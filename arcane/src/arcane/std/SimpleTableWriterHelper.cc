@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleTableWriterHelper.cc                                  (C) 2000-2022 */
+/* SimpleTableWriterHelper.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Classe permettant d'écrire un SimpleTableInternal dans un fichier.        */
 /* Simplifie l'utilisation de l'écrivain en gérant le multiprocessus et les  */
@@ -34,9 +34,10 @@ bool SimpleTableWriterHelper::
 init(const Directory& root_directory, const String& table_name, const String& directory_name)
 {
   setTableName(table_name);
-  _computeName();
+  _computeTableName();
 
-  m_name_output_directory = directory_name;
+  setOutputDirectory(directory_name);
+  _computeOutputDirectory();
 
   m_root = Directory(root_directory, m_simple_table_reader_writer->fileType());
   return true;
@@ -59,8 +60,9 @@ print(Integer rank)
 bool SimpleTableWriterHelper::
 writeFile(const Directory& root_directory, Integer rank)
 {
-  // Finalisation du nom du csv (si ce n'est pas déjà fait).
-  _computeName();
+  // Finalisation du nom et du répertoire du csv (si ce n'est pas déjà fait).
+  _computeTableName();
+  _computeOutputDirectory();
 
   // Création du répertoire.
   bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_parallel_mng, root_directory);
@@ -80,9 +82,9 @@ writeFile(const Directory& root_directory, Integer rank)
   if (rank != -1 && m_simple_table_internal->m_parallel_mng->commRank() != rank)
     return true;
 
-  // Si l'on a rank == -1 et que m_simple_table_internal->m_name_table_once_process == true, alors il n'y a que le
+  // Si l'on a rank == -1 et que isOneFileByRanksPermited() == false, alors il n'y a que le
   // processus 0 qui doit écrire.
-  if ((rank == -1 && m_name_table_once_process) && m_simple_table_internal->m_parallel_mng->commRank() != 0)
+  if ((rank == -1 && !isOneFileByRanksPermited()) && m_simple_table_internal->m_parallel_mng->commRank() != 0)
     return true;
 
   return m_simple_table_reader_writer->writeTable(output_directory, m_simple_table_internal->m_table_name);
@@ -142,19 +144,22 @@ setForcedToUseScientificNotation(bool use_scientific)
 String SimpleTableWriterHelper::
 outputDirectory()
 {
+  _computeOutputDirectory();
   return m_name_output_directory;
 }
 
 String SimpleTableWriterHelper::
 outputDirectoryWithoutComputation()
 {
-  return m_name_output_directory;
+  return m_name_output_directory_without_computation;
 }
 
 void SimpleTableWriterHelper::
 setOutputDirectory(const String& directory)
 {
   m_name_output_directory = directory;
+  m_name_output_directory_without_computation = directory;
+  m_name_output_directory_computed = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,7 +168,7 @@ setOutputDirectory(const String& directory)
 String SimpleTableWriterHelper::
 tableName()
 {
-  _computeName();
+  _computeTableName();
   return m_simple_table_internal->m_table_name;
 }
 
@@ -187,13 +192,14 @@ setTableName(const String& name)
 String SimpleTableWriterHelper::
 fileName()
 {
-  _computeName();
+  _computeTableName();
   return m_simple_table_internal->m_table_name + "." + m_simple_table_reader_writer->fileType();
 }
 
 Directory SimpleTableWriterHelper::
 outputPath()
 {
+  _computeOutputDirectory();
   return Directory(m_root, m_name_output_directory);
 }
 
@@ -206,8 +212,10 @@ rootPath()
 bool SimpleTableWriterHelper::
 isOneFileByRanksPermited()
 {
-  _computeName();
-  return !m_name_table_once_process;
+  _computeTableName();
+  _computeOutputDirectory();
+
+  return m_name_table_one_file_by_ranks_permited || m_name_output_directory_one_file_by_ranks_permited;
 }
 
 String SimpleTableWriterHelper::
@@ -243,29 +251,46 @@ setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void SimpleTableWriterHelper::
+_computeTableName()
+{
+  if (!m_name_table_computed) {
+    m_simple_table_internal->m_table_name = _computeName(m_name_table_without_computation, m_name_table_one_file_by_ranks_permited);
+    m_name_table_computed = true;
+  }
+}
+
+void SimpleTableWriterHelper::
+_computeOutputDirectory()
+{
+  if (!m_name_output_directory_computed) {
+    m_name_output_directory = _computeName(m_name_output_directory_without_computation, m_name_output_directory_one_file_by_ranks_permited);
+    m_name_output_directory_computed = true;
+  }
+}
+
 /**
  * @brief Méthode permettant de remplacer les symboles de nom par leur valeur.
  * 
  * @param name [IN] Le nom à modifier.
- * @param only_once [OUT] Si le nom contient le symbole '\@proc_id\@' permettant 
- *                de différencier les fichiers écrits par differents processus.
+ * @param one_file_by_ranks_permited [OUT] True si le nom contient le symbole '\@proc_id\@'
+ *                                   permettant de différencier les fichiers écrits par
+ *                                   differents processus.
  * @return String Le nom avec les symboles remplacés.
  */
-void SimpleTableWriterHelper::
-_computeName()
+String SimpleTableWriterHelper::
+_computeName(String name, bool& one_file_by_ranks_permited)
 {
-  if (m_name_table_computed) {
-    return;
-  }
+  one_file_by_ranks_permited = false;
 
   // Permet de contourner le bug avec String::split() si le nom commence par '@'.
-  if (m_simple_table_internal->m_table_name.startsWith("@")) {
-    m_simple_table_internal->m_table_name = "@" + m_simple_table_internal->m_table_name;
+  if (name.startsWith("@")) {
+    name = "@" + name;
   }
 
   StringUniqueArray string_splited;
   // On découpe la string là où se trouve les @.
-  m_simple_table_internal->m_table_name.split(string_splited, '@');
+  name.split(string_splited, '@');
 
   // On traite les mots entre les "@".
   if (string_splited.size() > 1) {
@@ -274,11 +299,11 @@ _computeName()
     // On remplace "@proc_id@" par l'id du proc.
     if (proc_id) {
       string_splited[proc_id.value()] = String::fromNumber(m_simple_table_internal->m_parallel_mng->commRank());
-      m_name_table_once_process = false;
+      one_file_by_ranks_permited = true;
     }
     // Il n'y a que un seul proc qui write.
     else {
-      m_name_table_once_process = true;
+      one_file_by_ranks_permited = false;
     }
 
     // On recherche "num_procs" dans le tableau (donc @num_procs@ dans le nom).
@@ -299,10 +324,7 @@ _computeName()
     combined.append(str);
   }
 
-  m_simple_table_internal->m_table_name = combined.toString();
-
-  m_name_table_computed = true;
-  return;
+  return combined.toString();
 }
 
 /*---------------------------------------------------------------------------*/
