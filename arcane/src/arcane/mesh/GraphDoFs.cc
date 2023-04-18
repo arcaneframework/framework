@@ -518,12 +518,12 @@ endUpdate()
       {
         link_uids.add(ilink->uniqueId());
         auto value = dual_uid_mng.uniqueIdOfPairOfDualItems(*ilink) ;
-        Integer dualitem_kind_1 = std::get<0>(value.first) ;
+        eItemKind dualitem_kind_1 = std::get<0>(value.first) ;
         Int64   dualitem_uid_1  = std::get<1>(value.first) ;
         Int64   dof_uid_1       = dual_uid_mng.uniqueIdOf(dualitem_kind_1,dualitem_uid_1) ;
         dualnode_uids.add(dof_uid_1) ;
 
-        Integer dualitem_kind_2 = std::get<0>(value.second) ;
+        eItemKind dualitem_kind_2 = std::get<0>(value.second) ;
         Int64    dualitem_uid_2 = std::get<1>(value.second) ;
         Int64         dof_uid_2 = dual_uid_mng.uniqueIdOf(dualitem_kind_2,dualitem_uid_2) ;
         dualnode_uids.add(dof_uid_2) ;

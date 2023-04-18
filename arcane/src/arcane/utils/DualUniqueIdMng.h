@@ -136,9 +136,9 @@ public:
   ~DualUniqueIdMng() {}
 
 public:
-  inline static Integer codeToItemKind(Int64 code) ;
-  inline Integer uidToDualItemKind(Int64 unique_id) ;
-  inline Int64 uniqueIdOf(Integer item_kind, Int64 item_uid);
+  inline static eItemKind codeToItemKind(Int64 code) ;
+  inline eItemKind uidToDualItemKind(Int64 unique_id) ;
+  inline Int64 uniqueIdOf(eItemKind item_kind, Int64 item_uid);
 
   template<typename ItemT>
   inline static Int64 uniqueIdOf(const ItemT& item);
@@ -146,7 +146,7 @@ public:
   template<typename ItemT>
   inline Int64 debugUniqueIdOf(const ItemT& item);
 
-  inline std::tuple<Integer,Int64> uniqueIdOfDualItem(const DoF& item);
+  inline std::tuple<eItemKind,Int64> uniqueIdOfDualItem(const DoF& item);
 
   template<typename ItemT>
   inline static Int64 uniqueIdOf(const ItemT& item, const Integer rank);
@@ -154,7 +154,7 @@ public:
   template<typename ItemT_1, typename ItemT_2>
   inline static Int64 uniqueIdOf(const ItemT_1& item_1, const ItemT_2& item_2);
 
-  inline std::pair< std::tuple<Integer,Int64>,std::tuple<Integer,Int64> > uniqueIdOfPairOfDualItems(const DoF& item);
+  inline std::pair< std::tuple<eItemKind,Int64>,std::tuple<eItemKind,Int64> > uniqueIdOfPairOfDualItems(const DoF& item);
 
   template<typename ItemT_1, typename ItemT_2>
   inline static Int64 uniqueIdOf(const ItemT_1& item_1, const Integer item_1_rank,
@@ -287,7 +287,7 @@ debugUniqueIdOf(const ItemT& item)
   return unique_id | traits_item_code<ItemT,Int64>::code;
 }
 
-inline Integer
+inline eItemKind
 DualUniqueIdMng::
 uidToDualItemKind(Int64 unique_id)
 {
@@ -307,7 +307,7 @@ uidToDualItemKind(Int64 unique_id)
 }
 
 
-inline Integer
+inline eItemKind
 DualUniqueIdMng::
 codeToItemKind(Int64 code)
 {
@@ -326,7 +326,7 @@ codeToItemKind(Int64 code)
 
 inline Int64
 DualUniqueIdMng::
-uniqueIdOf(Integer item_kind, Int64 item_uid)
+uniqueIdOf(eItemKind item_kind, Int64 item_uid)
 {
   ARCANE_ASSERT((8*sizeof(Int64) == 64),("Int64 is not 64-bits"));
   ARCANE_ASSERT((_onlyFirstBitUsed<29,Int64>(item_uid)),
@@ -351,14 +351,14 @@ uniqueIdOf(Integer item_kind, Int64 item_uid)
   return -1 ;
 }
 
-inline std::tuple<Integer,Int64>
+inline std::tuple<eItemKind,Int64>
 DualUniqueIdMng::
 uniqueIdOfDualItem(const DoF& node)
 {
   ARCANE_ASSERT((8*sizeof(Int64) == 64),("Int64 is not 64-bits"));
   const Int64 node_id = node.uniqueId();
-  const Int64 dual_id   = _extractFirstId(node_id);
-  Integer item_kind = uidToDualItemKind(node_id) ;
+  const Int64 dual_id = _extractFirstId(node_id);
+  eItemKind item_kind = uidToDualItemKind(node_id) ;
 
   return std::make_tuple(item_kind,dual_id) ;
 }
@@ -411,7 +411,7 @@ uniqueIdOf(const ItemT_1& item_1, const ItemT_2& item_2)
 }
 
 
-inline std::pair<std::tuple<Integer,Int64>,std::tuple<Integer,Int64> >
+inline std::pair<std::tuple<eItemKind,Int64>,std::tuple<eItemKind,Int64> >
 DualUniqueIdMng::
 uniqueIdOfPairOfDualItems(const DoF& link)
 {
@@ -419,13 +419,13 @@ uniqueIdOfPairOfDualItems(const DoF& link)
 
   const Int64 link_id = link.uniqueId();
 
-  const Int64   code_1 = _extractFirstCode(link_id);
-  const Int64     id_1 = _extractFirstId(link_id);
-  const Integer kind_1 = codeToItemKind(code_1) ;
+  const Int64     code_1 = _extractFirstCode(link_id);
+  const Int64       id_1 = _extractFirstId(link_id);
+  const eItemKind kind_1 = codeToItemKind(code_1) ;
 
-  const Int64   code_2 = _extractSecondCode(link_id);
-  const Int64     id_2 = _extractSecondId(link_id);
-  const Integer kind_2 = codeToItemKind(code_2) ;
+  const Int64     code_2 = _extractSecondCode(link_id);
+  const Int64       id_2 = _extractSecondId(link_id);
+  const eItemKind kind_2 = codeToItemKind(code_2) ;
 
 
   return std::make_pair(std::make_tuple(kind_1,id_1),std::make_tuple(kind_2,id_2)) ;
