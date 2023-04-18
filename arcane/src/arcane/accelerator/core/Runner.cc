@@ -222,7 +222,7 @@ class Runner::Impl
 
 Runner::
 Runner()
-: m_p(new Impl())
+: m_p(std::make_shared<Impl>())
 {
 }
 
@@ -249,12 +249,6 @@ Runner(eExecutionPolicy p, DeviceId device_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Runner::
-~Runner()
-{
-  delete m_p;
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -275,7 +269,7 @@ _internalCreateOrGetRunQueueImpl()
   auto pool = m_p->getPool();
 
   {
-    Impl::Lock my_lock(m_p);
+    Impl::Lock my_lock(m_p.get());
     if (!pool->empty()) {
       impl::RunQueueImpl* p = pool->top();
       pool->pop();
@@ -311,7 +305,7 @@ _internalFreeRunQueueImpl(impl::RunQueueImpl* p)
 {
   _checkIsInit();
   {
-    Impl::Lock my_lock(m_p);
+    Impl::Lock my_lock(m_p.get());
     if (p->_isInPool())
       m_p->getPool()->push(p);
   }

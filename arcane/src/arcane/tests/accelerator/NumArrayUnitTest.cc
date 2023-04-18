@@ -424,11 +424,15 @@ _executeTest2()
 
   constexpr double expected_sum4 = 164736000.0;
 
+  // Test copie de Runner
+  Runner runner1(m_runner);
+  Runner runner2;
+  runner2 = runner1;
   auto queue1 = makeQueue(m_runner);
   queue1.setAsync(true);
-  auto queue2 = makeQueue(m_runner);
+  auto queue2 = makeQueue(runner1);
   queue2.setAsync(true);
-  auto queue3 = makeQueue(m_runner);
+  auto queue3 = makeQueue(runner2);
   queue3.setAsync(true);
 
   NumArray<double, MDDim4> t1(n1, n2, n3, n4);

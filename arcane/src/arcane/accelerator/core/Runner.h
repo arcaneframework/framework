@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.h                                                    (C) 2000-2022 */
+/* Runner.h                                                    (C) 2000-2023 */
 /*                                                                           */
 /* Gestion de l'exécution sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -16,7 +16,10 @@
 
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/MemoryRessource.h"
+
 #include "arcane/accelerator/core/RunQueue.h"
+
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,7 +31,8 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Gestionnaire d'exécution pour accélérateur.
- * \warning API en cours de définition.
+ *
+ * Cette classe utilise une sémantique par référence
  *
  * Une instance de cette classe représente un backend d'exécution. Il faut
  * d'abord appelé initialize() avant de pouvoir utiliser les méthodes de
@@ -38,7 +42,7 @@ namespace Arcane::Accelerator
  * Une instance de cette classe est associée à un device qui n'est pas forcément
  * celui utilisé par défaut pour le thread courant. Pour garantir que les
  * kernels associés à ce runner seront bien exécutés sur le bon device il
- * est nécessaire d'appeler la méthode setAsCurrentDevice().
+ * est nécessaire d'appeler au moins une fois la méthode setAsCurrentDevice().
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
@@ -60,14 +64,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   explicit Runner(eExecutionPolicy p);
   //! Créé et initialise un gestionnaire pour l'accélérateur \a p et l'accélérateur \a device
   Runner(eExecutionPolicy p, DeviceId device);
-  ~Runner();
-
- public:
-
-  Runner(const Runner&) = delete;
-  Runner(Runner&&) = delete;
-  Runner& operator=(const Runner&) = delete;
-  Runner& operator=(Runner&&) = delete;
 
  public:
 
@@ -147,7 +143,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 
  private:
 
-  Impl* m_p;
+  std::shared_ptr<Impl> m_p;
 
  private:
 
@@ -161,7 +157,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Créé une file temporaire associée à \a runner.
+ * \brief Créé une file associée à \a runner.
  *
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
@@ -172,7 +168,7 @@ makeQueue(Runner& runner)
 }
 
 /*!
- * \brief Créé une file temporaire associée à \a runner.
+ * \brief Créé une file associée à \a runner.
  *
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
@@ -184,26 +180,26 @@ makeQueue(Runner* runner)
 }
 
 /*!
- * \brief Créé une file temporaire associée à \a runner avec les propriétés \a bi.
+ * \brief Créé une file associée à \a runner avec les propriétés \a bi.
  *
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner& runner,const RunQueueBuildInfo& bi)
+makeQueue(Runner& runner, const RunQueueBuildInfo& bi)
 {
-  return RunQueue(runner,bi);
+  return RunQueue(runner, bi);
 }
 
 /*!
- * \brief Créé une file temporaire associée à \a runner avec les propriétés \a bi.
+ * \brief Créé une file associée à \a runner avec les propriétés \a bi.
  *
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner* runner,const RunQueueBuildInfo& bi)
+makeQueue(Runner* runner, const RunQueueBuildInfo& bi)
 {
   ARCANE_CHECK_POINTER(runner);
-  return RunQueue(*runner,bi);
+  return RunQueue(*runner, bi);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -228,9 +224,9 @@ makeQueueRef(Runner& runner)
  * pour éviter une allocation inutile.
  */
 inline Ref<RunQueue>
-makeQueueRef(Runner& runner,const RunQueueBuildInfo& bi)
+makeQueueRef(Runner& runner, const RunQueueBuildInfo& bi)
 {
-  return makeRef(new RunQueue(runner,bi));
+  return makeRef(new RunQueue(runner, bi));
 }
 
 /*---------------------------------------------------------------------------*/
