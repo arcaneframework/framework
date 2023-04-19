@@ -4,12 +4,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   AdiProjectionModule.cc
   CartesianMeshTestUtils.cc
 )
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
-  set_source_files_properties(${ARCANE_ACCELERATOR_SOURCES} PROPERTIES LANGUAGE CUDA)
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
-  set_source_files_properties(${ARCANE_ACCELERATOR_SOURCES} PROPERTIES LANGUAGE HIP)
-endif()
+arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 
 arcane_add_library(arcane_cea_tests
   INPUT_PATH ${ARCANECEA_SRC_PATH}
