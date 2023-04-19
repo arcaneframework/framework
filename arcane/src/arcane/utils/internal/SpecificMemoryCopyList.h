@@ -16,14 +16,58 @@
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/ArrayExtentsValue.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::Accelerator
+{
+class RunQueue;
+}
+
 namespace Arcane::impl
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_UTILS_EXPORT IndexedMemoryCopyArgs
+{
+ public:
+
+  IndexedMemoryCopyArgs(Span<const Int32> indexes, Span<const std::byte> source,
+                        Span<std::byte> destination)
+  : m_indexes(indexes)
+  , m_source(source)
+  , m_destination(destination)
+  {}
+
+ public:
+
+  Arcane::Accelerator::RunQueue* m_queue = nullptr;
+  Span<const Int32> m_indexes;
+  Span<const std::byte> m_source;
+  Span<std::byte> m_destination;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
+{
+ public:
+
+  virtual ~ISpecificMemoryCopy() = default;
+
+ public:
+
+  virtual void copyFrom(const IndexedMemoryCopyArgs& args) = 0;
+  virtual void copyTo(const IndexedMemoryCopyArgs& args) = 0;
+  virtual Int32 datatypeSize() const = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -141,24 +185,6 @@ class SpecificMemoryCopyList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
-{
- public:
-
-  virtual ~ISpecificMemoryCopy() = default;
-
- public:
-
-  virtual void copyFrom(Span<const Int32> indexes, Span<const std::byte> source,
-                        Span<std::byte> destination) = 0;
-  virtual void copyTo(Span<const Int32> indexes, Span<const std::byte> source,
-                      Span<std::byte> destination) = 0;
-  virtual Int32 datatypeSize() const = 0;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template <typename DataType, typename Extent>
 class SpecificMemoryCopyBase
 : public ISpecificMemoryCopy
@@ -201,16 +227,14 @@ class SpecificMemoryCopy
 
  public:
 
-  void copyFrom(Span<const Int32> indexes, Span<const std::byte> source,
-                Span<std::byte> destination) override
+  void copyFrom(const IndexedMemoryCopyArgs& args) override
   {
-    _copyFrom(indexes, _toTrueType(source), _toTrueType(destination));
+    _copyFrom(args.m_indexes, _toTrueType(args.m_source), _toTrueType(args.m_destination));
   }
 
-  void copyTo(Span<const Int32> indexes, Span<const std::byte> source,
-              Span<std::byte> destination) override
+  void copyTo(const IndexedMemoryCopyArgs& args) override
   {
-    _copyTo(indexes, _toTrueType(source), _toTrueType(destination));
+    _copyTo(args.m_indexes, _toTrueType(args.m_source), _toTrueType(args.m_destination));
   }
 
  public:
@@ -260,15 +284,13 @@ class SpecificMemoryCopyRef
       m_used_copier = &m_generic_copier;
   }
 
-  void copyFrom(Span<const Int32> indexes, Span<const std::byte> source,
-                Span<std::byte> destination)
+  void copyFrom(const IndexedMemoryCopyArgs& args)
   {
-    m_used_copier->copyFrom(indexes, source, destination);
+    m_used_copier->copyFrom(args);
   }
-  void copyTo(Span<const Int32> indexes, Span<const std::byte> source,
-              Span<std::byte> destination)
+  void copyTo(const IndexedMemoryCopyArgs& args)
   {
-    m_used_copier->copyTo(indexes, source, destination);
+    m_used_copier->copyTo(args);
   }
 
  private:

@@ -69,6 +69,8 @@ template <typename Extents>
 class ArrayBounds
 : public ArrayBoundsBase<Extents>
 {
+ public:
+
   using ExtentsType = Extents;
   using BaseClass = ArrayBoundsBase<ExtentsType>;
   using ArrayExtentsType = ArrayExtents<ExtentsType>;

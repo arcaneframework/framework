@@ -96,7 +96,7 @@ copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes)
   auto destination = bytes();
 
   impl::SpecificMemoryCopyRef copier = global_copy_list.copier(one_data_size);
-  copier.copyFrom(indexes, source, destination);
+  copier.copyFrom({indexes, source, destination});
 }
 
 /*---------------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes)
   auto destination = v.bytes();
 
   impl::SpecificMemoryCopyRef copier = global_copy_list.copier(one_data_size);
-  copier.copyTo(indexes, source, destination);
+  copier.copyTo({indexes, source, destination});
 }
 
 /*---------------------------------------------------------------------------*/

@@ -24,6 +24,7 @@
 
 namespace Arcane::Accelerator::impl
 {
+using IndexedMemoryCopyArgs = Arcane::impl::IndexedMemoryCopyArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,55 +42,55 @@ class AcceleratorSpecificMemoryCopy
 
  public:
 
-  void copyFrom(Span<const Int32> indexes, Span<const std::byte> source,
-                Span<std::byte> destination) override
+  void copyFrom(const IndexedMemoryCopyArgs& args) override
   {
-    _copyFrom(indexes, _toTrueType(source), _toTrueType(destination));
+    _copyFrom(args.m_queue, args.m_indexes, _toTrueType(args.m_source), _toTrueType(args.m_destination));
   }
 
-  void copyTo(Span<const Int32> indexes, Span<const std::byte> source,
-              Span<std::byte> destination) override
+  void copyTo(const IndexedMemoryCopyArgs& args) override
   {
-    _copyTo(indexes, _toTrueType(source), _toTrueType(destination));
+    _copyTo(args.m_queue, args.m_indexes, _toTrueType(args.m_source), _toTrueType(args.m_destination));
   }
 
  public:
 
-  void _copyFrom(Span<const Int32> indexes, Span<const DataType> source,
-                 Span<DataType> destination)
+  void _copyFrom(RunQueue* queue, Span<const Int32> indexes,
+                 Span<const DataType> source, Span<DataType> destination)
   {
-    Int32 nb_index = (Int32)indexes.size();
+    ARCANE_CHECK_POINTER(queue);
 
-    auto command = makeCommand(m_queue);
+    Int32 nb_index = (Int32)indexes.size();
+    const Int32 sub_size = m_extent.v;
+
+    auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_index)
     {
       auto [i] = iter();
-      Int64 zindex = i * m_extent.v;
-      Int64 zci = indexes[i] * m_extent.v;
-      for (Int32 z = 0, n = m_extent.v; z < n; ++z)
+      Int64 zindex = i * sub_size;
+      Int64 zci = indexes[i] * sub_size;
+      for (Int32 z = 0; z < sub_size; ++z)
         destination[zindex + z] = source[zci + z];
     };
   }
 
-  void _copyTo(Span<const Int32> indexes, Span<const DataType> source,
+  void _copyTo(RunQueue* queue, Span<const Int32> indexes, Span<const DataType> source,
                Span<DataType> destination)
   {
-    Int32 nb_index = (Int32)indexes.size();
+    ARCANE_CHECK_POINTER(queue);
 
-    auto command = makeCommand(m_queue);
+    Int32 nb_index = (Int32)indexes.size();
+    const Int32 sub_size = m_extent.v;
+
+    auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_index)
     {
       auto [i] = iter();
-      Int64 zindex = i * m_extent.v;
-      Int64 zci = indexes[i] * m_extent.v;
-      for (Int32 z = 0, n = m_extent.v; z < n; ++z)
+      Int64 zindex = i * sub_size;
+      Int64 zci = indexes[i] * sub_size;
+      for (Int32 z = 0; z < sub_size; ++z)
         destination[zci + z] = source[zindex + z];
     };
   }
-
- private:
-
-  RunQueue* m_queue = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

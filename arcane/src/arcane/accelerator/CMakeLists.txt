@@ -14,6 +14,8 @@ arcane_add_library(arcane_accelerator
   FILES ${ARCANE_SOURCES}
   )
 
+arcane_accelerator_add_source_files(MemoryCopier.cc)
+
 target_link_libraries(arcane_accelerator PUBLIC
   arcane_core
   arcane_accelerator_core
