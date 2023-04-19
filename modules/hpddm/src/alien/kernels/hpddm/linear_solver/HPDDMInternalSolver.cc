@@ -230,7 +230,7 @@ HPDDMInternalSolver::solve(CSRMatrixType const& Ad, CSRMatrixType const& An,
 void
 HPDDMInternalSolver::internalPrintInfo() const
 {
-  m_stater.print(const_cast<ITraceMng*>(traceMng()), m_status,
+  m_stat.print(const_cast<ITraceMng*>(traceMng()), m_status,
       format("Linear Solver : {0}", "HPDDMSolver"));
   if (m_output_level > 0)
     alien_info([&] {

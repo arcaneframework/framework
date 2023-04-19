@@ -62,8 +62,8 @@ MTLInternalLinearSolver::~MTLInternalLinearSolver()
 void
 MTLInternalLinearSolver::init()
 {
-  m_stater.reset();
-  m_stater.startInitializationMeasure();
+  //m_stater.reset();
+  //m_stater.startInitializationMeasure();
 
 #ifdef USE_PMTL4
   int argc = 0;
@@ -264,7 +264,7 @@ MTLInternalLinearSolver::hasParallelSupport() const
 void
 MTLInternalLinearSolver::internalPrintInfo() const
 {
-  m_stater.print(const_cast<Arccore::ITraceMng*>(traceMng()), m_status,
+  m_stat.print(const_cast<Arccore::ITraceMng*>(traceMng()), m_status,
       Arccore::String::format("Linear Solver : {0}", "MTLLinearSolver"));
 }
 

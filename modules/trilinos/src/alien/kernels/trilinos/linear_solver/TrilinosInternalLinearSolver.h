@@ -11,7 +11,7 @@
 #include <alien/utils/Precomp.h>
 #include <alien/AlienTrilinosPrecomp.h>
 #include <alien/kernels/trilinos/linear_solver/TrilinosOptionTypes.h>
-#include <alien/expression/solver/SolverStater.h>
+#include <alien/expression/solver/SolverStat.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/utils/ObjectWithTrace.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosVector.h>
@@ -21,7 +21,7 @@ class IOptionsTrilinosSolver;
 
 namespace Alien {
 
-class SolverStater;
+class SolverStat;
 
 template <typename TagT>
 class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
@@ -76,10 +76,8 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
   //! Etat du solveur
   const Alien::SolverStatus& getStatus() const;
 
-  Alien::SolverStatus& getStatusRef() { return m_status; }
-
-  const SolverStat& getSolverStat() const { return m_stater; }
-  SolverStater& getSolverStater() { return m_stater; }
+  const SolverStat& getSolverStat() const { return m_stat; }
+  SolverStat& getSolverStater() { return m_stat; }
 
   String getName() const { return "trilinos"; }
 
@@ -130,7 +128,7 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
   Integer m_solve_num = 0;
   Integer m_total_iter_num = 0;
 
-  SolverStater m_stater;
+  SolverStat m_stat;
 
   IOptionsTrilinosSolver* m_options = nullptr;
   std::vector<double> m_pressure_diag;

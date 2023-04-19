@@ -2,7 +2,7 @@
 #define ALIEN_KERNELS_PETSC_PETSCLINEARSOLVER_H
 
 #include <alien/core/backend/IInternalLinearSolverT.h>
-#include <alien/expression/solver/SolverStater.h>
+#include <alien/expression/solver/SolverStat.h>
 #include <alien/utils/ObjectWithTrace.h>
 
 #include <arccore/message_passing/IMessagePassingMng.h>
@@ -18,7 +18,7 @@ namespace Alien {
 
 class IPETScKSP;
 class IPETScPC;
-class SolverStater;
+class SolverStat;
 class PETScMatrix;
 class PETScVector;
 
@@ -97,13 +97,11 @@ class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETS
 
   //! Etat du solveur
   const Status& getStatus() const;
-  Status& getStatusRef() { return m_status; }
 
   //! Statistiques du solveur
-  const SolverStat& getSolverStat() const { return m_stater; }
+  const SolverStat& getSolverStat() const { return m_stat; }
 
-  SolverStat& getSolverStat() { return m_stater; }
-  SolverStater& getSolverStater() { return m_stater; }
+  SolverStat& getSolverStat() { return m_stat; }
 
   void internalPrintInfo() const;
 
@@ -145,7 +143,7 @@ class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETS
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
 
   //! Statistiques d'exécution du solveur
-  SolverStater m_stater;
+  SolverStat m_stat;
 
   IOptionsPETScLinearSolver* m_options;
 };

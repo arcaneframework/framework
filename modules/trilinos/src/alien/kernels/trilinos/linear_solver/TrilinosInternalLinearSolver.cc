@@ -192,7 +192,7 @@ template <typename TagT>
 void
 TrilinosInternalLinearSolver<TagT>::internalPrintInfo() const
 {
-  m_stater.print(const_cast<ITraceMng*>(traceMng()), m_status,
+  m_stat.print(const_cast<ITraceMng*>(traceMng()), m_status,
       Arccore::String::format("Linear Solver : {0}", "TrilinosSolver"));
 }
 

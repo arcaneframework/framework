@@ -22,7 +22,7 @@ class IOptionsHTSSolver;
 
 namespace Alien {
 
-class SolverStater;
+class SolverStat;
 
 class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
     //: public IInternalLinearSolver<SimpleCSRMatrix<Real>, SimpleCSRVector<Real> >
@@ -70,10 +70,9 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
 
   //! Etat du solveur
   const Alien::SolverStatus& getStatus() const;
-  Alien::SolverStatus& getStatusRef() { return m_status; }
 
-  const SolverStat& getSolverStat() const { return m_stater; }
-  SolverStater& getSolverStater() { return m_stater; }
+  const SolverStat& getSolverStat() const { return m_stat; }
+  SolverStat& getSolverStat() { return m_stat; }
 
   String getName() const { return "htssolver"; }
 
@@ -170,7 +169,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
   Real m_int_total_setup_time = 0.;
   Real m_int_total_finish_time = 0.;
 
-  SolverStater m_stater;
+  SolverStat m_stat;
 
   IOptionsHTSSolver* m_options = nullptr;
   std::vector<double> m_pressure_diag;

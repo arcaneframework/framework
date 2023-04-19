@@ -19,7 +19,7 @@
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/kernels/hpddm/linear_solver/HPDDMOptionTypes.h>
-#include <alien/expression/solver/SolverStater.h>
+#include <alien/expression/solver/SolverStat.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/utils/ObjectWithTrace.h>
 #include <alien/kernels/simple_csr/SimpleCSRVector.h>
@@ -82,10 +82,8 @@ class ALIEN_HPDDM_EXPORT HPDDMInternalSolver
   //! Etat du solveur
   const Alien::ILinearSolver::Status& getStatus() const { return m_status; }
 
-  Alien::SolverStatus& getStatusRef() { return m_status; }
-
-  const SolverStat& getSolverStat() const { return m_stater; }
-  SolverStater& getSolverStater() { return m_stater; }
+  const SolverStat& getSolverStat() const { return m_stat; }
+  SolverStater& getSolverStat() { return m_stat; }
 
   bool solve(const Alien::IMatrix& A, const Alien::IVector& b, Alien::IVector& x);
 
@@ -116,7 +114,7 @@ class ALIEN_HPDDM_EXPORT HPDDMInternalSolver
   std::vector<Real> m_hpddm_sol;
   std::vector<Real> m_hpddm_rhs;
 
-  Alien::SolverStater m_stater; //<! Statistiques d'ex�cution du solveur
+  Alien::SolverStat m_stat; //<! Statistiques d'ex�cution du solveur
   Alien::ILinearSolver::Status m_status;
   Real m_init_solver_time = 0.;
   Real m_iter_solver_time = 0.;

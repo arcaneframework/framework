@@ -295,7 +295,7 @@ PETScInternalLinearSolver::solve(
   if (m_verbose == VerboseTypes::high) {
     alien_info([&] {
       cout() << "|---------------------------------------------|";
-      cout() << "| Start Linear Solver #" << m_stater.solveCount();
+      cout() << "| Start Linear Solver #" << m_stat.solveCount();
     });
   }
 
@@ -491,7 +491,7 @@ void
 PETScInternalLinearSolver::internalPrintInfo() const
 {
   if (traceMng())
-    m_stater.print(const_cast<Arccore::ITraceMng*>(traceMng()), m_status,
+    m_stat.print(const_cast<Arccore::ITraceMng*>(traceMng()), m_status,
         "Linear Solver : PETScLinearSolver");
 }
 
@@ -520,7 +520,7 @@ PETScInternalLinearSolver::_solveNullRHS(PETScVector& x)
   if (m_verbose == VerboseTypes::high) {
     alien_info([&] {
       cout() << "|---------------------------------------------|";
-      cout() << "| Start Linear Solver #" << m_stater.solveCount();
+      cout() << "| Start Linear Solver #" << m_stat.solveCount();
       cout() << "| -- Zero second member -- ";
     });
   }

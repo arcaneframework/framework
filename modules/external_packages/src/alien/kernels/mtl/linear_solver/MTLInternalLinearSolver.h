@@ -2,7 +2,7 @@
 #define ALIEN_KERNELS_MTL_LINEARSOLVER_MTLINTERNALLINEARSOLVER_H_
 
 #include <alien/utils/Precomp.h>
-#include <alien/expression/solver/SolverStater.h>
+#include <alien/expression/solver/SolverStat.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/kernels/mtl/data_structure/MTLInternal.h>
 #include <alien/kernels/mtl/linear_solver/MTLOptionTypes.h>
@@ -13,7 +13,7 @@ class IOptionsMTLLinearSolver;
 
 namespace Alien {
 
-class SolverStater;
+class SolverStat;
 class MTLMatrix;
 class MTLVector;
 
@@ -64,12 +64,10 @@ class MTLInternalLinearSolver : public IInternalLinearSolver<MTLMatrix, MTLVecto
 
   //! Etat du solveur
   const Alien::SolverStatus& getStatus() const;
-  Alien::SolverStatus& getStatusRef() { return m_status; }
 
   //! Statistiques du solveur
-  SolverStater& getSolverStat() { return m_stater; }
-  const SolverStat& getSolverStat() const { return m_stater; }
-  SolverStater& getSolverStater() { return m_stater; }
+  SolverStat& getSolverStat() { return m_stat; }
+  const SolverStat& getSolverStat() const { return m_stat; }
 
  private:
   bool _solve(MatrixInternal::MTLMatrixType const& A,
@@ -92,7 +90,7 @@ class MTLInternalLinearSolver : public IInternalLinearSolver<MTLMatrix, MTLVecto
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
 
   //! Statistiques d'exécution du solveur
-  SolverStater m_stater;
+  SolverStat m_stat;
 
   IOptionsMTLLinearSolver* m_options = nullptr;
 };

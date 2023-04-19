@@ -11,7 +11,7 @@
 #include <memory>
 
 #include <alien/utils/Precomp.h>
-#include <alien/expression/solver/SolverStater.h>
+#include <alien/expression/solver/SolverStat.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/utils/ObjectWithTrace.h>
 
@@ -25,7 +25,7 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SolverStater;
+class SolverStat;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -80,16 +80,15 @@ class HypreInternalLinearSolver : public IInternalLinearSolver<HypreMatrix, Hypr
   const Status& getStatus() const;
   Status& getStatusRef() { return m_status; }
 
-  const SolverStat& getSolverStat() const { return m_stater; }
-  SolverStater& getSolverStater() { return m_stater; }
+  const SolverStat& getSolverStat() const { return m_stat; }
+  SolverStat& getSolverStat() { return m_stat; }
 
  private:
   Status m_status;
 
   Integer m_gpu_device_id = 0 ;
 
-  // SolverStat m_stat;
-  SolverStater m_stater;
+  SolverStat m_stat;
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
   IOptionsHypreSolver* m_options;
 

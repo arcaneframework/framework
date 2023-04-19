@@ -38,7 +38,7 @@ class IOptionsMCGSolver;
 
 namespace Alien {
 
-class SolverStater;
+class SolverStat;
 
 class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
                                                            public ObjectWithTrace

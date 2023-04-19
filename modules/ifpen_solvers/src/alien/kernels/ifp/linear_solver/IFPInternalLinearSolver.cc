@@ -43,6 +43,7 @@ IFPInternalLinearSolver::IFPInternalLinearSolver(
 : m_parallel_mng(parallel_mng)
 , m_print_info(0)
 , m_options(options)
+, m_stater(this)
 {
 }
 
@@ -58,7 +59,7 @@ IFPInternalLinearSolver::~IFPInternalLinearSolver()
 void
 IFPInternalLinearSolver::init()
 {
-  SolverStatSentry<IFPInternalLinearSolver> sentry(this, SolverStater::eInit);
+  SolverStatSentry<IFPInternalLinearSolver> sentry(m_stater, BaseSolverStater::eInit);
   if (m_parallel_mng == nullptr)
     return;
 
@@ -183,7 +184,7 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
 
   bool isSolverOk = false;
 
-  SolverStatSentry<IFPInternalLinearSolver> sentry(this, SolverStater::ePrepare);
+  SolverStatSentry<IFPInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
 
   // m_stater.startPrepareMeasure();
 
@@ -217,7 +218,7 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
     m_ilu0_algo = 4;
   sentry.release();
 
-  SolverStatSentry<IFPInternalLinearSolver> sentry2(this, SolverStater::eSolve);
+  SolverStatSentry<IFPInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
   if (matrix.internal()->m_system_is_resizeable == true)
     isSolverOk = _solveRs(matrix.internal()->m_system_is_resizeable);
   else
@@ -245,7 +246,7 @@ IFPInternalLinearSolver::_solve()
 
   alien_info(m_print_info, [&] {
     cout() << "|--------------------------------------------------------|";
-    cout() << "| Start Linear Solver #" << m_stater.solveCount();
+    cout() << "| Start Linear Solver #" << m_stat.solveCount();
   });
 
   F2C(ifpsolversolve)
@@ -271,7 +272,7 @@ IFPInternalLinearSolver::_solveRs(bool m_resizeable)
 {
   alien_info(m_print_info, [&] {
     cout() << "|--------------------------------------------------------|";
-    cout() << "| Start Linear Solver #" << m_stater.solveCount();
+    cout() << "| Start Linear Solver #" << m_stat.solveCount();
   });
 
   // m_stater.startSolveMeasure();
@@ -299,7 +300,7 @@ IFPInternalLinearSolver::_solveRs(bool m_resizeable)
 void
 IFPInternalLinearSolver::internalPrintInfo() const
 {
-  m_stater.print(
+  m_stat.print(
       Universe().traceMng(), m_status, String("Linear Solver : IFPLinearSolver"));
   Real init_solver_count = 0;
   Real init_precond_count = 0;
