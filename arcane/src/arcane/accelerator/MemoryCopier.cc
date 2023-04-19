@@ -108,9 +108,19 @@ class AcceleratorIndexedCopyTraits
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class AcceleratorSpecificMemoryCopyList
+{
+ public:
+  AcceleratorSpecificMemoryCopyList()
+  {
+    Arcane::impl::ISpecificMemoryCopyList::setDefaultCopyListIfNotSet(&m_copy_list);
+  }
+  Arcane::impl::SpecificMemoryCopyList<AcceleratorIndexedCopyTraits> m_copy_list;
+};
+
 namespace
 {
-  Arcane::impl::SpecificMemoryCopyList<AcceleratorIndexedCopyTraits> global_copy_list;
+  AcceleratorSpecificMemoryCopyList global_copy_list;
 }
 
 /*---------------------------------------------------------------------------*/

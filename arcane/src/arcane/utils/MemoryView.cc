@@ -45,6 +45,7 @@ class IndexedCopyTraits
 
 namespace Arcane
 {
+using RunQueue = Accelerator::RunQueue;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,6 +53,27 @@ namespace Arcane
 namespace
 {
   impl::SpecificMemoryCopyList<impl::IndexedCopyTraits> global_copy_list;
+  impl::ISpecificMemoryCopyList* default_global_copy_list = nullptr;
+
+  impl::ISpecificMemoryCopyList* _getDefaultCopyList(RunQueue* queue)
+  {
+    if (queue && !default_global_copy_list)
+      ARCANE_FATAL("No instance of copier is available for RunQueue");
+    if (default_global_copy_list && queue)
+      return default_global_copy_list;
+    return &global_copy_list;
+  }
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void impl::ISpecificMemoryCopyList::
+setDefaultCopyListIfNotSet(ISpecificMemoryCopyList* ptr)
+{
+  if (!default_global_copy_list) {
+    default_global_copy_list = ptr;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -87,7 +109,7 @@ copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes)
 
 void MutableMemoryView::
 copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                Accelerator::RunQueue* run_queue)
+                RunQueue* queue)
 {
   Int32 one_data_size = m_datatype_size;
   Int64 v_one_data_size = v.datatypeSize();
@@ -102,8 +124,7 @@ copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
   auto source = v.bytes();
   auto destination = bytes();
 
-  impl::SpecificMemoryCopyRef copier = global_copy_list.copier(one_data_size);
-  copier.copyFrom({ indexes, source, destination, run_queue });
+  _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, source, destination, queue });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -117,7 +138,7 @@ copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes)
 
 void ConstMemoryView::
 copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-              Accelerator::RunQueue* run_queue)
+              RunQueue* queue)
 {
   Int32 one_data_size = m_datatype_size;
   Int64 v_one_data_size = v.datatypeSize();
@@ -132,8 +153,7 @@ copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
   auto source = bytes();
   auto destination = v.bytes();
 
-  impl::SpecificMemoryCopyRef copier = global_copy_list.copier(one_data_size);
-  copier.copyTo({ indexes, source, destination, run_queue });
+  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, source, destination, queue });
 }
 
 /*---------------------------------------------------------------------------*/

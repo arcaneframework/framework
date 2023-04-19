@@ -76,6 +76,29 @@ class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Interface d'une liste d'instances de ISpecificMemoryCopy spécialisées.
+ */
+class ARCANE_UTILS_EXPORT ISpecificMemoryCopyList
+{
+ public:
+
+  /*!
+   * \brief Positionne l'instance par défaut pour les copies.
+   *
+   * Cette méthode est normalement appelée par l'API accélérateur pour
+   * fournir des noyaux de copie spécifiques à chaque device.
+   */
+  static void setDefaultCopyListIfNotSet(ISpecificMemoryCopyList* ptr);
+
+ public:
+
+  virtual void copyTo(Int32 datatype_size, const IndexedMemoryCopyArgs& args) = 0;
+  virtual void copyFrom(Int32 datatype_size, const IndexedMemoryCopyArgs& args) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Liste d'instances de ISpecificMemoryCopy spécialisées.
  *
  * Cette classe contient des instances de ISpecificMemoryCopy spécialisées
@@ -85,6 +108,7 @@ class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
  */
 template <typename Traits>
 class SpecificMemoryCopyList
+: public ISpecificMemoryCopyList
 {
  public:
 
@@ -145,9 +169,9 @@ class SpecificMemoryCopyList
     }
   }
 
- public:
+ private:
 
-  RefType copier(Int32 v)
+  RefType _copier(Int32 v)
   {
     if (v < 0)
       ARCANE_FATAL("Bad value {0} for datasize", v);
@@ -163,6 +187,20 @@ class SpecificMemoryCopyList
     else
       ++m_nb_generic;
     return RefType(x, v);
+  }
+
+ public:
+
+  void copyTo(Int32 datatype_size, const IndexedMemoryCopyArgs& args) override
+  {
+    auto c = _copier(datatype_size);
+    c.copyTo(args);
+  }
+
+  void copyFrom(Int32 datatype_size, const IndexedMemoryCopyArgs& args) override
+  {
+    auto c = _copier(datatype_size);
+    c.copyFrom(args);
   }
 
  private:
@@ -299,6 +337,7 @@ class SpecificMemoryCopyRef
   {
     m_used_copier->copyFrom(args);
   }
+
   void copyTo(const IndexedMemoryCopyArgs& args)
   {
     m_used_copier->copyTo(args);
