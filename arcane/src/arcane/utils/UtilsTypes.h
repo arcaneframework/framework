@@ -280,6 +280,17 @@ template<int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Les types de ce namespace sont dans la composante 'arcane_accelerator_core'
+// et ne sont pas directement accessibles dans 'arcane_utils'.
+// Ils peuvent cependant être utilisés en paramètre de certaines méthodes.
+
+namespace Accelerator
+{
+class RunQueue;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Tableau dynamique à une dimension de pointeurs
 typedef Array<Pointer> PointerArray;

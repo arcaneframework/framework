@@ -123,6 +123,25 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
    */
   void copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes);
 
+  /*!
+   * \brief Copie dans l'instance indexée les données de \a v.
+   *
+   * L'opération est équivalente au pseudo-code suivant:
+   *
+   * \code
+   * Int32 n = indexes.size();
+   * for( Int32 i=0; i<n; ++i )
+   *   v[indexes[i]] = this[i];
+   * \endcode
+   *
+   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+   *
+   * \pre this.datatypeSize() == v.datatypeSize();
+   * \pre v.nbElement() >= indexes.size();
+   */
+  void copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
+                     Accelerator::RunQueue* run_queue = nullptr);
+
  public:
 
   //! Vue convertie en un Span
@@ -250,6 +269,25 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    * \pre this.nbElement() >= indexes.size();
    */
   void copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes);
+
+  /*!
+   * \brief Copie dans l'instance les données indexées de \a v.
+   *
+   * L'opération est équivalente au pseudo-code suivant:
+   *
+   * \code
+   * Int32 n = indexes.size();
+   * for( Int32 i=0; i<n; ++i )
+   *   this[i] = v[indexes[i]];
+   * \endcode
+   *
+   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+   *
+   * \pre this.datatypeSize() == v.datatypeSize();
+   * \pre this.nbElement() >= indexes.size();
+   */
+  void copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
+                       Accelerator::RunQueue* run_queue = nullptr);
 
  public:
 

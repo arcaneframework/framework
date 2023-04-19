@@ -23,39 +23,43 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
-{
-class RunQueue;
-}
-
 namespace Arcane::impl
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Arguments pour une copie de certains indices entre deux zones mémoire.
+ */
 class ARCANE_UTILS_EXPORT IndexedMemoryCopyArgs
 {
  public:
 
-  IndexedMemoryCopyArgs(Span<const Int32> indexes, Span<const std::byte> source,
-                        Span<std::byte> destination)
+  using RunQueue = Arcane::Accelerator::RunQueue;
+
+ public:
+
+  IndexedMemoryCopyArgs(SmallSpan<const Int32> indexes, Span<const std::byte> source,
+                        Span<std::byte> destination, RunQueue* run_queue)
   : m_indexes(indexes)
   , m_source(source)
   , m_destination(destination)
+  , m_queue(run_queue)
   {}
 
  public:
 
-  Arcane::Accelerator::RunQueue* m_queue = nullptr;
-  Span<const Int32> m_indexes;
+  SmallSpan<const Int32> m_indexes;
   Span<const std::byte> m_source;
   Span<std::byte> m_destination;
+  RunQueue* m_queue = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Interface d'un copieur mémoire spécialisé pour une taille de donnée.
+ */
 class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
 {
  public:
@@ -71,7 +75,14 @@ class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Liste d'instances de ISpecificMemoryCopy spécialisées.
+ *
+ * Cette classe contient des instances de ISpecificMemoryCopy spécialisées
+ * pour une taille de de type de données. Cela permet au compilateur de
+ * connaitre précisément la taille d'un type de donnée et ainsi de mieux
+ * optimiser les boucles.
+ */
 template <typename Traits>
 class SpecificMemoryCopyList
 {
@@ -239,10 +250,10 @@ class SpecificMemoryCopy
 
  public:
 
-  void _copyFrom(Span<const Int32> indexes, Span<const DataType> source,
+  void _copyFrom(SmallSpan<const Int32> indexes, Span<const DataType> source,
                  Span<DataType> destination)
   {
-    Int64 nb_index = indexes.size();
+    Int32 nb_index = indexes.size();
     for (Int32 i = 0; i < nb_index; ++i) {
       Int64 zindex = i * m_extent.v;
       Int64 zci = indexes[i] * m_extent.v;
@@ -251,10 +262,10 @@ class SpecificMemoryCopy
     }
   }
 
-  void _copyTo(Span<const Int32> indexes, Span<const DataType> source,
+  void _copyTo(SmallSpan<const Int32> indexes, Span<const DataType> source,
                Span<DataType> destination)
   {
-    Int64 nb_index = indexes.size();
+    Int32 nb_index = indexes.size();
 
     for (Int32 i = 0; i < nb_index; ++i) {
       Int64 zindex = i * m_extent.v;

@@ -82,6 +82,13 @@ copyHost(ConstMemoryView v)
 void MutableMemoryView::
 copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes)
 {
+  copyFromIndexes(v, indexes.smallView(), nullptr);
+}
+
+void MutableMemoryView::
+copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
+                Accelerator::RunQueue* run_queue)
+{
   Int32 one_data_size = m_datatype_size;
   Int64 v_one_data_size = v.datatypeSize();
   if (one_data_size != v_one_data_size)
@@ -96,7 +103,7 @@ copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes)
   auto destination = bytes();
 
   impl::SpecificMemoryCopyRef copier = global_copy_list.copier(one_data_size);
-  copier.copyFrom({indexes, source, destination});
+  copier.copyFrom({ indexes, source, destination, run_queue });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,6 +111,13 @@ copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes)
 
 void ConstMemoryView::
 copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes)
+{
+  copyToIndexes(v, indexes.smallView(), nullptr);
+}
+
+void ConstMemoryView::
+copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
+              Accelerator::RunQueue* run_queue)
 {
   Int32 one_data_size = m_datatype_size;
   Int64 v_one_data_size = v.datatypeSize();
@@ -119,7 +133,7 @@ copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes)
   auto destination = v.bytes();
 
   impl::SpecificMemoryCopyRef copier = global_copy_list.copier(one_data_size);
-  copier.copyTo({indexes, source, destination});
+  copier.copyTo({ indexes, source, destination, run_queue });
 }
 
 /*---------------------------------------------------------------------------*/
