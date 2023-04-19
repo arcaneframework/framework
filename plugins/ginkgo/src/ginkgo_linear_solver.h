@@ -77,6 +77,7 @@ class InternalLinearSolver
   //! Etat du solveur
   const SolverStatus& getStatus() const override;
   const SolverStat& getSolverStat() const override { return m_stat; }
+  SolverStat& getSolverStat() override { return m_stat; }
 
   std::shared_ptr<ILinearAlgebra> algebra() const override;
 

@@ -28,8 +28,7 @@ namespace Alien
 {
 
 /*---------------------------------------------------------------------------*/
-
-class ALIEN_EXPORT SolverStater : public SolverStat
+class ALIEN_EXPORT BaseSolverStater
 {
  public:
   typedef enum
@@ -41,28 +40,14 @@ class ALIEN_EXPORT SolverStater : public SolverStat
   } eStateType;
 
  public:
-  /** Constructeur de la classe */
-  SolverStater();
+  BaseSolverStater()
+  : m_state(eNone)
+  , m_suspend_count(0)
+  {}
 
-  /** Destructeur de la classe */
-  virtual ~SolverStater() {}
+  virtual ~BaseSolverStater() {}
 
  public:
-  void reset();
-
-  void startInitializationMeasure();
-
-  void stopInitializationMeasure();
-
-  void startPrepareMeasure();
-
-  void suspendPrepareMeasure(); //!< Incremental contribution for prepare phase.
-  void stopPrepareMeasure();
-
-  void startSolveMeasure();
-
-  void stopSolveMeasure(const Alien::SolverStatus& status);
-
   static Real getVirtualTimeCounter() { return _getVirtualTime(); }
 
   static Real getRealTimeCounter() { return _getRealTime(); }
@@ -74,13 +59,14 @@ class ALIEN_EXPORT SolverStater : public SolverStat
     : m_counter(time_counter)
     , m_is_virtual(is_virtual)
     {
-      m_start_counter = m_is_virtual ? SolverStater::getVirtualTimeCounter()
-                                     : SolverStater::getRealTimeCounter();
+      m_start_counter = m_is_virtual ? BaseSolverStater::getVirtualTimeCounter()
+                                     : BaseSolverStater::getRealTimeCounter();
     }
+
     virtual ~Sentry()
     {
-      Real end_counter = m_is_virtual ? SolverStater::getVirtualTimeCounter()
-                                      : SolverStater::getRealTimeCounter();
+      Real end_counter = m_is_virtual ? BaseSolverStater::getVirtualTimeCounter()
+                                      : BaseSolverStater::getRealTimeCounter();
       m_counter += end_counter - m_start_counter;
     }
 
@@ -90,7 +76,7 @@ class ALIEN_EXPORT SolverStater : public SolverStat
     bool m_is_virtual;
   };
 
- private:
+ protected:
   static Arccore::Real _getVirtualTime();
 
   static Arccore::Real _getRealTime();
@@ -101,39 +87,144 @@ class ALIEN_EXPORT SolverStater : public SolverStat
 
   void _stopTimer();
 
- private:
+ protected:
   eStateType m_state;
   Integer m_suspend_count;
   Real m_real_time; //!< 'wall clock' time for the lastest start or stop
   Real m_cpu_time; //!< 'cpu' time for the lastest start or stop
 };
 
-/*---------------------------------------------------------------------------*/
+template <typename SolverT>
+class SolverStater : public BaseSolverStater
+{
+ public:
+ public:
+  /** Constructeur de la classe */
+  SolverStater(SolverT* solver)
+  : BaseSolverStater()
+  , m_solver(solver)
+  {}
 
+  /** Destructeur de la classe */
+  virtual ~SolverStater() {}
+
+ public:
+  void reset()
+  {
+    m_solver->getSolverStat().reset();
+
+    m_state = eNone;
+    m_suspend_count = 0;
+  }
+
+  void startInitializationMeasure()
+  {
+    ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
+    _startTimer();
+    m_state = eInit;
+  }
+
+  void stopInitializationMeasure()
+  {
+    ALIEN_ASSERT((m_state == eInit), ("Unexpected SolverStater state %d", m_state));
+    _stopTimer();
+    m_state = eNone;
+
+    auto& solver_stat = m_solver->getSolverStat();
+    solver_stat.m_initialization_time += m_real_time;
+    solver_stat.m_initialization_cpu_time += m_cpu_time;
+  }
+
+  void startPrepareMeasure()
+  {
+    ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
+    _startTimer();
+    m_state = ePrepare;
+  }
+
+  void suspendPrepareMeasure() //!< Incremental contribution for prepare phase.
+  {
+    ALIEN_ASSERT((m_state == ePrepare), ("Unexpected SolverStater state %d", m_state));
+    _stopTimer();
+    auto& solver_stat = m_solver->getSolverStat();
+    if (m_suspend_count == 0) {
+      solver_stat.m_last_prepare_time = m_real_time;
+      solver_stat.m_last_prepare_cpu_time = m_cpu_time;
+    }
+    else {
+      solver_stat.m_last_prepare_time += m_real_time;
+      solver_stat.m_last_prepare_cpu_time += m_cpu_time;
+    }
+    m_state = eNone;
+    ++m_suspend_count;
+  }
+
+  void stopPrepareMeasure()
+  {
+    if (m_state == ePrepare)
+      suspendPrepareMeasure();
+    ALIEN_ASSERT((m_suspend_count > 0), ("Unexpected suspend count"));
+
+    auto& solver_stat = m_solver->getSolverStat();
+    solver_stat.m_last_prepare_time += m_real_time;
+    solver_stat.m_last_prepare_cpu_time += m_cpu_time;
+
+    m_suspend_count = 0;
+    m_state = eNone;
+    solver_stat.m_prepare_time += solver_stat.m_last_prepare_time;
+    solver_stat.m_prepare_cpu_time += solver_stat.m_last_prepare_cpu_time;
+  }
+
+  void startSolveMeasure()
+  {
+    ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
+    _startTimer();
+    m_state = eSolve;
+  }
+
+  void stopSolveMeasure()
+  {
+    ALIEN_ASSERT((m_state == eSolve), ("Unexpected SolverStater state %d", m_state));
+    _stopTimer();
+    m_state = eNone;
+    auto const& status = m_solver->getStatus();
+    auto& solver_stat = m_solver->getSolverStat();
+    solver_stat.m_last_solve_time = m_real_time;
+    solver_stat.m_last_solve_cpu_time = m_cpu_time;
+    solver_stat.m_solve_time += solver_stat.m_last_solve_time;
+    solver_stat.m_solve_cpu_time += solver_stat.m_last_solve_cpu_time;
+    ++solver_stat.m_solve_count;
+    solver_stat.m_last_iteration_count = status.iteration_count;
+    solver_stat.m_iteration_count += solver_stat.m_last_iteration_count;
+  }
+
+ private:
+  SolverT* m_solver = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
 template <typename SolverT>
 class SolverStatSentry
 {
  private:
   bool m_is_released = false;
-  Alien::SolverStatus& m_solver_status;
-  SolverStater& m_solver_stater;
-  SolverStater::eStateType m_state = SolverStater::eNone;
+  SolverStater<SolverT> m_solver_stater;
+  BaseSolverStater::eStateType m_state = BaseSolverStater::eNone;
 
  public:
-  SolverStatSentry(SolverT* solver, SolverStater::eStateType state)
-  : m_solver_status(solver->getStatusRef())
-  , m_solver_stater(solver->getSolverStater())
+  SolverStatSentry(SolverStater<SolverT>& parent, BaseSolverStater::eStateType state)
+  : m_solver_stater(parent)
   , m_state(state)
   {
     switch (m_state) {
-    case SolverStater::eInit:
+    case BaseSolverStater::eInit:
       m_solver_stater.reset();
       m_solver_stater.startInitializationMeasure();
       break;
-    case SolverStater::ePrepare:
+    case BaseSolverStater::ePrepare:
       m_solver_stater.startPrepareMeasure();
       break;
-    case SolverStater::eSolve:
+    case BaseSolverStater::eSolve:
       m_solver_stater.startSolveMeasure();
       break;
     default:
@@ -148,14 +239,14 @@ class SolverStatSentry
     if (m_is_released)
       return;
     switch (m_state) {
-    case SolverStater::eInit:
+    case BaseSolverStater::eInit:
       m_solver_stater.stopInitializationMeasure();
       break;
-    case SolverStater::ePrepare:
+    case BaseSolverStater::ePrepare:
       m_solver_stater.stopPrepareMeasure();
       break;
-    case SolverStater::eSolve:
-      m_solver_stater.stopSolveMeasure(m_solver_status);
+    case BaseSolverStater::eSolve:
+      m_solver_stater.stopSolveMeasure();
       break;
     default:
       break;

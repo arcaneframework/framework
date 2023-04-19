@@ -34,6 +34,7 @@
 
 #include <alien/expression/solver/ILinearSolver.h>
 
+#include <alien/expression/solver/SolverStater.h>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -77,6 +78,7 @@ class LinearSolver : public ILinearSolver
   template <typename... T>
   LinearSolver(T... args)
   : m_solver(AlgebraTraits<Tag>::solver_factory(args...))
+  , m_stater(m_solver.get())
   {}
 
   //! Free resources
@@ -102,6 +104,7 @@ class LinearSolver : public ILinearSolver
    * \param[in] pm : new parallel mng
    */
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
+
   /*!
    * \brief Solve the linear system A * x = b
    * \param[in] A The matrix to invert
@@ -162,6 +165,7 @@ class LinearSolver : public ILinearSolver
  private:
   //! The linear solver kernel
   std::unique_ptr<KernelSolver> m_solver;
+  SolverStater<KernelSolver> m_stater;
 };
 
 /*---------------------------------------------------------------------------*/

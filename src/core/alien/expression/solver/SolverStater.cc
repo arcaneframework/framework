@@ -45,121 +45,9 @@ static clock_t current_clock_value = 0;
 #endif
 
 /*---------------------------------------------------------------------------*/
-
-SolverStater::SolverStater()
-: m_state(eNone)
-, m_suspend_count(0)
-{}
-
 /*---------------------------------------------------------------------------*/
 
-void SolverStater::reset()
-{
-  m_solve_count = 0;
-  m_iteration_count = 0;
-  m_last_iteration_count = 0;
-  m_initialization_time = m_initialization_cpu_time = 0;
-  m_prepare_time = m_prepare_cpu_time = 0;
-  m_last_prepare_time = m_last_prepare_cpu_time = 0;
-  m_solve_time = m_solve_cpu_time = 0;
-  m_last_solve_time = m_last_solve_cpu_time = 0;
-
-  m_state = eNone;
-  m_suspend_count = 0;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void SolverStater::startInitializationMeasure()
-{
-  ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
-  _startTimer();
-  m_state = eInit;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void SolverStater::stopInitializationMeasure()
-{
-  ALIEN_ASSERT((m_state == eInit), ("Unexpected SolverStater state %d", m_state));
-  _stopTimer();
-  m_state = eNone;
-  m_initialization_time += m_real_time;
-  m_initialization_cpu_time += m_cpu_time;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void SolverStater::startPrepareMeasure()
-{
-  ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
-  _startTimer();
-  m_state = ePrepare;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void SolverStater::suspendPrepareMeasure()
-{
-  ALIEN_ASSERT((m_state == ePrepare), ("Unexpected SolverStater state %d", m_state));
-  _stopTimer();
-  if (m_suspend_count == 0) {
-    m_last_prepare_time = m_real_time;
-    m_last_prepare_cpu_time = m_cpu_time;
-  }
-  else {
-    m_last_prepare_time += m_real_time;
-    m_last_prepare_cpu_time += m_cpu_time;
-  }
-  m_state = eNone;
-  ++m_suspend_count;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void SolverStater::stopPrepareMeasure()
-{
-  if (m_state == ePrepare)
-    suspendPrepareMeasure();
-  ALIEN_ASSERT((m_suspend_count > 0), ("Unexpected suspend count"));
-
-  m_last_prepare_time += m_real_time;
-  m_last_prepare_cpu_time += m_cpu_time;
-
-  m_suspend_count = 0;
-  m_state = eNone;
-  m_prepare_time += m_last_prepare_time;
-  m_prepare_cpu_time += m_last_prepare_cpu_time;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void SolverStater::startSolveMeasure()
-{
-  ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
-  _startTimer();
-  m_state = eSolve;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void SolverStater::stopSolveMeasure(const Alien::SolverStatus& status)
-{
-  ALIEN_ASSERT((m_state == eSolve), ("Unexpected SolverStater state %d", m_state));
-  _stopTimer();
-  m_state = eNone;
-  m_last_solve_time = m_real_time;
-  m_last_solve_cpu_time = m_cpu_time;
-  m_solve_time += m_last_solve_time;
-  m_solve_cpu_time += m_last_solve_cpu_time;
-  ++m_solve_count;
-  m_last_iteration_count = status.iteration_count;
-  m_iteration_count += m_last_iteration_count;
-}
-
-/*---------------------------------------------------------------------------*/
-
-Real SolverStater::_getVirtualTime()
+Real BaseSolverStater::_getVirtualTime()
 {
   // From Arcane 1.16.3 to work with historical timers and Windows
 #ifdef ARCANE_TIMER_USE_CLOCK
@@ -178,7 +66,7 @@ Real SolverStater::_getVirtualTime()
 
 /*---------------------------------------------------------------------------*/
 
-Real SolverStater::_getRealTime()
+Real BaseSolverStater::_getRealTime()
 {
   // From Arcane 1.16.3 to work with old timers and Windows.
 #ifdef WIN32
@@ -202,7 +90,7 @@ Real SolverStater::_getRealTime()
 
 /*---------------------------------------------------------------------------*/
 
-void SolverStater::_errorInTimer(const String& msg, int retcode)
+void BaseSolverStater::_errorInTimer(const String& msg, int retcode)
 {
   throw FatalErrorException(
   A_FUNCINFO, String::format("{0} return code: {1} errno: {2}", msg, retcode, errno));
@@ -210,7 +98,7 @@ void SolverStater::_errorInTimer(const String& msg, int retcode)
 
 /*---------------------------------------------------------------------------*/
 
-void SolverStater::_startTimer()
+void BaseSolverStater::_startTimer()
 {
   ALIEN_ASSERT((m_state == eNone), ("Unexpected SolverStater state %d", m_state));
   m_real_time = _getRealTime();
@@ -219,7 +107,7 @@ void SolverStater::_startTimer()
 
 /*---------------------------------------------------------------------------*/
 
-void SolverStater::_stopTimer()
+void BaseSolverStater::_stopTimer()
 {
   ALIEN_ASSERT((m_state != eNone), ("Unexpected SolverStater state %d", m_state));
   m_real_time = _getRealTime() - m_real_time;

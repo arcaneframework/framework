@@ -57,6 +57,8 @@ class InternalLinearSolver : public IInternalLinearSolver<Matrix, Vector>
 
   const SolverStat& getSolverStat() const { return m_stat; }
 
+  SolverStat& getSolverStat() override { return m_stat; }
+
   std::shared_ptr<ILinearAlgebra> algebra() const;
 
  private:

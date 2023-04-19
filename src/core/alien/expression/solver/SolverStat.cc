@@ -32,6 +32,7 @@ namespace Alien
 {
 
 using namespace Arccore;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -81,6 +82,17 @@ SolverStat::SolverStat()
 {}
 
 /*---------------------------------------------------------------------------*/
+void SolverStat::reset()
+{
+  m_solve_count = 0;
+  m_iteration_count = 0;
+  m_last_iteration_count = 0;
+  m_initialization_time = m_initialization_cpu_time = 0;
+  m_prepare_time = m_prepare_cpu_time = 0;
+  m_last_prepare_time = m_last_prepare_cpu_time = 0;
+  m_solve_time = m_solve_cpu_time = 0;
+  m_last_solve_time = m_last_solve_cpu_time = 0;
+}
 
 Integer
 SolverStat::solveCount() const

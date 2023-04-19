@@ -75,11 +75,14 @@ bool LinearSolver<Tag>::solve(const IMatrix& A, const IVector& b, IVector& x)
   else {
     m_solver->updateParallelMng(A.impl()->distribution().parallelMng());
   }
-  // m_solver->getSolverStat().startPrepareMeasure();
+
+  SolverStatSentry<KernelSolver> sentry(m_stater, BaseSolverStater::ePrepare);
   const auto& matrix = A.impl()->get<Tag>();
   const auto& rhs = b.impl()->get<Tag>();
   auto& sol = x.impl()->get<Tag>(true);
-  // m_solver->getSolverStat().stopPrepareMeasure();
+  sentry.release();
+
+  SolverStatSentry<KernelSolver> sentry2(m_stater, BaseSolverStater::eSolve);
   return m_solver->solve(matrix, rhs, sol);
 }
 
@@ -89,6 +92,7 @@ bool LinearSolver<Tag>::solve(const IMatrix& A, const IVector& b, IVector& x)
 template <class Tag>
 void LinearSolver<Tag>::init()
 {
+  SolverStatSentry<KernelSolver> sentry(m_stater, BaseSolverStater::eInit);
   m_solver->init();
 }
 

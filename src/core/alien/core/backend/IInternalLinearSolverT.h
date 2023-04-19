@@ -98,6 +98,16 @@ class IInternalLinearSolver
   virtual SolverStat const& getSolverStat() const = 0;
 
   /*!
+   * \brief Get statistics on the solve phase
+   *
+   * Get statistics on the solver phase, such as iteration count, initialization time,
+   * solve time, etc.
+   *
+   * \return Solver statistics
+   */
+  virtual SolverStat& getSolverStat() = 0;
+
+  /*!
    * \brief Indicates if the kernel is parallel
    * \returns Parallel support capability
    */
