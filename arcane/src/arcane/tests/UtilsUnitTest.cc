@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UtilsUnitTest.cc                                            (C) 2000-2017 */
+/* UtilsUnitTest.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Test des fonctions utilitaires de Arcane.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/UserDataList.h"
 #include "arcane/utils/IUserData.h"
@@ -27,6 +25,7 @@
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/ITraceMngPolicy.h"
+#include "arcane/utils/StringList.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/FactoryService.h"
@@ -119,6 +118,7 @@ class UtilsUnitTest
   void _testEvents();
   void _testConvertFromString();
   void _testConvertFromStringToInt32Array();
+  void _testCommandLine();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -184,6 +184,8 @@ executeTest()
   // et fait planter le test. En mettant cela en dernier, on peut quand
   // même utiliser valgrind sur les autres tests.
   _testFloatingException();
+
+  _testCommandLine();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -790,6 +792,28 @@ executeFunctor(const MemoryInfoChunk& chunk)
 {
   if (chunk.size()>1024)
     m_trace_mng->info() << "BLOCK=" << chunk.size();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UtilsUnitTest::
+_testCommandLine()
+{
+  info() << "Test READ_COMMAND_LINE";
+  StringList arg_list;
+  platform::fillCommandLineArguments(arg_list);
+  Int32 nb_arg = arg_list.count();
+  info() << "NB_ARG=" << nb_arg;
+  // La fonction peut retourner une liste vide si on ne supporte pas la
+  // récupération des arguments de la ligne de commande sur la plateforme.
+  if (nb_arg>=2){
+    String arg_case_file = arg_list[nb_arg-1];
+    info() << "ARG_CASE_FILE=" <<  arg_case_file;
+    String expected_end = "testUtils-1.arc";
+    if (!arg_case_file.endsWith(expected_end))
+      ARCANE_FATAL("Bad value '{0}'. should ends with '{1}'",arg_case_file,expected_end);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
