@@ -392,6 +392,25 @@ function(arcane_add_component_test_executable component_name)
 endfunction()
 
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Indique que les fichiers passés en argument doivent être compilés avec le support accélérateur
+# correspondant.
+macro(arcane_accelerator_add_source_files)
+  if (ARCANE_WANT_CUDA)
+    foreach(_x ${ARGN})
+      message(STATUS "Add CUDA language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES LANGUAGE CUDA)
+    endforeach()
+  endif()
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
+    foreach(_x ${ARGN})
+      message(STATUS "Add HIP language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES LANGUAGE HIP)
+    endforeach()
+  endif()
+endmacro()
+
+# ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
 # indent-tabs-mode: nil
