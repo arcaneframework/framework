@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.cc                                            (C) 2000-2022 */
+/* PlatformUtils.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/StringList.h"
 #include "arcane/utils/internal/MemoryRessourceMng.h"
 
 #include <chrono>
@@ -46,6 +47,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <fcntl.h>
 #endif
 
 #include <malloc.h>
@@ -464,6 +466,44 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
 //#error "platform::getSymbolFullPath() not implemented for this platform"
 #endif
   return full_path;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void platform::
+fillCommandLineArguments(StringList& arg_list)
+{
+  arg_list.clear();
+#if defined(ARCANE_OS_LINUX)
+
+  const int BUFSIZE = 1024;
+  char buffer[BUFSIZE + 1];
+
+  UniqueArray<char> bytes;
+  bytes.reserve(1024);
+
+  {
+    const char* filename = "/proc/self/cmdline";
+    int fd = open(filename, O_RDONLY);
+    ssize_t nb_read = 0;
+    // TODO: traiter les interruptions
+    while ((nb_read = read(fd, buffer, BUFSIZE)) > 0) {
+      buffer[BUFSIZE] = '\0';
+      bytes.addRange(Span<const char>(buffer, nb_read));
+    }
+    close(fd);
+  }
+
+  int size = bytes.size();
+  const char* ptr = bytes.data();
+  const char* end = ptr + size;
+  while (ptr < end) {
+    arg_list.add(StringView(ptr));
+    while (*ptr++ && ptr < end)
+      ;
+  }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/

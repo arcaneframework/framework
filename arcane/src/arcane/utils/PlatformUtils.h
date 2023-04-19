@@ -372,6 +372,20 @@ getLoadedSharedLibraryFullPath(const String& dll_name);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit \a arg_list avec les arguments de la ligne de commande.
+ *
+ * Cette fonction remplit \a arg_list avec les arguments utilisés dans
+ * l'appel à main().
+ *
+ * Actuellement cette méthode ne fonctionne que sous Linux. Pour les autres
+ * plateforme elle retourne une liste vide.
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+fillCommandLineArguments(StringList& arg_list);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Définition du pragma pour indiquer l'indépendance des itérations
 
