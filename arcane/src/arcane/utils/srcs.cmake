@@ -214,7 +214,6 @@ set(ARCANE_SOURCES
   CollectionImpl.h
   CriticalSection.h
   Deleter.h
-  DualUniqueIdMng.h
   EventHandler.h
   EventHandlerList.h
   FatalErrorException.h

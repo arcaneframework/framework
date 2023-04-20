@@ -15,6 +15,7 @@ set( ARCANE_SOURCES
   DynamicMeshChecker.h
   DynamicMeshMerger.cc
   DynamicMeshMerger.h
+  DualUniqueIdMng.h
   FaceUniqueIdBuilder.cc
   FaceUniqueIdBuilder.h
   FaceUniqueIdBuilder2.cc

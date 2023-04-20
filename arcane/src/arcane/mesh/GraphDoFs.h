@@ -24,7 +24,7 @@
 #include "arcane/mesh/ItemConnectivityMng.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 #include "arcane/mesh/GhostLayerFromConnectivityComputer.h"
-#include "arcane/utils/DualUniqueIdMng.h"
+#include "arcane/mesh/DualUniqueIdMng.h"
 #include "arcane/mesh/ParticleFamily.h"
 #include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 

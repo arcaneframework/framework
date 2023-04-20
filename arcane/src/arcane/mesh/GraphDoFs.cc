@@ -9,7 +9,7 @@
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/DualUniqueIdMng.h"
+#include "arcane/mesh/DualUniqueIdMng.h"
 #include "arcane/mesh/GraphDoFs.h"
 
 #include "arcane/utils/ArgumentException.h"
@@ -20,7 +20,6 @@
 #include "arcane/MathUtils.h"
 
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
-#include "arcane/utils/DualUniqueIdMng.h"
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
