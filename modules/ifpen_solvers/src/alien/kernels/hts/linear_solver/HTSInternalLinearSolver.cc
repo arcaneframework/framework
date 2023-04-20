@@ -52,6 +52,7 @@ HTSInternalLinearSolver::HTSInternalLinearSolver(
     Arccore::MessagePassing::IMessagePassingMng* parallel_mng, IOptionsHTSSolver* options)
 : m_parallel_mng(parallel_mng)
 , m_options(options)
+, m_stater(this)
 {
 }
 
@@ -68,7 +69,7 @@ HTSInternalLinearSolver::init(int argc, char const** argv)
 void
 HTSInternalLinearSolver::init()
 {
-  SolverStatSentry<HTSInternalLinearSolver> sentry(this, SolverStater::eInit);
+  SolverStatSentry<HTSInternalLinearSolver> sentry(m_stater, BaseSolverStater::eInit);
   m_output_level = m_options->output();
 
 #ifdef ALIEN_USE_HTSSOLVER
@@ -449,13 +450,13 @@ HTSInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   using namespace Alien;
 
 #ifdef ALIEN_USE_HTSSOLVER
-  SolverStatSentry<HTSInternalLinearSolver> sentry(this, SolverStater::ePrepare);
+  SolverStatSentry<HTSInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
   CSRMatrixType const& matrix = A.impl()->get<BackEnd::tag::simplecsr>();
   CSRVectorType const& rhs = b.impl()->get<BackEnd::tag::simplecsr>();
   CSRVectorType& sol = x.impl()->get<BackEnd::tag::simplecsr>(true);
   sentry.release();
 
-  SolverStatSentry<HTSInternalLinearSolver> sentry2(this, SolverStater::eSolve);
+  SolverStatSentry<HTSInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
   return solve(matrix, rhs, sol);
 #endif
 }

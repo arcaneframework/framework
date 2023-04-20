@@ -170,6 +170,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
   Real m_int_total_finish_time = 0.;
 
   SolverStat m_stat;
+  SolverStater<HTSInternalLinearSolver> m_stater;
 
   IOptionsHTSSolver* m_options = nullptr;
   std::vector<double> m_pressure_diag;
