@@ -45,8 +45,12 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/Real3.h"
+#include "arcane/mesh/CellFamily.h"
+#include "arcane/core/MeshVariableScalarRef.h"
+#include "arcane/core/MeshVariableArrayRef.h"
 
 #include "arcane/core/ItemAllocationInfo.h"
+#include "arcane/core/VariableBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -371,84 +375,173 @@ _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk
   node_family_info.item_coordinates = vtk_reader.nodeCoords();
 }
 
-  VtkPolyhedralTools::ReadStatus read(IPrimaryMesh* mesh, const String& filename)
-  {
-    ARCANE_CHECK_POINTER(mesh);
-    VtkReader reader{ filename };
-    if (reader.readHasFailed())
-      return reader.readStatus();
-    ItemAllocationInfo item_allocation_info;
-    _fillItemAllocationInfo(item_allocation_info, reader);
-    auto polyhedral_mesh_allocator = mesh->initialAllocator()->polyhedralMeshAllocator();
-    polyhedral_mesh_allocator->allocateItems(item_allocation_info);
-    return reader.readStatus();
-  }
-};
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class VtkPolyhedralCaseMeshReader
-: public AbstractService
-, public ICaseMeshReader
+void VtkPolyhedralMeshIOService::
+_readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
 {
- public:
-
-  class Builder : public IMeshBuilder
-  {
-   public:
-
-    explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info)
-    : m_trace_mng(tm)
-    , m_read_info(read_info)
-    {}
-
-   public:
-
-    void fillMeshBuildInfo(MeshBuildInfo& build_info) override
-    {
-      build_info.addFactoryName("ArcanePolyhedralMeshFactory");
-      build_info.addNeedPartitioning(false);
+  auto* cell_data = reader.cellData();
+  if (cell_data) {
+    // Read cell groups and variables
+    for (auto i = 0; i < cell_data->GetNumberOfArrays(); ++i) {
+      auto* cell_array = cell_data->GetArray(i);
+      if (!cell_array)
+        continue;
+      String name = cell_array->GetName();
+      if (name.substring(0, 6) == "GROUP_")
+        _createGroup(cell_array, name.substring(6), mesh, mesh->cellFamily());
+      else
+        _createVariable(cell_array, name, mesh, mesh->cellFamily());
+      info() << "Reading property " << cell_array->GetName();
+      for (auto i = 0; i < cell_array->GetNumberOfTuples(); ++i) {
+        for (auto j = 0; j < cell_array->GetNumberOfComponents(); ++j) {
+          info() << cell_array->GetName() << "[" << i << "][" << j << "] = " << cell_array->GetComponent(i, j);
+        }
+        cell_array->GetArrayType();
+      }
     }
-
-    void allocateMeshItems(IPrimaryMesh* pm) override
-    {
-      ARCANE_CHECK_POINTER(pm);
-      m_trace_mng->info() << "---CREATE POLYHEDRAL MESH---- " << pm->name();
-      m_trace_mng->info() << "--Read mesh file " << m_read_info.fileName();
-      VtkPolyhedralMeshIOService polyhedral_vtk_service{};
-      auto read_status = polyhedral_vtk_service.read(pm, m_read_info.fileName());
-      if (read_status.failure)
-        ARCANE_FATAL(read_status.failure_message);
-    }
-
-   private:
-
-    ITraceMng* m_trace_mng;
-    CaseMeshReaderReadInfo m_read_info;
-  };
-
-  explicit VtkPolyhedralCaseMeshReader(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi)
-  {}
-
- public:
-
-  Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const override
-  {
-    IMeshBuilder* builder = nullptr;
-    if (read_info.format() == "vtk")
-      builder = new Builder(traceMng(), read_info);
-    return makeRef(builder);
   }
+  auto* point_data = reader.pointData();
+  if (point_data) {
+    // Read node groups and variables
+    for (auto i = 0; i < point_data->GetNumberOfArrays(); ++i) {
+      auto* point_array = point_data->GetArray(i);
+      String name = point_array->GetName();
+      if (name.substring(0, 6) == "GROUP_")
+        _createGroup(point_array, name.substring(6), mesh, mesh->nodeFamily());
+      else
+        _createNodeVariable(point_array, name);
+      info() << "Reading property " << point_array->GetName();
+      for (auto j = 0; j < point_array->GetNumberOfTuples(); ++j) {
+        info() << point_array->GetName() << "[" << j << "] = " << *point_array->GetTuple(j);
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::
+_createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family)
+{
+  ARCANE_CHECK_POINTER(group_items);
+  ARCANE_CHECK_POINTER(mesh);
+  ARCANE_CHECK_POINTER(item_family);
+  if (group_items->GetNumberOfComponents() != 1)
+    fatal() << String::format("Cannot create item group {0}. Group information in data property must be a scalar", group_name);
+  debug() << "Create group " << group_name;
+  Int32UniqueArray ids;
+  ids.reserve((int)group_items->GetNumberOfValues());
+  using GroupDispatcher = vtkArrayDispatch::DispatchByValueType<vtkArrayDispatch::Integrals>;
+  auto group_creator = [&ids](auto* array) {
+    vtkIdType numTuples = array->GetNumberOfTuples();
+    vtkDataArrayAccessor<std::remove_pointer_t<decltype(array)>> array_accessor{ array };
+    auto local_id = 0;
+    for (vtkIdType tupleIdx = 0; tupleIdx < numTuples; ++tupleIdx) {
+      auto value = array_accessor.Get(tupleIdx, 0);
+      if (value)
+        ids.push_back(local_id);
+      ++local_id;
+    }
+  };
+  if (!GroupDispatcher::Execute(group_items, group_creator))
+    ARCANE_FATAL("Cannot create item group {0}. Group information in data property must be an integral type", group_name);
+  debug() << " ids for cell_group " << group_name << "  " << ids; // to remove
+  item_family->createGroup(group_name, ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename vtkType>
+struct ToArcaneType
+{
+  using type = vtkType;
 };
 
+template <>
+struct ToArcaneType<float>
+{
+  using type = Real;
+};
+
+template <>
+struct ToArcaneType<long long>
+{
+  using type = Int64;
+};
+
+template <typename T> using to_arcane_type_t = typename ToArcaneType<T>::type;
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::
+_createVariable(vtkDataArray* cell_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family)
+{
+  ARCANE_CHECK_POINTER(cell_values);
+  ARCANE_CHECK_POINTER(mesh);
+  ARCANE_CHECK_POINTER(item_family);
+  if (cell_values->GetNumberOfTuples() != item_family->nbItem())
+    ARCANE_FATAL("Cannot create variable {0}, {1} values are given for {2} items in {3} family",
+                 variable_name, cell_values->GetNumberOfTuples(), item_family->nbItem(), item_family->name());
+  info() << "Create Cell variable " << variable_name;
+  auto variable_creator = [mesh, variable_name, item_family, this](auto* values) {
+    VariableBuildInfo vbi{ mesh, variable_name };
+    using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
+    auto* var = new ItemVariableScalarRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
+    m_read_variables.add(var);
+    vtkDataArrayAccessor<std::remove_pointer_t<decltype(values)>> values_accessor{ values };
+    ENUMERATE_ITEM (item, item_family->allItems()) {
+      (*var)[item] = (to_arcane_type_t<ValueType>)values_accessor.Get(item.index(), 0);
+    }
+  };
+  auto array_variable_creator = [mesh, variable_name, item_family, this](auto* values) {
+    VariableBuildInfo vbi{ mesh, variable_name };
+    using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
+    auto* var = new ItemVariableArrayRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
+    m_read_variables.add(var);
+    vtkDataArrayAccessor<std::remove_pointer_t<decltype(values)>> values_accessor{ values };
+    var->resize(values->GetNumberOfComponents());
+    ENUMERATE_ITEM (item, item_family->allItems()) {
+      auto index = 0;
+      for (auto& var_value : (*var)[item]) {
+        var_value = (to_arcane_type_t<ValueType>)values_accessor.Get(item.index(), index++);
+      }
+    }
+  };
+  // Restrict to int and real values
+  using ValueTypes = vtkTypeList_Create_6(double, float, int, long, long long, short);
+  //  using ValueTypes = vtkTypeList_Create_4(double, int, long, short);
+  using ArrayDispatcher = vtkArrayDispatch::DispatchByValueType<ValueTypes>;
+  // Create ScalarVariable
+  bool is_variable_created = false;
+  if (cell_values->GetNumberOfComponents() == 1) {
+    is_variable_created = ArrayDispatcher::Execute(cell_values, variable_creator);
+  }
+  // Create ArrayVariable
+  else { // ArrayVariable
+    is_variable_created = ArrayDispatcher::Execute(cell_values, array_variable_creator);
+  }
+  if (!is_variable_created)
+    ARCANE_FATAL("Cannot create variable {0}, it's data type is not supported. Only real and integral types are supported", variable_name);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE(VtkPolyhedralCaseMeshReader,
-                        ServiceProperty("VtkPolyhedralCaseMeshReader", ST_CaseOption),
-                        ARCANE_SERVICE_INTERFACE(ICaseMeshReader));
+void VtkPolyhedralMeshIOService::_createNodeGroup(vtkDataArray* group_items, String group_name)
+{
+  info() << "Create Node group " << group_name;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::_createNodeVariable(vtkDataArray* node_values, String variable_name)
+{
+  info() << "Create Node variable " << variable_name;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
