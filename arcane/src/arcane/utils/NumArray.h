@@ -159,6 +159,8 @@ class NumArrayBase
   using ArrayBoundsIndexType = typename SpanType::ArrayBoundsIndexType;
   using ThatClass = NumArrayBase<DataType, Extents, LayoutPolicy>;
   using ExtentsType = Extents;
+  using value_type = DataType;
+  using LayoutPolicyType = LayoutPolicy;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
   static constexpr int rank() { return Extents::rank(); }
 
