@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAcceleratorRuntime.cc                                   (C) 2000-2022 */
+/* CudaAcceleratorRuntime.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Runtime pour 'Cuda'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -35,16 +35,24 @@
 
 #include <iostream>
 
+#include <cuda.h>
+
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
 #include <nvToolsExt.h>
 #endif
-
-#include <cuda.h>
 
 using namespace Arccore;
 
 namespace Arcane::Accelerator::Cuda
 {
+namespace
+{
+  bool global_use_cupti = false;
+}
+extern "C++" void
+initCupti();
+extern "C++" void
+flushCupti();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,6 +74,9 @@ void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
   ARCANE_FATAL("CUDA Error trace={0} e={1} name={2} message={3}",
                ti, e, error_name, error_message);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void _printUUID(std::ostream& o, char bytes[16])
 {
@@ -125,6 +136,8 @@ class CudaRunQueueStream
   void barrier() override
   {
     ARCANE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
+    if (global_use_cupti)
+      flushCupti();
   }
   void copyMemory(const MemoryCopyArgs& args) override
   {
@@ -271,7 +284,7 @@ class CudaRunnerRuntime
   {
     return new CudaRunQueueEvent(true);
   }
-  void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  void setMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
     auto v = buffer.bytes();
     const void* ptr = v.data();
@@ -298,7 +311,7 @@ class CudaRunnerRuntime
     //std::cout << "MEMADVISE p=" << ptr << " size=" << count << " advise = " << cuda_advise << " id = " << device << "\n";
     cudaMemAdvise(ptr, count, cuda_advise, device);
   }
-  void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
     auto v = buffer.bytes();
     const void* ptr = v.data();
@@ -405,6 +418,8 @@ fillDevices()
     device_info.setName(dp.name);
     m_device_info_list.addDevice(device_info);
   }
+  if (global_use_cupti)
+    initCupti();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -413,7 +428,7 @@ fillDevices()
 class CudaMemoryCopier
 : public IMemoryCopier
 {
-  void copy(MemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
+  void copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
             MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem) override
   {
     // 'cudaMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant

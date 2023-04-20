@@ -28,8 +28,15 @@ target_link_libraries(arcane_accelerator_cuda_runtime PUBLIC
 #  target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
 #  target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvtx3)
 if (TARGET CUDA::nvToolsExt)
+  message(STATUS "CUDA: 'nvToolsExt' is available")
   target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
   target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvToolsExt)
+endif()
+if (TARGET CUDA::cupti)
+  message(STATUS "CUDA: 'cupti' is available")
+  target_sources(arcane_accelerator_cuda_runtime PRIVATE Cupti.cc)
+  target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_CUPTI)
+  target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::cupti)
 endif()
 
 # ----------------------------------------------------------------------------
