@@ -22,6 +22,11 @@
 #include <vtkNew.h>
 #include <vtkCellIterator.h>
 #include <vtkIdTypeArray.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
+#include <vtkDataSetAttributes.h>
+#include <vtkArrayDispatch.h>
+#include <vtkDataArrayAccessor.h>
 
 #include <arccore/base/Ref.h>
 #include <arccore/base/String.h>
@@ -116,6 +121,11 @@ class VtkPolyhedralMeshIOService
     bool readHasFailed() const noexcept { return m_read_status.failure; }
     const VtkPolyhedralTools::ReadStatus readStatus() const noexcept { return m_read_status; }
 
+    void readDataSetAttributes() const;
+
+    vtkCellData* cellData();
+    vtkPointData* pointData();
+
    private:
 
     const String& m_filename;
@@ -132,6 +142,8 @@ class VtkPolyhedralMeshIOService
     Int32UniqueArray m_cell_nb_edges, m_face_nb_edges, m_face_uid_indexes;
     Int32UniqueArray m_cell_face_indexes, m_edge_nb_nodes;
     Real3UniqueArray m_node_coordinates;
+    vtkCellData* m_cell_data = nullptr;
+    vtkPointData* m_point_data = nullptr;
 
     std::pair<bool, Int32> _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes);
     template <typename Connectivity2DArray>
@@ -445,6 +457,7 @@ VtkReader(const String& filename)
     return;
   }
   m_vtk_grid_reader->SetFileName(filename.localstr());
+  m_vtk_grid_reader->ReadAllScalarsOn();
   m_vtk_grid_reader->Update();
   auto* vtk_grid = m_vtk_grid_reader->GetOutput();
   if (!vtk_grid) {
@@ -452,6 +465,14 @@ VtkReader(const String& filename)
     m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}", filename);
     return;
   }
+  if (!vtk_grid->GetFaces()) {
+    m_read_status.failure = true;
+    m_read_status.failure_message = String::format("The given mesh vtk file {0} is not a polyhedral mesh, cannot read it", filename);
+    return;
+  }
+
+  m_cell_data = vtk_grid->GetCellData();
+  m_point_data = vtk_grid->GetPointData();
 
   std::cout << "-- VTK GRID READ "
             << " NB CELLS  " << vtk_grid->GetNumberOfCells() << std::endl;
@@ -460,7 +481,7 @@ VtkReader(const String& filename)
   cell_iter->InitTraversal();
   vtkIdType* cell_faces{ nullptr };
   vtkIdType nb_faces = 0;
-  while (!cell_iter->IsDoneWithTraversal()) {
+  while (!cell_iter->IsDoneWithTraversal()) { // todo remove this debug print
     std::cout << "---- visiting cell id " << cell_iter->GetCellId() << std::endl;
     std::cout << "----   cell number of faces " << cell_iter->GetNumberOfFaces() << std::endl;
     std::cout << "----   cell number of points " << cell_iter->GetNumberOfPoints() << std::endl;
@@ -1128,6 +1149,52 @@ nodeCoords()
   return m_node_coordinates;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::VtkReader::
+readDataSetAttributes() const
+{
+  auto* vtk_grid = m_vtk_grid_reader->GetOutput();
+  auto* cell_data = vtk_grid->GetCellData();
+  auto* point_data = vtk_grid->GetPointData();
+  auto* cell_scalar_properties = cell_data->GetAttribute(vtkDataSetAttributes::AttributeTypes::SCALARS);
+  auto* point_scalar_properties = point_data->GetAttribute(vtkDataSetAttributes::AttributeTypes::SCALARS);
+  std::cout << "---- Read properties ----\n";
+  for (auto i = 0; i < cell_data->GetNumberOfArrays(); ++i) {
+    auto* cell_array = cell_data->GetArray(i);
+    std::cout << "Reading property " << cell_array->GetName() << "\n";
+    for (auto j = 0; j < cell_array->GetNumberOfTuples(); ++j) {
+      std::cout << cell_array->GetName() << "[" << j << "] = " << *cell_array->GetTuple(j) << "\n";
+      cell_array->GetArrayType();
+    }
+  }
+  for (auto i = 0; i < point_data->GetNumberOfArrays(); ++i) {
+    auto* point_array = point_data->GetArray(i);
+    std::cout << "Reading property " << point_array->GetName() << "\n";
+    for (auto j = 0; j < point_array->GetNumberOfTuples(); ++j) {
+      std::cout << point_array->GetName() << "[" << j << "] = " << *point_array->GetTuple(j) << "\n";
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+vtkCellData* VtkPolyhedralMeshIOService::VtkReader::
+cellData()
+{
+  return m_cell_data;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+vtkPointData* VtkPolyhedralMeshIOService::VtkReader::
+pointData()
+{
+  return m_point_data;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
