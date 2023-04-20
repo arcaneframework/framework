@@ -486,6 +486,8 @@ fillCommandLineArguments(StringList& arg_list)
   {
     const char* filename = "/proc/self/cmdline";
     int fd = open(filename, O_RDONLY);
+    if (fd<0)
+      return;
     ssize_t nb_read = 0;
     // TODO: traiter les interruptions
     while ((nb_read = read(fd, buffer, BUFSIZE)) > 0) {
