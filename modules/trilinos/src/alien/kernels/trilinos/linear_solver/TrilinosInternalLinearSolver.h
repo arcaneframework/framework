@@ -77,7 +77,7 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
   const Alien::SolverStatus& getStatus() const;
 
   const SolverStat& getSolverStat() const { return m_stat; }
-  SolverStat& getSolverStater() { return m_stat; }
+  SolverStat& getSolverStat() { return m_stat; }
 
   String getName() const { return "trilinos"; }
 
