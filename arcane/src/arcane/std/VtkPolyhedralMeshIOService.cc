@@ -64,7 +64,13 @@ namespace VtkPolyhedralTools
 } // namespace VtkPolyhedralTools
 
 class VtkPolyhedralMeshIOService
+: public TraceAccessor
 {
+ public:
+
+  explicit VtkPolyhedralMeshIOService(ITraceMng* trace_mng)
+  : TraceAccessor(trace_mng)
+  {}
 
   class VtkReader
   {
