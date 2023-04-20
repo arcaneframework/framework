@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include <numeric>
+
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/IMesh.h"
 #include "arcane/MeshHandle.h"
@@ -68,6 +70,8 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject
   void _buildGroup(IItemFamily* family, String const& group_name);
   template <typename VariableRefType>
   void _checkVariable(VariableRefType variable, ItemGroup item_group);
+  template <typename VariableArrayRefType>
+  void _checkArrayVariable(VariableArrayRefType variable, ItemGroup item_group);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -167,13 +171,41 @@ void CustomMeshTestModule::_testVariables(IMesh* mesh)
   // test variables
   info() << " -- test variables -- ";
   // cell variable
+  m_cell_variable.fill(1);
   _checkVariable(m_cell_variable, mesh->allCells());
   // node variable
+  m_node_variable.fill(1);
   _checkVariable(m_node_variable, mesh->allNodes());
   // face variable
+  m_face_variable.fill(1);
   _checkVariable(m_face_variable, mesh->allFaces());
   // edge variable
+  m_edge_variable.fill(1);
   _checkVariable(m_edge_variable, mesh->allEdges());
+  for (const auto& variable_name : options()->getCheckCellVariableReal()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableCellReal var{ VariableBuildInfo(mesh, variable_name) };
+    _checkVariable(var, mesh->allCells());
+  }
+  for (const auto& variable_name : options()->getCheckCellVariableInteger()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableCellInteger var{ VariableBuildInfo(mesh, variable_name) };
+    _checkVariable(var, mesh->allCells());
+  }
+  for (const auto& variable_name : options()->getCheckCellVariableArrayInteger()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableCellArrayInteger var{ VariableBuildInfo(mesh, variable_name) };
+    _checkArrayVariable(var, mesh->allCells());
+  }
+  for (const auto& variable_name : options()->getCheckCellVariableArrayReal()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableCellArrayReal var{ VariableBuildInfo(mesh, variable_name) };
+    _checkArrayVariable(var, mesh->allCells());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -192,28 +224,39 @@ _testGroups(IMesh* mesh)
   _buildGroup(mesh->cellFamily(), group_name);
   ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Group my_cell_group has not been created"));
   PartialVariableCellInt32 partial_cell_var({ mesh, "partial_cell_variable", mesh->cellFamily()->name(), group_name });
+  partial_cell_var.fill(1);
   _checkVariable(partial_cell_var, partial_cell_var.itemGroup());
   // Node group
   group_name = "my_node_group";
   _buildGroup(mesh->nodeFamily(), group_name);
   ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Group my_node_group has not been created"));
   PartialVariableNodeInt32 partial_node_var({ mesh, "partial_node_variable", mesh->nodeFamily()->name(), group_name });
+  partial_node_var.fill(1);
   _checkVariable(partial_node_var, partial_node_var.itemGroup());
   // Face group
   group_name = "my_face_group";
   _buildGroup(mesh->faceFamily(), group_name);
   ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Group my_face_group has not been created"));
   PartialVariableFaceInt32 partial_face_var({ mesh, "partial_face_variable", mesh->faceFamily()->name(), group_name });
+  partial_face_var.fill(1);
   _checkVariable(partial_face_var, partial_face_var.itemGroup());
   // Edge group
   group_name = "my_edge_group";
   _buildGroup(mesh->edgeFamily(), group_name);
   ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Group my_edge_group has not been created"));
   PartialVariableEdgeInt32 partial_edge_var({ mesh, "partial_edge_variable", mesh->edgeFamily()->name(), group_name });
+  partial_edge_var.fill(1);
   _checkVariable(partial_edge_var, partial_edge_var.itemGroup());
 
+  for (const auto& group_infos : options()->checkGroup()) {
+    auto group = mesh->findGroup(group_infos->getName());
+    if (group.null())
+      ARCANE_FATAL("Could not find group {0}", group_infos->getName());
+    ValueChecker vc{ A_FUNCINFO };
+    vc.areEqual(group.size(), group_infos->getSize(), "check group size");
+  }
   ValueChecker vc{ A_FUNCINFO };
-  auto nb_group = 8;
+  auto nb_group = 8 + options()->checkGroup().size();
   vc.areEqual(nb_group, mesh->groups().count(), "check number of groups in the mesh");
 }
 
@@ -276,18 +319,39 @@ template <typename VariableRefType>
 void CustomMeshTestModule::
 _checkVariable(VariableRefType variable_ref, ItemGroup item_group)
 {
-  variable_ref.fill(1);
   auto variable_sum = 0.;
   using ItemType = typename VariableRefType::ItemType;
   ENUMERATE_ (ItemType, iitem, item_group) {
     info() << variable_ref.name() << " at item " << iitem.localId() << " " << variable_ref[iitem];
     variable_sum += variable_ref[iitem];
   }
-  if (variable_sum != item_group.size())
+  if (variable_sum != item_group.size()) {
     fatal() << "Error on variable " << variable_ref.name();
-  //   Check find variable
-  if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh(), variable_ref.name()))
-    ARCANE_FATAL("Cannot find mesh variable {0}", variable_ref.name());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename VariableArrayRefType>
+void CustomMeshTestModule::
+_checkArrayVariable(VariableArrayRefType variable_ref, ItemGroup item_group)
+{
+  auto variable_sum = 0.;
+  using ItemType = typename VariableArrayRefType::ItemType;
+  auto array_size = variable_ref.arraySize();
+  ENUMERATE_ (ItemType, iitem, item_group) {
+    for (auto value : variable_ref[iitem]) {
+      variable_sum += value;
+    }
+    info() << variable_ref.name() << " at item " << iitem.localId() << variable_ref[iitem];
+  }
+  ValueChecker vc{ A_FUNCINFO };
+  if (array_size == 0)
+    ARCANE_FATAL("Array variable {0} array size is zero");
+  std::vector<int> ref_sum(array_size);
+  std::iota(ref_sum.begin(), ref_sum.end(), 1.);
+  vc.areEqual(variable_sum, item_group.size() * std::accumulate(ref_sum.begin(), ref_sum.end(), 0.), "check array variable values");
 }
 
 /*---------------------------------------------------------------------------*/

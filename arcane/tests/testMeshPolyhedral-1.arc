@@ -24,6 +24,18 @@
       <nb-edges>26</nb-edges>
       <nb-nodes>16</nb-nodes>
     </mesh-size>
+    <check-group>
+      <name>HALF_CELL</name>
+      <size>1</size>
+    </check-group>
+    <check-group>
+      <name>FIRST_CELL_NODES</name>
+      <size>10</size>
+    </check-group>
+    <check-cell-variable-integer>CellFlags</check-cell-variable-integer>
+    <check-cell-variable-real>CellReal</check-cell-variable-real>
+    <check-cell-variable-array-integer>CellArrayFlags</check-cell-variable-array-integer>
+    <check-cell-variable-array-real>CellArrayReal</check-cell-variable-array-real>
     <mesh-coordinates>
       <do-check>true</do-check>
       <coords>
@@ -51,10 +63,10 @@
     <output-period>1</output-period>
     <output>
       <variable>CellVariable</variable>
-      <variable>FaceVariable</variable>
+      <!--      <variable>FaceVariable</variable>-->
       <variable>NodeVariable</variable>
       <group>AllCells</group>
-      <group>AllFaces</group>
+      <!--      <group>AllFaces</group>-->
     </output>
     <save-init>true</save-init>
     <format name="Ensight7PostProcessor">
