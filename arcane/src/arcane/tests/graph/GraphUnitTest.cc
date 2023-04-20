@@ -24,7 +24,7 @@
 #include "arcane/anyitem/AnyItem.h"
 #include "arcane/mesh/ItemFamily.h"
 
-#include "arcane/utils/DualUniqueIdMng.h"
+#include "arcane/mesh/DualUniqueIdMng.h"
 
 #include "arcane/mesh/DoFManager.h"
 #include "arcane/mesh/DoFFamily.h"
