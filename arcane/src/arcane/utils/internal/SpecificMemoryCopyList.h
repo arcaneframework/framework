@@ -293,8 +293,8 @@ class SpecificMemoryCopy
   {
     Int32 nb_index = indexes.size();
     for (Int32 i = 0; i < nb_index; ++i) {
-      Int64 zindex = i * m_extent.v;
-      Int64 zci = indexes[i] * m_extent.v;
+      Int64 zindex = (Int64)i * m_extent.v;
+      Int64 zci = (Int64)(indexes[i]) * m_extent.v;
       for (Int32 z = 0, n = m_extent.v; z < n; ++z)
         destination[zindex + z] = source[zci + z];
     }
@@ -306,8 +306,8 @@ class SpecificMemoryCopy
     Int32 nb_index = indexes.size();
 
     for (Int32 i = 0; i < nb_index; ++i) {
-      Int64 zindex = i * m_extent.v;
-      Int64 zci = indexes[i] * m_extent.v;
+      Int64 zindex = (Int64)i * m_extent.v;
+      Int64 zci = (Int64)(indexes[i]) * m_extent.v;
       for (Int32 z = 0, n = m_extent.v; z < n; ++z)
         destination[zci + z] = source[zindex + z];
     }

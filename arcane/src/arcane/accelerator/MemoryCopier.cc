@@ -54,13 +54,13 @@ class AcceleratorSpecificMemoryCopy
 
  public:
 
-  void _copyFrom(RunQueue* queue, Span<const Int32> indexes,
+  void _copyFrom(RunQueue* queue, SmallSpan<const Int32> indexes,
                  Span<const DataType> source, Span<DataType> destination)
   {
     ARCANE_CHECK_POINTER(queue);
 
-    Int32 nb_index = (Int32)indexes.size();
-    const Int32 sub_size = m_extent.v;
+    Int32 nb_index = indexes.size();
+    const Int64 sub_size = m_extent.v;
 
     auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_index)
@@ -73,13 +73,13 @@ class AcceleratorSpecificMemoryCopy
     };
   }
 
-  void _copyTo(RunQueue* queue, Span<const Int32> indexes, Span<const DataType> source,
+  void _copyTo(RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
                Span<DataType> destination)
   {
     ARCANE_CHECK_POINTER(queue);
 
-    Int32 nb_index = (Int32)indexes.size();
-    const Int32 sub_size = m_extent.v;
+    Int32 nb_index = indexes.size();
+    const Int64 sub_size = m_extent.v;
 
     auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_index)
