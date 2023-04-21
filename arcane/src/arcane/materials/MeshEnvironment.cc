@@ -92,14 +92,15 @@ class MeshEnvironmentObserver
 /*---------------------------------------------------------------------------*/
 
 MeshEnvironment::
-MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int32 env_id)
+MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int32 env_id)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
 , m_user_environment(0)
-, m_nb_mat_per_cell(VariableBuildInfo(mm->mesh(),mm->name()+"_CellNbMaterial_"+name))
+, m_nb_mat_per_cell(VariableBuildInfo(mm->mesh(), mm->name() + "_CellNbMaterial_" + name))
 , m_total_nb_cell_mat(0)
 , m_group_observer(0)
-, m_data(this,name,env_id,false)
+, m_data(this, name, env_id, false)
+, m_non_const_this(this)
 {
 }
 
@@ -576,17 +577,17 @@ findComponentCell(AllEnvCell c) const
 /*---------------------------------------------------------------------------*/
 
 EnvItemVectorView MeshEnvironment::
-envView()
+envView() const
 {
-  return {this,variableIndexer()->matvarIndexes(),
-          itemsInternalView(),variableIndexer()->localIds()};
+  return { m_non_const_this, variableIndexer()->matvarIndexes(),
+           itemsInternalView(), variableIndexer()->localIds() };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ComponentItemVectorView MeshEnvironment::
-view()
+view() const
 {
   return envView();
 }
@@ -604,7 +605,7 @@ resizeItemsInternal(Integer nb_item)
 /*---------------------------------------------------------------------------*/
 
 ComponentPurePartItemVectorView MeshEnvironment::
-pureItems()
+pureItems() const
 {
   return m_data.partData()->pureView();
 }
@@ -613,7 +614,7 @@ pureItems()
 /*---------------------------------------------------------------------------*/
 
 ComponentImpurePartItemVectorView MeshEnvironment::
-impureItems()
+impureItems() const
 {
   return m_data.partData()->impureView();
 }
@@ -622,7 +623,7 @@ impureItems()
 /*---------------------------------------------------------------------------*/
 
 ComponentPartItemVectorView MeshEnvironment::
-partItems(eMatPart part)
+partItems(eMatPart part) const
 {
   return m_data.partData()->partView(part);
 }
@@ -631,27 +632,27 @@ partItems(eMatPart part)
 /*---------------------------------------------------------------------------*/
 
 EnvPurePartItemVectorView MeshEnvironment::
-pureEnvItems()
+pureEnvItems() const
 {
-  return {this,m_data.partData()->pureView()};
+  return { m_non_const_this, m_data.partData()->pureView() };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 EnvImpurePartItemVectorView MeshEnvironment::
-impureEnvItems()
+impureEnvItems() const
 {
-  return {this,m_data.partData()->impureView()};
+  return { m_non_const_this, m_data.partData()->impureView() };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 EnvPartItemVectorView MeshEnvironment::
-partEnvItems(eMatPart part)
+partEnvItems(eMatPart part) const
 {
-  return {this,m_data.partData()->partView(part)};
+  return { m_non_const_this, m_data.partData()->partView(part) };
 }
 
 /*---------------------------------------------------------------------------*/

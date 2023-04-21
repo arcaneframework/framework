@@ -62,12 +62,7 @@ class MeshComponentData
 
   const String& name() const { return m_name; }
 
-  MeshMaterialVariableIndexer* variableIndexer()
-  {
-    return m_variable_indexer;
-  }
-
-  const MeshMaterialVariableIndexer* variableIndexer() const
+  MeshMaterialVariableIndexer* variableIndexer() const
   {
     return m_variable_indexer;
   }
