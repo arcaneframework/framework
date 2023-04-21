@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterial.h                                             (C) 2000-2022 */
+/* IMeshMaterial.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'un matériau d'un maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -81,16 +81,16 @@ class ARCANE_CORE_EXPORT IMeshMaterial
   virtual MatCell findMatCell(AllEnvCell c) const =0;
 
   //! Vue associée à ce matériau
-  virtual MatItemVectorView matView() =0;
+  virtual MatItemVectorView matView() const =0;
 
   //! Vue sur la liste des entités pures (associées à la maille globale) du matériau
-  virtual MatPurePartItemVectorView pureMatItems() =0;
+  virtual MatPurePartItemVectorView pureMatItems() const =0;
 
   //! Vue sur la liste des entités impures (partielles) partielles du matériau
-  virtual MatImpurePartItemVectorView impureMatItems() =0;
+  virtual MatImpurePartItemVectorView impureMatItems() const =0;
 
   //! Vue sur la partie pure ou impure des entités du matériau
-  virtual MatPartItemVectorView partMatItems(eMatPart part) =0;
+  virtual MatPartItemVectorView partMatItems(eMatPart part) const =0;
 
  public:
 

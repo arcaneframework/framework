@@ -68,7 +68,7 @@ class MeshEnvironment
   {
     return m_materials.size();
   }
-  MeshMaterialVariableIndexer* variableIndexer() override
+  MeshMaterialVariableIndexer* variableIndexer() const override
   {
     return m_data.variableIndexer();
   }
@@ -87,8 +87,8 @@ class MeshEnvironment
   ComponentCell findComponentCell(AllEnvCell c) const override;
   EnvCell findEnvCell(AllEnvCell c) const override;
 
-  ComponentItemVectorView view() override;
-  EnvItemVectorView envView() override;
+  ComponentItemVectorView view() const override;
+  EnvItemVectorView envView() const override;
 
   void checkValid() override;
 
@@ -101,13 +101,13 @@ class MeshEnvironment
   IMeshMaterial* asMaterial() override { return nullptr; }
   IMeshEnvironment* asEnvironment() override { return this; }
 
-  ComponentPurePartItemVectorView pureItems() override;
-  ComponentImpurePartItemVectorView impureItems() override;
-  ComponentPartItemVectorView partItems(eMatPart part) override;
+  ComponentPurePartItemVectorView pureItems() const override;
+  ComponentImpurePartItemVectorView impureItems() const override;
+  ComponentPartItemVectorView partItems(eMatPart part) const override;
 
-  EnvPurePartItemVectorView pureEnvItems() override;
-  EnvImpurePartItemVectorView impureEnvItems() override;
-  EnvPartItemVectorView partEnvItems(eMatPart part) override;
+  EnvPurePartItemVectorView pureEnvItems() const override;
+  EnvImpurePartItemVectorView impureEnvItems() const override;
+  EnvPartItemVectorView partEnvItems(eMatPart part) const override;
 
  public:
 
@@ -167,6 +167,7 @@ class MeshEnvironment
   UniqueArray<ComponentItemInternal> m_mat_items_internal;
   IItemGroupObserver* m_group_observer;
   MeshComponentData m_data;
+  MeshEnvironment* m_non_const_this;
 
  private:
   

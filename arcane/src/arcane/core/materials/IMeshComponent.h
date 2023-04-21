@@ -59,7 +59,7 @@ class ARCANE_CORE_EXPORT IMeshComponent
    * \internal
    * Indexeur pour accéder aux variables partielles.
    */
-  virtual MeshMaterialVariableIndexer* variableIndexer() =0;
+  virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
 
   /*!
    * \internal
@@ -90,7 +90,7 @@ class ARCANE_CORE_EXPORT IMeshComponent
   virtual ComponentCell findComponentCell(AllEnvCell c) const =0;
 
   //! Vue associée à ce composant
-  virtual ComponentItemVectorView view() =0;
+  virtual ComponentItemVectorView view() const =0;
 
   //! Vérifie que le composant est valide.
   virtual void checkValid() =0;
@@ -105,13 +105,13 @@ class ARCANE_CORE_EXPORT IMeshComponent
   virtual bool hasSpace(MatVarSpace space) const =0;
 
   //! Vue sur la liste des entités pures (associées à la maille globale) du composant
-  virtual ComponentPurePartItemVectorView pureItems() =0;
+  virtual ComponentPurePartItemVectorView pureItems() const =0;
 
   //! Vue sur la liste des entités impures (partielles) partielles du composant
-  virtual ComponentImpurePartItemVectorView impureItems() =0;
+  virtual ComponentImpurePartItemVectorView impureItems() const =0;
 
   //! Vue sur la partie pure ou impure des entités du composant
-  virtual ComponentPartItemVectorView partItems(eMatPart part) =0;
+  virtual ComponentPartItemVectorView partItems(eMatPart part) const =0;
 
   /*!
    * \brief Retourne le composant sous la forme d'un IMeshMaterial.

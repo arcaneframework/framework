@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshEnvironment.h                                          (C) 2000-2022 */
+/* IMeshEnvironment.h                                          (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'un milieu d'un maillage.                                      */
 /*---------------------------------------------------------------------------*/
@@ -21,17 +21,6 @@
 
 namespace Arcane::Materials
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*class IMeshMaterialMng;
-class IMeshMaterial;
-class MeshMaterialVariableIndexer;
-class EnvItemVectorView;
-class EnvCell;
-class AllEnvCell;
-*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -99,16 +88,16 @@ class ARCANE_CORE_EXPORT IMeshEnvironment
   virtual EnvCell findEnvCell(AllEnvCell c) const =0;
 
   //! Vue associée à ce milieu
-  virtual EnvItemVectorView envView() =0;
+  virtual EnvItemVectorView envView() const =0;
 
   //! Vue sur la liste des entités pures (associées à la maille globale) du milieu
-  virtual EnvPurePartItemVectorView pureEnvItems() =0;
+  virtual EnvPurePartItemVectorView pureEnvItems() const =0;
 
   //! Vue sur la liste des entités impures (partielles) partielles du milieu
-  virtual EnvImpurePartItemVectorView impureEnvItems() =0;
+  virtual EnvImpurePartItemVectorView impureEnvItems() const =0;
 
   //! Vue sur la partie pure ou impure des entités du milieu
-  virtual EnvPartItemVectorView partEnvItems(eMatPart part) =0;
+  virtual EnvPartItemVectorView partEnvItems(eMatPart part) const =0;
 };
 
 /*---------------------------------------------------------------------------*/
