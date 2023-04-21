@@ -22,6 +22,11 @@
 #include <vtkNew.h>
 #include <vtkCellIterator.h>
 #include <vtkIdTypeArray.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
+#include <vtkDataSetAttributes.h>
+#include <vtkArrayDispatch.h>
+#include <vtkDataArrayAccessor.h>
 
 #include <arccore/base/Ref.h>
 #include <arccore/base/String.h>
@@ -40,8 +45,12 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/Real3.h"
+#include "arcane/mesh/CellFamily.h"
+#include "arcane/core/MeshVariableScalarRef.h"
+#include "arcane/core/MeshVariableArrayRef.h"
 
 #include "arcane/core/ItemAllocationInfo.h"
+#include "arcane/core/VariableBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,7 +68,13 @@ namespace VtkPolyhedralTools
 } // namespace VtkPolyhedralTools
 
 class VtkPolyhedralMeshIOService
+: public TraceAccessor
 {
+ public:
+
+  explicit VtkPolyhedralMeshIOService(ITraceMng* trace_mng)
+  : TraceAccessor(trace_mng)
+  {}
 
   class VtkReader
   {
@@ -116,6 +131,11 @@ class VtkPolyhedralMeshIOService
     bool readHasFailed() const noexcept { return m_read_status.failure; }
     const VtkPolyhedralTools::ReadStatus readStatus() const noexcept { return m_read_status; }
 
+    void readDataSetAttributes() const;
+
+    vtkCellData* cellData();
+    vtkPointData* pointData();
+
    private:
 
     const String& m_filename;
@@ -132,6 +152,8 @@ class VtkPolyhedralMeshIOService
     Int32UniqueArray m_cell_nb_edges, m_face_nb_edges, m_face_uid_indexes;
     Int32UniqueArray m_cell_face_indexes, m_edge_nb_nodes;
     Real3UniqueArray m_node_coordinates;
+    vtkCellData* m_cell_data = nullptr;
+    vtkPointData* m_point_data = nullptr;
 
     std::pair<bool, Int32> _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes);
     template <typename Connectivity2DArray>
@@ -139,124 +161,6 @@ class VtkPolyhedralMeshIOService
   };
 
  public:
-
-  void _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk_reader)
-  {
-    auto nb_item_family = 4;
-    auto nb_connected_family = 3;
-    item_allocation_info.family_infos.resize(nb_item_family);
-    for (auto& family_info : item_allocation_info.family_infos) {
-      family_info.connected_family_info.resize(nb_connected_family);
-    }
-    // Create regular item families and connectivities
-    auto& cell_family_info = item_allocation_info.family_infos[0];
-    cell_family_info.name = "Cell";
-    cell_family_info.item_kind = IK_Cell;
-    cell_family_info.item_uids = vtk_reader.cellUids();
-    auto& node_family_info = item_allocation_info.family_infos[1];
-    node_family_info.name = "Node";
-    node_family_info.item_kind = IK_Node;
-    node_family_info.item_uids = vtk_reader.nodeUids();
-    auto& face_family_info = item_allocation_info.family_infos[2];
-    face_family_info.name = "Face";
-    face_family_info.item_kind = IK_Face;
-    face_family_info.item_uids = vtk_reader.faceUids();
-    auto& edge_family_info = item_allocation_info.family_infos[3];
-    edge_family_info.name = "Edge";
-    edge_family_info.item_kind = IK_Edge;
-    edge_family_info.item_uids = vtk_reader.edgeUids();
-    // Cell to nodes connectivity
-    auto cell_connected_family_index = 0;
-    auto& cell_connected_node_family_info = cell_family_info.connected_family_info[cell_connected_family_index++];
-    cell_connected_node_family_info.name = node_family_info.name;
-    cell_connected_node_family_info.item_kind = node_family_info.item_kind;
-    cell_connected_node_family_info.connectivity_name = "CellToNodes";
-    cell_connected_node_family_info.nb_connected_items_per_item = vtk_reader.cellNbNodes();
-    cell_connected_node_family_info.connected_items_uids = vtk_reader.cellNodes();
-    // Cell to faces connectivity
-    auto& cell_connected_face_family_info = cell_family_info.connected_family_info[cell_connected_family_index++];
-    cell_connected_face_family_info.name = face_family_info.name;
-    cell_connected_face_family_info.item_kind = face_family_info.item_kind;
-    cell_connected_face_family_info.connectivity_name = "CellToFaces";
-    cell_connected_face_family_info.nb_connected_items_per_item = vtk_reader.cellNbFaces();
-    cell_connected_face_family_info.connected_items_uids = vtk_reader.cellFaces();
-    // Cell to edges connectivity
-    auto& cell_connected_edge_family_info = cell_family_info.connected_family_info[cell_connected_family_index++];
-    cell_connected_edge_family_info.name = edge_family_info.name;
-    cell_connected_edge_family_info.item_kind = edge_family_info.item_kind;
-    cell_connected_edge_family_info.connectivity_name = "CellToEdges";
-    cell_connected_edge_family_info.nb_connected_items_per_item = vtk_reader.cellNbEdges();
-    cell_connected_edge_family_info.connected_items_uids = vtk_reader.cellEdges();
-    // Face to cells connectivity
-    auto face_connected_family_index = 0;
-    auto& face_connected_cell_family_info = face_family_info.connected_family_info[face_connected_family_index++];
-    face_connected_cell_family_info.name = cell_family_info.name;
-    face_connected_cell_family_info.item_kind = cell_family_info.item_kind;
-    face_connected_cell_family_info.connectivity_name = "FaceToCells";
-    face_connected_cell_family_info.nb_connected_items_per_item = vtk_reader.faceNbCells();
-    face_connected_cell_family_info.connected_items_uids = vtk_reader.faceCells();
-    // Face to nodes connectivity
-    auto& face_connected_node_family_info = face_family_info.connected_family_info[face_connected_family_index++];
-    face_connected_node_family_info.name = node_family_info.name;
-    face_connected_node_family_info.item_kind = node_family_info.item_kind;
-    face_connected_node_family_info.connectivity_name = "FaceToNodes";
-    face_connected_node_family_info.nb_connected_items_per_item = vtk_reader.faceNbNodes();
-    face_connected_node_family_info.connected_items_uids = vtk_reader.faceNodes();
-    // Face to edges connectivity
-    auto& face_connected_edge_family_info = face_family_info.connected_family_info[face_connected_family_index];
-    face_connected_edge_family_info.name = edge_family_info.name;
-    face_connected_edge_family_info.item_kind = edge_family_info.item_kind;
-    face_connected_edge_family_info.connectivity_name = "FaceToEdges";
-    face_connected_edge_family_info.nb_connected_items_per_item = vtk_reader.faceNbEdges();
-    face_connected_edge_family_info.connected_items_uids = vtk_reader.faceEdges();
-    // Edge to cells connectivity
-    auto edge_connected_family_index = 0;
-    auto& edge_connected_cell_family_info = edge_family_info.connected_family_info[edge_connected_family_index++];
-    edge_connected_cell_family_info.name = cell_family_info.name;
-    edge_connected_cell_family_info.item_kind = cell_family_info.item_kind;
-    edge_connected_cell_family_info.connectivity_name = "EdgeToCells";
-    edge_connected_cell_family_info.nb_connected_items_per_item = vtk_reader.edgeNbCells();
-    edge_connected_cell_family_info.connected_items_uids = vtk_reader.edgeCells();
-    // Edge to faces connectivity
-    auto& edge_connected_face_family_info = edge_family_info.connected_family_info[edge_connected_family_index++];
-    edge_connected_face_family_info.name = face_family_info.name;
-    edge_connected_face_family_info.item_kind = face_family_info.item_kind;
-    edge_connected_face_family_info.connectivity_name = "EdgeToFaces";
-    edge_connected_face_family_info.nb_connected_items_per_item = vtk_reader.edgeNbFaces();
-    edge_connected_face_family_info.connected_items_uids = vtk_reader.edgeFaces();
-    // Edge to nodes connectivity
-    auto& edge_connected_node_family_info = edge_family_info.connected_family_info[edge_connected_family_index++];
-    edge_connected_node_family_info.name = node_family_info.name;
-    edge_connected_node_family_info.item_kind = node_family_info.item_kind;
-    edge_connected_node_family_info.connectivity_name = "EdgeToNodes";
-    edge_connected_node_family_info.nb_connected_items_per_item = vtk_reader.edgeNbNodes();
-    edge_connected_node_family_info.connected_items_uids = vtk_reader.edgeNodes();
-    // Node to cells connectivity
-    auto node_connected_family_index = 0;
-    auto& node_connected_cell_family_info = node_family_info.connected_family_info[node_connected_family_index++];
-    node_connected_cell_family_info.name = cell_family_info.name;
-    node_connected_cell_family_info.item_kind = cell_family_info.item_kind;
-    node_connected_cell_family_info.connectivity_name = "NodeToCells";
-    node_connected_cell_family_info.nb_connected_items_per_item = vtk_reader.nodeNbCells();
-    node_connected_cell_family_info.connected_items_uids = vtk_reader.nodeCells();
-    // Node to faces connectivity
-    auto& node_connected_face_family_info = node_family_info.connected_family_info[node_connected_family_index++];
-    node_connected_face_family_info.name = face_family_info.name;
-    node_connected_face_family_info.item_kind = face_family_info.item_kind;
-    node_connected_face_family_info.connectivity_name = "NodeToFaces";
-    node_connected_face_family_info.nb_connected_items_per_item = vtk_reader.nodeNbFaces();
-    node_connected_face_family_info.connected_items_uids = vtk_reader.nodeFaces();
-    // Node to edges connectivity
-    auto& node_connected_edge_family_info = node_family_info.connected_family_info[node_connected_family_index++];
-    node_connected_edge_family_info.name = edge_family_info.name;
-    node_connected_edge_family_info.item_kind = edge_family_info.item_kind;
-    node_connected_edge_family_info.connectivity_name = "NodeToEdges";
-    node_connected_edge_family_info.nb_connected_items_per_item = vtk_reader.nodeNbEdges();
-    node_connected_edge_family_info.connected_items_uids = vtk_reader.nodeEdges();
-    // Node coordinates
-    node_family_info.item_coordinates_variable_name = "NodeCoord";
-    node_family_info.item_coordinates = vtk_reader.nodeCoords();
-  }
 
   VtkPolyhedralTools::ReadStatus read(IPrimaryMesh* mesh, const String& filename)
   {
@@ -268,8 +172,20 @@ class VtkPolyhedralMeshIOService
     _fillItemAllocationInfo(item_allocation_info, reader);
     auto polyhedral_mesh_allocator = mesh->initialAllocator()->polyhedralMeshAllocator();
     polyhedral_mesh_allocator->allocateItems(item_allocation_info);
+    _readVariablesAndGroups(mesh, reader);
     return reader.readStatus();
   }
+
+ private:
+
+  UniqueArray<VariableRef*> m_read_variables;
+
+  void _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk_reader);
+  void _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader);
+  void _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family);
+  void _createVariable(vtkDataArray* cell_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family);
+  void _createNodeGroup(vtkDataArray* group_items, String group_name);
+  void _createNodeVariable(vtkDataArray* node_values, String variable_name);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -303,7 +219,7 @@ class VtkPolyhedralCaseMeshReader
       ARCANE_CHECK_POINTER(pm);
       m_trace_mng->info() << "---CREATE POLYHEDRAL MESH---- " << pm->name();
       m_trace_mng->info() << "--Read mesh file " << m_read_info.fileName();
-      VtkPolyhedralMeshIOService polyhedral_vtk_service{};
+      VtkPolyhedralMeshIOService polyhedral_vtk_service{ m_trace_mng };
       auto read_status = polyhedral_vtk_service.read(pm, m_read_info.fileName());
       if (read_status.failure)
         ARCANE_FATAL(read_status.failure_message);
@@ -340,6 +256,296 @@ ARCANE_REGISTER_SERVICE(VtkPolyhedralCaseMeshReader,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void VtkPolyhedralMeshIOService::
+_fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk_reader)
+{
+  auto nb_item_family = 4;
+  auto nb_connected_family = 3;
+  item_allocation_info.family_infos.resize(nb_item_family);
+  for (auto& family_info : item_allocation_info.family_infos) {
+    family_info.connected_family_info.resize(nb_connected_family);
+  }
+  // Create regular item families and connectivities
+  auto& cell_family_info = item_allocation_info.family_infos[0];
+  cell_family_info.name = "Cell";
+  cell_family_info.item_kind = IK_Cell;
+  cell_family_info.item_uids = vtk_reader.cellUids();
+  auto& node_family_info = item_allocation_info.family_infos[1];
+  node_family_info.name = "Node";
+  node_family_info.item_kind = IK_Node;
+  node_family_info.item_uids = vtk_reader.nodeUids();
+  auto& face_family_info = item_allocation_info.family_infos[2];
+  face_family_info.name = "Face";
+  face_family_info.item_kind = IK_Face;
+  face_family_info.item_uids = vtk_reader.faceUids();
+  auto& edge_family_info = item_allocation_info.family_infos[3];
+  edge_family_info.name = "Edge";
+  edge_family_info.item_kind = IK_Edge;
+  edge_family_info.item_uids = vtk_reader.edgeUids();
+  // Cell to nodes connectivity
+  auto cell_connected_family_index = 0;
+  auto& cell_connected_node_family_info = cell_family_info.connected_family_info[cell_connected_family_index++];
+  cell_connected_node_family_info.name = node_family_info.name;
+  cell_connected_node_family_info.item_kind = node_family_info.item_kind;
+  cell_connected_node_family_info.connectivity_name = "CellToNodes";
+  cell_connected_node_family_info.nb_connected_items_per_item = vtk_reader.cellNbNodes();
+  cell_connected_node_family_info.connected_items_uids = vtk_reader.cellNodes();
+  // Cell to faces connectivity
+  auto& cell_connected_face_family_info = cell_family_info.connected_family_info[cell_connected_family_index++];
+  cell_connected_face_family_info.name = face_family_info.name;
+  cell_connected_face_family_info.item_kind = face_family_info.item_kind;
+  cell_connected_face_family_info.connectivity_name = "CellToFaces";
+  cell_connected_face_family_info.nb_connected_items_per_item = vtk_reader.cellNbFaces();
+  cell_connected_face_family_info.connected_items_uids = vtk_reader.cellFaces();
+  // Cell to edges connectivity
+  auto& cell_connected_edge_family_info = cell_family_info.connected_family_info[cell_connected_family_index++];
+  cell_connected_edge_family_info.name = edge_family_info.name;
+  cell_connected_edge_family_info.item_kind = edge_family_info.item_kind;
+  cell_connected_edge_family_info.connectivity_name = "CellToEdges";
+  cell_connected_edge_family_info.nb_connected_items_per_item = vtk_reader.cellNbEdges();
+  cell_connected_edge_family_info.connected_items_uids = vtk_reader.cellEdges();
+  // Face to cells connectivity
+  auto face_connected_family_index = 0;
+  auto& face_connected_cell_family_info = face_family_info.connected_family_info[face_connected_family_index++];
+  face_connected_cell_family_info.name = cell_family_info.name;
+  face_connected_cell_family_info.item_kind = cell_family_info.item_kind;
+  face_connected_cell_family_info.connectivity_name = "FaceToCells";
+  face_connected_cell_family_info.nb_connected_items_per_item = vtk_reader.faceNbCells();
+  face_connected_cell_family_info.connected_items_uids = vtk_reader.faceCells();
+  // Face to nodes connectivity
+  auto& face_connected_node_family_info = face_family_info.connected_family_info[face_connected_family_index++];
+  face_connected_node_family_info.name = node_family_info.name;
+  face_connected_node_family_info.item_kind = node_family_info.item_kind;
+  face_connected_node_family_info.connectivity_name = "FaceToNodes";
+  face_connected_node_family_info.nb_connected_items_per_item = vtk_reader.faceNbNodes();
+  face_connected_node_family_info.connected_items_uids = vtk_reader.faceNodes();
+  // Face to edges connectivity
+  auto& face_connected_edge_family_info = face_family_info.connected_family_info[face_connected_family_index];
+  face_connected_edge_family_info.name = edge_family_info.name;
+  face_connected_edge_family_info.item_kind = edge_family_info.item_kind;
+  face_connected_edge_family_info.connectivity_name = "FaceToEdges";
+  face_connected_edge_family_info.nb_connected_items_per_item = vtk_reader.faceNbEdges();
+  face_connected_edge_family_info.connected_items_uids = vtk_reader.faceEdges();
+  // Edge to cells connectivity
+  auto edge_connected_family_index = 0;
+  auto& edge_connected_cell_family_info = edge_family_info.connected_family_info[edge_connected_family_index++];
+  edge_connected_cell_family_info.name = cell_family_info.name;
+  edge_connected_cell_family_info.item_kind = cell_family_info.item_kind;
+  edge_connected_cell_family_info.connectivity_name = "EdgeToCells";
+  edge_connected_cell_family_info.nb_connected_items_per_item = vtk_reader.edgeNbCells();
+  edge_connected_cell_family_info.connected_items_uids = vtk_reader.edgeCells();
+  // Edge to faces connectivity
+  auto& edge_connected_face_family_info = edge_family_info.connected_family_info[edge_connected_family_index++];
+  edge_connected_face_family_info.name = face_family_info.name;
+  edge_connected_face_family_info.item_kind = face_family_info.item_kind;
+  edge_connected_face_family_info.connectivity_name = "EdgeToFaces";
+  edge_connected_face_family_info.nb_connected_items_per_item = vtk_reader.edgeNbFaces();
+  edge_connected_face_family_info.connected_items_uids = vtk_reader.edgeFaces();
+  // Edge to nodes connectivity
+  auto& edge_connected_node_family_info = edge_family_info.connected_family_info[edge_connected_family_index++];
+  edge_connected_node_family_info.name = node_family_info.name;
+  edge_connected_node_family_info.item_kind = node_family_info.item_kind;
+  edge_connected_node_family_info.connectivity_name = "EdgeToNodes";
+  edge_connected_node_family_info.nb_connected_items_per_item = vtk_reader.edgeNbNodes();
+  edge_connected_node_family_info.connected_items_uids = vtk_reader.edgeNodes();
+  // Node to cells connectivity
+  auto node_connected_family_index = 0;
+  auto& node_connected_cell_family_info = node_family_info.connected_family_info[node_connected_family_index++];
+  node_connected_cell_family_info.name = cell_family_info.name;
+  node_connected_cell_family_info.item_kind = cell_family_info.item_kind;
+  node_connected_cell_family_info.connectivity_name = "NodeToCells";
+  node_connected_cell_family_info.nb_connected_items_per_item = vtk_reader.nodeNbCells();
+  node_connected_cell_family_info.connected_items_uids = vtk_reader.nodeCells();
+  // Node to faces connectivity
+  auto& node_connected_face_family_info = node_family_info.connected_family_info[node_connected_family_index++];
+  node_connected_face_family_info.name = face_family_info.name;
+  node_connected_face_family_info.item_kind = face_family_info.item_kind;
+  node_connected_face_family_info.connectivity_name = "NodeToFaces";
+  node_connected_face_family_info.nb_connected_items_per_item = vtk_reader.nodeNbFaces();
+  node_connected_face_family_info.connected_items_uids = vtk_reader.nodeFaces();
+  // Node to edges connectivity
+  auto& node_connected_edge_family_info = node_family_info.connected_family_info[node_connected_family_index++];
+  node_connected_edge_family_info.name = edge_family_info.name;
+  node_connected_edge_family_info.item_kind = edge_family_info.item_kind;
+  node_connected_edge_family_info.connectivity_name = "NodeToEdges";
+  node_connected_edge_family_info.nb_connected_items_per_item = vtk_reader.nodeNbEdges();
+  node_connected_edge_family_info.connected_items_uids = vtk_reader.nodeEdges();
+  // Node coordinates
+  node_family_info.item_coordinates_variable_name = "NodeCoord";
+  node_family_info.item_coordinates = vtk_reader.nodeCoords();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::
+_readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
+{
+  auto* cell_data = reader.cellData();
+  if (cell_data) {
+    // Read cell groups and variables
+    for (auto i = 0; i < cell_data->GetNumberOfArrays(); ++i) {
+      auto* cell_array = cell_data->GetArray(i);
+      if (!cell_array)
+        continue;
+      String name = cell_array->GetName();
+      if (name.substring(0, 6) == "GROUP_")
+        _createGroup(cell_array, name.substring(6), mesh, mesh->cellFamily());
+      else
+        _createVariable(cell_array, name, mesh, mesh->cellFamily());
+      info() << "Reading property " << cell_array->GetName();
+      for (auto i = 0; i < cell_array->GetNumberOfTuples(); ++i) {
+        for (auto j = 0; j < cell_array->GetNumberOfComponents(); ++j) {
+          info() << cell_array->GetName() << "[" << i << "][" << j << "] = " << cell_array->GetComponent(i, j);
+        }
+        cell_array->GetArrayType();
+      }
+    }
+  }
+  auto* point_data = reader.pointData();
+  if (point_data) {
+    // Read node groups and variables
+    for (auto i = 0; i < point_data->GetNumberOfArrays(); ++i) {
+      auto* point_array = point_data->GetArray(i);
+      String name = point_array->GetName();
+      if (name.substring(0, 6) == "GROUP_")
+        _createGroup(point_array, name.substring(6), mesh, mesh->nodeFamily());
+      else
+        _createNodeVariable(point_array, name);
+      info() << "Reading property " << point_array->GetName();
+      for (auto j = 0; j < point_array->GetNumberOfTuples(); ++j) {
+        info() << point_array->GetName() << "[" << j << "] = " << *point_array->GetTuple(j);
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::
+_createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family)
+{
+  ARCANE_CHECK_POINTER(group_items);
+  ARCANE_CHECK_POINTER(mesh);
+  ARCANE_CHECK_POINTER(item_family);
+  if (group_items->GetNumberOfComponents() != 1)
+    fatal() << String::format("Cannot create item group {0}. Group information in data property must be a scalar", group_name);
+  debug() << "Create group " << group_name;
+  Int32UniqueArray ids;
+  ids.reserve((int)group_items->GetNumberOfValues());
+  using GroupDispatcher = vtkArrayDispatch::DispatchByValueType<vtkArrayDispatch::Integrals>;
+  auto group_creator = [&ids](auto* array) {
+    vtkIdType numTuples = array->GetNumberOfTuples();
+    vtkDataArrayAccessor<std::remove_pointer_t<decltype(array)>> array_accessor{ array };
+    auto local_id = 0;
+    for (vtkIdType tupleIdx = 0; tupleIdx < numTuples; ++tupleIdx) {
+      auto value = array_accessor.Get(tupleIdx, 0);
+      if (value)
+        ids.push_back(local_id);
+      ++local_id;
+    }
+  };
+  if (!GroupDispatcher::Execute(group_items, group_creator))
+    ARCANE_FATAL("Cannot create item group {0}. Group information in data property must be an integral type", group_name);
+  debug() << " ids for cell_group " << group_name << "  " << ids; // to remove
+  item_family->createGroup(group_name, ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename vtkType>
+struct ToArcaneType
+{
+  using type = vtkType;
+};
+
+template <>
+struct ToArcaneType<float>
+{
+  using type = Real;
+};
+
+template <>
+struct ToArcaneType<long long>
+{
+  using type = Int64;
+};
+
+template <typename T> using to_arcane_type_t = typename ToArcaneType<T>::type;
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::
+_createVariable(vtkDataArray* cell_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family)
+{
+  ARCANE_CHECK_POINTER(cell_values);
+  ARCANE_CHECK_POINTER(mesh);
+  ARCANE_CHECK_POINTER(item_family);
+  if (cell_values->GetNumberOfTuples() != item_family->nbItem())
+    ARCANE_FATAL("Cannot create variable {0}, {1} values are given for {2} items in {3} family",
+                 variable_name, cell_values->GetNumberOfTuples(), item_family->nbItem(), item_family->name());
+  info() << "Create Cell variable " << variable_name;
+  auto variable_creator = [mesh, variable_name, item_family, this](auto* values) {
+    VariableBuildInfo vbi{ mesh, variable_name };
+    using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
+    auto* var = new ItemVariableScalarRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
+    m_read_variables.add(var);
+    vtkDataArrayAccessor<std::remove_pointer_t<decltype(values)>> values_accessor{ values };
+    ENUMERATE_ITEM (item, item_family->allItems()) {
+      (*var)[item] = (to_arcane_type_t<ValueType>)values_accessor.Get(item.index(), 0);
+    }
+  };
+  auto array_variable_creator = [mesh, variable_name, item_family, this](auto* values) {
+    VariableBuildInfo vbi{ mesh, variable_name };
+    using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
+    auto* var = new ItemVariableArrayRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
+    m_read_variables.add(var);
+    vtkDataArrayAccessor<std::remove_pointer_t<decltype(values)>> values_accessor{ values };
+    var->resize(values->GetNumberOfComponents());
+    ENUMERATE_ITEM (item, item_family->allItems()) {
+      auto index = 0;
+      for (auto& var_value : (*var)[item]) {
+        var_value = (to_arcane_type_t<ValueType>)values_accessor.Get(item.index(), index++);
+      }
+    }
+  };
+  // Restrict to int and real values
+  using ValueTypes = vtkTypeList_Create_6(double, float, int, long, long long, short);
+  //  using ValueTypes = vtkTypeList_Create_4(double, int, long, short);
+  using ArrayDispatcher = vtkArrayDispatch::DispatchByValueType<ValueTypes>;
+  // Create ScalarVariable
+  bool is_variable_created = false;
+  if (cell_values->GetNumberOfComponents() == 1) {
+    is_variable_created = ArrayDispatcher::Execute(cell_values, variable_creator);
+  }
+  // Create ArrayVariable
+  else { // ArrayVariable
+    is_variable_created = ArrayDispatcher::Execute(cell_values, array_variable_creator);
+  }
+  if (!is_variable_created)
+    ARCANE_FATAL("Cannot create variable {0}, it's data type is not supported. Only real and integral types are supported", variable_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::_createNodeGroup(vtkDataArray* group_items, String group_name)
+{
+  info() << "Create Node group " << group_name;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::_createNodeVariable(vtkDataArray* node_values, String variable_name)
+{
+  info() << "Create Node variable " << variable_name;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 VtkPolyhedralMeshIOService::VtkReader::
 VtkReader(const String& filename)
 : m_filename{ filename }
@@ -350,6 +556,7 @@ VtkReader(const String& filename)
     return;
   }
   m_vtk_grid_reader->SetFileName(filename.localstr());
+  m_vtk_grid_reader->ReadAllScalarsOn();
   m_vtk_grid_reader->Update();
   auto* vtk_grid = m_vtk_grid_reader->GetOutput();
   if (!vtk_grid) {
@@ -357,6 +564,14 @@ VtkReader(const String& filename)
     m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}", filename);
     return;
   }
+  if (!vtk_grid->GetFaces()) {
+    m_read_status.failure = true;
+    m_read_status.failure_message = String::format("The given mesh vtk file {0} is not a polyhedral mesh, cannot read it", filename);
+    return;
+  }
+
+  m_cell_data = vtk_grid->GetCellData();
+  m_point_data = vtk_grid->GetPointData();
 
   std::cout << "-- VTK GRID READ "
             << " NB CELLS  " << vtk_grid->GetNumberOfCells() << std::endl;
@@ -365,7 +580,7 @@ VtkReader(const String& filename)
   cell_iter->InitTraversal();
   vtkIdType* cell_faces{ nullptr };
   vtkIdType nb_faces = 0;
-  while (!cell_iter->IsDoneWithTraversal()) {
+  while (!cell_iter->IsDoneWithTraversal()) { // todo remove this debug print
     std::cout << "---- visiting cell id " << cell_iter->GetCellId() << std::endl;
     std::cout << "----   cell number of faces " << cell_iter->GetNumberOfFaces() << std::endl;
     std::cout << "----   cell number of points " << cell_iter->GetNumberOfPoints() << std::endl;
@@ -1033,6 +1248,52 @@ nodeCoords()
   return m_node_coordinates;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::VtkReader::
+readDataSetAttributes() const
+{
+  auto* vtk_grid = m_vtk_grid_reader->GetOutput();
+  auto* cell_data = vtk_grid->GetCellData();
+  auto* point_data = vtk_grid->GetPointData();
+  auto* cell_scalar_properties = cell_data->GetAttribute(vtkDataSetAttributes::AttributeTypes::SCALARS);
+  auto* point_scalar_properties = point_data->GetAttribute(vtkDataSetAttributes::AttributeTypes::SCALARS);
+  std::cout << "---- Read properties ----\n";
+  for (auto i = 0; i < cell_data->GetNumberOfArrays(); ++i) {
+    auto* cell_array = cell_data->GetArray(i);
+    std::cout << "Reading property " << cell_array->GetName() << "\n";
+    for (auto j = 0; j < cell_array->GetNumberOfTuples(); ++j) {
+      std::cout << cell_array->GetName() << "[" << j << "] = " << *cell_array->GetTuple(j) << "\n";
+      cell_array->GetArrayType();
+    }
+  }
+  for (auto i = 0; i < point_data->GetNumberOfArrays(); ++i) {
+    auto* point_array = point_data->GetArray(i);
+    std::cout << "Reading property " << point_array->GetName() << "\n";
+    for (auto j = 0; j < point_array->GetNumberOfTuples(); ++j) {
+      std::cout << point_array->GetName() << "[" << j << "] = " << *point_array->GetTuple(j) << "\n";
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+vtkCellData* VtkPolyhedralMeshIOService::VtkReader::
+cellData()
+{
+  return m_cell_data;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+vtkPointData* VtkPolyhedralMeshIOService::VtkReader::
+pointData()
+{
+  return m_point_data;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

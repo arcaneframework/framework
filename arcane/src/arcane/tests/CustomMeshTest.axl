@@ -17,11 +17,19 @@
         <simple name="value" minOccurs="0" maxOccurs="unbounded" type="real3"/>
       </complex>
     </complex>
+    <complex name="check-group" minOccurs="0" maxOccurs="unbounded" type="CheckGroup">
+      <simple name="name" type="string"/>
+      <simple name="size" type="integer"/>
+    </complex>
+    <simple name="check-cell-variable-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
+    <simple name="check-cell-variable-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
+    <simple name="check-cell-variable-array-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
+    <simple name="check-cell-variable-array-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
   </options>
 
   <variables>
     <variable field-name="cell_variable" name="CellVariable"
-              data-type="real" item-kind="cell" dim="0" dump="true" need-sync="true" />
+              data-type="real" item-kind="cell" dim="0" dump="true" need-sync="true"/>
     <variable field-name="face_variable" name="FaceVariable"
               data-type="real" item-kind="face" dim="0" dump="true" need-sync="true" />
     <variable field-name="node_variable" name="NodeVariable"

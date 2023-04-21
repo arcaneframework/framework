@@ -39,3 +39,86 @@ CELLS 2 78
 CELL_TYPES 2
 42
 42
+CELL_DATA 2
+SCALARS CellFlags int 1
+LOOKUP_TABLE default
+1
+1
+SCALARS CellReal double 1
+LOOKUP_TABLE default
+1.
+1.
+FIELD ArrayVariables 2
+CellArrayFlags 3 2 int
+1
+2
+3
+1
+2
+3
+CellArrayReal 3 2 double
+1.
+2.
+3.
+1.
+2.
+3.
+SCALARS GROUP_HALF_CELL int 1
+LOOKUP_TABLE default
+0
+1
+POINT_DATA 16
+SCALARS PointFlags int 1
+LOOKUP_TABLE default
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+SCALARS PointFlags2 int 1
+LOOKUP_TABLE default
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+SCALARS GROUP_FIRST_CELL_NODES int 1
+LOOKUP_TABLE default
+1
+1
+1
+1
+1
+0
+1
+1
+1
+1
+1
+0
+0
+0
+0
+0
