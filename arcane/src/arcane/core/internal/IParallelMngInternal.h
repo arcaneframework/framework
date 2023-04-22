@@ -33,6 +33,14 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
  public:
 
   virtual ~IParallelMngInternal() = default;
+
+ public:
+
+  virtual Runner* defaultRunner() const = 0;
+
+ public:
+
+  virtual void setDefaultRunner(Runner* runner) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

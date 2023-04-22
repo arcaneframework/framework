@@ -29,6 +29,8 @@
 #include "arcane/core/IParallelNonBlockingCollective.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
 
+#include "arcane/accelerator/core/Runner.h"
+
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/MessagePassingMng.h"
 #include "arccore/message_passing/IControlDispatcher.h"
@@ -216,6 +218,19 @@ class ParallelMngDispatcher::Impl
 : public IParallelMngInternal
 {
  public:
+
+  Runner* defaultRunner() const override { return m_runner; }
+  void setDefaultRunner(Runner* runner) override
+  {
+    m_runner = runner;
+    // Conserve une référence sur le Runner pour éviter sa destruction
+    m_runner_ref = (runner) ? *runner : Runner();
+  }
+
+ private:
+
+  Runner* m_runner = nullptr;
+  Runner m_runner_ref;
 };
 
 /*---------------------------------------------------------------------------*/
