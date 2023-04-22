@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDispatcher.h                                     (C) 2000-2022 */
+/* ParallelMngDispatcher.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Interface du gestionnaire du parallélisme sur un domaine.                 */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IParallelMng.h"
+#include "arcane/core/IParallelMng.h"
 #include "arccore/base/ReferenceCounterImpl.h"
 
 #include <atomic>
@@ -84,13 +84,17 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 , public IParallelMng
 {
  public:
+
   //! Implémentation de Arccore::MessagePassing::IControlDispatcher.
   class ARCANE_CORE_EXPORT DefaultControlDispatcher
   : public MP::IControlDispatcher
   {
    public:
+
     explicit DefaultControlDispatcher(IParallelMng* pm);
-   public:
+
+  public:
+
     void waitAllRequests(ArrayView<Request> requests) override;
     void waitSomeRequests(ArrayView<Request> requests,
                           ArrayView<bool> indexes, bool is_non_blocking) override;
@@ -102,24 +106,39 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
     Ref<Parallel::IRequestList> createRequestListRef() override;
     MP::IProfiler* profiler() const override { return nullptr; }
     void setProfiler(MP::IProfiler* p) override;
-   private:
+
+  private:
+
     IParallelMng* m_parallel_mng;
   };
 
   //! Implémentation de Arccore::MessagePassing::ISerializeDispatcher.
   class SerializeDispatcher;
 
+  class Impl;
+
  public:
+
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
 
   explicit ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi);
   ~ParallelMngDispatcher() override;
 
+ public:
+
+  ParallelMngDispatcher(const ParallelMngDispatcher&) = delete;
+  ParallelMngDispatcher(ParallelMngDispatcher&&) = delete;
+  ParallelMngDispatcher& operator=(ParallelMngDispatcher&&) = delete;
+  ParallelMngDispatcher& operator=(const ParallelMngDispatcher&) = delete;
+
  private:
+
   void _setArccoreDispatchers();
 
  public:
+
   IMessagePassingMng* messagePassingMng() const override;
   void broadcastString(String& str, Int32 rank) override;
   void broadcastMemoryBuffer(ByteArray& bytes, Int32 rank) override;
@@ -133,6 +152,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   virtual void allGatherSerializer(ISerializer* send_serializer, ISerializer* recv_serializer) = 0;
 
  public:
+
 #define ARCANE_PARALLEL_MANAGER_DISPATCH_PROTOTYPE(field, type) \
  public:\
   void allGather(ConstArrayView<type> send_buf, ArrayView<type> recv_buf) override; \
@@ -190,6 +210,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 #undef ARCANE_PARALLEL_MANAGER_DISPATCH_PROTOTYPE
 
  public:
+
   virtual IParallelDispatchT<char>* dispatcher(char*);
   virtual IParallelDispatchT<signed char>* dispatcher(signed char*);
   virtual IParallelDispatchT<unsigned char>* dispatcher(unsigned char*);
@@ -212,8 +233,8 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   virtual IParallelDispatchT<HPReal>* dispatcher(HPReal*);
 
  public:
-  template <class CreatorType>
-  void
+
+  template <class CreatorType>  void
   createDispatchers(CreatorType& ct)
   {
     m_char = ct.template create<char>();
@@ -256,6 +277,10 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   IParallelMng* createSubParallelMng(Int32ConstArrayView kept_ranks) final;
   Ref<IParallelMng> createSubParallelMngRef(Int32ConstArrayView kept_ranks) override;
 
+ public:
+
+  IParallelMngInternal* _internalApi() { return m_parallel_mng_internal; }
+
  protected:
 
   MP::MessagePassingMng* _messagePassingMng() const { return m_message_passing_mng_ref.get(); }
@@ -266,8 +291,8 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
  protected:
 
   TimeMetricAction _communicationTimeMetricAction() const;
-  void _setControlDispatcher(MP::IControlDispatcher* d); // m_control_dispatcher = nullptr;
-  void _setSerializeDispatcher(MP::ISerializeDispatcher* d); // m_serialize_dispatcher = nullptr;
+  void _setControlDispatcher(MP::IControlDispatcher* d);
+  void _setSerializeDispatcher(MP::ISerializeDispatcher* d);
 
  private:
   
@@ -276,6 +301,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
   MP::IControlDispatcher* m_control_dispatcher = nullptr;
   MP::ISerializeDispatcher* m_serialize_dispatcher = nullptr;
+  IParallelMngInternal* m_parallel_mng_internal = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -39,6 +39,7 @@ class ITransferValuesParallelOperation;
 class IParallelExchanger;
 class IVariableSynchronizer;
 class IParallelTopology;
+class IParallelMngInternal;
 }
 
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMng)
