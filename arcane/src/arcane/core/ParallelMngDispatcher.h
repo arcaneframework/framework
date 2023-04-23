@@ -287,6 +287,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   UniqueArray<Integer> _doWaitRequests(ArrayView<Request> requests,Parallel::eWaitType wait_type);
   virtual ISerializeMessageList* _createSerializeMessageList() =0;
   virtual IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) =0;
+  virtual bool _isAcceleratorAware() const { return false; }
 
  protected:
 

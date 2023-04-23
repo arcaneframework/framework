@@ -36,7 +36,19 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
 
  public:
 
+  //! Runner par défaut. Peut être nul
   virtual Runner* defaultRunner() const = 0;
+
+  //! File par défaut pour les messages. Peut être nul
+  virtual RunQueue* defaultQueue() const = 0;
+
+  /*!
+   * \brief Indique si l'implémentation gère les accélérateurs.
+   *
+   * Si c'est le cas on peut utiliser directement la mémoire de l'accélérateur
+   * dans les appels MPI ce qui permet d'éviter d'éventuelles recopies.
+   */
+  virtual bool isAcceleratorAware() const = 0;
 
  public:
 

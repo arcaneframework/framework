@@ -219,17 +219,32 @@ class ParallelMngDispatcher::Impl
 {
  public:
 
+  Impl(ParallelMngDispatcher* pm) : m_parallel_mng(pm){}
+  ~Impl()
+  {
+    m_queue.reset();
+  }
+ public:
+
   Runner* defaultRunner() const override { return m_runner; }
+  RunQueue* defaultQueue() const override { return m_queue.get(); }
+  bool isAcceleratorAware() const { return m_parallel_mng->_isAcceleratorAware(); }
   void setDefaultRunner(Runner* runner) override
   {
     m_runner = runner;
     // Conserve une référence sur le Runner pour éviter sa destruction
     m_runner_ref = (runner) ? *runner : Runner();
+    if (m_runner)
+      m_queue = makeQueueRef(m_runner);
+    else
+      m_queue.reset();
   }
 
  private:
 
+  ParallelMngDispatcher* m_parallel_mng = nullptr;
   Runner* m_runner = nullptr;
+  Ref<RunQueue> m_queue;
   Runner m_runner_ref;
 };
 
@@ -266,7 +281,7 @@ ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
 , m_message_passing_mng_ref(bi.messagePassingMngRef())
 , m_control_dispatcher(new DefaultControlDispatcher(this))
 , m_serialize_dispatcher(new SerializeDispatcher(this))
-, m_parallel_mng_internal(new Impl())
+, m_parallel_mng_internal(new Impl(this))
 {
 }
 

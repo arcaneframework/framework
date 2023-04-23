@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.h                                            (C) 2000-2022 */
+/* MpiParallelMng.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation des messages avec MPI.                                     */
 /*---------------------------------------------------------------------------*/
@@ -157,6 +157,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
 
   ISerializeMessageList* _createSerializeMessageList() override;
   IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) override;
+  bool _isAcceleratorAware() const override;
 
  public:
 
