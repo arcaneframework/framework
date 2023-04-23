@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAccelerator.cc                                          (C) 2000-2022 */
+/* CudaAccelerator.cc                                          (C) 2000-2023 */
 /*                                                                           */
 /* Backend 'CUDA' pour les accélérateurs.                                    */
 /*---------------------------------------------------------------------------*/
@@ -98,8 +98,41 @@ class UnifiedMemoryCudaMemoryAllocator
 
   cudaError_t _allocate(void** ptr, size_t new_size) override
   {
+    const bool do_page = false;
+    if (do_page)
+      return _allocate_page(ptr, new_size);
     return ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
   }
+
+  cudaError_t _allocate_page(void** ptr, size_t new_size)
+  {
+    const size_t page_size = 4096;
+
+    // Alloue un multiple de la taille d'une page
+    // Comme les transfers de la mémoire unifiée se font par page,
+    // cela permet de détecter qu'elle allocation provoque le transfert
+    size_t orig_new_size = new_size;
+    size_t n = new_size / page_size;
+    if ((new_size % page_size) != 0)
+      ++n;
+    new_size = (n + 1) * page_size;
+
+    auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
+
+    void* p = *ptr;
+    const bool do_trace = false;
+    if (do_trace)
+      std::cout << "MALLOC_MANAGED=" << p << " size=" << orig_new_size << "\n";
+
+    // Indique qu'on privilégie l'allocation sur le GPU mais que le CPU
+    // accédera aussi aux données
+    cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, 0);
+    cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, cudaCpuDeviceId);
+
+    //cudaMemAdvise(p, new_size, cudaMemAdviseSetReadMostly, 0);
+    return r;
+  }
+
   cudaError_t _deallocate(void* ptr) override
   {
     return ::cudaFree(ptr);
