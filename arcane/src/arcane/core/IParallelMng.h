@@ -1227,6 +1227,11 @@ class ARCANE_CORE_EXPORT IParallelMng
   //! Gestionnaire de message de %Arccore associé
   virtual IMessagePassingMng* messagePassingMng() const =0;
 
+ public:
+
+  //! API interne à Arcane
+  virtual IParallelMngInternal* _internalApi() =0;
+
  private:
 
   /*!

@@ -54,12 +54,12 @@ class AcceleratorMng
 
   void initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info) override;
   bool isInitialized() const override { return m_has_init; }
-  Runner* defaultRunner() override { CHECK_HAS_INIT(); return m_default_runner.get(); }
+  Runner* defaultRunner() override { CHECK_HAS_INIT(); return &m_default_runner; }
   RunQueue* defaultQueue() override { CHECK_HAS_INIT(); return m_default_queue.get(); }
 
  private:
 
-  Ref<Runner> m_default_runner;
+  Runner m_default_runner;
   Ref<RunQueue> m_default_queue;
   bool m_has_init = false;
 };
@@ -73,12 +73,10 @@ initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info)
   if (m_has_init)
     ARCANE_FATAL("Method initialize() has already been called");
 
-  Runner* runner = new Runner();
-  m_default_runner = makeRef(runner);
-  arcaneInitializeRunner(*runner,traceMng(),runtime_info);
+  arcaneInitializeRunner(m_default_runner,traceMng(),runtime_info);
   m_has_init = true;
 
-  m_default_queue = makeQueueRef(runner);
+  m_default_queue = makeQueueRef(m_default_runner);
 }
 
 /*---------------------------------------------------------------------------*/

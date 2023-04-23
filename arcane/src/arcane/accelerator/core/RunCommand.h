@@ -37,11 +37,16 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   friend impl::IReduceMemoryImpl* impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
   friend impl::RunCommandLaunchInfo;
   friend impl::RunQueueImpl;
+  friend RunCommand makeCommand(RunQueue& run_queue);
+  friend RunCommand makeCommand(RunQueue* run_queue);
 
  public:
 
-  RunCommand(RunQueue& run_queue);
   ~RunCommand();
+
+ protected:
+
+  explicit RunCommand(RunQueue& run_queue);
 
  public:
 

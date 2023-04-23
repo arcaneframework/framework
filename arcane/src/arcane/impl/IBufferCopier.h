@@ -16,6 +16,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/MemoryView.h"
+
 #include "arcane/core/GroupIndexTable.h"
 
 /*---------------------------------------------------------------------------*/
@@ -28,6 +29,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Interface pour copier des éléments entre deux zones avec indexation.
  */
 class IBufferCopier
 {
@@ -44,6 +46,13 @@ class IBufferCopier
   virtual void copyToBuffer(Int32ConstArrayView indexes,
                             MutableMemoryView buffer,
                             ConstMemoryView var_value) = 0;
+
+  virtual IMemoryAllocator* allocator() const = 0;
+
+ public:
+
+  virtual void setRunQueue(RunQueue* queue) = 0;
+  virtual void setAllocator(IMemoryAllocator* allocator) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -61,15 +70,24 @@ class DirectBufferCopier
                       ConstMemoryView buffer,
                       MutableMemoryView var_value) override
   {
-    buffer.copyToIndexesHost(var_value, indexes);
+    buffer.copyToIndexes(var_value, indexes, m_queue);
   }
 
   void copyToBuffer(Int32ConstArrayView indexes,
                     MutableMemoryView buffer,
                     ConstMemoryView var_value) override
   {
-    buffer.copyFromIndexesHost(var_value, indexes);
+    buffer.copyFromIndexes(var_value, indexes, m_queue);
   }
+
+  IMemoryAllocator* allocator() const override { return m_allocator; }
+  void setRunQueue(RunQueue* queue) override { m_queue = queue; }
+  void setAllocator(IMemoryAllocator* allocator) override { m_allocator = allocator; }
+
+ private:
+
+  RunQueue* m_queue = nullptr;
+  IMemoryAllocator* m_allocator = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -101,6 +119,9 @@ class TableBufferCopier
     _buildFinalIndexes(final_indexes, indexes);
     m_base_copier.copyToBuffer(final_indexes, buffer, var_value);
   }
+  IMemoryAllocator* allocator() const override { return m_base_copier.allocator(); }
+  void setRunQueue(RunQueue* queue) override { m_base_copier.setRunQueue(queue); }
+  void setAllocator(IMemoryAllocator* allocator) override { m_base_copier.setAllocator(allocator); }
 
  private:
 
@@ -111,8 +132,7 @@ class TableBufferCopier
 
   void _buildFinalIndexes(Array<Int32>& final_indexes, ConstArrayView<Int32> orig_indexes)
   {
-    // TODO: utiliser des buffers de taille fixe pour ne pas avoir à faire
-    // d'allocation
+    // TODO: faire cette allocation qu'une seule fois et la conserver.
     GroupIndexTable& table = *m_table;
     Int32 n = orig_indexes.size();
     final_indexes.resize(n);

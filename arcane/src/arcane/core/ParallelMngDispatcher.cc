@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDispatcher.cc                                    (C) 2000-2022 */
+/* ParallelMngDispatcher.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Redirection de la gestion des messages suivant le type des arguments.     */
 /*---------------------------------------------------------------------------*/
@@ -22,11 +22,14 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ParallelMngDispatcher.h"
-#include "arcane/IParallelDispatch.h"
-#include "arcane/Timer.h"
-#include "arcane/ITimeStats.h"
-#include "arcane/IParallelNonBlockingCollective.h"
+#include "arcane/core/ParallelMngDispatcher.h"
+#include "arcane/core/IParallelDispatch.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ITimeStats.h"
+#include "arcane/core/IParallelNonBlockingCollective.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
+
+#include "arcane/accelerator/core/Runner.h"
 
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/MessagePassingMng.h"
@@ -211,6 +214,43 @@ class ParallelMngDispatcher::SerializeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class ParallelMngDispatcher::Impl
+: public IParallelMngInternal
+{
+ public:
+
+  explicit Impl(ParallelMngDispatcher* pm) : m_parallel_mng(pm){}
+  ~Impl()
+  {
+    m_queue.reset();
+  }
+ public:
+
+  Runner* defaultRunner() const override { return m_runner; }
+  RunQueue* defaultQueue() const override { return m_queue.get(); }
+  bool isAcceleratorAware() const { return m_parallel_mng->_isAcceleratorAware(); }
+  void setDefaultRunner(Runner* runner) override
+  {
+    m_runner = runner;
+    // Conserve une référence sur le Runner pour éviter sa destruction
+    m_runner_ref = (runner) ? *runner : Runner();
+    if (m_runner)
+      m_queue = makeQueueRef(m_runner);
+    else
+      m_queue.reset();
+  }
+
+ private:
+
+  ParallelMngDispatcher* m_parallel_mng = nullptr;
+  Runner* m_runner = nullptr;
+  Ref<RunQueue> m_queue;
+  Runner m_runner_ref;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -241,6 +281,7 @@ ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
 , m_message_passing_mng_ref(bi.messagePassingMngRef())
 , m_control_dispatcher(new DefaultControlDispatcher(this))
 , m_serialize_dispatcher(new SerializeDispatcher(this))
+, m_parallel_mng_internal(new Impl(this))
 {
 }
 
@@ -251,6 +292,8 @@ ParallelMngDispatcher::
 ~ParallelMngDispatcher()
 {
   m_mp_dispatchers_ref.reset();
+
+  delete m_parallel_mng_internal;
 
   delete m_serialize_dispatcher;
   delete m_control_dispatcher;
