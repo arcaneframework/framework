@@ -219,7 +219,7 @@ class ParallelMngDispatcher::Impl
 {
  public:
 
-  Impl(ParallelMngDispatcher* pm) : m_parallel_mng(pm){}
+  explicit Impl(ParallelMngDispatcher* pm) : m_parallel_mng(pm){}
   ~Impl()
   {
     m_queue.reset();
