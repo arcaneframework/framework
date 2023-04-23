@@ -45,6 +45,46 @@ void arcaneCheckCudaErrors(const TraceInfo& ti, CUptiResult e)
 /*---------------------------------------------------------------------------*/
 
 static const char*
+getStallReasonString(CUpti_ActivityPCSamplingStallReason reason)
+{
+  switch (reason) {
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_INVALID:
+    return "Invalid";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_NONE:
+    return "Selected";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_INST_FETCH:
+    return "Instruction fetch";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_EXEC_DEPENDENCY:
+    return "Execution dependency";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_MEMORY_DEPENDENCY:
+    return "Memory dependency";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_TEXTURE:
+    return "Texture";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_SYNC:
+    return "Sync";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_CONSTANT_MEMORY_DEPENDENCY:
+    return "Constant memory dependency";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_PIPE_BUSY:
+    return "Pipe busy";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_MEMORY_THROTTLE:
+    return "Memory throttle";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_NOT_SELECTED:
+    return "Not selected";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_OTHER:
+    return "Other";
+  case CUPTI_ACTIVITY_PC_SAMPLING_STALL_SLEEPING:
+    return "Sleeping";
+  default:
+    break;
+  }
+
+  return "<unknown>";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+static const char*
 getUvmCounterKindString(CUpti_ActivityUnifiedMemoryCounterKind kind)
 {
   switch (kind) {
@@ -73,6 +113,7 @@ printActivity(CUpti_Activity* record)
               << " address=" << reinterpret_cast<void*>(uvm->address)
               << " kind=" << getUvmCounterKindString(uvm->counterKind)
               << " value=" << uvm->value
+              << " flags=" << uvm->flags
               << " source=" << uvm->srcId << " destination=" << uvm->dstId
               << "\n";
     break;
@@ -95,6 +136,45 @@ printActivity(CUpti_Activity* record)
               << "\n";
     break;
   }
+  case CUPTI_ACTIVITY_KIND_SOURCE_LOCATOR: {
+    auto* source_locator = reinterpret_cast<CUpti_ActivitySourceLocator*>(record);
+    std::cout << "Source Locator Id " << source_locator->id
+              << " File " << source_locator->fileName
+              << " Line " << source_locator->lineNumber
+              << "\n";
+    break;
+  }
+  case CUPTI_ACTIVITY_KIND_PC_SAMPLING: {
+    auto* ps_record = reinterpret_cast<CUpti_ActivityPCSampling3*>(record);
+
+    std::cout << "source " << ps_record->sourceLocatorId << " functionId " << ps_record->functionId
+              << " pc " << ps_record->pcOffset << " correlation " << ps_record->correlationId
+              << " samples " << ps_record->samples
+              << " latency samples " << ps_record->latencySamples
+              << " stallreason " << getStallReasonString(ps_record->stallReason)
+              << "\n";
+    break;
+  }
+  case CUPTI_ACTIVITY_KIND_PC_SAMPLING_RECORD_INFO: {
+    auto* pcsri_result = reinterpret_cast<CUpti_ActivityPCSamplingRecordInfo*>(record);
+
+    std::cout << "correlation " << pcsri_result->correlationId
+              << " totalSamples " << pcsri_result->totalSamples
+              << " droppedSamples " << pcsri_result->droppedSamples
+              << " samplingPeriodInCycles " << pcsri_result->samplingPeriodInCycles
+              << "\n";
+    break;
+  }
+  case CUPTI_ACTIVITY_KIND_FUNCTION: {
+    auto* func_result = reinterpret_cast<CUpti_ActivityFunction*>(record);
+
+    std::cout << "id " << func_result->id << " ctx " << func_result->contextId
+              << " moduleId " << func_result->moduleId
+              << " functionIndex " << func_result->functionIndex
+              << " name " << func_result->name
+              << "\n";
+    break;
+  }
 
   default:
     std::cout << "  <unknown>\n";
@@ -114,6 +194,7 @@ class CuptiInfo
  private:
 
   CUpti_ActivityUnifiedMemoryCounterConfig config[2];
+  CUpti_ActivityPCSamplingConfig configPC;
   bool m_is_init = false;
 };
 
@@ -189,11 +270,23 @@ init(Int32 level)
 
   ARCANE_CHECK_CUDA(cuptiActivityConfigureUnifiedMemoryCounter(config, 2));
 
+  {
+    configPC.size = sizeof(CUpti_ActivityPCSamplingConfig);
+    configPC.samplingPeriod = CUPTI_ACTIVITY_PC_SAMPLING_PERIOD_MIN;
+    configPC.samplingPeriod2 = 0;
+    CUcontext cuCtx;
+    cuCtxGetCurrent(&cuCtx);
+    ARCANE_CHECK_CUDA(cuptiActivityConfigurePCSampling(cuCtx, &configPC));
+  }
+
   // Active les compteurs
-  if (level>=1)
+  // CONCURRENT_KERNEL et PC_SAMPLING ne sont pas compatibles
+  if (level >= 1)
     ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
-  if (level>=2)
+  if (level == 2)
     ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
+  if (level >= 3)
+    ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_PC_SAMPLING));
 
   ARCANE_CHECK_CUDA(cuptiGetTimestamp(&startTimestamp));
 
