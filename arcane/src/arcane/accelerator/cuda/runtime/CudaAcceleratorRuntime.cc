@@ -22,6 +22,7 @@
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -47,10 +48,10 @@ namespace Arcane::Accelerator::Cuda
 {
 namespace
 {
-  bool global_use_cupti = false;
+  Int32 global_cupti_level = false;
 }
 extern "C++" void
-initCupti();
+initCupti(Int32 level);
 extern "C++" void
 flushCupti();
 
@@ -136,7 +137,7 @@ class CudaRunQueueStream
   void barrier() override
   {
     ARCANE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
-    if (global_use_cupti)
+    if (global_cupti_level > 0)
       flushCupti();
   }
   void copyMemory(const MemoryCopyArgs& args) override
@@ -418,8 +419,13 @@ fillDevices()
     device_info.setName(dp.name);
     m_device_info_list.addDevice(device_info);
   }
-  if (global_use_cupti)
-    initCupti();
+
+  // Regarde si on active Cupti
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_LEVEL", true))
+    global_cupti_level = v.value();
+
+  if (global_cupti_level > 0)
+    initCupti(global_cupti_level);
 }
 
 /*---------------------------------------------------------------------------*/

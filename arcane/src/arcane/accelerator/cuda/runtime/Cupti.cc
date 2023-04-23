@@ -61,13 +61,15 @@ getUvmCounterKindString(CUpti_ActivityUnifiedMemoryCounterKind kind)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+static uint64_t startTimestamp = 0;
+
 static void
 printActivity(CUpti_Activity* record)
 {
   switch (record->kind) {
   case CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER: {
     auto* uvm = reinterpret_cast<CUpti_ActivityUnifiedMemoryCounter2*>(record);
-    std::cout << "UNIFIED_MEMORY_COUNTER [ " << (uvm->start) << " " << (uvm->end) << " ]"
+    std::cout << "UNIFIED_MEMORY_COUNTER [ " << (uvm->start - startTimestamp) << " " << (uvm->end - startTimestamp) << " ]"
               << " address=" << reinterpret_cast<void*>(uvm->address)
               << " kind=" << getUvmCounterKindString(uvm->counterKind)
               << " value=" << uvm->value
@@ -75,6 +77,25 @@ printActivity(CUpti_Activity* record)
               << "\n";
     break;
   }
+  case CUPTI_ACTIVITY_KIND_KERNEL:
+  case CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL: {
+    const char* kindString = (record->kind == CUPTI_ACTIVITY_KIND_KERNEL) ? "KERNEL" : "CONC KERNEL";
+    // NOTE: 'CUpti_ActivityKernel5' est disponible à partir de CUDA 11.0 mais obsolète à partir de CUDA 11.2
+    // à partir de Cuda 12 on pourra utiliser 'CUpti_ActivityKernel9'.
+    auto* kernel = reinterpret_cast<CUpti_ActivityKernel5*>(record);
+    std::cout << kindString << " [ " << (kernel->start - startTimestamp) << " - " << (kernel->end - startTimestamp)
+              << " - " << (kernel->end - kernel->start) << " ]"
+              << " device=" << kernel->deviceId << " context=" << kernel->contextId
+              << " stream=" << kernel->streamId << " correlation=" << kernel->correlationId;
+    std::cout << " grid=[" << kernel->gridX << "," << kernel->gridY << "," << kernel->gridZ << "]"
+              << " block=[" << kernel->blockX << "," << kernel->blockY << "," << kernel->blockZ << "]"
+              << " shared memory (static=" << kernel->staticSharedMemory << " dynamic=" << kernel->dynamicSharedMemory << ")"
+              << " registers=" << kernel->registersPerThread
+              << " name=" << '"' << kernel->name << '"'
+              << "\n";
+    break;
+  }
+
   default:
     std::cout << "  <unknown>\n";
     break;
@@ -88,7 +109,7 @@ class CuptiInfo
 {
  public:
 
-  void init();
+  void init(Int32 level);
 
  private:
 
@@ -148,7 +169,7 @@ arcaneCuptiBufferCompleted(CUcontext ctx, uint32_t stream_id, uint8_t* buffer,
 /*---------------------------------------------------------------------------*/
 
 void CuptiInfo::
-init()
+init(Int32 level)
 {
   if (m_is_init)
     return;
@@ -169,9 +190,14 @@ init()
   ARCANE_CHECK_CUDA(cuptiActivityConfigureUnifiedMemoryCounter(config, 2));
 
   // Active les compteurs
-  ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
+  if (level>=1)
+    ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
+  if (level>=2)
+    ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
 
-  // A appeler en fin de calcul pour désactiver les compteurs
+  ARCANE_CHECK_CUDA(cuptiGetTimestamp(&startTimestamp));
+
+  // TODO A appeler en fin de calcul pour désactiver les compteurs
   // ARCANE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
 }
 
@@ -184,9 +210,9 @@ namespace
 }
 
 extern "C++" void
-initCupti()
+initCupti(Int32 level)
 {
-  m_global_cupti_info.init();
+  m_global_cupti_info.init(level);
 }
 extern "C++" void
 flushCupti()
