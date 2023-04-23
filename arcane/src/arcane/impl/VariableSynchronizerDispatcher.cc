@@ -21,6 +21,9 @@
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
 
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+
 #include "arcane/core/VariableCollection.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/IParallelExchanger.h"
@@ -29,6 +32,9 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/datatype/DataStorageTypeInfo.h"
 #include "arcane/core/datatype/DataTypeTraits.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
+
+#include "arcane/accelerator/core/Runner.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,6 +58,51 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: plutôt que d'utiliser la mémoire managée, il est préférable d'avoir
+// une copie sur le device des IDs. Cela permettra d'éviter des transferts
+// potentiels si on mélange synchronisation de variables sur accélérateurs et
+// sur CPU.
+
+VariableSyncInfo::
+VariableSyncInfo()
+: m_share_ids(platform::getDefaultDataAllocator())
+, m_ghost_ids(platform::getDefaultDataAllocator())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableSyncInfo::
+VariableSyncInfo(Int32ConstArrayView share_ids, Int32ConstArrayView ghost_ids,
+                 Int32 rank)
+: VariableSyncInfo()
+{
+  m_target_rank = rank;
+  m_share_ids.copy(share_ids);
+  m_ghost_ids.copy(ghost_ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableSyncInfo::
+VariableSyncInfo(const VariableSyncInfo& rhs)
+: VariableSyncInfo()
+{
+  // NOTE: pour l'instant (avril 2023) il faut un constructeur de recopie
+  // explicite pour spécifier l'allocateur
+  m_target_rank = rhs.m_target_rank;
+  m_share_ids.copy(rhs.m_share_ids);
+  m_ghost_ids.copy(rhs.m_ghost_ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
@@ -60,10 +111,29 @@ VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
   ARCANE_CHECK_POINTER(m_factory.get());
   m_generic_instance = this->m_factory->createInstance();
 
+  // TODO: Utiliser une unique instance de IBufferCopier partagée par tous les
+  // dispatchers
   if (bi.table())
     m_buffer_copier = new TableBufferCopier(bi.table());
   else
     m_buffer_copier = new DirectBufferCopier();
+
+  auto* internal_pm = m_parallel_mng->_internalApi();
+  Runner* runner = internal_pm->defaultRunner();
+  bool is_accelerator_aware = internal_pm->isAcceleratorAware();
+
+  // Pour l'instant n'active pas cette fonctionnalité de test.
+  const bool allow_aware = false;
+  if (allow_aware) {
+    // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
+    // buffer sur le device. On pourrait utiliser le mémoire managée mais certaines
+    // implémentations MPI (i.e: BXI) ne le supportent pas.
+    if (runner && is_accelerator_aware) {
+      m_buffer_copier->setRunQueue(internal_pm->defaultQueue());
+      auto* a = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
+      m_buffer_copier->setAllocator(a);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -111,7 +181,7 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   Int32 datatype_size = basicDataTypeSize(storage_info.basicDataType()) * nb_basic_element;
   m_2d_buffer.compute(m_buffer_copier, m_sync_info, dim2_size * datatype_size);
 
-  m_2d_buffer.setDataView(makeMutableMemoryView(value.data(), datatype_size * dim2_size,dim1_size));
+  m_2d_buffer.setDataView(makeMutableMemoryView(value.data(), datatype_size * dim2_size, dim1_size));
   _beginSynchronize(m_2d_buffer);
   _endSynchronize(m_2d_buffer);
   m_is_in_sync = false;
@@ -139,7 +209,7 @@ setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
+ * \brief Calcule et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
  */
 template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
@@ -147,7 +217,6 @@ compute()
 {
   if (!m_sync_info)
     ARCANE_FATAL("The instance is not initialized. You need to call setItemGroupSynchronizeInfo() before");
-
   eBasicDataType bdt = DataTypeTraitsT<SimpleType>::basicDataType();
   Int32 nb_basic_type = DataTypeTraitsT<SimpleType>::nbBasicType();
   Int32 datatype_size = basicDataTypeSize(bdt) * nb_basic_type;
@@ -171,6 +240,10 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dataty
   auto sync_list = sync_info->infos();
   Integer nb_message = sync_list.size();
   m_nb_rank = nb_message;
+
+  IMemoryAllocator* allocator = m_buffer_copier->allocator();
+  if (allocator && allocator != m_buffer.allocator())
+    m_buffer = UniqueArray<std::byte>(allocator);
 
   m_ghost_locals_buffer.resize(nb_message);
   m_share_locals_buffer.resize(nb_message);
@@ -220,7 +293,7 @@ copyReceive(Integer index)
   ConstArrayView<Int32> indexes = vsi.ghostIds();
   ConstMemoryView local_buffer = receiveBuffer(index);
 
-  m_buffer_copier->copyFromBuffer(indexes,local_buffer,var_values);
+  m_buffer_copier->copyFromBuffer(indexes, local_buffer, var_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -236,7 +309,7 @@ copySend(Integer index)
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
   MutableMemoryView local_buffer = sendBuffer(index);
-  m_buffer_copier->copyToBuffer(indexes,local_buffer,var_values);
+  m_buffer_copier->copyToBuffer(indexes, local_buffer, var_values);
 }
 
 /*---------------------------------------------------------------------------*/

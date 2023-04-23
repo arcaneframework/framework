@@ -58,12 +58,10 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 {
  public:
 
-  VariableSyncInfo() = default;
-  VariableSyncInfo(Int32ConstArrayView share_ids,Int32ConstArrayView ghost_ids,
-                   Int32 rank)
-  : m_share_ids(share_ids), m_ghost_ids(ghost_ids),
-    m_target_rank(rank) {}
-	
+  VariableSyncInfo(Int32ConstArrayView share_ids,Int32ConstArrayView ghost_ids,Int32 rank);
+  VariableSyncInfo(const VariableSyncInfo& rhs);
+  VariableSyncInfo();
+
  public:
 
   //! Rang du processeur cible
