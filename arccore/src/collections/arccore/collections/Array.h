@@ -37,6 +37,9 @@ namespace Arccore
  *
  * Cette classe sert pour contenir les meta-données communes à toutes les
  * implémentations qui dérivent de AbstractArray.
+ *
+ * Seul UniqueArray a le droit d'utiliser un allocateur autre que l'allocateur
+ * par défaut.
  */
 class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 {
@@ -366,8 +369,7 @@ class AbstractArray
     // pouvoir conserver l'instance de l'allocateur. Par défaut
     // on utilise une taille de 1 élément.
     if (a && a!=m_md->allocator){
-      Int64 c = (acapacity>1) ? acapacity : 1;
-      _directFirstAllocateWithAllocator(c,a);
+      _directFirstAllocateWithAllocator(acapacity,a);
     }
   }
 
@@ -383,7 +385,7 @@ class AbstractArray
     // Si on a un allocateur spécifique, il faut allouer un
     // bloc pour conserver cette information.
     if (a != m_md->allocator)
-      _directFirstAllocateWithAllocator(1,a);
+      _directFirstAllocateWithAllocator(0,a);
     _updateReferences();
   }
   IMemoryAllocator* allocator() const
@@ -537,7 +539,8 @@ class AbstractArray
   {
     _allocateMetaData();
     m_md->allocator = a;
-    _allocateMP(new_capacity);
+    if (new_capacity>0)
+      _allocateMP(new_capacity);
     m_md->nb_ref = _getNbRef();
     m_md->size = 0;
     _updateReferences();
