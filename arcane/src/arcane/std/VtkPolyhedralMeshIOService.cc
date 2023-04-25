@@ -134,8 +134,6 @@ class VtkPolyhedralMeshIOService
     bool readHasFailed() const noexcept { return m_read_status.failure; }
     const VtkPolyhedralTools::ReadStatus readStatus() const noexcept { return m_read_status; }
 
-    void readDataSetAttributes() const;
-
     vtkCellData* cellData();
     vtkPointData* pointData();
 
@@ -1215,35 +1213,6 @@ nodeCoords()
     }
   }
   return m_node_coordinates;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VtkPolyhedralMeshIOService::VtkReader::
-readDataSetAttributes() const
-{
-  auto* vtk_grid = m_vtk_grid_reader->GetOutput();
-  auto* cell_data = vtk_grid->GetCellData();
-  auto* point_data = vtk_grid->GetPointData();
-  auto* cell_scalar_properties = cell_data->GetAttribute(vtkDataSetAttributes::AttributeTypes::SCALARS);
-  auto* point_scalar_properties = point_data->GetAttribute(vtkDataSetAttributes::AttributeTypes::SCALARS);
-  std::cout << "---- Read properties ----\n";
-  for (auto i = 0; i < cell_data->GetNumberOfArrays(); ++i) {
-    auto* cell_array = cell_data->GetArray(i);
-    std::cout << "Reading property " << cell_array->GetName() << "\n";
-    for (auto j = 0; j < cell_array->GetNumberOfTuples(); ++j) {
-      std::cout << cell_array->GetName() << "[" << j << "] = " << *cell_array->GetTuple(j) << "\n";
-      cell_array->GetArrayType();
-    }
-  }
-  for (auto i = 0; i < point_data->GetNumberOfArrays(); ++i) {
-    auto* point_array = point_data->GetArray(i);
-    std::cout << "Reading property " << point_array->GetName() << "\n";
-    for (auto j = 0; j < point_array->GetNumberOfTuples(); ++j) {
-      std::cout << point_array->GetName() << "[" << j << "] = " << *point_array->GetTuple(j) << "\n";
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/
