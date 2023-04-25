@@ -52,6 +52,8 @@
 #include "arcane/core/ItemAllocationInfo.h"
 #include "arcane/core/VariableBuildInfo.h"
 
+#include "arcane/std/VtkPolyhedralMeshIO_axl.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -190,8 +192,7 @@ class VtkPolyhedralMeshIOService
 /*---------------------------------------------------------------------------*/
 
 class VtkPolyhedralCaseMeshReader
-: public AbstractService
-, public ICaseMeshReader
+: public ArcaneVtkPolyhedralMeshIOObject
 {
  public:
 
@@ -230,7 +231,7 @@ class VtkPolyhedralCaseMeshReader
   };
 
   explicit VtkPolyhedralCaseMeshReader(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi)
+  : ArcaneVtkPolyhedralMeshIOObject(sbi)
   {}
 
  public:
