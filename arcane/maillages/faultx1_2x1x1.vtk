@@ -68,7 +68,7 @@ LOOKUP_TABLE default
 0
 1
 POINT_DATA 16
-SCALARS PointFlags int 1
+SCALARS NodeFlags int 1
 LOOKUP_TABLE default
 1
 1
@@ -86,24 +86,123 @@ LOOKUP_TABLE default
 1
 1
 1
-SCALARS PointFlags2 int 1
+SCALARS NodeReal double 1
 LOOKUP_TABLE default
-0
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+FIELD ArrayVariables 2
+NodeArrayFlags 3 16 int
 1
 2
 3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+NodeArrayReal 3 16 double
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
+1.
+2.
+3.
 SCALARS GROUP_FIRST_CELL_NODES int 1
 LOOKUP_TABLE default
 1
