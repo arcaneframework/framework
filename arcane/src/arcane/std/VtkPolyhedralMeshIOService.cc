@@ -527,22 +527,6 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VtkPolyhedralMeshIOService::_createNodeGroup(vtkDataArray* group_items, String group_name)
-{
-  info() << "Create Node group " << group_name;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VtkPolyhedralMeshIOService::_createNodeVariable(vtkDataArray* node_values, String variable_name)
-{
-  info() << "Create Node variable " << variable_name;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 VtkPolyhedralMeshIOService::VtkReader::
 VtkReader(const String& filename)
 : m_filename{ filename }
