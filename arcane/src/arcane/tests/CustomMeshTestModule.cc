@@ -182,6 +182,8 @@ void CustomMeshTestModule::_testVariables(IMesh* mesh)
   // edge variable
   m_edge_variable.fill(1);
   _checkVariable(m_edge_variable, mesh->allEdges());
+  // Check variables defined in mesh file
+  // Cell variables
   for (const auto& variable_name : options()->getCheckCellVariableReal()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
       ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
@@ -205,6 +207,31 @@ void CustomMeshTestModule::_testVariables(IMesh* mesh)
       ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
     VariableCellArrayReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allCells());
+  }
+  // Node variables
+  for (const auto& variable_name : options()->getCheckNodeVariableReal()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableNodeReal var{ VariableBuildInfo(mesh, variable_name) };
+    _checkVariable(var, mesh->allNodes());
+  }
+  for (const auto& variable_name : options()->getCheckNodeVariableInteger()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableNodeInteger var{ VariableBuildInfo(mesh, variable_name) };
+    _checkVariable(var, mesh->allNodes());
+  }
+  for (const auto& variable_name : options()->getCheckNodeVariableArrayInteger()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableNodeArrayInteger var{ VariableBuildInfo(mesh, variable_name) };
+    _checkArrayVariable(var, mesh->allNodes());
+  }
+  for (const auto& variable_name : options()->getCheckNodeVariableArrayReal()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableNodeArrayReal var{ VariableBuildInfo(mesh, variable_name) };
+    _checkArrayVariable(var, mesh->allNodes());
   }
 }
 
