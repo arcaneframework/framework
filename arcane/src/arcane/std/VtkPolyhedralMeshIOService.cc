@@ -183,9 +183,7 @@ class VtkPolyhedralMeshIOService
   void _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk_reader);
   void _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader);
   void _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family);
-  void _createVariable(vtkDataArray* cell_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family);
-  void _createNodeGroup(vtkDataArray* group_items, String group_name);
-  void _createNodeVariable(vtkDataArray* node_values, String variable_name);
+  void _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -411,7 +409,7 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
       if (name.substring(0, 6) == "GROUP_")
         _createGroup(point_array, name.substring(6), mesh, mesh->nodeFamily());
       else
-        _createNodeVariable(point_array, name);
+        _createVariable(point_array, name, mesh, mesh->nodeFamily());
       info() << "Reading property " << point_array->GetName();
       for (auto j = 0; j < point_array->GetNumberOfTuples(); ++j) {
         info() << point_array->GetName() << "[" << j << "] = " << *point_array->GetTuple(j);
@@ -477,15 +475,15 @@ template <typename T> using to_arcane_type_t = typename ToArcaneType<T>::type;
 /*---------------------------------------------------------------------------*/
 
 void VtkPolyhedralMeshIOService::
-_createVariable(vtkDataArray* cell_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family)
+_createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family)
 {
-  ARCANE_CHECK_POINTER(cell_values);
+  ARCANE_CHECK_POINTER(item_values);
   ARCANE_CHECK_POINTER(mesh);
   ARCANE_CHECK_POINTER(item_family);
-  if (cell_values->GetNumberOfTuples() != item_family->nbItem())
+  if (item_values->GetNumberOfTuples() != item_family->nbItem())
     ARCANE_FATAL("Cannot create variable {0}, {1} values are given for {2} items in {3} family",
-                 variable_name, cell_values->GetNumberOfTuples(), item_family->nbItem(), item_family->name());
-  info() << "Create Cell variable " << variable_name;
+                 variable_name, item_values->GetNumberOfTuples(), item_family->nbItem(), item_family->name());
+  info() << "Create mesh variable " << variable_name;
   auto variable_creator = [mesh, variable_name, item_family, this](auto* values) {
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
@@ -512,35 +510,18 @@ _createVariable(vtkDataArray* cell_values, const String& variable_name, IMesh* m
   };
   // Restrict to int and real values
   using ValueTypes = vtkTypeList_Create_6(double, float, int, long, long long, short);
-  //  using ValueTypes = vtkTypeList_Create_4(double, int, long, short);
   using ArrayDispatcher = vtkArrayDispatch::DispatchByValueType<ValueTypes>;
   // Create ScalarVariable
   bool is_variable_created = false;
-  if (cell_values->GetNumberOfComponents() == 1) {
-    is_variable_created = ArrayDispatcher::Execute(cell_values, variable_creator);
+  if (item_values->GetNumberOfComponents() == 1) {
+    is_variable_created = ArrayDispatcher::Execute(item_values, variable_creator);
   }
   // Create ArrayVariable
   else { // ArrayVariable
-    is_variable_created = ArrayDispatcher::Execute(cell_values, array_variable_creator);
+    is_variable_created = ArrayDispatcher::Execute(item_values, array_variable_creator);
   }
   if (!is_variable_created)
     ARCANE_FATAL("Cannot create variable {0}, it's data type is not supported. Only real and integral types are supported", variable_name);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VtkPolyhedralMeshIOService::_createNodeGroup(vtkDataArray* group_items, String group_name)
-{
-  info() << "Create Node group " << group_name;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VtkPolyhedralMeshIOService::_createNodeVariable(vtkDataArray* node_values, String variable_name)
-{
-  info() << "Create Node variable " << variable_name;
 }
 
 /*---------------------------------------------------------------------------*/
