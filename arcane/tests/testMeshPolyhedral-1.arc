@@ -36,6 +36,10 @@
     <check-cell-variable-real>CellReal</check-cell-variable-real>
     <check-cell-variable-array-integer>CellArrayFlags</check-cell-variable-array-integer>
     <check-cell-variable-array-real>CellArrayReal</check-cell-variable-array-real>
+    <check-node-variable-integer>NodeFlags</check-node-variable-integer>
+    <check-node-variable-real>NodeReal</check-node-variable-real>
+    <check-node-variable-array-integer>NodeArrayFlags</check-node-variable-array-integer>
+    <check-node-variable-array-real>NodeArrayReal</check-node-variable-array-real>
     <mesh-coordinates>
       <do-check>true</do-check>
       <coords>
