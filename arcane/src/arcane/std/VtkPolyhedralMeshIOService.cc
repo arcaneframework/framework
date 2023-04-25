@@ -74,8 +74,9 @@ class VtkPolyhedralMeshIOService
 {
  public:
 
-  explicit VtkPolyhedralMeshIOService(ITraceMng* trace_mng)
+  explicit VtkPolyhedralMeshIOService(ITraceMng* trace_mng, bool print_mesh_infos = false)
   : TraceAccessor(trace_mng)
+  , m_print_mesh_infos(print_mesh_infos)
   {}
 
   class VtkReader
@@ -83,7 +84,7 @@ class VtkPolyhedralMeshIOService
 
    public:
 
-    explicit VtkReader(const String& filename);
+    explicit VtkReader(const String& filename, bool print_mesh_info = false);
 
     Int64ConstArrayView cellUids();
     Int64ConstArrayView nodeUids();
@@ -141,6 +142,7 @@ class VtkPolyhedralMeshIOService
    private:
 
     const String& m_filename;
+    bool m_print_mesh_infos = false;
     VtkPolyhedralTools::ReadStatus m_read_status;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
     Int64UniqueArray m_cell_uids, m_node_uids, m_face_uids, m_edge_uids;
@@ -160,6 +162,7 @@ class VtkPolyhedralMeshIOService
     std::pair<bool, Int32> _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes);
     template <typename Connectivity2DArray>
     void _flattenConnectivity(Connectivity2DArray connected_item_2darray, Int32Span nb_connected_item_per_source_item, Int64UniqueArray& connected_item_array);
+    void _printMeshInfos() const;
   };
 
  public:
@@ -167,7 +170,7 @@ class VtkPolyhedralMeshIOService
   VtkPolyhedralTools::ReadStatus read(IPrimaryMesh* mesh, const String& filename)
   {
     ARCANE_CHECK_POINTER(mesh);
-    VtkReader reader{ filename };
+    VtkReader reader{ filename, m_print_mesh_infos };
     if (reader.readHasFailed())
       return reader.readStatus();
     ItemAllocationInfo item_allocation_info;
@@ -181,6 +184,7 @@ class VtkPolyhedralMeshIOService
  private:
 
   UniqueArray<VariableRef*> m_read_variables;
+  bool m_print_mesh_infos = false;
 
   void _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk_reader);
   void _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader);
@@ -200,9 +204,10 @@ class VtkPolyhedralCaseMeshReader
   {
    public:
 
-    explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info)
+    explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info, bool print_mesh_info = false)
     : m_trace_mng(tm)
     , m_read_info(read_info)
+    , m_print_mesh_info(print_mesh_info)
     {}
 
    public:
@@ -218,7 +223,7 @@ class VtkPolyhedralCaseMeshReader
       ARCANE_CHECK_POINTER(pm);
       m_trace_mng->info() << "---CREATE POLYHEDRAL MESH---- " << pm->name();
       m_trace_mng->info() << "--Read mesh file " << m_read_info.fileName();
-      VtkPolyhedralMeshIOService polyhedral_vtk_service{ m_trace_mng };
+      VtkPolyhedralMeshIOService polyhedral_vtk_service{ m_trace_mng, m_print_mesh_info };
       auto read_status = polyhedral_vtk_service.read(pm, m_read_info.fileName());
       if (read_status.failure)
         ARCANE_FATAL(read_status.failure_message);
@@ -228,6 +233,7 @@ class VtkPolyhedralCaseMeshReader
 
     ITraceMng* m_trace_mng;
     CaseMeshReaderReadInfo m_read_info;
+    bool m_print_mesh_info = false;
   };
 
   explicit VtkPolyhedralCaseMeshReader(const ServiceBuildInfo& sbi)
@@ -240,7 +246,7 @@ class VtkPolyhedralCaseMeshReader
   {
     IMeshBuilder* builder = nullptr;
     if (read_info.format() == "vtk")
-      builder = new Builder(traceMng(), read_info);
+      builder = new Builder(traceMng(), read_info, options()->getPrintMeshInfos());
     return makeRef(builder);
   }
 };
@@ -529,8 +535,9 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
 /*---------------------------------------------------------------------------*/
 
 VtkPolyhedralMeshIOService::VtkReader::
-VtkReader(const String& filename)
+VtkReader(const String& filename, bool print_mesh_info)
 : m_filename{ filename }
+, m_print_mesh_infos{ print_mesh_info }
 {
   if (filename.empty()) {
     m_read_status.failure = true;
@@ -555,28 +562,8 @@ VtkReader(const String& filename)
   m_cell_data = vtk_grid->GetCellData();
   m_point_data = vtk_grid->GetPointData();
 
-  std::cout << "-- VTK GRID READ "
-            << " NB CELLS  " << vtk_grid->GetNumberOfCells() << std::endl;
-  // Parse cells
-  auto* cell_iter = vtk_grid->vtkDataSet::NewCellIterator();
-  cell_iter->InitTraversal();
-  vtkIdType* cell_faces{ nullptr };
-  vtkIdType nb_faces = 0;
-  while (!cell_iter->IsDoneWithTraversal()) { // todo remove this debug print
-    std::cout << "---- visiting cell id " << cell_iter->GetCellId() << std::endl;
-    std::cout << "----   cell number of faces " << cell_iter->GetNumberOfFaces() << std::endl;
-    std::cout << "----   cell number of points " << cell_iter->GetNumberOfPoints() << std::endl;
-    vtk_grid->GetFaceStream(cell_iter->GetCellId(), nb_faces, cell_faces);
-    for (auto iface = 0; iface < nb_faces; ++iface) {
-      auto face_nb_nodes = *cell_faces++;
-      std::cout << "----      has face with " << face_nb_nodes << " nodes. Node ids : ";
-      for (int inode = 0; inode < face_nb_nodes; ++inode) {
-        std::cout << *cell_faces++;
-      }
-      std::cout << std::endl;
-    }
-    cell_iter->GoToNextCell();
-  }
+  if (m_print_mesh_infos)
+    _printMeshInfos();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1275,6 +1262,37 @@ vtkPointData* VtkPolyhedralMeshIOService::VtkReader::
 pointData()
 {
   return m_point_data;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::VtkReader::
+_printMeshInfos() const
+{
+  auto* vtk_grid = m_vtk_grid_reader->GetOutput();
+  std::cout << "-- VTK GRID READ "
+            << " NB CELLS  " << vtk_grid->GetNumberOfCells() << std::endl;
+  // Parse cells
+  auto* cell_iter = vtk_grid->vtkDataSet::NewCellIterator();
+  cell_iter->InitTraversal();
+  vtkIdType* cell_faces{ nullptr };
+  vtkIdType nb_faces = 0;
+  while (!cell_iter->IsDoneWithTraversal()) { // todo remove this debug print
+    std::cout << "---- visiting cell id " << cell_iter->GetCellId() << std::endl;
+    std::cout << "----   cell number of faces " << cell_iter->GetNumberOfFaces() << std::endl;
+    std::cout << "----   cell number of points " << cell_iter->GetNumberOfPoints() << std::endl;
+    vtk_grid->GetFaceStream(cell_iter->GetCellId(), nb_faces, cell_faces);
+    for (auto iface = 0; iface < nb_faces; ++iface) {
+      auto face_nb_nodes = *cell_faces++;
+      std::cout << "----      has face with " << face_nb_nodes << " nodes. Node ids : ";
+      for (int inode = 0; inode < face_nb_nodes; ++inode) {
+        std::cout << *cell_faces++ << " ";
+      }
+      std::cout << std::endl;
+    }
+    cell_iter->GoToNextCell();
+  }
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
