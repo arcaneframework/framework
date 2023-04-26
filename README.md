@@ -9,232 +9,99 @@ Written by CEA/IFPEN and Contributors
 All content is the property of the respective authors or their employers.
 
 For more information regarding authorship of content, please consult the listed source code repository logs.
+____
 
-## Introduction
+<p align="center">
+  <a href="https://github.com/arcaneframework/framework">
+    <img alt="Arcane Framework" src="arcane/doc/theme/img/arcane_framework_medium.webp" width="602px">
+  </a>
+  <p align="center">Plateforme de développement pour les codes de calcul parallèles non structurés 2D ou 3D.</p>
+</p>
 
-Arcane est une plateforme de développement pour les codes de calcul parallèles non structurés 2D ou 3D.
+![GitHub](https://img.shields.io/github/license/arcaneframework/framework?style=for-the-badge)
+![GitHub all releases](https://img.shields.io/github/downloads/arcaneframework/framework/total?style=for-the-badge)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/arcaneframework/framework?style=for-the-badge)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/arcaneframework/framework?style=for-the-badge)
 
-### Documentation
+![Codecov](https://img.shields.io/codecov/c/gh/arcaneframework/framework?style=for-the-badge)
+![Codacy grade](https://img.shields.io/codacy/grade/9d31bc0a9ae04f858a26342092cb2744?style=for-the-badge)
+![Coverity Scan](https://img.shields.io/coverity/scan/24734?style=for-the-badge)
 
+
+- [Documentation](#documentation)
+- [Changelog](#changelog)
+- [Getting started](#getting-started)
+  - [Installer Arcane](#installer-arcane)
+  - [Exemples d'utilisation de la plateforme Arcane](#exemples-dutilisation-de-la-plateforme-arcane)
+- [Introduction au framework Arcane](#introduction-au-framework-arcane)
+  - [Arccore](#arccore)
+  - [Arccon](#arccon)
+  - [AxlStar](#axlstar)
+  - [Arcane](#arcane)
+
+## Documentation
 La documentation en ligne est accessible depuis internet :
 - La documentation utilisateur se trouve ici : [Documentation utilisateur](https://arcaneframework.github.io/arcane/userdoc/html/index.html)
 - La documentation développeur se trouve ici : [Documentation développeur](https://arcaneframework.github.io/arcane/devdoc/html/index.html)
 - Le dépôt GitHub où est générée et stockée la documentation : [Dépôt GitHub](https://github.com/arcaneframework/arcaneframework.github.io)
 
-### Changelog
-
+## Changelog
 Les dernières modifications sont dans le fichier suivant: [Changelog](arcane/doc/doc_common/changelog.md)
 
-## Compilation
+## Getting started
+### Installer Arcane
+Les instructions pour compiler et installer Arcane sont [ici](BUILD.md).
 
-Ce dépôt permet de compiler directement Arcane et ses dépendances
-(Arrcon, Axlstar et Arccore)
+Des images Docker sont aussi disponibles [ici](https://github.com/arcaneframework/containers/pkgs/container/arcane_ubuntu-2204).
+Les détails concernant ces images sont [ici](https://github.com/arcaneframework/containers).
 
-La compilation doit se faire dans un répertoire différent de celui
-contenant les sources.
+Des recettes Spack pour Arcane sont accessibles [ici](https://github.com/arcaneframework/spack_recipes).
 
-Pour les prérequis, voir les répertoires [Arcane](arcane/README.md) et [Arccore](arccore/README.md):
+### Exemples d'utilisation de la plateforme Arcane
+Des exemples d'applications utilisant Arcane sont disponibles sur GitHub. En voici une liste non-exaustive :
+- [Benchs Arcane](https://github.com/arcaneframework/arcane-benchs) : Un lot de mini-applications permettant d'évaluer
+  des fonctionnalités d'Arcane. Ce sont de bonnes bases pour débuter dans Arcane.
+- [ArcaneFem](https://github.com/arcaneframework/arcanefem) : Very simple codes to test Finite Element Methods using Arcane.
+- TODO MaHyCo
 
-- [Linux](#linux)
+## Introduction au framework Arcane
+Ce dépôt Git contient quatre parties : Arccore, Arccon, AxlStar et Arcane.
 
-Pour récuperer les sources:
+### Arccore
+<a href="https://github.com/arcaneframework/framework/tree/main/arccore">
+  <img alt="Arccore" src="arcane/doc/theme/img/arccore_medium.webp" width="301px" >
 
-~~~{sh}
-git clone --recurse-submodules /path/to/git
-~~~
+  (Plus de détails ici)
+</a>
 
-ou
+TODO
 
-~~~{sh}
-git clone /path/to/git
-cd framework && git submodule update --init --recursive
-~~~
+### Arccon
+<a href="https://github.com/arcaneframework/framework/blob/main/arccon/build-system/README.md">
+  <img alt="Arccon" src="arcane/doc/theme/img/arccon_medium.webp" width="301px" >
 
-Il existe deux modes de compilations:
-1. soit on compile Arcane et les projets associées (Arccon, Axlstar et
-   Arccore) en même temps
-2. soit on ne compile qu'un seul composant.
+  (Plus de détails ici)
+</a>
 
-Le défaut est de tout compiler. La variable cmake
-`FRAMEWORK_BUILD_COMPONENT` permet de choisir le mode de
-compilation. Par défaut, la valeur est `all` et cela signifie qu'on
-compile tout. Si la valeur est `arcane`, `arccon`, `arccore` ou
-`axlstar` alors on ne compile que ces derniers. Il faut donc dans ce
-cas que les dépendences éventuelles soient déjà installées (par
-exemple pour Arcane il faut que Arccore soit déjà installé et
-spécifier son chemin via CMAKE_PREFIX_PATH par exemple).
+Arccon fournit des fonctions CMake pour gérer les packages classiques ainsi que les cibles CMake associées.
 
-Pour compiler Arcane et les composantes dont il dépend (arccore, axlstar, arccon)::
+Son objectif est de proposer une abstraction pour gérer les packages de manière uniforme en fonction des versions de CMake et de la manière dont est installé le produit afin de ne pas avoir à modifier les fichiers CMake de l'application.
 
-~~~{sh}
-mkdir /path/to/build
-cmake -S /path/to/sources -B /path/to/build
-cmake --build /path/to/build
-~~~
+### AxlStar
+<a href="https://github.com/arcaneframework/framework/blob/main/axlstar">
+  <img alt="AxlStar" src="arcane/doc/theme/img/axlstar_medium.webp" width="301px" >
 
-Pour compiler uniquement Arcane en considérant que les dépendances
-Arccore, Arccon, Axlstar et ArcDependencies sont déjà installées:
+  (Plus de détails ici)
+</a>
 
-~~~{sh}
-mkdir /path/to/build
-cmake -S /path/to/sources -B /path/to/build -DFRAMEWORK_BUILD_COMPONENT=arcane -DArccon_ROOT=... -DArccore_ROOT=... -DAxlstar_ROOT=... -DArcDependencies_ROOT=...
-cmake --build /path/to/build
-~~~
+Axlstar est un ensemble d'outils pour générer à partir de fichier XML au format axl des classes C++ pour créer
+des services ou des modules pour la plateforme Arcane.
 
-## Gestion des packages externes utilisés par Arcane
+### Arcane
+<a href="https://github.com/arcaneframework/framework/blob/main/arcane">
+  <img alt="Arcane" src="arcane/doc/theme/img/arcane_medium.webp" width="301px" >
 
-Arcane utilise certains packages externes comme MPI ou la Glib qu'il
-est nécessaire de trouver lors de la configuration d'un code
-utilisateur. La manière de gérer ces packages est différente suivant
-qu'on utilise une version de Arcane avant ou après la 3.7.4.
+  (Plus de détails ici)
+</a>
 
-Avant la version 3.7.4, dans le cas où on compile toute la plateformce
-à la fois le fichier `ArcaneTargets.cmake` définira des cibles pour
-les packages trouvés par Arccon (par exemple la Glib ou MPI). Cela
-peut poser problème si on mélange cette installation avec une autre
-qui exporte les même cibles. Pour éviter cela, il est possible de
-mettre à `TRUE` la variable CMake `FRAMEWORK_NO_EXPORT_PACKAGES`.
-
-A partir de la verison 3.7.4, le comportement par défaut est de ne pas
-exporter les packages et d'essayer de les trouver automatiquement lors
-du `find_package(Arcane)` ce qui est le comportement préconisé par
-CMake. Pour cela, on sauvegarde les informations de l'emplacement des
-ces packages lors de la configuration de Arcane et on les utilise pour
-retrouver les packages si l'utilisateur n'a pas spécifier de chemin
-explicitement. La variable de configuration
-`ARCANE_USE_FIND_DEPENDENCIES` qui vaut `TRUE` par défaut permet de
-modifier ce comportement: si elle `TRUE` (le défaut), alors Arcane
-recherche les packages dépendant lors de l'appel à
-`find_package(Arcane)` en utilisant la commande CMake
-`find_dependency`. En mettant cette valeur à `FALSE` on retrouve le
-comportement d'avant la version 3.7.4. Le code utilisateur peut aussi
-explicitement désactiver le chargement des chemins par défaut en
-positionnant la variable `ARCANE_USE_CONFIGURATION_PATH` avant de
-faire le `find_package(Arcane)`. Cela permet de retrouver le
-comportement d'avant la 3.7.4.
-
-Les variables `FRAMEWORK_NO_EXPORT_PACKAGES` et
-`ARCANE_USE_FIND_DEPENDENCIES` sont utilisées temporairement pour
-garantir la compatibilité avec le code existant.
-
-## Linux
-
-Cette section indique comment installer sous Linux x64 les dépendances
-nécessaires.
-
-### CMake
-
-Il faut au moins la version 3.21 de CMake. Si elle n'est pas présente sur votre système, la commande
-suivante permet de l'installer dans `/usr/local`. Il faudra ensuite
-ajouter le chemin correspondant dans la variable d'environnement PATH;
-
-~~~{sh}
-# Install CMake 21.3 in /usr/local/cmake
-MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.21.3
-wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-linux-x86_64.tar.gz
-sudo mkdir ${MY_CMAKE_INSTALL_PATH}
-sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.21.3-linux-x86_64.tar.gz
-export PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
-cmake --version
-~~~
-
-Vous pouvez aussi installer directement CMake via [snap](https://snapcraft.io/):
-~~~{sh}
-sudo snap install --classic cmake
-~~~
-
-
-### Environnement `.Net`
-
-L'environnement `.Net` est accessible via `apt` mais vous pouvez aussi
-directement télécharger un fichier `tar` contenant le binaire et les
-fichiers nécessaires. Pour l'architecture `x64`, les commandes
-suivantes installent l'environnement dans le répertoire `$HOME/dotnet`.
-
-~~~{sh}
-wget https://download.visualstudio.microsoft.com/download/pr/372b11de-1321-44f3-aad7-040842babe62/c5925f9f856c3a299e97c80283317275/dotnet-sdk-6.0.304-linux-x64.tar.gz
-mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.304-linux-x64.tar.gz -C $HOME/dotnet
-export DOTNET_ROOT=$HOME/dotnet
-export PATH=$HOME/dotnet:$PATH:
-~~~
-
-Pour d'autres architectures, la page [Download
-.Net](https://dotnet.microsoft.com/en-us/download) contient la liste
-des téléchargements disponibles.
-
-### Ubuntu 20.04 via les packages systèmes
-
-Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
-
-~~~{sh}
-sudo apt-get update
-sudo apt-get install -y apt-utils build-essential iputils-ping python3 \
-git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
-libparmetis-dev wget
-wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
-sudo apt-get update
-sudo apt-get install -y apt-transport-https dotnet-sdk-6.0
-~~~
-
-### Ubuntu 22.04 via les packages systèmes
-
-Sur Ubuntu 22.04, les versions de CMake et de '.Net' sont suffisamment
-récentes pour pouvoir être installés via les packages système.
-
-Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
-
-~~~{sh}
-sudo apt-get update
-sudo apt-get install -y apt-utils build-essential iputils-ping python3 \
-  git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
-  libparmetis-dev dotnet6 cmake
-~~~
-
-Il est aussi possible d'installer les packages optionnels suivants:
-
-~~~{sh}
-# Pour google test:
-sudo apt-get install -y googletest
-
-# Pour Ninja:
-sudo apt-get install -y ninja-build
-
-# Pour le wrapper C#:
-sudo apt-get install -y swig4.0
-
-# Pour Hypre
-sudo apt-get install -y libhypre-dev
-
-# Pour PETSc
-sudo apt-get install -y libpetsc-real-dev
-
-# Pour Trilinos
-sudo apt-get install -y libtrilinos-teuchos-dev libtrilinos-epetra-dev \
-  libtrilinos-tpetra-dev libtrilinos-kokkos-dev libtrilinos-ifpack2-dev \
-  libtrilinos-ifpack-dev libtrilinos-amesos-dev libtrilinos-galeri-dev \
-  libtrilinos-xpetra-dev libtrilinos-epetraext-dev \
-  libtrilinos-triutils-dev libtrilinos-thyra-dev \
-  libtrilinos-kokkos-kernels-dev libtrilinos-rtop-dev \
-  libtrilinos-isorropia-dev libtrilinos-belos-dev \
-
-# Pour Zoltan
-sudo apt-get install -y libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
-  libtrilinos-amesos2-dev libtrilinos-shards-dev libtrilinos-muelu-dev \
-  libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
-  libtrilinos-stratimikos-dev libtrilinos-shylu-dev \
-  libtrilinos-zoltan-dev libtrilinos-zoltan2-dev
-~~~
-
-### Arch Linux/Manjaro via Pacman/YAY
-
-Les commandes suivantes permettent d'installer CMake, .Net et les dépendances
-nécessaires pour Arcane (ainsi que les dépendances optionnelles `TBB`, `HDF5` et `ParMetis`):
-
-~~~{sh}
-sudo pacman -Syu
-sudo pacman -S gcc cmake python git gcc-fortran glib2 libxml2 hdf5-openmpi wget tbb dotnet-sdk aspnet-runtime aspnet-targeting-pack
-yay -S aur/parmetis
-~~~
+Arcane est le composant qui se place au dessus de tous les autres.
