@@ -62,11 +62,11 @@ namespace Arcane::Materials
  */
 class ARCANE_MATERIALS_EXPORT AllCell2AllEnvCell
 {
-  AllCell2AllEnvCell();
-  ~AllCell2AllEnvCell();
+ public:
+  //AllCell2AllEnvCell();
+  //~AllCell2AllEnvCell();
   void reset();
   
- public:
   //! Copies interdites
   AllCell2AllEnvCell(const AllCell2AllEnvCell&) = delete;
   AllCell2AllEnvCell& operator=(const AllCell2AllEnvCell&) = delete;

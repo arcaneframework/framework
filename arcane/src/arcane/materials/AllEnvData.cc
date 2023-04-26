@@ -344,6 +344,10 @@ forceRecompute(bool compute_all)
   if (allCell2AllEnvCell)
     allCell2AllEnvCell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
   else
+    // FIXME: C'est ici que ça plante en // dans
+//"/home/letiercef/Arcane/build/bin/arcane_test_driver" "launch" "-E" "arcanecea_tests_exec" "-n" "4" "-m 20" "/home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc"
+// ./lib/arcanecea_tests_exec -A,S=4 -A,MaxIteration=20 /home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc
+// ARCANE_DEBUGGER=memcheck bin/arcane_test_driver launch -E arcanecea_tests_exec -m 20 /home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc
     m_material_mng->createAllCell2AllEnvCell(platform::getDefaultDataAllocator());
 }
 
@@ -779,12 +783,15 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
   }
   true_env->updateItemsDirect(m_nb_env_per_cell,true_mat,ids,operation,need_update_env);
 
+  // FIXME: Visiblement on a pas besoin de le faire ici, puisqu'un ForceRecompute est tjrs appelé après
+  // mais pour optimisé tout ça, il faudrait voir à garder cette liste de ids à changer pour la MAJ
   // Met à jour le AllCell2AllEnvCell s'il a été initialisé
-  auto* allCell2AllEnvCell(m_material_mng->getAllCell2AllEnvCell());
+  /*auto* allCell2AllEnvCell(m_material_mng->getAllCell2AllEnvCell());
   if (allCell2AllEnvCell)
     allCell2AllEnvCell->bruteForceUpdate(ids);
   else
     m_material_mng->createAllCell2AllEnvCell(platform::getDefaultDataAllocator());
+    */
 }
 
 /*---------------------------------------------------------------------------*/

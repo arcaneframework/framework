@@ -20,22 +20,22 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*
 AllCell2AllEnvCell::
 AllCell2AllEnvCell()
 : m_mm(nullptr), m_alloc(nullptr), m_nb_allcell(0), m_allcell_allenvcell(nullptr)
 {
 }
-
+*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*
 AllCell2AllEnvCell::
 ~AllCell2AllEnvCell()
 {
   reset();
 }
-
+*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -70,7 +70,7 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   _instance->m_mm = mm;
   _instance->m_alloc = alloc;
   _instance->m_nb_allcell = mm->mesh()->allCells().size();
-  
+
   CellToAllEnvCellConverter all_env_cell_converter(mm);
 
   _instance->m_allcell_allenvcell = reinterpret_cast<Span<ComponentItemLocalId>*>(
@@ -81,7 +81,6 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
     Int32 cid = icell->itemLocalId();
     AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(cid)];
     ComponentItemLocalId* env_cells(nullptr);
-    Span<ComponentItemLocalId> env_cells_span;
     Integer nb_env(all_env_cell.nbEnvironment());
     if (nb_env) {
       env_cells = reinterpret_cast<ComponentItemLocalId*>(alloc->allocate(sizeof(ComponentItemLocalId) * nb_env));
@@ -91,9 +90,8 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
         env_cells[i] = ComponentItemLocalId(ev._varIndex());
         ++i;
       }
-      env_cells_span = Span<ComponentItemLocalId>(env_cells, nb_env);
     }
-    _instance->m_allcell_allenvcell[cid] = env_cells_span;
+    _instance->m_allcell_allenvcell[cid] = (nb_env?Span<ComponentItemLocalId>(env_cells, nb_env):Span<ComponentItemLocalId>());
   }
   return _instance;
 }
@@ -108,7 +106,7 @@ bruteForceUpdate(Int32ConstArrayView ids)
   //ARCANE_FATAL("AllCell2AllEnvCell::bruteForceUpdate call !!!");
 
   // A priori, je ne pense pas que le nb de maille ait changé quand on fait un 
-  // ForceRecompute. Mais ça doit arriver ailleurs... le endUpdate ?
+  // ForceRecompute et le updateMaterialDirect. Mais ça doit arriver ailleurs... le endUpdate ?
   if (m_nb_allcell != m_mm->mesh()->allCells().size()) {
 
     // TODO: Je met un fatal, à supprimer une fois bien testé/exploré
