@@ -762,11 +762,6 @@ class AbstractArray
     }
   }
 
-  void _resizeAndCopyView(ConstArrayView<T> rhs)
-  {
-    this->_resizeAndCopyView(Span<const T>(rhs));
-  }
-
   /*!
    * \brief Implémente l'opérateur d'assignement par déplacement.
    *
@@ -1347,6 +1342,7 @@ class Array
  * conséquent ce type de tableau doit être utilisé avec précaution dans
  * le cas d'un environnement multi-thread.
  *
+ * \sa UniqueArray.
  */
 template<typename T>
 class SharedArray
@@ -1583,6 +1579,12 @@ class SharedArray
  * spécifié en argument doit rester valide tant que cette instance
  * est utilisée.
  *
+ * Si le type est un type Plain Object Data (POD) alors les données ne sont
+ * pas initialisées en cas de réallocation. La classe template ArrayTraits
+ * permet de spécifier si un type est POD suivant la valeur données par
+ * le type ArrayTraits<T>::IsPODType qui peut être FalseType ou TrueType.
+ * Sauf spécialisation, seuls les types de base du C++ sont POD.
+ *
  * \warning L'allocateur est transféré à l'instance de destination lors d'un
  * appel au constructeur (UniqueArray(UniqueArray&&) ou assignement
  * (UniqueArray::operator=(UniqueArray&&) par déplacement ainsi que lors
@@ -1626,8 +1628,8 @@ class UniqueArray
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const ConstArrayView<T>& aview)
+  : UniqueArray(Span<const T>(aview))
   {
-    this->_initFromSpan(Span<const T>(aview));
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const Span<const T>& aview)
@@ -1636,8 +1638,8 @@ class UniqueArray
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const ArrayView<T>& aview)
+  : UniqueArray(Span<const T>(aview))
   {
-    this->_initFromSpan(Span<const T>(aview));
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const Span<T>& aview)
@@ -1651,17 +1653,17 @@ class UniqueArray
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const Array<T>& rhs)
   {
-    this->_initFromSpan(rhs.constView());
+    this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const UniqueArray<T>& rhs) : Array<T> {}
   {
-    this->_initFromSpan(rhs.constView());
+    this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const SharedArray<T>& rhs)
   {
-    this->_initFromSpan(rhs.constView());
+    this->_initFromSpan(rhs);
   }
   //! Constructeur par déplacement. \a rhs est invalidé après cet appel
   UniqueArray(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT : Array<T>(std::move(rhs)) {}
@@ -1786,7 +1788,7 @@ operator=(const UniqueArray<T>& rhs)
 template<typename T> inline std::ostream&
 operator<<(std::ostream& o, const AbstractArray<T>& val)
 {
-  o << ConstArrayView<T>(val);
+  o << Span<const T>(val);
   return o;
 }
 
@@ -1796,7 +1798,7 @@ operator<<(std::ostream& o, const AbstractArray<T>& val)
 template<typename T> inline bool
 operator==(const AbstractArray<T>& rhs, const AbstractArray<T>& lhs)
 {
-  return operator==(ConstArrayView<T>(rhs),ConstArrayView<T>(lhs));
+  return operator==(Span<const T>(rhs),Span<const T>(lhs));
 }
 
 template<typename T> inline bool
