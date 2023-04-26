@@ -215,7 +215,7 @@ class Array2
       this->_reserve(4);
     }
     Span<const DataType> aview(rhs.data(),total);
-    Base::_copyView(aview);
+    Base::_resizeAndCopyView(aview);
     m_md->dim1_size = rhs.dim1Size();
     m_md->dim2_size = rhs.dim2Size();
     _arccoreCheckSharedNull();

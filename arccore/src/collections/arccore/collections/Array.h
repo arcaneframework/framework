@@ -728,20 +728,43 @@ class AbstractArray
   {
     _copy(rhs_begin,IsPODType());
   }
-  void _copyView(Span<const T> rhs)
+
+  /*!
+   * \brief Redimensionne l'instance et recopie les valeurs de \a rhs.
+   *
+   * Si la taille diminue, les éléments compris entre size() et rhs.size()
+   * sont détruits.
+   *
+   * \post size()==rhs.size()
+   */
+  void _resizeAndCopyView(Span<const T> rhs)
   {
     const T* rhs_begin = rhs.data();
     Int64 rhs_size = rhs.size();
+    const Int64 current_size = m_md->size;
     T* abegin = m_ptr;
     // Vérifie que \a rhs n'est pas un élément à l'intérieur de ce tableau
     if (abegin>=rhs_begin && abegin<(rhs_begin+rhs_size))
       ArrayMetaData::overlapError(abegin,m_md->size,rhs_begin,rhs_size);
-    _resize(rhs_size);
-    _copy(rhs_begin);
+
+    if (rhs_size > current_size) {
+      this->_internalRealloc(rhs_size, false);
+      // Crée les nouveaux éléments
+      this->_createRange(m_md->size, rhs_size, rhs_begin + current_size);
+      // Copie les éléments déjà existant
+      _copy(rhs_begin);
+      m_md->size = rhs_size;
+    }
+    else{
+      this->_destroyRange(rhs_size,current_size,IsPODType{});
+      m_md->size = rhs_size;
+      _copy(rhs_begin);
+    }
   }
-  void _copyView(ConstArrayView<T> rhs)
+
+  void _resizeAndCopyView(ConstArrayView<T> rhs)
   {
-    this->_copyView(Span<const T>(rhs));
+    this->_resizeAndCopyView(Span<const T>(rhs));
   }
 
   /*!
@@ -1215,7 +1238,7 @@ class Array
    */  
   void copy(Span<const T> rhs)
   {
-    this->_copyView(rhs);
+    this->_resizeAndCopyView(rhs);
   }
 
   //! Clone le tableau
