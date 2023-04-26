@@ -56,8 +56,6 @@ dl.deprecated dd {
  * Taille / Position du logo.
  */
 #projectlogo img {
-  width: 250px;
-  height: 100px;
   max-height: none !important;
   padding-top: 5px;
   padding-bottom: 5px;
