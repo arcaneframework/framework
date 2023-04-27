@@ -27,6 +27,8 @@
 #include <vtkDataSetAttributes.h>
 #include <vtkArrayDispatch.h>
 #include <vtkDataArrayAccessor.h>
+#include <vtkPolyDataReader.h>
+#include <vtkPolyData.h>
 
 #include <arccore/base/Ref.h>
 #include <arccore/base/String.h>
@@ -66,6 +68,13 @@ namespace VtkPolyhedralTools
   {
     bool failure = false;
     String failure_message;
+    String info_message;
+  };
+
+  struct PrintInfoLevel
+  {
+    bool print_mesh_info = false;
+    bool print_debug_info = false;
   };
 } // namespace VtkPolyhedralTools
 
@@ -74,9 +83,9 @@ class VtkPolyhedralMeshIOService
 {
  public:
 
-  explicit VtkPolyhedralMeshIOService(ITraceMng* trace_mng, bool print_mesh_infos = false)
+  explicit VtkPolyhedralMeshIOService(ITraceMng* trace_mng, VtkPolyhedralTools::PrintInfoLevel print_info_level)
   : TraceAccessor(trace_mng)
-  , m_print_mesh_infos(print_mesh_infos)
+  , m_print_info_level(print_info_level)
   {}
 
   class VtkReader
@@ -84,7 +93,7 @@ class VtkPolyhedralMeshIOService
 
    public:
 
-    explicit VtkReader(const String& filename, bool print_mesh_info = false);
+    explicit VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_level = VtkPolyhedralTools::PrintInfoLevel{});
 
     Int64ConstArrayView cellUids();
     Int64ConstArrayView nodeUids();
@@ -136,13 +145,15 @@ class VtkPolyhedralMeshIOService
 
     vtkCellData* cellData();
     vtkPointData* pointData();
+    vtkCellData* faceData();
 
    private:
 
     const String& m_filename;
-    bool m_print_mesh_infos = false;
+    VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
     VtkPolyhedralTools::ReadStatus m_read_status;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
+    vtkNew<vtkPolyDataReader> m_vtk_face_grid_reader;
     Int64UniqueArray m_cell_uids, m_node_uids, m_face_uids, m_edge_uids;
     Int64UniqueArray m_face_node_uids, m_edge_node_uids, m_cell_node_uids;
     Int64UniqueArray m_face_cell_uids, m_edge_cell_uids, m_edge_face_uids;
@@ -156,6 +167,7 @@ class VtkPolyhedralMeshIOService
     Real3UniqueArray m_node_coordinates;
     vtkCellData* m_cell_data = nullptr;
     vtkPointData* m_point_data = nullptr;
+    vtkCellData* m_face_data = nullptr;
 
     void _printMeshInfos() const;
 
@@ -169,7 +181,7 @@ class VtkPolyhedralMeshIOService
   VtkPolyhedralTools::ReadStatus read(IPrimaryMesh* mesh, const String& filename)
   {
     ARCANE_CHECK_POINTER(mesh);
-    VtkReader reader{ filename, m_print_mesh_infos };
+    VtkReader reader{ filename, m_print_info_level };
     if (reader.readHasFailed())
       return reader.readStatus();
     ItemAllocationInfo item_allocation_info;
@@ -183,13 +195,14 @@ class VtkPolyhedralMeshIOService
  private:
 
   UniqueArray<VariableRef*> m_read_variables;
-  bool m_print_mesh_infos = false;
+  VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
 
   void _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader);
-  void _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family) const;
-  void _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family);
+  void _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family, Int32ConstSpan vtkToArcaneLid) const;
+  void _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family, Int32ConstSpan arcane_to_vtk_lids);
 
   static void _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk_reader);
+  void _computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span arcane_to_vtk_lids, VtkPolyhedralMeshIOService::VtkReader& reader, IPrimaryMesh* mesh) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -204,10 +217,10 @@ class VtkPolyhedralCaseMeshReader
   {
    public:
 
-    explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info, bool print_mesh_info = false)
+    explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info, VtkPolyhedralTools::PrintInfoLevel print_info_level)
     : m_trace_mng(tm)
     , m_read_info(read_info)
-    , m_print_mesh_info(print_mesh_info)
+    , m_print_info_level(print_info_level)
     {}
 
     void fillMeshBuildInfo(MeshBuildInfo& build_info) override
@@ -221,17 +234,18 @@ class VtkPolyhedralCaseMeshReader
       ARCANE_CHECK_POINTER(pm);
       m_trace_mng->info() << "---CREATE POLYHEDRAL MESH---- " << pm->name();
       m_trace_mng->info() << "--Read mesh file " << m_read_info.fileName();
-      VtkPolyhedralMeshIOService polyhedral_vtk_service{ m_trace_mng, m_print_mesh_info };
+      VtkPolyhedralMeshIOService polyhedral_vtk_service{ m_trace_mng, m_print_info_level };
       auto read_status = polyhedral_vtk_service.read(pm, m_read_info.fileName());
       if (read_status.failure)
         ARCANE_FATAL(read_status.failure_message);
+      m_trace_mng->info() << read_status.info_message;
     }
 
    private:
 
     ITraceMng* m_trace_mng;
     CaseMeshReaderReadInfo m_read_info;
-    bool m_print_mesh_info = false;
+    VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
   };
 
   explicit VtkPolyhedralCaseMeshReader(const ServiceBuildInfo& sbi)
@@ -244,7 +258,7 @@ class VtkPolyhedralCaseMeshReader
   {
     IMeshBuilder* builder = nullptr;
     if (read_info.format() == "vtk")
-      builder = new Builder(traceMng(), read_info, options()->getPrintMeshInfos());
+      builder = new Builder(traceMng(), read_info, VtkPolyhedralTools::PrintInfoLevel{ options()->getPrintMeshInfos(), options()->getPrintDebugInfos() });
     return makeRef(builder);
   }
 };
@@ -384,37 +398,65 @@ _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk
 void VtkPolyhedralMeshIOService::
 _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
 {
+  // Cell data
   if (auto* cell_data = reader.cellData(); cell_data) {
     // Read cell groups and variables
+    Int32SharedArray vtk_to_arcane_lids(mesh->cellFamily()->nbItem());
+    std::iota(vtk_to_arcane_lids.begin(), vtk_to_arcane_lids.end(), 0);
+    Int32SharedArray arcane_to_vtk_lids{ vtk_to_arcane_lids };
     for (auto array_index = 0; array_index < cell_data->GetNumberOfArrays(); ++array_index) {
       auto* cell_array = cell_data->GetArray(array_index);
       if (!cell_array)
         continue;
       if (String name = cell_array->GetName(); name.substring(0, 6) == "GROUP_")
-        _createGroup(cell_array, name.substring(6), mesh, mesh->cellFamily());
+        _createGroup(cell_array, name.substring(6), mesh, mesh->cellFamily(), vtk_to_arcane_lids.constSpan());
       else
-        _createVariable(cell_array, name, mesh, mesh->cellFamily());
+        _createVariable(cell_array, name, mesh, mesh->cellFamily(), arcane_to_vtk_lids);
       info() << "Reading property " << cell_array->GetName();
       for (auto tuple_index = 0; tuple_index < cell_array->GetNumberOfTuples(); ++tuple_index) {
         for (auto component_index = 0; component_index < cell_array->GetNumberOfComponents(); ++component_index) {
           info() << cell_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << cell_array->GetComponent(tuple_index, component_index);
         }
-        cell_array->GetArrayType();
       }
     }
   }
-  auto* point_data = reader.pointData();
-  if (point_data) {
+  // Node data
+  if (auto* point_data = reader.pointData(); point_data) {
     // Read node groups and variables
-    for (auto i = 0; i < point_data->GetNumberOfArrays(); ++i) {
-      auto* point_array = point_data->GetArray(i);
+    Int32SharedArray vtk_to_arcane_lids(mesh->nodeFamily()->nbItem());
+    std::iota(vtk_to_arcane_lids.begin(), vtk_to_arcane_lids.end(), 0);
+    Int32SharedArray arcane_to_vtk_lids{ vtk_to_arcane_lids };
+    for (auto array_index = 0; array_index < point_data->GetNumberOfArrays(); ++array_index) {
+      auto* point_array = point_data->GetArray(array_index);
       if (String name = point_array->GetName(); name.substring(0, 6) == "GROUP_")
-        _createGroup(point_array, name.substring(6), mesh, mesh->nodeFamily());
+        _createGroup(point_array, name.substring(6), mesh, mesh->nodeFamily(), vtk_to_arcane_lids.constSpan());
       else
-        _createVariable(point_array, name, mesh, mesh->nodeFamily());
+        _createVariable(point_array, name, mesh, mesh->nodeFamily(), arcane_to_vtk_lids);
       info() << "Reading property " << point_array->GetName();
-      for (auto j = 0; j < point_array->GetNumberOfTuples(); ++j) {
-        info() << point_array->GetName() << "[" << j << "] = " << *point_array->GetTuple(j);
+      for (auto tuple_index = 0; tuple_index < point_array->GetNumberOfTuples(); ++tuple_index) {
+        for (auto component_index = 0; component_index < point_array->GetNumberOfComponents(); ++component_index) {
+          info() << point_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << point_array->GetComponent(tuple_index, component_index);
+        }
+      }
+    }
+  }
+  // Face data
+  if (auto* face_data = reader.faceData(); face_data) {
+    // Read face groups and variables
+    Int32UniqueArray vtk_to_Arcane_lids(mesh->faceFamily()->nbItem());
+    Int32UniqueArray arcane_to_vtk_lids(mesh->faceFamily()->nbItem());
+    _computeFaceVtkArcaneLidConversion(vtk_to_Arcane_lids, arcane_to_vtk_lids, reader, mesh);
+    for (auto array_index = 0; array_index < face_data->GetNumberOfArrays(); ++array_index) {
+      auto* face_array = face_data->GetArray(array_index);
+      if (String name = face_array->GetName(); name.substring(0, 6) == "GROUP_")
+        _createGroup(face_array, name.substring(6), mesh, mesh->faceFamily(), vtk_to_Arcane_lids);
+      else
+        _createVariable(face_array, name, mesh, mesh->faceFamily(), arcane_to_vtk_lids);
+      info() << "Reading property " << face_array->GetName();
+      for (auto tuple_index = 0; tuple_index < face_array->GetNumberOfTuples(); ++tuple_index) {
+        for (auto component_index = 0; component_index < face_array->GetNumberOfComponents(); ++component_index) {
+          info() << face_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << face_array->GetComponent(tuple_index, component_index);
+        }
       }
     }
   }
@@ -424,7 +466,7 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
 /*---------------------------------------------------------------------------*/
 
 void VtkPolyhedralMeshIOService::
-_createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family) const
+_createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family, Int32ConstSpan vtkToArcaneLid) const
 {
   ARCANE_CHECK_POINTER(group_items);
   ARCANE_CHECK_POINTER(mesh);
@@ -432,24 +474,24 @@ _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* 
   if (group_items->GetNumberOfComponents() != 1)
     fatal() << String::format("Cannot create item group {0}. Group information in data property must be a scalar", group_name);
   debug() << "Create group " << group_name;
-  Int32UniqueArray ids;
-  ids.reserve((int)group_items->GetNumberOfValues());
+  Int32UniqueArray arcane_lids;
+  arcane_lids.reserve((int)group_items->GetNumberOfValues());
   using GroupDispatcher = vtkArrayDispatch::DispatchByValueType<vtkArrayDispatch::Integrals>;
-  auto group_creator = [&ids](auto* array) {
+  auto group_creator = [&arcane_lids, &vtkToArcaneLid](auto* array) {
     vtkIdType numTuples = array->GetNumberOfTuples();
     vtkDataArrayAccessor<std::remove_pointer_t<decltype(array)>> array_accessor{ array };
     auto local_id = 0;
     for (vtkIdType tupleIdx = 0; tupleIdx < numTuples; ++tupleIdx) {
       auto value = array_accessor.Get(tupleIdx, 0);
       if (value)
-        ids.push_back(local_id);
+        arcane_lids.push_back(vtkToArcaneLid[local_id]);
       ++local_id;
     }
   };
   if (!GroupDispatcher::Execute(group_items, group_creator))
     ARCANE_FATAL("Cannot create item group {0}. Group information in data property must be an integral type", group_name);
-  debug() << " ids for cell_group " << group_name << "  " << ids; // to remove
-  item_family->createGroup(group_name, ids);
+  debug() << " local ids for item group " << group_name << "  " << arcane_lids; // to remove
+  item_family->createGroup(group_name, arcane_lids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -477,7 +519,7 @@ template <typename T> using to_arcane_type_t = typename ToArcaneType<T>::type;
 /*---------------------------------------------------------------------------*/
 
 void VtkPolyhedralMeshIOService::
-_createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family)
+_createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family, Int32ConstSpan arcane_to_vtk_lids)
 {
   ARCANE_CHECK_POINTER(item_values);
   ARCANE_CHECK_POINTER(mesh);
@@ -486,17 +528,17 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
     ARCANE_FATAL("Cannot create variable {0}, {1} values are given for {2} items in {3} family",
                  variable_name, item_values->GetNumberOfTuples(), item_family->nbItem(), item_family->name());
   info() << "Create mesh variable " << variable_name;
-  auto variable_creator = [mesh, variable_name, item_family, this](auto* values) {
+  auto variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this](auto* values) {
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
     auto* var = new ItemVariableScalarRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
     m_read_variables.add(var);
     vtkDataArrayAccessor<std::remove_pointer_t<decltype(values)>> values_accessor{ values };
     ENUMERATE_ITEM (item, item_family->allItems()) {
-      (*var)[item] = (to_arcane_type_t<ValueType>)values_accessor.Get(item.index(), 0);
+      (*var)[item] = (to_arcane_type_t<ValueType>)values_accessor.Get(arcane_to_vtk_lids[item.localId()], 0);
     }
   };
-  auto array_variable_creator = [mesh, variable_name, item_family, this](auto* values) {
+  auto array_variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this](auto* values) {
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
     auto* var = new ItemVariableArrayRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
@@ -506,7 +548,7 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
     ENUMERATE_ITEM (item, item_family->allItems()) {
       auto index = 0;
       for (auto& var_value : (*var)[item]) {
-        var_value = (to_arcane_type_t<ValueType>)values_accessor.Get(item.index(), index++);
+        var_value = (to_arcane_type_t<ValueType>)values_accessor.Get(arcane_to_vtk_lids[item.localId()], index++);
       }
     }
   };
@@ -529,10 +571,36 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void VtkPolyhedralMeshIOService::
+_computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span arcane_to_vtk_lids, VtkPolyhedralMeshIOService::VtkReader& reader, IPrimaryMesh* mesh) const
+{
+  auto face_nodes_unique_ids = reader.faceNodes();
+  auto face_nb_nodes = reader.faceNbNodes();
+  auto current_face_index = 0;
+  auto current_face_index_in_face_nodes = 0;
+  Int32UniqueArray face_nodes_local_ids(face_nodes_unique_ids.size());
+  mesh->nodeFamily()->itemsUniqueIdToLocalId(face_nodes_local_ids, face_nodes_unique_ids);
+  for (auto current_face_nb_node : face_nb_nodes) {
+    auto current_face_nodes = face_nodes_local_ids.subConstView(current_face_index_in_face_nodes, current_face_nb_node);
+    current_face_index_in_face_nodes += current_face_nb_node;
+    Node face_first_node{ mesh->nodeFamily()->view()[current_face_nodes[0]] };
+    face_vtk_to_arcane_lids[current_face_index] = mesh_utils::getFaceFromNodesLocal(face_first_node, current_face_nodes).localId();
+    ++current_face_index;
+  }
+  auto vtk_lid = 0;
+  for (auto arcane_lid : face_vtk_to_arcane_lids) {
+    arcane_to_vtk_lids[arcane_lid] = vtk_lid;
+    ++vtk_lid;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 VtkPolyhedralMeshIOService::VtkReader::
-VtkReader(const String& filename, bool print_mesh_info)
+VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_level)
 : m_filename{ filename }
-, m_print_mesh_infos{ print_mesh_info }
+, m_print_info_level{ print_info_level }
 {
   if (filename.empty()) {
     m_read_status.failure = true;
@@ -543,7 +611,13 @@ VtkReader(const String& filename, bool print_mesh_info)
   m_vtk_grid_reader->ReadAllScalarsOn();
   m_vtk_grid_reader->Update();
   auto* vtk_grid = m_vtk_grid_reader->GetOutput();
+  // Check vtk grid exists and not empty
   if (!vtk_grid) {
+    m_read_status.failure = true;
+    m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}", filename);
+    return;
+  }
+  if (vtk_grid->GetNumberOfCells() == 0) {
     m_read_status.failure = true;
     m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}", filename);
     return;
@@ -557,7 +631,28 @@ VtkReader(const String& filename, bool print_mesh_info)
   m_cell_data = vtk_grid->GetCellData();
   m_point_data = vtk_grid->GetPointData();
 
-  if (m_print_mesh_infos)
+  // Read face info (for variables and groups) if present
+  String faces_filename = m_filename + "faces.vtk";
+  std::ifstream ifile(faces_filename.localstr());
+  if (!ifile) {
+    m_read_status.info_message = String::format("Information no face mesh given {0} to define face variables or groups on faces.", faces_filename);
+  }
+  else {
+    m_vtk_face_grid_reader->SetFileName(faces_filename.localstr());
+    m_vtk_face_grid_reader->ReadAllScalarsOn();
+    m_vtk_face_grid_reader->Update();
+    auto* vtk_face_grid = m_vtk_face_grid_reader->GetOutput();
+    // Check face vtk grid exists and not empty
+    if (vtk_face_grid->GetNumberOfCells() == 0) {
+      m_read_status.failure = true;
+      m_read_status.failure_message = m_read_status.failure_message + String::format(" Error in reading face information for groups in mesh file {0} ", faces_filename);
+    }
+    else {
+      m_face_data = vtk_face_grid->GetCellData();
+    }
+  }
+
+  if (m_print_info_level.print_mesh_info)
     _printMeshInfos();
 }
 
@@ -724,13 +819,16 @@ faceUids()
   m_node_nb_faces.resize(m_node_uids.size(), 0);
   _flattenConnectivity(node_faces.constSpan(), m_node_nb_faces, m_node_face_uids);
 
-  std::cout << "================FACE NODES ==============" << std::endl;
-  std::copy(m_face_node_uids.begin(), m_face_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(m_face_nb_nodes.begin(), m_face_nb_nodes.end(), std::ostream_iterator<Int64>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(m_cell_face_indexes.begin(), m_cell_face_indexes.end(), std::ostream_iterator<Int64>(std::cout, " "));
-  std::cout << std::endl;
+  if (m_print_info_level.print_debug_info) {
+    std::cout << "================FACE NODES ==============" << std::endl;
+    std::copy(m_face_node_uids.begin(), m_face_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+    std::cout << std::endl;
+    std::copy(m_face_nb_nodes.begin(), m_face_nb_nodes.end(), std::ostream_iterator<Int64>(std::cout, " "));
+    std::cout << std::endl;
+    std::copy(m_cell_face_indexes.begin(), m_cell_face_indexes.end(), std::ostream_iterator<Int64>(std::cout, " "));
+    std::cout << std::endl;
+  }
+
   return m_face_uids;
 }
 
@@ -852,14 +950,16 @@ edgeUids()
     // fill edge nb nodes
     m_edge_nb_nodes.resize(m_edge_uids.size(), 2);
 
-    std::cout << "================EDGE NODES ==============" << std::endl;
-    std::copy(m_edge_node_uids.begin(), m_edge_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-    std::cout << std::endl;
-    std::cout << "================FACE EDGES ==============" << std::endl;
-    std::copy(m_face_nb_edges.begin(), m_face_nb_edges.end(), std::ostream_iterator<Int32>(std::cout, " "));
-    std::cout << std::endl;
-    std::copy(m_face_edge_uids.begin(), m_face_edge_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-    std::cout << std::endl;
+    if (m_print_info_level.print_debug_info) {
+      std::cout << "================EDGE NODES ==============" << std::endl;
+      std::copy(m_edge_node_uids.begin(), m_edge_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+      std::cout << std::endl;
+      std::cout << "================FACE EDGES ==============" << std::endl;
+      std::copy(m_face_nb_edges.begin(), m_face_nb_edges.end(), std::ostream_iterator<Int32>(std::cout, " "));
+      std::cout << std::endl;
+      std::copy(m_face_edge_uids.begin(), m_face_edge_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+      std::cout << std::endl;
+    }
     return m_edge_uids;
 }
 
@@ -971,12 +1071,14 @@ faceCells()
   if (m_face_cell_uids.empty())
     faceUids();
   // debug
-  std::cout << "=================FACE CELLS================="
-            << "\n";
-  std::copy(m_face_cell_uids.begin(), m_face_cell_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-  std::cout << "\n";
-  std::cout << "=================END FACE CELLS================="
-            << "\n";
+  if (m_print_info_level.print_debug_info) {
+    std::cout << "=================FACE CELLS================="
+              << "\n";
+    std::copy(m_face_cell_uids.begin(), m_face_cell_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+    std::cout << "\n";
+    std::cout << "=================END FACE CELLS================="
+              << "\n";
+  }
   return m_face_cell_uids;
 }
 
@@ -1198,16 +1300,20 @@ nodeCoords()
   if (m_node_coordinates.empty()) {
     auto* vtk_grid = m_vtk_grid_reader->GetOutput();
     auto point_coords = vtk_grid->GetPoints()->GetData();
-    //    std::cout << "======= Point COORDS ====" << std::endl;
-    //    std::ostringstream oss;
-    //    point_coords->PrintSelf(oss, vtkIndent{ 2 });
-    //    std::cout << oss.str() << std::endl;
+    if (m_print_info_level.print_debug_info) {
+      std::cout << "======= Point COORDS ====" << std::endl;
+      std::ostringstream oss;
+      point_coords->PrintSelf(oss, vtkIndent{ 2 });
+      std::cout << oss.str() << std::endl;
+    }
     auto nb_nodes = vtk_grid->GetNumberOfPoints();
     for (int i = 0; i < nb_nodes; ++i) {
-      //      std::cout << "==========current point coordinates : ( ";
-      //      std::cout << *(point_coords->GetTuple(i)) << " , ";
-      //      std::cout << *(point_coords->GetTuple(i)+1) << " , ";
-      //      std::cout << *(point_coords->GetTuple(i)+2) << " ) ===" << std::endl;
+      if (m_print_info_level.print_debug_info) {
+          std::cout << "==========current point coordinates : ( ";
+          std::cout << *(point_coords->GetTuple(i)) << " , ";
+          std::cout << *(point_coords->GetTuple(i) + 1) << " , ";
+          std::cout << *(point_coords->GetTuple(i) + 2) << " ) ===" << std::endl;
+      }
       m_node_coordinates.add({ *(point_coords->GetTuple(i)),
                                *(point_coords->GetTuple(i) + 1),
                                *(point_coords->GetTuple(i) + 2) });
@@ -1248,7 +1354,7 @@ _printMeshInfos() const
   cell_iter->InitTraversal();
   vtkIdType* cell_faces{ nullptr };
   vtkIdType nb_faces = 0;
-  while (!cell_iter->IsDoneWithTraversal()) { // todo remove this debug print
+  while (!cell_iter->IsDoneWithTraversal()) {
     std::cout << "---- visiting cell id " << cell_iter->GetCellId() << std::endl;
     std::cout << "----   cell number of faces " << cell_iter->GetNumberOfFaces() << std::endl;
     std::cout << "----   cell number of points " << cell_iter->GetNumberOfPoints() << std::endl;
@@ -1257,12 +1363,20 @@ _printMeshInfos() const
       auto face_nb_nodes = *cell_faces++;
       std::cout << "----      has face with " << face_nb_nodes << " nodes. Node ids : ";
       for (int inode = 0; inode < face_nb_nodes; ++inode) {
-        std::cout << *cell_faces++ << " ";
+          std::cout << *cell_faces++ << " ";
       }
       std::cout << std::endl;
     }
     cell_iter->GoToNextCell();
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+vtkCellData* VtkPolyhedralMeshIOService::VtkReader::faceData()
+{
+  return m_face_data;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -4,5 +4,6 @@
   <interface name="ICaseMeshReader"/>
   <options>
     <simple name="print-mesh-infos" type="bool" default="false"/>
+    <simple name="print-debug-infos" type="bool" default="false"/>
   </options>
 </service>

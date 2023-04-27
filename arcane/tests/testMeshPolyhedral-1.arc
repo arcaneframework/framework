@@ -15,6 +15,7 @@
       <filename>faultx1_2x1x1.vtk</filename>
       <specific-reader name="VtkPolyhedralCaseMeshReader">
         <print-mesh-infos>true</print-mesh-infos>
+        <print-debug-infos>false</print-debug-infos>
       </specific-reader>
     </mesh>
   </meshes>
@@ -34,6 +35,15 @@
       <name>FIRST_CELL_NODES</name>
       <size>10</size>
     </check-group>
+    <check-group>
+      <name>HALF_FACE</name>
+      <size>6</size>
+    </check-group>
+    <check-group>
+      <name>BOUNDARY_FACES</name>
+      <size>12</size>
+    </check-group>
+    <check-boundary-face-group>BOUNDARY_FACES</check-boundary-face-group>
     <check-cell-variable-integer>CellFlags</check-cell-variable-integer>
     <check-cell-variable-real>CellReal</check-cell-variable-real>
     <check-cell-variable-array-integer>CellArrayFlags</check-cell-variable-array-integer>
@@ -42,6 +52,10 @@
     <check-node-variable-real>NodeReal</check-node-variable-real>
     <check-node-variable-array-integer>NodeArrayFlags</check-node-variable-array-integer>
     <check-node-variable-array-real>NodeArrayReal</check-node-variable-array-real>
+    <check-face-variable-integer>FaceFlags</check-face-variable-integer>
+    <check-face-variable-real>FaceReal</check-face-variable-real>
+    <check-face-variable-array-integer>FaceArrayFlags</check-face-variable-array-integer>
+    <check-face-variable-array-real>FaceArrayReal</check-face-variable-array-real>
     <mesh-coordinates>
       <do-check>true</do-check>
       <coords>
