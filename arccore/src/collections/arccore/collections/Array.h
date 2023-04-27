@@ -37,6 +37,9 @@ namespace Arccore
  *
  * Cette classe sert pour contenir les meta-données communes à toutes les
  * implémentations qui dérivent de AbstractArray.
+ *
+ * Seul UniqueArray a le droit d'utiliser un allocateur autre que l'allocateur
+ * par défaut.
  */
 class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 {
@@ -366,8 +369,7 @@ class AbstractArray
     // pouvoir conserver l'instance de l'allocateur. Par défaut
     // on utilise une taille de 1 élément.
     if (a && a!=m_md->allocator){
-      Int64 c = (acapacity>1) ? acapacity : 1;
-      _directFirstAllocateWithAllocator(c,a);
+      _directFirstAllocateWithAllocator(acapacity,a);
     }
   }
 
@@ -383,7 +385,7 @@ class AbstractArray
     // Si on a un allocateur spécifique, il faut allouer un
     // bloc pour conserver cette information.
     if (a != m_md->allocator)
-      _directFirstAllocateWithAllocator(1,a);
+      _directFirstAllocateWithAllocator(0,a);
     _updateReferences();
   }
   IMemoryAllocator* allocator() const
@@ -537,7 +539,8 @@ class AbstractArray
   {
     _allocateMetaData();
     m_md->allocator = a;
-    _allocateMP(new_capacity);
+    if (new_capacity>0)
+      _allocateMP(new_capacity);
     m_md->nb_ref = _getNbRef();
     m_md->size = 0;
     _updateReferences();
@@ -725,20 +728,38 @@ class AbstractArray
   {
     _copy(rhs_begin,IsPODType());
   }
-  void _copyView(Span<const T> rhs)
+
+  /*!
+   * \brief Redimensionne l'instance et recopie les valeurs de \a rhs.
+   *
+   * Si la taille diminue, les éléments compris entre size() et rhs.size()
+   * sont détruits.
+   *
+   * \post size()==rhs.size()
+   */
+  void _resizeAndCopyView(Span<const T> rhs)
   {
     const T* rhs_begin = rhs.data();
     Int64 rhs_size = rhs.size();
+    const Int64 current_size = m_md->size;
     T* abegin = m_ptr;
     // Vérifie que \a rhs n'est pas un élément à l'intérieur de ce tableau
     if (abegin>=rhs_begin && abegin<(rhs_begin+rhs_size))
       ArrayMetaData::overlapError(abegin,m_md->size,rhs_begin,rhs_size);
-    _resize(rhs_size);
-    _copy(rhs_begin);
-  }
-  void _copyView(ConstArrayView<T> rhs)
-  {
-    this->_copyView(Span<const T>(rhs));
+
+    if (rhs_size > current_size) {
+      this->_internalRealloc(rhs_size, false);
+      // Crée les nouveaux éléments
+      this->_createRange(m_md->size, rhs_size, rhs_begin + current_size);
+      // Copie les éléments déjà existant
+      _copy(rhs_begin);
+      m_md->size = rhs_size;
+    }
+    else{
+      this->_destroyRange(rhs_size,current_size,IsPODType{});
+      m_md->size = rhs_size;
+      _copy(rhs_begin);
+    }
   }
 
   /*!
@@ -1212,7 +1233,7 @@ class Array
    */  
   void copy(Span<const T> rhs)
   {
-    this->_copyView(rhs);
+    this->_resizeAndCopyView(rhs);
   }
 
   //! Clone le tableau
@@ -1321,6 +1342,7 @@ class Array
  * conséquent ce type de tableau doit être utilisé avec précaution dans
  * le cas d'un environnement multi-thread.
  *
+ * \sa UniqueArray.
  */
 template<typename T>
 class SharedArray
@@ -1558,12 +1580,18 @@ class SharedArray
  * est utilisée.
  *
  * \warning L'allocateur est transféré à l'instance de destination lors d'un
- * appel au constructeur (UniqueArray(UniqueArray&&) ou assignement
- * (UniqueArray::operator=(UniqueArray&&) par déplacement ainsi que lors
+ * appel aux constructeurs qui prennent en argument un Array, SharedArray ou
+ * UniqueArray. Il en est de même avec l'opérateur d'assignement et lors
  * de l'appel à UniqueArray::swap(). Si ces appels sont envisagés, il
- * faut garantir que l'allocateur restera valide même après transfert. Si
- * on ne peut pas garantir cela, il est préférable d'utiliser la
- * classe Array qui ne permet pas un tel transfert.
+ * faut garantir que l'allocateur restera valide même après transfert. Il
+ * est donc préférable dans tout les cas que l'allocateur spécifique utilisé
+ * reste valide durant toute la durée de l'application.
+ *
+ * Si le type est un type Plain Object Data (POD) alors les données ne sont
+ * pas initialisées en cas de réallocation. La classe template ArrayTraits
+ * permet de spécifier si un type est POD suivant la valeur données par
+ * le type ArrayTraits<T>::IsPODType qui peut être FalseType ou TrueType.
+ * Sauf spécialisation, seuls les types de base du C++ sont POD.
  */
 template<typename T>
 class UniqueArray
@@ -1600,8 +1628,8 @@ class UniqueArray
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const ConstArrayView<T>& aview)
+  : UniqueArray(Span<const T>(aview))
   {
-    this->_initFromSpan(Span<const T>(aview));
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const Span<const T>& aview)
@@ -1610,8 +1638,8 @@ class UniqueArray
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const ArrayView<T>& aview)
+  : UniqueArray(Span<const T>(aview))
   {
-    this->_initFromSpan(Span<const T>(aview));
   }
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const Span<T>& aview)
@@ -1625,17 +1653,19 @@ class UniqueArray
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const Array<T>& rhs)
   {
-    this->_initFromSpan(rhs.constView());
+    this->_initFromAllocator(rhs.allocator(),0);
+    this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const UniqueArray<T>& rhs) : Array<T> {}
   {
-    this->_initFromSpan(rhs.constView());
+    this->_initFromAllocator(rhs.allocator(),0);
+    this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const SharedArray<T>& rhs)
   {
-    this->_initFromSpan(rhs.constView());
+    this->_initFromSpan(rhs);
   }
   //! Constructeur par déplacement. \a rhs est invalidé après cet appel
   UniqueArray(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT : Array<T>(std::move(rhs)) {}
@@ -1657,20 +1687,27 @@ class UniqueArray
     this->_initFromAllocator(allocator,asize);
     this->_resize(asize);
   }
+  //! Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
+  UniqueArray(IMemoryAllocator* allocator,Span<const T> rhs)
+  {
+    this->_initFromAllocator(allocator,rhs.size());
+    this->_initFromSpan(rhs);
+  }
+
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const Array<T>& rhs)
   {
-    this->copy(rhs.constSpan());
+    _assignFromArray(rhs);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const SharedArray<T>& rhs)
   {
-    this->copy(rhs.constSpan());
+    _assignFromArray(rhs);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const UniqueArray<T>& rhs)
   {
-    this->copy(rhs.constSpan());
+    _assignFromArray(rhs);
   }
   //! Opérateur de recopie par déplacement. \a rhs est invalidé après cet appel.
   void operator=(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT
@@ -1713,11 +1750,30 @@ class UniqueArray
   {
     this->_swap(rhs);
   }
+
   //! Clone le tableau
   UniqueArray<T> clone() const
   {
-    return UniqueArray<T>(this->constSpan());
+    return UniqueArray<T>(*this);
   }
+
+ private:
+
+  void _assignFromArray(const Array<T>& rhs)
+  {
+    if (&rhs==this)
+      return;
+    auto rhs_span = rhs.constSpan();
+    if (rhs.allocator()==this->allocator()){
+      this->copy(rhs_span);
+    }
+    else{
+      this->dispose();
+      this->_initFromAllocator(rhs.allocator(),0);
+      this->_initFromSpan(rhs_span);
+    }
+  }
+
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1760,7 +1816,7 @@ operator=(const UniqueArray<T>& rhs)
 template<typename T> inline std::ostream&
 operator<<(std::ostream& o, const AbstractArray<T>& val)
 {
-  o << ConstArrayView<T>(val);
+  o << Span<const T>(val);
   return o;
 }
 
@@ -1770,7 +1826,7 @@ operator<<(std::ostream& o, const AbstractArray<T>& val)
 template<typename T> inline bool
 operator==(const AbstractArray<T>& rhs, const AbstractArray<T>& lhs)
 {
-  return operator==(ConstArrayView<T>(rhs),ConstArrayView<T>(lhs));
+  return operator==(Span<const T>(rhs),Span<const T>(lhs));
 }
 
 template<typename T> inline bool
