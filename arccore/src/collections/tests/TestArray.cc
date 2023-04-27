@@ -29,10 +29,11 @@ class IntSubClassNoPod
 {
  public:
   explicit IntSubClassNoPod(Integer v) : m_v(v) {}
-  IntSubClassNoPod() : m_v(0) {}
+  //IntSubClassNoPod() : m_v(0) {}
   Integer m_v;
   friend bool operator==(const IntSubClassNoPod& v,Integer iv) { return v.m_v == iv; }
   friend bool operator==(const IntSubClassNoPod& v1,const IntSubClassNoPod& v2) { return v1.m_v==v2.m_v; }
+  friend bool operator!=(const IntSubClassNoPod& v1,const IntSubClassNoPod& v2) { return v1.m_v!=v2.m_v; }
   friend std::ostream& operator<<(std::ostream& o,IntSubClassNoPod c)
   {
     o << c.m_v;
@@ -426,6 +427,20 @@ _testArrayNewInternal()
       ++r1;
       ASSERT_TRUE((r1==values.rend()));
     }
+    {
+      UniqueArray<IntSubClassNoPod> c{ IntSubClassNoPod{ 5 }, IntSubClassNoPod{ 7 } };
+      UniqueArray<IntSubClassNoPod> c2(c.constView());
+      c2.add(IntSubClassNoPod{ 3 });
+      ARCCORE_UT_CHECK((c2.size() == 3), "Bad value [3]");
+      ARCCORE_UT_CHECK((c.size() == 2), "Bad value [2]");
+      ARCCORE_UT_CHECK((c[0] == 5), "Bad value [5]");
+      ARCCORE_UT_CHECK((c[1] == 7), "Bad value [7]");
+      ARCCORE_UT_CHECK((c2[0] == 5), "Bad value [5]");
+      ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
+      ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
+      c = c2.span();
+      ASSERT_EQ(c.constSpan(),c2.constSpan());
+    }
   }
 }
 }
@@ -678,6 +693,9 @@ class MyArrayTest
   }
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(Array, Misc3)
 {
   using namespace Arccore;
@@ -705,6 +723,9 @@ TEST(Array, Misc3)
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(Array, Misc4)
 {
   using namespace Arccore;
@@ -720,6 +741,7 @@ TEST(Array, Misc4)
     a.add(13);
     a.add(-5);
     UniqueArray<Int32> c(a.clone());
+    ASSERT_EQ(c.allocator(),a.allocator());
     ASSERT_EQ(c.size(),a.size());
     ASSERT_EQ(c.constSpan(),a.constSpan());
     UniqueArray<Int32> d(allocator2,a);
@@ -728,6 +750,69 @@ TEST(Array, Misc4)
     ASSERT_EQ(d.constSpan(),a.constSpan());
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Array, Allocator)
+{
+  using namespace Arccore;
+  PrintableMemoryAllocator printable_allocator;
+  PrintableMemoryAllocator printable_allocator2;
+  IMemoryAllocator* allocator1 = AlignedMemoryAllocator::Simd();
+  IMemoryAllocator* allocator2 = &printable_allocator;
+  {
+    UniqueArray<Int32> a1(allocator2);
+    ASSERT_EQ(a1.allocator(), allocator2);
+    ASSERT_EQ(a1.size(), 0);
+    ASSERT_EQ(a1.capacity(), 0);
+    ASSERT_EQ(a1.data(), nullptr);
+
+    UniqueArray<Int32> a2(a1);
+    ASSERT_EQ(a1.allocator(), a2.allocator());
+    ASSERT_EQ(a2.capacity(), 0);
+    ASSERT_EQ(a2.data(), nullptr);
+    std::array<Int32, 5> vals = { 5, 7, 12, 3, 1 };
+    a1.reserve(3);
+    a1.add(5);
+    a1.add(7);
+    a1.add(12);
+    a1.add(3);
+    a1.add(1);
+    ASSERT_EQ(a1.size(), 5);
+
+    UniqueArray<Int32> a3(allocator1);
+    a3.add(4);
+    a3.add(6);
+    a3.add(2);
+    ASSERT_EQ(a3.size(), 3);
+    a3 = a1;
+    ASSERT_EQ(a3.allocator(), a1.allocator());
+    ASSERT_EQ(a3.size(), a1.size());
+    ASSERT_EQ(a3.constSpan(), a1.constSpan());
+
+    UniqueArray<Int32> a4(allocator1);
+    a4.add(4);
+    a4.add(6);
+    a4.add(2);
+    ASSERT_EQ(a4.size(), 3);
+    a4 = a1.span();
+    ASSERT_EQ(a4.allocator(), allocator1);
+
+    a4 = UniqueArray<Int32>(&printable_allocator2);
+
+    UniqueArray<Int32> array[2];
+    IMemoryAllocator* allocator3 = allocator1;
+    for( Integer i=0; i<2; ++i ){
+      array[i] = UniqueArray<Int32>(allocator3);
+    }
+    ASSERT_EQ(array[0].allocator(), allocator3);
+    ASSERT_EQ(array[1].allocator(), allocator3);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arccore
 {

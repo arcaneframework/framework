@@ -1579,19 +1579,19 @@ class SharedArray
  * spécifié en argument doit rester valide tant que cette instance
  * est utilisée.
  *
+ * \warning L'allocateur est transféré à l'instance de destination lors d'un
+ * appel aux constructeurs qui prennent en argument un Array, SharedArray ou
+ * UniqueArray. Il en est de même avec l'opérateur d'assignement et lors
+ * de l'appel à UniqueArray::swap(). Si ces appels sont envisagés, il
+ * faut garantir que l'allocateur restera valide même après transfert. Il
+ * est donc préférable dans tout les cas que l'allocateur spécifique utilisé
+ * reste valide durant toute la durée de l'application.
+ *
  * Si le type est un type Plain Object Data (POD) alors les données ne sont
  * pas initialisées en cas de réallocation. La classe template ArrayTraits
  * permet de spécifier si un type est POD suivant la valeur données par
  * le type ArrayTraits<T>::IsPODType qui peut être FalseType ou TrueType.
  * Sauf spécialisation, seuls les types de base du C++ sont POD.
- *
- * \warning L'allocateur est transféré à l'instance de destination lors d'un
- * appel au constructeur (UniqueArray(UniqueArray&&) ou assignement
- * (UniqueArray::operator=(UniqueArray&&) par déplacement ainsi que lors
- * de l'appel à UniqueArray::swap(). Si ces appels sont envisagés, il
- * faut garantir que l'allocateur restera valide même après transfert. Si
- * on ne peut pas garantir cela, il est préférable d'utiliser la
- * classe Array qui ne permet pas un tel transfert.
  */
 template<typename T>
 class UniqueArray
@@ -1653,11 +1653,13 @@ class UniqueArray
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const Array<T>& rhs)
   {
+    this->_initFromAllocator(rhs.allocator(),0);
     this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const UniqueArray<T>& rhs) : Array<T> {}
   {
+    this->_initFromAllocator(rhs.allocator(),0);
     this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
@@ -1695,17 +1697,17 @@ class UniqueArray
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const Array<T>& rhs)
   {
-    this->copy(rhs.constSpan());
+    _assignFromArray(rhs);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const SharedArray<T>& rhs)
   {
-    this->copy(rhs.constSpan());
+    _assignFromArray(rhs);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const UniqueArray<T>& rhs)
   {
-    this->copy(rhs.constSpan());
+    _assignFromArray(rhs);
   }
   //! Opérateur de recopie par déplacement. \a rhs est invalidé après cet appel.
   void operator=(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT
@@ -1748,11 +1750,30 @@ class UniqueArray
   {
     this->_swap(rhs);
   }
+
   //! Clone le tableau
   UniqueArray<T> clone() const
   {
-    return UniqueArray<T>(this->constSpan());
+    return UniqueArray<T>(*this);
   }
+
+ private:
+
+  void _assignFromArray(const Array<T>& rhs)
+  {
+    if (&rhs==this)
+      return;
+    auto rhs_span = rhs.constSpan();
+    if (rhs.allocator()==this->allocator()){
+      this->copy(rhs_span);
+    }
+    else{
+      this->dispose();
+      this->_initFromAllocator(rhs.allocator(),0);
+      this->_initFromSpan(rhs_span);
+    }
+  }
+
 };
 
 /*---------------------------------------------------------------------------*/
