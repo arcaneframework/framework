@@ -233,6 +233,31 @@ void CustomMeshTestModule::_testVariables(IMesh* mesh)
     VariableNodeArrayReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allNodes());
   }
+  // Face variables
+  for (const auto& variable_name : options()->getCheckFaceVariableReal()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableFaceReal var{ VariableBuildInfo(mesh, variable_name) };
+    _checkVariable(var, mesh->allFaces());
+  }
+  for (const auto& variable_name : options()->getCheckFaceVariableInteger()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableFaceInteger var{ VariableBuildInfo(mesh, variable_name) };
+    _checkVariable(var, mesh->allFaces());
+  }
+  for (const auto& variable_name : options()->getCheckFaceVariableArrayInteger()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableFaceArrayInteger var{ VariableBuildInfo(mesh, variable_name) };
+    _checkArrayVariable(var, mesh->allFaces());
+  }
+  for (const auto& variable_name : options()->getCheckFaceVariableArrayReal()) {
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableFaceArrayReal var{ VariableBuildInfo(mesh, variable_name) };
+    _checkArrayVariable(var, mesh->allFaces());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
