@@ -27,6 +27,8 @@
 #include <vtkDataSetAttributes.h>
 #include <vtkArrayDispatch.h>
 #include <vtkDataArrayAccessor.h>
+#include <vtkPolyDataReader.h>
+#include <vtkPolyData.h>
 
 #include <arccore/base/Ref.h>
 #include <arccore/base/String.h>
@@ -66,6 +68,7 @@ namespace VtkPolyhedralTools
   {
     bool failure = false;
     String failure_message;
+    String info_message;
   };
 
   struct PrintInfoLevel
@@ -150,6 +153,7 @@ class VtkPolyhedralMeshIOService
     VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
     VtkPolyhedralTools::ReadStatus m_read_status;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
+    vtkNew<vtkPolyDataReader> m_vtk_face_grid_reader;
     Int64UniqueArray m_cell_uids, m_node_uids, m_face_uids, m_edge_uids;
     Int64UniqueArray m_face_node_uids, m_edge_node_uids, m_cell_node_uids;
     Int64UniqueArray m_face_cell_uids, m_edge_cell_uids, m_edge_face_uids;
@@ -163,6 +167,7 @@ class VtkPolyhedralMeshIOService
     Real3UniqueArray m_node_coordinates;
     vtkCellData* m_cell_data = nullptr;
     vtkPointData* m_point_data = nullptr;
+    vtkCellData* m_face_data = nullptr;
 
     void _printMeshInfos() const;
 
@@ -193,10 +198,11 @@ class VtkPolyhedralMeshIOService
   VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
 
   void _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader);
-  void _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family) const;
-  void _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family);
+  void _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family, Int32ConstSpan vtkToArcaneLid) const;
+  void _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family, Int32ConstSpan arcane_to_vtk_lids);
 
   static void _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk_reader);
+  void _computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span arcane_to_vtk_lids, VtkPolyhedralMeshIOService::VtkReader& reader, IPrimaryMesh* mesh) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -232,6 +238,7 @@ class VtkPolyhedralCaseMeshReader
       auto read_status = polyhedral_vtk_service.read(pm, m_read_info.fileName());
       if (read_status.failure)
         ARCANE_FATAL(read_status.failure_message);
+      m_trace_mng->info() << read_status.info_message;
     }
 
    private:
@@ -391,37 +398,65 @@ _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk
 void VtkPolyhedralMeshIOService::
 _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
 {
+  // Cell data
   if (auto* cell_data = reader.cellData(); cell_data) {
     // Read cell groups and variables
+    Int32SharedArray vtk_to_arcane_lids(mesh->cellFamily()->nbItem());
+    std::iota(vtk_to_arcane_lids.begin(), vtk_to_arcane_lids.end(), 0);
+    Int32SharedArray arcane_to_vtk_lids{ vtk_to_arcane_lids };
     for (auto array_index = 0; array_index < cell_data->GetNumberOfArrays(); ++array_index) {
       auto* cell_array = cell_data->GetArray(array_index);
       if (!cell_array)
         continue;
       if (String name = cell_array->GetName(); name.substring(0, 6) == "GROUP_")
-        _createGroup(cell_array, name.substring(6), mesh, mesh->cellFamily());
+        _createGroup(cell_array, name.substring(6), mesh, mesh->cellFamily(), vtk_to_arcane_lids.constSpan());
       else
-        _createVariable(cell_array, name, mesh, mesh->cellFamily());
+        _createVariable(cell_array, name, mesh, mesh->cellFamily(), arcane_to_vtk_lids);
       info() << "Reading property " << cell_array->GetName();
       for (auto tuple_index = 0; tuple_index < cell_array->GetNumberOfTuples(); ++tuple_index) {
         for (auto component_index = 0; component_index < cell_array->GetNumberOfComponents(); ++component_index) {
           info() << cell_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << cell_array->GetComponent(tuple_index, component_index);
         }
-        cell_array->GetArrayType();
       }
     }
   }
-  auto* point_data = reader.pointData();
-  if (point_data) {
+  // Node data
+  if (auto* point_data = reader.pointData(); point_data) {
     // Read node groups and variables
-    for (auto i = 0; i < point_data->GetNumberOfArrays(); ++i) {
-      auto* point_array = point_data->GetArray(i);
+    Int32SharedArray vtk_to_arcane_lids(mesh->nodeFamily()->nbItem());
+    std::iota(vtk_to_arcane_lids.begin(), vtk_to_arcane_lids.end(), 0);
+    Int32SharedArray arcane_to_vtk_lids{ vtk_to_arcane_lids };
+    for (auto array_index = 0; array_index < point_data->GetNumberOfArrays(); ++array_index) {
+      auto* point_array = point_data->GetArray(array_index);
       if (String name = point_array->GetName(); name.substring(0, 6) == "GROUP_")
-        _createGroup(point_array, name.substring(6), mesh, mesh->nodeFamily());
+        _createGroup(point_array, name.substring(6), mesh, mesh->nodeFamily(), vtk_to_arcane_lids.constSpan());
       else
-        _createVariable(point_array, name, mesh, mesh->nodeFamily());
+        _createVariable(point_array, name, mesh, mesh->nodeFamily(), arcane_to_vtk_lids);
       info() << "Reading property " << point_array->GetName();
-      for (auto j = 0; j < point_array->GetNumberOfTuples(); ++j) {
-        info() << point_array->GetName() << "[" << j << "] = " << *point_array->GetTuple(j);
+      for (auto tuple_index = 0; tuple_index < point_array->GetNumberOfTuples(); ++tuple_index) {
+        for (auto component_index = 0; component_index < point_array->GetNumberOfComponents(); ++component_index) {
+          info() << point_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << point_array->GetComponent(tuple_index, component_index);
+        }
+      }
+    }
+  }
+  // Face data
+  if (auto* face_data = reader.faceData(); face_data) {
+    // Read face groups and variables
+    Int32UniqueArray vtk_to_Arcane_lids(mesh->faceFamily()->nbItem());
+    Int32UniqueArray arcane_to_vtk_lids(mesh->faceFamily()->nbItem());
+    _computeFaceVtkArcaneLidConversion(vtk_to_Arcane_lids, arcane_to_vtk_lids, reader, mesh);
+    for (auto array_index = 0; array_index < face_data->GetNumberOfArrays(); ++array_index) {
+      auto* face_array = face_data->GetArray(array_index);
+      if (String name = face_array->GetName(); name.substring(0, 6) == "GROUP_")
+        _createGroup(face_array, name.substring(6), mesh, mesh->faceFamily(), vtk_to_Arcane_lids);
+      else
+        _createVariable(face_array, name, mesh, mesh->faceFamily(), arcane_to_vtk_lids);
+      info() << "Reading property " << face_array->GetName();
+      for (auto tuple_index = 0; tuple_index < face_array->GetNumberOfTuples(); ++tuple_index) {
+        for (auto component_index = 0; component_index < face_array->GetNumberOfComponents(); ++component_index) {
+          info() << face_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << face_array->GetComponent(tuple_index, component_index);
+        }
       }
     }
   }
@@ -431,7 +466,7 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
 /*---------------------------------------------------------------------------*/
 
 void VtkPolyhedralMeshIOService::
-_createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family) const
+_createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family, Int32ConstSpan vtkToArcaneLid) const
 {
   ARCANE_CHECK_POINTER(group_items);
   ARCANE_CHECK_POINTER(mesh);
@@ -439,24 +474,24 @@ _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* 
   if (group_items->GetNumberOfComponents() != 1)
     fatal() << String::format("Cannot create item group {0}. Group information in data property must be a scalar", group_name);
   debug() << "Create group " << group_name;
-  Int32UniqueArray ids;
-  ids.reserve((int)group_items->GetNumberOfValues());
+  Int32UniqueArray arcane_lids;
+  arcane_lids.reserve((int)group_items->GetNumberOfValues());
   using GroupDispatcher = vtkArrayDispatch::DispatchByValueType<vtkArrayDispatch::Integrals>;
-  auto group_creator = [&ids](auto* array) {
+  auto group_creator = [&arcane_lids, &vtkToArcaneLid](auto* array) {
     vtkIdType numTuples = array->GetNumberOfTuples();
     vtkDataArrayAccessor<std::remove_pointer_t<decltype(array)>> array_accessor{ array };
     auto local_id = 0;
     for (vtkIdType tupleIdx = 0; tupleIdx < numTuples; ++tupleIdx) {
       auto value = array_accessor.Get(tupleIdx, 0);
       if (value)
-        ids.push_back(local_id);
+        arcane_lids.push_back(vtkToArcaneLid[local_id]);
       ++local_id;
     }
   };
   if (!GroupDispatcher::Execute(group_items, group_creator))
     ARCANE_FATAL("Cannot create item group {0}. Group information in data property must be an integral type", group_name);
-  debug() << " ids for cell_group " << group_name << "  " << ids; // to remove
-  item_family->createGroup(group_name, ids);
+  debug() << " local ids for item group " << group_name << "  " << arcane_lids; // to remove
+  item_family->createGroup(group_name, arcane_lids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -484,7 +519,7 @@ template <typename T> using to_arcane_type_t = typename ToArcaneType<T>::type;
 /*---------------------------------------------------------------------------*/
 
 void VtkPolyhedralMeshIOService::
-_createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family)
+_createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family, Int32ConstSpan arcane_to_vtk_lids)
 {
   ARCANE_CHECK_POINTER(item_values);
   ARCANE_CHECK_POINTER(mesh);
@@ -493,17 +528,17 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
     ARCANE_FATAL("Cannot create variable {0}, {1} values are given for {2} items in {3} family",
                  variable_name, item_values->GetNumberOfTuples(), item_family->nbItem(), item_family->name());
   info() << "Create mesh variable " << variable_name;
-  auto variable_creator = [mesh, variable_name, item_family, this](auto* values) {
+  auto variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this](auto* values) {
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
     auto* var = new ItemVariableScalarRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
     m_read_variables.add(var);
     vtkDataArrayAccessor<std::remove_pointer_t<decltype(values)>> values_accessor{ values };
     ENUMERATE_ITEM (item, item_family->allItems()) {
-      (*var)[item] = (to_arcane_type_t<ValueType>)values_accessor.Get(item.index(), 0);
+      (*var)[item] = (to_arcane_type_t<ValueType>)values_accessor.Get(arcane_to_vtk_lids[item.localId()], 0);
     }
   };
-  auto array_variable_creator = [mesh, variable_name, item_family, this](auto* values) {
+  auto array_variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this](auto* values) {
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
     auto* var = new ItemVariableArrayRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
@@ -513,7 +548,7 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
     ENUMERATE_ITEM (item, item_family->allItems()) {
       auto index = 0;
       for (auto& var_value : (*var)[item]) {
-        var_value = (to_arcane_type_t<ValueType>)values_accessor.Get(item.index(), index++);
+        var_value = (to_arcane_type_t<ValueType>)values_accessor.Get(arcane_to_vtk_lids[item.localId()], index++);
       }
     }
   };
@@ -531,6 +566,32 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
   }
   if (!is_variable_created)
     ARCANE_FATAL("Cannot create variable {0}, it's data type is not supported. Only real and integral types are supported", variable_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::
+_computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span arcane_to_vtk_lids, VtkPolyhedralMeshIOService::VtkReader& reader, IPrimaryMesh* mesh) const
+{
+  auto face_nodes_unique_ids = reader.faceNodes();
+  auto face_nb_nodes = reader.faceNbNodes();
+  auto current_face_index = 0;
+  auto current_face_index_in_face_nodes = 0;
+  Int32UniqueArray face_nodes_local_ids(face_nodes_unique_ids.size());
+  mesh->nodeFamily()->itemsUniqueIdToLocalId(face_nodes_local_ids, face_nodes_unique_ids);
+  for (auto current_face_nb_node : face_nb_nodes) {
+    auto current_face_nodes = face_nodes_local_ids.subConstView(current_face_index_in_face_nodes, current_face_nb_node);
+    current_face_index_in_face_nodes += current_face_nb_node;
+    Node face_first_node{ mesh->nodeFamily()->view()[current_face_nodes[0]] };
+    face_vtk_to_arcane_lids[current_face_index] = mesh_utils::getFaceFromNodesLocal(face_first_node, current_face_nodes).localId();
+    ++current_face_index;
+  }
+  auto vtk_lid = 0;
+  for (auto arcane_lid : face_vtk_to_arcane_lids) {
+    arcane_to_vtk_lids[arcane_lid] = vtk_lid;
+    ++vtk_lid;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1302,7 +1363,7 @@ _printMeshInfos() const
       auto face_nb_nodes = *cell_faces++;
       std::cout << "----      has face with " << face_nb_nodes << " nodes. Node ids : ";
       for (int inode = 0; inode < face_nb_nodes; ++inode) {
-        std::cout << *cell_faces++ << " ";
+          std::cout << *cell_faces++ << " ";
       }
       std::cout << std::endl;
     }
