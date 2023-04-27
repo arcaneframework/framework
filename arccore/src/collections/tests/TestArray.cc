@@ -705,6 +705,30 @@ TEST(Array, Misc3)
   }
 }
 
+TEST(Array, Misc4)
+{
+  using namespace Arccore;
+
+  IMemoryAllocator* allocator1 = AlignedMemoryAllocator::Simd();
+  IMemoryAllocator* allocator2 = AlignedMemoryAllocator::CacheLine();
+
+  {
+    UniqueArray<Int32> a(allocator1);
+    ASSERT_EQ(a.allocator(),allocator1);
+    a.add(27);
+    a.add(38);
+    a.add(13);
+    a.add(-5);
+    UniqueArray<Int32> c(a.clone());
+    ASSERT_EQ(c.size(),a.size());
+    ASSERT_EQ(c.constSpan(),a.constSpan());
+    UniqueArray<Int32> d(allocator2,a);
+    ASSERT_EQ(d.allocator(),allocator2);
+    ASSERT_EQ(d.size(),a.size());
+    ASSERT_EQ(d.constSpan(),a.constSpan());
+  }
+}
+
 namespace Arccore
 {
 // Instancie explicitement les classes tableaux pour garantir
