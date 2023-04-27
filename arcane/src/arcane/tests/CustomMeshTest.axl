@@ -21,6 +21,7 @@
       <simple name="name" type="string"/>
       <simple name="size" type="integer"/>
     </complex>
+    <simple name="check-boundary-face-group" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-cell-variable-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-cell-variable-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-cell-variable-array-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
@@ -29,6 +30,10 @@
     <simple name="check-node-variable-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-node-variable-array-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-node-variable-array-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
+    <simple name="check-face-variable-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
+    <simple name="check-face-variable-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
+    <simple name="check-face-variable-array-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
+    <simple name="check-face-variable-array-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
   </options>
 
   <variables>
