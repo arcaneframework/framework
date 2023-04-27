@@ -730,13 +730,16 @@ faceUids()
   m_node_nb_faces.resize(m_node_uids.size(), 0);
   _flattenConnectivity(node_faces.constSpan(), m_node_nb_faces, m_node_face_uids);
 
-  std::cout << "================FACE NODES ==============" << std::endl;
-  std::copy(m_face_node_uids.begin(), m_face_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(m_face_nb_nodes.begin(), m_face_nb_nodes.end(), std::ostream_iterator<Int64>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(m_cell_face_indexes.begin(), m_cell_face_indexes.end(), std::ostream_iterator<Int64>(std::cout, " "));
-  std::cout << std::endl;
+  if (m_print_info_level.print_debug_info) {
+    std::cout << "================FACE NODES ==============" << std::endl;
+    std::copy(m_face_node_uids.begin(), m_face_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+    std::cout << std::endl;
+    std::copy(m_face_nb_nodes.begin(), m_face_nb_nodes.end(), std::ostream_iterator<Int64>(std::cout, " "));
+    std::cout << std::endl;
+    std::copy(m_cell_face_indexes.begin(), m_cell_face_indexes.end(), std::ostream_iterator<Int64>(std::cout, " "));
+    std::cout << std::endl;
+  }
+
   return m_face_uids;
 }
 
@@ -858,14 +861,16 @@ edgeUids()
     // fill edge nb nodes
     m_edge_nb_nodes.resize(m_edge_uids.size(), 2);
 
-    std::cout << "================EDGE NODES ==============" << std::endl;
-    std::copy(m_edge_node_uids.begin(), m_edge_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-    std::cout << std::endl;
-    std::cout << "================FACE EDGES ==============" << std::endl;
-    std::copy(m_face_nb_edges.begin(), m_face_nb_edges.end(), std::ostream_iterator<Int32>(std::cout, " "));
-    std::cout << std::endl;
-    std::copy(m_face_edge_uids.begin(), m_face_edge_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-    std::cout << std::endl;
+    if (m_print_info_level.print_debug_info) {
+      std::cout << "================EDGE NODES ==============" << std::endl;
+      std::copy(m_edge_node_uids.begin(), m_edge_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+      std::cout << std::endl;
+      std::cout << "================FACE EDGES ==============" << std::endl;
+      std::copy(m_face_nb_edges.begin(), m_face_nb_edges.end(), std::ostream_iterator<Int32>(std::cout, " "));
+      std::cout << std::endl;
+      std::copy(m_face_edge_uids.begin(), m_face_edge_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+      std::cout << std::endl;
+    }
     return m_edge_uids;
 }
 
@@ -977,12 +982,14 @@ faceCells()
   if (m_face_cell_uids.empty())
     faceUids();
   // debug
-  std::cout << "=================FACE CELLS================="
-            << "\n";
-  std::copy(m_face_cell_uids.begin(), m_face_cell_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-  std::cout << "\n";
-  std::cout << "=================END FACE CELLS================="
-            << "\n";
+  if (m_print_info_level.print_debug_info) {
+    std::cout << "=================FACE CELLS================="
+              << "\n";
+    std::copy(m_face_cell_uids.begin(), m_face_cell_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+    std::cout << "\n";
+    std::cout << "=================END FACE CELLS================="
+              << "\n";
+  }
   return m_face_cell_uids;
 }
 
@@ -1204,16 +1211,20 @@ nodeCoords()
   if (m_node_coordinates.empty()) {
     auto* vtk_grid = m_vtk_grid_reader->GetOutput();
     auto point_coords = vtk_grid->GetPoints()->GetData();
-    //    std::cout << "======= Point COORDS ====" << std::endl;
-    //    std::ostringstream oss;
-    //    point_coords->PrintSelf(oss, vtkIndent{ 2 });
-    //    std::cout << oss.str() << std::endl;
+    if (m_print_info_level.print_debug_info) {
+      std::cout << "======= Point COORDS ====" << std::endl;
+      std::ostringstream oss;
+      point_coords->PrintSelf(oss, vtkIndent{ 2 });
+      std::cout << oss.str() << std::endl;
+    }
     auto nb_nodes = vtk_grid->GetNumberOfPoints();
     for (int i = 0; i < nb_nodes; ++i) {
-      //      std::cout << "==========current point coordinates : ( ";
-      //      std::cout << *(point_coords->GetTuple(i)) << " , ";
-      //      std::cout << *(point_coords->GetTuple(i)+1) << " , ";
-      //      std::cout << *(point_coords->GetTuple(i)+2) << " ) ===" << std::endl;
+      if (m_print_info_level.print_debug_info) {
+          std::cout << "==========current point coordinates : ( ";
+          std::cout << *(point_coords->GetTuple(i)) << " , ";
+          std::cout << *(point_coords->GetTuple(i) + 1) << " , ";
+          std::cout << *(point_coords->GetTuple(i) + 2) << " ) ===" << std::endl;
+      }
       m_node_coordinates.add({ *(point_coords->GetTuple(i)),
                                *(point_coords->GetTuple(i) + 1),
                                *(point_coords->GetTuple(i) + 2) });
@@ -1254,7 +1265,7 @@ _printMeshInfos() const
   cell_iter->InitTraversal();
   vtkIdType* cell_faces{ nullptr };
   vtkIdType nb_faces = 0;
-  while (!cell_iter->IsDoneWithTraversal()) { // todo remove this debug print
+  while (!cell_iter->IsDoneWithTraversal()) {
     std::cout << "---- visiting cell id " << cell_iter->GetCellId() << std::endl;
     std::cout << "----   cell number of faces " << cell_iter->GetNumberOfFaces() << std::endl;
     std::cout << "----   cell number of points " << cell_iter->GetNumberOfPoints() << std::endl;
