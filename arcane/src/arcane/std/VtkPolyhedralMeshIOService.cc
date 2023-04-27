@@ -142,6 +142,7 @@ class VtkPolyhedralMeshIOService
 
     vtkCellData* cellData();
     vtkPointData* pointData();
+    vtkCellData* faceData();
 
    private:
 
@@ -549,7 +550,13 @@ VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_
   m_vtk_grid_reader->ReadAllScalarsOn();
   m_vtk_grid_reader->Update();
   auto* vtk_grid = m_vtk_grid_reader->GetOutput();
+  // Check vtk grid exists and not empty
   if (!vtk_grid) {
+    m_read_status.failure = true;
+    m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}", filename);
+    return;
+  }
+  if (vtk_grid->GetNumberOfCells() == 0) {
     m_read_status.failure = true;
     m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}", filename);
     return;
@@ -563,7 +570,28 @@ VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_
   m_cell_data = vtk_grid->GetCellData();
   m_point_data = vtk_grid->GetPointData();
 
-  if (m_print_mesh_infos)
+  // Read face info (for variables and groups) if present
+  String faces_filename = m_filename + "faces.vtk";
+  std::ifstream ifile(faces_filename.localstr());
+  if (!ifile) {
+    m_read_status.info_message = String::format("Information no face mesh given {0} to define face variables or groups on faces.", faces_filename);
+  }
+  else {
+    m_vtk_face_grid_reader->SetFileName(faces_filename.localstr());
+    m_vtk_face_grid_reader->ReadAllScalarsOn();
+    m_vtk_face_grid_reader->Update();
+    auto* vtk_face_grid = m_vtk_face_grid_reader->GetOutput();
+    // Check face vtk grid exists and not empty
+    if (vtk_face_grid->GetNumberOfCells() == 0) {
+      m_read_status.failure = true;
+      m_read_status.failure_message = m_read_status.failure_message + String::format(" Error in reading face information for groups in mesh file {0} ", faces_filename);
+    }
+    else {
+      m_face_data = vtk_face_grid->GetCellData();
+    }
+  }
+
+  if (m_print_info_level.print_mesh_info)
     _printMeshInfos();
 }
 
@@ -1280,6 +1308,14 @@ _printMeshInfos() const
     }
     cell_iter->GoToNextCell();
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+vtkCellData* VtkPolyhedralMeshIOService::VtkReader::faceData()
+{
+  return m_face_data;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
