@@ -67,6 +67,12 @@ namespace VtkPolyhedralTools
     bool failure = false;
     String failure_message;
   };
+
+  struct PrintInfoLevel
+  {
+    bool print_mesh_info = false;
+    bool print_debug_info = false;
+  };
 } // namespace VtkPolyhedralTools
 
 class VtkPolyhedralMeshIOService
@@ -74,9 +80,9 @@ class VtkPolyhedralMeshIOService
 {
  public:
 
-  explicit VtkPolyhedralMeshIOService(ITraceMng* trace_mng, bool print_mesh_infos = false)
+  explicit VtkPolyhedralMeshIOService(ITraceMng* trace_mng, VtkPolyhedralTools::PrintInfoLevel print_info_level)
   : TraceAccessor(trace_mng)
-  , m_print_mesh_infos(print_mesh_infos)
+  , m_print_info_level(print_info_level)
   {}
 
   class VtkReader
@@ -84,7 +90,7 @@ class VtkPolyhedralMeshIOService
 
    public:
 
-    explicit VtkReader(const String& filename, bool print_mesh_info = false);
+    explicit VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_level = VtkPolyhedralTools::PrintInfoLevel{});
 
     Int64ConstArrayView cellUids();
     Int64ConstArrayView nodeUids();
@@ -140,7 +146,7 @@ class VtkPolyhedralMeshIOService
    private:
 
     const String& m_filename;
-    bool m_print_mesh_infos = false;
+    VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
     VtkPolyhedralTools::ReadStatus m_read_status;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
     Int64UniqueArray m_cell_uids, m_node_uids, m_face_uids, m_edge_uids;
@@ -169,7 +175,7 @@ class VtkPolyhedralMeshIOService
   VtkPolyhedralTools::ReadStatus read(IPrimaryMesh* mesh, const String& filename)
   {
     ARCANE_CHECK_POINTER(mesh);
-    VtkReader reader{ filename, m_print_mesh_infos };
+    VtkReader reader{ filename, m_print_info_level };
     if (reader.readHasFailed())
       return reader.readStatus();
     ItemAllocationInfo item_allocation_info;
@@ -183,7 +189,7 @@ class VtkPolyhedralMeshIOService
  private:
 
   UniqueArray<VariableRef*> m_read_variables;
-  bool m_print_mesh_infos = false;
+  VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
 
   void _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader);
   void _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family) const;
@@ -204,10 +210,10 @@ class VtkPolyhedralCaseMeshReader
   {
    public:
 
-    explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info, bool print_mesh_info = false)
+    explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info, VtkPolyhedralTools::PrintInfoLevel print_info_level)
     : m_trace_mng(tm)
     , m_read_info(read_info)
-    , m_print_mesh_info(print_mesh_info)
+    , m_print_info_level(print_info_level)
     {}
 
     void fillMeshBuildInfo(MeshBuildInfo& build_info) override
@@ -221,7 +227,7 @@ class VtkPolyhedralCaseMeshReader
       ARCANE_CHECK_POINTER(pm);
       m_trace_mng->info() << "---CREATE POLYHEDRAL MESH---- " << pm->name();
       m_trace_mng->info() << "--Read mesh file " << m_read_info.fileName();
-      VtkPolyhedralMeshIOService polyhedral_vtk_service{ m_trace_mng, m_print_mesh_info };
+      VtkPolyhedralMeshIOService polyhedral_vtk_service{ m_trace_mng, m_print_info_level };
       auto read_status = polyhedral_vtk_service.read(pm, m_read_info.fileName());
       if (read_status.failure)
         ARCANE_FATAL(read_status.failure_message);
@@ -231,7 +237,7 @@ class VtkPolyhedralCaseMeshReader
 
     ITraceMng* m_trace_mng;
     CaseMeshReaderReadInfo m_read_info;
-    bool m_print_mesh_info = false;
+    VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
   };
 
   explicit VtkPolyhedralCaseMeshReader(const ServiceBuildInfo& sbi)
@@ -244,7 +250,7 @@ class VtkPolyhedralCaseMeshReader
   {
     IMeshBuilder* builder = nullptr;
     if (read_info.format() == "vtk")
-      builder = new Builder(traceMng(), read_info, options()->getPrintMeshInfos());
+      builder = new Builder(traceMng(), read_info, VtkPolyhedralTools::PrintInfoLevel{ options()->getPrintMeshInfos(), options()->getPrintDebugInfos() });
     return makeRef(builder);
   }
 };
@@ -530,9 +536,9 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
 /*---------------------------------------------------------------------------*/
 
 VtkPolyhedralMeshIOService::VtkReader::
-VtkReader(const String& filename, bool print_mesh_info)
+VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_level)
 : m_filename{ filename }
-, m_print_mesh_infos{ print_mesh_info }
+, m_print_info_level{ print_info_level }
 {
   if (filename.empty()) {
     m_read_status.failure = true;
