@@ -381,12 +381,65 @@ _checkExist(hid_t loc_id,const String& group_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void HSpace::
+createSimple(int nb, hsize_t dims[])
+{
+  _setId(H5Screate_simple(nb, dims, nullptr));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HSpace::
+createSimple(int nb, hsize_t dims[], hsize_t max_dims[])
+{
+  _setId(H5Screate_simple(nb, dims, max_dims));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int HSpace::
+nbDimension()
+{
+ return H5Sget_simple_extent_ndims(id());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+herr_t HSpace::
+getDimensions(hsize_t dims[], hsize_t max_dims[])
+{
+  return H5Sget_simple_extent_dims(id(), dims, max_dims);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void HDataset::
 create(const Hid& loc_id,const String& var,hid_t save_type,
        const HSpace& space_id,hid_t plist)
 {
 	hid_t hid = H5Dcreate2(loc_id.id(),var.localstr(),save_type,space_id.id(),
                         plist,H5P_DEFAULT,H5P_DEFAULT);
+  //cerr << "** CREATE ID=" << hid << '\n';
+  _setId(hid);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HDataset::
+create(const Hid& loc_id,const String& var,hid_t save_type,
+       const HSpace& space_id,const HProperty& link_plist,
+       const HProperty& creation_plist,const HProperty& access_plist)
+{
+	hid_t hid = H5Dcreate2(loc_id.id(),var.localstr(),save_type,space_id.id(),
+                         link_plist.id(),creation_plist.id(),access_plist.id());
   //cerr << "** CREATE ID=" << hid << '\n';
   _setId(hid);
 }
@@ -432,6 +485,24 @@ readWithException(hid_t native_type,void* array)
 	herr_t err = H5Dread(id(),native_type,H5S_ALL,H5S_ALL,H5P_DEFAULT,array);
   if (err!=0)
     ARCANE_THROW(IOException,"Can not read dataset");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+HSpace HDataset::
+getSpace()
+{
+  return HSpace(H5Dget_space(id()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+herr_t HDataset::
+setExtent(const hsize_t new_dims[])
+{
+  return H5Dset_extent(id(),new_dims);
 }
 
 /*---------------------------------------------------------------------------*/

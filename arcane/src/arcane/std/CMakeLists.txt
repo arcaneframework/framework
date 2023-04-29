@@ -26,6 +26,7 @@ if(HDF5_FOUND)
   list(APPEND ARCANE_SOURCES
     EnsightHdfPostProcessor.cc
     VtkHdfPostProcessor.cc
+    VtkHdfV2PostProcessor.cc
     )
 endif()
 

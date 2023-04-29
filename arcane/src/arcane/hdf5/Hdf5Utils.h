@@ -380,10 +380,10 @@ class ARCANE_HDF5_EXPORT HSpace
 
  public:
 
-  void createSimple(int nb, hsize_t dims[])
-  {
-    _setId(H5Screate_simple(nb, dims, 0));
-  }
+  void createSimple(int nb, hsize_t dims[]);
+  void createSimple(int nb, hsize_t dims[], hsize_t max_dims[]);
+  int nbDimension();
+  herr_t getDimensions(hsize_t dims[], hsize_t max_dims[]);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -427,6 +427,9 @@ class ARCANE_HDF5_EXPORT HDataset
     _setNullId();
   }
   void create(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id, hid_t plist);
+  void create(const Hid& loc_id,const String& var,hid_t save_type,
+              const HSpace& space_id,const HProperty& link_plist,
+              const HProperty& creation_plist,const HProperty& access_plist);
   void recursiveCreate(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id, hid_t plist);
   void open(const Hid& loc_id, const String& var);
   void openIfExists(const Hid& loc_id, const String& var);
@@ -440,10 +443,8 @@ class ARCANE_HDF5_EXPORT HDataset
     return H5Dread(id(), native_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, array);
   }
   void readWithException(hid_t native_type, void* array);
-  HSpace getSpace()
-  {
-    return HSpace(H5Dget_space(id()));
-  }
+  HSpace getSpace();
+  herr_t setExtent(const hsize_t new_dims[]);
 
  private:
 
