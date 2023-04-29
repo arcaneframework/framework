@@ -130,5 +130,6 @@ set(AXL_FILES
   SimpleCsvOutput
   SimpleCsvComparator
   VtkHdfPostProcessor
+  VtkHdfV2PostProcessor
   VtkPolyhedralMeshIO
   )
