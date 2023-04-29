@@ -71,16 +71,20 @@ hasParallelHdf5()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-static hid_t _H5Gopen(hid_t loc_id, const char *name)
+namespace
 {
-  return H5Gopen1(loc_id,name);
+
+hid_t _H5Gopen(hid_t loc_id, const char *name)
+{
+  return H5Gopen2(loc_id,name,H5P_DEFAULT);
 }
 
-static hid_t _H5Gcreate(hid_t loc_id, const char *name)
+hid_t _H5Gcreate(hid_t loc_id, const char *name)
 {
   return H5Gcreate2(loc_id, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 }
 
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -345,6 +349,27 @@ _checkOrCreate(hid_t loc_id,const String& group_name)
   hid_t new_id = _H5Gcreate(loc_id,group_name.localstr());
   //cerr << "** TRY TO CREATE <" << group_name.str()  << "> " << new_id << "\n";
   return new_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HGroup::
+create(const Hid& loc_id, const String& group_name)
+{
+  _setId(H5Gcreate2(loc_id.id(), group_name.localstr(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HGroup::
+openOrCreate(const Hid& loc_id, const String& group_name)
+{
+  hid_t id = _checkOrCreate(loc_id.id(),group_name);
+  if (id<0)
+    ARCANE_THROW(ReaderWriterException,"Can not open or create group named '{0}'",group_name);
+  _setId(id);
 }
 
 /*---------------------------------------------------------------------------*/

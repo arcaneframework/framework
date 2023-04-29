@@ -25,22 +25,6 @@
 
 #include "arcane/hdf5/ArcaneHdf5Global.h"
 
-// Désactive ces macros car on compile maintenant toujours avec HDF5 1.10+
-#if 0
-// Si HDF5 est compilé avec MPI, alors hdf5.h inclue mpi.h et il faut
-// signaler qu'on ne souhaite pas avoir la partie C++ de MPI
-// NOTE: Avec HDF5 1.10, ces deux macros sont définies donc il n'y a
-// plus besoin de le faire. Ce n'est pas le cas avec HDF5 1.8 donc
-// on les garde encore. Lorsqu'on ne supportera plus que HDF5 1.10 et plus,
-// on pourra les supprimer.
-#ifndef OMPI_SKIP_MPICXX
-#define OMPI_SKIP_MPICXX
-#endif
-#ifndef MPICH_SKIP_MPICXX
-#define MPICH_SKIP_MPICXX
-#endif
-#endif
-
 // Cette macro pour MSVC avec les dll, pour eviter des symbols externes
 // indéfinis avec H5T_NATIVE*
 #define _HDF5USEDLL_
@@ -321,10 +305,8 @@ class ARCANE_HDF5_EXPORT HGroup
 
  public:
 
-  void create(const Hid& loc_id, const String& var)
-  {
-    _setId(H5Gcreate2(loc_id.id(), var.localstr(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-  }
+  void create(const Hid& loc_id, const String& group_name);
+  void openOrCreate(const Hid& loc_id, const String& group_name);
   void recursiveCreate(const Hid& loc_id, const String& var);
   void recursiveCreate(const Hid& loc_id, const Array<String>& paths);
   void checkDelete(const Hid& loc_id, const String& var);
