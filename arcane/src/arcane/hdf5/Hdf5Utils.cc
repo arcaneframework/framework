@@ -113,6 +113,7 @@ splitString(const String& str,Array<String>& str_array,char c)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 void HFile::
 openTruncate(const String& var)
 {
@@ -121,6 +122,7 @@ openTruncate(const String& var)
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
+
 void HFile::
 openAppend(const String& var)
 {
@@ -129,6 +131,7 @@ openAppend(const String& var)
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
+
 void HFile::
 openRead(const String& var)
 {
@@ -137,6 +140,7 @@ openRead(const String& var)
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
+
 void HFile::
 openTruncate(const String& var,hid_t plist_id)
 {
@@ -145,6 +149,7 @@ openTruncate(const String& var,hid_t plist_id)
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
+
 void HFile::
 openAppend(const String& var,hid_t plist_id)
 {
@@ -153,6 +158,7 @@ openAppend(const String& var,hid_t plist_id)
   if (isBad())
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
+
 void HFile::
 openRead(const String& var,hid_t plist_id)
 {
@@ -162,13 +168,29 @@ openRead(const String& var,hid_t plist_id)
     ARCANE_THROW(ReaderWriterException,"Can not open file '{0}'",var);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+herr_t HFile::
+_close()
+{
+  herr_t e = 0;
+  if (id()>0){
+    e = H5Fclose(id());
+    _setNullId();
+  }
+  return e;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void HFile::
 close()
 {
-  if (id()>0){
-    H5Fclose(id());
-    _setNullId();
-  }
+  herr_t e = _close();
+  if (e<0)
+    ARCANE_THROW(ReaderWriterException,"Can not close file");
 }
 
 /*---------------------------------------------------------------------------*/

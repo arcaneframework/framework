@@ -226,8 +226,8 @@ class ARCANE_HDF5_EXPORT HFile
 {
  public:
 
-  HFile() {}
-  ~HFile() { close(); }
+  HFile() = default;
+  ~HFile() { _close(); }
   HFile(HFile&& rhs)
   : Hid(rhs.id())
   {
@@ -257,6 +257,10 @@ class ARCANE_HDF5_EXPORT HFile
   void openAppend(const String& var, hid_t plist_id);
   void openRead(const String& var, hid_t plist_id);
   void close();
+
+ private:
+
+  herr_t _close();
 };
 
 /*---------------------------------------------------------------------------*/
