@@ -86,6 +86,29 @@ class VtkHdfV2DataWriter
 {
  public:
 
+  /*!
+   * \brief Classe pour conserver un couple (hdf_group,nom_du_dataset).
+   *
+   * Les instances de cette classe utilisent une référence sur un groupe HDF5
+   * et ce dernier doit donc vivre plus longtemps que l'instance.
+   */
+  struct GroupAndName
+  {
+    bool isNull() const { return name.null(); }
+    HGroup& group;
+    String name;
+  };
+  /*!
+   * \brief Conserve les infos sur les données à sauver et l'offset associé.
+   */
+  struct DataInfo
+  {
+    GroupAndName dataset;
+    GroupAndName offset;
+  };
+
+ public:
+
   VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups);
 
  public:
@@ -135,27 +158,30 @@ class VtkHdfV2DataWriter
 
   std::map<String, Int64> m_variable_offset;
 
+  HGroup m_null_hdf_group;
+  GroupAndName m_null_offset;
+
  private:
 
   void _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values);
   void _addStringAttribute(Hid& hid, const char* name, const String& value);
 
   template <typename DataType> Int64
-  _writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values);
+  _writeDataSet1D(const DataInfo& data_info, Span<const DataType> values);
   template <typename DataType> Int64
-  _writeDataSet1DUsingCollectiveIO(HGroup& group, const String& name, Span<const DataType> values);
+  _writeDataSet1DUsingCollectiveIO(const DataInfo& data_info, Span<const DataType> values);
   template <typename DataType> Int64
-  _writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType> values);
+  _writeDataSet1DCollective(const DataInfo& data_info, Span<const DataType> values);
   template <typename DataType> Int64
-  _writeDataSet2D(HGroup& group, const String& name, Span2<const DataType> values);
+  _writeDataSet2D(const DataInfo& data_info, Span2<const DataType> values);
   template <typename DataType> Int64
-  _writeDataSet2DUsingCollectiveIO(HGroup& group, const String& name, Span2<const DataType> values);
+  _writeDataSet2DUsingCollectiveIO(const DataInfo& data_info, Span2<const DataType> values);
   template <typename DataType> Int64
-  _writeDataSet2DCollective(HGroup& group, const String& name, Span2<const DataType> values);
+  _writeDataSet2DCollective(const DataInfo& data_info, Span2<const DataType> values);
   template <typename DataType> Int64
-  _writeBasicTypeDataset(HGroup& group, IVariable* var, IData* data);
-  Int64 _writeReal3Dataset(HGroup& group, IVariable* var, IData* data);
-  Int64 _writeReal2Dataset(HGroup& group, IVariable* var, IData* data);
+  _writeBasicTypeDataset(const DataInfo& data_info, IData* data);
+  Int64 _writeReal3Dataset(const DataInfo& data_info, IData* data);
+  Int64 _writeReal2Dataset(const DataInfo& data_info, IData* data);
 
   String _getFileName()
   {
@@ -164,7 +190,7 @@ class VtkHdfV2DataWriter
     return sb.toString();
   }
   template <typename DataType> Int64
-  _writeDataSetGeneric(HGroup& group, const String& name, Int32 nb_dim,
+  _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
                        Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                        bool is_collective);
   void _addInt64ttribute(Hid& hid, const char* name, Int64 value);
@@ -178,6 +204,7 @@ VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_groups(groups)
+, m_null_offset{ m_null_hdf_group, String() }
 {
 }
 
@@ -301,26 +328,29 @@ beginWrite(const VariableCollection& vars)
       cells_offset[index + 1] = connected_node_index;
     }
   }
-
-  _writeDataSet1DCollective<Int64>(top_group, "Offsets", cells_offset);
+  GroupAndName cell_offset_info{ m_steps_group, "CellOffsets" };
+  GroupAndName point_offset_info{ m_steps_group, "PointOffsets" };
+  _writeDataSet1DCollective<Int64>({ { top_group, "Offsets" }, { top_group, "Connectivity" } }, cells_offset);
   {
-    Int64 offset = _writeDataSet1DCollective<Int64>(top_group, "Connectivity", cells_connectivity);
+    Int64 offset = _writeDataSet1DCollective<Int64>({ { top_group, "Connectivity" },
+                                                      { m_steps_group, "ConnectivityIdOffsets" } },
+                                                    cells_connectivity);
     if (m_is_writer)
-      _writeDataSet1D<Int64>(m_steps_group, "ConnectivityIdOffsets", asConstSpan(&offset));
+      _writeDataSet1D<Int64>({ { m_steps_group, "ConnectivityIdOffsets" }, m_null_offset }, asConstSpan(&offset));
   }
   {
-    Int64 offset = _writeDataSet1DCollective<unsigned char>(top_group, "Types", cells_type);
+    Int64 offset = _writeDataSet1DCollective<unsigned char>({ { top_group, "Types" }, cell_offset_info }, cells_type);
     if (m_is_writer)
-      _writeDataSet1D<Int64>(m_steps_group, "CellOffsets", asConstSpan(&offset));
+      _writeDataSet1D<Int64>({ cell_offset_info, m_null_offset }, asConstSpan(&offset));
   }
 
   {
     Int64 nb_cell_int64 = nb_cell;
-    _writeDataSet1DCollective<Int64>(top_group, "NumberOfCells", asConstSpan(&nb_cell_int64));
+    _writeDataSet1DCollective<Int64>({ { top_group, "NumberOfCells" }, m_null_offset }, asConstSpan(&nb_cell_int64));
     Int64 nb_node_int64 = nb_node;
-    _writeDataSet1DCollective<Int64>(top_group, "NumberOfPoints", asConstSpan(&nb_node_int64));
+    _writeDataSet1DCollective<Int64>({ { top_group, "NumberOfPoints" }, m_null_offset }, asConstSpan(&nb_node_int64));
     Int64 number_of_connectivity_ids = cells_connectivity.size();
-    _writeDataSet1DCollective<Int64>(top_group, "NumberOfConnectivityIds", asConstSpan(&number_of_connectivity_ids));
+    _writeDataSet1DCollective<Int64>({ { top_group, "NumberOfConnectivityIds" }, m_null_offset }, asConstSpan(&number_of_connectivity_ids));
   }
 
   // Sauve les coordonnées des noeuds
@@ -336,26 +366,26 @@ beginWrite(const VariableCollection& vars)
       points[index][2] = pos.z;
     }
 
-    Int64 offset = _writeDataSet2DCollective<Real>(top_group, "Points", points);
+    Int64 offset = _writeDataSet2DCollective<Real>({ { top_group, "Points" }, point_offset_info }, points);
     if (m_is_writer)
-      _writeDataSet1D<Int64>(m_steps_group, "PointOffsets", asConstSpan(&offset));
+      _writeDataSet1D<Int64>({ point_offset_info, m_null_offset }, asConstSpan(&offset));
   }
 
   // Sauve les informations sur le type de maille (réel ou fantôme)
-  _writeDataSet1DCollective<unsigned char>(m_cell_data_group, "vtkGhostType", cells_ghost_type);
+  _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, cell_offset_info }, cells_ghost_type);
 
   if (m_is_writer) {
 
     // Liste des temps.
     Real current_time = m_times[time_index - 1];
-    _writeDataSet1D<Real>(m_steps_group, "Values", asConstSpan(&current_time));
-
-    // Nombre de temps
-    _addInt64ttribute(m_steps_group, "NSteps", time_index);
+    _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_null_offset }, asConstSpan(&current_time));
 
     // Offset de la partie.
     Int64 part_offset = (time_index - 1) * pm->commSize();
-    _writeDataSet1D<Int64>(m_steps_group, "PartOffsets", asConstSpan(&part_offset));
+    _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_null_offset }, asConstSpan(&part_offset));
+
+    // Nombre de temps
+    _addInt64ttribute(m_steps_group, "NSteps", time_index);
   }
 }
 
@@ -408,10 +438,12 @@ namespace
  * valeurs du temps courant.
  */
 template <typename DataType> Int64 VtkHdfV2DataWriter::
-_writeDataSetGeneric(HGroup& group, const String& name, Int32 nb_dim,
+_writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
                      Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                      bool is_collective)
 {
+  HGroup& group = data_info.dataset.group;
+  const String& name = data_info.dataset.name;
   static constexpr int MAX_DIM = 2;
   HDataset dataset;
   // En cas d'opération collective, local_dims et global_dims sont
@@ -545,35 +577,35 @@ _writeDataSetGeneric(HGroup& group, const String& name, Int32 nb_dim,
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> Int64 VtkHdfV2DataWriter::
-_writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values)
+_writeDataSet1D(const DataInfo& data_info, Span<const DataType> values)
 {
-  return _writeDataSetGeneric(group, name, 1, values.size(), 1, values.data(), false);
+  return _writeDataSetGeneric(data_info, 1, values.size(), 1, values.data(), false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> Int64 VtkHdfV2DataWriter::
-_writeDataSet1DUsingCollectiveIO(HGroup& group, const String& name, Span<const DataType> values)
+_writeDataSet1DUsingCollectiveIO(const DataInfo& data_info, Span<const DataType> values)
 {
-  return _writeDataSetGeneric(group, name, 1, values.size(), 1, values.data(), true);
+  return _writeDataSetGeneric(data_info, 1, values.size(), 1, values.data(), true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> Int64 VtkHdfV2DataWriter::
-_writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType> values)
+_writeDataSet1DCollective(const DataInfo& data_info, Span<const DataType> values)
 {
   if (!m_is_parallel)
-    return _writeDataSet1D(group, name, values);
+    return _writeDataSet1D(data_info, values);
   if (m_is_collective_io)
-    return _writeDataSet1DUsingCollectiveIO(group, name, values);
+    return _writeDataSet1DUsingCollectiveIO(data_info, values);
   UniqueArray<DataType> all_values;
   IParallelMng* pm = m_mesh->parallelMng();
   pm->gatherVariable(values.smallView(), all_values, pm->masterIORank());
   if (m_is_master_io)
-    return _writeDataSet1D<DataType>(group, name, all_values);
+    return _writeDataSet1D<DataType>(data_info, all_values);
   return (-1);
 }
 
@@ -581,30 +613,30 @@ _writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> Int64 VtkHdfV2DataWriter::
-_writeDataSet2D(HGroup& group, const String& name, Span2<const DataType> values)
+_writeDataSet2D(const DataInfo& data_info, Span2<const DataType> values)
 {
-  return _writeDataSetGeneric(group, name, 2, values.dim1Size(), values.dim2Size(), values.data(), false);
+  return _writeDataSetGeneric(data_info, 2, values.dim1Size(), values.dim2Size(), values.data(), false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> Int64 VtkHdfV2DataWriter::
-_writeDataSet2DUsingCollectiveIO(HGroup& group, const String& name, Span2<const DataType> values)
+_writeDataSet2DUsingCollectiveIO(const DataInfo& data_info, Span2<const DataType> values)
 {
-  return _writeDataSetGeneric(group, name, 2, values.dim1Size(), values.dim2Size(), values.data(), true);
+  return _writeDataSetGeneric(data_info, 2, values.dim1Size(), values.dim2Size(), values.data(), true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> Int64 VtkHdfV2DataWriter::
-_writeDataSet2DCollective(HGroup& group, const String& name, Span2<const DataType> values)
+_writeDataSet2DCollective(const DataInfo& data_info, Span2<const DataType> values)
 {
   if (!m_is_parallel)
-    return _writeDataSet2D(group, name, values);
+    return _writeDataSet2D(data_info, values);
   if (m_is_collective_io)
-    return _writeDataSet2DUsingCollectiveIO(group, name, values);
+    return _writeDataSet2DUsingCollectiveIO(data_info, values);
 
   Int64 dim2_size = values.dim2Size();
   UniqueArray<DataType> all_values;
@@ -616,7 +648,7 @@ _writeDataSet2DCollective(HGroup& group, const String& name, Span2<const DataTyp
     if (dim2_size != 0)
       dim1_size = dim1_size / dim2_size;
     Span2<const DataType> span2(all_values.data(), dim1_size, dim2_size);
-    return _writeDataSet2D<DataType>(group, name, span2);
+    return _writeDataSet2D<DataType>(data_info, span2);
   }
   return (-1);
 }
@@ -727,23 +759,23 @@ write(IVariable* var, IData* data)
     ARCANE_FATAL("Only export of 'Cell' or 'Node' variable is implemented (name={0})", var->name());
   }
   ARCANE_CHECK_POINTER(group);
-
+  DataInfo data_info{ { *group, var->name() }, m_null_offset };
   eDataType data_type = var->dataType();
   switch (data_type) {
   case DT_Real:
-    _writeBasicTypeDataset<Real>(*group, var, data);
+    _writeBasicTypeDataset<Real>(data_info, data);
     break;
   case DT_Int64:
-    _writeBasicTypeDataset<Int64>(*group, var, data);
+    _writeBasicTypeDataset<Int64>(data_info, data);
     break;
   case DT_Int32:
-    _writeBasicTypeDataset<Int32>(*group, var, data);
+    _writeBasicTypeDataset<Int32>(data_info, data);
     break;
   case DT_Real3:
-    _writeReal3Dataset(*group, var, data);
+    _writeReal3Dataset(data_info, data);
     break;
   case DT_Real2:
-    _writeReal2Dataset(*group, var, data);
+    _writeReal2Dataset(data_info, data);
     break;
   default:
     warning() << String::format("Export for datatype '{0}' is not supported (var_name={1})", data_type, var->name());
@@ -754,18 +786,18 @@ write(IVariable* var, IData* data)
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> Int64 VtkHdfV2DataWriter::
-_writeBasicTypeDataset(HGroup& group, IVariable* var, IData* data)
+_writeBasicTypeDataset(const DataInfo& data_info, IData* data)
 {
   auto* true_data = dynamic_cast<IArrayDataT<DataType>*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  return _writeDataSet1DCollective(group, var->name(), Span<const DataType>(true_data->view()));
+  return _writeDataSet1DCollective(data_info, Span<const DataType>(true_data->view()));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Int64 VtkHdfV2DataWriter::
-_writeReal3Dataset(HGroup& group, IVariable* var, IData* data)
+_writeReal3Dataset(const DataInfo& data_info, IData* data)
 {
   auto* true_data = dynamic_cast<IArrayDataT<Real3>*>(data);
   ARCANE_CHECK_POINTER(true_data);
@@ -780,14 +812,14 @@ _writeReal3Dataset(HGroup& group, IVariable* var, IData* data)
     scalar_values[i][1] = v.y;
     scalar_values[i][2] = v.z;
   }
-  return _writeDataSet2DCollective<Real>(group, var->name(), scalar_values);
+  return _writeDataSet2DCollective<Real>(data_info, scalar_values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Int64 VtkHdfV2DataWriter::
-_writeReal2Dataset(HGroup& group, IVariable* var, IData* data)
+_writeReal2Dataset(const DataInfo& data_info, IData* data)
 {
   // Converti en un tableau de 3 composantes dont la dernière vaudra 0.
   auto* true_data = dynamic_cast<IArrayDataT<Real2>*>(data);
@@ -802,7 +834,7 @@ _writeReal2Dataset(HGroup& group, IVariable* var, IData* data)
     scalar_values[i][1] = v.y;
     scalar_values[i][2] = 0.0;
   }
-  return _writeDataSet2DCollective<Real>(group, var->name(), scalar_values);
+  return _writeDataSet2DCollective<Real>(data_info, scalar_values);
 }
 
 /*---------------------------------------------------------------------------*/
