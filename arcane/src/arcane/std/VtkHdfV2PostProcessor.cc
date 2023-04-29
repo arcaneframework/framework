@@ -55,7 +55,11 @@
 
 // TODO: gérer les variables 2D
 
-// TODO: gérer les retour arrière car il faut réduire la taille des dataset.
+// TODO: gérer les retour arrière : il faut réduire la taille des dataset.
+
+// TODO: hors HDF5, faire un mécanisme qui regroupe plusieurs parties
+// du maillage en une seule. Cela permettra de réduire le nombre de mailles
+// fantômes et d'utiliser MPI/IO en mode hybride.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,11 +67,6 @@
 namespace Arcane
 {
 using namespace Hdf5Utils;
-
-namespace
-{
-  Int32 global_chunk_size = 1 << 13;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -123,6 +122,7 @@ class VtkHdfV2DataWriter
   bool m_is_master_io = false;
   bool m_is_collective_io = false;
   bool m_is_first_call = false;
+  bool m_is_writer = false;
 
   std::map<String, Int64> m_variable_offset;
 
@@ -134,9 +134,13 @@ class VtkHdfV2DataWriter
   template <typename DataType> Int64
   _writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values);
   template <typename DataType> Int64
+  _writeDataSet1DUsingCollectiveIO(HGroup& group, const String& name, Span<const DataType> values);
+  template <typename DataType> Int64
   _writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType> values);
   template <typename DataType> Int64
   _writeDataSet2D(HGroup& group, const String& name, Span2<const DataType> values);
+  template <typename DataType> Int64
+  _writeDataSet2DUsingCollectiveIO(HGroup& group, const String& name, Span2<const DataType> values);
   template <typename DataType> Int64
   _writeDataSet2DCollective(HGroup& group, const String& name, Span2<const DataType> values);
   template <typename DataType> Int64
@@ -152,7 +156,8 @@ class VtkHdfV2DataWriter
   }
   template <typename DataType> Int64
   _writeDataSetGeneric(HGroup& group, const String& name, Int32 nb_dim,
-                       Int64 dim1_size, Int64 dim2_size, const DataType* values_data);
+                       Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
+                       bool is_collective);
   void _addInt64ttribute(Hid& hid, const char* name, Int64 value);
 };
 
@@ -199,11 +204,14 @@ beginWrite(const VariableCollection& vars)
   // - Hdf5 a été compilé avec MPI
   // - on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride)
   m_is_collective_io = pm->isParallel() && HInit::hasParallelHdf5();
-
   if (pm->isHybridImplementation() || pm->isThreadImplementation())
     m_is_collective_io = false;
+
   if (is_first_call)
     info() << "VtkHdfV2DataWriter: using collective MPI/IO ?=" << m_is_collective_io;
+
+  // Vrai si on doit participer aux écritures
+  m_is_writer = m_is_master_io || m_is_collective_io;
 
   HProperty plist_id;
   if (m_is_collective_io)
@@ -220,7 +228,7 @@ beginWrite(const VariableCollection& vars)
 
   HGroup top_group;
 
-  if (m_is_collective_io || m_is_master_io) {
+  if (m_is_writer) {
     if (is_first_call) {
       m_file_id.openTruncate(m_full_filename, plist_id.id());
 
@@ -294,15 +302,14 @@ beginWrite(const VariableCollection& vars)
   {
     _writeDataSet1DCollective<Int64>(top_group, "Offsets", cells_offset);
   }
-
   {
     Int64 offset = _writeDataSet1DCollective<Int64>(top_group, "Connectivity", cells_connectivity);
-    if (m_is_master_io)
+    if (m_is_writer)
       _writeDataSet1D<Int64>(m_steps_group, "ConnectivityIdOffsets", Span<const Int64>(&offset, 1));
   }
   {
     Int64 offset = _writeDataSet1DCollective<unsigned char>(top_group, "Types", cells_type);
-    if (m_is_master_io)
+    if (m_is_writer)
       _writeDataSet1D<Int64>(m_steps_group, "CellOffsets", Span<const Int64>(&offset, 1));
   }
 
@@ -330,26 +337,27 @@ beginWrite(const VariableCollection& vars)
   }
   {
     Int64 offset = _writeDataSet2DCollective<Real>(top_group, "Points", points);
-    if (m_is_master_io)
+    if (m_is_writer)
       _writeDataSet1D<Int64>(m_steps_group, "PointOffsets", Span<const Int64>(&offset, 1));
   }
 
   _writeDataSet1DCollective<unsigned char>(m_cell_data_group, "vtkGhostType", cells_ghost_type);
 
-  if (m_is_master_io) {
-    // Liste des temps.
-    Real current_time = m_times[time_index - 1];
-    _writeDataSet1D<Real>(m_steps_group, "Values", Span<const Real>(&current_time, 1));
-  }
+  if (m_is_writer) {
+    {
+      // Liste des temps.
+      Real current_time = m_times[time_index - 1];
+      _writeDataSet1D<Real>(m_steps_group, "Values", Span<const Real>(&current_time, 1));
+    }
 
-  // Nombre de temps
-  if (m_is_master_io)
+    // Nombre de temps
     _addInt64ttribute(m_steps_group, "NSteps", time_index);
 
-  if (m_is_master_io) {
-    // Offset de la partie.
-    Int64 part_offset = (time_index - 1) * pm->commSize();
-    _writeDataSet1D<Int64>(m_steps_group, "PartOffsets", Span<const Int64>(&part_offset, 1));
+    {
+      // Offset de la partie.
+      Int64 part_offset = (time_index - 1) * pm->commSize();
+      _writeDataSet1D<Int64>(m_steps_group, "PartOffsets", Span<const Int64>(&part_offset, 1));
+    }
   }
 }
 
@@ -398,47 +406,104 @@ namespace
  * Pour chaque temps ajouté, la donnée est écrite à la fin des valeurs précédentes.
  *
  * Retourne l'offset d'écriture de la première dimension.
+ * Cela est nécessaire pour le format VTK pour indiquer où commence les
+ * valeurs du temps courant.
  */
 template <typename DataType> Int64 VtkHdfV2DataWriter::
 _writeDataSetGeneric(HGroup& group, const String& name, Int32 nb_dim,
-                     Int64 dim1_size, Int64 dim2_size, const DataType* values_data)
+                     Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
+                     bool is_collective)
 {
   static constexpr int MAX_DIM = 2;
   HDataset dataset;
-  hsize_t dims[MAX_DIM];
+  // En cas d'opération collective, local_dims et global_dims sont
+  // différents sur la première dimension. La deuxième dimension est toujours
+  // la même.
+
+  // Dimensions du dataset que le rang courant va écrire.
+  hsize_t local_dims[MAX_DIM];
+  local_dims[0] = dim1_size;
+  local_dims[1] = dim2_size;
+
+  // Dimensions cumulées de tous les rangs pour l'écriture.
+  hsize_t global_dims[MAX_DIM];
+
+  // Dimensions maximales du DataSet
+  // Pour la deuxième dimension, on suppose qu'elle est constante au cours du temps.
   hsize_t max_dims[MAX_DIM];
   max_dims[0] = H5S_UNLIMITED;
   max_dims[1] = dim2_size;
+
   const hid_t hdf_type = HDFTraits<DataType>::hdfType();
   herr_t herror = 0;
   Int64 write_offset = 0;
+
+  Int64 my_index = 0;
+  Int64 global_dim1_size = dim1_size;
+  Int32 nb_participating_rank = 1;
+  if (is_collective) {
+    // En mode collectif il faut récupérer les index de chaque rang.
+    // TODO: pour les variables, ces indices ne dépendent que du groupe associé
+    // et on peut donc conserver l'information pour éviter le gather à chaque fois.
+    IParallelMng* pm = m_mesh->parallelMng();
+    nb_participating_rank = pm->commSize();
+    Int32 my_rank = pm->commRank();
+
+    UniqueArray<Int64> all_sizes(nb_participating_rank);
+    pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
+
+    global_dim1_size = 0;
+    for (Integer i = 0; i < nb_participating_rank; ++i)
+      global_dim1_size += all_sizes[i];
+    my_index = 0;
+    for (Integer i = 0; i < my_rank; ++i)
+      my_index += all_sizes[i];
+  }
+
+  HProperty write_plist_id;
+  if (is_collective)
+    write_plist_id.createDatasetTransfertCollectiveMPIIO();
+
+  HSpace memory_space;
+  memory_space.createSimple(nb_dim, local_dims);
+
+  HSpace file_space;
+
   if (m_is_first_call) {
+    // TODO: regarder comment mieux calculer le chunk
     hsize_t chunk_dims[MAX_DIM];
-    dims[0] = dim1_size;
-    dims[1] = dim2_size;
-    Int64 chunk_size = dim1_size;
+    global_dims[0] = global_dim1_size;
+    global_dims[1] = dim2_size;
+    // Il est important que tout le monde ait la même taille de chunk.
+    Int64 chunk_size = global_dim1_size / nb_participating_rank;
     if (chunk_size < 1024)
       chunk_size = 1024;
-    chunk_dims[0] = chunk_size; //global_chunk_size;
+    chunk_dims[0] = chunk_size;
     chunk_dims[1] = dim2_size;
-    info() << "CHUNK nb_dim=" << nb_dim
-           << " chunk0=" << chunk_dims[0]
-           << " chunk1=" << chunk_dims[1]
-           << " name=" << name
-           << " nb_byte=" << dim1_size * sizeof(DataType);
-    HSpace hspace;
-    hspace.createSimple(nb_dim, dims, max_dims);
+    info(4) << "CHUNK nb_dim=" << nb_dim
+            << " chunk0=" << chunk_dims[0]
+            << " name=" << name
+            << " nb_byte=" << global_dim1_size * sizeof(DataType);
+    file_space.createSimple(nb_dim, global_dims, max_dims);
     HProperty plist_id;
     plist_id.create(H5P_DATASET_CREATE);
     H5Pset_chunk(plist_id.id(), nb_dim, chunk_dims);
 
-    dataset.create(group, name.localstr(), hdf_type, hspace,
-                   HProperty{}, plist_id, HProperty{});
-    dataset.write(hdf_type, values_data);
+    dataset.create(group, name.localstr(), hdf_type, file_space, HProperty{}, plist_id, HProperty{});
+
+    if (is_collective) {
+      hsize_t offset[MAX_DIM];
+      offset[0] = my_index;
+      offset[1] = 0;
+      if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offset, nullptr, local_dims, nullptr)) < 0)
+        ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
+    }
   }
   else {
+    // Agrandit la première dimension du dataset.
+    // On va ajouter 'global_dim1_size' à cette dimension.
     dataset.open(group, name.localstr());
-    HSpace file_space = dataset.getSpace();
+    file_space = dataset.getSpace();
     int nb_dimension = file_space.nbDimension();
     if (nb_dimension != nb_dim)
       ARCANE_THROW(IOException, "Bad dimension '{0}' for dataset '{1}' (should be 1)",
@@ -447,39 +512,34 @@ _writeDataSetGeneric(HGroup& group, const String& name, Int32 nb_dim,
     hsize_t original_dims[MAX_DIM];
     file_space.getDimensions(original_dims, nullptr);
     hsize_t offset0 = original_dims[0];
-    hsize_t offset1 = 0; //original_dims[1];
-    hsize_t count0 = dim1_size;
-    hsize_t count1 = dim2_size;
-    dims[0] = offset0 + count0;
-    dims[1] = offset1 + count1;
+    global_dims[0] = offset0 + global_dim1_size;
+    global_dims[1] = dim2_size;
     write_offset = offset0;
-    // Agrandit le dataset. ATTENTION cela invalide file_space. Il faut donc le relire.
-    if ((herror = dataset.setExtent(dims)) < 0)
+    // Agrandit le dataset.
+    // ATTENTION cela invalide file_space. Il faut donc le relire juste après.
+    if ((herror = dataset.setExtent(global_dims)) < 0)
       ARCANE_THROW(IOException, "Can not extent dataset '{0}' (err={1})", name, herror);
     file_space = dataset.getSpace();
 
     hsize_t offsets[MAX_DIM];
-    offsets[0] = offset0;
-    offsets[1] = offset1;
-    hsize_t counts[MAX_DIM];
-    counts[0] = count0;
-    counts[1] = count1;
-    info() << "APPEND nb_dim=" << nb_dim
-           << " dim0=" << dims[0]
-           << " count0=" << counts[0]
-           << " offsets0=" << offsets[0] << " name=" << name;
+    offsets[0] = offset0 + my_index;
+    offsets[1] = 0;
+    info(4) << "APPEND nb_dim=" << nb_dim
+            << " dim0=" << global_dims[0]
+            << " count0=" << local_dims[0]
+            << " offsets0=" << offsets[0] << " name=" << name;
 
-    if (herr_t e = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets, nullptr, counts, nullptr) < 0)
-      ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, e);
-
-    HSpace mem_space;
-    mem_space.createSimple(nb_dim, counts, max_dims);
-
-    if ((herror = dataset.write(hdf_type, values_data, mem_space, file_space, HProperty{})) < 0)
-      ARCANE_THROW(IOException, "Can not write dataset '{0}' (err={1})", name, herror);
+    if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets, nullptr, local_dims, nullptr)) < 0)
+      ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
   }
+
+  // Effectue l'écriture
+  if ((herror = dataset.write(hdf_type, values_data, memory_space, file_space, write_plist_id)) < 0)
+    ARCANE_THROW(IOException, "Can not write dataset '{0}' (err={1})", name, herror);
+
   if (dataset.isBad())
     ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
+
   return write_offset;
 }
 
@@ -489,7 +549,16 @@ _writeDataSetGeneric(HGroup& group, const String& name, Int32 nb_dim,
 template <typename DataType> Int64 VtkHdfV2DataWriter::
 _writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values)
 {
-  return _writeDataSetGeneric(group, name, 1, values.size(), 1, values.data());
+  return _writeDataSetGeneric(group, name, 1, values.size(), 1, values.data(), false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> Int64 VtkHdfV2DataWriter::
+_writeDataSet1DUsingCollectiveIO(HGroup& group, const String& name, Span<const DataType> values)
+{
+  return _writeDataSetGeneric(group, name, 1, values.size(), 1, values.data(), true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -501,7 +570,7 @@ _writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType
   if (!m_is_parallel)
     return _writeDataSet1D(group, name, values);
   if (m_is_collective_io)
-    ARCANE_THROW(NotImplementedException, "Collective 1D");
+    return _writeDataSet1DUsingCollectiveIO(group, name, values);
   UniqueArray<DataType> all_values;
   IParallelMng* pm = m_mesh->parallelMng();
   pm->gatherVariable(values.smallView(), all_values, pm->masterIORank());
@@ -516,7 +585,16 @@ _writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType
 template <typename DataType> Int64 VtkHdfV2DataWriter::
 _writeDataSet2D(HGroup& group, const String& name, Span2<const DataType> values)
 {
-  return _writeDataSetGeneric(group, name, 2, values.dim1Size(), values.dim2Size(), values.data());
+  return _writeDataSetGeneric(group, name, 2, values.dim1Size(), values.dim2Size(), values.data(), false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> Int64 VtkHdfV2DataWriter::
+_writeDataSet2DUsingCollectiveIO(HGroup& group, const String& name, Span2<const DataType> values)
+{
+  return _writeDataSetGeneric(group, name, 2, values.dim1Size(), values.dim2Size(), values.data(), true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -528,7 +606,7 @@ _writeDataSet2DCollective(HGroup& group, const String& name, Span2<const DataTyp
   if (!m_is_parallel)
     return _writeDataSet2D(group, name, values);
   if (m_is_collective_io)
-    ARCANE_THROW(NotImplementedException, "Collective 2D");
+    return _writeDataSet2DUsingCollectiveIO(group, name, values);
 
   Int64 dim2_size = values.dim2Size();
   UniqueArray<DataType> all_values;
@@ -632,6 +710,7 @@ setMetaData(const String& meta_data)
 void VtkHdfV2DataWriter::
 write(IVariable* var, IData* data)
 {
+  return;
   info(4) << "Write VtkHdfV2 var=" << var->name();
 
   eItemKind item_kind = var->itemKind();
