@@ -195,14 +195,11 @@ beginWrite(const VariableCollection& vars)
 
   HInit();
 
-  if (pm->isParallel())
-    ARCANE_THROW(NotImplementedException, "VTK HDF V2.0 in parallel");
-
-  // TODO: protéger appels concurrents HDF5
   // Il est possible d'utiliser le mode collectif de HDF5 via MPI-IO dans les cas suivants:
   // - Hdf5 a été compilé avec MPI
   // - on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride)
   m_is_collective_io = pm->isParallel() && HInit::hasParallelHdf5();
+
   if (pm->isHybridImplementation() || pm->isThreadImplementation())
     m_is_collective_io = false;
   if (is_first_call)
@@ -267,8 +264,8 @@ beginWrite(const VariableCollection& vars)
     }
   }
 
-  // Pour les connectivités, la taille du tableau est égal
-  // au nombre de mailes plus 1.
+  // Pour les offsets, la taille du tableau est égal
+  // au nombre de mailles plus 1.
   UniqueArray<Int64> cells_connectivity(total_nb_connected_node);
   UniqueArray<Int64> cells_offset(nb_cell + 1);
   UniqueArray<unsigned char> cells_type(nb_cell);
@@ -300,12 +297,13 @@ beginWrite(const VariableCollection& vars)
 
   {
     Int64 offset = _writeDataSet1DCollective<Int64>(top_group, "Connectivity", cells_connectivity);
-    // TODO: a priori pas collectif et l'offset est la dimension actuelle du dataset
-    _writeDataSet1DCollective<Int64>(m_steps_group, "ConnectivityIdOffsets", Span<const Int64>(&offset, 1));
+    if (m_is_master_io)
+      _writeDataSet1D<Int64>(m_steps_group, "ConnectivityIdOffsets", Span<const Int64>(&offset, 1));
   }
   {
     Int64 offset = _writeDataSet1DCollective<unsigned char>(top_group, "Types", cells_type);
-    _writeDataSet1DCollective<Int64>(m_steps_group, "CellOffsets", Span<const Int64>(&offset, 1));
+    if (m_is_master_io)
+      _writeDataSet1D<Int64>(m_steps_group, "CellOffsets", Span<const Int64>(&offset, 1));
   }
 
   UniqueArray<Int64> nb_cell_by_ranks(1);
@@ -332,23 +330,25 @@ beginWrite(const VariableCollection& vars)
   }
   {
     Int64 offset = _writeDataSet2DCollective<Real>(top_group, "Points", points);
-    _writeDataSet1DCollective<Int64>(m_steps_group, "PointOffsets", Span<const Int64>(&offset, 1));
+    if (m_is_master_io)
+      _writeDataSet1D<Int64>(m_steps_group, "PointOffsets", Span<const Int64>(&offset, 1));
   }
 
   _writeDataSet1DCollective<unsigned char>(m_cell_data_group, "vtkGhostType", cells_ghost_type);
 
-  {
+  if (m_is_master_io) {
     // Liste des temps.
     Real current_time = m_times[time_index - 1];
     _writeDataSet1D<Real>(m_steps_group, "Values", Span<const Real>(&current_time, 1));
   }
 
   // Nombre de temps
-  _addInt64ttribute(m_steps_group, "NSteps", time_index);
+  if (m_is_master_io)
+    _addInt64ttribute(m_steps_group, "NSteps", time_index);
 
-  {
+  if (m_is_master_io) {
     // Offset de la partie.
-    Int64 part_offset = time_index - 1;
+    Int64 part_offset = (time_index - 1) * pm->commSize();
     _writeDataSet1D<Int64>(m_steps_group, "PartOffsets", Span<const Int64>(&part_offset, 1));
   }
 }
@@ -498,7 +498,16 @@ _writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values)
 template <typename DataType> Int64 VtkHdfV2DataWriter::
 _writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType> values)
 {
-  return _writeDataSet1D(group, name, values);
+  if (!m_is_parallel)
+    return _writeDataSet1D(group, name, values);
+  if (m_is_collective_io)
+    ARCANE_THROW(NotImplementedException, "Collective 1D");
+  UniqueArray<DataType> all_values;
+  IParallelMng* pm = m_mesh->parallelMng();
+  pm->gatherVariable(values.smallView(), all_values, pm->masterIORank());
+  if (m_is_master_io)
+    return _writeDataSet1D<DataType>(group, name, all_values);
+  return (-1);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -516,7 +525,24 @@ _writeDataSet2D(HGroup& group, const String& name, Span2<const DataType> values)
 template <typename DataType> Int64 VtkHdfV2DataWriter::
 _writeDataSet2DCollective(HGroup& group, const String& name, Span2<const DataType> values)
 {
-  return _writeDataSet2D(group, name, values);
+  if (!m_is_parallel)
+    return _writeDataSet2D(group, name, values);
+  if (m_is_collective_io)
+    ARCANE_THROW(NotImplementedException, "Collective 2D");
+
+  Int64 dim2_size = values.dim2Size();
+  UniqueArray<DataType> all_values;
+  IParallelMng* pm = m_mesh->parallelMng();
+  Span<const DataType> values_1d(values.data(), values.totalNbElement());
+  pm->gatherVariable(values_1d.smallView(), all_values, pm->masterIORank());
+  if (m_is_master_io) {
+    Int64 dim1_size = all_values.size();
+    if (dim2_size != 0)
+      dim1_size = dim1_size / dim2_size;
+    Span2<const DataType> span2(all_values.data(), dim1_size, dim2_size);
+    return _writeDataSet2D<DataType>(group, name, span2);
+  }
+  return (-1);
 }
 
 /*---------------------------------------------------------------------------*/
