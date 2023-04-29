@@ -68,6 +68,15 @@ namespace Arcane
 {
 using namespace Hdf5Utils;
 
+namespace
+{
+  template <typename T> Span<const T>
+  asConstSpan(const T* v)
+  {
+    return Span<const T>(v, 1);
+  }
+} // namespace
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -148,7 +157,7 @@ class VtkHdfV2DataWriter
   Int64 _writeReal3Dataset(HGroup& group, IVariable* var, IData* data);
   Int64 _writeReal2Dataset(HGroup& group, IVariable* var, IData* data);
 
-  String _getFileNameForTimeIndex(Int32)
+  String _getFileName()
   {
     StringBuilder sb(m_mesh->name());
     sb += ".hdf";
@@ -191,7 +200,7 @@ beginWrite(const VariableCollection& vars)
   if (is_first_call)
     pwarning() << "L'implémentation au format 'VtkHdfV2' est expérimentale";
 
-  String filename = _getFileNameForTimeIndex(time_index);
+  String filename = _getFileName();
 
   Directory dir(m_directory_name);
 
@@ -231,31 +240,25 @@ beginWrite(const VariableCollection& vars)
   if (m_is_writer) {
     if (is_first_call) {
       m_file_id.openTruncate(m_full_filename, plist_id.id());
-
-      top_group.create(m_file_id, "VTKHDF");
-
-      std::array<Int64, 2> version = { 2, 0 };
-      _addInt64ArrayAttribute(top_group, "Version", version);
-      _addStringAttribute(top_group, "Type", "UnstructuredGrid");
-
-      m_cell_data_group.create(top_group, "CellData");
-      m_node_data_group.create(top_group, "PointData");
-      m_steps_group.create(top_group, "Steps");
-      m_point_data_offsets_group.create(m_steps_group, "PointDataOffsets");
-      m_cell_data_offsets_group.create(m_steps_group, "CellDataOffsets");
-      m_field_data_offsets_group.create(m_steps_group, "FieldDataOffsets");
     }
     else {
       m_file_id.openAppend(m_full_filename, plist_id.id());
-      top_group.open(m_file_id, "VTKHDF");
-      m_cell_data_group.open(top_group, "CellData");
-      m_node_data_group.open(top_group, "PointData");
-
-      m_steps_group.open(top_group, "Steps");
-      m_point_data_offsets_group.open(m_steps_group, "PointDataOffsets");
-      m_cell_data_offsets_group.open(m_steps_group, "CellDataOffsets");
-      m_field_data_offsets_group.open(m_steps_group, "FieldDataOffsets");
     }
+
+    top_group.openOrCreate(m_file_id, "VTKHDF");
+
+    if (is_first_call) {
+      std::array<Int64, 2> version = { 2, 0 };
+      _addInt64ArrayAttribute(top_group, "Version", version);
+      _addStringAttribute(top_group, "Type", "UnstructuredGrid");
+    }
+
+    m_cell_data_group.openOrCreate(top_group, "CellData");
+    m_node_data_group.openOrCreate(top_group, "PointData");
+    m_steps_group.openOrCreate(top_group, "Steps");
+    m_point_data_offsets_group.openOrCreate(m_steps_group, "PointDataOffsets");
+    m_cell_data_offsets_group.openOrCreate(m_steps_group, "CellDataOffsets");
+    m_field_data_offsets_group.openOrCreate(m_steps_group, "FieldDataOffsets");
   }
 
   CellGroup all_cells = m_mesh->allCells();
@@ -299,65 +302,60 @@ beginWrite(const VariableCollection& vars)
     }
   }
 
-  {
-    _writeDataSet1DCollective<Int64>(top_group, "Offsets", cells_offset);
-  }
+  _writeDataSet1DCollective<Int64>(top_group, "Offsets", cells_offset);
   {
     Int64 offset = _writeDataSet1DCollective<Int64>(top_group, "Connectivity", cells_connectivity);
     if (m_is_writer)
-      _writeDataSet1D<Int64>(m_steps_group, "ConnectivityIdOffsets", Span<const Int64>(&offset, 1));
+      _writeDataSet1D<Int64>(m_steps_group, "ConnectivityIdOffsets", asConstSpan(&offset));
   }
   {
     Int64 offset = _writeDataSet1DCollective<unsigned char>(top_group, "Types", cells_type);
     if (m_is_writer)
-      _writeDataSet1D<Int64>(m_steps_group, "CellOffsets", Span<const Int64>(&offset, 1));
+      _writeDataSet1D<Int64>(m_steps_group, "CellOffsets", asConstSpan(&offset));
   }
 
-  UniqueArray<Int64> nb_cell_by_ranks(1);
-  nb_cell_by_ranks[0] = nb_cell;
-  _writeDataSet1DCollective<Int64>(top_group, "NumberOfCells", nb_cell_by_ranks);
-
-  UniqueArray<Int64> nb_node_by_ranks(1);
-  nb_node_by_ranks[0] = nb_node;
-  _writeDataSet1DCollective<Int64>(top_group, "NumberOfPoints", nb_node_by_ranks);
-
-  UniqueArray<Int64> number_of_connectivity_ids(1);
-  number_of_connectivity_ids[0] = cells_connectivity.size();
-  _writeDataSet1DCollective<Int64>(top_group, "NumberOfConnectivityIds", number_of_connectivity_ids);
-
-  VariableNodeReal3& nodes_coordinates(m_mesh->nodesCoordinates());
-  UniqueArray2<Real> points;
-  points.resize(nb_node, 3);
-  ENUMERATE_NODE (inode, all_nodes) {
-    Int32 index = inode.index();
-    Real3 pos = nodes_coordinates[inode];
-    points[index][0] = pos.x;
-    points[index][1] = pos.y;
-    points[index][2] = pos.z;
-  }
   {
+    Int64 nb_cell_int64 = nb_cell;
+    _writeDataSet1DCollective<Int64>(top_group, "NumberOfCells", asConstSpan(&nb_cell_int64));
+    Int64 nb_node_int64 = nb_node;
+    _writeDataSet1DCollective<Int64>(top_group, "NumberOfPoints", asConstSpan(&nb_node_int64));
+    Int64 number_of_connectivity_ids = cells_connectivity.size();
+    _writeDataSet1DCollective<Int64>(top_group, "NumberOfConnectivityIds", asConstSpan(&number_of_connectivity_ids));
+  }
+
+  // Sauve les coordonnées des noeuds
+  {
+    VariableNodeReal3& nodes_coordinates(m_mesh->nodesCoordinates());
+    UniqueArray2<Real> points;
+    points.resize(nb_node, 3);
+    ENUMERATE_ (Node, inode, all_nodes) {
+      Int32 index = inode.index();
+      Real3 pos = nodes_coordinates[inode];
+      points[index][0] = pos.x;
+      points[index][1] = pos.y;
+      points[index][2] = pos.z;
+    }
+
     Int64 offset = _writeDataSet2DCollective<Real>(top_group, "Points", points);
     if (m_is_writer)
-      _writeDataSet1D<Int64>(m_steps_group, "PointOffsets", Span<const Int64>(&offset, 1));
+      _writeDataSet1D<Int64>(m_steps_group, "PointOffsets", asConstSpan(&offset));
   }
 
+  // Sauve les informations sur le type de maille (réel ou fantôme)
   _writeDataSet1DCollective<unsigned char>(m_cell_data_group, "vtkGhostType", cells_ghost_type);
 
   if (m_is_writer) {
-    {
-      // Liste des temps.
-      Real current_time = m_times[time_index - 1];
-      _writeDataSet1D<Real>(m_steps_group, "Values", Span<const Real>(&current_time, 1));
-    }
+
+    // Liste des temps.
+    Real current_time = m_times[time_index - 1];
+    _writeDataSet1D<Real>(m_steps_group, "Values", asConstSpan(&current_time));
 
     // Nombre de temps
     _addInt64ttribute(m_steps_group, "NSteps", time_index);
 
-    {
-      // Offset de la partie.
-      Int64 part_offset = (time_index - 1) * pm->commSize();
-      _writeDataSet1D<Int64>(m_steps_group, "PartOffsets", Span<const Int64>(&part_offset, 1));
-    }
+    // Offset de la partie.
+    Int64 part_offset = (time_index - 1) * pm->commSize();
+    _writeDataSet1D<Int64>(m_steps_group, "PartOffsets", asConstSpan(&part_offset));
   }
 }
 
@@ -710,7 +708,6 @@ setMetaData(const String& meta_data)
 void VtkHdfV2DataWriter::
 write(IVariable* var, IData* data)
 {
-  return;
   info(4) << "Write VtkHdfV2 var=" << var->name();
 
   eItemKind item_kind = var->itemKind();
