@@ -92,19 +92,60 @@ class VtkHdfV2DataWriter
    * Les instances de cette classe utilisent une référence sur un groupe HDF5
    * et ce dernier doit donc vivre plus longtemps que l'instance.
    */
-  struct GroupAndName
+  struct DatasetGroupAndName
   {
-    bool isNull() const { return name.null(); }
     HGroup& group;
     String name;
+  };
+
+  /*!
+   * \brief Classe pour conserver les information d'un offset.
+   *
+   * Il s'agit d'un couple (hdf_group,nom_du_dataset).
+   *
+   * Le groupe peut être nul auquel cas il s'agit d'un offset qui est
+   * uniquement calculé et qui ne sera pas sauvegardé.
+   *
+   * Les instances de cette classe utilisent une référence sur un groupe HDF5
+   * et ce dernier doit donc vivre plus longtemps que l'instance.
+   */
+  struct OffsetInfo
+  {
+    // TODO: utiliser un nom supplémentaire pour faire la distinction
+    // entre les variables Arcane et les champs spécifiques HDF5.
+    OffsetInfo() = default;
+    explicit OffsetInfo(const String& name)
+    : m_name(name)
+    {}
+    OffsetInfo(HGroup& _group, const String& name)
+    : m_group(&_group)
+    , m_name(name)
+    {}
+    bool isNull() const { return m_name.null(); }
+
+    HGroup* group() const { return m_group; }
+    const String& name() const { return m_name; }
+    //! Valeur de l'offset. (-1) si on écrit à la fin du tableau
+    Int64 value() const { return m_value; }
+    void setValue(Int64 v) { m_value = v; }
+    friend bool operator<(const OffsetInfo& s1, const OffsetInfo& s2)
+    {
+      return (s1.m_name < s2.m_name);
+    }
+
+   private:
+
+    HGroup* m_group = nullptr;
+    String m_name;
+    Int64 m_value = -1;
   };
   /*!
    * \brief Conserve les infos sur les données à sauver et l'offset associé.
    */
   struct DataInfo
   {
-    GroupAndName dataset;
-    GroupAndName offset;
+    DatasetGroupAndName dataset;
+    OffsetInfo offset;
   };
 
  public:
@@ -142,6 +183,7 @@ class VtkHdfV2DataWriter
   //! Identifiant HDF du fichier
   HFile m_file_id;
 
+  HGroup m_top_group;
   HGroup m_cell_data_group;
   HGroup m_node_data_group;
 
@@ -156,32 +198,36 @@ class VtkHdfV2DataWriter
   bool m_is_first_call = false;
   bool m_is_writer = false;
 
-  std::map<String, Int64> m_variable_offset;
-
-  HGroup m_null_hdf_group;
-  GroupAndName m_null_offset;
+  //GroupAndName m_null_offset;
+  OffsetInfo m_cell_offset_info;
+  OffsetInfo m_point_offset_info;
+  OffsetInfo m_connectivity_offset_info;
+  OffsetInfo m_offset_field_offset_info;
+  OffsetInfo m_part_offset_info;
+  OffsetInfo m_time_offset_info;
+  std::map<OffsetInfo, Int64> m_offset_info_list;
 
  private:
 
   void _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values);
   void _addStringAttribute(Hid& hid, const char* name, const String& value);
 
-  template <typename DataType> Int64
+  template <typename DataType> void
   _writeDataSet1D(const DataInfo& data_info, Span<const DataType> values);
-  template <typename DataType> Int64
+  template <typename DataType> void
   _writeDataSet1DUsingCollectiveIO(const DataInfo& data_info, Span<const DataType> values);
-  template <typename DataType> Int64
+  template <typename DataType> void
   _writeDataSet1DCollective(const DataInfo& data_info, Span<const DataType> values);
-  template <typename DataType> Int64
+  template <typename DataType> void
   _writeDataSet2D(const DataInfo& data_info, Span2<const DataType> values);
-  template <typename DataType> Int64
+  template <typename DataType> void
   _writeDataSet2DUsingCollectiveIO(const DataInfo& data_info, Span2<const DataType> values);
-  template <typename DataType> Int64
+  template <typename DataType> void
   _writeDataSet2DCollective(const DataInfo& data_info, Span2<const DataType> values);
-  template <typename DataType> Int64
+  template <typename DataType> void
   _writeBasicTypeDataset(const DataInfo& data_info, IData* data);
-  Int64 _writeReal3Dataset(const DataInfo& data_info, IData* data);
-  Int64 _writeReal2Dataset(const DataInfo& data_info, IData* data);
+  void _writeReal3Dataset(const DataInfo& data_info, IData* data);
+  void _writeReal2Dataset(const DataInfo& data_info, IData* data);
 
   String _getFileName()
   {
@@ -189,11 +235,13 @@ class VtkHdfV2DataWriter
     sb += ".hdf";
     return sb.toString();
   }
-  template <typename DataType> Int64
+  template <typename DataType> void
   _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
                        Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                        bool is_collective);
   void _addInt64ttribute(Hid& hid, const char* name, Int64 value);
+  void _openOrCreateGroups();
+  void _closeGroups();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -204,7 +252,6 @@ VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_groups(groups)
-, m_null_offset{ m_null_hdf_group, String() }
 {
 }
 
@@ -249,43 +296,31 @@ beginWrite(const VariableCollection& vars)
   // Vrai si on doit participer aux écritures
   m_is_writer = m_is_master_io || m_is_collective_io;
 
+  // Indique qu'on utilise MPI/IO si demandé
   HProperty plist_id;
   if (m_is_collective_io)
     plist_id.createFilePropertyMPIIO(pm);
 
-  if (is_first_call) {
-    if (m_is_master_io) {
-      dir.createDirectory();
-    }
-  }
+  if (is_first_call && m_is_master_io)
+    dir.createDirectory();
 
   if (m_is_collective_io)
     pm->barrier();
 
-  HGroup top_group;
-
   if (m_is_writer) {
-    if (is_first_call) {
-      m_file_id.openTruncate(m_full_filename, plist_id.id());
-    }
-    else {
-      m_file_id.openAppend(m_full_filename, plist_id.id());
-    }
 
-    top_group.openOrCreate(m_file_id, "VTKHDF");
+    if (is_first_call)
+      m_file_id.openTruncate(m_full_filename, plist_id.id());
+    else
+      m_file_id.openAppend(m_full_filename, plist_id.id());
+
+    _openOrCreateGroups();
 
     if (is_first_call) {
       std::array<Int64, 2> version = { 2, 0 };
-      _addInt64ArrayAttribute(top_group, "Version", version);
-      _addStringAttribute(top_group, "Type", "UnstructuredGrid");
+      _addInt64ArrayAttribute(m_top_group, "Version", version);
+      _addStringAttribute(m_top_group, "Type", "UnstructuredGrid");
     }
-
-    m_cell_data_group.openOrCreate(top_group, "CellData");
-    m_node_data_group.openOrCreate(top_group, "PointData");
-    m_steps_group.openOrCreate(top_group, "Steps");
-    m_point_data_offsets_group.openOrCreate(m_steps_group, "PointDataOffsets");
-    m_cell_data_offsets_group.openOrCreate(m_steps_group, "CellDataOffsets");
-    m_field_data_offsets_group.openOrCreate(m_steps_group, "FieldDataOffsets");
   }
 
   CellGroup all_cells = m_mesh->allCells();
@@ -295,11 +330,9 @@ beginWrite(const VariableCollection& vars)
   const Int32 nb_node = all_nodes.size();
 
   Int32 total_nb_connected_node = 0;
-  {
-    ENUMERATE_CELL (icell, all_cells) {
-      Cell cell = *icell;
-      total_nb_connected_node += cell.nodeIds().size();
-    }
+  ENUMERATE_ (Cell, icell, all_cells) {
+    Cell cell = *icell;
+    total_nb_connected_node += cell.nodeIds().size();
   }
 
   // Pour les offsets, la taille du tableau est égal
@@ -328,29 +361,49 @@ beginWrite(const VariableCollection& vars)
       cells_offset[index + 1] = connected_node_index;
     }
   }
-  GroupAndName cell_offset_info{ m_steps_group, "CellOffsets" };
-  GroupAndName point_offset_info{ m_steps_group, "PointOffsets" };
-  _writeDataSet1DCollective<Int64>({ { top_group, "Offsets" }, { top_group, "Connectivity" } }, cells_offset);
-  {
-    Int64 offset = _writeDataSet1DCollective<Int64>({ { top_group, "Connectivity" },
-                                                      { m_steps_group, "ConnectivityIdOffsets" } },
-                                                    cells_connectivity);
-    if (m_is_writer)
-      _writeDataSet1D<Int64>({ { m_steps_group, "ConnectivityIdOffsets" }, m_null_offset }, asConstSpan(&offset));
-  }
-  {
-    Int64 offset = _writeDataSet1DCollective<unsigned char>({ { top_group, "Types" }, cell_offset_info }, cells_type);
-    if (m_is_writer)
-      _writeDataSet1D<Int64>({ cell_offset_info, m_null_offset }, asConstSpan(&offset));
-  }
+
+  // Il y a 5 valeurs d'offset utilisées:
+  // - offset sur le nombre de mailles (CellOffsets). Cet offset a pour nombre d'éléments
+  //   le nombre de temps sauvés et est augmenté à chaque sortie du nombre de mailles. Cet offset
+  //   est aussi utiliser pour les variables aux mailles
+  // - offset sur le nombre de noeuds (PointOffsets). Il équivalent à 'CellOffsets' mais
+  //   pour les noeuds.
+  // - offset pour "NumberOfCells", "NumberOfPoints" et "NumberOfConnectivityIds". Pour chacun
+  //   de ces champs il y a NbPart valeurs par temps, avec 'NbPart' le nombre de parties (donc
+  //   le nombre de sous-domaines si on ne fait pas de regroupement). Il y a donc au total
+  //   NbPart * NbTimeStep dans ce champ d'offset.
+  // - offset pour le champ "Connectivity" qui s'appelle "ConnectivityIdOffsets".
+  //   Cet offset a pour nombre d'éléments le nombre de temps sauvés.
+  // - offset pour le champ "Offsets". "Offset" contient pour chaque maille l'offset dans
+  //   "Connectivity" de la connectivité des noeuds de la maille. Cet offset n'est pas sauvés
+  //   mais comme ce champ à un nombre de valeur égale au nombre de mailles plus 1 il est possible
+  //   de le déduire de "CellOffsets" (il vaut "CellOffsets" plus l'index du temps courant).
+
+  m_cell_offset_info = OffsetInfo(m_steps_group, "CellOffsets");
+  m_point_offset_info = OffsetInfo(m_steps_group, "PointOffsets");
+  m_connectivity_offset_info = OffsetInfo(m_steps_group, "ConnectivityIdOffsets");
+  // Ces trois offsets ne sont pas sauvegardés dans le format VTK
+  m_offset_field_offset_info = OffsetInfo("_OffsetFieldOffsetInfo");
+  m_part_offset_info = OffsetInfo("_PartOffsetInfo");
+  m_time_offset_info = OffsetInfo("_TimeOffsetInfo");
+
+  // TODO: faire un offset pour cet objet (ou regarder comment le calculer automatiquement
+  _writeDataSet1DCollective<Int64>({ { m_top_group, "Offsets" }, m_offset_field_offset_info }, cells_offset);
+
+  _writeDataSet1DCollective<Int64>({ { m_top_group, "Connectivity" }, m_connectivity_offset_info },
+                                   cells_connectivity);
+  _writeDataSet1DCollective<unsigned char>({ { m_top_group, "Types" }, m_cell_offset_info }, cells_type);
 
   {
     Int64 nb_cell_int64 = nb_cell;
-    _writeDataSet1DCollective<Int64>({ { top_group, "NumberOfCells" }, m_null_offset }, asConstSpan(&nb_cell_int64));
+    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfCells" }, m_part_offset_info },
+                                     asConstSpan(&nb_cell_int64));
     Int64 nb_node_int64 = nb_node;
-    _writeDataSet1DCollective<Int64>({ { top_group, "NumberOfPoints" }, m_null_offset }, asConstSpan(&nb_node_int64));
+    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfPoints" }, m_part_offset_info },
+                                     asConstSpan(&nb_node_int64));
     Int64 number_of_connectivity_ids = cells_connectivity.size();
-    _writeDataSet1DCollective<Int64>({ { top_group, "NumberOfConnectivityIds" }, m_null_offset }, asConstSpan(&number_of_connectivity_ids));
+    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfConnectivityIds" }, m_part_offset_info },
+                                     asConstSpan(&number_of_connectivity_ids));
   }
 
   // Sauve les coordonnées des noeuds
@@ -366,23 +419,21 @@ beginWrite(const VariableCollection& vars)
       points[index][2] = pos.z;
     }
 
-    Int64 offset = _writeDataSet2DCollective<Real>({ { top_group, "Points" }, point_offset_info }, points);
-    if (m_is_writer)
-      _writeDataSet1D<Int64>({ point_offset_info, m_null_offset }, asConstSpan(&offset));
+    _writeDataSet2DCollective<Real>({ { m_top_group, "Points" }, m_point_offset_info }, points);
   }
 
   // Sauve les informations sur le type de maille (réel ou fantôme)
-  _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, cell_offset_info }, cells_ghost_type);
+  _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, m_cell_offset_info }, cells_ghost_type);
 
   if (m_is_writer) {
 
     // Liste des temps.
     Real current_time = m_times[time_index - 1];
-    _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_null_offset }, asConstSpan(&current_time));
+    _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_time_offset_info }, asConstSpan(&current_time));
 
     // Offset de la partie.
     Int64 part_offset = (time_index - 1) * pm->commSize();
-    _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_null_offset }, asConstSpan(&part_offset));
+    _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, asConstSpan(&part_offset));
 
     // Nombre de temps
     _addInt64ttribute(m_steps_group, "NSteps", time_index);
@@ -437,7 +488,7 @@ namespace
  * Cela est nécessaire pour le format VTK pour indiquer où commence les
  * valeurs du temps courant.
  */
-template <typename DataType> Int64 VtkHdfV2DataWriter::
+template <typename DataType> void VtkHdfV2DataWriter::
 _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
                      Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                      bool is_collective)
@@ -570,31 +621,32 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   if (dataset.isBad())
     ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
 
-  return write_offset;
+  if (!data_info.offset.isNull())
+    m_offset_info_list.insert(std::make_pair(data_info.offset, write_offset));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType> Int64 VtkHdfV2DataWriter::
+template <typename DataType> void VtkHdfV2DataWriter::
 _writeDataSet1D(const DataInfo& data_info, Span<const DataType> values)
 {
-  return _writeDataSetGeneric(data_info, 1, values.size(), 1, values.data(), false);
+  _writeDataSetGeneric(data_info, 1, values.size(), 1, values.data(), false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType> Int64 VtkHdfV2DataWriter::
+template <typename DataType> void VtkHdfV2DataWriter::
 _writeDataSet1DUsingCollectiveIO(const DataInfo& data_info, Span<const DataType> values)
 {
-  return _writeDataSetGeneric(data_info, 1, values.size(), 1, values.data(), true);
+  _writeDataSetGeneric(data_info, 1, values.size(), 1, values.data(), true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType> Int64 VtkHdfV2DataWriter::
+template <typename DataType> void VtkHdfV2DataWriter::
 _writeDataSet1DCollective(const DataInfo& data_info, Span<const DataType> values)
 {
   if (!m_is_parallel)
@@ -605,32 +657,31 @@ _writeDataSet1DCollective(const DataInfo& data_info, Span<const DataType> values
   IParallelMng* pm = m_mesh->parallelMng();
   pm->gatherVariable(values.smallView(), all_values, pm->masterIORank());
   if (m_is_master_io)
-    return _writeDataSet1D<DataType>(data_info, all_values);
-  return (-1);
+    _writeDataSet1D<DataType>(data_info, all_values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType> Int64 VtkHdfV2DataWriter::
+template <typename DataType> void VtkHdfV2DataWriter::
 _writeDataSet2D(const DataInfo& data_info, Span2<const DataType> values)
 {
-  return _writeDataSetGeneric(data_info, 2, values.dim1Size(), values.dim2Size(), values.data(), false);
+  _writeDataSetGeneric(data_info, 2, values.dim1Size(), values.dim2Size(), values.data(), false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType> Int64 VtkHdfV2DataWriter::
+template <typename DataType> void VtkHdfV2DataWriter::
 _writeDataSet2DUsingCollectiveIO(const DataInfo& data_info, Span2<const DataType> values)
 {
-  return _writeDataSetGeneric(data_info, 2, values.dim1Size(), values.dim2Size(), values.data(), true);
+  _writeDataSetGeneric(data_info, 2, values.dim1Size(), values.dim2Size(), values.data(), true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType> Int64 VtkHdfV2DataWriter::
+template <typename DataType> void VtkHdfV2DataWriter::
 _writeDataSet2DCollective(const DataInfo& data_info, Span2<const DataType> values)
 {
   if (!m_is_parallel)
@@ -650,7 +701,6 @@ _writeDataSet2DCollective(const DataInfo& data_info, Span2<const DataType> value
     Span2<const DataType> span2(all_values.data(), dim1_size, dim2_size);
     return _writeDataSet2D<DataType>(data_info, span2);
   }
-  return (-1);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -716,13 +766,51 @@ _addStringAttribute(Hid& hid, const char* name, const String& value)
 void VtkHdfV2DataWriter::
 endWrite()
 {
+  // Sauvegarde les offsets enregistrés
+
+  if (m_is_writer) {
+    for (const auto& i : m_offset_info_list) {
+      Int64 offset = i.second;
+      const OffsetInfo& offset_info = i.first;
+      HGroup* hdf_group = offset_info.group();
+      //info() << "OFFSET_INFO name=" << offset_info.name() << " offset=" << offset;
+      if (hdf_group)
+        _writeDataSet1D<Int64>({ { *hdf_group, offset_info.name() }, m_time_offset_info }, asConstSpan(&offset));
+    }
+  }
+  _closeGroups();
+  m_file_id.close();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkHdfV2DataWriter::
+_openOrCreateGroups()
+{
+  // Tout groupe ouvert ici doit être fermé dans closeGroups().
+  m_top_group.openOrCreate(m_file_id, "VTKHDF");
+  m_cell_data_group.openOrCreate(m_top_group, "CellData");
+  m_node_data_group.openOrCreate(m_top_group, "PointData");
+  m_steps_group.openOrCreate(m_top_group, "Steps");
+  m_point_data_offsets_group.openOrCreate(m_steps_group, "PointDataOffsets");
+  m_cell_data_offsets_group.openOrCreate(m_steps_group, "CellDataOffsets");
+  m_field_data_offsets_group.openOrCreate(m_steps_group, "FieldDataOffsets");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkHdfV2DataWriter::
+_closeGroups()
+{
   m_cell_data_group.close();
   m_node_data_group.close();
   m_point_data_offsets_group.close();
   m_cell_data_offsets_group.close();
   m_field_data_offsets_group.close();
   m_steps_group.close();
-  m_file_id.close();
+  m_top_group.close();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -748,18 +836,21 @@ write(IVariable* var, IData* data)
     ARCANE_FATAL("Only export of scalar item variable is implemented (name={0})", var->name());
 
   HGroup* group = nullptr;
+  OffsetInfo offset_info;
   switch (item_kind) {
   case IK_Cell:
     group = &m_cell_data_group;
+    offset_info = m_cell_offset_info;
     break;
   case IK_Node:
     group = &m_node_data_group;
+    offset_info = m_point_offset_info;
     break;
   default:
     ARCANE_FATAL("Only export of 'Cell' or 'Node' variable is implemented (name={0})", var->name());
   }
   ARCANE_CHECK_POINTER(group);
-  DataInfo data_info{ { *group, var->name() }, m_null_offset };
+  DataInfo data_info{ { *group, var->name() }, offset_info };
   eDataType data_type = var->dataType();
   switch (data_type) {
   case DT_Real:
@@ -785,18 +876,18 @@ write(IVariable* var, IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType> Int64 VtkHdfV2DataWriter::
+template <typename DataType> void VtkHdfV2DataWriter::
 _writeBasicTypeDataset(const DataInfo& data_info, IData* data)
 {
   auto* true_data = dynamic_cast<IArrayDataT<DataType>*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  return _writeDataSet1DCollective(data_info, Span<const DataType>(true_data->view()));
+  _writeDataSet1DCollective(data_info, Span<const DataType>(true_data->view()));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64 VtkHdfV2DataWriter::
+void VtkHdfV2DataWriter::
 _writeReal3Dataset(const DataInfo& data_info, IData* data)
 {
   auto* true_data = dynamic_cast<IArrayDataT<Real3>*>(data);
@@ -812,13 +903,13 @@ _writeReal3Dataset(const DataInfo& data_info, IData* data)
     scalar_values[i][1] = v.y;
     scalar_values[i][2] = v.z;
   }
-  return _writeDataSet2DCollective<Real>(data_info, scalar_values);
+  _writeDataSet2DCollective<Real>(data_info, scalar_values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64 VtkHdfV2DataWriter::
+void VtkHdfV2DataWriter::
 _writeReal2Dataset(const DataInfo& data_info, IData* data)
 {
   // Converti en un tableau de 3 composantes dont la dernière vaudra 0.
@@ -834,7 +925,7 @@ _writeReal2Dataset(const DataInfo& data_info, IData* data)
     scalar_values[i][1] = v.y;
     scalar_values[i][2] = 0.0;
   }
-  return _writeDataSet2DCollective<Real>(data_info, scalar_values);
+  _writeDataSet2DCollective<Real>(data_info, scalar_values);
 }
 
 /*---------------------------------------------------------------------------*/
