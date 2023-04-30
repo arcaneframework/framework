@@ -25,22 +25,6 @@
 
 #include "arcane/hdf5/ArcaneHdf5Global.h"
 
-// Désactive ces macros car on compile maintenant toujours avec HDF5 1.10+
-#if 0
-// Si HDF5 est compilé avec MPI, alors hdf5.h inclue mpi.h et il faut
-// signaler qu'on ne souhaite pas avoir la partie C++ de MPI
-// NOTE: Avec HDF5 1.10, ces deux macros sont définies donc il n'y a
-// plus besoin de le faire. Ce n'est pas le cas avec HDF5 1.8 donc
-// on les garde encore. Lorsqu'on ne supportera plus que HDF5 1.10 et plus,
-// on pourra les supprimer.
-#ifndef OMPI_SKIP_MPICXX
-#define OMPI_SKIP_MPICXX
-#endif
-#ifndef MPICH_SKIP_MPICXX
-#define MPICH_SKIP_MPICXX
-#endif
-#endif
-
 // Cette macro pour MSVC avec les dll, pour eviter des symbols externes
 // indéfinis avec H5T_NATIVE*
 #define _HDF5USEDLL_
@@ -321,10 +305,8 @@ class ARCANE_HDF5_EXPORT HGroup
 
  public:
 
-  void create(const Hid& loc_id, const String& var)
-  {
-    _setId(H5Gcreate2(loc_id.id(), var.localstr(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-  }
+  void create(const Hid& loc_id, const String& group_name);
+  void openOrCreate(const Hid& loc_id, const String& group_name);
   void recursiveCreate(const Hid& loc_id, const String& var);
   void recursiveCreate(const Hid& loc_id, const Array<String>& paths);
   void checkDelete(const Hid& loc_id, const String& var);
@@ -568,18 +550,40 @@ class ARCANE_HDF5_EXPORT HType
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Définition des types standards Arcane pour hdf5.
+ *
+ * Une instance de cette classe construit des types HDF5 pour faire la
+ * conversion entre les types HDF5 et les types Arcane.
+ *
+ * Le constructeur par défaut utilisant des appels HDF5, il n'est pas thread-safe.
+ * Si on est en contexte multi-thread, il est préférable d'utiliser
+ * StandardTypes(false) et d'appeler init() pour initialiser les types.
  */
 class ARCANE_HDF5_EXPORT StandardTypes
 {
  public:
 
+  /*!
+   * \brief Créé une instance en initialisant les types.
+   *
+   * \warning non thread-safe.
+   */
   StandardTypes();
+
+  //! Créé une instance sans initialiser les types is \a do_init est faux.
+  explicit StandardTypes(bool do_init);
+
   ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
   StandardTypes(const StandardTypes& rhs) = default;
+
   ~StandardTypes();
 
   ARCANE_DEPRECATED_REASON("Y2023: Copy operator is deprecated. This class has unique ownership")
   StandardTypes& operator=(const StandardTypes& rhs) = default;
+
+ public:
+
+  //! Initialise les types.
+  void initialize();
 
  public:
 
