@@ -683,6 +683,25 @@ createDatasetTransfertCollectiveMPIIO()
 StandardTypes::
 StandardTypes()
 {
+  initialize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StandardTypes::
+StandardTypes(bool do_init)
+{
+  if (do_init)
+    initialize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void StandardTypes::
+initialize()
+{
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_CHAR);
     m_char_id.setId(type_id);

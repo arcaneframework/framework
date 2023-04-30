@@ -550,18 +550,40 @@ class ARCANE_HDF5_EXPORT HType
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Définition des types standards Arcane pour hdf5.
+ *
+ * Une instance de cette classe construit des types HDF5 pour faire la
+ * conversion entre les types HDF5 et les types Arcane.
+ *
+ * Le constructeur par défaut utilisant des appels HDF5, il n'est pas thread-safe.
+ * Si on est en contexte multi-thread, il est préférable d'utiliser
+ * StandardTypes(false) et d'appeler init() pour initialiser les types.
  */
 class ARCANE_HDF5_EXPORT StandardTypes
 {
  public:
 
+  /*!
+   * \brief Créé une instance en initialisant les types.
+   *
+   * \warning non thread-safe.
+   */
   StandardTypes();
+
+  //! Créé une instance sans initialiser les types is \a do_init est faux.
+  explicit StandardTypes(bool do_init);
+
   ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
   StandardTypes(const StandardTypes& rhs) = default;
+
   ~StandardTypes();
 
   ARCANE_DEPRECATED_REASON("Y2023: Copy operator is deprecated. This class has unique ownership")
   StandardTypes& operator=(const StandardTypes& rhs) = default;
+
+ public:
+
+  //! Initialise les types.
+  void initialize();
 
  public:
 
