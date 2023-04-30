@@ -46,6 +46,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: Ajouter test de vérifcation des valeurs sauvegardées
+
 // TODO: Regarder la sauvegarde des uniqueId() (via vtkOriginalCellIds)
 
 // TODO: Regarder comment éviter de sauver le maillage à chaque itération s'il
@@ -54,8 +56,6 @@
 // TODO: Regarder la compression
 
 // TODO: gérer les variables 2D
-
-// TODO: gérer les retour arrière : il faut réduire la taille des dataset.
 
 // TODO: hors HDF5, faire un mécanisme qui regroupe plusieurs parties
 // du maillage en une seule. Cela permettra de réduire le nombre de mailles
@@ -198,14 +198,15 @@ class VtkHdfV2DataWriter
   bool m_is_first_call = false;
   bool m_is_writer = false;
 
-  //GroupAndName m_null_offset;
   OffsetInfo m_cell_offset_info;
   OffsetInfo m_point_offset_info;
   OffsetInfo m_connectivity_offset_info;
-  OffsetInfo m_offset_field_offset_info;
+  OffsetInfo m_offset_for_cell_offset_info;
   OffsetInfo m_part_offset_info;
   OffsetInfo m_time_offset_info;
   std::map<OffsetInfo, Int64> m_offset_info_list;
+
+  StandardTypes m_standard_types;
 
  private:
 
@@ -240,8 +241,11 @@ class VtkHdfV2DataWriter
                        Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                        bool is_collective);
   void _addInt64ttribute(Hid& hid, const char* name, Int64 value);
+  Int64 _readInt64Attribute(Hid& hid, const char* name);
   void _openOrCreateGroups();
   void _closeGroups();
+  void _readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step);
+  void _initializeOffsets();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -252,6 +256,7 @@ VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_groups(groups)
+, m_standard_types(false)
 {
 }
 
@@ -294,6 +299,9 @@ beginWrite(const VariableCollection& vars)
     info() << "VtkHdfV2DataWriter: using collective MPI/IO ?=" << m_is_collective_io;
 
   // Vrai si on doit participer aux écritures
+  // Si on utilise MPI/IO avec HDF5, il faut tout de même que tous
+  // les rangs fassent toutes les opérations d'écriture pour garantir
+  // la cohérence des méta-données.
   m_is_writer = m_is_master_io || m_is_collective_io;
 
   // Indique qu'on utilise MPI/IO si demandé
@@ -308,6 +316,7 @@ beginWrite(const VariableCollection& vars)
     pm->barrier();
 
   if (m_is_writer) {
+    m_standard_types.initialize();
 
     if (is_first_call)
       m_file_id.openTruncate(m_full_filename, plist_id.id());
@@ -362,33 +371,10 @@ beginWrite(const VariableCollection& vars)
     }
   }
 
-  // Il y a 5 valeurs d'offset utilisées:
-  // - offset sur le nombre de mailles (CellOffsets). Cet offset a pour nombre d'éléments
-  //   le nombre de temps sauvés et est augmenté à chaque sortie du nombre de mailles. Cet offset
-  //   est aussi utiliser pour les variables aux mailles
-  // - offset sur le nombre de noeuds (PointOffsets). Il équivalent à 'CellOffsets' mais
-  //   pour les noeuds.
-  // - offset pour "NumberOfCells", "NumberOfPoints" et "NumberOfConnectivityIds". Pour chacun
-  //   de ces champs il y a NbPart valeurs par temps, avec 'NbPart' le nombre de parties (donc
-  //   le nombre de sous-domaines si on ne fait pas de regroupement). Il y a donc au total
-  //   NbPart * NbTimeStep dans ce champ d'offset.
-  // - offset pour le champ "Connectivity" qui s'appelle "ConnectivityIdOffsets".
-  //   Cet offset a pour nombre d'éléments le nombre de temps sauvés.
-  // - offset pour le champ "Offsets". "Offset" contient pour chaque maille l'offset dans
-  //   "Connectivity" de la connectivité des noeuds de la maille. Cet offset n'est pas sauvés
-  //   mais comme ce champ à un nombre de valeur égale au nombre de mailles plus 1 il est possible
-  //   de le déduire de "CellOffsets" (il vaut "CellOffsets" plus l'index du temps courant).
-
-  m_cell_offset_info = OffsetInfo(m_steps_group, "CellOffsets");
-  m_point_offset_info = OffsetInfo(m_steps_group, "PointOffsets");
-  m_connectivity_offset_info = OffsetInfo(m_steps_group, "ConnectivityIdOffsets");
-  // Ces trois offsets ne sont pas sauvegardés dans le format VTK
-  m_offset_field_offset_info = OffsetInfo("_OffsetFieldOffsetInfo");
-  m_part_offset_info = OffsetInfo("_PartOffsetInfo");
-  m_time_offset_info = OffsetInfo("_TimeOffsetInfo");
+  _initializeOffsets();
 
   // TODO: faire un offset pour cet objet (ou regarder comment le calculer automatiquement
-  _writeDataSet1DCollective<Int64>({ { m_top_group, "Offsets" }, m_offset_field_offset_info }, cells_offset);
+  _writeDataSet1DCollective<Int64>({ { m_top_group, "Offsets" }, m_offset_for_cell_offset_info }, cells_offset);
 
   _writeDataSet1DCollective<Int64>({ { m_top_group, "Connectivity" }, m_connectivity_offset_info },
                                    cells_connectivity);
@@ -482,11 +468,9 @@ namespace
 /*!
  * \brief Ecrit une donnée 1D ou 2D.
  *
- * Pour chaque temps ajouté, la donnée est écrite à la fin des valeurs précédentes.
+ * Pour chaque temps ajouté, la donnée est écrite à la fin des valeurs précédentes
+ * sauf en cas de retour arrière où l'offset est dans data_info.
  *
- * Retourne l'offset d'écriture de la première dimension.
- * Cela est nécessaire pour le format VTK pour indiquer où commence les
- * valeurs du temps courant.
  */
 template <typename DataType> void VtkHdfV2DataWriter::
 _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
@@ -495,11 +479,19 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
 {
   HGroup& group = data_info.dataset.group;
   const String& name = data_info.dataset.name;
+
+  // Si positif ou nul indique l'offset d'écriture. Sinon on écrit à la fin
+  Int64 wanted_offset = data_info.offset.value();
+
+  // TODO: utiliser une structure qui encapsule les dimensions pour vérifier
+  // les éventuels débordements de tableau.
   static constexpr int MAX_DIM = 2;
   HDataset dataset;
+
   // En cas d'opération collective, local_dims et global_dims sont
   // différents sur la première dimension. La deuxième dimension est toujours
-  // la même.
+  // identique pour local_dims et global_dims et ne doit pas être modifiée durant
+  // tout le calcul.
 
   // Dimensions du dataset que le rang courant va écrire.
   hsize_t local_dims[MAX_DIM];
@@ -589,10 +581,16 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     if (nb_dimension != nb_dim)
       ARCANE_THROW(IOException, "Bad dimension '{0}' for dataset '{1}' (should be 1)",
                    nb_dimension, name);
-
+    // TODO: Vérifier que la deuxième dimension est la même que celle sauvée.
     hsize_t original_dims[MAX_DIM];
     file_space.getDimensions(original_dims, nullptr);
     hsize_t offset0 = original_dims[0];
+    // Si on a un offset positif issu de OffsetInfo alors on le prend.
+    // Cela signifie qu'on a fait un retour arrière.
+    if (wanted_offset >= 0) {
+      offset0 = wanted_offset;
+      info() << "Forcing offset to " << wanted_offset;
+    }
     global_dims[0] = offset0 + global_dim1_size;
     global_dims[1] = dim2_size;
     write_offset = offset0;
@@ -743,6 +741,23 @@ _addInt64ttribute(Hid& hid, const char* name, Int64 value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int64 VtkHdfV2DataWriter::
+_readInt64Attribute(Hid& hid, const char* name)
+{
+  HAttribute attr;
+  attr.open(hid, name);
+  if (attr.isBad())
+    ARCANE_FATAL("Can not open attribute '{0}'", name);
+  Int64 value;
+  herr_t ret = attr.read(H5T_NATIVE_INT64, &value);
+  if (ret < 0)
+    ARCANE_FATAL("Can not read attribute '{0}'", name);
+  return value;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void VtkHdfV2DataWriter::
 _addStringAttribute(Hid& hid, const char* name, const String& value)
 {
@@ -849,7 +864,9 @@ write(IVariable* var, IData* data)
   default:
     ARCANE_FATAL("Only export of 'Cell' or 'Node' variable is implemented (name={0})", var->name());
   }
+
   ARCANE_CHECK_POINTER(group);
+
   DataInfo data_info{ { *group, var->name() }, offset_info };
   eDataType data_type = var->dataType();
   switch (data_type) {
@@ -926,6 +943,86 @@ _writeReal2Dataset(const DataInfo& data_info, IData* data)
     scalar_values[i][2] = 0.0;
   }
   _writeDataSet2DCollective<Real>(data_info, scalar_values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkHdfV2DataWriter::
+_readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step)
+{
+  HGroup* hgroup = offset_info.group();
+  ARCANE_CHECK_POINTER(hgroup);
+  StandardArrayT<Int64> a(hgroup->id(), offset_info.name());
+  UniqueArray<Int64> values;
+  a.directRead(m_standard_types, values);
+  Int64 offset_value = values[wanted_step];
+  offset_info.setValue(offset_value);
+  info() << "VALUES name=" << offset_info.name() << " values=" << values
+         << " wanted_step=" << wanted_step << " v=" << offset_value;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkHdfV2DataWriter::
+_initializeOffsets()
+{
+  // Il y a 5 valeurs d'offset utilisées:
+  // - offset sur le nombre de mailles (CellOffsets). Cet offset a pour nombre d'éléments
+  //   le nombre de temps sauvés et est augmenté à chaque sortie du nombre de mailles. Cet offset
+  //   est aussi utiliser pour les variables aux mailles
+  // - offset sur le nombre de noeuds (PointOffsets). Il équivalent à 'CellOffsets' mais
+  //   pour les noeuds.
+  // - offset pour "NumberOfCells", "NumberOfPoints" et "NumberOfConnectivityIds". Pour chacun
+  //   de ces champs il y a NbPart valeurs par temps, avec 'NbPart' le nombre de parties (donc
+  //   le nombre de sous-domaines si on ne fait pas de regroupement). Il y a donc au total
+  //   NbPart * NbTimeStep dans ce champ d'offset.
+  // - offset pour le champ "Connectivity" qui s'appelle "ConnectivityIdOffsets".
+  //   Cet offset a pour nombre d'éléments le nombre de temps sauvés.
+  // - offset pour le champ "Offsets". "Offset" contient pour chaque maille l'offset dans
+  //   "Connectivity" de la connectivité des noeuds de la maille. Cet offset n'est pas sauvés
+  //   mais comme ce champ à un nombre de valeur égale au nombre de mailles plus 1 il est possible
+  //   de le déduire de "CellOffsets" (il vaut "CellOffsets" plus l'index du temps courant).
+
+  m_cell_offset_info = OffsetInfo(m_steps_group, "CellOffsets");
+  m_point_offset_info = OffsetInfo(m_steps_group, "PointOffsets");
+  m_connectivity_offset_info = OffsetInfo(m_steps_group, "ConnectivityIdOffsets");
+  // Ces trois offsets ne sont pas sauvegardés dans le format VTK
+  m_offset_for_cell_offset_info = OffsetInfo("_OffsetForCellOffsetInfo");
+  m_part_offset_info = OffsetInfo("_PartOffsetInfo");
+  m_time_offset_info = OffsetInfo("_TimeOffsetInfo");
+
+  // Regarde si on n'a pas fait de retour-arrière.
+  // C'est le cas si le nombre de temps sauvés est supérieur au nombre
+  // de valeurs de \a m_times.
+  if (m_is_writer && !m_is_first_call) {
+    IParallelMng* pm = m_mesh->parallelMng();
+    const Int32 nb_rank = pm->commSize();
+    Int64 nb_current_step = _readInt64Attribute(m_steps_group, "NSteps");
+    Int32 time_index = m_times.size();
+    info(4) << "NB_STEP=" << nb_current_step << " time_index=" << time_index
+            << " current_time=" << m_times.back();
+    const bool debug_times = false;
+    if (debug_times) {
+      StandardArrayT<Real> a1(m_steps_group.id(), "Values");
+      UniqueArray<Real> times;
+      a1.directRead(m_standard_types, times);
+      info() << "TIMES=" << times;
+    }
+    if ((nb_current_step + 1) != time_index) {
+      info() << "[VtkHdf] go_backward detected";
+      Int32 wanted_step = time_index - 1;
+      // Signifie qu'on a fait un retour arrière.
+      // Dans ce cas il faut relire les offsets
+      _readAndSetOffset(m_cell_offset_info, wanted_step);
+      _readAndSetOffset(m_point_offset_info, wanted_step);
+      _readAndSetOffset(m_connectivity_offset_info, wanted_step);
+      m_part_offset_info.setValue(wanted_step * nb_rank);
+      m_time_offset_info.setValue(wanted_step);
+      m_offset_for_cell_offset_info.setValue(m_cell_offset_info.value() + wanted_step * nb_rank);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
