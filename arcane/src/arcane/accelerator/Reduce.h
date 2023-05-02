@@ -103,7 +103,7 @@ class ReduceDeviceInfo
   unsigned int* m_device_count = nullptr;
 
   //! Indique si on utilise la réduction par grille (sinon on utilise les atomiques)
-  bool m_use_grid_reduce = false;
+  bool m_use_grid_reduce = true;
 };
 
 /*---------------------------------------------------------------------------*/

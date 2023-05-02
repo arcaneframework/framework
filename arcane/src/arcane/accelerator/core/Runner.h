@@ -43,6 +43,11 @@ namespace Arcane::Accelerator
  * celui utilisé par défaut pour le thread courant. Pour garantir que les
  * kernels associés à ce runner seront bien exécutés sur le bon device il
  * est nécessaire d'appeler au moins une fois la méthode setAsCurrentDevice().
+ *
+ * Il est possible de changer le mécanisme utilisé pour les réductions via
+ * la méthode setDeviceReducePolicy(). Par défaut on utilise un kernel
+ * utilisant des synchronisations entre blocs. Cela permet de garantir la
+ * répétabilité des résultats.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
