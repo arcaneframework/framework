@@ -11,6 +11,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/Profiling.h"
+#include "arcane/utils/internal/ProfilingInternal.h"
+
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 
 #include <cuda.h>
@@ -23,6 +26,7 @@
 
 namespace Arcane::Accelerator::Cuda
 {
+using Arcane::impl::AcceleratorStatInfoList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -104,18 +108,25 @@ getUvmCounterKindString(CUpti_ActivityUnifiedMemoryCounterKind kind)
 static uint64_t startTimestamp = 0;
 
 static void
-printActivity(CUpti_Activity* record)
+printActivity(AcceleratorStatInfoList* stat_info,CUpti_Activity* record)
 {
   switch (record->kind) {
   case CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER: {
     auto* uvm = reinterpret_cast<CUpti_ActivityUnifiedMemoryCounter2*>(record);
+    Int64 nb_byte = uvm->value;
     std::cout << "UNIFIED_MEMORY_COUNTER [ " << (uvm->start - startTimestamp) << " " << (uvm->end - startTimestamp) << " ]"
               << " address=" << reinterpret_cast<void*>(uvm->address)
               << " kind=" << getUvmCounterKindString(uvm->counterKind)
-              << " value=" << uvm->value
+              << " value=" << nb_byte
               << " flags=" << uvm->flags
               << " source=" << uvm->srcId << " destination=" << uvm->dstId
               << "\n";
+    if (stat_info){
+      if (uvm->counterKind==CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD)
+        stat_info->addMemoryTransfer(AcceleratorStatInfoList::eMemoryTransferType::HostToDevice,nb_byte);
+      if (uvm->counterKind==CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_DTOH)
+        stat_info->addMemoryTransfer(AcceleratorStatInfoList::eMemoryTransferType::DeviceToHost,nb_byte);
+    }
     break;
   }
   case CUPTI_ACTIVITY_KIND_KERNEL:
@@ -221,13 +232,18 @@ static void CUPTIAPI
 arcaneCuptiBufferCompleted(CUcontext ctx, uint32_t stream_id, uint8_t* buffer,
                            [[maybe_unused]] size_t size, size_t validSize)
 {
+  // NOTE: il semble que cette méthode soit toujours appelée depuis
+  // un thread spécifique créé par le runtime CUDA.
+
   CUptiResult status;
   CUpti_Activity* record = nullptr;
+
+  AcceleratorStatInfoList* stat_info = ProfilingRegistry::_threadLocalAcceleratorInstance();
 
   do {
     status = cuptiActivityGetNextRecord(buffer, validSize, &record);
     if (status == CUPTI_SUCCESS) {
-      printActivity(record);
+      printActivity(stat_info,record);
     }
     else if (status == CUPTI_ERROR_MAX_LIMIT_REACHED) {
       break;
