@@ -72,6 +72,9 @@ getCudaUnifiedMemoryAllocator();
 extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
 getCudaHostPinnedMemoryAllocator();
 
+extern "C++" ARCANE_CUDA_EXPORT void
+initializeCudaMemoryAllocators();
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

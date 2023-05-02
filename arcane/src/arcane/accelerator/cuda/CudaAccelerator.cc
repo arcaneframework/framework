@@ -18,6 +18,7 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include <iostream>
 
@@ -28,23 +29,21 @@ using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e)
+void arcaneCheckCudaErrors(const TraceInfo& ti, cudaError_t e)
 {
-  if (e!=cudaSuccess)
-    ARCANE_FATAL("CUDA Error trace={0} e={1} str={2}",ti,e,cudaGetErrorString(e));
+  if (e != cudaSuccess)
+    ARCANE_FATAL("CUDA Error trace={0} e={1} str={2}", ti, e, cudaGetErrorString(e));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e)
+void arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti, cudaError_t e)
 {
-  if (e==cudaSuccess)
+  if (e == cudaSuccess)
     return;
-  String str = String::format("CUDA Error trace={0} e={1} str={2}",ti,e,cudaGetErrorString(e));
-  FatalErrorException ex(ti,str);
+  String str = String::format("CUDA Error trace={0} e={1} str={2}", ti, e, cudaGetErrorString(e));
+  FatalErrorException ex(ti, str);
   ex.explain(std::cerr);
 }
 
@@ -94,14 +93,41 @@ class CudaMemoryAllocatorBase
 class UnifiedMemoryCudaMemoryAllocator
 : public CudaMemoryAllocatorBase
 {
+ public:
+
+  void initialize()
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
+      m_page_allocate_level = v.value();
+  }
+
  protected:
 
   cudaError_t _allocate(void** ptr, size_t new_size) override
   {
-    const bool do_page = false;
+    const bool do_page = m_page_allocate_level > 0;
     if (do_page)
       return _allocate_page(ptr, new_size);
     return ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
+  }
+
+  cudaError_t _deallocate(void* ptr) override
+  {
+    const bool do_trace = m_page_allocate_level >= 2;
+    if (do_trace) {
+      // Utilise un flux spécifique pour être sur que les affichages ne seront pas mélangés
+      // en cas de multi-threading
+      std::ostringstream ostr;
+      ostr << "FREE_MANAGED=" << ptr;
+      if (m_page_allocate_level >= 3) {
+        String s = platform::getStackTrace();
+        ostr << " stack=" << s;
+      }
+      ostr << "\n";
+      std::cout << ostr.str();
+    }
+
+    return ::cudaFree(ptr);
   }
 
   cudaError_t _allocate_page(void** ptr, size_t new_size)
@@ -111,6 +137,8 @@ class UnifiedMemoryCudaMemoryAllocator
     // Alloue un multiple de la taille d'une page
     // Comme les transfers de la mémoire unifiée se font par page,
     // cela permet de détecter qu'elle allocation provoque le transfert
+    // TODO: vérifier que le début de l'allocation est bien un multiple
+    // de la taille de page.
     size_t orig_new_size = new_size;
     size_t n = new_size / page_size;
     if ((new_size % page_size) != 0)
@@ -118,14 +146,25 @@ class UnifiedMemoryCudaMemoryAllocator
     new_size = (n + 1) * page_size;
 
     auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
-
     void* p = *ptr;
-    const bool do_trace = false;
-    if (do_trace)
-      std::cout << "MALLOC_MANAGED=" << p << " size=" << orig_new_size << "\n";
+
+    const bool do_trace = m_page_allocate_level >= 2;
+    if (do_trace) {
+      // Utilise un flux spécifique pour être sur que les affichages ne seront pas mélangés
+      // en cas de multi-threading
+      std::ostringstream ostr;
+      ostr << "MALLOC_MANAGED=" << p << " size=" << orig_new_size;
+      if (m_page_allocate_level >= 3) {
+        String s = platform::getStackTrace();
+        ostr << " stack=" << s;
+      }
+      ostr << "\n";
+      std::cout << ostr.str();
+    }
 
     // Indique qu'on privilégie l'allocation sur le GPU mais que le CPU
-    // accédera aussi aux données
+    // accédera aussi aux données.
+    // TODO: regarder pour faire cela tout le temps.
     cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, 0);
     cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, cudaCpuDeviceId);
 
@@ -133,10 +172,10 @@ class UnifiedMemoryCudaMemoryAllocator
     return r;
   }
 
-  cudaError_t _deallocate(void* ptr) override
-  {
-    return ::cudaFree(ptr);
-  }
+ private:
+
+  //! Strictement positif si on alloue page par page
+  Int32 m_page_allocate_level = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -210,6 +249,14 @@ Arccore::IMemoryAllocator*
 getCudaHostPinnedMemoryAllocator()
 {
   return &host_pinned_cuda_memory_allocator;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void initializeCudaMemoryAllocators()
+{
+  unified_memory_cuda_memory_allocator.initialize();
 }
 
 /*---------------------------------------------------------------------------*/
