@@ -84,59 +84,92 @@ impl::ScopedStatLoop::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class AllForLoopStatInfoList
+class AllStatInfoList
 {
  public:
 
-  impl::ForLoopStatInfoList* createStatInfoList()
+  impl::ForLoopStatInfoList* createForLoopStatInfoList()
   {
     std::lock_guard<std::mutex> lk(m_mutex);
-    std::unique_ptr<impl::ForLoopStatInfoList> x(new impl::ForLoopStatInfoList);
-    impl::ForLoopStatInfoList* ptr = x.get();
-    m_stat_info_list_vector.push_back(std::move(x));
+    std::unique_ptr<impl::ForLoopStatInfoList> x(new impl::ForLoopStatInfoList());
+    auto* ptr = x.get();
+    m_for_loop_stat_info_list_vector.push_back(std::move(x));
+    return ptr;
+  }
+  impl::AcceleratorStatInfoList* createAcceleratorStatInfoList()
+  {
+    std::lock_guard<std::mutex> lk(m_mutex);
+    std::unique_ptr<impl::AcceleratorStatInfoList> x(new impl::AcceleratorStatInfoList());
+    auto* ptr = x.get();
+    m_accelerator_stat_info_list_vector.push_back(std::move(x));
     return ptr;
   }
 
-  void visit(const std::function<void(const impl::ForLoopStatInfoList&)>& f)
+  void visitForLoop(const std::function<void(const impl::ForLoopStatInfoList&)>& f)
   {
-    for (const auto& x : m_stat_info_list_vector)
+    for (const auto& x : m_for_loop_stat_info_list_vector)
       f(*x);
   }
 
-  public :
+  void visitAccelerator(const std::function<void(const impl::AcceleratorStatInfoList&)>& f)
+  {
+    for (const auto& x : m_accelerator_stat_info_list_vector)
+      f(*x);
+  }
+
+ public:
 
   std::mutex m_mutex;
-  std::vector<std::unique_ptr<impl::ForLoopStatInfoList>> m_stat_info_list_vector;
+  std::vector<std::unique_ptr<impl::ForLoopStatInfoList>> m_for_loop_stat_info_list_vector;
+  std::vector<std::unique_ptr<impl::AcceleratorStatInfoList>> m_accelerator_stat_info_list_vector;
 };
-AllForLoopStatInfoList global_all_stat_info_list;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AllStatInfoList global_all_stat_info_list;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Permet de gérer une instance de ForLoopStatInfoList par thread pour éviter les verroux
 class ThreadLocalStatInfo
 {
  public:
 
-  impl::ForLoopStatInfoList* statInfoList()
+  impl::ForLoopStatInfoList* forLoopStatInfoList()
   {
-    return _createOrGetStatInfoList();
+    return _createOrGetForLoopStatInfoList();
+  }
+  impl::AcceleratorStatInfoList* acceleratorStatInfoList()
+  {
+    return _createOrGetAcceleratorStatInfoList();
   }
   void merge(const ForLoopOneExecStat& stat_info, const ForLoopTraceInfo& trace_info)
   {
-    impl::ForLoopStatInfoList* stat_list = _createOrGetStatInfoList();
+    impl::ForLoopStatInfoList* stat_list = _createOrGetForLoopStatInfoList();
     stat_list->merge(stat_info, trace_info);
   }
 
  private:
 
-  impl::ForLoopStatInfoList* _createOrGetStatInfoList()
+  impl::ForLoopStatInfoList* _createOrGetForLoopStatInfoList()
   {
-    if (!m_stat_info_list)
-      m_stat_info_list = global_all_stat_info_list.createStatInfoList();
-    return m_stat_info_list;
+    if (!m_for_loop_stat_info_list)
+      m_for_loop_stat_info_list = global_all_stat_info_list.createForLoopStatInfoList();
+    return m_for_loop_stat_info_list;
+  }
+  impl::AcceleratorStatInfoList* _createOrGetAcceleratorStatInfoList()
+  {
+    if (!m_accelerator_stat_info_list)
+      m_accelerator_stat_info_list = global_all_stat_info_list.createAcceleratorStatInfoList();
+    return m_accelerator_stat_info_list;
   }
 
  private:
 
-  impl::ForLoopStatInfoList* m_stat_info_list = nullptr;
+  impl::ForLoopStatInfoList* m_for_loop_stat_info_list = nullptr;
+  impl::AcceleratorStatInfoList* m_accelerator_stat_info_list = nullptr;
 };
 thread_local ThreadLocalStatInfo thread_local_stat_info;
 
@@ -151,7 +184,7 @@ Int32 ProfilingRegistry::m_profiling_level = 0;
 impl::ForLoopStatInfoList* ProfilingRegistry::
 threadLocalInstance()
 {
-  return thread_local_stat_info.statInfoList();
+  return thread_local_stat_info.forLoopStatInfoList();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -160,7 +193,16 @@ threadLocalInstance()
 impl::ForLoopStatInfoList* ProfilingRegistry::
 _threadLocalForLoopInstance()
 {
-  return thread_local_stat_info.statInfoList();
+  return thread_local_stat_info.forLoopStatInfoList();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::AcceleratorStatInfoList* ProfilingRegistry::
+_threadLocalAcceleratorInstance()
+{
+  return thread_local_stat_info.acceleratorStatInfoList();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -169,7 +211,16 @@ _threadLocalForLoopInstance()
 void ProfilingRegistry::
 visitLoopStat(const std::function<void(const impl::ForLoopStatInfoList&)>& f)
 {
-  global_all_stat_info_list.visit(f);
+  global_all_stat_info_list.visitForLoop(f);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ProfilingRegistry::
+visitAcceleratorStat(const std::function<void(const impl::AcceleratorStatInfoList&)>& f)
+{
+  global_all_stat_info_list.visitAccelerator(f);
 }
 
 /*---------------------------------------------------------------------------*/

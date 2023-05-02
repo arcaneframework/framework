@@ -98,6 +98,58 @@ class ForLoopCumulativeStat
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Statistiques pour les accélérateurs.
+ *
+ * TODO: regarder comment rendre cela plus générique et permettre à
+ * l'implémentation d'ajouter ses évènements
+ */
+class AcceleratorStatInfoList
+{
+ public:
+
+  class MemoryTransferInfo
+  {
+   public:
+
+    void merge(const MemoryTransferInfo& mem_info)
+    {
+      m_nb_byte += mem_info.m_nb_byte;
+      m_nb_call += mem_info.m_nb_call;
+    }
+
+   public:
+
+    Int64 m_nb_byte = 0;
+    Int64 m_nb_call = 0;
+  };
+
+  enum class eMemoryTransferType
+  {
+    HostToDevice = 0,
+    DeviceToHost = 1
+  };
+
+ public:
+
+  void addMemoryTransfer(eMemoryTransferType type, Int64 nb_byte)
+  {
+    MemoryTransferInfo mem_info{ nb_byte, 1 };
+    m_managed_memory_transfer_list[(int)type].merge(mem_info);
+  }
+  const MemoryTransferInfo& memoryTransfer(eMemoryTransferType type) const
+  {
+    return m_managed_memory_transfer_list[(int)type];
+  }
+
+ private:
+
+  // Doit avoir le même nombre d'éléments que 'eMemoryTransfertType'
+  std::array<MemoryTransferInfo, 2> m_managed_memory_transfer_list;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::impl
 

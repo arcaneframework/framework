@@ -26,6 +26,7 @@
 
 namespace Arcane::impl
 {
+class AcceleratorStatInfoList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -172,7 +173,7 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
   static bool hasProfiling() { return m_profiling_level > 0; }
 
   /*!
-   * \brief Visite la liste des statistiques.
+   * \brief Visite la liste des statistiques des boucles
    *
    * Il y a une instance de impl::ForLoopStatInfoList par thread qui a
    * exécuté une boucle.
@@ -180,6 +181,16 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
    * Cette méthode ne doit pas être appelée s'il y a des boucles en cours d'exécution.
    */
   static void visitLoopStat(const std::function<void(const impl::ForLoopStatInfoList&)>& f);
+
+  /*!
+   * \brief Visite la liste des statistiques sur accélérateur
+   *
+   * Il y a une instance de impl::AcceleratorStatInfoList par thread qui a
+   * exécuté une boucle.
+   *
+   * Cette méthode ne doit pas être appelée lorsque le profiling est actif.
+   */
+  static void visitAcceleratorStat(const std::function<void(const impl::AcceleratorStatInfoList&)>& f);
 
   static const impl::ForLoopCumulativeStat& globalLoopStat();
 
@@ -192,6 +203,12 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
    * Instance locale par thread du gestionnaire des statistiques de boucle
    */
   static impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
+
+  /*!
+   * \internal.
+   * Instance locale par thread du gestionnaire des statistiques pour accélérateur
+   */
+  static impl::AcceleratorStatInfoList* _threadLocalAcceleratorInstance();
 
  private:
 
