@@ -186,7 +186,7 @@ class Runner::Impl
   //TODO: mettre à None lorsqu'on aura supprimé Runner::setExecutionPolicy()
   eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
   bool m_is_init = false;
-  eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Atomic;
+  eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
   DeviceId m_device_id;
 
  private:
