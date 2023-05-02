@@ -157,6 +157,15 @@ threadLocalInstance()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+impl::ForLoopStatInfoList* ProfilingRegistry::
+_threadLocalForLoopInstance()
+{
+  return thread_local_stat_info.statInfoList();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ProfilingRegistry::
 visitLoopStat(const std::function<void(const impl::ForLoopStatInfoList&)>& f)
 {

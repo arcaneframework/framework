@@ -144,16 +144,17 @@ class ARCANE_UTILS_EXPORT ForLoopOneExecStat
  * une valeur supérieur ou égale à 1.
  *
  * L'ajout de statistiques se fait en récupérant une instance de
- * impl::StatInfoList spécifique au thread en cours d'exécution.
+ * impl::ForLoopStatInfoList spécifique au thread en cours d'exécution.
  */
 class ARCANE_UTILS_EXPORT ProfilingRegistry
 {
  public:
 
   /*!
-   * \internal.
-   * Instance locale par thread du gestionnaire des statistiques
+   * TODO: rendre obsolète. Utiliser à la place:
+   * static impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
    */
+  ARCANE_DEPRECATED_REASON("Y2023: Use _threadLocalForLoopInstance() instead")
   static impl::ForLoopStatInfoList* threadLocalInstance();
 
   /*!
@@ -181,6 +182,16 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
   static void visitLoopStat(const std::function<void(const impl::ForLoopStatInfoList&)>& f);
 
   static const impl::ForLoopCumulativeStat& globalLoopStat();
+
+ public:
+
+  // API publique mais réservée à Arcane.
+
+  /*!
+   * \internal.
+   * Instance locale par thread du gestionnaire des statistiques de boucle
+   */
+  static impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
 
  private:
 
