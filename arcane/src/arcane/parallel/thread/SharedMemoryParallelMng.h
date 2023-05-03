@@ -158,6 +158,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 
   ISerializeMessageList* _createSerializeMessageList() override;
   IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) override;
+  bool _isAcceleratorAware() const override { return true; }
 
  private:
   

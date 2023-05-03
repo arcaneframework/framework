@@ -32,17 +32,17 @@
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 
-#include "arcane/SerializeMessage.h"
-#include "arcane/IIOMng.h"
-#include "arcane/Timer.h"
-#include "arcane/ISerializeMessageList.h"
+#include "arcane/core/SerializeMessage.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ISerializeMessageList.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 
 #include "arcane/impl/TimerMng.h"
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelMng.h"
 #include "arcane/impl/ParallelMngUtilsFactoryBase.h"
-
-#include "arcane/IItemFamily.h"
 
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/RequestListBase.h"
@@ -836,6 +836,15 @@ Ref<IParallelMngUtilsFactory> HybridParallelMng::
 _internalUtilsFactory() const
 {
   return m_utils_factory;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool HybridParallelMng::
+_isAcceleratorAware() const
+{
+  return m_mpi_parallel_mng->_internalApi()->isAcceleratorAware();
 }
 
 /*---------------------------------------------------------------------------*/
