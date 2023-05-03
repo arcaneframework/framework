@@ -54,6 +54,10 @@ extern "C++" void
 initCupti(Int32 level);
 extern "C++" void
 flushCupti();
+extern "C++" void
+startCupti();
+extern "C++" void
+stopCupti();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -348,6 +352,16 @@ class CudaRunnerRuntime
   }
 
   const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
+
+  void startProfiling() override
+  {
+    startCupti();
+  }
+
+  void stopProfiling() override
+  {
+    stopCupti();
+  }
 
  public:
 

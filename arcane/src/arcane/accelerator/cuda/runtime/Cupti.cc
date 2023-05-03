@@ -201,12 +201,15 @@ class CuptiInfo
  public:
 
   void init(Int32 level);
+  void start();
+  void stop();
 
  private:
 
   CUpti_ActivityUnifiedMemoryCounterConfig config[2];
   CUpti_ActivityPCSamplingConfig configPC;
   bool m_is_init = false;
+  int m_profiling_level = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -268,9 +271,20 @@ arcaneCuptiBufferCompleted(CUcontext ctx, uint32_t stream_id, uint8_t* buffer,
 void CuptiInfo::
 init(Int32 level)
 {
+  m_profiling_level = level;
+  start();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CuptiInfo::
+start()
+{
   if (m_is_init)
     return;
   m_is_init = true;
+  int level = m_profiling_level;
 
   ARCANE_CHECK_CUDA(cuptiActivityRegisterCallbacks(arcaneCuptiBufferRequested, arcaneCuptiBufferCompleted));
 
@@ -297,6 +311,7 @@ init(Int32 level)
 
   // Active les compteurs
   // CONCURRENT_KERNEL et PC_SAMPLING ne sont pas compatibles
+  // Si on ajoute des compteurs ici il faut les désactiver dans stop()
   if (level >= 1)
     ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
   if (level == 2)
@@ -313,6 +328,26 @@ init(Int32 level)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void CuptiInfo::
+stop()
+{
+  if (!m_is_init)
+    return;
+  int level = m_profiling_level;
+
+  if (level >= 1)
+    ARCANE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
+  if (level == 2)
+    ARCANE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
+  if (level >= 3)
+    ARCANE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_PC_SAMPLING));
+
+  m_is_init = false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace
 {
   CuptiInfo m_global_cupti_info;
@@ -323,10 +358,25 @@ initCupti(Int32 level)
 {
   m_global_cupti_info.init(level);
 }
+
 extern "C++" void
 flushCupti()
 {
   ARCANE_CHECK_CUDA(cuptiActivityFlushAll(0));
+}
+
+extern "C++" void
+startCupti()
+{
+  m_global_cupti_info.start();
+}
+
+extern "C++" void
+stopCupti()
+{
+  m_global_cupti_info.stop();
+  flushCupti();
+  ARCANE_CHECK_CUDA(cudaDeviceSynchronize());
 }
 
 /*---------------------------------------------------------------------------*/
