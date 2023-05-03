@@ -65,6 +65,14 @@ namespace
       ARCANE_FATAL("No runtime is available for execution policy '{0}'",p);
     return x;
   }
+
+  inline void
+  _stopProfiling(eExecutionPolicy p)
+  {
+    auto* x = _getRuntimeNoCheck(p);
+    if (x)
+      x->stopProfiling();
+  }
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -506,6 +514,22 @@ deviceInfoList(eExecutionPolicy policy)
     return nullptr;
   impl::IRunnerRuntime* r = _getRuntime(policy);
   return r->deviceInfoList();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arrête tout les profiling en cours de tout les runtime.
+ *
+ * En général on utilise cela en fin de calcul.
+ */
+void Runner::
+_stopAllProfiling()
+{
+  _stopProfiling(eExecutionPolicy::CUDA);
+  _stopProfiling(eExecutionPolicy::HIP);
+  _stopProfiling(eExecutionPolicy::Sequential);
+  _stopProfiling(eExecutionPolicy::Thread);
 }
 
 /*---------------------------------------------------------------------------*/

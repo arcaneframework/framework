@@ -145,6 +145,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   impl::IRunQueueEventImpl* _createEventWithTimer();
   void _addCommandTime(double v);
   impl::IRunnerRuntime* _internalRuntime() const;
+  static void _stopAllProfiling();
 
  private:
 
