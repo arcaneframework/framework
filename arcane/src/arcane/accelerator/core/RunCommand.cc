@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.cc                                               (C) 2000-2022 */
+/* RunCommand.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -253,7 +253,7 @@ notifyEndExecuteKernel()
     exec_info->setEndTime(m_begin_time+diff_time_ns);
     //std::cout << "END_EXEC exec_info=" << m_loop_run_info.traceInfo().traceInfo() << "\n";
     ForLoopTraceInfo flti(traceInfo(),kernelName());
-    ProfilingRegistry::threadLocalInstance()->merge(*exec_info,flti);
+    ProfilingRegistry::_threadLocalForLoopInstance()->merge(*exec_info,flti);
   }
 
   _reset();

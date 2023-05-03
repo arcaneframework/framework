@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EnumeratorTracer.cc                                         (C) 2000-2022 */
+/* EnumeratorTracer.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Enumérateurs sur les mailles matériaux.                                   */
 /*---------------------------------------------------------------------------*/
@@ -74,7 +74,7 @@ _endLoop(EnumeratorTraceInfo& eti)
   ForLoopOneExecStat exec_stat;
   exec_stat.setBeginTime(eti.beginTime());
   exec_stat.setEndTime(platform::getRealTimeNS());
-  ProfilingRegistry::threadLocalInstance()->merge(exec_stat, loop_trace_info);
+  ProfilingRegistry::_threadLocalForLoopInstance()->merge(exec_stat, loop_trace_info);
 }
 
 /*---------------------------------------------------------------------------*/
