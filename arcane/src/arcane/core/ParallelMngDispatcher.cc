@@ -21,6 +21,7 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/ParallelMngDispatcher.h"
 #include "arcane/core/IParallelDispatch.h"
@@ -219,7 +220,12 @@ class ParallelMngDispatcher::Impl
 {
  public:
 
-  explicit Impl(ParallelMngDispatcher* pm) : m_parallel_mng(pm){}
+  explicit Impl(ParallelMngDispatcher* pm)
+  : m_parallel_mng(pm)
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DISABLE_ACCELERATOR_AWARE_MESSAGE_PASSING", true))
+      m_is_accelerator_aware_disabled = (v.value()!=0);
+  }
   ~Impl()
   {
     m_queue.reset();
@@ -228,7 +234,12 @@ class ParallelMngDispatcher::Impl
 
   Runner* defaultRunner() const override { return m_runner; }
   RunQueue* defaultQueue() const override { return m_queue.get(); }
-  bool isAcceleratorAware() const { return m_parallel_mng->_isAcceleratorAware(); }
+  bool isAcceleratorAware() const override
+  {
+    if (m_is_accelerator_aware_disabled)
+      return false;
+    return m_parallel_mng->_isAcceleratorAware();
+  }
   void setDefaultRunner(Runner* runner) override
   {
     m_runner = runner;
@@ -246,6 +257,7 @@ class ParallelMngDispatcher::Impl
   Runner* m_runner = nullptr;
   Ref<RunQueue> m_queue;
   Runner m_runner_ref;
+  bool m_is_accelerator_aware_disabled = false;
 };
 
 /*---------------------------------------------------------------------------*/
