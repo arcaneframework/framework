@@ -24,6 +24,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane
+{
+class ArcaneMainBatch;
+}
 namespace Arcane::Accelerator
 {
 
@@ -55,6 +59,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   friend impl::RunCommandImpl;
   friend RunQueue;
   friend RunQueueEvent;
+  friend ArcaneMainBatch;
   class Impl;
 
  public:
@@ -145,6 +150,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   impl::IRunQueueEventImpl* _createEventWithTimer();
   void _addCommandTime(double v);
   impl::IRunnerRuntime* _internalRuntime() const;
+  static void _stopAllProfiling();
 
  private:
 

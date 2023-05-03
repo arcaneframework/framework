@@ -140,6 +140,8 @@ initializeTest()
   IApplication* app = subDomain()->application();
   const auto& acc_info = app->acceleratorRuntimeInitialisationInfo();
   initializeRunner(m_runner, traceMng(), acc_info);
+  Runner runner2(m_runner.executionPolicy());
+  runner2.setAsCurrentDevice();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunnerRuntime.h                                          (C) 2000-2022 */
+/* IRunnerRuntime.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Interface du runtime associé à une RunQueue.                              */
 /*---------------------------------------------------------------------------*/
@@ -47,6 +47,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
   virtual void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
   virtual void setCurrentDevice(DeviceId device_id) = 0;
   virtual const IDeviceInfoList* deviceInfoList() = 0;
+  virtual void startProfiling() {}
+  virtual void stopProfiling() {}
 };
 
 /*---------------------------------------------------------------------------*/

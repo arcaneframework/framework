@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBTaskImplementation.cc                                    (C) 2000-2022 */
+/* TBBTaskImplementation.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation des tâches utilisant TBB (Intel Threads Building Blocks).  */
 /*---------------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ class ScopedExecInfo
   ~ScopedExecInfo()
   {
     if (m_stat_info_ptr && m_use_own_run_info)
-      ProfilingRegistry::threadLocalInstance()->merge(*m_stat_info_ptr,m_run_info.traceInfo());
+      ProfilingRegistry::_threadLocalForLoopInstance()->merge(*m_stat_info_ptr,m_run_info.traceInfo());
   }
 
  public:

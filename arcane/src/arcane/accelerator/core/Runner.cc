@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.cc                                                   (C) 2000-2022 */
+/* Runner.cc                                                   (C) 2000-2023 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -39,7 +39,7 @@ namespace Arcane::Accelerator
 namespace
 {
   inline impl::IRunnerRuntime*
-  _getRuntime(eExecutionPolicy p)
+  _getRuntimeNoCheck(eExecutionPolicy p)
   {
     impl::IRunnerRuntime* runtime = nullptr;
     switch (p) {
@@ -55,6 +55,23 @@ namespace
       return impl::getThreadRunQueueRuntime();
     }
     return runtime;
+  }
+
+  inline impl::IRunnerRuntime*
+  _getRuntime(eExecutionPolicy p)
+  {
+    auto* x = _getRuntimeNoCheck(p);
+    if (!x)
+      ARCANE_FATAL("No runtime is available for execution policy '{0}'",p);
+    return x;
+  }
+
+  inline void
+  _stopProfiling(eExecutionPolicy p)
+  {
+    auto* x = _getRuntimeNoCheck(p);
+    if (x)
+      x->stopProfiling();
   }
 } // namespace
 
@@ -497,6 +514,22 @@ deviceInfoList(eExecutionPolicy policy)
     return nullptr;
   impl::IRunnerRuntime* r = _getRuntime(policy);
   return r->deviceInfoList();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arrête tout les profiling en cours de tout les runtime.
+ *
+ * En général on utilise cela en fin de calcul.
+ */
+void Runner::
+_stopAllProfiling()
+{
+  _stopProfiling(eExecutionPolicy::CUDA);
+  _stopProfiling(eExecutionPolicy::HIP);
+  _stopProfiling(eExecutionPolicy::Sequential);
+  _stopProfiling(eExecutionPolicy::Thread);
 }
 
 /*---------------------------------------------------------------------------*/

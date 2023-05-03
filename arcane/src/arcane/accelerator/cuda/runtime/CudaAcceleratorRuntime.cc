@@ -48,12 +48,17 @@ namespace Arcane::Accelerator::Cuda
 {
 namespace
 {
-  Int32 global_cupti_level = false;
+  Int32 global_cupti_level = 0;
+  Int32 global_cupti_flush = 0;
 }
 extern "C++" void
-initCupti(Int32 level);
+initCupti(Int32 level,bool do_print);
 extern "C++" void
 flushCupti();
+extern "C++" void
+startCupti();
+extern "C++" void
+stopCupti();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -137,7 +142,7 @@ class CudaRunQueueStream
   void barrier() override
   {
     ARCANE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
-    if (global_cupti_level > 0)
+    if (global_cupti_flush > 0)
       flushCupti();
   }
   void copyMemory(const MemoryCopyArgs& args) override
@@ -310,7 +315,7 @@ class CudaRunnerRuntime
     else
       return;
     //std::cout << "MEMADVISE p=" << ptr << " size=" << count << " advise = " << cuda_advise << " id = " << device << "\n";
-    cudaMemAdvise(ptr, count, cuda_advise, device);
+    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, device));
   }
   void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
@@ -348,6 +353,16 @@ class CudaRunnerRuntime
   }
 
   const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
+
+  void startProfiling() override
+  {
+    startCupti();
+  }
+
+  void stopProfiling() override
+  {
+    stopCupti();
+  }
 
  public:
 
@@ -423,9 +438,14 @@ fillDevices()
   // Regarde si on active Cupti
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_LEVEL", true))
     global_cupti_level = v.value();
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_FLUSH", true))
+    global_cupti_flush = v.value();
+  bool do_print_cupti = true;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_PRINT", true))
+    do_print_cupti = (v.value()!=0);
 
   if (global_cupti_level > 0)
-    initCupti(global_cupti_level);
+    initCupti(global_cupti_level,do_print_cupti);
 }
 
 /*---------------------------------------------------------------------------*/

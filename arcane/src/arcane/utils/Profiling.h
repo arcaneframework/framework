@@ -26,6 +26,7 @@
 
 namespace Arcane::impl
 {
+class AcceleratorStatInfoList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -144,16 +145,17 @@ class ARCANE_UTILS_EXPORT ForLoopOneExecStat
  * une valeur supérieur ou égale à 1.
  *
  * L'ajout de statistiques se fait en récupérant une instance de
- * impl::StatInfoList spécifique au thread en cours d'exécution.
+ * impl::ForLoopStatInfoList spécifique au thread en cours d'exécution.
  */
 class ARCANE_UTILS_EXPORT ProfilingRegistry
 {
  public:
 
   /*!
-   * \internal.
-   * Instance locale par thread du gestionnaire des statistiques
+   * TODO: rendre obsolète. Utiliser à la place:
+   * static impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
    */
+  ARCANE_DEPRECATED_REASON("Y2023: Use _threadLocalForLoopInstance() instead")
   static impl::ForLoopStatInfoList* threadLocalInstance();
 
   /*!
@@ -171,7 +173,7 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
   static bool hasProfiling() { return m_profiling_level > 0; }
 
   /*!
-   * \brief Visite la liste des statistiques.
+   * \brief Visite la liste des statistiques des boucles
    *
    * Il y a une instance de impl::ForLoopStatInfoList par thread qui a
    * exécuté une boucle.
@@ -180,7 +182,33 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
    */
   static void visitLoopStat(const std::function<void(const impl::ForLoopStatInfoList&)>& f);
 
+  /*!
+   * \brief Visite la liste des statistiques sur accélérateur
+   *
+   * Il y a une instance de impl::AcceleratorStatInfoList par thread qui a
+   * exécuté une boucle.
+   *
+   * Cette méthode ne doit pas être appelée lorsque le profiling est actif.
+   */
+  static void visitAcceleratorStat(const std::function<void(const impl::AcceleratorStatInfoList&)>& f);
+
   static const impl::ForLoopCumulativeStat& globalLoopStat();
+
+ public:
+
+  // API publique mais réservée à Arcane.
+
+  /*!
+   * \internal.
+   * Instance locale par thread du gestionnaire des statistiques de boucle
+   */
+  static impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
+
+  /*!
+   * \internal.
+   * Instance locale par thread du gestionnaire des statistiques pour accélérateur
+   */
+  static impl::AcceleratorStatInfoList* _threadLocalAcceleratorInstance();
 
  private:
 
