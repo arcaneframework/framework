@@ -24,6 +24,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane
+{
+class ArcaneMainBatch;
+}
 namespace Arcane::Accelerator
 {
 
@@ -55,6 +59,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   friend impl::RunCommandImpl;
   friend RunQueue;
   friend RunQueueEvent;
+  friend ArcaneMainBatch;
   class Impl;
 
  public:

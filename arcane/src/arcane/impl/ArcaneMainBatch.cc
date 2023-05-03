@@ -65,6 +65,8 @@
 #include "arcane/impl/ExecutionStatsDumper.h"
 #include "arcane/impl/TimeLoopReader.h"
 
+#include "arcane/accelerator/core/Runner.h"
+
 #include <thread>
 
 /*---------------------------------------------------------------------------*/
@@ -214,6 +216,10 @@ class ArcaneMainBatch
  private:
   
   bool _sequentialParseArgs(StringList args);
+  static void _stopAllProfiling()
+  {
+    Accelerator::Runner::_stopAllProfiling();
+  }
 };
   
 /*---------------------------------------------------------------------------*/
@@ -816,8 +822,12 @@ executeRank(Int32 local_rank)
 
   time_stat->endGatherStats();
 
-  if (print_stats && sub_domain)
+  if (print_stats && sub_domain){
+    sub_domain->parallelMng()->barrier();
+    if (local_rank==0)
+      ArcaneMainBatch::_stopAllProfiling();
     _printStats(sub_domain,trace,time_stat);
+  }
 
   //BaseForm[Hash["This is the end", "CRC32"], 16]
   // On informes les 'autres' capacités qu'il faut s'en aller, maintenant!
