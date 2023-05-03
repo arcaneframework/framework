@@ -144,6 +144,7 @@ class HybridParallelMng
   IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) override;
   Ref<IParallelMng> createSubParallelMngRef(Int32ConstArrayView kept_ranks) override;
   Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const override;
+  bool _isAcceleratorAware() const override;
 
  public:
 

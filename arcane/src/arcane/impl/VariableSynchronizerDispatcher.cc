@@ -122,17 +122,13 @@ VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
   Runner* runner = internal_pm->defaultRunner();
   bool is_accelerator_aware = internal_pm->isAcceleratorAware();
 
-  // Pour l'instant n'active pas cette fonctionnalité de test.
-  const bool allow_aware = false;
-  if (allow_aware) {
-    // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
-    // buffer sur le device. On pourrait utiliser le mémoire managée mais certaines
-    // implémentations MPI (i.e: BXI) ne le supportent pas.
-    if (runner && is_accelerator_aware) {
-      m_buffer_copier->setRunQueue(internal_pm->defaultQueue());
-      auto* a = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
-      m_buffer_copier->setAllocator(a);
-    }
+  // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
+  // buffer sur le device. On pourrait utiliser le mémoire managée mais certaines
+  // implémentations MPI (i.e: BXI) ne le supportent pas.
+  if (runner && is_accelerator_aware) {
+    m_buffer_copier->setRunQueue(internal_pm->defaultQueue());
+    auto* a = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
+    m_buffer_copier->setAllocator(a);
   }
 }
 

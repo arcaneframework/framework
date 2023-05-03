@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryMessageQueue.cc                                 (C) 2000-2020 */
+/* SharedMemoryMessageQueue.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation d'une file de messages en mémoire partagée.                */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,8 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ITraceMng.h"
+
+#include "arcane/utils/internal/MemoryRessourceMng.h"
 
 #include "arcane/parallel/thread/SharedMemoryMessageQueue.h"
 #include "arcane/parallel/thread/IAsyncQueue.h"
@@ -69,7 +71,8 @@ copyFromSender(SharedMemoryMessageRequest* sender)
   if (send_size > receive_size)
     ARCANE_FATAL("Not enough memory for receiving message receive={0} send={1}",
                  receive_size,send_size);
-  ::memcpy(receive_span.data(),send_span.data(),send_size);
+
+  MemoryRessourceMng::genericCopy(ConstMemoryView(send_span), MutableMemoryView(receive_span));
 }
 
 /*---------------------------------------------------------------------------*/
