@@ -314,7 +314,7 @@ class CudaRunnerRuntime
     else
       return;
     //std::cout << "MEMADVISE p=" << ptr << " size=" << count << " advise = " << cuda_advise << " id = " << device << "\n";
-    cudaMemAdvise(ptr, count, cuda_advise, device);
+    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, device));
   }
   void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
