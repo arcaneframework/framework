@@ -120,7 +120,12 @@ namespace
 {
   inline bool _isHost(eMemoryRessource r)
   {
-    return r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned;
+    // Si on sait pas, considère qu'on est accessible de puis l'hôte.
+    if (r == eMemoryRessource::Unknown)
+      return true;
+    if (r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned)
+      return true;
+    return false;
   }
 } // namespace
 
