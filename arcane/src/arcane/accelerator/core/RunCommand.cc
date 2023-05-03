@@ -46,7 +46,7 @@ class ReduceMemoryImpl
  public:
 
   ReduceMemoryImpl(RunCommandImpl* p)
-  : m_command(p) //, m_grid_buffer(eMemoryRessource::Device)
+  : m_command(p), m_grid_buffer(eMemoryRessource::Device)
   {
     // TODO: prendre en compte la politique d'exécution pour savoir
     // comment allouer.
@@ -395,10 +395,14 @@ _allocateGridDataMemory()
   m_grid_buffer.resize(total_size);
   auto mem_view = makeMutableMemoryView(m_grid_buffer.to1DSpan());
   m_grid_memory_info.m_grid_memory_values = mem_view;
+
   // Indique qu'on va utiliser cette zone mémoire uniquement sur le device.
-  Runner* runner = m_command->runner();
-  runner->setMemoryAdvice(mem_view,eMemoryAdvice::PreferredLocationDevice);
-  runner->setMemoryAdvice(mem_view,eMemoryAdvice::AccessedByHost);
+  // Cela n'est utile que si on utilise la mémoire managée pour la grille.
+  if (m_grid_buffer.memoryRessource()!=eMemoryRessource::Device){
+    Runner* runner = m_command->runner();
+    runner->setMemoryAdvice(mem_view,eMemoryAdvice::PreferredLocationDevice);
+    runner->setMemoryAdvice(mem_view,eMemoryAdvice::AccessedByHost);
+  }
   //std::cout << "RESIZE GRID t=" << total_size << "\n";
 }
 
