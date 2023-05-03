@@ -159,6 +159,17 @@ copy(ConstMemoryView from, eMemoryRessource from_mem,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MemoryRessourceMng::
+genericCopy(ConstMemoryView from, MutableMemoryView to)
+{
+  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+  eMemoryRessource mem_type = eMemoryRessource::Unknown;
+  mrm->_internal()->copy(from, mem_type, to, mem_type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/

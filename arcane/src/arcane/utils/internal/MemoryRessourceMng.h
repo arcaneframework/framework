@@ -57,6 +57,11 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
   //! Interface interne
   IMemoryRessourceMngInternal* _internal() override { return this; }
 
+ public:
+
+  //! Copie générique utilisant platform::getDataMemoryRessourceMng()
+  static void genericCopy(ConstMemoryView from, MutableMemoryView to);
+
  private:
 
   std::array<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
