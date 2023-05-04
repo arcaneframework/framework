@@ -416,19 +416,18 @@ space() const
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariable::
-_copyToBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes,
-                     Int32 one_data_size,SmallSpan<Span<std::byte>> views)
+_copyToBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes,
+                     Span<std::byte> destination_bytes,
+                     Int32 data_size,SmallSpan<Span<std::byte>> views)
 {
-  const Int32 full_dim2_size = one_data_size;
-  const Int32 value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
+  const Int32 value_size = matvar_indexes.size();
 
-  Span<std::byte> destination_bytes(bytes);
   for( Int32 z=0; z<value_size; ++z ){
     MatVarIndex mvi = matvar_indexes[z];
     Span<std::byte> orig_view = views[mvi.arrayIndex()];
-    Int64 zci = (Int64)(mvi.valueIndex()) * full_dim2_size;
-    Int64 zindex = (Int64)z * full_dim2_size;
-    for (Int32 z = 0, n = full_dim2_size; z < n; ++z)
+    Int64 zci = (Int64)(mvi.valueIndex()) * data_size;
+    Int64 zindex = (Int64)z * data_size;
+    for (Int32 z = 0, n = data_size; z < n; ++z)
       destination_bytes[zindex + z] = orig_view[zci + z];
   }
 }
@@ -437,20 +436,19 @@ _copyToBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariable::
-_copyFromBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes,
-                       Int32 one_data_size,SmallSpan<Span<std::byte>> views)
+_copyFromBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes,
+                       Span<const std::byte> source_bytes,
+                       Int32 data_size,SmallSpan<Span<std::byte>> views)
 {
-  const Int32 full_dim2_size = one_data_size;
-  const Integer value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
+  const Int32 value_size = matvar_indexes.size();
 
-  Span<const std::byte> destination_bytes(bytes);
   for( Int32 z=0; z<value_size; ++z ){
     MatVarIndex mvi = matvar_indexes[z];
     Span<std::byte> orig_view = views[mvi.arrayIndex()];
-    Int64 zci = (Int64)(mvi.valueIndex()) * full_dim2_size;
-    Int64 zindex = (Int64)z * full_dim2_size;
-    for (Int32 z = 0, n = full_dim2_size; z < n; ++z)
-      orig_view[zci + z] = destination_bytes[zindex + z];
+    Int64 zci = (Int64)(mvi.valueIndex()) * data_size;
+    Int64 zindex = (Int64)z * data_size;
+    for (Int32 z = 0, n = data_size; z < n; ++z)
+      orig_view[zci + z] = source_bytes[zindex + z];
   }
 }
 
