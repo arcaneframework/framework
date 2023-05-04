@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonCudaHipReduceImpl.h                                   (C) 2000-2021 */
+/* CommonCudaHipReduceImpl.h                                   (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation CUDA et HIP des réductions.                                */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,11 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+// Attention: avec ROCm et un GPU sur bus PCI express la plupart des
+// méthodes atomiques ne fonctionnent pas si le pointeur est allouée
+// en mémoire unifiée. A priori le problème se pose avec atomicMin, atomicMax,
+// atomicInc. Par contre atomicAdd a l'air de fonctionner.
 
 namespace Arcane::Accelerator::impl
 {
@@ -87,30 +92,36 @@ template<>
 class CommonCudaHipAtomicMax<Int64>
 {
  public:
+#if defined(__HIP__)
+  static ARCCORE_DEVICE void apply(Int64*,Int64)
+  {
+    // N'existe pas sur ROCm (5.5)
+    assert(0); // "AtomicMax<Int64> is not supported on ROCm");
+  }
+#else
   static ARCCORE_DEVICE void apply(Int64* ptr,Int64 v)
   {
-#if defined(__HIP__)
-    // N'existe pas sur ROCm (5.3)
-    assert(0); // "AtomicMax<Int64> is not supported on ROCm");
-#else
     ::atomicMax((long long int*)ptr,v);
-#endif
   }
+#endif
 };
 
 template<>
 class CommonCudaHipAtomicMin<Int64>
 {
  public:
-  static ARCCORE_DEVICE void apply(Int64* ptr,Int64 v)
-  {
 #if defined(__HIP__)
+  static ARCCORE_DEVICE void apply(Int64*,Int64)
+  {
     // N'existe pas sur ROCm (5.3)
     assert(0); // "AtomicMin<Int64> is only not supported on ROCm");
-#else
-    ::atomicMin((long long int*)ptr,v);
-#endif
   }
+#else
+  static ARCCORE_DEVICE void apply(Int64* ptr,Int64 v)
+  {
+    ::atomicMin((long long int*)ptr,v);
+  }
+#endif
 };
 
 // Les devices d'architecture inférieure à 6.0 ne supportent pas
@@ -400,6 +411,10 @@ grid_reduce(T& val,T identity,SmallSpan<T> device_mem,unsigned int* device_count
     // ensure write visible to all threadblocks
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
+    // Attention: avec ROCm et un GPU sur bus PCI express si 'device_count'
+    // est alloué en mémoire unifiée le atomicAdd ne fonctionne pas.
+    // Dans ce cas on peut le remplacer par:
+    //   unsigned int old_count = ::atomicAdd(device_count, 1) % (wrap_around+1);
     unsigned int old_count = ::atomicInc(device_count, wrap_around);
     lastBlock = ((int)old_count == wrap_around);
   }
