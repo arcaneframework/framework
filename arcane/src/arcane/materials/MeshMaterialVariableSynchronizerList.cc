@@ -40,7 +40,7 @@ class MeshMaterialVariableSynchronizerList::Impl
 {
  public:
 
-  Impl(IMeshMaterialMng* material_mng)
+  explicit Impl(IMeshMaterialMng* material_mng)
   : m_material_mng(material_mng)
   {
     // Pour utiliser l'ancien (avant la version accélérateur) mécanisme de synchronisation.

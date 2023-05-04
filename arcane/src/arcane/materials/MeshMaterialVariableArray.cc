@@ -330,7 +330,7 @@ _copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<const std
   // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
   // l'alignement est correct.
   const Integer value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
-  ConstArray2View<DataType> values((const DataType*)bytes.data(),value_size,dim2_size);
+  ConstArray2View<DataType> values(reinterpret_cast<const DataType*>(bytes.data()),value_size,dim2_size);
   for( Integer z=0; z<value_size; ++z ){
     setValue(matvar_indexes[z],values[z]);
   }
