@@ -229,6 +229,19 @@ class TaskFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Ces classes ne sont pas accessibles dans 'utils' mais il est possible
+// d'utiliser des pointeurs sur ces instances.
+// La définition est dans 'arcane_accelerator_core'
+namespace Accelerator
+{
+class Runner;
+class RunQueue;
+}
+using Accelerator::Runner;
+using Accelerator::RunQueue;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Constante pour indiquer que la dimension d'un tableau est dynamique
 inline constexpr Int32 DynExtent = -1;

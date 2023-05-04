@@ -414,42 +414,17 @@ space() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void MeshMaterialVariable::
-_copyToBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes,
-                     Span<std::byte> destination_bytes,
-                     Int32 data_size,SmallSpan<Span<std::byte>> views)
+/*!
+ * \brief Convertit une vue de MatVarIndex en vue de Int32.
+ *
+ * Considère qu'un MatVarIndex contient 2 Int32.
+ */
+SmallSpan<const Int32> MeshMaterialVariable::
+_toInt32Indexes(SmallSpan<const MatVarIndex> indexes)
 {
-  const Int32 value_size = matvar_indexes.size();
-
-  for( Int32 z=0; z<value_size; ++z ){
-    MatVarIndex mvi = matvar_indexes[z];
-    Span<std::byte> orig_view = views[mvi.arrayIndex()];
-    Int64 zci = (Int64)(mvi.valueIndex()) * data_size;
-    Int64 zindex = (Int64)z * data_size;
-    for (Int32 z = 0, n = data_size; z < n; ++z)
-      destination_bytes[zindex + z] = orig_view[zci + z];
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshMaterialVariable::
-_copyFromBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes,
-                       Span<const std::byte> source_bytes,
-                       Int32 data_size,SmallSpan<Span<std::byte>> views)
-{
-  const Int32 value_size = matvar_indexes.size();
-
-  for( Int32 z=0; z<value_size; ++z ){
-    MatVarIndex mvi = matvar_indexes[z];
-    Span<std::byte> orig_view = views[mvi.arrayIndex()];
-    Int64 zci = (Int64)(mvi.valueIndex()) * data_size;
-    Int64 zindex = (Int64)z * data_size;
-    for (Int32 z = 0, n = data_size; z < n; ++z)
-      orig_view[zci + z] = source_bytes[zindex + z];
-  }
+  static_assert(sizeof(MatVarIndex)==2*sizeof(Int32),"Bad size for MatVarIndex");
+  auto* ptr = reinterpret_cast<const Int32*>(indexes.data());
+  return { ptr, indexes.size()*2 };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -459,7 +434,11 @@ void MeshMaterialVariable::
 _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes) const
 {
   const Integer one_data_size = dataTypeSize();
-  _copyToBufferGeneric(matvar_indexes,bytes,one_data_size,m_views_as_bytes.view());
+  SmallSpan<const Int32> indexes(_toInt32Indexes(matvar_indexes));
+  const Int32 nb_item = matvar_indexes.size();
+  MutableMemoryView destination_buffer(makeMutableMemoryView(bytes.data(),one_data_size,nb_item));
+  MultiConstMemoryView source_view(m_views_as_bytes.view(),one_data_size);
+  source_view.copyToIndexes(destination_buffer,indexes);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -468,8 +447,12 @@ _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes
 void MeshMaterialVariable::
 _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes)
 {
-  const Integer one_data_size = dataTypeSize();
-  _copyFromBufferGeneric(matvar_indexes,bytes,one_data_size,m_views_as_bytes.view());
+  const Int32 one_data_size = dataTypeSize();
+  SmallSpan<const Int32> indexes(_toInt32Indexes(matvar_indexes));
+  const Int32 nb_item = matvar_indexes.size();
+  MultiMutableMemoryView destination_view(m_views_as_bytes.view(),one_data_size);
+  ConstMemoryView source_buffer(makeConstMemoryView(bytes.data(),one_data_size,nb_item));
+  destination_view.copyFromIndexes(source_buffer,indexes);
 }
 
 /*---------------------------------------------------------------------------*/

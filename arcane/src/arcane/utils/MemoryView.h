@@ -25,7 +25,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue constante sur une zone mémoire contigue.
+ * \ingroup MemoryView
+ * \brief Vue constante sur une zone mémoire contigue contenant des
+ * éléments de taille fixe.
+ *
+ * Les fonctions makeConstMemoryView() permettent de créer des instances
+ * de cette classe.
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
  */
@@ -115,7 +120,7 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
    * \code
    * Int64 n = indexes.size();
    * for( Int64 i=0; i<n; ++i )
-   *   v[indexes[i]] = this[i];
+   *   v[i] = this[indexes[i]];
    * \endcode
    *
    * \pre this.datatypeSize() == v.datatypeSize();
@@ -131,7 +136,7 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
    * \code
    * Int32 n = indexes.size();
    * for( Int32 i=0; i<n; ++i )
-   *   v[indexes[i]] = this[i];
+   *   v[i] = this[indexes[i]];
    * \endcode
    *
    * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
@@ -140,7 +145,7 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
    * \pre v.nbElement() >= indexes.size();
    */
   void copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-                     Accelerator::RunQueue* run_queue = nullptr);
+                     RunQueue* run_queue = nullptr);
 
  public:
 
@@ -161,8 +166,15 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue modifiable sur une zone mémoire contigue.
  * \ingroup MemoryView
+ *
+ * \brief Vue modifiable sur une zone mémoire contigue contenant des
+ * éléments de taille fixe.
+ *
+ * Les fonctions makeMutableMemoryView() permettent de créer des instances
+ * de cette classe.
+ *
+ * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
  */
 class ARCANE_UTILS_EXPORT MutableMemoryView
 {
@@ -262,7 +274,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    * \code
    * Int64 n = indexes.size();
    * for( Int64 i=0; i<n; ++i )
-   *   this[i] = v[indexes[i]];
+   *   this[indexes[i]] = v[i];
    * \endcode
    *
    * \pre this.datatypeSize() == v.datatypeSize();
@@ -278,7 +290,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    * \code
    * Int32 n = indexes.size();
    * for( Int32 i=0; i<n; ++i )
-   *   this[i] = v[indexes[i]];
+   *   this[indexes[i]] = v[i];
    * \endcode
    *
    * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
@@ -287,7 +299,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    * \pre this.nbElement() >= indexes.size();
    */
   void copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                       Accelerator::RunQueue* run_queue = nullptr);
+                       RunQueue* run_queue = nullptr);
 
  public:
 
@@ -303,6 +315,117 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   Int64 m_nb_element = 0;
   Int32 m_datatype_size = 0;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup MemoryView
+ *
+ * \brief Liste de vues constantes sur des zones mémoires contigues.
+ *
+ * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ */
+class ARCANE_UTILS_EXPORT MultiConstMemoryView
+{
+ public:
+
+  MultiConstMemoryView(SmallSpan<const Span<const std::byte>> views, Int32 datatype_size)
+  : m_views(views)
+  , m_datatype_size(datatype_size)
+  {}
+  MultiConstMemoryView(SmallSpan<const Span<std::byte>> views, Int32 datatype_size)
+  : m_datatype_size(datatype_size)
+  {
+    auto* ptr = reinterpret_cast<const Span<const std::byte>*>(views.data());
+    m_views = { ptr, views.size() };
+  }
+
+ public:
+
+  /*!
+   * \brief Copie dans l'instance indexée les données de \a v.
+   *
+   * L'opération est équivalente au pseudo-code suivant:
+   *
+   * \code
+   * Int32 n = indexes.size();
+   * for( Int32 i=0; i<n; ++i ){
+   *   Int32 index0 = indexes[ (i*2)   ];
+   *   Int32 index1 = indexes[ (i*2)+1 ];
+   *   v[i] = this[index0][index1];
+   * }
+   * \endcode
+   *
+   * Le tableau des indexes doit avoir une taille multiple de 2. Les valeurs
+   * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
+   *
+   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+   *
+   * \pre this.datatypeSize() == v.datatypeSize();
+   * \pre v.nbElement() >= indexes.size();
+   */
+  void copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
+                     RunQueue* run_queue = nullptr);
+
+ private:
+
+  SmallSpan<const Span<const std::byte>> m_views;
+  Int32 m_datatype_size;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup MemoryView
+ *
+ * \brief Liste de vues modifiables sur des zones mémoires contigues.
+ *
+ * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ */
+class ARCANE_UTILS_EXPORT MultiMutableMemoryView
+{
+ public:
+
+  MultiMutableMemoryView(SmallSpan<Span<std::byte>> views, Int32 datatype_size)
+  : m_views(views)
+  , m_datatype_size(datatype_size)
+  {}
+
+ public:
+
+  /*!
+   * \brief Copie dans l'instance indexée les données de \a v.
+   *
+   * L'opération est équivalente au pseudo-code suivant:
+   *
+   * \code
+   * Int32 n = indexes.size();
+   * for( Int32 i=0; i<n; ++i ){
+   *   Int32 index0 = indexes[ (i*2)   ];
+   *   Int32 index1 = indexes[ (i*2)+1 ];
+   *   this[index0][index1] = v[i];
+   * }
+   * \endcode
+   *
+   * Le tableau des indexes doit avoir une taille multiple de 2. Les valeurs
+   * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
+   *
+   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+   *
+   * \pre this.datatypeSize() == v.datatypeSize();
+   * \pre v.nbElement() >= indexes.size();
+   */
+  void copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
+                       RunQueue* run_queue = nullptr);
+
+ private:
+
+  SmallSpan<Span<std::byte>> m_views;
+  Int32 m_datatype_size;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
