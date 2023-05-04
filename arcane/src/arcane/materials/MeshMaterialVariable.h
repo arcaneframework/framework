@@ -147,10 +147,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
  private:
 
-  static void _copyToBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes,
-                                   Int32 one_data_size,SmallSpan<Span<std::byte>> views);
-  static void _copyFromBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes,
-                                     Int32 one_data_size,SmallSpan<Span<std::byte>> views);
+  static SmallSpan<const Int32> _toInt32Indexes(SmallSpan<const MatVarIndex> indexes);
 };
 
 /*---------------------------------------------------------------------------*/
