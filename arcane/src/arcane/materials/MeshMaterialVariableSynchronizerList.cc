@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizerList.cc                     (C) 2000-2022 */
+/* MeshMaterialVariableSynchronizerList.cc                     (C) 2000-2023 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -17,9 +17,11 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/ValueConvert.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/IVariableSynchronizer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MeshMaterialVariable.h"
@@ -38,7 +40,14 @@ class MeshMaterialVariableSynchronizerList::Impl
 {
  public:
 
-  Impl(IMeshMaterialMng* material_mng) : m_material_mng(material_mng){}
+  Impl(IMeshMaterialMng* material_mng)
+  : m_material_mng(material_mng)
+  {
+    // Pour utiliser l'ancien (avant la version accélérateur) mécanisme de synchronisation.
+    // TEMPORAIRE: à supprimer fin 2023.
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_LEGACY_SYNCHRONIZE", true))
+      m_use_generic_version = (v.value()==0);
+  }
 
  public:
 
@@ -46,6 +55,7 @@ class MeshMaterialVariableSynchronizerList::Impl
   UniqueArray<MeshMaterialVariable*> m_mat_env_vars;
   UniqueArray<MeshMaterialVariable*> m_env_only_vars;
   Int64 m_total_size = 0;
+  bool m_use_generic_version = true;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -163,12 +173,15 @@ _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
 
   if (!pm->isParallel())
     return;
+  const bool use_new_version = m_p->m_use_generic_version;
+  RunQueue* runqueue = nullptr;
 
   mmvs->checkRecompute();
 
   ITraceMng* tm = pm->traceMng();
   Integer nb_var = vars.size();
-  tm->info(4) << "MAT_SYNCHRONIZE version=" << sync_version << " multiple n=" << nb_var;
+  tm->info(4) << "MAT_SYNCHRONIZE version=" << sync_version << " multiple n="
+              << nb_var << " is_generic?=" << use_new_version;
 
   Int32UniqueArray data_sizes(nb_var);
   Integer all_datatype_size = 0;
@@ -211,7 +224,13 @@ _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
       Integer offset = 0;
       for( Integer z=0; z<nb_var; ++z ){
         Integer my_data_size = data_sizes[z];
-        vars[z]->copyToBuffer(shared_matcells,values.subView(offset,total_shared * my_data_size));
+        auto sub_view = values.subView(offset,total_shared * my_data_size);
+        if (use_new_version){
+          std::byte* ptr = reinterpret_cast<std::byte*>(sub_view.data());
+          vars[z]->_internalApi()->copyToBuffer(shared_matcells,{ptr,sub_view.size()},runqueue);
+        }
+        else
+          vars[z]->copyToBuffer(shared_matcells,sub_view);
         offset += total_shared * my_data_size;
       }
       requests.add(pm->send(values,rank,false));
@@ -228,7 +247,13 @@ _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
       Integer offset = 0;
       for( Integer z=0; z<nb_var; ++z ){
         Integer my_data_size = data_sizes[z];
-        vars[z]->copyFromBuffer(ghost_matcells,values.subView(offset,total_ghost * my_data_size));
+        auto sub_view = values.subView(offset,total_ghost * my_data_size);
+        if (use_new_version){
+          const std::byte* ptr = reinterpret_cast<const std::byte*>(sub_view.data());
+          vars[z]->_internalApi()->copyFromBuffer(ghost_matcells,{ptr,sub_view.size()},runqueue);
+        }
+        else
+          vars[z]->copyFromBuffer(ghost_matcells,sub_view);
         offset += total_ghost * my_data_size;
       }
     }
