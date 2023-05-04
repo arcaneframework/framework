@@ -50,6 +50,7 @@ namespace Arcane::Materials
 
 class MaterialVariableBuildInfo;
 class MeshMaterialVariablePrivate;
+class MeshMaterialVariableSynchronizerList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,6 +67,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 : public IMeshMaterialVariable
 {
   friend MeshMaterialVariablePrivate;
+  // Pour accès à 'copyToBuffer', 'copyFromBuffer'. A supprimer ensuite
+  friend MeshMaterialVariableSynchronizerList;
 
  public:
 
@@ -111,7 +114,12 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   //! @name Fonctions publiques mais réservées à Arcane pour gérer les synchronisations
   //@{
   virtual Int32 dataTypeSize() const =0;
+
+ protected:
+
+  // TODO: interface obsolète à supprimer
   virtual void copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const =0;
+  // TODO: interface obsolète à supprimer
   virtual void copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes) =0;
   //@}
 
@@ -429,6 +437,8 @@ class ItemMaterialVariableScalar
                                            Int32ConstArrayView indexes);
   ARCANE_MATERIALS_EXPORT void fillPartialValues(const DataType& value);
 
+ private:
+
   ARCANE_MATERIALS_EXPORT Int32 dataTypeSize() const override;
   ARCANE_MATERIALS_EXPORT
   void copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,
@@ -573,6 +583,9 @@ class ItemMaterialVariableArray
   ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr) override;
   ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr,AllEnvCellVectorView view) override;
   ARCANE_MATERIALS_EXPORT void serialize(ISerializer* sbuffer,Int32ConstArrayView ids) override;
+
+ private:
+
   ARCANE_MATERIALS_EXPORT Int32 dataTypeSize() const override;
 
   ARCANE_MATERIALS_EXPORT
