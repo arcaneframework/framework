@@ -22,14 +22,14 @@
 #include "arcane/materials/MeshMaterialVariable.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
-#include "arcane/materials/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/ComponentItemVectorView.h"
+#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 
-#include "arcane/Array2Variable.h"
-#include "arcane/VariableRefArray2.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/ISerializer.h"
+#include "arcane/core/Array2Variable.h"
+#include "arcane/core/VariableRefArray2.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/ISerializer.h"
 
 #include "arcane/materials/ItemMaterialVariableBaseT.H"
 

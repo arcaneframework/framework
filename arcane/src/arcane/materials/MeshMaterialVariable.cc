@@ -30,7 +30,6 @@
 #include "arcane/core/materials/ComponentItemVectorView.h"
 #include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 
-#include "arcane/materials/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableRef.h"
@@ -38,16 +37,18 @@
 #include "arcane/materials/IMeshMaterialVariableComputeFunction.h"
 #include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 
-#include "arcane/Variable.h"
-#include "arcane/VariableDependInfo.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
-#include "arcane/IObserver.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/Parallel.h"
-#include "arcane/IData.h"
+#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
+
+#include "arcane/core/Variable.h"
+#include "arcane/core/VariableDependInfo.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IObserver.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/IData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

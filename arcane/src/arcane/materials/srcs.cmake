@@ -111,7 +111,6 @@ set(ARCANE_SOURCES
   EnvCellVector.h
   MatItemInternal.h
   MeshMaterialVariableComputeFunction.h
-  MeshMaterialVariablePrivate.h
   IEnumeratorTracer.h
   IMeshBlock.h
   IMeshComponent.h
@@ -125,4 +124,5 @@ set(ARCANE_SOURCES
   IMeshMaterialModifierImpl.h
   IMeshMaterialSynchronizeBuffer.h
   ItemMaterialVariableBaseT.H
+  internal/MeshMaterialVariablePrivate.h
   )

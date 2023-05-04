@@ -23,24 +23,25 @@
 #include "arcane/utils/Array2.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/materials/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 
+#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
+
 #include "arcane/materials/ItemMaterialVariableBaseT.H"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
-#include "arcane/IDataFactoryMng.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IDataFactoryMng.h"
 
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ISerializeMessage.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ISerializeMessage.h"
 
 #include "arcane/VariableInfo.h"
 #include "arcane/VariableRefArray.h"
