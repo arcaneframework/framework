@@ -22,14 +22,14 @@
 #include "arcane/materials/MeshMaterialVariable.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
-#include "arcane/materials/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/ComponentItemVectorView.h"
+#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 
-#include "arcane/Array2Variable.h"
-#include "arcane/VariableRefArray2.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/ISerializer.h"
+#include "arcane/core/Array2Variable.h"
+#include "arcane/core/VariableRefArray2.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/ISerializer.h"
 
 #include "arcane/materials/ItemMaterialVariableBaseT.H"
 
@@ -283,7 +283,7 @@ template<typename DataType> Int32
 ItemMaterialVariableArray<DataType>::
 dataTypeSize() const
 {
-  Integer dim2_size = m_vars[0]->valueView().dim2Size();
+  Int32 dim2_size = m_vars[0]->valueView().dim2Size();
   return (Int32)sizeof(DataType) * dim2_size;
 }
 
@@ -292,15 +292,15 @@ dataTypeSize() const
 
 template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
-copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const
+_copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<std::byte> bytes) const
 {
+  const Integer one_data_size = dataTypeSize();
   Integer dim2_size = m_vars[0]->valueView().dim2Size();
-  Integer one_data_size = dataTypeSize();
 
   // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
   // l'alignement est correct.
-  const Integer value_size = bytes.size() / one_data_size;
-  Array2View<DataType> values((DataType*)bytes.unguardedBasePointer(),value_size,dim2_size);
+  const Int32 value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
+  Array2View<DataType> values(reinterpret_cast<DataType*>(bytes.data()),value_size,dim2_size);
   for( Integer z=0; z<value_size; ++z ){
     values[z].copy(value(matvar_indexes[z]));
   }
@@ -311,18 +311,40 @@ copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) con
 
 template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
-copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
+copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const
 {
+  auto* ptr = reinterpret_cast<std::byte*>(bytes.data());
+  return _copyToBufferLegacy(matvar_indexes,{ptr,bytes.size()});
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ItemMaterialVariableArray<DataType>::
+_copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<const std::byte> bytes)
+{
+  const Integer one_data_size = dataTypeSize();
   Integer dim2_size = m_vars[0]->valueView().dim2Size();
-  Integer one_data_size = dataTypeSize();
 
   // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
   // l'alignement est correct.
-  const Integer value_size = bytes.size() / one_data_size;
-  ConstArray2View<DataType> values((const DataType*)bytes.unguardedBasePointer(),value_size,dim2_size);
+  const Integer value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
+  ConstArray2View<DataType> values(reinterpret_cast<const DataType*>(bytes.data()),value_size,dim2_size);
   for( Integer z=0; z<value_size; ++z ){
     setValue(matvar_indexes[z],values[z]);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ItemMaterialVariableArray<DataType>::
+copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
+{
+  auto* ptr = reinterpret_cast<const std::byte*>(bytes.data());
+  return _copyFromBufferLegacy(matvar_indexes,{ptr,bytes.size()});
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariable.h                                      (C) 2000-2022 */
+/* MeshMaterialVariable.h                                      (C) 2000-2023 */
 /*                                                                           */
 /* Variable sur un matériau du maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MatVarIndex.h"
@@ -49,6 +50,7 @@ namespace Arcane::Materials
 
 class MaterialVariableBuildInfo;
 class MeshMaterialVariablePrivate;
+class MeshMaterialVariableSynchronizerList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,6 +66,10 @@ class MeshMaterialVariablePrivate;
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 : public IMeshMaterialVariable
 {
+  friend MeshMaterialVariablePrivate;
+  // Pour accès à 'copyToBuffer', 'copyFromBuffer'. A supprimer ensuite
+  friend MeshMaterialVariableSynchronizerList;
+
  public:
 
   MeshMaterialVariable(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
@@ -101,12 +107,19 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
                    Array<MeshMaterialVariableDependInfo>& mat_infos) override;
   //@}
 
+  IMeshMaterialVariableInternal* _internalApi() override;
+
  public:
 
   //! @name Fonctions publiques mais réservées à Arcane pour gérer les synchronisations
   //@{
   virtual Int32 dataTypeSize() const =0;
+
+ protected:
+
+  // TODO: interface obsolète à supprimer
   virtual void copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const =0;
+  // TODO: interface obsolète à supprimer
   virtual void copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes) =0;
   //@}
 
@@ -125,8 +138,19 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
  protected:
 
   MeshMaterialVariablePrivate* m_p;
+  UniqueArray<Span<std::byte>> m_views_as_bytes;
+
+ protected:
+
+  void _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes) const;
+  void _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes);
 
  private:
+
+  static void _copyToBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes,
+                                   Int32 one_data_size,SmallSpan<Span<std::byte>> views);
+  static void _copyFromBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes,
+                                     Int32 one_data_size,SmallSpan<Span<std::byte>> views);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -168,6 +192,12 @@ class MaterialVariableScalarTraits
   ARCANE_MATERIALS_EXPORT static void
   resizeWithReserve(PrivatePartType* var,Integer new_size);
   static Integer dimension() { return 0; }
+  static Span<std::byte> toBytes(ArrayView<DataType> view)
+  {
+    Span<DataType> s(view);
+    return asWritableBytes(s);
+  }
+
 };
 
 /*---------------------------------------------------------------------------*/
@@ -194,26 +224,32 @@ class MaterialVariableArrayTraits
  public:
 
   ARCANE_MATERIALS_EXPORT
-  static void saveData(IMeshComponent* component,IData* data,
+  static void saveData(IMeshComponent* component, IData* data,
                        Array<ContainerViewType>& cviews);
   ARCANE_MATERIALS_EXPORT
-  static void copyTo(ConstArray2View<DataType> input,Int32ConstArrayView input_indexes,
-                     Array2View<DataType> output,Int32ConstArrayView output_indexes);
+  static void copyTo(ConstArray2View<DataType> input, Int32ConstArrayView input_indexes,
+                     Array2View<DataType> output, Int32ConstArrayView output_indexes);
   ARCANE_MATERIALS_EXPORT
-  static void resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,
+  static void resizeAndFillWithDefault(ValueDataType* data, ContainerType& container,
                                        Integer dim1_size);
-  static void setValue(ArrayView<DataType> view,const DataType& v)
+  static void setValue(ArrayView<DataType> view, const DataType& v)
   {
     view.fill(v);
   }
-  static void setValue(ArrayView<DataType> view,Span<const DataType> v)
+  static void setValue(ArrayView<DataType> view, Span<const DataType> v)
   {
     view.copy(v);
   }
-  static void resizeWithReserve(PrivatePartType* var,Integer new_size)
+  static void resizeWithReserve(PrivatePartType* var, Integer new_size)
   {
     var->resize(new_size);
   }
+  static Span<std::byte> toBytes(Array2View<DataType> view)
+  {
+    Span<DataType> s(view.data(),view.totalNbElement());
+    return asWritableBytes(s);
+  }
+
   static Integer dimension() { return 0; }
 };
 
@@ -401,6 +437,8 @@ class ItemMaterialVariableScalar
                                            Int32ConstArrayView indexes);
   ARCANE_MATERIALS_EXPORT void fillPartialValues(const DataType& value);
 
+ private:
+
   ARCANE_MATERIALS_EXPORT Int32 dataTypeSize() const override;
   ARCANE_MATERIALS_EXPORT
   void copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,
@@ -428,6 +466,13 @@ class ItemMaterialVariableScalar
   void _synchronizeV4();
   void _synchronizeV5();
   Int64 _synchronize2();
+
+ private:
+
+  void _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
+                           Span<std::byte> bytes) const;
+  void _copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
+                       Span<const std::byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -538,6 +583,9 @@ class ItemMaterialVariableArray
   ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr) override;
   ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr,AllEnvCellVectorView view) override;
   ARCANE_MATERIALS_EXPORT void serialize(ISerializer* sbuffer,Int32ConstArrayView ids) override;
+
+ private:
+
   ARCANE_MATERIALS_EXPORT Int32 dataTypeSize() const override;
 
   ARCANE_MATERIALS_EXPORT
@@ -573,6 +621,11 @@ class ItemMaterialVariableArray
   using BaseClass::m_global_variable_ref;
   using BaseClass::m_vars;
   using BaseClass::m_views;
+
+  void _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
+                           Span<std::byte> bytes) const;
+  void _copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
+                             Span<const std::byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/

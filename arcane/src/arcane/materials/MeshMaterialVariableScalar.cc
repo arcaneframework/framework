@@ -23,24 +23,25 @@
 #include "arcane/utils/Array2.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/materials/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 
+#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
+
 #include "arcane/materials/ItemMaterialVariableBaseT.H"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
-#include "arcane/IDataFactoryMng.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IDataFactoryMng.h"
 
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ISerializeMessage.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ISerializeMessage.h"
 
 #include "arcane/VariableInfo.h"
 #include "arcane/VariableRefArray.h"
@@ -288,12 +289,12 @@ dataTypeSize() const
 
 template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const
+_copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<std::byte> bytes) const
 {
   // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
   // l'alignement est correct.
   const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
-  ArrayView<DataType> values(value_size,(DataType*)bytes.unguardedBasePointer());
+  ArrayView<DataType> values(value_size,reinterpret_cast<DataType*>(bytes.data()));
   for( Integer z=0; z<value_size; ++z ){
     values[z] = this->operator[](matvar_indexes[z]);
   }
@@ -304,15 +305,37 @@ copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) con
 
 template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
+copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const
+{
+  auto* ptr = reinterpret_cast<std::byte*>(bytes.data());
+  return _copyToBufferLegacy(matvar_indexes,{ptr,bytes.size()});
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ItemMaterialVariableScalar<DataType>::
+_copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<const std::byte> bytes)
 {
   // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
   // l'alignement est correct.
-  const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
-  ConstArrayView<DataType> values(value_size,(const DataType*)bytes.unguardedBasePointer());
+  const Int32 value_size = CheckedConvert::toInt32(bytes.size() / sizeof(DataType));
+  ConstArrayView<DataType> values(value_size,reinterpret_cast<const DataType*>(bytes.data()));
   for( Integer z=0; z<value_size; ++z ){
     setValue(matvar_indexes[z],values[z]);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ItemMaterialVariableScalar<DataType>::
+copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
+{
+  auto* ptr = reinterpret_cast<const std::byte*>(bytes.data());
+  return _copyFromBufferLegacy(matvar_indexes,{ptr,bytes.size()});
 }
 
 /*---------------------------------------------------------------------------*/

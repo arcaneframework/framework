@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariable.cc                                     (C) 2000-2022 */
+/* MeshMaterialVariable.cc                                     (C) 2000-2023 */
 /*                                                                           */
 /* Variable sur un matériau du maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,7 @@
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ScopedPtr.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshMaterial.h"
@@ -30,7 +31,6 @@
 #include "arcane/core/materials/ComponentItemVectorView.h"
 #include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 
-#include "arcane/materials/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableRef.h"
@@ -38,16 +38,18 @@
 #include "arcane/materials/IMeshMaterialVariableComputeFunction.h"
 #include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 
-#include "arcane/Variable.h"
-#include "arcane/VariableDependInfo.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
-#include "arcane/IObserver.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/Parallel.h"
-#include "arcane/IData.h"
+#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
+
+#include "arcane/core/Variable.h"
+#include "arcane/core/VariableDependInfo.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IObserver.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/IData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,7 +61,8 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariablePrivate::
-MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs,
+                            MeshMaterialVariable* variable)
 : m_nb_reference(0)
 , m_first_reference(nullptr)
 , m_name(v.name())
@@ -68,6 +71,7 @@ MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 , m_global_variable_changed_observer(0)
 , m_has_recursive_depend(true)
 , m_var_space(mvs)
+, m_variable(variable)
 {
  // Pour test uniquement
  if (!platform::getEnvironmentVariable("ARCANE_NO_RECURSIVE_DEPEND").null())
@@ -87,12 +91,41 @@ MeshMaterialVariablePrivate::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int32 MeshMaterialVariablePrivate::
+dataTypeSize() const
+{
+  return m_variable->dataTypeSize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+             Span<std::byte> bytes, [[maybe_unused]] RunQueue* queue) const
+{
+  m_variable->_copyToBuffer(matvar_indexes,bytes);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+               Span<const std::byte> bytes, [[maybe_unused]] RunQueue* queue)
+{
+  m_variable->_copyFromBuffer(matvar_indexes,bytes);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariable::
 MeshMaterialVariable(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
-: m_p(new MeshMaterialVariablePrivate(v,mvs))
+: m_p(new MeshMaterialVariablePrivate(v,mvs,this))
 {
 }
 
@@ -377,6 +410,75 @@ MatVarSpace MeshMaterialVariable::
 space() const
 {
   return m_p->space();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariable::
+_copyToBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes,
+                     Span<std::byte> destination_bytes,
+                     Int32 data_size,SmallSpan<Span<std::byte>> views)
+{
+  const Int32 value_size = matvar_indexes.size();
+
+  for( Int32 z=0; z<value_size; ++z ){
+    MatVarIndex mvi = matvar_indexes[z];
+    Span<std::byte> orig_view = views[mvi.arrayIndex()];
+    Int64 zci = (Int64)(mvi.valueIndex()) * data_size;
+    Int64 zindex = (Int64)z * data_size;
+    for (Int32 z = 0, n = data_size; z < n; ++z)
+      destination_bytes[zindex + z] = orig_view[zci + z];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariable::
+_copyFromBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes,
+                       Span<const std::byte> source_bytes,
+                       Int32 data_size,SmallSpan<Span<std::byte>> views)
+{
+  const Int32 value_size = matvar_indexes.size();
+
+  for( Int32 z=0; z<value_size; ++z ){
+    MatVarIndex mvi = matvar_indexes[z];
+    Span<std::byte> orig_view = views[mvi.arrayIndex()];
+    Int64 zci = (Int64)(mvi.valueIndex()) * data_size;
+    Int64 zindex = (Int64)z * data_size;
+    for (Int32 z = 0, n = data_size; z < n; ++z)
+      orig_view[zci + z] = source_bytes[zindex + z];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariable::
+_copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes) const
+{
+  const Integer one_data_size = dataTypeSize();
+  _copyToBufferGeneric(matvar_indexes,bytes,one_data_size,m_views_as_bytes.view());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariable::
+_copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes)
+{
+  const Integer one_data_size = dataTypeSize();
+  _copyFromBufferGeneric(matvar_indexes,bytes,one_data_size,m_views_as_bytes.view());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshMaterialVariableInternal* MeshMaterialVariable::
+_internalApi()
+{
+  return m_p->_internalApi();
 }
 
 /*---------------------------------------------------------------------------*/
