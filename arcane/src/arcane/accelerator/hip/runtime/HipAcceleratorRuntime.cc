@@ -226,20 +226,60 @@ class HipRunnerRuntime
   {
     return new HipRunQueueEvent(true);
   }
-  void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  void setMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
-    ARCANE_UNUSED(buffer);
-    ARCANE_UNUSED(advice);
-    ARCANE_UNUSED(device_id);
-    ARCANE_THROW(NotImplementedException, "");
+    auto v = buffer.bytes();
+    const void* ptr = v.data();
+    size_t count = v.size();
+    int device = device_id.asInt32();
+    hipMemoryAdvise hip_advise;
+
+    if (advice == eMemoryAdvice::MostlyRead)
+      hip_advise = hipMemAdviseSetReadMostly;
+    else if (advice == eMemoryAdvice::PreferredLocationDevice)
+      hip_advise = hipMemAdviseSetPreferredLocation;
+    else if (advice == eMemoryAdvice::AccessedByDevice)
+      hip_advise = hipMemAdviseSetAccessedBy;
+    else if (advice == eMemoryAdvice::PreferredLocationHost) {
+      hip_advise = hipMemAdviseSetPreferredLocation;
+      device = hipCpuDeviceId;
+    }
+    else if (advice == eMemoryAdvice::AccessedByHost) {
+      hip_advise = hipMemAdviseSetAccessedBy;
+      device = hipCpuDeviceId;
+    }
+    else
+      return;
+    //std::cout << "MEMADVISE p=" << ptr << " size=" << count << " advise = " << hip_advise << " id = " << device << "\n";
+    ARCANE_CHECK_HIP(hipMemAdvise(ptr, count, hip_advise, device));
   }
-  void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
-    ARCANE_UNUSED(buffer);
-    ARCANE_UNUSED(advice);
-    ARCANE_UNUSED(device_id);
-    ARCANE_THROW(NotImplementedException, "");
+    auto v = buffer.bytes();
+    const void* ptr = v.data();
+    size_t count = v.size();
+    int device = device_id.asInt32();
+    hipMemoryAdvise hip_advise;
+
+    if (advice == eMemoryAdvice::MostlyRead)
+      hip_advise = hipMemAdviseUnsetReadMostly;
+    else if (advice == eMemoryAdvice::PreferredLocationDevice)
+      hip_advise = hipMemAdviseUnsetPreferredLocation;
+    else if (advice == eMemoryAdvice::AccessedByDevice)
+      hip_advise = hipMemAdviseUnsetAccessedBy;
+    else if (advice == eMemoryAdvice::PreferredLocationHost) {
+      hip_advise = hipMemAdviseUnsetPreferredLocation;
+      device = hipCpuDeviceId;
+    }
+    else if (advice == eMemoryAdvice::AccessedByHost) {
+      hip_advise = hipMemAdviseUnsetAccessedBy;
+      device = hipCpuDeviceId;
+    }
+    else
+      return;
+    ARCANE_CHECK_HIP(hipMemAdvise(ptr, count, hip_advise, device));
   }
+
   void setCurrentDevice(DeviceId device_id) final
   {
     Int32 id = device_id.asInt32();
@@ -317,7 +357,7 @@ fillDevices()
 class HipMemoryCopier
 : public IMemoryCopier
 {
-  void copy(MemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
+  void copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
             MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem) override
   {
     // 'hipMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
