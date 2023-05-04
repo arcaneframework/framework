@@ -404,6 +404,27 @@ _copyToBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteArrayView b
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MeshMaterialVariable::
+_copyFromBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteConstArrayView bytes,
+                       Int32 one_data_size,ConstArrayView<Span<std::byte>> views)
+{
+  const Int32 full_dim2_size = one_data_size;
+  const Integer value_size = bytes.size() / one_data_size;
+
+  Span<std::byte> destination_bytes((std::byte*)bytes.data(),bytes.size());
+  for( Integer z=0; z<value_size; ++z ){
+    MatVarIndex mvi = matvar_indexes[z];
+    Span<std::byte> orig_view = views[mvi.arrayIndex()];
+    Int64 zci = (Int64)(mvi.valueIndex()) * full_dim2_size;
+    Int64 zindex = (Int64)z * full_dim2_size;
+    for (Int32 z = 0, n = full_dim2_size; z < n; ++z)
+      orig_view[zci + z] = destination_bytes[zindex + z];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/

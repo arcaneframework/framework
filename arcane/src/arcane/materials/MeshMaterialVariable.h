@@ -131,6 +131,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
   void _copyToBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteArrayView bytes,
                             Int32 one_data_size,ConstArrayView<Span<std::byte>> views) const;
+  void _copyFromBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteConstArrayView bytes,
+                              Int32 one_data_size,ConstArrayView<Span<std::byte>> views);
 };
 
 /*---------------------------------------------------------------------------*/

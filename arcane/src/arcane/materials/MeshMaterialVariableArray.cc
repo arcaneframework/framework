@@ -318,15 +318,19 @@ template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
 copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
 {
+  const Integer one_data_size = dataTypeSize();
   Integer dim2_size = m_vars[0]->valueView().dim2Size();
-  Integer one_data_size = dataTypeSize();
-
-  // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
-  // l'alignement est correct.
-  const Integer value_size = bytes.size() / one_data_size;
-  ConstArray2View<DataType> values((const DataType*)bytes.data(),value_size,dim2_size);
-  for( Integer z=0; z<value_size; ++z ){
-    setValue(matvar_indexes[z],values[z]);
+  if (m_p->isUseGenericBufferCopy()){
+    this->_copyFromBufferGeneric(matvar_indexes,bytes,one_data_size,this->m_views_as_bytes);
+  }
+  else{
+    // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
+    // l'alignement est correct.
+    const Integer value_size = bytes.size() / one_data_size;
+    ConstArray2View<DataType> values((const DataType*)bytes.data(),value_size,dim2_size);
+    for( Integer z=0; z<value_size; ++z ){
+      setValue(matvar_indexes[z],values[z]);
+    }
   }
 }
 

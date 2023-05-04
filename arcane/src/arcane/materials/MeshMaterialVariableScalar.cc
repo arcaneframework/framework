@@ -312,12 +312,18 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
 {
-  // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
-  // l'alignement est correct.
-  const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
-  ConstArrayView<DataType> values(value_size,(const DataType*)bytes.unguardedBasePointer());
-  for( Integer z=0; z<value_size; ++z ){
-    setValue(matvar_indexes[z],values[z]);
+  const Integer one_data_size = dataTypeSize();
+  if (m_p->isUseGenericBufferCopy()){
+    this->_copyFromBufferGeneric(matvar_indexes,bytes,one_data_size,this->m_views_as_bytes);
+  }
+  else{
+    // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
+    // l'alignement est correct.
+    const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
+    ConstArrayView<DataType> values(value_size,(const DataType*)bytes.unguardedBasePointer());
+    for( Integer z=0; z<value_size; ++z ){
+      setValue(matvar_indexes[z],values[z]);
+    }
   }
 }
 
