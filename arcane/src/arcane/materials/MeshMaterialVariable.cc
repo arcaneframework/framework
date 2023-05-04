@@ -60,7 +60,8 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariablePrivate::
-MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs,
+                            MeshMaterialVariable* variable)
 : m_nb_reference(0)
 , m_first_reference(nullptr)
 , m_name(v.name())
@@ -70,6 +71,7 @@ MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 , m_has_recursive_depend(true)
 , m_var_space(mvs)
 , m_use_generic_buffer_copy(true)
+, m_variable(variable)
 {
  // Pour test uniquement
  if (!platform::getEnvironmentVariable("ARCANE_NO_RECURSIVE_DEPEND").null())
@@ -89,12 +91,21 @@ MeshMaterialVariablePrivate::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int32 MeshMaterialVariablePrivate::
+dataTypeSize() const
+{
+  return m_variable->dataTypeSize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariable::
 MeshMaterialVariable(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
-: m_p(new MeshMaterialVariablePrivate(v,mvs))
+: m_p(new MeshMaterialVariablePrivate(v,mvs,this))
 {
 }
 
@@ -421,6 +432,15 @@ _copyFromBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteConstArra
     for (Int32 z = 0, n = full_dim2_size; z < n; ++z)
       orig_view[zci + z] = destination_bytes[zindex + z];
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshMaterialVariableInternal* MeshMaterialVariable::
+_internalApi()
+{
+  return m_p->_internalApi();
 }
 
 /*---------------------------------------------------------------------------*/

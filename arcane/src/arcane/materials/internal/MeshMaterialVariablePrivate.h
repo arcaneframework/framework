@@ -9,15 +9,16 @@
 /*                                                                           */
 /* Partie privée d'une variable sur un matériau du maillage.                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MESHMATERIALVARIABLEPRIVATE_H
-#define ARCANE_MATERIALS_MESHMATERIALVARIABLEPRIVATE_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLEPRIVATE_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLEPRIVATE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/VariableDependInfo.h"
+#include "arcane/core/VariableDependInfo.h"
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/materials/MeshMaterialVariableDependInfo.h"
 
@@ -39,23 +40,39 @@ namespace Arcane::Materials
  * \brief Partie privée d'une variable matériau.
  */
 class MeshMaterialVariablePrivate
+: public IMeshMaterialVariableInternal
 {
  public:
-  MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
+
+  MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v, MatVarSpace mvs,
+                              MeshMaterialVariable* variable);
   ~MeshMaterialVariablePrivate();
+
  public:
+
   MatVarSpace space() const { return m_var_space; }
   bool hasRecursiveDepend() const { return m_has_recursive_depend; }
   const String& name() const { return m_name; }
   IMeshMaterialMng* materialMng() const { return m_material_mng; }
   bool isUseGenericBufferCopy() const { return m_use_generic_buffer_copy; }
+  IMeshMaterialVariableInternal* _internalApi() { return this; }
+
  public:
+
+  Int32 dataTypeSize() const override;
+
+ public:
+
   Int32 m_nb_reference;
   MeshMaterialVariableRef* m_first_reference; //! Première référence sur la variable
+
  private:
+
   String m_name;
   IMeshMaterialMng* m_material_mng;
+
  public:
+
   /*!
    * \brief Stocke les références sur les variables tableaux qui servent pour
    * stocker les valeurs par matériau.
@@ -84,12 +101,13 @@ class MeshMaterialVariablePrivate
   bool m_has_recursive_depend;
   MatVarSpace m_var_space;
   bool m_use_generic_buffer_copy = true;
+  MeshMaterialVariable* m_variable = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

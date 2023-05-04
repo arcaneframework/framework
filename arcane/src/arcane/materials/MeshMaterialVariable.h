@@ -102,6 +102,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
                    Array<MeshMaterialVariableDependInfo>& mat_infos) override;
   //@}
 
+  IMeshMaterialVariableInternal* _internalApi() override;
+
  public:
 
   //! @name Fonctions publiques mais réservées à Arcane pour gérer les synchronisations
