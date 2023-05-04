@@ -179,6 +179,62 @@ makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MultiMutableMemoryView::
+copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
+                RunQueue* run_queue)
+{
+  const Int32 value_size = indexes.size() / 2;
+  const Int32 one_data_size = m_datatype_size;
+  const Int64 v_one_data_size = v.datatypeSize();
+  if (one_data_size != v_one_data_size)
+    ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
+                 one_data_size, v_one_data_size);
+
+  auto source_bytes = v.bytes();
+  for (Int32 z = 0; z < value_size; ++z) {
+    Int32 index0 = indexes[z * 2];
+    Int32 index1 = indexes[(z * 2) + 1];
+    Span<std::byte> orig_view = m_views[index0];
+    Int64 zci = ((Int64)(index1)) * one_data_size;
+    Int64 zindex = (Int64)z * one_data_size;
+    for (Int32 z = 0, n = one_data_size; z < n; ++z)
+      orig_view[zci + z] = source_bytes[zindex + z];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MultiConstMemoryView::
+copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
+              RunQueue* run_queue)
+{
+  const Int32 value_size = indexes.size() / 2;
+  const Int32 one_data_size = m_datatype_size;
+  const Int64 v_one_data_size = v.datatypeSize();
+  if (one_data_size != v_one_data_size)
+    ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
+                 one_data_size, v_one_data_size);
+
+  auto destination_bytes = v.bytes();
+
+  for (Int32 z = 0; z < value_size; ++z) {
+    Int32 index0 = indexes[z * 2];
+    Int32 index1 = indexes[(z * 2) + 1];
+    Span<const std::byte> orig_view = m_views[index0];
+    Int64 zci = ((Int64)(index1)) * one_data_size;
+    Int64 zindex = (Int64)z * one_data_size;
+    for (Int32 z = 0, n = one_data_size; z < n; ++z)
+      destination_bytes[zindex + z] = orig_view[zci + z];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ARCANE_UTILS_EXPORT void
 arcanePrintSpecificMemoryStats()
 {
