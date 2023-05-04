@@ -283,7 +283,7 @@ template<typename DataType> Int32
 ItemMaterialVariableArray<DataType>::
 dataTypeSize() const
 {
-  Integer dim2_size = m_vars[0]->valueView().dim2Size();
+  Int32 dim2_size = m_vars[0]->valueView().dim2Size();
   return (Int32)sizeof(DataType) * dim2_size;
 }
 
@@ -294,15 +294,20 @@ template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
 copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const
 {
-  Integer dim2_size = m_vars[0]->valueView().dim2Size();
-  Integer one_data_size = dataTypeSize();
+  const Integer one_data_size = dataTypeSize();
+  if (m_p->isUseGenericBufferCopy()){
+    this->_copyToBufferGeneric(matvar_indexes,bytes,one_data_size,this->m_views_as_bytes);
+  }
+  else{
+    Integer dim2_size = m_vars[0]->valueView().dim2Size();
 
-  // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
-  // l'alignement est correct.
-  const Integer value_size = bytes.size() / one_data_size;
-  Array2View<DataType> values((DataType*)bytes.unguardedBasePointer(),value_size,dim2_size);
-  for( Integer z=0; z<value_size; ++z ){
-    values[z].copy(value(matvar_indexes[z]));
+    // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
+    // l'alignement est correct.
+    const Integer value_size = bytes.size() / one_data_size;
+    Array2View<DataType> values(reinterpret_cast<DataType*>(bytes.data()),value_size,dim2_size);
+    for( Integer z=0; z<value_size; ++z ){
+      values[z].copy(value(matvar_indexes[z]));
+    }
   }
 }
 
@@ -319,7 +324,7 @@ copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView byt
   // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
   // l'alignement est correct.
   const Integer value_size = bytes.size() / one_data_size;
-  ConstArray2View<DataType> values((const DataType*)bytes.unguardedBasePointer(),value_size,dim2_size);
+  ConstArray2View<DataType> values((const DataType*)bytes.data(),value_size,dim2_size);
   for( Integer z=0; z<value_size; ++z ){
     setValue(matvar_indexes[z],values[z]);
   }

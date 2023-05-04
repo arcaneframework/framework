@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariable.h                                      (C) 2000-2022 */
+/* MeshMaterialVariable.h                                      (C) 2000-2023 */
 /*                                                                           */
 /* Variable sur un matériau du maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MatVarIndex.h"
@@ -126,7 +127,10 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
   MeshMaterialVariablePrivate* m_p;
 
- private:
+ protected:
+
+  void _copyToBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteArrayView bytes,
+                            Int32 one_data_size,ConstArrayView<Span<std::byte>> views) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -168,6 +172,12 @@ class MaterialVariableScalarTraits
   ARCANE_MATERIALS_EXPORT static void
   resizeWithReserve(PrivatePartType* var,Integer new_size);
   static Integer dimension() { return 0; }
+  static Span<std::byte> toBytes(ArrayView<DataType> view)
+  {
+    Span<DataType> s(view);
+    return asWritableBytes(s);
+  }
+
 };
 
 /*---------------------------------------------------------------------------*/
@@ -194,26 +204,32 @@ class MaterialVariableArrayTraits
  public:
 
   ARCANE_MATERIALS_EXPORT
-  static void saveData(IMeshComponent* component,IData* data,
+  static void saveData(IMeshComponent* component, IData* data,
                        Array<ContainerViewType>& cviews);
   ARCANE_MATERIALS_EXPORT
-  static void copyTo(ConstArray2View<DataType> input,Int32ConstArrayView input_indexes,
-                     Array2View<DataType> output,Int32ConstArrayView output_indexes);
+  static void copyTo(ConstArray2View<DataType> input, Int32ConstArrayView input_indexes,
+                     Array2View<DataType> output, Int32ConstArrayView output_indexes);
   ARCANE_MATERIALS_EXPORT
-  static void resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,
+  static void resizeAndFillWithDefault(ValueDataType* data, ContainerType& container,
                                        Integer dim1_size);
-  static void setValue(ArrayView<DataType> view,const DataType& v)
+  static void setValue(ArrayView<DataType> view, const DataType& v)
   {
     view.fill(v);
   }
-  static void setValue(ArrayView<DataType> view,Span<const DataType> v)
+  static void setValue(ArrayView<DataType> view, Span<const DataType> v)
   {
     view.copy(v);
   }
-  static void resizeWithReserve(PrivatePartType* var,Integer new_size)
+  static void resizeWithReserve(PrivatePartType* var, Integer new_size)
   {
     var->resize(new_size);
   }
+  static Span<std::byte> toBytes(Array2View<DataType> view)
+  {
+    Span<DataType> s(view.data(),view.totalNbElement());
+    return asWritableBytes(s);
+  }
+
   static Integer dimension() { return 0; }
 };
 
@@ -314,6 +330,7 @@ class ItemMaterialVariableBase
   //! Variables pour les différents matériaux.
   UniqueArray<PrivatePartType*> m_vars;
   UniqueArray<ContainerViewType> m_views;
+  UniqueArray<Span<std::byte>> m_views_as_bytes;
 
  private:
   bool _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var);

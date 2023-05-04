@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariable.cc                                     (C) 2000-2022 */
+/* MeshMaterialVariable.cc                                     (C) 2000-2023 */
 /*                                                                           */
 /* Variable sur un matériau du maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -68,6 +68,7 @@ MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 , m_global_variable_changed_observer(0)
 , m_has_recursive_depend(true)
 , m_var_space(mvs)
+, m_use_generic_buffer_copy(true)
 {
  // Pour test uniquement
  if (!platform::getEnvironmentVariable("ARCANE_NO_RECURSIVE_DEPEND").null())
@@ -377,6 +378,27 @@ MatVarSpace MeshMaterialVariable::
 space() const
 {
   return m_p->space();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariable::
+_copyToBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteArrayView bytes,
+                     Int32 one_data_size,ConstArrayView<Span<std::byte>> views) const
+{
+  const Int32 full_dim2_size = one_data_size;
+  const Integer value_size = bytes.size() / one_data_size;
+
+  Span<std::byte> destination_bytes((std::byte*)bytes.data(),bytes.size());
+  for( Integer z=0; z<value_size; ++z ){
+    MatVarIndex mvi = matvar_indexes[z];
+    Span<std::byte> orig_view = views[mvi.arrayIndex()];
+    Int64 zci = (Int64)(mvi.valueIndex()) * full_dim2_size;
+    Int64 zindex = (Int64)z * full_dim2_size;
+    for (Int32 z = 0, n = full_dim2_size; z < n; ++z)
+      destination_bytes[zindex + z] = orig_view[zci + z];
+  }
 }
 
 /*---------------------------------------------------------------------------*/

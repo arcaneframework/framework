@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemMaterialVariableBaseT.h                                 (C) 2000-2022 */
+/* ItemMaterialVariableBaseT.h                                 (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation de la classe de base des variables matériaux.              */
 /*---------------------------------------------------------------------------*/
@@ -90,6 +90,7 @@ _init(ArrayView<PrivatePartType*> vars)
   m_vars.addRange(vars);
   Integer nb_var = m_vars.size();
   m_views.resize(nb_var);
+  m_views_as_bytes.resize(nb_var);
   // Il faut maintenir une référence sur les variables qu'on possède pour
   // être sur qu'elles sont bien initialisées et qu'elles ne seront pas détruites
   // tant que cette instance existe.
@@ -98,6 +99,7 @@ _init(ArrayView<PrivatePartType*> vars)
     // m_vars[i] peut être nul si notre variable est une variable uniquement milieu.
     m_p->m_refs[i] = nullptr;
     m_views[i] = ContainerViewType();
+    m_views_as_bytes[i] = {};
     if (i==0){
       // Pour la variable globale, il s'agit d'une variable maillage.
       m_p->m_refs[i] = m_global_variable_ref;
@@ -109,8 +111,10 @@ _init(ArrayView<PrivatePartType*> vars)
     }
     // TODO: il faut pouvoir être notifié du changement de cette variable.
     // pour ensuite mettre à jour les vues (peut-être aussi faire un MyVariableRef).
-    if (m_vars[i])
+    if (m_vars[i]) {
       m_views[i] = m_vars[i]->valueView();
+      m_views_as_bytes[i] = TraitsType::toBytes(m_views[i]);
+    }
     //std::cout << "INIT_VIEW: " << i << " v=" << m_views[i].size() << '\n';
   }
 }
@@ -232,8 +236,11 @@ syncReferences()
   Integer nb_var = m_vars.size();
   for( Integer i=0; i<nb_var; ++i ){
     m_views[i] = ContainerViewType();
-    if (m_vars[i])
+    m_views_as_bytes[i] = {};
+    if (m_vars[i]) {
       m_views[i] = m_vars[i]->valueView();
+      m_views_as_bytes[i] = TraitsType::toBytes(m_views[i]);
+    }
   }
 
   for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){

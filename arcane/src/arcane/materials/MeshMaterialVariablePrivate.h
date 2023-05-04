@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariablePrivate.h                               (C) 2000-2019 */
+/* MeshMaterialVariablePrivate.h                               (C) 2000-2023 */
 /*                                                                           */
 /* Partie privée d'une variable sur un matériau du maillage.                 */
 /*---------------------------------------------------------------------------*/
@@ -24,9 +24,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 class IObserver;
-MATERIALS_BEGIN_NAMESPACE
+}
+
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,6 +48,7 @@ class MeshMaterialVariablePrivate
   bool hasRecursiveDepend() const { return m_has_recursive_depend; }
   const String& name() const { return m_name; }
   IMeshMaterialMng* materialMng() const { return m_material_mng; }
+  bool isUseGenericBufferCopy() const { return m_use_generic_buffer_copy; }
  public:
   Int32 m_nb_reference;
   MeshMaterialVariableRef* m_first_reference; //! Première référence sur la variable
@@ -78,13 +83,13 @@ class MeshMaterialVariablePrivate
 
   bool m_has_recursive_depend;
   MatVarSpace m_var_space;
+  bool m_use_generic_buffer_copy = true;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
