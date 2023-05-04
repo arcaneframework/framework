@@ -62,6 +62,8 @@ if (Parmetis_FOUND AND Lima_FOUND)
 endif ()
 
 arcane_add_test(material1 testMaterial-1.arc "-m 10")
+arcane_add_test_parallel_thread(material1 testMaterial-1.arc 4 "-m 10")
+arcane_add_test_parallel(material1_legacy_sync testMaterial-1.arc 4 "-m 10" "-We,ARCANE_MATERIAL_LEGACY_SYNCHRONIZE,1")
 if (LZ4_FOUND)
   arcane_add_test_sequential(material1_lz4 testMaterial-1.arc "-m 10" "-We,ARCANE_MATERIAL_DATA_COMPRESSOR_NAME,LZ4DataCompressor")
 endif()
