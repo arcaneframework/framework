@@ -60,6 +60,11 @@ class MeshMaterialVariablePrivate
  public:
 
   Int32 dataTypeSize() const override;
+  void copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+                    Span<std::byte> bytes, RunQueue* queue) const override;
+
+  void copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+                      Span<const std::byte> bytes, RunQueue* queue) override;
 
  public:
 

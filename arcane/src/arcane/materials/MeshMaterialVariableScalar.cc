@@ -289,20 +289,51 @@ dataTypeSize() const
 
 template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
+_copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<std::byte> bytes) const
+{
+  if (m_p->isUseGenericBufferCopy()){
+    this->_copyToBuffer(matvar_indexes,bytes);
+    return;
+  }
+
+  // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
+  // l'alignement est correct.
+  const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
+  ArrayView<DataType> values(value_size,reinterpret_cast<DataType*>(bytes.data()));
+  for( Integer z=0; z<value_size; ++z ){
+    values[z] = this->operator[](matvar_indexes[z]);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ItemMaterialVariableScalar<DataType>::
 copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const
 {
-  const Integer one_data_size = dataTypeSize();
+  auto* ptr = reinterpret_cast<std::byte*>(bytes.data());
+  return _copyToBufferLegacy(matvar_indexes,{ptr,bytes.size()});
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ItemMaterialVariableScalar<DataType>::
+_copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<const std::byte> bytes)
+{
   if (m_p->isUseGenericBufferCopy()){
-    this->_copyToBufferGeneric(matvar_indexes,bytes,one_data_size,this->m_views_as_bytes);
+    this->_copyFromBuffer(matvar_indexes,bytes);
+    return;
   }
-  else{
-    // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
-    // l'alignement est correct.
-    const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
-    ArrayView<DataType> values(value_size,reinterpret_cast<DataType*>(bytes.data()));
-    for( Integer z=0; z<value_size; ++z ){
-      values[z] = this->operator[](matvar_indexes[z]);
-    }
+
+  // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
+  // l'alignement est correct.
+  const Int32 value_size = CheckedConvert::toInt32(bytes.size() / sizeof(DataType));
+  ConstArrayView<DataType> values(value_size,reinterpret_cast<const DataType*>(bytes.data()));
+  for( Integer z=0; z<value_size; ++z ){
+    setValue(matvar_indexes[z],values[z]);
   }
 }
 
@@ -313,19 +344,8 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
 {
-  const Integer one_data_size = dataTypeSize();
-  if (m_p->isUseGenericBufferCopy()){
-    this->_copyFromBufferGeneric(matvar_indexes,bytes,one_data_size,this->m_views_as_bytes);
-  }
-  else{
-    // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
-    // l'alignement est correct.
-    const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
-    ConstArrayView<DataType> values(value_size,(const DataType*)bytes.unguardedBasePointer());
-    for( Integer z=0; z<value_size; ++z ){
-      setValue(matvar_indexes[z],values[z]);
-    }
-  }
+  auto* ptr = reinterpret_cast<const std::byte*>(bytes.data());
+  return _copyFromBufferLegacy(matvar_indexes,{ptr,bytes.size()});
 }
 
 /*---------------------------------------------------------------------------*/

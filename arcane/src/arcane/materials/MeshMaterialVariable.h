@@ -65,6 +65,8 @@ class MeshMaterialVariablePrivate;
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 : public IMeshMaterialVariable
 {
+  friend MeshMaterialVariablePrivate;
+
  public:
 
   MeshMaterialVariable(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
@@ -128,13 +130,19 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
  protected:
 
   MeshMaterialVariablePrivate* m_p;
+  UniqueArray<Span<std::byte>> m_views_as_bytes;
 
  protected:
 
-  void _copyToBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteArrayView bytes,
-                            Int32 one_data_size,ConstArrayView<Span<std::byte>> views) const;
-  void _copyFromBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteConstArrayView bytes,
-                              Int32 one_data_size,ConstArrayView<Span<std::byte>> views);
+  void _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes) const;
+  void _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes);
+
+ private:
+
+  static void _copyToBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes,
+                                   Int32 one_data_size,SmallSpan<Span<std::byte>> views);
+  static void _copyFromBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes,
+                                     Int32 one_data_size,SmallSpan<Span<std::byte>> views);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -334,7 +342,6 @@ class ItemMaterialVariableBase
   //! Variables pour les différents matériaux.
   UniqueArray<PrivatePartType*> m_vars;
   UniqueArray<ContainerViewType> m_views;
-  UniqueArray<Span<std::byte>> m_views_as_bytes;
 
  private:
   bool _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var);
@@ -449,6 +456,13 @@ class ItemMaterialVariableScalar
   void _synchronizeV4();
   void _synchronizeV5();
   Int64 _synchronize2();
+
+ private:
+
+  void _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
+                           Span<std::byte> bytes) const;
+  void _copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
+                       Span<const std::byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -594,6 +608,11 @@ class ItemMaterialVariableArray
   using BaseClass::m_global_variable_ref;
   using BaseClass::m_vars;
   using BaseClass::m_views;
+
+  void _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
+                           Span<std::byte> bytes) const;
+  void _copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
+                             Span<const std::byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/

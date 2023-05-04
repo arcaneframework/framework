@@ -47,6 +47,22 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
    * multiplié pour le nombre d'éléments du tableau.
    */
   virtual Int32 dataTypeSize() const = 0;
+
+  /*!
+   * \brief Copie les valeurs de la variable dans un buffer.
+   *
+   * \a queue peut être nul.
+   */
+  virtual void copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+                            Span<std::byte> bytes, RunQueue* queue) const = 0;
+
+  /*!
+   * \brief Copie les valeurs de la variable depuis un buffer.
+   *
+   * \a queue peut être nul.
+   */
+  virtual void copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+                              Span<const std::byte> bytes, RunQueue* queue) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

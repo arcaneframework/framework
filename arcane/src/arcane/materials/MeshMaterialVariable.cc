@@ -23,6 +23,7 @@
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ScopedPtr.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshMaterial.h"
@@ -95,6 +96,26 @@ Int32 MeshMaterialVariablePrivate::
 dataTypeSize() const
 {
   return m_variable->dataTypeSize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+             Span<std::byte> bytes, [[maybe_unused]] RunQueue* queue) const
+{
+  m_variable->_copyToBuffer(matvar_indexes,bytes);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+               Span<const std::byte> bytes, [[maybe_unused]] RunQueue* queue)
+{
+  m_variable->_copyFromBuffer(matvar_indexes,bytes);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -396,14 +417,14 @@ space() const
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariable::
-_copyToBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteArrayView bytes,
-                     Int32 one_data_size,ConstArrayView<Span<std::byte>> views) const
+_copyToBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes,
+                     Int32 one_data_size,SmallSpan<Span<std::byte>> views)
 {
   const Int32 full_dim2_size = one_data_size;
-  const Integer value_size = bytes.size() / one_data_size;
+  const Int32 value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
 
-  Span<std::byte> destination_bytes((std::byte*)bytes.data(),bytes.size());
-  for( Integer z=0; z<value_size; ++z ){
+  Span<std::byte> destination_bytes(bytes);
+  for( Int32 z=0; z<value_size; ++z ){
     MatVarIndex mvi = matvar_indexes[z];
     Span<std::byte> orig_view = views[mvi.arrayIndex()];
     Int64 zci = (Int64)(mvi.valueIndex()) * full_dim2_size;
@@ -417,14 +438,14 @@ _copyToBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteArrayView b
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariable::
-_copyFromBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteConstArrayView bytes,
-                       Int32 one_data_size,ConstArrayView<Span<std::byte>> views)
+_copyFromBufferGeneric(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes,
+                       Int32 one_data_size,SmallSpan<Span<std::byte>> views)
 {
   const Int32 full_dim2_size = one_data_size;
-  const Integer value_size = bytes.size() / one_data_size;
+  const Integer value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
 
-  Span<std::byte> destination_bytes((std::byte*)bytes.data(),bytes.size());
-  for( Integer z=0; z<value_size; ++z ){
+  Span<const std::byte> destination_bytes(bytes);
+  for( Int32 z=0; z<value_size; ++z ){
     MatVarIndex mvi = matvar_indexes[z];
     Span<std::byte> orig_view = views[mvi.arrayIndex()];
     Int64 zci = (Int64)(mvi.valueIndex()) * full_dim2_size;
@@ -432,6 +453,26 @@ _copyFromBufferGeneric(ConstArrayView<MatVarIndex> matvar_indexes, ByteConstArra
     for (Int32 z = 0, n = full_dim2_size; z < n; ++z)
       orig_view[zci + z] = destination_bytes[zindex + z];
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariable::
+_copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes) const
+{
+  const Integer one_data_size = dataTypeSize();
+  _copyToBufferGeneric(matvar_indexes,bytes,one_data_size,m_views_as_bytes.view());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariable::
+_copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes)
+{
+  const Integer one_data_size = dataTypeSize();
+  _copyFromBufferGeneric(matvar_indexes,bytes,one_data_size,m_views_as_bytes.view());
 }
 
 /*---------------------------------------------------------------------------*/
