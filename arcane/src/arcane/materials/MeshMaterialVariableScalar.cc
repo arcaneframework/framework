@@ -291,11 +291,6 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<std::byte> bytes) const
 {
-  if (m_p->isUseGenericBufferCopy()){
-    this->_copyToBuffer(matvar_indexes,bytes);
-    return;
-  }
-
   // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
   // l'alignement est correct.
   const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
@@ -323,11 +318,6 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<const std::byte> bytes)
 {
-  if (m_p->isUseGenericBufferCopy()){
-    this->_copyFromBuffer(matvar_indexes,bytes);
-    return;
-  }
-
   // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
   // l'alignement est correct.
   const Int32 value_size = CheckedConvert::toInt32(bytes.size() / sizeof(DataType));

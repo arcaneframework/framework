@@ -295,19 +295,14 @@ ItemMaterialVariableArray<DataType>::
 _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<std::byte> bytes) const
 {
   const Integer one_data_size = dataTypeSize();
-  if (m_p->isUseGenericBufferCopy()){
-    this->_copyToBuffer(matvar_indexes,bytes);
-  }
-  else{
-    Integer dim2_size = m_vars[0]->valueView().dim2Size();
+  Integer dim2_size = m_vars[0]->valueView().dim2Size();
 
-    // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
-    // l'alignement est correct.
-    const Int32 value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
-    Array2View<DataType> values(reinterpret_cast<DataType*>(bytes.data()),value_size,dim2_size);
-    for( Integer z=0; z<value_size; ++z ){
-      values[z].copy(value(matvar_indexes[z]));
-    }
+  // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
+  // l'alignement est correct.
+  const Int32 value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
+  Array2View<DataType> values(reinterpret_cast<DataType*>(bytes.data()),value_size,dim2_size);
+  for( Integer z=0; z<value_size; ++z ){
+    values[z].copy(value(matvar_indexes[z]));
   }
 }
 
@@ -329,11 +324,6 @@ template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
 _copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<const std::byte> bytes)
 {
-  if (m_p->isUseGenericBufferCopy()){
-    this->_copyFromBuffer(matvar_indexes,bytes);
-    return;
-  }
-
   const Integer one_data_size = dataTypeSize();
   Integer dim2_size = m_vars[0]->valueView().dim2Size();
 

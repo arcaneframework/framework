@@ -71,7 +71,6 @@ MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs,
 , m_global_variable_changed_observer(0)
 , m_has_recursive_depend(true)
 , m_var_space(mvs)
-, m_use_generic_buffer_copy(true)
 , m_variable(variable)
 {
  // Pour test uniquement

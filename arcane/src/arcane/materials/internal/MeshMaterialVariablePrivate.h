@@ -54,7 +54,6 @@ class MeshMaterialVariablePrivate
   bool hasRecursiveDepend() const { return m_has_recursive_depend; }
   const String& name() const { return m_name; }
   IMeshMaterialMng* materialMng() const { return m_material_mng; }
-  bool isUseGenericBufferCopy() const { return m_use_generic_buffer_copy; }
   IMeshMaterialVariableInternal* _internalApi() { return this; }
 
  public:
@@ -105,7 +104,6 @@ class MeshMaterialVariablePrivate
 
   bool m_has_recursive_depend;
   MatVarSpace m_var_space;
-  bool m_use_generic_buffer_copy = true;
   MeshMaterialVariable* m_variable = nullptr;
 };
 
