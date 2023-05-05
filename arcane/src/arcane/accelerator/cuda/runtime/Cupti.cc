@@ -214,7 +214,9 @@ printActivity(AcceleratorStatInfoList* stat_info,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Classe singleton pour gérer CUPTI.
+ */
 class CuptiInfo
 {
  public:
@@ -222,6 +224,7 @@ class CuptiInfo
   void init(Int32 level);
   void start();
   void stop();
+  void flush();
 
  private:
 
@@ -302,7 +305,7 @@ start()
 {
   if (m_is_init)
     return;
-  m_is_init = true;
+
   int level = m_profiling_level;
 
   ARCANE_CHECK_CUDA(cuptiActivityRegisterCallbacks(arcaneCuptiBufferRequested, arcaneCuptiBufferCompleted));
@@ -341,6 +344,10 @@ start()
     ARCANE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_PC_SAMPLING));
 
   ARCANE_CHECK_CUDA(cuptiGetTimestamp(&startTimestamp));
+
+  // Mettre à la fin pour qu'en cas d'exception on considère l'initialisation
+  // non effectuée.
+  m_is_init = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -360,7 +367,23 @@ stop()
   if (level >= 3)
     ARCANE_CHECK_CUDA(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_PC_SAMPLING));
 
+  ARCANE_CHECK_CUDA(cuptiActivityFlushAll(0));
+  ARCANE_CHECK_CUDA(cudaDeviceSynchronize());
+
   m_is_init = false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CuptiInfo::
+flush()
+{
+  // Il ne faut pas faire de flush si CUPTI n'a pas démarré car cela provoque
+  // une erreur.
+  if (!m_is_init)
+    return;
+  ARCANE_CHECK_CUDA(cuptiActivityFlushAll(0));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -381,7 +404,7 @@ initCupti(Int32 level,bool do_print)
 extern "C++" void
 flushCupti()
 {
-  ARCANE_CHECK_CUDA(cuptiActivityFlushAll(0));
+  m_global_cupti_info.flush();
 }
 
 extern "C++" void
@@ -394,8 +417,6 @@ extern "C++" void
 stopCupti()
 {
   m_global_cupti_info.stop();
-  flushCupti();
-  ARCANE_CHECK_CUDA(cudaDeviceSynchronize());
 }
 
 /*---------------------------------------------------------------------------*/
