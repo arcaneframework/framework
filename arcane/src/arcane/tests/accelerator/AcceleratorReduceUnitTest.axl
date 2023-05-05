@@ -1,0 +1,10 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<!-- Options du jeu de données pour le service de 'AcceleratorReduceUnitTest' -->
+<service name="AcceleratorReduceUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false" />
+  <options>
+    <simple name="use-atomic" type="bool" default="false" >
+      <description>True if use atomic for reduction</description>
+    </simple>
+  </options>
+</service>

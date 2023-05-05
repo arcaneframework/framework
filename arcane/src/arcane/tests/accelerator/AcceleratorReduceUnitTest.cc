@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorReduceUnitTest.cc                                (C) 2000-2022 */
+/* AcceleratorReduceUnitTest.cc                                (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des réductions sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,8 @@
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
+#include "arcane/tests/accelerator/AcceleratorReduceUnitTest_axl.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,7 +43,7 @@ namespace ax = Arcane::Accelerator;
  * \brief Service de test de la classe 'NumArray'.
  */
 class AcceleratorReduceUnitTest
-: public BasicUnitTest
+: public ArcaneAcceleratorReduceUnitTestObject
 {
  public:
 
@@ -93,7 +95,7 @@ ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(AcceleratorReduceUnitTest, IUnitTest,
 
 AcceleratorReduceUnitTest::
 AcceleratorReduceUnitTest(const ServiceBuildInfo& sb)
-: BasicUnitTest(sb)
+: ArcaneAcceleratorReduceUnitTestObject(sb)
 {
 }
 
@@ -125,12 +127,16 @@ initializeTest()
 void AcceleratorReduceUnitTest::
 executeTest()
 {
-  info() << "UseReducePolicy = Atomic";
-  m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Atomic);
-  executeTest2(2);
-  info() << "UseReducePolicy = Grid";
-  m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
-  executeTest2(10);
+  if (options()->useAtomic()){
+    info() << "UseReducePolicy = Atomic";
+    m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Atomic);
+    executeTest2(2);
+  }
+  else{
+    info() << "UseReducePolicy = Grid";
+    m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
+    executeTest2(10);
+  }
 }
 
 void AcceleratorReduceUnitTest::

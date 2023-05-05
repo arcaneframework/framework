@@ -114,6 +114,7 @@ set(AXL_FILES
   CustomMeshTest
   HydroAdditionalTest
   accelerator/SimpleHydroAccelerator
+  accelerator/AcceleratorReduceUnitTest
   PDESRandomNumberGeneratorUnitTest
   RandomNumberGeneratorUnitTest
   ServiceInterface1ImplTest
