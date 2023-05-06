@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PapiPerformanceService.cc                                   (C) 2000-2022 */
+/* PapiPerformanceService.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Informations de performances utilisant PAPI.                              */
 /*---------------------------------------------------------------------------*/
@@ -187,8 +187,8 @@ initialize()
 
   prginfo = PAPI_get_executable_info();
   
-  start = prginfo->address_info.text_start;
-  end = prginfo->address_info.text_end;
+  start = reinterpret_cast<caddr_t>(prginfo->address_info.text_start);
+  end = reinterpret_cast<caddr_t>(prginfo->address_info.text_end);
 
   info() << "** PROGRAM INFOS: start=" << (long)start << " end=" << (long)end << " length=" << (end-start);
 
