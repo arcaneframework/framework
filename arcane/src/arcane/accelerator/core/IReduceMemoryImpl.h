@@ -47,7 +47,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
     //! Entier utilisé pour compter le nombre de blocs ayant déjà fait leur partie de la réduction
     unsigned int* m_grid_device_count = nullptr;
     //! Politique de réduction
-    eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Atomic;
+    eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
   };
 
  public:

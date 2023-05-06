@@ -477,6 +477,7 @@ void arcaneTestHipReductionX(int vsize,ax::RunQueue& queue,const String& name)
   IMemoryAllocator* hip_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
   UniqueArray<int> d_a(hip_allocator2,vsize);
   UniqueArray<int> d_out(hip_allocator2,vsize);
+
   for( Integer i=0; i<vsize; ++i ){
     int a = 5 + ((i+2) % 43);
     d_a[i] = a;
@@ -492,7 +493,7 @@ void arcaneTestHipReductionX(int vsize,ax::RunQueue& queue,const String& name)
   ReducerMin<double> min_double_reducer(command);
   Span<const int> xa = d_a.span();
   Span<int> xout = d_out.span();
-  auto func2 = [=] ARCCORE_HOST_DEVICE (Arcane::ArrayBoundsIndex<1> idx)
+  command << RUNCOMMAND_LOOP1(idx, vsize)
   {
     auto [i] = idx();
     double vxa = (double)(xa[i]);
@@ -506,15 +507,21 @@ void arcaneTestHipReductionX(int vsize,ax::RunQueue& queue,const String& name)
     //if (i<10)
     //printf("Do Reduce i=%d v=%d %lf\n",i,xa[i],vxa);
   };
-  run(command,ArrayBounds<MDDim1>(vsize),func2);
-  std::cout << "SumReducer name=" << name << " v_int=" << sum_reducer.reduce()
-            << " v_double=" << sum_double_reducer.reduce()
+
+  int sum_int_value = sum_reducer.reduce();
+  double sum_double_value = sum_double_reducer.reduce();
+  std::cout << "SumReducer name=" << name << " v_int=" << sum_int_value
+            << " v_double=" << sum_double_value
             << "\n";
-  std::cout << "MaxReducer name=" << name << " v_int=" << max_int_reducer.reduce()
-            << " v_double=" << max_double_reducer.reduce()
+  int max_int_value = max_int_reducer.reduce();
+  double max_double_value = max_double_reducer.reduce();
+  std::cout << "MaxReducer name=" << name << " v_int=" << max_int_value
+            << " v_double=" << max_double_value
             << "\n";
-  std::cout << "MinReducer name=" << name << " v_int=" << min_int_reducer.reduce()
-            << " v_double=" << min_double_reducer.reduce()
+  int min_int_value = min_int_reducer.reduce();
+  double min_double_value = min_double_reducer.reduce();
+  std::cout << "MinReducer name=" << name << " v_int=" << min_int_value
+            << " v_double=" << min_double_value
             << "\n";
 }
 
@@ -527,12 +534,13 @@ int arcaneTestHipReduction()
   // TODO: tester en ne commancant pas par 0.
   ax::Runner runner_seq(ax::eExecutionPolicy::Sequential);
   ax::Runner runner_thread(ax::eExecutionPolicy::Thread);
-  ax::Runner runner_cuda(ax::eExecutionPolicy::CUDA);
+  ax::Runner runner_hip(ax::eExecutionPolicy::HIP);
+  runner_hip.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
   ax::RunQueue queue1{makeQueue(runner_seq)};
   ax::RunQueue queue2{makeQueue(runner_thread)};
-  ax::RunQueue queue3{makeQueue(runner_cuda)};
-  int sizes_to_test[] = { 56, 567, 452182 };
-  for( int i=0; i<3; ++i ){
+  ax::RunQueue queue3{makeQueue(runner_hip)};
+  int sizes_to_test[] = { 56, 567, 4389, 452182 };
+  for( int i=0; i<4; ++i ){
     int vsize = sizes_to_test[i];
     arcaneTestHipReductionX(vsize,queue1,"Sequential");
     arcaneTestHipReductionX(vsize,queue2,"Thread");

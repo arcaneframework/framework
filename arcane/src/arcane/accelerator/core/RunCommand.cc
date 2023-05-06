@@ -20,6 +20,7 @@
 #include "arcane/utils/NumArray.h"
 #include "arcane/utils/ForLoopTraceInfo.h"
 #include "arcane/utils/ConcurrencyUtils.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueue.h"
@@ -54,13 +55,17 @@ class ReduceMemoryImpl
     if (!m_allocator)
       ARCANE_FATAL("No HostMemory allocator available for accelerator");
     _allocateMemoryForReduceData(128);
-    m_grid_memory_info.m_grid_device_count = reinterpret_cast<unsigned int*>(m_allocator->allocate(sizeof(int)));
-    (*m_grid_memory_info.m_grid_device_count) = 0;
+
+    IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+    m_device_allocator = mrm->getAllocator(eMemoryRessource::Device);
+    ARCANE_CHECK_POINTER(m_device_allocator);
+    _allocateMemoryForGridDeviceCount();
   }
+
   ~ReduceMemoryImpl()
   {
     m_allocator->deallocate(m_managed_memory);
-    m_allocator->deallocate(m_grid_memory_info.m_grid_device_count);
+    m_device_allocator->deallocate(m_grid_memory_info.m_grid_device_count);
   }
 
  public:
@@ -84,6 +89,7 @@ class ReduceMemoryImpl
 
   RunCommandImpl* m_command;
   IMemoryAllocator* m_allocator;
+  IMemoryAllocator* m_device_allocator = nullptr;
 
   //! Pointeur vers la mémoire unifiée contenant la donnée réduite
   std::byte* m_managed_memory = nullptr;
@@ -106,6 +112,7 @@ class ReduceMemoryImpl
  private:
 
   void _allocateGridDataMemory();
+  void _allocateMemoryForGridDeviceCount();
   void _setReducePolicy();
   void _allocateMemoryForReduceData(Int32 new_size)
   {
@@ -404,6 +411,25 @@ _allocateGridDataMemory()
     runner->setMemoryAdvice(mem_view,eMemoryAdvice::AccessedByHost);
   }
   //std::cout << "RESIZE GRID t=" << total_size << "\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ReduceMemoryImpl::
+_allocateMemoryForGridDeviceCount()
+{
+  ARCANE_CHECK_POINTER(m_device_allocator);
+
+  // Alloue sur le device la mémoire contenant le nombre de blocs restant à traiter
+  Int64 size = sizeof(unsigned int);
+  const unsigned int zero = 0;
+  auto* ptr = reinterpret_cast<unsigned int*>(m_device_allocator->allocate(size));
+  m_grid_memory_info.m_grid_device_count = ptr;
+
+  // Initialise cette zone mémoire avec 0.
+  MemoryCopyArgs copy_args(ptr, &zero, size);
+  m_command->internalStream()->copyMemory(copy_args);
 }
 
 /*---------------------------------------------------------------------------*/
