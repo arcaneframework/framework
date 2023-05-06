@@ -28,7 +28,7 @@
 #elif PETSC_VERSION_(3,0,0)
 #include "petscmg.h"
 #else
-#error PETSC_VERSION != 3.10.2 nor 3.7.7 nor 3.6.0 nor 3.3.0 nor 3.0.0
+#error "Bad version of PETSc: should be 3.0.0, 3.3.0 or greater than 3.6.1."
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -568,8 +568,10 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
   case(KSP_CONVERGED_RTOL):{break;}
   case(KSP_CONVERGED_ATOL):{break;}
   case(KSP_CONVERGED_ITS):{break;}
+#if !PETSC_VERSION_GE(3,19,0)
   case(KSP_CONVERGED_CG_NEG_CURVE):{break;}
   case(KSP_CONVERGED_CG_CONSTRAINED):{break;}
+#endif
   case(KSP_CONVERGED_STEP_LENGTH):{break;}
   case(KSP_CONVERGED_HAPPY_BREAKDOWN):{break;}
               /* diverged */
