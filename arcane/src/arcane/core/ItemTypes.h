@@ -32,7 +32,7 @@ namespace Arcane
 // A définir si on souhaiter ajouter un offset aux classes 'ItemVector' et
 // 'ItemEnumerator'. Cela change la taille de ces structures et il ne faut
 // donc recompiler code code utilisateur si on change ce '#define'.
-// #define ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+#define ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
 
 // A définir si on souhaite cacher les méthodes d'accès aux structures
 // internes des connectivités.
