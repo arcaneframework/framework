@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -553,9 +553,26 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
                    PETSC_DEFAULT,
                    PETSC_DEFAULT,
                    solver_param->maxIter());
+
+  // override KSP options from commandline if present//
+  KSPSetFromOptions(m_ksp_solver);
+
+  // override PC options from commandline if present//
+  PCSetFromOptions(prec) ;
+
+  // setup KSP solver and precondtioner //
   KSPSetUp(m_ksp_solver);
-  //KSPSetFromOptions(m_ksp_solver);
-  debug()<<"[AlephMatrixSolve] All set up, mow solving";
+  PCSetUp(prec);
+
+  // print info which KSP solver and PC used //
+  KSPType kt;
+  KSPGetType(m_ksp_solver,&kt);
+  PCType pt;
+  PCGetType(prec,&pt);
+  debug()<<"[AlephMatrixSolve] Will use KSP type :" << kt << " PC type : "<< pt ;
+
+  // solve the linear system //
+  debug()<<"[AlephMatrixSolve] All set up, now solving";
   KSPSolve(m_ksp_solver,RHS,solution);
   debug()<<"[AlephMatrixSolve] solved";
   KSPGetConvergedReason(m_ksp_solver,&reason);
