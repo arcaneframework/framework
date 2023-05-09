@@ -8,5 +8,6 @@
   <variables>
     <variable field-name="cell_temperature" name="CellTemperature" data-type="real" item-kind="cell" dim="0" dump="true" />
     <variable field-name="node_temperature" name="NodeTemperature" data-type="real" item-kind="node" dim="0" dump="true" />
+    <variable field-name="cell_center" name="CellCenter" data-type="real3" item-kind="cell" dim="0" dump="true" />
   </variables>
 </module>
