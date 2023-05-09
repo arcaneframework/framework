@@ -605,7 +605,7 @@ startInit()
   }
 
   // Itération sur tous les milieux et tous les matériaux d'une maille.
-  ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng->allEnvCells()){
+  ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,allCells()){
     AllEnvCell all_env_cell = *iallenvcell;
     Cell global_cell = all_env_cell.globalCell();
     ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){

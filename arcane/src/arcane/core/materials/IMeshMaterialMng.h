@@ -217,9 +217,6 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * Si \a v vaut \a false, les milieux et les matériaux ne sont pas notifiés
    * des changements de la topologie du maillage. Dans ce cas, toutes les
    * données associées sont invalidées.
-   * \note En mode compatibilité, il est néammoins possible de reconstruire
-   * une liste valide des milieux et matériaux mais sans conservation des valeurs
-   * partielles.
    */
   virtual void setMeshModificationNotified(bool v) =0;
 
@@ -377,9 +374,6 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
 
   //! Vue sur les mailles milieux correspondant au groupe \a cells
   virtual AllEnvCellVectorView view(CellVectorView cells) =0;
-
-  //! Vue sur les mailles milieux correspondant au groupe de toutes les mailles
-  virtual ARCANE_DEPRECATED AllEnvCellVectorView allEnvCells() =0;
 
   //! Créée une instance pour convertir de 'Cell' en 'AllEnvCell'
   virtual CellToAllEnvCellConverter cellToAllEnvCellConverter() =0;

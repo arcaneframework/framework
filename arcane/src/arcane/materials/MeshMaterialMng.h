@@ -173,8 +173,6 @@ class MeshMaterialMng
     return this->view(cells.localIds());
   }
 
-  AllEnvCellVectorView allEnvCells() override;
-
   CellToAllEnvCellConverter cellToAllEnvCellConverter() override;
 
   void recreateFromDump() override;

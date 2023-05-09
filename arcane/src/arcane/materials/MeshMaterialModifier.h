@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialModifier.h                                      (C) 2000-2018 */
+/* MeshMaterialModifier.h                                      (C) 2000-2023 */
 /*                                                                           */
 /* Objet permettant de modifier les matériaux.                               */
 /*---------------------------------------------------------------------------*/
@@ -20,17 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IMesh;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,8 +37,9 @@ class IMeshEnvironment;
  * \ingroup ArcaneMaterials
  * \brief Objet permettant de modifier les matériaux ou les milieux.
  *
- * Cette class fournit les méthodes pour modifier la liste des
+ * Cette classe fournit les méthodes pour modifier la liste des
  * mailles composant un matériaux ou un milieu.
+ *
  * Les modifications se font directement sur les matériaux. Les milieux
  * correspondants sont automatiquement mis à jour. Il est possible
  * soit d'ajouter des mailles dans un matériaux (addCells())
@@ -56,13 +48,12 @@ class IMeshEnvironment;
  * n'a pas besoin d'être appelée explicitement: elle l'est automatiquement
  * lors de l'appel au destructeur.
  * \todo ajouter exemple.
- *
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
 {
  public:
 
-  MeshMaterialModifier(IMeshMaterialMng*);
+  explicit MeshMaterialModifier(IMeshMaterialMng*);
   ~MeshMaterialModifier() ARCANE_NOEXCEPT_FALSE;
 
  public:
@@ -70,20 +61,12 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
   /*!
    * \brief Ajoute les mailles d'indices locaux \a ids au matériau \a mat.
    */
-  void addCells(IMeshMaterial* mat,Int32ConstArrayView ids);
+  void addCells(IMeshMaterial* mat, Int32ConstArrayView ids);
 
   /*!
    * \brief Supprime les mailles d'indices locaux \a ids au matériau \a mat.
    */
-  void removeCells(IMeshMaterial* mat,Int32ConstArrayView ids);
-
-  /*!
-   * \brief Positionne les mailles d'indices locaux \a ids au matériau \a mat.
-   *
-   * Cette méthode n'est valide qu'en mode compatibilité
-   * (IMeshMaterialMng::isCompatibilityMode())
-   */
-  void setCells(IMeshMaterial* mat,Int32ConstArrayView ids);
+  void removeCells(IMeshMaterial* mat, Int32ConstArrayView ids);
 
   /*!
    * \brief Met à jour les structures après une modification.
@@ -104,11 +87,9 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

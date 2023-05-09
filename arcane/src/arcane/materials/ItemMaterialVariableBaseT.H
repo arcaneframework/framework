@@ -156,29 +156,16 @@ buildFromManager(bool is_continue)
       all_vars[i+1] = nullptr;
       continue;
     }
-    // Prend le nom spécifié pour le nom de la variable matériau s'il existe
-    String var_name = indexer->wantedVariableName();
-    bool is_compat = false;
+
     // Si un nom est spécifié, il s'agit du mode de compatibilité
     // avec Troll et dans ce cas la variable n'est pas associée
     // au maillage.
-    if (var_name.null())
-      var_name = String("Mat")+indexer->name()+"_"+this->name();
-    else{
-      var_name = var_name + "_" + this->name();
-      is_compat = true;
-    }
-
+    String var_name = String("Mat")+indexer->name()+"_"+this->name();
     
-    //Note: Ces variables ne sont pas associées au maillage.
+    // Note: Ces variables ne sont pas associées au maillage.
     // Il s'agit juste de variables tableau.
     IVariable* var = 0;
-    if (is_compat){
-      VariableBuildInfo vbi2(mesh->variableMng(),var_name,property);
-      VariableInfo vi = VariableRefType::_internalVariableInfo(vbi2);
-      var = PrivatePartType::getReference(vbi2,vi);
-    }
-    else{
+    {
       VariableBuildInfo vbi2(mesh,var_name,property);
       VariableInfo vi = VariableRefType::_internalVariableInfo(vbi2);
       var = PrivatePartType::getReference(vbi2,vi);

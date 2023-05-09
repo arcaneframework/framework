@@ -37,14 +37,13 @@ class MeshMaterialModifierImpl::Operation
 {
  public:
   Operation() = default;
-  Operation(IMeshMaterial* mat,Int32ConstArrayView ids,bool is_add,bool is_set=false)
-  : m_mat(mat), m_is_add(is_add), m_is_set(is_set), m_ids(ids)
+  Operation(IMeshMaterial* mat,Int32ConstArrayView ids,bool is_add)
+  : m_mat(mat), m_is_add(is_add), m_ids(ids)
   {
   }
  public:
   IMeshMaterial* m_mat = nullptr;
   bool m_is_add = false;
-  bool m_is_set = false;
   UniqueArray<Int32> m_ids;
 };
 
@@ -64,8 +63,6 @@ void MeshMaterialModifierImpl::OperationList::
 add(Operation* o)
 {
  m_operations.add(o);
- if (o->m_is_set)
-   ++m_nb_direct_set;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -77,7 +74,6 @@ clear()
   for( Operation* o : m_operations )
     delete o;
   m_operations.clear();
-  m_nb_direct_set = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -157,17 +153,6 @@ removeCells(IMeshMaterial* mat,Int32ConstArrayView ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-setCells(IMeshMaterial* mat,Int32ConstArrayView ids)
-{
-  if (m_material_mng->isKeepValuesAfterChange())
-    ARCANE_THROW( NotSupportedException,"Can only setCells() when isKeepValuesAfterChange() is false");
-  m_operations.add(new Operation(mat,ids,true,true));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshMaterialModifierImpl::
 _setCells(IMeshMaterial* mat,Int32ConstArrayView ids)
 {
   CellGroup cells = mat->cells();
@@ -207,9 +192,6 @@ bool MeshMaterialModifierImpl::
 _checkMayOptimize()
 {
   Integer nb_operation = m_operations.values().size();
-  // Pas d'optimisations si on fait un setCells() direct.
-  if (m_operations.nbDirectSet()!=0)
-    return false;
   if (nb_operation>1 && !m_allow_optimize_multiple_operation)
     return false;
   for( Integer i=0; i<nb_operation; ++i ){
@@ -256,14 +238,14 @@ endUpdate()
   for( Integer i=0; i<nb_operation; ++i ){
     Operation* op = m_operations.values()[i];
     IMeshMaterial* mat = op->m_mat;
-    if (op->m_is_add && !op->m_is_set){
+    if (op->m_is_add){
       linfo() << "MODIFIER_ADD_CELLS_TO_MATERIAL: mat=" << mat->name()
               << " mat_index=" << mat->variableIndexer()->index()
               << " op_index=" << i
               << " nb_item=" << op->m_ids.size()
               << " ids=" << op->m_ids;
     }
-    if (!op->m_is_add && !op->m_is_set){
+    if (!op->m_is_add){
       linfo() << "MODIFIER_REMOVE_CELLS_TO_MATERIAL: mat=" << mat->name()
               << " mat_index=" << mat->variableIndexer()->index()
               << " op_index=" << i
@@ -282,14 +264,14 @@ endUpdate()
       Operation* op = m_operations.values()[i];
       IMeshMaterial* mat = op->m_mat;
 
-      if (op->m_is_add && !op->m_is_set){
+      if (op->m_is_add){
         linfo() << "ONLY_ONE_ADD: using optimization mat=" << mat->name();
         keeped_lids = op->m_ids;
         ++nb_optimize_add;
         m_material_mng->allEnvData()->updateMaterialDirect(mat,op->m_ids,eOperation::Add);
       }
 
-      if (!op->m_is_add && !op->m_is_set){
+      if (!op->m_is_add){
         linfo() << "ONLY_ONE_REMOVE: using optimization mat=" << mat->name();
         keeped_lids = op->m_ids;
         ++nb_optimize_remove;
@@ -343,12 +325,8 @@ _applyOperations()
 {
   for( Operation* o : m_operations.values() ){
     IMeshMaterial* mat = o->m_mat;
-    if (o->m_is_add){
-      if (o->m_is_set)
-        _setCells(mat,o->m_ids);
-      else
-        _addCells(mat,o->m_ids);
-    }
+    if (o->m_is_add)
+      _addCells(mat,o->m_ids);
     else
       _removeCells(mat,o->m_ids);
   }
