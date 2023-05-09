@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.cc                                                 (C) 2000-2022 */
+/* NumArray.cc                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Tableaux multi-dimensionnel pour les types numériques sur accélérateur.   */
 /*---------------------------------------------------------------------------*/
@@ -58,8 +58,8 @@ _checkHost(eMemoryRessource r)
 /*---------------------------------------------------------------------------*/
 
 void NumArrayBaseCommon::
-_copy(Span<const std::byte> from, eMemoryRessource from_mem,
-      Span<std::byte> to, eMemoryRessource to_mem)
+_memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
+                 Span<std::byte> to, eMemoryRessource to_mem)
 {
   IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
   mrm->_internal()->copy(ConstMemoryView(from), from_mem, MutableMemoryView(to), to_mem);

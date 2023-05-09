@@ -35,6 +35,8 @@ namespace Arcane
 template <typename DataType, int Rank, typename Extents, typename LayoutPolicy>
 class NumArrayIntermediate;
 
+template <typename DataType>
+class NumArrayContainer;
 }
 
 namespace Arcane::impl
@@ -52,14 +54,15 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
   static IMemoryAllocator* _getDefaultAllocator();
   static IMemoryAllocator* _getDefaultAllocator(eMemoryRessource r);
   static void _checkHost(eMemoryRessource r);
-  static void _copy(Span<const std::byte> from, eMemoryRessource from_mem,
-                    Span<std::byte> to, eMemoryRessource to_mem);
+  static void _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
+                               Span<std::byte> to, eMemoryRessource to_mem);
 };
 
 // Wrapper de Arccore::Array pour la classe NumArray
 template <typename DataType>
 class NumArrayContainer
 : private Arccore::Array<DataType>
+, private NumArrayBaseCommon
 {
  private:
 
@@ -71,31 +74,48 @@ class NumArrayContainer
   using BaseClass::capacity;
   using BaseClass::fill;
 
- public:
+ private:
 
   explicit NumArrayContainer(IMemoryAllocator* a)
+  : BaseClass()
   {
     this->_initFromAllocator(a, 0);
   }
-  NumArrayContainer(const ThatClass& rhs)
-  : BaseClass()
+
+ public:
+
+  explicit NumArrayContainer()
+  : NumArrayContainer(_getDefaultAllocator())
   {
-    this->_initFromSpan(rhs.to1DSpan());
   }
+
+  explicit NumArrayContainer(eMemoryRessource r)
+  : NumArrayContainer(_getDefaultAllocator(r))
+  {
+    m_memory_ressource = r;
+  }
+
+  NumArrayContainer(const ThatClass& rhs)
+  : NumArrayContainer(rhs.allocator())
+  {
+    m_memory_ressource = rhs.m_memory_ressource;
+    _resizeAndCopy(rhs);
+  }
+
   NumArrayContainer(ThatClass&& rhs)
   : BaseClass(std::move(rhs))
+  , m_memory_ressource(rhs.m_memory_ressource)
   {
   }
-  ThatClass& operator=(const ThatClass& rhs)
-  {
-    if (this != &rhs) {
-      BaseClass::_copy(rhs.data());
-    }
-    return (*this);
-  }
+
+  // Cet opérateur est interdit car il faut gérer le potentiel
+  // changement de l'allocateur et la recopie
+  ThatClass& operator=(const ThatClass& rhs) = delete;
+
   ThatClass& operator=(ThatClass&& rhs)
   {
     this->_move(rhs);
+    m_memory_ressource = rhs.m_memory_ressource;
     return (*this);
   }
 
@@ -106,8 +126,14 @@ class NumArrayContainer
   Span<const DataType> to1DSpan() const { return BaseClass::constSpan(); }
   Span<std::byte> bytes() { return asWritableBytes(BaseClass::span()); }
   Span<const std::byte> bytes() const { return asBytes(BaseClass::constSpan()); }
-  void swap(NumArrayContainer<DataType>& rhs) { BaseClass::_swap(rhs); }
+  void swap(NumArrayContainer<DataType>& rhs)
+  {
+    BaseClass::_swap(rhs);
+    std::swap(m_memory_ressource, rhs.m_memory_ressource);
+  }
   void copy(Span<const DataType> rhs) { BaseClass::_copy(rhs.data()); }
+  IMemoryAllocator* allocator() const { return BaseClass::allocator(); }
+  eMemoryRessource memoryRessource() const { return m_memory_ressource; }
   void copyInitializerList(std::initializer_list<DataType> alist)
   {
     Span<DataType> s = to1DSpan();
@@ -121,6 +147,28 @@ class NumArrayContainer
         break;
     }
   }
+
+  void copyOnly(const ThatClass& v)
+  {
+    _memoryAwareCopy(v);
+  }
+
+ private:
+
+  void _memoryAwareCopy(const ThatClass& v)
+  {
+    NumArrayBaseCommon::_memoryAwareCopy(asBytes(v.to1DSpan()), v.m_memory_ressource,
+                                         asWritableBytes(to1DSpan()), m_memory_ressource);
+  }
+  void _resizeAndCopy(const ThatClass& v)
+  {
+    this->_resizeNoInit(v.to1DSpan().size());
+    _memoryAwareCopy(v);
+  }
+
+ private:
+
+  eMemoryRessource m_memory_ressource = eMemoryRessource::UnifiedMemory;
 };
 
 } // namespace Arcane::impl
@@ -185,24 +233,20 @@ class NumArrayBase
  protected:
 
   NumArrayBase()
-  : m_data(_getDefaultAllocator())
   {
     _resizeInit();
   }
   explicit NumArrayBase(eMemoryRessource r)
-  : m_data(_getDefaultAllocator(r))
-  , m_memory_ressource(r)
+  : m_data(r)
   {
     _resizeInit();
   }
   explicit NumArrayBase(const DynamicDimsType& extents)
-  : m_data(_getDefaultAllocator())
   {
     resize(extents);
   }
   NumArrayBase(const DynamicDimsType& extents, eMemoryRessource r)
-  : m_data(_getDefaultAllocator(r))
-  , m_memory_ressource(r)
+  : m_data(r)
   {
     resize(extents);
   }
@@ -210,16 +254,36 @@ class NumArrayBase
   NumArrayBase(const ThatClass&) = default;
   NumArrayBase(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
-  ThatClass& operator=(const ThatClass&) = default;
+
+  /*!
+   * \brief Opérateur de recopie.
+   *
+   * \warning Après appel à cette méthode, la ressource mémoire de l'instance
+   * sera celle de \a rhs. Si on souhaite faire une recopie en conservant la
+   * ressource mémoire associée il faut utiliser copy().
+   */
+  ThatClass& operator=(const ThatClass& rhs)
+  {
+    if (&rhs == this)
+      return (*this);
+    eMemoryRessource r = memoryRessource();
+    eMemoryRessource rhs_r = rhs.memoryRessource();
+    if (rhs_r != r)
+      m_data = ArrayWrapper(rhs_r);
+    this->copy(rhs);
+    return (*this);
+  }
 
  private:
 
+  //! Redimensionne le tableau à partir des valeurs de \a m_span.extents()
   void _resize()
   {
     m_total_nb_element = m_span.extents().totalNbElement();
     m_data.resize(m_total_nb_element);
     m_span.m_ptr = m_data.to1DSpan().data();
   }
+
   /*!
    * \brief Allocation éventuelle lors de l'initialisation.
    *
@@ -236,8 +300,20 @@ class NumArrayBase
 
  public:
 
-  void fill(const DataType& v) { m_data.fill(v); }
+  /*!
+   * \brief Remplit les valeurs du tableau par \a v.
+   *
+   * \warning L'opération se fait sur l'hôte donc la mémoire associée
+   * à l'instance doit être accessible sur l'hôte.
+   */
+  void fill(const DataType& v)
+  {
+    _checkHost(memoryRessource());
+    m_data.fill(v);
+  }
+  //! Nombre de dimensions
   static constexpr Int32 nbDimension() { return Extents::rank(); }
+  //! Valeurs des dimensions
   ArrayExtents<Extents> extents() const { return m_span.extents(); }
   ArrayExtentsWithOffset<Extents, LayoutPolicy> extentsWithOffset() const
   {
@@ -254,40 +330,67 @@ class NumArrayBase
 
   Span<const DataType> to1DSpan() const { return m_span.to1DSpan(); }
   Span<DataType> to1DSpan() { return m_span.to1DSpan(); }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs.
+   *
+   * Cette opération se fait sur l'hôte et donc la mémoire associée
+   * à cette instance doit être accessible depuis l'hôte.
+   */
   void copy(ConstSpanType rhs)
   {
-    _checkHost(m_memory_ressource);
+    _checkHost(memoryRessource());
     m_data.copy(rhs.to1DSpan());
   }
-  void copy(const NumArrayBase<DataType, Extents, LayoutPolicy>& rhs)
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs.
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   */
+  void copy(const ThatClass& rhs)
   {
     this->resize(rhs.extents().dynamicExtents());
-    _copy(asBytes(rhs.to1DSpan()), rhs.m_memory_ressource,
-          asWritableBytes(to1DSpan()), m_memory_ressource);
+    m_data.copyOnly(rhs.m_data);
   }
+
+  //! Référence constante pour l'élément \a idx
   const DataType& operator()(ArrayBoundsIndexType idx) const
   {
     return m_span(idx);
   }
+  //! Référence modifiable l'élément \a idx
   DataType& operator()(ArrayBoundsIndexType idx)
   {
     return m_span(idx);
   }
+
   DataType& s(ArrayBoundsIndexType idx)
   {
     return m_span(idx);
   }
+
+  /*!
+   * \brief Échange les données avec \a rhs.
+   *
+   * \warning L'allocateur mémoire est aussi échangé. Il est donc
+   * préférable que les deux NumArray utilisent le même allocateur
+   * et le même memoryRessource().
+   */
   void swap(NumArrayBase<DataType, Extents>& rhs)
   {
     m_data.swap(rhs.m_data);
     std::swap(m_span, rhs.m_span);
     std::swap(m_total_nb_element, rhs.m_total_nb_element);
-    std::swap(m_memory_ressource, rhs.m_memory_ressource);
   }
   Int64 capacity() const { return m_data.capacity(); }
-  eMemoryRessource memoryRessource() const { return m_memory_ressource; }
+  eMemoryRessource memoryRessource() const { return m_data.memoryRessource(); }
   Span<std::byte> bytes() { return asWritableBytes(to1DSpan()); }
   Span<const std::byte> bytes() const { return asBytes(to1DSpan()); }
+
+  //! Allocateur mémoire associé
+  IMemoryAllocator* memoryAllocator() const { return m_data.allocator(); }
 
  public:
 
@@ -299,7 +402,6 @@ class NumArrayBase
   SpanType m_span;
   ArrayWrapper m_data;
   Int64 m_total_nb_element = 0;
-  eMemoryRessource m_memory_ressource = eMemoryRessource::UnifiedMemory;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -757,7 +859,7 @@ class NumArray
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
-  ThatClass& operator=(const ThatClass&) = default;
+  ThatClass& operator=(const ThatClass& rhs) = default;
 
  public:
 
