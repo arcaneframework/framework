@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayUnitTest.cc                                         (C) 2000-2022 */
+/* NumArrayUnitTest.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des 'NumArray'.                                           */
 /*---------------------------------------------------------------------------*/
@@ -405,6 +405,48 @@ _executeTest1(eMemoryRessource mem_kind)
   {
     NumArray<double, ExtentsV<n1,n2,n3,n4>> t1(mem_kind);
     _doRank4(queue,t1,expected_sum4);
+  }
+
+  {
+    // Test copie.
+    NumArray<double, MDDim1> t1(mem_kind);
+    //t1.resize(22);
+    t1.resize(n1);
+    {
+      auto command = makeCommand(queue);
+      auto out_t1 = viewOut(command,t1);
+
+      command << RUNCOMMAND_LOOP1(iter, n1)
+      {
+        auto [i] = iter();
+        out_t1[iter] = _getValue(i);
+      };
+    }
+    info() << "CHECK ALLOCATOR";
+    NumArray<double, MDDim1> t2(t1);
+    if (t1.memoryRessource()!=t2.memoryRessource())
+      ARCANE_FATAL("Bad memory ressource 1");
+    if (t1.memoryAllocator()!=t2.memoryAllocator())
+      ARCANE_FATAL("Bad allocator 1");
+
+    NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
+    host_t1.copy(t2);
+    double s3 = _doSum(host_t1, { n1 });
+    info() << "SUM1_4 = " << s3;
+    vc.areEqual(s3, expected_sum1, "SUM1_4");
+
+    NumArray<double, MDDim1> t3;
+    t3.resize(25);
+    t3 = t1;
+    if (t1.memoryRessource()!=t3.memoryRessource())
+      ARCANE_FATAL("Bad memory ressource 2 t1={0} t3={1}",t1.memoryRessource(),t3.memoryRessource());
+    if (t1.memoryAllocator()!=t3.memoryAllocator())
+      ARCANE_FATAL("Bad allocator 2");
+    NumArray<double, MDDim1> host_t3(eMemoryRessource::Host);
+    host_t3.copy(t3);
+    double s5 = _doSum(host_t3, { n1 });
+    info() << "SUM1_5 = " << s5;
+    vc.areEqual(s5, expected_sum1, "SUM1_5");
   }
 }
 
