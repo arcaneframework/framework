@@ -952,15 +952,6 @@ _checkEndCreate()
 /*---------------------------------------------------------------------------*/
 
 AllEnvCellVectorView MeshMaterialMng::
-allEnvCells()
-{
-  return view(mesh()->allCells());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AllEnvCellVectorView MeshMaterialMng::
 view(Int32ConstArrayView local_ids)
 {
   return AllEnvCellVectorView(local_ids,m_all_env_data->allEnvItemsInternal());

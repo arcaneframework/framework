@@ -375,9 +375,6 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   //! Vue sur les mailles milieux correspondant au groupe \a cells
   virtual AllEnvCellVectorView view(CellVectorView cells) =0;
 
-  //! Vue sur les mailles milieux correspondant au groupe de toutes les mailles
-  virtual ARCANE_DEPRECATED AllEnvCellVectorView allEnvCells() =0;
-
   //! Créée une instance pour convertir de 'Cell' en 'AllEnvCell'
   virtual CellToAllEnvCellConverter cellToAllEnvCellConverter() =0;
 

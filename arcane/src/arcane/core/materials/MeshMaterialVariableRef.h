@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.h                                   (C) 2000-2022 */
+/* MeshMaterialVariableRef.h                                   (C) 2000-2023 */
 /*                                                                           */
 /* Référence à une variable sur un matériau du maillage.                     */
 /*---------------------------------------------------------------------------*/
@@ -105,9 +105,6 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
   void unregisterVariable();
 
   virtual void updateFromInternal() =0;
-
-  //! \deprecated Utiliser materialVariable() à la place
-  ARCANE_DEPRECATED IMeshMaterialVariable* variable() const { return m_material_variable; }
   
   //! Variable matériau associée.
   IMeshMaterialVariable* materialVariable() const { return m_material_variable; }
