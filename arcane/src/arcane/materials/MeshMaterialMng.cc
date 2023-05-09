@@ -341,12 +341,6 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
       ARCANE_FATAL("Aucun matériau de nom '{0}' n'est défini",mat_name);
     }
     MeshMaterial* mm = _createMaterial(me,mat_info,new_mat_name);
-    const String& mat_var_name = buildinfo.m_var_name;
-    if (!mat_var_name.null()){
-      info() << "Adding material '" << mat_name << "' with variable name " << mat_var_name
-             << " to environment " << env_name;
-      mm->variableIndexer()->setWantedVariableName(mat_var_name);
-    }
     me->addMaterial(mm);
     mat_info->_addEnvironment(env_name);
   }
