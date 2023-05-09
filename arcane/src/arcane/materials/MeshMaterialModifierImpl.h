@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialModifierImpl.h                                  (C) 2000-2015 */
+/* MeshMaterialModifierImpl.h                                  (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -24,21 +24,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::Materials
+{
 class MeshMaterialMng;
 class IMeshMaterialVariable;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,21 +42,19 @@ class MeshMaterialModifierImpl
   class OperationList
   {
    public:
-    OperationList() : m_nb_direct_set(0){}
+    OperationList(){}
     ~OperationList();
    public:
     void add(Operation* o);
     void clear();
     ConstArrayView<Operation*> values() const { return m_operations.constView(); }
-    Integer nbDirectSet() const { return m_nb_direct_set; }
    public:
     UniqueArray<Operation*> m_operations;
-    Integer m_nb_direct_set;
   };
 
  public:
 
-  MeshMaterialModifierImpl(MeshMaterialMng* mm);
+  explicit MeshMaterialModifierImpl(MeshMaterialMng* mm);
 
  public:
 
@@ -77,7 +64,6 @@ class MeshMaterialModifierImpl
 
   virtual void addCells(IMeshMaterial* mat,Int32ConstArrayView ids);
   virtual void removeCells(IMeshMaterial* mat,Int32ConstArrayView ids);
-  virtual void setCells(IMeshMaterial* mat,Int32ConstArrayView ids);
 
   virtual void endUpdate();
   virtual void beginUpdate();
@@ -110,8 +96,7 @@ class MeshMaterialModifierImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

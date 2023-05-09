@@ -217,9 +217,6 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * Si \a v vaut \a false, les milieux et les matériaux ne sont pas notifiés
    * des changements de la topologie du maillage. Dans ce cas, toutes les
    * données associées sont invalidées.
-   * \note En mode compatibilité, il est néammoins possible de reconstruire
-   * une liste valide des milieux et matériaux mais sans conservation des valeurs
-   * partielles.
    */
   virtual void setMeshModificationNotified(bool v) =0;
 
