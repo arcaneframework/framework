@@ -49,8 +49,6 @@ namespace Arcane::impl
  */
 class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 {
-  template <typename T> friend class NumArrayContainer;
-
  protected:
 
   static IMemoryAllocator* _getDefaultAllocator();
@@ -64,6 +62,7 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 template <typename DataType>
 class NumArrayContainer
 : private Arccore::Array<DataType>
+, private NumArrayBaseCommon
 {
  private:
 
@@ -86,12 +85,12 @@ class NumArrayContainer
  public:
 
   explicit NumArrayContainer()
-  : NumArrayContainer(NumArrayBaseCommon::_getDefaultAllocator())
+  : NumArrayContainer(_getDefaultAllocator())
   {
   }
 
   explicit NumArrayContainer(eMemoryRessource r)
-  : NumArrayContainer(NumArrayBaseCommon::_getDefaultAllocator(r))
+  : NumArrayContainer(_getDefaultAllocator(r))
   {
     m_memory_ressource = r;
   }
