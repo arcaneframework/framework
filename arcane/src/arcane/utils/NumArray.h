@@ -35,6 +35,8 @@ namespace Arcane
 template <typename DataType, int Rank, typename Extents, typename LayoutPolicy>
 class NumArrayIntermediate;
 
+template <typename DataType>
+class NumArrayContainer;
 }
 
 namespace Arcane::impl
@@ -47,13 +49,15 @@ namespace Arcane::impl
  */
 class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 {
+  template <typename T> friend class NumArrayContainer;
+
  protected:
 
   static IMemoryAllocator* _getDefaultAllocator();
   static IMemoryAllocator* _getDefaultAllocator(eMemoryRessource r);
   static void _checkHost(eMemoryRessource r);
-  static void _copy(Span<const std::byte> from, eMemoryRessource from_mem,
-                    Span<std::byte> to, eMemoryRessource to_mem);
+  static void _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
+                               Span<std::byte> to, eMemoryRessource to_mem);
 };
 
 // Wrapper de Arccore::Array pour la classe NumArray
@@ -80,7 +84,8 @@ class NumArrayContainer
   NumArrayContainer(const ThatClass& rhs)
   : BaseClass()
   {
-    this->_initFromSpan(rhs.to1DSpan());
+    this->_initFromAllocator(rhs.allocator(), 0);
+    _resizeAndCopy(rhs.to1DSpan());
   }
   NumArrayContainer(ThatClass&& rhs)
   : BaseClass(std::move(rhs))
@@ -89,7 +94,7 @@ class NumArrayContainer
   ThatClass& operator=(const ThatClass& rhs)
   {
     if (this != &rhs) {
-      BaseClass::_copy(rhs.data());
+      _resizeAndCopy(rhs.to1DSpan());
     }
     return (*this);
   }
@@ -108,6 +113,7 @@ class NumArrayContainer
   Span<const std::byte> bytes() const { return asBytes(BaseClass::constSpan()); }
   void swap(NumArrayContainer<DataType>& rhs) { BaseClass::_swap(rhs); }
   void copy(Span<const DataType> rhs) { BaseClass::_copy(rhs.data()); }
+  IMemoryAllocator* allocator() const { return BaseClass::allocator(); }
   void copyInitializerList(std::initializer_list<DataType> alist)
   {
     Span<DataType> s = to1DSpan();
@@ -120,6 +126,19 @@ class NumArrayContainer
       if (index >= s1)
         break;
     }
+  }
+
+ private:
+
+  void _memoryAwareCopy(Span<const DataType> v)
+  {
+    NumArrayBaseCommon::_memoryAwareCopy(asBytes(v), eMemoryRessource::Unknown,
+                                         asWritableBytes(to1DSpan()), eMemoryRessource::Unknown);
+  }
+  void _resizeAndCopy(Span<const DataType> v)
+  {
+    this->_resizeNoInit(v.size());
+    _memoryAwareCopy(v);
   }
 };
 
@@ -236,8 +255,20 @@ class NumArrayBase
 
  public:
 
-  void fill(const DataType& v) { m_data.fill(v); }
+  /*!
+   * \brief Remplit les valeurs du tableau par \a v.
+   *
+   * \warning L'opération se fait sur l'hôte donc la mémoire associée
+   * à l'instance doit être accessible sur l'hôte.
+   */
+  void fill(const DataType& v)
+  {
+    _checkHost(m_memory_ressource);
+    m_data.fill(v);
+  }
+  //! Nombre de dimensions
   static constexpr Int32 nbDimension() { return Extents::rank(); }
+  //! Valeurs des dimensions
   ArrayExtents<Extents> extents() const { return m_span.extents(); }
   ArrayExtentsWithOffset<Extents, LayoutPolicy> extentsWithOffset() const
   {
@@ -254,29 +285,54 @@ class NumArrayBase
 
   Span<const DataType> to1DSpan() const { return m_span.to1DSpan(); }
   Span<DataType> to1DSpan() { return m_span.to1DSpan(); }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs.
+   *
+   * Cette opération se fait sur l'hôte et donc la mémoire associée
+   * à cette instance doit être accessible depuis l'hôte.
+   */
   void copy(ConstSpanType rhs)
   {
     _checkHost(m_memory_ressource);
     m_data.copy(rhs.to1DSpan());
   }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs.
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   */
   void copy(const NumArrayBase<DataType, Extents, LayoutPolicy>& rhs)
   {
     this->resize(rhs.extents().dynamicExtents());
-    _copy(asBytes(rhs.to1DSpan()), rhs.m_memory_ressource,
-          asWritableBytes(to1DSpan()), m_memory_ressource);
+    _memoryAwareCopy(asBytes(rhs.to1DSpan()), rhs.m_memory_ressource,
+                     asWritableBytes(to1DSpan()), m_memory_ressource);
   }
+  //! Référence constante pour l'élément \a idx
   const DataType& operator()(ArrayBoundsIndexType idx) const
   {
     return m_span(idx);
   }
+  //! Référence modifiable l'élément \a idx
   DataType& operator()(ArrayBoundsIndexType idx)
   {
     return m_span(idx);
   }
+
   DataType& s(ArrayBoundsIndexType idx)
   {
     return m_span(idx);
   }
+
+  /*!
+   * \brief Échange les données avec \a rhs.
+   *
+   * \warning L'allocateur mémoire est aussi échangé. Il est donc
+   * préférable que les deux NumArray utilisent le même allocateur
+   * et le même memoryRessource().
+   */
   void swap(NumArrayBase<DataType, Extents>& rhs)
   {
     m_data.swap(rhs.m_data);
@@ -288,6 +344,9 @@ class NumArrayBase
   eMemoryRessource memoryRessource() const { return m_memory_ressource; }
   Span<std::byte> bytes() { return asWritableBytes(to1DSpan()); }
   Span<const std::byte> bytes() const { return asBytes(to1DSpan()); }
+
+  //! Allocateur mémoire associé
+  IMemoryAllocator* memoryAllocator() const { return m_data.allocator(); }
 
  public:
 
