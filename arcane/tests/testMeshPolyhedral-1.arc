@@ -27,6 +27,7 @@
       <nb-edges>26</nb-edges>
       <nb-nodes>16</nb-nodes>
     </mesh-size>
+    <nb-mesh-group>5</nb-mesh-group>
     <check-group>
       <name>HALF_CELL</name>
       <size>1</size>
@@ -44,6 +45,7 @@
       <size>12</size>
     </check-group>
     <check-boundary-face-group>BOUNDARY_FACES</check-boundary-face-group>
+    <check-internal-face-group>INTERNAL_FACES</check-internal-face-group>
     <check-cell-variable-integer>CellFlags</check-cell-variable-integer>
     <check-cell-variable-real>CellReal</check-cell-variable-real>
     <check-cell-variable-array-integer>CellArrayFlags</check-cell-variable-array-integer>
