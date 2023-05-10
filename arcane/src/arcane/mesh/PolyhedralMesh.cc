@@ -360,16 +360,17 @@ namespace mesh
                    target_item_uids.end(),
                    std::back_inserter(target_item_uids_filtered),
                    [](auto uid) { return uid != NULL_ITEM_UNIQUE_ID; });
-      // Add connectivity (async)
+      // Add connectivity in Neo (async)
       m_mesh.scheduleAddConnectivity(source_family, source_items.m_future_items, target_family,
                                      std::forward<ConnectivitySizeType>(nb_connected_items_per_item),
                                      std::move(target_item_uids_filtered),
                                      connectivity_name.localstr());
-      // Register connectivity in Arcane : via un algo !! todo : quelle prop out
+      // Register Neo connectivities in Arcane
       auto& mesh_graph = m_mesh.internalMeshGraph();
-      source_family.addProperty<Int32>("NoOutProperty"); // todo remove : create noOutput algo in Neo
+      std::string connectivity_add_output_property_name = std::string{ "EndOf" } + connectivity_name.localstr() + "Add";
+      source_family.addProperty<Neo::utils::Int32>(connectivity_add_output_property_name);
       mesh_graph.addAlgorithm(Neo::InProperty{ source_family, connectivity_name.localstr() },
-                              Neo::OutProperty{ source_family, "NoOutProperty" },
+                              Neo::OutProperty{ source_family, connectivity_add_output_property_name },
                               [arcane_source_item_family, arcane_target_item_family, &source_family, this, connectivity_name](Neo::Mesh::ConnectivityPropertyType const&,
                                                                                                                               Neo::PropertyT<Neo::utils::Int32>&) {
                                 this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
