@@ -1690,7 +1690,7 @@ class UniqueArray
   //! Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
   UniqueArray(IMemoryAllocator* allocator,Span<const T> rhs)
   {
-    this->_initFromAllocator(allocator,rhs.size());
+    this->_initFromAllocator(allocator,0);
     this->_initFromSpan(rhs);
   }
 
