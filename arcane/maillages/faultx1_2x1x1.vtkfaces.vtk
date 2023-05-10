@@ -175,3 +175,18 @@ LOOKUP_TABLE default
 1
 1
 1
+SCALARS GROUP_INTERNAL_FACES int 1
+LOOKUP_TABLE default
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
