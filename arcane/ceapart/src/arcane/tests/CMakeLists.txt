@@ -3,6 +3,7 @@
 set(ARCANE_ACCELERATOR_SOURCES
   AdiProjectionModule.cc
   CartesianMeshTestUtils.cc
+  MeshMaterialSyncUnitTest.cc
 )
 arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 

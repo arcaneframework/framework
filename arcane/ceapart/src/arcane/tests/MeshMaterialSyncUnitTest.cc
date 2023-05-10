@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSyncUnitTest.cc                                 (C) 2000-2014 */
+/* MeshMaterialSyncUnitTest.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Service de test de la synchronisation des matériaux.                      */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,16 @@
 
 #include "arcane/utils/OStringStream.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IMesh.h"
+
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/core/RunQueue.h"
+
+#include "arcane/accelerator/RunCommandMaterialEnumerate.h"
+#include "arcane/accelerator/MaterialVariableViews.h"
+#include "arcane/accelerator/VariableViews.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MeshMaterialInfo.h"
@@ -32,10 +40,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 using namespace Arcane;
 using namespace Arcane::Materials;
+namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,26 +57,27 @@ class MeshMaterialSyncUnitTest
 {
  public:
 
-
-  MeshMaterialSyncUnitTest(const ServiceBuildInfo& mbi);
-  ~MeshMaterialSyncUnitTest();
+  explicit MeshMaterialSyncUnitTest(const ServiceBuildInfo& mbi);
 
  public:
 
-  virtual void initializeTest();
-  virtual void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
  private:
   
   IMeshMaterialMng* m_material_mng;
+  VariableCellByte m_variable_is_own_cell;
+  VariableCellInt64 m_cell_unique_ids;
 
-  void _checkVariableSync();
+  void _checkVariableSync1();
   void _doPhase1();
   void _doPhase2();
-};
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+ public:
+
+  void _checkVariableSync2(bool do_check);
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,14 +86,8 @@ MeshMaterialSyncUnitTest::
 MeshMaterialSyncUnitTest(const ServiceBuildInfo& sbi)
 : ArcaneMeshMaterialSyncUnitTestObject(sbi)
 , m_material_mng(IMeshMaterialMng::getReference(sbi.mesh()))
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MeshMaterialSyncUnitTest::
-~MeshMaterialSyncUnitTest()
+, m_variable_is_own_cell(VariableBuildInfo(sbi.meshHandle(),"CellIsOwn"))
+, m_cell_unique_ids(VariableBuildInfo(sbi.meshHandle(),"CellUniqueId"))
 {
 }
 
@@ -196,7 +201,7 @@ _doPhase1()
 
   m_material_mng->synchronizeMaterialsInCells();
   m_material_mng->checkMaterialsInCells();
-  _checkVariableSync();
+  _checkVariableSync1();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -249,19 +254,30 @@ _doPhase2()
 
   m_material_mng->synchronizeMaterialsInCells();
   m_material_mng->checkMaterialsInCells();
-  _checkVariableSync();
+  _checkVariableSync1();
+  m_variable_is_own_cell.fill(0);
+  ENUMERATE_(Cell,icell,ownCells()){
+    m_variable_is_own_cell[icell] = 1;
+  }
+  ENUMERATE_(Cell,icell,allCells()){
+    Cell cell = *icell;
+    m_cell_unique_ids[cell] = cell.uniqueId();
+  }
+  for( int i=0; i<5; ++i )
+    _checkVariableSync2(false);
+  _checkVariableSync2(true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialSyncUnitTest::
-_checkVariableSync()
+_checkVariableSync1()
 {
   // Vérifie que la synchronisation des variables marche bien
   MaterialVariableCellInt32 mat_indexes(MaterialVariableBuildInfo(m_material_mng,"SyncMatIndexes"));
 
-    ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,ownCells()){
+  ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,ownCells()){
     AllEnvCell all_env_cell = *iallenvcell;
     ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
       ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
@@ -290,7 +306,59 @@ _checkVariableSync()
     }
   }
   if (nb_error!=0)
-    fatal() << "Bad variable synchronization";
+    ARCANE_FATAL("Bad variable synchronization nb_error={0}",nb_error);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialSyncUnitTest::
+_checkVariableSync2(bool do_check)
+{
+  // TODO: Faire aussi avec les matériaux lorsqu'ils seront disponibles
+  // TODO: Ne pas mettre la même valeur dans chaque maille milieu/matériau (faire un offset du uid)
+  Arcane::Accelerator::RunQueue* queue = subDomain()->acceleratorMng()->defaultQueue();
+
+  // Vérifie que la synchronisation des variables marche bien
+  MaterialVariableCellInt64 material_uids(MaterialVariableBuildInfo(m_material_mng,"SyncMatIndexes"));
+
+  ENUMERATE_ENV(ienv, m_material_mng) {
+    IMeshEnvironment* env = *ienv;
+    EnvCellVectorView envcellsv = env->envView();
+    auto cmd = makeCommand(queue);
+    auto out_mat_uids = viewOut(cmd, material_uids);
+    auto in_is_own_cell = ax::viewIn(cmd, m_variable_is_own_cell);
+    auto in_cell_uids = ax::viewIn(cmd, m_cell_unique_ids);
+    cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
+      auto [mvi, cid] = evi();
+      if (in_is_own_cell[cid]==1){
+        out_mat_uids[mvi] = in_cell_uids[cid];
+      }
+    };
+  }
+
+  material_uids.synchronize();
+
+  if (!do_check)
+    return;
+
+  Integer nb_error = 0;
+  ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,allCells()){
+    AllEnvCell all_env_cell = *iallenvcell;
+    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+      EnvCell mc = *ienvcell;
+      Cell global_cell = mc.globalCell();
+      if (material_uids[mc] != global_cell.uniqueId()){
+        ++nb_error;
+        if (nb_error<10)
+          error() << "VariableSync error mat=" << mc
+                  << " uid_value=" << material_uids[mc]
+                  << " cell=" << ItemPrinter(mc.globalCell());
+      }
+    }
+  }
+  if (nb_error!=0)
+    ARCANE_FATAL("Bad variable synchronization nb_error={0}",nb_error);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -302,7 +370,7 @@ ARCANE_REGISTER_SERVICE_MESHMATERIALSYNCUNITTEST(MeshMaterialSyncUnitTest,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
