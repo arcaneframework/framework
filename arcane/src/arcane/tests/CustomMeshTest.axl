@@ -21,7 +21,9 @@
       <simple name="name" type="string"/>
       <simple name="size" type="integer"/>
     </complex>
+    <simple name="nb-mesh-group" minOccurs="1" maxOccurs="1" type="integer"/>
     <simple name="check-boundary-face-group" minOccurs="0" maxOccurs="unbounded" type="string"/>
+    <simple name="check-internal-face-group" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-cell-variable-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-cell-variable-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-cell-variable-array-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
