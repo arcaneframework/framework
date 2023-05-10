@@ -388,6 +388,7 @@ class AbstractArray
       _directFirstAllocateWithAllocator(0,a);
     _updateReferences();
   }
+
   IMemoryAllocator* allocator() const
   {
     return m_md->allocator;
@@ -1768,8 +1769,11 @@ class UniqueArray
       this->copy(rhs_span);
     }
     else{
-      this->dispose();
-      this->_initFromAllocator(rhs.allocator(),0);
+      IMemoryAllocator* a = rhs.allocator();
+      this->_destroy();
+      this->_internalDeallocate();
+      this->_reset();
+      this->_initFromAllocator(a,0);
       this->_initFromSpan(rhs_span);
     }
   }
