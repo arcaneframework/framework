@@ -242,13 +242,13 @@ _buildCellByDirectionList()
 
   // Indice local de la face par directions pour Arcane avec le HoneyCombMeshGenerator:
   /*
-   *     0
-   *    / \
-   *   1   5
-   *   |   |
-   *   2   4
-   *    \ /
    *     3
+   *    / \
+   *   4   2
+   *   |   |
+   *   5   1
+   *    \ /
+   *     0
    */
 
   static constexpr int NB_DIRECTION = 6;
@@ -272,7 +272,7 @@ _buildCellByDirectionList()
     // puis vers le haut (3 ème direction)
     // puis vers le haut à gauche (4 ème direction)
     // puis vers le bas à gauche (5 ème direction)
-    std::array<Int32, NB_DIRECTION> next_directions = { 3, 4, 5, 0, 1, 2 };
+    std::array<Int32, NB_DIRECTION> next_directions = { 0, 1, 2, 3, 4, 5 };
 
     for (int i = 1; i < NB_DIRECTION; ++i) {
       Cell cell = _getLastCellFollowingDirection(begin_cells[i - 1], next_directions[i]);
@@ -282,7 +282,7 @@ _buildCellByDirectionList()
   }
 
   // Indice local de la face dans la direction souhaité
-  std::array<Int32, NB_DIRECTION> search_directions = { 4, 1, 2, 1, 4, 5 };
+  std::array<Int32, NB_DIRECTION> search_directions = { 1, 4, 5, 4, 1, 2 };
 
   // Pour chaque direction, on part de deux mailles de bord et on prend
   // toutes les mailles dans la direction 'direction_for_next'.
@@ -296,12 +296,12 @@ _buildCellByDirectionList()
   };
 
   std::array<std::array<BeginAndDirection, 2>, NB_DIRECTION> begin_and_directions = { {
-  { BeginAndDirection{ 0, 0 }, BeginAndDirection{ 5, 5 } }, // direction 0
-  { BeginAndDirection{ 1, 5 }, BeginAndDirection{ 2, 0 } }, // direction 1
-  { BeginAndDirection{ 2, 0 }, BeginAndDirection{ 3, 1 } }, // direction 2
-  { BeginAndDirection{ 3, 3 }, BeginAndDirection{ 2, 2 } }, // direction 3
-  { BeginAndDirection{ 4, 2 }, BeginAndDirection{ 5, 3 } }, // direction 4
-  { BeginAndDirection{ 5, 3 }, BeginAndDirection{ 0, 4 } } // direction 5
+  { BeginAndDirection{ 0, 3 }, BeginAndDirection{ 5, 2 } }, // direction 0
+  { BeginAndDirection{ 1, 2 }, BeginAndDirection{ 2, 3 } }, // direction 1
+  { BeginAndDirection{ 2, 3 }, BeginAndDirection{ 3, 4 } }, // direction 2
+  { BeginAndDirection{ 3, 0 }, BeginAndDirection{ 2, 5 } }, // direction 3
+  { BeginAndDirection{ 4, 5 }, BeginAndDirection{ 5, 0 } }, // direction 4
+  { BeginAndDirection{ 5, 0 }, BeginAndDirection{ 0, 1 } } // direction 5
   } };
 
   for (int i = 0; i < NB_DIRECTION; ++i) {
@@ -309,10 +309,16 @@ _buildCellByDirectionList()
     for (int j = 0; j < 2; ++j) {
       BeginAndDirection x = begin_and_directions[i][j];
       Cell cell = begin_cells[x.begin_cell];
+      Cell next_cell;
+      if (j==0){
+        next_cell = begin_cells[begin_and_directions[i][j+1].begin_cell];
+      }
       const Int32 next = x.direction_for_next;
       do {
         _addCellFollowingDirection(boundary_cells[i], cell, search_dir);
         cell = cell.face(next).oppositeCell(cell);
+        if (next_cell==cell)
+          break;
       } while (!cell.null());
     }
   }
