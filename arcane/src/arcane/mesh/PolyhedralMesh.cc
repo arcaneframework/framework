@@ -25,6 +25,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/IMeshFactory.h"
+#include "arcane/core/ItemInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -252,6 +253,14 @@ namespace mesh
     Integer nbCell() const { return m_mesh.nbCells(); }
     Integer nbItem(eItemKind ik) const { return m_mesh.nbItems(itemKindArcaneToNeo(ik)); }
 
+    void _setFaceInfos(Int32 mod_flags, Face& face)
+    {
+      Int32 face_flags = face.itemBase().flags();
+      face_flags &= ~ItemFlags::II_InterfaceFlags;
+      face_flags |= mod_flags;
+      face.mutableItemBase().setFlags(face_flags);
+    }
+
     /*---------------------------------------------------------------------------*/
 
     void addFamily(eItemKind ik, const String& name)
@@ -360,16 +369,17 @@ namespace mesh
                    target_item_uids.end(),
                    std::back_inserter(target_item_uids_filtered),
                    [](auto uid) { return uid != NULL_ITEM_UNIQUE_ID; });
-      // Add connectivity (async)
+      // Add connectivity in Neo (async)
       m_mesh.scheduleAddConnectivity(source_family, source_items.m_future_items, target_family,
                                      std::forward<ConnectivitySizeType>(nb_connected_items_per_item),
                                      std::move(target_item_uids_filtered),
                                      connectivity_name.localstr());
-      // Register connectivity in Arcane : via un algo !! todo : quelle prop out
+      // Register Neo connectivities in Arcane
       auto& mesh_graph = m_mesh.internalMeshGraph();
-      source_family.addProperty<Int32>("NoOutProperty"); // todo remove : create noOutput algo in Neo
+      std::string connectivity_add_output_property_name = std::string{ "EndOf" } + connectivity_name.localstr() + "Add";
+      source_family.addProperty<Neo::utils::Int32>(connectivity_add_output_property_name);
       mesh_graph.addAlgorithm(Neo::InProperty{ source_family, connectivity_name.localstr() },
-                              Neo::OutProperty{ source_family, "NoOutProperty" },
+                              Neo::OutProperty{ source_family, connectivity_add_output_property_name },
                               [arcane_source_item_family, arcane_target_item_family, &source_family, this, connectivity_name](Neo::Mesh::ConnectivityPropertyType const&,
                                                                                                                               Neo::PropertyT<Neo::utils::Int32>&) {
                                 this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
@@ -389,6 +399,34 @@ namespace mesh
                                 item_internal_connectivity_list->setConnectivityIndex(arcane_target_item_family->itemKind(),
                                                                                       Int32ArrayView{ Integer(connectivity_index_size), connectivity_index_data });
                               });
+      // If FaceToCellConnectivity Add face flags II_Boundary, II_SubdomainBoundary, II_HasFrontCell, II_HasBackCell
+      if (arcane_source_item_family->itemKind() == IK_Face && arcane_target_item_family->itemKind() == IK_Cell) {
+        std::string flag_definition_output_property_name{ "EndOfFlagDefinition" };
+        source_family.addProperty<Neo::utils::Int32>(flag_definition_output_property_name);
+        mesh_graph.addAlgorithm(Neo::InProperty{ source_family, connectivity_add_output_property_name }, Neo::OutProperty{ source_family, flag_definition_output_property_name },
+                                [arcane_source_item_family, this, target_item_uids, &source_items](Neo::PropertyT<Neo::utils::Int32> const&, Neo::PropertyT<Neo::utils::Int32> const&) {
+                                  auto current_face_index = 0;
+                                  auto arcane_faces = arcane_source_item_family->itemInfoListView();
+                                  for (auto face_lid : source_items.m_future_items.new_items) {
+                                    Face current_face = arcane_faces[face_lid].toFace();
+                                    if (target_item_uids[2 * current_face_index + 1] == NULL_ITEM_LOCAL_ID) {
+                                      //                                    if (current_face.frontCell().null()) {
+                                      // Reste uniquement la back_cell ou aucune maille.
+                                      Int32 mod_flags = (target_item_uids[2 * current_face_index] != NULL_ITEM_LOCAL_ID) ? (ItemFlags::II_Boundary | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst) : 0;
+                                      _setFaceInfos(mod_flags, current_face);
+                                    }
+                                    else if (target_item_uids[2 * current_face_index] == NULL_ITEM_LOCAL_ID) {
+                                      // Reste uniquement la front cell
+                                      _setFaceInfos(ItemFlags::II_Boundary | ItemFlags::II_HasFrontCell | ItemFlags::II_FrontCellIsFirst, current_face);
+                                    }
+                                    else {
+                                      // Il y a deux mailles connectées.
+                                      _setFaceInfos(ItemFlags::II_HasFrontCell | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst, current_face);
+                                    }
+                                    ++current_face_index;
+                                  }
+                                });
+      }
     }
 
     /*---------------------------------------------------------------------------*/

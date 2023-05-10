@@ -68,6 +68,9 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject
   void _testDimensions(IMesh* mesh);
   void _testCoordinates(IMesh* mesh);
   void _buildGroup(IItemFamily* family, String const& group_name);
+  void _checkBoundaryFaceGroup(IMesh* mesh, String const& boundary_face_group_name) const;
+  void _checkInternalFaceGroup(IMesh* mesh, String const& internal_face_group_name) const;
+  void _checkFlags(IMesh* mesh) const;
   template <typename VariableRefType>
   void _checkVariable(VariableRefType variable, ItemGroup item_group);
   template <typename VariableArrayRefType>
@@ -115,16 +118,34 @@ _testEnumerationAndConnectivities(IMesh* mesh)
     info() << "face number of nodes " << iface->nodes().size();
     info() << "face number of cells " << iface->cells().size();
     info() << "face number of edges " << iface->edges().size();
+    info() << "face back cell " << iface->backCell().localId();
+    info() << "face front cell " << iface->frontCell().localId();
     ENUMERATE_NODE (inode, iface->nodes()) {
       info() << "face node " << inode.index() << " lid " << inode.localId() << " uid " << inode->uniqueId().asInt64();
     }
+    auto cell_index = 0;
+    bool are_face_cells_ok = true;
     ENUMERATE_CELL (icell, iface->cells()) {
       info() << "face cell " << icell.index() << " lid " << icell.localId() << " uid " << icell->uniqueId().asInt64();
+      if (cell_index == 0) {
+        if (iface->itemBase().flags() & ItemFlags::II_FrontCellIsFirst)
+          are_face_cells_ok = are_face_cells_ok && icell->uniqueId() == iface->frontCell().uniqueId();
+        else
+          are_face_cells_ok = are_face_cells_ok && icell->uniqueId() == iface->backCell().uniqueId();
+      }
+      else
+        are_face_cells_ok = are_face_cells_ok && icell->uniqueId() == iface->frontCell().uniqueId();
+      ++cell_index;
+    }
+    if (!are_face_cells_ok) {
+      fatal() << "Problem with face cells.";
     }
     ENUMERATE_EDGE (iedge, iface->edges()) {
       info() << "face edge " << iedge.index() << " lid " << iedge.localId() << " uid " << iedge->uniqueId().asInt64();
     }
   }
+  // Check face flags
+  _checkFlags(mesh);
   // ALL NODES
   ENUMERATE_NODE (inode, mesh->allNodes()) {
     info() << "node with index " << inode.index();
@@ -308,8 +329,15 @@ _testGroups(IMesh* mesh)
     vc.areEqual(group.size(), group_infos->getSize(), "check group size");
   }
   ValueChecker vc{ A_FUNCINFO };
-  auto nb_group = 8 + options()->checkGroup().size();
+  auto nb_group = 8 + options()->nbMeshGroup;
   vc.areEqual(nb_group, mesh->groups().count(), "check number of groups in the mesh");
+
+  for (const auto& boundary_face_group_name : options()->getCheckBoundaryFaceGroup()) {
+    _checkBoundaryFaceGroup(mesh, boundary_face_group_name);
+  }
+  for (const auto& boundary_face_group_name : options()->getCheckInternalFaceGroup()) {
+    _checkInternalFaceGroup(mesh, boundary_face_group_name);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -404,6 +432,89 @@ _checkArrayVariable(VariableArrayRefType variable_ref, ItemGroup item_group)
   std::vector<int> ref_sum(array_size);
   std::iota(ref_sum.begin(), ref_sum.end(), 1.);
   vc.areEqual(variable_sum, item_group.size() * std::accumulate(ref_sum.begin(), ref_sum.end(), 0.), "check array variable values");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CustomMeshTestModule::
+_checkBoundaryFaceGroup(IMesh* mesh, const String& boundary_face_group_name) const
+{
+  auto boundary_face_group = mesh->findGroup(boundary_face_group_name);
+  if (boundary_face_group.null())
+    ARCANE_FATAL("Cannot find boundary face group {0}", boundary_face_group_name);
+  bool are_face_boundaries = true;
+  ENUMERATE_FACE (iface, boundary_face_group) {
+    are_face_boundaries = are_face_boundaries && iface->isSubDomainBoundary();
+    if (!iface->isSubDomainBoundary()) {
+      info() << String::format("Face {0} with nodes {1} is not boundary", iface->uniqueId(), iface->nodes().localIds());
+    }
+  }
+  if (!are_face_boundaries)
+    ARCANE_FATAL("Boundary face group {0} contains face(s) that are not on the subdomain boundary", boundary_face_group_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CustomMeshTestModule::
+_checkInternalFaceGroup(IMesh* mesh, const String& internal_face_group_name) const
+{
+  auto internal_face_group = mesh->findGroup(internal_face_group_name);
+  if (internal_face_group.null())
+    ARCANE_FATAL("Cannot find internal face group {0}", internal_face_group_name);
+  bool are_face_internals = true;
+  ENUMERATE_FACE (iface, internal_face_group) {
+    are_face_internals = are_face_internals && !iface->isSubDomainBoundary();
+    if (iface->isSubDomainBoundary()) {
+      info() << String::format("Face {0} with nodes {1} is not an internal face", iface->uniqueId(), iface->nodes().localIds());
+    }
+  }
+  if (!are_face_internals)
+    ARCANE_FATAL("Internal face group {0} contains face(s) that are on the subdomain boundary", internal_face_group_name);
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CustomMeshTestModule::
+_checkFlags(IMesh* mesh) const
+{
+  bool are_flags_ok = true;
+  bool has_internal_faces = false;
+  ENUMERATE_FACE (iface, mesh->allFaces()) {
+    Face face{ *iface };
+    if (face.backCell().null()) {
+      are_flags_ok = are_flags_ok && face.isSubDomainBoundary();
+      are_flags_ok = are_flags_ok && (face.itemBase().flags() & ItemFlags::II_Boundary);
+      are_flags_ok = are_flags_ok && (face.itemBase().flags() & ItemFlags::II_FrontCellIsFirst);
+      are_flags_ok = are_flags_ok && !(face.itemBase().flags() & ItemFlags::II_BackCellIsFirst);
+      are_flags_ok = are_flags_ok && (face.itemBase().flags() & ItemFlags::II_HasFrontCell);
+      are_flags_ok = are_flags_ok && !(face.itemBase().flags() & ItemFlags::II_HasBackCell);
+    }
+    else if (face.frontCell().null()) {
+      are_flags_ok = are_flags_ok && face.isSubDomainBoundary();
+      are_flags_ok = are_flags_ok && (face.itemBase().flags() & ItemFlags::II_Boundary);
+      are_flags_ok = are_flags_ok && (face.itemBase().flags() & ItemFlags::II_BackCellIsFirst);
+      are_flags_ok = are_flags_ok && !(face.itemBase().flags() & ItemFlags::II_FrontCellIsFirst);
+      are_flags_ok = are_flags_ok && (face.itemBase().flags() & ItemFlags::II_HasBackCell);
+      are_flags_ok = are_flags_ok && !(face.itemBase().flags() & ItemFlags::II_HasFrontCell);
+    }
+    else {
+      are_flags_ok = are_flags_ok && !face.isSubDomainBoundary();
+      are_flags_ok = are_flags_ok && !(face.itemBase().flags() & ItemFlags::II_Boundary);
+      are_flags_ok = are_flags_ok && (face.itemBase().flags() & ItemFlags::II_BackCellIsFirst);
+      are_flags_ok = are_flags_ok && !(face.itemBase().flags() & ItemFlags::II_FrontCellIsFirst);
+      are_flags_ok = are_flags_ok && (face.itemBase().flags() & ItemFlags::II_HasBackCell);
+      are_flags_ok = are_flags_ok && (face.itemBase().flags() & ItemFlags::II_HasFrontCell);
+      has_internal_faces = true;
+    }
+  }
+  if (!are_flags_ok)
+    ARCANE_FATAL("Face flags are incorrect");
+  if (has_internal_faces)
+    info() << "Mesh has internal faces";
+  else
+    info() << "Mesh has no internal face";
 }
 
 /*---------------------------------------------------------------------------*/
