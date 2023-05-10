@@ -90,6 +90,10 @@ ARCANE_ADD_TEST(material_sync1 testMaterial-sync-1.arc)
 ARCANE_ADD_TEST_PARALLEL_THREAD(material_sync1 testMaterial-sync-1.arc 4)
 ARCANE_ADD_TEST_PARALLEL(material_sync2 testMaterial-sync-2.arc 4)
 ARCANE_ADD_TEST_PARALLEL(material_sync2_v3 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,3)
+arcane_add_test(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
+arcane_add_test_parallel_thread(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
+arcane_add_accelerator_test_parallel(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
+arcane_add_accelerator_test_parallel_thread(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
 
 ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
 # NOTE Ajoute test optmisation uniquement en sequentiel car pour l'instant cela
