@@ -143,12 +143,12 @@ namespace
   {
     Real p = 0.5 * pitch;
     Real q = 0.5 * pitch / (math::sqrt(3.0));
-    coords[0] = { x + q, y + p, z };
-    coords[1] = { x - q, y + p, z };
-    coords[2] = { x - 2 * q, y, z };
-    coords[3] = { x - q, y - p, z };
-    coords[4] = { x + q, y - p, z };
-    coords[5] = { x + 2 * q, y, z };
+    coords[0] = { x - q, y - p, z };
+    coords[1] = { x + q, y - p, z };
+    coords[2] = { x + 2 * q, y, z };
+    coords[3] = { x + q, y + p, z };
+    coords[4] = { x - q, y + p, z };
+    coords[5] = { x - 2 * q, y, z };
   }
 
 } // namespace
