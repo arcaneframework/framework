@@ -76,9 +76,16 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryCopyArgs
 
   //! Copie \a length octets depuis \a source vers \a destination
   MemoryCopyArgs(void* destination, const void* source, Int64 length)
-  : m_source(_toSpan(source, length))
-  , m_destination(_toSpan(destination, length))
+  : MemoryCopyArgs(_toSpan(destination, length),_toSpan(source, length))
   {}
+
+  //! Copie \a source.size() octets depuis \a source vers \a destination
+  MemoryCopyArgs(Span<std::byte> destination, Span<const std::byte> source)
+  : m_source(source)
+  , m_destination(destination)
+  {
+    // TODO: vérifier destination.size() > source.size();
+  }
 
   //! Copie depuis \a source vers \a destination
   MemoryCopyArgs(MutableMemoryView destination, ConstMemoryView source)
@@ -122,21 +129,26 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryPrefetchArgs
   {
     return { reinterpret_cast<const std::byte*>(ptr), length };
   }
-  static Span<std::byte> _toSpan(void* ptr, Int64 length)
+  /*static Span<std::byte> _toSpan(void* ptr, Int64 length)
   {
     return { reinterpret_cast<std::byte*>(ptr), length };
-  }
+    }*/
 
  public:
 
-  //! Copie \a length octets depuis \a source vers \a destination
+  //! Prefetch \a length octets depuis \a source
   MemoryPrefetchArgs(const void* source, Int64 length)
-  : m_source(ConstMemoryView(_toSpan(source, length)))
+  : MemoryPrefetchArgs(_toSpan(source, length))
   {}
 
-  //! Copie depuis \a source vers \a destination
+  //! Prefetch \a source
   explicit MemoryPrefetchArgs(ConstMemoryView source)
   : m_source(source)
+  {}
+
+  //! Prefetch \a source
+  explicit MemoryPrefetchArgs(Span<const std::byte> source)
+  : m_source(ConstMemoryView(source))
   {}
 
  public:
