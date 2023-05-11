@@ -393,6 +393,7 @@ class AbstractArray
   {
     return m_md->allocator;
   }
+
  public:
 
   operator ConstArrayView<T>() const
@@ -835,6 +836,25 @@ class AbstractArray
       // On est certain de ne pas dépasser 32 bits car on est inférieur à asize.
       asize = static_cast<Integer>(max_size);
     return asize;
+  }
+
+  // Uniquement pour UniqueArray et UniqueArray2
+  void _assignFromArray(const AbstractArray<T>& rhs)
+  {
+    if (&rhs==this)
+      return;
+    Span<const T> rhs_span(rhs);
+    if (rhs.allocator()==this->allocator()){
+      _resizeAndCopyView(rhs_span);
+    }
+    else{
+      IMemoryAllocator* a = rhs.allocator();
+      _destroy();
+      _internalDeallocate();
+      _reset();
+      _initFromAllocator(a,0);
+      _initFromSpan(rhs_span);
+    }
   }
 
  protected:
@@ -1698,17 +1718,17 @@ class UniqueArray
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const Array<T>& rhs)
   {
-    _assignFromArray(rhs);
+    this->_assignFromArray(rhs);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const SharedArray<T>& rhs)
   {
-    _assignFromArray(rhs);
+    this->_assignFromArray(rhs);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   void operator=(const UniqueArray<T>& rhs)
   {
-    _assignFromArray(rhs);
+    this->_assignFromArray(rhs);
   }
   //! Opérateur de recopie par déplacement. \a rhs est invalidé après cet appel.
   void operator=(UniqueArray<T>&& rhs) ARCCORE_NOEXCEPT
@@ -1759,25 +1779,6 @@ class UniqueArray
   }
 
  private:
-
-  void _assignFromArray(const Array<T>& rhs)
-  {
-    if (&rhs==this)
-      return;
-    auto rhs_span = rhs.constSpan();
-    if (rhs.allocator()==this->allocator()){
-      this->copy(rhs_span);
-    }
-    else{
-      IMemoryAllocator* a = rhs.allocator();
-      this->_destroy();
-      this->_internalDeallocate();
-      this->_reset();
-      this->_initFromAllocator(a,0);
-      this->_initFromSpan(rhs_span);
-    }
-  }
-
 };
 
 /*---------------------------------------------------------------------------*/
