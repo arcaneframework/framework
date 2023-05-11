@@ -22,14 +22,9 @@
 #include "arcane/utils/Real3x3.h"
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshMaterial.h"
-#include "arcane/core/materials/IMeshEnvironment.h"
 #include "arcane/core/materials/ComponentItemVectorView.h"
-#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 
 #include "arcane/materials/MaterialVariableBuildInfo.h"
 #include "arcane/materials/MatItemEnumerator.h"
@@ -47,9 +42,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IObserver.h"
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/ItemPrinter.h"
 #include "arcane/core/Parallel.h"
-#include "arcane/core/IData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,7 +61,7 @@ MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs,
 , m_name(v.name())
 , m_material_mng(v.materialMng())
 , m_keep_on_change(true)
-, m_global_variable_changed_observer(0)
+, m_global_variable_changed_observer(nullptr)
 , m_has_recursive_depend(true)
 , m_var_space(mvs)
 , m_variable(variable)
@@ -126,6 +119,7 @@ copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
 MeshMaterialVariable::
 MeshMaterialVariable(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 : m_p(new MeshMaterialVariablePrivate(v,mvs,this))
+, m_views_as_bytes(platform::getDefaultDataAllocator())
 {
 }
 
@@ -160,7 +154,7 @@ void MeshMaterialVariable::
 addVariableRef(MeshMaterialVariableRef* ref)
 {
   Mutex::ScopedLock sl(m_p->materialMng()->variableLock());
-  // L'increment de m_p->m_nb_reference est fait dans getReference()
+  // L'incrément de m_p->m_nb_reference est fait dans getReference()
   ref->setNextReference(m_p->m_first_reference);
   if (m_p->m_first_reference){
     MeshMaterialVariableRef* _list = m_p->m_first_reference;
@@ -169,7 +163,7 @@ addVariableRef(MeshMaterialVariableRef* ref)
     _list->setPreviousReference(ref);
   }
   else{
-    ref->setPreviousReference(0);
+    ref->setPreviousReference(nullptr);
   }
   m_p->m_first_reference = ref;
 }
@@ -192,13 +186,13 @@ removeVariableRef(MeshMaterialVariableRef* ref)
 
   // La référence peut être utilisée par la suite donc il ne faut pas oublier
   // de supprimer le précédent et le suivant.
-  ref->setNextReference(0);
-  ref->setPreviousReference(0);
+  ref->setNextReference(nullptr);
+  ref->setPreviousReference(nullptr);
 
   Int32 nb_ref = --m_p->m_nb_reference;
 
-  // Vérifie que le nombre de référence est valide.
-  // En cas d'erreur, on ne peut rien afficher car il est possible que m_p ait
+  // Vérifie que le nombre de références est valide.
+  // En cas d'erreur, on ne peut rien afficher, car il est possible que m_p ait
   // déjà été détruit.
   if (nb_ref<0)
     ARCANE_FATAL("Invalid reference number for variable");
@@ -206,9 +200,9 @@ removeVariableRef(MeshMaterialVariableRef* ref)
   // Lorsqu'il n'y a plus de références sur cette variable, le signale au
   // gestionnaire de variable et se détruit
   if (nb_ref==0){
-    // Attention: il faut d'abord détruire l'observable
+    // Attention : il faut d'abord détruire l'observable,
     // car removeVariable() peut détruire la variable globale s'il n'y
-    // a plus de références dessus et comme il restera un observer dessus,
+    // a plus de références dessus et comme il restera un observateur dessus,
     // cela provoquera une fuite mémoire car l'observable associé ne sera
     // pas détruit.
     delete m_p->m_global_variable_changed_observer;
@@ -271,13 +265,11 @@ void MeshMaterialVariable::
 update(IMeshMaterial* mat)
 {
   if (m_p->hasRecursiveDepend()){
-    for( Integer k=0,n=m_p->m_depends.size(); k<n; ++k ){
-      VariableDependInfo& vdi = m_p->m_depends[k];
+    for( VariableDependInfo& vdi : m_p->m_depends ){
       vdi.variable()->update();
     }
 
-    for( Integer k=0,n=m_p->m_mat_depends.size(); k<n; ++k ){
-      MeshMaterialVariableDependInfo& vdi = m_p->m_mat_depends[k];
+    for( MeshMaterialVariableDependInfo& vdi : m_p->m_mat_depends ){
       vdi.variable()->update(mat);
     }
   }
@@ -285,8 +277,7 @@ update(IMeshMaterial* mat)
 
   bool need_update = false;
   Int64 modified_time = m_p->m_modified_times[mat_id];
-  for( Integer k=0,n=m_p->m_depends.size(); k<n; ++k ){
-    VariableDependInfo& vdi = m_p->m_depends[k];
+  for( VariableDependInfo& vdi : m_p->m_depends ){
     Int64 mt = vdi.variable()->modifiedTime();
     if (mt>modified_time){
       need_update = true;
@@ -294,8 +285,7 @@ update(IMeshMaterial* mat)
     }
   }
   if (!need_update){
-    for( Integer k=0,n=m_p->m_mat_depends.size(); k<n; ++k ){
-      MeshMaterialVariableDependInfo& vdi = m_p->m_mat_depends[k];
+    for( MeshMaterialVariableDependInfo& vdi : m_p->m_mat_depends ){
       Int64 mt = vdi.variable()->modifiedTime(mat);
       if (mt>modified_time){
         need_update = true;
@@ -386,13 +376,11 @@ void MeshMaterialVariable::
 dependInfos(Array<VariableDependInfo>& infos,
             Array<MeshMaterialVariableDependInfo>& mat_infos)
 {
-  for( Integer k=0,n=m_p->m_depends.size(); k<n; ++k ){
-    VariableDependInfo& vdi = m_p->m_depends[k];
+  for( VariableDependInfo& vdi : m_p->m_depends ){
     infos.add(vdi);
   }
 
-  for( Integer k=0,n=m_p->m_mat_depends.size(); k<n; ++k ){
-    MeshMaterialVariableDependInfo& vdi = m_p->m_mat_depends[k];
+  for( MeshMaterialVariableDependInfo& vdi : m_p->m_mat_depends ){
     mat_infos.add(vdi);
   }
 }

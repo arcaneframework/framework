@@ -73,7 +73,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
  public:
 
   MeshMaterialVariable(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
-  ~MeshMaterialVariable();
+  ~MeshMaterialVariable() override;
 
  public:
 
@@ -137,7 +137,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
  protected:
 
-  MeshMaterialVariablePrivate* m_p;
+  MeshMaterialVariablePrivate* m_p = nullptr;
   UniqueArray<Span<std::byte>> m_views_as_bytes;
 
  protected:
