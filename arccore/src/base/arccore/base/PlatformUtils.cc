@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.cc                                            (C) 2000-2021 */
+/* PlatformUtils.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -74,6 +74,12 @@
 
 namespace Arccore
 {
+
+// Ces deux fonctions sont définies dans 'Exception.cc'
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreSetPauseOnException(bool v);
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreCallExplainInExceptionConstructor(bool v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -722,6 +728,11 @@ platformInitialize()
   getCPUTime();
 
   global_has_color_console = _getHasColorTerminal();
+
+  if (getEnvironmentVariable("ARCCORE_PAUSE_ON_EXCEPTION")=="1")
+    arccoreSetPauseOnException(true);
+  if (getEnvironmentVariable("ARCCORE_PRINT_ON_EXCEPTION")=="1")
+    arccoreCallExplainInExceptionConstructor(true);
 }
 
 /*---------------------------------------------------------------------------*/
