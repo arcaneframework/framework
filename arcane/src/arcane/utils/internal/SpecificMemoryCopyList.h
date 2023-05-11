@@ -146,9 +146,6 @@ class SpecificMemoryCopyList
     m_copier[56] = &m_s56;
     m_copier[64] = &m_s64;
     m_copier[72] = &m_s72;
-
-    m_nb_specialized = 0;
-    m_nb_generic = 0;
   }
 
  public:
@@ -177,7 +174,7 @@ class SpecificMemoryCopyList
       ARCANE_FATAL("Bad value {0} for datasize", v);
 
     InterfaceType* x = nullptr;
-    if (v >= 0 && v < NB_COPIER)
+    if (v < NB_COPIER)
       x = m_copier[v];
     if (x) {
       if (x->datatypeSize() != v)
@@ -227,8 +224,8 @@ class SpecificMemoryCopyList
   SpecificType<Int64, ExtentValue<9>> m_s72;
 
   std::array<InterfaceType*, NB_COPIER> m_copier;
-  std::atomic<Int32> m_nb_specialized;
-  std::atomic<Int32> m_nb_generic;
+  std::atomic<Int32> m_nb_specialized = 0;
+  std::atomic<Int32> m_nb_generic = 0;
 };
 
 /*---------------------------------------------------------------------------*/
