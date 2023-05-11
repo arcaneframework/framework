@@ -35,6 +35,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/SimpleHydroAcceleratorService.cc
   accelerator/MiniWeatherArray.cc
   accelerator/MemoryCopyUnitTest.cc
+  accelerator/MultiMemoryCopyUnitTest.cc
   accelerator/NumArrayUnitTest.cc
   accelerator/AcceleratorReduceUnitTest.cc
   accelerator/RunQueueUnitTest.cc
@@ -621,6 +622,10 @@ arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMate
 arcane_add_test_sequential(memorycopy1 testMemoryCopy-1.arc)
 arcane_add_test_sequential_task(memorycopy1 testMemoryCopy-1.arc 4)
 arcane_add_accelerator_test_sequential(memorycopy1 testMemoryCopy-1.arc)
+
+arcane_add_test_sequential(multi_memorycopy1 testMultiMemoryCopy-1.arc)
+arcane_add_test_sequential_task(multi_memorycopy1 testMultiMemoryCopy-1.arc 4)
+arcane_add_accelerator_test_sequential(multi_memorycopy1 testMultiMemoryCopy-1.arc)
 
 arcane_add_test_sequential(miniweather_orig1 testMiniWeatherOriginal.arc)
 arcane_add_test_sequential(miniweather_array_seq1 testMiniWeatherArraySequential.arc)
