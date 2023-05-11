@@ -107,7 +107,7 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
   {
     Int64 byte_offset = begin_index * m_datatype_size;
     auto sub_bytes = m_bytes.subspan(byte_offset, nb_element * m_datatype_size);
-    return ConstMemoryView(sub_bytes, m_datatype_size, nb_element);
+    return {sub_bytes, m_datatype_size, nb_element};
   }
 
  public:
@@ -126,7 +126,7 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
    * \pre this.datatypeSize() == v.datatypeSize();
    * \pre v.nbElement() >= indexes.size();
    */
-  void copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes);
+  void copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes) const;
 
   /*!
    * \brief Copie dans l'instance indexée les données de \a v.
@@ -145,7 +145,7 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
    * \pre v.nbElement() >= indexes.size();
    */
   void copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-                     RunQueue* run_queue = nullptr);
+                     RunQueue* run_queue = nullptr) const;
 
  public:
 
@@ -231,7 +231,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
 
  public:
 
-  constexpr operator ConstMemoryView() const { return ConstMemoryView(m_bytes, m_datatype_size, m_nb_element); }
+  constexpr operator ConstMemoryView() const { return {m_bytes, m_datatype_size, m_nb_element}; }
 
  public:
 
@@ -252,7 +252,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   {
     Int64 byte_offset = begin_index * m_datatype_size;
     auto sub_bytes = m_bytes.subspan(byte_offset, nb_element * m_datatype_size);
-    return MutableMemoryView(sub_bytes, m_datatype_size, nb_element);
+    return {sub_bytes, m_datatype_size, nb_element};
   }
 
  public:
@@ -264,7 +264,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    *
    * \pre v.bytes.size() >= bytes.size()
    */
-  void copyHost(ConstMemoryView v);
+  void copyHost(ConstMemoryView v) const;
 
   /*!
    * \brief Copie dans l'instance les données indexées de \a v.
@@ -280,7 +280,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    * \pre this.datatypeSize() == v.datatypeSize();
    * \pre this.nbElement() >= indexes.size();
    */
-  void copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes);
+  void copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes) const;
 
   /*!
    * \brief Copie dans l'instance les données indexées de \a v.
@@ -299,7 +299,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    * \pre this.nbElement() >= indexes.size();
    */
   void copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                       RunQueue* run_queue = nullptr);
+                       RunQueue* run_queue = nullptr) const;
 
  public:
 
