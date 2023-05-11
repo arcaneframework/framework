@@ -14,6 +14,7 @@ set( ARCANE_SOURCES
   IDeviceInfoList.h
   Memory.h
   Memory.cc
+  PointerAttribute.h
   Runner.h
   Runner.cc
   RunCommand.h

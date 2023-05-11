@@ -33,6 +33,7 @@
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
+#include "arcane/accelerator/core/PointerAttribute.h"
 
 #include <iostream>
 
@@ -50,9 +51,9 @@ namespace
 {
   Int32 global_cupti_level = 0;
   Int32 global_cupti_flush = 0;
-}
+} // namespace
 extern "C++" void
-initCupti(Int32 level,bool do_print);
+initCupti(Int32 level, bool do_print);
 extern "C++" void
 flushCupti();
 extern "C++" void
@@ -364,6 +365,17 @@ class CudaRunnerRuntime
     stopCupti();
   }
 
+  void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
+  {
+    cudaPointerAttributes ca;
+    ARCANE_CHECK_CUDA(cudaPointerGetAttributes(&ca, ptr));
+    // NOTE: le type Arcane 'ePointerMemoryType' a normalememt les mêmes valeurs
+    // que le type CUDA correspondant donc on peut faire un cast simple.
+    auto mem_type = static_cast<ePointerMemoryType>(ca.type);
+    _fillPointerAttribute(attribute, mem_type, ca.device,
+                          ptr, ca.devicePointer, ca.hostPointer);
+  }
+
  public:
 
   void fillDevices();
@@ -442,10 +454,10 @@ fillDevices()
     global_cupti_flush = v.value();
   bool do_print_cupti = true;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_PRINT", true))
-    do_print_cupti = (v.value()!=0);
+    do_print_cupti = (v.value() != 0);
 
   if (global_cupti_level > 0)
-    initCupti(global_cupti_level,do_print_cupti);
+    initCupti(global_cupti_level, do_print_cupti);
 }
 
 /*---------------------------------------------------------------------------*/

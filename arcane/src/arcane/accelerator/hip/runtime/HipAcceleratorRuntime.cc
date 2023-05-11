@@ -289,6 +289,26 @@ class HipRunnerRuntime
   }
   const IDeviceInfoList* deviceInfoList() override { return &m_device_info_list; }
 
+  void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
+  {
+    hipPointerAttribute_t pa;
+    ARCANE_CHECK_HIP(hipPointerGetAttributes(&pa, ptr));
+    auto mem_type = ePointerMemoryType::Unregistered;
+    if (pa.isManaged)
+      mem_type = ePointerMemoryType::Managed;
+    else if (pa.memoryType == hipMemoryTypeHost)
+      mem_type = ePointerMemoryType::Host;
+    else if (pa.memoryType == hipMemoryTypeDevice)
+      mem_type = ePointerMemoryType::Device;
+
+    std::cout << "HIP Info: hip_memory_type=" << (int)pa.memoryType << " is_managed?=" << pa.isManaged
+              << " flags=" << pa.allocationFlags
+              << " my_memory_type=" << (int)mem_type
+              << "\n";
+    _fillPointerAttribute(attribute, mem_type, pa.device,
+                          ptr, pa.devicePointer, pa.hostPointer);
+  }
+
   void fillDevices();
 
  private:

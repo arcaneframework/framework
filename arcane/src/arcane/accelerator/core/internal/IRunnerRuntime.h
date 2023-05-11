@@ -49,6 +49,15 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
   virtual const IDeviceInfoList* deviceInfoList() = 0;
   virtual void startProfiling() {}
   virtual void stopProfiling() {}
+  virtual void getPointerAttribute(PointerAttribute& attribute, const void* ptr) = 0;
+
+ protected:
+
+  void _fillPointerAttribute(PointerAttribute& attribute,
+                             ePointerMemoryType mem_type,
+                             int device, const void* pointer, const void* device_pointer,
+                             const void* host_pointer);
+  void _fillPointerAttribute(PointerAttribute& attribute, const void* pointer);
 };
 
 /*---------------------------------------------------------------------------*/

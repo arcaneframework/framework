@@ -125,6 +125,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT CommonRunnerRuntime
   void unsetMemoryAdvice(ConstMemoryView, eMemoryAdvice, DeviceId) final {}
   void setCurrentDevice(DeviceId) final {}
   const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
+  void getPointerAttribute(PointerAttribute& attribute, const void* ptr) final
+  {
+    _fillPointerAttribute(attribute,ptr);
+  }
 
  private:
 

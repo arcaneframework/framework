@@ -48,6 +48,7 @@ class MemoryPrefetchArgs;
 class DeviceId;
 class DeviceInfo;
 class IDeviceInfoList;
+class PointerAttribute;
 enum class eMemoryAdvice;
 
 namespace impl
@@ -114,6 +115,19 @@ enum class eRunQueuePriority : int
   High = -100,
   //! Une valeur arbitraire positive pour définir une priorité faible
   Low = 100
+};
+
+
+//! Type de mémoire pour un pointeur
+enum class ePointerMemoryType
+{
+  //NOTE: Les valeurs sont équivalentes à cudaMemoryType. Si on
+  // change ces valeurs il faut changer la fonction correspondante
+  // dans le runtime (getPointerAttribute()).
+  Unregistered = 0,
+  Host = 1,
+  Device = 2,
+  Managed = 3
 };
 
 /*---------------------------------------------------------------------------*/

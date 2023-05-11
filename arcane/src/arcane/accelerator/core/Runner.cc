@@ -23,6 +23,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/DeviceId.h"
 #include "arcane/accelerator/core/IDeviceInfoList.h"
+#include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 
 #include <stack>
@@ -518,6 +519,16 @@ deviceInfoList(eExecutionPolicy policy)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void Runner::
+fillPointerAttribute(PointerAttribute& attr,const void* ptr)
+{
+  _checkIsInit();
+  m_p->runtime()->getPointerAttribute(attr,ptr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Arrête tout les profiling en cours de tout les runtime.
  *
@@ -530,6 +541,31 @@ _stopAllProfiling()
   _stopProfiling(eExecutionPolicy::HIP);
   _stopProfiling(eExecutionPolicy::Sequential);
   _stopProfiling(eExecutionPolicy::Thread);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void impl::IRunnerRuntime::
+_fillPointerAttribute(PointerAttribute& attribute,
+                      ePointerMemoryType mem_type,
+                      int device, const void* pointer, const void* device_pointer,
+                      const void* host_pointer)
+{
+  PointerAttribute a(mem_type, device, pointer, device_pointer, host_pointer);
+  attribute = a;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void impl::IRunnerRuntime::
+_fillPointerAttribute(PointerAttribute& attribute, const void* pointer)
+{
+  attribute = PointerAttribute(pointer);
 }
 
 /*---------------------------------------------------------------------------*/
