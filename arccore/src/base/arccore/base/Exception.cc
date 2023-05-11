@@ -18,6 +18,10 @@
 
 #include <iostream>
 
+#ifndef ARCCORE_OS_WIN32
+#include <unistd.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,7 +37,38 @@ std::atomic<Int32> Exception::m_nb_pending_exception;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// #define ARCCORE_DEBUG_EXCEPTION
+namespace
+{
+// Si vrai, affiche les informations de l'exception dans les appels aux
+// constructeur. Cela permet d'avoir le message dans le cas où une exception
+// lève une autre exception (ce qui appelle directement std::terminate et on
+// ne peut pas la récupérer.
+bool global_explain_in_constructor = false;
+// Si vrai, se met en pause dans le constructeur pour attendre de brancher
+// un débugger
+bool global_pause_in_constructor = false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreSetPauseOnException(bool v)
+{
+  global_pause_in_constructor = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreCallExplainInExceptionConstructor(bool v)
+{
+  global_explain_in_constructor = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 Exception::
 Exception(const String& aname,const String& awhere)
@@ -43,16 +78,7 @@ Exception(const String& aname,const String& awhere)
 {
   ++m_nb_pending_exception;
   _setStackTrace();
-#if defined(ARCCORE_DEBUG_EXCEPTION)
-  explain(cerr);
-  cerr << "** Exception: Debug mode activated. Execution paused.\n";
-  cerr << "** Exception: To find the location of the exception, start the debugger\n";
-  cerr << "** Exception: using process number " << Platform::getProcessId() << '\n';
-  cerr << "** Exception: on host " << String(Platform::getHostName()) << ".\n";
-#ifndef ARCCORE_OS_WIN32
-  ::pause();
-#endif
-#endif
+  _checkExplainAndPause();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -67,17 +93,7 @@ Exception(const String& aname,const String& awhere,const String& amessage)
 {
   ++m_nb_pending_exception;
   _setStackTrace();
-
-#if defined(ARCCORE_DEBUG_EXCEPTION)
-  explain(cerr);
-  cerr << "** Exception: Debug mode activated. Execution paused.\n";
-  cerr << "** Exception: To find the location of the exception, start the debugger\n";
-  cerr << "** Exception: using process number " << platform::getProcessId() << '\n';
-  cerr << "** Exception: on host " << String(platform::getHostName()) << ".\n";
-#ifndef ARCCORE_OS_WIN32
-  ::pause();
-#endif
-#endif
+  _checkExplainAndPause();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -92,6 +108,7 @@ Exception(const String& aname,const String& awhere,
 , m_is_collective(false)
 {
   ++m_nb_pending_exception;
+  _checkExplainAndPause();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -107,6 +124,7 @@ Exception(const String& aname,const String& awhere,
 , m_is_collective(false)
 {
   ++m_nb_pending_exception;
+  _checkExplainAndPause();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -120,6 +138,7 @@ Exception(const String& aname,const TraceInfo& awhere)
   ++m_nb_pending_exception;
   _setWhere(awhere);
   _setStackTrace();
+  _checkExplainAndPause();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -134,6 +153,7 @@ Exception(const String& aname,const TraceInfo& awhere,const String& amessage)
   ++m_nb_pending_exception;
   _setWhere(awhere);
   _setStackTrace();
+  _checkExplainAndPause();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -148,6 +168,7 @@ Exception(const String& aname,const TraceInfo& awhere,
 {
   ++m_nb_pending_exception;
   _setWhere(awhere);
+  _checkExplainAndPause();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,6 +184,7 @@ Exception(const String& aname,const TraceInfo& awhere,
 {
   ++m_nb_pending_exception;
   _setWhere(awhere);
+  _checkExplainAndPause();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -177,16 +199,7 @@ Exception(const Exception& from)
 , m_is_collective(from.m_is_collective)
 {
   ++m_nb_pending_exception;
-#if defined(ARCCORE_DEBUG_EXCEPTION)
-  explain(cerr);
-  cerr << "** Exception: Debug mode activated. Execution paused.\n";
-  cerr << "** Exception: To find the location of the exception, start the debugger\n";
-  cerr << "** Exception: using process number " << platform::getProcessId() << '\n';
-  cerr << "** Exception: on host " << String(platform::getHostName()) << ".\n";
-#ifndef ARCCORE_OS_WIN32
-  ::pause();
-#endif
-#endif
+  _checkExplainAndPause();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -272,6 +285,30 @@ operator<<(std::ostream& o,const Exception& ex)
 {
   ex.write(o);
   return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Exception::
+_checkExplainAndPause()
+{
+  if (global_explain_in_constructor){
+    std::cerr << "** Exception:" << (*this) << "\n";
+  }
+
+  if (global_pause_in_constructor){
+    std::cerr << "** Exception: Debug mode activated. Execution paused.\n";
+    std::cerr << "** Exception: To find the location of the exception, start the debugger\n";
+    // Utilise format pour être sur que le message ne sera pas affiché en plusieurs
+    // morceaux
+    std::cerr << String::format("** Exception: using process number {0} on host '{1}'\n",
+                                Platform::getProcessId(),Platform::getHostName());
+
+#ifndef ARCCORE_OS_WIN32
+    ::pause();
+#endif
+  }
 }
 
 /*---------------------------------------------------------------------------*/
