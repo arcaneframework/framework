@@ -163,7 +163,7 @@ MutableMemoryView
 makeMutableMemoryView(void* ptr, Int32 datatype_size, Int64 nb_element)
 {
   Span<std::byte> bytes(reinterpret_cast<std::byte*>(ptr), datatype_size * nb_element);
-  return {bytes, datatype_size, nb_element};
+  return { bytes, datatype_size, nb_element };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -173,7 +173,7 @@ ConstMemoryView
 makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
 {
   Span<const std::byte> bytes(reinterpret_cast<const std::byte*>(ptr), datatype_size * nb_element);
-  return {bytes, datatype_size, nb_element};
+  return { bytes, datatype_size, nb_element };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -184,25 +184,15 @@ makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
 
 void MultiMutableMemoryView::
 copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                RunQueue* run_queue)
+                RunQueue* queue)
 {
-  const Int32 value_size = indexes.size() / 2;
   const Int32 one_data_size = m_datatype_size;
   const Int64 v_one_data_size = v.datatypeSize();
   if (one_data_size != v_one_data_size)
     ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
                  one_data_size, v_one_data_size);
 
-  auto source_bytes = v.bytes();
-  for (Int32 i = 0; i < value_size; ++i) {
-    Int32 index0 = indexes[i * 2];
-    Int32 index1 = indexes[(i * 2) + 1];
-    Span<std::byte> orig_view = m_views[index0];
-    Int64 zci = ((Int64)(index1)) * one_data_size;
-    Int64 zindex = (Int64)i * one_data_size;
-    for (Int32 z = 0, n = one_data_size; z < n; ++z)
-      orig_view[zci + z] = source_bytes[zindex + z];
-  }
+  _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, m_views, v.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -210,26 +200,15 @@ copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
 
 void MultiConstMemoryView::
 copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-              RunQueue* run_queue)
+              RunQueue* queue)
 {
-  const Int32 value_size = indexes.size() / 2;
   const Int32 one_data_size = m_datatype_size;
   const Int64 v_one_data_size = v.datatypeSize();
   if (one_data_size != v_one_data_size)
     ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
                  one_data_size, v_one_data_size);
 
-  auto destination_bytes = v.bytes();
-
-  for (Int32 i = 0; i < value_size; ++i) {
-    Int32 index0 = indexes[i * 2];
-    Int32 index1 = indexes[(i * 2) + 1];
-    Span<const std::byte> orig_view = m_views[index0];
-    Int64 zci = ((Int64)(index1)) * one_data_size;
-    Int64 zindex = (Int64)i * one_data_size;
-    for (Int32 z = 0, n = one_data_size; z < n; ++z)
-      destination_bytes[zindex + z] = orig_view[zci + z];
-  }
+  _getDefaultCopyList(queue)->copyTo(one_data_size, {indexes, m_views, v.bytes(), queue});
 }
 
 /*---------------------------------------------------------------------------*/
