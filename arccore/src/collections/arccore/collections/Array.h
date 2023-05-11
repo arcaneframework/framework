@@ -388,6 +388,7 @@ class AbstractArray
       _directFirstAllocateWithAllocator(0,a);
     _updateReferences();
   }
+
   IMemoryAllocator* allocator() const
   {
     return m_md->allocator;
@@ -1690,7 +1691,7 @@ class UniqueArray
   //! Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
   UniqueArray(IMemoryAllocator* allocator,Span<const T> rhs)
   {
-    this->_initFromAllocator(allocator,rhs.size());
+    this->_initFromAllocator(allocator,0);
     this->_initFromSpan(rhs);
   }
 
@@ -1768,8 +1769,11 @@ class UniqueArray
       this->copy(rhs_span);
     }
     else{
-      this->dispose();
-      this->_initFromAllocator(rhs.allocator(),0);
+      IMemoryAllocator* a = rhs.allocator();
+      this->_destroy();
+      this->_internalDeallocate();
+      this->_reset();
+      this->_initFromAllocator(a,0);
       this->_initFromSpan(rhs_span);
     }
   }

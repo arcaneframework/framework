@@ -731,23 +731,44 @@ TEST(Array, Misc4)
   using namespace Arccore;
 
   IMemoryAllocator* allocator1 = AlignedMemoryAllocator::Simd();
-  IMemoryAllocator* allocator2 = AlignedMemoryAllocator::CacheLine();
+  PrintableMemoryAllocator printable_allocator2;
+  IMemoryAllocator* allocator2 = &printable_allocator2;
 
   {
+    std::cout << "Array a\n";
     UniqueArray<Int32> a(allocator1);
     ASSERT_EQ(a.allocator(),allocator1);
     a.add(27);
     a.add(38);
     a.add(13);
     a.add(-5);
+
+    std::cout << "Array b\n";
+    UniqueArray<Int32> b(allocator2);
+    ASSERT_EQ(b.capacity(),0);
+    ASSERT_EQ(b.size(),0);
+    ASSERT_EQ(b.allocator(),allocator2);
+
+    b = a;
+    ASSERT_EQ(b.size(),a.size());
+    ASSERT_EQ(b.allocator(),a.allocator());
+
+    std::cout << "Array c\n";
     UniqueArray<Int32> c(a.clone());
     ASSERT_EQ(c.allocator(),a.allocator());
     ASSERT_EQ(c.size(),a.size());
     ASSERT_EQ(c.constSpan(),a.constSpan());
+
+    std::cout << "Array d\n";
     UniqueArray<Int32> d(allocator2,a);
     ASSERT_EQ(d.allocator(),allocator2);
     ASSERT_EQ(d.size(),a.size());
     ASSERT_EQ(d.constSpan(),a.constSpan());
+
+    std::cout << "Array e\n";
+    UniqueArray<Int32> e(allocator2,25);
+    ASSERT_EQ(e.allocator(),allocator2);
+    ASSERT_EQ(e.size(),25);
   }
 }
 
@@ -762,12 +783,14 @@ TEST(Array, Allocator)
   IMemoryAllocator* allocator1 = AlignedMemoryAllocator::Simd();
   IMemoryAllocator* allocator2 = &printable_allocator;
   {
+    std::cout << "Array a1\n";
     UniqueArray<Int32> a1(allocator2);
     ASSERT_EQ(a1.allocator(), allocator2);
     ASSERT_EQ(a1.size(), 0);
     ASSERT_EQ(a1.capacity(), 0);
     ASSERT_EQ(a1.data(), nullptr);
 
+    std::cout << "Array a2\n";
     UniqueArray<Int32> a2(a1);
     ASSERT_EQ(a1.allocator(), a2.allocator());
     ASSERT_EQ(a2.capacity(), 0);
@@ -781,6 +804,7 @@ TEST(Array, Allocator)
     a1.add(1);
     ASSERT_EQ(a1.size(), 5);
 
+    std::cout << "Array a3\n";
     UniqueArray<Int32> a3(allocator1);
     a3.add(4);
     a3.add(6);
@@ -791,6 +815,7 @@ TEST(Array, Allocator)
     ASSERT_EQ(a3.size(), a1.size());
     ASSERT_EQ(a3.constSpan(), a1.constSpan());
 
+    std::cout << "Array a4\n";
     UniqueArray<Int32> a4(allocator1);
     a4.add(4);
     a4.add(6);
