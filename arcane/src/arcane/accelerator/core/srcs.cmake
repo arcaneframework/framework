@@ -10,8 +10,6 @@ set( ARCANE_SOURCES
   DeviceInfoList.h
   IReduceMemoryImpl.h
   IRunQueueEventImpl.h
-  IRunQueueRuntime.h
-  IRunnerRuntime.h
   IRunQueueStream.h
   IDeviceInfoList.h
   Memory.h
@@ -29,4 +27,5 @@ set( ARCANE_SOURCES
   RunQueueImpl.h
   RunQueueImpl.cc
   RunQueueRuntime.cc
+  internal/IRunnerRuntime.h
 )

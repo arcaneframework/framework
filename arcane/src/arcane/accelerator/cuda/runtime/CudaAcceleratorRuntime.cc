@@ -29,7 +29,7 @@
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
 
-#include "arcane/accelerator/core/IRunnerRuntime.h"
+#include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"

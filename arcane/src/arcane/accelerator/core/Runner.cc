@@ -21,9 +21,9 @@
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
-#include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/DeviceId.h"
 #include "arcane/accelerator/core/IDeviceInfoList.h"
+#include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 
 #include <stack>
 #include <map>
