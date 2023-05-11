@@ -112,8 +112,8 @@ class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
 
   virtual void copyFrom(const IndexedMemoryCopyArgs& args) = 0;
   virtual void copyTo(const IndexedMemoryCopyArgs& args) = 0;
-  virtual void copyFrom(const IndexedMultiMemoryCopyArgs&) {}
-  virtual void copyTo(const IndexedMultiMemoryCopyArgs&) {}
+  virtual void copyFrom(const IndexedMultiMemoryCopyArgs&) = 0;
+  virtual void copyTo(const IndexedMultiMemoryCopyArgs&) = 0;
   virtual Int32 datatypeSize() const = 0;
 };
 
