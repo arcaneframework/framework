@@ -57,17 +57,23 @@ class Array2
 
  private:
 
+  using BaseClass = AbstractArray<DataType>;
   typedef AbstractArray<DataType> Base;
   typedef typename Base::ConstReferenceType ConstReferenceType;
 
  protected:
 
-  using AbstractArray<DataType>::m_ptr;
-  using AbstractArray<DataType>::m_md;
-  using AbstractArray<DataType>::_setMP2;
-  using AbstractArray<DataType>::_setMP;
-  using AbstractArray<DataType>::_destroy;
-  using AbstractArray<DataType>::_internalDeallocate;
+  using BaseClass::m_ptr;
+  using BaseClass::m_md;
+  using BaseClass::_setMP2;
+  using BaseClass::_setMP;
+  using BaseClass::_destroy;
+  using BaseClass::_internalDeallocate;
+  using BaseClass::_initFromAllocator;
+
+ public:
+
+  using AbstractArray<DataType>::allocator;
 
  protected:
 
@@ -205,20 +211,13 @@ class Array2
   {
     return Array2<DataType>(this->constSpan());
   }
+  /*!
+   * \brief Redimensionne l'instance à partir des dimensions de \a rhs
+   * et copie dedans les valeurs de \a rhs.
+   */
   void copy(Span2<const DataType> rhs)
   {
-    Int64 total = rhs.totalNbElement();
-    if (total==0){
-      // Si la taille est nulle, il faut tout de meme faire une allocation
-      // pour stocker les valeurs dim1_size et dim2_size (sinon, elle seraient
-      // dans TrueImpl::shared_null)
-      this->_reserve(4);
-    }
-    Span<const DataType> aview(rhs.data(),total);
-    Base::_resizeAndCopyView(aview);
-    m_md->dim1_size = rhs.dim1Size();
-    m_md->dim2_size = rhs.dim2Size();
-    _arccoreCheckSharedNull();
+    _resizeAndCopyView(rhs);
   }
   //! Capacité (nombre d'éléments alloués) du tableau
   Integer capacity() const { return Base::capacity(); }
@@ -460,6 +459,37 @@ class Array2
     Base::_swap(rhs);
   }
 
+  // Uniquement valide pour UniqueArray2
+  void _assignFromArray2(const Array2<DataType>& rhs)
+  {
+    if (&rhs==this)
+      return;
+    if (rhs.allocator()==this->allocator()){
+      this->copy(rhs.constSpan());
+    }
+    else{
+      this->_assignFromArray(rhs);
+      m_md->dim1_size = rhs.dim1Size();
+      m_md->dim2_size = rhs.dim2Size();
+    }
+  }
+
+  void _resizeAndCopyView(Span2<const DataType> rhs)
+  {
+    Int64 total = rhs.totalNbElement();
+    if (total==0){
+      // Si la taille est nulle, il faut tout de meme faire une allocation
+      // pour stocker les valeurs dim1_size et dim2_size (sinon, elle seraient
+      // dans TrueImpl::shared_null)
+      this->_reserve(4);
+    }
+    Span<const DataType> aview(rhs.data(),total);
+    Base::_resizeAndCopyView(aview);
+    m_md->dim1_size = rhs.dim1Size();
+    m_md->dim2_size = rhs.dim2Size();
+    _arccoreCheckSharedNull();
+  }
+
  private:
 
   void _arccoreCheckSharedNull()
@@ -685,9 +715,19 @@ class UniqueArray2
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   UniqueArray2(const ConstArray2View<T>& view) : Array2<T>(view) {}
   //! Créé un tableau en recopiant les valeurs \a rhs.
-  UniqueArray2(const Array2<T>& rhs) : Array2<T>(rhs.constSpan()) {}
+  UniqueArray2(const Array2<T>& rhs)
+  : Array2<T>()
+  {
+    this->_initFromAllocator(rhs.allocator(),0);
+    this->_resizeAndCopyView(rhs);
+  }
   //! Créé un tableau en recopiant les valeurs \a rhs.
-  UniqueArray2(const UniqueArray2<T>& rhs) : Array2<T>(rhs.constSpan()) {}
+  UniqueArray2(const UniqueArray2<T>& rhs)
+  : Array2<T>()
+  {
+    this->_initFromAllocator(rhs.allocator(),0);
+    this->_resizeAndCopyView(rhs);
+  }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray2(const SharedArray2<T>& rhs) : Array2<T>(rhs.constSpan()) {}
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
@@ -704,19 +744,19 @@ class UniqueArray2
   //! Copie les valeurs de \a rhs dans cette instance.
   UniqueArray2& operator=(const Array2<T>& rhs)
   {
-    this->copy(rhs.constSpan());
+    this->_assignFromArray2(rhs);
     return (*this);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   UniqueArray2& operator=(const SharedArray2<T>& rhs)
   {
-    this->copy(rhs.constSpan());
+    this->_assignFromArray2(rhs);
     return (*this);
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   UniqueArray2& operator=(const UniqueArray2<T>& rhs)
   {
-    this->copy(rhs.constSpan());
+    this->_assignFromArray2(rhs);
     return (*this);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.

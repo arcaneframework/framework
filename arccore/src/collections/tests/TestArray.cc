@@ -215,8 +215,7 @@ public:
 
 namespace
 {
-void
-_testArrayNewInternal()
+void _testArrayNewInternal()
 {
   using namespace Arccore;
   std::cout << "** TEST VECTOR NEW\n";
@@ -227,22 +226,20 @@ _testArrayNewInternal()
   //if (impl_size!=wanted_size)
   //ARCCORE_FATAL("Bad sizeof(ArrayImplBase) v={0} expected={1}",impl_size,wanted_size);
   {
-    IntegerArrayTester< SharedArray<IntSubClass>, IntSubClass > rvt;
+    IntegerArrayTester<SharedArray<IntSubClass>, IntSubClass> rvt;
     rvt.test();
   }
   std::cout << "** TEST VECTOR NEW 2\n";
   {
-    IntegerArrayTester< SharedArray<IntPtrSubClass>, IntPtrSubClass > rvt;
+    IntegerArrayTester<SharedArray<IntPtrSubClass>, IntPtrSubClass> rvt;
     rvt.test();
     std::cout << "** COUNT = " << IntPtrSubClass::count << "\n";
-
   }
   std::cout << "** TEST VECTOR NEW 3\n";
   {
-    IntegerArrayTester< SharedArray<IntPtrSubClass>, IntPtrSubClass > rvt;
+    IntegerArrayTester<SharedArray<IntPtrSubClass>, IntPtrSubClass> rvt;
     rvt.test();
     std::cout << "** COUNT = " << IntPtrSubClass::count << "\n";
-
   }
   {
     SharedArray<IntSubClass> c;
@@ -250,13 +247,13 @@ _testArrayNewInternal()
     c.add(7);
     SharedArray<IntSubClass> c2(c.clone());
     c2.add(3);
-    ARCCORE_UT_CHECK((c2.size()==3),"Bad value [3]");
-    ARCCORE_UT_CHECK((c.size()==2),"Bad value [2]");
-    ARCCORE_UT_CHECK((c[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c[1]==7),"Bad value [7]");
-    ARCCORE_UT_CHECK((c2[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c2[1]==7),"Bad value [7]");
-    ARCCORE_UT_CHECK((c2[2]==3),"Bad value [7]");
+    ARCCORE_UT_CHECK((c2.size() == 3), "Bad value [3]");
+    ARCCORE_UT_CHECK((c.size() == 2), "Bad value [2]");
+    ARCCORE_UT_CHECK((c[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c[1] == 7), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
   }
   {
     UniqueArray<IntSubClass> c;
@@ -264,56 +261,56 @@ _testArrayNewInternal()
     c.add(7);
     UniqueArray<IntSubClass> c2(c.constView());
     c2.add(3);
-    ARCCORE_UT_CHECK((c2.size()==3),"Bad value [3]");
-    ARCCORE_UT_CHECK((c.size()==2),"Bad value [2]");
-    ARCCORE_UT_CHECK((c[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c[1]==7),"Bad value [7]");
-    ARCCORE_UT_CHECK((c2[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c2[1]==7),"Bad value [7]");
-    ARCCORE_UT_CHECK((c2[2]==3),"Bad value [7]");
+    ARCCORE_UT_CHECK((c2.size() == 3), "Bad value [3]");
+    ARCCORE_UT_CHECK((c.size() == 2), "Bad value [2]");
+    ARCCORE_UT_CHECK((c[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c[1] == 7), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
   }
   {
-    UniqueArray<IntSubClass> c { 5, 7 };
+    UniqueArray<IntSubClass> c{ 5, 7 };
     UniqueArray<IntSubClass> c2(c.constView());
     c2.add(3);
-    ARCCORE_UT_CHECK((c2.size()==3),"Bad value [3]");
-    ARCCORE_UT_CHECK((c.size()==2),"Bad value [2]");
-    ARCCORE_UT_CHECK((c[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c[1]==7),"Bad value [7]");
-    ARCCORE_UT_CHECK((c2[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c2[1]==7),"Bad value [7]");
-    ARCCORE_UT_CHECK((c2[2]==3),"Bad value [7]");
+    ARCCORE_UT_CHECK((c2.size() == 3), "Bad value [3]");
+    ARCCORE_UT_CHECK((c.size() == 2), "Bad value [2]");
+    ARCCORE_UT_CHECK((c[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c[1] == 7), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
   }
   {
-    UniqueArray<IntSubClass> c { 5, 7 };
-    ARCCORE_UT_CHECK((c.size()==2),"Bad value [2]");
-    ARCCORE_UT_CHECK((c[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c[1]==7),"Bad value [7]");
+    UniqueArray<IntSubClass> c{ 5, 7 };
+    ARCCORE_UT_CHECK((c.size() == 2), "Bad value [2]");
+    ARCCORE_UT_CHECK((c[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c[1] == 7), "Bad value [7]");
   }
   {
-    SharedArray<IntSubClass> c { 5, 7 };
-    ARCCORE_UT_CHECK((c.size()==2),"Bad value [2]");
-    ARCCORE_UT_CHECK((c[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c[1]==7),"Bad value [7]");
+    SharedArray<IntSubClass> c{ 5, 7 };
+    ARCCORE_UT_CHECK((c.size() == 2), "Bad value [2]");
+    ARCCORE_UT_CHECK((c[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c[1] == 7), "Bad value [7]");
   }
   {
     PrintableMemoryAllocator allocator;
     UniqueArray<IntSubClass> c(&allocator);
-    UniqueArray<IntSubClass> cx(&allocator,5);
-    ARCCORE_UT_CHECK((cx.size()==5),"Bad value [5]");
+    UniqueArray<IntSubClass> cx(&allocator, 5);
+    ARCCORE_UT_CHECK((cx.size() == 5), "Bad value [5]");
     c.add(5);
     c.add(7);
     UniqueArray<IntSubClass> c2(c.constView());
     c2.add(3);
-    ARCCORE_UT_CHECK((c2.size()==3),"Bad value [3]");
-    ARCCORE_UT_CHECK((c.size()==2),"Bad value [2]");
-    ARCCORE_UT_CHECK((c[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c[1]==7),"Bad value [7]");
-    ARCCORE_UT_CHECK((c2[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c2[1]==7),"Bad value [7]");
-    ARCCORE_UT_CHECK((c2[2]==3),"Bad value [7]");
-    for( Integer i=0; i<50; ++i )
-      c.add(i+3);
+    ARCCORE_UT_CHECK((c2.size() == 3), "Bad value [3]");
+    ARCCORE_UT_CHECK((c.size() == 2), "Bad value [2]");
+    ARCCORE_UT_CHECK((c[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c[1] == 7), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
+    for (Integer i = 0; i < 50; ++i)
+      c.add(i + 3);
     c.resize(24);
     c.reserve(70);
   }
@@ -328,23 +325,23 @@ _testArrayNewInternal()
       c2 = c;
     }
     c2.add(3);
-    ARCCORE_UT_CHECK((c2.size()==3),"Bad value [3]");
-    ARCCORE_UT_CHECK((c2[0]==5),"Bad value [5]");
-    ARCCORE_UT_CHECK((c2[1]==7),"Bad value [7]");
-    ARCCORE_UT_CHECK((c2[2]==3),"Bad value [7]");
+    ARCCORE_UT_CHECK((c2.size() == 3), "Bad value [3]");
+    ARCCORE_UT_CHECK((c2[0] == 5), "Bad value [5]");
+    ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
   }
   {
     UniqueArray<Int32> values1 = { 2, 5 };
     UniqueArray<Int32> values2 = { 4, 9, 7 };
     // Copie les valeurs de values2 à la fin de values1.
-    std::copy(std::begin(values2),std::end(values2),std::back_inserter(values1));
+    std::copy(std::begin(values2), std::end(values2), std::back_inserter(values1));
     std::cout << "** VALUES1 = " << values1 << "\n";
-    ARCCORE_UT_CHECK((values1.size()==5),"BI: Bad size");
-    ARCCORE_UT_CHECK((values1[0]==2),"BI: Bad value [0]");
-    ARCCORE_UT_CHECK((values1[1]==5),"BI: Bad value [1]");
-    ARCCORE_UT_CHECK((values1[2]==4),"BI: Bad value [2]");
-    ARCCORE_UT_CHECK((values1[3]==9),"BI: Bad value [3]");
-    ARCCORE_UT_CHECK((values1[4]==7),"BI: Bad value [4]");
+    ARCCORE_UT_CHECK((values1.size() == 5), "BI: Bad size");
+    ARCCORE_UT_CHECK((values1[0] == 2), "BI: Bad value [0]");
+    ARCCORE_UT_CHECK((values1[1] == 5), "BI: Bad value [1]");
+    ARCCORE_UT_CHECK((values1[2] == 4), "BI: Bad value [2]");
+    ARCCORE_UT_CHECK((values1[3] == 9), "BI: Bad value [3]");
+    ARCCORE_UT_CHECK((values1[4] == 7), "BI: Bad value [4]");
 
     UniqueArray<IntPtrSubClass> vx;
     vx.add(IntPtrSubClass(5));
@@ -358,12 +355,12 @@ _testArrayNewInternal()
     // Copie les valeurs de values2 à la fin de values1.
     values1.copy(values2);
     std::cout << "** VALUES1 = " << values1 << "\n";
-    ARCCORE_UT_CHECK((values1.size()==5),"BI: Bad size");
-    ARCCORE_UT_CHECK((values1[0]==4),"BI2: Bad value [0]");
-    ARCCORE_UT_CHECK((values1[1]==9),"BI2: Bad value [1]");
-    ARCCORE_UT_CHECK((values1[2]==7),"BI2: Bad value [2]");
-    ARCCORE_UT_CHECK((values1[3]==6),"BI2: Bad value [3]");
-    ARCCORE_UT_CHECK((values1[4]==3),"BI2: Bad value [4]");
+    ARCCORE_UT_CHECK((values1.size() == 5), "BI: Bad size");
+    ARCCORE_UT_CHECK((values1[0] == 4), "BI2: Bad value [0]");
+    ARCCORE_UT_CHECK((values1[1] == 9), "BI2: Bad value [1]");
+    ARCCORE_UT_CHECK((values1[2] == 7), "BI2: Bad value [2]");
+    ARCCORE_UT_CHECK((values1[3] == 6), "BI2: Bad value [3]");
+    ARCCORE_UT_CHECK((values1[4] == 3), "BI2: Bad value [4]");
 
     UniqueArray<IntPtrSubClass> vx;
     vx.add(IntPtrSubClass(5));
@@ -389,43 +386,43 @@ _testArrayNewInternal()
     UniqueArray<IntPtrSubClass>::iterator i = std::begin(vx);
     UniqueArray<IntPtrSubClass>::iterator iend = std::end(vx);
     UniqueArray<IntPtrSubClass>::const_iterator ci = i;
-    std::cout << "V=" << i->m_v << " " << ci->m_v << " " << (iend-i) << '\n';
+    std::cout << "V=" << i->m_v << " " << ci->m_v << " " << (iend - i) << '\n';
     const UniqueArray<IntPtrSubClass>& cvx = (const UniqueArray<IntPtrSubClass>&)(vx);
     UniqueArray<IntPtrSubClass>::const_iterator cicvx = std::begin(cvx);
     std::cout << "V=" << cicvx->m_v << '\n';
-    std::copy(std::begin(vx),std::end(vx),std::begin(vx));
+    std::copy(std::begin(vx), std::end(vx), std::begin(vx));
   }
   {
     UniqueArray<Int32> values = { 4, 9, 7 };
-    for( typename ArrayView<Int32>::const_iter i(values.view()); i(); ++i ){
+    for (typename ArrayView<Int32>::const_iter i(values.view()); i(); ++i) {
       std::cout << *i << '\n';
     }
-    for( typename ConstArrayView<Int32>::const_iter i(values.view()); i(); ++i ){
+    for (typename ConstArrayView<Int32>::const_iter i(values.view()); i(); ++i) {
       std::cout << *i << '\n';
     }
-    for( auto i : values.range()){
+    for (auto i : values.range()) {
       std::cout << i << '\n';
     }
-    for( auto i : values.constView().range()) {
+    for (auto i : values.constView().range()) {
       std::cout << i << '\n';
     }
 
     {
       auto r1 = std::make_reverse_iterator(values.end());
       auto r2 = std::make_reverse_iterator(values.begin());
-      for( ; r1!=r2; ++ r1 ){
+      for (; r1 != r2; ++r1) {
         std::cout << "RVALUE = " << *r1 << '\n';
       }
     }
     {
       auto r1 = values.rbegin();
-      ASSERT_EQ((*r1),7);
+      ASSERT_EQ((*r1), 7);
       ++r1;
-      ASSERT_EQ((*r1),9);
+      ASSERT_EQ((*r1), 9);
       ++r1;
-      ASSERT_EQ((*r1),4);
+      ASSERT_EQ((*r1), 4);
       ++r1;
-      ASSERT_TRUE((r1==values.rend()));
+      ASSERT_TRUE((r1 == values.rend()));
     }
     {
       UniqueArray<IntSubClassNoPod> c{ IntSubClassNoPod{ 5 }, IntSubClassNoPod{ 7 } };
@@ -439,21 +436,21 @@ _testArrayNewInternal()
       ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
       ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
       c = c2.span();
-      ASSERT_EQ(c.constSpan(),c2.constSpan());
+      ASSERT_EQ(c.constSpan(), c2.constSpan());
     }
   }
 }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 TEST(Array, Misc)
 {
-  try{
+  try {
     _testArrayNewInternal();
   }
-  catch(const Exception& ex){
+  catch (const Exception& ex) {
     std::cerr << "Exception ex=" << ex << "\n";
     throw;
   }
@@ -547,12 +544,35 @@ TEST(Array, Misc2)
   }
 }
 
+namespace
+{
+template <typename T>
+void _checkSameInfoArray2(const Array2<T>& a, const Array2<T>& b)
+{
+  ASSERT_EQ(a.allocator(), b.allocator());
+  ASSERT_EQ(a.totalNbElement(), b.totalNbElement());
+  ASSERT_EQ(a.dim1Size(), b.dim1Size());
+  ASSERT_EQ(a.dim2Size(), b.dim2Size());
+}
+
+} // namespace
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 TEST(Array2, Misc)
 {
   using namespace Arccore;
+  PrintableMemoryAllocator printable_allocator2;
+  IMemoryAllocator* allocator2 = &printable_allocator2;
+
+  SharedArray2<Int32> sh_a;
+  sh_a.resize(3, 2);
+  ASSERT_EQ(sh_a.totalNbElement(), 6);
+  ASSERT_EQ(sh_a.dim1Size(), 3);
+  ASSERT_EQ(sh_a.dim2Size(), 2);
+
+  SharedArray2<Int32> sh_empty;
 
   {
     UniqueArray2<Int32> c;
@@ -584,6 +604,53 @@ TEST(Array2, Misc)
     ASSERT_EQ(c[1][0], 3);
     ASSERT_EQ(c[0][1], 0);
     ASSERT_EQ(c[1][1], 0);
+    UniqueArray2<Int32> d;
+    d.resize(4, 5);
+    ASSERT_EQ(d.totalNbElement(), 20);
+    ASSERT_EQ(d.dim1Size(), 4);
+    ASSERT_EQ(d.dim2Size(), 5);
+
+    d = c;
+    ASSERT_EQ(d.totalNbElement(), c.totalNbElement());
+    ASSERT_EQ(d.dim1Size(), c.dim1Size());
+    ASSERT_EQ(d.dim2Size(), c.dim2Size());
+
+    UniqueArray2<Int32> e(allocator2);
+    ASSERT_EQ(e.allocator(), allocator2);
+    e.resize(7, 6);
+    ASSERT_EQ(e.totalNbElement(), 42);
+    ASSERT_EQ(e.dim1Size(), 7);
+    ASSERT_EQ(e.dim2Size(), 6);
+
+    {
+      e = d;
+      ASSERT_EQ(e.allocator(), d.allocator());
+      ASSERT_EQ(d.totalNbElement(), e.totalNbElement());
+      Int32 dim1_size = e.dim1Size();
+      Int32 dim2_size = e.dim2Size();
+      ASSERT_EQ(d.dim1Size(), dim1_size);
+      ASSERT_EQ(d.dim2Size(), dim2_size);
+      e.add(23);
+      ASSERT_EQ(e.dim1Size(), dim1_size + 1);
+      ASSERT_EQ(e.dim2Size(), dim2_size);
+      ASSERT_EQ(e[dim1_size][0], 23);
+    }
+    {
+      UniqueArray2<Int32> f(allocator2);
+      UniqueArray2<Int32> g;
+      g.resize(4, 3);
+      g = f;
+      _checkSameInfoArray2(g, f);
+
+      UniqueArray2<Int32> h(f);
+      _checkSameInfoArray2(h, f);
+
+      UniqueArray2<Int32> h2(sh_a);
+      _checkSameInfoArray2(h2, sh_a);
+
+      g = sh_a;
+      _checkSameInfoArray2(g, sh_a);
+    }
   }
   {
     UniqueArray2<Int32> c;
