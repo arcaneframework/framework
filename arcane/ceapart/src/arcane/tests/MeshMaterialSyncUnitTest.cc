@@ -69,6 +69,7 @@ class MeshMaterialSyncUnitTest
   IMeshMaterialMng* m_material_mng;
   VariableCellByte m_variable_is_own_cell;
   VariableCellInt64 m_cell_unique_ids;
+  MaterialVariableCellInt64 m_material_uids;
 
   void _checkVariableSync1();
   void _doPhase1();
@@ -88,6 +89,7 @@ MeshMaterialSyncUnitTest(const ServiceBuildInfo& sbi)
 , m_material_mng(IMeshMaterialMng::getReference(sbi.mesh()))
 , m_variable_is_own_cell(VariableBuildInfo(sbi.meshHandle(),"CellIsOwn"))
 , m_cell_unique_ids(VariableBuildInfo(sbi.meshHandle(),"CellUniqueId"))
+, m_material_uids(MaterialVariableBuildInfo(m_material_mng,"SyncMaterialsUid"))
 {
 }
 
@@ -263,7 +265,8 @@ _doPhase2()
     Cell cell = *icell;
     m_cell_unique_ids[cell] = cell.uniqueId();
   }
-  for( int i=0; i<5; ++i )
+
+  for( int i=0; i<10; ++i )
     _checkVariableSync2(false);
   _checkVariableSync2(true);
 }
@@ -320,13 +323,12 @@ _checkVariableSync2(bool do_check)
   Arcane::Accelerator::RunQueue* queue = subDomain()->acceleratorMng()->defaultQueue();
 
   // Vérifie que la synchronisation des variables marche bien
-  MaterialVariableCellInt64 material_uids(MaterialVariableBuildInfo(m_material_mng,"SyncMatIndexes"));
 
   ENUMERATE_ENV(ienv, m_material_mng) {
     IMeshEnvironment* env = *ienv;
     EnvCellVectorView envcellsv = env->envView();
     auto cmd = makeCommand(queue);
-    auto out_mat_uids = viewOut(cmd, material_uids);
+    auto out_mat_uids = viewOut(cmd, m_material_uids);
     auto in_is_own_cell = ax::viewIn(cmd, m_variable_is_own_cell);
     auto in_cell_uids = ax::viewIn(cmd, m_cell_unique_ids);
     cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
@@ -337,7 +339,7 @@ _checkVariableSync2(bool do_check)
     };
   }
 
-  material_uids.synchronize();
+  m_material_uids.synchronize();
 
   if (!do_check)
     return;
@@ -348,11 +350,11 @@ _checkVariableSync2(bool do_check)
     ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
       EnvCell mc = *ienvcell;
       Cell global_cell = mc.globalCell();
-      if (material_uids[mc] != global_cell.uniqueId()){
+      if (m_material_uids[mc] != global_cell.uniqueId()){
         ++nb_error;
         if (nb_error<10)
           error() << "VariableSync error mat=" << mc
-                  << " uid_value=" << material_uids[mc]
+                  << " uid_value=" << m_material_uids[mc]
                   << " cell=" << ItemPrinter(mc.globalCell());
       }
     }

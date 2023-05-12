@@ -70,6 +70,10 @@ class AcceleratorSpecificMemoryCopy
   {
     ARCANE_CHECK_POINTER(queue);
 
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, indexes.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, source.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
+
     Int32 nb_index = indexes.size();
     const Int64 sub_size = m_extent.v;
 
@@ -89,6 +93,14 @@ class AcceleratorSpecificMemoryCopy
   {
     ARCANE_CHECK_POINTER(queue);
 
+    if (arcaneIsCheck()) {
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, source.data());
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
+      // Idéalement il faudrait tester les valeurs des éléments de multi_views
+      // mais si on fait cela on peut potentiellement faire des transferts
+      // entre l'accélérateur et le CPU.
+    }
     const Int32 nb_index = indexes.size() / 2;
     // On devrait pouvoir utiliser 'm_extent.v' mais avec CUDA 12.1 cela génère
     // une erreur lors de l'exécution: error 98 : invalid device function
@@ -117,6 +129,10 @@ class AcceleratorSpecificMemoryCopy
   {
     ARCANE_CHECK_POINTER(queue);
 
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, indexes.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, source.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
+
     Int32 nb_index = indexes.size();
     const Int64 sub_size = m_extent.v;
 
@@ -135,6 +151,16 @@ class AcceleratorSpecificMemoryCopy
                Span<DataType> destination)
   {
     ARCANE_CHECK_POINTER(queue);
+
+    if (arcaneIsCheck()){
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue,indexes.data());
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue,destination.data());
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue,multi_views.data());
+      // Idéalement il faudrait tester les valeurs des éléments de multi_views
+      // mais si on fait cela on peut potentiellement faire des transferts
+      // entre l'accélérateur et le CPU.
+    }
+
     const Int32 nb_index = indexes.size() / 2;
     // On devrait pouvoir utiliser 'm_extent.v' mais avec CUDA 12.1 cela génère
     // une erreur lors de l'exécution: error 98 : invalid device function

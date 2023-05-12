@@ -145,10 +145,32 @@ operator<<(std::ostream& o, eExecutionPolicy exec_policy)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_ACCELERATOR_CORE_EXPORT
 std::ostream& operator<<(std::ostream& o, const DeviceId& device_id)
 {
   o << device_id.asInt32();
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::ostream&
+operator<<(std::ostream& o, ePointerMemoryType mem_type)
+{
+  switch (mem_type) {
+  case ePointerMemoryType::Unregistered:
+    o << "Unregistered";
+    break;
+  case ePointerMemoryType::Host:
+    o << "Host";
+    break;
+  case ePointerMemoryType::Device:
+    o << "Device";
+    break;
+  case ePointerMemoryType::Managed:
+    o << "Managed";
+    break;
+  }
   return o;
 }
 
@@ -168,8 +190,8 @@ getAcceleratorRunnerRuntime()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ePointerAccessibility impl::RuntimeStaticInfo::
-getPointerAccessibility(eExecutionPolicy policy, const void* ptr)
+ePointerAccessibility impl::RuntimeStaticInfo::
+getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribute* ptr_attr)
 {
   // Regarde si le pointeur est accessible pour la politique d'exécution donnée.
   // Le seul cas où on peut le savoir exactement est si on a un runtime
@@ -181,6 +203,9 @@ getPointerAccessibility(eExecutionPolicy policy, const void* ptr)
     return ePointerAccessibility::Unknown;
   PointerAttribute attr;
   r->getPointerAttribute(attr, ptr);
+  if (ptr_attr) {
+    *ptr_attr = attr;
+  }
   if (attr.isValid()) {
     if (isAcceleratorPolicy(policy))
       return attr.devicePointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
@@ -193,10 +218,34 @@ getPointerAccessibility(eExecutionPolicy policy, const void* ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" void impl::
-arcaneThrowPointerNotAcccessible(const void* ptr, const TraceInfo& ti)
+void impl::RuntimeStaticInfo::
+checkPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
+                          const char* name, const TraceInfo& ti)
 {
-  throw FatalErrorException(ti, String::format("Pointer '{0}' is not accessible on this execution policy", ptr));
+  // Le pointeur nul est toujours accessible.
+  if (!ptr)
+    return;
+  PointerAttribute ptr_attr;
+  ePointerAccessibility a = getPointerAccessibility(policy, ptr, &ptr_attr);
+  if (a == ePointerAccessibility::No) {
+    auto s = String::format("Pointer 'addr={0}' ({1}) is not accessible "
+                            "for this execution policy ({2}).\n  PointerInfo: {3}",
+                            ptr, name, policy, ptr_attr);
+
+    throw FatalErrorException(ti, s);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::ostream&
+operator<<(std::ostream& o,const PointerAttribute& a)
+{
+  o << "(mem_type=" << a.memoryType() << ", ptr=" << a.originalPointer()
+    << ", host_ptr=" << a.hostPointer()
+    << ", device_ptr=" << a.devicePointer() << " device=" << a.device() << ")";
+  return o; 
 }
 
 /*---------------------------------------------------------------------------*/

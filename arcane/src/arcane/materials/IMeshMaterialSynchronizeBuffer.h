@@ -82,7 +82,7 @@ namespace impl
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
 makeMultiBufferMeshMaterialSynchronizeBufferRef();
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
-makeOneBufferMeshMaterialSynchronizeBufferRef();
+makeOneBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource mem);
 }
 
 /*---------------------------------------------------------------------------*/

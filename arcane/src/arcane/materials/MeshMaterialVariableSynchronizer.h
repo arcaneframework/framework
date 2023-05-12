@@ -63,8 +63,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
 
   IMeshMaterialMng* m_material_mng;
   IVariableSynchronizer* m_variable_synchronizer;
-  UniqueArray< SharedArray<MatVarIndex> > m_shared_items;
-  UniqueArray< SharedArray<MatVarIndex> > m_ghost_items;
+  UniqueArray< UniqueArray<MatVarIndex> > m_shared_items;
+  UniqueArray< UniqueArray<MatVarIndex> > m_ghost_items;
   Int64 m_timestamp;
   MatVarSpace m_var_space;
   Ref<IMeshMaterialSynchronizeBuffer> m_commun_buffer;

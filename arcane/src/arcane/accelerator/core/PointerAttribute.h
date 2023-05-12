@@ -49,6 +49,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT PointerAttribute
   const void* hostPointer() const { return m_host_pointer; }
   const void* devicePointer() const { return m_device_pointer; }
   int device() const { return m_device; }
+  friend std::ostream& operator<<(std::ostream& o, const PointerAttribute& a);
 
  private:
 

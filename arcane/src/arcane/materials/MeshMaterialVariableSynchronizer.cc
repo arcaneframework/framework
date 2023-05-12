@@ -1,21 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizer.cc                         (C) 2000-2022 */
+/* MeshMaterialVariableSynchronizer.cc                         (C) 2000-2023 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IMesh.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/utils/MemoryRessource.h"
+#include "arcane/utils/PlatformUtils.h"
+
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/materials/MeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/IMeshMaterialMng.h"
@@ -41,7 +44,7 @@ MeshMaterialVariableSynchronizer(IMeshMaterialMng* material_mng,
 , m_variable_synchronizer(var_syncer)
 , m_timestamp(-1)
 , m_var_space(space)
-, m_commun_buffer(impl::makeOneBufferMeshMaterialSynchronizeBufferRef())
+, m_commun_buffer(impl::makeOneBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource::Host))
 {
 }
 
@@ -154,6 +157,16 @@ recompute()
   m_shared_items.resize(nb_rank);
   m_ghost_items.resize(nb_rank);
 
+  {
+    // Ces tableaux doivent être accessibles sur l'accélérateur
+    // TODO: à terme, n'utiliser un seul tableau pour les envois
+    // et un seul pour les réceptions.
+    IMemoryAllocator* a = platform::getDefaultDataAllocator();
+    for( Int32 i=0; i<nb_rank; ++i ){
+      m_shared_items[i] = UniqueArray<MatVarIndex>(a);
+      m_ghost_items[i] = UniqueArray<MatVarIndex>(a);
+    }
+  }
   for( Integer i=0; i<nb_rank; ++i ){
 
     {

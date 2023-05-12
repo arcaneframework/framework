@@ -73,7 +73,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
  public:
 
   MeshMaterialVariable(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
-  ~MeshMaterialVariable();
+  ~MeshMaterialVariable() override;
 
  public:
 
@@ -137,13 +137,13 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
  protected:
 
-  MeshMaterialVariablePrivate* m_p;
+  MeshMaterialVariablePrivate* m_p = nullptr;
   UniqueArray<Span<std::byte>> m_views_as_bytes;
 
  protected:
 
-  void _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes) const;
-  void _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes);
+  void _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes,RunQueue* queue) const;
+  void _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes,RunQueue* queue);
 
  private:
 
