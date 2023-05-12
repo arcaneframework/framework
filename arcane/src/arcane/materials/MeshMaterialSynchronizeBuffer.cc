@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSynchronizeBuffer.cc                            (C) 2000-2022 */
+/* MeshMaterialSynchronizeBuffer.cc                            (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des buffers pour la synchronisation de variables matériaux.       */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,8 @@
 #include "arcane/materials/IMeshMaterialSynchronizeBuffer.h"
 
 #include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -106,11 +108,11 @@ class OneBufferMeshMaterialSynchronizeBuffer
       m_receive_index = 0;
     }
 
-    Span<Byte> sendBuffer(Span<Byte> full_buffer)
+    Span<Byte> sendBuffer(Span<Byte> full_buffer) const
     {
       return full_buffer.subspan(m_send_index,m_send_size);
     }
-    Span<Byte> receiveBuffer(Span<Byte> full_buffer)
+    Span<Byte> receiveBuffer(Span<Byte> full_buffer) const
     {
       return full_buffer.subspan(m_receive_index,m_receive_size);
     }
@@ -123,6 +125,10 @@ class OneBufferMeshMaterialSynchronizeBuffer
 
  public:
 
+  explicit OneBufferMeshMaterialSynchronizeBuffer(IMemoryAllocator* allocator)
+  : m_buffer(allocator){}
+
+ public:
   Int32 nbRank() const override { return m_nb_rank; }
   void setNbRank(Int32 nb_rank) override
   {
@@ -187,9 +193,10 @@ makeMultiBufferMeshMaterialSynchronizeBufferRef()
 }
 
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
-makeOneBufferMeshMaterialSynchronizeBufferRef()
+makeOneBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource memory_ressource)
 {
-  auto* v = new OneBufferMeshMaterialSynchronizeBuffer();
+  auto* a = platform::getDataMemoryRessourceMng()->getAllocator(memory_ressource);
+  auto* v = new OneBufferMeshMaterialSynchronizeBuffer(a);
   return makeRef<IMeshMaterialSynchronizeBuffer>(v);
 }
 }

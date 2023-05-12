@@ -14,13 +14,13 @@
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/MemoryRessource.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
@@ -56,6 +56,7 @@ class MeshMaterialVariableSynchronizerList::Impl
   UniqueArray<MeshMaterialVariable*> m_env_only_vars;
   Int64 m_total_size = 0;
   bool m_use_generic_version = true;
+  eMemoryRessource m_buffer_memory_ressource = eMemoryRessource::Host;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -132,8 +133,18 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
     buf_list = mmvs->commonBuffer();
   }
   else if (sync_version==7){
-    // Version 7. Utilise un buffer unique mais réalloué à chaque fois.
-    buf_list =  impl::makeOneBufferMeshMaterialSynchronizeBufferRef();
+    // Version 7. Utilise un buffer unique, mais réalloué à chaque fois.
+    // Cette version est la seule qui supporte le MPI 'GPU Aware'.
+    eMemoryRessource mem = eMemoryRessource::UnifiedMemory;
+    IParallelMng* pm = mmvs->variableSynchronizer()->parallelMng();
+    if (pm->_internalApi()->isAcceleratorAware()) {
+      // N'est supporté que pour la nouvelle version des synchronisations
+      if (m_p->m_use_generic_version) {
+        mem = eMemoryRessource::Device;
+        pm->traceMng()->info(4) << "MatSync: Using device memory for buffer";
+      }
+    }
+    buf_list =  impl::makeOneBufferMeshMaterialSynchronizeBufferRef(mem);
   }
   else{
     // Version 6. Version historique avec plusieurs buffers recréés à chaque fois.
@@ -174,7 +185,7 @@ _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
   if (!pm->isParallel())
     return;
   const bool use_new_version = m_p->m_use_generic_version;
-  RunQueue* runqueue = nullptr;
+  RunQueue* queue = pm->_internalApi()->defaultQueue();
 
   mmvs->checkRecompute();
 
@@ -226,8 +237,8 @@ _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
         Integer my_data_size = data_sizes[z];
         auto sub_view = values.subView(offset,total_shared * my_data_size);
         if (use_new_version){
-          std::byte* ptr = reinterpret_cast<std::byte*>(sub_view.data());
-          vars[z]->_internalApi()->copyToBuffer(shared_matcells,{ptr,sub_view.size()},runqueue);
+          auto* ptr = reinterpret_cast<std::byte*>(sub_view.data());
+          vars[z]->_internalApi()->copyToBuffer(shared_matcells,{ptr,sub_view.size()},queue);
         }
         else
           vars[z]->copyToBuffer(shared_matcells,sub_view);
@@ -249,8 +260,8 @@ _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
         Integer my_data_size = data_sizes[z];
         auto sub_view = values.subView(offset,total_ghost * my_data_size);
         if (use_new_version){
-          const std::byte* ptr = reinterpret_cast<const std::byte*>(sub_view.data());
-          vars[z]->_internalApi()->copyFromBuffer(ghost_matcells,{ptr,sub_view.size()},runqueue);
+          auto* ptr = reinterpret_cast<const std::byte*>(sub_view.data());
+          vars[z]->_internalApi()->copyFromBuffer(ghost_matcells,{ptr,sub_view.size()},queue);
         }
         else
           vars[z]->copyFromBuffer(ghost_matcells,sub_view);

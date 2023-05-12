@@ -95,9 +95,9 @@ dataTypeSize() const
 
 void MeshMaterialVariablePrivate::
 copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
-             Span<std::byte> bytes, [[maybe_unused]] RunQueue* queue) const
+             Span<std::byte> bytes, RunQueue* queue) const
 {
-  m_variable->_copyToBuffer(matvar_indexes,bytes);
+  m_variable->_copyToBuffer(matvar_indexes,bytes,queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -105,9 +105,9 @@ copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
 
 void MeshMaterialVariablePrivate::
 copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
-               Span<const std::byte> bytes, [[maybe_unused]] RunQueue* queue)
+               Span<const std::byte> bytes, RunQueue* queue)
 {
-  m_variable->_copyFromBuffer(matvar_indexes,bytes);
+  m_variable->_copyFromBuffer(matvar_indexes,bytes,queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -419,28 +419,30 @@ _toInt32Indexes(SmallSpan<const MatVarIndex> indexes)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariable::
-_copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes) const
+_copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+              Span<std::byte> bytes, RunQueue* queue) const
 {
   const Integer one_data_size = dataTypeSize();
   SmallSpan<const Int32> indexes(_toInt32Indexes(matvar_indexes));
   const Int32 nb_item = matvar_indexes.size();
   MutableMemoryView destination_buffer(makeMutableMemoryView(bytes.data(),one_data_size,nb_item));
   MultiConstMemoryView source_view(m_views_as_bytes.view(),one_data_size);
-  source_view.copyToIndexes(destination_buffer,indexes);
+  source_view.copyToIndexes(destination_buffer,indexes,queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariable::
-_copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes)
+_copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
+                Span<const std::byte> bytes, RunQueue* queue)
 {
   const Int32 one_data_size = dataTypeSize();
   SmallSpan<const Int32> indexes(_toInt32Indexes(matvar_indexes));
   const Int32 nb_item = matvar_indexes.size();
   MultiMutableMemoryView destination_view(m_views_as_bytes.view(),one_data_size);
   ConstMemoryView source_buffer(makeConstMemoryView(bytes.data(),one_data_size,nb_item));
-  destination_view.copyFromIndexes(source_buffer,indexes);
+  destination_view.copyFromIndexes(source_buffer,indexes,queue);
 }
 
 /*---------------------------------------------------------------------------*/

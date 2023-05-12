@@ -142,8 +142,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
  protected:
 
-  void _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes) const;
-  void _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes);
+  void _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes,RunQueue* queue) const;
+  void _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes,RunQueue* queue);
 
  private:
 
