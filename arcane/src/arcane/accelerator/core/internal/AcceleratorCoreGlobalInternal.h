@@ -91,9 +91,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RuntimeStaticInfo
 {
  public:
 
-  static ePointerAccessibility getPointerAccessibility(eExecutionPolicy policy, const void* ptr);
-  static ePointerAccessibility getPointerAccessibility(RunQueue* queue, const void* ptr);
-  static ePointerAccessibility getPointerAccessibility(Runner* runner, const void* ptr);
+  static ePointerAccessibility
+  getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribute* ptr_attr);
+
+  static void
+  checkPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
+                                  const char* name, const TraceInfo& ti);
 };
 
 /*---------------------------------------------------------------------------*/

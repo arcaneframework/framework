@@ -41,7 +41,7 @@ RunQueue(Runner& runner)
 
 RunQueue::
 RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
-: m_p(impl::RunQueueImpl::create(&runner,bi))
+: m_p(impl::RunQueueImpl::create(&runner, bi))
 {
 }
 
@@ -161,27 +161,27 @@ recordEvent(Ref<RunQueueEvent>& event)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ePointerAccessibility impl::RuntimeStaticInfo::
-getPointerAccessibility(RunQueue* queue, const void* ptr)
+extern "C++" ePointerAccessibility
+getPointerAccessibility(RunQueue* queue, const void* ptr, PointerAttribute* ptr_attr)
 {
   if (!queue)
     return ePointerAccessibility::Unknown;
-  return getPointerAccessibility(queue->executionPolicy(),ptr);
+  return impl::RuntimeStaticInfo::getPointerAccessibility(queue->executionPolicy(), ptr, ptr_attr);
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ePointerAccessibility
-getPointerAccessibility(RunQueue* queue, const void* ptr)
+extern "C++" void impl::
+arcaneCheckPointerIsAcccessible(RunQueue* queue, const void* ptr,
+                                const char* name, const TraceInfo& ti)
 {
-  return impl::RuntimeStaticInfo::getPointerAccessibility(queue,ptr);
+  if (!queue)
+    return;
+  return impl::RuntimeStaticInfo::checkPointerIsAcccessible(queue->executionPolicy(), ptr, name, ti);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

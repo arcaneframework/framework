@@ -134,6 +134,11 @@ enum class ePointerMemoryType
   Managed = 3
 };
 
+//! Affiche le nom du type de mémoire
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+std::ostream&
+operator<<(std::ostream& o, ePointerMemoryType mem_type);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -170,32 +175,27 @@ isAcceleratorPolicy(eExecutionPolicy exec_policy)
  * \brief Accessibilité de l'adresse \a ptr pour une exécution sur la file \a queue.
  *
  * Si \a queue est nul, retourne ePointerAccessibility::Unknown.
+ * Si \a ptr_attr est non nul, il sera remplit avec les informations du pointeur
+ * comme si on avait appelé Runner::fillPointerAttribute().
  */
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT ePointerAccessibility
-getPointerAccessibility(RunQueue* queue, const void* ptr);
+getPointerAccessibility(RunQueue* queue, const void* ptr, PointerAttribute* ptr_attr = nullptr);
 
-//! Accessibilité de l'adresse \a ptr pour une exécution sur \a queue.
-inline ePointerAccessibility
-getPointerAccessibility(RunQueue& queue, const void* ptr)
-{
-  return getPointerAccessibility(&queue, ptr);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Accessibilité de l'adresse \a ptr pour une exécution sur \a runner.
  *
  * Si \a runner est nul, retourne ePointerAccessibility::Unknown.
+ * Si \a ptr_attr est non nul, il sera remplit avec les informations du pointeur
+ * comme si on avait appelé Runner::fillPointerAttribute().
  */
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT ePointerAccessibility
-getPointerAccessibility(Runner* runner, const void* ptr);
+getPointerAccessibility(Runner* runner, const void* ptr, PointerAttribute* ptr_attr = nullptr);
 
-//! Accessibilité de l'adresse \a ptr pour une exécution sur \a runner.
-inline ePointerAccessibility
-getPointerAccessibility(Runner& runner, const void* ptr)
+//! Accessibilité de l'adresse \a ptr pour une exécution sur \a queue_or_runner.
+template <typename T> inline ePointerAccessibility
+getPointerAccessibility(T& queue_or_runner, const void* ptr, PointerAttribute* ptr_attr = nullptr)
 {
-  return getPointerAccessibility(&runner, ptr);
+  return getPointerAccessibility(&queue_or_runner, ptr, ptr_attr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -210,14 +210,29 @@ namespace Arcane::Accelerator::impl
 {
 using Arcane::Accelerator::isAcceleratorPolicy;
 
+/*!
+ * \brief Vérifie si \a ptr est accessible pour une exécution sur \a queue.
+ *
+ * Lève une exception FatalErrorException si ce n'est pas le cas.
+ */
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
-arcaneThrowPointerNotAcccessible [[noreturn]] (const void* ptr, const TraceInfo& ti);
+arcaneCheckPointerIsAcccessible(RunQueue* queue, const void* ptr,
+                                const char* name, const TraceInfo& ti);
 
-inline void
-arcaneCheckPointerIsAcccessible(ePointerAccessibility a, const void* ptr, const TraceInfo& ti)
+/*!
+ * \brief Vérifie si \a ptr est accessible pour une exécution sur \a runner.
+ *
+ * Lève une exception FatalErrorException si ce n'est pas le cas.
+ */
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
+arcaneCheckPointerIsAcccessible(Runner* runner, const void* ptr,
+                                const char* name, const TraceInfo& ti);
+
+template <typename T> inline void
+arcaneCheckPointerIsAcccessible(T& queue_or_runner, const void* ptr,
+                                const char* name, const TraceInfo& ti)
 {
-  if (a == ePointerAccessibility::No)
-    arcaneThrowPointerNotAcccessible(ptr, ti);
+  arcaneCheckPointerIsAcccessible(&queue_or_runner, ptr, name, ti);
 }
 
 } // namespace Arcane::Accelerator::impl
@@ -230,7 +245,7 @@ arcaneCheckPointerIsAcccessible(ePointerAccessibility a, const void* ptr, const 
  * Lance une exception si ce n'est pas le cas.
  */
 #define ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner, ptr) \
-  ::Arcane::Accelerator::impl::arcaneCheckPointerIsAcccessible(::Arcane::Accelerator::getPointerAccessibility((queue_or_runner), (ptr)), (ptr), A_FUNCINFO)
+  ::Arcane::Accelerator::impl::arcaneCheckPointerIsAcccessible((queue_or_runner), (ptr), #ptr, A_FUNCINFO)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

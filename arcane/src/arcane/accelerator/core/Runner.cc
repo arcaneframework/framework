@@ -64,7 +64,7 @@ namespace
   {
     auto* x = _getRuntimeNoCheck(p);
     if (!x)
-      ARCANE_FATAL("No runtime is available for execution policy '{0}'",p);
+      ARCANE_FATAL("No runtime is available for execution policy '{0}'", p);
     return x;
   }
 
@@ -522,10 +522,10 @@ deviceInfoList(eExecutionPolicy policy)
 /*---------------------------------------------------------------------------*/
 
 void Runner::
-fillPointerAttribute(PointerAttribute& attr,const void* ptr)
+fillPointerAttribute(PointerAttribute& attr, const void* ptr)
 {
   _checkIsInit();
-  m_p->runtime()->getPointerAttribute(attr,ptr);
+  m_p->runtime()->getPointerAttribute(attr, ptr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -547,21 +547,21 @@ _stopAllProfiling()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ePointerAccessibility impl::RuntimeStaticInfo::
-getPointerAccessibility(Runner* runner, const void* ptr)
+extern "C++" ePointerAccessibility
+getPointerAccessibility(Runner* runner, const void* ptr, PointerAttribute* ptr_attr)
 {
   if (!runner)
     return ePointerAccessibility::Unknown;
-  return getPointerAccessibility(runner->executionPolicy(),ptr);
+  return impl::RuntimeStaticInfo::getPointerAccessibility(runner->executionPolicy(), ptr, ptr_attr);
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ePointerAccessibility
-getPointerAccessibility(Runner* runner, const void* ptr)
+extern "C++" void impl::
+arcaneCheckPointerIsAcccessible(Runner* runner, const void* ptr,
+                                const char* name, const TraceInfo& ti)
 {
-  return impl::RuntimeStaticInfo::getPointerAccessibility(runner,ptr);
+  if (!runner)
+    return;
+  return impl::RuntimeStaticInfo::checkPointerIsAcccessible(runner->executionPolicy(), ptr, name, ti);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -576,8 +576,7 @@ _fillPointerAttribute(PointerAttribute& attribute,
                       int device, const void* pointer, const void* device_pointer,
                       const void* host_pointer)
 {
-  PointerAttribute a(mem_type, device, pointer, device_pointer, host_pointer);
-  attribute = a;
+  attribute = PointerAttribute(mem_type, device, pointer, device_pointer, host_pointer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -592,7 +591,7 @@ _fillPointerAttribute(PointerAttribute& attribute, const void* pointer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
