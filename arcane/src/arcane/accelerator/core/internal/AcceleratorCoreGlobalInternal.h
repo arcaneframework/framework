@@ -59,6 +59,20 @@ extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void setHIPRunQueueRuntime(IRunnerRu
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Récupère l'implémentation accélérateur courante (peut être nulle).
+ *
+ * Le pointeur retourné est nul si aucun runtime accélérateur n'est positionné.
+ * Si isUsingCUDARuntime() est vrai, retourne le runtime associé à CUDA.
+ * Si isUsingHIPRuntime() est vrai retourne le runtime associé à HIP.
+ */
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
+IRunnerRuntime*
+getAcceleratorRunnerRuntime();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Récupère l'implémentation Séquentielle de RunQueue
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 IRunnerRuntime*
@@ -68,6 +82,19 @@ getSequentialRunQueueRuntime();
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 IRunnerRuntime*
 getThreadRunQueueRuntime();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Classe statique fournissant des fonctions internes à Arcane.
+class ARCANE_ACCELERATOR_CORE_EXPORT RuntimeStaticInfo
+{
+ public:
+
+  static ePointerAccessibility getPointerAccessibility(eExecutionPolicy policy, const void* ptr);
+  static ePointerAccessibility getPointerAccessibility(RunQueue* queue, const void* ptr);
+  static ePointerAccessibility getPointerAccessibility(Runner* runner, const void* ptr);
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -45,6 +45,8 @@ using namespace Arccore;
 
 namespace impl
 {
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
+internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 
 template<typename DataType>
 class ReduceIdentity;

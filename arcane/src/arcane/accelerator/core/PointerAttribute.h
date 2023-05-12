@@ -29,7 +29,8 @@ namespace Arcane::Accelerator
  * \brief Informations sur une adresse mémoire.
  *
  * Les informations de cette instance sont équivalentes à celles obtenues
- * par l'appel à cudaPointerGetAttributes()
+ * par l'appel à cudaPointerGetAttributes().
+ * Les informations ne sont valides que si isValid() est vrai.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT PointerAttribute
 {
@@ -37,12 +38,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT PointerAttribute
   friend impl::IRunnerRuntime;
 
  public:
- public:
 
   PointerAttribute() = default;
 
  public:
 
+  bool isValid() const { return m_is_valid; }
   ePointerMemoryType memoryType() const { return m_memory_type; }
   const void* originalPointer() const { return m_pointer; }
   const void* hostPointer() const { return m_host_pointer; }
@@ -51,10 +52,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT PointerAttribute
 
  private:
 
+  //! Constructeur indiquant qu'on n'a pas d'informations sur la zone mémoire
   PointerAttribute(const void* pointer)
-  : m_memory_type(ePointerMemoryType::Host)
-  , m_pointer(pointer)
-  , m_host_pointer(pointer)
+  : m_pointer(pointer)
+  , m_is_valid(false)
   {
   }
 
@@ -65,6 +66,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT PointerAttribute
   , m_pointer(pointer)
   , m_device_pointer(device_pointer)
   , m_host_pointer(host_pointer)
+  , m_is_valid(true)
   {}
 
  private:
@@ -74,6 +76,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT PointerAttribute
   const void* m_pointer = nullptr;
   const void* m_device_pointer = nullptr;
   const void* m_host_pointer = nullptr;
+  bool m_is_valid = false;
 };
 
 /*---------------------------------------------------------------------------*/

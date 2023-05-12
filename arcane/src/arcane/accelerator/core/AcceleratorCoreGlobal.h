@@ -53,17 +53,18 @@ enum class eMemoryAdvice;
 
 namespace impl
 {
-class IRunnerRuntime;
-// typedef pour compatibilité avec anciennes versions (octobre 2022)
-using IRunQueueRuntime = IRunnerRuntime;
-class IRunQueueStream;
-class RunCommandImpl;
-class IReduceMemoryImpl;
-class ReduceMemoryImpl;
-class RunQueueImpl;
-class IRunQueueEventImpl;
-class RunCommandLaunchInfo;
-}
+  class RuntimeStaticInfo;
+  class IRunnerRuntime;
+  // typedef pour compatibilité avec anciennes versions (octobre 2022)
+  using IRunQueueRuntime = IRunnerRuntime;
+  class IRunQueueStream;
+  class RunCommandImpl;
+  class IReduceMemoryImpl;
+  class ReduceMemoryImpl;
+  class RunQueueImpl;
+  class IRunQueueEventImpl;
+  class RunCommandLaunchInfo;
+} // namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -86,7 +87,8 @@ enum class eExecutionPolicy
 
 //! Affiche le nom de la politique d'exécution
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-std::ostream& operator<<(std::ostream& o,eExecutionPolicy exec_policy);
+std::ostream&
+operator<<(std::ostream& o, eExecutionPolicy exec_policy);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -117,6 +119,8 @@ enum class eRunQueuePriority : int
   Low = 100
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Type de mémoire pour un pointeur
 enum class ePointerMemoryType
@@ -132,20 +136,23 @@ enum class ePointerMemoryType
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator::impl
+/*!
+ * \brief Informations d'accessibilité d'une adresse mémoire.
+ *
+ * Indique si une adresse mémoire est accessible sur un accélérateur ou
+ * sur le CPU.
+ *
+ * \sa getPointerAccessibility()
+ */
+enum class ePointerAccessibility
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
-internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+  //! Accessibilité inconnue
+  Unknown = 0,
+  //! Non accessible
+  No = 1,
+  //! Accessible
+  Yes = 2
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -154,15 +161,43 @@ internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 inline bool
 isAcceleratorPolicy(eExecutionPolicy exec_policy)
 {
-  return exec_policy==eExecutionPolicy::CUDA || exec_policy==eExecutionPolicy::HIP;
+  return exec_policy == eExecutionPolicy::CUDA || exec_policy == eExecutionPolicy::HIP;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Accessibilité de l'adresse \a ptr pour une exécution sur la file \a queue.
+ *
+ * Si \a queue est nul, retourne ePointerAccessibility::Unknown.
+ */
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT ePointerAccessibility
+getPointerAccessibility(RunQueue* queue, const void* ptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Accessibilité de l'adresse \a ptr pour une exécution sur \a runner.
+ *
+ * Si \a runner est nul, retourne ePointerAccessibility::Unknown.
+ */
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT ePointerAccessibility
+getPointerAccessibility(Runner* runner, const void* ptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
+using Arcane::Accelerator::isAcceleratorPolicy;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator::impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif  
+#endif

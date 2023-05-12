@@ -547,6 +547,26 @@ _stopAllProfiling()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ePointerAccessibility impl::RuntimeStaticInfo::
+getPointerAccessibility(Runner* runner, const void* ptr)
+{
+  if (!runner)
+    return ePointerAccessibility::Unknown;
+  return getPointerAccessibility(runner->executionPolicy(),ptr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ePointerAccessibility
+getPointerAccessibility(Runner* runner, const void* ptr)
+{
+  return impl::RuntimeStaticInfo::getPointerAccessibility(runner,ptr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

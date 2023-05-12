@@ -12,8 +12,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 
 #include "arcane/accelerator/core/DeviceInfoList.h"
+#include "arcane/accelerator/core/PointerAttribute.h"
 
 #include <iostream>
 
@@ -146,6 +148,44 @@ std::ostream& operator<<(std::ostream& o, const DeviceId& device_id)
 {
   o << device_id.asInt32();
   return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" impl::IRunnerRuntime* impl::
+getAcceleratorRunnerRuntime()
+{
+  if (isUsingCUDARuntime())
+    return getCUDARunQueueRuntime();
+  if (isUsingHIPRuntime())
+    return getHIPRunQueueRuntime();
+  return nullptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ePointerAccessibility impl::RuntimeStaticInfo::
+getPointerAccessibility(eExecutionPolicy policy, const void* ptr)
+{
+  // Regarde si le pointeur est accessible pour la politique d'exécution donnée.
+  // Le seul cas où on peut le savoir exactement est si on a un runtime
+  // accélérateur et que la valeur retournée par getPointeAttribute() est valide.
+  if (policy == eExecutionPolicy::None)
+    return ePointerAccessibility::Unknown;
+  IRunnerRuntime* r = getAcceleratorRunnerRuntime();
+  if (!r)
+    return ePointerAccessibility::Unknown;
+  PointerAttribute attr;
+  r->getPointerAttribute(attr, ptr);
+  if (attr.isValid()) {
+    if (isAcceleratorPolicy(policy))
+      return attr.devicePointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
+    else
+      return attr.hostPointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
+  }
+  return ePointerAccessibility::Unknown;
 }
 
 /*---------------------------------------------------------------------------*/
