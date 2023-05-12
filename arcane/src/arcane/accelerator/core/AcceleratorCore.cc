@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 
@@ -186,6 +188,15 @@ getPointerAccessibility(eExecutionPolicy policy, const void* ptr)
       return attr.hostPointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
   }
   return ePointerAccessibility::Unknown;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void impl::
+arcaneThrowPointerNotAcccessible(const void* ptr, const TraceInfo& ti)
+{
+  throw FatalErrorException(ti, String::format("Pointer '{0}' is not accessible on this execution policy", ptr));
 }
 
 /*---------------------------------------------------------------------------*/
