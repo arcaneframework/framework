@@ -31,6 +31,7 @@
 #include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
+#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

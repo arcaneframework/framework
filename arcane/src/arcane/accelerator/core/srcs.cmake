@@ -29,4 +29,5 @@ set( ARCANE_SOURCES
   RunQueueImpl.cc
   RunQueueRuntime.cc
   internal/IRunnerRuntime.h
+  internal/AcceleratorCoreGlobalInternal.h
 )

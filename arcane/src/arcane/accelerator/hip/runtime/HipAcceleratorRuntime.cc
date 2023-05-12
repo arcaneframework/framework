@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HipAcceleratorRuntime.cc                                    (C) 2000-2022 */
+/* HipAcceleratorRuntime.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Runtime pour 'HIP'.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
+#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/RunCommandImpl.h"

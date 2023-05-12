@@ -25,6 +25,7 @@
 #include "arcane/accelerator/core/IDeviceInfoList.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
+#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 
 #include <stack>
 #include <map>

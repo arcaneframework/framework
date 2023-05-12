@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorCore.cc                                          (C) 2000-2022 */
+/* AcceleratorCore.cc                                          (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 
 #include "arcane/accelerator/core/DeviceInfoList.h"
 

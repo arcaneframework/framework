@@ -141,6 +141,9 @@ enum class ePointerMemoryType
 namespace Arcane::Accelerator::impl
 {
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
 internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 
@@ -153,55 +156,6 @@ isAcceleratorPolicy(eExecutionPolicy exec_policy)
 {
   return exec_policy==eExecutionPolicy::CUDA || exec_policy==eExecutionPolicy::HIP;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Indique si on utilise le runtime CUDA
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-bool isUsingCUDARuntime();
-
-//! Positionne l'utilisation du runtime CUDA
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setUsingCUDARuntime(bool v);
-
-//! Récupère l'implémentation CUDA de RunQueue (peut être nulle)
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime* getCUDARunQueueRuntime();
-
-//! Positionne l'implémentation CUDA de RunQueue.
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setCUDARunQueueRuntime(IRunnerRuntime* v);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Indique si on utilise le runtime HIP
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-bool isUsingHIPRuntime();
-
-//! Positionne l'utilisation du runtime HIP
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setUsingHIPRuntime(bool v);
-
-//! Récupère l'implémentation HIP de RunQueue (peut être nulle)
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime* getHIPRunQueueRuntime();
-
-//! Positionne l'implémentation HIP de RunQueue.
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setHIPRunQueueRuntime(IRunnerRuntime* v);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Récupère l'implémentation Séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime* getSequentialRunQueueRuntime();
-
-//! Récupère l'implémentation Thread de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime* getThreadRunQueueRuntime();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
