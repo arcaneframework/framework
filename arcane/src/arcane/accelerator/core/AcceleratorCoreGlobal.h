@@ -48,21 +48,23 @@ class MemoryPrefetchArgs;
 class DeviceId;
 class DeviceInfo;
 class IDeviceInfoList;
+class PointerAttribute;
 enum class eMemoryAdvice;
 
 namespace impl
 {
-class IRunnerRuntime;
-// typedef pour compatibilité avec anciennes versions (octobre 2022)
-using IRunQueueRuntime = IRunnerRuntime;
-class IRunQueueStream;
-class RunCommandImpl;
-class IReduceMemoryImpl;
-class ReduceMemoryImpl;
-class RunQueueImpl;
-class IRunQueueEventImpl;
-class RunCommandLaunchInfo;
-}
+  class RuntimeStaticInfo;
+  class IRunnerRuntime;
+  // typedef pour compatibilité avec anciennes versions (octobre 2022)
+  using IRunQueueRuntime = IRunnerRuntime;
+  class IRunQueueStream;
+  class RunCommandImpl;
+  class IReduceMemoryImpl;
+  class ReduceMemoryImpl;
+  class RunQueueImpl;
+  class IRunQueueEventImpl;
+  class RunCommandLaunchInfo;
+} // namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -85,7 +87,8 @@ enum class eExecutionPolicy
 
 //! Affiche le nom de la politique d'exécution
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-std::ostream& operator<<(std::ostream& o,eExecutionPolicy exec_policy);
+std::ostream&
+operator<<(std::ostream& o, eExecutionPolicy exec_policy);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -119,16 +122,37 @@ enum class eRunQueuePriority : int
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator::impl
+//! Type de mémoire pour un pointeur
+enum class ePointerMemoryType
 {
+  //NOTE: Les valeurs sont équivalentes à cudaMemoryType. Si on
+  // change ces valeurs il faut changer la fonction correspondante
+  // dans le runtime (getPointerAttribute()).
+  Unregistered = 0,
+  Host = 1,
+  Device = 2,
+  Managed = 3
+};
 
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
-internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations d'accessibilité d'une adresse mémoire.
+ *
+ * Indique si une adresse mémoire est accessible sur un accélérateur ou
+ * sur le CPU.
+ *
+ * \sa getPointerAccessibility()
+ */
+enum class ePointerAccessibility
+{
+  //! Accessibilité inconnue
+  Unknown = 0,
+  //! Non accessible
+  No = 1,
+  //! Accessible
+  Yes = 2
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -137,64 +161,90 @@ internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 inline bool
 isAcceleratorPolicy(eExecutionPolicy exec_policy)
 {
-  return exec_policy==eExecutionPolicy::CUDA || exec_policy==eExecutionPolicy::HIP;
+  return exec_policy == eExecutionPolicy::CUDA || exec_policy == eExecutionPolicy::HIP;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Accessibilité de l'adresse \a ptr pour une exécution sur la file \a queue.
+ *
+ * Si \a queue est nul, retourne ePointerAccessibility::Unknown.
+ */
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT ePointerAccessibility
+getPointerAccessibility(RunQueue* queue, const void* ptr);
+
+//! Accessibilité de l'adresse \a ptr pour une exécution sur \a queue.
+inline ePointerAccessibility
+getPointerAccessibility(RunQueue& queue, const void* ptr)
+{
+  return getPointerAccessibility(&queue, ptr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Accessibilité de l'adresse \a ptr pour une exécution sur \a runner.
+ *
+ * Si \a runner est nul, retourne ePointerAccessibility::Unknown.
+ */
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT ePointerAccessibility
+getPointerAccessibility(Runner* runner, const void* ptr);
+
+//! Accessibilité de l'adresse \a ptr pour une exécution sur \a runner.
+inline ePointerAccessibility
+getPointerAccessibility(Runner& runner, const void* ptr)
+{
+  return getPointerAccessibility(&runner, ptr);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indique si on utilise le runtime CUDA
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-bool isUsingCUDARuntime();
-
-//! Positionne l'utilisation du runtime CUDA
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setUsingCUDARuntime(bool v);
-
-//! Récupère l'implémentation CUDA de RunQueue (peut être nulle)
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime* getCUDARunQueueRuntime();
-
-//! Positionne l'implémentation CUDA de RunQueue.
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setCUDARunQueueRuntime(IRunnerRuntime* v);
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indique si on utilise le runtime HIP
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-bool isUsingHIPRuntime();
+namespace Arcane::Accelerator::impl
+{
+using Arcane::Accelerator::isAcceleratorPolicy;
 
-//! Positionne l'utilisation du runtime HIP
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setUsingHIPRuntime(bool v);
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
+arcaneThrowPointerNotAcccessible [[noreturn]] (const void* ptr, const TraceInfo& ti);
 
-//! Récupère l'implémentation HIP de RunQueue (peut être nulle)
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime* getHIPRunQueueRuntime();
+inline void
+arcaneCheckPointerIsAcccessible(ePointerAccessibility a, const void* ptr, const TraceInfo& ti)
+{
+  if (a == ePointerAccessibility::No)
+    arcaneThrowPointerNotAcccessible(ptr, ti);
+}
 
-//! Positionne l'implémentation HIP de RunQueue.
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setHIPRunQueueRuntime(IRunnerRuntime* v);
+} // namespace Arcane::Accelerator::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Macro qui vérifie si \a ptr est accessible pour une RunQueue ou un Runner.
+ *
+ * Lance une exception si ce n'est pas le cas.
+ */
+#define ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner, ptr) \
+  ::Arcane::Accelerator::impl::arcaneCheckPointerIsAcccessible(::Arcane::Accelerator::getPointerAccessibility((queue_or_runner), (ptr)), (ptr), A_FUNCINFO)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Récupère l'implémentation Séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime* getSequentialRunQueueRuntime();
-
-//! Récupère l'implémentation Thread de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime* getThreadRunQueueRuntime();
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator::impl
+#ifdef ARCANE_CHECK
+//! Macro qui vérifie en mode check si \a ptr est accessible pour une RunQueue ou un Runner.
+#define ARCANE_CHECK_ACCESSIBLE_POINTER(queue_or_runner, ptr) \
+  ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS((queue_or_runner), (ptr))
+#else
+//! Macro qui vérifie en mode check si \a ptr est accessible pour une RunQueue ou un Runner.
+#define ARCANE_CHECK_ACCESSIBLE_POINTER(queue_or_runner, ptr)
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

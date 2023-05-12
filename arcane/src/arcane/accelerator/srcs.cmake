@@ -5,7 +5,6 @@ set( ARCANE_SOURCES
   AsyncRunQueuePool.h
   CommonCudaHipReduceImpl.h
   IReduceMemoryImpl.h
-  IRunQueueRuntime.h
   IRunQueueStream.h
   MaterialVariableViews.h
   MemoryCopier.cc

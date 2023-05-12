@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HipAcceleratorRuntime.cc                                    (C) 2000-2022 */
+/* HipAcceleratorRuntime.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Runtime pour 'HIP'.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,8 @@
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
-#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/internal/IRunnerRuntime.h"
+#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/RunCommandImpl.h"
@@ -288,6 +289,26 @@ class HipRunnerRuntime
     ARCANE_CHECK_HIP(hipSetDevice(id));
   }
   const IDeviceInfoList* deviceInfoList() override { return &m_device_info_list; }
+
+  void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
+  {
+    hipPointerAttribute_t pa;
+    ARCANE_CHECK_HIP(hipPointerGetAttributes(&pa, ptr));
+    auto mem_type = ePointerMemoryType::Unregistered;
+    if (pa.isManaged)
+      mem_type = ePointerMemoryType::Managed;
+    else if (pa.memoryType == hipMemoryTypeHost)
+      mem_type = ePointerMemoryType::Host;
+    else if (pa.memoryType == hipMemoryTypeDevice)
+      mem_type = ePointerMemoryType::Device;
+
+    std::cout << "HIP Info: hip_memory_type=" << (int)pa.memoryType << " is_managed?=" << pa.isManaged
+              << " flags=" << pa.allocationFlags
+              << " my_memory_type=" << (int)mem_type
+              << "\n";
+    _fillPointerAttribute(attribute, mem_type, pa.device,
+                          ptr, pa.devicePointer, pa.hostPointer);
+  }
 
   void fillDevices();
 

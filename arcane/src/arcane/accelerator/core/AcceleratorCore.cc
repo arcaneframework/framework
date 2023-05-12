@@ -1,19 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorCore.cc                                          (C) 2000-2022 */
+/* AcceleratorCore.cc                                          (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+#include "arcane/utils/FatalErrorException.h"
+
+#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 
 #include "arcane/accelerator/core/DeviceInfoList.h"
+#include "arcane/accelerator/core/PointerAttribute.h"
 
 #include <iostream>
 
@@ -146,6 +150,53 @@ std::ostream& operator<<(std::ostream& o, const DeviceId& device_id)
 {
   o << device_id.asInt32();
   return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" impl::IRunnerRuntime* impl::
+getAcceleratorRunnerRuntime()
+{
+  if (isUsingCUDARuntime())
+    return getCUDARunQueueRuntime();
+  if (isUsingHIPRuntime())
+    return getHIPRunQueueRuntime();
+  return nullptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ePointerAccessibility impl::RuntimeStaticInfo::
+getPointerAccessibility(eExecutionPolicy policy, const void* ptr)
+{
+  // Regarde si le pointeur est accessible pour la politique d'exécution donnée.
+  // Le seul cas où on peut le savoir exactement est si on a un runtime
+  // accélérateur et que la valeur retournée par getPointeAttribute() est valide.
+  if (policy == eExecutionPolicy::None)
+    return ePointerAccessibility::Unknown;
+  IRunnerRuntime* r = getAcceleratorRunnerRuntime();
+  if (!r)
+    return ePointerAccessibility::Unknown;
+  PointerAttribute attr;
+  r->getPointerAttribute(attr, ptr);
+  if (attr.isValid()) {
+    if (isAcceleratorPolicy(policy))
+      return attr.devicePointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
+    else
+      return attr.hostPointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
+  }
+  return ePointerAccessibility::Unknown;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void impl::
+arcaneThrowPointerNotAcccessible(const void* ptr, const TraceInfo& ti)
+{
+  throw FatalErrorException(ti, String::format("Pointer '{0}' is not accessible on this execution policy", ptr));
 }
 
 /*---------------------------------------------------------------------------*/

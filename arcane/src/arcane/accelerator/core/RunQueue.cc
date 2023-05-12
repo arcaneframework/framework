@@ -1,20 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.cc                                                 (C) 2000-2022 */
+/* RunQueue.cc                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueImpl.h"
-#include "arcane/accelerator/core/IRunnerRuntime.h"
+#include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
@@ -155,6 +156,26 @@ void RunQueue::
 recordEvent(Ref<RunQueueEvent>& event)
 {
   recordEvent(*event.get());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ePointerAccessibility impl::RuntimeStaticInfo::
+getPointerAccessibility(RunQueue* queue, const void* ptr)
+{
+  if (!queue)
+    return ePointerAccessibility::Unknown;
+  return getPointerAccessibility(queue->executionPolicy(),ptr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ePointerAccessibility
+getPointerAccessibility(RunQueue* queue, const void* ptr)
+{
+  return impl::RuntimeStaticInfo::getPointerAccessibility(queue,ptr);
 }
 
 /*---------------------------------------------------------------------------*/
