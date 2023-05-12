@@ -19,6 +19,7 @@
 #include "arcane/ServiceFactory.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
+#include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
@@ -104,6 +105,10 @@ class NumArrayUnitTest
   void _executeTest1(eMemoryRessource mem_kind);
   void _executeTest2();
   void _executeTest3();
+
+ private:
+
+  void _checkPointerAttribute(eMemoryRessource mem,const void* ptr);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -273,6 +278,7 @@ _executeTest1(eMemoryRessource mem_kind)
   {
     NumArray<double, MDDim1> t1(mem_kind);
     t1.resize(n1);
+    _checkPointerAttribute(mem_kind,t1.bytes().data());
 
     NumArray<double, MDDim1> t2(mem_kind);
     t2.resize(n1);
@@ -539,6 +545,55 @@ _executeTest3()
 {
   Arcane::_arcaneTestRealArrayVariant();
   Arcane::_arcaneTestRealArray2Variant();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+namespace
+{
+void _checkMemoryType(ax::ePointerMemoryType expected,ax::ePointerMemoryType current)
+{
+  if (expected!=current)
+    ARCANE_FATAL("Bad memory type expected={0} current={1}",(int)expected,(int)current);
+}
+void _checkNonNullHostPointer(const ax::PointerAttribute& pa)
+{
+  const void* p = pa.hostPointer();
+  if (!p)
+    ARCANE_FATAL("Host pointer is null");
+}
+void _checkNonNullDevicePointer(const ax::PointerAttribute& pa)
+{
+  const void* p = pa.devicePointer();
+  if (!p)
+    ARCANE_FATAL("Device pointer is null");
+}
+}
+void NumArrayUnitTest::
+_checkPointerAttribute(eMemoryRessource mem,const void* ptr)
+{
+  ValueChecker vc(A_FUNCINFO);
+  ax::PointerAttribute pa;
+  m_runner.fillPointerAttribute(pa,ptr);
+  auto mem_type = pa.memoryType();
+  info() << "PointerInfo mem_ressource=" << mem
+         << " allocated_type=" << (int)mem_type
+         << " host_ptr=" << pa.hostPointer()
+         << " device_ptr=" << pa.devicePointer()
+         << " device=" << pa.device();
+  if (mem==eMemoryRessource::UnifiedMemory){
+    _checkMemoryType(mem_type,ax::ePointerMemoryType::Managed);
+    _checkNonNullHostPointer(pa);
+    _checkNonNullDevicePointer(pa);
+  }
+  if (mem==eMemoryRessource::HostPinned){
+    _checkMemoryType(mem_type,ax::ePointerMemoryType::Host);
+    _checkNonNullHostPointer(pa);
+  }
+  if (mem==eMemoryRessource::Device){
+    _checkMemoryType(mem_type,ax::ePointerMemoryType::Device);
+    _checkNonNullDevicePointer(pa);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
