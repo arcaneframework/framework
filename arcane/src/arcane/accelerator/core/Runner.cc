@@ -536,7 +536,7 @@ fillPointerAttribute(PointerAttribute& attr, const void* ptr)
  * En général on utilise cela en fin de calcul.
  */
 void Runner::
-_stopAllProfiling()
+stopAllProfiling()
 {
   _stopProfiling(eExecutionPolicy::CUDA);
   _stopProfiling(eExecutionPolicy::HIP);

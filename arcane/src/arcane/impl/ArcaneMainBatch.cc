@@ -216,10 +216,6 @@ class ArcaneMainBatch
  private:
   
   bool _sequentialParseArgs(StringList args);
-  static void _stopAllProfiling()
-  {
-    Accelerator::Runner::_stopAllProfiling();
-  }
 };
   
 /*---------------------------------------------------------------------------*/
@@ -823,9 +819,14 @@ executeRank(Int32 local_rank)
   time_stat->endGatherStats();
 
   if (print_stats && sub_domain){
-    sub_domain->parallelMng()->barrier();
+    // S'assure que tout le monde est ici avant d'arêter le profiling
+    // TODO: Comme le profiling est local au processus, il suffirait
+    // a priori de faire la barrière sur les IParallelMng locaux.
+    IParallelMng* pm = sub_domain->parallelMng();
+    pm->barrier();
     if (local_rank==0)
-      ArcaneMainBatch::_stopAllProfiling();
+      Runner::stopAllProfiling();
+    pm->barrier();
     _printStats(sub_domain,trace,time_stat);
   }
 
