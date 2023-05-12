@@ -496,6 +496,8 @@ _executeTest2()
   {
     auto command = makeCommand(queue1);
     auto out_t1 = viewOut(command, t1);
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue1,out_t1.to1DSpan().data());
+
     Int32 s1 = 300;
     auto b = makeLoopRanges(s1, n2, n3, n4);
     command << RUNCOMMAND_LOOP(iter, b)
@@ -580,7 +582,8 @@ _checkPointerAttribute(eMemoryRessource mem,const void* ptr)
          << " allocated_type=" << (int)mem_type
          << " host_ptr=" << pa.hostPointer()
          << " device_ptr=" << pa.devicePointer()
-         << " device=" << pa.device();
+         << " device=" << pa.device()
+         << " access_info=" << (int)getPointerAccessibility(&m_runner,ptr);
   if (mem==eMemoryRessource::UnifiedMemory){
     _checkMemoryType(mem_type,ax::ePointerMemoryType::Managed);
     _checkNonNullHostPointer(pa);
