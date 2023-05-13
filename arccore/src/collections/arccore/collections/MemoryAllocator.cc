@@ -309,6 +309,45 @@ deallocate(void* ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool IMemoryAllocator::
+hasRealloc(MemoryAllocationArgs) const
+{
+  return hasRealloc();
+}
+
+void* IMemoryAllocator::
+allocate(size_t new_size, MemoryAllocationArgs)
+{
+  return allocate(new_size);
+}
+
+void* IMemoryAllocator::
+reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs)
+{
+  return reallocate(current_ptr, new_size);
+}
+
+void IMemoryAllocator::
+deallocate(void* ptr, MemoryAllocationArgs)
+{
+  return deallocate(ptr);
+}
+
+size_t IMemoryAllocator::
+adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs)
+{
+  return adjustCapacity(wanted_capacity, element_size);
+}
+
+size_t IMemoryAllocator::
+guarantedAlignment(MemoryAllocationArgs)
+{
+  return guarantedAlignment();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arccore
 
 /*---------------------------------------------------------------------------*/

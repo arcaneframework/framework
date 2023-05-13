@@ -71,7 +71,7 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    * des allocateurs spécifiques avec alignement mémoire (comme
    * par exemple posix_memalign).
    */
-  virtual bool hasRealloc(MemoryAllocationArgs) const { return hasRealloc(); }
+  virtual bool hasRealloc(MemoryAllocationArgs) const;
 
   /*!
    * \brief Alloue de la mémoire pour \a new_size octets et retourne le pointeur.
@@ -81,7 +81,7 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    * est soit nul, soit une valeur spécifique
    * - le pointeur retourné peut être nul si la mémoire n'a pas pu être allouée.
    */
-  virtual void* allocate(size_t new_size, MemoryAllocationArgs) { return allocate(new_size); }
+  virtual void* allocate(size_t new_size, MemoryAllocationArgs);
 
   /*!
    * \brief Réalloue de la mémoire pour \a new_size octets et retourne le pointeur.
@@ -94,10 +94,7 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    * à allocate().
    * - le pointeur retourné peut être nul si la mémoire n'a pas pu être allouée.
    */
-  virtual void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs)
-  {
-    return reallocate(current_ptr, new_size);
-  }
+  virtual void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs);
 
   /*!
    * \brief Libère la mémoire dont l'adresse de base est \a ptr.
@@ -108,10 +105,7 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    * La sémantique de cette méthode équivalente à free() et donc \a ptr
    * peut être nul auquel cas aucune opération n'est effectuée.
    */
-  virtual void deallocate(void* ptr, MemoryAllocationArgs)
-  {
-    return deallocate(ptr);
-  }
+  virtual void deallocate(void* ptr, MemoryAllocationArgs);
 
   /*!
    * \brief Ajuste la capacité suivant la taille d'élément.
@@ -122,10 +116,7 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    * alloués est un multiple de cet alignement.
    * 
    */
-  virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs)
-  {
-    return adjustCapacity(wanted_capacity, element_size);
-  }
+  virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs);
 
   /*!
   * \brief Valeur de l'alignement garanti par l'allocateur.
@@ -135,21 +126,24 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
   *
   * S'il n'y a aucune garantie, retourne 0.
   */
-  virtual size_t guarantedAlignment(MemoryAllocationArgs)
-  {
-    return guarantedAlignment();
-  }
+  virtual size_t guarantedAlignment(MemoryAllocationArgs);
 
  public:
 
   // Méthodes historiques (avant 2023) sans arguments supplémentaires.
   // Elles sont laissées pour rester compatible avec l'existant mais seront
   // supprimées à terme.
+  ARCCORE_DEPRECATED_REASON("Y2023: use hasRealloc(MemoryAllocationArgs) instead")
   virtual bool hasRealloc() const = 0;
+  ARCCORE_DEPRECATED_REASON("Y2023: use allocate(size_t,MemoryAllocationArgs) instead")
   virtual void* allocate(size_t new_size) = 0;
+  ARCCORE_DEPRECATED_REASON("Y2023: use reallocate(void*,size_t,MemoryAllocationArgs) instead")
   virtual void* reallocate(void* current_ptr, size_t new_size) = 0;
+  ARCCORE_DEPRECATED_REASON("Y2023: use deallocate(void*_t,MemoryAllocationArgs) instead")
   virtual void deallocate(void* ptr) = 0;
+  ARCCORE_DEPRECATED_REASON("Y2023: use adjustCapacity(size_t,size_t,MemoryAllocationArgs) instead")
   virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size) = 0;
+  ARCCORE_DEPRECATED_REASON("Y2023: use guarantedAlignment(MemoryAllocationArgs) instead")
   virtual size_t guarantedAlignment() = 0;
 };
 

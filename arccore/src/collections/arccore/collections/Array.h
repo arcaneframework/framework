@@ -38,8 +38,8 @@ namespace Arccore
  * Cette classe sert pour contenir les meta-données communes à toutes les
  * implémentations qui dérivent de AbstractArray.
  *
- * Seul UniqueArray a le droit d'utiliser un allocateur autre que l'allocateur
- * par défaut.
+ * Seules les classes qui implémentent une sémantique à la UniqueArray
+ * ont le droit d'utiliser un allocateur autre que l'allocateur par défaut.
  */
 class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 {
@@ -86,7 +86,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
                                              const void* begin2,Int64 size2);
  protected:
 
- using MemoryPointer = void*;
+  using MemoryPointer = void*;
 
   MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
   MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
@@ -94,7 +94,8 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
  private:
 
- void _checkAllocator() const;
+  void _checkAllocator() const;
+  MemoryAllocationArgs _getAllocationArgs() const;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -67,16 +67,26 @@ _checkAllocator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MemoryAllocationArgs ArrayMetaData::
+_getAllocationArgs() const
+{
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ArrayMetaData::MemoryPointer ArrayMetaData::
 _allocate(Int64 new_capacity,Int64 sizeof_true_type)
 {
   _checkAllocator();
+  MemoryAllocationArgs alloc_args = _getAllocationArgs();
 
   size_t s_new_capacity = (size_t)new_capacity;
-  s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type);
+  s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type,alloc_args);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
   size_t elem_size = s_new_capacity * s_sizeof_true_type;
-  MemoryPointer p = allocator->allocate(elem_size);
+  MemoryPointer p = allocator->allocate(elem_size,alloc_args);
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
@@ -102,29 +112,30 @@ ArrayMetaData::MemoryPointer ArrayMetaData::
 _reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
 {
   _checkAllocator();
+  MemoryAllocationArgs alloc_args = _getAllocationArgs();
 
   size_t s_new_capacity = (size_t)new_capacity;
-  s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type);
+  s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type,alloc_args);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
   size_t elem_size = s_new_capacity * s_sizeof_true_type;
   
   MemoryPointer p = nullptr;
   {
-    const bool use_realloc = allocator->hasRealloc();
+    const bool use_realloc = allocator->hasRealloc(alloc_args);
     // Lorsqu'on voudra implémenter un realloc avec alignement, il faut passer
     // par use_realloc = false car sous Linux il n'existe pas de méthode realloc
     // garantissant l'alignmenent (alors que sous Win32 si :) ).
     // use_realloc = false;
     if (use_realloc){
-      p = allocator->reallocate(current,elem_size);
+      p = allocator->reallocate(current,elem_size,alloc_args);
     }
     else{
-      p = allocator->allocate(elem_size);
+      p = allocator->allocate(elem_size,alloc_args);
       //GG: TODO: regarder si 'current' peut etre nul (a priori je ne pense pas...)
       if (p && current){
         size_t current_size = this->size * s_sizeof_true_type;
         ::memcpy(p,current,current_size);
-        allocator->deallocate(current);
+        allocator->deallocate(current,alloc_args);
       }
     }
   }
@@ -152,8 +163,10 @@ _reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
 void ArrayMetaData::
 _deallocate(MemoryPointer current) noexcept
 {
-  if (allocator)
-    allocator->deallocate(current);
+  if (allocator){
+    MemoryAllocationArgs alloc_args = _getAllocationArgs();
+    allocator->deallocate(current,alloc_args);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
