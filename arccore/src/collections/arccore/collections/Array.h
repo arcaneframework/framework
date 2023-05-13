@@ -16,6 +16,9 @@
 
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/Span.h"
+#include "arccore/collections/MemoryAllocationOptions.h"
+
+// TODO Supprimer l'inclusion de ce fichier
 #include "arccore/collections/IMemoryAllocator.h"
 
 #include <memory>
@@ -53,27 +56,28 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   template <typename> friend class SharedArray;
   template <typename> friend class SharedArray2;
   friend class AbstractArrayBase;
+  static IMemoryAllocator* _defaultAllocator();
 
  public:
 
-  ArrayMetaData() : nb_ref(0), capacity(0), size(0), dim1_size(0),
-  dim2_size(0), allocator(&DefaultMemoryAllocator::shared_null_instance)
+  ArrayMetaData() : allocator(_defaultAllocator())
   {}
 
  protected:
 
- //! Nombre de références sur cet objet.
-  Int64 nb_ref;
-  //! Nombre d'éléments alloués
-  Int64 capacity;
   //! Nombre d'éléments du tableau (pour les tableaux 1D)
-  Int64 size;
+  Int64 size = 0;
   //! Taille de la première dimension (pour les tableaux 2D)
-  Int64 dim1_size;
+  Int64 dim1_size = 0;
   //! Taille de la deuxième dimension (pour les tableaux 2D)
-  Int64 dim2_size;
+  Int64 dim2_size = 0;
+  //! Nombre d'éléments alloués
+  Int64 capacity = 0;
   //! Allocateur mémoire
-  IMemoryAllocator* allocator;
+  IMemoryAllocator* allocator = nullptr;
+  //! Nombre de références sur cet objet.
+  eMemoryLocationHint m_memory_advice = eMemoryLocationHint::None;
+  Int32 nb_ref = 0;
   //! Indique is cette instance a été allouée par l'opérateur new.
   bool is_allocated_by_new = false;
   bool is_not_null = false;
@@ -82,6 +86,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
   static void throwNullExpected ARCCORE_NORETURN ();
   static void throwNotNullExpected ARCCORE_NORETURN ();
+  static void throwUnsupportedSpecificAllocator ARCCORE_NORETURN ();
   static void overlapError ARCCORE_NORETURN (const void* begin1,Int64 size1,
                                              const void* begin2,Int64 size2);
  protected:
@@ -115,7 +120,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayImplBase
  * \internal
  *
  * \brief Cette classe n'est plus utilisée.
- */  
+ */
 template <typename T>
 class ArrayImplT
 : public ArrayImplBase
@@ -356,22 +361,28 @@ class AbstractArray
   }
 
   /*!
+   * \brief Construit un tableau avec un allocateur spécifique \a a.
+   *
+   * \sa _initFromAllocator(MemoryAllocationOptions o,Int64 acapacity);
+   */
+  // TODO A supprimer. Utiliser la surcharge avec MemoryAllocationOptions à la place.
+  void _initFromAllocator(IMemoryAllocator* a,Int64 acapacity)
+  {
+    _initFromAllocator(MemoryAllocationOptions(a),acapacity);
+  }
+
+  /*!
    * \brief Construit un vecteur vide avec un allocateur spécifique \a a.
    *
    * Si \a acapacity n'est pas nul, la mémoire est allouée pour
    * contenir \a acapacity éléments (mais le tableau reste vide).
    *
-   * Cette méthode ne doit être appelée que dans un constructeur de la classe dérivée.
+   * Cette méthode ne doit être appelée que dans un constructeur de la classe dérivée
+   * et uniquement par les classes utilisant une sémantique à la UniqueArray.
    */
-  void _initFromAllocator(IMemoryAllocator* a,Int64 acapacity)
+  void _initFromAllocator(MemoryAllocationOptions o,Int64 acapacity)
   {
-    // Si un allocateur spécifique est utilisé et qu'il n'est pas
-    // celui par défaut, il faut toujours allouer un objet pour
-    // pouvoir conserver l'instance de l'allocateur. Par défaut
-    // on utilise une taille de 1 élément.
-    if (a && a!=m_md->allocator){
-      _directFirstAllocateWithAllocator(acapacity,a);
-    }
+    _directFirstAllocateWithAllocator(acapacity,o);
   }
 
  public:
@@ -380,13 +391,13 @@ class AbstractArray
   void dispose()
   {
     _destroy();
-    IMemoryAllocator* a = m_md->allocator;
+    MemoryAllocationOptions options(m_md->allocator,m_md->m_memory_advice);
     _internalDeallocate();
     _setToSharedNull();
     // Si on a un allocateur spécifique, il faut allouer un
     // bloc pour conserver cette information.
-    if (a != m_md->allocator)
-      _directFirstAllocateWithAllocator(0,a);
+    if (options.allocator() != m_md->allocator)
+      _directFirstAllocateWithAllocator(0,options);
     _updateReferences();
   }
 
@@ -536,12 +547,27 @@ class AbstractArray
     m_md->nb_ref = _getNbRef();
     _updateReferences();
   }
+
  private:
 
-  void _directFirstAllocateWithAllocator(Int64 new_capacity,IMemoryAllocator* a)
+  void _directFirstAllocateWithAllocator(Int64 new_capacity,MemoryAllocationOptions options)
   {
+#ifdef ARCANE_CHECK
+    if (!_isUseOwnMetaData())
+      ArrayMetaData::throwUnsupportedSpecificAllocator();
+#endif
+    IMemoryAllocator* wanted_allocator = options.allocator();
+    if (!wanted_allocator) {
+      wanted_allocator = ArrayMetaData::_defaultAllocator();
+      options.setAllocator(wanted_allocator);
+    }
+    // TODO: Comme cette méthode ne peut être appelé que
+    // si _isUseOwnMetaData() est vrai, on peut simplifier l'allocation
+    // et ne pas appeler _updateReference() et mettre automatiquement à 1 le
+    // nombre de références.
     _allocateMetaData();
-    m_md->allocator = a;
+    m_md->allocator = options.allocator();
+    m_md->m_memory_advice = options.memoryAdvice();
     if (new_capacity>0)
       _allocateMP(new_capacity);
     m_md->nb_ref = _getNbRef();
@@ -1696,6 +1722,11 @@ class UniqueArray
   {
     this->_initFromAllocator(allocator,0);
   }
+  //! Créé un tableau vide avec un allocateur spécifique \a allocator
+  explicit UniqueArray(MemoryAllocationOptions allocate_options) : Array<T>()
+  {
+    this->_initFromAllocator(allocate_options,0);
+  }
   /*!
    * \brief Créé un tableau de \a asize éléments avec un
    * allocateur spécifique \a allocator.
@@ -1709,10 +1740,29 @@ class UniqueArray
     this->_initFromAllocator(allocator,asize);
     this->_resize(asize);
   }
+  /*!
+   * \brief Créé un tableau de \a asize éléments avec un
+   * allocateur spécifique \a allocator.
+   *
+   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
+   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   */
+  UniqueArray(MemoryAllocationOptions allocate_options,Int64 asize)
+  : Array<T>()
+  {
+    this->_initFromAllocator(allocate_options,asize);
+    this->_resize(asize);
+  }
   //! Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
   UniqueArray(IMemoryAllocator* allocator,Span<const T> rhs)
   {
     this->_initFromAllocator(allocator,0);
+    this->_initFromSpan(rhs);
+  }
+  //! Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
+  UniqueArray(MemoryAllocationOptions allocate_options,Span<const T> rhs)
+  {
+    this->_initFromAllocator(allocate_options,0);
     this->_initFromSpan(rhs);
   }
 

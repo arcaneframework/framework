@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.cc                                                    (C) 2000-2021 */
+/* Array.cc                                                    (C) 2000-2023 */
 /*                                                                           */
 /* Vecteur de données 1D.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 #include "arccore/base/TraceInfo.h"
 
 #include "arccore/collections/Array.h"
+#include "arccore/collections/IMemoryAllocator.h"
 
 #include <algorithm>
 #include <iostream>
@@ -45,6 +46,15 @@ class BadAllocException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IMemoryAllocator* ArrayMetaData::
+_defaultAllocator()
+{
+  return &DefaultMemoryAllocator::shared_null_instance;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ArrayMetaData::
 _checkAllocator() const
 {
@@ -70,7 +80,7 @@ _checkAllocator() const
 MemoryAllocationArgs ArrayMetaData::
 _getAllocationArgs() const
 {
-  return {};
+  return { m_memory_advice };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -199,6 +209,15 @@ void ArrayMetaData::
 throwNotNullExpected()
 {
   throw BadAllocException("ArrayMetaData should be not be null");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArrayMetaData::
+throwUnsupportedSpecificAllocator()
+{
+  throw BadAllocException("Changing allocator is only supported for UniqueArray");
 }
 
 /*---------------------------------------------------------------------------*/
