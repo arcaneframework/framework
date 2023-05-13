@@ -37,6 +37,8 @@ enum class eMemoryLocationHint : int8_t
  */
 class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
 {
+  friend class ArrayMetaData;
+
  public:
 
   MemoryAllocationOptions() = default;

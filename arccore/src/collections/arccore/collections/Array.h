@@ -60,7 +60,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
  public:
 
-  ArrayMetaData() : allocator(_defaultAllocator())
+  ArrayMetaData() : allocation_options(_defaultAllocator())
   {}
 
  protected:
@@ -73,14 +73,17 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   Int64 dim2_size = 0;
   //! Nombre d'éléments alloués
   Int64 capacity = 0;
-  //! Allocateur mémoire
-  IMemoryAllocator* allocator = nullptr;
-  //! Nombre de références sur cet objet.
-  eMemoryLocationHint m_memory_advice = eMemoryLocationHint::None;
+  //! Allocateur mémoire et options associées
+  MemoryAllocationOptions allocation_options;
+  //! Nombre de références sur l'instance
   Int32 nb_ref = 0;
   //! Indique is cette instance a été allouée par l'opérateur new.
   bool is_allocated_by_new = false;
   bool is_not_null = false;
+
+ protected:
+
+  IMemoryAllocator* _allocator() const { return allocation_options.m_allocator; }
 
  public:
 
@@ -204,6 +207,17 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
     m_md = &m_meta_data;
   }
   virtual ~AbstractArrayBase() = default;
+
+ public:
+
+  IMemoryAllocator* allocator() const
+  {
+    return m_md->allocation_options.allocator();
+  }
+  MemoryAllocationOptions allocationOptions() const
+  {
+    return m_md->allocation_options;
+  }
 
  protected:
 
@@ -391,19 +405,14 @@ class AbstractArray
   void dispose()
   {
     _destroy();
-    MemoryAllocationOptions options(m_md->allocator,m_md->m_memory_advice);
+    MemoryAllocationOptions options(m_md->allocation_options);
     _internalDeallocate();
     _setToSharedNull();
     // Si on a un allocateur spécifique, il faut allouer un
     // bloc pour conserver cette information.
-    if (options.allocator() != m_md->allocator)
+    if (options.allocator() != m_md->_allocator())
       _directFirstAllocateWithAllocator(0,options);
     _updateReferences();
-  }
-
-  IMemoryAllocator* allocator() const
-  {
-    return m_md->allocator;
   }
 
  public:
@@ -566,8 +575,7 @@ class AbstractArray
     // et ne pas appeler _updateReference() et mettre automatiquement à 1 le
     // nombre de références.
     _allocateMetaData();
-    m_md->allocator = options.allocator();
-    m_md->m_memory_advice = options.memoryAdvice();
+    m_md->allocation_options = options;
     if (new_capacity>0)
       _allocateMP(new_capacity);
     m_md->nb_ref = _getNbRef();
@@ -1535,6 +1543,8 @@ class SharedArray
   //! Mise à jour des références
   Integer _getNbRef() final
   {
+    // NOTE: à vérifier mais lorsque cette méthode est appelée
+    // il n'y a toujours qu'une seule référence.
     // TODO fusionner avec l'implémentation de SharedArray2
     Integer nb_ref = 1;
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
