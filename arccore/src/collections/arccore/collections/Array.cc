@@ -79,7 +79,9 @@ _checkAllocator() const
 MemoryAllocationArgs ArrayMetaData::
 _getAllocationArgs() const
 {
-  return { allocation_options.m_memory_advice };
+  MemoryAllocationArgs x;
+  x.setMemoryLocationHint(allocation_options.m_memory_location_hint);
+  return x;
 }
 
 /*---------------------------------------------------------------------------*/

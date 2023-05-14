@@ -27,7 +27,7 @@ enum class eMemoryLocationHint : int8_t
   None = 0,
   MainlyDevice = 1,
   MainlyHost = 2,
-  BothMostlyRead = 3
+  HostAndDeviceMostlyRead = 3
 };
 
 /*---------------------------------------------------------------------------*/
@@ -48,9 +48,9 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   {
   }
 
-  explicit MemoryAllocationOptions(IMemoryAllocator* allocator, eMemoryLocationHint advice)
+  explicit MemoryAllocationOptions(IMemoryAllocator* allocator, eMemoryLocationHint mem_hint)
   : m_allocator(allocator)
-  , m_memory_advice(advice)
+  , m_memory_location_hint(mem_hint)
   {
   }
 
@@ -59,8 +59,8 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   IMemoryAllocator* allocator() const { return m_allocator; }
   void setAllocator(IMemoryAllocator* v) { m_allocator = v; }
 
-  eMemoryLocationHint memoryAdvice() const { return m_memory_advice; }
-  void setMemoryAdvice(eMemoryLocationHint mem_advice) { m_memory_advice = mem_advice; }
+  eMemoryLocationHint memoryLocationHint() const { return m_memory_location_hint; }
+  void setMemoryLocationHint(eMemoryLocationHint mem_advice) { m_memory_location_hint = mem_advice; }
 
  public:
 
@@ -68,13 +68,13 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   {
     if (a.m_allocator == b.m_allocator)
       return true;
-    return (a.m_memory_advice == b.m_memory_advice);
+    return (a.m_memory_location_hint == b.m_memory_location_hint);
   }
 
  private:
 
   IMemoryAllocator* m_allocator = nullptr;
-  eMemoryLocationHint m_memory_advice = eMemoryLocationHint::None;
+  eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
 };
 
 /*---------------------------------------------------------------------------*/

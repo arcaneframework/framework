@@ -31,7 +31,12 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationArgs
 {
  public:
 
-  eMemoryLocationHint m_memory_advice = eMemoryLocationHint::None;
+  void setMemoryLocationHint(eMemoryLocationHint mem_advice) { m_memory_location_hint = mem_advice; }
+  eMemoryLocationHint memoryLocationHint() const { return m_memory_location_hint; }
+
+ private:
+
+  eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
 };
 
 /*---------------------------------------------------------------------------*/

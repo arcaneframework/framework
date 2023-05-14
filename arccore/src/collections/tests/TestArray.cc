@@ -935,8 +935,8 @@ TEST(Array, Allocator)
  * \brief Allocateur pour tester les arguments.
  *
  * Permet de vérifier qu'on a bien appelé avec les bons arguments.
- * On ne doit l'appeler qu'avec args.memoryAdvice() qui vaut
- * eMemoryLocationHint::None or eMemoryLocationHint::BothMostlyRead
+ * On ne doit l'appeler qu'avec args.memoryLocationHint() qui vaut
+ * eMemoryLocationHint::None or eMemoryLocationHint::HostAndDeviceMostlyRead
  */
 class TesterMemoryAllocatorV2
 : public IMemoryAllocator2
@@ -982,7 +982,7 @@ class TesterMemoryAllocatorV2
 
   static void _checkValid(MemoryAllocationArgs args)
   {
-    bool is_valid = args.m_memory_advice==eMemoryLocationHint::None || args.m_memory_advice==eMemoryLocationHint::BothMostlyRead;
+    bool is_valid = args.memoryLocationHint() ==eMemoryLocationHint::None || args.memoryLocationHint() ==eMemoryLocationHint::HostAndDeviceMostlyRead;
     ASSERT_TRUE(is_valid);
   }
 };
@@ -997,8 +997,13 @@ TEST(Array, AllocatorV2)
   using namespace Arccore;
   TesterMemoryAllocatorV2 testerv2_allocator;
   TesterMemoryAllocatorV2 testerv2_allocator2;
-  MemoryAllocationOptions allocate_options1(&testerv2_allocator, eMemoryLocationHint::BothMostlyRead);
+  MemoryAllocationOptions allocate_options1(&testerv2_allocator, eMemoryLocationHint::HostAndDeviceMostlyRead);
   MemoryAllocationOptions allocate_options2(&testerv2_allocator);
+  {
+    MemoryAllocationOptions opt3(&testerv2_allocator);
+    opt3.setMemoryLocationHint(eMemoryLocationHint::HostAndDeviceMostlyRead);
+    ASSERT_EQ(opt3,allocate_options1);
+  }
   {
     std::cout << "Array a1\n";
     UniqueArray<Int32> a1(allocate_options2);
