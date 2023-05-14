@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryAllocationOptions.h                                    (C) 2000-2023 */
+/* MemoryAllocationOptions.h                                   (C) 2000-2023 */
 /*                                                                           */
-/* Options pour pour configurer les allocations.                             */
+/* Options pour configurer les allocations.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COLLECTIONS_MEMORYALLOCATIONOPTIONS_H
 #define ARCCORE_COLLECTIONS_MEMORYALLOCATIONOPTIONS_H
@@ -62,6 +62,15 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   eMemoryLocationHint memoryAdvice() const { return m_memory_advice; }
   void setMemoryAdvice(eMemoryLocationHint mem_advice) { m_memory_advice = mem_advice; }
 
+ public:
+
+  friend bool operator==(const MemoryAllocationOptions& a, const MemoryAllocationOptions& b)
+  {
+    if (a.m_allocator == b.m_allocator)
+      return true;
+    return (a.m_memory_advice == b.m_memory_advice);
+  }
+
  private:
 
   IMemoryAllocator* m_allocator = nullptr;
@@ -71,7 +80,7 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
