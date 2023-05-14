@@ -147,6 +147,12 @@ SimdAllocator(AlignedMemoryAllocator::simdAlignment());
 AlignedMemoryAllocator AlignedMemoryAllocator::
 CacheLineAllocator(AlignedMemoryAllocator::cacheLineAlignment());
 
+AlignedMemoryAllocator2 AlignedMemoryAllocator2::
+SimdAllocator(AlignedMemoryAllocator2::simdAlignment());
+
+AlignedMemoryAllocator2 AlignedMemoryAllocator2::
+CacheLineAllocator(AlignedMemoryAllocator::cacheLineAlignment());
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -154,6 +160,7 @@ CacheLineAllocator(AlignedMemoryAllocator::cacheLineAlignment());
  * d'allouer de la mémoire alignée. Il faudrait vérifier si elles sont
  * disponibles partout.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -166,8 +173,38 @@ hasRealloc() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool AlignedMemoryAllocator2::
+hasRealloc(MemoryAllocationArgs) const
+{
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void* AlignedMemoryAllocator::
 allocate(size_t new_size)
+{
+#ifdef ARCCORE_OS_LINUX
+  void* ptr = nullptr;
+  int e = ::posix_memalign(&ptr, m_alignment, new_size);
+  if (e == EINVAL)
+    throw ArgumentException(A_FUNCINFO, "Invalid argument to posix_memalign");
+  if (e == ENOMEM)
+    return nullptr;
+  return ptr;
+#elif defined(ARCCORE_OS_WIN32)
+  return _aligned_malloc(new_size, m_alignment);
+#else
+  throw NotImplementedException(A_FUNCINFO);
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void* AlignedMemoryAllocator2::
+allocate(size_t new_size,MemoryAllocationArgs)
 {
 #ifdef ARCCORE_OS_LINUX
   void* ptr = nullptr;
@@ -204,8 +241,40 @@ reallocate(void* current_ptr, size_t new_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void* AlignedMemoryAllocator2::
+reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs)
+{
+#ifdef ARCCORE_OS_LINUX
+  ARCCORE_UNUSED(current_ptr);
+  ARCCORE_UNUSED(new_size);
+  throw NotSupportedException(A_FUNCINFO);
+#elif defined(ARCCORE_OS_WIN32)
+  return _aligned_realloc(current_ptr, new_size, m_alignment);
+#else
+  throw NotImplementedException(A_FUNCINFO);
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void AlignedMemoryAllocator::
 deallocate(void* ptr)
+{
+#ifdef ARCCORE_OS_LINUX
+  ::free(ptr);
+#elif defined(ARCCORE_OS_WIN32)
+  return _aligned_free(ptr);
+#else
+  throw NotImplementedException(A_FUNCINFO);
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AlignedMemoryAllocator2::
+deallocate(void* ptr, MemoryAllocationArgs)
 {
 #ifdef ARCCORE_OS_LINUX
   ::free(ptr);
@@ -265,6 +334,15 @@ adjustMemoryCapacity(size_t wanted_capacity, size_t element_size, size_t alignme
 
 size_t AlignedMemoryAllocator::
 adjustCapacity(size_t wanted_capacity, size_t element_size)
+{
+  return adjustMemoryCapacity(wanted_capacity, element_size, m_alignment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+size_t AlignedMemoryAllocator2::
+adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs)
 {
   return adjustMemoryCapacity(wanted_capacity, element_size, m_alignment);
 }

@@ -221,7 +221,7 @@ void _testArrayNewInternal()
   using namespace Arccore;
   std::cout << "** TEST VECTOR NEW\n";
 
-  std::cout << "** wanted_size = " << AlignedMemoryAllocator::simdAlignment() << "\n";
+  std::cout << "** wanted_size = " << AlignedMemoryAllocator2::simdAlignment() << "\n";
   //if (impl_size!=wanted_size)
   //ARCCORE_FATAL("Bad sizeof(ArrayImplBase) v={0} expected={1}",impl_size,wanted_size);
   {
@@ -876,7 +876,7 @@ TEST(Array, Allocator)
   PrintableMemoryAllocator printable_allocator;
   PrintableMemoryAllocator printable_allocator2;
   IMemoryAllocator* allocator1 = AlignedMemoryAllocator::Simd();
-  IMemoryAllocator* allocator2 = &printable_allocator;
+  IMemoryAllocator* allocator2 = AlignedMemoryAllocator2::Simd();
   {
     std::cout << "Array a1\n";
     UniqueArray<Int32> a1(allocator2);
