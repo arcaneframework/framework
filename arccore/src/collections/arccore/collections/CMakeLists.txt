@@ -5,6 +5,8 @@ set(SOURCES
   Array2.cc
   CollectionsGlobal.h
   IMemoryAllocator.h
+  MemoryAllocationArgs.h
+  MemoryAllocationOptions.h
   MemoryAllocator.cc
 )
 

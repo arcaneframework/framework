@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.cc                                                    (C) 2000-2021 */
+/* Array.cc                                                    (C) 2000-2023 */
 /*                                                                           */
 /* Vecteur de données 1D.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/ArrayView.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/TraceInfo.h"
 
 #include "arccore/collections/Array.h"
+#include "arccore/collections/IMemoryAllocator.h"
 
 #include <algorithm>
 #include <iostream>
@@ -33,8 +33,8 @@ class BadAllocException
 : public std::bad_alloc
 {
  public:
-  BadAllocException(const std::string& str) : m_message(str){}
-  virtual const char* what() const ARCCORE_NOEXCEPT
+  explicit BadAllocException(std::string str) : m_message(std::move(str)){}
+  const char* what() const ARCCORE_NOEXCEPT override
   {
     return m_message.c_str();
   }
@@ -45,10 +45,19 @@ class BadAllocException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IMemoryAllocator* ArrayMetaData::
+_defaultAllocator()
+{
+  return &DefaultMemoryAllocator::shared_null_instance;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ArrayMetaData::
 _checkAllocator() const
 {
-  if (!allocator)
+  if (!allocation_options.m_allocator)
     throw BadAllocException("Null allocator");
 }
 
@@ -67,16 +76,28 @@ _checkAllocator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MemoryAllocationArgs ArrayMetaData::
+_getAllocationArgs() const
+{
+  MemoryAllocationArgs x;
+  x.setMemoryLocationHint(allocation_options.m_memory_location_hint);
+  return x;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ArrayMetaData::MemoryPointer ArrayMetaData::
 _allocate(Int64 new_capacity,Int64 sizeof_true_type)
 {
   _checkAllocator();
-
+  MemoryAllocationArgs alloc_args = _getAllocationArgs();
+  IMemoryAllocator* a = _allocator();
   size_t s_new_capacity = (size_t)new_capacity;
-  s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type);
+  s_new_capacity = a->adjustCapacity(s_new_capacity,sizeof_true_type,alloc_args);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
   size_t elem_size = s_new_capacity * s_sizeof_true_type;
-  MemoryPointer p = allocator->allocate(elem_size);
+  MemoryPointer p = a->allocate(elem_size,alloc_args);
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
@@ -102,29 +123,31 @@ ArrayMetaData::MemoryPointer ArrayMetaData::
 _reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
 {
   _checkAllocator();
+  MemoryAllocationArgs alloc_args = _getAllocationArgs();
+  IMemoryAllocator* a = _allocator();
 
   size_t s_new_capacity = (size_t)new_capacity;
-  s_new_capacity = allocator->adjustCapacity(s_new_capacity,sizeof_true_type);
+  s_new_capacity = a->adjustCapacity(s_new_capacity,sizeof_true_type,alloc_args);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
   size_t elem_size = s_new_capacity * s_sizeof_true_type;
   
   MemoryPointer p = nullptr;
   {
-    const bool use_realloc = allocator->hasRealloc();
+    const bool use_realloc = a->hasRealloc(alloc_args);
     // Lorsqu'on voudra implémenter un realloc avec alignement, il faut passer
     // par use_realloc = false car sous Linux il n'existe pas de méthode realloc
-    // garantissant l'alignmenent (alors que sous Win32 si :) ).
+    // garantissant l'alignement (alors que sous Win32 si :) ).
     // use_realloc = false;
-    if (use_realloc){
-      p = allocator->reallocate(current,elem_size);
+    if (use_realloc) {
+      p = a->reallocate(current, elem_size, alloc_args);
     }
-    else{
-      p = allocator->allocate(elem_size);
-      //GG: TODO: regarder si 'current' peut etre nul (a priori je ne pense pas...)
-      if (p && current){
+    else {
+      p = a->allocate(elem_size, alloc_args);
+      //GG: TODO: regarder si 'current' peut être nul (a priori je ne pense pas...)
+      if (p && current) {
         size_t current_size = this->size * s_sizeof_true_type;
-        ::memcpy(p,current,current_size);
-        allocator->deallocate(current);
+        ::memcpy(p, current, current_size);
+        a->deallocate(current, alloc_args);
       }
     }
   }
@@ -152,8 +175,10 @@ _reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
 void ArrayMetaData::
 _deallocate(MemoryPointer current) noexcept
 {
-  if (allocator)
-    allocator->deallocate(current);
+  if (_allocator()){
+    MemoryAllocationArgs alloc_args = _getAllocationArgs();
+    _allocator()->deallocate(current,alloc_args);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -186,6 +211,15 @@ void ArrayMetaData::
 throwNotNullExpected()
 {
   throw BadAllocException("ArrayMetaData should be not be null");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArrayMetaData::
+throwUnsupportedSpecificAllocator()
+{
+  throw BadAllocException("Changing allocator is only supported for UniqueArray");
 }
 
 /*---------------------------------------------------------------------------*/

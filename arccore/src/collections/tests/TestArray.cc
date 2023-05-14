@@ -8,6 +8,7 @@
 
 #include "arccore/collections/Array.h"
 #include "arccore/collections/Array2.h"
+#include "arccore/collections/IMemoryAllocator.h"
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/Iterator.h"
@@ -220,9 +221,7 @@ void _testArrayNewInternal()
   using namespace Arccore;
   std::cout << "** TEST VECTOR NEW\n";
 
-  size_t impl_size = sizeof(ArrayImplBase);
-  std::cout << "** wanted_size = " << AlignedMemoryAllocator::simdAlignment() << "\n";
-  std::cout << "** sizeof(ArrayImplBase) = " << impl_size << '\n';
+  std::cout << "** wanted_size = " << AlignedMemoryAllocator2::simdAlignment() << "\n";
   //if (impl_size!=wanted_size)
   //ARCCORE_FATAL("Bad sizeof(ArrayImplBase) v={0} expected={1}",impl_size,wanted_size);
   {
@@ -318,17 +317,34 @@ void _testArrayNewInternal()
     SharedArray<IntSubClass> c2;
     c2.add(3);
     c2.add(5);
+    SharedArray<IntSubClass> c22(33);
+    ASSERT_EQ(c22.size(),33);
+    c22 = c2;
     {
       SharedArray<IntSubClass> c;
       c.add(5);
       c.add(7);
       c2 = c;
+      SharedArray<IntSubClass> c3(c2);
+      SharedArray<IntSubClass> c4(c);
+      c2.resize(125);
+      ASSERT_EQ(c2.size(),c3.size());
+      ASSERT_EQ(c2.size(),c4.size());
+      c3.resize(459);
+      ASSERT_EQ(c2.size(),c3.size());
+      ASSERT_EQ(c2.size(),c4.size());
+      c4.resize(932);
+      c.resize(32);
     }
     c2.add(3);
-    ARCCORE_UT_CHECK((c2.size() == 3), "Bad value [3]");
+    ARCCORE_UT_CHECK((c2.size() == 33), "Bad value [3]");
     ARCCORE_UT_CHECK((c2[0] == 5), "Bad value [5]");
     ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
-    ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
+    ARCCORE_UT_CHECK((c2[32] == 3), "Bad value [7]");
+    c2.resize(1293);
+    ASSERT_EQ(c2.size(),1293);
+    ASSERT_EQ(c22.size(),2);
+
   }
   {
     UniqueArray<Int32> values1 = { 2, 5 };
@@ -477,9 +493,12 @@ TEST(Array, Misc2)
   {
     UniqueArray<Real> v;
     v.resize(3);
+    v[0] = 1.2;
+    v[1] = -1.3;
+    v[2] = 7.6;
     v.add(4.3);
-    for (Integer i = 0, is = v.size(); i < is; ++i) {
-      std::cout << " Value: " << v[i] << '\n';
+    for ( Real x : v) {
+      std::cout << " Value: " << x << '\n';
     }
     v.printInfos(std::cout);
   }
@@ -836,6 +855,15 @@ TEST(Array, Misc4)
     UniqueArray<Int32> e(allocator2,25);
     ASSERT_EQ(e.allocator(),allocator2);
     ASSERT_EQ(e.size(),25);
+
+    UniqueArray<Int32> f(allocator2);
+    f = e;
+    ASSERT_EQ(f.allocator(),e.allocator());
+    ASSERT_EQ(f.size(),e.size());
+
+    f = f;
+    ASSERT_EQ(f.allocator(),e.allocator());
+    ASSERT_EQ(f.size(),e.size());
   }
 }
 
@@ -848,7 +876,7 @@ TEST(Array, Allocator)
   PrintableMemoryAllocator printable_allocator;
   PrintableMemoryAllocator printable_allocator2;
   IMemoryAllocator* allocator1 = AlignedMemoryAllocator::Simd();
-  IMemoryAllocator* allocator2 = &printable_allocator;
+  IMemoryAllocator* allocator2 = AlignedMemoryAllocator2::Simd();
   {
     std::cout << "Array a1\n";
     UniqueArray<Int32> a1(allocator2);
@@ -900,6 +928,132 @@ TEST(Array, Allocator)
     }
     ASSERT_EQ(array[0].allocator(), allocator3);
     ASSERT_EQ(array[1].allocator(), allocator3);
+  }
+}
+
+/*!
+ * \brief Allocateur pour tester les arguments.
+ *
+ * Permet de vérifier qu'on a bien appelé avec les bons arguments.
+ * On ne doit l'appeler qu'avec args.memoryLocationHint() qui vaut
+ * eMemoryLocationHint::None or eMemoryLocationHint::HostAndDeviceMostlyRead
+ */
+class TesterMemoryAllocatorV2
+: public IMemoryAllocator2
+{
+ public:
+
+  bool hasRealloc(MemoryAllocationArgs args) const override
+  {
+    _checkValid(args);
+    return m_default_allocator.hasRealloc();
+  }
+  void* allocate(size_t new_size, MemoryAllocationArgs args) override
+  {
+    _checkValid(args);
+    return m_default_allocator.allocate(new_size);
+  }
+  void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs args) override
+  {
+    _checkValid(args);
+    return m_default_allocator.reallocate(current_ptr,new_size);
+  }
+  void deallocate(void* ptr, MemoryAllocationArgs args) override
+  {
+    _checkValid(args);
+    m_default_allocator.deallocate(ptr);
+  }
+  size_t adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs args) override
+  {
+    _checkValid(args);
+    return m_default_allocator.adjustCapacity(wanted_capacity,element_size);
+  }
+  size_t guarantedAlignment(MemoryAllocationArgs args) override
+  {
+    _checkValid(args);
+    return m_default_allocator.guarantedAlignment();
+  }
+
+ private:
+
+  DefaultMemoryAllocator m_default_allocator;
+
+ private:
+
+  static void _checkValid(MemoryAllocationArgs args)
+  {
+    bool is_valid = args.memoryLocationHint() ==eMemoryLocationHint::None || args.memoryLocationHint() ==eMemoryLocationHint::HostAndDeviceMostlyRead;
+    ASSERT_TRUE(is_valid);
+  }
+};
+
+#define ASSERT_SAME_ARRAY_INFOS(a,b) \
+  ASSERT_EQ(a.allocationOptions(), b.allocationOptions());\
+  ASSERT_EQ(a.size(), b.size());\
+  ASSERT_EQ(a.capacity(), b.capacity())
+
+TEST(Array, AllocatorV2)
+{
+  using namespace Arccore;
+  TesterMemoryAllocatorV2 testerv2_allocator;
+  TesterMemoryAllocatorV2 testerv2_allocator2;
+  MemoryAllocationOptions allocate_options1(&testerv2_allocator, eMemoryLocationHint::HostAndDeviceMostlyRead);
+  MemoryAllocationOptions allocate_options2(&testerv2_allocator);
+  {
+    MemoryAllocationOptions opt3(&testerv2_allocator);
+    opt3.setMemoryLocationHint(eMemoryLocationHint::HostAndDeviceMostlyRead);
+    ASSERT_EQ(opt3,allocate_options1);
+  }
+  {
+    std::cout << "Array a1\n";
+    UniqueArray<Int32> a1(allocate_options2);
+    ASSERT_EQ(a1.allocationOptions(), allocate_options2);
+    ASSERT_EQ(a1.size(), 0);
+    ASSERT_EQ(a1.capacity(), 0);
+    ASSERT_EQ(a1.data(), nullptr);
+
+    std::cout << "Array a2\n";
+    UniqueArray<Int32> a2(a1);
+    ASSERT_SAME_ARRAY_INFOS(a2,a1);
+    ASSERT_EQ(a2.data(), nullptr);
+    std::array<Int32, 5> vals = { 5, 7, 12, 3, 1 };
+    a1.reserve(3);
+    a1.add(5);
+    a1.add(7);
+    a1.add(12);
+    a1.add(3);
+    a1.add(1);
+    ASSERT_EQ(a1.size(), 5);
+
+    std::cout << "Array a3\n";
+    UniqueArray<Int32> a3(allocate_options1);
+    a3.add(4);
+    a3.add(6);
+    a3.add(2);
+    ASSERT_EQ(a3.size(), 3);
+    a3 = a1;
+    ASSERT_EQ(a3.allocator(), a1.allocator());
+    ASSERT_EQ(a3.size(), a1.size());
+    ASSERT_EQ(a3.constSpan(), a1.constSpan());
+
+    std::cout << "Array a4\n";
+    UniqueArray<Int32> a4(allocate_options1);
+    a4.add(4);
+    a4.add(6);
+    a4.add(2);
+    ASSERT_EQ(a4.size(), 3);
+    a4 = a1.span();
+    ASSERT_EQ(a4.allocationOptions(), allocate_options1);
+
+    a4 = UniqueArray<Int32>(&testerv2_allocator2);
+
+    UniqueArray<Int32> array[2];
+    MemoryAllocationOptions allocator3 = allocate_options1;
+    for( Integer i=0; i<2; ++i ){
+      array[i] = UniqueArray<Int32>(allocator3);
+    }
+    ASSERT_EQ(array[0].allocationOptions(), allocator3);
+    ASSERT_EQ(array[1].allocationOptions(), allocator3);
   }
 }
 
