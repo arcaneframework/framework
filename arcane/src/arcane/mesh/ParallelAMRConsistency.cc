@@ -582,7 +582,6 @@ _addFaceToList2(Face face, FaceInfoMap2& face_map)
 void ParallelAMRConsistency::
 makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
 {
-  Integer nb_sub_domain_boundary_face = 0;
   // Marque les noeuds sur la frontière
   Integer nb_active_face = static_cast<Integer> (m_mesh->nbFace() * 0.2); // 20% de faces shared (sur estimé)
   m_active_nodes.resize((nb_active_face * 2) + 5);
@@ -624,7 +623,6 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
         face2.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
         _addFaceToList2(face2, m_active_faces2);
         active_faces_set.insert(face2);
-        ++nb_sub_domain_boundary_face;
         for ( Node node : face2.nodes() ){
           node.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
           active_nodes_set.insert(node);

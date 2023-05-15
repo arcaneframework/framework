@@ -2107,7 +2107,6 @@ _removeGhostChildren()
   UniqueArray<ItemInternal*> parent_cells;
   parent_cells.reserve(1000);
 
-  Integer counter = 0;
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
     ItemInternal* cell = nbid->value();
     if (cell->owner() == sid)
@@ -2116,7 +2115,6 @@ _removeGhostChildren()
     if (cell->flags() & ItemFlags::II_JustCoarsened){
       for (Integer c = 0, cs = cell->nbHChildren(); c < cs; c++){
         cells_to_remove.add(cell->internalHChild(c)->localId());
-        counter++;
       }
       parent_cells.add(cell);
     }

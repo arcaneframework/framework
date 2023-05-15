@@ -155,6 +155,8 @@ _internalItemTestCompile()
       total += dof.localId();
     }
   }
+
+  std::cout << "TOTAL=" << total << "\n";
 }
 
 /*---------------------------------------------------------------------------*/

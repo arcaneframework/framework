@@ -1457,12 +1457,10 @@ _checkFillArrayFromTo(IMeshMaterial* mat,MaterialVariableCellReal& var)
     Int32UniqueArray indexes;
     {
       Integer wanted_index = 0;
-      Integer step = 1;
       Integer iterator_index = 0;
       ENUMERATE_MATCELL(imatcell,mat){
         if (iterator_index==wanted_index){
           matvar_indexes.insert(std::make_pair(iterator_index,*imatcell));
-          ++step;
           indexes.add(iterator_index);
         }
         ++iterator_index;

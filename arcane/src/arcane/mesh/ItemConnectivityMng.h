@@ -138,7 +138,7 @@ public:
     _register(connectivity->name(),connectivity->sourceFamily()->fullName(),connectivity->targetFamily()->fullName());
   }
 
-  void unregisterConnectivity(IIncrementalItemConnectivity* connectivity) override
+  void unregisterConnectivity([[maybe_unused]] IIncrementalItemConnectivity* connectivity) override
   {
     //connectivity->sourceFamily()->removeSourceConnectivity(connectivity);
     //connectivity->targetFamily()->removeTargetConnectivity(connectivity);

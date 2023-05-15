@@ -1120,7 +1120,7 @@ _testAllGatherVariable2(Int32 root_rank)
 
 template<typename DataType> template<bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
-_testAllGatherVariable3(Int32 root_rank,bool use_generic)
+_testAllGatherVariable3(Int32 root_rank,[[maybe_unused]] bool use_generic)
 {
   // root_rank vaut (-1) si on utilise la version collective (allGather)
   IParallelMng* pm = m_parallel_mng;

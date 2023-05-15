@@ -60,10 +60,6 @@ TEST(TestNumVector,RealN2)
   // Operator * and /
   {
     RealN2 v2(1.2,4.5);
-    RealN2 v1(1.3,2.3);
-    //RealN2 v3 = v1 * v2;
-    //ASSERT_EQ(v3.x(),1.2*1.3);
-    //ASSERT_EQ(v3.y(),4.5*2.3);
     RealN2 v4 = v2 * 2.3;
     ASSERT_EQ(v4.vx(),v2.vx()*2.3);
     ASSERT_EQ(v4.vy(),v2.vy()*2.3);

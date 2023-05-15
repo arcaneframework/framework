@@ -333,7 +333,6 @@ void MEDMeshReader::
 _readAndAllocateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* meshname)
 {
   Int64 cell_unique_id = 0;
-  Int32 cell_local_id = 0;
   // Alloue les entités types par type.
   for (const auto& iinfo : m_med_to_arcane_types) {
     Integer item_dimension = iinfo.dimension();
@@ -379,7 +378,6 @@ _readAndAllocateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, con
       med_connectivity_index += nb_item_node;
       cells_infos_index += nb_item_node;
 
-      ++cell_local_id;
     }
     mesh->allocateCells(nb_item, cells_infos, false);
   }

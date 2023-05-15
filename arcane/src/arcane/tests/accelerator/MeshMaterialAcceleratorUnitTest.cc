@@ -100,7 +100,6 @@ class MeshMaterialAcceleratorUnitTest
   UniqueArray<Int32> m_env1_pure_value_index;
   UniqueArray<Int32> m_env1_partial_value_index;
   CellGroup m_sub_env_group1;
-  Int32 m_nb_z;
 
   void _initializeVariables();
 
@@ -139,7 +138,6 @@ MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& sb)
 , m_mat_c(VariableBuildInfo(mesh(),"MatC"))
 , m_mat_d(VariableBuildInfo(mesh(),"MatD"))
 , m_mat_e(VariableBuildInfo(mesh(),"MatE"))
-, m_nb_z(0)
 {
 }
 

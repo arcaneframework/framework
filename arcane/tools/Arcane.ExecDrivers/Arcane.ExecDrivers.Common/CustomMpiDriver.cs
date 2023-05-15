@@ -16,7 +16,7 @@ namespace Arcane.ExecDrivers.Common
       if (m_is_init)
         return;
       string host_name = Environment.MachineName;
-      Console.WriteLine("TRY CUSTOM MPI_LAUNCHER machine={0}");
+      Console.WriteLine("TRY CUSTOM MPI_LAUNCHER machine={0}",host_name);
       m_is_init = true;
     }
 
@@ -80,8 +80,8 @@ namespace Arcane.ExecDrivers.Common
         while (nb_thread_power_2 < nb_thread)
           nb_thread_power_2 *= 2;
         p.MpiLauncherArgs.Add("-c" + nb_thread_power_2);
-        //Utils.SetEnvironmentVariable("ARCANE_BIND_THREADS", "1");
-        //Utils.SetEnvironmentVariable("ARCANE_SPINLOCK_BARRIER", "1");
+        // Utils.SetEnvironmentVariable("ARCANE_BIND_THREADS", "1");
+        // Utils.SetEnvironmentVariable("ARCANE_SPINLOCK_BARRIER", "1");
       }
 
       return true;

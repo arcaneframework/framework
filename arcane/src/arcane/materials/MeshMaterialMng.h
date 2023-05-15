@@ -106,7 +106,7 @@ class MeshMaterialMng
   }
 
   void setDataCompressorServiceName(const String& name) override;
-  String dataCompressorServiceName() const { return m_data_compressor_service_name; }
+  String dataCompressorServiceName() const override { return m_data_compressor_service_name; }
 
   const String& name() const override { return m_name; }
   ConstArrayView<IMeshMaterial*> materials() const override { return m_materials; }
