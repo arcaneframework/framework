@@ -95,7 +95,7 @@ findWhichLidFromMapMap(IVariable* var,
     var_idx_name = var_idx_name + String("_idx");
     VariableItemInt32* var_idx =
     new VariableItemInt32(VariableBuildInfo(var->itemFamily(),
-                                            var_idx_name),
+                                            var_idx_name,IVariable::PSubDomainDepend),
                           var->itemKind());
     // On rajoute à notre map la variable '_idx' de cette variable
     m_var_map_idx.insert(std::make_pair(var, var_idx));
