@@ -184,40 +184,8 @@ namespace Arcane.ExecDrivers.Common
     {
       m_properties = new ExecDriverProperties();
       m_additional_assemblies = new List<Assembly>();
-      Console.WriteLine("Try adding custom drivers");
-      _TryAddAssembly("Arcane.CeaExecDrivers.dll");
-    }
-
-    void _TryAddAssembly(string file_name)
-    {
-      Assembly this_assembly = Assembly.GetAssembly(typeof(ExecDriver));
-      string this_assembly_path = Path.GetDirectoryName(this_assembly.Location);
-      string lib_path = this_assembly_path;
-      string full_path = Path.Combine(lib_path, file_name);
-      Console.WriteLine("Try loading assembly '{0}'", full_path);
-      try {
-        if (!File.Exists(full_path))
-          return;
-        Assembly b = Utils.LoadAssembly(full_path);
-        if (b != null) {
-          m_additional_assemblies.Add(b);
-          Console.WriteLine("Found custom driver named '{0}'", full_path);
-          foreach (Type t in b.GetTypes()) {
-            if (t.Name == "MainClass") {
-              Console.WriteLine("Found type named '{0}'", t.FullName);
-              ConstructorInfo m = t.GetConstructor(new Type[0]);
-              Console.WriteLine("EXEC_METHOD = {0}", m);
-              object o = m.Invoke(new object[0]);
-              Console.WriteLine("CREATE Ob={0}", o);
-              m_custom_driver = (ICustomExecDriver)o;
-              Console.WriteLine("Custome driver ={0}", m_custom_driver);
-            }
-          }
-        }
-      }
-      catch (Exception ex) {
-        Console.WriteLine(String.Format("Can not load assembly '{0}' ex={1}", file_name, ex.Message));
-      }
+      m_custom_driver = new CustomMpiDriver();
+      Console.WriteLine("Custome driver ={0}", m_custom_driver);
     }
 
     public void ParseArgs(string[] args, Mono.Options.OptionSet additional_options)
