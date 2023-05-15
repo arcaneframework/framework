@@ -101,9 +101,10 @@ namespace Arcane.ExecDrivers.Common
         p.MpiLauncherArgs.Add("-d tv");
         p.UseTotalview = false;
       }
-
-      int nb_thread = p.NbTaskPerProcess * p.NbSharedMemorySubDomain;
-      Console.WriteLine("NB_THREAD={0} ({1},{2})", nb_thread, p.NbSharedMemorySubDomain, p.NbTaskPerProcess);
+      int nb_task = Math.Max(p.NbTaskPerProcess,1);
+      int nb_shared_memory = Math.Max(p.NbSharedMemorySubDomain,1);
+      int nb_thread = nb_task * nb_shared_memory;
+      Console.WriteLine("NB_THREAD={0} (nb_shm={1},nb_task={2})", nb_thread, nb_shared_memory, nb_task);
 
       p.MpiLauncherArgs.Add("-n");
       p.MpiLauncherArgs.Add(p.NbProc.ToString());
