@@ -369,8 +369,19 @@ namespace Arcane.ExecDrivers.Common
         Console.WriteLine("Using visual studio debugger");
         use_devenv = true;
       }
+
       if (m_properties.NbProc != 0)
         is_parallel = true;
+      bool force_use_mpiexec = false;
+      {
+        string str = Utils.GetEnvironmentVariable("ARCANE_ALWAYS_USE_MPI_DRIVER");
+        if (str=="1" || str=="TRUE")
+          force_use_mpiexec = true;
+      }
+      if (m_properties.NbProc==0 && force_use_mpiexec){
+        Console.WriteLine("Force using mpi driver to launch sequential test");
+        m_properties.NbProc = 1;
+      }
       if (!String.IsNullOrEmpty(m_dotnet_assembly)){
         m_use_dotnet = true;
         Utils.SetEnvironmentVariable("ARCANE_DOTNET_ASSEMBLY", m_dotnet_assembly);
@@ -447,6 +458,7 @@ namespace Arcane.ExecDrivers.Common
           sub_args.Add(exe_name);
           exe_name = Utils.ValgrindExecName;
         }
+
         if (m_properties.NbProc == 0) {
           command = exe_name;
           _HandleMpiLauncher();
