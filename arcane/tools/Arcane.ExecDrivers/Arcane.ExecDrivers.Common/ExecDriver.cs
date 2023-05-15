@@ -340,13 +340,19 @@ namespace Arcane.ExecDrivers.Common
 
       if (m_properties.NbProc != 0)
         is_parallel = true;
-      bool force_use_mpiexec = false;
+      // Regarde si on force l'utilisation du lanceur MPI (en général mpixec) même pour les jobs séquentiels
+      // Cela peut être nécessaire sur certaines plateformes
+      // On le fait si demandé via une variable d'environnement ou si
+      // on utilise un driver spécifique.
+      bool force_use_mpi_driver = !String.IsNullOrEmpty(Utils.CustomMpiDriver);
       {
         string str = Utils.GetEnvironmentVariable("ARCANE_ALWAYS_USE_MPI_DRIVER");
         if (str=="1" || str=="TRUE")
-          force_use_mpiexec = true;
+          force_use_mpi_driver = true;
+        if (str=="0" || str=="FALSE")
+          force_use_mpi_driver = false;
       }
-      if (m_properties.NbProc==0 && force_use_mpiexec){
+      if (m_properties.NbProc==0 && force_use_mpi_driver){
         Console.WriteLine("Force using mpi driver to launch sequential test");
         m_properties.NbProc = 1;
       }
