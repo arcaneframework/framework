@@ -542,6 +542,9 @@ namespace Arcane.ExecDrivers.Common
       // supprime les arguments positionnés par les anciens appels.
       m_properties.MpiLauncherArgs.Clear();
       string mpi_exec_name = Utils.MpiExecName;
+      string custom_mpi_driver = Utils.CustomMpiDriver;
+      if (!String.IsNullOrEmpty(custom_mpi_driver))
+        mpi_exec_name = custom_mpi_driver;
       m_properties.MpiLauncher = mpi_exec_name;
       if (m_custom_driver != null) {
         if (m_custom_driver.HandleMpiLauncher(m_properties, mpi_exec_name))
