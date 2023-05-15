@@ -25,7 +25,7 @@ namespace Arccore::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 void GatherMessageInfoBase::
-print(std::ostream& o) const
+print(std::ostream&) const
 {
 }
 
