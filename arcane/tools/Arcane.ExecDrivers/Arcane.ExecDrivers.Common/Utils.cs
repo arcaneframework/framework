@@ -66,6 +66,7 @@ namespace Arcane.ExecDrivers.Common
     public static string ConfigMpiexecPreflags { get; set; }
     public static string ConfigMpiexecPostflags { get; set; }
     public static string ConfigMpiVendorName { get; set; }
+    public static string CustomMpiDriver { get; set; }
 
     static Dictionary<string,string> m_settings;
 
@@ -108,6 +109,7 @@ namespace Arcane.ExecDrivers.Common
       m_mono_exec_path = NormalizePath(_ReadConfig(settings, "MonoExecPath"));
       DotnetCoreClrPath = NormalizePath(_ReadConfig(settings, "DotnetCoreClrPath"));
       m_external_libraries = _ReadConfig(settings, "ExternalLibraries");
+      CustomMpiDriver = _ReadConfig(settings, "CustomMpiDriver");
 
       ConfigMpiexec = NormalizePath(_ReadConfig(settings, "Config_MPIEXEC"));
       ConfigMpiexecNumprocFlag = NormalizePath(_ReadConfig(settings, "Config_MPIEXEC_NUMPROC_FLAG"));

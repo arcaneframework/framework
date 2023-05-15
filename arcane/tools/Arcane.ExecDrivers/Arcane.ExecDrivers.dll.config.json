@@ -3,6 +3,7 @@
     "CodeLibPath" : "@ARCANE_INSTALL_LIB@",
     "CodeSharePath" : "@ARCANE_INSTALL_SHR@",
     "MpiBinary" : "@MPIEXEC_EXECUTABLE@",
+    "CustomMpiDriver" : "@ARCANE_CUSTOM_MPI_DRIVER@",
     "ValgrindBinary" : "@VALGRIND_EXEC_NAME@",
     "MonoExecPath" : "@MONO_EXEC_PATH@",
     "DotnetCoreClrPath" : "@DOTNET_EXEC@",

@@ -184,40 +184,8 @@ namespace Arcane.ExecDrivers.Common
     {
       m_properties = new ExecDriverProperties();
       m_additional_assemblies = new List<Assembly>();
-      Console.WriteLine("Try adding custom drivers");
-      _TryAddAssembly("Arcane.CeaExecDrivers.dll");
-    }
-
-    void _TryAddAssembly(string file_name)
-    {
-      Assembly this_assembly = Assembly.GetAssembly(typeof(ExecDriver));
-      string this_assembly_path = Path.GetDirectoryName(this_assembly.Location);
-      string lib_path = this_assembly_path;
-      string full_path = Path.Combine(lib_path, file_name);
-      Console.WriteLine("Try loading assembly '{0}'", full_path);
-      try {
-        if (!File.Exists(full_path))
-          return;
-        Assembly b = Utils.LoadAssembly(full_path);
-        if (b != null) {
-          m_additional_assemblies.Add(b);
-          Console.WriteLine("Found custom driver named '{0}'", full_path);
-          foreach (Type t in b.GetTypes()) {
-            if (t.Name == "MainClass") {
-              Console.WriteLine("Found type named '{0}'", t.FullName);
-              ConstructorInfo m = t.GetConstructor(new Type[0]);
-              Console.WriteLine("EXEC_METHOD = {0}", m);
-              object o = m.Invoke(new object[0]);
-              Console.WriteLine("CREATE Ob={0}", o);
-              m_custom_driver = (ICustomExecDriver)o;
-              Console.WriteLine("Custome driver ={0}", m_custom_driver);
-            }
-          }
-        }
-      }
-      catch (Exception ex) {
-        Console.WriteLine(String.Format("Can not load assembly '{0}' ex={1}", file_name, ex.Message));
-      }
+      m_custom_driver = new CustomMpiDriver();
+      Console.WriteLine("Custome driver ={0}", m_custom_driver);
     }
 
     public void ParseArgs(string[] args, Mono.Options.OptionSet additional_options)
@@ -369,8 +337,25 @@ namespace Arcane.ExecDrivers.Common
         Console.WriteLine("Using visual studio debugger");
         use_devenv = true;
       }
+
       if (m_properties.NbProc != 0)
         is_parallel = true;
+      // Regarde si on force l'utilisation du lanceur MPI (en général mpixec) même pour les jobs séquentiels
+      // Cela peut être nécessaire sur certaines plateformes
+      // On le fait si demandé via une variable d'environnement ou si
+      // on utilise un driver spécifique.
+      bool force_use_mpi_driver = !String.IsNullOrEmpty(Utils.CustomMpiDriver);
+      {
+        string str = Utils.GetEnvironmentVariable("ARCANE_ALWAYS_USE_MPI_DRIVER");
+        if (str=="1" || str=="TRUE")
+          force_use_mpi_driver = true;
+        if (str=="0" || str=="FALSE")
+          force_use_mpi_driver = false;
+      }
+      if (m_properties.NbProc==0 && force_use_mpi_driver){
+        Console.WriteLine("Force using mpi driver to launch sequential test");
+        m_properties.NbProc = 1;
+      }
       if (!String.IsNullOrEmpty(m_dotnet_assembly)){
         m_use_dotnet = true;
         Utils.SetEnvironmentVariable("ARCANE_DOTNET_ASSEMBLY", m_dotnet_assembly);
@@ -447,6 +432,7 @@ namespace Arcane.ExecDrivers.Common
           sub_args.Add(exe_name);
           exe_name = Utils.ValgrindExecName;
         }
+
         if (m_properties.NbProc == 0) {
           command = exe_name;
           _HandleMpiLauncher();
@@ -562,6 +548,9 @@ namespace Arcane.ExecDrivers.Common
       // supprime les arguments positionnés par les anciens appels.
       m_properties.MpiLauncherArgs.Clear();
       string mpi_exec_name = Utils.MpiExecName;
+      string custom_mpi_driver = Utils.CustomMpiDriver;
+      if (!String.IsNullOrEmpty(custom_mpi_driver))
+        mpi_exec_name = custom_mpi_driver;
       m_properties.MpiLauncher = mpi_exec_name;
       if (m_custom_driver != null) {
         if (m_custom_driver.HandleMpiLauncher(m_properties, mpi_exec_name))
