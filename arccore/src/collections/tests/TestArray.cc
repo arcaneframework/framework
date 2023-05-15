@@ -33,7 +33,7 @@ class IntSubClassNoPod
   //IntSubClassNoPod() : m_v(0) {}
   Integer m_v;
   friend bool operator==(const IntSubClassNoPod& v,Integer iv) { return v.m_v == iv; }
-  friend bool operator==(const IntSubClassNoPod& v1,const IntSubClassNoPod& v2) { return v1.m_v==v2.m_v; }
+  //friend bool operator==(const IntSubClassNoPod& v1,const IntSubClassNoPod& v2) { return v1.m_v==v2.m_v; }
   friend bool operator!=(const IntSubClassNoPod& v1,const IntSubClassNoPod& v2) { return v1.m_v!=v2.m_v; }
   friend std::ostream& operator<<(std::ostream& o,IntSubClassNoPod c)
   {
@@ -890,7 +890,6 @@ TEST(Array, Allocator)
     ASSERT_EQ(a1.allocator(), a2.allocator());
     ASSERT_EQ(a2.capacity(), 0);
     ASSERT_EQ(a2.data(), nullptr);
-    std::array<Int32, 5> vals = { 5, 7, 12, 3, 1 };
     a1.reserve(3);
     a1.add(5);
     a1.add(7);
@@ -1016,7 +1015,6 @@ TEST(Array, AllocatorV2)
     UniqueArray<Int32> a2(a1);
     ASSERT_SAME_ARRAY_INFOS(a2,a1);
     ASSERT_EQ(a2.data(), nullptr);
-    std::array<Int32, 5> vals = { 5, 7, 12, 3, 1 };
     a1.reserve(3);
     a1.add(5);
     a1.add(7);

@@ -179,7 +179,6 @@ _readConfig()
 
   if (nb_group!=0){
     std::set<String> used_groups; // Liste des groupes déjà indiquées
-    Integer index = 0;
     //m_group_list.resize(nb_group);
     info() << " ";
     info() << "-- List of output groups (" << nb_group << " groups):";
@@ -189,7 +188,6 @@ _readConfig()
         continue;
       String groupname = group.name();
       if (used_groups.find(groupname)==used_groups.end()){
-        ++index;
         info() << "Group <" << groupname << ">";
         used_groups.insert(groupname);
         m_groups.add(group);

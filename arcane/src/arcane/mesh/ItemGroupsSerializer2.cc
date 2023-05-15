@@ -113,7 +113,7 @@ get(ISerializer* sbuf,Int64Array& items_in_groups_uid)
 
   Integer local_index = 0;
   UniqueArray<Int32> items_in_group_local_id;
-  Int32 group_index = 0;
+  [[maybe_unused]] Int32 group_index = 0;
   for( ItemGroupList::Enumerator i_group(m_groups_to_exchange); ++i_group; ++group_index ){
     ItemGroup group = *i_group;
     // Le premier élément du tableau contient le nombre d'éléments

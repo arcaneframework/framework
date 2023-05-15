@@ -1168,7 +1168,6 @@ _legacyProbeMessage(MessageRank source,MessageTag tag,bool is_blocking)
 {
   MPI_Status mpi_status;
   int has_message = 0;
-  MPI_Message message;
   int ret = 0;
   int mpi_source = source.value();
   if (source.isProcNull())

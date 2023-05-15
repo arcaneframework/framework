@@ -287,7 +287,7 @@ _saveGroup(const ItemGroup& group,HGroup& domain_group)
     ENUMERATE_ITEM(iitem,all_items){
       const Item& _item = *iitem;
       const ItemWithNodes& item = _item.toItemWithNodes();
-      Integer index = 0;
+      [[maybe_unused]] Integer index = 0;
       for( NodeEnumerator inode(item.nodes()); inode.hasNext(); ++inode ){
         //const Node& node = *inode;
         item_node_ids.add(node_local_indexes[inode.itemLocalId()]);

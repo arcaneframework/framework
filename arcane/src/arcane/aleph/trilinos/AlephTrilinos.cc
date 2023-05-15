@@ -230,7 +230,7 @@ class AlephMatrixTrilinos : public IAlephMatrix
  *****************************************************************************/
   void AlephMatrixFill(int size, int* rows, int* cols, double* values)
   {
-    int rtn = 0;
+    [[maybe_unused]] int rtn = 0;
     for (int i = 0; i < size; i++) {
       // int InsertGlobalValues(int GlobalRow, int NumEntries, double* Values, int* Indices);
       /*#warning TRILINOS DUMP

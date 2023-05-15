@@ -405,12 +405,8 @@ isUpdated()
   if(!m_update_sync_info)
     return false ;
 
-  auto dualnode_family = dualNodeFamily() ;
-  auto link_family = linkFamily() ;
-
   for (Integer index = 0; index < NB_DUAL_ITEM_TYPE; ++index) {
     Integer dual_node_kind = m_dualnode_kinds[index];
-    Arcane::eItemKind dual_item_kind = dualItemKind(dual_node_kind) ;
     auto dof2dual_incremental_connectivity = m_incremental_connectivities[_connectivityIndex(dual_node_kind)] ;
 
     if (dof2dual_incremental_connectivity && ! m_connectivity_mng.isUpToDate(dof2dual_incremental_connectivity))

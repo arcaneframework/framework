@@ -158,10 +158,8 @@ lockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr)
   ARCCORE_UNUSED(scoped_spin_lock_addr);
 
   volatile gint* v = (gint*)spin_lock_addr;
-  int loop = 0;
   if (!g_bit_trylock(v, 0)) {
     do {
-      ++loop;
       //TODO: Faire Pause
     } while (!g_bit_trylock(v, 0));
   }

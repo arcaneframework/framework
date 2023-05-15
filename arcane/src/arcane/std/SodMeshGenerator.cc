@@ -410,7 +410,6 @@ generateMesh(IPrimaryMesh* mesh)
   Int64UniqueArray cells_infos(mesh_nb_cell*10);
 
   if (m_mesh_dimension==1){
-    Integer cell_local_id = 0;
     Integer cells_infos_index = 0;
     
     for( Integer x=0; x<nb_cell_x; ++x ){
@@ -432,13 +431,11 @@ generateMesh(IPrimaryMesh* mesh)
           cells_infos[cells_infos_index+1] = nodes_unique_id[base_id + 1];
 
           cells_infos_index += current_cell_nb_node;
-          ++cell_local_id;
         }
       }
     }
   }
   else if (m_mesh_dimension==2){
-    Integer cell_local_id = 0;
     Integer cells_infos_index = 0;
 
     for( Integer x=0; x<nb_cell_x; ++x ){
@@ -462,14 +459,12 @@ generateMesh(IPrimaryMesh* mesh)
           cells_infos[cells_infos_index+3] = nodes_unique_id[base_id + 1];
           
           cells_infos_index += current_cell_nb_node;
-          ++cell_local_id;
         }
       }
     }
   }
   else if (m_mesh_dimension==3){
     if (m_zyx_generate==false){
-      Integer cell_local_id = 0;
       Integer cells_infos_index = 0;
       for( Integer x=0; x<nb_cell_x; ++x ){
         for( Integer z=0; z<nb_cell_z; ++z ){
@@ -492,12 +487,10 @@ generateMesh(IPrimaryMesh* mesh)
             cells_infos[cells_infos_index+6] = nodes_unique_id[base_id + nb_node_yz + nb_node_y + 1];
             cells_infos[cells_infos_index+7] = nodes_unique_id[base_id + nb_node_yz + nb_node_y + 0];
             cells_infos_index += current_cell_nb_node;
-            ++cell_local_id;
           }
         }
       }
     }else{ // m_zyx_generate
-      Integer cell_local_id = 0;
       Integer cells_infos_index = 0;
       for( Integer z=0; z<nb_cell_z; ++z ){
         for( Integer y=0; y<nb_cell_y; ++y ){
@@ -529,7 +522,6 @@ generateMesh(IPrimaryMesh* mesh)
                    << cells_infos[cells_infos_index+6] << ", "
                    << cells_infos[cells_infos_index+7];
             cells_infos_index += current_cell_nb_node;
-            ++cell_local_id;
           }
         }
       }

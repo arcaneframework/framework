@@ -352,12 +352,10 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
     Integer nb_particle = all_particles.size();
     Integer nb_particle_to_remove = 0;
     Integer max_particle_to_remove = (Integer)(nb_particle * options()->destroyRatio());
-    Integer index = 0;
     ENUMERATE_PARTICLE(i_part,all_particles){
       Particle part = *i_part;
       particles_local_id.add(part.localId());
       ++nb_particle_to_remove;
-      ++index;
       if (nb_particle_to_remove>(max_particle_to_remove))
         break;
     }

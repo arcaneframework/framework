@@ -718,10 +718,8 @@ computeGeometricValues()
       SimdReal3 face_coord[6];
 
       SimdReal3 cqs[8];
-      int nb_done = 0;
       //std::cerr << "SIZE=" << cells.size() << '\n';
       ENUMERATE_SIMD_CELL(ivecitem,cells){
-        ++nb_done;
         SimdCell vitem = *ivecitem;
         for( CellEnumerator iscell(ivecitem.enumerator()); iscell.hasNext(); ++iscell ){
           Cell cell(*iscell);
