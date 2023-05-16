@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.h                                (C) 2000-2021             */
+/* PolyhedralMesh.h                                (C) 2000-2023             */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure                             */
 /*---------------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ class PolyhedralMesh
 : public EmptyMesh
 , public IPolyhedralMeshInitialAllocator
 {
- public:
+ private:
 
   String m_name;
   ISubDomain* m_subdomain;
@@ -74,8 +74,10 @@ class PolyhedralMesh
   bool m_is_allocated = false;
   ItemTypeMng* m_item_type_mng = nullptr;
 
+ public:
+
   // IPolyhedralMeshInitialAllocator interface
-  void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info);
+  void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info) override;
 
  public:
 
@@ -110,7 +112,7 @@ class PolyhedralMesh
   std::array<std::unique_ptr<PolyhedralFamily>, NB_ITEM_KIND> m_empty_arcane_families;
   std::array<PolyhedralFamily*, NB_ITEM_KIND> m_default_arcane_families;
   std::vector<std::unique_ptr<VariableItemReal3>> m_arcane_item_coords;
-  std::unique_ptr<VariableNodeReal3> m_arcane_node_coords;
+  std::unique_ptr<VariableNodeReal3> m_arcane_node_coords = nullptr;
   ItemGroupList m_all_groups;
   InitialAllocator m_initial_allocator;
   IVariableMng* m_variable_mng;
