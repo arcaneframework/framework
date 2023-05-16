@@ -392,6 +392,8 @@ namespace mesh
                                 auto nb_item_size = connectivity_values.m_offsets.size();
                                 item_internal_connectivity_list->setConnectivityNbItem(arcane_target_item_family->itemKind(),
                                                                                        Int32ArrayView{ Integer(nb_item_size), nb_item_data });
+                                auto max_nb_connected_items = *std::max_element(connectivity_values.m_offsets.begin(), connectivity_values.m_offsets.end());
+                                item_internal_connectivity_list->setMaxNbConnectedItem(arcane_target_item_family->itemKind(), max_nb_connected_items);
                                 auto connectivity_values_data = connectivity_values.m_data.data();
                                 auto connectivity_values_size = connectivity_values.m_data.size();
                                 item_internal_connectivity_list->setConnectivityList(arcane_target_item_family->itemKind(),
