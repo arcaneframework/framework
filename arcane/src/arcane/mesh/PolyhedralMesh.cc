@@ -832,6 +832,54 @@ allCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+NodeGroup mesh::PolyhedralMesh::
+ownNodes()
+{
+  if (m_default_arcane_families[IK_Node])
+    return m_default_arcane_families[IK_Node]->allItems().own();
+  else
+    return NodeGroup{};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+EdgeGroup mesh::PolyhedralMesh::
+ownEdges()
+{
+  if (m_default_arcane_families[IK_Edge])
+    return m_default_arcane_families[IK_Edge]->allItems().own();
+  else
+    return EdgeGroup{};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+FaceGroup mesh::PolyhedralMesh::
+ownFaces()
+{
+  if (m_default_arcane_families[IK_Face])
+    return m_default_arcane_families[IK_Face]->allItems().own();
+  else
+    return FaceGroup{};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup mesh::PolyhedralMesh::
+ownCells()
+{
+  if (m_default_arcane_families[IK_Cell])
+    return m_default_arcane_families[IK_Cell]->allItems().own();
+  else
+    return CellGroup{};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 FaceGroup mesh::PolyhedralMesh::
 outerFaces()
 {
