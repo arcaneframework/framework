@@ -338,6 +338,8 @@ _testGroups(IMesh* mesh)
   for (const auto& boundary_face_group_name : options()->getCheckInternalFaceGroup()) {
     _checkInternalFaceGroup(mesh, boundary_face_group_name);
   }
+
+  _checkBoundaryFaceGroup(mesh, mesh->outerFaces().name());
 }
 
 /*---------------------------------------------------------------------------*/
