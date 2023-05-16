@@ -29,6 +29,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/List.h"
 #include "arcane/core/IMeshInitialAllocator.h"
+#include "arcane/core/IParallelMng.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include <vector>
@@ -71,7 +72,8 @@ class PolyhedralMesh
   MeshHandle m_mesh_handle;
   std::unique_ptr<Properties> m_properties;
   std::unique_ptr<PolyhedralMeshImpl> m_mesh; // using pimpl to limit dependency to neo lib to cc file
-  MeshPartInfo m_part_info;
+  IParallelMng* m_parallel_mng;
+  MeshPartInfo m_mesh_part_info;
   bool m_is_allocated = false;
   ItemTypeMng* m_item_type_mng = nullptr;
 
@@ -173,7 +175,7 @@ class PolyhedralMesh
 
   Properties* properties() override { return m_properties.get(); }
 
-  const MeshPartInfo& meshPartInfo() const { return m_part_info; };
+  const MeshPartInfo& meshPartInfo() const { return m_mesh_part_info; };
 
   IItemFamily* nodeFamily() override;
   IItemFamily* edgeFamily() override;

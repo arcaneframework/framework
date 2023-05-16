@@ -548,6 +548,8 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_mesh_handle{ m_subdomain->defaultMeshHandle() }
 , m_properties(std::make_unique<Properties>(subdomain->propertyMng(), String("ArcaneMeshProperties_") + m_name))
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
+, m_parallel_mng{ mbi.parallelMngRef().get() }
+, m_mesh_part_info{ makeMeshPartInfoFromParallelMng(m_parallel_mng) }
 , m_item_type_mng(ItemTypeMng::_singleton())
 , m_initial_allocator(*this)
 , m_variable_mng{ subdomain->variableMng() }
