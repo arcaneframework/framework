@@ -782,16 +782,6 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
       env->cells().removeItems(ids);
   }
   true_env->updateItemsDirect(m_nb_env_per_cell,true_mat,ids,operation,need_update_env);
-
-  // FIXME: Visiblement on a pas besoin de le faire ici, puisqu'un ForceRecompute est tjrs appelé après
-  // mais pour optimisé tout ça, il faudrait voir à garder cette liste de ids à changer pour la MAJ
-  // Met à jour le AllCell2AllEnvCell s'il a été initialisé
-  /*auto* allCell2AllEnvCell(m_material_mng->getAllCell2AllEnvCell());
-  if (allCell2AllEnvCell)
-    allCell2AllEnvCell->bruteForceUpdate(ids);
-  else
-    m_material_mng->createAllCell2AllEnvCell(platform::getDefaultDataAllocator());
-    */
 }
 
 /*---------------------------------------------------------------------------*/

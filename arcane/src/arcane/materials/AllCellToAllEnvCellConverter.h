@@ -63,9 +63,9 @@ namespace Arcane::Materials
 class ARCANE_MATERIALS_EXPORT AllCell2AllEnvCell
 {
  public:
-  //AllCell2AllEnvCell();
-  //~AllCell2AllEnvCell();
-  void reset();
+  explicit AllCell2AllEnvCell(IMeshMaterialMng* mm, IMemoryAllocator* alloc, Integer nb_allcell);
+  ~AllCell2AllEnvCell() = default;
+  //void reset();
   
   //! Copies interdites
   AllCell2AllEnvCell(const AllCell2AllEnvCell&) = delete;
@@ -85,7 +85,8 @@ class ARCANE_MATERIALS_EXPORT AllCell2AllEnvCell
   /*!
    * Méthode d'accès à la table de "connectivité" cell -> all env cells
    */
-  ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
+  //ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
+  ARCCORE_HOST_DEVICE UniqueArray<UniqueArray<ComponentItemLocalId>> internal() const
   {
     return m_allcell_allenvcell;
   }
@@ -94,7 +95,8 @@ class ARCANE_MATERIALS_EXPORT AllCell2AllEnvCell
   IMeshMaterialMng* m_mm;
   IMemoryAllocator* m_alloc;
   Integer m_nb_allcell;
-  Span<ComponentItemLocalId>* m_allcell_allenvcell;
+  //Span<ComponentItemLocalId>* m_allcell_allenvcell;
+  UniqueArray<UniqueArray<ComponentItemLocalId>> m_allcell_allenvcell;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -156,8 +158,10 @@ class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
   friend class EnumeratorTracer;
 
  public:
-  using index_type = Span<ComponentItemLocalId>::index_type;
-  using size_type = Span<ComponentItemLocalId>::size_type;
+  //using index_type = Span<ComponentItemLocalId>::index_type;
+  using index_type = UniqueArray<ComponentItemLocalId>::size_type;
+  //using size_type = Span<ComponentItemLocalId>::size_type;
+  using size_type = UniqueArray<ComponentItemLocalId>::size_type;
 
  public:
   // La version CPU permet de vérifier qu'on a bien fait l'init avant l'ENUMERATE
@@ -189,7 +193,8 @@ class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
  private:
   Integer m_cid;
   index_type m_index;
-  Span<ComponentItemLocalId>* m_ptr;
+  //Span<ComponentItemLocalId>* m_ptr;
+  UniqueArray<ComponentItemLocalId>* m_ptr;
   size_type m_size;
 };
 

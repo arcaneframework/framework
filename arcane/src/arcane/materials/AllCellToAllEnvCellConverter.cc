@@ -11,6 +11,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
+#include "arcane/mesh/ItemFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,6 +28,12 @@ AllCell2AllEnvCell()
 {
 }
 */
+AllCell2AllEnvCell::
+AllCell2AllEnvCell(IMeshMaterialMng* mm, IMemoryAllocator* alloc, Integer nb_allcell)
+: m_mm(mm), m_alloc(alloc), m_nb_allcell(nb_allcell)
+, m_allcell_allenvcell(UniqueArray<UniqueArray<ComponentItemLocalId>>(alloc, nb_allcell))
+{
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
@@ -38,7 +45,7 @@ AllCell2AllEnvCell::
 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*
 void AllCell2AllEnvCell::
 reset()
 {
@@ -55,10 +62,10 @@ reset()
   m_alloc = nullptr;
   m_nb_allcell = 0;
 }
-
+*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*
 AllCell2AllEnvCell* AllCell2AllEnvCell::
 create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
 {
@@ -95,16 +102,39 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   }
   return _instance;
 }
+*/
+AllCell2AllEnvCell* AllCell2AllEnvCell::
+create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
+{
+  AllCell2AllEnvCell *_instance(nullptr);
+  _instance = reinterpret_cast<AllCell2AllEnvCell*>(alloc->allocate(sizeof(AllCell2AllEnvCell)));
+  if (!_instance)
+    ARCANE_FATAL("Unable to allocate memory for AllCell2AllEnvCell instance");
+  _instance = new (_instance) AllCell2AllEnvCell(mm, alloc, mm->mesh()->allCells().itemFamily()->maxLocalId()+1);
+  //_instance->m_allcell_allenvcell.printInfos(std::cout);
 
+  CellToAllEnvCellConverter all_env_cell_converter(mm);
+  ENUMERATE_CELL(icell, mm->mesh()->allCells())
+  {
+    Int32 cid = icell->itemLocalId();
+    AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(cid)];
+    UniqueArray<ComponentItemLocalId> env_cells(alloc);
+    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell) {
+      EnvCell ev = *ienvcell;
+      env_cells.add(ComponentItemLocalId(ev._varIndex()));      
+    }
+    _instance->m_allcell_allenvcell[cid] = env_cells;
+  }
+  return _instance;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*
 void AllCell2AllEnvCell::
 bruteForceUpdate(Int32ConstArrayView ids)
 {
   // TODO: Je met un fatal, à supprimer une fois bien testé/exploré
   //ARCANE_FATAL("AllCell2AllEnvCell::bruteForceUpdate call !!!");
-
   // A priori, je ne pense pas que le nb de maille ait changé quand on fait un 
   // ForceRecompute et le updateMaterialDirect. Mais ça doit arriver ailleurs... le endUpdate ?
   if (m_nb_allcell != m_mm->mesh()->allCells().size()) {
@@ -113,9 +143,12 @@ bruteForceUpdate(Int32ConstArrayView ids)
     //ARCANE_FATAL("The number of cells has changed since initialization of AllCell2AllEnvCell.");
 
     AllCell2AllEnvCell *swap_ptr(create(m_mm, m_alloc));
-    std::swap(this->m_nb_allcell, swap_ptr->m_nb_allcell);
+    std::swap(this->m_mm,                 swap_ptr->m_mm);
+    std::swap(this->m_alloc,              swap_ptr->m_alloc);
+    std::swap(this->m_nb_allcell,         swap_ptr->m_nb_allcell);
     std::swap(this->m_allcell_allenvcell, swap_ptr->m_allcell_allenvcell);
-    swap_ptr->reset();
+    //swap_ptr->reset();
+    swap_ptr->~AllCell2AllEnvCell();
     m_alloc->deallocate(swap_ptr);
   } else {
     // Si le nb de maille n'a pas changé, on reconstruit en fonction de la liste de maille
@@ -144,7 +177,42 @@ bruteForceUpdate(Int32ConstArrayView ids)
     }
   }
 }
+*/
+void AllCell2AllEnvCell::
+bruteForceUpdate(Int32ConstArrayView ids)
+{
+  // TODO: Je met un fatal, à supprimer une fois bien testé/exploré
+  //ARCANE_FATAL("AllCell2AllEnvCell::bruteForceUpdate call !!!");
+  // NB: Le lien cell -> allenvcell se fait via le localid. Il se peut que le nb de maille diminue,
+  // on n'utilise donc pas la taille des allCells, mais le maxLocalId (+1) comme taille de la table
+  if (m_nb_allcell != m_mm->mesh()->allCells().itemFamily()->maxLocalId()+1) {
 
+    std::stringstream ss;
+    ss << "AllCells size is " << m_mm->mesh()->allCells().size() << ", was " << m_nb_allcell;
+    std::cout << ss.str() << std::endl;
+    //ARCANE_FATAL("");
+
+    m_allcell_allenvcell.clear();
+    m_nb_allcell = m_mm->mesh()->allCells().size();
+    m_allcell_allenvcell.resize(m_mm->mesh()->allCells().itemFamily()->maxLocalId()+1);
+  }
+  // Si le nb de maille n'a pas changé, on reconstruit en fonction de la liste de maille
+  // FIXME:
+  // Visiblement, quand il y a du changement de topologie en parallele (avec echange de maille ?)
+  // j'ai l'impression que le CellToAllEnvCellConverter n'est pas a jour au moment du ForceRecompute
+  // Il faut que je décale l'appel à cette méthode ?
+  CellToAllEnvCellConverter all_env_cell_converter(m_mm);
+  for (Int32 i(0); i<ids.size(); ++i) {
+    CellLocalId lid(ids[i]);
+    AllEnvCell all_env_cell = all_env_cell_converter[lid];
+    UniqueArray<ComponentItemLocalId> env_cells(m_alloc);
+    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell) {
+      EnvCell ev = *ienvcell;
+      env_cells.add(ComponentItemLocalId(ev._varIndex()));      
+    }
+    m_allcell_allenvcell[lid].swap(env_cells);
+  }
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
