@@ -840,6 +840,7 @@ _createItemFamily(eItemKind ik, const String& name)
     m_default_arcane_families[ik] = current_family;
     _updateMeshInternalList(ik);
   }
+  m_item_family_collection.add(current_family);
   return current_family;
 }
 
@@ -1082,11 +1083,7 @@ destroyGroups()
 IItemFamilyCollection mesh::PolyhedralMesh::
 itemFamilies()
 {
-  List<IItemFamily*> item_family_collection;
-  for (auto& item_family_ptr : m_arcane_families) {
-    item_family_collection.add(item_family_ptr.get());
-  }
-  return item_family_collection;
+  return m_item_family_collection;
 }
 
 /*---------------------------------------------------------------------------*/

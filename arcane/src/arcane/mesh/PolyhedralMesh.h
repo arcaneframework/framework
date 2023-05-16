@@ -118,6 +118,7 @@ class PolyhedralMesh
   InitialAllocator m_initial_allocator;
   IVariableMng* m_variable_mng;
   DynamicMeshChecker m_mesh_checker;
+  List<IItemFamily*> m_item_family_collection;
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
