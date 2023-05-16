@@ -832,6 +832,18 @@ allCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+FaceGroup mesh::PolyhedralMesh::
+outerFaces()
+{
+  if (m_default_arcane_families[IK_Cell])
+    return m_default_arcane_families[IK_Cell]->allItems().outerFaceGroup();
+  else
+    return FaceGroup{};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 mesh::PolyhedralFamily* mesh::PolyhedralMesh::
 _createItemFamily(eItemKind ik, const String& name)
 {

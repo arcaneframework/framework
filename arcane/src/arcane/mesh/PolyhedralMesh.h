@@ -166,7 +166,7 @@ class PolyhedralMesh
 
   CellGroup ownCells() override { return ItemGroup{}; }
 
-  FaceGroup outerFaces() override { return ItemGroup{}; }
+  FaceGroup outerFaces() override;
 
   IItemFamily* createItemFamily(eItemKind ik, const String& name) override;
 
