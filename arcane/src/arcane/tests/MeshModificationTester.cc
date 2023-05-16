@@ -240,7 +240,7 @@ _refineCells()
         to_add_cells.add(cell->node(2).uniqueId().asInt64());
         to_add_cells.add(cell->node(3).uniqueId().asInt64());
         Real3 center;
-        ENUMERATE_NODE(inode, cell->nodes()) {
+        for( NodeLocalId inode : cell->nodeIds()) {
           center += nodes_coords[inode];
           info() << String::format("ADD CENTER {0}",nodes_coords[inode]);
         }
