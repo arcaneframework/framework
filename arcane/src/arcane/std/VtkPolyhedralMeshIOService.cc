@@ -879,7 +879,6 @@ edgeUids()
           auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, m_edge_node_uids, Int32UniqueArray(m_edge_uids.size(), 2)); // works for edges
           if (!is_edge_found) {
             m_cell_nb_edges[cell_index] += 1;
-            m_cell_edge_uids.push_back(edge_uid);
             face_edges[m_face_uid_indexes[global_face_index]].insert(edge_uid);
             cell_edges[cell_index].insert(edge_uid);
             for (auto node : current_edge) {
@@ -905,7 +904,6 @@ edgeUids()
         auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, m_edge_node_uids, Int32UniqueArray(m_edge_uids.size(), 2)); // works for edges
         if (!is_edge_found) {
           m_cell_nb_edges[cell_index] += 1;
-          m_cell_edge_uids.push_back(edge_uid);
           edge_cells.push_back(std::set{ m_cell_uids[cell_index] });
           edge_faces.push_back(Int64UniqueArray{ m_cell_face_uids[m_cell_face_indexes[cell_index] + face_index] });
           face_edges[m_face_uid_indexes[global_face_index]].insert(edge_uid);
