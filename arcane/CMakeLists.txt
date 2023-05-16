@@ -740,6 +740,9 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARY_DIRS is ${ARCANE_EXTERNAL_LIBRARY_DIRS}"
 # les branches de développement de Arcane auront été fusionnées
 # target_compile_definitions(arcane_build_compile_flags INTERFACE ARCANE_NO_USING_FOR_STREAM)
 
+# Force à rendre privé les structures gérant les connectivités pour préparer leur suppression
+target_compile_definitions(arcane_build_compile_flags INTERFACE ARCANE_FORCE_HIDE_ITEM_CONNECTIVITY_STRUCTURE)
+
 if (UNIX)
   # Sur certaines plateformes (ex: centos7), il faut ajouter ces options
   # pour la compilation.

@@ -35,8 +35,12 @@ namespace Arcane
 #define ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
 
 // A définir si on souhaite cacher les méthodes d'accès aux structures
-// internes des connectivités.
-// #define ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+// internes des connectivités. Pour l'instant (mi-2023) on ne le fait que
+// pour les sources internes à Arcane mais ensuite il faudra le généraliser.
+// (La macro ARCANE_FORCE_... est définie dans le CMakeLists.txt principal)
+#ifdef ARCANE_FORCE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+#define ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+#endif
 
 // A définir si on souhaite utiliser les classes spécifiques pour gérer
 // les entités connectées (sinon on utilise ItemVectorView)
