@@ -879,7 +879,6 @@ edgeUids()
           auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, m_edge_node_uids, Int32UniqueArray(m_edge_uids.size(), 2)); // works for edges
           if (!is_edge_found) {
             m_cell_nb_edges[cell_index] += 1;
-            m_cell_edge_uids.push_back(edge_uid);
             face_edges[m_face_uid_indexes[global_face_index]].insert(edge_uid);
             cell_edges[cell_index].insert(edge_uid);
             for (auto node : current_edge) {
@@ -905,7 +904,6 @@ edgeUids()
         auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, m_edge_node_uids, Int32UniqueArray(m_edge_uids.size(), 2)); // works for edges
         if (!is_edge_found) {
           m_cell_nb_edges[cell_index] += 1;
-          m_cell_edge_uids.push_back(edge_uid);
           edge_cells.push_back(std::set{ m_cell_uids[cell_index] });
           edge_faces.push_back(Int64UniqueArray{ m_cell_face_uids[m_cell_face_indexes[cell_index] + face_index] });
           face_edges[m_face_uid_indexes[global_face_index]].insert(edge_uid);
@@ -958,6 +956,11 @@ edgeUids()
       std::copy(m_face_nb_edges.begin(), m_face_nb_edges.end(), std::ostream_iterator<Int32>(std::cout, " "));
       std::cout << std::endl;
       std::copy(m_face_edge_uids.begin(), m_face_edge_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+      std::cout << std::endl;
+      std::cout << "================CELL EDGES ==============" << std::endl;
+      std::copy(m_cell_nb_edges.begin(), m_cell_nb_edges.end(), std::ostream_iterator<Int32>(std::cout, " "));
+      std::cout << std::endl;
+      std::copy(m_cell_edge_uids.begin(), m_cell_edge_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
       std::cout << std::endl;
     }
     return m_edge_uids;
@@ -1216,7 +1219,7 @@ _flattenConnectivity(Connectivity2DArray connected_item_2darray,
   std::transform(connected_item_2darray.begin(), connected_item_2darray.end(), nb_connected_item_per_source_item.begin(), [](auto const& connected_items) {
     return connected_items.size();
   });
-  // fill edge_cell_uids
+  // fill connected_item_array
   connected_item_array.reserve(std::accumulate(nb_connected_item_per_source_item.begin(), nb_connected_item_per_source_item.end(), 0));
   std::for_each(connected_item_2darray.begin(), connected_item_2darray.end(), [&connected_item_array](auto const& connected_items) {
     for (auto const& connected_item : connected_items) {

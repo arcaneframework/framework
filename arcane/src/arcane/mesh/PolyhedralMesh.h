@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.h                                (C) 2000-2021             */
+/* PolyhedralMesh.h                                (C) 2000-2023             */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure                             */
 /*---------------------------------------------------------------------------*/
@@ -29,6 +29,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/List.h"
 #include "arcane/core/IMeshInitialAllocator.h"
+#include "arcane/core/IParallelMng.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include <vector>
@@ -36,6 +37,7 @@
 #include <memory>
 
 #include "arcane/core/IVariableMng.h"
+#include "DynamicMeshChecker.h"
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -61,7 +63,7 @@ class PolyhedralMesh
 : public EmptyMesh
 , public IPolyhedralMeshInitialAllocator
 {
- public:
+ private:
 
   String m_name;
   ISubDomain* m_subdomain;
@@ -70,12 +72,15 @@ class PolyhedralMesh
   MeshHandle m_mesh_handle;
   std::unique_ptr<Properties> m_properties;
   std::unique_ptr<PolyhedralMeshImpl> m_mesh; // using pimpl to limit dependency to neo lib to cc file
-  MeshPartInfo m_part_info;
+  IParallelMng* m_parallel_mng;
+  MeshPartInfo m_mesh_part_info;
   bool m_is_allocated = false;
   ItemTypeMng* m_item_type_mng = nullptr;
 
+ public:
+
   // IPolyhedralMeshInitialAllocator interface
-  void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info);
+  void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info) override;
 
  public:
 
@@ -110,10 +115,12 @@ class PolyhedralMesh
   std::array<std::unique_ptr<PolyhedralFamily>, NB_ITEM_KIND> m_empty_arcane_families;
   std::array<PolyhedralFamily*, NB_ITEM_KIND> m_default_arcane_families;
   std::vector<std::unique_ptr<VariableItemReal3>> m_arcane_item_coords;
-  std::unique_ptr<VariableNodeReal3> m_arcane_node_coords;
+  std::unique_ptr<VariableNodeReal3> m_arcane_node_coords = nullptr;
   ItemGroupList m_all_groups;
   InitialAllocator m_initial_allocator;
   IVariableMng* m_variable_mng;
+  DynamicMeshChecker m_mesh_checker;
+  List<IItemFamily*> m_item_family_collection;
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
@@ -168,7 +175,7 @@ class PolyhedralMesh
 
   Properties* properties() override { return m_properties.get(); }
 
-  const MeshPartInfo& meshPartInfo() const { return m_part_info; };
+  const MeshPartInfo& meshPartInfo() const { return m_mesh_part_info; };
 
   IItemFamily* nodeFamily() override;
   IItemFamily* edgeFamily() override;
@@ -203,7 +210,12 @@ class PolyhedralMesh
 
   IGhostLayerMng* ghostLayerMng() const override { return nullptr; }
 
-  void checkValidMesh() override { m_trace_mng->info() << "TODO implement checkValidMesh using DynamicMeshChecker"; }
+  void checkValidMesh() override
+  {
+    if (!m_is_allocated)
+      return;
+    m_mesh_checker.checkValidMesh();
+  }
 
   IVariableMng* variableMng() const override { return m_variable_mng; }
 

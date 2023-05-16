@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.cc                                           (C) 2000-2022 */
+/* PolyhedralMesh.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure.                            */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,25 @@
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/IMeshFactory.h"
 #include "arcane/core/ItemInternal.h"
+
+#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+
+#include "arcane/IMeshMng.h"
+#include "arcane/MeshHandle.h"
+#include "arcane/IItemFamily.h"
+#include "arcane/mesh/ItemFamily.h"
+#include "arcane/utils/Collection.h"
+#include "arcane/utils/List.h"
+
+#include "neo/Mesh.h"
+
+#ifdef ARCANE_HAS_VTKIO
+#include "arcane/mesh/PolyhedralMeshTools.h" // non utilisé ??
+#include "arcane/core/IMeshFactory.h"
+
+#endif
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,7 +72,6 @@ namespace mesh
 
   class PolyhedralFamily : public ItemFamily
   {
-    IMesh* m_mesh;
     ItemSharedInfoWithType* m_shared_info = nullptr;
     Int32UniqueArray m_empty_connectivity{ 0 };
     Int32UniqueArray m_empty_connectivity_indexes;
@@ -67,7 +85,6 @@ namespace mesh
 
     PolyhedralFamily(IMesh* mesh, eItemKind ik, String name)
     : ItemFamily(mesh, ik, name)
-    , m_mesh(mesh)
     {
       ItemFamily::build();
       m_sub_domain_id = subDomain()->subDomainId();
@@ -163,21 +180,6 @@ namespace mesh
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
-#include "arcane/IMeshMng.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/mesh/ItemFamily.h"
-#include "arcane/utils/Collection.h"
-#include "arcane/utils/List.h"
-
-#include "neo/Mesh.h"
-
-#ifdef ARCANE_HAS_VTKIO
-#include "arcane/mesh/PolyhedralMeshTools.h"
-#include "arcane/core/AbstractService.h"
-#include "arcane/core/IMeshFactory.h"
-#endif
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -207,18 +209,18 @@ namespace mesh
     static Neo::ItemKind itemKindArcaneToNeo(eItemKind ik)
     {
       switch (ik) {
-      case (IK_Cell):
+      case IK_Cell:
         return Neo::ItemKind::IK_Cell;
-      case (IK_Face):
+      case IK_Face:
         return Neo::ItemKind::IK_Face;
-      case (IK_Edge):
+      case IK_Edge:
         return Neo::ItemKind::IK_Edge;
-      case (IK_Node):
+      case IK_Node:
         return Neo::ItemKind::IK_Node;
-      case (IK_DoF):
+      case IK_DoF:
         return Neo::ItemKind::IK_Dof;
-      case (IK_Unknown):
-      case (IK_Particle):
+      case IK_Unknown:
+      case IK_Particle:
         return Neo::ItemKind::IK_None;
       }
       return Neo::ItemKind::IK_Node;
@@ -237,7 +239,7 @@ namespace mesh
 
    public:
 
-    PolyhedralMeshImpl(ISubDomain* subDomain)
+    explicit PolyhedralMeshImpl(ISubDomain* subDomain)
     : m_subdomain(subDomain)
     {}
 
@@ -253,7 +255,7 @@ namespace mesh
     Integer nbCell() const { return m_mesh.nbCells(); }
     Integer nbItem(eItemKind ik) const { return m_mesh.nbItems(itemKindArcaneToNeo(ik)); }
 
-    void _setFaceInfos(Int32 mod_flags, Face& face)
+    static void _setFaceInfos(Int32 mod_flags, Face& face)
     {
       Int32 face_flags = face.itemBase().flags();
       face_flags &= ~ItemFlags::II_InterfaceFlags;
@@ -390,6 +392,8 @@ namespace mesh
                                 auto nb_item_size = connectivity_values.m_offsets.size();
                                 item_internal_connectivity_list->setConnectivityNbItem(arcane_target_item_family->itemKind(),
                                                                                        Int32ArrayView{ Integer(nb_item_size), nb_item_data });
+                                auto max_nb_connected_items = *std::max_element(connectivity_values.m_offsets.begin(), connectivity_values.m_offsets.end());
+                                item_internal_connectivity_list->setMaxNbConnectedItem(arcane_target_item_family->itemKind(), max_nb_connected_items);
                                 auto connectivity_values_data = connectivity_values.m_data.data();
                                 auto connectivity_values_size = connectivity_values.m_data.size();
                                 item_internal_connectivity_list->setConnectivityList(arcane_target_item_family->itemKind(),
@@ -544,10 +548,12 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_mesh_handle{ m_subdomain->defaultMeshHandle() }
 , m_properties(std::make_unique<Properties>(subdomain->propertyMng(), String("ArcaneMeshProperties_") + m_name))
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
+, m_parallel_mng{ mbi.parallelMngRef().get() }
+, m_mesh_part_info{ makeMeshPartInfoFromParallelMng(m_parallel_mng) }
 , m_item_type_mng(ItemTypeMng::_singleton())
-, m_arcane_node_coords(nullptr)
 , m_initial_allocator(*this)
 , m_variable_mng{ subdomain->variableMng() }
+, m_mesh_checker{ this }
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -570,11 +576,10 @@ read(const String& filename)
   // Second step : read a vtk polyhedral file
   UniqueArray<String> splitted_filename{};
   filename.split(splitted_filename, '.');
-  auto file_extension = splitted_filename.back();
+  const auto& file_extension = splitted_filename.back();
   if (file_extension != "vtk")
     m_subdomain->traceMng()->fatal() << "Only vtk file format supported for polyhedral mesh";
 
-  //  createItemFamily(IK_Cell, "CellFamily");
   createItemFamily(IK_Cell, "Cell");
   createItemFamily(IK_Node, "Node");
   createItemFamily(IK_Face, "Face");
@@ -837,6 +842,7 @@ _createItemFamily(eItemKind ik, const String& name)
     m_default_arcane_families[ik] = current_family;
     _updateMeshInternalList(ik);
   }
+  m_item_family_collection.add(current_family);
   return current_family;
 }
 
@@ -1079,11 +1085,7 @@ destroyGroups()
 IItemFamilyCollection mesh::PolyhedralMesh::
 itemFamilies()
 {
-  List<IItemFamily*> item_family_collection;
-  for (auto& item_family_ptr : m_arcane_families) {
-    item_family_collection.add(item_family_ptr.get());
-  }
-  return item_family_collection;
+  return m_item_family_collection;
 }
 
 /*---------------------------------------------------------------------------*/
