@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicDataType.h                                             (C) 2000-2019 */
+/* BasicDataType.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Définition des types de données basiques.                                 */
 /*---------------------------------------------------------------------------*/
@@ -44,10 +44,12 @@ enum class eBasicDataType : unsigned char
   Int16 = 6, //!< Donnée de type entier 16 bits
   Int32 = 7, //!< Donnée de type entier 32 bits
   Int64 = 8, //!< Donnée de type entier 64 bits
-  Int128 = 9 //!< Donnée de type entier 128 bits
+  Int128 = 9, //!< Donnée de type entier 128 bits
+  BFloat16 = 10, //! < Donnée de type BFloat16
+  Int8 = 11, //! Donnée de type entier 8 bits
 };
 //! Nombre de types de base supportés
-constexpr unsigned char NB_BASIC_DATA_TYPE = 10;
+constexpr unsigned char NB_BASIC_DATA_TYPE = 12;
 
 //! Nom du type de donnée.
 extern "C++" ARCCORE_BASE_EXPORT const char*
