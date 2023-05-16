@@ -36,6 +36,7 @@
 #include <memory>
 
 #include "arcane/core/IVariableMng.h"
+#include "DynamicMeshChecker.h"
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -116,6 +117,7 @@ class PolyhedralMesh
   ItemGroupList m_all_groups;
   InitialAllocator m_initial_allocator;
   IVariableMng* m_variable_mng;
+  DynamicMeshChecker m_mesh_checker;
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
@@ -205,7 +207,12 @@ class PolyhedralMesh
 
   IGhostLayerMng* ghostLayerMng() const override { return nullptr; }
 
-  void checkValidMesh() override { m_trace_mng->info() << "TODO implement checkValidMesh using DynamicMeshChecker"; }
+  void checkValidMesh() override
+  {
+    if (!m_is_allocated)
+      return;
+    m_mesh_checker.checkValidMesh();
+  }
 
   IVariableMng* variableMng() const override { return m_variable_mng; }
 

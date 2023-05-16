@@ -549,6 +549,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_item_type_mng(ItemTypeMng::_singleton())
 , m_initial_allocator(*this)
 , m_variable_mng{ subdomain->variableMng() }
+, m_mesh_checker{ this }
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
