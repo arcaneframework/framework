@@ -91,8 +91,8 @@ class SpanImpl
 
   //! Constructeur de recopie depuis une autre vue
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
-  constexpr ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<X,SizeType>& from)  noexcept
+  template<typename X,SizeType XExtent = Extent, typename = std::enable_if_t<std::is_same_v<X,value_type>> >
+  constexpr ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<X,SizeType,XExtent>& from)  noexcept
   : m_ptr(from.data()), m_size(from.size()) {}
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
@@ -459,8 +459,8 @@ class Span
   constexpr ARCCORE_HOST_DEVICE Span(const ConstArrayView<X>& from) noexcept
   : BaseClass(from.m_ptr,from.m_size) {}
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
-  constexpr ARCCORE_HOST_DEVICE Span(const Span<X>& from) noexcept
+  template<typename X,Int64 XExtent,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
+  constexpr ARCCORE_HOST_DEVICE Span(const Span<X,XExtent>& from) noexcept
   : BaseClass(from) {}
   constexpr ARCCORE_HOST_DEVICE Span(const SpanImpl<T,Int64>& from) noexcept
   : BaseClass(from) {}
@@ -857,6 +857,44 @@ inline Span<std::byte>
 asWritableBytes(SpanImpl<DataType,SizeType> s)
 {
   return {reinterpret_cast<std::byte*>(s.data()), s.sizeBytes()};
+}
+namespace impl
+{
+
+template<typename ByteType, typename DataType,Int64 Extent> inline Span<DataType>
+asSpanInternal(Span<ByteType,Extent> bytes)
+{
+  Int64 size = bytes.size();
+  if (size==0)
+    return {};
+  static constexpr Int64 data_type = static_cast<Int64>(sizeof(data_type));
+  static_assert(data_type>0,"Bad datatype size");
+  ARCCORE_ASSERT((size%data_type)==0,("Size is not a multiple of sizeof(DataType)"));
+  auto* ptr = reinterpret_cast<DataType*>(bytes.data());
+  return { ptr, size / data_type };
+}
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Converti un Span<std::byte> en un Span<DataType>.
+ * \pre bytes.size() % sizeof(DataType) == 0;
+ */
+template<typename DataType,Int64 Extent> inline Span<DataType>
+asSpan(Span<std::byte,Extent> bytes)
+{
+  return impl::asSpanInternal<std::byte,DataType,Extent>(bytes);
+}
+/*!
+ * \brief Converti un Span<std::byte> en un Span<DataType>.
+ * \pre bytes.size() % sizeof(DataType) == 0;
+ */
+template<typename DataType,Int64 Extent> inline Span<const DataType>
+asSpan(Span<const std::byte,Extent> bytes)
+{
+  return impl::asSpanInternal<const std::byte,const DataType,Extent>(bytes);
 }
 
 /*---------------------------------------------------------------------------*/

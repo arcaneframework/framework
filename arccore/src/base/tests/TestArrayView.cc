@@ -356,6 +356,28 @@ TEST(Span, StdArray)
   _checkSame(s1, v1, "s1==v1");
   auto s2 = asSpan(v2);
   _checkSame(s2, v2, "s2==v2");
+
+  {
+    Span<Int64> ss0(s0);
+    auto bytes = asBytes(ss0);
+    auto x = asSpan<Int64>(bytes);
+    ASSERT_EQ(x.data(), nullptr);
+    ASSERT_EQ(x.size(), 0);
+  }
+
+  {
+    auto bytes = asWritableBytes(s1);
+    auto x = asSpan<Int64>(bytes);
+    _checkSame(x, v1, "x==v1");
+  }
+
+  {
+    auto bytes = asWritableBytes(s2);
+    auto x = asSpan<Int64>(bytes);
+    _checkSame(x, v2, "x==v2");
+    x[2] = 5;
+    ASSERT_EQ(v2[2], 5);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
