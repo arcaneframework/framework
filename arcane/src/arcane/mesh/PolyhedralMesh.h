@@ -158,13 +158,13 @@ class PolyhedralMesh
 
   CellGroup allCells() override;
 
-  NodeGroup ownNodes() override { return ItemGroup{}; }
+  NodeGroup ownNodes() override;
 
-  EdgeGroup ownEdges() override { return ItemGroup{}; }
+  EdgeGroup ownEdges() override;
 
-  FaceGroup ownFaces() override { return ItemGroup{}; }
+  FaceGroup ownFaces() override;
 
-  CellGroup ownCells() override { return ItemGroup{}; }
+  CellGroup ownCells() override;
 
   FaceGroup outerFaces() override;
 

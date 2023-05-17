@@ -292,6 +292,14 @@ _testGroups(IMesh* mesh)
   ARCANE_ASSERT((!mesh->findGroup("AllNodes").null()), ("Group AllNodes has not been created"));
   ARCANE_ASSERT((!mesh->findGroup("AllFaces").null()), ("Group AllFaces has not been created"));
   ARCANE_ASSERT((!mesh->findGroup("AllEdges").null()), ("Group AllEdges has not been created"));
+  // OwnItems groups
+  if (!Arcane::AbstractModule::subDomain()->parallelMng()->isParallel()) {
+    ValueChecker vc{ A_FUNCINFO };
+    vc.areEqual(mesh->allCells().size(), mesh->ownCells().size(), "All and own cell group size differ in sequential.");
+    vc.areEqual(mesh->allFaces().size(), mesh->ownFaces().size(), "All and own face group size differ in sequential.");
+    vc.areEqual(mesh->allEdges().size(), mesh->ownEdges().size(), "All and own edge group size differ in sequential.");
+    vc.areEqual(mesh->allNodes().size(), mesh->ownNodes().size(), "All and own node group size differ in sequential.");
+  }
   // Cell group
   String group_name = "my_cell_group";
   _buildGroup(mesh->cellFamily(), group_name);
