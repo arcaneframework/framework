@@ -838,8 +838,8 @@ sampleSpan(Span<const DataType> values,Span<const Int32> indexes,Span<DataType> 
 /*!
  * \brief Converti la vue en un tableau d'octets non modifiables.
  */
-template<typename DataType,typename SizeType> inline Span<const std::byte>
-asBytes(SpanImpl<DataType,SizeType> s)
+template<typename DataType,typename SizeType,Int64 Extent> inline Span<const std::byte,Extent>
+asBytes(SpanImpl<DataType,SizeType,Extent> s)
 {
   return {reinterpret_cast<const std::byte*>(s.data()), s.sizeBytes()};
 }
@@ -851,10 +851,10 @@ asBytes(SpanImpl<DataType,SizeType> s)
  *
  * Cette méthode n'est accessible que si \a DataType n'est pas `const`.
  */
-template<typename DataType,typename SizeType,
+template<typename DataType,typename SizeType,Int64 Extent,
          typename std::enable_if_t<!std::is_const<DataType>::value, int> = 0>
-inline Span<std::byte>
-asWritableBytes(SpanImpl<DataType,SizeType> s)
+inline Span<std::byte,Extent>
+asWritableBytes(SpanImpl<DataType,SizeType,Extent> s)
 {
   return {reinterpret_cast<std::byte*>(s.data()), s.sizeBytes()};
 }
