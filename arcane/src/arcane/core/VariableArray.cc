@@ -17,6 +17,7 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/MemoryAccessInfo.h"
+#include "arcane/utils/MemoryAllocator.h"
 
 #include "arcane/core/VariableDiff.h"
 #include "arcane/core/VariableBuildInfo.h"

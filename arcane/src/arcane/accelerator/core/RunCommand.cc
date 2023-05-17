@@ -21,6 +21,7 @@
 #include "arcane/utils/ForLoopTraceInfo.h"
 #include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryAllocator.h"
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueue.h"

@@ -115,7 +115,7 @@ class _ArrayStruct
 {
  public:
   virtual ~_ArrayStruct(){}
-  Arccore::ArrayImplBase* m_p;
+  void* m_p;
   _ArrayMetaData* m_md;
 };
 // ATTENTION: classe qui mime la représentation de Arcane::ItemSharedInfo.
