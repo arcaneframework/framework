@@ -342,10 +342,20 @@ _testSpanStdArray()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(Span,StdArray)
+TEST(Span, StdArray)
 {
   using namespace Arccore;
-  _testSpanStdArray<Span<Int64>,Span<const Int64>>();
+  _testSpanStdArray<Span<Int64>, Span<const Int64>>();
+
+  std::array<Int64, 0> v0;
+  std::array<Int64, 2> v1{ 5, 7 };
+  std::array<Int64, 3> v2{ 2, 4, -2 };
+  auto s0 = asSpan(v0);
+  _checkSame(s0, v0, "s0==v0");
+  auto s1 = asSpan(v1);
+  _checkSame(s1, v1, "s1==v1");
+  auto s2 = asSpan(v2);
+  _checkSame(s2, v2, "s2==v2");
 }
 
 /*---------------------------------------------------------------------------*/

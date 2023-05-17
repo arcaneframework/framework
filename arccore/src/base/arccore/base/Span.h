@@ -861,6 +861,18 @@ asWritableBytes(SpanImpl<DataType,SizeType> s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne un Span associé au std::array.
+ */
+template<typename DataType,size_t SizeType> inline Span<DataType,SizeType>
+asSpan(std::array<DataType,SizeType>& s)
+{
+  Int64 size = static_cast<Int64>(s.size());
+  return { s.data(), size };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<typename T> inline std::ostream&
 operator<<(std::ostream& o, Span<T> val)
