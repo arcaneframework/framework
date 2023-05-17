@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span.h                                                      (C) 2000-2022 */
+/* Span.h                                                      (C) 2000-2023 */
 /*                                                                           */
 /* Vues sur des tableaux C.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -251,12 +251,22 @@ class SpanImpl
    * Si `(abegin+asize` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  constexpr ARCCORE_HOST_DEVICE ThatClass subspan(SizeType abegin,SizeType asize) const
+  constexpr ARCCORE_HOST_DEVICE ThatClass subSpan(SizeType abegin,SizeType asize) const
   {
     if (abegin>=m_size)
       return {};
     asize = _min(asize,m_size-abegin);
     return {m_ptr+abegin,asize};
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
+   * \sa subSpan()
+   */
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPart(SizeType abegin,SizeType asize) const
+  {
+    return subSpan(abegin,asize);
+
   }
 
   /*!
@@ -266,13 +276,33 @@ class SpanImpl
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
+  ARCCORE_DEPRECATED_REASON("Y2023: use subSpan() instead")
   constexpr ThatClass subView(SizeType abegin,SizeType asize) const
   {
-    return subspan(abegin,asize);
+    return subSpan(abegin,asize);
+  }
+
+  //! Pour compatibilité avec le C++20
+  constexpr ARCCORE_HOST_DEVICE ThatClass subspan(SizeType abegin,SizeType asize) const
+  {
+    return subSpan(abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  ARCCORE_DEPRECATED_REASON("Y2023: use subSpanInterval() instead")
   constexpr ThatClass subViewInterval(SizeType index,SizeType nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ThatClass subSpanInterval(SizeType index,SizeType nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ThatClass subPartInterval(SizeType index,SizeType nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
@@ -485,12 +515,50 @@ class Span
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
+  constexpr ARCCORE_HOST_DEVICE Span<T> subSpan(Int64 abegin,Int64 asize) const
+  {
+    return BaseClass::subSpan(abegin,asize);
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPart(Int64 abegin,Int64 asize) const
+  {
+    return BaseClass::subPart(abegin,asize);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ARCCORE_HOST_DEVICE Span<T> subSpanInterval(Int64 index,Int64 nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPartInterval(Int64 index,Int64 nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  ARCCORE_DEPRECATED_REASON("Y2023: use subSpan() instead")
   constexpr ARCCORE_HOST_DEVICE Span<T> subView(Int64 abegin,Int64 asize) const
   {
     return subspan(abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  ARCCORE_DEPRECATED_REASON("Y2023: use subSpanInterval() instead")
   constexpr ARCCORE_HOST_DEVICE Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
@@ -591,12 +659,50 @@ class SmallSpan
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subSpan(Int32 abegin,Int32 asize) const
+  {
+    return BaseClass::subSpan(abegin,asize);
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPart(Int32 abegin,Int32 asize) const
+  {
+    return BaseClass::subSpan(abegin,asize);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subSpanInterval(Int32 index,Int32 nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPartInterval(Int32 index,Int32 nb_interval) const
+  {
+    return subSpanInterval(index,nb_interval);
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  ARCCORE_DEPRECATED_REASON("Y2023: use subPart() instead")
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subView(Int32 abegin,Int32 asize) const
   {
     return subspan(abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  ARCCORE_DEPRECATED_REASON("Y2023: use subPartInterval() instead")
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subViewInterval(Int32 index,Int32 nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
