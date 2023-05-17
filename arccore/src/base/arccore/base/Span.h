@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span.h                                                      (C) 2000-2022 */
+/* Span.h                                                      (C) 2000-2023 */
 /*                                                                           */
 /* Vues sur des tableaux C.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -91,8 +91,8 @@ class SpanImpl
 
   //! Constructeur de recopie depuis une autre vue
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
-  constexpr ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<X,SizeType>& from)  noexcept
+  template<typename X,SizeType XExtent = Extent, typename = std::enable_if_t<std::is_same_v<X,value_type>> >
+  constexpr ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<X,SizeType,XExtent>& from)  noexcept
   : m_ptr(from.data()), m_size(from.size()) {}
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
@@ -251,12 +251,22 @@ class SpanImpl
    * Si `(abegin+asize` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  constexpr ARCCORE_HOST_DEVICE ThatClass subspan(SizeType abegin,SizeType asize) const
+  constexpr ARCCORE_HOST_DEVICE ThatClass subSpan(SizeType abegin,SizeType asize) const
   {
     if (abegin>=m_size)
       return {};
     asize = _min(asize,m_size-abegin);
     return {m_ptr+abegin,asize};
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
+   * \sa subSpan()
+   */
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPart(SizeType abegin,SizeType asize) const
+  {
+    return subSpan(abegin,asize);
+
   }
 
   /*!
@@ -266,13 +276,33 @@ class SpanImpl
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
+  ARCCORE_DEPRECATED_REASON("Y2023: use subSpan() instead")
   constexpr ThatClass subView(SizeType abegin,SizeType asize) const
   {
-    return subspan(abegin,asize);
+    return subSpan(abegin,asize);
+  }
+
+  //! Pour compatibilité avec le C++20
+  constexpr ARCCORE_HOST_DEVICE ThatClass subspan(SizeType abegin,SizeType asize) const
+  {
+    return subSpan(abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  ARCCORE_DEPRECATED_REASON("Y2023: use subSpanInterval() instead")
   constexpr ThatClass subViewInterval(SizeType index,SizeType nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ThatClass subSpanInterval(SizeType index,SizeType nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ThatClass subPartInterval(SizeType index,SizeType nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
@@ -429,8 +459,8 @@ class Span
   constexpr ARCCORE_HOST_DEVICE Span(const ConstArrayView<X>& from) noexcept
   : BaseClass(from.m_ptr,from.m_size) {}
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template<typename X,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
-  constexpr ARCCORE_HOST_DEVICE Span(const Span<X>& from) noexcept
+  template<typename X,Int64 XExtent,typename = std::enable_if_t<std::is_same_v<X,value_type>> >
+  constexpr ARCCORE_HOST_DEVICE Span(const Span<X,XExtent>& from) noexcept
   : BaseClass(from) {}
   constexpr ARCCORE_HOST_DEVICE Span(const SpanImpl<T,Int64>& from) noexcept
   : BaseClass(from) {}
@@ -485,12 +515,50 @@ class Span
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
+  constexpr ARCCORE_HOST_DEVICE Span<T> subSpan(Int64 abegin,Int64 asize) const
+  {
+    return BaseClass::subSpan(abegin,asize);
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPart(Int64 abegin,Int64 asize) const
+  {
+    return BaseClass::subPart(abegin,asize);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ARCCORE_HOST_DEVICE Span<T> subSpanInterval(Int64 index,Int64 nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPartInterval(Int64 index,Int64 nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  ARCCORE_DEPRECATED_REASON("Y2023: use subSpan() instead")
   constexpr ARCCORE_HOST_DEVICE Span<T> subView(Int64 abegin,Int64 asize) const
   {
     return subspan(abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  ARCCORE_DEPRECATED_REASON("Y2023: use subSpanInterval() instead")
   constexpr ARCCORE_HOST_DEVICE Span<T> subViewInterval(Int64 index,Int64 nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
@@ -591,12 +659,50 @@ class SmallSpan
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subSpan(Int32 abegin,Int32 asize) const
+  {
+    return BaseClass::subSpan(abegin,asize);
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPart(Int32 abegin,Int32 asize) const
+  {
+    return BaseClass::subSpan(abegin,asize);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subSpanInterval(Int32 index,Int32 nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ARCCORE_HOST_DEVICE ThatClass subPartInterval(Int32 index,Int32 nb_interval) const
+  {
+    return subSpanInterval(index,nb_interval);
+  }
+
+  /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  ARCCORE_DEPRECATED_REASON("Y2023: use subPart() instead")
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subView(Int32 abegin,Int32 asize) const
   {
     return subspan(abegin,asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  ARCCORE_DEPRECATED_REASON("Y2023: use subPartInterval() instead")
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subViewInterval(Int32 index,Int32 nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
@@ -732,8 +838,8 @@ sampleSpan(Span<const DataType> values,Span<const Int32> indexes,Span<DataType> 
 /*!
  * \brief Converti la vue en un tableau d'octets non modifiables.
  */
-template<typename DataType,typename SizeType> inline Span<const std::byte>
-asBytes(SpanImpl<DataType,SizeType> s)
+template<typename DataType,typename SizeType,Int64 Extent> inline Span<const std::byte,Extent>
+asBytes(SpanImpl<DataType,SizeType,Extent> s)
 {
   return {reinterpret_cast<const std::byte*>(s.data()), s.sizeBytes()};
 }
@@ -745,12 +851,62 @@ asBytes(SpanImpl<DataType,SizeType> s)
  *
  * Cette méthode n'est accessible que si \a DataType n'est pas `const`.
  */
-template<typename DataType,typename SizeType,
+template<typename DataType,typename SizeType,Int64 Extent,
          typename std::enable_if_t<!std::is_const<DataType>::value, int> = 0>
-inline Span<std::byte>
-asWritableBytes(SpanImpl<DataType,SizeType> s)
+inline Span<std::byte,Extent>
+asWritableBytes(SpanImpl<DataType,SizeType,Extent> s)
 {
   return {reinterpret_cast<std::byte*>(s.data()), s.sizeBytes()};
+}
+namespace impl
+{
+
+template<typename ByteType, typename DataType,Int64 Extent> inline Span<DataType>
+asSpanInternal(Span<ByteType,Extent> bytes)
+{
+  Int64 size = bytes.size();
+  if (size==0)
+    return {};
+  static constexpr Int64 data_type = static_cast<Int64>(sizeof(data_type));
+  static_assert(data_type>0,"Bad datatype size");
+  ARCCORE_ASSERT((size%data_type)==0,("Size is not a multiple of sizeof(DataType)"));
+  auto* ptr = reinterpret_cast<DataType*>(bytes.data());
+  return { ptr, size / data_type };
+}
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Converti un Span<std::byte> en un Span<DataType>.
+ * \pre bytes.size() % sizeof(DataType) == 0;
+ */
+template<typename DataType,Int64 Extent> inline Span<DataType>
+asSpan(Span<std::byte,Extent> bytes)
+{
+  return impl::asSpanInternal<std::byte,DataType,Extent>(bytes);
+}
+/*!
+ * \brief Converti un Span<std::byte> en un Span<DataType>.
+ * \pre bytes.size() % sizeof(DataType) == 0;
+ */
+template<typename DataType,Int64 Extent> inline Span<const DataType>
+asSpan(Span<const std::byte,Extent> bytes)
+{
+  return impl::asSpanInternal<const std::byte,const DataType,Extent>(bytes);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne un Span associé au std::array.
+ */
+template<typename DataType,size_t SizeType> inline Span<DataType,SizeType>
+asSpan(std::array<DataType,SizeType>& s)
+{
+  Int64 size = static_cast<Int64>(s.size());
+  return { s.data(), size };
 }
 
 /*---------------------------------------------------------------------------*/

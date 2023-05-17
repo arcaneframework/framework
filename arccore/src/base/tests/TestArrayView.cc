@@ -342,10 +342,42 @@ _testSpanStdArray()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(Span,StdArray)
+TEST(Span, StdArray)
 {
   using namespace Arccore;
-  _testSpanStdArray<Span<Int64>,Span<const Int64>>();
+  _testSpanStdArray<Span<Int64>, Span<const Int64>>();
+
+  std::array<Int64, 0> v0;
+  std::array<Int64, 2> v1{ 5, 7 };
+  std::array<Int64, 3> v2{ 2, 4, -2 };
+  auto s0 = asSpan(v0);
+  _checkSame(s0, v0, "s0==v0");
+  auto s1 = asSpan(v1);
+  _checkSame(s1, v1, "s1==v1");
+  auto s2 = asSpan(v2);
+  _checkSame(s2, v2, "s2==v2");
+
+  {
+    Span<Int64> ss0(s0);
+    auto bytes = asBytes(ss0);
+    auto x = asSpan<Int64>(bytes);
+    ASSERT_EQ(x.data(), nullptr);
+    ASSERT_EQ(x.size(), 0);
+  }
+
+  {
+    auto bytes = asWritableBytes(s1);
+    auto x = asSpan<Int64>(bytes);
+    _checkSame(x, v1, "x==v1");
+  }
+
+  {
+    auto bytes = asWritableBytes(s2);
+    auto x = asSpan<Int64>(bytes);
+    _checkSame(x, v2, "x==v2");
+    x[2] = 5;
+    ASSERT_EQ(v2[2], 5);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -442,72 +474,195 @@ TEST(SmallSpan2,StdArray)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ViewType> void
+template <typename ViewType> void
 _testSubViewInterval()
 {
   using namespace Arccore;
-  
-  std::array<Int64,12> vlist { 9, 13, 32, 27, 43, -5, 2, -7, 8, 11, 25, 48 };
-  ViewType view{vlist};
+
+  std::array<Int64, 12> vlist{ 9, 13, 32, 27, 43, -5, 2, -7, 8, 11, 25, 48 };
+  ViewType view{ vlist };
 
   {
     ViewType null_view;
-    ViewType sub_view0{view.subViewInterval(1,0)};
-    ViewType sub_view1{view.subViewInterval(-1,2)};
-    ViewType sub_view2{view.subViewInterval(2,2)};
-    ViewType sub_view3{view.subViewInterval(0,0)};
+    ViewType sub_view0{ view.subViewInterval(1, 0) };
+    ViewType sub_view1{ view.subViewInterval(-1, 2) };
+    ViewType sub_view2{ view.subViewInterval(2, 2) };
+    ViewType sub_view3{ view.subViewInterval(0, 0) };
     std::cout << "SUBVIEW0=" << sub_view1 << '\n';
-    _checkSame(sub_view0,null_view,"sub_view0_null");
-    _checkSame(sub_view1,null_view,"sub_view1_null");
-    _checkSame(sub_view2,null_view,"sub_view2_null");
-    _checkSame(sub_view3,null_view,"sub_view3_null");
+    _checkSame(sub_view0, null_view, "sub_view0_null");
+    _checkSame(sub_view1, null_view, "sub_view1_null");
+    _checkSame(sub_view2, null_view, "sub_view2_null");
+    _checkSame(sub_view3, null_view, "sub_view3_null");
   }
 
   {
-    std::array<Int64,4> vlist0 { 9, 13, 32, 27 };
-    std::array<Int64,4> vlist1 { 43, -5, 2, -7 };
-    std::array<Int64,4> vlist2 { 8, 11, 25, 48 };
+    std::array<Int64, 4> vlist0{ 9, 13, 32, 27 };
+    std::array<Int64, 4> vlist1{ 43, -5, 2, -7 };
+    std::array<Int64, 4> vlist2{ 8, 11, 25, 48 };
 
-    ViewType sub_view0{view.subViewInterval(0,3)};
-    ViewType sub_view1{view.subViewInterval(1,3)};
-    ViewType sub_view2{view.subViewInterval(2,3)};
+    ViewType sub_view0{ view.subViewInterval(0, 3) };
+    ViewType sub_view1{ view.subViewInterval(1, 3) };
+    ViewType sub_view2{ view.subViewInterval(2, 3) };
     std::cout << "SUBVIEW1=" << sub_view1 << '\n';
-    _checkSame(sub_view0,vlist0,"sub_view0");
-    _checkSame(sub_view1,vlist1,"sub_view1");
-    _checkSame(sub_view2,vlist2,"sub_view2");
+    _checkSame(sub_view0, vlist0, "sub_view0");
+    _checkSame(sub_view1, vlist1, "sub_view1");
+    _checkSame(sub_view2, vlist2, "sub_view2");
   }
 
   {
-    std::array<Int64,2> vlist0 { 9, 13 };
-    std::array<Int64,2> vlist1 { 32, 27 };
-    std::array<Int64,2> vlist2 { 43, -5 };
-    std::array<Int64,2> vlist3 { 2, -7 };
-    std::array<Int64,4> vlist4 { 8, 11, 25, 48 };
+    std::array<Int64, 2> vlist0{ 9, 13 };
+    std::array<Int64, 2> vlist1{ 32, 27 };
+    std::array<Int64, 2> vlist2{ 43, -5 };
+    std::array<Int64, 2> vlist3{ 2, -7 };
+    std::array<Int64, 4> vlist4{ 8, 11, 25, 48 };
 
-    ViewType sub_view0{view.subViewInterval(0,5)};
-    ViewType sub_view1{view.subViewInterval(1,5)};
-    ViewType sub_view2{view.subViewInterval(2,5)};
-    ViewType sub_view3{view.subViewInterval(3,5)};
-    ViewType sub_view4{view.subViewInterval(4,5)};
+    ViewType sub_view0{ view.subViewInterval(0, 5) };
+    ViewType sub_view1{ view.subViewInterval(1, 5) };
+    ViewType sub_view2{ view.subViewInterval(2, 5) };
+    ViewType sub_view3{ view.subViewInterval(3, 5) };
+    ViewType sub_view4{ view.subViewInterval(4, 5) };
     std::cout << "SUBVIEW2=" << sub_view1 << '\n';
-    _checkSame(sub_view0,vlist0,"sub_view0");
-    _checkSame(sub_view1,vlist1,"sub_view1");
-    _checkSame(sub_view2,vlist2,"sub_view2");
-    _checkSame(sub_view3,vlist3,"sub_view3");
-    _checkSame(sub_view4,vlist4,"sub_view4");
+    _checkSame(sub_view0, vlist0, "sub_view0");
+    _checkSame(sub_view1, vlist1, "sub_view1");
+    _checkSame(sub_view2, vlist2, "sub_view2");
+    _checkSame(sub_view3, vlist3, "sub_view3");
+    _checkSame(sub_view4, vlist4, "sub_view4");
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(ArrayView,SubViewInterval)
+template <typename ViewType> void
+_testSubSpanInterval()
+{
+  using namespace Arccore;
+
+  std::array<Int64, 12> vlist{ 9, 13, 32, 27, 43, -5, 2, -7, 8, 11, 25, 48 };
+  ViewType view{ vlist };
+
+  {
+    ViewType null_view;
+    ViewType sub_view0{ view.subSpanInterval(1, 0) };
+    ViewType sub_view1{ view.subSpanInterval(-1, 2) };
+    ViewType sub_view2{ view.subSpanInterval(2, 2) };
+    ViewType sub_view3{ view.subSpanInterval(0, 0) };
+    std::cout << "SUBVIEW0=" << sub_view1 << '\n';
+    _checkSame(sub_view0, null_view, "sub_view0_null");
+    _checkSame(sub_view1, null_view, "sub_view1_null");
+    _checkSame(sub_view2, null_view, "sub_view2_null");
+    _checkSame(sub_view3, null_view, "sub_view3_null");
+  }
+
+  {
+    std::array<Int64, 4> vlist0{ 9, 13, 32, 27 };
+    std::array<Int64, 4> vlist1{ 43, -5, 2, -7 };
+    std::array<Int64, 4> vlist2{ 8, 11, 25, 48 };
+
+    ViewType sub_view0{ view.subSpanInterval(0, 3) };
+    ViewType sub_view1{ view.subSpanInterval(1, 3) };
+    ViewType sub_view2{ view.subSpanInterval(2, 3) };
+    std::cout << "SUBVIEW1=" << sub_view1 << '\n';
+    _checkSame(sub_view0, vlist0, "sub_view0");
+    _checkSame(sub_view1, vlist1, "sub_view1");
+    _checkSame(sub_view2, vlist2, "sub_view2");
+  }
+
+  {
+    std::array<Int64, 2> vlist0{ 9, 13 };
+    std::array<Int64, 2> vlist1{ 32, 27 };
+    std::array<Int64, 2> vlist2{ 43, -5 };
+    std::array<Int64, 2> vlist3{ 2, -7 };
+    std::array<Int64, 4> vlist4{ 8, 11, 25, 48 };
+
+    ViewType sub_view0{ view.subSpanInterval(0, 5) };
+    ViewType sub_view1{ view.subSpanInterval(1, 5) };
+    ViewType sub_view2{ view.subSpanInterval(2, 5) };
+    ViewType sub_view3{ view.subSpanInterval(3, 5) };
+    ViewType sub_view4{ view.subSpanInterval(4, 5) };
+    std::cout << "SUBVIEW2=" << sub_view1 << '\n';
+    _checkSame(sub_view0, vlist0, "sub_view0");
+    _checkSame(sub_view1, vlist1, "sub_view1");
+    _checkSame(sub_view2, vlist2, "sub_view2");
+    _checkSame(sub_view3, vlist3, "sub_view3");
+    _checkSame(sub_view4, vlist4, "sub_view4");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename ViewType> void
+_testSubPartInterval()
+{
+  using namespace Arccore;
+
+  std::array<Int64, 12> vlist{ 9, 13, 32, 27, 43, -5, 2, -7, 8, 11, 25, 48 };
+  ViewType view{ vlist };
+
+  {
+    ViewType null_view;
+    ViewType sub_view0{ view.subPartInterval(1, 0) };
+    ViewType sub_view1{ view.subPartInterval(-1, 2) };
+    ViewType sub_view2{ view.subPartInterval(2, 2) };
+    ViewType sub_view3{ view.subPartInterval(0, 0) };
+    std::cout << "SUBVIEW0=" << sub_view1 << '\n';
+    _checkSame(sub_view0, null_view, "sub_view0_null");
+    _checkSame(sub_view1, null_view, "sub_view1_null");
+    _checkSame(sub_view2, null_view, "sub_view2_null");
+    _checkSame(sub_view3, null_view, "sub_view3_null");
+  }
+
+  {
+    std::array<Int64, 4> vlist0{ 9, 13, 32, 27 };
+    std::array<Int64, 4> vlist1{ 43, -5, 2, -7 };
+    std::array<Int64, 4> vlist2{ 8, 11, 25, 48 };
+
+    ViewType sub_view0{ view.subPartInterval(0, 3) };
+    ViewType sub_view1{ view.subPartInterval(1, 3) };
+    ViewType sub_view2{ view.subPartInterval(2, 3) };
+    std::cout << "SUBVIEW1=" << sub_view1 << '\n';
+    _checkSame(sub_view0, vlist0, "sub_view0");
+    _checkSame(sub_view1, vlist1, "sub_view1");
+    _checkSame(sub_view2, vlist2, "sub_view2");
+  }
+
+  {
+    std::array<Int64, 2> vlist0{ 9, 13 };
+    std::array<Int64, 2> vlist1{ 32, 27 };
+    std::array<Int64, 2> vlist2{ 43, -5 };
+    std::array<Int64, 2> vlist3{ 2, -7 };
+    std::array<Int64, 4> vlist4{ 8, 11, 25, 48 };
+
+    ViewType sub_view0{ view.subPartInterval(0, 5) };
+    ViewType sub_view1{ view.subPartInterval(1, 5) };
+    ViewType sub_view2{ view.subPartInterval(2, 5) };
+    ViewType sub_view3{ view.subPartInterval(3, 5) };
+    ViewType sub_view4{ view.subPartInterval(4, 5) };
+    std::cout << "SUBVIEW2=" << sub_view1 << '\n';
+    _checkSame(sub_view0, vlist0, "sub_view0");
+    _checkSame(sub_view1, vlist1, "sub_view1");
+    _checkSame(sub_view2, vlist2, "sub_view2");
+    _checkSame(sub_view3, vlist3, "sub_view3");
+    _checkSame(sub_view4, vlist4, "sub_view4");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(ArrayView, SubViewInterval)
 {
   using namespace Arccore;
   _testSubViewInterval<ArrayView<Int64>>();
   _testSubViewInterval<ConstArrayView<Int64>>();
-  _testSubViewInterval<Span<Int64>>();
-  _testSubViewInterval<SmallSpan<Int64>>();
+  _testSubSpanInterval<Span<Int64>>();
+  _testSubSpanInterval<SmallSpan<Int64>>();
+
+  _testSubPartInterval<ArrayView<Int64>>();
+  _testSubPartInterval<ConstArrayView<Int64>>();
+  _testSubPartInterval<Span<Int64>>();
+  _testSubPartInterval<SmallSpan<Int64>>();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -539,7 +694,7 @@ template class SmallSpan2<Int32>;
 template class SmallSpan2<const Int32>;
 template class SmallSpan2<double>;
 template class SmallSpan2<const double>;
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

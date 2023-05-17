@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayView.h                                                 (C) 2000-2021 */
+/* ArrayView.h                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Types définissant les vues de tableaux C.                                 */
 /*---------------------------------------------------------------------------*/
@@ -329,6 +329,18 @@ class ArrayView
   }
 
   /*!
+   * \brief Sous-vue à partir de l'élément \a abegin
+   * et contenant \a asize éléments.
+   *
+   * Si (\a abegin+ \a asize) est supérieur à la taille du tableau,
+   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   */
+  constexpr ThatClass subPart(Integer abegin,Integer asize) noexcept
+  {
+    return subView(abegin,asize);
+  }
+
+  /*!
    * \brief Sous-vue constante à partir de
    * l'élément `abegin` et contenant `asize` éléments.
    *
@@ -345,6 +357,12 @@ class ArrayView
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
   constexpr ArrayView<T> subViewInterval(Integer index,Integer nb_interval)
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ThatClass subPartInterval(Integer index,Integer nb_interval)
   {
     return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
@@ -603,6 +621,18 @@ class ConstArrayView
 
   /*!
    * \brief Sous-vue (constante) à partir de l'élément \a abegin et
+   contenant \a asize éléments.
+   *
+   * Si `(abegin+asize)` est supérieur à la taille du tableau,
+   * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
+   */
+  constexpr ThatClass subPart(Integer abegin,Integer asize) const noexcept
+  {
+    return subView(abegin,asize);
+  }
+
+  /*!
+   * \brief Sous-vue (constante) à partir de l'élément \a abegin et
    * contenant \a asize éléments.
    *
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
@@ -615,6 +645,12 @@ class ConstArrayView
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
   constexpr ConstArrayView<T> subViewInterval(Integer index,Integer nb_interval) const
+  {
+    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+  }
+
+  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  constexpr ThatClass subPartInterval(Integer index,Integer nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
