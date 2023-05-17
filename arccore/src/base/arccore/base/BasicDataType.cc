@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicDataType.cc                                            (C) 2000-2020 */
+/* BasicDataType.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Définition des types liés aux données.                                    */
 /*---------------------------------------------------------------------------*/
@@ -36,10 +36,12 @@ namespace Arccore
 namespace
 {
 const char* N_BYTE = "Byte";
+const char* N_BFLOAT16 = "BFloat16";
 const char* N_FLOAT16 = "Float16";
 const char* N_FLOAT32 = "Float32";
 const char* N_FLOAT64 = "Float64";
 const char* N_FLOAT128 = "Float128";
+const char* N_INT8 = "Int8";
 const char* N_INT16 = "Int16";
 const char* N_INT32 = "Int32";
 const char* N_INT64 = "Int64";
@@ -47,12 +49,13 @@ const char* N_INT128 = "Int128";
 const char* N_UNKNOWN = "Unknown";
 const char* N_INVALID = "Invalid";
 
-//! Nom des types
+//! Nom des types. Doit correspondre aux valeurs de l'énumération eBasicDataType
 const char* N_ALL_NAMES[NB_BASIC_DATA_TYPE] =
   {
     N_UNKNOWN, N_BYTE,
     N_FLOAT16, N_FLOAT32, N_FLOAT64, N_FLOAT128,
     N_INT16, N_INT32, N_INT64, N_INT128,
+    N_BFLOAT16, N_INT8
   };
 
 //! Taille d'un élément du type
@@ -60,7 +63,8 @@ int ALL_SIZEOF[NB_BASIC_DATA_TYPE] =
   {
     0, 1,
     2, 4, 8, 16,
-    2, 4, 8, 16
+    2, 4, 8, 16,
+    2, 1
   };
 }
 
