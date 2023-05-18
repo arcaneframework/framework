@@ -53,38 +53,38 @@ void arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti, cudaError_t e)
  * \brief Classe de base d'un allocateur spécifique pour 'Cuda'.
  */
 class CudaMemoryAllocatorBase
-: public Arccore::AlignedMemoryAllocator
+: public Arccore::AlignedMemoryAllocator2
 {
  public:
 
   CudaMemoryAllocatorBase()
-  : AlignedMemoryAllocator(128)
+  : AlignedMemoryAllocator2(128)
   {}
 
-  bool hasRealloc() const final { return false; }
-  void* allocate(size_t new_size) final
+  bool hasRealloc(MemoryAllocationArgs) const final { return false; }
+  void* allocate(size_t new_size, MemoryAllocationArgs args) final
   {
     void* out = nullptr;
-    ARCANE_CHECK_CUDA(_allocate(&out, new_size));
+    ARCANE_CHECK_CUDA(_allocate(&out, new_size, args));
     Int64 a = reinterpret_cast<Int64>(out);
     if ((a % 128) != 0)
       ARCANE_FATAL("Bad alignment for CUDA allocator: offset={0}", (a % 128));
     return out;
   }
-  void* reallocate(void* current_ptr, size_t new_size) final
+  void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs args) final
   {
-    deallocate(current_ptr);
-    return allocate(new_size);
+    deallocate(current_ptr, args);
+    return allocate(new_size, args);
   }
-  void deallocate(void* ptr) final
+  void deallocate(void* ptr, MemoryAllocationArgs args) final
   {
-    ARCANE_CHECK_CUDA(_deallocate(ptr));
+    ARCANE_CHECK_CUDA(_deallocate(ptr, args));
   }
 
  protected:
 
-  virtual cudaError_t _allocate(void** ptr, size_t new_size) = 0;
-  virtual cudaError_t _deallocate(void* ptr) = 0;
+  virtual cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs args) = 0;
+  virtual cudaError_t _deallocate(void* ptr, MemoryAllocationArgs args) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -103,7 +103,7 @@ class UnifiedMemoryCudaMemoryAllocator
 
  protected:
 
-  cudaError_t _allocate(void** ptr, size_t new_size) override
+  cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
   {
     const bool do_page = m_page_allocate_level > 0;
     if (do_page)
@@ -111,7 +111,7 @@ class UnifiedMemoryCudaMemoryAllocator
     return ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
   }
 
-  cudaError_t _deallocate(void* ptr) override
+  cudaError_t _deallocate(void* ptr, MemoryAllocationArgs) override
   {
     const bool do_trace = m_page_allocate_level >= 2;
     if (do_trace) {
@@ -186,11 +186,11 @@ class HostPinnedCudaMemoryAllocator
 {
  protected:
 
-  cudaError_t _allocate(void** ptr, size_t new_size) override
+  cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
   {
     return ::cudaMallocHost(ptr, new_size);
   }
-  cudaError_t _deallocate(void* ptr) override
+  cudaError_t _deallocate(void* ptr, MemoryAllocationArgs) override
   {
     return ::cudaFreeHost(ptr);
   }
@@ -204,11 +204,11 @@ class DeviceCudaMemoryAllocator
 {
  protected:
 
-  cudaError_t _allocate(void** ptr, size_t new_size) override
+  cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
   {
     return ::cudaMalloc(ptr, new_size);
   }
-  cudaError_t _deallocate(void* ptr) override
+  cudaError_t _deallocate(void* ptr, MemoryAllocationArgs) override
   {
     return ::cudaFree(ptr);
   }

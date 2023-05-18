@@ -53,35 +53,38 @@ arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e)
  * \brief Classe de base d'un allocateur spécifique pour 'Hip'.
  */
 class HipMemoryAllocatorBase
-: public Arccore::AlignedMemoryAllocator
+: public Arccore::AlignedMemoryAllocator2
 {
  public:
-  HipMemoryAllocatorBase() : AlignedMemoryAllocator(128){}
 
-  bool hasRealloc() const override { return false; }
-  void* allocate(size_t new_size) override
+  HipMemoryAllocatorBase()
+  : AlignedMemoryAllocator2(128)
+  {}
+
+  bool hasRealloc(MemoryAllocationArgs) const override { return false; }
+  void* allocate(size_t new_size, MemoryAllocationArgs args) override
   {
     void* out = nullptr;
-    ARCANE_CHECK_HIP(_allocate(&out,new_size));
+    ARCANE_CHECK_HIP(_allocate(&out, new_size, args));
     Int64 a = reinterpret_cast<Int64>(out);
-    if ((a % 128)!=0)
-      ARCANE_FATAL("Bad alignment for HIP allocator: offset={0}",(a % 128));
+    if ((a % 128) != 0)
+      ARCANE_FATAL("Bad alignment for HIP allocator: offset={0}", (a % 128));
     return out;
   }
-  void* reallocate(void* current_ptr,size_t new_size) override
+  void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs args) override
   {
-    deallocate(current_ptr);
-    return allocate(new_size);
+    deallocate(current_ptr, args);
+    return allocate(new_size, args);
   }
-  void deallocate(void* ptr) override
+  void deallocate(void* ptr, MemoryAllocationArgs args) override
   {
-    ARCANE_CHECK_HIP(_deallocate(ptr));
+    ARCANE_CHECK_HIP(_deallocate(ptr, args));
   }
 
  protected:
 
-  virtual hipError_t _allocate(void** ptr, size_t new_size) = 0;
-  virtual hipError_t _deallocate(void* ptr) = 0;
+  virtual hipError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) = 0;
+  virtual hipError_t _deallocate(void* ptr, MemoryAllocationArgs) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -92,11 +95,11 @@ class UnifiedMemoryHipMemoryAllocator
 {
  protected:
 
-  hipError_t _allocate(void** ptr, size_t new_size) override
+  hipError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
   {
     return ::hipMallocManaged(ptr, new_size, hipMemAttachGlobal);
   }
-  hipError_t _deallocate(void* ptr) override
+  hipError_t _deallocate(void* ptr, MemoryAllocationArgs) override
   {
     return ::hipFree(ptr);
   }
@@ -110,11 +113,11 @@ class HostPinnedHipMemoryAllocator
 {
  protected:
 
-  hipError_t _allocate(void** ptr, size_t new_size) override
+  hipError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
   {
     return ::hipHostMalloc(ptr, new_size);
   }
-  hipError_t _deallocate(void* ptr) override
+  hipError_t _deallocate(void* ptr, MemoryAllocationArgs) override
   {
     return ::hipHostFree(ptr);
   }
@@ -128,11 +131,11 @@ class DeviceHipMemoryAllocator
 {
  protected:
 
-  hipError_t _allocate(void** ptr, size_t new_size) override
+  hipError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
   {
     return ::hipMalloc(ptr, new_size);
   }
-  hipError_t _deallocate(void* ptr) override
+  hipError_t _deallocate(void* ptr, MemoryAllocationArgs) override
   {
     return ::hipFree(ptr);
   }
