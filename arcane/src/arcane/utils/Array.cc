@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.cc                                                    (C) 2000-2020 */
+/* Array.cc                                                    (C) 2000-2023 */
 /*                                                                           */
 /* Vecteur de données 1D.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/MemoryAllocator.h"
 
 #include <algorithm>
 
@@ -56,9 +57,10 @@ _applySimdPadding(Array<DataType>& ids)
   Integer padding_size = arcaneSizeWithPadding(size);
   if (padding_size==size)
     return;
-  if (ids.allocator()->guarantedAlignment()<AlignedMemoryAllocator::simdAlignment())
+  MemoryAllocationArgs args;
+  if (ids.allocator()->guarantedAlignment(args)<AlignedMemoryAllocator::simdAlignment())
     ARCANE_FATAL("Allocator guaranted alignment ({0}) has to be greated than {1}",
-                 ids.allocator()->guarantedAlignment(),AlignedMemoryAllocator::simdAlignment());
+                 ids.allocator()->guarantedAlignment(args),AlignedMemoryAllocator::simdAlignment());
   if (padding_size>ids.capacity())
     ARCANE_FATAL("Not enough capacity c={0} min_expected={1}",ids.capacity(),
                  padding_size);

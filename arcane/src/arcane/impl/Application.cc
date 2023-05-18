@@ -612,8 +612,6 @@ initialize()
   if (platform::getSymbolizerService()){
     m_trace->info() << "Symbolizer service is available";
   }
-  m_trace->info() << "Array size storage = " << sizeof(Array<Int32>::size_type)
-                  << " sizeof(ArrayImplBase)=" << sizeof(ArrayImplBase);
 
 #ifdef ARCANE_USE_LIBXML2
     m_trace->info() << "Using 'libxml2' for XML parsing";

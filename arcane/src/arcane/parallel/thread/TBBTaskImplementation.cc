@@ -20,6 +20,7 @@
 #include "arcane/utils/IObservable.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Profiling.h"
+#include "arcane/utils/MemoryAllocator.h"
 
 #include "arcane/FactoryService.h"
 

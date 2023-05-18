@@ -66,6 +66,7 @@ set(ARCANE_SOURCES
   IMessagePassingProfilingService.h
   ISO88591Transcoder.cc
   ISO88591Transcoder.h
+  MemoryAllocator.h
   MemoryView.h
   MemoryView.cc
   Misc.cc

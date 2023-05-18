@@ -28,6 +28,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/ArrayShape.h"
+#include "arcane/utils/MemoryAllocator.h"
 
 #include "arcane/datatype/IDataOperation.h"
 #include "arcane/datatype/DataStorageTypeInfo.h"

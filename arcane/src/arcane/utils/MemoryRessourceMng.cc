@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryRessourceMng.cc                                       (C) 2000-2022 */
+/* MemoryRessourceMng.cc                                       (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/MemoryAllocator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

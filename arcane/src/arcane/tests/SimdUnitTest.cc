@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimdUnitTest.cc                                             (C) 2000-2022 */
+/* SimdUnitTest.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des classes gérant la vectorisation.                      */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ValueChecker.h"
+#include "arcane/utils/MemoryAllocator.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/FactoryService.h"
