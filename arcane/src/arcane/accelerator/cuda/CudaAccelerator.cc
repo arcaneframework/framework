@@ -103,12 +103,11 @@ class UnifiedMemoryCudaMemoryAllocator
 
  protected:
 
-  cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
+  cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs args) override
   {
     const bool do_page = m_page_allocate_level > 0;
-    if (do_page)
-      return _allocate_page(ptr, new_size);
-    return ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
+    cudaError_t r = do_page ? _allocate_page(ptr, new_size, args) : _allocate_direct(ptr, new_size, args);
+    return r;
   }
 
   cudaError_t _deallocate(void* ptr, MemoryAllocationArgs) override
@@ -130,7 +129,15 @@ class UnifiedMemoryCudaMemoryAllocator
     return ::cudaFree(ptr);
   }
 
-  cudaError_t _allocate_page(void** ptr, size_t new_size)
+  cudaError_t _allocate_direct(void** ptr, size_t new_size, MemoryAllocationArgs args)
+  {
+    cudaError_t r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
+    if (r == cudaSuccess)
+      _applyHint(*ptr, new_size, args);
+    return r;
+  }
+
+  cudaError_t _allocate_page(void** ptr, size_t new_size, MemoryAllocationArgs args)
   {
     const size_t page_size = 4096;
 
@@ -162,14 +169,28 @@ class UnifiedMemoryCudaMemoryAllocator
       std::cout << ostr.str();
     }
 
-    // Indique qu'on privilégie l'allocation sur le GPU mais que le CPU
-    // accédera aussi aux données.
-    // TODO: regarder pour faire cela tout le temps.
-    cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, 0);
-    cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, cudaCpuDeviceId);
+    if (r == cudaSuccess)
+      _applyHint(*ptr, new_size, args);
 
-    //cudaMemAdvise(p, new_size, cudaMemAdviseSetReadMostly, 0);
     return r;
+  }
+
+  void _applyHint(void* p, size_t new_size, MemoryAllocationArgs args)
+  {
+    // TODO: regarder comment utiliser une autre device que le device 0.
+    // (Peut-être prendre cudaGetDevice ?)
+    eMemoryLocationHint hint = args.memoryLocationHint();
+    if (hint == eMemoryLocationHint::MainlyDevice || hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
+      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, 0));
+      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, cudaCpuDeviceId));
+    }
+    if (hint == eMemoryLocationHint::MainlyHost) {
+      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId));
+      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, 0));
+    }
+    if (hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
+      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetReadMostly, 0));
+    }
   }
 
  private:
