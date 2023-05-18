@@ -89,6 +89,8 @@ using Arccore::StdFunctorWithArgumentT;
 /*---------------------------------------------------------------------------*/
 // Classes de 'arccore_collections'
 
+using Arccore::MemoryAllocationOptions;
+using Arccore::MemoryAllocationArgs;
 using Arccore::IMemoryAllocator;
 using Arccore::PrintableMemoryAllocator;
 using Arccore::AlignedMemoryAllocator;

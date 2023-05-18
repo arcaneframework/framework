@@ -533,7 +533,7 @@ dumpArcaneDatabase()
         JSONWriter::Array ja_axl_content(json_writer,"axl-content");
         Int64 index = 0;
         for( Integer k=0; k<nb_block; ++k ){
-          auto z = content.subView(index,block_size);
+          auto z = content.subSpan(index,block_size);
           json_writer.writeValue(z);
           index += block_size;
         }

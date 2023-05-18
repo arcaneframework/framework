@@ -659,7 +659,7 @@ allToAllVariable(Span<const Type> g_send_buf,
         Int64 recv_size = vinfo.recv_count[z];
         Int64 recv_index = tmp_recv_index[fri_mpi_rank];
         
-        Span<const Type> recv_view = tmp_recv_buf.span().subView(recv_index,recv_size);
+        Span<const Type> recv_view = tmp_recv_buf.span().subSpan(recv_index,recv_size);
 
         Int64 my_recv_index = vinfo.recv_index[z];
 

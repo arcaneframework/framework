@@ -66,8 +66,8 @@ class ReduceMemoryImpl
 
   ~ReduceMemoryImpl()
   {
-    m_allocator->deallocate(m_managed_memory);
-    m_device_allocator->deallocate(m_grid_memory_info.m_grid_device_count);
+    m_allocator->deallocate(m_managed_memory,{});
+    m_device_allocator->deallocate(m_grid_memory_info.m_grid_device_count,{});
   }
 
  public:
@@ -118,7 +118,7 @@ class ReduceMemoryImpl
   void _setReducePolicy();
   void _allocateMemoryForReduceData(Int32 new_size)
   {
-    m_managed_memory = reinterpret_cast<std::byte*>(m_allocator->allocate(new_size));
+    m_managed_memory = reinterpret_cast<std::byte*>(m_allocator->allocate(new_size,{}));
     m_size = new_size;
   }
 };
@@ -426,7 +426,7 @@ _allocateMemoryForGridDeviceCount()
   // Alloue sur le device la mémoire contenant le nombre de blocs restant à traiter
   Int64 size = sizeof(unsigned int);
   const unsigned int zero = 0;
-  auto* ptr = reinterpret_cast<unsigned int*>(m_device_allocator->allocate(size));
+  auto* ptr = reinterpret_cast<unsigned int*>(m_device_allocator->allocate(size,{}));
   m_grid_memory_info.m_grid_device_count = ptr;
 
   // Initialise cette zone mémoire avec 0.
