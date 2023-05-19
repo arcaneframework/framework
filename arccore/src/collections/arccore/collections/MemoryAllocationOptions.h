@@ -22,14 +22,6 @@
 namespace Arccore
 {
 
-enum class eMemoryLocationHint : int8_t
-{
-  None = 0,
-  MainlyDevice = 1,
-  MainlyHost = 2,
-  HostAndDeviceMostlyRead = 3
-};
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -62,7 +54,9 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   eMemoryLocationHint memoryLocationHint() const { return m_memory_location_hint; }
   void setMemoryLocationHint(eMemoryLocationHint mem_advice) { m_memory_location_hint = mem_advice; }
 
- public:
+  MemoryAllocationArgs allocationArgs() const;
+
+  public:
 
   friend bool operator==(const MemoryAllocationOptions& a, const MemoryAllocationOptions& b)
   {
