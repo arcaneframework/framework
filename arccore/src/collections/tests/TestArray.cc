@@ -997,11 +997,11 @@ TEST(Array, AllocatorV2)
   TesterMemoryAllocatorV2 testerv2_allocator;
   TesterMemoryAllocatorV2 testerv2_allocator2;
   MemoryAllocationOptions allocate_options1(&testerv2_allocator, eMemoryLocationHint::HostAndDeviceMostlyRead);
-  MemoryAllocationOptions allocate_options2(&testerv2_allocator);
+  MemoryAllocationOptions allocate_options2(&testerv2_allocator, eMemoryLocationHint::None, 0);
   {
     MemoryAllocationOptions opt3(&testerv2_allocator);
     opt3.setMemoryLocationHint(eMemoryLocationHint::HostAndDeviceMostlyRead);
-    ASSERT_EQ(opt3,allocate_options1);
+    ASSERT_EQ(opt3, allocate_options1);
   }
   {
     std::cout << "Array a1\n";
@@ -1013,7 +1013,7 @@ TEST(Array, AllocatorV2)
 
     std::cout << "Array a2\n";
     UniqueArray<Int32> a2(a1);
-    ASSERT_SAME_ARRAY_INFOS(a2,a1);
+    ASSERT_SAME_ARRAY_INFOS(a2, a1);
     ASSERT_EQ(a2.data(), nullptr);
     a1.reserve(3);
     a1.add(5);
@@ -1047,7 +1047,7 @@ TEST(Array, AllocatorV2)
 
     UniqueArray<Int32> array[2];
     MemoryAllocationOptions allocator3 = allocate_options1;
-    for( Integer i=0; i<2; ++i ){
+    for (Integer i = 0; i < 2; ++i) {
       array[i] = UniqueArray<Int32>(allocator3);
     }
     ASSERT_EQ(array[0].allocationOptions(), allocator3);

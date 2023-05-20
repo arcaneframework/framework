@@ -90,6 +90,7 @@ allocationArgs() const
 {
   MemoryAllocationArgs x;
   x.setMemoryLocationHint(m_memory_location_hint);
+  x.setDevice(m_device);
   return x;
 }
 

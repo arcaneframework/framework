@@ -40,9 +40,16 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   {
   }
 
-  explicit MemoryAllocationOptions(IMemoryAllocator* allocator, eMemoryLocationHint mem_hint)
+  MemoryAllocationOptions(IMemoryAllocator* allocator, eMemoryLocationHint mem_hint)
   : m_allocator(allocator)
   , m_memory_location_hint(mem_hint)
+  {
+  }
+
+  MemoryAllocationOptions(IMemoryAllocator* allocator, eMemoryLocationHint mem_hint, Int8 device)
+  : m_allocator(allocator)
+  , m_memory_location_hint(mem_hint)
+  , m_device(device)
   {
   }
 
@@ -54,21 +61,29 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   eMemoryLocationHint memoryLocationHint() const { return m_memory_location_hint; }
   void setMemoryLocationHint(eMemoryLocationHint mem_advice) { m_memory_location_hint = mem_advice; }
 
+  Int8 device() const { return m_device; }
+  void setDevice(Int8 device) { m_device = device; }
+
   MemoryAllocationArgs allocationArgs() const;
 
-  public:
+ public:
 
   friend bool operator==(const MemoryAllocationOptions& a, const MemoryAllocationOptions& b)
   {
-    if (a.m_allocator == b.m_allocator)
-      return true;
-    return (a.m_memory_location_hint == b.m_memory_location_hint);
+    if (a.m_allocator != b.m_allocator)
+      return false;
+    if (a.m_memory_location_hint != b.m_memory_location_hint)
+      return false;
+    if (a.m_device != b.m_device)
+      return false;
+    return true;
   }
 
  private:
 
   IMemoryAllocator* m_allocator = nullptr;
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
+  Int8 m_device = -1;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1727,13 +1727,13 @@ class UniqueArray
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const Array<T>& rhs)
   {
-    this->_initFromAllocator(rhs.allocator(),0);
+    this->_initFromAllocator(rhs.allocationOptions(),0);
     this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const UniqueArray<T>& rhs) : Array<T> {}
   {
-    this->_initFromAllocator(rhs.allocator(),0);
+    this->_initFromAllocator(rhs.allocationOptions(),0);
     this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
