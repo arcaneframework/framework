@@ -533,6 +533,40 @@ adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool IMemoryAllocator2::
+hasRealloc() const
+{
+  return hasRealloc(MemoryAllocationArgs{});
+}
+void* IMemoryAllocator2::
+allocate(size_t new_size)
+{
+  return allocate(new_size, MemoryAllocationArgs{});
+}
+void* IMemoryAllocator2::
+reallocate(void* current_ptr, size_t new_size)
+{
+  return reallocate(current_ptr, new_size, MemoryAllocationArgs{});
+}
+void IMemoryAllocator2::
+deallocate(void* ptr)
+{
+  return deallocate(ptr, MemoryAllocationArgs{});
+}
+size_t IMemoryAllocator2::
+adjustCapacity(size_t wanted_capacity, size_t element_size)
+{
+  return adjustCapacity(wanted_capacity, element_size, MemoryAllocationArgs{});
+}
+size_t IMemoryAllocator2::
+guarantedAlignment()
+{
+  return guarantedAlignment(MemoryAllocationArgs{});
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool IMemoryAllocator3::
 hasRealloc() const
 {

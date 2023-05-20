@@ -132,9 +132,13 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
  public:
 
   // Méthodes obsolètes
+  ARCCORE_DEPRECATED_REASON("Y2023: use allocate(MemoryAllocationArgs,Int64) instead")
   virtual void* allocate(size_t new_size, MemoryAllocationArgs);
+  ARCCORE_DEPRECATED_REASON("Y2023: use reallocate(MemoryAllocationArgs,AllocatedMemoryInfo,Int64) instead")
   virtual void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs);
+  ARCCORE_DEPRECATED_REASON("Y2023: use deallocate(MemoryAllocationArgs,AllocatedMemoryInfo) instead")
   virtual void deallocate(void* ptr, MemoryAllocationArgs);
+  ARCCORE_DEPRECATED_REASON("Y2023: use adjustedCapacity(MemoryAllocationArgs,Int64,Int64) instead")
   virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs);
 
  public:
@@ -144,13 +148,13 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
   // supprimées à terme.
   ARCCORE_DEPRECATED_REASON("Y2023: use hasRealloc(MemoryAllocationArgs) instead")
   virtual bool hasRealloc() const = 0;
-  ARCCORE_DEPRECATED_REASON("Y2023: use allocate(size_t,MemoryAllocationArgs) instead")
+  ARCCORE_DEPRECATED_REASON("Y2023: use allocate(MemoryAllocationArgs,Int64) instead")
   virtual void* allocate(size_t new_size) = 0;
-  ARCCORE_DEPRECATED_REASON("Y2023: use reallocate(AllocatedMemoryInfo,Int64,MemoryAllocationArgs) instead")
+  ARCCORE_DEPRECATED_REASON("Y2023: use reallocate(MemoryAllocationArgs,AllocatedMemoryInfo,Int64) instead")
   virtual void* reallocate(void* current_ptr, size_t new_size) = 0;
-  ARCCORE_DEPRECATED_REASON("Y2023: use deallocate(AllocatedMemoryInfo,MemoryAllocationArgs) instead")
+  ARCCORE_DEPRECATED_REASON("Y2023: use deallocate(MemoryAllocationArgs,AllocatedMemoryInfo) instead")
   virtual void deallocate(void* ptr) = 0;
-  ARCCORE_DEPRECATED_REASON("Y2023: use adjustCapacity(size_t,size_t,MemoryAllocationArgs) instead")
+  ARCCORE_DEPRECATED_REASON("Y2023: use adjustedCapacity(MemoryAllocationArgs,Int64,Int64) instead")
   virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size) = 0;
   ARCCORE_DEPRECATED_REASON("Y2023: use guarantedAlignment(MemoryAllocationArgs) instead")
   virtual size_t guarantedAlignment() = 0;
@@ -163,91 +167,37 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
  *
  * Elle contient les mêmes méthodes que IMemoryAllocator mais avec un argument
  * supplémentaire qui permet de spécialiser les allocations.
+ *
+ * \deprecated Utiliser 'IMemoryAllocator3' à la place.
  */
 class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator2
 : public IMemoryAllocator
 {
  public:
 
-  /*!
-   * \brief Indique si l'allocateur supporte la sémantique de realloc.
-   *
-   * Les allocateurs par défaut du C (malloc/realloc/free) supportent
-   * évidemment le realloc mais ce n'est pas forcément le cas
-   * des allocateurs spécifiques avec alignement mémoire (comme
-   * par exemple posix_memalign).
-   */
   virtual bool hasRealloc(MemoryAllocationArgs args) const = 0;
+  virtual size_t guarantedAlignment(MemoryAllocationArgs args) = 0;
 
-  /*!
-   * \brief Alloue de la mémoire pour \a new_size octets et retourne le pointeur.
-   *
-   * La sémantique est équivalent à malloc():
-   * - \a new_size peut valoir zéro et dans ce cas le pointeur retourné
-   * est soit nul, soit une valeur spécifique
-   * - le pointeur retourné peut être nul si la mémoire n'a pas pu être allouée.
-   */
+  ARCCORE_DEPRECATED_REASON("Y2023: this interface is deprecated. Use IMemoryAllocator3 instead")
   virtual void* allocate(size_t new_size, MemoryAllocationArgs args) = 0;
 
-  /*!
-   * \brief Réalloue de la mémoire pour \a new_size octets et retourne le pointeur.
-   *
-   * Le pointeur \a current_ptr doit avoir été alloué via l'appel à
-   * allocate() ou reallocate() de cette instance.
-   *
-   * La sémantique de cette méthode est équivalente à realloc():
-   * - \a current_ptr peut-être nul auquel cas cet appel est équivalent
-   * à allocate().
-   * - le pointeur retourné peut être nul si la mémoire n'a pas pu être allouée.
-   */
+  ARCCORE_DEPRECATED_REASON("Y2023: this interface is deprecated. Use IMemoryAllocator3 instead")
   virtual void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs args) = 0;
 
-  /*!
-   * \brief Libère la mémoire dont l'adresse de base est \a ptr.
-   *
-   * Le pointeur \a ptr doit avoir été alloué via l'appel à
-   * allocate() ou reallocate() de cette instance.
-   *
-   * La sémantique de cette méthode équivalente à free() et donc \a ptr
-   * peut être nul auquel cas aucune opération n'est effectuée.
-   */
+  ARCCORE_DEPRECATED_REASON("Y2023: this interface is deprecated. Use IMemoryAllocator3 instead")
   virtual void deallocate(void* ptr, MemoryAllocationArgs args) = 0;
 
-  /*!
-   * \brief Ajuste la capacité suivant la taille d'élément.
-   *
-   * Cette méthode est utilisée pour éventuellement modifié le nombre
-   * d'éléments alloués suivant leur taille. Cela permet par exemple
-   * pour les allocateurs alignés de garantir que le nombre d'éléments
-   * alloués est un multiple de cet alignement.
-   * 
-   */
+  ARCCORE_DEPRECATED_REASON("Y2023: this interface is deprecated. Use IMemoryAllocator3 instead")
   virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs args) = 0;
-
-  /*!
-   * \brief Valeur de l'alignement garanti par l'allocateur.
-   *
-   * Cette méthode permet de s'assurer qu'un allocateur a un alignement suffisant
-   * pour certaines opérations comme la vectorisation par exemple.
-   *
-   * S'il n'y a aucune garantie, retourne 0.
-   */
-  virtual size_t guarantedAlignment(MemoryAllocationArgs args) = 0;
 
  private:
 
-  bool hasRealloc() const final { return hasRealloc(MemoryAllocationArgs{}); }
-  void* allocate(size_t new_size) final { return allocate(new_size, MemoryAllocationArgs{}); }
-  void* reallocate(void* current_ptr, size_t new_size) final
-  {
-    return reallocate(current_ptr, new_size, MemoryAllocationArgs{});
-  }
-  void deallocate(void* ptr) final { return deallocate(ptr, MemoryAllocationArgs{}); }
-  size_t adjustCapacity(size_t wanted_capacity, size_t element_size) final
-  {
-    return adjustCapacity(wanted_capacity, element_size, MemoryAllocationArgs{});
-  }
-  size_t guarantedAlignment() final { return guarantedAlignment(MemoryAllocationArgs{}); }
+  bool hasRealloc() const final;
+  void* allocate(size_t new_size) final;
+  void* reallocate(void* current_ptr, size_t new_size) final;
+  void deallocate(void* ptr) final;
+  size_t adjustCapacity(size_t wanted_capacity, size_t element_size) final;
+  size_t guarantedAlignment() final;
 };
 
 /*---------------------------------------------------------------------------*/

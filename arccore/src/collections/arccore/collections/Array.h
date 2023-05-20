@@ -109,7 +109,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
   MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
   MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
-  void _deallocate(MemoryPointer current) ARCCORE_NOEXCEPT;
+  void _deallocate(MemoryPointer current,Int64 sizeof_true_type) ARCCORE_NOEXCEPT;
 
  private:
 
@@ -552,7 +552,7 @@ class AbstractArray
         old_ptr[i].~T();
       }
       m_md->nb_ref = old_md->nb_ref;
-      m_md->_deallocate(old_ptr);
+      m_md->_deallocate(old_ptr,sizeof(T));
       _updateReferences();
     }
   }
@@ -560,7 +560,7 @@ class AbstractArray
   void _internalDeallocate()
   {
     if (!_isSharedNull())
-      m_md->_deallocate(m_ptr);
+      m_md->_deallocate(m_ptr,sizeof(T));
     if (m_md->is_not_null)
       _deallocateMetaData(m_md);
   }
