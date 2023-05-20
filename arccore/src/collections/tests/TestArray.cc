@@ -875,7 +875,7 @@ TEST(Array, Allocator)
   using namespace Arccore;
   PrintableMemoryAllocator printable_allocator;
   PrintableMemoryAllocator printable_allocator2;
-  IMemoryAllocator* allocator1 = AlignedMemoryAllocator::Simd();
+  IMemoryAllocator* allocator1 = AlignedMemoryAllocator3::Simd();
   IMemoryAllocator* allocator2 = AlignedMemoryAllocator2::Simd();
   {
     std::cout << "Array a1\n";

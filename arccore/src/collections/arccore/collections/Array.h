@@ -229,6 +229,7 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
   {
     return m_md->allocation_options;
   }
+  void setMemoryAllocationHint(eMemoryLocationHint new_hint);
 
  protected:
 
@@ -247,6 +248,8 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
   {
     return true;
   }
+
+  virtual Int64 _getDataTypeSize() const =0;
 
  protected:
 
@@ -618,6 +621,8 @@ class AbstractArray
   }
 
  protected:
+
+  Int64 _getDataTypeSize() const final { return sizeof(T); }
 
   //! Mise à jour des références
   virtual void _updateReferences()

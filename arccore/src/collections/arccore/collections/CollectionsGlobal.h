@@ -78,8 +78,37 @@ enum class eMemoryLocationHint : int8_t
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations sur une zone mémoire allouée
+ */
+class AllocatedMemoryInfo
+{
+ public:
 
-}
+  AllocatedMemoryInfo() = default;
+  explicit AllocatedMemoryInfo(void* base_address)
+  : m_base_address(base_address)
+  {}
+  AllocatedMemoryInfo(void* base_address, Int64 _size)
+  : m_base_address(base_address)
+  , m_size(_size)
+  {}
+
+  //! Adresse du début de la zone allouée.
+  void* baseAddress() const { return m_base_address; }
+  //! Taille de la zone mémoire. (-1) si inconnue
+  Int64 size() const { return m_size; }
+
+ public:
+
+  void* m_base_address = nullptr;
+  Int64 m_size = -1;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -64,6 +64,15 @@ _checkAllocator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MemoryAllocationArgs ArrayMetaData::
+_getAllocationArgs() const
+{
+  return allocation_options.allocationArgs();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*
  * TODO: pour les allocations, faire en sorte que le
  * début du tableau soit aligné sur 16 octets dans tous les cas.
@@ -76,12 +85,24 @@ _checkAllocator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MemoryAllocationArgs ArrayMetaData::
-_getAllocationArgs() const
+MemoryAllocationArgs MemoryAllocationOptions::
+allocationArgs() const
 {
   MemoryAllocationArgs x;
-  x.setMemoryLocationHint(allocation_options.m_memory_location_hint);
+  x.setMemoryLocationHint(m_memory_location_hint);
   return x;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AbstractArrayBase::
+setMemoryAllocationHint(eMemoryLocationHint new_hint)
+{
+  MemoryAllocationArgs old_args = m_md->_getAllocationArgs();
+  m_md->allocation_options.setMemoryLocationHint(new_hint);
+  MemoryAllocationArgs new_args = m_md->_getAllocationArgs();
+  m_md->_allocator()->notifyMemoryArgsChanged(old_args,new_args,AllocatedMemoryInfo{});
 }
 
 /*---------------------------------------------------------------------------*/

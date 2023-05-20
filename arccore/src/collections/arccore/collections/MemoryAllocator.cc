@@ -45,6 +45,14 @@ DefaultMemoryAllocator2 DefaultMemoryAllocator2::shared_null_instance;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void IMemoryAllocator::
+notifyMemoryArgsChanged(MemoryAllocationArgs, MemoryAllocationArgs, AllocatedMemoryInfo)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool DefaultMemoryAllocator::
 hasRealloc() const
 {
@@ -153,6 +161,12 @@ SimdAllocator(AlignedMemoryAllocator2::simdAlignment());
 AlignedMemoryAllocator2 AlignedMemoryAllocator2::
 CacheLineAllocator(AlignedMemoryAllocator::cacheLineAlignment());
 
+AlignedMemoryAllocator3 AlignedMemoryAllocator3::
+SimdAllocator(AlignedMemoryAllocator3::simdAlignment());
+
+AlignedMemoryAllocator3 AlignedMemoryAllocator3::
+CacheLineAllocator(AlignedMemoryAllocator::cacheLineAlignment());
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -204,7 +218,7 @@ allocate(size_t new_size)
 /*---------------------------------------------------------------------------*/
 
 void* AlignedMemoryAllocator2::
-allocate(size_t new_size,MemoryAllocationArgs)
+allocate(size_t new_size, MemoryAllocationArgs)
 {
 #ifdef ARCCORE_OS_LINUX
   void* ptr = nullptr;
@@ -216,6 +230,28 @@ allocate(size_t new_size,MemoryAllocationArgs)
   return ptr;
 #elif defined(ARCCORE_OS_WIN32)
   return _aligned_malloc(new_size, m_alignment);
+#else
+  throw NotImplementedException(A_FUNCINFO);
+#endif
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AllocatedMemoryInfo AlignedMemoryAllocator3::
+allocate(MemoryAllocationArgs args, Int64 new_size)
+{
+#ifdef ARCCORE_OS_LINUX
+  void* ptr = nullptr;
+  int e = ::posix_memalign(&ptr, m_alignment, new_size);
+  if (e == EINVAL)
+    throw ArgumentException(A_FUNCINFO, "Invalid argument to posix_memalign");
+  if (e == ENOMEM)
+    return AllocatedMemoryInfo(nullptr);
+  return AllocatedMemoryInfo(ptr, new_size);
+#elif defined(ARCCORE_OS_WIN32)
+  return AllocatedMemoryInfo(_aligned_malloc(new_size, m_alignment), new_size);
 #else
   throw NotImplementedException(A_FUNCINFO);
 #endif
@@ -258,6 +294,23 @@ reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+AllocatedMemoryInfo AlignedMemoryAllocator3::
+reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size)
+{
+#ifdef ARCCORE_OS_LINUX
+  ARCCORE_UNUSED(current_ptr);
+  ARCCORE_UNUSED(new_size);
+  throw NotSupportedException(A_FUNCINFO);
+#elif defined(ARCCORE_OS_WIN32)
+  return AllocatedMemoryInfo(_aligned_realloc(current_ptr.baseAddress(), new_size, m_alignment), new_size);
+#else
+  throw NotImplementedException(A_FUNCINFO);
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void AlignedMemoryAllocator::
 deallocate(void* ptr)
 {
@@ -280,6 +333,21 @@ deallocate(void* ptr, MemoryAllocationArgs)
   ::free(ptr);
 #elif defined(ARCCORE_OS_WIN32)
   return _aligned_free(ptr);
+#else
+  throw NotImplementedException(A_FUNCINFO);
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AlignedMemoryAllocator3::
+deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr)
+{
+#ifdef ARCCORE_OS_LINUX
+  ::free(ptr.baseAddress());
+#elif defined(ARCCORE_OS_WIN32)
+  return _aligned_free(ptr.baseAddress());
 #else
   throw NotImplementedException(A_FUNCINFO);
 #endif
@@ -350,6 +418,15 @@ adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int64 AlignedMemoryAllocator3::
+adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const
+{
+  return adjustMemoryCapacity(wanted_capacity, element_size, m_alignment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -393,16 +470,51 @@ hasRealloc(MemoryAllocationArgs) const
   return hasRealloc();
 }
 
+AllocatedMemoryInfo IMemoryAllocator::
+allocate(MemoryAllocationArgs, Int64 new_size)
+{
+  return AllocatedMemoryInfo(this->allocate(new_size));
+}
+
+AllocatedMemoryInfo IMemoryAllocator::
+reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size)
+{
+  return AllocatedMemoryInfo(this->reallocate(current_ptr.baseAddress(), new_size));
+}
+
+void IMemoryAllocator::
+deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr)
+{
+  return deallocate(ptr.baseAddress());
+}
+
+Int64 IMemoryAllocator::
+adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64 element_size) const
+{
+  auto* x = const_cast<IMemoryAllocator*>(this);
+  return x->adjustCapacity(wanted_capacity, element_size);
+}
+
+size_t IMemoryAllocator::
+guarantedAlignment(MemoryAllocationArgs) const
+{
+  auto* x = const_cast<IMemoryAllocator*>(this);
+  return x->guarantedAlignment();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void* IMemoryAllocator::
 allocate(size_t new_size, MemoryAllocationArgs)
 {
-  return allocate(new_size);
+  return this->allocate(new_size);
 }
 
 void* IMemoryAllocator::
 reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs)
 {
-  return reallocate(current_ptr, new_size);
+  return this->reallocate(current_ptr, new_size);
 }
 
 void IMemoryAllocator::
@@ -414,13 +526,42 @@ deallocate(void* ptr, MemoryAllocationArgs)
 size_t IMemoryAllocator::
 adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs)
 {
-  return adjustCapacity(wanted_capacity, element_size);
+  auto* x = const_cast<IMemoryAllocator*>(this);
+  return x->adjustCapacity(wanted_capacity, element_size);
 }
 
-size_t IMemoryAllocator::
-guarantedAlignment(MemoryAllocationArgs)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool IMemoryAllocator3::
+hasRealloc() const
 {
-  return guarantedAlignment();
+  return hasRealloc(MemoryAllocationArgs{});
+}
+void* IMemoryAllocator3::
+allocate(size_t new_size)
+{
+  return allocate(MemoryAllocationArgs{}, new_size).baseAddress();
+}
+void* IMemoryAllocator3::
+reallocate(void* current_ptr, size_t new_size)
+{
+  return BaseClass::reallocate(current_ptr, new_size, MemoryAllocationArgs{});
+}
+void IMemoryAllocator3::
+deallocate(void* ptr)
+{
+  deallocate(MemoryAllocationArgs{},AllocatedMemoryInfo(ptr));
+}
+size_t IMemoryAllocator3::
+adjustCapacity(size_t wanted_capacity, size_t element_size)
+{
+  return adjustedCapacity(MemoryAllocationArgs{},wanted_capacity, element_size);
+}
+size_t IMemoryAllocator3::
+guarantedAlignment()
+{
+  return guarantedAlignment(MemoryAllocationArgs{});
 }
 
 /*---------------------------------------------------------------------------*/
