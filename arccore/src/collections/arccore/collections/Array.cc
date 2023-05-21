@@ -48,7 +48,7 @@ class BadAllocException
 IMemoryAllocator* ArrayMetaData::
 _defaultAllocator()
 {
-  return &DefaultMemoryAllocator::shared_null_instance;
+  return &DefaultMemoryAllocator3::shared_null_instance;
 }
 
 /*---------------------------------------------------------------------------*/

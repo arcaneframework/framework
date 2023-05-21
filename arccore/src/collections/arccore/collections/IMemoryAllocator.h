@@ -300,12 +300,6 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator3
 class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator
 : public IMemoryAllocator
 {
-  friend class ArrayMetaData;
-
- private:
-
-  static DefaultMemoryAllocator shared_null_instance;
-
  public:
 
   bool hasRealloc() const override;
@@ -323,21 +317,23 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator
  *
  * TODO: marquer les méthodes comme 'final'.
  */
-class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator2
-: public IMemoryAllocator2
+class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator3
+: public IMemoryAllocator3
 {
+  friend class ArrayMetaData;
+
  private:
 
-  static DefaultMemoryAllocator2 shared_null_instance;
+  static DefaultMemoryAllocator3 shared_null_instance;
 
  public:
 
   bool hasRealloc(MemoryAllocationArgs) const override;
-  void* allocate(size_t new_size, MemoryAllocationArgs) override;
-  void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs) override;
-  void deallocate(void* ptr, MemoryAllocationArgs) override;
-  size_t adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs) override;
-  size_t guarantedAlignment(MemoryAllocationArgs) override { return 0; }
+  AllocatedMemoryInfo allocate(MemoryAllocationArgs, Int64 new_size) override;
+  AllocatedMemoryInfo reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size) override;
+  void deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr) override;
+  Int64 adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64 element_size) const override;
+  size_t guarantedAlignment(MemoryAllocationArgs) const override { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/

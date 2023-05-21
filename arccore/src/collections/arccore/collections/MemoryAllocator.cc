@@ -39,8 +39,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-DefaultMemoryAllocator DefaultMemoryAllocator::shared_null_instance;
-DefaultMemoryAllocator2 DefaultMemoryAllocator2::shared_null_instance;
+DefaultMemoryAllocator3 DefaultMemoryAllocator3::shared_null_instance;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -101,7 +100,7 @@ adjustCapacity(size_t wanted_capacity, size_t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool DefaultMemoryAllocator2::
+bool DefaultMemoryAllocator3::
 hasRealloc(MemoryAllocationArgs) const
 {
   return true;
@@ -110,35 +109,35 @@ hasRealloc(MemoryAllocationArgs) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* DefaultMemoryAllocator2::
-allocate(size_t new_size, MemoryAllocationArgs)
+AllocatedMemoryInfo DefaultMemoryAllocator3::
+allocate(MemoryAllocationArgs, Int64 new_size)
 {
-  return ::malloc(new_size);
+  return { ::malloc(new_size), new_size };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* DefaultMemoryAllocator2::
-reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs)
+AllocatedMemoryInfo DefaultMemoryAllocator3::
+reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size)
 {
-  return ::realloc(current_ptr, new_size);
+  return { ::realloc(current_ptr.baseAddress(), new_size), new_size };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DefaultMemoryAllocator2::
-deallocate(void* ptr, MemoryAllocationArgs)
+void DefaultMemoryAllocator3::
+deallocate(MemoryAllocationArgs,AllocatedMemoryInfo ptr)
 {
-  ::free(ptr);
+  ::free(ptr.baseAddress());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-size_t DefaultMemoryAllocator2::
-adjustCapacity(size_t wanted_capacity, size_t, MemoryAllocationArgs)
+Int64 DefaultMemoryAllocator3::
+adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64 ) const
 {
   return wanted_capacity;
 }
