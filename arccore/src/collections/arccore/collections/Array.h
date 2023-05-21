@@ -110,6 +110,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
   MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
   void _deallocate(MemoryPointer current,Int64 sizeof_true_type) ARCCORE_NOEXCEPT;
+  void _setMemoryAllocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type);
 
  private:
 
@@ -204,10 +205,20 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe de base pour les tableaux.
+ * \brief Classe de base interne pour les tableaux.
  *
  * Cette classe gère uniquement les meta-données pour les tableaux comme
  * le nombre d'éléments ou la capacité.
+ *
+ * \a m_md est un pointeur contenant les meta-donné du tableau. Si le
+ * tableau est partagé (SharedArray, SharedArray2), alors ce pointeur
+ * est alloué dynamiquement et dans ce cas _isUseOwnMetaData() doit
+ * retourné \a false. Si le tableau n'est pas partagé (UniqueArray ou
+ * UniqueArray2), alors les meta-données sont conservées directement
+ * dans le l'instance du tableau pour éviter des allocations inutiles
+ * et alors \a m_md pointe vers \a m_meta_data. Dans tous les cas il
+ * ne faut pas utiliser \a m_meta_data directement mais toujours passer
+ * par \a m_md.
  */
 class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
 {
@@ -229,7 +240,6 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
   {
     return m_md->allocation_options;
   }
-  void setMemoryAllocationHint(eMemoryLocationHint new_hint);
 
  protected:
 
@@ -248,8 +258,6 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
   {
     return true;
   }
-
-  virtual Int64 _getDataTypeSize() const =0;
 
  protected:
 
@@ -480,6 +488,15 @@ class AbstractArray
     ARCCORE_CHECK_AT(i,m_md->size);
     return m_ptr[i];
   }
+
+ public:
+
+  //! Modifie les informations sur la localisation mémoire
+  void setMemoryAllocationHint(eMemoryLocationHint new_hint)
+  {
+    m_md->_setMemoryAllocationHint(new_hint,m_ptr,sizeof(T));
+  }
+
  private:
 
   using AbstractArrayBase::m_meta_data;
@@ -621,8 +638,6 @@ class AbstractArray
   }
 
  protected:
-
-  Int64 _getDataTypeSize() const final { return sizeof(T); }
 
   //! Mise à jour des références
   virtual void _updateReferences()

@@ -97,13 +97,14 @@ allocationArgs() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AbstractArrayBase::
-setMemoryAllocationHint(eMemoryLocationHint new_hint)
+void ArrayMetaData::
+_setMemoryAllocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type)
 {
-  MemoryAllocationArgs old_args = m_md->_getAllocationArgs();
-  m_md->allocation_options.setMemoryLocationHint(new_hint);
-  MemoryAllocationArgs new_args = m_md->_getAllocationArgs();
-  m_md->_allocator()->notifyMemoryArgsChanged(old_args,new_args,AllocatedMemoryInfo{});
+  MemoryAllocationArgs old_args = _getAllocationArgs();
+  allocation_options.setMemoryLocationHint(new_hint);
+  MemoryAllocationArgs new_args = _getAllocationArgs();
+  AllocatedMemoryInfo mem_info(ptr,size,capacity);
+  _allocator()->notifyMemoryArgsChanged(old_args,new_args,mem_info);
 }
 
 /*---------------------------------------------------------------------------*/
