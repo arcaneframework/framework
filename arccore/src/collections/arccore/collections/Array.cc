@@ -48,7 +48,7 @@ class BadAllocException
 IMemoryAllocator* ArrayMetaData::
 _defaultAllocator()
 {
-  return &DefaultMemoryAllocator::shared_null_instance;
+  return &DefaultMemoryAllocator3::shared_null_instance;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -59,6 +59,15 @@ _checkAllocator() const
 {
   if (!allocation_options.m_allocator)
     throw BadAllocException("Null allocator");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationArgs ArrayMetaData::
+_getAllocationArgs() const
+{
+  return allocation_options.allocationArgs();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -76,12 +85,26 @@ _checkAllocator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MemoryAllocationArgs ArrayMetaData::
-_getAllocationArgs() const
+MemoryAllocationArgs MemoryAllocationOptions::
+allocationArgs() const
 {
   MemoryAllocationArgs x;
-  x.setMemoryLocationHint(allocation_options.m_memory_location_hint);
+  x.setMemoryLocationHint(m_memory_location_hint);
+  x.setDevice(m_device);
   return x;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArrayMetaData::
+_setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type)
+{
+  MemoryAllocationArgs old_args = _getAllocationArgs();
+  allocation_options.setMemoryLocationHint(new_hint);
+  MemoryAllocationArgs new_args = _getAllocationArgs();
+  AllocatedMemoryInfo mem_info(ptr,size,capacity);
+  _allocator()->notifyMemoryArgsChanged(old_args,new_args,mem_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -94,10 +117,10 @@ _allocate(Int64 new_capacity,Int64 sizeof_true_type)
   MemoryAllocationArgs alloc_args = _getAllocationArgs();
   IMemoryAllocator* a = _allocator();
   size_t s_new_capacity = (size_t)new_capacity;
-  s_new_capacity = a->adjustCapacity(s_new_capacity,sizeof_true_type,alloc_args);
+  s_new_capacity = a->adjustedCapacity(alloc_args,s_new_capacity,sizeof_true_type);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
   size_t elem_size = s_new_capacity * s_sizeof_true_type;
-  MemoryPointer p = a->allocate(elem_size,alloc_args);
+  MemoryPointer p = a->allocate(alloc_args,elem_size).baseAddress();
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
@@ -120,34 +143,33 @@ _allocate(Int64 new_capacity,Int64 sizeof_true_type)
 /*---------------------------------------------------------------------------*/
 
 ArrayMetaData::MemoryPointer ArrayMetaData::
-_reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
+_reallocate(Int64 new_capacity, Int64 sizeof_true_type, MemoryPointer current)
 {
   _checkAllocator();
   MemoryAllocationArgs alloc_args = _getAllocationArgs();
   IMemoryAllocator* a = _allocator();
+  const Int64 current_allocated_size = capacity * sizeof_true_type;
+  const Int64 current_size = this->size * sizeof_true_type;
+  new_capacity = a->adjustedCapacity(alloc_args, new_capacity, sizeof_true_type);
+  size_t elem_size = new_capacity * sizeof_true_type;
 
-  size_t s_new_capacity = (size_t)new_capacity;
-  s_new_capacity = a->adjustCapacity(s_new_capacity,sizeof_true_type,alloc_args);
-  size_t s_sizeof_true_type = (size_t)sizeof_true_type;
-  size_t elem_size = s_new_capacity * s_sizeof_true_type;
-  
   MemoryPointer p = nullptr;
   {
+    AllocatedMemoryInfo current_info(current, current_size, current_allocated_size);
     const bool use_realloc = a->hasRealloc(alloc_args);
     // Lorsqu'on voudra implémenter un realloc avec alignement, il faut passer
     // par use_realloc = false car sous Linux il n'existe pas de méthode realloc
     // garantissant l'alignement (alors que sous Win32 si :) ).
     // use_realloc = false;
     if (use_realloc) {
-      p = a->reallocate(current, elem_size, alloc_args);
+      p = a->reallocate(alloc_args, current_info, elem_size).baseAddress();
     }
     else {
-      p = a->allocate(elem_size, alloc_args);
+      p = a->allocate(alloc_args, elem_size).baseAddress();
       //GG: TODO: regarder si 'current' peut être nul (a priori je ne pense pas...)
       if (p && current) {
-        size_t current_size = this->size * s_sizeof_true_type;
         ::memcpy(p, current, current_size);
-        a->deallocate(current, alloc_args);
+        a->deallocate(alloc_args, current_info);
       }
     }
   }
@@ -157,7 +179,7 @@ _reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
             << " size=" << new_capacity << " datasize=" << sizeof_true_impl
             << " ptr=" << current << " new_p=" << p << '\n';
 #endif
-  if (!p){
+  if (!p) {
     std::ostringstream ostr;
     ostr << " Bad ArrayImplBase::reallocate() size=" << elem_size
          << " capacity=" << new_capacity
@@ -165,7 +187,7 @@ _reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
          << " old_ptr=" << current << '\n';
     throw BadAllocException(ostr.str());
   }
-  this->capacity = (Int64)s_new_capacity;
+  this->capacity = new_capacity;
   return p;
 }
 
@@ -173,11 +195,14 @@ _reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-_deallocate(MemoryPointer current) noexcept
+_deallocate(MemoryPointer current, Int64 sizeof_true_type) noexcept
 {
-  if (_allocator()){
+  if (_allocator()) {
+    Int64 current_size = this->size * sizeof_true_type;
+    Int64 current_capacity = this->capacity * sizeof_true_type;
+    AllocatedMemoryInfo mem_info(current, current_size, current_capacity);
     MemoryAllocationArgs alloc_args = _getAllocationArgs();
-    _allocator()->deallocate(current,alloc_args);
+    _allocator()->deallocate(alloc_args, mem_info);
   }
 }
 

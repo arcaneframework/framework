@@ -34,9 +34,13 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationArgs
   void setMemoryLocationHint(eMemoryLocationHint mem_advice) { m_memory_location_hint = mem_advice; }
   eMemoryLocationHint memoryLocationHint() const { return m_memory_location_hint; }
 
+  Int8 device() const { return m_device; }
+  void setDevice(Int8 device) { m_device = device; }
+
  private:
 
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
+  Int8 m_device = (-1);
 };
 
 /*---------------------------------------------------------------------------*/

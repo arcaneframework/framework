@@ -109,7 +109,8 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
   MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
   MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
-  void _deallocate(MemoryPointer current) ARCCORE_NOEXCEPT;
+  void _deallocate(MemoryPointer current,Int64 sizeof_true_type) ARCCORE_NOEXCEPT;
+  void _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type);
 
  private:
 
@@ -204,10 +205,20 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe de base pour les tableaux.
+ * \brief Classe de base interne pour les tableaux.
  *
  * Cette classe gère uniquement les meta-données pour les tableaux comme
  * le nombre d'éléments ou la capacité.
+ *
+ * \a m_md est un pointeur contenant les meta-donné du tableau. Si le
+ * tableau est partagé (SharedArray, SharedArray2), alors ce pointeur
+ * est alloué dynamiquement et dans ce cas _isUseOwnMetaData() doit
+ * retourné \a false. Si le tableau n'est pas partagé (UniqueArray ou
+ * UniqueArray2), alors les meta-données sont conservées directement
+ * dans le l'instance du tableau pour éviter des allocations inutiles
+ * et alors \a m_md pointe vers \a m_meta_data. Dans tous les cas il
+ * ne faut pas utiliser \a m_meta_data directement mais toujours passer
+ * par \a m_md.
  */
 class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
 {
@@ -477,6 +488,15 @@ class AbstractArray
     ARCCORE_CHECK_AT(i,m_md->size);
     return m_ptr[i];
   }
+
+ public:
+
+  //! Modifie les informations sur la localisation mémoire
+  void setMemoryLocationHint(eMemoryLocationHint new_hint)
+  {
+    m_md->_setMemoryLocationHint(new_hint,m_ptr,sizeof(T));
+  }
+
  private:
 
   using AbstractArrayBase::m_meta_data;
@@ -549,7 +569,7 @@ class AbstractArray
         old_ptr[i].~T();
       }
       m_md->nb_ref = old_md->nb_ref;
-      m_md->_deallocate(old_ptr);
+      m_md->_deallocate(old_ptr,sizeof(T));
       _updateReferences();
     }
   }
@@ -557,7 +577,7 @@ class AbstractArray
   void _internalDeallocate()
   {
     if (!_isSharedNull())
-      m_md->_deallocate(m_ptr);
+      m_md->_deallocate(m_ptr,sizeof(T));
     if (m_md->is_not_null)
       _deallocateMetaData(m_md);
   }
@@ -1722,13 +1742,13 @@ class UniqueArray
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const Array<T>& rhs)
   {
-    this->_initFromAllocator(rhs.allocator(),0);
+    this->_initFromAllocator(rhs.allocationOptions(),0);
     this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   UniqueArray(const UniqueArray<T>& rhs) : Array<T> {}
   {
-    this->_initFromAllocator(rhs.allocator(),0);
+    this->_initFromAllocator(rhs.allocationOptions(),0);
     this->_initFromSpan(rhs);
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
