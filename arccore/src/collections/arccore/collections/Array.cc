@@ -98,7 +98,7 @@ allocationArgs() const
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-_setMemoryAllocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type)
+_setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type)
 {
   MemoryAllocationArgs old_args = _getAllocationArgs();
   allocation_options.setMemoryLocationHint(new_hint);

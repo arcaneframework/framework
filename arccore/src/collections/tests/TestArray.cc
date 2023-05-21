@@ -937,51 +937,63 @@ TEST(Array, Allocator)
  * On ne doit l'appeler qu'avec args.memoryLocationHint() qui vaut
  * eMemoryLocationHint::None or eMemoryLocationHint::HostAndDeviceMostlyRead
  */
-class TesterMemoryAllocatorV2
-: public IMemoryAllocator2
+class TesterMemoryAllocatorV3
+: public IMemoryAllocator3
 {
  public:
 
   bool hasRealloc(MemoryAllocationArgs args) const override
   {
     _checkValid(args);
-    return m_default_allocator.hasRealloc();
+    return m_default_allocator.hasRealloc(args);
   }
-  void* allocate(size_t new_size, MemoryAllocationArgs args) override
+  AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) override
   {
     _checkValid(args);
-    return m_default_allocator.allocate(new_size);
+    return m_default_allocator.allocate(args,new_size);
   }
-  void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs args) override
+  AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) override
   {
     _checkValid(args);
-    return m_default_allocator.reallocate(current_ptr,new_size);
+    return m_default_allocator.reallocate(args, current_ptr, new_size);
   }
-  void deallocate(void* ptr, MemoryAllocationArgs args) override
+  void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) override
   {
     _checkValid(args);
-    m_default_allocator.deallocate(ptr);
+    m_default_allocator.deallocate(args, ptr);
   }
-  size_t adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs args) override
+  Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const override
   {
     _checkValid(args);
-    return m_default_allocator.adjustCapacity(wanted_capacity,element_size);
+    return m_default_allocator.adjustedCapacity(args, wanted_capacity, element_size);
   }
-  size_t guarantedAlignment(MemoryAllocationArgs args) override
+  size_t guarantedAlignment(MemoryAllocationArgs args) const override
   {
     _checkValid(args);
-    return m_default_allocator.guarantedAlignment();
+    return m_default_allocator.guarantedAlignment(args);
+  }
+
+  void notifyMemoryArgsChanged(MemoryAllocationArgs old_args, MemoryAllocationArgs new_args, AllocatedMemoryInfo ptr) override
+  {
+    // Cette méthode n'est appelée qu'une seule fois donc on teste directement les valeurs attendues
+    ASSERT_EQ(old_args.memoryLocationHint(), eMemoryLocationHint::None);
+    ASSERT_EQ(new_args.memoryLocationHint(), eMemoryLocationHint::MainlyHost);
+    ASSERT_EQ(ptr.size(), 2);
+    m_default_allocator.notifyMemoryArgsChanged(old_args, new_args, ptr);
   }
 
  private:
 
-  DefaultMemoryAllocator m_default_allocator;
+  DefaultMemoryAllocator3 m_default_allocator;
 
  private:
 
   static void _checkValid(MemoryAllocationArgs args)
   {
-    bool is_valid = args.memoryLocationHint() ==eMemoryLocationHint::None || args.memoryLocationHint() ==eMemoryLocationHint::HostAndDeviceMostlyRead;
+    bool v1 = args.memoryLocationHint() == eMemoryLocationHint::None;
+    bool v2 = args.memoryLocationHint() == eMemoryLocationHint::MainlyHost;
+    bool v3 = args.memoryLocationHint() == eMemoryLocationHint::HostAndDeviceMostlyRead;
+    bool is_valid = v1 || v2 || v3;
     ASSERT_TRUE(is_valid);
   }
 };
@@ -994,8 +1006,8 @@ class TesterMemoryAllocatorV2
 TEST(Array, AllocatorV2)
 {
   using namespace Arccore;
-  TesterMemoryAllocatorV2 testerv2_allocator;
-  TesterMemoryAllocatorV2 testerv2_allocator2;
+  TesterMemoryAllocatorV3 testerv2_allocator;
+  TesterMemoryAllocatorV3 testerv2_allocator2;
   MemoryAllocationOptions allocate_options1(&testerv2_allocator, eMemoryLocationHint::HostAndDeviceMostlyRead);
   MemoryAllocationOptions allocate_options2(&testerv2_allocator, eMemoryLocationHint::None, 0);
   {
@@ -1022,6 +1034,10 @@ TEST(Array, AllocatorV2)
     a1.add(3);
     a1.add(1);
     ASSERT_EQ(a1.size(), 5);
+    a2.add(9);
+    a2.add(17);
+    // Pour tester notifyMemoryArgsChanged()
+    a2.setMemoryLocationHint(eMemoryLocationHint::MainlyHost);
 
     std::cout << "Array a3\n";
     UniqueArray<Int32> a3(allocate_options1);

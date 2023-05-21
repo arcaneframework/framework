@@ -110,7 +110,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
   MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
   void _deallocate(MemoryPointer current,Int64 sizeof_true_type) ARCCORE_NOEXCEPT;
-  void _setMemoryAllocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type);
+  void _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type);
 
  private:
 
@@ -492,9 +492,9 @@ class AbstractArray
  public:
 
   //! Modifie les informations sur la localisation mémoire
-  void setMemoryAllocationHint(eMemoryLocationHint new_hint)
+  void setMemoryLocationHint(eMemoryLocationHint new_hint)
   {
-    m_md->_setMemoryAllocationHint(new_hint,m_ptr,sizeof(T));
+    m_md->_setMemoryLocationHint(new_hint,m_ptr,sizeof(T));
   }
 
  private:
