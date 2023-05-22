@@ -49,25 +49,14 @@ class ReduceMemoryImpl
  public:
 
   ReduceMemoryImpl(RunCommandImpl* p)
-  : m_command(p), m_grid_buffer(eMemoryRessource::Device)
+  : m_command(p), m_grid_buffer(eMemoryRessource::Device), m_grid_device_count(eMemoryRessource::Device)
   {
-    // TODO: prendre en compte la politique d'exécution pour savoir
-    // comment allouer.
-    m_allocator = platform::getAcceleratorHostMemoryAllocator();
-    if (!m_allocator)
-      ARCANE_FATAL("No HostMemory allocator available for accelerator");
     _allocateMemoryForReduceData(128);
-
-    IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
-    m_device_allocator = mrm->getAllocator(eMemoryRessource::Device);
-    ARCANE_CHECK_POINTER(m_device_allocator);
     _allocateMemoryForGridDeviceCount();
   }
 
   ~ReduceMemoryImpl()
   {
-    m_allocator->deallocate(m_managed_memory,{});
-    m_device_allocator->deallocate(m_grid_memory_info.m_grid_device_count,{});
   }
 
  public:
@@ -89,12 +78,13 @@ class ReduceMemoryImpl
 
  private:
 
-  RunCommandImpl* m_command;
-  IMemoryAllocator* m_allocator;
-  IMemoryAllocator* m_device_allocator = nullptr;
+  RunCommandImpl* m_command = nullptr;
 
   //! Pointeur vers la mémoire unifiée contenant la donnée réduite
   std::byte* m_managed_memory = nullptr;
+
+  //! Allocation pour la donnée réduite
+  NumArray<std::byte, MDDim1> m_managed_memory_bytes;
 
   //! Taille allouée pour \a m_managed_memory
   Int64 m_size = 0;
@@ -107,9 +97,17 @@ class ReduceMemoryImpl
 
   GridMemoryInfo m_grid_memory_info;
 
+  //! Tableau contenant la valeur de la réduction pour chaque bloc d'une grille
   NumArray<Byte, MDDim1> m_grid_buffer;
+
   //! Buffer pour conserver la valeur de l'identité
   UniqueArray<std::byte> m_identity_buffer;
+
+  /*!
+   * \brief Tableau de 1 entier non signé contenant le nombre de grilles ayant déja
+   * effectuée la réduction.
+   */
+  NumArray<unsigned int, MDDim1> m_grid_device_count;
 
  private:
 
@@ -118,7 +116,8 @@ class ReduceMemoryImpl
   void _setReducePolicy();
   void _allocateMemoryForReduceData(Int32 new_size)
   {
-    m_managed_memory = reinterpret_cast<std::byte*>(m_allocator->allocate(new_size,{}));
+    m_managed_memory_bytes.resize(new_size);
+    m_managed_memory = m_managed_memory_bytes.to1DSpan().data();
     m_size = new_size;
   }
 };
@@ -421,12 +420,13 @@ _allocateGridDataMemory()
 void ReduceMemoryImpl::
 _allocateMemoryForGridDeviceCount()
 {
-  ARCANE_CHECK_POINTER(m_device_allocator);
-
   // Alloue sur le device la mémoire contenant le nombre de blocs restant à traiter
+  // Il s'agit d'un seul entier non signé.
   Int64 size = sizeof(unsigned int);
   const unsigned int zero = 0;
-  auto* ptr = reinterpret_cast<unsigned int*>(m_device_allocator->allocate(size,{}));
+  m_grid_device_count.resize(1);
+  auto* ptr = m_grid_device_count.to1DSpan().data();
+  
   m_grid_memory_info.m_grid_device_count = ptr;
 
   // Initialise cette zone mémoire avec 0.

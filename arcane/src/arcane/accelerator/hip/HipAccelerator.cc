@@ -53,32 +53,32 @@ arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e)
  * \brief Classe de base d'un allocateur spécifique pour 'Hip'.
  */
 class HipMemoryAllocatorBase
-: public Arccore::AlignedMemoryAllocator2
+: public Arccore::AlignedMemoryAllocator3
 {
  public:
 
   HipMemoryAllocatorBase()
-  : AlignedMemoryAllocator2(128)
+  : AlignedMemoryAllocator3(128)
   {}
 
   bool hasRealloc(MemoryAllocationArgs) const override { return false; }
-  void* allocate(size_t new_size, MemoryAllocationArgs args) override
+  AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) override
   {
     void* out = nullptr;
     ARCANE_CHECK_HIP(_allocate(&out, new_size, args));
     Int64 a = reinterpret_cast<Int64>(out);
     if ((a % 128) != 0)
       ARCANE_FATAL("Bad alignment for HIP allocator: offset={0}", (a % 128));
-    return out;
+    return { out, new_size };
   }
-  void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs args) override
+  AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) override
   {
-    deallocate(current_ptr, args);
-    return allocate(new_size, args);
+    deallocate(args, current_ptr);
+    return allocate(args, new_size);
   }
-  void deallocate(void* ptr, MemoryAllocationArgs args) override
+  void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) override
   {
-    ARCANE_CHECK_HIP(_deallocate(ptr, args));
+    ARCANE_CHECK_HIP(_deallocate(ptr.baseAddress(), args));
   }
 
  protected:

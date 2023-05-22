@@ -53,32 +53,32 @@ void arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti, cudaError_t e)
  * \brief Classe de base d'un allocateur spécifique pour 'Cuda'.
  */
 class CudaMemoryAllocatorBase
-: public Arccore::AlignedMemoryAllocator2
+: public Arccore::AlignedMemoryAllocator3
 {
  public:
 
   CudaMemoryAllocatorBase()
-  : AlignedMemoryAllocator2(128)
+  : AlignedMemoryAllocator3(128)
   {}
 
   bool hasRealloc(MemoryAllocationArgs) const final { return false; }
-  void* allocate(size_t new_size, MemoryAllocationArgs args) final
+  AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) final
   {
     void* out = nullptr;
     ARCANE_CHECK_CUDA(_allocate(&out, new_size, args));
     Int64 a = reinterpret_cast<Int64>(out);
     if ((a % 128) != 0)
       ARCANE_FATAL("Bad alignment for CUDA allocator: offset={0}", (a % 128));
-    return out;
+    return { out, new_size };
   }
-  void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs args) final
+  AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) final
   {
-    deallocate(current_ptr, args);
-    return allocate(new_size, args);
+    deallocate(args, current_ptr);
+    return allocate(args, new_size);
   }
-  void deallocate(void* ptr, MemoryAllocationArgs args) final
+  void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) final
   {
-    ARCANE_CHECK_CUDA(_deallocate(ptr, args));
+    ARCANE_CHECK_CUDA(_deallocate(ptr.baseAddress(), args));
   }
 
  protected:
@@ -99,6 +99,17 @@ class UnifiedMemoryCudaMemoryAllocator
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
       m_page_allocate_level = v.value();
+  }
+
+ public:
+
+  void notifyMemoryArgsChanged([[maybe_unused]] MemoryAllocationArgs old_args,
+                               MemoryAllocationArgs new_args, AllocatedMemoryInfo ptr) override
+  {
+    void* p = ptr.baseAddress();
+    Int64 s = ptr.capacity();
+    if (p && s > 0)
+      _applyHint(ptr.baseAddress(), ptr.size(), new_args);
   }
 
  protected:
