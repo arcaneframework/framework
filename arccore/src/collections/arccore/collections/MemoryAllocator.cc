@@ -239,7 +239,7 @@ allocate(size_t new_size, MemoryAllocationArgs)
 /*---------------------------------------------------------------------------*/
 
 AllocatedMemoryInfo AlignedMemoryAllocator3::
-allocate(MemoryAllocationArgs args, Int64 new_size)
+allocate([[maybe_unused]] MemoryAllocationArgs args, Int64 new_size)
 {
 #ifdef ARCCORE_OS_LINUX
   void* ptr = nullptr;
@@ -294,7 +294,7 @@ reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs)
 /*---------------------------------------------------------------------------*/
 
 AllocatedMemoryInfo AlignedMemoryAllocator3::
-reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size)
+reallocate([[maybe_unused]] MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size)
 {
 #ifdef ARCCORE_OS_LINUX
   ARCCORE_UNUSED(current_ptr);
@@ -341,7 +341,7 @@ deallocate(void* ptr, MemoryAllocationArgs)
 /*---------------------------------------------------------------------------*/
 
 void AlignedMemoryAllocator3::
-deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr)
+deallocate([[maybe_unused]] MemoryAllocationArgs args, AllocatedMemoryInfo ptr)
 {
 #ifdef ARCCORE_OS_LINUX
   ::free(ptr.baseAddress());
@@ -418,7 +418,7 @@ adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs
 /*---------------------------------------------------------------------------*/
 
 Int64 AlignedMemoryAllocator3::
-adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const
+adjustedCapacity([[maybe_unused]] MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const
 {
   return adjustMemoryCapacity(wanted_capacity, element_size, m_alignment);
 }

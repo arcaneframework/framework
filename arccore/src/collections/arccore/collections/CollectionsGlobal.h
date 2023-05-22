@@ -35,11 +35,14 @@ namespace Arccore
 class IMemoryAllocator;
 class PrintableMemoryAllocator;
 class AlignedMemoryAllocator;
+class AlignedMemoryAllocator3;
 class DefaultMemoryAllocator;
+class DefaultMemoryAllocator3;
 class ArrayImplBase;
 class ArrayMetaData;
 class MemoryAllocationArgs;
 class MemoryAllocationOptions;
+class ArrayDebugInfo;
 template<typename DataType> class ArrayTraits;
 template<typename DataType> class ArrayImplT;
 template<typename DataType> class Array;
@@ -102,9 +105,9 @@ class AllocatedMemoryInfo
 
   //! Adresse du début de la zone allouée.
   void* baseAddress() const { return m_base_address; }
-  //! Taille de la zone mémoire utilisée. (-1) si inconnue
+  //! Taille en octets de la zone mémoire utilisée. (-1) si inconnue
   Int64 size() const { return m_size; }
-  //! Taille de la zone mémoire allouée. (-1) si inconnue
+  //! Taille en octets de la zone mémoire allouée. (-1) si inconnue
   Int64 capacity() const { return m_capacity; }
 
  public:

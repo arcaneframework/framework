@@ -55,6 +55,12 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
 
  public:
 
+  MemoryAllocationOptions(const MemoryAllocationOptions& rhs);
+  MemoryAllocationOptions& operator=(const MemoryAllocationOptions& rhs);
+  ~MemoryAllocationOptions();
+
+ public:
+
   IMemoryAllocator* allocator() const { return m_allocator; }
   void setAllocator(IMemoryAllocator* v) { m_allocator = v; }
 
@@ -64,6 +70,10 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   Int8 device() const { return m_device; }
   void setDevice(Int8 device) { m_device = device; }
 
+  void setArrayName(const String& name);
+  String arrayName() const;
+
+  //! Arguments pour 'IMemoryAllocator' associés à ces options
   MemoryAllocationArgs allocationArgs() const;
 
  public:
@@ -84,6 +94,7 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   IMemoryAllocator* m_allocator = nullptr;
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
   Int8 m_device = -1;
+  ArrayDebugInfo* m_debug_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
