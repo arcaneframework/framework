@@ -1071,6 +1071,47 @@ TEST(Array, AllocatorV2)
   }
 }
 
+TEST(Array, DebugInfo)
+{
+  using namespace Arccore;
+  DefaultMemoryAllocator3 m_default_allocator;
+  MemoryAllocationOptions allocate_options2(&m_default_allocator, eMemoryLocationHint::None, 0);
+
+  String a1_name("Array1");
+  UniqueArray<Int32> a3;
+  {
+    std::cout << "Array a1\n";
+    UniqueArray<Int32> a1(allocate_options2);
+    a1.setDebugName(a1_name);
+    ASSERT_EQ(a1.allocationOptions(), allocate_options2);
+    ASSERT_EQ(a1.size(), 0);
+    ASSERT_EQ(a1.capacity(), 0);
+    ASSERT_EQ(a1.data(), nullptr);
+    ASSERT_EQ(a1.debugName(), a1_name);
+
+    std::cout << "Array a2\n";
+    UniqueArray<Int32> a2(a1);
+    ASSERT_SAME_ARRAY_INFOS(a2, a1);
+    ASSERT_EQ(a2.data(), nullptr);
+    ASSERT_EQ(a2.debugName(), a1_name);
+    a1.reserve(3);
+    a1.add(5);
+    a1.add(7);
+    a1.add(12);
+    a1.add(3);
+    a1.add(1);
+    ASSERT_EQ(a1.size(), 5);
+    a2.add(9);
+    a2.add(17);
+    ASSERT_EQ(a2.debugName(), a1_name);
+    ASSERT_EQ(a2.size(), 2);
+
+    a3 = a2;
+  }
+  ASSERT_EQ(a3.debugName(), a1_name);
+  ASSERT_EQ(a3.size(), 2);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
