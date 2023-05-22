@@ -42,12 +42,11 @@ class MpiSerializeMessage;
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeMessageRequest
 {
  public:
-  MpiSerializeMessageRequest()
-  : m_mpi_message(nullptr), m_request() {}
+  MpiSerializeMessageRequest() = default;
   MpiSerializeMessageRequest(BasicSerializeMessage* mpi_message,Request request)
-  : m_mpi_message(mpi_message), m_request(request) {}
+  : m_mpi_message(mpi_message), m_request(std::move(request)) {}
  public:
-  BasicSerializeMessage* m_mpi_message;
+  BasicSerializeMessage* m_mpi_message = nullptr;
   Request m_request;
 };
 

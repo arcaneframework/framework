@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Iterator.h                                                  (C) 2000-2018 */
+/* Iterator.h                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Iterateurs (obsolète).                                                    */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ArccoreGlobal.h"
+
+#include <utility>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,7 +39,8 @@ class IteratorBase
 {
  public:
 
-  IteratorBase(IT b,IT e) : m_begin(b), m_end(e) {}
+  IteratorBase(IT b,IT e)
+  : m_begin(std::move(b)), m_end(std::move(e)) {}
 
   void operator++(){ ++m_begin; }
   void operator--(){ --m_begin; }

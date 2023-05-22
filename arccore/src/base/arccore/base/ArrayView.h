@@ -299,7 +299,7 @@ class ArrayView
   }
 
   //! Remplit le tableau avec la valeur \a o
-  void fill(T o) noexcept
+  void fill(const T& o) noexcept
   {
     for( Integer i=0, n=m_size; i<n; ++i )
       m_ptr[i] = o;

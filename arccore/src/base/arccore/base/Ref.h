@@ -139,9 +139,9 @@ class Ref
   class Deleter : DeleterBase
   {
    public:
-    Deleter(Internal::ExternalRef h) : m_handle(h), m_no_destroy(false){}
+    Deleter(Internal::ExternalRef h) : m_handle(std::move(h)), m_no_destroy(false){}
     Deleter(Internal::ExternalRef h,bool no_destroy)
-    : m_handle(h), m_no_destroy(no_destroy){}
+    : m_handle(std::move(h)), m_no_destroy(no_destroy){}
     void operator()(InstanceType* tt)
     {
       if (m_no_destroy)
