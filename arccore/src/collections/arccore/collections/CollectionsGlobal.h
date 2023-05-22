@@ -105,9 +105,9 @@ class AllocatedMemoryInfo
 
   //! Adresse du début de la zone allouée.
   void* baseAddress() const { return m_base_address; }
-  //! Taille de la zone mémoire utilisée. (-1) si inconnue
+  //! Taille en octets de la zone mémoire utilisée. (-1) si inconnue
   Int64 size() const { return m_size; }
-  //! Taille de la zone mémoire allouée. (-1) si inconnue
+  //! Taille en octets de la zone mémoire allouée. (-1) si inconnue
   Int64 capacity() const { return m_capacity; }
 
  public:

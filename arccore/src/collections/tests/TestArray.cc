@@ -978,7 +978,7 @@ class TesterMemoryAllocatorV3
     // Cette méthode n'est appelée qu'une seule fois donc on teste directement les valeurs attendues
     ASSERT_EQ(old_args.memoryLocationHint(), eMemoryLocationHint::None);
     ASSERT_EQ(new_args.memoryLocationHint(), eMemoryLocationHint::MainlyHost);
-    ASSERT_EQ(ptr.size(), 2);
+    ASSERT_EQ(ptr.size(), 8);
     m_default_allocator.notifyMemoryArgsChanged(old_args, new_args, ptr);
   }
 

@@ -91,7 +91,7 @@ _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_
   MemoryAllocationArgs old_args = _getAllocationArgs();
   allocation_options.setMemoryLocationHint(new_hint);
   MemoryAllocationArgs new_args = _getAllocationArgs();
-  AllocatedMemoryInfo mem_info(ptr,size,capacity);
+  AllocatedMemoryInfo mem_info(ptr,size*sizeof_true_type,capacity*sizeof_true_type);
   _allocator()->notifyMemoryArgsChanged(old_args,new_args,mem_info);
 }
 
