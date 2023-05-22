@@ -240,6 +240,14 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
   {
     return m_md->allocation_options;
   }
+  /*!
+   * \brief Positionne le nom du tableau pour les informations de debug.
+   *
+   * Ce nom peut être utilisé par exemple pour les affichages listing.
+   */
+  void setDebugName(const String& name);
+  //! Nom de debug (nul si aucun nom spécifié)
+  String debugName() const;
 
  protected:
 

@@ -3,10 +3,12 @@ set(SOURCES
   Array.cc
   Array2.h
   Array2.cc
+  ArrayDebugInfo.h
   CollectionsGlobal.h
   IMemoryAllocator.h
   MemoryAllocationArgs.h
   MemoryAllocationOptions.h
+  MemoryAllocationOptions.cc
   MemoryAllocator.cc
 )
 

@@ -85,18 +85,6 @@ _getAllocationArgs() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MemoryAllocationArgs MemoryAllocationOptions::
-allocationArgs() const
-{
-  MemoryAllocationArgs x;
-  x.setMemoryLocationHint(m_memory_location_hint);
-  x.setDevice(m_device);
-  return x;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void ArrayMetaData::
 _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type)
 {
@@ -245,6 +233,24 @@ void ArrayMetaData::
 throwUnsupportedSpecificAllocator()
 {
   throw BadAllocException("Changing allocator is only supported for UniqueArray");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AbstractArrayBase::
+setDebugName(const String& name)
+{
+  m_md->allocation_options.setArrayName(name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String AbstractArrayBase::
+debugName() const
+{
+  return m_md->allocation_options.arrayName();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -35,11 +35,14 @@ namespace Arccore
 class IMemoryAllocator;
 class PrintableMemoryAllocator;
 class AlignedMemoryAllocator;
+class AlignedMemoryAllocator3;
 class DefaultMemoryAllocator;
+class DefaultMemoryAllocator3;
 class ArrayImplBase;
 class ArrayMetaData;
 class MemoryAllocationArgs;
 class MemoryAllocationOptions;
+class ArrayDebugInfo;
 template<typename DataType> class ArrayTraits;
 template<typename DataType> class ArrayImplT;
 template<typename DataType> class Array;
