@@ -131,18 +131,6 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
 
  public:
 
-  // Méthodes obsolètes
-  ARCCORE_DEPRECATED_REASON("Y2023: use allocate(MemoryAllocationArgs,Int64) instead")
-  virtual void* allocate(size_t new_size, MemoryAllocationArgs);
-  ARCCORE_DEPRECATED_REASON("Y2023: use reallocate(MemoryAllocationArgs,AllocatedMemoryInfo,Int64) instead")
-  virtual void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs);
-  ARCCORE_DEPRECATED_REASON("Y2023: use deallocate(MemoryAllocationArgs,AllocatedMemoryInfo) instead")
-  virtual void deallocate(void* ptr, MemoryAllocationArgs);
-  ARCCORE_DEPRECATED_REASON("Y2023: use adjustedCapacity(MemoryAllocationArgs,Int64,Int64) instead")
-  virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs);
-
- public:
-
   // Méthodes historiques (avant 2023) sans arguments supplémentaires.
   // Elles sont laissées pour rester compatible avec l'existant mais seront
   // supprimées à terme.
@@ -158,46 +146,6 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
   virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size) = 0;
   ARCCORE_DEPRECATED_REASON("Y2023: use guarantedAlignment(MemoryAllocationArgs) instead")
   virtual size_t guarantedAlignment() = 0;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Interface de la version 2 de IMemoryAllocator.
- *
- * Elle contient les mêmes méthodes que IMemoryAllocator mais avec un argument
- * supplémentaire qui permet de spécialiser les allocations.
- *
- * \deprecated Utiliser 'IMemoryAllocator3' à la place.
- */
-class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator2
-: public IMemoryAllocator
-{
- public:
-
-  virtual bool hasRealloc(MemoryAllocationArgs args) const = 0;
-  virtual size_t guarantedAlignment(MemoryAllocationArgs args) = 0;
-
-  ARCCORE_DEPRECATED_REASON("Y2023: this interface is deprecated. Use IMemoryAllocator3 instead")
-  virtual void* allocate(size_t new_size, MemoryAllocationArgs args) = 0;
-
-  ARCCORE_DEPRECATED_REASON("Y2023: this interface is deprecated. Use IMemoryAllocator3 instead")
-  virtual void* reallocate(void* current_ptr, size_t new_size, MemoryAllocationArgs args) = 0;
-
-  ARCCORE_DEPRECATED_REASON("Y2023: this interface is deprecated. Use IMemoryAllocator3 instead")
-  virtual void deallocate(void* ptr, MemoryAllocationArgs args) = 0;
-
-  ARCCORE_DEPRECATED_REASON("Y2023: this interface is deprecated. Use IMemoryAllocator3 instead")
-  virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size, MemoryAllocationArgs args) = 0;
-
- private:
-
-  bool hasRealloc() const final;
-  void* allocate(size_t new_size) final;
-  void* reallocate(void* current_ptr, size_t new_size) final;
-  void deallocate(void* ptr) final;
-  size_t adjustCapacity(size_t wanted_capacity, size_t element_size) final;
-  size_t guarantedAlignment() final;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -419,84 +367,6 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
   void deallocate(void* ptr) override;
   size_t adjustCapacity(size_t wanted_capacity, size_t element_size) override;
   size_t guarantedAlignment() override { return m_alignment; }
-
- private:
-
-  size_t m_alignment;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Allocateur mémoire avec alignement mémoire spécifique.
- *
- * Cette classe s'utilise via les deux méthodes publiques Simd()
- * et CacheLine() qui retournent respectivement un allocateur avec
- * un alignement adéquat pour autoriser la vectorisation et un allocateur
- * aligné sur une ligne de cache.
- */
-class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator2
-: public IMemoryAllocator2
-{
- private:
-
-  static AlignedMemoryAllocator2 SimdAllocator;
-  static AlignedMemoryAllocator2 CacheLineAllocator;
-
- public:
-
-  // TODO: essayer de trouver les bonnes valeurs en fonction de la cible.
-  // 64 est OK pour toutes les architectures x64 à la fois pour le SIMD
-  // et la ligne de cache.
-
-  // IMPORTANT : Si on change la valeur ici, il faut changer la taille de
-  // l'alignement de ArrayImplBase.
-
-  // TODO Pour l'instant seul un alignement sur 64 est autorisé. Pour
-  // autoriser d'autres valeurs, il faut modifier l'implémentation dans
-  // ArrayImplBase.
-
-  // TODO marquer les méthodes comme 'final'.
-
-  //! Alignement pour les structures utilisant la vectorisation
-  static constexpr Integer simdAlignment() { return 64; }
-  //! Alignement pour une ligne de cache.
-  static constexpr Integer cacheLineAlignment() { return 64; }
-
-  /*!
-   * \brief Allocateur garantissant l'alignement pour utiliser
-   * la vectorisation sur la plateforme cible.
-   *
-   * Il s'agit de l'alignement pour le type plus restrictif et donc il
-   * est possible d'utiliser cet allocateur pour toutes les structures vectorielles.
-   */
-  static AlignedMemoryAllocator2* Simd()
-  {
-    return &SimdAllocator;
-  }
-
-  /*!
-   * \brief Allocateur garantissant l'alignement sur une ligne de cache.
-   */
-  static AlignedMemoryAllocator2* CacheLine()
-  {
-    return &CacheLineAllocator;
-  }
-
- protected:
-
-  explicit AlignedMemoryAllocator2(Integer alignment)
-  : m_alignment((size_t)alignment)
-  {}
-
- public:
-
-  bool hasRealloc(MemoryAllocationArgs) const override;
-  void* allocate(size_t new_size,MemoryAllocationArgs) override;
-  void* reallocate(void* current_ptr, size_t new_size,MemoryAllocationArgs) override;
-  void deallocate(void* ptr,MemoryAllocationArgs) override;
-  size_t adjustCapacity(size_t wanted_capacity, size_t element_size,MemoryAllocationArgs) override;
-  size_t guarantedAlignment(MemoryAllocationArgs) override { return m_alignment; }
 
  private:
 
