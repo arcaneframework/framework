@@ -922,11 +922,10 @@ class AbstractArray
       _resizeAndCopyView(rhs_span);
     }
     else{
-      IMemoryAllocator* a = rhs.allocator();
       _destroy();
       _internalDeallocate();
       _reset();
-      _initFromAllocator(a,0);
+      _initFromAllocator(rhs.allocationOptions(),0);
       _initFromSpan(rhs_span);
     }
   }
