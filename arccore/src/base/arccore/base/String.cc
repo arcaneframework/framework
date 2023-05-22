@@ -215,8 +215,7 @@ operator=(std::string_view str)
 String& String::
 operator=(const std::string& str)
 {
-  String new_s(str);
-  return this->operator=(new_s);
+  return this->operator=(String(str));
 }
 
 /*---------------------------------------------------------------------------*/

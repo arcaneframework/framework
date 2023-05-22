@@ -48,7 +48,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
 
  protected:
 
-  virtual void _add(Request r)
+  virtual void _add(const Request& r)
   {
     m_requests.add(r);
     m_requests_done.add(false);

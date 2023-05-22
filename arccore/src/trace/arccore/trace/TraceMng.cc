@@ -1255,10 +1255,10 @@ removeAllClassConfig()
   Mutex::ScopedLock sl(m_trace_mutex);
   // Comme tous les TraceClassConfig vont être détruit, il ne faut plus les
   // référencer dans les TraceClass.
-  for( auto i : m_trace_class_stack )
+  for( auto& i : m_trace_class_stack )
     i.m_info = &m_default_trace_class_config;
   m_current_msg_class.m_info = &m_default_trace_class_config;
-  for( auto i : m_trace_class_config_map )
+  for( const auto& i : m_trace_class_config_map )
     delete i.second;
   m_trace_class_config_map.clear();
 }
@@ -1272,8 +1272,7 @@ visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* fun
   if (!functor)
     return;
   for( const auto& i : m_trace_class_config_map ){
-    std::pair<String,TraceClassConfig> x(i.first,*(i.second));
-    functor->executeFunctor(x);
+    functor->executeFunctor(std::make_pair(i.first,*(i.second)));
   }
 }
 

@@ -70,7 +70,7 @@ class TestBaseType
 class TestBaseTypeNoRef
 {
  public:
-  TestBaseTypeNoRef(int a,std::string b) : m_a(a), m_b(b)
+  TestBaseTypeNoRef(int a,const std::string& b) : m_a(a), m_b(b)
   {
     std::cout << "CREATE ME this=" << this << "\n";
     ++global_nb_create;
@@ -119,7 +119,7 @@ class TestRefSharedPtr
  public:
   typedef TestBaseTypeNoRef BaseType;
  public:
-  TestRefSharedPtr(int a,std::string b) : TestBaseTypeNoRef(a,b){}
+  TestRefSharedPtr(int a,const std::string& b) : TestBaseTypeNoRef(a,b){}
 };
 }
 
