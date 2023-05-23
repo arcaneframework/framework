@@ -31,6 +31,7 @@
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
+#include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MeshMaterialSyncUnitTest_axl.h"
@@ -77,7 +78,7 @@ class MeshMaterialSyncUnitTest
 
  public:
 
-  void _checkVariableSync2(bool do_check);
+  void _checkVariableSync2(bool do_check,Int32 iteration);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -267,8 +268,8 @@ _doPhase2()
   }
 
   for( int i=0; i<10; ++i )
-    _checkVariableSync2(false);
-  _checkVariableSync2(true);
+    _checkVariableSync2(false,i);
+  _checkVariableSync2(true,5);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -316,7 +317,7 @@ _checkVariableSync1()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialSyncUnitTest::
-_checkVariableSync2(bool do_check)
+_checkVariableSync2(bool do_check,Int32 iteration)
 {
   // TODO: Faire aussi avec les matériaux lorsqu'ils seront disponibles
   // TODO: Ne pas mettre la même valeur dans chaque maille milieu/matériau (faire un offset du uid)
@@ -339,7 +340,16 @@ _checkVariableSync2(bool do_check)
     };
   }
 
-  m_material_uids.synchronize();
+  // Avec la version 7 des synchronisations, on teste une fois sur deux la version
+  // non bloquante.
+  if ((iteration%2)==0 && m_material_mng->synchronizeVariableVersion()==7){
+    MeshMaterialVariableSynchronizerList vlist(m_material_mng);
+    m_material_uids.synchronize(vlist);
+    vlist.beginSynchronize();
+    vlist.endSynchronize();
+  }
+  else
+    m_material_uids.synchronize();
 
   if (!do_check)
     return;
