@@ -17,6 +17,7 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/MemoryRessource.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IVariableSynchronizer.h"
@@ -78,6 +79,9 @@ class MeshMaterialVariableSynchronizerList::Impl
   Int64 m_total_size = 0;
   bool m_use_generic_version = true;
   eMemoryRessource m_buffer_memory_ressource = eMemoryRessource::Host;
+  SyncInfo m_mat_env_sync_info;
+  SyncInfo m_env_only_sync_info;
+  bool m_is_in_sync = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -113,27 +117,103 @@ totalMessageSize() const
 void MeshMaterialVariableSynchronizerList::
 apply()
 {
+  // Avec la version 8 des synchronisations, il faut faire obligatoirement
+  // que chaque synchronisation soit bloquante car il n'y a qu'un seul
+  // buffer partagé.
+  Int32 v = m_p->m_material_mng->synchronizeVariableVersion();
+  bool is_blocking = (v == 8);
+
+  _beginSynchronize(is_blocking);
+  _endSynchronize(is_blocking);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableSynchronizerList::
+beginSynchronize()
+{
+  Int32 v = m_p->m_material_mng->synchronizeVariableVersion();
+  if (v != 7)
+    ARCANE_FATAL("beginSynchronize() is only valid for synchronize version 7 (v={0})", v);
+  _beginSynchronize(false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableSynchronizerList::
+endSynchronize()
+{
+  _endSynchronize(false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableSynchronizerList::
+_beginSynchronize(bool is_blocking)
+{
+  if (m_p->m_is_in_sync)
+    ARCANE_FATAL("Already synchronizing");
+  m_p->m_is_in_sync = true;
+
   m_p->m_total_size = 0;
   // TODO: modifier le synchroniser pour faire cela en une passe
   // de send/recv/wait.
   IMeshMaterialMng* mm = m_p->m_material_mng;
-  SyncInfo sync_info1;
-  if (!m_p->m_mat_env_vars.empty()) {
-    _fillSyncInfo(sync_info1);
-    sync_info1.mat_synchronizer = mm->_allCellsMatEnvSynchronizer();
-    sync_info1.variables = m_p->m_mat_env_vars;
-    sync_info1.message_tag = MP::MessageTag(569);
-    _synchronizeMultiple(sync_info1);
+  m_p->m_mat_env_sync_info = SyncInfo();
+  m_p->m_env_only_sync_info = SyncInfo();
+
+  {
+    SyncInfo& sync_info = m_p->m_mat_env_sync_info;
+    _fillSyncInfo(sync_info);
+    sync_info.mat_synchronizer = mm->_allCellsMatEnvSynchronizer();
+    sync_info.variables = m_p->m_mat_env_vars;
+    sync_info.message_tag = MP::MessageTag(569);
+    if (!sync_info.variables.empty()) {
+      _beginSynchronizeMultiple(sync_info);
+      if (is_blocking)
+        _endSynchronizeMultiple2(sync_info);
+    }
   }
-  SyncInfo sync_info2;
-  if (!m_p->m_env_only_vars.empty()) {
-    _fillSyncInfo(sync_info2);
-    sync_info2.mat_synchronizer = mm->_allCellsEnvOnlySynchronizer();
-    sync_info2.variables = m_p->m_env_only_vars;
-    sync_info2.message_tag = MP::MessageTag(585);
-    _synchronizeMultiple(sync_info2);
+  {
+    SyncInfo& sync_info = m_p->m_env_only_sync_info;
+    _fillSyncInfo(sync_info);
+    sync_info.mat_synchronizer = mm->_allCellsEnvOnlySynchronizer();
+    sync_info.variables = m_p->m_env_only_vars;
+    sync_info.message_tag = MP::MessageTag(585);
+    if (!sync_info.variables.empty()) {
+      _beginSynchronizeMultiple(sync_info);
+      if (is_blocking)
+        _endSynchronizeMultiple2(sync_info);
+    }
   }
-  m_p->m_total_size = sync_info1.message_total_size + sync_info2.message_total_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableSynchronizerList::
+_endSynchronize(bool is_blocking)
+{
+  if (!m_p->m_is_in_sync)
+    ARCANE_FATAL("beginSynchronize() has to be called before endSynchronize()");
+
+  {
+    SyncInfo& sync_info = m_p->m_mat_env_sync_info;
+    if (!sync_info.variables.empty() && !is_blocking)
+      _endSynchronizeMultiple2(sync_info);
+    m_p->m_total_size += sync_info.message_total_size;
+  }
+  {
+    SyncInfo& sync_info = m_p->m_env_only_sync_info;
+    if (!sync_info.variables.empty() && !is_blocking)
+      _endSynchronizeMultiple2(sync_info);
+    m_p->m_total_size += sync_info.message_total_size;
+  }
+
+  m_p->m_is_in_sync = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -143,13 +223,13 @@ void MeshMaterialVariableSynchronizerList::
 add(MeshMaterialVariable* var)
 {
   MatVarSpace mvs = var->space();
-  if (mvs==MatVarSpace::MaterialAndEnvironment)
+  if (mvs == MatVarSpace::MaterialAndEnvironment)
     m_p->m_mat_env_vars.add(var);
-  else if (mvs==MatVarSpace::Environment)
+  else if (mvs == MatVarSpace::Environment)
     m_p->m_env_only_vars.add(var);
   else
-    ARCANE_THROW(NotSupportedException,"Invalid space for variable name={0} space={1}",
-                 var->name(),(int)mvs);
+    ARCANE_THROW(NotSupportedException, "Invalid space for variable name={0} space={1}",
+                 var->name(), (int)mvs);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,7 +246,7 @@ _fillSyncInfo(SyncInfo& sync_info)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableSynchronizerList::
-_synchronizeMultiple(SyncInfo& sync_info)
+_beginSynchronizeMultiple(SyncInfo& sync_info)
 {
   IMeshMaterialVariableSynchronizer* mmvs = sync_info.mat_synchronizer;
   const Int32 sync_version = sync_info.sync_version;
@@ -199,7 +279,6 @@ _synchronizeMultiple(SyncInfo& sync_info)
   }
 
   _beginSynchronizeMultiple2(sync_info);
-  _endSynchronizeMultiple2(sync_info);
 }
 
 /*---------------------------------------------------------------------------*/
