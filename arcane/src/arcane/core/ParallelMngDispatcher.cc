@@ -31,6 +31,7 @@
 #include "arcane/core/internal/IParallelMngInternal.h"
 
 #include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueueBuildInfo.h"
 
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/MessagePassingMng.h"
@@ -247,8 +248,11 @@ class ParallelMngDispatcher::Impl
     m_runner = runner;
     // Conserve une référence sur le Runner pour éviter sa destruction
     m_runner_ref = (runner) ? *runner : Runner();
-    if (m_runner)
-      m_queue = makeQueueRef(m_runner);
+    if (m_runner){
+      Accelerator::RunQueueBuildInfo build_info(-5);
+      m_queue = makeQueueRef(*m_runner,build_info);
+      m_queue->setAsync(true);
+    }
     else
       m_queue.reset();
   }

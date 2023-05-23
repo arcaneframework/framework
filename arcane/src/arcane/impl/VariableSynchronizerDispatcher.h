@@ -183,10 +183,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
   MutableMemoryView globalReceiveBuffer() final { return m_ghost_memory_view; }
   MutableMemoryView globalSendBuffer() final { return m_share_memory_view; }
 
-  void copyReceive(Integer index) final;
-  void copySend(Integer index) final;
+  void copyReceiveAsync(Integer index) final;
+  void copySendAsync(Integer index) final;
   Int64 totalReceiveSize() const final { return m_ghost_memory_view.bytes().size(); }
   Int64 totalSendSize() const final { return m_share_memory_view.bytes().size(); }
+
+  void barrier() final { m_buffer_copier->barrier(); }
 
  public:
 

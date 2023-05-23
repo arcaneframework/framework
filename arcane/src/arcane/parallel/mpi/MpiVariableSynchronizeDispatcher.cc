@@ -236,7 +236,7 @@ endSynchronize(IDataSynchronizeBuffer* ds_buf)
       // Recopie les valeurs recues
       {
         MpiTimeInterval tit(&copy_time);
-        ds_buf->copyReceive(orig_index);
+        ds_buf->copyReceiveAsync(orig_index);
       }
     }
   }
@@ -248,6 +248,9 @@ endSynchronize(IDataSynchronizeBuffer* ds_buf)
     MpiTimeInterval tit(&wait_time);
     m_send_request_list->wait(Parallel::WaitAll);
   }
+
+  // S'assure que les copies des buffers sont bien terminées
+  ds_buf->barrier();
 
   Int64 total_ghost_size = ds_buf->totalReceiveSize();
   Int64 total_share_size = ds_buf->totalSendSize();
