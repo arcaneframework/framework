@@ -27,11 +27,14 @@
 #include "arcane/materials/MeshMaterialVariable.h"
 #include "arcane/materials/IMeshMaterialSynchronizeBuffer.h"
 
+#include "arccore/message_passing/Messages.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Materials
 {
+namespace MP = Arccore::MessagePassing;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,7 +49,9 @@ class MeshMaterialVariableSynchronizerList::SyncInfo
   bool use_generic_version = false;
   Int32 sync_version = 0;
   IMeshMaterialVariableSynchronizer* mat_synchronizer = nullptr;
-  Int64 total_size = 0;
+  Int64 message_total_size = 0;
+  UniqueArray<MeshMaterialVariable*> variables;
+  MP::MessageTag message_tag;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -115,14 +120,20 @@ apply()
   SyncInfo sync_info1;
   if (!m_p->m_mat_env_vars.empty()) {
     _fillSyncInfo(sync_info1);
-    _synchronizeMultiple(m_p->m_mat_env_vars, mm->_allCellsMatEnvSynchronizer(), sync_info1);
+    sync_info1.mat_synchronizer = mm->_allCellsMatEnvSynchronizer();
+    sync_info1.variables = m_p->m_mat_env_vars;
+    sync_info1.message_tag = MP::MessageTag(569);
+    _synchronizeMultiple(sync_info1);
   }
   SyncInfo sync_info2;
   if (!m_p->m_env_only_vars.empty()) {
     _fillSyncInfo(sync_info2);
-    _synchronizeMultiple(m_p->m_env_only_vars, mm->_allCellsEnvOnlySynchronizer(), sync_info2);
+    sync_info2.mat_synchronizer = mm->_allCellsEnvOnlySynchronizer();
+    sync_info2.variables = m_p->m_env_only_vars;
+    sync_info2.message_tag = MP::MessageTag(585);
+    _synchronizeMultiple(sync_info2);
   }
-  m_p->m_total_size = sync_info1.total_size + sync_info2.total_size;
+  m_p->m_total_size = sync_info1.message_total_size + sync_info2.message_total_size;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -155,10 +166,9 @@ _fillSyncInfo(SyncInfo& sync_info)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableSynchronizerList::
-_synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
-                     IMeshMaterialVariableSynchronizer* mmvs, SyncInfo& sync_info)
+_synchronizeMultiple(SyncInfo& sync_info)
 {
-  sync_info.mat_synchronizer = mmvs;
+  IMeshMaterialVariableSynchronizer* mmvs = sync_info.mat_synchronizer;
   const Int32 sync_version = sync_info.sync_version;
   if (sync_version == 8) {
     // Version 8. Utilise le buffer commun pour éviter les multiples allocations
@@ -171,7 +181,7 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
     IParallelMng* pm = mmvs->variableSynchronizer()->parallelMng();
     if (pm->_internalApi()->isAcceleratorAware()) {
       // N'est supporté que pour la nouvelle version des synchronisations
-      if (m_p->m_use_generic_version) {
+      if (sync_info.use_generic_version) {
         mem = eMemoryRessource::Device;
         pm->traceMng()->info(4) << "MatSync: Using device memory for buffer";
       }
@@ -188,16 +198,17 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
     sync_info.buf_list->setNbRank(nb_rank);
   }
 
-  _beginSynchronizeMultiple2(vars, sync_info);
-  _endSynchronizeMultiple2(vars, sync_info);
+  _beginSynchronizeMultiple2(sync_info);
+  _endSynchronizeMultiple2(sync_info);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableSynchronizerList::
-_beginSynchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars, SyncInfo& sync_info)
+_beginSynchronizeMultiple2(SyncInfo& sync_info)
 {
+  ConstArrayView<MeshMaterialVariable*> vars = sync_info.variables;
   IMeshMaterialSynchronizeBuffer* buf_list = sync_info.buf_list.get();
   IMeshMaterialVariableSynchronizer* mmvs = sync_info.mat_synchronizer;
   // Version de la synchronisation qui envoie uniquement
@@ -208,6 +219,7 @@ _beginSynchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars, SyncInfo&
 
   IVariableSynchronizer* var_syncer = mmvs->variableSynchronizer();
   IParallelMng* pm = var_syncer->parallelMng();
+  IMessagePassingMng* mpm = pm->messagePassingMng();
 
   // TODO: gérer l'alignement des multiples buffer.
 
@@ -252,7 +264,8 @@ _beginSynchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars, SyncInfo&
   // Poste les receive.
   for (Integer i = 0; i < nb_rank; ++i) {
     Int32 rank = ranks[i];
-    sync_info.requests.add(pm->recv(buf_list->receiveBuffer(i).smallView(), rank, false));
+    MP::PointToPointMessageInfo msg_info(MP::MessageRank(rank), sync_info.message_tag, MP::eBlockingType::NonBlocking);
+    sync_info.requests.add(mpReceive(mpm, buf_list->receiveBuffer(i), msg_info));
   }
 
   // Poste les send
@@ -273,7 +286,8 @@ _beginSynchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars, SyncInfo&
         vars[z]->copyToBuffer(shared_matcells, sub_view);
       offset += total_shared * my_data_size;
     }
-    sync_info.requests.add(pm->send(values, rank, false));
+    MP::PointToPointMessageInfo msg_info(MP::MessageRank(rank), sync_info.message_tag, MP::eBlockingType::NonBlocking);
+    sync_info.requests.add(mpSend(mpm, values, msg_info));
   }
 }
 
@@ -281,8 +295,9 @@ _beginSynchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars, SyncInfo&
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableSynchronizerList::
-_endSynchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars, SyncInfo& sync_info)
+_endSynchronizeMultiple2(SyncInfo& sync_info)
 {
+  ConstArrayView<MeshMaterialVariable*> vars = sync_info.variables;
   IMeshMaterialVariableSynchronizer* mmvs = sync_info.mat_synchronizer;
   IVariableSynchronizer* var_syncer = mmvs->variableSynchronizer();
   IParallelMng* pm = var_syncer->parallelMng();
@@ -318,7 +333,7 @@ _endSynchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars, SyncInfo& s
       offset += total_ghost * my_data_size;
     }
   }
-  sync_info.total_size += buf_list->totalSize();
+  sync_info.message_total_size += buf_list->totalSize();
 }
 
 /*---------------------------------------------------------------------------*/
