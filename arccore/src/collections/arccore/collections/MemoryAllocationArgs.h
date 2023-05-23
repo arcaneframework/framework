@@ -37,10 +37,16 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationArgs
   Int8 device() const { return m_device; }
   void setDevice(Int8 device) { m_device = device; }
 
+  ArrayDebugInfo* debugInfo() const { return m_debug_info; }
+  void setDebugInfo(ArrayDebugInfo* v) { m_debug_info = v; }
+
+  String arrayName() const;
+
  private:
 
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
   Int8 m_device = (-1);
+  ArrayDebugInfo* m_debug_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
