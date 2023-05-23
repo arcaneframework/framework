@@ -37,7 +37,7 @@ class TestBaseType
  public:
   typedef ReferenceCounterTag ReferenceCounterTagType;
  public:
-  TestBaseType(int a,std::string b) : m_a(a), m_b(b)
+  TestBaseType(int a,const std::string& b) : m_a(a), m_b(b)
   {
     std::cout << "CREATE ME this=" << this << "\n";
     ++global_nb_create;
@@ -102,7 +102,7 @@ class TestRefOwn
  public:
   typedef TestBaseType BaseType;
  public:
-  TestRefOwn(int a,std::string b) : TestBaseType(a,b){}
+  TestRefOwn(int a,const std::string& b) : TestBaseType(a,b){}
   ~TestRefOwn() override
   {
     std::cout << "DELETE ME (TestRefOwn) this=" << this << "\n";

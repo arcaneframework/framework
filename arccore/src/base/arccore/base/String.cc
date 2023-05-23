@@ -195,8 +195,7 @@ operator=(String&& str)
 String& String::
 operator=(StringView str)
 {
-  String new_s(str);
-  return this->operator=(new_s);
+  return this->operator=(String(str));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -205,8 +204,7 @@ operator=(StringView str)
 String& String::
 operator=(std::string_view str)
 {
-  String new_s(str);
-  return this->operator=(new_s);
+  return this->operator=(String(str));
 }
 
 /*---------------------------------------------------------------------------*/
