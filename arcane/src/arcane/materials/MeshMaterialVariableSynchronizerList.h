@@ -42,6 +42,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
  private:
 
   class Impl;
+  class SyncInfo;
 
  public:
 
@@ -66,17 +67,32 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
   //! Après appel à apply(), contient la taille des messages envoyés
   Int64 totalMessageSize() const;
 
+  /*!
+   * \brief Commence une synchronisation non bloquante.
+   *
+   * Cela est valide uniquement si IMeshMaterialMng::synchronizeVariableVersion() vaut 7.
+   */
+  void beginSynchronize();
+
+  /*!
+   * \brief Bloque tant que la synchronisation en cours n'est pas terminé.
+   *
+   * Il faut appeler beginSynchronize() avant cet appel.
+   */
+  void endSynchronize();
+
  private:
 
   Impl* m_p;
 
  private:
 
-  void _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
-                            IMeshMaterialVariableSynchronizer* mmvs);
-  void _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
-                             IMeshMaterialVariableSynchronizer* mmvs,
-                             IMeshMaterialSynchronizeBuffer* buf_list);
+  static void _beginSynchronizeMultiple(SyncInfo& sync_info);
+  static void _beginSynchronizeMultiple2(SyncInfo& sync_info);
+  static void _endSynchronizeMultiple2(SyncInfo& sync_info);
+  void _fillSyncInfo(SyncInfo& sync_info);
+  void _beginSynchronize(bool is_blocking);
+  void _endSynchronize(bool is_blocking);
 };
 
 /*---------------------------------------------------------------------------*/
