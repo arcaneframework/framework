@@ -279,7 +279,7 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dataty
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizeBufferBase::
-copyReceive(Integer index)
+copyReceiveAsync(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
@@ -289,14 +289,14 @@ copyReceive(Integer index)
   ConstArrayView<Int32> indexes = vsi.ghostIds();
   ConstMemoryView local_buffer = receiveBuffer(index);
 
-  m_buffer_copier->copyFromBuffer(indexes, local_buffer, var_values);
+  m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizeBufferBase::
-copySend(Integer index)
+copySendAsync(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
@@ -305,7 +305,7 @@ copySend(Integer index)
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
   MutableMemoryView local_buffer = sendBuffer(index);
-  m_buffer_copier->copyToBuffer(indexes, local_buffer, var_values);
+  m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -596,7 +596,8 @@ copyAllSend()
 {
   Int32 nb_rank = nbRank();
   for (Int32 i = 0; i < nb_rank; ++i)
-    copySend(i);
+    copySendAsync(i);
+  barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -607,7 +608,18 @@ copyAllReceive()
 {
   Int32 nb_rank = nbRank();
   for (Int32 i = 0; i < nb_rank; ++i)
-    copyReceive(i);
+    copyReceiveAsync(i);
+  barrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DirectBufferCopier::
+barrier()
+{
+  if (m_queue)
+    m_queue->barrier();
 }
 
 /*---------------------------------------------------------------------------*/

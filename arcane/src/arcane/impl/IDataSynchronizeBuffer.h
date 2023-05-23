@@ -35,9 +35,13 @@ namespace Arcane
  * partie est associée à un destinataire (sendBuffer() ou receiveBuffer()).
  *
  * Avant d'utiliser les buffers, il faut recopier les valeurs de la données
- * La méthode copySend() permet de recopier les valeurs de la donnée dans le
- * buffer d'envoi et copyReceive() permet de recopier le buffer de réception
+ * La méthode copySendAsync() permet de recopier les valeurs de la donnée dans le
+ * buffer d'envoi et copyReceiveAsync() permet de recopier le buffer de réception
  * dans la donnée.
+ *
+ * \warning Ces méthodes copyReceiveAsync() et copySendAsync() peuvent être asynchrones.
+ * Il est donc important d'appeler barrier() avant d'utiliser les données copiées
+ * pour être sur que les transferts sont terminées.
  *
  * Si hasGlobalBuffer() est vrai alors les buffers de chaque partie sont issues
  * d'un buffer global et il est possible de le récupérer via globalSendBuffer()
@@ -78,13 +82,13 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
   virtual Int64 receiveDisplacement(Int32 index) const = 0;
 
   //! Recopie dans les données depuis le buffer de réception du rang \a index.
-  virtual void copyReceive(Int32 index) = 0;
+  virtual void copyReceiveAsync(Int32 index) = 0;
 
   //! Recopie toutes les données depuis le buffer de réception.
   virtual void copyAllReceive();
 
   //! Recopie dans le buffer d'envoi les données du rang \a index
-  virtual void copySend(Int32 index) = 0;
+  virtual void copySendAsync(Int32 index) = 0;
 
   //! Recopie dans le buffer d'envoi toute les données
   virtual void copyAllSend();
@@ -94,6 +98,9 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
 
   //! Taille totale à recevoir en octet
   virtual Int64 totalReceiveSize() const = 0;
+
+  //! Attend que les copies (copySendAsync() et copyReceiveAsync()) soient terminées
+  virtual void barrier() =0;
 };
 
 /*---------------------------------------------------------------------------*/

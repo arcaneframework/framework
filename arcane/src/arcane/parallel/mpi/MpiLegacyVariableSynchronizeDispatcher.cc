@@ -225,7 +225,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 
       {
         double begin_time = MPI_Wtime();
-        vs_buf->copyReceive(index);
+        vs_buf->copyReceiveAsync(index);
         double end_time = MPI_Wtime();
         copy_time += (end_time - begin_time);
       }
@@ -239,6 +239,10 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
   mpi_status.resize(m_send_requests.size());
   m_mpi_parallel_mng->adapter()->getMpiProfiling()->waitAll(m_send_requests.size(),m_send_requests.data(),
                                                             mpi_status.data());
+
+  // S'assure que les copies des buffers sont bien terminées
+  vs_buf->barrier();
+
   //trace->info() << "Wait all end";
   {
     Int64 total_ghost_size = vs_buf->totalReceiveSize();

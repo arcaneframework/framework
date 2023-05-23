@@ -30,6 +30,10 @@ namespace Arcane
 /*!
  * \internal
  * \brief Interface pour copier des éléments entre deux zones avec indexation.
+ *
+ * Les méthodes de copie peuvent être asynchrones. Il faut appeler barrier()
+ * pour s'assurer que ces copies sont bien terminées avant d'utilier les
+ * valeurs des buffers.
  */
 class IBufferCopier
 {
@@ -39,15 +43,18 @@ class IBufferCopier
 
  public:
 
-  virtual void copyFromBuffer(Int32ConstArrayView indexes,
-                              ConstMemoryView buffer,
-                              MutableMemoryView var_value) = 0;
+  virtual void copyFromBufferAsync(Int32ConstArrayView indexes,
+                                   ConstMemoryView buffer,
+                                   MutableMemoryView var_value) = 0;
 
-  virtual void copyToBuffer(Int32ConstArrayView indexes,
-                            MutableMemoryView buffer,
-                            ConstMemoryView var_value) = 0;
+  virtual void copyToBufferAsync(Int32ConstArrayView indexes,
+                                 MutableMemoryView buffer,
+                                 ConstMemoryView var_value) = 0;
 
   virtual IMemoryAllocator* allocator() const = 0;
+
+  //! Bloque tant que les copies ne sont pas terminées.
+  virtual void barrier() = 0;
 
  public:
 
@@ -66,21 +73,22 @@ class DirectBufferCopier
 {
  public:
 
-  void copyFromBuffer(Int32ConstArrayView indexes,
-                      ConstMemoryView buffer,
-                      MutableMemoryView var_value) override
+  void copyFromBufferAsync(Int32ConstArrayView indexes,
+                           ConstMemoryView buffer,
+                           MutableMemoryView var_value) override
   {
     buffer.copyToIndexes(var_value, indexes, m_queue);
   }
 
-  void copyToBuffer(Int32ConstArrayView indexes,
-                    MutableMemoryView buffer,
-                    ConstMemoryView var_value) override
+  void copyToBufferAsync(Int32ConstArrayView indexes,
+                         MutableMemoryView buffer,
+                         ConstMemoryView var_value) override
   {
     buffer.copyFromIndexes(var_value, indexes, m_queue);
   }
 
   IMemoryAllocator* allocator() const override { return m_allocator; }
+  void barrier() override;
   void setRunQueue(RunQueue* queue) override { m_queue = queue; }
   void setAllocator(IMemoryAllocator* allocator) override { m_allocator = allocator; }
 
@@ -102,24 +110,26 @@ class TableBufferCopier
   : m_table(table)
   {}
 
-  void copyFromBuffer(Int32ConstArrayView indexes,
-                      ConstMemoryView buffer,
-                      MutableMemoryView var_value) override
+  void copyFromBufferAsync(Int32ConstArrayView indexes,
+                           ConstMemoryView buffer,
+                           MutableMemoryView var_value) override
   {
     UniqueArray<Int32> final_indexes;
     _buildFinalIndexes(final_indexes, indexes);
-    m_base_copier.copyFromBuffer(final_indexes, buffer, var_value);
+    m_base_copier.copyFromBufferAsync(final_indexes, buffer, var_value);
   }
 
-  void copyToBuffer(Int32ConstArrayView indexes,
-                    MutableMemoryView buffer,
-                    ConstMemoryView var_value) override
+  void copyToBufferAsync(Int32ConstArrayView indexes,
+                         MutableMemoryView buffer,
+                         ConstMemoryView var_value) override
   {
     UniqueArray<Int32> final_indexes;
     _buildFinalIndexes(final_indexes, indexes);
-    m_base_copier.copyToBuffer(final_indexes, buffer, var_value);
+    m_base_copier.copyToBufferAsync(final_indexes, buffer, var_value);
   }
   IMemoryAllocator* allocator() const override { return m_base_copier.allocator(); }
+  void barrier() override { m_base_copier.barrier(); }
+
   void setRunQueue(RunQueue* queue) override { m_base_copier.setRunQueue(queue); }
   void setAllocator(IMemoryAllocator* allocator) override { m_base_copier.setAllocator(allocator); }
 
