@@ -42,6 +42,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
  private:
 
   class Impl;
+  class SyncInfo;
 
  public:
 
@@ -73,10 +74,13 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
  private:
 
   void _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
-                            IMeshMaterialVariableSynchronizer* mmvs);
-  void _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
-                             IMeshMaterialVariableSynchronizer* mmvs,
-                             IMeshMaterialSynchronizeBuffer* buf_list);
+                            IMeshMaterialVariableSynchronizer* mmvs, SyncInfo& sync_info);
+
+  static void _beginSynchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
+                                         SyncInfo& sync_info);
+  static void _endSynchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
+                                       SyncInfo& sync_info);
+  void _fillSyncInfo(SyncInfo& sync_info);
 };
 
 /*---------------------------------------------------------------------------*/
