@@ -28,6 +28,8 @@
 #include "arcane/materials/MeshMaterialVariable.h"
 #include "arcane/materials/IMeshMaterialSynchronizeBuffer.h"
 
+#include "arcane/accelerator/core/RunQueue.h"
+
 #include "arccore/message_passing/Messages.h"
 
 /*---------------------------------------------------------------------------*/
@@ -347,9 +349,8 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
     sync_info.requests.add(mpReceive(mpm, buf_list->receiveBuffer(i), msg_info));
   }
 
-  // Poste les send
+  // Copie les valeurs dans les buffers
   for (Integer i = 0; i < nb_rank; ++i) {
-    Int32 rank = ranks[i];
     ConstArrayView<MatVarIndex> shared_matcells(mmvs->sharedItems(i));
     Integer total_shared = shared_matcells.size();
     ByteArrayView values(buf_list->sendBuffer(i).smallView());
@@ -365,8 +366,17 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
         vars[z]->copyToBuffer(shared_matcells, sub_view);
       offset += total_shared * my_data_size;
     }
+  }
+
+  // Attend que les copies soient terminées
+  if (queue)
+    queue->barrier();
+
+  // Poste les sends
+  for (Integer i = 0; i < nb_rank; ++i) {
+    Int32 rank = ranks[i];
     MP::PointToPointMessageInfo msg_info(MP::MessageRank(rank), sync_info.message_tag, MP::eBlockingType::NonBlocking);
-    sync_info.requests.add(mpSend(mpm, values, msg_info));
+    sync_info.requests.add(mpSend(mpm, buf_list->sendBuffer(i), msg_info));
   }
 }
 
@@ -413,6 +423,10 @@ _endSynchronizeMultiple2(SyncInfo& sync_info)
     }
   }
   sync_info.message_total_size += buf_list->totalSize();
+
+  // Attend que les copies soient terminées
+  if (queue)
+    queue->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
