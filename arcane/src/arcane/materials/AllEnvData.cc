@@ -316,8 +316,7 @@ forceRecompute(bool compute_all)
 
   if (is_verbose){
     OStringStream ostr;
-    m_material_mng->dumpInfos2(ostr());
-    info() << ostr.str();
+    m_material_mng->dumpInfos2(ostr());    info() << ostr.str();
   }
 
   // Vérifie la cohérence des localIds() du variableIndexer()
@@ -339,16 +338,18 @@ forceRecompute(bool compute_all)
     }
   }
 
-  // Met à jour le AllCell2AllEnvCell s'il a été initialisé
-  auto* allCell2AllEnvCell(m_material_mng->getAllCell2AllEnvCell());
-  if (allCell2AllEnvCell)
-    allCell2AllEnvCell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
-  else
-    // FIXME: C'est ici que ça plante en // dans
+  // Met à jour le AllCell2AllEnvCell s'il a été initialisé si la fonctionnalité est activé
+  if (m_material_mng->isCellToAllEnvCellForRunCommand()) {
+    auto* allCell2AllEnvCell(m_material_mng->getAllCell2AllEnvCell());
+    if (allCell2AllEnvCell)
+      allCell2AllEnvCell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
+    else
+      // FIXME: C'est ici que ça plante en // dans
 //"/home/letiercef/Arcane/build/bin/arcane_test_driver" "launch" "-E" "arcanecea_tests_exec" "-n" "4" "-m 20" "/home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc"
 // ./lib/arcanecea_tests_exec -A,S=4 -A,MaxIteration=20 /home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc
 // ARCANE_DEBUGGER=memcheck bin/arcane_test_driver launch -E arcanecea_tests_exec -m 20 /home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc
-    m_material_mng->createAllCell2AllEnvCell(platform::getDefaultDataAllocator());
+      m_material_mng->createAllCell2AllEnvCell(platform::getDefaultDataAllocator());
+  }
 }
 
 /*---------------------------------------------------------------------------*/

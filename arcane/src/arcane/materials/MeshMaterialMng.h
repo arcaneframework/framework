@@ -208,10 +208,16 @@ class MeshMaterialMng
 
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
-  //!\internal
-  // TODO: POUR TESTER, A BLINDER SI ON GARDE
-  AllCell2AllEnvCell* getAllCell2AllEnvCell() const { return m_allcell_2_allenvcell; }
-  void createAllCell2AllEnvCell(IMemoryAllocator* alloc) { m_allcell_2_allenvcell = AllCell2AllEnvCell::create(this, alloc); }
+  void enableCellToAllEnvCellForRunCommand(bool is_enable) override
+  {
+    m_is_allcell_2_allenvcell = is_enable;
+  }
+  bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
+  AllCell2AllEnvCell* getAllCell2AllEnvCell() const override { return m_allcell_2_allenvcell; }
+  void createAllCell2AllEnvCell(IMemoryAllocator* alloc) override
+  {
+    m_allcell_2_allenvcell = AllCell2AllEnvCell::create(this, alloc);
+  }
 
  private:
 
@@ -267,6 +273,7 @@ class MeshMaterialMng
   String m_data_compressor_service_name;
 
   AllCell2AllEnvCell* m_allcell_2_allenvcell;
+  bool m_is_allcell_2_allenvcell;
 
  private:
 

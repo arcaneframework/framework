@@ -115,6 +115,7 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 , m_synchronize_variable_version(1)
 , m_exchange_mng(nullptr)
 , m_allcell_2_allenvcell(nullptr)
+, m_is_allcell_2_allenvcell(false)
 {
   m_modifier = new MeshMaterialModifierImpl(this);
   m_all_env_data = new AllEnvData(this);
@@ -122,6 +123,10 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
   m_variable_factory_mng = arcaneCreateMeshMaterialVariableFactoryMng(this);
   m_observer_pool = std::make_unique<ObserverPool>();
   m_observer_pool->addObserver(this,&MeshMaterialMng::_onMeshDestroyed,mesh_handle.onDestroyObservable());
+
+  String s = platform::getEnvironmentVariable("ARCANE_ALLENVCELL_FOR_RUNCOMMAND");
+  if (!s.null())
+    m_is_allcell_2_allenvcell = true;
 }
 
 /*---------------------------------------------------------------------------*/

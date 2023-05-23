@@ -473,6 +473,14 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   //! Interface de la fabrique de variables
   virtual IMeshMaterialVariableFactoryMng* variableFactoryMng() const =0;
 
+  /*!
+   * \brief Active la construction et la mise à jour de la table de 
+   * "connectivité" CellLocalId -> AllEnvCell pour les RUNCOMMAND
+   * Peut également être positionné par la macro ARCANE_ALLENVCELL_FOR_RUNCOMMAND
+   */
+  virtual void enableCellToAllEnvCellForRunCommand(bool is_enable) =0;
+  virtual bool isCellToAllEnvCellForRunCommand() const =0;
+
  public:
 
   //!\internal
@@ -483,8 +491,19 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
     virtual Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool is_create) =0;
   };
 
-  //!\internal
+  /*!
+   * \internal
+   * \brief Renvoie la table de "connectivité" CellLocalId -> AllEnvCell
+   * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
+   * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
+   */
   virtual AllCell2AllEnvCell* getAllCell2AllEnvCell() const =0;
+  /*!
+   * \internal
+   * \brief Construit la table de "connectivité" CellLocalId -> AllEnvCell
+   * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
+   * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
+   */
   virtual void createAllCell2AllEnvCell(IMemoryAllocator* alloc) =0;
 
  private:
