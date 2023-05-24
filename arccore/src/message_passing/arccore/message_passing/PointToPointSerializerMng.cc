@@ -51,7 +51,7 @@ class PointToPointSerializerMng::Impl
     }
     m_pending_messages.clear();
   }
-  Integer waitMessages(eWaitType wt,std::function<void(ISerializeMessage*)> functor)
+  Integer waitMessages(eWaitType wt,const std::function<void(ISerializeMessage*)>& functor)
   {
     processPendingMessages();
     Integer n = m_message_list->waitMessages(wt);

@@ -24,6 +24,15 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+String MemoryAllocationArgs::
+arrayName() const
+{
+  return (m_debug_info) ? m_debug_info->name() : String();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MemoryAllocationOptions::
 MemoryAllocationOptions(const MemoryAllocationOptions& rhs)
 : m_allocator(rhs.m_allocator)
@@ -73,6 +82,7 @@ allocationArgs() const
   MemoryAllocationArgs x;
   x.setMemoryLocationHint(m_memory_location_hint);
   x.setDevice(m_device);
+  x.setDebugInfo(m_debug_info);
   return x;
 }
 

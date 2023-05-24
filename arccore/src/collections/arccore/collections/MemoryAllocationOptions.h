@@ -25,7 +25,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Options pour pour configurer les allocations.
+ * \brief Options pour configurer les allocations.
  */
 class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
 {

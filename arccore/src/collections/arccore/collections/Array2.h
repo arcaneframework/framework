@@ -52,8 +52,6 @@ class Array2
     IB_InitWithDefault,
     IB_NoInit
   };
-  //TODO: verifier qu'on n'affecte pas m_p->dim1_size ou
-  // m_md->dim2_size si m_p est TrueImpl::shared_null.
 
  private:
 
@@ -74,6 +72,10 @@ class Array2
  public:
 
   using AbstractArray<DataType>::allocator;
+  using AbstractArray<DataType>::setMemoryLocationHint;
+  using AbstractArrayBase::setDebugName;
+  using AbstractArrayBase::debugName;
+  using AbstractArrayBase::allocationOptions;
 
  protected:
 
