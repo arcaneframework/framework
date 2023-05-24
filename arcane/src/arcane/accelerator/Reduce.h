@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Reduce.h                                                    (C) 2000-2022 */
+/* Reduce.h                                                    (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des réductions pour les accélérateurs.                            */
 /*---------------------------------------------------------------------------*/
@@ -94,8 +94,10 @@ class ReduceDeviceInfo
   DataType m_current_value;
   //! Valeur de l'identité pour la réduction
   DataType m_identity;
-  //! Pointeur vers la donnée réduite (mémoire accessible depuis l'hôte)
-  DataType* m_final_ptr = nullptr;
+  //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis le device)
+  DataType* m_device_final_ptr = nullptr;
+  //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis l'hôte)
+  void* m_host_final_ptr = nullptr;
   //! Tableau avec une valeur par bloc pour la réduction
   SmallSpan<DataType> m_grid_buffer;
   /*!
@@ -156,7 +158,7 @@ class ReduceFunctorSum
   DataType applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
     _applyDevice(dev_info);
-    return *(dev_info.m_final_ptr);
+    return *(dev_info.m_device_final_ptr);
   }
   static DataType apply(std::atomic<DataType>* ptr,DataType v)
   {
@@ -178,7 +180,7 @@ class ReduceFunctorMax
   DataType applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
     _applyDevice(dev_info);
-    return *(dev_info.m_final_ptr);
+    return *(dev_info.m_device_final_ptr);
   }
   static DataType apply(std::atomic<DataType>* ptr,DataType v)
   {
@@ -202,7 +204,7 @@ class ReduceFunctorMin
   DataType applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
     _applyDevice(dev_info);
-    return *(dev_info.m_final_ptr);
+    return *(dev_info.m_device_final_ptr);
   }
   static DataType apply(std::atomic<DataType>* ptr,DataType v)
   {
@@ -244,7 +246,7 @@ class ReduceFunctorMin
  * NOTE sur l'implémentation
  *
  * Sur GPU, les réductions sont effectuées dans le destructeur de la classe
- * La valeur 'm_managed_memory_value' sert à conserver ces valeurs.
+ * La valeur 'm_host_or_device_memory_for_reduced_value' sert à conserver ces valeurs.
  * Sur l'hôte, on utilise un 'std::atomic' pour conserver la valeur commune
  * entre les threads. Cette valeur est référencée par 'm_parent_value' et n'est
  * valide que sur l'hôte.
@@ -254,7 +256,7 @@ class Reducer
 {
  public:
   Reducer(RunCommand& command)
-  : m_managed_memory_value(&m_local_value), m_command(&command)
+  : m_host_or_device_memory_for_reduced_value(&m_local_value), m_command(&command)
   {
     //std::cout << String::format("Reduce main host this={0}\n",this); std::cout.flush();
     m_is_master_instance = true;
@@ -265,11 +267,12 @@ class Reducer
     //printf("Create null host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
     m_memory_impl = impl::internalGetOrCreateReduceMemoryImpl(&command);
     if (m_memory_impl){
-      m_managed_memory_value = impl::allocateReduceDataMemory<DataType>(m_memory_impl,m_identity);
+      m_host_or_device_memory_for_reduced_value = impl::allocateReduceDataMemory<DataType>(m_memory_impl,m_identity);
+      m_grid_memory_info = m_memory_impl->gridMemoryInfo();
     }
   }
   ARCCORE_HOST_DEVICE Reducer(const Reducer& rhs)
-  : m_managed_memory_value(rhs.m_managed_memory_value), m_local_value(rhs.m_local_value), m_identity(rhs.m_identity)
+  : m_host_or_device_memory_for_reduced_value(rhs.m_host_or_device_memory_for_reduced_value), m_local_value(rhs.m_local_value), m_identity(rhs.m_identity)
   {
 #ifdef ARCCORE_DEVICE_CODE
     m_grid_memory_info = rhs.m_grid_memory_info;
@@ -308,11 +311,12 @@ class Reducer
     impl::ReduceDeviceInfo<DataType> dvi;
     dvi.m_grid_buffer = grid_buffer;
     dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
-    dvi.m_final_ptr = m_managed_memory_value;
+    dvi.m_device_final_ptr = m_host_or_device_memory_for_reduced_value;
+    dvi.m_host_final_ptr = m_grid_memory_info.m_host_memory_for_reduced_value;
     dvi.m_current_value = m_local_value;
     dvi.m_identity = m_identity;
     dvi.m_use_grid_reduce = m_grid_memory_info.m_reduce_policy != eDeviceReducePolicy::Atomic;
-    ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_managed_memory_value,m_local_value,m_identity);
+    ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
 #else
     //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
     // Code hôte
@@ -323,7 +327,7 @@ class Reducer
     if (!m_is_master_instance)
       ReduceFunctor::apply(m_parent_value,m_local_value);
 
-    //printf("Destroy host %p %p\n",m_managed_memory_value,this);
+    //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
     if (m_memory_impl && m_is_master_instance)
       m_memory_impl->release();
 #endif
@@ -337,31 +341,39 @@ class Reducer
   {
     return m_local_value;
   }
-  // Effectue la réduction et récupère la valeur. ATTENTION: ne faire qu'une seule fois.
+  //! Effectue la réduction et récupère la valeur. ATTENTION: ne faire qu'une seule fois.
   DataType reduce()
   {
-    // TODO: faire un fatal si 'm_is_master_instance' vaut 'false'.
-    // Effectue la réduction sur m_managed_memory_value
-    // One ne peut pas le faire avant car comme en CUDA elle est gérée
-    // par la mémoire unifiée, il n'est pas possible d'y accéder tant que
-    // le CPU est en train de le faire.
+    // Si la réduction est faite sur accélérateur, il faut recopier la valeur du device sur l'hôte.
+    DataType* final_ptr = m_host_or_device_memory_for_reduced_value;
+    if (m_memory_impl){
+      m_memory_impl->copyReduceValueFromDevice();
+      final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
+    }
+
     if (m_parent_value){
       //std::cout << String::format("Reduce host has parent this={0} local_value={1} parent_value={2}\n",
       //                            this,m_local_value,*m_parent_value);
       //std::cout.flush();
-      ReduceFunctor::apply(m_parent_value,*m_managed_memory_value);
-      *m_managed_memory_value = *m_parent_value;
+      ReduceFunctor::apply(m_parent_value,*final_ptr);
+      *final_ptr = *m_parent_value;
     }
     else{
       //std::cout << String::format("Reduce host no parent this={0} local_value={1} managed={2}\n",
-      //                            this,m_local_value,*m_managed_memory_value);
+      //                            this,m_local_value,*m_host_or_device_memory_for_reduced_value);
       //std::cout.flush();
     }
-    return *m_managed_memory_value;
+    return *final_ptr;
   }
  protected:
   impl::IReduceMemoryImpl* m_memory_impl = nullptr;
-  DataType* m_managed_memory_value;
+  /*!
+   * \brief Pointeur vers la donnée qui contiendra la valeur réduite.
+   *
+   * Sur accélérateur, cette donnée est allouée sur le device.
+   * Sur CPU, il s'agit de l'adresse de \a m_local_value pour l'instance parente.
+   */
+  DataType* m_host_or_device_memory_for_reduced_value;
   impl::IReduceMemoryImpl::GridMemoryInfo m_grid_memory_info;
  private:
   RunCommand* m_command;
