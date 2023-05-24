@@ -17,11 +17,12 @@
 #include "arcane/utils/IDataCompressor.h"
 #include "arcane/utils/MemoryAllocator.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/IMesh.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/VariableStatusChangedEventArgs.h"
-#include "arcane/VariableView.h"
+#include "arcane/core/datatype/DataAllocationInfo.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableStatusChangedEventArgs.h"
+#include "arcane/core/VariableView.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
@@ -106,6 +107,7 @@ class VariableUnitTest
   void _testAlignment();
   void _testSwap();
   void _testCompression();
+  void _testDataAllocation();
 
   template<typename MeshVarType>
   void _testSwapHelper(MeshVarType& cells);
@@ -530,6 +532,24 @@ _testCompression()
     IDataInternal* d = var->data()->_commonInternal();
     d->compressAndClear(data_buffer);
     d->decompressAndFill(data_buffer);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableUnitTest::
+_testDataAllocation()
+{
+  IVariableMng* vm = subDomain()->variableMng();
+  VariableCollection variables = vm->usedVariables();
+  for( VariableCollection::Enumerator i(variables); ++i; ){
+    IVariable* var = *i;
+    IData* data = var->data();
+    DataAllocationInfo dai = data->allocationInfo();
+    info() << "Memory: var=" << var->name() << " memory_hint=" << (int)dai.memoryLocationHint();
+    dai.setMemoryLocationHint(eMemoryLocationHint::MainlyHost);
+    data->setAllocationInfo(dai);
   }
 }
 
