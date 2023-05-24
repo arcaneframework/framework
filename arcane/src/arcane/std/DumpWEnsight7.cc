@@ -1036,8 +1036,8 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       else { // mesh has general items
         for (Item mi : items) {
           Cell cell = mi.toCell();
-          ENUMERATE_FACE (face, cell.faces()) {
-            writeFileInt(ofile, face->nbNode());
+          for (Face face : cell.faces()) {
+            writeFileInt(ofile, face.nbNode());
           }
         }
       }

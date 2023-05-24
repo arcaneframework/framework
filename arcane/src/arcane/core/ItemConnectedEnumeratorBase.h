@@ -54,7 +54,7 @@ class ItemConnectedEnumeratorBase
   explicit ItemConnectedEnumeratorBase(const ConstArrayView<Int32> local_ids)
   : m_local_ids(local_ids.data()), m_count(local_ids.size()) {}
   template<int E> explicit ItemConnectedEnumeratorBase(const ItemConnectedListView<E>& rhs)
-  : m_local_ids(rhs.localIds().data()), m_count(rhs.localIds().size())
+  : m_local_ids(rhs._localIds().data()), m_count(rhs._localIds().size())
 #ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
     , m_local_id_offset(rhs.m_local_id_offset)
 #endif

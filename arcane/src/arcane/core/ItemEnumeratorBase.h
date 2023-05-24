@@ -64,7 +64,7 @@ class ItemEnumeratorBase
   ItemEnumeratorBase(const ItemVectorView& rhs)
   : ItemEnumeratorBase((const ItemInternalVectorView&)rhs,nullptr) {}
   template<int E> ItemEnumeratorBase(const ItemConnectedListView<E>& rhs)
-  : m_local_ids(rhs.localIds().data()), m_count(rhs.localIds().size()){}
+  : m_local_ids(rhs._localIds().data()), m_count(rhs._localIds().size()){}
 
   ItemEnumeratorBase(const ItemEnumerator& rhs);
   ItemEnumeratorBase(const ItemInternalEnumerator& rhs);

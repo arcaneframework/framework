@@ -421,7 +421,7 @@ _createGraphOfDof()
 
   // On remplit le tableau links_infos
   ENUMERATE_CELL (icell, ownCells()) {
-    const Cell& cell = *icell;
+    Cell cell = *icell;
 
     //  Take only cell with nb_facemax faces, number of dual node per link is constant...
     if (cell.faces().size() != nb_facemax) {
@@ -431,8 +431,7 @@ _createGraphOfDof()
 
     links_infos2[links_infos_index++] = m_dualUid_mng.uniqueIdOf(cell);
 
-    ENUMERATE_FACE (iface, cell.faces()) {
-      auto const& face = *iface;
+    for ( Face face : cell.faces()) {
       links_infos2[links_infos_index] = face_to_dual_node_property[face];
       links_infos_index++;
     }

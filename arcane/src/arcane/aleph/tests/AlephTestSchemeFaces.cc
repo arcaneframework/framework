@@ -177,16 +177,18 @@ amrRefine(RealArray& values, const Real trigRefine)
     for (Integer j = 0, js = CELL_NB_H_CHILDREN(cell); j < js; ++j) {
       //debug()<<"\t\t[amrRefineMesh] child cell #"<<cell.hChild(j).localId();
       m_cell_temperature[cells[CELL_H_CHILD(cell, j).localId()]] = m_cell_temperature[cells[lid]];
-      ENUMERATE_FACE (iFace, allCells().view()[CELL_H_CHILD(cell, j).localId()].toCell().faces()) {
-        Face face = *iFace;
+      auto faces = allCells().view()[CELL_H_CHILD(cell, j).localId()].toCell().faces();
+      Integer index = 0;
+      for (Face face : faces){
         if (face.isSubDomainBoundary()) {
           //debug() << "\t\t\t[amrRefineMesh] outer face #"<< iFace->localId()<<", index="<<iFace.index()<<", T="<<m_face_temperature[cell.face(iFace.index())];
-          m_face_temperature[iFace] = m_face_temperature[cell.face(iFace.index())];
+          m_face_temperature[face] = m_face_temperature[cell.face(index)];
         }
         else {
           //debug() << "\t\t\t[amrRefineMesh] inner face #"<< iFace->localId();//<<", T="<<m_face_temperature[face.toFace()];
-          m_face_temperature[iFace] = 0;
+          m_face_temperature[face] = 0;
         }
+        ++index;
       }
     }
   }
@@ -273,15 +275,15 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
     }
 
     // Now stare at the children to set up new faces' values
-    const Cell& parent = cell;
+    Cell parent = cell;
     //const Cell &parent = cellFamily()->itemsInternal()[parents_to_coarsen_lid[i]];
-    ENUMERATE_FACE (iFace, parent.faces()) {
-      if ((!iFace->backCell().null()) && (!iFace->frontCell().null())) {
-        debug() << "\t\t\t[FaceAmrCoarsen] FOCUS face #" << iFace->localId() << ", "
-                << iFace->backCell().localId() << "->"
-                << iFace->frontCell().localId();
+    for( Face face : parent.faces()) {
+      if ((!face.backCell().null()) && (!face.frontCell().null())) {
+        debug() << "\t\t\t[FaceAmrCoarsen] FOCUS face #" << face.localId() << ", "
+                << face.backCell().localId() << "->"
+                << face.frontCell().localId();
         // Maintenant on va ratacher les voisins à notre parent
-        const Cell& neighbour = (iFace->backCell().localId() == parent.localId()) ? iFace->frontCell() : iFace->backCell();
+        const Cell& neighbour = (face.backCell().localId() == parent.localId()) ? face.frontCell() : face.backCell();
         debug() << "\t\t\t[FaceAmrCoarsen] neighbour #" << neighbour.localId() << ", level=" << neighbour.level();
 
         // Le voisin du parent doit être un parent
@@ -290,12 +292,12 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
         // Si le voisin est actif, la face en cours est celle qui doit être utilisée
         if (neighbour.isActive()) {
           debug() << "\t\t\t[FaceAmrCoarsen] neighbour is ACTIVE";
-          debug() << "\t\t\t[FaceAmrCoarsen] hit: face_" << iFace->localId() << ": " << neighbour.localId() << "->" << parent.localId();
-          //faces_to_attach.add(iFace->localId());
+          debug() << "\t\t\t[FaceAmrCoarsen] hit: face_" << face.localId() << ": " << neighbour.localId() << "->" << parent.localId();
+          //faces_to_attach.add(face.localId());
           //lids_to_be_attached.add(parent.localId());
-          //dynMesh->trueFaceFamily().replaceBackCellToFace(iFace->internal(),neighbour.internal());//iFace->backCell().internal());
-          //dynMesh->trueFaceFamily().replaceFrontCellToFace(iFace->internal(),parent.internal());//iFace->frontCell().internal());
-          //faceReorienter.checkAndChangeOrientation(iFace->internal());
+          //dynMesh->trueFaceFamily().replaceBackCellToFace(face.internal(),neighbour.internal());//face.backCell().internal());
+          //dynMesh->trueFaceFamily().replaceFrontCellToFace(face.internal(),parent.internal());//face.frontCell().internal());
+          //faceReorienter.checkAndChangeOrientation(face.internal());
           continue;
         }
 
@@ -307,14 +309,15 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
           for (Integer j = 0, js = CELL_NB_H_CHILDREN(neighbour); j < js; ++j) {
             //debug()<<"\t\t\t\t[FaceAmrCoarsen] neighbour child #"<<neighbour.hChild(j).localId();
 
-            ENUMERATE_FACE (niFace, CELL_H_CHILD(neighbour, j).faces()) {
-              if ((*niFace).backCell().null())
+            auto faces = CELL_H_CHILD(neighbour, j).faces();
+            for (Face face : faces){
+              if (face.backCell().null())
                 continue;
-              if ((*niFace).frontCell().null())
+              if (face.frontCell().null())
                 continue;
 
-              Cell other = ((*niFace).frontCell().localId() == CELL_H_CHILD(neighbour, j).localId()) ? (*niFace).backCell() : (*niFace).frontCell();
-              //debug()<<"\t\t\t\t[FaceAmrCoarsen] neighbour child face #"<<(*niFace).localId()<<", "<< (*niFace).backCell().localId()<<"->"<< (*niFace).frontCell().localId();
+              Cell other = (face.frontCell().localId() == CELL_H_CHILD(neighbour, j).localId()) ? face.backCell() : face.frontCell();
+              //debug()<<"\t\t\t\t[FaceAmrCoarsen] neighbour child face #"<<face.localId()<<", "<< face.backCell().localId()<<"->"<< face.frontCell().localId();
 
               // Si l''autre' est un parent, c'est pas ce que l'on cherche
               if (other.level() == 0)
@@ -324,8 +327,8 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
               if (CELL_H_PARENT(other).localId() != parent.localId())
                 continue;
 
-              debug() << "\t\t\t\t[FaceAmrCoarsen] hit: face_" << (*niFace).localId() << ": " << CELL_H_CHILD(neighbour, j).localId() << "->" << parent.localId();
-              faces_to_attach.add((*niFace).localId());
+              debug() << "\t\t\t\t[FaceAmrCoarsen] hit: face_" << face.localId() << ": " << CELL_H_CHILD(neighbour, j).localId() << "->" << parent.localId();
+              faces_to_attach.add(face.localId());
               lids_to_be_attached.add(parent.localId());
               found[iFound++] = true;
               break;
@@ -336,11 +339,11 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
         }
         //  ARCANE_ASSERT(((found[0]==true)&&(found[1]==true)),("Not found"));
       }
-      else if (iFace->backCell().null()) {
-        debug() << "\t\t\t[FaceAmrCoarsen] skip face #" << iFace->localId() << ", ?->" << iFace->frontCell().localId() << " ";
+      else if (face.backCell().null()) {
+        debug() << "\t\t\t[FaceAmrCoarsen] skip face #" << face.localId() << ", ?->" << face.frontCell().localId() << " ";
       }
       else {
-        debug() << "\t\t\t[FaceAmrCoarsen] skip face #" << iFace->localId() << ", " << iFace->backCell().localId() << "->?"
+        debug() << "\t\t\t[FaceAmrCoarsen] skip face #" << face.localId() << ", " << face.backCell().localId() << "->?"
                 << " ";
       }
     }

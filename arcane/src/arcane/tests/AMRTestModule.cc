@@ -298,7 +298,7 @@ _loadBalance()
   VariableItemInt32& cells_new_owner = mesh()->toPrimaryMesh()->itemsNewOwner(IK_Cell);
   ENUMERATE_FACE(iface,allFaces()) {
     if (!iface->isOwn())
-      ENUMERATE_CELL(icell,iface->cells())
+      for (CellLocalId icell : iface->cells())
         cells_new_owner[icell] = iface->owner();
   }
   info() << "Own cells before migration (" << ownCells().size() << " / " << allCells().size() << " )";

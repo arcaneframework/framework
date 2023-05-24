@@ -397,16 +397,18 @@ initAmrRefineMesh(Integer nb_to_refine)
     for (Integer j = 0, js = CELL_NB_H_CHILDREN(cell); j < js; ++j) {
       //debug()<<"\t\t[amrRefineMesh] child cell #"<<cell.hChild(j).localId();
       m_cell_temperature[cells[CELL_H_CHILD(cell, j).localId()]] = m_cell_temperature[cells[lid]];
-      ENUMERATE_FACE (iFace, allCells().view()[CELL_H_CHILD(cell, j).localId()].toCell().faces()) {
-        Face face = *iFace;
+      auto faces = allCells().view()[CELL_H_CHILD(cell, j).localId()].toCell().faces();
+      Integer index = 0;
+      for( Face face : faces ){
         if (face.isSubDomainBoundary()) {
           //debug() << "\t\t\t[amrRefineMesh] outer face #"<< (*iFace).localId()<<", index="<<iFace.index()<<", T="<<m_face_temperature[cell.face(iFace.index())];
-          m_face_temperature[iFace] = m_face_temperature[cell.face(iFace.index())];
+          m_face_temperature[face] = m_face_temperature[cell.face(index)];
         }
         else {
           //debug() << "\t\t\t[amrRefineMesh] inner face #"<< (*iFace).localId();//<<", T="<<m_face_temperature[face.toFace()];
-          m_face_temperature[iFace] = 0;
+          m_face_temperature[face] = 0;
         }
+        ++index;
       }
     }
   }

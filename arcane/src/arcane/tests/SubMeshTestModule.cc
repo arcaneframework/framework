@@ -525,11 +525,11 @@ _compute3AddItems()
     if (check_variable) {
       ENUMERATE_CELL(icell,parent2sub) {
         (*new_cell_uids)[icell] = icell->uniqueId();
-        ENUMERATE_FACE(iface,icell->faces()){
-          (*new_face_uids)[iface] = iface->uniqueId();
+        for ( Face face : icell->faces()){
+          (*new_face_uids)[face] = face.uniqueId();
         }
-        ENUMERATE_NODE(inode,icell->nodes()){
-          (*new_node_uids)[inode] = inode->uniqueId();
+        for ( Node node : icell->nodes()){
+          (*new_node_uids)[node] = node.uniqueId();
         }
       }
     }
@@ -570,7 +570,7 @@ _compute5MoveItems()
   VariableItemInt32& cells_new_owner = mesh()->toPrimaryMesh()->itemsNewOwner(IK_Cell);
   ENUMERATE_FACE(iface,allFaces()) {
     if (!iface->isOwn())
-      ENUMERATE_CELL(icell,iface->cells())
+      for( CellLocalId icell : iface->cells())
         cells_new_owner[icell] = iface->owner();
   }
   info() << "Own cells before migration (" << ownCells().size() << " / " << allCells().size() << " )";

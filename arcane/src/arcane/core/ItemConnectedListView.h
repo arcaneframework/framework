@@ -254,6 +254,15 @@ class ItemConnectedListView
     return const_iterator(ARCANE_ARGS_AND_OFFSET(m_shared_info,(m_local_ids.data()+this->size()),m_local_id_offset));
   }
 
+  friend std::ostream& operator<<(std::ostream& o,const ItemConnectedListView<Extent>& a)
+  {
+    o << a.m_local_ids.localIds();
+    return o;
+  }
+
+  ARCANE_DEPRECATED_REASON("Y2023: Use iterator to get values or use operator[]")
+  Int32ConstArrayView localIds() const { return m_local_ids; }
+
 #ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
  private:
 #else
@@ -266,11 +275,6 @@ class ItemConnectedListView
     return ItemInternalVectorView(m_shared_info,m_local_ids);
   }
 
-  // TODO Rendre obsolète
- 
-  //! Tableau des numéros locaux des entités
-  Int32ConstArrayView localIds() const { return m_local_ids; }
-
   // TODO: rendre obsolète
   inline ItemEnumerator enumerator() const;
 
@@ -278,6 +282,9 @@ class ItemConnectedListView
 
   //! Vue sur le tableau des indices
   ItemIndexArrayView indexes() const { return m_local_ids; }
+
+  //! Vue sur le tableau des indices
+  Int32ConstArrayView _localIds() const { return m_local_ids; }
 
  protected:
   

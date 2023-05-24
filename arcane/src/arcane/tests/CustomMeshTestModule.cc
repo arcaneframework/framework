@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CustomMeshTestModule.cc                          C) 2000-2021             */
+/* CustomMeshTestModule.cc                                      C) 2000-2023 */
 /*                                                                           */
 /* Test Module for custom mesh                                               */
 /*---------------------------------------------------------------------------*/
@@ -100,14 +100,14 @@ _testEnumerationAndConnectivities(IMesh* mesh)
     info() << "cell number of nodes " << icell->nodes().size();
     info() << "cell number of faces " << icell->faces().size();
     info() << "cell number of edges " << icell->edges().size();
-    ENUMERATE_NODE (inode, icell->nodes()) {
-      info() << "cell node " << inode.index() << " lid " << inode.localId() << " uid " << inode->uniqueId().asInt64();
+    for (Node node : icell->nodes()) {
+      info() << "cell node lid " << node.localId() << " uid " << node.uniqueId().asInt64();
     }
-    ENUMERATE_FACE (iface, icell->faces()) {
-      info() << "cell face " << iface.index() << " lid " << iface.localId() << " uid " << iface->uniqueId().asInt64();
+    for (Face face : icell->faces()) {
+      info() << "cell face lid " << face.localId() << " uid " << face.uniqueId().asInt64();
     }
-    ENUMERATE_EDGE (iedge, icell->edges()) {
-      info() << "cell edge " << iedge.index() << " lid " << iedge.localId() << " uid " << iedge->uniqueId().asInt64();
+    for (Edge edge : icell->edges()) {
+      info() << "cell edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
   }
   // ALL FACES
@@ -120,28 +120,28 @@ _testEnumerationAndConnectivities(IMesh* mesh)
     info() << "face number of edges " << iface->edges().size();
     info() << "face back cell " << iface->backCell().localId();
     info() << "face front cell " << iface->frontCell().localId();
-    ENUMERATE_NODE (inode, iface->nodes()) {
-      info() << "face node " << inode.index() << " lid " << inode.localId() << " uid " << inode->uniqueId().asInt64();
+    for (Node node : iface->nodes()) {
+      info() << "face node lid " << node.localId() << " uid " << node.uniqueId().asInt64();
     }
     auto cell_index = 0;
     bool are_face_cells_ok = true;
-    ENUMERATE_CELL (icell, iface->cells()) {
-      info() << "face cell " << icell.index() << " lid " << icell.localId() << " uid " << icell->uniqueId().asInt64();
+    for (Cell cell : iface->cells()) {
+      info() << "face cell lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
       if (cell_index == 0) {
         if (iface->itemBase().flags() & ItemFlags::II_FrontCellIsFirst)
-          are_face_cells_ok = are_face_cells_ok && icell->uniqueId() == iface->frontCell().uniqueId();
+          are_face_cells_ok = are_face_cells_ok && cell.uniqueId() == iface->frontCell().uniqueId();
         else
-          are_face_cells_ok = are_face_cells_ok && icell->uniqueId() == iface->backCell().uniqueId();
+          are_face_cells_ok = are_face_cells_ok && cell.uniqueId() == iface->backCell().uniqueId();
       }
       else
-        are_face_cells_ok = are_face_cells_ok && icell->uniqueId() == iface->frontCell().uniqueId();
+        are_face_cells_ok = are_face_cells_ok && cell.uniqueId() == iface->frontCell().uniqueId();
       ++cell_index;
     }
     if (!are_face_cells_ok) {
-      fatal() << "Problem with face cells.";
+      ARCANE_FATAL("Problem with face cells.");
     }
-    ENUMERATE_EDGE (iedge, iface->edges()) {
-      info() << "face edge " << iedge.index() << " lid " << iedge.localId() << " uid " << iedge->uniqueId().asInt64();
+    for (Edge edge : iface->edges()) {
+      info() << "face edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
   }
   // Check face flags
@@ -154,14 +154,14 @@ _testEnumerationAndConnectivities(IMesh* mesh)
     info() << "node number of faces " << inode->faces().size();
     info() << "node number of cells " << inode->cells().size();
     info() << "node number of edges " << inode->edges().size();
-    ENUMERATE_FACE (iface, inode->faces()) {
-      info() << "node face " << iface.index() << " lid " << iface.localId() << " uid " << iface->uniqueId().asInt64();
+    for (Face face : inode->faces()) {
+      info() << "node face lid " << face.localId() << " uid " << face.uniqueId().asInt64();
     }
-    ENUMERATE_CELL (icell, inode->cells()) {
-      info() << "node cell " << icell.index() << " lid " << icell.localId() << " uid " << icell->uniqueId().asInt64();
+    for (Cell cell : inode->cells()) {
+      info() << "node cell lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
     }
-    ENUMERATE_EDGE (iedge, inode->edges()) {
-      info() << "face edge " << iedge.index() << " lid " << iedge.localId() << " uid " << iedge->uniqueId().asInt64();
+    for (Edge edge : inode->edges()) {
+      info() << "node edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
   }
   // ALL EDGES
@@ -172,14 +172,14 @@ _testEnumerationAndConnectivities(IMesh* mesh)
     info() << "edge number of faces " << iedge->faces().size();
     info() << "edge number of cells " << iedge->cells().size();
     info() << "edge number of nodes " << iedge->nodes().size();
-    ENUMERATE_FACE (iface, iedge->faces()) {
-      info() << "edge face " << iface.index() << " lid " << iface.localId() << " uid " << iface->uniqueId().asInt64();
+    for (Face face : iedge->faces()) {
+      info() << "edge face lid " << face.localId() << " uid " << face.uniqueId();
     }
-    ENUMERATE_CELL (icell, iedge->cells()) {
-      info() << "edge cell " << icell.index() << " lid " << icell.localId() << " uid " << icell->uniqueId().asInt64();
+    for (Cell cell : iedge->cells()) {
+      info() << "edge cell lid " << cell.localId() << " uid " << cell.uniqueId();
     }
-    ENUMERATE_NODE (inode, iedge->nodes()) {
-      info() << "edge node " << inode.index() << " lid " << inode.localId() << " uid " << inode->uniqueId().asInt64();
+    for (Node node : iedge->nodes()) {
+      info() << "edge node lid " << node.localId() << " uid " << node.uniqueId();
     }
   }
 }
@@ -457,7 +457,7 @@ _checkBoundaryFaceGroup(IMesh* mesh, const String& boundary_face_group_name) con
   ENUMERATE_FACE (iface, boundary_face_group) {
     are_face_boundaries = are_face_boundaries && iface->isSubDomainBoundary();
     if (!iface->isSubDomainBoundary()) {
-      info() << String::format("Face {0} with nodes {1} is not boundary", iface->uniqueId(), iface->nodes().localIds());
+      info() << String::format("Face {0} with nodes {1} is not boundary", iface->uniqueId(), iface->nodes());
     }
   }
   if (!are_face_boundaries)
@@ -477,7 +477,7 @@ _checkInternalFaceGroup(IMesh* mesh, const String& internal_face_group_name) con
   ENUMERATE_FACE (iface, internal_face_group) {
     are_face_internals = are_face_internals && !iface->isSubDomainBoundary();
     if (iface->isSubDomainBoundary()) {
-      info() << String::format("Face {0} with nodes {1} is not an internal face", iface->uniqueId(), iface->nodes().localIds());
+      info() << String::format("Face {0} with nodes {1} is not an internal face", iface->uniqueId(), iface->nodes());
     }
   }
   if (!are_face_internals)
