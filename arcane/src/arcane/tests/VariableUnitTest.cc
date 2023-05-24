@@ -152,6 +152,7 @@ executeTest()
   _testAlignment();
   _testReferences(options()->nbReference());
   _testCompression();
+  _testDataAllocation();
 }
 
 /*---------------------------------------------------------------------------*/
