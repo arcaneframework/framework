@@ -49,7 +49,7 @@ class ReduceMemoryImpl
  public:
 
   ReduceMemoryImpl(RunCommandImpl* p)
-  : m_command(p), m_managed_memory_bytes(eMemoryRessource::Device), m_host_memory_bytes(eMemoryRessource::Host),
+  : m_command(p), m_device_memory_bytes(eMemoryRessource::Device), m_host_memory_bytes(eMemoryRessource::Host),
     m_grid_buffer(eMemoryRessource::Device), m_grid_device_count(eMemoryRessource::Device)
   {
     _allocateMemoryForReduceData(128);
@@ -83,15 +83,15 @@ class ReduceMemoryImpl
   RunCommandImpl* m_command = nullptr;
 
   //! Pointeur vers la mémoire unifiée contenant la donnée réduite
-  std::byte* m_managed_memory = nullptr;
+  std::byte* m_device_memory = nullptr;
 
   //! Allocation pour la donnée réduite en mémoire managée
-  NumArray<std::byte, MDDim1> m_managed_memory_bytes;
+  NumArray<std::byte, MDDim1> m_device_memory_bytes;
 
   //! Allocation pour la donnée réduite en mémoire hôte
   NumArray<std::byte, MDDim1> m_host_memory_bytes;
 
-  //! Taille allouée pour \a m_managed_memory
+  //! Taille allouée pour \a m_device_memory
   Int64 m_size = 0;
 
   //! Taille courante de la grille (nombre de blocs)
@@ -121,8 +121,8 @@ class ReduceMemoryImpl
   void _setReducePolicy();
   void _allocateMemoryForReduceData(Int32 new_size)
   {
-    m_managed_memory_bytes.resize(new_size);
-    m_managed_memory = m_managed_memory_bytes.to1DSpan().data();
+    m_device_memory_bytes.resize(new_size);
+    m_device_memory = m_device_memory_bytes.to1DSpan().data();
 
     m_host_memory_bytes.resize(new_size);
     m_grid_memory_info.m_host_memory_for_reduced_value = m_host_memory_bytes.to1DSpan().data();
@@ -393,10 +393,10 @@ allocateReduceDataMemory(ConstMemoryView identity_view)
   // Recopie \a identity_view dans un buffer car on utilise l'asynchronisme
   // et la zone pointée par \a identity_view n'est pas forcément conservée
   m_identity_buffer.copy(identity_view.bytes());
-  MemoryCopyArgs copy_args(m_managed_memory, m_identity_buffer.span().data(), data_type_size);
+  MemoryCopyArgs copy_args(m_device_memory, m_identity_buffer.span().data(), data_type_size);
   m_command->internalStream()->copyMemory(copy_args.addAsync());
 
-  return m_managed_memory;
+  return m_device_memory;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -444,7 +444,7 @@ void ReduceMemoryImpl::
 copyReduceValueFromDevice()
 {
   void* destination = m_grid_memory_info.m_host_memory_for_reduced_value;
-  void* source = m_managed_memory;
+  void* source = m_device_memory;
   MemoryCopyArgs copy_args(destination,source,m_data_type_size);
   m_command->internalStream()->copyMemory(copy_args);
 }
