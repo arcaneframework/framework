@@ -14,6 +14,7 @@ set( ARCANE_SOURCES
   IDeviceInfoList.h
   Memory.h
   Memory.cc
+  MemoryTracer.cc
   PointerAttribute.h
   Runner.h
   Runner.cc
@@ -30,4 +31,5 @@ set( ARCANE_SOURCES
   RunQueueRuntime.cc
   internal/IRunnerRuntime.h
   internal/AcceleratorCoreGlobalInternal.h
+  internal/MemoryTracer.h
 )

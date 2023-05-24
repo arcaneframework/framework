@@ -16,6 +16,8 @@
 
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 
+#include "arcane/accelerator/core/internal/MemoryTracer.h"
+
 #include <cuda.h>
 #include <cupti.h>
 
@@ -120,12 +122,16 @@ printActivity(AcceleratorStatInfoList* stat_info,
     auto* uvm = reinterpret_cast<CUpti_ActivityUnifiedMemoryCounter2*>(record);
     Int64 nb_byte = uvm->value;
     if (do_print) {
+      void* address = reinterpret_cast<void*>(uvm->address);
+      std::pair<String,String> mem_info = impl::MemoryTracer::findMemory(address);
       std::cout << "UNIFIED_MEMORY_COUNTER [ " << (uvm->start - startTimestamp) << " " << (uvm->end - startTimestamp) << " ]"
-                << " address=" << reinterpret_cast<void*>(uvm->address)
+                << " address=" << address
                 << " kind=" << getUvmCounterKindString(uvm->counterKind)
                 << " value=" << nb_byte
                 << " flags=" << uvm->flags
                 << " source=" << uvm->srcId << " destination=" << uvm->dstId
+                << " name=" << mem_info.first
+                << " stack=" << mem_info.second
                 << "\n";
     }
     if (stat_info) {
