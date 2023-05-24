@@ -451,7 +451,7 @@ void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
   SmallSpan<DataType> grid_buffer = dev_info.m_grid_buffer;
   DataType identity = dev_info.m_identity;
   unsigned int* device_count = dev_info.m_device_count;
-  DataType* ptr = dev_info.m_final_ptr;
+  DataType* ptr = dev_info.m_device_final_ptr;
   DataType v = dev_info.m_current_value;
   bool do_grid_reduce = dev_info.m_use_grid_reduce;
 

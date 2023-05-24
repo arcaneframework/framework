@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IReduceMemoryImpl.h                                         (C) 2000-2022 */
+/* IReduceMemoryImpl.h                                         (C) 2000-2023 */
 /*                                                                           */
 /* Interface de la gestion mémoire pour les réductions.                      */
 /*---------------------------------------------------------------------------*/
@@ -48,6 +48,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
     unsigned int* m_grid_device_count = nullptr;
     //! Politique de réduction
     eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
+    //! Pointeur vers la mémoire sur l'hôte contenant la valeur réduite.
+    void* m_host_memory_for_reduced_value = nullptr;
   };
 
  public:
@@ -70,6 +72,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
 
   //! Informations sur la mémoire utilisée par la réduction
   virtual GridMemoryInfo gridMemoryInfo() = 0;
+
+  /*!
+   * \brief Copie la valeur réduite depuis le device vers l'hote.
+   *
+   * La valeur sera copié de gridMemoryInfo().m_device_memory_for_reduced_value
+   * vers gridMemoryInfo().m_host_memory_for_reduced_value
+   */
+  virtual void copyReduceValueFromDevice() =0;
 
   //! Libère l'instance.
   virtual void release() = 0;
