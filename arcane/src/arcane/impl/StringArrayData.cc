@@ -22,9 +22,10 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ArrayShape.h"
 
-#include "arcane/datatype/DataStorageTypeInfo.h"
-#include "arcane/datatype/DataStorageBuildInfo.h"
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataAllocationInfo.h"
+#include "arcane/core/datatype/DataStorageTypeInfo.h"
+#include "arcane/core/datatype/DataStorageBuildInfo.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
 #include "arcane/impl/SerializedData.h"
 #include "arcane/impl/DataStorageFactory.h"
@@ -94,6 +95,8 @@ public:
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
   ArrayShape shape() const override { return {}; }
   void setShape(const ArrayShape&) override {}
+  void setAllocationInfo(const DataAllocationInfo& v) override { m_allocation_info = v; }
+  DataAllocationInfo allocationInfo() const override { return m_allocation_info; }
   void visit(IArrayDataVisitor* visitor) override
   {
     visitor->applyVisitor(this);
@@ -120,6 +123,7 @@ public:
   UniqueArray<DataType> m_value; //!< Donnée
   ITraceMng* m_trace;
   IArrayDataInternalT<String>* m_internal;
+  DataAllocationInfo m_allocation_info;
 
  private:
 
@@ -174,6 +178,7 @@ StringArrayData(const StringArrayData& rhs)
 : m_value(rhs.m_value)
 , m_trace(rhs.m_trace)
 , m_internal(new Impl(this))
+, m_allocation_info(rhs.m_allocation_info)
 {}
 
 StringArrayData::

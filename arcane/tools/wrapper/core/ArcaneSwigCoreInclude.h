@@ -82,6 +82,7 @@
 #include "arcane/datatype/ScalarVariant.h"
 #include "arcane/datatype/ArrayVariant.h"
 #include "arcane/datatype/DataStorageTypeInfo.h"
+#include "arcane/datatype/DataAllocationInfo.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ArcaneSimpleExecutor.h"

@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataStorageTypeInfo.cc                                      (C) 2000-2023 */
+/* DataAllocationInfo.h                                        (C) 2000-2023 */
 /*                                                                           */
-/* Informations sur le type du conteneur d'une donnée.                       */
+/* Informations sur l'allocation d'une donnée.                               */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_DATATYPES_DATAALLOCATIONINFO_H
+#define ARCANE_DATATYPES_DATAALLOCATIONINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/datatype/DataStorageTypeInfo.h"
-#include "arcane/core/datatype/DataAllocationInfo.h"
-
-#include "arcane/utils/StringBuilder.h"
+#include "arcane/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,43 +24,42 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-DataStorageTypeInfo::
-DataStorageTypeInfo(eBasicDataType basic_data_type,Integer nb_basic_element,
-                    Integer dimension,Integer multi_tag,const String& impl_name)
-: m_basic_data_type(basic_data_type)
-, m_nb_basic_element(nb_basic_element)
-, m_dimension(dimension)
-, m_multi_tag(multi_tag)
-, m_impl_name(impl_name)
+/*!
+ * \brief Informations sur l'allocation d'une donnée.
+ */
+class ARCANE_DATATYPE_EXPORT DataAllocationInfo
 {
-}
+ public:
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  //! Constructeur.
+  DataAllocationInfo() = default;
+  DataAllocationInfo(eMemoryLocationHint hint)
+  : m_location_hint(hint)
+  {}
 
-String DataStorageTypeInfo::
-_buildFullName() const
-{
-  StringBuilder full_name_b;
-  full_name_b += Arccore::basicDataTypeName(m_basic_data_type);
-  full_name_b += ".";
-  full_name_b += m_nb_basic_element;
-  full_name_b += ".";
-  full_name_b += m_dimension;
-  full_name_b += ".";
-  full_name_b += m_multi_tag;
-  if (!m_impl_name.empty()){
-    full_name_b += ".";
-    full_name_b += m_impl_name;
+ public:
+
+  eMemoryLocationHint memoryLocationHint() const { return m_location_hint; }
+  void setMemoryLocationHint(eMemoryLocationHint hint) { m_location_hint = hint; }
+
+ public:
+
+  friend bool operator==(const DataAllocationInfo& a, const DataAllocationInfo& b)
+  {
+    return a.m_location_hint == b.m_location_hint;
   }
-  return full_name_b.toString();
-}
+
+ private:
+
+  eMemoryLocationHint m_location_hint = eMemoryLocationHint::None;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif

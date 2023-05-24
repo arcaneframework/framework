@@ -474,6 +474,7 @@ class IMultiArray2DataVisitor;
 class IDataOperation;
 class ISerializedData;
 class IHashAlgorithm;
+class DataAllocationInfo;
 class DataStorageTypeInfo;
 class ISerializedData;
 class IDataFactoryMng;

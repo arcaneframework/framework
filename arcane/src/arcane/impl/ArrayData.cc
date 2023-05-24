@@ -30,10 +30,11 @@
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MemoryAllocator.h"
 
-#include "arcane/datatype/DataStorageBuildInfo.h"
-#include "arcane/datatype/IDataOperation.h"
-#include "arcane/datatype/DataStorageTypeInfo.h"
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataAllocationInfo.h"
+#include "arcane/core/datatype/DataStorageBuildInfo.h"
+#include "arcane/core/datatype/IDataOperation.h"
+#include "arcane/core/datatype/DataStorageTypeInfo.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/IData.h"
@@ -112,6 +113,8 @@ class ArrayDataT
   void computeHash(IHashAlgorithm* algo,ByteArray& output) const override;
   ArrayShape shape() const override { return m_shape; }
   void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
+  void setAllocationInfo(const DataAllocationInfo& v) override;
+  DataAllocationInfo allocationInfo() const override { return m_allocation_info; }
   void visit(IArrayDataVisitor* visitor) override
   {
     visitor->applyVisitor(this);
@@ -155,6 +158,7 @@ class ArrayDataT
   ITraceMng* m_trace;
   IArrayDataInternalT<DataType>* m_internal;
   ArrayShape m_shape;
+  DataAllocationInfo m_allocation_info;
 
  private:
 
@@ -233,6 +237,7 @@ ArrayDataT(const ArrayDataT<DataType>& rhs)
 , m_trace(rhs.m_trace)
 , m_internal(new Impl(this))
 , m_shape(rhs.m_shape)
+, m_allocation_info(rhs.m_allocation_info)
 {
   m_value = rhs.m_value.constSpan();
 }
@@ -592,9 +597,9 @@ fillDefault()
 /*---------------------------------------------------------------------------*/
 
 template<typename DataType> void ArrayDataT<DataType>::
-setName(const String&)
+setName(const String& name)
 {
-  //m_value.setTraceInfo(ARCANE_TRACE_INFO(name));
+  m_value.setDebugName(name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -651,6 +656,18 @@ _setShape()
 {
   m_shape.setNbDimension(1);
   m_shape.setDimension(0,1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void ArrayDataT<DataType>::
+setAllocationInfo(const DataAllocationInfo& v)
+{
+  if (m_allocation_info==v)
+    return;
+  m_allocation_info = v;
+  m_value.setMemoryLocationHint(v.memoryLocationHint());
 }
 
 /*---------------------------------------------------------------------------*/
