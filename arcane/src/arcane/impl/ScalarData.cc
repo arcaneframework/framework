@@ -31,6 +31,7 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/IDataVisitor.h"
 
+#include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/datatype/DataStorageTypeInfo.h"
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
 #include "arcane/core/datatype/DataTypeTraits.h"
@@ -75,6 +76,7 @@ class ScalarDataT
   ScalarDataT(const ScalarDataT<DataType>& rhs)
   : m_value(rhs.m_value)
   , m_trace(rhs.m_trace)
+  , m_allocation_info(rhs.m_allocation_info)
   {}
 
  public:
@@ -106,6 +108,8 @@ class ScalarDataT
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
   ArrayShape shape() const override;
   void setShape(const ArrayShape&) override;
+  void setAllocationInfo(const DataAllocationInfo& v) override { m_allocation_info = v; }
+  DataAllocationInfo allocationInfo() const override { return m_allocation_info; }
   void visit(IScalarDataVisitor* visitor) override
   {
     visitor->applyVisitor(this);
@@ -129,6 +133,7 @@ class ScalarDataT
   DataType m_value; //!< Donnée
   ITraceMng* m_trace;
   NullDataInternal m_internal;
+  DataAllocationInfo m_allocation_info;
 
  private:
 

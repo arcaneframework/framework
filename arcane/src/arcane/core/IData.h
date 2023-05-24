@@ -50,7 +50,7 @@ class ARCANE_CORE_EXPORT IData
 
   //! Clone la donnée. L'instance créée doit être détruite par l'opérateur 'delete'
   ARCCORE_DEPRECATED_2020("Use cloneRef() instead")
-  virtual IData* clone() =0;
+  virtual IData* clone() = 0;
 
   //! Clone la donnée mais sans éléments. L'instance créée doit être détruite par l'opérateur 'delete'
   ARCCORE_DEPRECATED_2020("Use cloneEmptyRef() instead")
@@ -63,7 +63,7 @@ class ARCANE_CORE_EXPORT IData
   virtual Ref<IData> cloneEmptyRef() = 0;
 
   //! Informations sur le type de conteneur de la donnée
-  virtual DataStorageTypeInfo storageTypeInfo() const =0;
+  virtual DataStorageTypeInfo storageTypeInfo() const = 0;
 
   //! Sérialise la donnée en appliquant l'opération \a operation
   virtual void serialize(ISerializer* sbuf, IDataOperation* operation) = 0;
@@ -167,6 +167,14 @@ class ARCANE_CORE_EXPORT IData
 
  public:
 
+  //! Positionne les informations sur l'allocation
+  virtual void setAllocationInfo(const DataAllocationInfo& v) = 0;
+
+  //! Informations sur l'allocation
+  virtual DataAllocationInfo allocationInfo() const = 0;
+
+ public:
+
   //! Applique le visiteur à la donnée
   virtual void visit(IDataVisitor* visitor) = 0;
 
@@ -206,7 +214,7 @@ class ARCANE_CORE_EXPORT IData
   virtual void visitMultiArray2(IMultiArray2DataVisitor* visitor);
 
   //! \internal
-  virtual IDataInternal* _commonInternal() =0;
+  virtual IDataInternal* _commonInternal() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

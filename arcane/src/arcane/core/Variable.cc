@@ -852,7 +852,7 @@ _setData(const Ref<IData>& data)
                  m_p->m_infos.fullName(),m_p->m_infos.dataType(),
                  m_p->m_infos.dimension(),m_p->m_infos.multiTag());
   }
-  data->setName(m_p->m_infos.localName());
+  data->setName(m_p->m_infos.fullName());
 }
 
 /*---------------------------------------------------------------------------*/

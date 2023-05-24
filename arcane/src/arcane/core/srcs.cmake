@@ -628,6 +628,7 @@ set(ARCANE_ORIGINAL_SOURCES
   datatype/ArrayVariant.h
   datatype/BadVariantTypeException.cc
   datatype/BadVariantTypeException.h
+  datatype/DataAllocationInfo.h
   datatype/DataStorageBuildInfo.h
   datatype/DataStorageBuildInfo.cc
   datatype/DataStorageTypeInfo.h

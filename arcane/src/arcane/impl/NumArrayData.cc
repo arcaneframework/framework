@@ -30,14 +30,15 @@
 
 #include "arccore/base/Span2.h"
 
-#include "arcane/datatype/IDataOperation.h"
-#include "arcane/datatype/DataStorageTypeInfo.h"
-#include "arcane/datatype/DataStorageBuildInfo.h"
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataAllocationInfo.h"
+#include "arcane/core/datatype/IDataOperation.h"
+#include "arcane/core/datatype/DataStorageTypeInfo.h"
+#include "arcane/core/datatype/DataStorageBuildInfo.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
-#include "arcane/ISerializer.h"
-#include "arcane/IData.h"
-#include "arcane/IDataVisitor.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/IDataVisitor.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 
@@ -135,6 +136,8 @@ class NumArrayDataT
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
   ArrayShape shape() const override { return m_shape; }
   void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
+  void setAllocationInfo(const DataAllocationInfo& v) override { m_allocation_info = v; }
+  DataAllocationInfo allocationInfo() const override { return m_allocation_info; }
   void visit(IArray2DataVisitor*)
   {
     ARCANE_THROW(NotSupportedException, "Can not visit array2 data with NumArray data");
@@ -172,6 +175,7 @@ class NumArrayDataT
   ITraceMng* m_trace;
   ArrayShape m_shape;
   NullDataInternal m_internal;
+  DataAllocationInfo m_allocation_info;
 
  private:
 
@@ -199,6 +203,7 @@ template<typename DataType,int RankValue> NumArrayDataT<DataType,RankValue>::
 NumArrayDataT(const NumArrayDataT<DataType,RankValue>& rhs)
 : m_value(rhs.m_value)
 , m_trace(rhs.m_trace)
+, m_allocation_info(rhs.m_allocation_info)
 {
 }
 

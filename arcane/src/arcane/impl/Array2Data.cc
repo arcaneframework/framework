@@ -30,10 +30,11 @@
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MemoryAllocator.h"
 
-#include "arcane/datatype/IDataOperation.h"
-#include "arcane/datatype/DataStorageTypeInfo.h"
-#include "arcane/datatype/DataStorageBuildInfo.h"
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataAllocationInfo.h"
+#include "arcane/core/datatype/DataStorageBuildInfo.h"
+#include "arcane/core/datatype/IDataOperation.h"
+#include "arcane/core/datatype/DataStorageTypeInfo.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/IData.h"
@@ -113,6 +114,8 @@ class Array2DataT
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
   ArrayShape shape() const override { return m_shape; }
   void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
+  void setAllocationInfo(const DataAllocationInfo& v) override;
+  DataAllocationInfo allocationInfo() const override { return m_allocation_info; }
 
   void visit(IArray2DataVisitor* visitor)
   {
@@ -154,6 +157,7 @@ class Array2DataT
   ITraceMng* m_trace;
   IArray2DataInternalT<DataType>* m_internal;
   ArrayShape m_shape;
+  DataAllocationInfo m_allocation_info;
 
  private:
 
@@ -243,6 +247,7 @@ Array2DataT(const Array2DataT<DataType>& rhs)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(rhs.m_trace)
 , m_internal(new Impl(this))
+, m_allocation_info(rhs.m_allocation_info)
 {
   m_value = rhs.m_value;
 }
@@ -600,7 +605,7 @@ fillDefault()
 template<typename DataType> void Array2DataT<DataType>::
 setName(const String& name)
 {
-  ARCANE_UNUSED(name);
+  m_value.setDebugName(name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -660,6 +665,18 @@ template<typename DataType> void Array2DataT<DataType>::
 swapValuesDirect(ThatClass* true_data)
 {
   m_value.swap(true_data->m_value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void Array2DataT<DataType>::
+setAllocationInfo(const DataAllocationInfo& v)
+{
+  if (m_allocation_info==v)
+    return;
+  m_allocation_info = v;
+  m_value.setMemoryLocationHint(v.memoryLocationHint());
 }
 
 /*---------------------------------------------------------------------------*/
