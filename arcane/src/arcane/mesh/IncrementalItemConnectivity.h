@@ -108,8 +108,8 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
   // On interdit la copie à cause de \a m_p
   IncrementalItemConnectivityBase(const IncrementalItemConnectivityBase&) = delete;
   IncrementalItemConnectivityBase(IncrementalItemConnectivityBase&&) = delete;
-  IncrementalItemConnectivityBase operator=(const IncrementalItemConnectivityBase&) = delete;
-  IncrementalItemConnectivityBase operator=(IncrementalItemConnectivityBase&&) = delete;
+  IncrementalItemConnectivityBase& operator=(const IncrementalItemConnectivityBase&) = delete;
+  IncrementalItemConnectivityBase& operator=(IncrementalItemConnectivityBase&&) = delete;
 
  public:
 

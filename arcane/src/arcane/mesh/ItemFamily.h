@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.h                                                (C) 2000-2022 */
+/* ItemFamily.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Famille d'entités.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 #include "arcane/mesh/DynamicMeshKindInfos.h"
 
 #include "arcane/IItemConnectivity.h"
+#include "arcane/IIncrementalItemConnectivity.h"
 
 #include "arcane/ItemSharedInfo.h"
 
