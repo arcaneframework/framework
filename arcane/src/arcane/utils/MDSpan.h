@@ -17,6 +17,7 @@
 #include "arcane/utils/ArrayExtents.h"
 #include "arcane/utils/ArrayBounds.h"
 #include "arcane/utils/NumericTraits.h"
+#include "arcane/utils/ArrayLayout.h"
 
 /*
  * ATTENTION:
@@ -467,11 +468,14 @@ class MDSpan
    *   MDSpan<Real, MDDim2> sliced_span = span3.slice(5);
    *   // sliced_span(i,i) <=> span3(5,i,j);
    * \endcode
+   *
+   * \warning Cela n'est valide que si \a LayoutPolicy est \a RightLayout.
    */
   template <typename X = ExtentsType, typename = std::enable_if_t<X::rank() >= 2, void>>
   ARCCORE_HOST_DEVICE MDSpan<DataType, RemovedFirstExtentsType, LayoutPolicy>
   slice(Int32 i) const
   {
+    static_assert(std::is_base_of_v<RightLayout, LayoutPolicy>, "Only valid for RightLayout");
     auto new_extents = m_extents.extents().removeFirstExtent().dynamicExtents();
     std::array<Int32, ExtentsType::rank()> indexes = {};
     indexes[0] = i;
