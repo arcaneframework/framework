@@ -51,7 +51,9 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
 , public IIncrementalItemConnectivity
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
+
   AbstractIncrementalItemConnectivity(IItemFamily* source_family,
                                       IItemFamily* target_family,
                                       const String& connectivity_name);
@@ -65,6 +67,8 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
   ConstArrayView<IItemFamily*> families() const override { return m_families.constView();}
   IItemFamily* sourceFamily() const override { return m_source_family;}
   IItemFamily* targetFamily() const override { return m_target_family;}
+
+  Ref<IIncrementalItemConnectivity> toReference() override;
 
  protected:
 
@@ -98,6 +102,14 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
   IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_family,
                                   const String& aname);
   ~IncrementalItemConnectivityBase();
+
+ public:
+
+  // On interdit la copie à cause de \a m_p
+  IncrementalItemConnectivityBase(const IncrementalItemConnectivityBase&) = delete;
+  IncrementalItemConnectivityBase(IncrementalItemConnectivityBase&&) = delete;
+  IncrementalItemConnectivityBase operator=(const IncrementalItemConnectivityBase&) = delete;
+  IncrementalItemConnectivityBase operator=(IncrementalItemConnectivityBase&&) = delete;
 
  public:
 
