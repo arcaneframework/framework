@@ -49,6 +49,22 @@ TEST(NumArray, Basic)
   array3.resize(12, 4, 6);
   ASSERT_EQ(array3.totalNbElement(), (12 * 4 * 6));
 
+  {
+    MDSpan<Real, MDDim3> span_array3(array3.span());
+    ASSERT_EQ(array3.extent0(), span_array3.extent0());
+    for (Int32 i = 0; i < array3.extent0(); ++i) {
+      MDSpan<Real, MDDim2> span_array2 = span_array3.slice(i);
+      ASSERT_EQ(span_array2.extent0(), span_array3.extent1());
+      ASSERT_EQ(span_array2.extent1(), span_array3.extent2());
+      std::cout << " MDDim2 slice i=" << i << " X=" << span_array2.extent0() << " Y=" << span_array2.extent1() << "\n";
+      for (Int32 x = 0, xn = span_array2.extent0(); x < xn; ++x) {
+        for (Int32 y = 0, yn = span_array2.extent1(); y < yn; ++y) {
+          ASSERT_EQ(span_array2.ptrAt(x, y), span_array3.ptrAt(i, x, y));
+        }
+      }
+    }
+  }
+
   NumArray<Real, MDDim4> array4(2, 3, 4, 5);
   array4.s(1, 2, 3, 4) = 5.0;
   std::cout << " V=" << array4(1, 2, 3, 4) << "\n";
