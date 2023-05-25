@@ -130,6 +130,8 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 
   Int32 maxNbConnectedItem() const override;
 
+  void reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity) override;
+
  public:
 
   Int32ConstArrayView _connectedItemsLocalId(ItemLocalId lid) const

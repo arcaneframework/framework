@@ -171,6 +171,12 @@ class IncrementalItemConnectivityContainer
     m_connectivity_index_array.resize(wanted_size);
   }
 
+  void reserveForItems(Int32 capacity)
+  {
+    m_connectivity_nb_item_array.reserve(capacity);
+    m_connectivity_index_array.reserve(capacity);
+  }
+
  public:
 
 };
@@ -220,6 +226,28 @@ IncrementalItemConnectivityBase::
 ~IncrementalItemConnectivityBase()
 {
   delete m_p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivityBase::
+reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity)
+{
+  if (n<=0)
+    return;
+
+  m_p->reserveForItems(n);
+  _notifyConnectivityIndexChanged();
+  _notifyConnectivityNbItemChanged();
+
+  if (pre_alloc_connectivity){
+    Int32 pre_alloc_size = preAllocatedSize();
+    if (pre_alloc_size>0){
+      m_p->m_connectivity_list_array.reserve(n * pre_alloc_size);
+      _notifyConnectivityListChanged();
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

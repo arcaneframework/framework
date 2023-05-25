@@ -106,6 +106,20 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
    */
   virtual Int32 maxNbConnectedItem() const = 0;
 
+  /*!
+   * \brief Réserve la mémoire pour \a n entités sources.
+   *
+   * L'appel à cette méthode est optionnel mais permet d'éviter de multiples
+   * réallocations lors d'appels successifs à notifySourceItemAdded().
+   *
+   * Si \a pre_alloc_connectivity est vrai, préalloue aussi les la liste des
+   * connectivités en fonction de la valeur de preAllocatedSize(). Par exemple
+   * si preAllocatedSize() vaut 4 et si \a n vaut 10000, on va préallouer
+   * pour 40000 connectivités. Pour éviter une surconsommation mémoire inutile,
+   * il ne faut préallouer les connectivités que si on est sur qu'on va les utiliser.
+   */
+  virtual void reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity);
+
   //! Retourne une référence sur l'instance
   virtual Ref<IIncrementalItemConnectivity> toReference() = 0;
 };
