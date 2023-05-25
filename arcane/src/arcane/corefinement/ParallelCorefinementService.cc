@@ -36,46 +36,51 @@ using namespace Arcane::Numerics;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParallelCorefinementService::Internal {
-public:
-  Internal(ParallelCorefinementService * p)
-    : migrationTimer(p->subDomain(),"CorefinementMigration",Timer::TimerVirtual)
-    , corefinementTimer(p->subDomain(),"CorefinementAll",Timer::TimerVirtual) 
+class ParallelCorefinementService::Internal
+{
+ public:
+
+  Internal(ParallelCorefinementService* p)
+  : migrationTimer(p->subDomain(), "CorefinementMigration", Timer::TimerVirtual)
+  , corefinementTimer(p->subDomain(), "CorefinementAll", Timer::TimerVirtual)
   {
     ;
   }
 
-public:
-  class Box {
-  public:
-    Box(const Real3 & lower_left, 
-        const Real3 & upper_right,
-        const VariableNodeReal3 & nodesCoordinates) 
-      : m_lower_left(lower_left), 
-        m_upper_right(upper_right),
-        m_nodes_coordinates(nodesCoordinates) { }
-    bool isInside(const Real3 & coord) const {
-      return coord.x > m_lower_left.x
-        and coord.y > m_lower_left.y
-        and coord.z > m_lower_left.z
-        and coord.x < m_upper_right.x
-        and coord.y < m_upper_right.y
-        and coord.z < m_upper_right.z;
+ public:
+
+  class Box
+  {
+   public:
+
+    Box(const Real3& lower_left,
+        const Real3& upper_right,
+        const VariableNodeReal3& nodesCoordinates)
+    : m_lower_left(lower_left)
+    , m_upper_right(upper_right)
+    , m_nodes_coordinates(nodesCoordinates)
+    {}
+    bool isInside(const Real3& coord) const
+    {
+      return coord.x > m_lower_left.x and coord.y > m_lower_left.y and coord.z > m_lower_left.z and coord.x < m_upper_right.x and coord.y < m_upper_right.y and coord.z < m_upper_right.z;
     }
 
-    bool isInside(const Face & face) {
-      ENUMERATE_NODE(inode,face.nodes()) {
+    bool isInside(const Face& face)
+    {
+      for (Node node : face.nodes()) {
         // m_trace->info() << inode->localId() << " " << m_nodes_coordinates[inode] << " : " << isInside(m_nodes_coordinates[inode]);
-        if (isInside(m_nodes_coordinates[inode])) return true;
+        if (isInside(m_nodes_coordinates[node]))
+          return true;
       }
       return false;
     }
 
-    ITraceMng * m_trace;
+    ITraceMng* m_trace;
 
-  private:
+   private:
+
     const Real3 m_lower_left, m_upper_right;
-    const VariableNodeReal3 & m_nodes_coordinates;
+    const VariableNodeReal3& m_nodes_coordinates;
   };
 
   //! test de distance entre faces
@@ -86,17 +91,18 @@ public:
       : m_nodes_coordinates(nodesCoordinates),
         m_distance(distance) { }
   
-    bool operator()(const Face & faceA, const Face & faceB) {
-      ENUMERATE_NODE(inodeA,faceA.nodes()) {
-        ENUMERATE_NODE(inodeB,faceB.nodes()) {
-          if (math::normeR3(m_nodes_coordinates[inodeA]-m_nodes_coordinates[inodeB]) < m_distance)
+    bool operator()(const Face & faceA, const Face & faceB)
+    {
+      for (Node nodeA : faceA.nodes()) {
+        for (Node nodeB : faceB.nodes()) {
+          if (math::normeR3(m_nodes_coordinates[nodeA] - m_nodes_coordinates[nodeB]) < m_distance)
             return true;
         }
       }
       return false;
     }
 
-  private:
+   private:
     const VariableNodeReal3 & m_nodes_coordinates;
     const Real m_distance;
   };
@@ -284,26 +290,26 @@ update()
   // Not optimized box computation (many nodes are min/max several times)
   // Master BOX
   ENUMERATE_FACE(iface,m_master_group) {
-    ENUMERATE_NODE(inode,iface->nodes()) {
-      master_lower_left = math::min(master_lower_left,nodesCoordinates[inode]);
-      master_upper_right = math::max(master_upper_right,nodesCoordinates[inode]);
+    for (Node node : iface->nodes()) {
+            master_lower_left = math::min(master_lower_left, nodesCoordinates[node]);
+            master_upper_right = math::max(master_upper_right, nodesCoordinates[node]);
     }
   }
   ENUMERATE_FACE(iface,m_slave_group) {
-    ENUMERATE_NODE(inode,iface->nodes()) {
-      master_lower_left = math::min(master_lower_left,nodesCoordinates[inode]);
-      master_upper_right = math::max(master_upper_right,nodesCoordinates[inode]);
+    for (Node node : iface->nodes()) {
+            master_lower_left = math::min(master_lower_left, nodesCoordinates[node]);
+            master_upper_right = math::max(master_upper_right, nodesCoordinates[node]);
     }
   }
 
   // Slave BOX
   ENUMERATE_FACE(iface,m_slave_group) {
-    ENUMERATE_NODE(inode,iface->nodes()) {
-      slave_lower_left = math::min(slave_lower_left,nodesCoordinates[inode]);
-      slave_upper_right = math::max(slave_upper_right,nodesCoordinates[inode]);
+    for (Node node : iface->nodes()) {
+            slave_lower_left = math::min(slave_lower_left, nodesCoordinates[node]);
+            slave_upper_right = math::max(slave_upper_right, nodesCoordinates[node]);
     }
   }
-  
+
   // Extend current box
   master_lower_left.subSame(m_box_tolerance);
   master_upper_right.addSame(m_box_tolerance);
@@ -344,11 +350,12 @@ update()
       if (masterBox.isInside(*iface)) {
         faces_to_send[i_sub_domain].insert(iface->localId());
         Cell boundaryCell = iface->boundaryCell();
-        if (boundaryCell.null()) fatal() << "Non boundary face used in co-refinement";
+        if (boundaryCell.null())
+          fatal() << "Non boundary face used in co-refinement";
         cells_to_send[i_sub_domain].insert(boundaryCell.localId());
-        ENUMERATE_NODE(inode,boundaryCell.nodes())
-          nodes_to_send[i_sub_domain].insert(inode->localId());
-      }
+        for (Node node : boundaryCell.nodes())
+          nodes_to_send[i_sub_domain].insert(node.localId());
+            }
     }
 
     Internal::Box slaveBox(allBoxes[4*i_sub_domain+2],allBoxes[4*i_sub_domain+3],nodesCoordinates);
@@ -357,11 +364,12 @@ update()
       if (masterBox.isInside(*iface)) {
         faces_to_send[i_sub_domain].insert(iface->localId());
         Cell boundaryCell = iface->boundaryCell();
-        if (boundaryCell.null()) fatal() << "Non boundary face used in co-refinement";
+        if (boundaryCell.null())
+          fatal() << "Non boundary face used in co-refinement";
         cells_to_send[i_sub_domain].insert(boundaryCell.localId());
-        ENUMERATE_NODE(inode,boundaryCell.nodes())
-          nodes_to_send[i_sub_domain].insert(inode->localId());
-      }
+        for (Node node : boundaryCell.nodes())
+          nodes_to_send[i_sub_domain].insert(node.localId());
+            }
     }
   }
 
