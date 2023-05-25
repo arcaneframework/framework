@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshStats.cc                                                (C) 2000-2020 */
+/* MeshStats.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Statistiques sur le maillage.                                             */
 /*---------------------------------------------------------------------------*/
@@ -17,19 +17,20 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/Collection.h"
 
-#include "arcane/MeshStats.h"
-#include "arcane/Item.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IVariable.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/StringDictionary.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/IVariableSynchronizer.h"
+#include "arcane/core/MeshStats.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/StringDictionary.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -307,9 +308,11 @@ _dumpIncrementalConnectivityMemoryUsage()
     IVariable* v = *iv;
     if (!v->hasTag(tag_name))
       continue;
-    Real v_memory = v->allocatedMemory();
-    info(4) << "Allocated Memory n=" << v->name() << " v=" << v_memory;
-    total_memory += v_memory;
+    if (v->meshHandle().meshOrNull()==m_mesh){
+      Real v_memory = v->allocatedMemory();
+      info(4) << "Allocated Memory n=" << v->name() << " v=" << v_memory;
+      total_memory += v_memory;
+    }
   }
   info() << "Total memory for incremental connectivities mem=" << total_memory;
 }
