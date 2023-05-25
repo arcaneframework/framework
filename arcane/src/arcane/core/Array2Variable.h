@@ -73,6 +73,7 @@ class Array2VariableT
   void setIsSynchronized() override;
   void setIsSynchronized(const ItemGroup& item_group) override;
   IData* data() override { return m_data; }
+  const IData* data() const override { return m_data; }
 
  public:
 

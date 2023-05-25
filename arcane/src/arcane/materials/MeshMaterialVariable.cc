@@ -21,6 +21,7 @@
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
 #include "arcane/utils/Mutex.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/materials/IMeshMaterial.h"
@@ -119,7 +120,7 @@ copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
 MeshMaterialVariable::
 MeshMaterialVariable(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 : m_p(new MeshMaterialVariablePrivate(v,mvs,this))
-, m_views_as_bytes(platform::getDefaultDataAllocator())
+, m_views_as_bytes(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
 }
 

@@ -14,7 +14,7 @@
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/Observer.h"
 #include "arcane/IMesh.h"
@@ -47,7 +47,7 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
 : MeshMaterialVariable(v,mvs)
 , m_global_variable(global_var)
 , m_global_variable_ref(global_var_ref)
-, m_views(platform::getDefaultDataAllocator())
+, m_views(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
 }
 
@@ -197,6 +197,7 @@ _syncFromGlobalVariable()
   // change. Cette variable est la première variable de la liste.
   // Il faut ensuite notifier toutes les références de ce changement.
   m_views[0] = m_vars[0]->valueView();
+  m_views_as_bytes[0] = TraitsType::toBytes(m_views[0]);
 
   for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){
     MeshMaterialVariableRef* ref = *i;
@@ -341,6 +342,7 @@ _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
     ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->variablesIndexer();
     Traits::resizeWithReserve(partial_var,indexers[var_index]->maxIndexInMultipleArray());
     m_views[var_index+1] = partial_var->valueView();
+    m_views_as_bytes[var_index+1] = TraitsType::toBytes(m_views[var_index+1]);
   }
 
   ContainerConstViewType global_view = m_vars[0]->constValueView();
