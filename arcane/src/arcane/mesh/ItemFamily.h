@@ -377,8 +377,10 @@ class ARCANE_MESH_EXPORT ItemFamily
   ItemConnectivitySet m_source_item_connectivities; //! connectivite ou ItemFamily == SourceFamily
   ItemConnectivitySet m_target_item_connectivities;   //! connectivite ou ItemFamily == TargetFamily
   IItemConnectivityMng* m_connectivity_mng;
+ private:
   UniqueArray<Ref<IIncrementalItemConnectivity>> m_source_incremental_item_connectivities;
   UniqueArray<Ref<IIncrementalItemConnectivity>> m_target_incremental_item_connectivities;
+ protected:
   IItemFamilyPolicyMng* m_policy_mng;
 
  protected:
@@ -397,6 +399,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   void _addConnectivitySelector(ItemConnectivitySelector* selector);
   void _buildConnectivitySelectors();
+  void _preAllocate(Int32 nb_item);
 
  private:
 

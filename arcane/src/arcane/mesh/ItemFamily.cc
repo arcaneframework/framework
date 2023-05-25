@@ -1369,7 +1369,7 @@ beginCompactItems(ItemFamilyCompactInfos& compact_infos)
     c->notifySourceFamilyLocalIdChanged(new_to_old_ids);
 
   for( IItemConnectivity* c : m_target_item_connectivities )
-      c->notifyTargetFamilyLocalIdChanged(old_to_new_ids);
+    c->notifyTargetFamilyLocalIdChanged(old_to_new_ids);
 
   if (m_connectivity_mng)
     m_connectivity_mng->notifyLocalIdChanged(this,old_to_new_ids, nbItem());
@@ -1675,6 +1675,17 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
   // Notifie les connectivitées incrémentales qu'on a ajouté un élément à la source
   for( auto& c : m_source_incremental_item_connectivities )
     c->notifySourceItemAdded(ItemLocalId(local_id));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
+_preAllocate(Int32 nb_item)
+{
+  _resizeItemVariables(nb_item,false);
+  for( auto& c : m_source_incremental_item_connectivities )
+    c->reserveMemoryForNbSourceItems(nb_item,true);
 }
 
 /*---------------------------------------------------------------------------*/

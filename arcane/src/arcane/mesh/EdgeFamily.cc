@@ -57,15 +57,6 @@ class EdgeFamily::TopologyModifier
 EdgeFamily::
 EdgeFamily(IMesh* mesh,const String& name)
 : ItemFamily(mesh,IK_Edge,name)
-, m_has_edge(false)
-, m_node_prealloc(0)
-, m_face_prealloc(0)
-, m_cell_prealloc(0)
-, m_mesh_connectivity(0)
-, m_node_connectivity(nullptr)
-, m_face_connectivity(nullptr)
-, m_cell_connectivity(nullptr)
-, m_node_family(nullptr)
 {
   _setTopologyModifier(new TopologyModifier(this));
 }
@@ -199,7 +190,9 @@ findOrAllocOne(Int64 uid,bool& is_alloc)
 void EdgeFamily::
 preAllocate(Integer nb_item)
 {
-  ARCANE_UNUSED(nb_item);
+  if (m_has_edge) {
+    this->_preAllocate(nb_item);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

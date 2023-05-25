@@ -241,7 +241,7 @@ findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc)
 void CellFamily::
 preAllocate(Integer nb_item)
 {
-  ARCANE_UNUSED(nb_item);
+  this->_preAllocate(nb_item);
 }
 
 /*---------------------------------------------------------------------------*/

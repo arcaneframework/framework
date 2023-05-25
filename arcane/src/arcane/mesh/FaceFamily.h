@@ -145,24 +145,26 @@ class ARCANE_MESH_EXPORT FaceFamily
 
  private:
 
-  Integer m_node_prealloc;
-  Integer m_edge_prealloc;
-  Integer m_cell_prealloc;
-  Integer m_mesh_connectivity;
+  Integer m_node_prealloc = 0;
+  Integer m_edge_prealloc = 0;
+  Integer m_cell_prealloc = 0;
+  Integer m_mesh_connectivity = 0;
 
   //! Famille des noeuds associée à cette famille
-  NodeFamily* m_node_family;
+  NodeFamily* m_node_family = nullptr;
 
   //! Famille d'arêtes associée à cette famille
-  EdgeFamily* m_edge_family;
+  EdgeFamily* m_edge_family = nullptr;
 
   //! Indique s'il faut vérifier l'orientation
-  bool m_check_orientation;
+  bool m_check_orientation = true;
 
-  NodeConnectivity* m_node_connectivity;
-  EdgeConnectivity* m_edge_connectivity;
-  FaceConnectivity* m_face_connectivity;
-  CellConnectivity* m_cell_connectivity;
+  NodeConnectivity* m_node_connectivity = nullptr;
+  EdgeConnectivity* m_edge_connectivity = nullptr;
+  FaceConnectivity* m_face_connectivity = nullptr;
+  CellConnectivity* m_cell_connectivity = nullptr;
+
+  bool m_has_face = true;
 
  private:
 
