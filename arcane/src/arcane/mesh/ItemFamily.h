@@ -399,7 +399,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   void _addConnectivitySelector(ItemConnectivitySelector* selector);
   void _buildConnectivitySelectors();
-  void _preAllocate(Int32 nb_item);
+  void _preAllocate(Int32 nb_item,bool pre_alloc_connectivity);
 
  private:
 

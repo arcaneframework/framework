@@ -1681,11 +1681,11 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_preAllocate(Int32 nb_item)
+_preAllocate(Int32 nb_item,bool pre_alloc_connectivity)
 {
   _resizeItemVariables(nb_item,false);
   for( auto& c : m_source_incremental_item_connectivities )
-    c->reserveMemoryForNbSourceItems(nb_item,true);
+    c->reserveMemoryForNbSourceItems(nb_item,pre_alloc_connectivity);
 }
 
 /*---------------------------------------------------------------------------*/

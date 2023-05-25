@@ -246,9 +246,17 @@ findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc)
 void FaceFamily::
 preAllocate(Integer nb_item)
 {
-  if (m_has_face){
-    this->_preAllocate(nb_item);
-  }
+  if (!m_has_face)
+    return;
+  // On ne préalloue pas par défaut car on ne souhaite pas pré-allouer
+  // pour la connectivité face->face car c'est dernière n'est utilisée que
+  // s'il y a des TiedInterface et cela n'est pas fréquent.
+  // Du coup on pré-alloue explicitement les connectivités qu'on souhaite.
+  this->_preAllocate(nb_item,false);
+  m_node_connectivity->trueCustomConnectivity()->reserveMemoryForNbSourceItems(nb_item,true);
+  if (Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_HasEdge))
+    m_edge_connectivity->trueCustomConnectivity()->reserveMemoryForNbSourceItems(nb_item,true);
+  m_cell_connectivity->trueCustomConnectivity()->reserveMemoryForNbSourceItems(nb_item,true);
 }
 
 /*---------------------------------------------------------------------------*/

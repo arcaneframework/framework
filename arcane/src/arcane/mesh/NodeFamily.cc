@@ -137,7 +137,7 @@ build()
 void NodeFamily::
 preAllocate(Integer nb_item)
 {
-  this->_preAllocate(nb_item);
+  this->_preAllocate(nb_item,true);
 }
 
 /*---------------------------------------------------------------------------*/

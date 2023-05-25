@@ -191,7 +191,7 @@ void EdgeFamily::
 preAllocate(Integer nb_item)
 {
   if (m_has_edge) {
-    this->_preAllocate(nb_item);
+    this->_preAllocate(nb_item,true);
   }
 }
 
