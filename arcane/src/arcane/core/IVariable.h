@@ -314,6 +314,12 @@ class ARCANE_CORE_EXPORT IVariable
    */
   virtual void shrinkMemory() =0;
 
+  //! Positionne les informations sur l'allocation
+  virtual void setAllocationInfo(const DataAllocationInfo& v) = 0;
+
+  //! Informations sur l'allocation
+  virtual DataAllocationInfo allocationInfo() const = 0;
+
  public:
 
   /*!
@@ -547,7 +553,10 @@ class ARCANE_CORE_EXPORT IVariable
 
   //! Données associées à la variable
   virtual IData* data() =0;
-  
+
+  //! Données associées à la variable
+  virtual const IData* data() const =0;
+
   //! Fabrique de données associées à la variable
   virtual IDataFactoryMng* dataFactoryMng() const =0;
 

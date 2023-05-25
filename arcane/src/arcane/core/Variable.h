@@ -162,6 +162,9 @@ class ARCANE_CORE_EXPORT Variable
   void resize(Integer n) override;
   void resizeFromGroup() override;
 
+  void setAllocationInfo(const DataAllocationInfo& v) override;
+  DataAllocationInfo allocationInfo() const override;
+
  public:
   
   IObservable* writeObservable() override;

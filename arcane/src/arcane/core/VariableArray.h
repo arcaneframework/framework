@@ -80,6 +80,7 @@ class VariableArrayT
   void setIsSynchronized() override;
   void setIsSynchronized(const ItemGroup& item_group) override;
   IData* data() override { return m_value; }
+  const IData* data() const override { return m_value; }
 
   virtual void fill(const T& v);
   virtual void fill(const T& v,const ItemGroup& item_group);

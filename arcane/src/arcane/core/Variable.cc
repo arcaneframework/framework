@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Variable.cc                                                 (C) 2000-2022 */
+/* Variable.cc                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant une variable.                                               */
 /*---------------------------------------------------------------------------*/
@@ -29,31 +29,32 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/ItemGroupObserver.h"
-#include "arcane/expr/Expression.h"
-#include "arcane/VariableExpressionImpl.h"
-#include "arcane/Variable.h"
-#include "arcane/VarRefEnumerator.h"
-#include "arcane/IVariableAccessor.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/VariableInfo.h"
-#include "arcane/ISerializer.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableComputeFunction.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/Observable.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IDataReader.h"
-#include "arcane/IDataWriter.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/VariableDependInfo.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/VariableMetaData.h"
-#include "arcane/IMeshMng.h"
-#include "arcane/MeshHandle.h"
+#include "arcane/core/ItemGroupObserver.h"
+#include "arcane/core/expr/Expression.h"
+#include "arcane/core/VariableExpressionImpl.h"
+#include "arcane/core/Variable.h"
+#include "arcane/core/VarRefEnumerator.h"
+#include "arcane/core/IVariableAccessor.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableComputeFunction.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/Observable.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IDataReader.h"
+#include "arcane/core/IDataWriter.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/VariableDependInfo.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/VariableMetaData.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/datatype/DataAllocationInfo.h"
 
 #include <map>
 #include <set>
@@ -1320,6 +1321,27 @@ bool Variable::
 _wantShrink() const
 {
   return m_p->m_want_shrink;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Variable::
+setAllocationInfo(const DataAllocationInfo& v)
+{
+  data()->setAllocationInfo(v);
+  // Il est possible que le changement d'allocation modifie les données
+  // allouées. Il faut donc synchroniser les références.
+  syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+DataAllocationInfo Variable::
+allocationInfo() const
+{
+  return data()->allocationInfo();
 }
 
 /*---------------------------------------------------------------------------*/

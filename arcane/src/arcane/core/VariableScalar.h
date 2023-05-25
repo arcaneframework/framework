@@ -59,6 +59,7 @@ class VariableScalarT
   void shrinkMemory() override { }
   void print(std::ostream& o) const override;
   IData* data() override { return m_value; }
+  const IData* data() const override { return m_value; }
 
  public:
   
