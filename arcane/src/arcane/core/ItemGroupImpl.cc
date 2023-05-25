@@ -21,7 +21,7 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/SharedPtr.h"
-#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/ItemGroupObserver.h"
 #include "arcane/IItemFamily.h"
@@ -223,7 +223,7 @@ class ItemGroupImplPrivate
   void resetSubGroups();
 
  private:
-  UniqueArray<Int32> m_local_buffer = UniqueArray<Int32>(platform::getDefaultDataAllocator());
+  UniqueArray<Int32> m_local_buffer{MemoryUtils::getAllocatorForMostlyReadOnlyData()};
   Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
   VariableArrayInt32* m_variable_items_local_id = nullptr;
  private:
