@@ -832,8 +832,8 @@ removeCellFromFace(Face face,ItemLocalId cell_to_remove_lid)
       subFaces(face,subfaces);
       for(Integer s=0,ss=subfaces.size();s<ss;s++){
         ItemInternal* face2= subfaces[s];
-        Int32 cell0 = face2->cellLocalId(0);
-        Int32 cell1 = face2->cellLocalId(1);
+        Int32 cell0 = face2->cellId(0);
+        Int32 cell1 = face2->cellId(1);
         // On avait obligatoirement deux mailles connectées avant,
         // donc la back_cell est la maille 0, la front cell la maille 1
         if (cell0==cell_to_remove_lid){

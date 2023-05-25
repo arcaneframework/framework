@@ -98,7 +98,7 @@ topHParent() const
 {
   const ItemInternal* top_it = this;
   while (top_it->nbHParent())
-    top_it = top_it->internalHParent(0);
+    top_it = top_it->_internalHParent(0);
   ARCANE_ASSERT((!top_it->null()),("topHParent Problem!"));
   ARCANE_ASSERT((top_it->level() == 0),("topHParent Problem"));
   return top_it;
@@ -126,7 +126,7 @@ topHParent()
 {
   ItemInternal* top_it = this;
   while (top_it->nbHParent())
-    top_it = top_it->internalHParent(0);
+    top_it = top_it->_internalHParent(0);
   ARCANE_ASSERT((!top_it->null()),("topHParent Problem!"));
   ARCANE_ASSERT((top_it->level() == 0),("topHParent Problem"));
   return top_it;
@@ -153,7 +153,7 @@ whichChildAmI(const ItemInternal *iitem) const
 {
   ARCANE_ASSERT((this->hasHChildren()), ("item has non-child!"));
   for (Integer c=0; c<this->nbHChildren(); c++)
-    if (this->internalHChild(c) == iitem)
+    if (this->_internalHChild(c) == iitem)
       return c;
   return -1;
 }

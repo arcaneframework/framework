@@ -242,10 +242,6 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 ItemFamily::
 ~ItemFamily()
 {
-  info(4) << "Family name=" << m_full_name
-          << " nb_access_v2=" << m_item_connectivity_list.nbAccess()
-          << " nb_access_all_v2=" << m_item_connectivity_list.nbAccessAll();
-
   delete m_topology_modifier;
   delete m_policy_mng;
   delete m_properties;
@@ -851,12 +847,12 @@ notifyItemsOwnerChanged()
     IItemFamily * family = m_child_families[i];
     ItemInternalArrayView items(family->itemsInternal());
     for( Integer z=0, zs=items.size(); z<zs; ++z ){
-      ItemInternal* item = items[z];
-      if (item->isSuppressed())
+      impl::MutableItemBase item(items[z]);
+      if (item.isSuppressed())
         continue;
-      Item parent_item = item->parent(0);
-      ARCANE_ASSERT((parent_item.uniqueId() == item->uniqueId()),("Inconsistent parent uid"));
-      item->setOwner(parent_item.owner(), m_sub_domain_id);
+      Item parent_item = item.parentBase(0);
+      ARCANE_ASSERT((parent_item.uniqueId() == item.uniqueId()),("Inconsistent parent uid"));
+      item.setOwner(parent_item.owner(), m_sub_domain_id);
     }
     family->notifyItemsOwnerChanged();
   }

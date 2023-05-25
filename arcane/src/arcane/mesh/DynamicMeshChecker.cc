@@ -96,12 +96,10 @@ checkValidMesh()
   const bool global_check = false;
   if (m_check_level>=1 && global_check){
     if (!m_var_cells_faces)
-      m_var_cells_faces = new VariableCellArrayInt64(VariableBuildInfo(m_mesh->subDomain(),
-                                                                       "MeshTestCellFaces"));
+      m_var_cells_faces = new VariableCellArrayInt64(VariableBuildInfo(m_mesh,"MeshTestCellFaces"));
 
     if (!m_var_cells_nodes)
-      m_var_cells_nodes = new VariableCellArrayInt64(VariableBuildInfo(m_mesh->subDomain(),
-                                                                       "MeshTestCellNodes"));
+      m_var_cells_nodes = new VariableCellArrayInt64(VariableBuildInfo(m_mesh,"MeshTestCellNodes"));
 
     CellGroup all_cells(m_mesh->allCells());
     Integer max_nb_face = 0;
@@ -593,7 +591,7 @@ void DynamicMeshChecker::
 checkVariablesSynchronization()
 {
   Int64 nb_diff = 0;
-  VariableCollection used_vars(m_mesh->subDomain()->variableMng()->usedVariables());
+  VariableCollection used_vars(m_mesh->variableMng()->usedVariables());
   for( VariableCollection::Enumerator i_var(used_vars); ++i_var; ){
     IVariable* var = *i_var;
     switch (var->itemKind()){
@@ -677,16 +675,16 @@ checkMeshFromReferenceFile()
   if (!m_compare_reference_file)
     return;
 
-  ISubDomain *sub_domain = m_mesh->subDomain();
+  IParallelMng* pm = m_mesh->parallelMng();
 
-  if (!sub_domain->parallelMng()->isParallel())
+  if (!pm->isParallel())
     return; // uniquement en parallèle
 
   debug() << "Testing the mesh against the initial mesh";
   String base_file_name("meshconnectivity");
   // En parallèle, compare le maillage actuel avec le fichier
   // contenant la connectivité complète (cas séquentiel)
-  IIOMng* io_mng = sub_domain->ioMng();
+  IIOMng* io_mng = pm->ioMng();
   ScopedPtrT<IXmlDocumentHolder> xml_doc(io_mng->parseXmlFile(base_file_name));
   if (xml_doc.get()){
     XmlNode doc_node = xml_doc->documentNode();

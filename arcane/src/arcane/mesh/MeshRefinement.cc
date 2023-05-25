@@ -2114,7 +2114,7 @@ _removeGhostChildren()
 
     if (cell->flags() & ItemFlags::II_JustCoarsened){
       for (Integer c = 0, cs = cell->nbHChildren(); c < cs; c++){
-        cells_to_remove.add(cell->internalHChild(c)->localId());
+        cells_to_remove.add(cell->hChildBase(c).localId());
       }
       parent_cells.add(cell);
     }

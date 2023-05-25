@@ -161,6 +161,7 @@ _removeCell(Cell cell)
 void SubMeshTools::
 removeDeadGhostCells()
 {
+  // TODO
   CellFamily& cell_family = m_mesh->trueCellFamily();
   FaceFamily& face_family = m_mesh->trueFaceFamily();
   EdgeFamily& edge_family = m_mesh->trueEdgeFamily();
@@ -169,34 +170,38 @@ removeDeadGhostCells()
   // On cherche les items fantomes dont les parents sont supprimés
   UniqueArray<ItemInternal*> items_to_remove;
   items_to_remove = _ghostItems(&cell_family);
-  for( ItemInternal* item : items_to_remove ){
-    ARCANE_ASSERT((!item->parent(0)->isSuppressed()),("SubMesh cell not synchronized with its support group"));
+  for( ItemInternal* item_internal : items_to_remove ){
+    impl::ItemBase item(item_internal);
+    ARCANE_ASSERT((!item.parentBase(0).isSuppressed()),("SubMesh cell not synchronized with its support group"));
 
     // on met no_destroy=true => ce sont les sous-items qui s'occuperont de la destruction
-    if (item->parent(0)->isSuppressed())
+    if (item.parentBase(0).isSuppressed())
       _removeCell(item);
   }
 
   items_to_remove = _ghostItems(&face_family);
-  for( ItemInternal* item : items_to_remove ){
-    if (item->parent(0)->isSuppressed()) {
-      ARCANE_ASSERT((item->nbCell() == 0),("Cannot remove connected sub-item"));
+  for( ItemInternal* item_internal : items_to_remove ){
+    impl::ItemBase item(item_internal);
+    if (item.parentBase(0).isSuppressed()) {
+      ARCANE_ASSERT((item.nbCell() == 0),("Cannot remove connected sub-item"));
       face_family.removeFaceIfNotConnected(item);
     }
   }
 
   items_to_remove = _ghostItems(&edge_family);
-  for( ItemInternal* item : items_to_remove ){
-    if (item->parent(0)->isSuppressed()) {
-      ARCANE_ASSERT((item->nbCell() == 0 && item->nbFace() == 0),("Cannot remove connected sub-item"));
+  for( ItemInternal* item_internal : items_to_remove ){
+    impl::ItemBase item(item_internal);
+    if (item.parentBase(0).isSuppressed()) {
+      ARCANE_ASSERT((item.nbCell() == 0 && item.nbFace() == 0),("Cannot remove connected sub-item"));
       edge_family.removeEdgeIfNotConnected(item);
     }
   }
 
   items_to_remove = _ghostItems(&node_family);
-  for( ItemInternal* item : items_to_remove ){
-    if (item->parent(0)->isSuppressed()) {
-      ARCANE_ASSERT((item->nbCell()==0 && item->nbFace()==0 && item->nbEdge()==0),("Cannot remove connected sub-item"));
+  for( ItemInternal* item_internal : items_to_remove ){
+    impl::ItemBase item(item_internal);
+    if (item.parentBase(0).isSuppressed()) {
+      ARCANE_ASSERT((item.nbCell()==0 && item.nbFace()==0 && item.nbEdge()==0),("Cannot remove connected sub-item"));
       node_family.removeItem(item);
     }
   }
