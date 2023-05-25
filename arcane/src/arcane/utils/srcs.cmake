@@ -83,6 +83,8 @@ set(ARCANE_SOURCES
   MemoryInfo.h
   MemoryRessource.h
   MemoryRessourceMng.cc
+  MemoryUtils.h
+  MemoryUtils.cc
   Numeric.cc
   Numeric.h
   NumericTraits.h
