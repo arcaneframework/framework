@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalItemConnectivity.h                               (C) 2000-2022 */
+/* IncrementalItemConnectivity.h                               (C) 2000-2023 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,8 @@
 #define ARCANE_INCREMENTALITEMCONNECTIVITY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arccore/base/ReferenceCounterImpl.h"
 
 #include "arcane/utils/TraceAccessor.h"
 
@@ -45,8 +47,10 @@ class IndexedItemConnectivityAccessor;
  */
 class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
 : public TraceAccessor
+, public ReferenceCounterImpl
 , public IIncrementalItemConnectivity
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
  public:
   AbstractIncrementalItemConnectivity(IItemFamily* source_family,
                                       IItemFamily* target_family,

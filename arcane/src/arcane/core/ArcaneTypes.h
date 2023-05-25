@@ -115,6 +115,7 @@ class IIndexedIncrementalItemConnectivityMng;
 class IIndexedIncrementalItemConnectivity;
 class IMeshInitialAllocator;
 class UnstructuredMeshAllocateBuildInfo;
+class IIncrementalItemConnectivity;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -521,6 +522,7 @@ ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ISerializedData)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseFunction)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseOptions)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseMng)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IIncrementalItemConnectivity)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
