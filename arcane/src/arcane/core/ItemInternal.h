@@ -43,6 +43,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::impl
+{
+class ItemBase;
+};
+
 namespace Arcane
 {
 class ItemInternalCompatibility;
@@ -120,6 +125,10 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 {
   // IMPORTANT: Cette structure doit avoir le même agencement mémoire
   // que la structure C# de même nom.
+
+  friend class impl::ItemBase;
+  friend class ItemInternal;
+  friend class Item;
 
  private:
 
@@ -213,8 +222,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 #endif
   }
 
- public:
-
+ private:
   /*!
    * \brief Liste des localId() des entités de type \a item_kind
    * connectées à l'entité de de localid() \a lid.
@@ -305,20 +313,29 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     return { m_list[item_kind], m_indexes[item_kind], m_nb_item[item_kind] };
   }
 
- public:
+ private:
 
+  // TODO: Rendre obsolète les méthodes suivantes
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
   ItemInternal* nodeV2(Int32 lid,Int32 aindex) const
   { return m_items->nodes[ _nodeLocalIdV2(lid,aindex) ]; }
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
   ItemInternal* edgeV2(Int32 lid,Int32 aindex) const
   { return m_items->edges[ _edgeLocalIdV2(lid,aindex) ]; }
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
   ItemInternal* faceV2(Int32 lid,Int32 aindex) const
   { return m_items->faces[ _faceLocalIdV2(lid,aindex) ]; }
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
   ItemInternal* cellV2(Int32 lid,Int32 aindex) const
   { return m_items->cells[ _cellLocalIdV2(lid,aindex) ]; }
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
   ItemInternal* hParentV2(Int32 lid,Int32 aindex) const
   { return m_items->cells[ _hParentLocalIdV2(lid,aindex) ]; }
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
   ItemInternal* hChildV2(Int32 lid,Int32 aindex) const
   { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
+
+ public:
 
   ItemBaseBuildInfo nodeBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_nodeLocalIdV2(lid,aindex),A_INTERNAL_SI(node)); }
@@ -333,15 +350,6 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   ItemBaseBuildInfo hChildBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_hChildLocalIdV2(lid,aindex),A_INTERNAL_SI(cell)); }
 
-  ItemInternalVectorView nodesV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
-  ItemInternalVectorView edgesV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid)); }
-  ItemInternalVectorView facesV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
-  ItemInternalVectorView cellsV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid)); }
-
   auto nodeList(Int32 lid) const
   { return impl::ItemIndexedListView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
   auto edgeList(Int32 lid) const
@@ -350,6 +358,17 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   { return impl::ItemIndexedListView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
   auto cellList(Int32 lid) const
   { return impl::ItemIndexedListView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid)); }
+
+ private:
+
+  ItemInternalVectorView nodesV2(Int32 lid) const
+  { return ItemInternalVectorView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
+  ItemInternalVectorView edgesV2(Int32 lid) const
+  { return ItemInternalVectorView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid)); }
+  ItemInternalVectorView facesV2(Int32 lid) const
+  { return ItemInternalVectorView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
+  ItemInternalVectorView cellsV2(Int32 lid) const
+  { return ItemInternalVectorView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid)); }
 
   Int32ConstArrayView nodeLocalIdsV2(Int32 lid) const
   { return Int32ConstArrayView(_nbNodeV2(lid),_nodeLocalIdsV2(lid)); }
@@ -360,7 +379,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   Int32ConstArrayView cellLocalIdsV2(Int32 lid) const
   { return Int32ConstArrayView(_nbCellV2(lid),_cellLocalIdsV2(lid)); }
 
- public:
+ private:
 
   const Int32* _nodeLocalIdsV2(Int32 lid) const
   { return itemLocalIds(ItemInternalConnectivityList::NODE_IDX,lid); }
@@ -387,7 +406,22 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   Int32 _hChildLocalIdV2(Int32 lid,Int32 index) const
   { return itemLocalId(ItemInternalConnectivityList::HCHILD_IDX,lid,index); }
 
- public:
+ private:
+
+  ItemInternal* _nodeV2(Int32 lid,Int32 aindex) const
+  { return m_items->nodes[ _nodeLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _edgeV2(Int32 lid,Int32 aindex) const
+  { return m_items->edges[ _edgeLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _faceV2(Int32 lid,Int32 aindex) const
+  { return m_items->faces[ _faceLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _cellV2(Int32 lid,Int32 aindex) const
+  { return m_items->cells[ _cellLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _hParentV2(Int32 lid,Int32 aindex) const
+  { return m_items->cells[ _hParentLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _hChildV2(Int32 lid,Int32 aindex) const
+  { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
+
+ private:
 
   Int32 _nbNodeV2(Int32 lid) const { return m_nb_item[NODE_IDX][lid]; }
   Int32 _nbEdgeV2(Int32 lid) const { return m_nb_item[EDGE_IDX][lid]; }
@@ -657,14 +691,15 @@ class ARCANE_CORE_EXPORT ItemBase
    * se traduit par un débordement de tableau.
    */
   //@{
-  // TODO rendre obsolète après la version 3.8 (utiliser nodeList() à la place)
+  ARCANE_DEPRECATED_REASON("Y2023: Use nodeList() instead.")
   ItemInternalVectorView internalNodes() const { return _connectivity()->nodesV2(m_local_id); }
-  // TODO rendre obsolète après la version 3.8
+  ARCANE_DEPRECATED_REASON("Y2023: Use edgeList() instead.")
   ItemInternalVectorView internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
-  // TODO rendre obsolète après la version 3.8
+  ARCANE_DEPRECATED_REASON("Y2023: Use faceList() instead.")
   ItemInternalVectorView internalFaces() const { return _connectivity()->facesV2(m_local_id); }
-  // TODO rendre obsolète après la version 3.8
+  ARCANE_DEPRECATED_REASON("Y2023: Use cellList() instead.")
   ItemInternalVectorView internalCells() const { return _connectivity()->cellsV2(m_local_id); }
+  //@}
 
   /*!
    * \brief Méthodes utilisant les nouvelles connectivités pour accéder
@@ -686,11 +721,6 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemIndexedListView<DynExtent> itemList(Edge*) const { return edgeList(); }
   ItemIndexedListView<DynExtent> itemList(Face*) const { return faceList(); }
   ItemIndexedListView<DynExtent> itemList(Cell*) const { return cellList(); }
-
-  Int32ConstArrayView nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
-  Int32ConstArrayView edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
-  Int32ConstArrayView faceIds() const { return _connectivity()->faceLocalIdsV2(m_local_id); }
-  Int32ConstArrayView cellIds() const { return _connectivity()->cellLocalIdsV2(m_local_id); }
   //@}
 
   ItemBase nodeBase(Int32 index) const { return _connectivity()->nodeBase(m_local_id,index); }
@@ -700,6 +730,17 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemBase hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id,index); }
   ItemBase hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id,index); }
   inline ItemBase parentBase(Int32 index) const;
+
+ private:
+
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
+  Int32ConstArrayView nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
+  Int32ConstArrayView edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
+  Int32ConstArrayView faceIds() const { return _connectivity()->faceLocalIdsV2(m_local_id); }
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
+  Int32ConstArrayView cellIds() const { return _connectivity()->cellLocalIdsV2(m_local_id); }
 
  public:
 
@@ -933,28 +974,37 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
+  // TODO: Rendre obsolète les trois méthodes suivantes.
+  // Il faut utiliser la méthode correspondante de ItemBase
+
   //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
-  ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? internalCell(0) : nullItem(); }
+  ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::boundaryCell() instead.")
+  ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? _internalCell(0) : nullItem(); }
   //! Maille derrière l'entité (nullItem() si aucune)
+  ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::backCell() instead.")
   ItemInternal* backCell() const
   {
     if (flags() & II_HasBackCell)
-      return internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
+      return _internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
     return nullItem();
   }
   //! Maille devant l'entité (nullItem() si aucune)
+  ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::frontCell() instead.")
   ItemInternal* frontCell() const
   {
     if (flags() & II_HasFrontCell)
-      return internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
+      return _internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
     return nullItem();
   }
+  ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::masterFace() instead.")
   ItemInternal* masterFace() const
   {
     if (flags() & II_SlaveFace)
-      return internalFace(0);
+      return _internalFace(0);
     return nullItem();
   }
+
+ public:
 
   //! Infos partagées de l'entité.
   ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
@@ -962,23 +1012,31 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  // TODO rendre obsolète après la version 3.8 (utiliser itemList() à la place)
+  ARCANE_DEPRECATED_REASON("Y2023: Use itemList() instead.")
   ItemInternalVectorView internalItems(Node*) const { return nodeList(); }
-  // TODO rendre obsolète après la version 3.8
+  ARCANE_DEPRECATED_REASON("Y2023: Use itemList() instead.")
   ItemInternalVectorView internalItems(Edge*) const { return edgeList(); }
-  // TODO rendre obsolète après la version 3.8
+  ARCANE_DEPRECATED_REASON("Y2023: Use itemList() instead.")
   ItemInternalVectorView internalItems(Face*) const { return faceList(); }
-  // TODO rendre obsolète après la version 3.8
+  ARCANE_DEPRECATED_REASON("Y2023: Use itemList() instead.")
   ItemInternalVectorView internalItems(Cell*) const { return cellList(); }
 
  public:
 
-  ItemInternal* internalNode(Int32 index) const { return _connectivity()->nodeV2(m_local_id,index); }
-  ItemInternal* internalEdge(Int32 index) const { return _connectivity()->edgeV2(m_local_id,index); }
-  ItemInternal* internalFace(Int32 index) const { return _connectivity()->faceV2(m_local_id,index); }
-  ItemInternal* internalCell(Int32 index) const { return _connectivity()->cellV2(m_local_id,index); }
-  ItemInternal* internalHParent(Int32 index) const { return _connectivity()->hParentV2(m_local_id,index); }
-  ItemInternal* internalHChild(Int32 index) const { return _connectivity()->hChildV2(m_local_id,index); }
+  // TODO: Rendre obsolète (utiliser nodeBase(), edgeBase(), ... à la place)
+  ARCANE_DEPRECATED_REASON("Y2023: Use nodeBase() instead.")
+  ItemInternal* internalNode(Int32 index) const { return _connectivity()->_nodeV2(m_local_id,index); }
+  ARCANE_DEPRECATED_REASON("Y2023: Use edgeBase() instead.")
+  ItemInternal* internalEdge(Int32 index) const { return _connectivity()->_edgeV2(m_local_id,index); }
+  ARCANE_DEPRECATED_REASON("Y2023: Use faceBase() instead.")
+  ItemInternal* internalFace(Int32 index) const { return _connectivity()->_faceV2(m_local_id,index); }
+  ARCANE_DEPRECATED_REASON("Y2023: Use cellBase() instead.")
+  ItemInternal* internalCell(Int32 index) const { return _connectivity()->_cellV2(m_local_id,index); }
+  ARCANE_DEPRECATED_REASON("Y2023: Use hParentBase() instead.")
+  ItemInternal* internalHParent(Int32 index) const { return _connectivity()->_hParentV2(m_local_id,index); }
+  ARCANE_DEPRECATED_REASON("Y2023: Use hChildBase() instead.")
+  ItemInternal* internalHChild(Int32 index) const { return _connectivity()->_hChildV2(m_local_id,index); }
+  ARCANE_DEPRECATED_REASON("Y2023: Use parentBase() instead.")
   ItemInternal* parent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
 
  public:
@@ -1019,17 +1077,20 @@ class ARCANE_CORE_EXPORT ItemInternal
   //! Mémoire nécessaire pour stocker les infos de l'entité
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Integer neededMemory() const { return 0; }
+
   //! Mémoire minimale nécessaire pour stocker les infos de l'entité (sans tampon)
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Integer minimumNeededMemory() const { return 0; }
 
  public:
 
-  // TODO: rendre obsolète après la version 3.8 les 4 méthodes suivantes
-  // car il faut utiliser nodeId(), edgeId(), ...
+  ARCANE_DEPRECATED_REASON("Y2023: Use nodeId() instead")
   Int32 nodeLocalId(Integer index) { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
+  ARCANE_DEPRECATED_REASON("Y2023: Use edgeId() instead")
   Int32 edgeLocalId(Integer index) { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
+  ARCANE_DEPRECATED_REASON("Y2023: Use faceId() instead")
   Int32 faceLocalId(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
+  ARCANE_DEPRECATED_REASON("Y2023: Use cellId() instead")
   Int32 cellLocalId(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
 
  public:
@@ -1062,6 +1123,14 @@ class ARCANE_CORE_EXPORT ItemInternal
     m_shared_info = shared_infos;
     shared_infos->_setTypeId(m_local_id,type_id.typeId());
   }
+
+  ItemInternal* _internalNode(Int32 index) const { return _connectivity()->_nodeV2(m_local_id,index); }
+  ItemInternal* _internalEdge(Int32 index) const { return _connectivity()->_edgeV2(m_local_id,index); }
+  ItemInternal* _internalFace(Int32 index) const { return _connectivity()->_faceV2(m_local_id,index); }
+  ItemInternal* _internalCell(Int32 index) const { return _connectivity()->_cellV2(m_local_id,index); }
+  ItemInternal* _internalHParent(Int32 index) const { return _connectivity()->_hParentV2(m_local_id,index); }
+  ItemInternal* _internalHChild(Int32 index) const { return _connectivity()->_hChildV2(m_local_id,index); }
+  ItemInternal* _parent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
 };
 
 /*---------------------------------------------------------------------------*/

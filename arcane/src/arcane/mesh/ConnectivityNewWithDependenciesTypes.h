@@ -237,7 +237,7 @@ private:
       ARCANE_FATAL("face '{0}' already has two cells",face->uniqueId().asInt64());// FullItemPrinter cannot be used here, the connectivities are not entirely set
 
     // Si on a déjà une maille, il s'agit de la back cell.
-    Int32 iback_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
+    Int32 iback_cell_lid = (nb_cell==1) ? face->cellId(0) : NULL_ITEM_LOCAL_ID;
     ItemLocalId back_cell_lid(iback_cell_lid);
     ItemLocalId front_cell_lid(cell->localId());
     _setBackAndFrontCells(face,back_cell_lid,front_cell_lid);
@@ -271,7 +271,7 @@ private:
     if (nb_cell>=2)
       ARCANE_FATAL("face '{0}' already has two cells",face->uniqueId().asInt64());// FullItemPrinter cannot be used here, the connectivities are not entirely set
     // Si on a déjà une maille, il s'agit de la front cell.
-    Int32 ifront_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
+    Int32 ifront_cell_lid = (nb_cell==1) ? face->cellId(0) : NULL_ITEM_LOCAL_ID;
 
     ItemLocalId back_cell_lid(cell->localId());
     ItemLocalId front_cell_lid(ifront_cell_lid);
@@ -341,8 +341,8 @@ private:
 
     // OFF AMR
     if (nb_cell_after!=0){
-      Int32 cell0 = face->cellLocalId(0);
-      Int32 cell1 = face->cellLocalId(1);
+      Int32 cell0 = face->cellId(0);
+      Int32 cell1 = face->cellId(1);
       // On avait obligatoirement deux mailles connectées avant,
       // donc la back_cell est la maille 0, la front cell la maille 1
       if (cell0==cell_to_remove_lid){
