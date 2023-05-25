@@ -533,6 +533,9 @@ _testCompression()
     IDataInternal* d = var->data()->_commonInternal();
     d->compressAndClear(data_buffer);
     d->decompressAndFill(data_buffer);
+    // Les appels précédents font évoluer le conteneur sous-jacent
+    // Il faut donc mettre à jour les références.
+    var->syncReferences();
   }
 }
 
