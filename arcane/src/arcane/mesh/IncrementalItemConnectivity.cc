@@ -78,6 +78,15 @@ AbstractIncrementalItemConnectivity(IItemFamily* source_family,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Ref<IIncrementalItemConnectivity> AbstractIncrementalItemConnectivity::
+toReference()
+{
+  return Arccore::makeRef<IIncrementalItemConnectivity>(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -162,6 +171,12 @@ class IncrementalItemConnectivityContainer
     m_connectivity_index_array.resize(wanted_size);
   }
 
+  void reserveForItems(Int32 capacity)
+  {
+    m_connectivity_nb_item_array.reserve(capacity);
+    m_connectivity_index_array.reserve(capacity);
+  }
+
  public:
 
 };
@@ -211,6 +226,28 @@ IncrementalItemConnectivityBase::
 ~IncrementalItemConnectivityBase()
 {
   delete m_p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivityBase::
+reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity)
+{
+  if (n<=0)
+    return;
+
+  m_p->reserveForItems(n);
+  _notifyConnectivityIndexChanged();
+  _notifyConnectivityNbItemChanged();
+
+  if (pre_alloc_connectivity){
+    Int32 pre_alloc_size = preAllocatedSize();
+    if (pre_alloc_size>0){
+      m_p->m_connectivity_list_array.reserve(n * pre_alloc_size);
+      _notifyConnectivityListChanged();
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -511,12 +548,19 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
   if (m_pre_allocated_size!=0){
     // En cas de préallocation, on alloue par bloc de taille 'm_pre_allocated_size'.
     // Il faut donc réallouer si la taille est un multiple de m_pre_allocated_size
-    if (size<m_pre_allocated_size || (size%m_pre_allocated_size)!=0){
-      Integer index = m_connectivity_index[lid];
-      m_connectivity_list[index+size] = target_lid;
+    if (size==0){
+      Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID,m_pre_allocated_size);
+      m_connectivity_index[lid] = new_pos_in_list;
+      m_connectivity_list[new_pos_in_list] = target_lid;
     }
     else{
-      _increaseIndexList(lid,size,target_lid);
+      if (size<m_pre_allocated_size || (size%m_pre_allocated_size)!=0){
+        Integer index = m_connectivity_index[lid];
+        m_connectivity_list[index+size] = target_lid;
+      }
+      else{
+        _increaseIndexList(lid,size,target_lid);
+      }
     }
   }
   else{
@@ -643,13 +687,7 @@ notifySourceItemAdded(ItemLocalId item)
   _notifyConnectivityNbItemChanged();
 
   m_connectivity_nb_item[lid] = 0;
-  if (m_pre_allocated_size>0){
-    Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID,m_pre_allocated_size);
-    m_connectivity_index[lid] = new_pos_in_list;
-  }
-  else{
-    m_connectivity_index[lid] = 0;
-  }
+  m_connectivity_index[lid] = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -768,6 +806,10 @@ compactConnectivityList()
   for( Integer i=0; i<nb_item; ++i ){
     Int32 lid = i;
     Int32 nb = m_connectivity_nb_item[lid];
+    if (nb==0){
+      m_connectivity_index[lid] = 0;
+      continue;
+    }
     Int32 index = m_connectivity_index[lid];
     Int32ConstArrayView con_list(nb,old_connectivity_list.data()+index);
     Integer alloc_size = _computeAllocSize(nb);

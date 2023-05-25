@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.h                                                (C) 2000-2022 */
+/* ItemFamily.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Famille d'entités.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 #include "arcane/mesh/DynamicMeshKindInfos.h"
 
 #include "arcane/IItemConnectivity.h"
+#include "arcane/IIncrementalItemConnectivity.h"
 
 #include "arcane/ItemSharedInfo.h"
 
@@ -377,8 +378,10 @@ class ARCANE_MESH_EXPORT ItemFamily
   ItemConnectivitySet m_source_item_connectivities; //! connectivite ou ItemFamily == SourceFamily
   ItemConnectivitySet m_target_item_connectivities;   //! connectivite ou ItemFamily == TargetFamily
   IItemConnectivityMng* m_connectivity_mng;
-  UniqueArray<IIncrementalItemConnectivity*> m_source_incremental_item_connectivities;
-  UniqueArray<IIncrementalItemConnectivity*> m_target_incremental_item_connectivities;
+ private:
+  UniqueArray<Ref<IIncrementalItemConnectivity>> m_source_incremental_item_connectivities;
+  UniqueArray<Ref<IIncrementalItemConnectivity>> m_target_incremental_item_connectivities;
+ protected:
   IItemFamilyPolicyMng* m_policy_mng;
 
  protected:
@@ -397,6 +400,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   void _addConnectivitySelector(ItemConnectivitySelector* selector);
   void _buildConnectivitySelectors();
+  void _preAllocate(Int32 nb_item,bool pre_alloc_connectivity);
 
  private:
 

@@ -5,14 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConnectivityNewWithDependenciesInfo.h                       (C) 2000-2017 */
+/* ConnectivityNewWithDependenciesInfo.h                       (C) 2000-2023 */
 /*                                                                           */
-/* Info for new connectivity mode (with dependencies)                         */
+/* Info for new connectivity mode (with dependencies)                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CONNECTIVITYNEWWITHDEPENDENCIESINFO_H_ 
-#define ARCANE_CONNECTIVITYNEWWITHDEPENDENCIESINFO_H_ 
+#ifndef ARCANE_MESH_CONNECTIVITYNEWWITHDEPENDENCIESINFO_H
+#define ARCANE_MESH_CONNECTIVITYNEWWITHDEPENDENCIESINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arccore/base/ReferenceCounterImpl.h"
 
 #include "arcane/utils/ArcaneGlobal.h"
 
@@ -24,13 +26,11 @@
 #include "arcane/mesh/CompactIncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivitySelector.h"
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,8 +46,10 @@ ARCANE_MESH_BEGIN_NAMESPACE
 template <class SourceFamily, class TargetFamily, class LegacyType, class CustomType = IncrementalItemConnectivity>
 class ARCANE_MESH_EXPORT NewWithLegacyConnectivity
 : public ItemConnectivitySelectorT<LegacyType,CustomType>
+, public ReferenceCounterImpl
 , public IIncrementalItemConnectivity
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 public:
   friend class ConnectivityItemVector;
 
@@ -128,6 +130,11 @@ public:
   //! Nombre maximum d'entités connectées à une entité source.
   Int32 maxNbConnectedItem() const override { return Base::trueCustomConnectivity()->maxNbConnectedItem(); }
 
+  Ref<IIncrementalItemConnectivity> toReference() override
+  {
+    return Arccore::makeRef<IIncrementalItemConnectivity>(this);
+  }
+
   protected:
 
   //! Implémente l'initialisation de \a civ pour cette connectivitée.
@@ -150,8 +157,7 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

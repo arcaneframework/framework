@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyNetwork.h                                         (C) 2000-2022 */
+/* ItemFamilyNetwork.h                                         (C) 2000-2023 */
 /*                                                                           */
 /* ItemFamily relations through their connectivities.                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMFAMILYNETWORK_H_ 
-#define ARCANE_ITEMFAMILYNETWORK_H_ 
+#ifndef ARCANE_MESH_ITEMFAMILYNETWORK_H
+#define ARCANE_MESH_ITEMFAMILYNETWORK_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -119,7 +119,12 @@ public:
   using ConnectivityGraph = GraphBaseT<IItemFamily*, IIncrementalItemConnectivity*>;
   mutable DirectedGraphT<IItemFamily*, IIncrementalItemConnectivity*> m_relation_graph;
   mutable DirectedAcyclicGraphT<IItemFamily*, IIncrementalItemConnectivity*> m_dependency_graph;
+
+  // NOTE GG: Il faudrait utiliser List<Ref<IIncrementalItemConnectivity>>
+  // mais cela change l'interface de cette classe à cause de la méthode
+  // getConnectivities(). A voir avec Stéphane pour la modification
   List<IIncrementalItemConnectivity*> m_connectivity_list;
+
   std::map<IIncrementalItemConnectivity*,std::pair<bool,bool>> m_connectivity_status; // bool = is_stored
   std::set<IItemFamily*> m_families;
 

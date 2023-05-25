@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalItemConnectivity.h                               (C) 2000-2022 */
+/* IncrementalItemConnectivity.h                               (C) 2000-2023 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,8 @@
 #define ARCANE_INCREMENTALITEMCONNECTIVITY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arccore/base/ReferenceCounterImpl.h"
 
 #include "arcane/utils/TraceAccessor.h"
 
@@ -45,9 +47,13 @@ class IndexedItemConnectivityAccessor;
  */
 class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
 : public TraceAccessor
+, public ReferenceCounterImpl
 , public IIncrementalItemConnectivity
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
+
   AbstractIncrementalItemConnectivity(IItemFamily* source_family,
                                       IItemFamily* target_family,
                                       const String& connectivity_name);
@@ -61,6 +67,8 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
   ConstArrayView<IItemFamily*> families() const override { return m_families.constView();}
   IItemFamily* sourceFamily() const override { return m_source_family;}
   IItemFamily* targetFamily() const override { return m_target_family;}
+
+  Ref<IIncrementalItemConnectivity> toReference() override;
 
  protected:
 
@@ -97,6 +105,14 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 
  public:
 
+  // On interdit la copie à cause de \a m_p
+  IncrementalItemConnectivityBase(const IncrementalItemConnectivityBase&) = delete;
+  IncrementalItemConnectivityBase(IncrementalItemConnectivityBase&&) = delete;
+  IncrementalItemConnectivityBase& operator=(const IncrementalItemConnectivityBase&) = delete;
+  IncrementalItemConnectivityBase& operator=(IncrementalItemConnectivityBase&&) = delete;
+
+ public:
+
   void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) override;
   void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids) override;
   Integer nbConnectedItem(ItemLocalId lid) const final
@@ -113,6 +129,8 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
   ItemConnectivityContainerView connectivityContainerView() const;
 
   Int32 maxNbConnectedItem() const override;
+
+  void reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity) override;
 
  public:
 

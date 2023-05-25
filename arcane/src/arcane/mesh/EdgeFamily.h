@@ -79,20 +79,20 @@ class ARCANE_MESH_EXPORT EdgeFamily
 
  protected:
 
-  ItemTypeInfo* m_edge_type;
-  bool m_has_edge;
-  Integer m_node_prealloc;
-  Integer m_face_prealloc;
-  Integer m_cell_prealloc;
-  Integer m_mesh_connectivity;
-  NodeConnectivity* m_node_connectivity;
-  FaceConnectivity* m_face_connectivity;
-  CellConnectivity* m_cell_connectivity;
+  ItemTypeInfo* m_edge_type = nullptr;
+  bool m_has_edge = false;
+  Integer m_node_prealloc = 0;
+  Integer m_face_prealloc = 0;
+  Integer m_cell_prealloc = 0;
+  Integer m_mesh_connectivity = 0;
+  NodeConnectivity* m_node_connectivity = nullptr;
+  FaceConnectivity* m_face_connectivity = nullptr;
+  CellConnectivity* m_cell_connectivity = nullptr;
 
  private:
 
   //! Famille des noeuds associée à cette famille
-  NodeFamily* m_node_family;
+  NodeFamily* m_node_family = nullptr;
 
   inline void _removeEdge(Edge edge);
   inline void _createOne(ItemInternal* item,Int64 uid);

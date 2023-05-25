@@ -80,17 +80,6 @@ class FaceFamily::TopologyModifier
 FaceFamily::
 FaceFamily(IMesh* mesh,const String& name)
 : ItemFamily(mesh,IK_Face,name)
-, m_node_prealloc(0)
-, m_edge_prealloc(0)
-, m_cell_prealloc(0)
-, m_mesh_connectivity(0)
-, m_node_family(nullptr)
-, m_edge_family(nullptr)
-, m_check_orientation(true)
-, m_node_connectivity(nullptr)
-, m_edge_connectivity(nullptr)
-, m_face_connectivity(nullptr)
-, m_cell_connectivity(nullptr)
 {
   _setTopologyModifier(new TopologyModifier(this));
 }
@@ -257,7 +246,17 @@ findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc)
 void FaceFamily::
 preAllocate(Integer nb_item)
 {
-  ARCANE_UNUSED(nb_item);
+  if (!m_has_face)
+    return;
+  // On ne préalloue pas par défaut car on ne souhaite pas pré-allouer
+  // pour la connectivité face->face car c'est dernière n'est utilisée que
+  // s'il y a des TiedInterface et cela n'est pas fréquent.
+  // Du coup on pré-alloue explicitement les connectivités qu'on souhaite.
+  this->_preAllocate(nb_item,false);
+  m_node_connectivity->trueCustomConnectivity()->reserveMemoryForNbSourceItems(nb_item,true);
+  if (Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_HasEdge))
+    m_edge_connectivity->trueCustomConnectivity()->reserveMemoryForNbSourceItems(nb_item,true);
+  m_cell_connectivity->trueCustomConnectivity()->reserveMemoryForNbSourceItems(nb_item,true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -979,17 +978,20 @@ void FaceFamily::
 setConnectivity(const Integer c)
 {
   m_mesh_connectivity = c;
-  m_node_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Face,IK_Node);
-  if (Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_HasEdge))
-    m_edge_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Face,IK_Edge);
-  m_face_connectivity->setPreAllocatedSize(4);
-  m_cell_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Face,IK_Cell);
-  m_node_connectivity->setPreAllocatedSize(m_node_prealloc);
-  m_cell_connectivity->setPreAllocatedSize(m_cell_prealloc);
-  debug() << "Family " << name() << " prealloc "
-          << m_node_prealloc << " by node, "
-          << m_edge_prealloc << " by edge, "
-          << m_cell_prealloc << " by cell.";
+  m_has_face = Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_HasFace);
+  if (m_has_face){
+    m_node_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Face,IK_Node);
+    if (Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_HasEdge))
+      m_edge_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Face,IK_Edge);
+    m_face_connectivity->setPreAllocatedSize(4);
+    m_cell_prealloc = Connectivity::getPrealloc(m_mesh_connectivity,IK_Face,IK_Cell);
+    m_node_connectivity->setPreAllocatedSize(m_node_prealloc);
+    m_cell_connectivity->setPreAllocatedSize(m_cell_prealloc);
+    debug() << "Family " << name() << " prealloc "
+            << m_node_prealloc << " by node, "
+            << m_edge_prealloc << " by edge, "
+            << m_cell_prealloc << " by cell.";
+  }
 }
 
 /*---------------------------------------------------------------------------*/
