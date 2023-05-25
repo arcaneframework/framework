@@ -254,8 +254,8 @@ ItemFamily::
   for( ItemConnectivitySelector* ics : m_connectivity_selector_list )
     delete ics;
 
-  for( IIncrementalItemConnectivity* c : m_source_incremental_item_connectivities )
-    delete c;
+  //for( IIncrementalItemConnectivity* c : m_source_incremental_item_connectivities )
+  //delete c;
 
   delete m_common_item_shared_info;
 }
@@ -1196,7 +1196,7 @@ readFromDump()
   m_infos.allItems().clear();
 
   // Notifie les connectivités sources qu'on vient de faire une relecture.
-  for( IIncrementalItemConnectivity* c : m_source_incremental_item_connectivities )
+  for( auto& c : m_source_incremental_item_connectivities )
     c->notifyReadFromDump();
 
   // Recréation des groupes si nécessaire
@@ -1359,10 +1359,10 @@ beginCompactItems(ItemFamilyCompactInfos& compact_infos)
   Int32ConstArrayView new_to_old_ids = compact_infos.newToOldLocalIds();
   Int32ConstArrayView old_to_new_ids = compact_infos.oldToNewLocalIds();
 
-  for( IIncrementalItemConnectivity* c : m_source_incremental_item_connectivities )
+  for( auto& c : m_source_incremental_item_connectivities )
     c->notifySourceFamilyLocalIdChanged(new_to_old_ids);
 
-  for( IIncrementalItemConnectivity* c : m_target_incremental_item_connectivities )
+  for( auto& c : m_target_incremental_item_connectivities )
     c->notifyTargetFamilyLocalIdChanged(old_to_new_ids);
 
   for (IItemConnectivity* c : m_source_item_connectivities )
@@ -1673,7 +1673,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;
   // Notifie les connectivitées incrémentales qu'on a ajouté un élément à la source
-  for( IIncrementalItemConnectivity* c : m_source_incremental_item_connectivities )
+  for( auto& c : m_source_incremental_item_connectivities )
     c->notifySourceItemAdded(ItemLocalId(local_id));
 }
 
@@ -2281,7 +2281,7 @@ setConnectivityMng(IItemConnectivityMng* connectivity_mng)
 void ItemFamily::
 addSourceConnectivity(IIncrementalItemConnectivity* c)
 {
-  m_source_incremental_item_connectivities.add(c);
+  m_source_incremental_item_connectivities.add(c->toReference());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2290,7 +2290,7 @@ addSourceConnectivity(IIncrementalItemConnectivity* c)
 void ItemFamily::
 addTargetConnectivity(IIncrementalItemConnectivity* c)
 {
-  m_target_incremental_item_connectivities.add(c);
+  m_target_incremental_item_connectivities.add(c->toReference());
 }
 
 /*---------------------------------------------------------------------------*/
