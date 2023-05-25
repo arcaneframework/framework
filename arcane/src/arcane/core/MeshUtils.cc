@@ -20,33 +20,34 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/JSONWriter.h"
 
-#include "arcane/MeshUtils.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/StdNum.h"
-#include "arcane/MeshVariableInfo.h"
-#include "arcane/Variable.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/MathUtils.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/Item.h"
-#include "arcane/ItemCompare.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/ITiedInterface.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/MeshVisitor.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/UnstructuredMeshConnectivity.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/StdNum.h"
+#include "arcane/core/MeshVariableInfo.h"
+#include "arcane/core/Variable.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/MathUtils.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemCompare.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/ITiedInterface.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/MeshVisitor.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
+#include "arcane/core/datatype/DataAllocationInfo.h"
 
 #include <algorithm>
 #include <map>
@@ -1717,6 +1718,28 @@ computeConnectivityPatternOccurence(IMesh* mesh)
   _computePatternOccurence(mesh->allFaces(), "FaceNodes", cty.faceNode());
   _computePatternOccurence(mesh->allCells(), "CellNodes", cty.cellNode());
   _computePatternOccurence(mesh->allCells(), "CellFaces", cty.cellFace());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUtils::
+markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh)
+{
+  if (!mesh)
+    return;
+  IVariableMng* vm = mesh->variableMng();
+  VariableCollection used_variables = vm->usedVariables();
+  const String tag_name = "ArcaneConnectivity";
+  DataAllocationInfo alloc_info(eMemoryLocationHint::HostAndDeviceMostlyRead);
+  // Les variables associées à la connectivité ont le tag 'ArcaneConnectivity'.
+  for( VariableCollection::Enumerator iv(used_variables); ++iv; ){
+    IVariable* v = *iv;
+    if (!v->hasTag(tag_name))
+      continue;
+    if (v->meshHandle().meshOrNull()==mesh)
+      v->setAllocationInfo(alloc_info);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

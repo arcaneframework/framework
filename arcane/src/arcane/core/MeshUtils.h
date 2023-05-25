@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.h                                                 (C) 2000-2022 */
+/* MeshUtils.h                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -228,6 +228,29 @@ computeConnectivityPatternOccurence(IMesh* mesh);
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::mesh_utils
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::MeshUtils
+{
+// TODO: Mettre dans ce namespace les méthodes qui sont dans 'mesh_utils'.
+
+/*!
+ * \brief Indique que les connectivités du maillages ne seront
+ * pas régulièrement modifiées.
+ *
+ * Cette fonction permet d'indiquer que les connectivitées associées aux
+ * entités du maillage (Node, Edge, Face et Cell) sont la plupart du temps
+ * en lecture. A noter que cela ne concerne pas les particules.
+ *
+ * En cas d'utilisation sur accélérateur, cela permet de dupliquer les
+ * informations entre l'accélérateur et l'hôte pour éviter des aller-retour
+ * multiples si les connectivités sont utilisées sur les deux à la fois.
+ */
+extern "C++" ARCANE_CORE_EXPORT
+void markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
