@@ -62,6 +62,9 @@ class ARCANE_CORE_EXPORT IDataInternal
    * \retval true si une compression a eu lieu.
    * \retval false si l'instance ne supporte pas la compression. Dans ce cas
    * elle reste utilisable.
+   *
+   * \warning L'appel à cette méthode modifie le conteneur sous-jacent. Si
+   * cette donnée est associée à une variable il faut appeler IVariable::syncReferences().
    */
   virtual bool compressAndClear(DataCompressionBuffer& buf)
   {
@@ -78,6 +81,9 @@ class ARCANE_CORE_EXPORT IDataInternal
    * \retval true si une décompression a eu lieu.
    * \retval false si aucune décompression n'a eu lieu car l'instance ne le
    * supporte pas.
+   *
+   * \warning L'appel à cette méthode modifie le conteneur sous-jacent. Si
+   * cette donnée est associée à une variable il faut appeler IVariable::syncReferences().
    */
   virtual bool decompressAndFill(DataCompressionBuffer& buf)
   {
