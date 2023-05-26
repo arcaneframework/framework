@@ -24,7 +24,7 @@ namespace ArcaneTest
 
 template <class T>
 void SimpleTableOutputUnitTest::
-ASSERT_EQUAL_ARRAY(UniqueArray<T> expected, UniqueArray<T> actual)
+_assertEqualArray(const UniqueArray<T>& expected, const UniqueArray<T>& actual)
 {
   ASSERT_EQUAL(expected.size(), actual.size());
   for (Integer i = 0; i < actual.size(); i++) {
@@ -103,7 +103,7 @@ testAddRow3()
   ptrSTO->addColumn("Ma colonne 3");
   ptrSTO->addRow("Ma ligne", test);
   ptrSTO->addColumn("Ma colonne 4");
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result, ptrSTO->row("Ma ligne"));
   ASSERT_EQUAL(3, ptrSTO->rowSize("Ma ligne"));
 }
 
@@ -153,7 +153,7 @@ testAddColumn3()
   ptrSTO->addRow("Ma ligne 3");
   ptrSTO->addColumn("Ma colonne", test);
   ptrSTO->addRow("Ma ligne 4");
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result, ptrSTO->column("Ma colonne"));
   ASSERT_EQUAL(3, ptrSTO->columnSize("Ma colonne"));
 }
 void SimpleTableOutputUnitTest::
@@ -190,7 +190,7 @@ testAddColumn4()
   }
 
   for(Integer i = 1; i < 11; ++i){
-    ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne " + String::fromNumber(i)));
+    _assertEqualArray(result, ptrSTO->column("Ma colonne " + String::fromNumber(i)));
   }
 }
 
@@ -223,7 +223,7 @@ testAddElemRow1()
   ASSERT_TRUE(ptrSTO->addElementInRow(position, 3));
   ASSERT_FALSE(ptrSTO->addElementInRow(position, 4));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result, ptrSTO->row("Ma ligne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -243,7 +243,7 @@ testAddElemRow2()
   ASSERT_TRUE(ptrSTO->addElementInRow("Ma ligne", 3));
   ASSERT_FALSE(ptrSTO->addElementInRow("Ma ligne", 4));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result, ptrSTO->row("Ma ligne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -268,7 +268,7 @@ testAddElemSameRow1()
 
   ASSERT_FALSE(ptrSTO->addElementInSameRow(5));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result, ptrSTO->row("Ma ligne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -283,18 +283,18 @@ testAddElemsRow1()
   RealUniqueArray result2 = { 1, 2, 3, 1, 2 };
   RealUniqueArray result3 = { 1, 2, 3, 1, 2, 1 };
   ASSERT_TRUE(ptrSTO->addElementsInRow(position, test));
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result1, ptrSTO->row("Ma ligne"));
 
   ptrSTO->addColumn("Ma colonne 4");
   ptrSTO->addColumn("Ma colonne 5");
 
   ASSERT_FALSE(ptrSTO->addElementsInRow(position, test));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result2, ptrSTO->row("Ma ligne"));
 
   ptrSTO->addColumn("Ma colonne 6");
 
   ASSERT_FALSE(ptrSTO->addElementsInRow(position, test));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result3, ptrSTO->row("Ma ligne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -309,20 +309,20 @@ testAddElemsRow2()
   RealUniqueArray result3 = { 1, 2, 3, 1, 2, 1 };
 
   ASSERT_TRUE(ptrSTO->addElementsInRow("Ma ligne", test));
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result1, ptrSTO->row("Ma ligne"));
 
   ptrSTO->addColumn("Ma colonne 4");
   ptrSTO->addColumn("Ma colonne 5");
 
   ASSERT_FALSE(ptrSTO->addElementsInRow("Ma ligne", test));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result2, ptrSTO->row("Ma ligne"));
 
   ptrSTO->addColumn("Ma colonne 6");
 
   Integer position = ptrSTO->rowPosition("Ma ligne");
 
   ASSERT_FALSE(ptrSTO->addElementsInRow(position, test));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result3, ptrSTO->row("Ma ligne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -337,20 +337,20 @@ testAddElemsSameRow1()
   RealUniqueArray result3 = { 1, 2, 3, 1, 2, 1 };
 
   ASSERT_TRUE(ptrSTO->addElementsInRow("Ma ligne", test));
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result1, ptrSTO->row("Ma ligne"));
 
   ptrSTO->addColumn("Ma colonne 4");
   ptrSTO->addColumn("Ma colonne 5");
 
   ASSERT_FALSE(ptrSTO->addElementsInSameRow(test));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result2, ptrSTO->row("Ma ligne"));
 
   ptrSTO->addColumn("Ma colonne 6");
 
   Integer position = ptrSTO->rowPosition("Ma ligne");
 
   ASSERT_FALSE(ptrSTO->addElementsInRow(position, test));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->row("Ma ligne"));
+  _assertEqualArray(result3, ptrSTO->row("Ma ligne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -368,7 +368,7 @@ testAddElemColumn1()
   ASSERT_TRUE(ptrSTO->addElementInColumn(position, 3));
   ASSERT_FALSE(ptrSTO->addElementInColumn(position, 4));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result, ptrSTO->column("Ma colonne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -388,7 +388,7 @@ testAddElemColumn2()
   ASSERT_TRUE(ptrSTO->addElementInColumn("Ma colonne", 3));
   ASSERT_FALSE(ptrSTO->addElementInColumn("Ma colonne", 4));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result, ptrSTO->column("Ma colonne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -413,7 +413,7 @@ testAddElemSameColumn1()
 
   ASSERT_FALSE(ptrSTO->addElementInSameColumn(5));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result, ptrSTO->column("Ma colonne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -428,18 +428,18 @@ testAddElemsColumn1()
   RealUniqueArray result2 = { 1, 2, 3, 1, 2 };
   RealUniqueArray result3 = { 1, 2, 3, 1, 2, 1 };
   ASSERT_TRUE(ptrSTO->addElementsInColumn(position, test));
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result1, ptrSTO->column("Ma colonne"));
 
   ptrSTO->addRow("Ma ligne 4");
   ptrSTO->addRow("Ma ligne 5");
 
   ASSERT_FALSE(ptrSTO->addElementsInColumn(position, test));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result2, ptrSTO->column("Ma colonne"));
 
   ptrSTO->addRow("Ma ligne 6");
 
   ASSERT_FALSE(ptrSTO->addElementsInColumn(position, test));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result3, ptrSTO->column("Ma colonne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -454,20 +454,20 @@ testAddElemsColumn2()
   RealUniqueArray result3 = { 1, 2, 3, 1, 2, 1 };
 
   ASSERT_TRUE(ptrSTO->addElementsInColumn("Ma colonne", test));
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result1, ptrSTO->column("Ma colonne"));
 
   ptrSTO->addRow("Ma ligne 4");
   ptrSTO->addRow("Ma ligne 5");
 
   ASSERT_FALSE(ptrSTO->addElementsInColumn("Ma colonne", test));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result2, ptrSTO->column("Ma colonne"));
 
   ptrSTO->addRow("Ma ligne 6");
 
   Integer position = ptrSTO->columnPosition("Ma colonne");
 
   ASSERT_FALSE(ptrSTO->addElementsInColumn(position, test));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result3, ptrSTO->column("Ma colonne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -482,20 +482,20 @@ testAddElemsSameColumn1()
   RealUniqueArray result3 = { 1, 2, 3, 1, 2, 1 };
 
   ASSERT_TRUE(ptrSTO->addElementsInColumn("Ma colonne", test));
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result1, ptrSTO->column("Ma colonne"));
 
   ptrSTO->addRow("Ma ligne 4");
   ptrSTO->addRow("Ma ligne 5");
 
   ASSERT_FALSE(ptrSTO->addElementsInSameColumn(test));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result2, ptrSTO->column("Ma colonne"));
 
   ptrSTO->addRow("Ma ligne 6");
 
   Integer position = ptrSTO->columnPosition("Ma colonne");
 
   ASSERT_FALSE(ptrSTO->addElementsInColumn(position, test));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->column("Ma colonne"));
+  _assertEqualArray(result3, ptrSTO->column("Ma colonne"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -525,11 +525,11 @@ testAddElemSame1()
   ASSERT_TRUE(ptrSTO->addElementInSameRow(9));
   ASSERT_FALSE(ptrSTO->addElementInSameColumn(10));
 
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->row("Ma ligne 1"));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->row("Ma ligne 2"));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->row("Ma ligne 3"));
-  ASSERT_EQUAL_ARRAY(result4, ptrSTO->row("Ma ligne 4"));
-  ASSERT_EQUAL_ARRAY(result5, ptrSTO->row("Ma ligne 5"));
+  _assertEqualArray(result1, ptrSTO->row("Ma ligne 1"));
+  _assertEqualArray(result2, ptrSTO->row("Ma ligne 2"));
+  _assertEqualArray(result3, ptrSTO->row("Ma ligne 3"));
+  _assertEqualArray(result4, ptrSTO->row("Ma ligne 4"));
+  _assertEqualArray(result5, ptrSTO->row("Ma ligne 5"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -550,9 +550,9 @@ testEditElem1()
   RealUniqueArray result2 = { 4, 5, 6 };
   RealUniqueArray result3 = { 7, 11, 9 };
 
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->row("Ma ligne 1"));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->row("Ma ligne 2"));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->row("Ma ligne 3"));
+  _assertEqualArray(result1, ptrSTO->row("Ma ligne 1"));
+  _assertEqualArray(result2, ptrSTO->row("Ma ligne 2"));
+  _assertEqualArray(result3, ptrSTO->row("Ma ligne 3"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -576,9 +576,9 @@ testEditElem2()
   RealUniqueArray result2 = { 4, 5, 6 };
   RealUniqueArray result3 = { 7, 11, 9 };
 
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->row("Ma ligne 1"));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->row("Ma ligne 2"));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->row("Ma ligne 3"));
+  _assertEqualArray(result1, ptrSTO->row("Ma ligne 1"));
+  _assertEqualArray(result2, ptrSTO->row("Ma ligne 2"));
+  _assertEqualArray(result3, ptrSTO->row("Ma ligne 3"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -766,9 +766,9 @@ testAddRowSameColumn1()
   ASSERT_TRUE(ptrSTO->addElementInSameColumn(6));
   ASSERT_TRUE(ptrSTO->addElementInSameColumn(9));
 
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->row("Ma ligne 1"));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->row("Ma ligne 2"));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->row("Ma ligne 3"));
+  _assertEqualArray(result1, ptrSTO->row("Ma ligne 1"));
+  _assertEqualArray(result2, ptrSTO->row("Ma ligne 2"));
+  _assertEqualArray(result3, ptrSTO->row("Ma ligne 3"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -800,7 +800,7 @@ testAddRowSameColumn2()
   ASSERT_TRUE(ptrSTO->addElementInSameColumn(8));
   ASSERT_TRUE(ptrSTO->addElementInSameColumn(9));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne 1"));
+  _assertEqualArray(result, ptrSTO->column("Ma colonne 1"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -832,7 +832,7 @@ testAddRowSameColumn3()
   ASSERT_FALSE(ptrSTO->addElementInSameColumn(5));
   ASSERT_FALSE(ptrSTO->addElementInSameColumn(6));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne 1"));
+  _assertEqualArray(result, ptrSTO->column("Ma colonne 1"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -862,9 +862,9 @@ testAddColumnSameRow1()
   ASSERT_TRUE(ptrSTO->addElementInSameRow(8));
   ASSERT_TRUE(ptrSTO->addElementInSameRow(9));
 
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->row("Ma ligne 1"));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->row("Ma ligne 2"));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->row("Ma ligne 3"));
+  _assertEqualArray(result1, ptrSTO->row("Ma ligne 1"));
+  _assertEqualArray(result2, ptrSTO->row("Ma ligne 2"));
+  _assertEqualArray(result3, ptrSTO->row("Ma ligne 3"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -896,7 +896,7 @@ testAddColumnSameRow2()
   ASSERT_TRUE(ptrSTO->addElementInSameRow(8));
   ASSERT_TRUE(ptrSTO->addElementInSameRow(9));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->row("Ma ligne 1"));
+  _assertEqualArray(result, ptrSTO->row("Ma ligne 1"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -928,7 +928,7 @@ testAddColumnSameRow3()
   ASSERT_FALSE(ptrSTO->addElementInSameRow(5));
   ASSERT_FALSE(ptrSTO->addElementInSameRow(6));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->row("Ma ligne 1"));
+  _assertEqualArray(result, ptrSTO->row("Ma ligne 1"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -966,9 +966,9 @@ testEditElemUDLR1()
   ASSERT_FALSE(ptrSTO->editElementDown(99));
   ASSERT_EQUAL(6., ptrSTO->elementUp());
 
-  ASSERT_EQUAL_ARRAY(result1, ptrSTO->row("Ma ligne 1"));
-  ASSERT_EQUAL_ARRAY(result2, ptrSTO->row("Ma ligne 2"));
-  ASSERT_EQUAL_ARRAY(result3, ptrSTO->row("Ma ligne 3"));
+  _assertEqualArray(result1, ptrSTO->row("Ma ligne 1"));
+  _assertEqualArray(result2, ptrSTO->row("Ma ligne 2"));
+  _assertEqualArray(result3, ptrSTO->row("Ma ligne 3"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -1001,7 +1001,7 @@ testEditElemDown1()
   ASSERT_TRUE(ptrSTO->editElementDown(5));
   ASSERT_TRUE(ptrSTO->editElementDown(6));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne 1"));
+  _assertEqualArray(result, ptrSTO->column("Ma colonne 1"));
 }
 
 void SimpleTableOutputUnitTest::
@@ -1034,7 +1034,7 @@ testEditElemRight1()
   ASSERT_TRUE(ptrSTO->editElementRight(5));
   ASSERT_TRUE(ptrSTO->editElementRight(6));
 
-  ASSERT_EQUAL_ARRAY(result, ptrSTO->row("Ma ligne 1"));
+  _assertEqualArray(result, ptrSTO->row("Ma ligne 1"));
 }
 
 void SimpleTableOutputUnitTest::

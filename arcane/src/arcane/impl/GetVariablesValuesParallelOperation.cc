@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -145,7 +146,10 @@ getVariableValues(VariableItemReal& variable,
       sm = new SerializeMessage(rank_send,rank_recv,ISerializeMessage::MT_Send);
       ISerializer* s = sm->serializer();
       s->setMode(ISerializer::ModeReserve);
-      Span<const Int64> z_unique_ids = sub_domain_list.find(rank_recv)->second.m_unique_ids;
+      auto xiter = sub_domain_list.find(rank_recv);
+      if (xiter==sub_domain_list.end())
+        ARCANE_FATAL("Can not find rank '{0}'",rank_recv);
+      Span<const Int64> z_unique_ids = xiter->second.m_unique_ids;
       Int64 nb = z_unique_ids.size();
       s->reserve(DT_Int64,1); // Pour la taille
       s->reserveSpan(DT_Int64,nb); // Pour le tableau
@@ -443,7 +447,7 @@ _getVariableValuesSequential(ItemVariableScalarRefT<Type>& variable,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

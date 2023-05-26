@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleTableOutputUnitTest.hh                                (C) 2000-2023 */
+/* SimpleTableOutputUnitTest.h                                 (C) 2000-2023 */
 /*                                                                           */
 /* Service de test pour les services implémentant ISimpleTableOutput.        */
 /*---------------------------------------------------------------------------*/
@@ -37,6 +37,7 @@ class SimpleTableOutputUnitTest
 : public ArcaneSimpleTableOutputUnitTestObject
 {
  public:
+
   SimpleTableOutputUnitTest(const ServiceBuildInfo& sbi)
   : ArcaneSimpleTableOutputUnitTestObject(sbi)
   , ptrSTO(nullptr)
@@ -116,10 +117,12 @@ class SimpleTableOutputUnitTest
   void tearDownForClass() override;
 
  private:
+
   template <class T>
-  void ASSERT_EQUAL_ARRAY(UniqueArray<T> expected, UniqueArray<T> actual);
+  void _assertEqualArray(const UniqueArray<T>& expected, const UniqueArray<T>& actual);
 
  private:
+
   ISimpleTableOutput* ptrSTO;
 };
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephIndexing.cc                                              (C) 2012~13 */
+/* AlephIndexing.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -128,8 +129,12 @@ Int32 AlephIndexing::get(const VariableRef& variable,
                          const Item& itm)
 {
   IVariable* var = variable.variable();
-  if (m_kernel->isInitialized())
-    return (*m_var_map_idx.find(var)->second)[itm] - m_kernel->topology()->part()[m_kernel->rank()];
+  if (m_kernel->isInitialized()){
+    auto x = m_var_map_idx.find(var);
+    if (x==m_var_map_idx.end())
+      ARCANE_FATAL("Can not find variable {0}",var->name());
+    return (*x->second)[itm] - m_kernel->topology()->part()[m_kernel->rank()];
+  }
   // On teste de bien travailler sur une variables scalaire
   if (var->dimension() != 1)
     throw ArgumentException(A_FUNCINFO, "cannot get non-scalar variables!");
@@ -250,7 +255,7 @@ AlephIndexing::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

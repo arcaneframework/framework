@@ -46,7 +46,7 @@
 namespace Arcane::impl
 {
 class ItemBase;
-};
+}
 
 namespace Arcane
 {
