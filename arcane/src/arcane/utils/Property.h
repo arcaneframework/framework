@@ -279,12 +279,12 @@ class PropertySetting
   {
     return SettingsTraits::typeName();
   }
-  ThatClass& addSetter(SetterType setter)
+  ThatClass& addSetter(const SetterType& setter)
   {
     m_setter = setter;
     return (*this);
   }
-  ThatClass& addGetter(GetterType getter)
+  ThatClass& addGetter(const GetterType& getter)
   {
     m_getter = getter;
     return (*this);
