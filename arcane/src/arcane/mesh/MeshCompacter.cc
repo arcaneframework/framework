@@ -122,6 +122,8 @@ beginCompact()
     for( IItemFamily* family : m_item_families ){
       IItemFamilyCompactPolicy* c = family->policyMng()->compactPolicy();
       auto iter = m_family_compact_infos_map.find(family);
+      if (iter==m_family_compact_infos_map.end())
+        ARCANE_FATAL("Can not find family '{0}'",family->name());
       c->beginCompact(*iter->second);
     }
   }
