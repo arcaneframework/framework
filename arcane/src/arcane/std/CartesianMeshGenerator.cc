@@ -21,29 +21,31 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/IMeshReader.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/XmlNodeIterator.h"
-#include "arcane/Service.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/Item.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/Properties.h"
-#include "arcane/MeshPartInfo.h"
-#include "arcane/IMeshBuilder.h"
-#include "arcane/IMeshUniqueIdMng.h"
-#include "arcane/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/XmlNodeIterator.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/IMeshBuilder.h"
+#include "arcane/core/IMeshUniqueIdMng.h"
+#include "arcane/core/IMeshInitialAllocator.h"
+#include "arcane/core/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/CartesianMeshAllocateBuildInfo.h"
 
 #include "arcane/std/Cartesian2DMeshGenerator_axl.h"
 #include "arcane/std/Cartesian3DMeshGenerator_axl.h"
@@ -601,6 +603,9 @@ generateMesh()
 
   m_generation_info = ICartesianMeshGenerationInfo::getReference(mesh,true);
 
+  bool use_specific_allocator = (m_mesh_dimension == 3);
+  CartesianMeshAllocateBuildInfo cartesian_mesh_build_info(mesh);
+
   info() << " decomposing the subdomains:" << m_build_info.m_nsdx << "x"
          << m_build_info.m_nsdy << "x" << m_build_info.m_nsdz;
   info() << "sub domain offset @ " << sdXOffset() << "x" << sdYOffset() << "x" << sdZOffset();
@@ -898,7 +903,14 @@ generateMesh()
     }
   }
 
-  mesh->setDimension(m_mesh_dimension);
+  if (use_specific_allocator){
+    info() << "Set Specific info for cartesian mesh";
+    cartesian_mesh_build_info.setInfos({all_nb_cell_x,all_nb_cell_y,all_nb_cell_z},
+                                       {own_nb_cell_x,own_nb_cell_y,own_nb_cell_z},
+                                       cell_unique_id_offset, node_unique_id_offset );
+  }
+  else
+    mesh->setDimension(m_mesh_dimension);
 
   info() << "FaceNumberingVersion = " << m_build_info.m_face_numbering_version;
   if (m_build_info.m_face_numbering_version>=0)
@@ -908,7 +920,12 @@ generateMesh()
   if (m_build_info.m_edge_numbering_version>=0)
     mesh->meshUniqueIdMng()->setEdgeBuilderVersion(m_build_info.m_edge_numbering_version);
 
-  mesh->allocateCells(own_nb_cell_xyz, cells_infos, true);
+  if (use_specific_allocator){
+    cartesian_mesh_build_info.allocateMesh();
+  }
+  else{
+    mesh->allocateCells(own_nb_cell_xyz, cells_infos, true);
+  }
 
   VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
   {
