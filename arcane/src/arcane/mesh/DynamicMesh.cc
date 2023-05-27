@@ -56,6 +56,7 @@
 #include "arcane/ICaseMng.h"
 
 #include "arcane/core/internal/UnstructuredMeshAllocateBuildInfoInternal.h"
+#include "arcane/core/internal/CartesianMeshAllocateBuildInfoInternal.h"
 
 #include "arcane/mesh/ExtraGhostCellsBuilder.h"
 #include "arcane/mesh/ExtraGhostParticlesBuilder.h"
@@ -856,6 +857,17 @@ _addCells(ISerializer* buffer,Int32Array* cells_local_id)
 
 void DynamicMesh::
 allocate(UnstructuredMeshAllocateBuildInfo& build_info)
+{
+  auto* x = build_info._internal();
+  setDimension(x->meshDimension());
+  allocateCells(x->nbCell(),x->cellsInfos(),true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+allocate(CartesianMeshAllocateBuildInfo& build_info)
 {
   auto* x = build_info._internal();
   setDimension(x->meshDimension());
