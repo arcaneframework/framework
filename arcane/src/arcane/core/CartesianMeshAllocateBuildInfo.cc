@@ -118,12 +118,6 @@ setInfos(std::array<Int64, 3> global_nb_cells,
   auto [own_nb_cell_x, own_nb_cell_y, own_nb_cell_z] = own_nb_cells;
   auto [all_nb_cell_x, all_nb_cell_y, all_nb_cell_z] = global_nb_cells;
 
-  Int32 own_nb_node_x = own_nb_cell_x + 1;
-  Int32 own_nb_node_y = own_nb_cell_y + 1;
-  Int32 own_nb_node_z = own_nb_cell_z + 1;
-  Int32 own_nb_node_xy = CheckedConvert::multiply(own_nb_node_x, own_nb_node_y);
-  Int32 own_nb_node_xyz = CheckedConvert::multiply(own_nb_node_xy, own_nb_node_z);
-
   Int32 own_nb_cell_xy = CheckedConvert::multiply(own_nb_cell_x, own_nb_cell_y);
   Int32 own_nb_cell_xyz = CheckedConvert::multiply(own_nb_cell_xy, own_nb_cell_z);
 
@@ -137,23 +131,34 @@ setInfos(std::array<Int64, 3> global_nb_cells,
 
   cells_infos.resize(own_nb_cell_xyz * (1 + 1 + 8));
 
-  // TODO: ne pas utiliser ce tableau et calculer directement en fonction
-  // de la position (i,j,k) de la maille.
-  UniqueArray<Int64> nodes_unique_id(own_nb_node_xyz);
+  //! Classe pour calculer le uniqueId() d'un noeud en fonction de sa position dans la grille.
+  class NodeUniqueIdComputer
   {
-    Integer node_local_id = 0;
-    for (Int64 z = 0; z < own_nb_node_z; ++z) {
-      for (Int64 y = 0; y < own_nb_node_y; ++y) {
-        for (Int64 x = 0; x < own_nb_node_x; ++x) {
-          Int64 node_unique_id = node_unique_id_offset + x + y * all_nb_node_x + z * all_nb_node_xy;
-          nodes_unique_id[node_local_id] = node_unique_id;
-          ++node_local_id;
-        }
-      }
+   public:
+
+    NodeUniqueIdComputer(Int64 base_offset, Int64 all_nb_node_x, Int64 all_nb_node_xy)
+    : m_base_offset(base_offset)
+    , m_all_nb_node_x(all_nb_node_x)
+    , m_all_nb_node_xy(all_nb_node_xy)
+    {}
+
+   public:
+
+    Int64 compute(Int32 x, Int32 y, Int32 z)
+    {
+      return m_base_offset + x + y * m_all_nb_node_x + z * m_all_nb_node_xy;
     }
-  }
+
+   private:
+
+    Int64 m_base_offset;
+    Int64 m_all_nb_node_x;
+    Int64 m_all_nb_node_xy;
+  };
 
   Integer cells_infos_index = 0;
+  NodeUniqueIdComputer node_uid_computer(node_unique_id_offset, all_nb_node_x, all_nb_node_xy);
+
   for (Integer z = 0; z < own_nb_cell_z; ++z) {
     for (Integer y = 0; y < own_nb_cell_y; ++y) {
       for (Integer x = 0; x < own_nb_cell_x; ++x) {
@@ -162,15 +167,14 @@ setInfos(std::array<Int64, 3> global_nb_cells,
         ++cells_infos_index;
         cells_infos[cells_infos_index] = cell_unique_id;
         ++cells_infos_index;
-        Integer node_lid = x + y * own_nb_node_x + z * own_nb_node_xy;
-        cells_infos[cells_infos_index + 0] = nodes_unique_id[node_lid];
-        cells_infos[cells_infos_index + 1] = nodes_unique_id[node_lid + 1];
-        cells_infos[cells_infos_index + 2] = nodes_unique_id[node_lid + own_nb_node_x + 1];
-        cells_infos[cells_infos_index + 3] = nodes_unique_id[node_lid + own_nb_node_x + 0];
-        cells_infos[cells_infos_index + 4] = nodes_unique_id[node_lid + own_nb_node_xy];
-        cells_infos[cells_infos_index + 5] = nodes_unique_id[node_lid + own_nb_node_xy + 1];
-        cells_infos[cells_infos_index + 6] = nodes_unique_id[node_lid + own_nb_node_xy + own_nb_node_x + 1];
-        cells_infos[cells_infos_index + 7] = nodes_unique_id[node_lid + own_nb_node_xy + own_nb_node_x + 0];
+        cells_infos[cells_infos_index + 0] = node_uid_computer.compute(x + 0, y + 0, z + 0);
+        cells_infos[cells_infos_index + 1] = node_uid_computer.compute(x + 1, y + 0, z + 0);
+        cells_infos[cells_infos_index + 2] = node_uid_computer.compute(x + 1, y + 1, z + 0);
+        cells_infos[cells_infos_index + 3] = node_uid_computer.compute(x + 0, y + 1, z + 0);
+        cells_infos[cells_infos_index + 4] = node_uid_computer.compute(x + 0, y + 0, z + 1);
+        cells_infos[cells_infos_index + 5] = node_uid_computer.compute(x + 1, y + 0, z + 1);
+        cells_infos[cells_infos_index + 6] = node_uid_computer.compute(x + 1, y + 1, z + 1);
+        cells_infos[cells_infos_index + 7] = node_uid_computer.compute(x + 0, y + 1, z + 1);
         cells_infos_index += 8;
       }
     }
