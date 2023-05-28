@@ -9,7 +9,147 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 3.9.4 (avril 2023) {#arcanedoc_version390}
+## Arcane Version 3.10 (En cours) {#arcanedoc_version3100}
+
+### Nouveautés/Améliorations
+
+- Création d'une classe Arcane::SmallArray pour gérer des tableaux de
+  petite taille avec la mémoire allouée sur la pile (\pr{615}).
+- Ajoute possibilité dans l'implémentation PETSc de Aleph de passer
+  des arguments qui seront utilisés pour initialiser PETSc via l'appel
+  à `PetscInitialize()` (\pr{621}).
+- Support pour les copies mémoire avec index sur accélérateur
+  (\pr{617}, \pr{625}, \pr{658})
+- Intégration partielle de CUPTI (CUDA Profiling Tools Interface)
+  permettant de récupérer automatiquement des informations de
+  profiling sur les cartes NVIDIA. Par exemple, cela permet de
+  récupérer les informations sur les transferts mémoire entre le CPU
+  et le GPU (\pr{627}, \pr{632}, \pr{642}).
+- Support en CUDA pour tracer les allocations/désallocations de la
+  mémoire managée et pour allouer par bloc multiples de la taille de
+  page (\pr{641}, \pr{672}, \pr{685}, \pr{693}).
+- Support des synchronisations avec le mode 'Accelerator Aware' de
+  MPI. Cela permet de faire des synchronisations sans recopie mémoire
+  entre le CPU et l'accélérateur. Ce mécanisme est aussi disponible en
+  mode échange de message en mémoire partagé et en mode hybride
+  (\pr{631}, \pr{644}, \pr{645}, \pr{646}, \pr{654}, \pr{661},
+  \pr{680}, \pr{681}).
+- Ajoute écrivain de post-traitement au format 'VTK HDF V2'. Ce format
+  permet de mettre dans le même fichier au format HDF5 plusieurs
+  temps de dépouillement (\pr{637}, \pr{638}, \pr{639}).
+- Autorise la copie de Arcane::NumArray depuis différentes zones
+  mémoire (\pr{651}).
+- Support sur accélérateur pour savoir si une adresse mémoire donnée
+  est accessible sur accélérateur ou sur le CPU ou les deux. Ajoute
+  aussi deux macros ARCANE_CHECK_ACCESSIBLE_POINTER() et
+  ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS() pour vérifier qu'une zone
+  mémoire est accessible pour être utilisée dans une
+  Arcane::Accelerator::RunQueue (\pr{660}).
+- Support pour la nouvelle interface Arccore::IMemoryAllocator3 dans
+  les allocateurs pour accélérateur (\pr{671}, \pr{674}).
+- Support sur accélérateur pour spécifier des informations sur
+  l'allocation mémoire des variables
+  (Arcane::IVariable::setAllocationInfo()). Cela permet par exemple
+  d'indiquer si une variable sera plutôt accédée sur accélérateur ou
+  sur le CPU (\pr{684}).
+- Amélioration de la gestion mémoire des connectivités lors de la
+  création du maillage. Les tableaux sont pré-alloués pour éviter des
+  recopies successives lorsqu'on ajoute les entités une par une
+  (\pr{689}).
+- Ajoute méthode Arcane::MDSpan::slice() pour retourner une vue sur
+  une sous-partie de la vue initiale (\pr{690}).
+- Ajoute méthode MeshUtils::markMeshConnectivitiesAsMostlyReadOnly()
+  pour indiquer que les variables gérant la connectivité ne seront pas
+  modifiées fréquemment. Cela permet d'optimiser la gestion mémoire
+  entre accélérateur et CPU pour éviter des recopies (\pr{691})
+- Possibilité de calculer dynamiquement le nom du répertoire de sortie
+  dans Arcane::SimpleTableWriterHelper (\pr{607}).
+
+### Changements
+
+- Autorise la copie d'instance de Arcane::Accelerator::Runner en
+  utilisant une sémantique par référence (\pr{623}).
+- Sur accélérateur, utilise par défaut un kernel spécifique sur toute
+  la grille pour les réductions. Auparant, on utilisait un kernel qui
+  mélangeait opération atomiques et calcul sur des blocs (\pr{640}).
+- Utilise la mémoire de l'accélérateur pour les opérations de
+  réduction. Auparavant on utilisait la mémoire managée (\pr{643}, \pr{683}).
+- Supprime dans les matériaux les méthodes obsolètes depuis plusieurs
+  années (\pr{652}).
+- Change la numérotation des noeuds des mailles hexagonales pour
+  `HoneyCombMeshGenerator` (\pr{657}).
+- Rend obsolète la méthode Arcane::ItemConnectedListView::localIds()
+  permettant d'accéder aux tableaux des localId() des entités
+  connectées à une autre (\pr{666}).
+- Rend privées ou obsolètes les méthodes internes à %Arcane de
+  Arcane::ItemInternalConnectivityList et Arcane::ItemInternal
+  (\pr{787}).
+
+### Corrections
+
+- Gère correctement la destruction des instances singleton de
+  Arcane::StandaloneSubDomain. Avant l'instance était détruite dans
+  les destructeurs globaux après la fin de `main()` ce qui pouvait
+  poser problème dans certains cas (\pr{619}).
+
+### Interne
+
+- Débute support pour créer dynamiquement des services contenant des
+  options du jeu de données (\pr{613}).
+- Supprime utilisation de Arcane::ISubDomain dans certaines parties
+  (\pr{620}).
+- Ajoute fonction pour récupérer les arguments de la ligne de
+  commande (\pr{624}).
+- Supprime avertissements coverity (\pr{626}, \pr{692}).
+- Rend `const` certaines méthodes de
+  Arcane::Materials::IMeshComponent (\pr{630}).
+- Améliorations diverses de la gestion des accélérateurs (\pr{647}).
+- Corrige compilation avec PAPI 7.0 et PETSc 3.19 (\pr{648}).
+- Ajoute champ de type Arcane::Int32 dans les différentes classes
+  gérant les connectivités pour gérer un offset sur les
+  localId(). Pour l'instant cela n'est pas utilisé et l'offset vaut
+  toujours 0 (\pr{649}).
+- Support pour utiliser un driver spécifique pour lancer les tests
+  (\pr{663}).
+- Remplace l'utilisation de `ENUMERATE_*` pour accéder aux
+  connectivités par des for-range (\pr{666}).
+
+### Arccore (2.4+)
+
+- Propage l'allocateur de la source dans le constructeur et
+  l'opérateur de recopie de Arccore::UniqueArray et
+  Arccore::UniqueArray2 (\pr{635}, \pr{656}).
+- Utilise Arccore::Span au lieu de Arccore::ConstArrayView pour
+  certains arguments pour permettre des vues dont la taille dépasse
+  2Go (\pr{635}).
+- Évite la construction d'éléments par défaut qui seront ensuite
+  écrasés dans Arccore::AbstractArray::_resizeAndCopyView(). Cele permet aussi
+  d'utiliser cette méthode avec des types de données qui n'ont pas de
+  constructeur vide (\pr{635}).
+- Ne fait plus d'allocation minimale même si un allocateur autre que
+  l'allocateur par défaut est utilisé. Auparavant on allouait toujours
+  au moins 4 éléments (\pr{635}).
+- Corrige double allocation inutile dans Arccore::Array::operator=()
+  si les deux tableaux n'ont pas le même allocateur (\pr{655}).
+- Permet d'afficher dans le constructeur de Arccore::Exception le
+  message de l'exception. Cela est utile pour débugger par exemple les
+  exceptions en dehors de `try{ ... } catch` ou les exceptions qui
+  lancent d'autres exceptions (\pr{659}).
+- Ajoute interface Arccore::IMemoryAllocator3 qui enrichit
+  Arccore::IMemoryAllocator pour passer plus d'informations à
+  l'allocateur. Cela permet d'ajouter par exemple la taille allouée ou
+  le nom du tableau (\pr{662}, \pr{673}, \pr{677}).
+- Ajoute type `Int8` et `BFloat16` dans Arccore::eBasicDataType (\pr{669})
+- Ajoute différentes fonctions de conversions entre les Arccore::Span
+  et `std::array`. Ajoute aussi les méthodes `subPart` et
+  `subPartInterval` communes à Arccore::ArrayView,
+  Arccore::ConstArrayView et Arccore::Span (\pr{670}).
+- Supprime avertissements coverity (\pr{675}).
+- Support pour donner un nom aux tableaux Arccore::Array. Cela est
+  utilisé dans Arccore::IMemoryAllocator3 pour afficher les
+  informations d'allocation (\pr{676}, \pr{682}).
+
+## Arcane Version 3.9.5 (04 avril 2023) {#arcanedoc_version390}
 
 ### Nouveautés/Améliorations
 
