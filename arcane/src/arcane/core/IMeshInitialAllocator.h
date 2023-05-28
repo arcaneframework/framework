@@ -22,6 +22,8 @@
 namespace Arcane
 {
 
+class ItemAllocationInfo;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -41,9 +43,24 @@ class ARCANE_CORE_EXPORT IUnstructuredMeshInitialAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Allocateur pour les maillages cartésiens.
+ */
+class ARCANE_CORE_EXPORT ICartesianMeshInitialAllocator
+{
+ public:
+
+  virtual ~ICartesianMeshInitialAllocator() = default;
+
+ public:
+
+  virtual void allocate(CartesianMeshAllocateBuildInfo& build_info) = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Allocateur pour les maillages polyédriques.
  */
-class ItemAllocationInfo;
 class ARCANE_CORE_EXPORT IPolyhedralMeshInitialAllocator
 {
  public:
@@ -68,12 +85,20 @@ class ARCANE_CORE_EXPORT IMeshInitialAllocator
 
  public:
 
+  //! Allocateur pour les maillages non structurés
   virtual IUnstructuredMeshInitialAllocator* unstructuredMeshAllocator()
   {
     return nullptr;
   }
 
+  //! Allocateur pour les maillages polyédriques
   virtual IPolyhedralMeshInitialAllocator* polyhedralMeshAllocator()
+  {
+    return nullptr;
+  }
+
+  //! Allocateur pour les maillages cartésiens
+  virtual ICartesianMeshInitialAllocator* cartesianMeshAllocator()
   {
     return nullptr;
   }

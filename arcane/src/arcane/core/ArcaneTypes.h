@@ -115,6 +115,7 @@ class IIndexedIncrementalItemConnectivityMng;
 class IIndexedIncrementalItemConnectivity;
 class IMeshInitialAllocator;
 class UnstructuredMeshAllocateBuildInfo;
+class CartesianMeshAllocateBuildInfo;
 class IIncrementalItemConnectivity;
 
 /*---------------------------------------------------------------------------*/

@@ -90,8 +90,8 @@ class ARCANE_MESH_EXPORT DynamicMesh
 , public TraceAccessor
 , public IPrimaryMesh
 , public IMeshModifier
-, public IMeshInitialAllocator
 , public IUnstructuredMeshInitialAllocator
+, public ICartesianMeshInitialAllocator
 {
  private:
   // TEMPORAIRE
@@ -110,6 +110,10 @@ class ARCANE_MESH_EXPORT DynamicMesh
 
     InitialAllocator(DynamicMesh* m) : m_mesh(m){}
     IUnstructuredMeshInitialAllocator* unstructuredMeshAllocator() override
+    {
+      return m_mesh;
+    }
+    ICartesianMeshInitialAllocator* cartesianMeshAllocator() override
     {
       return m_mesh;
     }
@@ -514,6 +518,7 @@ public:
 
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
   void allocate(UnstructuredMeshAllocateBuildInfo& build_info) override;
+  void allocate(CartesianMeshAllocateBuildInfo& build_info) override;
 
  private:
 

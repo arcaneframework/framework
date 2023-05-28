@@ -60,6 +60,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IDataInternal.h
   internal/CartesianMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.cc
+  internal/CartesianMeshAllocateBuildInfoInternal.h
   internal/UnstructuredMeshAllocateBuildInfoInternal.h
   internal/IParallelMngInternal.h
   )
@@ -374,6 +375,8 @@ set(ARCANE_ORIGINAL_SOURCES
   BasicUnitTest.h
   BlockIndexList.h
   BlockIndexList.cc
+  CartesianMeshAllocateBuildInfo.h
+  CartesianMeshAllocateBuildInfo.cc
   CaseDatasetSource.cc
   CaseDatasetSource.h
   CaseFunction.cc
