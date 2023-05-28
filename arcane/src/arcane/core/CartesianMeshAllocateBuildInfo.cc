@@ -106,10 +106,76 @@ CartesianMeshAllocateBuildInfo::
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAllocateBuildInfo::
-setInfos(std::array<Int64, 3> global_nb_cells,
-         std::array<Int32, 3> own_nb_cells,
-         Int64 cell_unique_id_offset,
-         Int64 node_unique_id_offset)
+setInfos2D(std::array<Int64, 2> global_nb_cells,
+           std::array<Int32, 2> own_nb_cells,
+           Int64 cell_unique_id_offset,
+           Int64 node_unique_id_offset)
+{
+  m_p->m_mesh_dimension = 2;
+
+  UniqueArray<Int64>& cells_infos = m_p->m_cells_infos;
+
+  auto [own_nb_cell_x, own_nb_cell_y] = own_nb_cells;
+  auto [all_nb_cell_x, all_nb_cell_y] = global_nb_cells;
+
+  Int32 own_nb_cell_xy = CheckedConvert::multiply(own_nb_cell_x, own_nb_cell_y);
+
+  Int64 all_nb_node_x = all_nb_cell_x + 1;
+
+  m_p->m_nb_cell = own_nb_cell_xy;
+
+  cells_infos.resize(own_nb_cell_xy * (1 + 1 + 4));
+
+  //! Classe pour calculer le uniqueId() d'un noeud en fonction de sa position dans la grille.
+  class NodeUniqueIdComputer
+  {
+   public:
+
+    NodeUniqueIdComputer(Int64 base_offset, Int64 all_nb_node_x)
+    : m_base_offset(base_offset)
+    , m_all_nb_node_x(all_nb_node_x)
+    {}
+
+   public:
+
+    Int64 compute(Int32 x, Int32 y)
+    {
+      return m_base_offset + x + y * m_all_nb_node_x;
+    }
+
+   private:
+
+    Int64 m_base_offset;
+    Int64 m_all_nb_node_x;
+  };
+
+  Integer cells_infos_index = 0;
+  NodeUniqueIdComputer node_uid_computer(node_unique_id_offset, all_nb_node_x);
+
+  for (Integer y = 0; y < own_nb_cell_y; ++y) {
+    for (Integer x = 0; x < own_nb_cell_x; ++x) {
+      Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell_x;
+      cells_infos[cells_infos_index] = IT_Quad4;
+      ++cells_infos_index;
+      cells_infos[cells_infos_index] = cell_unique_id;
+      ++cells_infos_index;
+      cells_infos[cells_infos_index + 0] = node_uid_computer.compute(x + 0, y + 0);
+      cells_infos[cells_infos_index + 1] = node_uid_computer.compute(x + 1, y + 0);
+      cells_infos[cells_infos_index + 2] = node_uid_computer.compute(x + 1, y + 1);
+      cells_infos[cells_infos_index + 3] = node_uid_computer.compute(x + 0, y + 1);
+      cells_infos_index += 4;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAllocateBuildInfo::
+setInfos3D(std::array<Int64, 3> global_nb_cells,
+           std::array<Int32, 3> own_nb_cells,
+           Int64 cell_unique_id_offset,
+           Int64 node_unique_id_offset)
 {
   m_p->m_mesh_dimension = 3;
 
@@ -121,7 +187,7 @@ setInfos(std::array<Int64, 3> global_nb_cells,
   Int32 own_nb_cell_xy = CheckedConvert::multiply(own_nb_cell_x, own_nb_cell_y);
   Int32 own_nb_cell_xyz = CheckedConvert::multiply(own_nb_cell_xy, own_nb_cell_z);
 
-  Int64 all_nb_cell_xy = ((Int64)all_nb_cell_x) * ((Int64)all_nb_cell_y);
+  Int64 all_nb_cell_xy = all_nb_cell_x * all_nb_cell_y;
 
   Int64 all_nb_node_x = all_nb_cell_x + 1;
   Int64 all_nb_node_y = all_nb_cell_y + 1;
