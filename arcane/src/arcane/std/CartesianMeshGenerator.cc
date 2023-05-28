@@ -603,7 +603,10 @@ generateMesh()
 
   m_generation_info = ICartesianMeshGenerationInfo::getReference(mesh,true);
 
-  bool use_specific_allocator = (m_mesh_dimension == 3);
+  bool use_specific_allocator = (m_mesh_dimension == 3 || m_mesh_dimension == 2);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_OLD_MESHGENERATOR", true))
+    use_specific_allocator = (v.value()==0);
+
   CartesianMeshAllocateBuildInfo cartesian_mesh_build_info(mesh);
 
   info() << " decomposing the subdomains:" << m_build_info.m_nsdx << "x"
@@ -905,9 +908,17 @@ generateMesh()
 
   if (use_specific_allocator){
     info() << "Set Specific info for cartesian mesh";
-    cartesian_mesh_build_info.setInfos({all_nb_cell_x,all_nb_cell_y,all_nb_cell_z},
-                                       {own_nb_cell_x,own_nb_cell_y,own_nb_cell_z},
-                                       cell_unique_id_offset, node_unique_id_offset );
+    if (m_mesh_dimension==3)
+      cartesian_mesh_build_info.setInfos3D({all_nb_cell_x,all_nb_cell_y,all_nb_cell_z},
+                                           {own_nb_cell_x,own_nb_cell_y,own_nb_cell_z},
+                                           cell_unique_id_offset, node_unique_id_offset );
+    else if (m_mesh_dimension==2){
+      cartesian_mesh_build_info.setInfos2D({all_nb_cell_x,all_nb_cell_y},
+                                           {own_nb_cell_x,own_nb_cell_y},
+                                           cell_unique_id_offset, node_unique_id_offset );
+    }
+    else
+      ARCANE_FATAL("Invalid dimensionn '{0}' (valid values are 2 or 3)",m_mesh_dimension);
   }
   else
     mesh->setDimension(m_mesh_dimension);
@@ -973,9 +984,12 @@ class Cartesian2DMeshGenerator
 : public ArcaneCartesian2DMeshGeneratorObject
 {
  public:
-  Cartesian2DMeshGenerator(const ServiceBuildInfo& sbi)
+
+  explicit Cartesian2DMeshGenerator(const ServiceBuildInfo& sbi)
   : ArcaneCartesian2DMeshGeneratorObject(sbi){}
+
  public:
+
   void fillMeshBuildInfo(MeshBuildInfo& build_info) override
   {
     ARCANE_UNUSED(build_info);
@@ -1002,6 +1016,7 @@ class Cartesian2DMeshGenerator
       m_build_info.m_bloc_py.add(o->progression);
     }
   }
+
   void allocateMeshItems(IPrimaryMesh* pm) override
   {
     info() << "Cartesian2DMeshGenerator: allocateMeshItems()";
@@ -1013,8 +1028,11 @@ class Cartesian2DMeshGenerator
     g.setBuildInfo(m_build_info);
     g.generateMesh();
   }
-  CartesianMeshGeneratorBuildInfo m_build_info;
+
  private:
+
+  CartesianMeshGeneratorBuildInfo m_build_info;
+
   static std::tuple<Integer,Integer>
   _computePartition(IPrimaryMesh* pm,Integer nb_x,Integer nb_y)
   {
