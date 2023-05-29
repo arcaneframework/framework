@@ -293,6 +293,7 @@ set(ARCANE_SOURCES
   StringDictionary.h
   StringDictionary.cc
   StringList.h
+  SHA3HashAlgorithm.cc
   ValueConvert.h
   ScopedPtr.h
   SharedPtr.h
