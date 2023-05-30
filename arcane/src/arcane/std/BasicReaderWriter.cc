@@ -502,8 +502,8 @@ readData(const String& var_full_name,IData* data)
   Integer nb_dimension = vdi->nbDimension();
   Int64 nb_base_element = vdi->nbBaseElement();
   bool is_multi_size = vdi->isMultiSize();
-  Int64UniqueArray extents(dimension_array_size);
-  reader->getExtents(var_full_name,extents);
+  UniqueArray<Int64> extents(dimension_array_size);
+  reader->getExtents(var_full_name,extents.view());
   ArrayShape shape = vdi->shape();
 
   Ref<ISerializedData> sd(arcaneCreateSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
@@ -627,8 +627,8 @@ class IGenericWriter
   virtual void initialize(const String& path,Int32 rank) =0;
   virtual void writeData(const String& var_full_name,const ISerializedData* sdata) =0;
   virtual void writeItemGroup(const String& group_full_name,
-                              Int64ConstArrayView written_unique_ids,
-                              Int64ConstArrayView wanted_unique_ids) =0;
+                              SmallSpan<const Int64> written_unique_ids,
+                              SmallSpan<const Int64> wanted_unique_ids) =0;
   virtual void endWrite() =0;
 };
 
@@ -664,8 +664,8 @@ class BasicGenericWriter
     m_rank = rank;
   }
   void writeData(const String& var_full_name,const ISerializedData* sdata) override;
-  void writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
-                      Int64ConstArrayView wanted_unique_ids) override;
+  void writeItemGroup(const String& group_full_name,SmallSpan<const Int64> written_unique_ids,
+                      SmallSpan<const Int64> wanted_unique_ids) override;
   void endWrite() override;
  private:
   IApplication* m_application;
@@ -744,8 +744,8 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
 /*---------------------------------------------------------------------------*/
 
 void BasicGenericWriter::
-writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
-               Int64ConstArrayView wanted_unique_ids)
+writeItemGroup(const String& group_full_name,SmallSpan<const Int64> written_unique_ids,
+               SmallSpan<const Int64> wanted_unique_ids)
 {
   if (m_version>=3){
     // Sauve les informations du groupe la base de données (clé,valeur)
@@ -770,15 +770,15 @@ writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_
   // Sauve la liste des unique_ids écrits
   {
     Integer nb_unique_id = written_unique_ids.size();
-    writer.write(IntegerConstArrayView(1,&nb_unique_id));
-    writer.write(written_unique_ids);
+    writer.write(asBytes(Span<const Int32>(&nb_unique_id,1)));
+    writer.write(asBytes(Span<const Int64>(written_unique_ids)));
   }
 
   // Sauve la liste des unique_ids souhaités par ce sous-domaine
   {
     Integer nb_unique_id = wanted_unique_ids.size();
-    writer.write(IntegerConstArrayView(1,&nb_unique_id));
-    writer.write(wanted_unique_ids);
+    writer.write(asBytes(Span<const Int32>(&nb_unique_id,1)));
+    writer.write(asBytes(Span<const Int64>(wanted_unique_ids)));
   }
 }
 
@@ -1054,7 +1054,7 @@ _directWriteVal(IVariable* var,IData* data)
       IItemFamily* item_family = group.itemFamily();
       String gname = group.name();
       String group_full_name = item_family->fullName() + "_" + gname;
-      m_global_writer->writeItemGroup(group_full_name,written_unique_ids,wanted_unique_ids);
+      m_global_writer->writeItemGroup(group_full_name,written_unique_ids,wanted_unique_ids.view());
       m_written_groups.insert(group);
     }
   }
