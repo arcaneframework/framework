@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IHashAlgorithm.h                                            (C) 2000-2020 */
+/* IHashAlgorithm.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'un algorithme de hashage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -31,8 +31,8 @@ namespace Arcane
 class ARCANE_UTILS_EXPORT IHashAlgorithm
 {
  public:
-	
-  virtual ~IHashAlgorithm(){}
+
+  virtual ~IHashAlgorithm() = default;
 
  public:
 
@@ -42,7 +42,8 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
    * La fonction de hashage est <strong>ajoutée</string> dans \a output.
    * La longueur dépend de l'algorithme utilisé.
    */
-  virtual void computeHash(ByteConstArrayView input,ByteArray& output) =0;
+  ARCANE_DEPRECATED_REASON("Y2023: Use computeHash64(Span<const std::byte> input,ByteArray& output) instead")
+  virtual void computeHash(ByteConstArrayView input, ByteArray& output) = 0;
 
   /*!
    * \brief Calcule la fonction de hashage sur le tableau \a input.
@@ -50,10 +51,7 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
    * La fonction de hashage est <strong>ajoutée</string> dans \a output.
    * La longueur dépend de l'algorithme utilisé.
    */
-  virtual void computeHash64(Span<const Byte> input,ByteArray& output)
-  {
-    computeHash(input.smallView(),output);
-  }
+  virtual void computeHash64(Span<const Byte> input, ByteArray& output);
 
   /*!
    * \brief Calcule la fonction de hashage sur le tableau \a input.
@@ -61,19 +59,13 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
    * La fonction de hashage est <strong>ajoutée</string> dans \a output.
    * La longueur dépend de l'algorithme utilisé.
    */
-  virtual void computeHash64(Span<const std::byte> input,ByteArray& output)
-  {
-    const Byte* x = reinterpret_cast<const Byte*>(input.data());
-    computeHash64(Span<const Byte>(x,input.size()),output);
-  }
-
- private:
+  virtual void computeHash64(Span<const std::byte> input, ByteArray& output);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namesapce Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
