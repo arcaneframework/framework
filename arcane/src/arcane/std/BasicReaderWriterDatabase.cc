@@ -564,14 +564,14 @@ getExtents(const String& key_name,SmallSpan<Int64> extents)
       IntegerUniqueArray dims;
       if (dimension_array_size>0){
         dims.resize(dimension_array_size);
-        m_p->m_reader.read(dims);
+        m_p->m_reader.read(asWritableBytes(dims.span()));
       }
       for( Integer i=0; i<dimension_array_size; ++i )
         extents[i] = dims[i];
     }
     else{
       if (dimension_array_size>0){
-        m_p->m_reader.read(extents);
+        m_p->m_reader.read(asWritableBytes(Span<Int64>(extents)));
       }
     }
   }
@@ -591,35 +591,35 @@ void KeyValueTextReader::
 read(const String& key,Span<Int16> values)
 {
   _setFileOffset(key);
-  m_p->m_reader.read(values);
+  m_p->m_reader.read(asWritableBytes(values));
 }
 
 void KeyValueTextReader::
 read(const String& key,Span<Int32> values)
 {
   _setFileOffset(key);
-  m_p->m_reader.read(values);
+  m_p->m_reader.read(asWritableBytes(values));
 }
 
 void KeyValueTextReader::
 read(const String& key,Span<Int64> values)
 {
   _setFileOffset(key);
-  m_p->m_reader.read(values);
+  m_p->m_reader.read(asWritableBytes(values));
 }
 
 void KeyValueTextReader::
 read(const String& key,Span<Real> values)
 {
   _setFileOffset(key);
-  m_p->m_reader.read(values);
+  m_p->m_reader.read(asWritableBytes(values));
 }
 
 void KeyValueTextReader::
 read(const String& key,Span<Byte> values)
 {
   _setFileOffset(key);
-  m_p->m_reader.read(values);
+  m_p->m_reader.read(asWritableBytes(values));
 }
 
 String KeyValueTextReader::

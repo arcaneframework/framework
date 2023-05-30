@@ -606,7 +606,7 @@ readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
     reader.readIntegers(IntegerArrayView(1,&nb_unique_id));
     info(5) << "NB_WRITTEN_UNIQUE_ID = " << nb_unique_id;
     written_unique_ids.resize(nb_unique_id);
-    reader.read(written_unique_ids);
+    reader.read(asWritableBytes(written_unique_ids.span()));
   }
 
   {
@@ -614,7 +614,7 @@ readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
     reader.readIntegers(IntegerArrayView(1,&nb_unique_id));
     info(5) << "NB_WANTED_UNIQUE_ID = " << nb_unique_id;
     wanted_unique_ids.resize(nb_unique_id);
-    reader.read(wanted_unique_ids);
+    reader.read(asWritableBytes(wanted_unique_ids.span()));
   }
 }
 
