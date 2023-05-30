@@ -239,11 +239,11 @@ void SerializedData::
 computeHash(IHashAlgorithm* algo, ByteArray& output) const
 {
   // TODO: faire avec le support 64 bits mais cela change le hash.
-  algo->computeHash(m_const_buffer.constSmallView(), output);
+  algo->computeHash64(m_const_buffer, output);
   const Byte* ptr = reinterpret_cast<const Byte*>(m_dimensions.data());
   Integer msize = CheckedConvert::multiply(m_dimensions.size(), (Integer)sizeof(Integer));
   ByteConstArrayView dim_bytes(msize, ptr);
-  algo->computeHash(dim_bytes, output);
+  algo->computeHash64(dim_bytes, output);
 }
 
 /*---------------------------------------------------------------------------*/

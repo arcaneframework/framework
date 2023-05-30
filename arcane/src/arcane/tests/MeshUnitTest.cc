@@ -1244,7 +1244,7 @@ _testMD5()
   // Calcul le md5 pour un tableau vide
   input.clear();
   output.clear();
-  md5.computeHash(input,output);
+  md5.computeHash64(input,output);
   s = Convert::toHexaString(output);
   ref = "d41d8cd98f00b204e9800998ecf8427e";
   info() << " S=" << s;
@@ -1254,7 +1254,7 @@ _testMD5()
   input.clear();
   output.clear();
   input.add('a');
-  md5.computeHash(input,output);
+  md5.computeHash64(input,output);
   s = Convert::toHexaString(output);
   ref = "0cc175b9c0f1b6a831c399e269772661";
   info() << " S=" << s;

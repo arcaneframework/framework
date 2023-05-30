@@ -38,7 +38,7 @@ const Integer real_t_size = sizeof(real_t);
 void
 _computeHash(ConstArrayView<idx_t> data, ByteArray& output)
 {
-  hash_algo.computeHash(ConstArrayView<Byte>(idx_t_size * data.size(), (Byte*)data.data()), output);
+  hash_algo.computeHash64(ConstArrayView<Byte>(idx_t_size * data.size(), (Byte*)data.data()), output);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ _computeHash(ConstArrayView<idx_t> data, ByteArray& output)
 void
 _computeHash(const idx_t* data, const Integer nb, ByteArray& output)
 {
-  hash_algo.computeHash(ConstArrayView<Byte>(idx_t_size * nb, (const Byte*)data), output);
+  hash_algo.computeHash64(ConstArrayView<Byte>(idx_t_size * nb, (const Byte*)data), output);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -56,7 +56,7 @@ _computeHash(const idx_t* data, const Integer nb, ByteArray& output)
 void
 _computeHash(const real_t* data, const Integer nb, ByteArray& output)
 {
-  hash_algo.computeHash(ConstArrayView<Byte>(real_t_size * nb, (const Byte*)data), output);
+  hash_algo.computeHash64(ConstArrayView<Byte>(real_t_size * nb, (const Byte*)data), output);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -93,7 +93,7 @@ _digestString(MPI_Comm comm, const int my_rank, const int nb_rank, const int io_
 
   if (my_rank == io_rank) {
     UniqueArray<Byte> final_digest;
-    hash_algo.computeHash(concat_digest, final_digest);
+    hash_algo.computeHash64(concat_digest, final_digest);
     return Convert::toHexaString(final_digest);
   }
 
