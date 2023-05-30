@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriter.cc                                        (C) 2000-2022 */
+/* BasicReaderWriter.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Lecture/Ecriture simple.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -81,6 +81,14 @@ namespace Arcane
 using impl::KeyValueTextReader;
 using impl::KeyValueTextWriter;
 
+namespace
+{
+// TODO A mettre dans Arccore
+template<typename T> Span<const std::byte> asBytes(SmallSpan<T> view)
+{
+  return {reinterpret_cast<const std::byte*>(view.data()), view.sizeBytes()};
+}
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -413,7 +421,7 @@ initialize(const String& path,Int32 rank)
     Int64 meta_data_size = 0;
     String key_name = "Global:OwnMetadata";
     m_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
-    UniqueArray<Byte> bytes(meta_data_size);
+    UniqueArray<std::byte> bytes(meta_data_size);
     m_text_reader->read(key_name,bytes);
     info(4) << "Reading own metadata rank=" << rank << " from database";
     xdoc = IXmlDocumentHolder::loadFromBuffer(bytes,"OwnMetadata",traceMng());
@@ -502,8 +510,8 @@ readData(const String& var_full_name,IData* data)
   Integer nb_dimension = vdi->nbDimension();
   Int64 nb_base_element = vdi->nbBaseElement();
   bool is_multi_size = vdi->isMultiSize();
-  Int64UniqueArray extents(dimension_array_size);
-  reader->getExtents(var_full_name,extents);
+  UniqueArray<Int64> extents(dimension_array_size);
+  reader->getExtents(var_full_name,extents.view());
   ArrayShape shape = vdi->shape();
 
   Ref<ISerializedData> sd(arcaneCreateSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
@@ -514,53 +522,8 @@ readData(const String& var_full_name,IData* data)
 
   data->allocateBufferForSerializedData(sd.get());
 
-  void* ptr = sd->writableBytes().data();
-
-  const bool print_values = false;
-  String key_name = var_full_name;
-  if (storage_size!=0){
-    eDataType base_data_type = sd->baseDataType();
-    Real* real_ptr = (Real*)ptr;
-    if (base_data_type==DT_Real){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element));
-      if (print_values){
-        if (nb_base_element>1){
-          info() << "VAR=" << var_full_name << " offset=" << vdi->fileOffset()
-                 << " V[0]=" << real_ptr[0] << " V[1]=" << real_ptr[1];
-          const char* buf = (const char*)ptr;
-          for( Integer i=0; i<16; ++i ){
-            info() << "READ I=" << i << " V=" << (int)buf[i];
-          }
-        }
-      }
-    }
-    else if (base_data_type==DT_Real2){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*2));
-    }
-    else if (base_data_type==DT_Real3){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*3));
-    }
-    else if (base_data_type==DT_Real2x2){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*4));
-    }
-    else if (base_data_type==DT_Real3x3){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*9));
-    }
-    else if (base_data_type==DT_Int16){
-      reader->read(key_name,Span<Int16>((Int16*)ptr,nb_base_element));
-    }
-    else if (base_data_type==DT_Int32){
-      reader->read(key_name,Span<Int32>((Int32*)ptr,nb_base_element));
-    }
-    else if (base_data_type==DT_Int64){
-      reader->read(key_name,Span<Int64>((Int64*)ptr,nb_base_element));
-    }
-    else if (base_data_type==DT_Byte){
-      reader->read(key_name,Span<Byte>((Byte*)ptr,storage_size));
-    }
-    else
-      ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
-  }
+  if (storage_size!=0)
+    reader->read(var_full_name,asWritableBytes(sd->writableBytes()));
 
   data->assignSerializedData(sd.get());
 }
@@ -578,14 +541,14 @@ readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
       Int64 nb_written_uid = 0;
       m_text_reader->getExtents(written_uid_name,Int64ArrayView(1,&nb_written_uid));
       written_unique_ids.resize(nb_written_uid);
-      m_text_reader->read(written_uid_name,written_unique_ids);
+      m_text_reader->read(written_uid_name,asWritableBytes(written_unique_ids.span()));
     }
     {
       String wanted_uid_name = String("GroupWantedUid:")+group_full_name;
       Int64 nb_wanted_uid = 0;
       m_text_reader->getExtents(wanted_uid_name,Int64ArrayView(1,&nb_wanted_uid));
       wanted_unique_ids.resize(nb_wanted_uid);
-      m_text_reader->read(wanted_uid_name,wanted_unique_ids);
+      m_text_reader->read(wanted_uid_name,asWritableBytes(wanted_unique_ids.span()));
     }
     return;
   }
@@ -598,7 +561,7 @@ readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
     reader.readIntegers(IntegerArrayView(1,&nb_unique_id));
     info(5) << "NB_WRITTEN_UNIQUE_ID = " << nb_unique_id;
     written_unique_ids.resize(nb_unique_id);
-    reader.read(written_unique_ids);
+    reader.read(asWritableBytes(written_unique_ids.span()));
   }
 
   {
@@ -606,7 +569,7 @@ readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
     reader.readIntegers(IntegerArrayView(1,&nb_unique_id));
     info(5) << "NB_WANTED_UNIQUE_ID = " << nb_unique_id;
     wanted_unique_ids.resize(nb_unique_id);
-    reader.read(wanted_unique_ids);
+    reader.read(asWritableBytes(wanted_unique_ids.span()));
   }
 }
 
@@ -627,8 +590,8 @@ class IGenericWriter
   virtual void initialize(const String& path,Int32 rank) =0;
   virtual void writeData(const String& var_full_name,const ISerializedData* sdata) =0;
   virtual void writeItemGroup(const String& group_full_name,
-                              Int64ConstArrayView written_unique_ids,
-                              Int64ConstArrayView wanted_unique_ids) =0;
+                              SmallSpan<const Int64> written_unique_ids,
+                              SmallSpan<const Int64> wanted_unique_ids) =0;
   virtual void endWrite() =0;
 };
 
@@ -664,8 +627,8 @@ class BasicGenericWriter
     m_rank = rank;
   }
   void writeData(const String& var_full_name,const ISerializedData* sdata) override;
-  void writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
-                      Int64ConstArrayView wanted_unique_ids) override;
+  void writeItemGroup(const String& group_full_name,SmallSpan<const Int64> written_unique_ids,
+                      SmallSpan<const Int64> wanted_unique_ids) override;
   void endWrite() override;
  private:
   IApplication* m_application;
@@ -706,37 +669,7 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
   // Maintenant, sauve les valeurs si necessaire
   Int64 nb_base_element = sdata->nbBaseElement();
   if (nb_base_element!=0 && ptr){
-    String key_name = var_full_name;
-    eDataType base_data_type = sdata->baseDataType();
-    if (base_data_type==DT_Real){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element));
-    }
-    else if (base_data_type==DT_Real2){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*2));
-    }
-    else if (base_data_type==DT_Real3){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*3));
-    }
-    else if (base_data_type==DT_Real2x2){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*4));
-    }
-    else if (base_data_type==DT_Real3x3){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*9));
-    }
-    else if (base_data_type==DT_Int16){
-      writer->write(key_name,Span<const Int16>((const Int16*)ptr,nb_base_element));
-    }
-    else if (base_data_type==DT_Int32){
-      writer->write(key_name,Span<const Int32>((const Int32*)ptr,nb_base_element));
-    }
-    else if (base_data_type==DT_Int64){
-      writer->write(key_name,Span<const Int64>((const Int64*)ptr,nb_base_element));
-    }
-    else if (base_data_type==DT_Byte){
-      writer->write(key_name,Span<const Byte>((const Byte*)ptr,nb_base_element));
-    }
-    else
-      ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
+    writer->write(var_full_name,asBytes(sdata->constBytes()));
   }
 }
 
@@ -744,8 +677,8 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
 /*---------------------------------------------------------------------------*/
 
 void BasicGenericWriter::
-writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_ids,
-               Int64ConstArrayView wanted_unique_ids)
+writeItemGroup(const String& group_full_name,SmallSpan<const Int64> written_unique_ids,
+               SmallSpan<const Int64> wanted_unique_ids)
 {
   if (m_version>=3){
     // Sauve les informations du groupe la base de données (clé,valeur)
@@ -753,13 +686,13 @@ writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_
       String written_uid_name = String("GroupWrittenUid:")+group_full_name;
       Int64 nb_written_uid = written_unique_ids.size();
       m_text_writer->setExtents(written_uid_name,Int64ConstArrayView(1,&nb_written_uid));
-      m_text_writer->write(written_uid_name,written_unique_ids);
+      m_text_writer->write(written_uid_name,asBytes(written_unique_ids));
     }
     {
       String wanted_uid_name = String("GroupWantedUid:")+group_full_name;
       Int64 nb_wanted_uid = wanted_unique_ids.size();
       m_text_writer->setExtents(wanted_uid_name,Int64ConstArrayView(1,&nb_wanted_uid));
-      m_text_writer->write(wanted_uid_name,wanted_unique_ids);
+      m_text_writer->write(wanted_uid_name,asBytes(wanted_unique_ids));
     }
     return;
   }
@@ -770,15 +703,15 @@ writeItemGroup(const String& group_full_name,Int64ConstArrayView written_unique_
   // Sauve la liste des unique_ids écrits
   {
     Integer nb_unique_id = written_unique_ids.size();
-    writer.write(IntegerConstArrayView(1,&nb_unique_id));
-    writer.write(written_unique_ids);
+    writer.write(asBytes(Span<const Int32>(&nb_unique_id,1)));
+    writer.write(asBytes(written_unique_ids));
   }
 
   // Sauve la liste des unique_ids souhaités par ce sous-domaine
   {
     Integer nb_unique_id = wanted_unique_ids.size();
-    writer.write(IntegerConstArrayView(1,&nb_unique_id));
-    writer.write(wanted_unique_ids);
+    writer.write(asBytes(Span<const Int32>(&nb_unique_id,1)));
+    writer.write(asBytes(wanted_unique_ids));
   }
 }
 
@@ -811,7 +744,7 @@ endWrite()
     Int64 length = bytes.length();
     String key_name = "Global:OwnMetadata";
     m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
-    m_text_writer->write(key_name,bytes);
+    m_text_writer->write(key_name,asBytes(bytes.span()));
   }
   else{
     String filename = _getOwnMetatadaFile(m_path,m_rank);
@@ -1054,7 +987,7 @@ _directWriteVal(IVariable* var,IData* data)
       IItemFamily* item_family = group.itemFamily();
       String gname = group.name();
       String group_full_name = item_family->fullName() + "_" + gname;
-      m_global_writer->writeItemGroup(group_full_name,written_unique_ids,wanted_unique_ids);
+      m_global_writer->writeItemGroup(group_full_name,written_unique_ids,wanted_unique_ids.view());
       m_written_groups.insert(group);
     }
   }
@@ -1088,7 +1021,7 @@ setMetaData(const String& meta_data)
     Int64 length = bytes.length();
     String key_name = "Global:CheckpointMetadata";
     m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
-    m_text_writer->write(key_name,bytes);
+    m_text_writer->write(key_name,asBytes(bytes));
   }
   else{
     Int32 my_rank = m_parallel_mng->commRank();
@@ -1506,7 +1439,7 @@ fillMetaData(ByteArray& bytes)
     info(4) << "Reading checkpoint metadata from database";
     m_forced_rank_to_read_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
     bytes.resize(meta_data_size);
-    m_forced_rank_to_read_text_reader->read(key_name,bytes);
+    m_forced_rank_to_read_text_reader->read(key_name,asWritableBytes(bytes.span()));
   }
   else{
     String filename = _getMetaDataFileName(rank);

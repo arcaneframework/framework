@@ -161,7 +161,7 @@ class BasicReaderWriterDatabaseCommon
   struct ExtentsInfo
   {
     static constexpr int MAX_SIZE = 8;
-    void fill(Int64ConstArrayView v)
+    void fill(SmallSpan<const Int64> v)
     {
       nb = v.size();
       if (nb>MAX_SIZE){
@@ -310,7 +310,7 @@ _writeEpilog()
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-setExtents(const String& key_name,Int64ConstArrayView extents)
+setExtents(const String& key_name,SmallSpan<const Int64> extents)
 {
   if (m_p->m_version>=3){
     _addKey(key_name,extents);
@@ -329,11 +329,11 @@ setExtents(const String& key_name,Int64ConstArrayView extents)
         UniqueArray<Integer> dims(dimension_array_size);
         for( Integer i=0; i<dimension_array_size; ++i )
           dims[i] = CheckedConvert::toInteger(extents[i]);
-        m_p->m_writer.write(dims);
+        m_p->m_writer.write(asBytes(dims.span()));
       }
       else
         // Sauve les dimensions comme un tableau de Int64
-        m_p->m_writer.write(extents);
+        m_p->m_writer.write(asBytes(Span<const Int64>(extents)));
     }
   }
 }
@@ -342,47 +342,7 @@ setExtents(const String& key_name,Int64ConstArrayView extents)
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-write(const String& key,Span<const Real> values)
-{
-  _writeKey(key);
-  m_p->m_writer.write(values);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void KeyValueTextWriter::
-write(const String& key,Span<const Int16> values)
-{
-  _writeKey(key);
-  m_p->m_writer.write(values);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void KeyValueTextWriter::
-write(const String& key,Span<const Int32> values)
-{
-  _writeKey(key);
-  m_p->m_writer.write(values);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void KeyValueTextWriter::
-write(const String& key,Span<const Int64> values)
-{
-  _writeKey(key);
-  m_p->m_writer.write(values);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void KeyValueTextWriter::
-write(const String& key,Span<const Byte> values)
+write(const String& key,Span<const std::byte> values)
 {
   _writeKey(key);
   m_p->m_writer.write(values);
@@ -428,7 +388,7 @@ fileOffset()
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-_addKey(const String& key,Int64ConstArrayView extents)
+_addKey(const String& key,SmallSpan<const Int64> extents)
 {
   Impl::DataInfo d { -1, Impl::ExtentsInfo() };
   d.m_extents.fill(extents);
@@ -577,7 +537,7 @@ _readJSON()
       }
       Impl::DataInfo x;
       x.m_file_offset = file_offset;
-      x.m_extents.fill(extents);
+      x.m_extents.fill(extents.view());
       m_p->m_data_infos.insert(std::make_pair(name,x));
     }
   }
@@ -588,7 +548,7 @@ _readJSON()
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextReader::
-getExtents(const String& key_name,Int64ArrayView extents)
+getExtents(const String& key_name,SmallSpan<Int64> extents)
 {
   Integer dimension_array_size = extents.size();
   if (m_p->m_version>=3){
@@ -604,14 +564,14 @@ getExtents(const String& key_name,Int64ArrayView extents)
       IntegerUniqueArray dims;
       if (dimension_array_size>0){
         dims.resize(dimension_array_size);
-        m_p->m_reader.read(dims);
+        m_p->m_reader.read(asWritableBytes(dims.span()));
       }
       for( Integer i=0; i<dimension_array_size; ++i )
         extents[i] = dims[i];
     }
     else{
       if (dimension_array_size>0){
-        m_p->m_reader.read(extents);
+        m_p->m_reader.read(asWritableBytes(Span<Int64>(extents)));
       }
     }
   }
@@ -628,35 +588,7 @@ readIntegers(const String& key,Span<Integer> values)
 }
 
 void KeyValueTextReader::
-read(const String& key,Span<Int16> values)
-{
-  _setFileOffset(key);
-  m_p->m_reader.read(values);
-}
-
-void KeyValueTextReader::
-read(const String& key,Span<Int32> values)
-{
-  _setFileOffset(key);
-  m_p->m_reader.read(values);
-}
-
-void KeyValueTextReader::
-read(const String& key,Span<Int64> values)
-{
-  _setFileOffset(key);
-  m_p->m_reader.read(values);
-}
-
-void KeyValueTextReader::
-read(const String& key,Span<Real> values)
-{
-  _setFileOffset(key);
-  m_p->m_reader.read(values);
-}
-
-void KeyValueTextReader::
-read(const String& key,Span<Byte> values)
+read(const String& key,Span<std::byte> values)
 {
   _setFileOffset(key);
   m_p->m_reader.read(values);

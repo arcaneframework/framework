@@ -43,29 +43,30 @@ namespace Arcane::impl
 class KeyValueTextWriter
 {
   class Impl;
+
  public:
 
-  explicit KeyValueTextWriter(const String& filename,Int32 version);
+  explicit KeyValueTextWriter(const String& filename, Int32 version);
   KeyValueTextWriter(const KeyValueTextWriter& rhs) = delete;
   ~KeyValueTextWriter();
   KeyValueTextWriter& operator=(const KeyValueTextWriter& rhs) = delete;
 
  public:
 
-  void setExtents(const String& key_name,Int64ConstArrayView extents);
-  void write(const String& key,Span<const Real> values);
-  void write(const String& key,Span<const Int16> values);
-  void write(const String& key,Span<const Int32> values);
-  void write(const String& key,Span<const Int64> values);
-  void write(const String& key,Span<const Byte> values);
+  void setExtents(const String& key_name, SmallSpan<const Int64> extents);
+  void write(const String& key, Span<const std::byte> values);
+
  public:
+
   String fileName() const;
   void setDataCompressor(Ref<IDataCompressor> dc);
   Ref<IDataCompressor> dataCompressor() const;
   Int64 fileOffset();
+
  private:
+
   Impl* m_p;
-  void _addKey(const String& key,Int64ConstArrayView extents);
+  void _addKey(const String& key, SmallSpan<const Int64> extents);
   void _writeKey(const String& key);
   void _writeHeader();
   void _writeEpilog();
@@ -83,33 +84,33 @@ class KeyValueTextReader
 
  public:
 
-  KeyValueTextReader(const String& filename,Int32 version);
+  KeyValueTextReader(const String& filename, Int32 version);
   KeyValueTextReader(const KeyValueTextReader& rhs) = delete;
   ~KeyValueTextReader();
   KeyValueTextReader& operator=(const KeyValueTextReader& rhs) = delete;
 
  public:
 
-  void getExtents(const String& key_name,Int64ArrayView extents);
-  void readIntegers(const String& key,Span<Integer> values);
-
-  void read(const String& key,Span<Int16> values);
-  void read(const String& key,Span<Int32> values);
-  void read(const String& key,Span<Int64> values);
-  void read(const String& key,Span<Real> values);
-  void read(const String& key,Span<Byte> values);
+  void getExtents(const String& key_name, SmallSpan<Int64> extents);
+  void readIntegers(const String& key, Span<Integer> values);
+  void read(const String& key, Span<std::byte> values);
 
  public:
+
   String fileName() const;
   void setFileOffset(Int64 v);
   void setDataCompressor(Ref<IDataCompressor> ds);
   Ref<IDataCompressor> dataCompressor() const;
+
  private:
+
   Impl* m_p;
+
  private:
+
   void _readHeader();
   void _readJSON();
-  void _readDirect(Int64 offset,Span<std::byte> bytes);
+  void _readDirect(Int64 offset, Span<std::byte> bytes);
   void _setFileOffset(const String& key_name);
 };
 
