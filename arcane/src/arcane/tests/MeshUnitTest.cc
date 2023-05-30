@@ -15,7 +15,6 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/List.h"
-#include "arcane/utils/MD5HashAlgorithm.h"
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/TestLogger.h"
@@ -185,7 +184,6 @@ public:
   void _testVariableWriter();
   void _testItemArray();
   void _testProjection();
-  void _testMD5();
   void _dumpConnections();
   void _partitionMesh(Int32 nb_part);
   void _testUsedVariables();
@@ -291,7 +289,6 @@ executeTest()
     error() << "ArithmeticException 2 catched!";
   }
 #endif
-  _testMD5();
   _testUsedVariables();
   _testAdditionalMeshes();
   _testCustomMeshTools();
@@ -1226,40 +1223,6 @@ _testProjection()
   //info() << vt->toString() << '\n';
   //a1 = a[0].x / a[0].z;
   //info() << " A1=" << a1;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshUnitTest::
-_testMD5()
-{
-  info() << " MD5 TEST";
-  Arcane::MD5HashAlgorithm md5;
-  ByteUniqueArray output;
-  ByteUniqueArray input;
-  String s;
-  String ref;
-
-  // Calcul le md5 pour un tableau vide
-  input.clear();
-  output.clear();
-  md5.computeHash64(input,output);
-  s = Convert::toHexaString(output);
-  ref = "d41d8cd98f00b204e9800998ecf8427e";
-  info() << " S=" << s;
-  if (s!=ref)
-    fatal() << "Bad value for empty array ref=" << ref << " new=" << s;
-
-  input.clear();
-  output.clear();
-  input.add('a');
-  md5.computeHash64(input,output);
-  s = Convert::toHexaString(output);
-  ref = "0cc175b9c0f1b6a831c399e269772661";
-  info() << " S=" << s;
-  if (s!=ref)
-    fatal() << "Bad value for simple array ref=" << ref << " new=" << s;
 }
 
 /*---------------------------------------------------------------------------*/
