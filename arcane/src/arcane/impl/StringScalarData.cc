@@ -268,7 +268,7 @@ void StringScalarData::
 computeHash(IHashAlgorithm* algo, ByteArray& output) const
 {
   ByteConstArrayView input = m_value.utf8();
-  algo->computeHash(input, output);
+  algo->computeHash64(input, output);
 }
 
 /*---------------------------------------------------------------------------*/

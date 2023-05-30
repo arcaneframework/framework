@@ -39,6 +39,7 @@
 #include "arcane/utils/IMessagePassingProfilingService.h"
 #include "arcane/utils/ISymbolizerService.h"
 #include "arcane/utils/IDataCompressor.h"
+#include "arcane/utils/IHashAlgorithm.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -229,6 +230,25 @@ arcaneSizeWithPadding(Integer size)
   // TODO: vérifier débordement.
   Integer padding_size = ((size / SIMD_PADDING_SIZE) + 1) * SIMD_PADDING_SIZE;
   return padding_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IHashAlgorithm::
+computeHash64(Span<const Byte> input,ByteArray& output)
+{
+  computeHash(input.smallView(),output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IHashAlgorithm::
+computeHash64(Span<const std::byte> input,ByteArray& output)
+{
+  const Byte* x = reinterpret_cast<const Byte*>(input.data());
+  computeHash64(Span<const Byte>(x,input.size()),output);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -10,6 +10,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/Convert.h"
+#include "arcane/utils/MD5HashAlgorithm.h"
 
 #include <gtest/gtest.h>
 
@@ -26,6 +27,12 @@ _computeSHA3_256Hash(Span<const std::byte> bytes, SmallSpan<std::byte> result);
 
 using namespace Arcane;
 
+struct TestInfo
+{
+  String data_value;
+  String expected_hash;
+};
+
 TEST(Hash, SHA3_256)
 {
   std::array<std::byte, 32> hash_result_array;
@@ -33,11 +40,6 @@ TEST(Hash, SHA3_256)
 
   std::cout << "TEST_SHA3-256\n";
 
-  struct TestInfo
-  {
-    String data_value;
-    String expected_hash;
-  };
   TestInfo values_to_test[8] = {
     { "",
       "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a" },
@@ -72,6 +74,61 @@ TEST(Hash, SHA3_256)
     std::cout << "CUR V3=" << ref_str << "\n";
     std::cout << "REF V3=" << ti.expected_hash << "\n";
     ASSERT_EQ(ref_str, ti.expected_hash);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Hash, MD5)
+{
+  std::cout << "MD5 TEST\n";
+  Arcane::MD5HashAlgorithm md5;
+  ByteUniqueArray output1;
+  ByteUniqueArray output2;
+  ByteUniqueArray output3;
+
+  TestInfo values_to_test[4] = {
+    { "",
+      "d41d8cd98f00b204e9800998ecf8427e" },
+
+    { "a",
+      "0cc175b9c0f1b6a831c399e269772661" },
+
+    { "The quick brown fox jumps over the lazy dog",
+      "9e107d9d372bb6826bd81d3542a419d6" },
+
+    { "The quick brown fox jumps over the lazy dog.",
+      "e4d909c290d0fb1ca068ffaddf22cbd0" }
+  };
+
+  for (const TestInfo& ti : values_to_test) {
+    Span<const Byte> str_bytes(ti.data_value.bytes());
+    {
+      Span<const std::byte> input1(asBytes(str_bytes));
+      output1.clear();
+      md5.computeHash64(input1, output1);
+    }
+    {
+      Span<const Byte> input2(str_bytes);
+      output2.clear();
+      md5.computeHash64(input2, output2);
+    }
+    {
+      ByteConstArrayView input3(str_bytes.constSmallView());
+      output3.clear();
+      md5.computeHash(input3, output3);
+    }
+    String hash1 = Convert::toHexaString(output1);
+    String hash2 = Convert::toHexaString(output2);
+    String hash3 = Convert::toHexaString(output3);
+    std::cout << "REF=" << ti.expected_hash << "\n";
+    std::cout << "HASH1=" << hash1 << "\n";
+    std::cout << "HASH2=" << hash2 << "\n";
+    std::cout << "HASH3=" << hash3 << "\n";
+    ASSERT_EQ(hash1, ti.expected_hash);
+    ASSERT_EQ(hash2, ti.expected_hash);
+    ASSERT_EQ(hash3, ti.expected_hash);
   }
 }
 

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MD5HashAlgorithm.h                                          (C) 2000-2014 */
+/* MD5HashAlgorithm.h                                          (C) 2000-2023 */
 /*                                                                           */
 /* Calcule la fonction de hashage MD5.                                       */
 /*---------------------------------------------------------------------------*/
@@ -19,45 +19,36 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*!
- * \brief  Calcule la fonction de hashage MD5.
+ * \brief Calcule la fonction de hashage MD5 d'un tableau.
+ *
+ * Pour cet algorithme, la taille de la clé est de 16 octets.
  */
 class ARCANE_UTILS_EXPORT MD5HashAlgorithm
 : public IHashAlgorithm
 {
  public:
-	
+
   MD5HashAlgorithm();
 
  public:
 
-  /*!
-   * \brief Calcule la fonction de hashage sur le tableau \a input.
-   * Pour cet algorithme, la clé est de 16 octets.
-   */
-  void computeHash(ByteConstArrayView input,ByteArray& output);
-
- private:
+  void computeHash(ByteConstArrayView input, ByteArray& output) override;
+  void computeHash64(Span<const Byte> input, ByteArray& output) override;
+  void computeHash64(Span<const std::byte> input, ByteArray& output) override;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

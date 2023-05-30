@@ -298,7 +298,7 @@ computeHash(IHashAlgorithm* algo, ByteArray& output) const
   Integer type_size = sizeof(DataType);
   const Byte* ptr = reinterpret_cast<const Byte*>(&m_value);
   ByteConstArrayView input(type_size, ptr);
-  algo->computeHash(input, output);
+  algo->computeHash64(input, output);
 }
 
 /*---------------------------------------------------------------------------*/
