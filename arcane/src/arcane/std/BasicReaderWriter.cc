@@ -522,53 +522,8 @@ readData(const String& var_full_name,IData* data)
 
   data->allocateBufferForSerializedData(sd.get());
 
-  void* ptr = sd->writableBytes().data();
-
-  const bool print_values = false;
-  String key_name = var_full_name;
-  if (storage_size!=0){
-    eDataType base_data_type = sd->baseDataType();
-    Real* real_ptr = (Real*)ptr;
-    if (base_data_type==DT_Real){
-      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element)));
-      if (print_values){
-        if (nb_base_element>1){
-          info() << "VAR=" << var_full_name << " offset=" << vdi->fileOffset()
-                 << " V[0]=" << real_ptr[0] << " V[1]=" << real_ptr[1];
-          const char* buf = (const char*)ptr;
-          for( Integer i=0; i<16; ++i ){
-            info() << "READ I=" << i << " V=" << (int)buf[i];
-          }
-        }
-      }
-    }
-    else if (base_data_type==DT_Real2){
-      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element*2)));
-    }
-    else if (base_data_type==DT_Real3){
-      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element*3)));
-    }
-    else if (base_data_type==DT_Real2x2){
-      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element*4)));
-    }
-    else if (base_data_type==DT_Real3x3){
-      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element*9)));
-    }
-    else if (base_data_type==DT_Int16){
-      reader->read(key_name,asWritableBytes(Span<Int16>((Int16*)ptr,nb_base_element)));
-    }
-    else if (base_data_type==DT_Int32){
-      reader->read(key_name,asWritableBytes(Span<Int32>((Int32*)ptr,nb_base_element)));
-    }
-    else if (base_data_type==DT_Int64){
-      reader->read(key_name,asWritableBytes(Span<Int64>((Int64*)ptr,nb_base_element)));
-    }
-    else if (base_data_type==DT_Byte){
-      reader->read(key_name,asWritableBytes(Span<Byte>((Byte*)ptr,storage_size)));
-    }
-    else
-      ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
-  }
+  if (storage_size!=0)
+    reader->read(var_full_name,asWritableBytes(sd->writableBytes()));
 
   data->assignSerializedData(sd.get());
 }
@@ -714,37 +669,7 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
   // Maintenant, sauve les valeurs si necessaire
   Int64 nb_base_element = sdata->nbBaseElement();
   if (nb_base_element!=0 && ptr){
-    String key_name = var_full_name;
-    eDataType base_data_type = sdata->baseDataType();
-    if (base_data_type==DT_Real){
-      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element)));
-    }
-    else if (base_data_type==DT_Real2){
-      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element*2)));
-    }
-    else if (base_data_type==DT_Real3){
-      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element*3)));
-    }
-    else if (base_data_type==DT_Real2x2){
-      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element*4)));
-    }
-    else if (base_data_type==DT_Real3x3){
-      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element*9)));
-    }
-    else if (base_data_type==DT_Int16){
-      writer->write(key_name,asBytes(Span<const Int16>((const Int16*)ptr,nb_base_element)));
-    }
-    else if (base_data_type==DT_Int32){
-      writer->write(key_name,asBytes(Span<const Int32>((const Int32*)ptr,nb_base_element)));
-    }
-    else if (base_data_type==DT_Int64){
-      writer->write(key_name,asBytes(Span<const Int64>((const Int64*)ptr,nb_base_element)));
-    }
-    else if (base_data_type==DT_Byte){
-      writer->write(key_name,asBytes(Span<const Byte>((const Byte*)ptr,nb_base_element)));
-    }
-    else
-      ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
+    writer->write(var_full_name,asBytes(sdata->constBytes()));
   }
 }
 
