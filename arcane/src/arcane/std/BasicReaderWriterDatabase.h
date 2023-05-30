@@ -93,12 +93,7 @@ class KeyValueTextReader
 
   void getExtents(const String& key_name, SmallSpan<Int64> extents);
   void readIntegers(const String& key, Span<Integer> values);
-
-  void read(const String& key, Span<Int16> values);
-  void read(const String& key, Span<Int32> values);
-  void read(const String& key, Span<Int64> values);
-  void read(const String& key, Span<Real> values);
-  void read(const String& key, Span<Byte> values);
+  void read(const String& key, Span<std::byte> values);
 
  public:
 

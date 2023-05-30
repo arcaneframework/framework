@@ -421,7 +421,7 @@ initialize(const String& path,Int32 rank)
     Int64 meta_data_size = 0;
     String key_name = "Global:OwnMetadata";
     m_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
-    UniqueArray<Byte> bytes(meta_data_size);
+    UniqueArray<std::byte> bytes(meta_data_size);
     m_text_reader->read(key_name,bytes);
     info(4) << "Reading own metadata rank=" << rank << " from database";
     xdoc = IXmlDocumentHolder::loadFromBuffer(bytes,"OwnMetadata",traceMng());
@@ -530,7 +530,7 @@ readData(const String& var_full_name,IData* data)
     eDataType base_data_type = sd->baseDataType();
     Real* real_ptr = (Real*)ptr;
     if (base_data_type==DT_Real){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element));
+      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element)));
       if (print_values){
         if (nb_base_element>1){
           info() << "VAR=" << var_full_name << " offset=" << vdi->fileOffset()
@@ -543,28 +543,28 @@ readData(const String& var_full_name,IData* data)
       }
     }
     else if (base_data_type==DT_Real2){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*2));
+      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element*2)));
     }
     else if (base_data_type==DT_Real3){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*3));
+      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element*3)));
     }
     else if (base_data_type==DT_Real2x2){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*4));
+      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element*4)));
     }
     else if (base_data_type==DT_Real3x3){
-      reader->read(key_name,Span<Real>(real_ptr,nb_base_element*9));
+      reader->read(key_name,asWritableBytes(Span<Real>(real_ptr,nb_base_element*9)));
     }
     else if (base_data_type==DT_Int16){
-      reader->read(key_name,Span<Int16>((Int16*)ptr,nb_base_element));
+      reader->read(key_name,asWritableBytes(Span<Int16>((Int16*)ptr,nb_base_element)));
     }
     else if (base_data_type==DT_Int32){
-      reader->read(key_name,Span<Int32>((Int32*)ptr,nb_base_element));
+      reader->read(key_name,asWritableBytes(Span<Int32>((Int32*)ptr,nb_base_element)));
     }
     else if (base_data_type==DT_Int64){
-      reader->read(key_name,Span<Int64>((Int64*)ptr,nb_base_element));
+      reader->read(key_name,asWritableBytes(Span<Int64>((Int64*)ptr,nb_base_element)));
     }
     else if (base_data_type==DT_Byte){
-      reader->read(key_name,Span<Byte>((Byte*)ptr,storage_size));
+      reader->read(key_name,asWritableBytes(Span<Byte>((Byte*)ptr,storage_size)));
     }
     else
       ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
@@ -586,14 +586,14 @@ readItemGroup(const String& group_full_name,Int64Array& written_unique_ids,
       Int64 nb_written_uid = 0;
       m_text_reader->getExtents(written_uid_name,Int64ArrayView(1,&nb_written_uid));
       written_unique_ids.resize(nb_written_uid);
-      m_text_reader->read(written_uid_name,written_unique_ids);
+      m_text_reader->read(written_uid_name,asWritableBytes(written_unique_ids.span()));
     }
     {
       String wanted_uid_name = String("GroupWantedUid:")+group_full_name;
       Int64 nb_wanted_uid = 0;
       m_text_reader->getExtents(wanted_uid_name,Int64ArrayView(1,&nb_wanted_uid));
       wanted_unique_ids.resize(nb_wanted_uid);
-      m_text_reader->read(wanted_uid_name,wanted_unique_ids);
+      m_text_reader->read(wanted_uid_name,asWritableBytes(wanted_unique_ids.span()));
     }
     return;
   }
@@ -1514,7 +1514,7 @@ fillMetaData(ByteArray& bytes)
     info(4) << "Reading checkpoint metadata from database";
     m_forced_rank_to_read_text_reader->getExtents(key_name,Int64ArrayView(1,&meta_data_size));
     bytes.resize(meta_data_size);
-    m_forced_rank_to_read_text_reader->read(key_name,bytes);
+    m_forced_rank_to_read_text_reader->read(key_name,asWritableBytes(bytes.span()));
   }
   else{
     String filename = _getMetaDataFileName(rank);

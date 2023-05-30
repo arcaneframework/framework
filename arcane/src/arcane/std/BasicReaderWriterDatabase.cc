@@ -588,38 +588,10 @@ readIntegers(const String& key,Span<Integer> values)
 }
 
 void KeyValueTextReader::
-read(const String& key,Span<Int16> values)
+read(const String& key,Span<std::byte> values)
 {
   _setFileOffset(key);
-  m_p->m_reader.read(asWritableBytes(values));
-}
-
-void KeyValueTextReader::
-read(const String& key,Span<Int32> values)
-{
-  _setFileOffset(key);
-  m_p->m_reader.read(asWritableBytes(values));
-}
-
-void KeyValueTextReader::
-read(const String& key,Span<Int64> values)
-{
-  _setFileOffset(key);
-  m_p->m_reader.read(asWritableBytes(values));
-}
-
-void KeyValueTextReader::
-read(const String& key,Span<Real> values)
-{
-  _setFileOffset(key);
-  m_p->m_reader.read(asWritableBytes(values));
-}
-
-void KeyValueTextReader::
-read(const String& key,Span<Byte> values)
-{
-  _setFileOffset(key);
-  m_p->m_reader.read(asWritableBytes(values));
+  m_p->m_reader.read(values);
 }
 
 String KeyValueTextReader::
