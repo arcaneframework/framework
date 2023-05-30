@@ -75,7 +75,7 @@ TextReader::
 void TextReader::
 readIntegers(Span<Integer> values)
 {
-  read(values);
+  read(asWritableBytes(values));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -96,11 +96,20 @@ _checkStream(const char* type, Int64 nb_read_value)
 /*---------------------------------------------------------------------------*/
 
 void TextReader::
-read(Span<Byte> values)
+read(Span<std::byte> values)
 {
   Int64 nb_value = values.size();
   _binaryRead(values.data(), nb_value);
-  _checkStream("Byte[]", nb_value);
+  _checkStream("byte[]", nb_value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TextReader::
+read(Span<Byte> values)
+{
+  read(asWritableBytes(values));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -109,9 +118,7 @@ read(Span<Byte> values)
 void TextReader::
 read(Span<Int64> values)
 {
-  Int64 nb_value = values.size();
-  _binaryRead(values.data(), nb_value * sizeof(Int64));
-  _checkStream("Int64[]", nb_value);
+  read(asWritableBytes(values));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -120,9 +127,7 @@ read(Span<Int64> values)
 void TextReader::
 read(Span<Int16> values)
 {
-  Int64 nb_value = values.size();
-  _binaryRead(values.data(), nb_value * sizeof(Int16));
-  _checkStream("Int16[]", nb_value);
+  read(asWritableBytes(values));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -131,9 +136,7 @@ read(Span<Int16> values)
 void TextReader::
 read(Span<Int32> values)
 {
-  Int64 nb_value = values.size();
-  _binaryRead(values.data(), nb_value * sizeof(Int32));
-  _checkStream("Int32[]", nb_value);
+  read(asWritableBytes(values));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -142,9 +145,7 @@ read(Span<Int32> values)
 void TextReader::
 read(Span<Real> values)
 {
-  Int64 nb_value = values.size();
-  _binaryRead(values.data(), nb_value * sizeof(Real));
-  _checkStream("Real[]", nb_value);
+  read(asWritableBytes(values));
 }
 
 /*---------------------------------------------------------------------------*/
