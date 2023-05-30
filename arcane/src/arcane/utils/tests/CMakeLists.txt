@@ -6,6 +6,7 @@ arcane_add_component_test_executable(utils
   TestNumVector.cc
   TestValueConvert.cc
   TestCollections.cc
+  TestHash.cc
   TestHashTable.cc
   TestMemory.cc
   )

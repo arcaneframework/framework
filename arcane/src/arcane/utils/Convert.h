@@ -144,6 +144,15 @@ extern ARCANE_UTILS_EXPORT String
 toHexaString(ByteConstArrayView input);
 
 /*!
+ * \brief Converti un tableau d'octet en sa représentation hexadécimale.
+ *
+ * Chaque octet de \a input est converti en deux caractères hexadécimaux,
+ * appartenant à [0-9a-f].
+ */
+extern ARCANE_UTILS_EXPORT String
+toHexaString(Span<const std::byte> input);
+
+/*!
  * \brief Converti un réel en sa représentation hexadécimale.
  *
  * Chaque octet de \a input est converti en deux caractères hexadécimaux,

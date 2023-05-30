@@ -354,19 +354,40 @@ static char global_hexa[16] = {'0','1', '2', '3', '4', '5', '6', '7', '8', '9',
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-String Convert::
-toHexaString(ByteConstArrayView input)
+namespace
 {
-  UniqueArray<char> out_buf;
-  Integer len = input.size();
+String
+_toHexaString(Span<const std::byte> input)
+{
+  UniqueArray<Byte> out_buf;
+  Int64 len = input.size();
   out_buf.resize((len*2)+1);
-  for( Integer i=0; i<len; ++i ){
-    int v = (int)input[i];
+  for( Int64 i=0; i<len; ++i ){
+    int v = std::to_integer<int>(input[i]);
     out_buf[(i*2)] = global_hexa[v/16];
     out_buf[(i*2)+1] = global_hexa[v%16];
   }
   out_buf[len*2] = '\0';
-  return StringView(out_buf.data());
+  return String(out_buf);
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String Convert::
+toHexaString(Span<const std::byte> input)
+{
+  return _toHexaString(input);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String Convert::
+toHexaString(ByteConstArrayView input)
+{
+  return _toHexaString(asBytes(Span<const Byte>(input)));
 }
 
 /*---------------------------------------------------------------------------*/
