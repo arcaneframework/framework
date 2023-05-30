@@ -11,8 +11,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/SHA3HashAlgorithm.h"
 
 #include <cstring>
 
@@ -115,8 +116,7 @@ class SHA3
   static void sha3_permutation(uint64_t* state);
   static void sha3_process_block(uint64_t hash[25], const uint64_t* block, size_t block_size);
   void sha3_update(Span<const std::byte> bytes);
-  void sha3_final(unsigned char* result);
-  void keccak_final(unsigned char* result);
+  void sha3_final(ByteArray& output_hash);
 };
 
 // Valide pour little-endian
@@ -441,15 +441,16 @@ sha3_update(Span<const std::byte> bytes)
 /*!
  * \brief Store calculated hash into the given array.
  *
- * @param ctx the algorithm context containing current hashing state
- * @param result calculated hash in binary form
+ * @param output_hash calculated hash in binary form
  */
 void SHA3::
-sha3_final(unsigned char* result)
+sha3_final(ByteArray& output_hash)
 {
   sha3_ctx* ctx = &m_context;
   size_t digest_length = 100 - ctx->block_size / 2;
   const size_t block_size = ctx->block_size;
+  output_hash.resize(digest_length);
+  auto* result = reinterpret_cast<unsigned char*>(output_hash.data());
 
   if (!(ctx->rest & SHA3_FINALIZED)) {
     // clear the rest of the data queue
@@ -471,41 +472,8 @@ sha3_final(unsigned char* result)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Store calculated hash into the given array.
- *
- * @param ctx the algorithm context containing current hashing state
- * @param result calculated hash in binary form
- */
-void SHA3::
-keccak_final(unsigned char* result)
-{
-  sha3_ctx* ctx = &m_context;
-  size_t digest_length = 100 - ctx->block_size / 2;
-  const size_t block_size = ctx->block_size;
 
-  if (!(ctx->rest & SHA3_FINALIZED)) {
-    // clear the rest of the data queue
-    std::memset((char*)ctx->message + ctx->rest, 0, block_size - ctx->rest);
-    ((char*)ctx->message)[ctx->rest] |= 0x01;
-    ((char*)ctx->message)[block_size - 1] |= (char)0x80;
-
-    // process final block
-    sha3_process_block(ctx->hash, ctx->message, block_size);
-    ctx->rest = SHA3_FINALIZED; // mark context as finalized
-  }
-
-  if (block_size <= digest_length)
-    ARCANE_FATAL("Bad value: block_size={0} digest_length={1}", block_size, digest_length);
-
-  if (result)
-    me64_to_le_str(result, ctx->hash, digest_length);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-}
+} // namespace Arcane::SHA3Algorithm
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -516,17 +484,80 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_UTILS_EXPORT void
-_computeSHA3_256Hash(Span<const std::byte> bytes, SmallSpan<std::byte> result)
+void SHA3HashAlgorithm::
+_computeHash64(Span<const std::byte> input, ByteArray& output)
 {
   using namespace SHA3Algorithm;
-  if (result.size() < 32)
-    ARCANE_FATAL("Bad size '{0}' for result (minimum is 32)", result.size());
 
   SHA3 sha3;
+  this->_initialize(sha3);
+  sha3.sha3_update(input);
+  sha3.sha3_final(output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SHA3HashAlgorithm::
+computeHash(ByteConstArrayView input, ByteArray& output)
+{
+  Span<const Byte> input64(input);
+  return _computeHash64(asBytes(input64), output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SHA3HashAlgorithm::
+computeHash64(Span<const Byte> input, ByteArray& output)
+{
+  Span<const std::byte> bytes(asBytes(input));
+  return _computeHash64(bytes, output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SHA3HashAlgorithm::
+computeHash64(Span<const std::byte> input, ByteArray& output)
+{
+  return _computeHash64(input, output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SHA3_256HashAlgorithm::
+_initialize(SHA3Algorithm::SHA3& sha3)
+{
   sha3.sha3_256_init();
-  sha3.sha3_update(bytes);
-  sha3.sha3_final((unsigned char*)result.data());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SHA3_224HashAlgorithm::
+_initialize(SHA3Algorithm::SHA3& sha3)
+{
+  sha3.sha3_224_init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SHA3_384HashAlgorithm::
+_initialize(SHA3Algorithm::SHA3& sha3)
+{
+  sha3.sha3_384_init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SHA3_512HashAlgorithm::
+_initialize(SHA3Algorithm::SHA3& sha3)
+{
+  sha3.sha3_512_init();
 }
 
 /*---------------------------------------------------------------------------*/
