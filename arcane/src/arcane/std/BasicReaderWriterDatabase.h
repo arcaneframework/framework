@@ -54,11 +54,7 @@ class KeyValueTextWriter
  public:
 
   void setExtents(const String& key_name, SmallSpan<const Int64> extents);
-  void write(const String& key, Span<const Real> values);
-  void write(const String& key, Span<const Int16> values);
-  void write(const String& key, Span<const Int32> values);
-  void write(const String& key, Span<const Int64> values);
-  void write(const String& key, Span<const Byte> values);
+  void write(const String& key, Span<const std::byte> values);
 
  public:
 

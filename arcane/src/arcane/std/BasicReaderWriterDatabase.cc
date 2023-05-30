@@ -342,50 +342,10 @@ setExtents(const String& key_name,SmallSpan<const Int64> extents)
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-write(const String& key,Span<const Real> values)
+write(const String& key,Span<const std::byte> values)
 {
   _writeKey(key);
-  m_p->m_writer.write(asBytes(values));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void KeyValueTextWriter::
-write(const String& key,Span<const Int16> values)
-{
-  _writeKey(key);
-  m_p->m_writer.write(asBytes(values));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void KeyValueTextWriter::
-write(const String& key,Span<const Int32> values)
-{
-  _writeKey(key);
-  m_p->m_writer.write(asBytes(values));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void KeyValueTextWriter::
-write(const String& key,Span<const Int64> values)
-{
-  _writeKey(key);
-  m_p->m_writer.write(asBytes(values));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void KeyValueTextWriter::
-write(const String& key,Span<const Byte> values)
-{
-  _writeKey(key);
-  m_p->m_writer.write(asBytes(values));
+  m_p->m_writer.write(values);
 }
 
 /*---------------------------------------------------------------------------*/

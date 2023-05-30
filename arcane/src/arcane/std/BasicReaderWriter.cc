@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriter.cc                                        (C) 2000-2022 */
+/* BasicReaderWriter.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Lecture/Ecriture simple.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -81,6 +81,14 @@ namespace Arcane
 using impl::KeyValueTextReader;
 using impl::KeyValueTextWriter;
 
+namespace
+{
+// TODO A mettre dans Arccore
+template<typename T> Span<const std::byte> asBytes(SmallSpan<T> view)
+{
+  return {reinterpret_cast<const std::byte*>(view.data()), view.sizeBytes()};
+}
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -709,31 +717,31 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
     String key_name = var_full_name;
     eDataType base_data_type = sdata->baseDataType();
     if (base_data_type==DT_Real){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element));
+      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element)));
     }
     else if (base_data_type==DT_Real2){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*2));
+      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element*2)));
     }
     else if (base_data_type==DT_Real3){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*3));
+      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element*3)));
     }
     else if (base_data_type==DT_Real2x2){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*4));
+      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element*4)));
     }
     else if (base_data_type==DT_Real3x3){
-      writer->write(key_name,Span<const Real>((const Real*)ptr,nb_base_element*9));
+      writer->write(key_name,asBytes(Span<const Real>((const Real*)ptr,nb_base_element*9)));
     }
     else if (base_data_type==DT_Int16){
-      writer->write(key_name,Span<const Int16>((const Int16*)ptr,nb_base_element));
+      writer->write(key_name,asBytes(Span<const Int16>((const Int16*)ptr,nb_base_element)));
     }
     else if (base_data_type==DT_Int32){
-      writer->write(key_name,Span<const Int32>((const Int32*)ptr,nb_base_element));
+      writer->write(key_name,asBytes(Span<const Int32>((const Int32*)ptr,nb_base_element)));
     }
     else if (base_data_type==DT_Int64){
-      writer->write(key_name,Span<const Int64>((const Int64*)ptr,nb_base_element));
+      writer->write(key_name,asBytes(Span<const Int64>((const Int64*)ptr,nb_base_element)));
     }
     else if (base_data_type==DT_Byte){
-      writer->write(key_name,Span<const Byte>((const Byte*)ptr,nb_base_element));
+      writer->write(key_name,asBytes(Span<const Byte>((const Byte*)ptr,nb_base_element)));
     }
     else
       ARCANE_THROW(NotSupportedException,"Bad datatype {0}",base_data_type);
@@ -753,13 +761,13 @@ writeItemGroup(const String& group_full_name,SmallSpan<const Int64> written_uniq
       String written_uid_name = String("GroupWrittenUid:")+group_full_name;
       Int64 nb_written_uid = written_unique_ids.size();
       m_text_writer->setExtents(written_uid_name,Int64ConstArrayView(1,&nb_written_uid));
-      m_text_writer->write(written_uid_name,written_unique_ids);
+      m_text_writer->write(written_uid_name,asBytes(written_unique_ids));
     }
     {
       String wanted_uid_name = String("GroupWantedUid:")+group_full_name;
       Int64 nb_wanted_uid = wanted_unique_ids.size();
       m_text_writer->setExtents(wanted_uid_name,Int64ConstArrayView(1,&nb_wanted_uid));
-      m_text_writer->write(wanted_uid_name,wanted_unique_ids);
+      m_text_writer->write(wanted_uid_name,asBytes(wanted_unique_ids));
     }
     return;
   }
@@ -771,14 +779,14 @@ writeItemGroup(const String& group_full_name,SmallSpan<const Int64> written_uniq
   {
     Integer nb_unique_id = written_unique_ids.size();
     writer.write(asBytes(Span<const Int32>(&nb_unique_id,1)));
-    writer.write(asBytes(Span<const Int64>(written_unique_ids)));
+    writer.write(asBytes(written_unique_ids));
   }
 
   // Sauve la liste des unique_ids souhaités par ce sous-domaine
   {
     Integer nb_unique_id = wanted_unique_ids.size();
     writer.write(asBytes(Span<const Int32>(&nb_unique_id,1)));
-    writer.write(asBytes(Span<const Int64>(wanted_unique_ids)));
+    writer.write(asBytes(wanted_unique_ids));
   }
 }
 
@@ -811,7 +819,7 @@ endWrite()
     Int64 length = bytes.length();
     String key_name = "Global:OwnMetadata";
     m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
-    m_text_writer->write(key_name,bytes);
+    m_text_writer->write(key_name,asBytes(bytes.span()));
   }
   else{
     String filename = _getOwnMetatadaFile(m_path,m_rank);
@@ -1088,7 +1096,7 @@ setMetaData(const String& meta_data)
     Int64 length = bytes.length();
     String key_name = "Global:CheckpointMetadata";
     m_text_writer->setExtents(key_name,Int64ConstArrayView(1,&length));
-    m_text_writer->write(key_name,bytes);
+    m_text_writer->write(key_name,asBytes(bytes));
   }
   else{
     Int32 my_rank = m_parallel_mng->commRank();
