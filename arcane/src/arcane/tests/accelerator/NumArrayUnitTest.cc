@@ -287,6 +287,15 @@ _executeTest1(eMemoryRessource mem_kind)
     t3.resize(n1);
 
     {
+      auto span_value = t1.span();
+      using Type1 = NumArray<double,MDDim1>::value_type;
+      using Type2 = decltype(span_value)::value_type;
+      bool is_same_type = std::is_same_v<Type1,Type2>;
+      std::cout << "IS_SAME: " << is_same_type << "\n";
+      if (!is_same_type)
+        ARCANE_FATAL("Not same type");
+    }
+    {
       auto command = makeCommand(queue);
       auto out_t1 = viewOut(command, t1);
       command.addNbThreadPerBlock(128);
