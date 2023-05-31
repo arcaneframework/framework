@@ -24,6 +24,7 @@ set(ARCANE_SOURCES
   DumpW.h
   DumpWEnsight7.cc
   DumpWUCD.cc
+  FileHashDatabase.cc
   JsonMessagePassingProfilingService.h
   JsonMessagePassingProfilingService.cc
   MeshGeneratorService.cc
@@ -104,7 +105,9 @@ set(ARCANE_SOURCES
 
   internal/SodStandardGroupsBuilder.h
   internal/SodStandardGroupsBuilder.cc
-  )
+
+  internal/IHashDatabase.h
+)
 
 set(AXL_FILES
   EnsightHdfPostProcessor
