@@ -218,6 +218,7 @@ class BasicReaderWriterDatabaseCommon
  public:
 
   std::map<String,DataInfo> m_data_infos;
+  Ref<IDataCompressor> m_data_compressor;
   Ref<IHashDatabase> m_hash_database;
 };
 
@@ -357,9 +358,29 @@ setExtents(const String& key_name,SmallSpan<const Int64> extents)
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-write(const String& key,Span<const std::byte> values)
+write(const String& key, Span<const std::byte> values)
 {
   _writeKey(key);
+
+  IDataCompressor* d = m_p->m_data_compressor.get();
+  Int64 len = values.size();
+  if (d && len > d->minCompressSize()) {
+    UniqueArray<std::byte> compressed_values;
+    m_p->m_data_compressor->compress(values, compressed_values);
+    Int64 compressed_size = compressed_values.largeSize();
+    m_p->m_writer.write(asBytes(Span<const Int64>(&compressed_size, 1)));
+    _write2(key, compressed_values);
+  }
+  else
+    _write2(key, values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextWriter::
+_write2(const String& key,Span<const std::byte> values)
+{
   if (m_p->m_hash_database.get()){
     HashDatabaseWriteResult result;
     HashDatabaseWriteArgs args(values);
@@ -388,7 +409,7 @@ fileName() const
 void KeyValueTextWriter::
 setDataCompressor(Ref<IDataCompressor> ds)
 {
-  m_p->m_writer.setDataCompressor(ds);
+  m_p->m_data_compressor = ds;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -397,7 +418,7 @@ setDataCompressor(Ref<IDataCompressor> ds)
 Ref<IDataCompressor> KeyValueTextWriter::
 dataCompressor() const
 {
-  return m_p->m_writer.dataCompressor();
+  return m_p->m_data_compressor;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -616,17 +637,39 @@ readIntegers(const String& key,Span<Integer> values)
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextReader::
-read(const String& key,Span<std::byte> values)
+read(const String& key, Span<std::byte> values)
 {
   _setFileOffset(key);
-  if (m_p->m_hash_database.get()){
+
+  IDataCompressor* d = m_p->m_data_compressor.get();
+  Int64 len = values.size();
+  if (d && len > d->minCompressSize()) {
+    UniqueArray<std::byte> compressed_values;
+    Int64 compressed_size = 0;
+    m_p->m_reader.read(asWritableBytes(Span<Int64>(&compressed_size, 1)));
+    compressed_values.resize(compressed_size);
+    _read2(compressed_values);
+    m_p->m_data_compressor->decompress(compressed_values, values);
+  }
+  else {
+    _read2(values);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextReader::
+_read2(Span<std::byte> values)
+{
+  if (m_p->m_hash_database.get()) {
     SmallArray<Byte> hash_as_bytes;
     hash_as_bytes.resize(64);
     m_p->m_reader.read(asWritableBytes(hash_as_bytes.span()));
 
     String hash_value(hash_as_bytes);
     //std::cout << "READ_KW_HASH key=" << key << " hash=" << hash_value << " expected_len=" << values.size() << "\n";
-    HashDatabaseReadArgs args(hash_value,values);
+    HashDatabaseReadArgs args(hash_value, values);
     m_p->m_hash_database->readValues(args);
   }
   else
@@ -657,7 +700,7 @@ setFileOffset(Int64 v)
 void KeyValueTextReader::
 setDataCompressor(Ref<IDataCompressor> ds)
 {
-  m_p->m_reader.setDataCompressor(ds);
+  m_p->m_data_compressor = ds;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -666,7 +709,7 @@ setDataCompressor(Ref<IDataCompressor> ds)
 Ref<IDataCompressor> KeyValueTextReader::
 dataCompressor() const
 {
-  return m_p->m_reader.dataCompressor();
+  return m_p->m_data_compressor;
 }
 
 /*---------------------------------------------------------------------------*/

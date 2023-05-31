@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriterDatabase.h                                 (C) 2000-2021 */
+/* BasicReaderWriterDatabase.h                                 (C) 2000-2023 */
 /*                                                                           */
 /* Base de donnée pour le service 'BasicReaderWriter'.                       */
 /*---------------------------------------------------------------------------*/
@@ -70,6 +70,7 @@ class KeyValueTextWriter
   void _writeKey(const String& key);
   void _writeHeader();
   void _writeEpilog();
+  void _write2(const String& key,Span<const std::byte> values);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -112,6 +113,7 @@ class KeyValueTextReader
   void _readJSON();
   void _readDirect(Int64 offset, Span<std::byte> bytes);
   void _setFileOffset(const String& key_name);
+  void _read2(Span<std::byte> values);
 };
 
 /*---------------------------------------------------------------------------*/
