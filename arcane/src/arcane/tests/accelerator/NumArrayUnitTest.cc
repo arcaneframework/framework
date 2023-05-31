@@ -288,12 +288,18 @@ _executeTest1(eMemoryRessource mem_kind)
 
     {
       auto span_value = t1.span();
-      using Type1 = NumArray<double,MDDim1>::value_type;
-      using Type2 = decltype(span_value)::value_type;
-      bool is_same_type = std::is_same_v<Type1,Type2>;
+      using ValueType1 = NumArray<double,MDDim1>::value_type;
+      using ValueType2 = decltype(span_value)::value_type;
+      bool is_same_type = std::is_same_v<ValueType1,ValueType2>;
       std::cout << "IS_SAME: " << is_same_type << "\n";
       if (!is_same_type)
-        ARCANE_FATAL("Not same type");
+        ARCANE_FATAL("Not same value type");
+
+      using LayoutType1 = NumArray<double,MDDim1>::LayoutPolicyType;
+      using LayoutType2 = decltype(span_value)::LayoutPolicyType;
+      bool is_same_policy = std::is_same_v<LayoutType1,LayoutType2>;
+      if (!is_same_policy)
+        ARCANE_FATAL("Not same policy");
     }
     {
       auto command = makeCommand(queue);

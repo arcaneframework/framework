@@ -63,6 +63,7 @@ class MDSpanBase
 
   using value_type = DataType;
   using ExtentsType = Extents;
+  using LayoutPolicyType = LayoutPolicy;
   using IndexType = typename Extents::IndexType;
   using ArrayExtentsWithOffsetType = ArrayExtentsWithOffset<Extents, LayoutPolicy>;
   using DynamicDimsType = typename Extents::DynamicDimsType;
