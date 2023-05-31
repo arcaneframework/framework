@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriterDatabase.cc                                (C) 2000-2021 */
+/* BasicReaderWriterDatabase.cc                                (C) 2000-2023 */
 /*                                                                           */
 /* Base de donnée pour le service 'BasicReaderWriter'.                       */
 /*---------------------------------------------------------------------------*/
@@ -21,11 +21,13 @@
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/IDataCompressor.h"
+#include "arcane/utils/SmallArray.h"
 
 #include "arcane/ArcaneException.h"
 
 #include "arcane/std/TextReader.h"
 #include "arcane/std/TextWriter.h"
+#include "arcane/std/internal/IHashDatabase.h"
 
 #include <fstream>
 #include <map>
@@ -158,6 +160,7 @@ class BasicReaderWriterDatabaseHeaderFormat
 class BasicReaderWriterDatabaseCommon
 {
  public:
+
   struct ExtentsInfo
   {
     static constexpr int MAX_SIZE = 8;
@@ -193,6 +196,17 @@ class BasicReaderWriterDatabaseCommon
 
  public:
 
+  BasicReaderWriterDatabaseCommon()
+  {
+    String hash_directory = platform::getEnvironmentVariable("ARCANE_HASHDATABASE_DIRECTORY");
+    if (!hash_directory.null()){
+      std::cout << "Using Hash database at location '" << hash_directory << "'\n";
+      m_hash_database = createFileHashDatabase(hash_directory);
+    }
+  }
+
+ public:
+
   DataInfo& findData(const String& key_name)
   {
     auto x = m_data_infos.find(key_name);
@@ -204,6 +218,7 @@ class BasicReaderWriterDatabaseCommon
  public:
 
   std::map<String,DataInfo> m_data_infos;
+  Ref<IHashDatabase> m_hash_database;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -345,7 +360,17 @@ void KeyValueTextWriter::
 write(const String& key,Span<const std::byte> values)
 {
   _writeKey(key);
-  m_p->m_writer.write(values);
+  if (m_p->m_hash_database.get()){
+    HashDatabaseWriteResult result;
+    HashDatabaseWriteArgs args(values);
+    args.setKey(key);
+    m_p->m_hash_database->writeValues(args,result);
+    String hash_value = result.hashValueAsString();
+    //std::cout << "WRITE_KW_HASH key=" << key << " hash=" << hash_value << " len=" << values.size() << "\n";
+    m_p->m_writer.write(asBytes(hash_value.bytes()));
+  }
+  else
+    m_p->m_writer.write(values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -587,12 +612,29 @@ readIntegers(const String& key,Span<Integer> values)
   m_p->m_reader.readIntegers(values);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void KeyValueTextReader::
 read(const String& key,Span<std::byte> values)
 {
   _setFileOffset(key);
-  m_p->m_reader.read(values);
+  if (m_p->m_hash_database.get()){
+    SmallArray<Byte> hash_as_bytes;
+    hash_as_bytes.resize(64);
+    m_p->m_reader.read(asWritableBytes(hash_as_bytes.span()));
+
+    String hash_value(hash_as_bytes);
+    //std::cout << "READ_KW_HASH key=" << key << " hash=" << hash_value << " expected_len=" << values.size() << "\n";
+    HashDatabaseReadArgs args(hash_value,values);
+    m_p->m_hash_database->readValues(args);
+  }
+  else
+    m_p->m_reader.read(values);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 String KeyValueTextReader::
 fileName() const
@@ -600,11 +642,17 @@ fileName() const
   return m_p->m_reader.fileName();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void KeyValueTextReader::
 setFileOffset(Int64 v)
 {
   m_p->m_reader.setFileOffset(v);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void KeyValueTextReader::
 setDataCompressor(Ref<IDataCompressor> ds)
