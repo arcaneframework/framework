@@ -61,7 +61,9 @@ class MDSpanBase
 
  public:
 
+  using value_type = DataType;
   using ExtentsType = Extents;
+  using LayoutPolicyType = LayoutPolicy;
   using IndexType = typename Extents::IndexType;
   using ArrayExtentsWithOffsetType = ArrayExtentsWithOffset<Extents, LayoutPolicy>;
   using DynamicDimsType = typename Extents::DynamicDimsType;
@@ -273,7 +275,6 @@ class MDSpanIntermediate<DataType, 3, Extents, LayoutPolicy>
   using BaseClass = MDSpanBase<DataType, Extents, LayoutPolicy>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
-  using value_type = typename std::remove_cv<DataType>::type;
 
  public:
 
