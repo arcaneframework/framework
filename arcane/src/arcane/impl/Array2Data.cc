@@ -29,6 +29,7 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
@@ -171,6 +172,7 @@ class Array2DataT
 template<typename DataType>
 class Array2DataT<DataType>::Impl
 : public IArray2DataInternalT<DataType>
+, public INumericDataInternal
 {
  public:
 
@@ -222,6 +224,18 @@ class Array2DataT<DataType>::Impl
     compressor->decompress(buf.m_buffer,asWritableBytes(values));
     return true;
   }
+
+  MutableMemoryView memoryView() override
+  {
+    Array2View<DataType> value = m_p->view();
+    Int32 dim1_size = value.dim1Size();
+    Int32 dim2_size = value.dim2Size();
+    DataStorageTypeInfo storage_info = m_p->storageTypeInfo();
+    Int32 nb_basic_element = storage_info.nbBasicElement();
+    Int32 datatype_size = basicDataTypeSize(storage_info.basicDataType()) * nb_basic_element;
+    return makeMutableMemoryView(value.data(), datatype_size * dim2_size, dim1_size);
+  }
+  INumericDataInternal* numericData() override { return this; }
 
  private:
 

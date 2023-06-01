@@ -29,6 +29,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
@@ -174,6 +175,7 @@ class ArrayDataT
 template<typename DataType>
 class ArrayDataT<DataType>::Impl
 : public IArrayDataInternalT<DataType>
+, public INumericDataInternal
 {
  public:
 
@@ -210,6 +212,11 @@ class ArrayDataT<DataType>::Impl
     compressor->decompress(buf.m_buffer,asWritableBytes(values));
     return true;
   }
+  MutableMemoryView memoryView() override
+  {
+    return makeMutableMemoryView<DataType>(m_p->view());
+  }
+  INumericDataInternal* numericData() override { return this; }
 
  private:
 
