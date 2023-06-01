@@ -112,25 +112,24 @@ recompute()
   m_ghost_displacements_base.resize(nb_message);
   m_share_displacements_base.resize(nb_message);
 
+  m_total_nb_ghost = 0;
+  m_total_nb_share = 0;
+
   {
-    Integer array_index = 0;
-    for (Integer i = 0, is = this->size(); i < is; ++i) {
-      const VariableSyncInfo& vsi = rankInfo(i);
-      Int32 local_size = vsi.nbGhost();
-      Int32 displacement = array_index;
-      m_ghost_displacements_base[i] = displacement;
-      array_index += local_size;
+    Integer ghost_displacement = 0;
+    Integer share_displacement = 0;
+    Int32 index = 0;
+    for (const VariableSyncInfo& vsi : infos()) {
+      Int32 ghost_size = vsi.nbGhost();
+      m_ghost_displacements_base[index] = ghost_displacement;
+      ghost_displacement += ghost_size;
+      Int32 share_size = vsi.nbShare();
+      m_share_displacements_base[index] = share_displacement;
+      share_displacement += share_size;
+      ++index;
     }
-  }
-  {
-    Integer array_index = 0;
-    for (Integer i = 0, is = this->size(); i < is; ++i) {
-      const VariableSyncInfo& vsi = rankInfo(i);
-      Int32 local_size = vsi.nbShare();
-      Int32 displacement = array_index;
-      m_share_displacements_base[i] = displacement;
-      array_index += local_size;
-    }
+    m_total_nb_ghost = ghost_displacement;
+    m_total_nb_share = share_displacement;
   }
 }
 
@@ -333,14 +332,8 @@ copySendAsync(Integer index)
 void VariableSynchronizeBufferBase::
 _allocateBuffers(Int32 datatype_size)
 {
-  auto sync_list = m_sync_info->infos();
-
-  Int64 total_ghost_buffer = 0;
-  Int64 total_share_buffer = 0;
-  for (auto& s : sync_list) {
-    total_ghost_buffer += s.nbGhost();
-    total_share_buffer += s.nbShare();
-  }
+  Int64 total_ghost_buffer = m_sync_info->totalNbGhost();
+  Int64 total_share_buffer = m_sync_info->totalNbShare();
 
   Int32 full_dim2_size = datatype_size;
   m_buffer.resize((total_ghost_buffer + total_share_buffer) * full_dim2_size);

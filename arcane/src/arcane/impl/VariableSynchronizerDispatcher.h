@@ -118,6 +118,8 @@ class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
   void recompute();
   Int64 shareDisplacement(Int32 index) const { return m_share_displacements_base[index]; }
   Int64 ghostDisplacement(Int32 index) const { return m_ghost_displacements_base[index]; }
+  Int64 totalNbGhost() const { return m_total_nb_ghost; }
+  Int64 totalNbShare() const { return m_total_nb_share; }
 
  private:
 
@@ -126,6 +128,8 @@ class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
   UniqueArray<Int64> m_ghost_displacements_base;
   //! Déplacement dans le buffer partagé de chaque rang
   UniqueArray<Int64> m_share_displacements_base;
+  Int64 m_total_nb_ghost = 0;
+  Int64 m_total_nb_share = 0;
 };
 
 /*---------------------------------------------------------------------------*/
