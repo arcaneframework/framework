@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringView.h                                                (C) 2000-2022 */
+/* StringView.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Vue sur une chaîne de caractères UTF-8.                                   */
 /*---------------------------------------------------------------------------*/
@@ -47,11 +47,6 @@ class ARCCORE_BASE_EXPORT StringView
 {
  public:
 
-  friend ARCCORE_BASE_EXPORT bool operator==(StringView a,StringView b);
-  friend ARCCORE_BASE_EXPORT bool operator<(StringView a,StringView b);
-
- public:
-
   //! Crée une vue sur une chaîne vide
   StringView() = default;
   //! Créé une vue à partir de \a str codé en UTF-8. \a str peut être nul.
@@ -90,8 +85,6 @@ class ARCCORE_BASE_EXPORT StringView
 
  public:
 
- public:
-
   /*!
    * \brief Retourne la conversion de l'instance dans l'encodage UTF-8.
    *
@@ -121,95 +114,79 @@ class ARCCORE_BASE_EXPORT StringView
     return std::string_view(reinterpret_cast<const char*>(m_v.data()),m_v.size());
   }
 
+  //! Opérateur d'écriture d'une StringView
+  friend ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StringView&);
+
+  /*!
+   * \brief Compare deux vues.
+   * \retval true si elles sont égales,
+   * \retval false sinon.
+   */
+  friend ARCCORE_BASE_EXPORT bool operator==(const StringView& a,const StringView& b);
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont différentes,
+   * \retval false si elles sont égales.
+   * \relate String
+   */
+  friend inline bool operator!=(const StringView& a,const StringView& b)
+  {
+    return !operator==(a,b);
+  }
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont égales,
+   * \retval false sinon.
+   * \relate String
+   */
+  friend ARCCORE_BASE_EXPORT bool operator==(const char* a,const StringView& b);
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont différentes,
+   * \retval false si elles sont égales.
+   * \relate String
+   */
+  friend bool operator!=(const char* a,const StringView& b){ return !operator==(a,b); }
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont égales,
+   * \retval false sinon.
+   * \relate String
+   */
+  friend ARCCORE_BASE_EXPORT bool operator==(const StringView& a,const char* b);
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont différentes,
+   * \retval false si elles sont égales.
+   * \relate String
+   */
+  friend inline bool operator!=(const StringView& a,const char* b)
+  {
+    return !operator==(a,b);
+  }
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si a<b
+   * \retval false sinon.
+   * \relate String
+   */
+  friend ARCCORE_BASE_EXPORT bool operator<(const StringView& a,const StringView& b);
+
  public:
 
   //! Écrit la chaîne au format UTF-8 sur le flot \a o
   void writeBytes(std::ostream& o) const;
 
- public:
-
  private:
 
   Span<const Byte> m_v;
-
- private:
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Opérateur d'écriture d'une StringView
-ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StringView&);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Compare deux vues.
- * \retval true si elles sont égales,
- * \retval false sinon.
- * \relate String
- */
-extern "C++" ARCCORE_BASE_EXPORT bool operator==(StringView a,StringView b);
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont différentes,
- * \retval false si elles sont égales.
- * \relate String
- */
-inline bool operator!=(StringView a,StringView b)
-{
-  return !operator==(a,b);
-}
-
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont égales,
- * \retval false sinon.
- * \relate String
- */
-extern "C++" ARCCORE_BASE_EXPORT bool operator==(const char* a,StringView b);
-
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont différentes,
- * \retval false si elles sont égales.
- * \relate String
- */
-inline bool operator!=(const char* a,StringView b)
-{
-  return !operator==(a,b);
-}
-
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont égales,
- * \retval false sinon.
- * \relate String
- */
-extern "C++" ARCCORE_BASE_EXPORT bool operator==(StringView a,const char* b);
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont différentes,
- * \retval false si elles sont égales.
- * \relate String
- */
-inline bool operator!=(StringView a,const char* b)
-{
-  return !operator==(a,b);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si a<b
- * \retval false sinon.
- * \relate String
- */
-extern "C++" ARCCORE_BASE_EXPORT bool operator<(StringView a,StringView b);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

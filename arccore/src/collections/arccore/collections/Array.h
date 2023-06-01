@@ -505,6 +505,44 @@ class AbstractArray
     m_md->_setMemoryLocationHint(new_hint,m_ptr,sizeof(T));
   }
 
+ public:
+
+  friend bool operator==(const AbstractArray<T>& rhs, const AbstractArray<T>& lhs)
+  {
+    return operator==(Span<const T>(rhs),Span<const T>(lhs));
+  }
+
+  friend bool operator!=(const AbstractArray<T>& rhs, const AbstractArray<T>& lhs)
+  {
+    return !(rhs==lhs);
+  }
+
+  friend bool operator==(const AbstractArray<T>& rhs, const Span<const T>& lhs)
+  {
+    return operator==(Span<const T>(rhs),lhs);
+  }
+
+  friend bool operator!=(const AbstractArray<T>& rhs, const Span<const T>& lhs)
+  {
+    return !(rhs==lhs);
+  }
+
+  friend bool operator==(const Span<const T>& rhs, const AbstractArray<T>& lhs)
+  {
+    return operator==(rhs,Span<const T>(lhs));
+  }
+
+  friend bool operator!=(const Span<const T>& rhs, const AbstractArray<T>& lhs)
+  {
+    return !(rhs==lhs);
+  }
+
+  friend std::ostream& operator<<(std::ostream& o, const AbstractArray<T>& val)
+  {
+    o << Span<const T>(val);
+    return o;
+  }
+
  private:
 
   using AbstractArrayBase::m_meta_data;
@@ -1916,27 +1954,26 @@ operator=(const UniqueArray<T>& rhs)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename T> inline std::ostream&
-operator<<(std::ostream& o, const AbstractArray<T>& val)
+/*!
+ * \brief Converti la vue en un tableau d'octets non modifiables.
+ */
+template<typename T> inline Span<const std::byte>
+asBytes(const Array<T>& v)
 {
-  o << Span<const T>(val);
-  return o;
+  return asBytes(v.constSpan());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename T> inline bool
-operator==(const AbstractArray<T>& rhs, const AbstractArray<T>& lhs)
+/*!
+ * \brief Converti la vue en un tableau d'octets modifiables.
+ *
+ * Cela ne doit être que si T est un type POD.
+ */
+template<typename T> inline Span<std::byte>
+asWritableBytes(Array<T>& v)
 {
-  return operator==(Span<const T>(rhs),Span<const T>(lhs));
-}
-
-template<typename T> inline bool
-operator!=(const AbstractArray<T>& rhs, const AbstractArray<T>& lhs)
-{
-  return !(rhs==lhs);
+  return asWritableBytes(v.span());
 }
 
 /*---------------------------------------------------------------------------*/

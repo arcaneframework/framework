@@ -179,6 +179,7 @@ class Ref
   ~Ref() = default;
   
  public:
+
   /*!
    * \internal
    * \brief Créé une référence à partir de l'instance \a t.
@@ -217,6 +218,29 @@ class Ref
   }
 
  public:
+
+  friend inline bool operator==(const ThatClass& a,const ThatClass& b)
+  {
+    return a.get()==b.get();
+  }
+
+  friend inline bool operator!=(const ThatClass& a,const ThatClass& b)
+  {
+    return a.get()!=b.get();
+  }
+
+  friend inline bool operator<(const ThatClass& a,const ThatClass& b)
+  {
+    return a.get()<b.get();
+  }
+
+  friend inline bool operator!(const ThatClass& a)
+  {
+    return a.isNull();
+  }
+
+ public:
+
   //! Instance associée ou `nullptr` si aucune
   InstanceType* get() const { return m_instance.get(); }
   //! Indique si le compteur référence une instance non nulle.
@@ -242,36 +266,14 @@ class Ref
     return t;
   }
   const ImplType& _internalInstance() const { return m_instance; }
+
  private:
+
   ImplType m_instance;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename InstanceType,int TagId>
-inline bool operator==(const Ref<InstanceType,TagId>& a,const Ref<InstanceType,TagId>& b)
-{
-  return a.get()==b.get();
-}
-
-template<typename InstanceType,int TagId>
-inline bool operator!=(const Ref<InstanceType,TagId>& a,const Ref<InstanceType,TagId>& b)
-{
-  return a.get()!=b.get();
-}
-
-template<typename InstanceType,int TagId>
-inline bool operator<(const Ref<InstanceType,TagId>& a,const Ref<InstanceType,TagId>& b)
-{
-  return a.get()<b.get();
-}
-
-template<typename InstanceType,int TagId>
-inline bool operator!(const Ref<InstanceType,TagId>& a)
-{
-  return a.isNull();
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

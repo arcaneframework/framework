@@ -448,6 +448,24 @@ class ArrayView
    */
   constexpr pointer data() noexcept { return m_ptr; }
 
+ public:
+
+  friend inline bool operator==(const ArrayView<T>& rhs, const ArrayView<T>& lhs)
+  {
+    return impl::areEqual(rhs,lhs);
+  }
+
+  friend inline bool operator!=(const ArrayView<T>& rhs, const ArrayView<T>& lhs)
+  {
+    return !(rhs==lhs);
+  }
+
+  friend std::ostream& operator<<(std::ostream& o, const ArrayView<T>& val)
+  {
+    impl::dumpArray(o,val,500);
+    return o;
+  }
+
  protected:
 
   /*!
@@ -750,6 +768,24 @@ class ConstArrayView
     return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
   }
 
+ public:
+
+  friend inline bool operator==(const ConstArrayView<T>& rhs, const ConstArrayView<T>& lhs)
+  {
+    return impl::areEqual(rhs,lhs);
+  }
+
+  friend inline bool operator!=(const ConstArrayView<T>& rhs, const ConstArrayView<T>& lhs)
+  {
+    return !(rhs==lhs);
+  }
+
+  friend std::ostream& operator<<(std::ostream& o, const ConstArrayView<T>& val)
+  {
+    impl::dumpArray(o,val,500);
+    return o;
+  }
+
  private:
 
   Integer m_size; //!< Nombre d'éléments 
@@ -765,36 +801,6 @@ class ConstArrayView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename T> inline bool
-operator==(ConstArrayView<T> rhs, ConstArrayView<T> lhs)
-{
-  return impl::areEqual(rhs,lhs);
-}
-
-template<typename T> inline bool
-operator!=(ConstArrayView<T> rhs, ConstArrayView<T> lhs)
-{
-  return !(rhs==lhs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline bool
-operator==(ArrayView<T> rhs, ArrayView<T> lhs)
-{
-  return operator==(rhs.constView(),lhs.constView());
-}
-
-template<typename T> inline bool
-operator!=(ArrayView<T> rhs,ArrayView<T> lhs)
-{
-  return !(rhs==lhs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Affiche sur le flot \a o les valeurs du tableau \a val.
  *
@@ -807,26 +813,6 @@ template<typename T> inline void
 dumpArray(std::ostream& o,ConstArrayView<T> val,int max_print)
 {
   impl::dumpArray(o,val,max_print);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline std::ostream&
-operator<<(std::ostream& o, ConstArrayView<T> val)
-{
-  dumpArray(o,val,500);
-  return o;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline std::ostream&
-operator<<(std::ostream& o, ArrayView<T> val)
-{
-  o << val.constView();
-  return o;
 }
 
 /*---------------------------------------------------------------------------*/

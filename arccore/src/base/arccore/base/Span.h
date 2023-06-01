@@ -380,6 +380,40 @@ class SpanImpl
    */
   constexpr ARCCORE_HOST_DEVICE pointer data() const noexcept { return m_ptr; }
 
+  //! Opérateur d'égalité (valide si T est const mais pas X)
+  template<typename X,SizeType Extent2,typename = std::enable_if_t<std::is_same_v<X,value_type>>> friend bool
+  operator==(const SpanImpl<T,SizeType,Extent>& rhs, const SpanImpl<X,SizeType,Extent2>& lhs)
+  {
+    return impl::areEqual(SpanImpl<T,SizeType>(rhs),SpanImpl<T,SizeType>(lhs));
+  }
+
+  //! Opérateur d'inégalité (valide si T est const mais pas X)
+  template<typename X,SizeType Extent2,typename = std::enable_if_t<std::is_same_v<X,value_type>>> friend bool
+  operator!=(const SpanImpl<T,SizeType,Extent>& rhs, const SpanImpl<X,SizeType,Extent2>& lhs)
+  {
+    return !operator==(rhs,lhs);
+  }
+
+  //! Opérateur d'égalité
+  template<SizeType Extent2> friend bool
+  operator==(const SpanImpl<T,SizeType,Extent>& rhs, const SpanImpl<T,SizeType,Extent2>& lhs)
+  {
+    return impl::areEqual(SpanImpl<T,SizeType>(rhs),SpanImpl<T,SizeType>(lhs));
+  }
+
+  //! Opérateur d'inégalité
+  template<SizeType Extent2> friend bool
+  operator!=(const SpanImpl<T,SizeType,Extent>& rhs, const SpanImpl<T,SizeType,Extent2>& lhs)
+  {
+    return !operator==(rhs,lhs);
+  }
+
+  friend inline std::ostream& operator<<(std::ostream& o, const ThatClass& val)
+  {
+    impl::dumpArray(o,Span<const T>(val),500);
+    return o;
+  }
+
  protected:
   
   /*!
@@ -707,60 +741,8 @@ class SmallSpan
   {
     return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
   }
+
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T,typename SizeType> inline bool
-operator==(SpanImpl<const T,SizeType> rhs, SpanImpl<const T,SizeType> lhs)
-{
-  return impl::areEqual(rhs,lhs);
-}
-
-template<typename T> inline bool
-operator==(Span<const T> rhs, Span<const T> lhs)
-{
-  SpanImpl<const T,Int64> a = rhs;
-  SpanImpl<const T,Int64> b = lhs;
-  return a==b;
-}
-
-template<typename T> inline bool
-operator!=(Span<const T> rhs, Span<const T> lhs)
-{
-  return !(rhs==lhs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline bool
-operator==(Span<T> rhs, Span<T> lhs)
-{
-  return impl::areEqual(rhs,lhs);
-}
-
-template<typename T> inline bool
-operator!=(Span<T> rhs, Span<T> lhs)
-{
-  return !(rhs==lhs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline bool
-operator==(SmallSpan<T> rhs, SmallSpan<T> lhs)
-{
-  return operator==(Span<const T>(rhs),Span<const T>(lhs));
-}
-
-template<typename T> inline bool
-operator!=(SmallSpan<T> rhs, SmallSpan<T> lhs)
-{
-  return !(rhs==lhs);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -838,8 +820,8 @@ sampleSpan(Span<const DataType> values,Span<const Int32> indexes,Span<DataType> 
 /*!
  * \brief Converti la vue en un tableau d'octets non modifiables.
  */
-template<typename DataType,typename SizeType,Int64 Extent> inline Span<const std::byte,Extent>
-asBytes(SpanImpl<DataType,SizeType,Extent> s)
+template<typename DataType,typename SizeType,SizeType Extent> inline Span<const std::byte>
+asBytes(const SpanImpl<DataType,SizeType,Extent>& s)
 {
   return {reinterpret_cast<const std::byte*>(s.data()), s.sizeBytes()};
 }
@@ -851,13 +833,17 @@ asBytes(SpanImpl<DataType,SizeType,Extent> s)
  *
  * Cette méthode n'est accessible que si \a DataType n'est pas `const`.
  */
-template<typename DataType,typename SizeType,Int64 Extent,
+template<typename DataType,typename SizeType,SizeType Extent,
          typename std::enable_if_t<!std::is_const<DataType>::value, int> = 0>
-inline Span<std::byte,Extent>
-asWritableBytes(SpanImpl<DataType,SizeType,Extent> s)
+inline Span<std::byte>
+asWritableBytes(const SpanImpl<DataType,SizeType,Extent>& s)
 {
   return {reinterpret_cast<std::byte*>(s.data()), s.sizeBytes()};
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace impl
 {
 
@@ -911,23 +897,21 @@ asSpan(std::array<DataType,SizeType>& s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ecrit en binaire le contenu de \a bytes sur le flot \a ostr.
+ *
+ * Cela revient à faire ostr.write(bytes.data(),bytes.size());
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+binaryWrite(std::ostream& ostr,const Span<const std::byte>& bytes);
 
-template<typename T> inline std::ostream&
-operator<<(std::ostream& o, Span<T> val)
-{
-  dumpArray(o,Span<const T>(val),500);
-  return o;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline std::ostream&
-operator<<(std::ostream& o, SmallSpan<T> val)
-{
-  o << Span<T>(val);
-  return o;
-}
+/*!
+ * \brief Lit en binaire le contenu de \a bytes depuis le flot \a istr.
+ *
+ * Cela revient à faire ostr.read(bytes.data(),bytes.size());
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+binaryRead(std::istream& istr,const Span<std::byte>& bytes);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

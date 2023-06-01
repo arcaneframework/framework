@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* String.h                                                    (C) 2000-2022 */
+/* String.h                                                    (C) 2000-2023 */
 /*                                                                           */
 /* Chaîne de caractère unicode.                                              */
 /*---------------------------------------------------------------------------*/
@@ -70,7 +70,6 @@ class ARCCORE_BASE_EXPORT String
 {
  public:
 
-  friend ARCCORE_BASE_EXPORT bool operator==(const String& a,const String& b);
   friend ARCCORE_BASE_EXPORT bool operator<(const String& a,const String& b);
   friend class StringBuilder;
   friend class StringUtilsImpl;
@@ -304,6 +303,71 @@ class ARCCORE_BASE_EXPORT String
 
  public:
 
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont égales,
+   * \retval false sinon.
+   * \relate String
+   */
+  friend ARCCORE_BASE_EXPORT bool operator==(const String& a,const String& b);
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont différentes,
+   * \retval false si elles sont égales.
+   * \relate String
+   */
+  friend bool operator!=(const String& a,const String& b)
+  {
+    return !operator==(a,b);
+  }
+
+  //! Opérateur d'écriture d'une String
+  friend ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const String&);
+  //! Opérateur de lecture d'une String
+  friend ARCCORE_BASE_EXPORT std::istream& operator>>(std::istream& o,String&);
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont égales,
+   * \retval false sinon.
+   */
+  friend ARCCORE_BASE_EXPORT bool operator==(const char* a,const String& b);
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont différentes,
+   * \retval false si elles sont égales.
+   */
+  inline friend bool operator!=(const char* a,const String& b)
+  {
+    return !operator==(a,b);
+  }
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont égales,
+   * \retval false sinon.
+   */
+  friend ARCCORE_BASE_EXPORT bool operator==(const String& a,const char* b);
+
+  /*!
+   * \brief Compare deux chaînes unicode.
+   * \retval true si elles sont différentes,
+   * \retval false si elles sont égales.
+   */
+  inline friend bool operator!=(const String& a,const char* b)
+  {
+    return !operator==(a,b);
+  }
+
+  //! Ajoute deux chaînes.
+  friend ARCCORE_BASE_EXPORT String operator+(const char* a,const String& b);
+
+  friend ARCCORE_BASE_EXPORT bool operator<(const String& a,const String& b);
+
+ public:
+
   //! Retourne la concaténation de cette chaîne avec la chaîne \a str encodée en UTF-8
   String operator+(const char* str) const
   {
@@ -504,84 +568,6 @@ class ARCCORE_BASE_EXPORT String
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateur d'écriture d'une String
-ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const String&);
-//! Opérateur de lecture d'une String
-ARCCORE_BASE_EXPORT std::istream& operator>>(std::istream& o,String&);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont égales,
- * \retval false sinon.
- * \relate String
- */
-extern "C++" ARCCORE_BASE_EXPORT bool operator==(const String& a,const String& b);
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont différentes,
- * \retval false si elles sont égales.
- * \relate String
- */
-inline bool operator!=(const String& a,const String& b)
-{
-  return !operator==(a,b);
-}
-
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont égales,
- * \retval false sinon.
- * \relate String
- */
-extern "C++" ARCCORE_BASE_EXPORT bool operator==(const char* a,const String& b);
-
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont différentes,
- * \retval false si elles sont égales.
- * \relate String
- */
-inline bool operator!=(const char* a,const String& b)
-{
-  return !operator==(a,b);
-}
-
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont égales,
- * \retval false sinon.
- * \relate String
- */
-extern "C++" ARCCORE_BASE_EXPORT bool operator==(const String& a,const char* b);
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si elles sont différentes,
- * \retval false si elles sont égales.
- * \relate String
- */
-inline bool operator!=(const String& a,const char* b)
-{
-  return !operator==(a,b);
-}
-
-//! Ajoute deux chaînes.
-extern "C++" ARCCORE_BASE_EXPORT String operator+(const char* a,const String& b);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Compare deux chaînes unicode.
- * \retval true si a<b
- * \retval false sinon.
- * \relate String
- */
-extern "C++" ARCCORE_BASE_EXPORT bool operator<(const String& a,const String& b);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template<typename U>
 class StringFormatterArgToString
 {
@@ -594,6 +580,8 @@ class StringFormatterArgToString
   }
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Classe utilisée pour formatter une chaîne de caractères.
@@ -621,6 +609,15 @@ class ARCCORE_BASE_EXPORT StringFormatterArg
  private:
   void _formatReal(Real avalue);
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline Span<const std::byte>
+asBytes(const String& v)
+{
+  return asBytes(v.bytes());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
