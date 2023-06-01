@@ -58,7 +58,7 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 {
  public:
 
-  VariableSyncInfo(Int32ConstArrayView share_ids,Int32ConstArrayView ghost_ids,Int32 rank);
+  VariableSyncInfo(Int32ConstArrayView share_ids, Int32ConstArrayView ghost_ids, Int32 rank);
   VariableSyncInfo(const VariableSyncInfo& rhs);
   VariableSyncInfo();
 
@@ -72,7 +72,9 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
   //! localIds() des entités à réceptionner du rang targetRank()
   ConstArrayView<Int32> ghostIds() const { return m_ghost_ids; }
 
+  //! Nombre d'entités partagées
   Int32 nbShare() const { return m_share_ids.size(); }
+  //! Nombre d'entités fantômes
   Int32 nbGhost() const { return m_ghost_ids.size(); }
 
   //! Met à jour les informations lorsque les localId() des entités changent
@@ -89,26 +91,45 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 
  private:
 
-  void _changeIds(Array<Int32>& ids,Int32ConstArrayView old_to_new_ids);
+  void _changeIds(Array<Int32>& ids, Int32ConstArrayView old_to_new_ids);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Informations nécessaires pour synchroniser les entités sur un groupe.
+ *
+ * Il faut appeler recompute() après avoir ajouté ou modifier les instances
+ * de VariableSyncInfo.
  */
 class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
 {
  public:
+
   ConstArrayView<VariableSyncInfo> infos() const { return m_ranks_info; }
   ArrayView<VariableSyncInfo> infos() { return m_ranks_info; }
   VariableSyncInfo& operator[](Int32 i) { return m_ranks_info[i]; }
   const VariableSyncInfo& operator[](Int32 i) const { return m_ranks_info[i]; }
+  VariableSyncInfo& rankInfo(Int32 i) { return m_ranks_info[i]; }
+  const VariableSyncInfo& rankInfo(Int32 i) const { return m_ranks_info[i]; }
   void clear() { m_ranks_info.clear(); }
   Int32 size() const { return m_ranks_info.size(); }
   void add(const VariableSyncInfo& s) { m_ranks_info.add(s); }
+  void recompute();
+  Int64 shareDisplacement(Int32 index) const { return m_share_displacements_base[index]; }
+  Int64 ghostDisplacement(Int32 index) const { return m_ghost_displacements_base[index]; }
+  Int64 totalNbGhost() const { return m_total_nb_ghost; }
+  Int64 totalNbShare() const { return m_total_nb_share; }
+
  private:
+
   UniqueArray<VariableSyncInfo> m_ranks_info;
+  //! Déplacement dans le buffer fantôme de chaque rang
+  UniqueArray<Int64> m_ghost_displacements_base;
+  //! Déplacement dans le buffer partagé de chaque rang
+  UniqueArray<Int64> m_share_displacements_base;
+  Int64 m_total_nb_ghost = 0;
+  Int64 m_total_nb_share = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -174,11 +195,11 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
   Int32 nbRank() const final { return m_nb_rank; }
   bool hasGlobalBuffer() const final { return true; }
 
-  MutableMemoryView receiveBuffer(Int32 index) final { return m_ghost_locals_buffer[index]; }
-  MutableMemoryView sendBuffer(Int32 index) final { return m_share_locals_buffer[index]; }
+  MutableMemoryView receiveBuffer(Int32 index) final { return _ghostLocalBuffer(index); }
+  MutableMemoryView sendBuffer(Int32 index) final { return _shareLocalBuffer(index); }
 
-  Int64 receiveDisplacement(Int32 index) const final { return m_ghost_displacements[index]; }
-  Int64 sendDisplacement(Int32 index) const final { return m_share_displacements[index]; }
+  Int64 receiveDisplacement(Int32 index) const final { return _ghostDisplacementBase(index) * m_datatype_size; }
+  Int64 sendDisplacement(Int32 index) const final { return _shareDisplacementBase(index) * m_datatype_size; }
 
   MutableMemoryView globalReceiveBuffer() final { return m_ghost_memory_view; }
   MutableMemoryView globalSendBuffer() final { return m_share_memory_view; }
@@ -192,7 +213,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  public:
 
-  void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list, Int32 datatype_size);
+  void compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_list, Int32 datatype_size);
   IDataSynchronizeBuffer* genericBuffer() { return this; }
   void setDataView(MutableMemoryView v) { m_data_view = v; }
   MutableMemoryView dataMemoryView() { return m_data_view; }
@@ -212,20 +233,48 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
  private:
 
   Int32 m_nb_rank = 0;
-  //! Position dans \a m_ghost_buffer de chaque rang
-  UniqueArray<MutableMemoryView> m_ghost_locals_buffer;
-  //! Position dans \a m_share_buffer de chaque rang
-  UniqueArray<MutableMemoryView> m_share_locals_buffer;
-  //! Déplacement dans \a m_ghost_buffer de chaque rang
-  UniqueArray<Int32> m_ghost_displacements;
-  //! Déplacement dans \a m_share_buffer de chaque rang
-  UniqueArray<Int32> m_share_displacements;
   //! Vue sur les données de la variable
   MutableMemoryView m_data_view;
   IBufferCopier* m_buffer_copier = nullptr;
 
   //! Buffer contenant les données concaténées en envoi et réception
   UniqueArray<std::byte> m_buffer;
+
+  Int32 m_datatype_size = 0;
+
+ private:
+
+  Int64 _ghostDisplacementBase(Int32 index) const
+  {
+    return m_sync_info->ghostDisplacement(index);
+  }
+  Int64 _shareDisplacementBase(Int32 index) const
+  {
+    return m_sync_info->shareDisplacement(index);
+  }
+
+  Int32 _nbGhost(Int32 index) const
+  {
+    return m_sync_info->rankInfo(index).nbGhost();
+  }
+
+  Int32 _nbShare(Int32 index) const
+  {
+    return m_sync_info->rankInfo(index).nbShare();
+  }
+
+  MutableMemoryView _shareLocalBuffer(Int32 index) const
+  {
+    Int64 displacement = _shareDisplacementBase(index);
+    Int32 local_size = _nbShare(index);
+    return m_share_memory_view.subView(displacement, local_size);
+  }
+  MutableMemoryView _ghostLocalBuffer(Int32 index) const
+  {
+    Int64 displacement = _ghostDisplacementBase(index);
+    Int32 local_size = _nbGhost(index);
+    return m_ghost_memory_view.subView(displacement, local_size);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -280,6 +329,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   bool m_is_in_sync = false;
   Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
   Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;
+
+ private:
+
+  void _applyDispatch(IData* data,SyncBuffer& sync_buffer);
 };
 
 /*---------------------------------------------------------------------------*/

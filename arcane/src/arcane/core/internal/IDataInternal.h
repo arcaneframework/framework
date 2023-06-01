@@ -24,6 +24,7 @@
 namespace Arcane
 {
 class IDataCompressor;
+class INumericDataInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -90,6 +91,31 @@ class ARCANE_CORE_EXPORT IDataInternal
     ARCANE_UNUSED(buf);
     return false;
   }
+
+  //! Interface générique pour les données numériques (nullptr si la donné n'est pas numérique)
+  virtual INumericDataInternal* numericData() { return nullptr; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Interface pour un 'IData' d'un type numérique.
+ *
+ * Les types numériques sont les types de eBasicDataType.
+ *
+ * En général tous les IData sont de ce type sauf StringScalarData ou
+ * StringArrayData.
+ */
+class ARCANE_CORE_EXPORT INumericDataInternal
+{
+ public:
+
+  virtual ~INumericDataInternal() = default;
+
+ public:
+
+  //! Vue mémoire sur la donnée
+  virtual MutableMemoryView memoryView() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -474,6 +474,7 @@ _createList(UniqueArray<SharedArray<Int32> >& boundary_items)
     }
   }
   _checkValid(ghost_rank_info,share_rank_info);
+  m_sync_list.recompute();
 
   // Calcul de m_communicating_ranks qui synthétisent les processeurs communiquants
   for( Integer i=0; i<m_sync_list.size(); ++i ){
@@ -702,6 +703,7 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
     info(4) << "NEW_SHARE_SIZE=" << vsi.nbShare() << " old=" << old_nb_share;
     info(4) << "NEW_GHOST_SIZE=" << vsi.nbGhost() << " old=" << old_nb_ghost;
   }
+  m_sync_list.recompute();
   m_dispatcher->compute();
 }
 
