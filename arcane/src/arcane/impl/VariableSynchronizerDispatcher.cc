@@ -33,6 +33,7 @@
 #include "arcane/core/datatype/DataStorageTypeInfo.h"
 #include "arcane/core/datatype/DataTypeTraits.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/accelerator/core/Runner.h"
 
@@ -147,10 +148,17 @@ template <typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IArrayDataT<SimpleType>* data)
 {
+  INumericDataInternal* numapi = data->_commonInternal()->numericData();
+  if (!numapi)
+    ARCANE_FATAL("Data can not be synchronized because it is not a numeric data");
+
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
   m_is_in_sync = true;
-  m_1d_buffer.setDataView(MutableMemoryView{ data->view() });
+
+  MutableMemoryView mem_view = numapi->memoryView();
+
+  m_1d_buffer.setDataView(mem_view);
   _beginSynchronize(m_1d_buffer);
   _endSynchronize(m_1d_buffer);
   m_is_in_sync = false;
@@ -162,22 +170,20 @@ applyDispatch(IArrayDataT<SimpleType>* data)
 template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IArray2DataT<SimpleType>* data)
 {
+  INumericDataInternal* numapi = data->_commonInternal()->numericData();
+  if (!numapi)
+    ARCANE_FATAL("Data can not be synchronized because it is not a numeric data");
+
+  MutableMemoryView mem_view = numapi->memoryView();
+  Int32 full_datatype_size = mem_view.datatypeSize();
+  if (mem_view.bytes().size() == 0)
+    return;
+
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
-  Array2View<SimpleType> value = data->view();
-
-  // Cette valeur doit être la même sur tous les procs
-  Integer dim2_size = value.dim2Size();
-  if (dim2_size == 0)
-    return;
   m_is_in_sync = true;
-  Integer dim1_size = value.dim1Size();
-  DataStorageTypeInfo storage_info = data->storageTypeInfo();
-  Int32 nb_basic_element = storage_info.nbBasicElement();
-  Int32 datatype_size = basicDataTypeSize(storage_info.basicDataType()) * nb_basic_element;
-  m_2d_buffer.compute(m_buffer_copier, m_sync_info, dim2_size * datatype_size);
-
-  m_2d_buffer.setDataView(makeMutableMemoryView(value.data(), datatype_size * dim2_size, dim1_size));
+  m_2d_buffer.compute(m_buffer_copier, m_sync_info, full_datatype_size);
+  m_2d_buffer.setDataView(mem_view);
   _beginSynchronize(m_2d_buffer);
   _endSynchronize(m_2d_buffer);
   m_is_in_sync = false;
