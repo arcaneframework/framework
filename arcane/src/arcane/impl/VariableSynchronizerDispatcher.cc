@@ -104,6 +104,42 @@ VariableSyncInfo(const VariableSyncInfo& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void ItemGroupSynchronizeInfo::
+recompute()
+{
+  Integer nb_message = this->size();
+
+  m_ghost_displacements_base.resize(nb_message);
+  m_share_displacements_base.resize(nb_message);
+
+  {
+    Integer array_index = 0;
+    for (Integer i = 0, is = this->size(); i < is; ++i) {
+      const VariableSyncInfo& vsi = rankInfo(i);
+      Int32 local_size = vsi.nbGhost();
+      Int32 displacement = array_index;
+      m_ghost_displacements_base[i] = displacement;
+      array_index += local_size;
+    }
+  }
+  {
+    Integer array_index = 0;
+    for (Integer i = 0, is = this->size(); i < is; ++i) {
+      const VariableSyncInfo& vsi = rankInfo(i);
+      Int32 local_size = vsi.nbShare();
+      Int32 displacement = array_index;
+      m_share_displacements_base[i] = displacement;
+      array_index += local_size;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
@@ -243,39 +279,13 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dataty
   m_datatype_size = datatype_size;
   m_buffer_copier = copier;
   m_sync_info = sync_info;
-  auto sync_list = sync_info->infos();
-  Integer nb_message = sync_list.size();
-  m_nb_rank = nb_message;
+  m_nb_rank = sync_info->size();
 
   IMemoryAllocator* allocator = m_buffer_copier->allocator();
   if (allocator && allocator != m_buffer.allocator())
     m_buffer = UniqueArray<std::byte>(allocator);
 
-  m_ghost_displacements_base.resize(nb_message);
-  m_share_displacements_base.resize(nb_message);
-
   _allocateBuffers(datatype_size);
-
-  {
-    Integer array_index = 0;
-    for (Integer i = 0, is = sync_list.size(); i < is; ++i) {
-      const VariableSyncInfo& vsi = sync_list[i];
-      Int32 local_size = vsi.nbGhost();
-      Int32 displacement = array_index;
-      m_ghost_displacements_base[i] = displacement;
-      array_index += local_size;
-    }
-  }
-  {
-    Integer array_index = 0;
-    for (Integer i = 0, is = sync_list.size(); i < is; ++i) {
-      const VariableSyncInfo& vsi = sync_list[i];
-      Int32 local_size = vsi.nbShare();
-      Int32 displacement = array_index;
-      m_share_displacements_base[i] = displacement;
-      array_index += local_size;
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/
