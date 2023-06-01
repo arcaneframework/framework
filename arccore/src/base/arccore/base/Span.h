@@ -897,6 +897,24 @@ asSpan(std::array<DataType,SizeType>& s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ecrit en binaire le contenu de \a bytes sur le flot \a ostr.
+ *
+ * Cela revient à faire ostr.write(bytes.data(),bytes.size());
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+binaryWrite(std::ostream& ostr,const Span<const std::byte>& bytes);
+
+/*!
+ * \brief Lit en binaire le contenu de \a bytes depuis le flot \a istr.
+ *
+ * Cela revient à faire ostr.read(bytes.data(),bytes.size());
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+binaryRead(std::istream& istr,const Span<std::byte>& bytes);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arccore
 
