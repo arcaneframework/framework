@@ -29,6 +29,8 @@ if (Neo_FOUND)
   set(TEST_LIBS ${TEST_LIBS} Neo::Neo)
 endif()
 
+arcane_find_package(hiredis QUIET)
+
 include(srcs.cmake)
 
 set(ARCANE_ACCELERATOR_SOURCES
@@ -44,6 +46,9 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/MeshMaterialAcceleratorUnitTest.cc
   )
 list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
+if (TARGET hiredis::hiredis)
+  list(APPEND ARCANE_SOURCES RedisUnitTest.cc)
+endif()
 
 arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 
@@ -283,6 +288,12 @@ ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_category testCaseOptions-5.arc -We,ARCANE
 arcane_add_test_sequential(caseoptions_multiplemesh testCaseOptions-multiple-mesh.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 arcane_add_test_sequential(caseoptions_multiplemesh_legacy testCaseOptions-multiple-mesh-legacy.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 arcane_add_test_sequential(casefunction1 testCaseFunction-1.arc)
+if (hiredis_FOUND)
+  # Pour ce test on a aussi besoin qu'une base redis soit accessible
+  # Comme il n'y a pas de moyen simple de le savoir, ce test n'est pas actif
+  # par défaut.
+  # arcane_add_test_sequential(redis1 testRedis-1.arc)
+endif()
 
 ARCANE_ADD_TEST(timehistory testTimeHistory-1.arc)
 

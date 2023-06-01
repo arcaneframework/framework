@@ -1,10 +1,12 @@
-﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc)
+﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc hiredis)
 set(PUBLIC_PKGS HDF5 MPI)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 
 foreach(package ${PKGS})
   arcane_find_package(${package})
 endforeach()
+
+set(ADDITIONAL_TARGETS)
 
 # Pour MEDFile, il faut HDF5 mais le find_package fait planter CMake (avec MED 4.0.0)
 # si HDF5 n'est pas trouvé. On ne fait donc le find_package que si HDF5
@@ -104,6 +106,11 @@ if(DbgHelp_FOUND)
     DbgHelpStackTraceService.cc
     )
 endif()
+if (TARGET hiredis::hiredis)
+  list(APPEND ARCANE_SOURCES
+    HiredisAdapter.cc
+    )
+endif()
 
 if(ARCANE_HAS_LINUX_PERF_COUNTERS)
   list(APPEND ARCANE_SOURCES
@@ -134,12 +141,9 @@ if(${ARCANE_HAS_MALLOC_HOOKS})
   target_compile_definitions(arcane_std PRIVATE ARCANE_USE_MALLOC_HOOK)
 endif()
 
-if(TARGET Arccore::arccore_message_passing_mpi)
-  target_link_libraries(arcane_std PUBLIC Arccore::arccore_message_passing_mpi)
-endif()
-if(TARGET Arcane::arcane_hdf5)
-  target_link_libraries(arcane_std PUBLIC Arcane::arcane_hdf5)
-endif()
+target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arccore::arccore_message_passing_mpi>)
+target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arcane::arcane_hdf5>)
+target_link_libraries(arcane_std PRIVATE $<TARGET_NAME_IF_EXISTS:hiredis::hiredis>)
 target_link_libraries(arcane_std PUBLIC ${ARCANE_BASE_LIBRARIES})
 
 # TODO: il semblerait qu'on ait besoin de rajouter stdc++fs pour que link passe avec le
