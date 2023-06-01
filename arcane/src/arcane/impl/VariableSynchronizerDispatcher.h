@@ -329,6 +329,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   bool m_is_in_sync = false;
   Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
   Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;
+
+ private:
+
+  void _applyDispatch(IData* data,SyncBuffer& sync_buffer);
 };
 
 /*---------------------------------------------------------------------------*/

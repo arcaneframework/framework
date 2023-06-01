@@ -181,29 +181,7 @@ template <typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 /*---------------------------------------------------------------------------*/
 
 template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
-applyDispatch(IArrayDataT<SimpleType>* data)
-{
-  INumericDataInternal* numapi = data->_commonInternal()->numericData();
-  if (!numapi)
-    ARCANE_FATAL("Data can not be synchronized because it is not a numeric data");
-
-  if (m_is_in_sync)
-    ARCANE_FATAL("Only one pending serialisation is supported");
-  m_is_in_sync = true;
-
-  MutableMemoryView mem_view = numapi->memoryView();
-
-  m_1d_buffer.setDataView(mem_view);
-  _beginSynchronize(m_1d_buffer);
-  _endSynchronize(m_1d_buffer);
-  m_is_in_sync = false;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
-applyDispatch(IArray2DataT<SimpleType>* data)
+_applyDispatch(IData* data,SyncBuffer& sync_buffer)
 {
   INumericDataInternal* numapi = data->_commonInternal()->numericData();
   if (!numapi)
@@ -217,11 +195,29 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
   m_is_in_sync = true;
-  m_2d_buffer.compute(m_buffer_copier, m_sync_info, full_datatype_size);
-  m_2d_buffer.setDataView(mem_view);
-  _beginSynchronize(m_2d_buffer);
-  _endSynchronize(m_2d_buffer);
+  sync_buffer.compute(m_buffer_copier, m_sync_info, full_datatype_size);
+  sync_buffer.setDataView(mem_view);
+  _beginSynchronize(sync_buffer);
+  _endSynchronize(sync_buffer);
   m_is_in_sync = false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+applyDispatch(IArrayDataT<SimpleType>* data)
+{
+  _applyDispatch(data,m_1d_buffer);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+applyDispatch(IArray2DataT<SimpleType>* data)
+{
+  _applyDispatch(data,m_2d_buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -254,10 +250,6 @@ compute()
 {
   if (!m_sync_info)
     ARCANE_FATAL("The instance is not initialized. You need to call setItemGroupSynchronizeInfo() before");
-  eBasicDataType bdt = DataTypeTraitsT<SimpleType>::basicDataType();
-  Int32 nb_basic_type = DataTypeTraitsT<SimpleType>::nbBasicType();
-  Int32 datatype_size = basicDataTypeSize(bdt) * nb_basic_type;
-  m_1d_buffer.compute(m_buffer_copier, m_sync_info, datatype_size);
   m_generic_instance->compute();
 }
 
