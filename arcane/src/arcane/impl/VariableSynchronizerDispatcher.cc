@@ -228,6 +228,9 @@ compute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
@@ -237,6 +240,7 @@ compute()
 void VariableSynchronizeBufferBase::
 compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 datatype_size)
 {
+  m_datatype_size = datatype_size;
   m_buffer_copier = copier;
   m_sync_info = sync_info;
   auto sync_list = sync_info->infos();
@@ -247,11 +251,8 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dataty
   if (allocator && allocator != m_buffer.allocator())
     m_buffer = UniqueArray<std::byte>(allocator);
 
-  m_ghost_locals_buffer.resize(nb_message);
-  m_share_locals_buffer.resize(nb_message);
-
-  m_ghost_displacements.resize(nb_message);
-  m_share_displacements.resize(nb_message);
+  m_ghost_displacements_base.resize(nb_message);
+  m_share_displacements_base.resize(nb_message);
 
   _allocateBuffers(datatype_size);
 
@@ -259,11 +260,9 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dataty
     Integer array_index = 0;
     for (Integer i = 0, is = sync_list.size(); i < is; ++i) {
       const VariableSyncInfo& vsi = sync_list[i];
-      Int32ConstArrayView ghost_grp = vsi.ghostIds();
-      Integer local_size = ghost_grp.size();
+      Int32 local_size = vsi.nbGhost();
       Int32 displacement = array_index;
-      m_ghost_displacements[i] = displacement * datatype_size;
-      m_ghost_locals_buffer[i] = m_ghost_memory_view.subView(displacement, local_size);
+      m_ghost_displacements_base[i] = displacement;
       array_index += local_size;
     }
   }
@@ -271,11 +270,9 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dataty
     Integer array_index = 0;
     for (Integer i = 0, is = sync_list.size(); i < is; ++i) {
       const VariableSyncInfo& vsi = sync_list[i];
-      Int32ConstArrayView share_grp = vsi.shareIds();
-      Integer local_size = share_grp.size();
+      Int32 local_size = vsi.nbShare();
       Int32 displacement = array_index;
-      m_share_displacements[i] = displacement * datatype_size;
-      m_share_locals_buffer[i] = m_share_memory_view.subView(displacement, local_size);
+      m_share_displacements_base[i] = displacement;
       array_index += local_size;
     }
   }
