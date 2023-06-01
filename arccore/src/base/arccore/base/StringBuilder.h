@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringBuilder.h                                             (C) 2000-2018 */
+/* StringBuilder.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Constructeur de chaîne de caractère unicode.                              */
 /*---------------------------------------------------------------------------*/
@@ -47,10 +47,8 @@ class ARCCORE_BASE_EXPORT StringBuilder
 {
  public:
 
- public:
-
   //! Crée une chaîne nulle
-  StringBuilder() : m_p(0), m_const_ptr(0) {}
+  StringBuilder() : m_p(nullptr), m_const_ptr(nullptr) {}
   //! Créé une chaîne à partir de \a str dans l'encodage local
   StringBuilder(const char* str);
   //! Créé une chaîne à partir de \a str dans l'encodage local
@@ -79,8 +77,6 @@ class ARCCORE_BASE_EXPORT StringBuilder
 
  public:
 
- public:
-
   /*!
    * \brief Retourne la chaîne de caractères construite.
    */
@@ -90,8 +86,6 @@ class ARCCORE_BASE_EXPORT StringBuilder
    * \brief Retourne la chaîne de caractères construite.
    */
   String toString() const;
-
- public:
 
  public:
 
@@ -136,6 +130,15 @@ class ARCCORE_BASE_EXPORT StringBuilder
   void operator+=(const APReal& v);
 
  public:
+
+  friend ARCCORE_BASE_EXPORT bool operator==(const StringBuilder& a,const StringBuilder& b);
+  friend bool operator!=(const StringBuilder& a,const StringBuilder& b)
+  {
+    return !operator==(a,b);
+  }
+
+ public:
+
   /*!
    * \brief Affiche les infos internes de la classe.
    *
@@ -145,8 +148,8 @@ class ARCCORE_BASE_EXPORT StringBuilder
 
  private:
 
-  mutable StringImpl* m_p; //!< Implémentation de la classe
-  mutable const char* m_const_ptr;
+  mutable StringImpl* m_p = nullptr; //!< Implémentation de la classe
+  mutable const char* m_const_ptr = nullptr;
 
   void _checkClone() const;
 };

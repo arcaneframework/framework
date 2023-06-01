@@ -337,6 +337,15 @@ _testSpanStdArray()
     span1 = v3;
     _checkSame(span1,v3,"const span1==v3");
   }
+  {
+    SpanType span1 { v1 };
+    ConstSpanType const_span1 { v1 };
+    ASSERT_TRUE(span1==const_span1);
+
+    SpanType span2 { v2 };
+    ConstSpanType const_span3 { v3 };
+    ASSERT_TRUE(span2!=const_span3);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -377,6 +386,24 @@ TEST(Span, StdArray)
     _checkSame(x, v2, "x==v2");
     x[2] = 5;
     ASSERT_EQ(v2[2], 5);
+  }
+
+  {
+    std::array<Int64,2> v1 { 5, 7 };
+    std::array<Int64,3> v2 { 2, 4, -2 };
+    Span<Int64,2> fixed_s1(v1);
+    Span<Int64,3> fixed_s2(v2);
+    ASSERT_FALSE(fixed_s1==fixed_s2);
+    ASSERT_TRUE(fixed_s1!=fixed_s2);
+
+    Span<const Int64> s1_a(s1);
+    Span<const std::byte> fb1(asBytes(s1_a));
+    Span<std::byte> fb2(asWritableBytes(s2));
+    ASSERT_FALSE(fb1==fb2);
+
+    std::array<Real, 3> v2r{ 2.0, 4.1, -2.3 };
+    SmallSpan<const Real> small2(v2r);
+    Span<const std::byte> small_fb2(asBytes(small2));
   }
 }
 

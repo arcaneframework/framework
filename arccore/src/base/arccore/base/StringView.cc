@@ -44,7 +44,7 @@ operator<<(std::ostream& o,const StringView& str)
 /*---------------------------------------------------------------------------*/
 
 bool
-operator==(StringView a,StringView b)
+operator==(const StringView& a,const StringView& b)
 {
   bool is_equal = (a.toStdStringView()==b.toStdStringView());
   //std::cout << "COMPARE: a=" << a.length() << " '" << a << "'"
@@ -55,7 +55,7 @@ operator==(StringView a,StringView b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool operator==(const char* a,StringView b)
+bool operator==(const char* a,const StringView& b)
 {
   return operator==(StringView(a),b);
 }
@@ -63,7 +63,7 @@ bool operator==(const char* a,StringView b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool operator==(StringView a,const char* b)
+bool operator==(const StringView& a,const char* b)
 {
   return operator==(a,StringView(b));
 }
@@ -71,7 +71,7 @@ bool operator==(StringView a,const char* b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool operator<(StringView a,StringView b)
+bool operator<(const StringView& a,const StringView& b)
 {
   return a.toStdStringView()<b.toStdStringView();
 }

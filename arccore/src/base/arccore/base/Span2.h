@@ -62,6 +62,8 @@ class View2TypeT<const T>
 template<typename T,typename SizeType,SizeType Extent1,SizeType Extent2>
 class Span2Impl
 {
+  using ThatClass = Span2Impl<T,SizeType,Extent1,Extent2>;
+
  public:
 
   using ElementType = T;
@@ -180,6 +182,33 @@ class Span2Impl
 
   //! Pointeur sur la mémoire allouée.
   constexpr ARCCORE_HOST_DEVICE const ElementType* data() const { return m_ptr; }
+
+ public:
+
+  //! Opérateur d'égalité (valide si T est const mais pas X)
+  template<typename X,SizeType XExtent1,SizeType XExtent2, typename = std::enable_if_t<std::is_same_v<X,value_type>>>
+  friend bool operator==(const ThatClass& lhs, const Span2Impl<X,SizeType,XExtent1,XExtent2>& rhs)
+  {
+    return impl::areEqual2D(rhs,lhs);
+  }
+  //! Opérateur d'inégalité (valide si T est const mais pas X)
+  template<typename X,SizeType XExtent1,SizeType XExtent2, typename = std::enable_if_t<std::is_same_v<X,value_type>>>
+  friend bool operator!=(const ThatClass& lhs, const Span2Impl<X,SizeType,XExtent1,XExtent2>& rhs)
+  {
+    return !impl::areEqual2D(rhs,lhs);
+  }
+  //! Opérateur d'égalité
+  template<SizeType XExtent1,SizeType XExtent2>
+  friend bool operator==(const ThatClass& lhs, const Span2Impl<T,SizeType,XExtent1,XExtent2>& rhs)
+  {
+    return impl::areEqual2D(rhs,lhs);
+  }
+  //! Opérateur d'inégalité
+  template<SizeType XExtent1,SizeType XExtent2>
+  friend bool operator!=(const ThatClass& lhs, const Span2Impl<T,SizeType,XExtent1,XExtent2>& rhs)
+  {
+    return !impl::areEqual2D(rhs,lhs);
+  }
 
  protected:
 
@@ -331,59 +360,6 @@ class Span2
     return Span<ElementType>(m_ptr + (m_dim2_size*i),m_dim2_size);
   }
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T,typename SizeType> inline bool
-operator==(Span2Impl<const T,SizeType> rhs, Span2Impl<const T,SizeType> lhs)
-{
-  return impl::areEqual2D(rhs,lhs);
-}
-
-template<typename T> inline bool
-operator==(Span2<const T> rhs, Span2<const T> lhs)
-{
-  Span2Impl<const T,Int64> a = rhs;
-  Span2Impl<const T,Int64> b = lhs;
-  return impl::areEqual2D(a,b);
-}
-
-template<typename T> inline bool
-operator!=(Span2<const T> rhs, Span2<const T> lhs)
-{
-  return !(rhs==lhs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline bool
-operator==(Span2<T> rhs, Span2<T> lhs)
-{
-  return impl::areEqual2D(rhs,lhs);
-}
-
-template<typename T> inline bool
-operator!=(Span2<T> rhs, Span2<T> lhs)
-{
-  return !(rhs==lhs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline bool
-operator==(SmallSpan2<T> rhs, SmallSpan2<T> lhs)
-{
-  return operator==(Span2<const T>(rhs),Span2<const T>(lhs));
-}
-
-template<typename T> inline bool
-operator!=(SmallSpan2<T> rhs, SmallSpan2<T> lhs)
-{
-  return !(rhs==lhs);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

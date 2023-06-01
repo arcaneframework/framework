@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringBuilder.cc                                            (C) 2000-2018 */
+/* StringBuilder.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Constructeur de chaîne de caractère unicode.                              */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,6 @@ namespace Arccore
 StringBuilder::
 StringBuilder(const std::string& str)
 : m_p(new StringImpl(str))
-, m_const_ptr(0)
 {
   m_p->addReference();
 }
@@ -39,7 +38,6 @@ StringBuilder(const std::string& str)
 StringBuilder::
 StringBuilder(const UCharConstArrayView& ustr)
 : m_p(new StringImpl(ustr.data()))
-, m_const_ptr(0)
 {
   m_p->addReference();
 }
@@ -50,7 +48,6 @@ StringBuilder(const UCharConstArrayView& ustr)
 StringBuilder::
 StringBuilder(const ByteConstArrayView& ustr)
 : m_p(new StringImpl(ustr))
-, m_const_ptr(0)
 {
   m_p->addReference();
 }
@@ -61,7 +58,6 @@ StringBuilder(const ByteConstArrayView& ustr)
 StringBuilder::
 StringBuilder(StringImpl* impl)
 : m_p(impl)
-, m_const_ptr(0)
 {
   if (m_p)
     m_p->addReference();
@@ -73,7 +69,6 @@ StringBuilder(StringImpl* impl)
 StringBuilder::
 StringBuilder(const char* str,Integer len)
 : m_p(new StringImpl(std::string_view(str,len)))
-, m_const_ptr(0)
 {
   m_p->addReference();
 }
@@ -84,7 +79,6 @@ StringBuilder(const char* str,Integer len)
 StringBuilder::
 StringBuilder(const char* str)
 : m_p(0)
-, m_const_ptr(0)
 {
   const bool do_alloc = true;
   if (do_alloc){
@@ -400,6 +394,15 @@ operator<<(std::ostream& o,const StringBuilder& str)
   String s = str.toString();
   o << s.localstr();
   return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool
+operator==(const StringBuilder& a,const StringBuilder& b)
+{
+  return a.toString()==b.toString();
 }
 
 /*---------------------------------------------------------------------------*/

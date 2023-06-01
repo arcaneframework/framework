@@ -5,13 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CheckedPointer.h                                            (C) 2000-2019 */
+/* CheckedPointer.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Classes encapsulant un pointeur permettant de vérifier l'utilisation.     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_CHECKEDPOINTER_H
 #define ARCCORE_BASE_CHECKEDPOINTER_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -121,38 +120,35 @@ class CheckedPointer
     return (!m_value);
   }
 
+
+  /*!
+   * \brief Compare les objets référencés par \a v1 et \a v2
+   * La comparaison se fait pointeur par pointeur.
+   * \retval true s'ils sont égaux
+   * \retval false sinon
+   */
+  template<typename T2> friend bool
+  operator==(const CheckedPointer<T>& v1,const CheckedPointer<T2>& v2)
+  {
+    return v1.get() == v2.get();
+  }
+
+  /*!
+   * \brief Compare les objets référencés par \a v1 et \a v2
+   * La comparaison se fait pointeur par pointeur.
+   * \retval false s'ils sont égaux
+   * \retval true sinon
+   */
+  template<typename T2> friend bool
+  operator!=(const CheckedPointer<T>& v1,const CheckedPointer<T2>& v2)
+  {
+    return v1.get() != v2.get();
+  }
+
  protected:
   
   T* m_value; //!< Pointeur sur l'objet référencé
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Compare les objets référencés par \a v1 et \a v2
- * La comparaison se fait pointeur par pointeur.
- * \retval true s'ils sont égaux
- * \retval false sinon
- */
-template<class T1,class T2> inline bool
-operator==(const CheckedPointer<T1>& v1,const CheckedPointer<T2>& v2)
-{
-  return v1.get() == v2.get();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Compare les objets référencés par \a v1 et \a v2
- * La comparaison se fait pointeur par pointeur.
- * \retval false s'ils sont égaux
- * \retval true sinon
- */
-template<class T1,class T2> inline bool
-operator!=(const CheckedPointer<T1>& v1,const CheckedPointer<T2>& v2)
-{
-  return v1.get() != v2.get();
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
