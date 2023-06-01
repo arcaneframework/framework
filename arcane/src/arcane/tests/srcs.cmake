@@ -4,7 +4,6 @@ set(ARCANE_SOURCES
   XmlUnitTest.cc
   SingletonService.cc
   ParticleUnitTest.cc
-  RedisUnitTest.cc
   TestUnitTest.cc
   CaseFunctionUnitTest.cc
   CaseOptionsTesterModule.cc

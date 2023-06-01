@@ -46,6 +46,9 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/MeshMaterialAcceleratorUnitTest.cc
   )
 list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
+if (TARGET hiredis::hiredis)
+  list(APPEND ARCANE_SOURCES RedisUnitTest.cc)
+endif()
 
 arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 
