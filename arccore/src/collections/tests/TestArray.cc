@@ -23,8 +23,14 @@ class IntSubClass
   IntSubClass(Integer v) : m_v(v) {}
   IntSubClass() : m_v(0) {}
   Integer m_v;
-  bool operator==(Integer iv) const { return m_v==iv; }
-  bool operator==(const IntSubClass& v) const { return m_v==v.m_v; }
+  friend bool operator==(const IntSubClass& v,Integer iv) { return v.m_v==iv; }
+  friend bool operator==(const IntSubClass& v1,const IntSubClass& v2) { return v1.m_v==v2.m_v; }
+  friend bool operator!=(const IntSubClass& v1,const IntSubClass& v2) { return v1.m_v!=v2.m_v; }
+  friend std::ostream& operator<<(std::ostream& o,const IntSubClass& c)
+  {
+    o << c.m_v;
+    return o;
+  }
 };
 class IntSubClassNoPod
 {
