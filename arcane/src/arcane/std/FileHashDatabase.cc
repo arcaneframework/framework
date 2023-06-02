@@ -14,12 +14,12 @@
 #include "arcane/std/internal/IHashDatabase.h"
 
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/SHA3HashAlgorithm.h"
-#include "arcane/utils/MD5HashAlgorithm.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/String.h"
-#include "arcane/utils/SmallArray.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/TraceAccessor.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,13 +28,13 @@ namespace Arcane
 {
 // TODO: ajouter information sur la version.
 // TODO: ajouter verrou pour la création des répertoires
-// TODO: ajouter support pour la compression
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class FileHashDatabase
-: public IHashDatabase
+: public TraceAccessor
+, public IHashDatabase
 {
  public:
 
@@ -48,42 +48,24 @@ class FileHashDatabase
 
  public:
 
-  FileHashDatabase(const String& directory)
-  : m_directory(directory)
+  FileHashDatabase(ITraceMng* tm, const String& directory)
+  : TraceAccessor(tm)
+  , m_directory(directory)
   {
   }
   ~FileHashDatabase()
   {
-    Real nb_byte_per_second = static_cast<Real>(m_nb_processed_bytes) / (m_hash_time + 1.0e-9);
-    // Pour avoir en Mega-byte par seconde
-    nb_byte_per_second /= 1.0e6;
-    std::cout << "FileHashDatabase: nb_write_cache=" << m_nb_write_cache
-              << " nb_write=" << m_nb_write << " nb_read=" << m_nb_read
-              << " nb_processed=" << m_nb_processed_bytes
-              << " hash_time=" << m_hash_time
-              << " rate=" << static_cast<Int64>(nb_byte_per_second) << " MB/s"
-              << "\n";
+    info() << "FileHashDatabase: nb_write_cache=" << m_nb_write_cache
+           << " nb_write=" << m_nb_write << " nb_read=" << m_nb_read;
   }
 
  public:
 
   void writeValues(const HashDatabaseWriteArgs& args, HashDatabaseWriteResult& xresult) override
   {
-    const String& key = args.key();
     Span<const std::byte> bytes = args.values();
-    m_nb_processed_bytes += bytes.size();
-    SHA3_256HashAlgorithm hash_algo;
-    //MD5HashAlgorithm hash_algo;
-    SmallArray<Byte, 1024> hash_result;
-    {
-      Real t1 = platform::getRealTime();
-      hash_algo.computeHash64(bytes, hash_result);
-      Real t2 = platform::getRealTime();
-      m_hash_time += (t2 - t1);
-    }
-    String hash_value = Convert::toHexaString(hash_result);
+    String hash_value = args.hashValue();
     xresult.setHashValueAsString(hash_value);
-    //std::cout << "COMPUTE_KEYVALUE_HASH hash=" << hash_value << " name=" << key << "\n";
     DirFileInfo dirfile_info = _getDirFileInfo(hash_value);
     String base_name = dirfile_info.directory;
     String full_filename = dirfile_info.full_filename;
@@ -104,7 +86,7 @@ class FileHashDatabase
       String full_filename = dirfile_info.full_filename;
       ofstream ofile(full_filename.localstr());
       //std::cout << "WRITE_HASH hash=" << hash_value << " size=" << bytes.size() << "\n";
-      ofile.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+      binaryWrite(ofile, bytes);
       ++m_nb_write;
       if (!ofile)
         ARCANE_FATAL("Can not write hash for filename '{0}'", full_filename);
@@ -120,10 +102,10 @@ class FileHashDatabase
     {
       String full_filename = dirfile_info.full_filename;
       std::ifstream ifile(full_filename.localstr());
-      ifile.read(reinterpret_cast<char*>(bytes.data()), bytes.size());
+      binaryRead(ifile, bytes);
       ++m_nb_read;
       if (!ifile.good())
-        ARCANE_FATAL("Can not read file '{0}' full_filename");
+        ARCANE_FATAL("Can not read file '{0}'", full_filename);
     }
   }
 
@@ -151,17 +133,15 @@ class FileHashDatabase
   Int64 m_nb_write_cache = 0;
   Int64 m_nb_write = 0;
   Int64 m_nb_read = 0;
-  Int64 m_nb_processed_bytes = 0;
-  Real m_hash_time = 0.0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" Ref<IHashDatabase>
-createFileHashDatabase(const String& directory)
+createFileHashDatabase(ITraceMng* tm, const String& directory)
 {
-  return makeRef<IHashDatabase>(new FileHashDatabase(directory));
+  return makeRef<IHashDatabase>(new FileHashDatabase(tm, directory));
 }
 
 /*---------------------------------------------------------------------------*/

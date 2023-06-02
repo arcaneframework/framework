@@ -23,43 +23,41 @@
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/IDataCompressor.h"
+#include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/ValueConvert.h"
-
-#include "arcane/XmlNode.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IDataReader.h"
-#include "arcane/IDataReader2.h"
-#include "arcane/IDataWriter.h"
-#include "arcane/CheckpointService.h"
-#include "arcane/Directory.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/FactoryService.h"
-#include "arcane/ISerializedData.h"
-#include "arcane/IMesh.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/IVariableUtilities.h"
-#include "arcane/ServiceBuilder.h"
-
-#include "arcane/VerifierService.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IItemFamily.h"
-
 #include "arcane/utils/List.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/ISerializer.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/VariableMetaData.h"
-#include "arcane/CheckpointInfo.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IDataReader.h"
+#include "arcane/core/IDataReader2.h"
+#include "arcane/core/IDataWriter.h"
+#include "arcane/core/CheckpointService.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/ISerializedData.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IRessourceMng.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/IVariableUtilities.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/VerifierService.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/VariableMetaData.h"
+#include "arcane/core/CheckpointInfo.h"
 
 #include "arcane/std/ParallelDataReader.h"
 #include "arcane/std/ParallelDataWriter.h"
@@ -81,14 +79,6 @@ namespace Arcane
 using impl::KeyValueTextReader;
 using impl::KeyValueTextWriter;
 
-namespace
-{
-// TODO A mettre dans Arccore
-template<typename T> Span<const std::byte> asBytes(SmallSpan<T> view)
-{
-  return {reinterpret_cast<const std::byte*>(view.data()), view.sizeBytes()};
-}
-}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -316,6 +306,14 @@ _createDeflater(IApplication* app,const String& name)
   return bc;
 }
 
+Ref<IHashAlgorithm>
+_createHashAlgorithm(IApplication* app,const String& name)
+{
+  ServiceBuilder<IHashAlgorithm> sf(app);
+  Ref<IHashAlgorithm> bc = sf.createReference(app,name);
+  return bc;
+}
+
 void
 _fillUniqueIds(const ItemGroup& group,Array<Int64>& uids)
 {
@@ -435,8 +433,10 @@ initialize(const String& path,Int32 rank)
   XmlNode root = xdoc->documentNode().documentElement();
   XmlNodeList variables_elem = root.children("variable-data");
   String deflater_name = root.attrValue("deflater-service");
+  String hash_algorithm_name = root.attrValue("hash-algorithm-service");
   String version_id = root.attrValue("version",false);
   info(4) << "Infos from metadata deflater-service=" << deflater_name
+          << " hash-algorithm-service=" << hash_algorithm_name
           << " version=" << version_id;
   if (version_id.null() || version_id=="1")
     // Version 1:
@@ -458,6 +458,10 @@ initialize(const String& path,Int32 rank)
   if (!deflater_name.null())
     deflater = _createDeflater(m_application,deflater_name);
 
+  Ref<IHashAlgorithm> hash_algorithm;
+  if (!hash_algorithm_name.null())
+    hash_algorithm = _createHashAlgorithm(m_application,hash_algorithm_name);
+
   for( Integer i=0, is=variables_elem.size(); i<is; ++i ){
     XmlNode n = variables_elem[i];
     String var_full_name = n.attrValue("full-name");
@@ -467,7 +471,7 @@ initialize(const String& path,Int32 rank)
 
   if (!m_text_reader.get()){
     String main_filename = _getBasicVariableFile(m_version,m_path,rank);
-    m_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
+    m_text_reader = makeRef(new KeyValueTextReader(traceMng(),main_filename,m_version));
   }
 
   // Il est possible qu'il y ait déjà un algorithme de compression spécifié.
@@ -475,6 +479,8 @@ initialize(const String& path,Int32 rank)
   // (Normalement cela ne devrait pas arriver sauf incohérence).
   if (deflater.get())
     m_text_reader->setDataCompressor(deflater);
+  if (hash_algorithm.get())
+    m_text_reader->setHashAlgorithm(hash_algorithm);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -862,6 +868,7 @@ class BasicWriter
   Int32 m_version;
 
   Ref<IDataCompressor> m_data_compressor;
+  Ref<IHashAlgorithm> m_hash_algorithm;
   Ref<KeyValueTextWriter> m_text_writer;
 
   std::map<ItemGroup,ParallelDataWriter*> m_parallel_data_writers;
@@ -912,7 +919,7 @@ initialize()
     platform::recursiveCreateDirectory(m_path);
   m_parallel_mng->barrier();
   String filename = _getBasicVariableFile(m_version,m_path,rank);
-  m_text_writer = makeRef(new KeyValueTextWriter(filename,m_version));
+  m_text_writer = makeRef(new KeyValueTextWriter(traceMng(),filename,m_version));
   m_text_writer->setDataCompressor(m_data_compressor);
 
   // Permet de surcharger le service utilisé pour la compression par une
@@ -927,6 +934,19 @@ initialize()
       m_text_writer->setDataCompressor(bc);
     }
   }
+  // Idem pour le service de calcul de hash
+  if (!m_hash_algorithm.get()){
+    String hash_algorithm_name = platform::getEnvironmentVariable("ARCANE_HASHALGORITHM");
+    if (hash_algorithm_name.null())
+      hash_algorithm_name = "SHA3_256";
+    else
+      info() << "Use hash algorithm from environment variable ARCANE_HASHALGORITHM name=" << hash_algorithm_name;
+    hash_algorithm_name = hash_algorithm_name + "HashAlgorithm";
+    auto v = _createHashAlgorithm(m_application,hash_algorithm_name);
+    m_hash_algorithm = v;
+    m_text_writer->setHashAlgorithm(v);
+  }
+
   m_global_writer = new BasicGenericWriter(m_application,m_version,m_text_writer);
   if (m_verbose_level>0)
     info() << "** OPEN MODE = " << m_open_mode;
@@ -1069,6 +1089,8 @@ endWrite()
           }
           jsw.write("DataCompressor",data_compressor_name);
           jsw.write("DataCompressorMinSize",String::fromNumber(data_compressor_min_size));
+          if (m_hash_algorithm.get())
+            jsw.write("HashAlgorithm",m_hash_algorithm->name());
         }
       }
       StringBuilder filename = m_path;
@@ -1184,6 +1206,8 @@ BasicReader(IApplication* app,IParallelMng* pm,Int32 forced_rank_to_read,
 void BasicReader::
 initialize()
 {
+  info() << "BasicReader::initialize()";
+
   IParallelMng* pm = m_parallel_mng;
   // Si un fichier 'arcane_acr_db.json' existe alors on lit les informations
   // de ce fichier pour détecter entre autre le numéro de version. Il faut
@@ -1197,6 +1221,7 @@ initialize()
     pm->broadcast(Int32ArrayView(1,&has_db_file),pm->masterIORank());
   }
   String data_compressor_name;
+  String hash_algorithm_name;
   if (has_db_file){
     UniqueArray<Byte> bytes;
     pm->ioMng()->collectiveRead(db_filename,bytes,false);
@@ -1207,9 +1232,13 @@ initialize()
     m_version = jv_arcane_db.expectedChild("Version").valueAsInt32();
     m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
     data_compressor_name = jv_arcane_db.expectedChild("DataCompressor").valueAsString();
-    info() << "Begin read using database version=" << m_version
+    JSONValue hash_algo_json = jv_arcane_db.child("HashAlgorithm");
+    if (!hash_algo_json.null())
+      hash_algorithm_name = hash_algo_json.valueAsString();
+    info() << "**--** Begin read using database version=" << m_version
            << " nb_part=" << m_nb_written_part
-           << " compressor=" << data_compressor_name;
+           << " compressor=" << data_compressor_name
+           << " hash_algorithm=" << hash_algorithm_name;
   }
   else{
     // Ancien format
@@ -1235,10 +1264,14 @@ initialize()
         rank_to_read = 0;
     }
     String main_filename = _getBasicVariableFile(m_version,m_path,rank_to_read);
-    m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
+    m_forced_rank_to_read_text_reader = makeRef(new KeyValueTextReader(traceMng(),main_filename,m_version));
     if (!data_compressor_name.empty()){
       Ref<IDataCompressor> dc = _createDeflater(m_application,data_compressor_name);
       m_forced_rank_to_read_text_reader->setDataCompressor(dc);
+    }
+    if (!hash_algorithm_name.empty()){
+      Ref<IHashAlgorithm> v = _createHashAlgorithm(m_application,hash_algorithm_name);
+      m_forced_rank_to_read_text_reader->setHashAlgorithm(v);
     }
   }
 }
@@ -1513,7 +1546,7 @@ _readOwnMetaDataAndCreateReader(Int32 rank)
     if (rank==m_forced_rank_to_read)
       text_reader = m_forced_rank_to_read_text_reader;
     else{
-      text_reader = makeRef(new KeyValueTextReader(main_filename,m_version));
+      text_reader = makeRef(new KeyValueTextReader(traceMng(),main_filename,m_version));
       // Il faut que ce lecteur ait le même gestionnaire de compression
       // que celui déjà créé
       text_reader->setDataCompressor(m_forced_rank_to_read_text_reader->dataCompressor());
