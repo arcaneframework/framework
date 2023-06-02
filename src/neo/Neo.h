@@ -1,11 +1,11 @@
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Neo.h                                           (C) 2000-2022             */
+/* Neo.h                                           (C) 2000-2023             */
 /*                                                                           */
 /* Data structure and tools for asynchronous mesh graph kernel               */
 /*---------------------------------------------------------------------------*/
@@ -827,6 +827,14 @@ class Family
     if (is_inserted)
       Neo::print() << "Add property " << name << " in Family " << m_name
                    << std::endl;
+  }
+
+  void removeProperty(std::string const& name) {
+    m_properties.erase(name);
+  }
+
+  void removeProperties() {
+    m_properties.clear();
   }
 
   Property& getProperty(std::string const& name) {
