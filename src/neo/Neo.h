@@ -1,11 +1,11 @@
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Neo.h                                           (C) 2000-2022             */
+/* Neo.h                                           (C) 2000-2023             */
 /*                                                                           */
 /* Data structure and tools for asynchronous mesh graph kernel               */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,6 @@
 #include <utility>
 
 #include "Utils.h"
-#include "sgraph/DirectedAcyclicGraph.h"
 
 namespace Neo {
 
@@ -794,107 +793,73 @@ using Property = std::variant<
 
 //----------------------------------------------------------------------------/
 
-namespace tye {// type engine : tool to visit variant
-template <typename... T> struct VisitorOverload : public T... {
-  using T::operator()...;
-};
-
-template <typename Func, typename Variant>
-void apply(Func &func, Variant &arg) {
-#ifdef _MSC_VER
-  auto default_func = [](auto arg) {
-#else
-  auto default_func = []([[maybe_unused]] auto arg) {
-#endif
-    std::cout << "Wrong Property Type" << std::endl;
-  }; // todo: prevent this behavior (statically ?)
-  std::visit(VisitorOverload{default_func, func}, arg);
-}
-
-template <typename Func, typename Variant>
-void apply(Func &func, Variant& arg1, Variant& arg2) {
-  std::visit([&arg2, &func](auto& concrete_arg1) {
-    std::visit([&concrete_arg1, &func](auto& concrete_arg2){
-#ifdef _MSC_VER // incomplete maybe_unused support on visual (v 19.29)
-        auto functor = VisitorOverload{[](const auto&  arg1,const auto& arg2) {std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl;},func}; // todo: prevent this behavior (statically ?)
-#else
-        auto functor = VisitorOverload{[]([[maybe_unused]] const auto&  arg1,[[maybe_unused]] const auto& arg2) {std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl;},func}; // todo: prevent this behavior (statically ?)
-#endif
-      functor(concrete_arg1,concrete_arg2);// arg1 & arg2 are variants, concrete_arg* are concrete arguments
-    },arg2);
-  },arg1);
-}
-
-template <typename Func, typename Variant>
-void apply(Func& func, Variant& arg1, Variant& arg2, Variant& arg3) {
-  std::visit([&arg2, &arg3, &func](auto& concrete_arg1) {
-    std::visit([&concrete_arg1, &arg3, &func](auto &concrete_arg2) {
-      std::visit([&concrete_arg1, &concrete_arg2, &func](auto &concrete_arg3) {
-#ifdef _MSC_VER
-        auto functor = VisitorOverload{[](const auto &arg1,const auto &arg2,const auto &arg3) {std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl;},func}; // todo: prevent this behavior (statically ?)
-#else
-        auto functor = VisitorOverload{[]([[maybe_unused]] const auto &arg1,[[maybe_unused]] const auto &arg2, [[maybe_unused]]const auto &arg3) {std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl;},func}; // todo: prevent this behavior (statically ?)
-#endif
-        functor(concrete_arg1, concrete_arg2,concrete_arg3); // arg1 & arg2 are variants, concrete_arg* are concrete arguments
-      }, arg3);
-    }, arg2);
-  }, arg1);
-}
-
-// template deduction guides
-template <typename...T> VisitorOverload(T...) -> VisitorOverload<T...>;
-
-}// namespace tye todo move in TypeEngine
-
-//----------------------------------------------------------------------------/
-
-class Family {
-public:
-
+class Family
+{
+ public:
   ItemKind m_ik;
   std::string m_name;
   std::string m_prop_lid_name;
   std::map<std::string, Property> m_properties;
   mutable ItemRange m_all;
 
-  Family(ItemKind ik, std::string name) : m_ik(ik), m_name(std::move(name)), m_prop_lid_name(name) {
+  Family(ItemKind ik, std::string name)
+  : m_ik(ik)
+  , m_name(std::move(name))
+  , m_prop_lid_name(name) {
     m_prop_lid_name.append("_lids");
-    m_properties[lidPropName()] = ItemLidsProperty{lidPropName()};
+    m_properties[lidPropName()] = ItemLidsProperty{ lidPropName() };
   }
 
-  constexpr std::string const& name() const noexcept {return m_name;}
-  constexpr ItemKind const& itemKind() const noexcept {return m_ik;}
+  constexpr std::string const& name() const noexcept { return m_name; }
+  constexpr ItemKind const& itemKind() const noexcept { return m_ik; }
 
   std::vector<Neo::utils::Int32> itemUniqueIdsToLocalids(std::vector<Neo::utils::Int64> const& item_uids) const {
     return _lidProp().operator[](item_uids);
   }
-  void itemUniqueIdsToLocalids(std::vector<Neo::utils::Int32> & item_lids, std::vector<Neo::utils::Int64> const& item_uids) const {
-    assert(("In itemUniqueIdsToLocalIds, lids and uids sizes differ.",item_lids.size() == item_uids.size()));
-    _lidProp()._getLidsFromUids(item_lids,item_uids);
+  void itemUniqueIdsToLocalids(std::vector<Neo::utils::Int32>& item_lids, std::vector<Neo::utils::Int64> const& item_uids) const {
+    assert(("In itemUniqueIdsToLocalIds, lids and uids sizes differ.", item_lids.size() == item_uids.size()));
+    _lidProp()._getLidsFromUids(item_lids, item_uids);
   }
 
-  template<typename T>
-  void addProperty(std::string const& name){
-    auto [iter,is_inserted] = m_properties.insert(std::make_pair(name,PropertyT<T>{name}));
-    if (is_inserted) Neo::print() << "Add property " << name << " in Family " << m_name
-                << std::endl;
+  template <typename T>
+  void addProperty(std::string const& name) {
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, PropertyT<T>{ name }));
+    if (is_inserted)
+      Neo::print() << "Add property " << name << " in Family " << m_name
+                   << std::endl;
+  }
+
+  void removeProperty(std::string const& name) {
+    m_properties.erase(name);
+  }
+
+  void removeProperties() {
+    m_properties.clear();
   }
 
   Property& getProperty(std::string const& name) {
     auto found_property = m_properties.find(name);
-    if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
+    if (found_property == m_properties.end())
+      throw std::invalid_argument("Cannot find Property " + name);
     return found_property->second;
   }
 
   Property const& getProperty(std::string const& name) const {
     auto found_property = m_properties.find(name);
-    if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
+    if (found_property == m_properties.end())
+      throw std::invalid_argument("Cannot find Property " + name);
     return found_property->second;
   }
 
   bool hasProperty(std::string const& name) const noexcept {
-    if (m_properties.find(name) == m_properties.end()) return false;
-    else return true;
+    if (m_properties.find(name) == m_properties.end())
+      return false;
+    else
+      return true;
+  }
+
+  bool hasProperty() const noexcept {
+    return (m_properties.size() > 1); // a family always has a lid_property
   }
 
   template <typename PropertyType>
@@ -908,10 +873,11 @@ public:
   }
 
   template <typename T>
-  void addArrayProperty(std::string const& name){
-    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayProperty<T>{name}));
-    if (is_inserted) Neo::print() << "Add array property " << name << " in Family " << m_name
-                << std::endl;
+  void addArrayProperty(std::string const& name) {
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayProperty<T>{ name }));
+    if (is_inserted)
+      Neo::print() << "Add array property " << name << " in Family " << m_name
+                   << std::endl;
   }
 
   std::string const&  lidPropName()
@@ -1014,68 +980,6 @@ struct PropertyHolder{
 struct InProperty : public PropertyHolder{};
 
 struct OutProperty : public PropertyHolder{};
-
-//----------------------------------------------------------------------------/
-
-struct IAlgorithm {
-  virtual void operator() () = 0;
-};
-
-template <typename Algorithm>
-struct AlgoHandler : public IAlgorithm {
-  AlgoHandler(InProperty&& in_prop, OutProperty&& out_prop, Algorithm&& algo)
-      : m_in_property(std::move(in_prop))
-      , m_out_property(std::move(out_prop))
-      , m_algo(std::forward<Algorithm>(algo)){}
-  InProperty m_in_property;
-  OutProperty m_out_property;
-  Algorithm m_algo;
-  void operator() () override {
-    tye::apply(m_algo,m_in_property(),m_out_property());
-  }
-};
-
-template <typename Algorithm>
-struct DualInAlgoHandler : public IAlgorithm {
-  DualInAlgoHandler(InProperty&& in_prop1, InProperty&& in_prop2, OutProperty&& out_prop, Algorithm&& algo)
-      : m_in_property1(std::move(in_prop1))
-      , m_in_property2(std::move(in_prop2))
-      , m_out_property(std::move(out_prop))
-      , m_algo(std::forward<Algorithm>(algo)){}
-  InProperty m_in_property1;
-  InProperty m_in_property2;
-  OutProperty m_out_property;
-  Algorithm m_algo;
-  void operator() () override {
-    tye::apply(m_algo,m_in_property1(),m_in_property2(),m_out_property());
-  }
-};
-
-template <typename Algorithm>
-struct NoDepsAlgoHandler : public IAlgorithm {
-  NoDepsAlgoHandler(OutProperty&& out_prop, Algorithm&& algo)
-      : m_out_property(std::move(out_prop))
-      , m_algo(std::forward<Algorithm>(algo)){}
-  OutProperty m_out_property;
-  Algorithm m_algo;
-  void operator() () override {
-    tye::apply(m_algo,m_out_property());
-  }
-};
-
-template <typename Algorithm>
-struct NoDepsDualOutAlgoHandler : public IAlgorithm {
-  NoDepsDualOutAlgoHandler(OutProperty&& out_prop1, OutProperty&& out_prop2, Algorithm&& algo)
-      : m_out_property1(std::move(out_prop1))
-      , m_out_property2(std::move(out_prop2))
-      , m_algo(std::forward<Algorithm>(algo)){}
-  OutProperty m_out_property1;
-  OutProperty m_out_property2;
-  Algorithm m_algo;
-  void operator() () override {
-    tye::apply(m_algo,m_out_property1(),m_out_property2());
-  }
-};
 
 //----------------------------------------------------------------------------/
 
@@ -1232,189 +1136,6 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
   return FilteredFutureItemRange{future_item_range,std::move(filter)};
 
 }
-
-//----------------------------------------------------------------------------/
-//----------------------------------------------------------------------------/
-
-class MeshBase {
- public:
-  std::string m_name;
-  FamilyMap m_families;
-  std::list<std::shared_ptr<IAlgorithm>> m_algos;
-  int m_dimension = 3;
-  using AlgoPtr = std::shared_ptr<IAlgorithm>;
-  using ProducingAlgoArray = std::vector<AlgoPtr>;
-  using ConsumingAlgoArray = std::vector<AlgoPtr>;
-  using PropertyRef = std::reference_wrapper<const PropertyHolder>;
-  static inline auto m_prop_holder_less_comparator = [] (PropertyHolder const& a, PropertyHolder const& b) {
-    return a.uniqueName() < b.uniqueName(); };
-  using PropertyHolderLessComparator = decltype(m_prop_holder_less_comparator);
-  std::map<PropertyHolder,std::pair<ProducingAlgoArray,ConsumingAlgoArray>,PropertyHolderLessComparator> m_property_algorithms {m_prop_holder_less_comparator};
-  SGraph::DirectedAcyclicGraph<AlgoPtr,PropertyHolder> m_dag;
-  enum class AlgorithmExecutionOrder {FIFO, LIFO, DAG};
-
-public:
-  Family& addFamily(ItemKind ik, std::string&& name) {
-    Neo::print() << "Add Family " << name << " in mesh " << m_name << std::endl;
-    return m_families.push_back(ik, name);
-  }
-
-  Family& getFamily(ItemKind ik, std::string const& name) const noexcept(ndebug) { return m_families.operator()(ik,name);}
-
-  [[nodiscard]] int nbItems(ItemKind ik) const {
-    return std::accumulate(m_families.begin(),m_families.end(),0,
-                           [ik](auto const& nb_item, auto const& family_map_element){
-                             return (family_map_element.first.first == ik) ? nb_item + family_map_element.second->nbElements() : nb_item;
-    });
-  }
-
-  template <typename Algorithm>
-  void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    auto algo_hander = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property),std::move(out_property),std::forward<Algorithm>(algo));
-    m_algos.push_back(algo_hander);
-    _addProducingAlgo(algo_hander->m_out_property,algo_hander);
-    _addConsumingAlgo(algo_hander->m_in_property,algo_hander);
-  }
-
-  template <typename Algorithm>
-  void addAlgorithm(OutProperty&& out_property, Algorithm algo) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    auto algo_handler = std::make_shared<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property),std::forward<Algorithm>(algo));
-    m_algos.push_back(algo_handler);
-    _addProducingAlgo(algo_handler->m_out_property, algo_handler);
-  }
-
-  template <typename Algorithm>
-  void addAlgorithm(InProperty&& in_property1, InProperty&& in_property2, OutProperty&& out_property, Algorithm algo){// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    auto algo_handler = std::make_shared<DualInAlgoHandler<decltype(algo)>>(
-    std::move(in_property1),
-    std::move(in_property2),
-    std::move(out_property),
-    std::forward<Algorithm>(algo));
-    m_algos.push_back(algo_handler);
-    _addProducingAlgo(algo_handler->m_out_property, algo_handler);
-    _addConsumingAlgo(algo_handler->m_in_property1, algo_handler);
-    _addConsumingAlgo(algo_handler->m_in_property2, algo_handler);
-  }
-
-  template <typename Algorithm>
-  void addAlgorithm(OutProperty&& out_property1, OutProperty&& out_property2, Algorithm algo) {// problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-    auto algo_handler = std::make_shared<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1), std::move(out_property2), std::forward<Algorithm>(algo));
-    m_algos.push_back(algo_handler);
-    _addProducingAlgo(algo_handler->m_out_property1,algo_handler);
-    _addProducingAlgo(algo_handler->m_out_property2,algo_handler);
-  }
-
-  /*!
-   * @brief Remove all added algorithms
-   */
-  void removeAlgorithms() {
-    m_algos.clear();
-    m_property_algorithms.clear();
-    m_dag.clear();
-  }
-
-  /*!
-   * @brief Apply added algorithms
-   * @param execution_order
-   * @return object EndOfMeshUpdate to unlock FutureItemRange
-   * Added algorithms are removed at the end of the method
-   */
-  EndOfMeshUpdate applyAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::DAG) {
-    return _applyAlgorithms(execution_order, false);
-  }
-
-  /*!
-   * @brief Apply added algorithms
-   * @param execution_order
-   * @return object EndOfMeshUpdate to unlock FutureItemRange
-   * Added algorithms are kept at the end of the method. If the method is called twice, tha algorithms are played again.
-   */
-  EndOfMeshUpdate applyAndKeepAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::DAG){
-    return _applyAlgorithms(execution_order,true);
-  }
-
-  EndOfMeshUpdate _applyAlgorithms(AlgorithmExecutionOrder execution_order, bool do_keep_algorithms) {
-    Neo::print() << "-- apply added algorithms with execution order ";
-    switch (execution_order) {
-    case AlgorithmExecutionOrder::FIFO:
-      Neo::print() << "FIFO --" << std::endl;
-      std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
-      break;
-    case AlgorithmExecutionOrder::LIFO:
-      Neo::print() << "LIFO --" << std::endl;
-      std::for_each(m_algos.rbegin(), m_algos.rend(), [](auto& algo) { (*algo.get())(); });
-      break;
-    case AlgorithmExecutionOrder::DAG:
-      Neo::print() << "DAG --" << std::endl;
-      _build_graph();
-      try {
-        auto sorted_graph = m_dag.topologicalSort();
-        std::for_each(sorted_graph.begin(), sorted_graph.end(),[](auto& algo) { (*algo.get())(); });
-      }
-      catch (std::runtime_error& error) {
-        if (!do_keep_algorithms) removeAlgorithms();
-        throw error;
-      }
-      break;
-    }
-    if (!do_keep_algorithms) removeAlgorithms();
-    return EndOfMeshUpdate{};
-  }
-
- private:
-
-  void _build_graph() {
-    // Mark algorithms that won't have their input properties
-    std::vector<AlgoPtr> to_remove_algos;
-    to_remove_algos.reserve(10);
-    for (auto&& [property, property_algos] : m_property_algorithms) {
-      auto& [producing_property_array, consuming_property_array] = property_algos;
-      if ( (producing_property_array.size() == 0 && property.m_status == PropertyStatus::ComputedProperty) // no producing algo for a computed property
-          || !property.m_family.hasProperty(property.m_name)) { // property does not exist
-        for (auto&& algo_to_remove : consuming_property_array){
-          to_remove_algos.push_back(algo_to_remove);
-        }
-        for (auto&& algo_to_remove : producing_property_array){// property does not exist
-          to_remove_algos.push_back(algo_to_remove);
-        }
-      }
-    }
-    auto compare_algo = [](auto const& algo1, auto const& algo2){return algo1.get() < algo2.get();};
-    std::sort(to_remove_algos.begin(), to_remove_algos.end(),compare_algo);
-
-    // Add edges between producing and consuming algos
-    auto is_removed_algo = [&to_remove_algos,compare_algo](AlgoPtr const& algo){
-      return std::binary_search(to_remove_algos.begin(), to_remove_algos.end(),algo, compare_algo);
-    };
-
-    for (auto& [property, property_algos] : m_property_algorithms){
-      if (!property.m_family.hasProperty(property.m_name)) continue;
-      auto& [producing_property_array, consuming_property_array] = property_algos;
-      for (auto& producing_algo : producing_property_array) {
-        // Add each producing algo in graph: it may have no consuming algo
-        if (!is_removed_algo(producing_algo)) m_dag.addVertex(producing_algo);
-        for (auto& consuming_algo : consuming_property_array) {
-          if (!is_removed_algo(producing_algo) && !is_removed_algo(consuming_algo))
-            m_dag.addEdge(producing_algo, consuming_algo, property);
-        }
-      }
-    }
-  }
-
-
-  void _addProducingAlgo(OutProperty const& out_property, std::shared_ptr<IAlgorithm> algo){
-    // add algo as one of producing algo of out_property
-    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[out_property];
-    producing_algo_array.push_back(algo);
-  }
-
-  void _addConsumingAlgo(InProperty const& in_property, std::shared_ptr<IAlgorithm> algo){
-    // add algo as one of the consuming algos of out_property
-    auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[in_property];
-    consuming_algo_array.push_back(algo);
-  }
-
-};
 
 //----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/

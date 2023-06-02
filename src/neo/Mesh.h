@@ -21,9 +21,13 @@
 #include "Neo.h"
 #include "Utils.h"
 
-namespace Neo {
+namespace Neo
+{
 
-class MeshBase;
+namespace MeshKernel
+{
+  class MeshBase;
+}
 enum class ItemKind;
 class Family;
 struct FutureItemRange;
@@ -71,10 +75,12 @@ class Mesh
   explicit Mesh(std::string const& mesh_name);
   ~Mesh();
 
-private:
-  std::unique_ptr<MeshBase> m_mesh_graph;
-  using ConnectivityMapType = std::map<std::string,Connectivity>;
+ private:
+  std::unique_ptr<MeshKernel::MeshBase> m_mesh_graph;
+  FamilyMap m_families;
+  using ConnectivityMapType = std::map<std::string, Connectivity, std::less<>>;
   ConnectivityMapType m_connectivities;
+  int m_dimension = 3;
 
   template <typename ItemRangeT>
   void _scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRangeWrapper<ItemRangeT> source_items,
@@ -102,7 +108,7 @@ private:
    * @return the dimension of the mesh {1,2,3}
    */
   [[nodiscard]] int dimension() const noexcept {
-    return m_mesh_graph->m_dimension;
+    return m_dimension;
   }
 
   /*!
@@ -110,7 +116,7 @@ private:
    * @return number of nodes in the mesh
    */
   [[nodiscard]] int nbNodes() const noexcept {
-    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Node);
+    return nbItems(Neo::ItemKind::IK_Node);
   }
 
   /*!
@@ -118,7 +124,7 @@ private:
    * @return number of edges in the mesh
    */
   [[nodiscard]] int nbEdges() const noexcept {
-    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Edge);
+    return nbItems(Neo::ItemKind::IK_Edge);
   }
 
   /*!
@@ -126,7 +132,7 @@ private:
    * @return number of faces in the mesh
    */
   [[nodiscard]] int nbFaces() const noexcept {
-    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Face);
+    return nbItems(Neo::ItemKind::IK_Face);
   }
 
   /*!
@@ -134,7 +140,7 @@ private:
    * @return number of cells in the mesh
    */
   [[nodiscard]] int nbCells() const noexcept {
-    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Cell);
+    return nbItems(Neo::ItemKind::IK_Cell);
   }
 
   /*!
@@ -142,16 +148,19 @@ private:
    * @return number of dofs in the mesh
    */
   [[nodiscard]] int nbDoFs() const noexcept {
-    return m_mesh_graph->nbItems(Neo::ItemKind::IK_Dof);
+    return nbItems(Neo::ItemKind::IK_Dof);
   }
 
   /*!
-   * @brief mesh item with item kind ik number
-   * @param ik : kind of the researched item
-   * @return number of item with item kind \p ik in the mesh
+   * @brief mesh item with kind \p ik number
+   * @param ik : kind of the counted item
+   * @return number of item with item kind \p ik in the mesh (may sum over several families with the same kind)
    */
   [[nodiscard]] int nbItems(Neo::ItemKind ik) const noexcept {
-    return m_mesh_graph->nbItems(ik);
+    return std::accumulate(m_families.begin(), m_families.end(), 0,
+                           [ik](auto const& nb_item, auto const& family_map_element) {
+                             return (family_map_element.first.first == ik) ? nb_item + family_map_element.second->nbElements() : nb_item;
+                           });
   }
 
   /*!
@@ -159,7 +168,7 @@ private:
    * @param family_name
    * @return the name of the unique id property for a family with name \p family_name whatever its kind.
    */
-  [[nodiscard]] std::string uniqueIdPropertyName(std::string const& family_name) const noexcept ;
+  [[nodiscard]] static std::string uniqueIdPropertyName(std::string const& family_name) noexcept;
 
   /*!
    * @brief find an existing family given its name \p family_name and kind \p family_kind
@@ -402,14 +411,14 @@ private:
    * @brief Apply all scheduled operations (addItems, addConnectivities, setItemCoords)
    * @return An object allowing to get the new items ItemRange from the FutureItemRange
    */
-  Neo::EndOfMeshUpdate applyScheduledOperations() noexcept ;
+  Neo::EndOfMeshUpdate applyScheduledOperations();
 
   /*!
    * Use this method to change coordinates of existing items
    * @param family ItemFamily of item to change coordinates
    * @return Coordinates property. Usage : Real3 coord = coord_prop[item_lid];
    */
-  [[nodiscard]] CoordPropertyType& getItemCoordProperty(Neo::Family & family);
+  [[nodiscard]] CoordPropertyType& getItemCoordProperty(Neo::Family& family);
   [[nodiscard]] CoordPropertyType const& getItemCoordProperty(Neo::Family const& family) const;
 
   /*!
@@ -420,7 +429,7 @@ private:
    * A more direct usage is to call directy \fn uniqueIds(item_family,item_lids)
    * to get uids of given lids
    */
-  [[nodiscard]] UidPropertyType const & getItemUidsProperty(const Family &item_family) const noexcept;
+  [[nodiscard]] UidPropertyType const& getItemUidsProperty(const Family& item_family) const noexcept;
 
   /*!
    * @brief Get items of kind \p item_kind connected to family \p source_family
@@ -473,7 +482,9 @@ private:
    * Access to internal structure, for advanced use
    * @return Reference toward internal structure
    */
-  Neo::MeshBase& internalMeshGraph() noexcept { return *m_mesh_graph;}
+  Neo::MeshKernel::MeshBase& internalMeshGraph() noexcept {
+    return *m_mesh_graph;
+  }
 
   [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {
     return item_family.name() + "_item_coordinates";
