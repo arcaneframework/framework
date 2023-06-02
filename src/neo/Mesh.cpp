@@ -15,12 +15,13 @@
 
 #include "Mesh.h"
 #include "Neo.h"
+#include "MeshKernel.h"
 
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
 
 Neo::Mesh::Mesh(const std::string& mesh_name)
- : m_mesh_graph(std::make_unique<Neo::MeshBase>(Neo::MeshBase{mesh_name})){
+: m_mesh_graph(std::make_unique<Neo::MeshKernel::MeshBase>(Neo::MeshKernel::MeshBase{ mesh_name })) {
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -36,8 +37,8 @@ std::string const& Neo::Mesh::name() const noexcept {
 /*-----------------------------------------------------------------------------*/
 
 Neo::Family& Neo::Mesh::findFamily(Neo::ItemKind family_kind,
-                                         std::string const& family_name) const noexcept(ndebug) {
-  return m_mesh_graph->getFamily(family_kind,family_name);
+                                   std::string const& family_name) const noexcept(ndebug) {
+  return m_families.operator()(family_kind, family_name);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -52,11 +53,11 @@ std::string Neo::Mesh::_connectivityOrientationPropertyName(std::string const& s
 
 /*-----------------------------------------------------------------------------*/
 
-Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept
-{
-  auto& cell_family = m_mesh_graph->addFamily(item_kind, std::move(family_name));
-  cell_family.addProperty<Neo::utils::Int64>(uniqueIdPropertyName(family_name));
-  return cell_family;
+Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept {
+  Neo::print() << "Add Family " << family_name << " in mesh " << name() << std::endl;
+  auto& item_family = m_families.push_back(item_kind, std::move(family_name));
+  item_family.addProperty<Neo::utils::Int64>(uniqueIdPropertyName(family_name));
+  return item_family;
 }
 
 /*-----------------------------------------------------------------------------*/
