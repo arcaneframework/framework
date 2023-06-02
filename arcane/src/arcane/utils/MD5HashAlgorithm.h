@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IHashAlgorithm.h"
+#include "arcane/utils/String.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,6 +36,11 @@ class ARCANE_UTILS_EXPORT MD5HashAlgorithm
  public:
 
   MD5HashAlgorithm();
+
+ public:
+
+  String name() const override { return "MD5"; }
+  Int32 hashSize() const override { return 16; }
 
  public:
 

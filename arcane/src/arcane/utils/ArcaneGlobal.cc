@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneGlobal.cc                                             (C) 2000-2021 */
+/* ArcaneGlobal.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations générales de Arcane.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/IndexOutOfRangeException.h"
 #include "arcane/utils/ArithmeticException.h"
@@ -19,6 +17,7 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/BadAlignmentException.h"
+#include "arcane/utils/NotImplementedException.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/IMemoryInfo.h"
@@ -59,7 +58,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -235,6 +235,24 @@ arcaneSizeWithPadding(Integer size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+String IHashAlgorithm::
+name() const
+{
+  ARCANE_THROW(NotImplementedException,"name() method");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 IHashAlgorithm::
+hashSize() const
+{
+  ARCANE_THROW(NotImplementedException,"hashSize() method");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void IHashAlgorithm::
 computeHash64(Span<const Byte> input,ByteArray& output)
 {
@@ -327,7 +345,7 @@ computeHash64(Span<const std::byte> input,ByteArray& output)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

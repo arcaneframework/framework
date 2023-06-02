@@ -66,8 +66,8 @@ class HashDatabaseWriteArgs
 
   HashDatabaseWriteArgs() = default;
 
-  HashDatabaseWriteArgs(Span<const std::byte> v)
-  : m_values(v)
+  HashDatabaseWriteArgs(Span<const std::byte> v,const String& hash_value)
+  : m_values(v), m_hash_value(hash_value)
   {}
 
  public:
@@ -78,10 +78,14 @@ class HashDatabaseWriteArgs
   void setValues(const Span<const std::byte>& v) { m_values = v; }
   Span<const std::byte> values() const { return m_values; }
 
+  void setHashValue(const String& v) { m_hash_value = v; }
+  const String& hashValue() const { return m_hash_value; }
+
  private:
 
   String m_key;
   Span<const std::byte> m_values;
+  String m_hash_value;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -118,7 +122,7 @@ class IHashDatabase
 /*---------------------------------------------------------------------------*/
 
 extern "C++" Ref<IHashDatabase>
-createFileHashDatabase(const String& directory);
+createFileHashDatabase(ITraceMng* tm, const String& directory);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

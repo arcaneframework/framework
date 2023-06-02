@@ -16,6 +16,7 @@
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/String.h"
+#include "arcane/utils/TraceAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -23,6 +24,7 @@
 namespace Arcane
 {
 class IDataCompressor;
+class IHashAlgorithm;
 }
 
 namespace Arcane::impl
@@ -41,12 +43,13 @@ namespace Arcane::impl
  * séquentielles.
  */
 class KeyValueTextWriter
+: public TraceAccessor
 {
   class Impl;
 
  public:
 
-  explicit KeyValueTextWriter(const String& filename, Int32 version);
+  KeyValueTextWriter(ITraceMng* tm,const String& filename, Int32 version);
   KeyValueTextWriter(const KeyValueTextWriter& rhs) = delete;
   ~KeyValueTextWriter();
   KeyValueTextWriter& operator=(const KeyValueTextWriter& rhs) = delete;
@@ -61,6 +64,8 @@ class KeyValueTextWriter
   String fileName() const;
   void setDataCompressor(Ref<IDataCompressor> dc);
   Ref<IDataCompressor> dataCompressor() const;
+  void setHashAlgorithm(Ref<IHashAlgorithm> v);
+  Ref<IHashAlgorithm> hashAlgorithm() const;
   Int64 fileOffset();
 
  private:
@@ -80,12 +85,13 @@ class KeyValueTextWriter
  * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
  */
 class KeyValueTextReader
+: public TraceAccessor
 {
   class Impl;
 
  public:
 
-  KeyValueTextReader(const String& filename, Int32 version);
+  KeyValueTextReader(ITraceMng* tm,const String& filename, Int32 version);
   KeyValueTextReader(const KeyValueTextReader& rhs) = delete;
   ~KeyValueTextReader();
   KeyValueTextReader& operator=(const KeyValueTextReader& rhs) = delete;
@@ -102,6 +108,8 @@ class KeyValueTextReader
   void setFileOffset(Int64 v);
   void setDataCompressor(Ref<IDataCompressor> ds);
   Ref<IDataCompressor> dataCompressor() const;
+  void setHashAlgorithm(Ref<IHashAlgorithm> v);
+  Ref<IHashAlgorithm> hashAlgorithm() const;
 
  private:
 
@@ -113,7 +121,7 @@ class KeyValueTextReader
   void _readJSON();
   void _readDirect(Int64 offset, Span<std::byte> bytes);
   void _setFileOffset(const String& key_name);
-  void _read2(Span<std::byte> values);
+  void _read2(const String& key_name,Span<std::byte> values);
 };
 
 /*---------------------------------------------------------------------------*/
