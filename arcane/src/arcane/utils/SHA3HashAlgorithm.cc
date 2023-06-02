@@ -142,6 +142,10 @@ keccak_init(unsigned int bits)
   bool is_ok = (rate <= 1600 && (rate % 64) == 0);
   if (!is_ok)
     ARCANE_FATAL("Bad value for rate '{0}'", rate);
+  // La taille de bloc est au maximum de 144 pour SHA3-224
+  // Au dela, la fonction 'sha3_process_block' ne fonctionne pas
+  if (m_context.block_size > 144)
+    ARCANE_FATAL("Block size is too big (v={0}) max_allowed=144", m_context.block_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -335,6 +339,9 @@ sha3_permutation(uint64_t* state)
 void SHA3::
 sha3_process_block(uint64_t hash[25], const uint64_t* block, size_t block_size)
 {
+  // La taille de bloc est au maximum de 144 pour SHA3-224
+  // Cela est testé dans keccak_init().
+
   // expanded loop
   hash[0] ^= le2me_64(block[0]);
   hash[1] ^= le2me_64(block[1]);
@@ -360,16 +367,6 @@ sha3_process_block(uint64_t hash[25], const uint64_t* block, size_t block_size)
       // if not sha3-256
       if (block_size > 136) {
         hash[17] ^= le2me_64(block[17]);
-        // if not sha3-224
-        if (block_size > 144) {
-          hash[18] ^= le2me_64(block[18]);
-          hash[19] ^= le2me_64(block[19]);
-          hash[20] ^= le2me_64(block[20]);
-          hash[21] ^= le2me_64(block[21]);
-          hash[22] ^= le2me_64(block[22]);
-          hash[23] ^= le2me_64(block[23]);
-          hash[24] ^= le2me_64(block[24]);
-        }
       }
     }
   }
@@ -396,8 +393,8 @@ sha3_update(Span<const std::byte> bytes)
   const unsigned char* msg = reinterpret_cast<const unsigned char*>(bytes.data());
   size_t size = bytes.size();
 
-  size_t index = (size_t)ctx->rest;
-  size_t block_size = (size_t)ctx->block_size;
+  const size_t index = (size_t)ctx->rest;
+  const size_t block_size = (size_t)ctx->block_size;
 
   if (ctx->rest & SHA3_FINALIZED)
     return; /* too late for additional input */
