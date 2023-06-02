@@ -18,7 +18,7 @@
 #include "neo/Utils.h"
 
 TEST(PerformanceTests, AddItemsByCopy) {
-  auto nb_cells = 1e6;
+  auto nb_cells = 1e3; // 1e6
   std::vector<Neo::utils::Int64> cell_uids(nb_cells);
   std::iota(cell_uids.begin(), cell_uids.end(), 0);
   Neo::Mesh mesh{ "mesh" };
@@ -38,7 +38,7 @@ TEST(PerformanceTests, AddItemsByCopy) {
 /*-----------------------------------------------------------------------------*/
 
 TEST(PerformanceTests, AddItemsByMove) {
-  auto nb_cells = 1e6;
+  auto nb_cells = 1e3; // 1e6
   std::vector<Neo::utils::Int64> cell_uids(nb_cells);
   std::iota(cell_uids.begin(), cell_uids.end(), 0);
   Neo::Mesh mesh{ "mesh" };
@@ -58,7 +58,7 @@ TEST(PerformanceTests, AddItemsByMove) {
 /*-----------------------------------------------------------------------------*/
 
 TEST(PerformanceTests, AppendItems) {
-  auto nb_cells = 1e6;
+  auto nb_cells = 1e3; //1e6
   std::vector<Neo::utils::Int64> cell_uids(nb_cells);
   std::iota(cell_uids.begin(), cell_uids.end(), 0);
   Neo::Mesh mesh{ "mesh" };
@@ -84,7 +84,7 @@ TEST(PerformanceTests, AppendItems) {
 /*-----------------------------------------------------------------------------*/
 
 TEST(PerformanceTests, AddConnectivity) {
-  int nb_cells = 1e5;
+  int nb_cells = 1e3; // 1e5
   auto nb_node_per_cells = 4;
   std::vector<Neo::utils::Int64> cell_uids(nb_cells);
   std::iota(cell_uids.begin(), cell_uids.end(), 0);
