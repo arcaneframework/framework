@@ -16,6 +16,7 @@
 
 #include "gtest/gtest.h"
 #include "neo/Neo.h"
+#include "neo/MeshKernel.h"
 
 TEST(NeoUtils, test_array_view) {
   std::vector<int> vec{ 0, 1, 2 };
@@ -677,10 +678,10 @@ TEST(NeoTestPropertyView, test_property_iterator){
 
 TEST(NeoTestPropertyGraph, test_property_graph_info) {
   std::cout << "Test Property Graph" << std::endl;
-  Neo::MeshBase mesh{ "test" };
+  Neo::MeshKernel::MeshBase mesh{ "test" };
 
   // Add a family : property always belong to a family
-  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cells");
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cells" };
 
   // Add a consuming/producing algo
   mesh.addAlgorithm(Neo::InProperty{ cell_family, "in_property" }, Neo::OutProperty{ cell_family, "out_property" }, []() {});
@@ -814,6 +815,7 @@ TEST(NeoTestFamily, test_family) {
   Neo::Family family(Neo::ItemKind::IK_Dof, "MyFamily");
   EXPECT_EQ(family.lidPropName(), family._lidProp().m_name);
   EXPECT_TRUE(family.hasProperty(family.lidPropName()));
+  EXPECT_FALSE(family.hasProperty());
   EXPECT_FALSE(family.hasProperty("toto"));
   std::vector<Neo::utils::Int64> uids{ 0, 1, 2 };
   family._lidProp().append(uids); // internal
@@ -874,22 +876,22 @@ void prepare_mesh(Neo::MeshBase& mesh) {
 
 //----------------------------------------------------------------------------/
 
-TEST(NeoTestBaseMesh, base_mesh_unit_test){
-  Neo::MeshBase mesh{ "test" };
-  auto& family1 = mesh.addFamily(Neo::ItemKind::IK_Cell, "family1");
-  auto& family2 = mesh.addFamily(Neo::ItemKind::IK_Cell, "family2");
-  auto& family3 = mesh.addFamily(Neo::ItemKind::IK_Node, "family3");
-  auto& family4 = mesh.addFamily(Neo::ItemKind::IK_Edge, "family4");
-  auto& family5 = mesh.addFamily(Neo::ItemKind::IK_Dof, "family5");
+TEST(NeoTestBaseMesh, base_mesh_unit_test) {
+  Neo::MeshKernel::MeshBase mesh{ "test" };
+  Neo::Family family1{ Neo::ItemKind::IK_Cell, "family1" };
+  Neo::Family family2{ Neo::ItemKind::IK_Cell, "family2" };
+  Neo::Family family3{ Neo::ItemKind::IK_Node, "family3" };
+  Neo::Family family4{ Neo::ItemKind::IK_Edge, "family4" };
+  Neo::Family family5{ Neo::ItemKind::IK_Dof, "family5" };
   bool is_called = false;
   family1.addProperty<int>("prop1");
   family2.addProperty<int>("prop2");
   family3.addProperty<int>("prop3");
   family4.addProperty<int>("prop4");
   family5.addProperty<int>("prop5");
-  mesh.addAlgorithm(Neo::InProperty{family1,"prop1", Neo::PropertyStatus::ExistingProperty},Neo::OutProperty{family2,"prop2"},
-                    [&is_called]([[maybe_unused]]Neo::PropertyT<int> const& prop1,
-                                 [[maybe_unused]]Neo::PropertyT<int>& prop2){
+  mesh.addAlgorithm(Neo::InProperty{ family1, "prop1", Neo::PropertyStatus::ExistingProperty }, Neo::OutProperty{ family2, "prop2" },
+                    [&is_called]([[maybe_unused]] Neo::PropertyT<int> const& prop1,
+                                 [[maybe_unused]] Neo::PropertyT<int>& prop2) {
                       is_called = true;
                     });
   // copy mesh
@@ -912,6 +914,24 @@ TEST(NeoTestBaseMesh, base_mesh_unit_test){
 
 //----------------------------------------------------------------------------/
 
+void add_properties(Neo::Family& cell_family, Neo::Family& node_family) {
+
+  // Adding node family and properties
+  node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
+  node_family.addProperty<Neo::utils::Int64>("node_uids");
+  node_family.addArrayProperty<Neo::utils::Int32>("node2cells");
+  node_family.addProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
+
+  // Test adds
+  EXPECT_NO_THROW(node_family.getProperty("node_uids"));
+
+  // Adding cell family and properties
+  cell_family.addProperty<Neo::utils::Int64>("cell_uids");
+  cell_family.addArrayProperty<Neo::utils::Int32>("cell2nodes");
+}
+
+//----------------------------------------------------------------------------/
+
 TEST(NeoTestBaseMesh, base_mesh_creation_test) {
 
   std::cout << "*------------------------------------*" << std::endl;
@@ -919,11 +939,11 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   std::cout << "*------------------------------------*" << std::endl;
 
   // creating mesh
-  auto mesh = Neo::MeshBase{ "my_neo_mesh" };
-  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
-  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+  auto mesh = Neo::MeshKernel::MeshBase{ "my_neo_mesh" };
+  Neo::Family node_family{ Neo::ItemKind::IK_Node, "NodeFamily" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "CellFamily" };
 
-  prepare_mesh(mesh);
+  add_properties(cell_family, node_family);
   // return;
 
   // given data to create mesh. After mesh creation data is no longer available
@@ -1135,9 +1155,6 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
 
   // launch algos
   mesh.applyAlgorithms();
-
-  // test properties
-  mesh_property_test(mesh);
 }
 
 //----------------------------------------------------------------------------/
@@ -1152,11 +1169,11 @@ TEST(NeoTestPartialMeshModification, partial_mesh_modif_test) {
   std::array<Neo::utils::Real3, 3> node_coords = { r, r, r }; // don't get why I can't write {{0,0,0},{0,0,0},{0,0,0}}; ...??
 
   // creating mesh
-  auto mesh = Neo::MeshBase{ "my_neo_mesh" };
-  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
-  mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+  auto mesh = Neo::MeshKernel::MeshBase{ "my_neo_mesh" };
+  Neo::Family node_family{ Neo::ItemKind::IK_Node, "NodeFamily" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "CellFamily" };
 
-  prepare_mesh(mesh);
+  add_properties(cell_family, node_family);
 
   mesh.addAlgorithm(Neo::InProperty{ node_family, node_family.lidPropName() },
                     Neo::OutProperty{ node_family, "node_coords" },
