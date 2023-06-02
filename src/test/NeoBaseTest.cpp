@@ -840,38 +840,17 @@ TEST(NeoTestFamily, test_family) {
   for (auto item : family.all()) {
     EXPECT_EQ(local_ids[i++], item);
   }
-}
-
-void mesh_property_test(const Neo::MeshBase& mesh) {
-  std::cout << "== Print Mesh " << mesh.m_name << " Properties ==" << std::endl;
-  for (const auto& [kind_name_pair, family] : mesh.m_families) {
-    std::cout << "= In family " << kind_name_pair.second << " =" << std::endl;
-    for (const auto& [prop_name, property] : family->m_properties) {
-      std::cout << prop_name << std::endl;
-      std::cout << "prop_adress " << &property << std::endl;
-    }
-  }
-  std::cout << "== End Print Mesh " << mesh.m_name << " Properties ==" << std::endl;
-}
-
-void prepare_mesh(Neo::MeshBase& mesh) {
-
-  // Adding node family and properties
-  auto& node_family = mesh.getFamily(Neo::ItemKind::IK_Node, "NodeFamily");
-  std::cout << "Find family " << node_family.m_name << std::endl;
-  node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
-  node_family.addProperty<Neo::utils::Int64>("node_uids");
-  node_family.addArrayProperty<Neo::utils::Int32>("node2cells");
-  node_family.addProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
-
-  // Test adds
-  EXPECT_NO_THROW(node_family.getProperty("node_uids"));
-
-  // Adding cell family and properties
-  auto& cell_family = mesh.getFamily(Neo::ItemKind::IK_Cell, "CellFamily");
-  std::cout << "Find family " << cell_family.m_name << std::endl;
-  cell_family.addProperty<Neo::utils::Int64>("cell_uids");
-  cell_family.addArrayProperty<Neo::utils::Int32>("cell2nodes");
+  family.removeProperty(scalar_prop_name);
+  EXPECT_FALSE(family.hasProperty(scalar_prop_name));
+  family.removeProperty(array_prop_name);
+  EXPECT_FALSE(family.hasProperty(array_prop_name));
+  EXPECT_FALSE(family.hasProperty());
+  // try removing an unexisting property
+  family.removeProperty(scalar_prop_name);
+  family.addProperty<Neo::utils::Int32>(scalar_prop_name);
+  family.addArrayProperty<Neo::utils::Int32>(array_prop_name);
+  family.removeProperties();
+  EXPECT_FALSE(family.hasProperty());
 }
 
 //----------------------------------------------------------------------------/
