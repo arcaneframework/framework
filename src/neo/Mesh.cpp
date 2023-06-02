@@ -382,8 +382,7 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
 
 /*-----------------------------------------------------------------------------*/
 
-Neo::EndOfMeshUpdate Neo::Mesh::applyScheduledOperations() noexcept
-{
+Neo::EndOfMeshUpdate Neo::Mesh::applyScheduledOperations() {
   return m_mesh_graph->applyAlgorithms();
 }
 

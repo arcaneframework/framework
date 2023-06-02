@@ -411,7 +411,7 @@ class Mesh
    * @brief Apply all scheduled operations (addItems, addConnectivities, setItemCoords)
    * @return An object allowing to get the new items ItemRange from the FutureItemRange
    */
-  Neo::EndOfMeshUpdate applyScheduledOperations() noexcept ;
+  Neo::EndOfMeshUpdate applyScheduledOperations();
 
   /*!
    * Use this method to change coordinates of existing items
