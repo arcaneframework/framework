@@ -41,6 +41,11 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
   //! Nom de l'algorithme
   virtual String name() const;
 
+  //NOTE: pour l'instant (version 3.10) par encore virtuel pure pour rester
+  // compatible avec l'existant. Envoi FatalErrorException si pas surchargée
+  //! Taille (en octet) de la clé de hash.
+  virtual Int32 hashSize() const;
+
   /*!
    * \brief Calcule la fonction de hashage sur le tableau \a input.
    *

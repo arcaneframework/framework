@@ -60,6 +60,7 @@ class ARCANE_UTILS_EXPORT SHA3_256HashAlgorithm
  public:
 
   String name() const override { return "SHA3_256"; }
+  Int32 hashSize() const override { return 32; }
 
  protected:
 
@@ -75,6 +76,7 @@ class ARCANE_UTILS_EXPORT SHA3_224HashAlgorithm
  public:
 
   String name() const override { return "SHA3_224"; }
+  Int32 hashSize() const override { return 28; }
 
  protected:
 
@@ -90,6 +92,7 @@ class ARCANE_UTILS_EXPORT SHA3_384HashAlgorithm
  public:
 
   String name() const override { return "SHA3_384"; }
+  Int32 hashSize() const override { return 48; }
 
  protected:
 
@@ -105,6 +108,7 @@ class ARCANE_UTILS_EXPORT SHA3_512HashAlgorithm
  public:
 
   String name() const override { return "SHA3_512"; }
+  Int32 hashSize() const override { return 64; }
 
  protected:
 

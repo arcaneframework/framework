@@ -11,14 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/IndexOutOfRangeException.h"
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/BadAlignmentException.h"
+#include "arcane/utils/NotImplementedException.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/IMemoryInfo.h"
@@ -239,7 +238,16 @@ arcaneSizeWithPadding(Integer size)
 String IHashAlgorithm::
 name() const
 {
-  return String{};
+  ARCANE_THROW(NotImplementedException,"name() method");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 IHashAlgorithm::
+hashSize() const
+{
+  ARCANE_THROW(NotImplementedException,"hashSize() method");
 }
 
 /*---------------------------------------------------------------------------*/

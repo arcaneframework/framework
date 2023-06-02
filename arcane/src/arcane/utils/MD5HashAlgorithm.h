@@ -39,7 +39,8 @@ class ARCANE_UTILS_EXPORT MD5HashAlgorithm
 
  public:
 
-  String name() const override { return "SHA3_224"; }
+  String name() const override { return "MD5"; }
+  Int32 hashSize() const override { return 16; }
 
  public:
 
