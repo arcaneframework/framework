@@ -852,8 +852,14 @@ class Family
   }
 
   bool hasProperty(std::string const& name) const noexcept {
-    if (m_properties.find(name) == m_properties.end()) return false;
-    else return true;
+    if (m_properties.find(name) == m_properties.end())
+      return false;
+    else
+      return true;
+  }
+
+  bool hasProperty() const noexcept {
+    return (m_properties.size() > 1); // a family always has a lid_property
   }
 
   template <typename PropertyType>
