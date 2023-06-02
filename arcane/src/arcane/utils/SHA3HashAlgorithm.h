@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IHashAlgorithm.h"
+#include "arcane/utils/String.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,6 +57,10 @@ class ARCANE_UTILS_EXPORT SHA3HashAlgorithm
 class ARCANE_UTILS_EXPORT SHA3_256HashAlgorithm
 : public SHA3HashAlgorithm
 {
+ public:
+
+  String name() const override { return "SHA3_256"; }
+
  protected:
 
   void _initialize(SHA3Algorithm::SHA3&) override;
@@ -67,6 +72,10 @@ class ARCANE_UTILS_EXPORT SHA3_256HashAlgorithm
 class ARCANE_UTILS_EXPORT SHA3_224HashAlgorithm
 : public SHA3HashAlgorithm
 {
+ public:
+
+  String name() const override { return "SHA3_224"; }
+
  protected:
 
   void _initialize(SHA3Algorithm::SHA3&) override;
@@ -78,6 +87,10 @@ class ARCANE_UTILS_EXPORT SHA3_224HashAlgorithm
 class ARCANE_UTILS_EXPORT SHA3_384HashAlgorithm
 : public SHA3HashAlgorithm
 {
+ public:
+
+  String name() const override { return "SHA3_384"; }
+
  protected:
 
   void _initialize(SHA3Algorithm::SHA3&) override;
@@ -89,6 +102,10 @@ class ARCANE_UTILS_EXPORT SHA3_384HashAlgorithm
 class ARCANE_UTILS_EXPORT SHA3_512HashAlgorithm
 : public SHA3HashAlgorithm
 {
+ public:
+
+  String name() const override { return "SHA3_512"; }
+
  protected:
 
   void _initialize(SHA3Algorithm::SHA3&) override;

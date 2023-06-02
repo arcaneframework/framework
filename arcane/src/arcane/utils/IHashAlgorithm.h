@@ -36,14 +36,10 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
 
  public:
 
-  /*!
-   * \brief Calcule la fonction de hashage sur le tableau \a input.
-   *
-   * La fonction de hashage est <strong>ajoutée</string> dans \a output.
-   * La longueur dépend de l'algorithme utilisé.
-   */
-  ARCANE_DEPRECATED_REASON("Y2023: Use computeHash64(Span<const std::byte> input,ByteArray& output) instead")
-  virtual void computeHash(ByteConstArrayView input, ByteArray& output) = 0;
+  //NOTE: pour l'instant (version 3.10) par encore virtuel pure pour rester
+  // compatible avec l'existant
+  //! Nom de l'algorithme
+  virtual String name() const;
 
   /*!
    * \brief Calcule la fonction de hashage sur le tableau \a input.
@@ -60,6 +56,17 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
    * La longueur dépend de l'algorithme utilisé.
    */
   virtual void computeHash64(Span<const std::byte> input, ByteArray& output);
+
+ public:
+
+  /*!
+   * \brief Calcule la fonction de hashage sur le tableau \a input.
+   *
+   * La fonction de hashage est <strong>ajoutée</string> dans \a output.
+   * La longueur dépend de l'algorithme utilisé.
+   */
+  ARCANE_DEPRECATED_REASON("Y2023: Use computeHash64(Span<const std::byte> input,ByteArray& output) instead")
+  virtual void computeHash(ByteConstArrayView input, ByteArray& output) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
