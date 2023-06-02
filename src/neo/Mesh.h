@@ -168,7 +168,7 @@ class Mesh
    * @param family_name
    * @return the name of the unique id property for a family with name \p family_name whatever its kind.
    */
-  [[nodiscard]] std::string uniqueIdPropertyName(std::string const& family_name) const noexcept ;
+  [[nodiscard]] static std::string uniqueIdPropertyName(std::string const& family_name) noexcept;
 
   /*!
    * @brief find an existing family given its name \p family_name and kind \p family_kind
