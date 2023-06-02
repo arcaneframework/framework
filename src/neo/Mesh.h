@@ -453,6 +453,23 @@ private:
   std::vector<Neo::utils::Int32> localIds(Family const& item_family, const std::vector<Neo::utils::Int64>& item_uids) const noexcept;
 
   /*!
+   * @brief prepare evolutive mesh api : schedule move node operation. Will be applied when applyScheduledOperations will be called
+   * @param mesh
+   * @param node_family node family with moving nodes
+   * @param node_uids uids of the moving nodes
+   * @param node_coords new coordinates of the moving nodes given in \p node_uids
+   */
+  void scheduleMoveNodes(Neo::Family& node_family, std::vector<Neo::utils::Int64> const& node_uids, std::vector<Neo::utils::Real3>& node_coords);
+
+  /*!
+   * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called
+   * @param mesh
+   * @param family
+   * @param removed_item_uids
+   */
+  void scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& removed_item_uids);
+
+  /*!
    * Access to internal structure, for advanced use
    * @return Reference toward internal structure
    */
