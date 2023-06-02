@@ -25,6 +25,7 @@ set(ARCANE_SOURCES
   DumpWEnsight7.cc
   DumpWUCD.cc
   FileHashDatabase.cc
+  HashAlgorithmServices.cc
   JsonMessagePassingProfilingService.h
   JsonMessagePassingProfilingService.cc
   MeshGeneratorService.cc
