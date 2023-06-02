@@ -1,11 +1,11 @@
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Mesh.h                                          (C) 2000-2021             */
+/* Mesh.h                                          (C) 2000-2023             */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -41,28 +41,34 @@ class EndOfMeshUpdate;
  *
  */
 
-class Mesh {
+class Mesh
+{
 
-public:
-  using UidPropertyType   = Neo::PropertyT<Neo::utils::Int64>;
+ public:
+  using UidPropertyType = Neo::PropertyT<Neo::utils::Int64>;
   using CoordPropertyType = Neo::PropertyT<Neo::utils::Real3>;
   using ConnectivityPropertyType = Neo::ArrayProperty<Neo::utils::Int32>;
 
-  struct Connectivity{
+  struct Connectivity
+  {
     Neo::Family const& source_family;
     Neo::Family const& target_family;
     std::string const& name;
     ConnectivityPropertyType const& connectivity_value;
+    ConnectivityPropertyType const& connectivity_orientation;
 
-    Neo::utils::ConstArrayView<Neo::utils::Int32> operator[] (Neo::utils::Int32 item_lid) const noexcept {
+    Neo::utils::ConstArrayView<Neo::utils::Int32> operator[](Neo::utils::Int32 item_lid) const noexcept {
       return connectivity_value[item_lid];
     }
   };
 
-  enum class ConnectivityOperation { Add, Modify};
+  enum class ConnectivityOperation
+  {
+    Add,
+    Modify
+  };
 
-public:
-  Mesh(std::string const& mesh_name);
+  explicit Mesh(std::string const& mesh_name);
   ~Mesh();
 
 private:
@@ -76,15 +82,20 @@ private:
                                 std::vector<Neo::utils::Int64> connected_item_uids,
                                 std::string const& connectivity_unique_name,
                                 ConnectivityOperation add_or_modify);
+  template <typename ItemRangeT>
+  void _scheduleAddConnectivityOrientation(Neo::Family& source_family, Neo::ItemRangeWrapper<ItemRangeT> source_items,
+                                           Neo::Family& target_family, std::vector<int> nb_connected_item_per_items,
+                                           std::vector<int> source_item_orientation_in_target_item, bool do_check_orientation);
 
+  void _addConnectivityOrientationCheck(Neo::Family& source_family, const Neo::Family& target_family);
+  static std::string _connectivityOrientationPropertyName(std::string const& source_family_name, std::string const& target_family);
 
-
-public:
+ public:
   /*!
    * @brief name of the mesh
    * @return  the name of the mesh
    */
-  [[nodiscard]] std::string const& name() const noexcept ;
+  [[nodiscard]] std::string const& name() const noexcept;
 
   /*!
    * @brief mesh dimension
@@ -165,7 +176,7 @@ public:
    * @param family_name
    * @return
    */
-  Neo::Family&  addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept ;
+  Neo::Family& addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept;
 
   /*!
    * @brief Schedule items creation for family \p family with unique ids \p uids
@@ -174,7 +185,7 @@ public:
    * @param future_added_item_range Future ItemRange : after the call to applyScheduledOperations
    * this future range will give access to a range containing new items local ids
    */
-  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange & future_added_item_range) noexcept ;
+  void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange& future_added_item_range) noexcept;
 
   /*!
    * @brief Ask for a fixed-size connectivity add between \p source_family and \p target_family. Source items are scheduled but not created.
@@ -198,6 +209,33 @@ public:
                                ConnectivityOperation add_or_modify = ConnectivityOperation::Add);
 
   /*!
+   * @brief Ask for a fixed-size oriented connectivity add between \p source_family and \p target_family. Source items are scheduled but not created.
+   * @param source_family The family of source items.
+   * @param source_items Items to be connected. Use of a FutureItemRange means these items come from a the AddItems operation not yet applied.
+     * (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+   * @param target_family The family of target items.
+   * @param nb_connected_item_per_item Connectivity fix size value.
+   * @param connected_item_uids Unique ids of the connected items.
+   * @param connectivity_unique_name Connectivity name must be unique
+   * @param source_item_orientation_in_target_item Orientation the source items into their items (ex a face in its cells), must be -1 or 1.
+   * @param add_or_modify Indicates whether Connectivity is added or modified (add is default)
+   * @param do_check_orientation If true an operation is added to check if the given orientation is correct, ie the sum of the orientations for an item belongs to {-1,0,1}
+   *
+   * Oriented connectivity with fix size (nb of connected items per item is constant).
+   * Use this method to add oriented connectivity with source items scheduled but not yet created
+   * i.e addItems and addConnectivity are applied in the same call to applyScheduledOperations.
+   * Adding an oriented connectivity simply register in addition to the connectivity, a property containing the orientation of the source items within the target items
+   * they are connected to.
+   */
+  void scheduleAddOrientedConnectivity(Neo::Family& source_family, Neo::FutureItemRange& source_items,
+                                       Neo::Family& target_family, int nb_connected_item_per_item,
+                                       std::vector<Neo::utils::Int64> connected_item_uids,
+                                       std::string const& connectivity_unique_name,
+                                       std::vector<Neo::utils::Int32> source_item_orientation_in_target_item,
+                                       ConnectivityOperation add_or_modify = ConnectivityOperation::Add,
+                                       bool do_check_orientation = false);
+
+  /*!
    * @brief Ask for a fixed-size connectivity add between \p source_family and \p target_family. Source items are already created.
    * @param source_family The family of source items.
    * @param source_items Items to be connected. Given via an ItemRange.
@@ -217,6 +255,33 @@ public:
                                std::vector<Neo::utils::Int64> connected_item_uids,
                                std::string const& connectivity_unique_name,
                                ConnectivityOperation add_or_modify = ConnectivityOperation::Add);
+
+  /*!
+   * @brief Ask for a fixed-size oriented connectivity add between \p source_family and \p target_family. Source items are already created.
+   * @param source_family The family of source items.
+   * @param source_items Items to be connected. Given via an ItemRange.
+     * (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+   * @param target_family The family of target items.
+   * @param nb_connected_item_per_item Connectivity fix size value.
+   * @param connected_item_uids Unique ids of the connected items.
+   * @param connectivity_unique_name Connectivity name must be unique
+   * @param source_item_orientation_in_target_item Orientation the source items into their items (ex a face in its cells), must be -1 or 1.
+   * @param add_or_modify Indicates whether Connectivity is added or modified (add is default)
+   * @param do_check_orientation If true an operation is added to check if the given orientation is correct, ie the sum of the orientations for an item belongs to {-1,0,1}
+   *
+   * Oriented connectivity with fix size (nb of connected items per item is constant).
+   * Use this method to add oriented connectivity with source items already created
+   * in a previous call to applyScheduledOperations.
+   * Adding an oriented connectivity simply register in addition to the connectivity, a property containing the orientation of the source items within the target items
+   * they are connected to.
+   */
+  void scheduleAddOrientedConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
+                                       Neo::Family& target_family, int nb_connected_item_per_item,
+                                       std::vector<Neo::utils::Int64> connected_item_uids,
+                                       std::string const& connectivity_unique_name,
+                                       std::vector<Neo::utils::Int32> source_item_orientation_in_target_item,
+                                       ConnectivityOperation add_or_modify = ConnectivityOperation::Add,
+                                       bool do_check_orientation = false);
 
   /*!
    * @brief Ask for a variable size connectivity add between \p source_family and \p target_family. Source items are scheduled but not created.
@@ -240,6 +305,33 @@ public:
                                ConnectivityOperation add_or_modify = ConnectivityOperation::Add);
 
   /*!
+   * @brief Ask for a variable size oriented connectivity add between \p source_family and \p target_family. Source items are scheduled but not created.
+   * @param source_family The family of source items.
+   * @param source_items Items to be connected. Use of a FutureItemRange means these items come from a the AddItems operation not yet applied.
+     * (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+   * @param target_family The family of target items.
+   * @param nb_connected_item_per_item Number of connected item per items. Array with size equal to source items number.
+   * @param connected_item_uids Unique ids of the connected items.
+   * @param connectivity_unique_name Connectivity name must be unique
+   * @param source_item_orientation_in_target_item Orientation the source items into their items (ex a face in its cells), must be -1 or 1.
+   * @param add_or_modify Indicates whether Connectivity is added or modified (add is default)
+   * @param do_check_orientation If true an operation is added to check if the given orientation is correct, ie the sum of the orientations for an item belongs to {-1,0,1}
+   *
+   * Oriented connectivity with variable size (nb of connected items per item is variable)
+   * Use this method to oriented add connectivity with source items scheduled but not yet created
+   * i.e addItems and addConnectivity are applied in the same call to applyScheduledOperations.
+   * Adding an oriented connectivity simply register in addition to the connectivity, a property containing the orientation of the source items within the target items
+   * they are connected to.
+   */
+  void scheduleAddOrientedConnectivity(Neo::Family& source_family, Neo::FutureItemRange& source_items,
+                                       Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
+                                       std::vector<Neo::utils::Int64> connected_item_uids,
+                                       std::string const& connectivity_unique_name,
+                                       std::vector<Neo::utils::Int32> source_item_orientation_in_target_item,
+                                       ConnectivityOperation add_or_modify = ConnectivityOperation::Add,
+                                       bool do_check_orientation = false);
+
+  /*!
     * @brief Ask for a variable size connectivity add between \p source_family and \p target_family. Source items are already created.
     * @param source_family The family of source items.
     * @param source_items Items to be connected. Use of a FutureItemRange means these items come from a the AddItems operation not yet applied.
@@ -261,13 +353,40 @@ public:
                                ConnectivityOperation add_or_modify = ConnectivityOperation::Add);
 
   /*!
+    * @brief Ask for a variable size oriented connectivity add between \p source_family and \p target_family. Source items are already created.
+    * @param source_family The family of source items.
+    * @param source_items Items to be connected. Use of a FutureItemRange means these items come from a the AddItems operation not yet applied.
+      * (i.e addItems and addConnectivity are applied with the same call to applyScheduledOperations)
+    * @param target_family The family of target items.
+    * @param nb_connected_item_per_item Number of connected item per items. Array with size equal to source items number.
+    * @param connected_item_uids Unique ids of the connected items.
+    * @param connectivity_unique_name Connectivity name must be unique
+    * @param source_item_orientation_in_target_item Orientation the source items into their items (ex a face in its cells), must be -1 or 1.
+    * @param add_or_modify Indicates whether Connectivity is added or modified (add is default)
+    * @param do_check_orientation If true an operation is added to check if the given orientation is correct, ie the sum of the orientations for an item belongs to {-1,0,1}
+    *
+    * Oriented connectivity with variable size (nb of connected items per item is variable)
+    * Use this method to add oriented connectivity with source items already created
+    * in a previous call to applyScheduledOperations.
+    * Adding an oriented connectivity simply register in addition to the connectivity, a property containing the orientation of the source items within the target items
+    * they are connected to.
+    */
+  void scheduleAddOrientedConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
+                                       Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
+                                       std::vector<Neo::utils::Int64> connected_item_uids,
+                                       std::string const& connectivity_unique_name,
+                                       std::vector<int> source_item_orientation_in_target_item,
+                                       ConnectivityOperation add_or_modify = ConnectivityOperation::Add,
+                                       bool do_check_orientation = false);
+
+  /*!
    * @brief Schedule an set item coordinates. Will be applied when applyScheduledOperations will be called
    * @param item_family Family of the items whose coords will be modified
    * @param future_added_item_range Set of the items whose coords will be modified. These items are not created yet.
    * They will be created in applyScheduledOperations before the call to this coords set.
    * @param item_coords Value of the items coordinates
    */
-  void scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange& future_added_item_range,std::vector<Neo::utils::Real3> item_coords) noexcept ;
+  void scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange& future_added_item_range, std::vector<Neo::utils::Real3> item_coords) noexcept;
 
   /*!
    * @brief Get item connectivity between \p source_family and \p target_family with name \p name
@@ -277,7 +396,7 @@ public:
    * @return Connectivity, a connectivity wrapper object
    * @throw a std::invalid_argument if the connectivity is not found
    */
-  Connectivity const getConnectivity(Neo::Family const& source_family,Neo::Family const& target_family,std::string const& connectivity_name);
+  Connectivity getConnectivity(Neo::Family const& source_family, Neo::Family const& target_family, std::string const& connectivity_name) const;
 
   /*!
    * @brief Apply all scheduled operations (addItems, addConnectivities, setItemCoords)
@@ -324,14 +443,14 @@ public:
    * @param item_lids Given item local ids
    * @return Given item unique ids
    */
-  std::vector<Neo::utils::Int64> uniqueIds(Family const &item_family,const std::vector<Neo::utils::Int32> &item_lids) const noexcept ;
+  std::vector<Neo::utils::Int64> uniqueIds(Family const& item_family, const std::vector<Neo::utils::Int32>& item_lids) const noexcept;
   /*!
    * Get local ids from \p item_uids (unique ids) in \p item_family
    * @param item_family Family of given items
    * @param item_uids Given item unique ids
    * @return Given item local ids
    */
-  std::vector<Neo::utils::Int32> localIds(Family const &item_family,const std::vector<Neo::utils::Int64> &item_uids) const noexcept ;
+  std::vector<Neo::utils::Int32> localIds(Family const& item_family, const std::vector<Neo::utils::Int64>& item_uids) const noexcept;
 
   /*!
    * Access to internal structure, for advanced use
@@ -339,7 +458,9 @@ public:
    */
   Neo::MeshBase& internalMeshGraph() noexcept { return *m_mesh_graph;}
 
-  public:
+  [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {
+    return item_family.name() + "_item_coordinates";
+  }
 
   [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}
 };
