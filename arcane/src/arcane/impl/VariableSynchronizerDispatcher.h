@@ -41,6 +41,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class VariableSynchronizer;
+class VariableSynchronizerDispatcher;
 class VariableSynchronizerMultiDispatcher;
 class Timer;
 
@@ -139,8 +140,6 @@ class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
  */
 class ARCANE_IMPL_EXPORT IVariableSynchronizeDispatcher
 {
- public:
-  typedef FalseType HasStringDispatch;
  public:
   virtual ~IVariableSynchronizeDispatcher() = default;
  public:
@@ -283,7 +282,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 /*!
  * \brief Gestion de la synchronisation.
  */
-class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
+class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 : public IVariableSynchronizeDispatcher
 {
  public:
@@ -293,15 +292,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
  public:
 
-  explicit VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi);
-  ~VariableSynchronizeDispatcher() override;
+  explicit VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi);
+  ~VariableSynchronizerDispatcher() override;
 
  public:
 
   void applyDispatch(IData* data) override;
-
- public:
-
   void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final;
   void compute() final;
 
@@ -329,29 +325,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
  private:
 
   void _applyDispatch(IData* data);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
-{
- public:
-
- using DispatcherType = VariableSynchronizeDispatcher;
-
- public:
-
- VariableSynchronizerDispatcher(IParallelMng* pm,const VariableSynchronizeDispatcherBuildInfo& bi);
-  ~VariableSynchronizerDispatcher();
-  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info);
-  void compute();
-  void applyDispatch(IData* data) { m_dispatcher->applyDispatch(data); }
-
- private:
-
-  IParallelMng* m_parallel_mng = nullptr;
-  DispatcherType* m_dispatcher = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

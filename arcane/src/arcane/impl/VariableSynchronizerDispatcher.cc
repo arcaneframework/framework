@@ -139,8 +139,8 @@ recompute()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-VariableSynchronizeDispatcher::
-VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
+VariableSynchronizerDispatcher::
+VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
 , m_factory(bi.factory())
 {
@@ -171,8 +171,8 @@ VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-VariableSynchronizeDispatcher::
-~VariableSynchronizeDispatcher()
+VariableSynchronizerDispatcher::
+~VariableSynchronizerDispatcher()
 {
   delete m_buffer_copier;
 }
@@ -180,7 +180,7 @@ VariableSynchronizeDispatcher::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeDispatcher::
+void VariableSynchronizerDispatcher::
 _applyDispatch(IData* data)
 {
   INumericDataInternal* numapi = data->_commonInternal()->numericData();
@@ -205,7 +205,7 @@ _applyDispatch(IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeDispatcher::
+void VariableSynchronizerDispatcher::
 applyDispatch(IData* data)
 {
   _applyDispatch(data);
@@ -214,7 +214,7 @@ applyDispatch(IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeDispatcher::
+void VariableSynchronizerDispatcher::
 setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
 {
   m_sync_info = sync_info;
@@ -227,7 +227,7 @@ setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
  * \brief Calcule et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
  */
-void VariableSynchronizeDispatcher::
+void VariableSynchronizerDispatcher::
 compute()
 {
   if (!m_sync_info)
@@ -362,47 +362,6 @@ synchronize(VariableCollection vars, ConstArrayView<VariableSyncInfo> sync_infos
       (*ivar)->serialize(sbuf, ghost_ids, nullptr);
     }
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-VariableSynchronizerDispatcher::
-VariableSynchronizerDispatcher(IParallelMng* pm,const VariableSynchronizeDispatcherBuildInfo& bi)
-: m_parallel_mng(pm)
-, m_dispatcher(new VariableSynchronizeDispatcher(bi))
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-VariableSynchronizerDispatcher::
-~VariableSynchronizerDispatcher()
-{
-  delete m_dispatcher;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableSynchronizerDispatcher::
-setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
-{
-  m_dispatcher->setItemGroupSynchronizeInfo(sync_info);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableSynchronizerDispatcher::
-compute()
-{
-  m_parallel_mng->traceMng()->info(4) << "DISPATCH RECOMPUTE";
-  m_dispatcher->compute();
 }
 
 /*---------------------------------------------------------------------------*/

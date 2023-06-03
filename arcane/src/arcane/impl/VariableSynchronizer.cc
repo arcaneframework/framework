@@ -81,7 +81,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
     if (!group.isAllItems())
       table = group.localIdToIndex().get();
     VariableSynchronizeDispatcherBuildInfo bi(pm,table,generic_factory);
-    m_dispatcher = new VariableSynchronizerDispatcher(pm,bi);
+    m_dispatcher = new VariableSynchronizerDispatcher(bi);
   }
   m_dispatcher->setItemGroupSynchronizeInfo(&m_sync_list);
   m_multi_dispatcher = new VariableSynchronizerMultiDispatcher(pm);
