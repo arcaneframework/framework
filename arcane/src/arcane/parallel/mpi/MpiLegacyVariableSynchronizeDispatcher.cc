@@ -41,7 +41,7 @@ namespace Arcane
  * dès qu'un message arrive.
  */
 class MpiLegacyVariableSynchronizerDispatcher
-: public AbstractGenericVariableSynchronizerDispatcher
+: public AbstractDataSynchronizeImplementation
 {
  public:
 
@@ -68,7 +68,7 @@ class MpiLegacyVariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 
 class MpiLegacyVariableSynchronizerDispatcher::Factory
-: public IGenericVariableSynchronizerDispatcherFactory
+: public IDataSynchronizeImplementationFactory
 {
  public:
 
@@ -76,10 +76,10 @@ class MpiLegacyVariableSynchronizerDispatcher::Factory
   : m_mpi_parallel_mng(mpi_pm)
   {}
 
-  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  Ref<IDataSynchronizeImplementation> createInstance() override
   {
     auto* x = new MpiLegacyVariableSynchronizerDispatcher(this);
-    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+    return makeRef<IDataSynchronizeImplementation>(x);
   }
 
  public:
@@ -90,11 +90,11 @@ class MpiLegacyVariableSynchronizerDispatcher::Factory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm)
 {
   auto* x = new MpiLegacyVariableSynchronizerDispatcher::Factory(mpi_pm);
-  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+  return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/

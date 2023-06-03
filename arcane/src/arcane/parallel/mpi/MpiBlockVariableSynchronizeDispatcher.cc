@@ -53,7 +53,7 @@ namespace Arcane
  * pas fini.
  */
 class MpiBlockVariableSynchronizerDispatcher
-: public AbstractGenericVariableSynchronizerDispatcher
+: public AbstractDataSynchronizeImplementation
 {
  public:
 
@@ -82,7 +82,7 @@ class MpiBlockVariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 
 class MpiBlockVariableSynchronizerDispatcher::Factory
-: public IGenericVariableSynchronizerDispatcherFactory
+: public IDataSynchronizeImplementationFactory
 {
  public:
 
@@ -92,10 +92,10 @@ class MpiBlockVariableSynchronizerDispatcher::Factory
   , m_nb_sequence(nb_sequence)
   {}
 
-  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  Ref<IDataSynchronizeImplementation> createInstance() override
   {
     auto* x = new MpiBlockVariableSynchronizerDispatcher(this);
-    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+    return makeRef<IDataSynchronizeImplementation>(x);
   }
 
  public:
@@ -108,11 +108,11 @@ class MpiBlockVariableSynchronizerDispatcher::Factory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiBlockVariableSynchronizerFactory(MpiParallelMng* mpi_pm, Int32 block_size, Int32 nb_sequence)
 {
   auto* x = new MpiBlockVariableSynchronizerDispatcher::Factory(mpi_pm, block_size, nb_sequence);
-  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+  return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/

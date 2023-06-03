@@ -55,7 +55,7 @@ bool global_debug_sync = false;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
 
 /*---------------------------------------------------------------------------*/

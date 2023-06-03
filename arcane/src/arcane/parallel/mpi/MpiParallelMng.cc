@@ -69,17 +69,17 @@ arcaneCreateIOMng(IParallelMng* psm);
 
 #if defined(ARCANE_HAS_MPI_NEIGHBOR)
 // Défini dans MpiNeighborVariableSynchronizeDispatcher
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiNeighborVariableSynchronizerFactory(MpiParallelMng* mpi_pm,
                                                    Ref<IVariableSynchronizerMpiCommunicator> synchronizer_communicator);
 #endif
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiBlockVariableSynchronizerFactory(MpiParallelMng* mpi_pm, Int32 block_size, Int32 nb_sequence);
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiDirectSendrecvVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 
 /*---------------------------------------------------------------------------*/
@@ -287,7 +287,7 @@ class MpiParallelMngUtilsFactory
     Ref<IVariableSynchronizerMpiCommunicator> topology_info;
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
     ITraceMng* tm = pm->traceMng();
-    Ref<IGenericVariableSynchronizerDispatcherFactory> generic_factory;
+    Ref<IDataSynchronizeImplementationFactory> generic_factory;
     // N'affiche les informations que pour le groupe de toutes les mailles pour éviter d'afficher
     // plusieurs fois le même message.
     bool do_print = (group.isAllItems() && group.itemKind()==IK_Cell);

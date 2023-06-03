@@ -35,6 +35,7 @@ namespace Arcane
 class VariableSynchronizerDispatcher;
 class VariableSynchronizerMultiDispatcher;
 class IVariableSynchronizerDispatcher;
+class GroupIndexTable;
 using IVariableSynchronizeDispatcher = IVariableSynchronizerDispatcher;
 
 /*---------------------------------------------------------------------------*/
@@ -148,7 +149,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
  public:
 
   VariableSynchronizeDispatcherBuildInfo(IParallelMng* pm, GroupIndexTable* table,
-                                         Ref<IGenericVariableSynchronizerDispatcherFactory> factory)
+                                         Ref<IDataSynchronizeImplementationFactory> factory)
   : m_parallel_mng(pm)
   , m_table(table)
   , m_factory(factory)
@@ -159,7 +160,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
   IParallelMng* parallelMng() const { return m_parallel_mng; }
   //! Table d'index pour le groupe. Peut-être nul.
   GroupIndexTable* table() const { return m_table; }
-  Ref<IGenericVariableSynchronizerDispatcherFactory> factory() const
+  Ref<IDataSynchronizeImplementationFactory> factory() const
   {
     return m_factory;
   }
@@ -168,7 +169,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
 
   IParallelMng* m_parallel_mng;
   GroupIndexTable* m_table;
-  Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
+  Ref<IDataSynchronizeImplementationFactory> m_factory;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -283,8 +283,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
   SyncBuffer m_sync_buffer;
   bool m_is_in_sync = false;
   bool m_is_empty_sync = false;
-  Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
-  Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;
+  Ref<IDataSynchronizeImplementationFactory> m_factory;
+  Ref<IDataSynchronizeImplementation> m_generic_instance;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -575,7 +575,7 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
  * Cette implémentation est faite à partir de send/receive suivi de 'wait'.
  */
 class SimpleVariableSynchronizerDispatcher
-: public AbstractGenericVariableSynchronizerDispatcher
+: public AbstractDataSynchronizeImplementation
 {
  public:
 
@@ -598,7 +598,7 @@ class SimpleVariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 
 class SimpleVariableSynchronizerDispatcher::Factory
-: public IGenericVariableSynchronizerDispatcherFactory
+: public IDataSynchronizeImplementationFactory
 {
  public:
 
@@ -606,10 +606,10 @@ class SimpleVariableSynchronizerDispatcher::Factory
   : m_parallel_mng(pm)
   {}
 
-  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  Ref<IDataSynchronizeImplementation> createInstance() override
   {
     auto* x = new SimpleVariableSynchronizerDispatcher(this);
-    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+    return makeRef<IDataSynchronizeImplementation>(x);
   }
 
  public:
@@ -629,11 +629,11 @@ SimpleVariableSynchronizerDispatcher(Factory* f)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm)
 {
   auto* x = new SimpleVariableSynchronizerDispatcher::Factory(pm);
-  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+  return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -45,7 +45,7 @@ namespace Arcane
  * MPI_Neighbor_alltoallv().
  */
 class MpiNeighborVariableSynchronizerDispatcher
-: public AbstractGenericVariableSynchronizerDispatcher
+: public AbstractDataSynchronizeImplementation
 {
  public:
 
@@ -72,7 +72,7 @@ class MpiNeighborVariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 
 class MpiNeighborVariableSynchronizerDispatcher::Factory
-: public IGenericVariableSynchronizerDispatcherFactory
+: public IDataSynchronizeImplementationFactory
 {
  public:
 
@@ -81,10 +81,10 @@ class MpiNeighborVariableSynchronizerDispatcher::Factory
   , m_synchronizer_communicator(synchronizer_communicator)
   {}
 
-  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  Ref<IDataSynchronizeImplementation> createInstance() override
   {
     auto* x = new MpiNeighborVariableSynchronizerDispatcher(this);
-    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+    return makeRef<IDataSynchronizeImplementation>(x);
   }
 
  public:
@@ -96,12 +96,12 @@ class MpiNeighborVariableSynchronizerDispatcher::Factory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiNeighborVariableSynchronizerFactory(MpiParallelMng* mpi_pm,
                                                    Ref<IVariableSynchronizerMpiCommunicator> sync_communicator)
 {
   auto* x = new MpiNeighborVariableSynchronizerDispatcher::Factory(mpi_pm, sync_communicator);
-  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+  return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/
