@@ -139,7 +139,7 @@ recompute()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
+VariableSynchronizeDispatcher::
 VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
 , m_factory(bi.factory())
@@ -171,7 +171,7 @@ VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
+VariableSynchronizeDispatcher::
 ~VariableSynchronizeDispatcher()
 {
   delete m_buffer_copier;
@@ -180,7 +180,7 @@ template <typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+void VariableSynchronizeDispatcher::
 _applyDispatch(IData* data)
 {
   INumericDataInternal* numapi = data->_commonInternal()->numericData();
@@ -205,8 +205,8 @@ _applyDispatch(IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
-applyDispatch(IArrayDataT<SimpleType>* data)
+void VariableSynchronizeDispatcher::
+applyDispatch(IData* data)
 {
   _applyDispatch(data);
 }
@@ -214,25 +214,7 @@ applyDispatch(IArrayDataT<SimpleType>* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
-applyDispatch(IArray2DataT<SimpleType>* data)
-{
-  _applyDispatch(data);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
-applyDispatch(IScalarDataT<SimpleType>*)
-{
-  ARCANE_THROW(NotSupportedException, "Can not synchronize scalar data");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+void VariableSynchronizeDispatcher::
 setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
 {
   m_sync_info = sync_info;
@@ -245,7 +227,7 @@ setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
  * \brief Calcule et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
  */
-template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+void VariableSynchronizeDispatcher::
 compute()
 {
   if (!m_sync_info)
@@ -389,6 +371,16 @@ synchronize(VariableCollection vars, ConstArrayView<VariableSyncInfo> sync_infos
 /*---------------------------------------------------------------------------*/
 
 VariableSynchronizerDispatcher::
+VariableSynchronizerDispatcher(IParallelMng* pm,const VariableSynchronizeDispatcherBuildInfo& bi)
+: m_parallel_mng(pm)
+, m_dispatcher(new VariableSynchronizeDispatcher(bi))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableSynchronizerDispatcher::
 ~VariableSynchronizerDispatcher()
 {
   delete m_dispatcher;
@@ -400,8 +392,7 @@ VariableSynchronizerDispatcher::
 void VariableSynchronizerDispatcher::
 setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
 {
-  for (IVariableSynchronizeDispatcher* d : m_dispatcher->dispatchers())
-    d->setItemGroupSynchronizeInfo(sync_info);
+  m_dispatcher->setItemGroupSynchronizeInfo(sync_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -411,9 +402,7 @@ void VariableSynchronizerDispatcher::
 compute()
 {
   m_parallel_mng->traceMng()->info(4) << "DISPATCH RECOMPUTE";
-  auto dispatchers = m_dispatcher->dispatchers();
-  for (IVariableSynchronizeDispatcher* d : dispatchers)
-    d->compute();
+  m_dispatcher->compute();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -619,22 +608,6 @@ barrier()
   if (m_queue)
     m_queue->barrier();
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#define ARCANE_INSTANTIATE(type) \
-  template class ARCANE_TEMPLATE_EXPORT VariableSynchronizeDispatcher<type>
-
-ARCANE_INSTANTIATE(Byte);
-ARCANE_INSTANTIATE(Int16);
-ARCANE_INSTANTIATE(Int32);
-ARCANE_INSTANTIATE(Int64);
-ARCANE_INSTANTIATE(Real);
-ARCANE_INSTANTIATE(Real2);
-ARCANE_INSTANTIATE(Real3);
-ARCANE_INSTANTIATE(Real2x2);
-ARCANE_INSTANTIATE(Real3x3);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -286,7 +286,6 @@ class MpiParallelMngUtilsFactory
   {
     Ref<IVariableSynchronizerMpiCommunicator> topology_info;
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
-    typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
     ITraceMng* tm = pm->traceMng();
     Ref<IGenericVariableSynchronizerDispatcherFactory> generic_factory;
     // N'affiche les informations que pour le groupe de toutes les mailles pour éviter d'afficher
@@ -326,7 +325,7 @@ class MpiParallelMngUtilsFactory
     VariableSynchronizerDispatcher* vd = nullptr;
     if (generic_factory.get()){
       VariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,generic_factory);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<VariableSynchronizeDispatcher>(bi));
+      vd = new VariableSynchronizerDispatcher(pm,bi);
     }
     if (!vd)
       ARCANE_FATAL("No synchronizer created");

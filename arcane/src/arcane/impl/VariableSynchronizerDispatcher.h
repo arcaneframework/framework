@@ -146,6 +146,7 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizeDispatcher
  public:
   virtual void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) =0;
   virtual void compute() =0;
+  virtual void applyDispatch(IData* data) =0;
  protected:
 };
 
@@ -280,12 +281,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestion de la synchronisation pour un type de donnée \a SimpleType.
+ * \brief Gestion de la synchronisation.
  */
-template <class SimpleType>
 class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
-: public IDataTypeDataDispatcherT<SimpleType>
-, public IVariableSynchronizeDispatcher
+: public IVariableSynchronizeDispatcher
 {
  public:
 
@@ -299,9 +298,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
  public:
 
-  void applyDispatch(IScalarDataT<SimpleType>* data) override;
-  void applyDispatch(IArrayDataT<SimpleType>* data) override;
-  void applyDispatch(IArray2DataT<SimpleType>* data) override;
+  void applyDispatch(IData* data) override;
 
  public:
 
@@ -340,19 +337,21 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 {
  public:
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
+
+ using DispatcherType = VariableSynchronizeDispatcher;
+
  public:
-  VariableSynchronizerDispatcher(IParallelMng* pm,DispatcherType* dispatcher)
-  : m_parallel_mng(pm), m_dispatcher(dispatcher)
-  {
-  }
+
+ VariableSynchronizerDispatcher(IParallelMng* pm,const VariableSynchronizeDispatcherBuildInfo& bi);
   ~VariableSynchronizerDispatcher();
   void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info);
   void compute();
-  IDataVisitor* visitor() { return m_dispatcher; }
+  void applyDispatch(IData* data) { m_dispatcher->applyDispatch(data); }
+
  private:
-  IParallelMng* m_parallel_mng;
-  DispatcherType* m_dispatcher;
+
+  IParallelMng* m_parallel_mng = nullptr;
+  DispatcherType* m_dispatcher = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -371,7 +370,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
 
   void synchronize(VariableCollection vars,ConstArrayView<VariableSyncInfo> sync_infos);
  private:
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
 };
   
 /*---------------------------------------------------------------------------*/
