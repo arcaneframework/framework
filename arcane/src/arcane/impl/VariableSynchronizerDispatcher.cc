@@ -259,9 +259,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
  public:
 
-  void applyDispatch(IData* data) override;
   void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final;
   void compute() final;
+  void beginSynchronize(IData* data) override;
+  void endSynchronize() override;
 
  protected:
 
@@ -281,12 +282,9 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
   ItemGroupSynchronizeInfo* m_sync_info = nullptr;
   SyncBuffer m_sync_buffer;
   bool m_is_in_sync = false;
+  bool m_is_empty_sync = false;
   Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
   Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;
-
- private:
-
-  void _applyDispatch(IData* data);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -337,7 +335,7 @@ VariableSynchronizerDispatcher::
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerDispatcher::
-_applyDispatch(IData* data)
+beginSynchronize(IData* data)
 {
   INumericDataInternal* numapi = data->_commonInternal()->numericData();
   if (!numapi)
@@ -345,26 +343,30 @@ _applyDispatch(IData* data)
 
   MutableMemoryView mem_view = numapi->memoryView();
   Int32 full_datatype_size = mem_view.datatypeSize();
-  if (mem_view.bytes().size() == 0)
-    return;
 
   if (m_is_in_sync)
-    ARCANE_FATAL("Only one pending serialisation is supported");
+    ARCANE_FATAL("_beginSynchronize() has already been called");
   m_is_in_sync = true;
+
+  m_is_empty_sync = (mem_view.bytes().size() == 0);
+  if (m_is_empty_sync)
+    return;
   m_sync_buffer.compute(m_buffer_copier, m_sync_info, full_datatype_size);
   m_sync_buffer.setDataView(mem_view);
   _beginSynchronize(m_sync_buffer);
-  _endSynchronize(m_sync_buffer);
-  m_is_in_sync = false;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerDispatcher::
-applyDispatch(IData* data)
+endSynchronize()
 {
-  _applyDispatch(data);
+  if (!m_is_in_sync)
+    ARCANE_FATAL("No pending synchronize(). You need to call beginSynchronize() before");
+  if (!m_is_empty_sync)
+    _endSynchronize(m_sync_buffer);
+  m_is_in_sync = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -381,7 +383,7 @@ setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcule et alloue les tampons nécessaire aux envois et réceptions
- * pour les synchronisations des variables 1D.
+ * pour les synchronisations des variables.
  */
 void VariableSynchronizerDispatcher::
 compute()

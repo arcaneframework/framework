@@ -198,8 +198,11 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
    */
   virtual void compute() = 0;
 
-  //! Exécute la synchronisation pour la donnée \a data.
-  virtual void applyDispatch(IData* data) = 0;
+  //! Commence l'exécution pour la synchronisation pour la donnée \a data.
+  virtual void beginSynchronize(IData* data) = 0;
+
+  //! Termine la synchronisation.
+  virtual void endSynchronize() = 0;
 
  public:
 

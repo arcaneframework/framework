@@ -674,7 +674,7 @@ synchronize(VariableCollection vars)
 void VariableSynchronizer::
 _synchronize(IVariable* var)
 {
-  m_dispatcher->applyDispatch(var->data());
+  synchronizeData(var->data());
   var->setIsSynchronized();
 }
 
@@ -684,7 +684,8 @@ _synchronize(IVariable* var)
 void VariableSynchronizer::
 synchronizeData(IData* data)
 {
-  m_dispatcher->applyDispatch(data);
+  m_dispatcher->beginSynchronize(data);
+  m_dispatcher->endSynchronize();
 }
 
 /*---------------------------------------------------------------------------*/
