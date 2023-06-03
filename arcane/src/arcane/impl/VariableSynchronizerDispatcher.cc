@@ -181,7 +181,7 @@ template <typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 /*---------------------------------------------------------------------------*/
 
 template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
-_applyDispatch(IData* data,SyncBuffer& sync_buffer)
+_applyDispatch(IData* data)
 {
   INumericDataInternal* numapi = data->_commonInternal()->numericData();
   if (!numapi)
@@ -195,10 +195,10 @@ _applyDispatch(IData* data,SyncBuffer& sync_buffer)
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
   m_is_in_sync = true;
-  sync_buffer.compute(m_buffer_copier, m_sync_info, full_datatype_size);
-  sync_buffer.setDataView(mem_view);
-  _beginSynchronize(sync_buffer);
-  _endSynchronize(sync_buffer);
+  m_sync_buffer.compute(m_buffer_copier, m_sync_info, full_datatype_size);
+  m_sync_buffer.setDataView(mem_view);
+  _beginSynchronize(m_sync_buffer);
+  _endSynchronize(m_sync_buffer);
   m_is_in_sync = false;
 }
 
@@ -208,7 +208,7 @@ _applyDispatch(IData* data,SyncBuffer& sync_buffer)
 template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IArrayDataT<SimpleType>* data)
 {
-  _applyDispatch(data,m_1d_buffer);
+  _applyDispatch(data);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -217,7 +217,7 @@ applyDispatch(IArrayDataT<SimpleType>* data)
 template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 applyDispatch(IArray2DataT<SimpleType>* data)
 {
-  _applyDispatch(data,m_2d_buffer);
+  _applyDispatch(data);
 }
 
 /*---------------------------------------------------------------------------*/

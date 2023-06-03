@@ -324,15 +324,14 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   IParallelMng* m_parallel_mng = nullptr;
   IBufferCopier* m_buffer_copier = nullptr;
   ItemGroupSynchronizeInfo* m_sync_info = nullptr;
-  SyncBuffer m_1d_buffer;
-  SyncBuffer m_2d_buffer;
+  SyncBuffer m_sync_buffer;
   bool m_is_in_sync = false;
   Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
   Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;
 
  private:
 
-  void _applyDispatch(IData* data,SyncBuffer& sync_buffer);
+  void _applyDispatch(IData* data);
 };
 
 /*---------------------------------------------------------------------------*/
