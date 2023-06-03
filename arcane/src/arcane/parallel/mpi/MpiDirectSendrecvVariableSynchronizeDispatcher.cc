@@ -104,8 +104,8 @@ MpiDirectSendrecvVariableSynchronizerDispatcher(Factory* f)
 void MpiDirectSendrecvVariableSynchronizerDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  auto sync_list = _syncInfo()->infos();
-  Int32 nb_message = sync_list.size();
+  auto sync_info = _syncInfo();
+  Int32 nb_message = sync_info->size();
 
   constexpr int serialize_tag = 523;
 
@@ -125,7 +125,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   {
     MpiTimeInterval tit(&sync_wait_time);
     for( Integer i=0; i<nb_message; ++i ){
-      const VariableSyncInfo& vsi = sync_list[i];
+      const VariableSyncInfo& vsi = sync_info->rankInfo(i);
       auto rbuf = vs_buf->receiveBuffer(i).bytes().smallView();
       auto sbuf = vs_buf->sendBuffer(i).bytes().smallView();
 

@@ -112,8 +112,8 @@ MpiLegacyVariableSynchronizerDispatcher(Factory* f)
 void MpiLegacyVariableSynchronizerDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  auto sync_list = _syncInfo()->infos();
-  Integer nb_message = sync_list.size();
+  auto sync_info = _syncInfo();
+  Integer nb_message = sync_info->size();
 
   m_send_requests.clear();
 
@@ -135,7 +135,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   m_recv_requests_done.resize(nb_message);
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = sync_list[i];
+    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
     auto ghost_local_buffer = vs_buf->receiveBuffer(i).bytes().smallView();
     if (!ghost_local_buffer.empty()){
       MPI_Request mpi_request;
@@ -157,7 +157,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages d'envoi en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = sync_list[i];
+    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
     auto share_local_buffer = vs_buf->sendBuffer(i).bytes().smallView();
     if (!share_local_buffer.empty()){
       MPI_Request mpi_request;

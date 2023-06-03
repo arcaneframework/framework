@@ -35,7 +35,7 @@ namespace Arcane
 class VariableSynchronizerDispatcher;
 class VariableSynchronizerMultiDispatcher;
 class IVariableSynchronizerDispatcher;
-using IVariableSynchronizeDispatcher =  IVariableSynchronizerDispatcher;
+using IVariableSynchronizeDispatcher = IVariableSynchronizerDispatcher;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -99,20 +99,33 @@ class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
 {
  public:
 
-  ConstArrayView<VariableSyncInfo> infos() const { return m_ranks_info; }
-  ArrayView<VariableSyncInfo> infos() { return m_ranks_info; }
   VariableSyncInfo& operator[](Int32 i) { return m_ranks_info[i]; }
   const VariableSyncInfo& operator[](Int32 i) const { return m_ranks_info[i]; }
+
   VariableSyncInfo& rankInfo(Int32 i) { return m_ranks_info[i]; }
   const VariableSyncInfo& rankInfo(Int32 i) const { return m_ranks_info[i]; }
+
   void clear() { m_ranks_info.clear(); }
   Int32 size() const { return m_ranks_info.size(); }
   void add(const VariableSyncInfo& s) { m_ranks_info.add(s); }
-  void recompute();
   Int64 shareDisplacement(Int32 index) const { return m_share_displacements_base[index]; }
   Int64 ghostDisplacement(Int32 index) const { return m_ghost_displacements_base[index]; }
   Int64 totalNbGhost() const { return m_total_nb_ghost; }
   Int64 totalNbShare() const { return m_total_nb_share; }
+
+  //! Notifie l'instance que les indices locaux ont changé
+  void changeLocalIds(Int32ConstArrayView old_to_new_ids);
+
+  //! Notifie l'instance que les valeurs ont changé
+  void recompute();
+
+ public:
+
+  ARCANE_DEPRECATED_REASON("Y2023: use operator[] instead")
+  ConstArrayView<VariableSyncInfo> infos() const { return m_ranks_info; }
+
+  ARCANE_DEPRECATED_REASON("Y2023: use operator[] instead")
+  ArrayView<VariableSyncInfo> infos() { return m_ranks_info; }
 
  private:
 
@@ -177,21 +190,21 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
 
  public:
 
-  virtual void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) =0;
+  virtual void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) = 0;
 
   /*!
    * \brief Recalcule les informations nécessaires après une mise à jour des informations
    * de \a ItemGroupSynchronizeInfo.
    */
-  virtual void compute() =0;
+  virtual void compute() = 0;
 
   //! Exécute la synchronisation pour la donnée \a data.
-  virtual void applyDispatch(IData* data) =0;
+  virtual void applyDispatch(IData* data) = 0;
 
  public:
 
-   static IVariableSynchronizeDispatcher*
-   create(const VariableSynchronizeDispatcherBuildInfo& build_info);
+  static IVariableSynchronizeDispatcher*
+  create(const VariableSynchronizeDispatcherBuildInfo& build_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -203,22 +216,25 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
 class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
 {
  public:
+
   explicit VariableSynchronizerMultiDispatcher(IParallelMng* pm)
   : m_parallel_mng(pm)
   {
   }
 
-  void synchronize(VariableCollection vars,ConstArrayView<VariableSyncInfo> sync_infos);
+  void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info);
+
  private:
+
   IParallelMng* m_parallel_mng = nullptr;
 };
-  
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespcae Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

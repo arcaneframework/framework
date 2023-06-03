@@ -136,8 +136,8 @@ MpiVariableSynchronizeDispatcher(Factory* f)
 void MpiVariableSynchronizeDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* ds_buf)
 {
-  auto sync_list = _syncInfo()->infos();
-  Integer nb_message = sync_list.size();
+  ItemGroupSynchronizeInfo* sync_info = _syncInfo();
+  Integer nb_message = sync_info->size();
 
   m_send_request_list->clear();
 
@@ -158,7 +158,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
 
     // Poste les messages de réception
     for (Integer i = 0; i < nb_message; ++i) {
-      const VariableSyncInfo& vsi = sync_list[i];
+      const VariableSyncInfo& vsi = sync_info->rankInfo(i);
       auto buf = ds_buf->receiveBuffer(i).bytes();
       if (!buf.empty()) {
         auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(), buf.size(),
@@ -180,7 +180,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
     // Poste les messages d'envoi en mode non bloquant.
     for (Integer i = 0; i < nb_message; ++i) {
       auto buf = ds_buf->sendBuffer(i).bytes();
-      const VariableSyncInfo& vsi = sync_list[i];
+      const VariableSyncInfo& vsi = sync_info->rankInfo(i);
       if (!buf.empty()) {
         auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(), buf.size(),
                                                           vsi.targetRank(), mpi_dt, serialize_tag);

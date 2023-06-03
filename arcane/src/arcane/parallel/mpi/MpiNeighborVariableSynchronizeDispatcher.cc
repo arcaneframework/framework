@@ -207,8 +207,7 @@ compute()
   auto* sync_communicator = m_synchronizer_communicator.get();
   ARCANE_CHECK_POINTER(sync_communicator);
 
-  auto sync_list = sync_info->infos();
-  const Int32 nb_message = sync_list.size();
+  const Int32 nb_message = sync_info->size();
 
   // Certaines versions de OpenMPI (avant la 4.1) plantent s'ils n'y a pas
   // de messages et qu'un des tableaux suivant est vide. Pour contourner

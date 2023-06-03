@@ -694,15 +694,7 @@ void VariableSynchronizer::
 changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
   info(4) << "** VariableSynchronizer::changeLocalIds() group=" << m_item_group.name();
-
-  for( VariableSyncInfo& vsi : m_sync_list.infos() ){
-    Int32 old_nb_share = vsi.nbShare();
-    Int32 old_nb_ghost = vsi.nbGhost();
-    vsi.changeLocalIds(old_to_new_ids);
-    info(4) << "NEW_SHARE_SIZE=" << vsi.nbShare() << " old=" << old_nb_share;
-    info(4) << "NEW_GHOST_SIZE=" << vsi.nbGhost() << " old=" << old_nb_ghost;
-  }
-  m_sync_list.recompute();
+  m_sync_list.changeLocalIds(old_to_new_ids);
   m_dispatcher->compute();
 }
 
@@ -761,7 +753,7 @@ _synchronizeMulti(VariableCollection vars)
     m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
   {
     Timer::Sentry ts2(m_sync_timer);
-    m_multi_dispatcher->synchronize(vars,m_sync_list.infos());
+    m_multi_dispatcher->synchronize(vars,&m_sync_list);
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       (*ivar)->setIsSynchronized();
     }

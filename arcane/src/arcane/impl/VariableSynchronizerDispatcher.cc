@@ -25,8 +25,6 @@
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IData.h"
-//#include "arcane/core/datatype/DataStorageTypeInfo.h"
-//#include "arcane/core/datatype/DataTypeTraits.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/internal/IDataInternal.h"
 
@@ -117,7 +115,7 @@ recompute()
     Integer ghost_displacement = 0;
     Integer share_displacement = 0;
     Int32 index = 0;
-    for (const VariableSyncInfo& vsi : infos()) {
+    for (const VariableSyncInfo& vsi : m_ranks_info) {
       Int32 ghost_size = vsi.nbGhost();
       m_ghost_displacements_base[index] = ghost_displacement;
       ghost_displacement += ghost_size;
@@ -131,6 +129,20 @@ recompute()
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupSynchronizeInfo::
+changeLocalIds(Int32ConstArrayView old_to_new_ids)
+{
+  for( VariableSyncInfo& vsi : m_ranks_info ){
+    vsi.changeLocalIds(old_to_new_ids);
+  }
+  recompute();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -483,13 +495,13 @@ _allocateBuffers(Int32 datatype_size)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerMultiDispatcher::
-synchronize(VariableCollection vars, ConstArrayView<VariableSyncInfo> sync_infos)
+synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
 {
   Ref<IParallelExchanger> exchanger{ ParallelMngUtils::createExchangerRef(m_parallel_mng) };
-  Integer nb_rank = sync_infos.size();
+  Integer nb_rank = sync_info->size();
   Int32UniqueArray recv_ranks(nb_rank);
   for (Integer i = 0; i < nb_rank; ++i) {
-    Int32 rank = sync_infos[i].targetRank();
+    Int32 rank = sync_info->rankInfo(i).targetRank();
     exchanger->addSender(rank);
     recv_ranks[i] = rank;
   }
@@ -497,7 +509,7 @@ synchronize(VariableCollection vars, ConstArrayView<VariableSyncInfo> sync_infos
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToSend(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView share_ids = sync_infos[i].shareIds();
+    Int32ConstArrayView share_ids = sync_info->rankInfo(i).shareIds();
     sbuf->setMode(ISerializer::ModeReserve);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, share_ids, nullptr);
@@ -512,7 +524,7 @@ synchronize(VariableCollection vars, ConstArrayView<VariableSyncInfo> sync_infos
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToReceive(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView ghost_ids = sync_infos[i].ghostIds();
+    Int32ConstArrayView ghost_ids = sync_info->rankInfo(i).ghostIds();
     sbuf->setMode(ISerializer::ModeGet);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, ghost_ids, nullptr);
@@ -631,8 +643,8 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   IParallelMng* pm = m_parallel_mng;
 
   const bool use_blocking_send = false;
-  auto sync_list = _syncInfo()->infos();
-  Int32 nb_message = sync_list.size();
+  auto sync_info = _syncInfo();
+  Int32 nb_message = sync_info->size();
 
   /*pm->traceMng()->info() << " ** ** COMMON BEGIN SYNC n=" << nb_message
                          << " this=" << (IVariableSynchronizeDispatcher*)this
@@ -640,7 +652,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages de réception non bloquant
   for (Integer i = 0; i < nb_message; ++i) {
-    const VariableSyncInfo& vsi = sync_list[i];
+    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
     auto buf = _toLegacySmallView(vs_buf->receiveBuffer(i));
     if (!buf.empty()) {
       Parallel::Request rval = pm->recv(buf, vsi.targetRank(), false);
@@ -652,7 +664,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages d'envoi en mode non bloquant.
   for (Integer i = 0; i < nb_message; ++i) {
-    const VariableSyncInfo& vsi = sync_list[i];
+    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
     auto buf = _toLegacySmallView(vs_buf->sendBuffer(i));
 
     //ConstArrayView<SimpleType> const_share = share_local_buffer;
