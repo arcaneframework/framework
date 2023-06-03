@@ -15,21 +15,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/TraceAccessor.h"
-#include "arcane/utils/NotSupportedException.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/Event.h"
+#include "arcane/utils/UniqueArray.h"
 
-#include "arcane/Parallel.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/VariableCollection.h"
 
-#include "arcane/impl/IBufferCopier.h"
-#include "arcane/impl/IDataSynchronizeBuffer.h"
 #include "arcane/impl/IGenericVariableSynchronizerDispatcher.h"
-
-#include "arcane/DataTypeDispatchingDataVisitor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +32,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//class VariableSynchronizer;
 class VariableSynchronizerDispatcher;
 class VariableSynchronizerMultiDispatcher;
 class IVariableSynchronizerDispatcher;
@@ -176,7 +167,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
  * interface.
  *
  * Il faut appeler \a setItemGroupSynchronizeInfo() pour initialiser
- * l'instance. I
+ * l'instance.
  */
 class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
 {

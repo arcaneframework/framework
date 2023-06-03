@@ -13,29 +13,27 @@
 
 #include "arcane/impl/VariableSynchronizerDispatcher.h"
 
-#include "arcane/utils/ArrayView.h"
-#include "arcane/utils/Array2View.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
-
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/VariableCollection.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/ISerializeMessage.h"
 #include "arcane/core/ISerializer.h"
+#include "arcane/core/IParallelMng.h"
 #include "arcane/core/IData.h"
-#include "arcane/core/datatype/DataStorageTypeInfo.h"
-#include "arcane/core/datatype/DataTypeTraits.h"
+//#include "arcane/core/datatype/DataStorageTypeInfo.h"
+//#include "arcane/core/datatype/DataTypeTraits.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/accelerator/core/Runner.h"
+
+#include "arcane/impl/IBufferCopier.h"
+#include "arcane/impl/IDataSynchronizeBuffer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
