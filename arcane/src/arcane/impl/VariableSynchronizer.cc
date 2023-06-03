@@ -63,7 +63,7 @@ arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
 
 VariableSynchronizer::
 VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
-                     VariableSynchronizerDispatcher* dispatcher)
+                     IVariableSynchronizerDispatcher* dispatcher)
 : TraceAccessor(pm->traceMng())
 , m_parallel_mng(pm)
 , m_item_group(group)
@@ -74,14 +74,13 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
 , m_allow_multi_sync(true)
 , m_trace_sync(false)
 {
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
   if (!m_dispatcher){
     auto generic_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
     GroupIndexTable* table = nullptr;
     if (!group.isAllItems())
       table = group.localIdToIndex().get();
     VariableSynchronizeDispatcherBuildInfo bi(pm,table,generic_factory);
-    m_dispatcher = new VariableSynchronizerDispatcher(pm,DispatcherType::create<VariableSynchronizeDispatcher>(bi));
+    m_dispatcher = IVariableSynchronizerDispatcher::create(bi);
   }
   m_dispatcher->setItemGroupSynchronizeInfo(&m_sync_list);
   m_multi_dispatcher = new VariableSynchronizerMultiDispatcher(pm);
@@ -675,7 +674,7 @@ synchronize(VariableCollection vars)
 void VariableSynchronizer::
 _synchronize(IVariable* var)
 {
-  var->data()->visit(m_dispatcher->visitor());
+  m_dispatcher->applyDispatch(var->data());
   var->setIsSynchronized();
 }
 
@@ -685,7 +684,7 @@ _synchronize(IVariable* var)
 void VariableSynchronizer::
 synchronizeData(IData* data)
 {
-  data->visit(m_dispatcher->visitor());
+  m_dispatcher->applyDispatch(data);
 }
 
 /*---------------------------------------------------------------------------*/

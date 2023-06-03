@@ -35,6 +35,7 @@
 
 namespace Arcane
 {
+class Timer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -126,7 +127,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
  public:
 
   VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
-                       VariableSynchronizerDispatcher* dispatcher);
+                       IVariableSynchronizerDispatcher* dispatcher);
   virtual ~VariableSynchronizer();
 
  public:
@@ -168,7 +169,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   ItemGroup m_item_group;
   ItemGroupSynchronizeInfo m_sync_list;
   Int32UniqueArray m_communicating_ranks;
-  VariableSynchronizerDispatcher* m_dispatcher;
+  IVariableSynchronizerDispatcher* m_dispatcher;
   VariableSynchronizerMultiDispatcher* m_multi_dispatcher;
   Timer* m_sync_timer;
   bool m_is_verbose;

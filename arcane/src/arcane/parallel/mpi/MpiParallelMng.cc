@@ -213,7 +213,7 @@ class MpiVariableSynchronizer
 {
  public:
   MpiVariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
-                          VariableSynchronizerDispatcher* dispatcher,
+                          IVariableSynchronizerDispatcher* dispatcher,
                           Ref<IVariableSynchronizerMpiCommunicator> topology_info)
   : VariableSynchronizer(pm,group,dispatcher)
   , m_topology_info(topology_info)
@@ -286,7 +286,6 @@ class MpiParallelMngUtilsFactory
   {
     Ref<IVariableSynchronizerMpiCommunicator> topology_info;
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
-    typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
     ITraceMng* tm = pm->traceMng();
     Ref<IGenericVariableSynchronizerDispatcherFactory> generic_factory;
     // N'affiche les informations que pour le groupe de toutes les mailles pour éviter d'afficher
@@ -323,10 +322,10 @@ class MpiParallelMngUtilsFactory
         tm->info() << "Using MpiSynchronizer V1";
       generic_factory = arcaneCreateMpiLegacyVariableSynchronizerFactory(mpi_pm);
     }
-    VariableSynchronizerDispatcher* vd = nullptr;
+    IVariableSynchronizerDispatcher* vd = nullptr;
     if (generic_factory.get()){
       VariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,generic_factory);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<VariableSynchronizeDispatcher>(bi));
+      vd = IVariableSynchronizerDispatcher::create(bi);
     }
     if (!vd)
       ARCANE_FATAL("No synchronizer created");
