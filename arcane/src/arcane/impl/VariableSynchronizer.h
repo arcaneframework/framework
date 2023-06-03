@@ -124,11 +124,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
     SharedArray<Int32> m_local_ids;
     SharedArray<Int64> m_unique_ids;
   };
+
  public:
 
   VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
-                       IVariableSynchronizerDispatcher* dispatcher);
-  virtual ~VariableSynchronizer();
+                       Ref<IDataSynchronizeImplementationFactory> implementation_factory);
+  ~VariableSynchronizer() override;
 
  public:
 
@@ -165,17 +166,18 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
  private:
 
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
   ItemGroup m_item_group;
   ItemGroupSynchronizeInfo m_sync_list;
   Int32UniqueArray m_communicating_ranks;
-  IVariableSynchronizerDispatcher* m_dispatcher;
-  VariableSynchronizerMultiDispatcher* m_multi_dispatcher;
-  Timer* m_sync_timer;
+  IVariableSynchronizerDispatcher* m_dispatcher = nullptr;
+  VariableSynchronizerMultiDispatcher* m_multi_dispatcher = nullptr;
+  Timer* m_sync_timer = nullptr;
   bool m_is_verbose;
   bool m_allow_multi_sync;
   bool m_trace_sync;
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
+  Ref<IDataSynchronizeImplementationFactory> m_implementation_factory;
 
  private:
 

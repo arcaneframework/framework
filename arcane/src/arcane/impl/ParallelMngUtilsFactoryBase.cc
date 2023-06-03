@@ -79,7 +79,7 @@ createTopology(IParallelMng* pm)
 Ref<IVariableSynchronizer> ParallelMngUtilsFactoryBase::
 createSynchronizer(IParallelMng* pm,IItemFamily* family)
 {
-  auto* x = new VariableSynchronizer(pm,family->allItems(),nullptr);
+  auto* x = new VariableSynchronizer(pm,family->allItems(),{});
   return makeRef<IVariableSynchronizer>(x);
 }
 
@@ -89,7 +89,7 @@ createSynchronizer(IParallelMng* pm,IItemFamily* family)
 Ref<IVariableSynchronizer> ParallelMngUtilsFactoryBase::
 createSynchronizer(IParallelMng* pm,const ItemGroup& group)
 {
-  auto* x = new VariableSynchronizer(pm,group,nullptr);
+  auto* x = new VariableSynchronizer(pm,group,{});
   return makeRef<IVariableSynchronizer>(x);
 }
 

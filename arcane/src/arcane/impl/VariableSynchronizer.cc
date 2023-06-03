@@ -63,24 +63,26 @@ arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
 
 VariableSynchronizer::
 VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
-                     IVariableSynchronizerDispatcher* dispatcher)
+                     Ref<IDataSynchronizeImplementationFactory> implementation_factory)
 : TraceAccessor(pm->traceMng())
 , m_parallel_mng(pm)
 , m_item_group(group)
-, m_dispatcher(dispatcher)
-, m_multi_dispatcher()
-, m_sync_timer(0)
 , m_is_verbose(false)
 , m_allow_multi_sync(true)
 , m_trace_sync(false)
 {
-  if (!m_dispatcher){
-    auto generic_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
+  if (!implementation_factory.get())
+    implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
+  m_implementation_factory = implementation_factory;
+
+  {
     GroupIndexTable* table = nullptr;
     if (!group.isAllItems())
       table = group.localIdToIndex().get();
-    VariableSynchronizeDispatcherBuildInfo bi(pm,table,generic_factory);
+    VariableSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory);
     m_dispatcher = IVariableSynchronizerDispatcher::create(bi);
+    if (!m_dispatcher)
+      ARCANE_FATAL("No synchronizer created");
   }
   m_dispatcher->setItemGroupSynchronizeInfo(&m_sync_list);
   m_multi_dispatcher = new VariableSynchronizerMultiDispatcher(pm);
