@@ -133,6 +133,152 @@ recompute()
   }
 }
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation de IDataSynchronizeBuffer pour les variables
+ */
+class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
+: public IDataSynchronizeBuffer
+{
+ public:
+
+  Int32 nbRank() const final { return m_nb_rank; }
+  bool hasGlobalBuffer() const final { return true; }
+
+  MutableMemoryView receiveBuffer(Int32 index) final { return _ghostLocalBuffer(index); }
+  MutableMemoryView sendBuffer(Int32 index) final { return _shareLocalBuffer(index); }
+
+  Int64 receiveDisplacement(Int32 index) const final { return _ghostDisplacementBase(index) * m_datatype_size; }
+  Int64 sendDisplacement(Int32 index) const final { return _shareDisplacementBase(index) * m_datatype_size; }
+
+  MutableMemoryView globalReceiveBuffer() final { return m_ghost_memory_view; }
+  MutableMemoryView globalSendBuffer() final { return m_share_memory_view; }
+
+  void copyReceiveAsync(Integer index) final;
+  void copySendAsync(Integer index) final;
+  Int64 totalReceiveSize() const final { return m_ghost_memory_view.bytes().size(); }
+  Int64 totalSendSize() const final { return m_share_memory_view.bytes().size(); }
+
+  void barrier() final { m_buffer_copier->barrier(); }
+
+ public:
+
+  void compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_list, Int32 datatype_size);
+  IDataSynchronizeBuffer* genericBuffer() { return this; }
+  void setDataView(MutableMemoryView v) { m_data_view = v; }
+  MutableMemoryView dataMemoryView() { return m_data_view; }
+
+ protected:
+
+  void _allocateBuffers(Int32 datatype_size);
+
+ protected:
+
+  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+  //! Buffer pour toutes les données des entités fantômes qui serviront en réception
+  MutableMemoryView m_ghost_memory_view;
+  //! Buffer pour toutes les données des entités partagées qui serviront en envoi
+  MutableMemoryView m_share_memory_view;
+
+ private:
+
+  Int32 m_nb_rank = 0;
+  //! Vue sur les données de la variable
+  MutableMemoryView m_data_view;
+  IBufferCopier* m_buffer_copier = nullptr;
+
+  //! Buffer contenant les données concaténées en envoi et réception
+  UniqueArray<std::byte> m_buffer;
+
+  Int32 m_datatype_size = 0;
+
+ private:
+
+  Int64 _ghostDisplacementBase(Int32 index) const
+  {
+    return m_sync_info->ghostDisplacement(index);
+  }
+  Int64 _shareDisplacementBase(Int32 index) const
+  {
+    return m_sync_info->shareDisplacement(index);
+  }
+
+  Int32 _nbGhost(Int32 index) const
+  {
+    return m_sync_info->rankInfo(index).nbGhost();
+  }
+
+  Int32 _nbShare(Int32 index) const
+  {
+    return m_sync_info->rankInfo(index).nbShare();
+  }
+
+  MutableMemoryView _shareLocalBuffer(Int32 index) const
+  {
+    Int64 displacement = _shareDisplacementBase(index);
+    Int32 local_size = _nbShare(index);
+    return m_share_memory_view.subView(displacement, local_size);
+  }
+  MutableMemoryView _ghostLocalBuffer(Int32 index) const
+  {
+    Int64 displacement = _ghostDisplacementBase(index);
+    Int32 local_size = _nbGhost(index);
+    return m_ghost_memory_view.subView(displacement, local_size);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gestion de la synchronisation.
+ */
+class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
+: public IVariableSynchronizeDispatcher
+{
+ public:
+
+  //! Gère les buffers d'envoi et réception pour la synchronisation
+  using SyncBuffer = VariableSynchronizeBufferBase;
+
+ public:
+
+  explicit VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi);
+  ~VariableSynchronizerDispatcher() override;
+
+ public:
+
+  void applyDispatch(IData* data) override;
+  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final;
+  void compute() final;
+
+ protected:
+
+  void _beginSynchronize(VariableSynchronizeBufferBase& sync_buffer)
+  {
+    m_generic_instance->beginSynchronize(sync_buffer.genericBuffer());
+  }
+  void _endSynchronize(VariableSynchronizeBufferBase& sync_buffer)
+  {
+    m_generic_instance->endSynchronize(sync_buffer.genericBuffer());
+  }
+
+ private:
+
+  IParallelMng* m_parallel_mng = nullptr;
+  IBufferCopier* m_buffer_copier = nullptr;
+  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+  SyncBuffer m_sync_buffer;
+  bool m_is_in_sync = false;
+  Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
+  Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;
+
+ private:
+
+  void _applyDispatch(IData* data);
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -233,6 +379,18 @@ compute()
   if (!m_sync_info)
     ARCANE_FATAL("The instance is not initialized. You need to call setItemGroupSynchronizeInfo() before");
   m_generic_instance->compute();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IVariableSynchronizeDispatcher* IVariableSynchronizeDispatcher::
+create(const VariableSynchronizeDispatcherBuildInfo& build_info)
+{
+  return new VariableSynchronizerDispatcher(build_info);
 }
 
 /*---------------------------------------------------------------------------*/

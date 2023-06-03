@@ -213,7 +213,7 @@ class MpiVariableSynchronizer
 {
  public:
   MpiVariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
-                          VariableSynchronizerDispatcher* dispatcher,
+                          IVariableSynchronizerDispatcher* dispatcher,
                           Ref<IVariableSynchronizerMpiCommunicator> topology_info)
   : VariableSynchronizer(pm,group,dispatcher)
   , m_topology_info(topology_info)
@@ -322,10 +322,10 @@ class MpiParallelMngUtilsFactory
         tm->info() << "Using MpiSynchronizer V1";
       generic_factory = arcaneCreateMpiLegacyVariableSynchronizerFactory(mpi_pm);
     }
-    VariableSynchronizerDispatcher* vd = nullptr;
+    IVariableSynchronizerDispatcher* vd = nullptr;
     if (generic_factory.get()){
       VariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,generic_factory);
-      vd = new VariableSynchronizerDispatcher(bi);
+      vd = IVariableSynchronizerDispatcher::create(bi);
     }
     if (!vd)
       ARCANE_FATAL("No synchronizer created");
