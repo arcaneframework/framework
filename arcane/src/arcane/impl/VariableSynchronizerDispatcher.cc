@@ -261,7 +261,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
   void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final;
   void compute() final;
-  void beginSynchronize(IData* data) override;
+  void beginSynchronize(INumericDataInternal* data) override;
   void endSynchronize() override;
 
  protected:
@@ -335,13 +335,11 @@ VariableSynchronizerDispatcher::
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerDispatcher::
-beginSynchronize(IData* data)
+beginSynchronize(INumericDataInternal* data)
 {
-  INumericDataInternal* numapi = data->_commonInternal()->numericData();
-  if (!numapi)
-    ARCANE_FATAL("Data can not be synchronized because it is not a numeric data");
+  ARCANE_CHECK_POINTER(data);
 
-  MutableMemoryView mem_view = numapi->memoryView();
+  MutableMemoryView mem_view = data->memoryView();
   Int32 full_datatype_size = mem_view.datatypeSize();
 
   if (m_is_in_sync)

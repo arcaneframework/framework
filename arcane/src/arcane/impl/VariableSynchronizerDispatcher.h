@@ -36,6 +36,7 @@ class VariableSynchronizerDispatcher;
 class VariableSynchronizerMultiDispatcher;
 class IVariableSynchronizerDispatcher;
 class GroupIndexTable;
+class INumericDataInternal;
 using IVariableSynchronizeDispatcher = IVariableSynchronizerDispatcher;
 
 /*---------------------------------------------------------------------------*/
@@ -200,7 +201,7 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
   virtual void compute() = 0;
 
   //! Commence l'exécution pour la synchronisation pour la donnée \a data.
-  virtual void beginSynchronize(IData* data) = 0;
+  virtual void beginSynchronize(INumericDataInternal* data) = 0;
 
   //! Termine la synchronisation.
   virtual void endSynchronize() = 0;

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizer.h                                      (C) 2000-2021 */
+/* VariableSynchronizer.h                                      (C) 2000-2023 */
 /*                                                                           */
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
@@ -36,6 +36,7 @@
 namespace Arcane
 {
 class Timer;
+class INumericDataInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -188,6 +189,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   void _synchronize(IVariable* var);
   void _synchronizeMulti(VariableCollection vars);
   bool _canSynchronizeMulti(const VariableCollection& vars);
+  void _synchronize(INumericDataInternal* data);
 };
 
 /*---------------------------------------------------------------------------*/

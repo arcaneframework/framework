@@ -24,15 +24,16 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/Array2.h"
 
-#include "arcane/VariableSynchronizerEventArgs.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IVariable.h"
-#include "arcane/IData.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/Timer.h"
-#include "arcane/parallel/IStat.h"
+#include "arcane/core/VariableSynchronizerEventArgs.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/parallel/IStat.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include <algorithm>
 
@@ -674,9 +675,23 @@ synchronize(VariableCollection vars)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizer::
+_synchronize(INumericDataInternal* data)
+{
+  m_dispatcher->beginSynchronize(data);
+  m_dispatcher->endSynchronize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
 _synchronize(IVariable* var)
 {
-  synchronizeData(var->data());
+  ARCANE_CHECK_POINTER(var);
+  INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
+  if (!numapi)
+    ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data",var->name());
+  _synchronize(numapi);
   var->setIsSynchronized();
 }
 
@@ -686,8 +701,11 @@ _synchronize(IVariable* var)
 void VariableSynchronizer::
 synchronizeData(IData* data)
 {
-  m_dispatcher->beginSynchronize(data);
-  m_dispatcher->endSynchronize();
+  ARCANE_CHECK_POINTER(data);
+  INumericDataInternal* numapi = data->_commonInternal()->numericData();
+  if (!numapi)
+    ARCANE_FATAL("Data can not be synchronized because it is not a numeric data");
+  _synchronize(numapi);
 }
 
 /*---------------------------------------------------------------------------*/
