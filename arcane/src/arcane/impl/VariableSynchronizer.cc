@@ -72,6 +72,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
 , m_allow_multi_sync(true)
 , m_trace_sync(false)
 {
+  m_sync_list = ItemGroupSynchronizeInfo::create();
   if (!implementation_factory.get())
     implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
   m_implementation_factory = implementation_factory;
@@ -85,7 +86,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
     if (!m_dispatcher)
       ARCANE_FATAL("No synchronizer created");
   }
-  m_dispatcher->setItemGroupSynchronizeInfo(&m_sync_list);
+  m_dispatcher->setItemGroupSynchronizeInfo(m_sync_list.get());
   m_multi_dispatcher = new VariableSynchronizerMultiDispatcher(pm);
 
   {
@@ -108,7 +109,6 @@ VariableSynchronizer::
 {
   delete m_sync_timer;
   delete m_multi_dispatcher;
-  delete m_dispatcher;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ compute()
 void VariableSynchronizer::
 _createList(UniqueArray<SharedArray<Int32> >& boundary_items)
 {
-  m_sync_list.clear();
+  m_sync_list->clear();
 
   IItemFamily* item_family = m_item_group.itemFamily();
   IParallelMng* pm = m_parallel_mng;
@@ -476,11 +476,11 @@ _createList(UniqueArray<SharedArray<Int32> >& boundary_items)
     }
   }
   _checkValid(ghost_rank_info,share_rank_info);
-  m_sync_list.recompute();
+  m_sync_list->recompute();
 
   // Calcul de m_communicating_ranks qui synthétisent les processeurs communiquants
-  for( Integer i=0; i<m_sync_list.size(); ++i ){
-    const VariableSyncInfo & sync_info = m_sync_list[i];
+  for( Integer i=0, n=m_sync_list->size(); i<n; ++i ){
+    const VariableSyncInfo & sync_info = m_sync_list->rankInfo(i);
     const Integer target_rank = sync_info.targetRank();
     m_communicating_ranks.add(target_rank);
     ARCANE_ASSERT((sync_info.nbGhost() == boundary_items[target_rank].size()),("Inconsistent ghost count"));
@@ -558,7 +558,7 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
       marked_elem[elem.localId()] = true;
     }
 
-    m_sync_list.add( VariableSyncInfo (share_grp,ghost_grp,current_proc) );
+    m_sync_list->add( VariableSyncInfo (share_grp,ghost_grp,current_proc) );
   }
 
   // Vérifie que tous les éléments sont marqués
@@ -590,13 +590,13 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
 void VariableSynchronizer::
 _printSyncList()
 {
-  Integer nb_comm = m_sync_list.size();
+  Integer nb_comm = m_sync_list->size();
   info() << "SYNC LIST FOR GROUP : " << m_item_group.fullName() << " N=" << nb_comm;
   OStringStream ostr;
   IItemFamily* item_family = m_item_group.itemFamily();
   ItemInfoListView items_internal(item_family);
   for( Integer i=0; i<nb_comm; ++i ){
-    const VariableSyncInfo& vsi = m_sync_list[i];
+    const VariableSyncInfo& vsi = m_sync_list->rankInfo(i);
     ostr() << " TARGET=" << vsi.targetRank() << '\n';
     Int32ConstArrayView share_ids = vsi.shareIds();
     ostr() << "\t\tSHARE(lid,uid) n=" << share_ids.size() << " :";
@@ -715,7 +715,7 @@ void VariableSynchronizer::
 changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
   info(4) << "** VariableSynchronizer::changeLocalIds() group=" << m_item_group.name();
-  m_sync_list.changeLocalIds(old_to_new_ids);
+  m_sync_list->changeLocalIds(old_to_new_ids);
   m_dispatcher->compute();
 }
 
@@ -774,7 +774,7 @@ _synchronizeMulti(VariableCollection vars)
     m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
   {
     Timer::Sentry ts2(m_sync_timer);
-    m_multi_dispatcher->synchronize(vars,&m_sync_list);
+    m_multi_dispatcher->synchronize(vars,m_sync_list.get());
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       (*ivar)->setIsSynchronized();
     }
@@ -803,7 +803,7 @@ communicatingRanks()
 Int32ConstArrayView VariableSynchronizer::
 sharedItems(Int32 index)
 {
-  return m_sync_list[index].shareIds();
+  return m_sync_list->rankInfo(index).shareIds();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -812,7 +812,7 @@ sharedItems(Int32 index)
 Int32ConstArrayView VariableSynchronizer::
 ghostItems(Int32 index)
 {
-  return m_sync_list[index].ghostIds();
+  return m_sync_list->rankInfo(index).ghostIds();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -16,6 +16,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/Ref.h"
+#include "arccore/base/ReferenceCounterImpl.h"
 
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/Parallel.h"
@@ -98,7 +100,26 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
  * de VariableSyncInfo.
  */
 class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
+: private ReferenceCounterImpl
 {
+ private:
+
+  ItemGroupSynchronizeInfo() = default;
+
+ public:
+
+  ItemGroupSynchronizeInfo(const ItemGroupSynchronizeInfo&) = delete;
+  ItemGroupSynchronizeInfo operator=(const ItemGroupSynchronizeInfo&) = delete;
+  ItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo&&) = delete;
+  ItemGroupSynchronizeInfo operator=(ItemGroupSynchronizeInfo&&) = delete;
+
+ public:
+
+  static Ref<ItemGroupSynchronizeInfo> create()
+  {
+    return makeRef(new ItemGroupSynchronizeInfo());
+  }
+
  public:
 
   VariableSyncInfo& operator[](Int32 i) { return m_ranks_info[i]; }
@@ -120,6 +141,11 @@ class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
 
   //! Notifie l'instance que les valeurs ont changé
   void recompute();
+
+ public:
+
+  void addReference() { ReferenceCounterImpl::addReference(); }
+  void removeReference() { ReferenceCounterImpl::removeReference(); }
 
  public:
 
@@ -186,6 +212,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
  */
 class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
 {
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
 
   virtual ~IVariableSynchronizerDispatcher() = default;
@@ -208,7 +236,7 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
 
  public:
 
-  static IVariableSynchronizeDispatcher*
+  static Ref<IVariableSynchronizeDispatcher>
   create(const VariableSynchronizeDispatcherBuildInfo& build_info);
 };
 

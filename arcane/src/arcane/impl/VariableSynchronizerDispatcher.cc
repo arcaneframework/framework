@@ -245,8 +245,11 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
  * \brief Gestion de la synchronisation.
  */
 class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
-: public IVariableSynchronizeDispatcher
+: private ReferenceCounterImpl
+, public IVariableSynchronizeDispatcher
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
 
   //! Gère les buffers d'envoi et réception pour la synchronisation
@@ -397,10 +400,10 @@ compute()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IVariableSynchronizeDispatcher* IVariableSynchronizeDispatcher::
+Ref<IVariableSynchronizeDispatcher> IVariableSynchronizeDispatcher::
 create(const VariableSynchronizeDispatcherBuildInfo& build_info)
 {
-  return new VariableSynchronizerDispatcher(build_info);
+  return makeRef<IVariableSynchronizeDispatcher>(new VariableSynchronizerDispatcher(build_info));
 }
 
 /*---------------------------------------------------------------------------*/

@@ -169,9 +169,9 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
   IParallelMng* m_parallel_mng = nullptr;
   ItemGroup m_item_group;
-  ItemGroupSynchronizeInfo m_sync_list;
+  Ref<ItemGroupSynchronizeInfo> m_sync_list;
   Int32UniqueArray m_communicating_ranks;
-  IVariableSynchronizerDispatcher* m_dispatcher = nullptr;
+  Ref<IVariableSynchronizerDispatcher> m_dispatcher;
   VariableSynchronizerMultiDispatcher* m_multi_dispatcher = nullptr;
   Timer* m_sync_timer = nullptr;
   bool m_is_verbose;
