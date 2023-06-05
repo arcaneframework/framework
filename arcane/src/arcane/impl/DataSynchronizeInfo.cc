@@ -118,7 +118,7 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupSynchronizeInfo::
+void DataSynchronizeInfo::
 recompute()
 {
   Integer nb_message = this->size();
@@ -150,7 +150,7 @@ recompute()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupSynchronizeInfo::
+void DataSynchronizeInfo::
 changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
   for (VariableSyncInfo& vsi : m_ranks_info) {

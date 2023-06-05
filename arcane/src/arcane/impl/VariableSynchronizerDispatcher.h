@@ -84,7 +84,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
  * Il faut utiliser create() pour créer une implémentation pour cette
  * interface.
  *
- * Il faut appeler \a setItemGroupSynchronizeInfo() pour initialiser
+ * Il faut appeler \a setDataSynchronizeInfo() pour initialiser
  * l'instance.
  */
 class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
@@ -97,11 +97,11 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
 
  public:
 
-  virtual void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) = 0;
+  virtual void setItemGroupSynchronizeInfo(DataSynchronizeInfo* sync_info) = 0;
 
   /*!
    * \brief Recalcule les informations nécessaires après une mise à jour des informations
-   * de \a ItemGroupSynchronizeInfo.
+   * de \a DataSynchronizeInfo.
    */
   virtual void compute() = 0;
 
@@ -131,7 +131,7 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerMultiDispatcher
 
  public:
 
-  virtual void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info) = 0;
+  virtual void synchronize(VariableCollection vars, DataSynchronizeInfo* sync_info) = 0;
 
  public:
 

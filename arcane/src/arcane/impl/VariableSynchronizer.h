@@ -169,7 +169,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
   IParallelMng* m_parallel_mng = nullptr;
   ItemGroup m_item_group;
-  Ref<ItemGroupSynchronizeInfo> m_sync_list;
+  Ref<DataSynchronizeInfo> m_sync_list;
   Int32UniqueArray m_communicating_ranks;
   Ref<IVariableSynchronizerDispatcher> m_dispatcher;
   IVariableSynchronizerMultiDispatcher* m_multi_dispatcher = nullptr;

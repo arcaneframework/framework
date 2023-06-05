@@ -23,8 +23,8 @@
 namespace Arcane
 {
 class IDataSynchronizeBuffer;
-class ItemGroupSynchronizeInfo;
 class IParallelMng;
+class DataSynchronizeInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,6 +41,8 @@ ARCANE_DEPRECATED_REASON("Use 'IDataSynchronizeImplementationFactory' instead") 
 
 using AbstractGenericVariableSynchronizerDispatcher
 ARCANE_DEPRECATED_REASON("Use 'AbstractDataSynchronizeImplementation' instead") = AbstractDataSynchronizeImplementation;
+
+using ItemGroupSynchronizeInfo = DataSynchronizeInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

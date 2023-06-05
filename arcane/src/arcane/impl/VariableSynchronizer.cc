@@ -72,7 +72,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
 , m_allow_multi_sync(true)
 , m_trace_sync(false)
 {
-  m_sync_list = ItemGroupSynchronizeInfo::create();
+  m_sync_list = DataSynchronizeInfo::create();
   if (!implementation_factory.get())
     implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
   m_implementation_factory = implementation_factory;

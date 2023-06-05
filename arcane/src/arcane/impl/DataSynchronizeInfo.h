@@ -23,7 +23,7 @@
 #include "arcane/core/Parallel.h"
 #include "arcane/core/VariableCollection.h"
 
-#include "arcane/impl/IGenericVariableSynchronizerDispatcher.h"
+#include "arcane/impl/IDataSynchronizeImplementation.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -89,25 +89,25 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
  * Il faut appeler recompute() après avoir ajouté ou modifier les instances
  * de VariableSyncInfo.
  */
-class ARCANE_IMPL_EXPORT ItemGroupSynchronizeInfo
+class ARCANE_IMPL_EXPORT DataSynchronizeInfo
 : private ReferenceCounterImpl
 {
  private:
 
-  ItemGroupSynchronizeInfo() = default;
+  DataSynchronizeInfo() = default;
 
  public:
 
-  ItemGroupSynchronizeInfo(const ItemGroupSynchronizeInfo&) = delete;
-  ItemGroupSynchronizeInfo operator=(const ItemGroupSynchronizeInfo&) = delete;
-  ItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo&&) = delete;
-  ItemGroupSynchronizeInfo operator=(ItemGroupSynchronizeInfo&&) = delete;
+  DataSynchronizeInfo(const DataSynchronizeInfo&) = delete;
+  DataSynchronizeInfo operator=(const DataSynchronizeInfo&) = delete;
+  DataSynchronizeInfo(DataSynchronizeInfo&&) = delete;
+  DataSynchronizeInfo operator=(DataSynchronizeInfo&&) = delete;
 
  public:
 
-  static Ref<ItemGroupSynchronizeInfo> create()
+  static Ref<DataSynchronizeInfo> create()
   {
-    return makeRef(new ItemGroupSynchronizeInfo());
+    return makeRef(new DataSynchronizeInfo());
   }
 
  public:
