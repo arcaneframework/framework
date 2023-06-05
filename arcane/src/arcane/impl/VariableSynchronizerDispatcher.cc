@@ -88,7 +88,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  public:
 
-  void compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_list, Int32 datatype_size);
+  void compute(IBufferCopier* copier, DataSynchronizeInfo* sync_list, Int32 datatype_size);
   IDataSynchronizeBuffer* genericBuffer() { return this; }
 
  protected:
@@ -97,7 +97,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  protected:
 
-  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+  DataSynchronizeInfo* m_sync_info = nullptr;
   //! Buffer pour toutes les données des entités fantômes qui serviront en réception
   MutableMemoryView m_ghost_memory_view;
   //! Buffer pour toutes les données des entités partagées qui serviront en envoi
@@ -157,7 +157,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
  * terme de memoire.
  */
 void VariableSynchronizeBufferBase::
-compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 datatype_size)
+compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_size)
 {
   m_datatype_size = datatype_size;
   m_buffer_copier = copier;
@@ -286,7 +286,7 @@ VariableSynchronizerDispatcherBase(const VariableSynchronizeDispatcherBuildInfo&
 {
   ARCANE_CHECK_POINTER(bi.factory().get());
   m_implementation_instance = bi.factory()->createInstance();
-  m_implementation_instance->setItemGroupSynchronizeInfo(m_sync_info.get());
+  m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
 
   if (bi.table())
     m_buffer_copier = new TableBufferCopier(bi.table());
@@ -416,7 +416,7 @@ void VariableSynchronizerDispatcher::
 compute()
 {
   if (!m_sync_info)
-    ARCANE_FATAL("The instance is not initialized. You need to call setItemGroupSynchronizeInfo() before");
+    ARCANE_FATAL("The instance is not initialized. You need to call setDataSynchronizeInfo() before");
   m_implementation_instance->compute();
 }
 
@@ -643,7 +643,7 @@ synchronize(VariableCollection vars)
 
   buffer.compute(m_buffer_copier,m_sync_info.get(),all_datatype_size);
 
-  m_implementation_instance->setItemGroupSynchronizeInfo(m_sync_info.get());
+  m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
   m_implementation_instance->compute();
   m_implementation_instance->beginSynchronize(buffer.genericBuffer());
   m_implementation_instance->endSynchronize(buffer.genericBuffer());

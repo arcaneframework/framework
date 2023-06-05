@@ -136,7 +136,7 @@ MpiVariableSynchronizeDispatcher(Factory* f)
 void MpiVariableSynchronizeDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* ds_buf)
 {
-  ItemGroupSynchronizeInfo* sync_info = _syncInfo();
+  DataSynchronizeInfo* sync_info = _syncInfo();
   Integer nb_message = sync_info->size();
 
   m_send_request_list->clear();

@@ -201,7 +201,7 @@ endSynchronize(IDataSynchronizeBuffer* buf)
 void MpiNeighborVariableSynchronizerDispatcher::
 compute()
 {
-  ItemGroupSynchronizeInfo* sync_info = _syncInfo();
+  DataSynchronizeInfo* sync_info = _syncInfo();
   ARCANE_CHECK_POINTER(sync_info);
 
   auto* sync_communicator = m_synchronizer_communicator.get();
