@@ -24,17 +24,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
-#define ARCANE_LOCALID_ADD_OFFSET(a) (m_local_id_offset + (a))
-#define ARCANE_ARGS_AND_OFFSET(a,b,c) a,b,c
-#else
-#define ARCANE_LOCALID_ADD_OFFSET(a) (a)
-#define ARCANE_ARGS_AND_OFFSET(a,b,c) a,b
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 namespace Arcane
 {
 
@@ -75,8 +64,8 @@ class ItemInternalVectorViewConstIterator
   //! Type d'une distance entre itérateur éléments du tableau
   typedef Integer difference_type;
  public:
-  value_type operator*() const { return m_items[ ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]) ]; }
-  value_type operator->() const { return m_items[ ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]) ]; }
+  value_type operator*() const { return m_items[ m_local_id_offset + m_local_ids[m_index] ]; }
+  value_type operator->() const { return m_items[ m_local_id_offset + m_local_ids[m_index] ]; }
   ThatClass& operator++() { ++m_index; return (*this); }
   ThatClass& operator--() { --m_index; return (*this); }
   void operator+=(difference_type v) { m_index += v; }

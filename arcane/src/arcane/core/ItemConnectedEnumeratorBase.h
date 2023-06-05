@@ -20,12 +20,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
-#define ARCANE_LOCALID_ADD_OFFSET(a) (m_local_id_offset + (a))
-#else
-#define ARCANE_LOCALID_ADD_OFFSET(a) (a)
-#endif
-
 namespace Arcane
 {
 
@@ -52,15 +46,18 @@ class ItemConnectedEnumeratorBase
 
   ItemConnectedEnumeratorBase() = default;
   explicit ItemConnectedEnumeratorBase(const ConstArrayView<Int32> local_ids)
-  : m_local_ids(local_ids.data()), m_count(local_ids.size()) {}
-  template<int E> explicit ItemConnectedEnumeratorBase(const ItemConnectedListView<E>& rhs)
-  : m_local_ids(rhs._localIds().data()), m_count(rhs._localIds().size())
-#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
-    , m_local_id_offset(rhs.m_local_id_offset)
-#endif
+  : m_local_ids(local_ids.data())
+  , m_count(local_ids.size())
   {}
-  ItemConnectedEnumeratorBase(const Int32* local_ids,Int32 index,Int32 n)
-  : m_local_ids(local_ids), m_index(index), m_count(n)
+  template <int E> explicit ItemConnectedEnumeratorBase(const ItemConnectedListView<E>& rhs)
+  : m_local_ids(rhs._localIds().data())
+  , m_count(rhs._localIds().size())
+  , m_local_id_offset(rhs.m_local_id_offset)
+  {}
+  ItemConnectedEnumeratorBase(const Int32* local_ids, Int32 index, Int32 n)
+  : m_local_ids(local_ids)
+  , m_index(index)
+  , m_count(n)
   {
   }
 
@@ -79,7 +76,7 @@ class ItemConnectedEnumeratorBase
   }
 
   //! Vrai si on n'a pas atteint la fin de l'énumérateur (index()<count())
-  constexpr bool hasNext() const { return m_index<m_count; }
+  constexpr bool hasNext() const { return m_index < m_count; }
 
   //! Nombre d'éléments de l'énumérateur
   constexpr Int32 count() const { return m_count; }
@@ -88,19 +85,17 @@ class ItemConnectedEnumeratorBase
   constexpr Int32 index() const { return m_index; }
 
   //! localId() de l'entité courante.
-  constexpr ItemLocalId itemLocalId() const { return ItemLocalId(ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index])); }
+  constexpr ItemLocalId itemLocalId() const { return ItemLocalId(m_local_id_offset + m_local_ids[m_index]); }
 
   //! localId() de l'entité courante.
-  constexpr Int32 localId() const { return ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]); }
+  constexpr Int32 localId() const { return m_local_id_offset + m_local_ids[m_index]; }
 
  protected:
 
   const Int32* ARCANE_RESTRICT m_local_ids = nullptr;
   Int32 m_index = 0;
   Int32 m_count = 0;
-#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
   Int32 m_local_id_offset = 0;
-#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -130,17 +125,23 @@ class ItemConnectedEnumeratorBaseT
   , m_item(NULL_ITEM_LOCAL_ID, ItemSharedInfo::nullInstance())
   {}
 
-  ItemConnectedEnumeratorBaseT(ItemSharedInfo* shared_info,const Int32ConstArrayView& local_ids)
-  : BaseClass(local_ids), m_item(NULL_ITEM_LOCAL_ID,shared_info) {}
+  ItemConnectedEnumeratorBaseT(ItemSharedInfo* shared_info, const Int32ConstArrayView& local_ids)
+  : BaseClass(local_ids)
+  , m_item(NULL_ITEM_LOCAL_ID, shared_info)
+  {}
 
   ItemConnectedEnumeratorBaseT(const impl::ItemIndexedListView<DynExtent>& view)
-  : ItemConnectedEnumeratorBaseT(view.m_shared_info, view.constLocalIds()){}
+  : ItemConnectedEnumeratorBaseT(view.m_shared_info, view.constLocalIds())
+  {}
 
   ItemConnectedEnumeratorBaseT(const ItemConnectedListViewT<ItemType>& rhs)
-  : BaseClass(rhs), m_item(NULL_ITEM_LOCAL_ID,rhs.m_shared_info){}
+  : BaseClass(rhs)
+  , m_item(NULL_ITEM_LOCAL_ID, rhs.m_shared_info)
+  {}
 
-  ItemConnectedEnumeratorBaseT(const Int32* local_ids,Int32 index,Int32 n,Item item_base)
-  : ItemConnectedEnumeratorBase(local_ids,index,n), m_item(item_base)
+  ItemConnectedEnumeratorBaseT(const Int32* local_ids, Int32 index, Int32 n, Item item_base)
+  : ItemConnectedEnumeratorBase(local_ids, index, n)
+  , m_item(item_base)
   {
   }
 
@@ -148,31 +149,29 @@ class ItemConnectedEnumeratorBaseT
 
   constexpr ItemType operator*() const
   {
-    m_item.m_local_id = ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]);
+    m_item.m_local_id = m_local_id_offset + m_local_ids[m_index];
     return m_item;
   }
   constexpr const ItemType* operator->() const
   {
-    m_item.m_local_id = ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]);
+    m_item.m_local_id = m_local_id_offset + m_local_ids[m_index];
     return &m_item;
   }
 
   constexpr LocalIdType asItemLocalId() const
   {
-    return LocalIdType{ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index])};
+    return LocalIdType{ m_local_id_offset + m_local_ids[m_index] };
   }
 
  protected:
 
-  mutable ItemType m_item = ItemType(NULL_ITEM_LOCAL_ID,nullptr);
+  mutable ItemType m_item = ItemType(NULL_ITEM_LOCAL_ID, nullptr);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
-
-#undef ARCANE_LOCALID_ADD_OFFSET
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
