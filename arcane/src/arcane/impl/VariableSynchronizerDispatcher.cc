@@ -17,6 +17,10 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/SmallArray.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/VariableCollection.h"
 #include "arcane/core/ParallelMngUtils.h"
@@ -97,6 +101,33 @@ VariableSyncInfo(const VariableSyncInfo& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void VariableSyncInfo::
+_changeIds(Array<Int32>& ids, Int32ConstArrayView old_to_new_ids)
+{
+  UniqueArray<Int32> orig_ids(ids);
+  ids.clear();
+
+  for (Integer z = 0, zs = orig_ids.size(); z < zs; ++z) {
+    Int32 old_id = orig_ids[z];
+    Int32 new_id = old_to_new_ids[old_id];
+    if (new_id != NULL_ITEM_LOCAL_ID)
+      ids.add(new_id);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSyncInfo::
+changeLocalIds(Int32ConstArrayView old_to_new_ids)
+{
+  _changeIds(m_share_ids, old_to_new_ids);
+  _changeIds(m_ghost_ids, old_to_new_ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -147,7 +178,7 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation de IDataSynchronizeBuffer pour les variables
+ * \brief Implémentation de IDataSynchronizeBuffer pour une donnée
  */
 class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 : public IDataSynchronizeBuffer
@@ -166,8 +197,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
   MutableMemoryView globalReceiveBuffer() final { return m_ghost_memory_view; }
   MutableMemoryView globalSendBuffer() final { return m_share_memory_view; }
 
-  void copyReceiveAsync(Integer index) final;
-  void copySendAsync(Integer index) final;
   Int64 totalReceiveSize() const final { return m_ghost_memory_view.bytes().size(); }
   Int64 totalSendSize() const final { return m_share_memory_view.bytes().size(); }
 
@@ -177,8 +206,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
   void compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_list, Int32 datatype_size);
   IDataSynchronizeBuffer* genericBuffer() { return this; }
-  void setDataView(MutableMemoryView v) { m_data_view = v; }
-  MutableMemoryView dataMemoryView() { return m_data_view; }
 
  protected:
 
@@ -192,11 +219,9 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
   //! Buffer pour toutes les données des entités partagées qui serviront en envoi
   MutableMemoryView m_share_memory_view;
 
- private:
+ protected:
 
   Int32 m_nb_rank = 0;
-  //! Vue sur les données de la variable
-  MutableMemoryView m_data_view;
   IBufferCopier* m_buffer_copier = nullptr;
 
   //! Buffer contenant les données concaténées en envoi et réception
@@ -242,70 +267,141 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestion de la synchronisation.
+ * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
+ * pour les synchronisations des variables 1D.
+ * \todo: ne pas allouer les tampons car leur conservation est couteuse en
+ * terme de memoire.
  */
-class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
-: private ReferenceCounterImpl
-, public IVariableSynchronizeDispatcher
+void VariableSynchronizeBufferBase::
+compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 datatype_size)
 {
-  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+  m_datatype_size = datatype_size;
+  m_buffer_copier = copier;
+  m_sync_info = sync_info;
+  m_nb_rank = sync_info->size();
+
+  IMemoryAllocator* allocator = m_buffer_copier->allocator();
+  if (allocator && allocator != m_buffer.allocator())
+    m_buffer = UniqueArray<std::byte>(allocator);
+
+  _allocateBuffers(datatype_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Calcul et alloue les tampons nécessaires aux envois et réceptions
+ * pour les synchronisations des variables 1D.
+ *
+ * \todo: ne pas converver les tampons pour chaque type de donnée des variables
+ * car leur conservation est couteuse en terme de memoire.
+ */
+void VariableSynchronizeBufferBase::
+_allocateBuffers(Int32 datatype_size)
+{
+  Int64 total_ghost_buffer = m_sync_info->totalNbGhost();
+  Int64 total_share_buffer = m_sync_info->totalNbShare();
+
+  Int32 full_dim2_size = datatype_size;
+  m_buffer.resize((total_ghost_buffer + total_share_buffer) * full_dim2_size);
+
+  Int64 share_offset = total_ghost_buffer * full_dim2_size;
+
+  auto s1 = m_buffer.span().subspan(0, share_offset);
+  m_ghost_memory_view = makeMutableMemoryView(s1.data(), full_dim2_size, total_ghost_buffer);
+  auto s2 = m_buffer.span().subspan(share_offset, total_share_buffer * full_dim2_size);
+  m_share_memory_view = makeMutableMemoryView(s2.data(), full_dim2_size, total_share_buffer);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation de IDataSynchronizeBuffer pour une donnée
+ */
+class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
+: public VariableSynchronizeBufferBase
+{
+ public:
+
+  void copyReceiveAsync(Int32 index) final;
+  void copySendAsync(Int32 index) final;
 
  public:
 
-  //! Gère les buffers d'envoi et réception pour la synchronisation
-  using SyncBuffer = VariableSynchronizeBufferBase;
-
- public:
-
-  explicit VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi);
-  ~VariableSynchronizerDispatcher() override;
-
- public:
-
-  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final;
-  void compute() final;
-  void beginSynchronize(INumericDataInternal* data) override;
-  void endSynchronize() override;
-
- protected:
-
-  void _beginSynchronize(VariableSynchronizeBufferBase& sync_buffer)
-  {
-    m_generic_instance->beginSynchronize(sync_buffer.genericBuffer());
-  }
-  void _endSynchronize(VariableSynchronizeBufferBase& sync_buffer)
-  {
-    m_generic_instance->endSynchronize(sync_buffer.genericBuffer());
-  }
+  void setDataView(MutableMemoryView v) { m_data_view = v; }
+  MutableMemoryView dataView() { return m_data_view; }
 
  private:
 
-  IParallelMng* m_parallel_mng = nullptr;
-  IBufferCopier* m_buffer_copier = nullptr;
-  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
-  SyncBuffer m_sync_buffer;
-  bool m_is_in_sync = false;
-  bool m_is_empty_sync = false;
-  Ref<IDataSynchronizeImplementationFactory> m_factory;
-  Ref<IDataSynchronizeImplementation> m_generic_instance;
+  //! Vue sur les données de la variable
+  MutableMemoryView m_data_view;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-VariableSynchronizerDispatcher::
-VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
-: m_parallel_mng(bi.parallelMng())
-, m_factory(bi.factory())
+void SingleDataSynchronizeBuffer::
+copyReceiveAsync(Int32 index)
 {
-  ARCANE_CHECK_POINTER(m_factory.get());
-  m_generic_instance = this->m_factory->createInstance();
+  ARCANE_CHECK_POINTER(m_sync_info);
+  ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  // TODO: Utiliser une unique instance de IBufferCopier partagée par tous les
-  // dispatchers
+  MutableMemoryView var_values = dataView();
+  ConstArrayView<Int32> indexes = m_sync_info->rankInfo(index).ghostIds();
+  ConstMemoryView local_buffer = receiveBuffer(index);
+
+  m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SingleDataSynchronizeBuffer::
+copySendAsync(Int32 index)
+{
+  ARCANE_CHECK_POINTER(m_sync_info);
+  ARCANE_CHECK_POINTER(m_buffer_copier);
+
+  ConstMemoryView var_values = dataView();
+  Int32ConstArrayView indexes = m_sync_info->rankInfo(index).shareIds();
+  MutableMemoryView local_buffer = sendBuffer(index);
+  m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class VariableSynchronizerDispatcherBase
+{
+ public:
+
+  explicit VariableSynchronizerDispatcherBase(const VariableSynchronizeDispatcherBuildInfo& bi);
+  ~VariableSynchronizerDispatcherBase();
+
+ protected:
+
+  IParallelMng* m_parallel_mng = nullptr;
+  IBufferCopier* m_buffer_copier = nullptr;
+  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+  Ref<IDataSynchronizeImplementation> m_implementation_instance;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableSynchronizerDispatcherBase::
+VariableSynchronizerDispatcherBase(const VariableSynchronizeDispatcherBuildInfo& bi)
+: m_parallel_mng(bi.parallelMng())
+{
+  ARCANE_CHECK_POINTER(bi.factory().get());
+  m_implementation_instance = bi.factory()->createInstance();
+
   if (bi.table())
     m_buffer_copier = new TableBufferCopier(bi.table());
   else
@@ -328,11 +424,66 @@ VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-VariableSynchronizerDispatcher::
-~VariableSynchronizerDispatcher()
+VariableSynchronizerDispatcherBase::
+~VariableSynchronizerDispatcherBase()
 {
   delete m_buffer_copier;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gestion de la synchronisation pour une donnée.
+ */
+class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
+: private ReferenceCounterImpl
+, public VariableSynchronizerDispatcherBase
+, public IVariableSynchronizeDispatcher
+{
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
+ public:
+
+  //! Gère les buffers d'envoi et réception pour la synchronisation
+  using SyncBuffer = SingleDataSynchronizeBuffer;
+
+ public:
+
+  explicit VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
+  : VariableSynchronizerDispatcherBase(bi)
+  {
+  }
+
+ public:
+
+  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final;
+  void compute() final;
+  void beginSynchronize(INumericDataInternal* data) override;
+  void endSynchronize() override;
+
+ protected:
+
+  void _beginSynchronize(VariableSynchronizeBufferBase& sync_buffer)
+  {
+    m_implementation_instance->beginSynchronize(sync_buffer.genericBuffer());
+  }
+  void _endSynchronize(VariableSynchronizeBufferBase& sync_buffer)
+  {
+    m_implementation_instance->endSynchronize(sync_buffer.genericBuffer());
+  }
+
+ private:
+
+  SyncBuffer m_sync_buffer;
+  bool m_is_in_sync = false;
+  bool m_is_empty_sync = false;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -377,7 +528,7 @@ void VariableSynchronizerDispatcher::
 setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
 {
   m_sync_info = sync_info;
-  m_generic_instance->setItemGroupSynchronizeInfo(sync_info);
+  m_implementation_instance->setItemGroupSynchronizeInfo(sync_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -391,7 +542,7 @@ compute()
 {
   if (!m_sync_info)
     ARCANE_FATAL("The instance is not initialized. You need to call setItemGroupSynchronizeInfo() before");
-  m_generic_instance->compute();
+  m_implementation_instance->compute();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -412,87 +563,137 @@ create(const VariableSynchronizeDispatcherBuildInfo& build_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
- * pour les synchronisations des variables 1D.
- * \todo: ne pas allouer les tampons car leur conservation est couteuse en
- * terme de memoire.
+ * \brief Implémentation de IDataSynchronizeBuffer pour plusieurs données.
  */
-void VariableSynchronizeBufferBase::
-compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 datatype_size)
+class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
+: public TraceAccessor
+, public VariableSynchronizeBufferBase
 {
-  m_datatype_size = datatype_size;
-  m_buffer_copier = copier;
-  m_sync_info = sync_info;
-  m_nb_rank = sync_info->size();
 
-  IMemoryAllocator* allocator = m_buffer_copier->allocator();
-  if (allocator && allocator != m_buffer.allocator())
-    m_buffer = UniqueArray<std::byte>(allocator);
+ public:
 
-  _allocateBuffers(datatype_size);
-}
+  MultiDataSynchronizeBuffer(ITraceMng* tm)
+  : TraceAccessor(tm)
+  {}
+
+ public:
+
+  void copyReceiveAsync(Int32 index) final;
+  void copySendAsync(Int32 index) final;
+
+ public:
+
+  void setNbData(Int32 nb_data)
+  {
+    m_data_views.resize(nb_data);
+    m_data_offsets.resize(nb_data);
+  }
+  void setDataView(Int32 index, MutableMemoryView v) { m_data_views[index] = v; }
+  void setDataOffset(Int32 index, Int32 offset) { m_data_offsets[index] = offset; }
+
+ private:
+
+  //! Vue sur les données de la variable
+  SmallArray<MutableMemoryView> m_data_views;
+  SmallArray<Int32> m_data_offsets;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeBufferBase::
-copyReceiveAsync(Integer index)
+void MultiDataSynchronizeBuffer::
+copyReceiveAsync(Int32 index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  MutableMemoryView var_values = dataMemoryView();
-  const VariableSyncInfo& vsi = (*m_sync_info)[index];
-  ConstArrayView<Int32> indexes = vsi.ghostIds();
-  ConstMemoryView local_buffer = receiveBuffer(index);
-
-  m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
+  Int64 data_offset = 0;
+  Span<const std::byte> local_buffer_bytes = receiveBuffer(index).bytes();
+  Int32ConstArrayView indexes = m_sync_info->rankInfo(index).ghostIds();
+  const Int64 nb_element = indexes.size();
+  for( MutableMemoryView var_values : m_data_views ){
+    Int32 datatype_size = var_values.datatypeSize();
+    Int64 current_size_in_bytes = nb_element * datatype_size;
+    Span<const std::byte> sub_local_buffer_bytes = local_buffer_bytes.subSpan(data_offset,current_size_in_bytes);
+    ConstMemoryView local_buffer = makeConstMemoryView(sub_local_buffer_bytes.data(),datatype_size,nb_element);
+    if (current_size_in_bytes!=0)
+      m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
+    data_offset += current_size_in_bytes;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeBufferBase::
-copySendAsync(Integer index)
+void MultiDataSynchronizeBuffer::
+copySendAsync(Int32 index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  ConstMemoryView var_values = dataMemoryView();
-  const VariableSyncInfo& vsi = (*m_sync_info)[index];
-  Int32ConstArrayView indexes = vsi.shareIds();
-  MutableMemoryView local_buffer = sendBuffer(index);
-  m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
+  Int64 data_offset = 0;
+  Span<std::byte> local_buffer_bytes = sendBuffer(index).bytes();
+  Int32ConstArrayView indexes = m_sync_info->rankInfo(index).shareIds();
+  const Int64 nb_element = indexes.size();
+  for( ConstMemoryView var_values : m_data_views ){
+    Int32 datatype_size = var_values.datatypeSize();
+    Int64 current_size_in_bytes = nb_element * datatype_size;
+    Span<std::byte> sub_local_buffer_bytes = local_buffer_bytes.subSpan(data_offset,current_size_in_bytes);
+    MutableMemoryView local_buffer = makeMutableMemoryView(sub_local_buffer_bytes.data(),datatype_size,nb_element);
+    if (current_size_in_bytes!=0)
+      m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
+    data_offset += current_size_in_bytes;
+  }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul et alloue les tampons nécessaires aux envois et réceptions
- * pour les synchronisations des variables 1D.
- *
- * \todo: ne pas converver les tampons pour chaque type de donnée des variables
- * car leur conservation est couteuse en terme de memoire.
+ * \internal
+ * \brief Synchronisation d'une liste de variables.
  */
-void VariableSynchronizeBufferBase::
-_allocateBuffers(Int32 datatype_size)
+class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
+: public IVariableSynchronizerMultiDispatcher
 {
-  Int64 total_ghost_buffer = m_sync_info->totalNbGhost();
-  Int64 total_share_buffer = m_sync_info->totalNbShare();
+ public:
 
-  Int32 full_dim2_size = datatype_size;
-  m_buffer.resize((total_ghost_buffer + total_share_buffer) * full_dim2_size);
+  explicit VariableSynchronizerMultiDispatcher(IParallelMng* pm)
+  : m_parallel_mng(pm)
+  {
+  }
 
-  Int64 share_offset = total_ghost_buffer * full_dim2_size;
+  void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info) override;
 
-  auto s1 = m_buffer.span().subspan(0, share_offset);
-  m_ghost_memory_view = makeMutableMemoryView(s1.data(), full_dim2_size, total_ghost_buffer);
-  auto s2 = m_buffer.span().subspan(share_offset, total_share_buffer * full_dim2_size);
-  m_share_memory_view = makeMutableMemoryView(s2.data(), full_dim2_size, total_share_buffer);
-}
+ private:
+
+  IParallelMng* m_parallel_mng = nullptr;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Synchronisation d'une liste de variables.
+ *
+ * \brief Version 2 qui utilise directement des buffers au lieu
+ * d'un ISerializer.
+ */
+class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcherV2
+: public VariableSynchronizerDispatcherBase
+, public IVariableSynchronizerMultiDispatcher
+{
+ public:
+
+  explicit VariableSynchronizerMultiDispatcherV2(const VariableSynchronizeDispatcherBuildInfo& bi)
+  : VariableSynchronizerDispatcherBase(bi)
+  {
+  }
+
+  void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info);
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -541,29 +742,49 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSyncInfo::
-_changeIds(Array<Int32>& ids, Int32ConstArrayView old_to_new_ids)
+void VariableSynchronizerMultiDispatcherV2::
+synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
 {
-  UniqueArray<Int32> orig_ids(ids);
-  ids.clear();
+  ARCANE_CHECK_POINTER(sync_info);
+  m_sync_info = sync_info;
 
-  for (Integer z = 0, zs = orig_ids.size(); z < zs; ++z) {
-    Int32 old_id = orig_ids[z];
-    Int32 new_id = old_to_new_ids[old_id];
-    if (new_id != NULL_ITEM_LOCAL_ID)
-      ids.add(new_id);
+  ITraceMng* tm = m_parallel_mng->traceMng();
+  MultiDataSynchronizeBuffer buffer(tm);
+
+  const Int32 nb_var = vars.count();
+  buffer.setNbData(nb_var);
+
+  tm->info() << "VarMultiSync nb_var=" << nb_var;
+
+  // Récupère les emplacements mémoire des données des variables et leur taille
+  Int32 all_datatype_size = 0;
+  {
+    Int32 index = 0;
+    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
+      IVariable* var = *ivar;
+      INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
+      if (!numapi)
+        ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data",var->name());
+      MutableMemoryView mem_view = numapi->memoryView();
+      all_datatype_size += mem_view.datatypeSize();
+      tm->info() << "VarMultiSync name="  << var->name() << " datatype_size=" << mem_view.datatypeSize()
+                 << " cumul=" << all_datatype_size;
+      buffer.setDataView(index,mem_view);
+      buffer.setDataOffset(index,all_datatype_size);
+      ++index;
+    }
   }
+
+  buffer.compute(m_buffer_copier,sync_info,all_datatype_size);
+
+  m_implementation_instance->setItemGroupSynchronizeInfo(sync_info);
+  m_implementation_instance->compute();
+  m_implementation_instance->beginSynchronize(buffer.genericBuffer());
+  m_implementation_instance->endSynchronize(buffer.genericBuffer());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void VariableSyncInfo::
-changeLocalIds(Int32ConstArrayView old_to_new_ids)
-{
-  _changeIds(m_share_ids, old_to_new_ids);
-  _changeIds(m_ghost_ids, old_to_new_ids);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -646,7 +867,8 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   IParallelMng* pm = m_parallel_mng;
 
   const bool use_blocking_send = false;
-  auto sync_info = _syncInfo();
+  auto* sync_info = _syncInfo();
+  ARCANE_CHECK_POINTER(sync_info);
   Int32 nb_message = sync_info->size();
 
   /*pm->traceMng()->info() << " ** ** COMMON BEGIN SYNC n=" << nb_message
@@ -737,6 +959,18 @@ barrier()
 {
   if (m_queue)
     m_queue->barrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IVariableSynchronizerMultiDispatcher* IVariableSynchronizerMultiDispatcher::
+create(const VariableSynchronizeDispatcherBuildInfo& bi)
+{
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_MULTISYNCHRONIZE", true))
+    if (v.value()>=1)
+      return new VariableSynchronizerMultiDispatcher(bi.parallelMng());
+  return new VariableSynchronizerMultiDispatcherV2(bi);
 }
 
 /*---------------------------------------------------------------------------*/
