@@ -59,122 +59,6 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: plutôt que d'utiliser la mémoire managée, il est préférable d'avoir
-// une copie sur le device des IDs. Cela permettra d'éviter des transferts
-// potentiels si on mélange synchronisation de variables sur accélérateurs et
-// sur CPU.
-
-VariableSyncInfo::
-VariableSyncInfo()
-: m_share_ids(platform::getDefaultDataAllocator())
-, m_ghost_ids(platform::getDefaultDataAllocator())
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-VariableSyncInfo::
-VariableSyncInfo(Int32ConstArrayView share_ids, Int32ConstArrayView ghost_ids,
-                 Int32 rank)
-: VariableSyncInfo()
-{
-  m_target_rank = rank;
-  m_share_ids.copy(share_ids);
-  m_ghost_ids.copy(ghost_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-VariableSyncInfo::
-VariableSyncInfo(const VariableSyncInfo& rhs)
-: VariableSyncInfo()
-{
-  // NOTE: pour l'instant (avril 2023) il faut un constructeur de recopie
-  // explicite pour spécifier l'allocateur
-  m_target_rank = rhs.m_target_rank;
-  m_share_ids.copy(rhs.m_share_ids);
-  m_ghost_ids.copy(rhs.m_ghost_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableSyncInfo::
-_changeIds(Array<Int32>& ids, Int32ConstArrayView old_to_new_ids)
-{
-  UniqueArray<Int32> orig_ids(ids);
-  ids.clear();
-
-  for (Integer z = 0, zs = orig_ids.size(); z < zs; ++z) {
-    Int32 old_id = orig_ids[z];
-    Int32 new_id = old_to_new_ids[old_id];
-    if (new_id != NULL_ITEM_LOCAL_ID)
-      ids.add(new_id);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableSyncInfo::
-changeLocalIds(Int32ConstArrayView old_to_new_ids)
-{
-  _changeIds(m_share_ids, old_to_new_ids);
-  _changeIds(m_ghost_ids, old_to_new_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupSynchronizeInfo::
-recompute()
-{
-  Integer nb_message = this->size();
-
-  m_ghost_displacements_base.resize(nb_message);
-  m_share_displacements_base.resize(nb_message);
-
-  m_total_nb_ghost = 0;
-  m_total_nb_share = 0;
-
-  {
-    Integer ghost_displacement = 0;
-    Integer share_displacement = 0;
-    Int32 index = 0;
-    for (const VariableSyncInfo& vsi : m_ranks_info) {
-      Int32 ghost_size = vsi.nbGhost();
-      m_ghost_displacements_base[index] = ghost_displacement;
-      ghost_displacement += ghost_size;
-      Int32 share_size = vsi.nbShare();
-      m_share_displacements_base[index] = share_displacement;
-      share_displacement += share_size;
-      ++index;
-    }
-    m_total_nb_ghost = ghost_displacement;
-    m_total_nb_share = share_displacement;
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupSynchronizeInfo::
-changeLocalIds(Int32ConstArrayView old_to_new_ids)
-{
-  for( VariableSyncInfo& vsi : m_ranks_info ){
-    vsi.changeLocalIds(old_to_new_ids);
-  }
-  recompute();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -586,16 +470,13 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
   void setNbData(Int32 nb_data)
   {
     m_data_views.resize(nb_data);
-    m_data_offsets.resize(nb_data);
   }
   void setDataView(Int32 index, MutableMemoryView v) { m_data_views[index] = v; }
-  void setDataOffset(Int32 index, Int32 offset) { m_data_offsets[index] = offset; }
 
  private:
 
   //! Vue sur les données de la variable
   SmallArray<MutableMemoryView> m_data_views;
-  SmallArray<Int32> m_data_offsets;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -754,8 +635,6 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
   const Int32 nb_var = vars.count();
   buffer.setNbData(nb_var);
 
-  tm->info() << "VarMultiSync nb_var=" << nb_var;
-
   // Récupère les emplacements mémoire des données des variables et leur taille
   Int32 all_datatype_size = 0;
   {
@@ -767,10 +646,7 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
         ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data",var->name());
       MutableMemoryView mem_view = numapi->memoryView();
       all_datatype_size += mem_view.datatypeSize();
-      tm->info() << "VarMultiSync name="  << var->name() << " datatype_size=" << mem_view.datatypeSize()
-                 << " cumul=" << all_datatype_size;
       buffer.setDataView(index,mem_view);
-      buffer.setDataOffset(index,all_datatype_size);
       ++index;
     }
   }
