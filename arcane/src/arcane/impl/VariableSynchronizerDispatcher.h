@@ -23,7 +23,7 @@
 #include "arcane/core/Parallel.h"
 #include "arcane/core/VariableCollection.h"
 
-#include "arcane/impl/IGenericVariableSynchronizerDispatcher.h"
+#include "arcane/impl/IDataSynchronizeImplementation.h"
 #include "arcane/impl/DataSynchronizeInfo.h"
 
 /*---------------------------------------------------------------------------*/
@@ -42,7 +42,6 @@ class GroupIndexTable;
 class INumericDataInternal;
 using IVariableSynchronizeDispatcher = IVariableSynchronizerDispatcher;
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -53,10 +52,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
  public:
 
   VariableSynchronizeDispatcherBuildInfo(IParallelMng* pm, GroupIndexTable* table,
-                                         Ref<IDataSynchronizeImplementationFactory> factory)
+                                         Ref<IDataSynchronizeImplementationFactory> factory,
+                                         Ref<DataSynchronizeInfo> sync_info)
   : m_parallel_mng(pm)
   , m_table(table)
   , m_factory(factory)
+  , m_synchronize_info(sync_info)
   {}
 
  public:
@@ -68,12 +69,17 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
   {
     return m_factory;
   }
+  Ref<DataSynchronizeInfo> synchronizeInfo() const
+  {
+    return m_synchronize_info;
+  }
 
  private:
 
   IParallelMng* m_parallel_mng;
   GroupIndexTable* m_table;
   Ref<IDataSynchronizeImplementationFactory> m_factory;
+  Ref<DataSynchronizeInfo> m_synchronize_info;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -96,8 +102,6 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
   virtual ~IVariableSynchronizerDispatcher() = default;
 
  public:
-
-  virtual void setItemGroupSynchronizeInfo(DataSynchronizeInfo* sync_info) = 0;
 
   /*!
    * \brief Recalcule les informations nécessaires après une mise à jour des informations
@@ -131,7 +135,7 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerMultiDispatcher
 
  public:
 
-  virtual void synchronize(VariableCollection vars, DataSynchronizeInfo* sync_info) = 0;
+  virtual void synchronize(VariableCollection vars) = 0;
 
  public:
 

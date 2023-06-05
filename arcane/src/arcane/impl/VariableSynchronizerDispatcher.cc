@@ -272,7 +272,7 @@ class VariableSynchronizerDispatcherBase
 
   IParallelMng* m_parallel_mng = nullptr;
   IBufferCopier* m_buffer_copier = nullptr;
-  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+  Ref<DataSynchronizeInfo> m_sync_info;
   Ref<IDataSynchronizeImplementation> m_implementation_instance;
 };
 
@@ -282,9 +282,11 @@ class VariableSynchronizerDispatcherBase
 VariableSynchronizerDispatcherBase::
 VariableSynchronizerDispatcherBase(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
+, m_sync_info(bi.synchronizeInfo())
 {
   ARCANE_CHECK_POINTER(bi.factory().get());
   m_implementation_instance = bi.factory()->createInstance();
+  m_implementation_instance->setItemGroupSynchronizeInfo(m_sync_info.get());
 
   if (bi.table())
     m_buffer_copier = new TableBufferCopier(bi.table());
@@ -343,7 +345,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
  public:
 
-  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final;
   void compute() final;
   void beginSynchronize(INumericDataInternal* data) override;
   void endSynchronize() override;
@@ -387,7 +388,7 @@ beginSynchronize(INumericDataInternal* data)
   m_is_empty_sync = (mem_view.bytes().size() == 0);
   if (m_is_empty_sync)
     return;
-  m_sync_buffer.compute(m_buffer_copier, m_sync_info, full_datatype_size);
+  m_sync_buffer.compute(m_buffer_copier, m_sync_info.get(), full_datatype_size);
   m_sync_buffer.setDataView(mem_view);
   _beginSynchronize(m_sync_buffer);
 }
@@ -403,16 +404,6 @@ endSynchronize()
   if (!m_is_empty_sync)
     _endSynchronize(m_sync_buffer);
   m_is_in_sync = false;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableSynchronizerDispatcher::
-setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
-{
-  m_sync_info = sync_info;
-  m_implementation_instance->setItemGroupSynchronizeInfo(sync_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -541,16 +532,18 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
 {
  public:
 
-  explicit VariableSynchronizerMultiDispatcher(IParallelMng* pm)
-  : m_parallel_mng(pm)
+  explicit VariableSynchronizerMultiDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
+  : m_parallel_mng(bi.parallelMng())
+  , m_sync_info(bi.synchronizeInfo())
   {
   }
 
-  void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info) override;
+  void synchronize(VariableCollection vars) override;
 
  private:
 
   IParallelMng* m_parallel_mng = nullptr;
+  Ref<DataSynchronizeInfo> m_sync_info;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -573,20 +566,20 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcherV2
   {
   }
 
-  void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info);
+  void synchronize(VariableCollection vars);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerMultiDispatcher::
-synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
+synchronize(VariableCollection vars)
 {
   Ref<IParallelExchanger> exchanger{ ParallelMngUtils::createExchangerRef(m_parallel_mng) };
-  Integer nb_rank = sync_info->size();
+  Integer nb_rank = m_sync_info->size();
   Int32UniqueArray recv_ranks(nb_rank);
   for (Integer i = 0; i < nb_rank; ++i) {
-    Int32 rank = sync_info->rankInfo(i).targetRank();
+    Int32 rank = m_sync_info->rankInfo(i).targetRank();
     exchanger->addSender(rank);
     recv_ranks[i] = rank;
   }
@@ -594,7 +587,7 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToSend(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView share_ids = sync_info->rankInfo(i).shareIds();
+    Int32ConstArrayView share_ids = m_sync_info->rankInfo(i).shareIds();
     sbuf->setMode(ISerializer::ModeReserve);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, share_ids, nullptr);
@@ -609,7 +602,7 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToReceive(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView ghost_ids = sync_info->rankInfo(i).ghostIds();
+    Int32ConstArrayView ghost_ids = m_sync_info->rankInfo(i).ghostIds();
     sbuf->setMode(ISerializer::ModeGet);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, ghost_ids, nullptr);
@@ -624,11 +617,8 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerMultiDispatcherV2::
-synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
+synchronize(VariableCollection vars)
 {
-  ARCANE_CHECK_POINTER(sync_info);
-  m_sync_info = sync_info;
-
   ITraceMng* tm = m_parallel_mng->traceMng();
   MultiDataSynchronizeBuffer buffer(tm);
 
@@ -651,9 +641,9 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
     }
   }
 
-  buffer.compute(m_buffer_copier,sync_info,all_datatype_size);
+  buffer.compute(m_buffer_copier,m_sync_info.get(),all_datatype_size);
 
-  m_implementation_instance->setItemGroupSynchronizeInfo(sync_info);
+  m_implementation_instance->setItemGroupSynchronizeInfo(m_sync_info.get());
   m_implementation_instance->compute();
   m_implementation_instance->beginSynchronize(buffer.genericBuffer());
   m_implementation_instance->endSynchronize(buffer.genericBuffer());
@@ -845,7 +835,7 @@ create(const VariableSynchronizeDispatcherBuildInfo& bi)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_MULTISYNCHRONIZE", true))
     if (v.value()>=1)
-      return new VariableSynchronizerMultiDispatcher(bi.parallelMng());
+      return new VariableSynchronizerMultiDispatcher(bi);
   return new VariableSynchronizerMultiDispatcherV2(bi);
 }
 

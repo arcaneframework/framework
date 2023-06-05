@@ -80,11 +80,10 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
   GroupIndexTable* table = nullptr;
   if (!group.isAllItems())
     table = group.localIdToIndex().get();
-  VariableSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory);
+  VariableSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory,m_sync_list);
   m_dispatcher = IVariableSynchronizerDispatcher::create(bi);
   if (!m_dispatcher)
     ARCANE_FATAL("No synchronizer created");
-  m_dispatcher->setItemGroupSynchronizeInfo(m_sync_list.get());
   m_multi_dispatcher = IVariableSynchronizerMultiDispatcher::create(bi);
   if (!m_multi_dispatcher)
     ARCANE_FATAL("No multi synchronizer created");
@@ -774,7 +773,7 @@ _synchronizeMulti(VariableCollection vars)
     m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
   {
     Timer::Sentry ts2(m_sync_timer);
-    m_multi_dispatcher->synchronize(vars,m_sync_list.get());
+    m_multi_dispatcher->synchronize(vars);
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       (*ivar)->setIsSynchronized();
     }
