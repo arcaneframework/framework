@@ -24,15 +24,16 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/Array2.h"
 
-#include "arcane/VariableSynchronizerEventArgs.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IVariable.h"
-#include "arcane/IData.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/Timer.h"
-#include "arcane/parallel/IStat.h"
+#include "arcane/core/VariableSynchronizerEventArgs.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/parallel/IStat.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include <algorithm>
 
@@ -55,7 +56,7 @@ bool global_debug_sync = false;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
 
 /*---------------------------------------------------------------------------*/
@@ -63,26 +64,29 @@ arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
 
 VariableSynchronizer::
 VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
-                     IVariableSynchronizerDispatcher* dispatcher)
+                     Ref<IDataSynchronizeImplementationFactory> implementation_factory)
 : TraceAccessor(pm->traceMng())
 , m_parallel_mng(pm)
 , m_item_group(group)
-, m_dispatcher(dispatcher)
-, m_multi_dispatcher()
-, m_sync_timer(0)
 , m_is_verbose(false)
 , m_allow_multi_sync(true)
 , m_trace_sync(false)
 {
-  if (!m_dispatcher){
-    auto generic_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
+  m_sync_list = ItemGroupSynchronizeInfo::create();
+  if (!implementation_factory.get())
+    implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
+  m_implementation_factory = implementation_factory;
+
+  {
     GroupIndexTable* table = nullptr;
     if (!group.isAllItems())
       table = group.localIdToIndex().get();
-    VariableSynchronizeDispatcherBuildInfo bi(pm,table,generic_factory);
+    VariableSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory);
     m_dispatcher = IVariableSynchronizerDispatcher::create(bi);
+    if (!m_dispatcher)
+      ARCANE_FATAL("No synchronizer created");
   }
-  m_dispatcher->setItemGroupSynchronizeInfo(&m_sync_list);
+  m_dispatcher->setItemGroupSynchronizeInfo(m_sync_list.get());
   m_multi_dispatcher = new VariableSynchronizerMultiDispatcher(pm);
 
   {
@@ -105,7 +109,6 @@ VariableSynchronizer::
 {
   delete m_sync_timer;
   delete m_multi_dispatcher;
-  delete m_dispatcher;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -198,7 +201,7 @@ compute()
 void VariableSynchronizer::
 _createList(UniqueArray<SharedArray<Int32> >& boundary_items)
 {
-  m_sync_list.clear();
+  m_sync_list->clear();
 
   IItemFamily* item_family = m_item_group.itemFamily();
   IParallelMng* pm = m_parallel_mng;
@@ -473,11 +476,11 @@ _createList(UniqueArray<SharedArray<Int32> >& boundary_items)
     }
   }
   _checkValid(ghost_rank_info,share_rank_info);
-  m_sync_list.recompute();
+  m_sync_list->recompute();
 
   // Calcul de m_communicating_ranks qui synthétisent les processeurs communiquants
-  for( Integer i=0; i<m_sync_list.size(); ++i ){
-    const VariableSyncInfo & sync_info = m_sync_list[i];
+  for( Integer i=0, n=m_sync_list->size(); i<n; ++i ){
+    const VariableSyncInfo & sync_info = m_sync_list->rankInfo(i);
     const Integer target_rank = sync_info.targetRank();
     m_communicating_ranks.add(target_rank);
     ARCANE_ASSERT((sync_info.nbGhost() == boundary_items[target_rank].size()),("Inconsistent ghost count"));
@@ -555,7 +558,7 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
       marked_elem[elem.localId()] = true;
     }
 
-    m_sync_list.add( VariableSyncInfo (share_grp,ghost_grp,current_proc) );
+    m_sync_list->add( VariableSyncInfo (share_grp,ghost_grp,current_proc) );
   }
 
   // Vérifie que tous les éléments sont marqués
@@ -587,13 +590,13 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
 void VariableSynchronizer::
 _printSyncList()
 {
-  Integer nb_comm = m_sync_list.size();
+  Integer nb_comm = m_sync_list->size();
   info() << "SYNC LIST FOR GROUP : " << m_item_group.fullName() << " N=" << nb_comm;
   OStringStream ostr;
   IItemFamily* item_family = m_item_group.itemFamily();
   ItemInfoListView items_internal(item_family);
   for( Integer i=0; i<nb_comm; ++i ){
-    const VariableSyncInfo& vsi = m_sync_list[i];
+    const VariableSyncInfo& vsi = m_sync_list->rankInfo(i);
     ostr() << " TARGET=" << vsi.targetRank() << '\n';
     Int32ConstArrayView share_ids = vsi.shareIds();
     ostr() << "\t\tSHARE(lid,uid) n=" << share_ids.size() << " :";
@@ -672,9 +675,23 @@ synchronize(VariableCollection vars)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizer::
+_synchronize(INumericDataInternal* data)
+{
+  m_dispatcher->beginSynchronize(data);
+  m_dispatcher->endSynchronize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
 _synchronize(IVariable* var)
 {
-  m_dispatcher->applyDispatch(var->data());
+  ARCANE_CHECK_POINTER(var);
+  INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
+  if (!numapi)
+    ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data",var->name());
+  _synchronize(numapi);
   var->setIsSynchronized();
 }
 
@@ -684,7 +701,11 @@ _synchronize(IVariable* var)
 void VariableSynchronizer::
 synchronizeData(IData* data)
 {
-  m_dispatcher->applyDispatch(data);
+  ARCANE_CHECK_POINTER(data);
+  INumericDataInternal* numapi = data->_commonInternal()->numericData();
+  if (!numapi)
+    ARCANE_FATAL("Data can not be synchronized because it is not a numeric data");
+  _synchronize(numapi);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -694,15 +715,7 @@ void VariableSynchronizer::
 changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
   info(4) << "** VariableSynchronizer::changeLocalIds() group=" << m_item_group.name();
-
-  for( VariableSyncInfo& vsi : m_sync_list.infos() ){
-    Int32 old_nb_share = vsi.nbShare();
-    Int32 old_nb_ghost = vsi.nbGhost();
-    vsi.changeLocalIds(old_to_new_ids);
-    info(4) << "NEW_SHARE_SIZE=" << vsi.nbShare() << " old=" << old_nb_share;
-    info(4) << "NEW_GHOST_SIZE=" << vsi.nbGhost() << " old=" << old_nb_ghost;
-  }
-  m_sync_list.recompute();
+  m_sync_list->changeLocalIds(old_to_new_ids);
   m_dispatcher->compute();
 }
 
@@ -761,7 +774,7 @@ _synchronizeMulti(VariableCollection vars)
     m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
   {
     Timer::Sentry ts2(m_sync_timer);
-    m_multi_dispatcher->synchronize(vars,m_sync_list.infos());
+    m_multi_dispatcher->synchronize(vars,m_sync_list.get());
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       (*ivar)->setIsSynchronized();
     }
@@ -790,7 +803,7 @@ communicatingRanks()
 Int32ConstArrayView VariableSynchronizer::
 sharedItems(Int32 index)
 {
-  return m_sync_list[index].shareIds();
+  return m_sync_list->rankInfo(index).shareIds();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -799,7 +812,7 @@ sharedItems(Int32 index)
 Int32ConstArrayView VariableSynchronizer::
 ghostItems(Int32 index)
 {
-  return m_sync_list[index].ghostIds();
+  return m_sync_list->rankInfo(index).ghostIds();
 }
 
 /*---------------------------------------------------------------------------*/

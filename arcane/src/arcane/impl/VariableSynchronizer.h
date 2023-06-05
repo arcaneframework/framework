@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizer.h                                      (C) 2000-2021 */
+/* VariableSynchronizer.h                                      (C) 2000-2023 */
 /*                                                                           */
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
@@ -36,6 +36,7 @@
 namespace Arcane
 {
 class Timer;
+class INumericDataInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -124,11 +125,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
     SharedArray<Int32> m_local_ids;
     SharedArray<Int64> m_unique_ids;
   };
+
  public:
 
   VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
-                       IVariableSynchronizerDispatcher* dispatcher);
-  virtual ~VariableSynchronizer();
+                       Ref<IDataSynchronizeImplementationFactory> implementation_factory);
+  ~VariableSynchronizer() override;
 
  public:
 
@@ -165,17 +167,18 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
  private:
 
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
   ItemGroup m_item_group;
-  ItemGroupSynchronizeInfo m_sync_list;
+  Ref<ItemGroupSynchronizeInfo> m_sync_list;
   Int32UniqueArray m_communicating_ranks;
-  IVariableSynchronizerDispatcher* m_dispatcher;
-  VariableSynchronizerMultiDispatcher* m_multi_dispatcher;
-  Timer* m_sync_timer;
+  Ref<IVariableSynchronizerDispatcher> m_dispatcher;
+  VariableSynchronizerMultiDispatcher* m_multi_dispatcher = nullptr;
+  Timer* m_sync_timer = nullptr;
   bool m_is_verbose;
   bool m_allow_multi_sync;
   bool m_trace_sync;
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
+  Ref<IDataSynchronizeImplementationFactory> m_implementation_factory;
 
  private:
 
@@ -186,6 +189,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   void _synchronize(IVariable* var);
   void _synchronizeMulti(VariableCollection vars);
   bool _canSynchronizeMulti(const VariableCollection& vars);
+  void _synchronize(INumericDataInternal* data);
 };
 
 /*---------------------------------------------------------------------------*/

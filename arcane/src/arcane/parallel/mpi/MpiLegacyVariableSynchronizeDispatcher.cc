@@ -41,7 +41,7 @@ namespace Arcane
  * dès qu'un message arrive.
  */
 class MpiLegacyVariableSynchronizerDispatcher
-: public AbstractGenericVariableSynchronizerDispatcher
+: public AbstractDataSynchronizeImplementation
 {
  public:
 
@@ -68,7 +68,7 @@ class MpiLegacyVariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 
 class MpiLegacyVariableSynchronizerDispatcher::Factory
-: public IGenericVariableSynchronizerDispatcherFactory
+: public IDataSynchronizeImplementationFactory
 {
  public:
 
@@ -76,10 +76,10 @@ class MpiLegacyVariableSynchronizerDispatcher::Factory
   : m_mpi_parallel_mng(mpi_pm)
   {}
 
-  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  Ref<IDataSynchronizeImplementation> createInstance() override
   {
     auto* x = new MpiLegacyVariableSynchronizerDispatcher(this);
-    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+    return makeRef<IDataSynchronizeImplementation>(x);
   }
 
  public:
@@ -90,11 +90,11 @@ class MpiLegacyVariableSynchronizerDispatcher::Factory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm)
 {
   auto* x = new MpiLegacyVariableSynchronizerDispatcher::Factory(mpi_pm);
-  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+  return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -112,8 +112,8 @@ MpiLegacyVariableSynchronizerDispatcher(Factory* f)
 void MpiLegacyVariableSynchronizerDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  auto sync_list = _syncInfo()->infos();
-  Integer nb_message = sync_list.size();
+  auto sync_info = _syncInfo();
+  Integer nb_message = sync_info->size();
 
   m_send_requests.clear();
 
@@ -135,7 +135,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   m_recv_requests_done.resize(nb_message);
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = sync_list[i];
+    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
     auto ghost_local_buffer = vs_buf->receiveBuffer(i).bytes().smallView();
     if (!ghost_local_buffer.empty()){
       MPI_Request mpi_request;
@@ -157,7 +157,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages d'envoi en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = sync_list[i];
+    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
     auto share_local_buffer = vs_buf->sendBuffer(i).bytes().smallView();
     if (!share_local_buffer.empty()){
       MPI_Request mpi_request;

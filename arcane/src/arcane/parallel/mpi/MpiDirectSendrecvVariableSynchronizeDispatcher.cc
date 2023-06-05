@@ -35,7 +35,7 @@ namespace Arcane
  * \brief Implémentation de la synchronisation via MPI_Sendrecv.
  */
 class MpiDirectSendrecvVariableSynchronizerDispatcher
-: public AbstractGenericVariableSynchronizerDispatcher
+: public AbstractDataSynchronizeImplementation
 {
  public:
 
@@ -60,7 +60,7 @@ class MpiDirectSendrecvVariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 
 class MpiDirectSendrecvVariableSynchronizerDispatcher::Factory
-: public IGenericVariableSynchronizerDispatcherFactory
+: public IDataSynchronizeImplementationFactory
 {
  public:
 
@@ -68,10 +68,10 @@ class MpiDirectSendrecvVariableSynchronizerDispatcher::Factory
   : m_mpi_parallel_mng(mpi_pm)
   {}
 
-  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  Ref<IDataSynchronizeImplementation> createInstance() override
   {
     auto* x = new MpiDirectSendrecvVariableSynchronizerDispatcher(this);
-    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+    return makeRef<IDataSynchronizeImplementation>(x);
   }
 
  public:
@@ -82,11 +82,11 @@ class MpiDirectSendrecvVariableSynchronizerDispatcher::Factory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiDirectSendrecvVariableSynchronizerFactory(MpiParallelMng* mpi_pm)
 {
   auto* x = new MpiDirectSendrecvVariableSynchronizerDispatcher::Factory(mpi_pm);
-  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+  return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,8 +104,8 @@ MpiDirectSendrecvVariableSynchronizerDispatcher(Factory* f)
 void MpiDirectSendrecvVariableSynchronizerDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  auto sync_list = _syncInfo()->infos();
-  Int32 nb_message = sync_list.size();
+  auto sync_info = _syncInfo();
+  Int32 nb_message = sync_info->size();
 
   constexpr int serialize_tag = 523;
 
@@ -125,7 +125,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   {
     MpiTimeInterval tit(&sync_wait_time);
     for( Integer i=0; i<nb_message; ++i ){
-      const VariableSyncInfo& vsi = sync_list[i];
+      const VariableSyncInfo& vsi = sync_info->rankInfo(i);
       auto rbuf = vs_buf->receiveBuffer(i).bytes().smallView();
       auto sbuf = vs_buf->sendBuffer(i).bytes().smallView();
 

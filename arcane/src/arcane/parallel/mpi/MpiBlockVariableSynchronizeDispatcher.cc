@@ -53,7 +53,7 @@ namespace Arcane
  * pas fini.
  */
 class MpiBlockVariableSynchronizerDispatcher
-: public AbstractGenericVariableSynchronizerDispatcher
+: public AbstractDataSynchronizeImplementation
 {
  public:
 
@@ -82,7 +82,7 @@ class MpiBlockVariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 
 class MpiBlockVariableSynchronizerDispatcher::Factory
-: public IGenericVariableSynchronizerDispatcherFactory
+: public IDataSynchronizeImplementationFactory
 {
  public:
 
@@ -92,10 +92,10 @@ class MpiBlockVariableSynchronizerDispatcher::Factory
   , m_nb_sequence(nb_sequence)
   {}
 
-  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  Ref<IDataSynchronizeImplementation> createInstance() override
   {
     auto* x = new MpiBlockVariableSynchronizerDispatcher(this);
-    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+    return makeRef<IDataSynchronizeImplementation>(x);
   }
 
  public:
@@ -108,11 +108,11 @@ class MpiBlockVariableSynchronizerDispatcher::Factory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateMpiBlockVariableSynchronizerFactory(MpiParallelMng* mpi_pm, Int32 block_size, Int32 nb_sequence)
 {
   auto* x = new MpiBlockVariableSynchronizerDispatcher::Factory(mpi_pm, block_size, nb_sequence);
-  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+  return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,8 +166,8 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 void MpiBlockVariableSynchronizerDispatcher::
 endSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  auto sync_list = _syncInfo()->infos();
-  const Int32 nb_message = sync_list.size();
+  auto sync_info = _syncInfo();
+  const Int32 nb_message = sync_info->size();
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
   Int32 my_rank = pm->commRank();
@@ -192,7 +192,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 
         // Poste les messages de réception
         for (Integer i = 0; i < nb_message; ++i) {
-          const VariableSyncInfo& vsi = sync_list[i];
+          const VariableSyncInfo& vsi = sync_info->rankInfo(i);
           if (_isSkipRank(vsi.targetRank(), isequence))
             continue;
           auto buf0 = vs_buf->receiveBuffer(i).bytes();
@@ -206,7 +206,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 
         // Poste les messages d'envoi en mode non bloquant.
         for (Integer i = 0; i < nb_message; ++i) {
-          const VariableSyncInfo& vsi = sync_list[i];
+          const VariableSyncInfo& vsi = sync_info->rankInfo(i);
           if (_isSkipRank(my_rank, isequence))
             continue;
           auto buf0 = vs_buf->sendBuffer(i).bytes();
