@@ -172,7 +172,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   Ref<ItemGroupSynchronizeInfo> m_sync_list;
   Int32UniqueArray m_communicating_ranks;
   Ref<IVariableSynchronizerDispatcher> m_dispatcher;
-  VariableSynchronizerMultiDispatcher* m_multi_dispatcher = nullptr;
+  IVariableSynchronizerMultiDispatcher* m_multi_dispatcher = nullptr;
   Timer* m_sync_timer = nullptr;
   bool m_is_verbose;
   bool m_allow_multi_sync;

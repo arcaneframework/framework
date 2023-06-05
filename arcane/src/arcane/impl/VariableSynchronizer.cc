@@ -77,17 +77,17 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
     implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
   m_implementation_factory = implementation_factory;
 
-  {
-    GroupIndexTable* table = nullptr;
-    if (!group.isAllItems())
-      table = group.localIdToIndex().get();
-    VariableSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory);
-    m_dispatcher = IVariableSynchronizerDispatcher::create(bi);
-    if (!m_dispatcher)
-      ARCANE_FATAL("No synchronizer created");
-  }
+  GroupIndexTable* table = nullptr;
+  if (!group.isAllItems())
+    table = group.localIdToIndex().get();
+  VariableSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory);
+  m_dispatcher = IVariableSynchronizerDispatcher::create(bi);
+  if (!m_dispatcher)
+    ARCANE_FATAL("No synchronizer created");
   m_dispatcher->setItemGroupSynchronizeInfo(m_sync_list.get());
-  m_multi_dispatcher = new VariableSynchronizerMultiDispatcher(pm);
+  m_multi_dispatcher = IVariableSynchronizerMultiDispatcher::create(bi);
+  if (!m_multi_dispatcher)
+    ARCANE_FATAL("No multi synchronizer created");
 
   {
     String s = platform::getEnvironmentVariable("ARCANE_ALLOW_MULTISYNC");

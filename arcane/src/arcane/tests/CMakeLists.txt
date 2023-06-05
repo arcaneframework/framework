@@ -369,6 +369,8 @@ add_test(serialize_message_list_v2_4proc
 ARCANE_ADD_TEST_PARALLEL(parallel testParallel-1.arc 4)
 ARCANE_ADD_TEST_PARALLEL(parallel2 testParallel-2.arc 4)
 arcane_add_test_parallel(parallel2_synchronize testParallel-synchronize1.arc 4)
+arcane_add_test_parallel_thread(parallel2_synchronize testParallel-synchronize1.arc 4)
+arcane_add_test_parallel(parallel2_synchronize_legacymulti testParallel-synchronize1.arc 4 -We,ARCANE_USE_LEGACY_MULTISYNCHRONIZE,1)
 arcane_add_test_parallel(parallel2_synchronize_v1 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,1)
 arcane_add_test_parallel(parallel2_synchronize_v2 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,2)
 arcane_add_test_parallel(parallel2_synchronize_v3 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,3)

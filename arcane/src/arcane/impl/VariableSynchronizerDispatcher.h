@@ -244,22 +244,21 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Synchronisation d'une liste de variables.
+ * \brief Interface de la synchronisation d'une liste de variables.
  */
-class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
+class ARCANE_IMPL_EXPORT IVariableSynchronizerMultiDispatcher
 {
  public:
 
-  explicit VariableSynchronizerMultiDispatcher(IParallelMng* pm)
-  : m_parallel_mng(pm)
-  {
-  }
+  virtual ~IVariableSynchronizerMultiDispatcher() = default;
 
-  void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info);
+ public:
 
- private:
+  virtual void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info) = 0;
 
-  IParallelMng* m_parallel_mng = nullptr;
+ public:
+
+  static IVariableSynchronizerMultiDispatcher* create(const VariableSynchronizeDispatcherBuildInfo& bi);
 };
 
 /*---------------------------------------------------------------------------*/
