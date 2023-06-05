@@ -207,6 +207,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
       m_nb_item_null_data[i][1] = 0;
       m_nb_item[i].setNull(&m_nb_item_null_data[i][1]);
       m_max_nb_item[i] = 0;
+      m_offset[i] = ConstArrayView<Int32>{};
     }
   }
 
@@ -239,7 +240,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
    */
   Int32 itemLocalId(Int32 item_kind,Int32 lid,Integer index) const
   {
-    return m_list[item_kind][ m_indexes[item_kind][lid] + index];
+    return m_list[item_kind][ m_indexes[item_kind][lid] + index] + _itemOffset(item_kind,lid);
   }
   //! Nombre d'appel à itemLocalId()
   Int64 nbAccess() const { return 0; }
@@ -263,6 +264,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   void setConnectivityList(Int32 item_kind,ConstArrayView<ItemLocalId> v)
   {
     m_list[item_kind] = v;
+    m_offset[item_kind] = ConstArrayView<Int32>{};
   }
   //! Positionne le tableau contenant le nombre d'entités connectées.
   void setConnectivityNbItem(Int32 item_kind,ConstArrayView<Int32> v)
@@ -351,24 +353,24 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   { return ItemBaseBuildInfo(_hChildLocalIdV2(lid,aindex),A_INTERNAL_SI(cell)); }
 
   auto nodeList(Int32 lid) const
-  { return impl::ItemIndexedListView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
+  { return impl::ItemIndexedListView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid),_nodeOffset(lid)); }
   auto edgeList(Int32 lid) const
-  { return impl::ItemIndexedListView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid)); }
+  { return impl::ItemIndexedListView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid),_edgeOffset(lid)); }
   auto faceList(Int32 lid) const
-  { return impl::ItemIndexedListView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
+  { return impl::ItemIndexedListView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid),_faceOffset(lid)); }
   auto cellList(Int32 lid) const
-  { return impl::ItemIndexedListView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid)); }
+  { return impl::ItemIndexedListView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid),_cellOffset(lid)); }
 
  private:
 
   ItemInternalVectorView nodesV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
+  { return ItemInternalVectorView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid),_nodeOffset(lid)); }
   ItemInternalVectorView edgesV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid)); }
+  { return ItemInternalVectorView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid),_edgeOffset(lid)); }
   ItemInternalVectorView facesV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
+  { return ItemInternalVectorView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid),_faceOffset(lid)); }
   ItemInternalVectorView cellsV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid)); }
+  { return ItemInternalVectorView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid),_cellOffset(lid)); }
 
   Int32ConstArrayView nodeLocalIdsV2(Int32 lid) const
   { return Int32ConstArrayView(_nbNodeV2(lid),_nodeLocalIdsV2(lid)); }
@@ -393,6 +395,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   { return itemLocalIds(ItemInternalConnectivityList::HPARENT_IDX,lid); }
   const Int32* _hChildLocalIdsV2(Int32 lid) const
   { return itemLocalIds(ItemInternalConnectivityList::HCHILD_IDX,lid); }
+
   Int32 _nodeLocalIdV2(Int32 lid,Int32 index) const
   { return itemLocalId(ItemInternalConnectivityList::NODE_IDX,lid,index); }
   Int32 _edgeLocalIdV2(Int32 lid,Int32 index) const
@@ -432,9 +435,26 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
+#ifdef ARCANE_USE_OFFSET_FOR_CONNECTIVITY
+  Int32 _nodeOffset(Int32 lid) const { return m_offset[NODE_IDX][lid]; }
+  Int32 _edgeOffset(Int32 lid) const { return m_offset[EDGE_IDX][lid]; }
+  Int32 _faceOffset(Int32 lid) const { return m_offset[FACE_IDX][lid]; }
+  Int32 _cellOffset(Int32 lid) const { return m_offset[CELL_IDX][lid]; }
+  Int32 _itemOffset(Int32 item_kind,Int32 lid) const { return m_offset[NODE_IDX][lid]; }
+#else
+  constexpr Int32 _nodeOffset([[maybe_unused]] Int32 lid) const { return 0; }
+  constexpr Int32 _edgeOffset([[maybe_unused]] Int32 lid) const { return 0; }
+  constexpr Int32 _faceOffset([[maybe_unused]] Int32 lid) const { return 0; }
+  constexpr Int32 _cellOffset([[maybe_unused]] Int32 lid) const { return 0; }
+  constexpr Int32 _itemOffset([[maybe_unused]] Int32 item_kind,[[maybe_unused]] Int32 lid) const { return 0; }
+#endif
+
+ private:
+
   ConstArrayView<Int32> m_indexes[MAX_ITEM_KIND];
   Int32View m_nb_item[MAX_ITEM_KIND];
   ConstArrayView<ItemLocalId> m_list[MAX_ITEM_KIND];
+  ConstArrayView<Int32> m_offset[MAX_ITEM_KIND];
   Int32 m_max_nb_item[MAX_ITEM_KIND];
 
  public:

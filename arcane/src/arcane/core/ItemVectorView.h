@@ -283,7 +283,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   operator ItemInternalVectorView() const
   {
-    return ItemInternalVectorView(m_shared_info,m_local_ids);
+    return ItemInternalVectorView(m_shared_info,m_local_ids, m_local_id_offset);
   }
 
   //! Accède au \a i-ème élément du vecteur

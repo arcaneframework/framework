@@ -228,8 +228,8 @@ class ItemConnectedListView
 
   ItemConnectedListView(const impl::ItemIndexedListView<DynExtent>& view)
   : m_local_ids(view.constLocalIds()), m_shared_info(view.m_shared_info) { }
-  ItemConnectedListView(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids)
-  : m_local_ids(local_ids), m_shared_info(shared_info) { }
+  ItemConnectedListView(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids,Int32 local_id_offset)
+  : m_local_ids(local_ids), m_shared_info(shared_info), m_local_id_offset(local_id_offset) { }
 
  public:
 
@@ -340,8 +340,8 @@ class ItemConnectedListViewT
 
  protected:
 
-  ItemConnectedListViewT(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids)
-  : BaseClass(shared_info,local_ids) { }
+  ItemConnectedListViewT(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids, Int32 local_id_offset)
+  : BaseClass(shared_info,local_ids,local_id_offset) { }
 
  public:
 

@@ -172,7 +172,7 @@ _internalActiveCells(Int32Array& local_ids) const
       local_ids.add(local_id);
     }
   }
-  return ItemInternalVectorView(m_shared_info->m_items->m_cell_shared_info,local_ids);
+  return ItemInternalVectorView(m_shared_info->m_items->m_cell_shared_info,local_ids,0);
 }
 
 /*---------------------------------------------------------------------------*/

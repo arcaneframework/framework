@@ -55,16 +55,18 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
 
  private:
 
-  constexpr ItemIndexedListView(ItemSharedInfo* si, SmallSpan<const Int32> local_ids)
+  constexpr ItemIndexedListView(ItemSharedInfo* si, SmallSpan<const Int32> local_ids, Int32 local_id_offset)
   : m_local_ids(local_ids)
   , m_shared_info(si)
+  , m_local_id_offset(local_id_offset)
   {
     ARCANE_ASSERT(m_shared_info, ("null shared_info"));
   }
 
-  constexpr ItemIndexedListView(ItemSharedInfo* si, const Int32* local_ids, Int32 count)
+  constexpr ItemIndexedListView(ItemSharedInfo* si, const Int32* local_ids, Int32 count, Int32 local_id_offset)
   : m_local_ids(local_ids, count)
   , m_shared_info(si)
+  , m_local_id_offset(local_id_offset)
   {
     ARCANE_ASSERT(m_shared_info, ("null shared info"));
   }
@@ -84,6 +86,7 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
 
   SmallSpan<const Int32, Extent> m_local_ids;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
+  Int32 m_local_id_offset;
 };
 
 /*---------------------------------------------------------------------------*/
