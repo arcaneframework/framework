@@ -140,6 +140,13 @@ namespace Arcane
     Int32ConstArrayView m_list_hparent;
     Int32ConstArrayView m_list_hchild;
 
+    Int32ConstArrayView m_offset_node;
+    Int32ConstArrayView m_offset_edge;
+    Int32ConstArrayView m_offset_face;
+    Int32ConstArrayView m_offset_cell;
+    Int32ConstArrayView m_offset_hparent;
+    Int32ConstArrayView m_offset_hchild;
+
     Int32 m_max_nb_item0;
     Int32 m_max_nb_item1;
     Int32 m_max_nb_item2;

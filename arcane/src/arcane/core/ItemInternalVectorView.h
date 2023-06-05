@@ -44,8 +44,8 @@ class ItemInternalVectorViewConstIterator
 
   ItemInternalVectorViewConstIterator(const ItemInternalPtr* items,
                                       const Int32* ARCANE_RESTRICT local_ids,
-                                      Integer index)
-  : m_items(items), m_local_ids(local_ids), m_index(index){}
+                                      Integer index,Int32 local_id_offset)
+  : m_items(items), m_local_ids(local_ids), m_index(index), m_local_id_offset(local_id_offset){}
 
  public:
 
@@ -64,8 +64,8 @@ class ItemInternalVectorViewConstIterator
   //! Type d'une distance entre itérateur éléments du tableau
   typedef Integer difference_type;
  public:
-  value_type operator*() const { return m_items[ m_local_ids[m_index] ]; }
-  value_type operator->() const { return m_items[ m_local_ids[m_index] ]; }
+  value_type operator*() const { return m_items[ m_local_id_offset + m_local_ids[m_index] ]; }
+  value_type operator->() const { return m_items[ m_local_id_offset + m_local_ids[m_index] ]; }
   ThatClass& operator++() { ++m_index; return (*this); }
   ThatClass& operator--() { --m_index; return (*this); }
   void operator+=(difference_type v) { m_index += v; }
@@ -77,12 +77,12 @@ class ItemInternalVectorViewConstIterator
   friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
     Integer index = a.m_index - v;
-    return ThatClass(a.m_items,a.m_local_ids,index);
+    return ThatClass(a.m_items,a.m_local_ids,index,a.m_local_id_offset);
   }
   friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
     Integer index = a.m_index + v;
-    return ThatClass(a.m_items,a.m_local_ids,index);
+    return ThatClass(a.m_items,a.m_local_ids,index,a.m_local_id_offset);
   }
   friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
   {
@@ -104,7 +104,8 @@ class ItemInternalVectorViewConstIterator
 
   const ItemInternalPtr* m_items;
   const Int32* ARCANE_RESTRICT m_local_ids;
-  Integer m_index;
+  Int32 m_index;
+  Int32 m_local_id_offset = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -140,16 +141,18 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
 
  private:
 
-  ItemInternalVectorView(ItemSharedInfo* si, Int32ConstArrayView local_ids)
+  ItemInternalVectorView(ItemSharedInfo* si, Int32ConstArrayView local_ids, Int32 local_id_offset)
   : m_local_ids(local_ids)
   , m_shared_info(si)
+  , m_local_id_offset(local_id_offset)
   {
     ARCANE_ASSERT(_isValid(), ("Bad ItemInternalVectorView"));
   }
 
-  ItemInternalVectorView(ItemSharedInfo* si, const Int32* local_ids, Integer count)
+  ItemInternalVectorView(ItemSharedInfo* si, const Int32* local_ids, Integer count, Int32 local_id_offset)
   : m_local_ids(count, local_ids)
   , m_shared_info(si)
+  , m_local_id_offset(local_id_offset)
   {
     ARCANE_ASSERT(_isValid(), ("Bad ItemInternalVectorView"));
   }
@@ -157,6 +160,7 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   ItemInternalVectorView(const impl::ItemIndexedListView<DynExtent>& view)
   : m_local_ids(view.constLocalIds())
   , m_shared_info(view.m_shared_info)
+  , m_local_id_offset(view.m_local_id_offset)
   {}
 
  public:
@@ -185,19 +189,24 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   ARCANE_DEPRECATED_REASON("Y2022: Use ItemVectorView to iterate")
   const_iterator begin() const
   {
-    return const_iterator(_items().data(), m_local_ids.data(), 0);
+    return const_iterator(_items().data(), m_local_ids.data(), 0, m_local_id_offset);
   }
 
   ARCANE_DEPRECATED_REASON("Y2022: Use ItemVectorView to iterate")
   const_iterator end() const
   {
-    return const_iterator(_items().data(), m_local_ids.data(), this->size());
+    return const_iterator(_items().data(), m_local_ids.data(), this->size(), m_local_id_offset);
   }
+
+ protected:
+
+  Int32 localIdOffset() const { return m_local_id_offset; }
 
  protected:
 
   Int32ConstArrayView m_local_ids;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
+  Int32 m_local_id_offset = 0;
 
  private:
 
@@ -209,6 +218,9 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
+
+#undef ARCANE_LOCALID_ADD_OFFSET
+#undef ARCANE_ARGS_AND_OFFSET
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
