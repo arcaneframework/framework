@@ -59,122 +59,6 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: plutôt que d'utiliser la mémoire managée, il est préférable d'avoir
-// une copie sur le device des IDs. Cela permettra d'éviter des transferts
-// potentiels si on mélange synchronisation de variables sur accélérateurs et
-// sur CPU.
-
-VariableSyncInfo::
-VariableSyncInfo()
-: m_share_ids(platform::getDefaultDataAllocator())
-, m_ghost_ids(platform::getDefaultDataAllocator())
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-VariableSyncInfo::
-VariableSyncInfo(Int32ConstArrayView share_ids, Int32ConstArrayView ghost_ids,
-                 Int32 rank)
-: VariableSyncInfo()
-{
-  m_target_rank = rank;
-  m_share_ids.copy(share_ids);
-  m_ghost_ids.copy(ghost_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-VariableSyncInfo::
-VariableSyncInfo(const VariableSyncInfo& rhs)
-: VariableSyncInfo()
-{
-  // NOTE: pour l'instant (avril 2023) il faut un constructeur de recopie
-  // explicite pour spécifier l'allocateur
-  m_target_rank = rhs.m_target_rank;
-  m_share_ids.copy(rhs.m_share_ids);
-  m_ghost_ids.copy(rhs.m_ghost_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableSyncInfo::
-_changeIds(Array<Int32>& ids, Int32ConstArrayView old_to_new_ids)
-{
-  UniqueArray<Int32> orig_ids(ids);
-  ids.clear();
-
-  for (Integer z = 0, zs = orig_ids.size(); z < zs; ++z) {
-    Int32 old_id = orig_ids[z];
-    Int32 new_id = old_to_new_ids[old_id];
-    if (new_id != NULL_ITEM_LOCAL_ID)
-      ids.add(new_id);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableSyncInfo::
-changeLocalIds(Int32ConstArrayView old_to_new_ids)
-{
-  _changeIds(m_share_ids, old_to_new_ids);
-  _changeIds(m_ghost_ids, old_to_new_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupSynchronizeInfo::
-recompute()
-{
-  Integer nb_message = this->size();
-
-  m_ghost_displacements_base.resize(nb_message);
-  m_share_displacements_base.resize(nb_message);
-
-  m_total_nb_ghost = 0;
-  m_total_nb_share = 0;
-
-  {
-    Integer ghost_displacement = 0;
-    Integer share_displacement = 0;
-    Int32 index = 0;
-    for (const VariableSyncInfo& vsi : m_ranks_info) {
-      Int32 ghost_size = vsi.nbGhost();
-      m_ghost_displacements_base[index] = ghost_displacement;
-      ghost_displacement += ghost_size;
-      Int32 share_size = vsi.nbShare();
-      m_share_displacements_base[index] = share_displacement;
-      share_displacement += share_size;
-      ++index;
-    }
-    m_total_nb_ghost = ghost_displacement;
-    m_total_nb_share = share_displacement;
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupSynchronizeInfo::
-changeLocalIds(Int32ConstArrayView old_to_new_ids)
-{
-  for( VariableSyncInfo& vsi : m_ranks_info ){
-    vsi.changeLocalIds(old_to_new_ids);
-  }
-  recompute();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -204,7 +88,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  public:
 
-  void compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_list, Int32 datatype_size);
+  void compute(IBufferCopier* copier, DataSynchronizeInfo* sync_list, Int32 datatype_size);
   IDataSynchronizeBuffer* genericBuffer() { return this; }
 
  protected:
@@ -213,7 +97,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  protected:
 
-  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+  DataSynchronizeInfo* m_sync_info = nullptr;
   //! Buffer pour toutes les données des entités fantômes qui serviront en réception
   MutableMemoryView m_ghost_memory_view;
   //! Buffer pour toutes les données des entités partagées qui serviront en envoi
@@ -273,7 +157,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
  * terme de memoire.
  */
 void VariableSynchronizeBufferBase::
-compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 datatype_size)
+compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_size)
 {
   m_datatype_size = datatype_size;
   m_buffer_copier = copier;
@@ -388,7 +272,7 @@ class VariableSynchronizerDispatcherBase
 
   IParallelMng* m_parallel_mng = nullptr;
   IBufferCopier* m_buffer_copier = nullptr;
-  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+  Ref<DataSynchronizeInfo> m_sync_info;
   Ref<IDataSynchronizeImplementation> m_implementation_instance;
 };
 
@@ -398,9 +282,11 @@ class VariableSynchronizerDispatcherBase
 VariableSynchronizerDispatcherBase::
 VariableSynchronizerDispatcherBase(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
+, m_sync_info(bi.synchronizeInfo())
 {
   ARCANE_CHECK_POINTER(bi.factory().get());
   m_implementation_instance = bi.factory()->createInstance();
+  m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
 
   if (bi.table())
     m_buffer_copier = new TableBufferCopier(bi.table());
@@ -459,7 +345,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
  public:
 
-  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final;
   void compute() final;
   void beginSynchronize(INumericDataInternal* data) override;
   void endSynchronize() override;
@@ -503,7 +388,7 @@ beginSynchronize(INumericDataInternal* data)
   m_is_empty_sync = (mem_view.bytes().size() == 0);
   if (m_is_empty_sync)
     return;
-  m_sync_buffer.compute(m_buffer_copier, m_sync_info, full_datatype_size);
+  m_sync_buffer.compute(m_buffer_copier, m_sync_info.get(), full_datatype_size);
   m_sync_buffer.setDataView(mem_view);
   _beginSynchronize(m_sync_buffer);
 }
@@ -523,16 +408,6 @@ endSynchronize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void VariableSynchronizerDispatcher::
-setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
-{
-  m_sync_info = sync_info;
-  m_implementation_instance->setItemGroupSynchronizeInfo(sync_info);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcule et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables.
@@ -541,7 +416,7 @@ void VariableSynchronizerDispatcher::
 compute()
 {
   if (!m_sync_info)
-    ARCANE_FATAL("The instance is not initialized. You need to call setItemGroupSynchronizeInfo() before");
+    ARCANE_FATAL("The instance is not initialized. You need to call setDataSynchronizeInfo() before");
   m_implementation_instance->compute();
 }
 
@@ -586,16 +461,13 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
   void setNbData(Int32 nb_data)
   {
     m_data_views.resize(nb_data);
-    m_data_offsets.resize(nb_data);
   }
   void setDataView(Int32 index, MutableMemoryView v) { m_data_views[index] = v; }
-  void setDataOffset(Int32 index, Int32 offset) { m_data_offsets[index] = offset; }
 
  private:
 
   //! Vue sur les données de la variable
   SmallArray<MutableMemoryView> m_data_views;
-  SmallArray<Int32> m_data_offsets;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -660,16 +532,18 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
 {
  public:
 
-  explicit VariableSynchronizerMultiDispatcher(IParallelMng* pm)
-  : m_parallel_mng(pm)
+  explicit VariableSynchronizerMultiDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
+  : m_parallel_mng(bi.parallelMng())
+  , m_sync_info(bi.synchronizeInfo())
   {
   }
 
-  void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info) override;
+  void synchronize(VariableCollection vars) override;
 
  private:
 
   IParallelMng* m_parallel_mng = nullptr;
+  Ref<DataSynchronizeInfo> m_sync_info;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -692,20 +566,20 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcherV2
   {
   }
 
-  void synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info);
+  void synchronize(VariableCollection vars);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerMultiDispatcher::
-synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
+synchronize(VariableCollection vars)
 {
   Ref<IParallelExchanger> exchanger{ ParallelMngUtils::createExchangerRef(m_parallel_mng) };
-  Integer nb_rank = sync_info->size();
+  Integer nb_rank = m_sync_info->size();
   Int32UniqueArray recv_ranks(nb_rank);
   for (Integer i = 0; i < nb_rank; ++i) {
-    Int32 rank = sync_info->rankInfo(i).targetRank();
+    Int32 rank = m_sync_info->rankInfo(i).targetRank();
     exchanger->addSender(rank);
     recv_ranks[i] = rank;
   }
@@ -713,7 +587,7 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToSend(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView share_ids = sync_info->rankInfo(i).shareIds();
+    Int32ConstArrayView share_ids = m_sync_info->rankInfo(i).shareIds();
     sbuf->setMode(ISerializer::ModeReserve);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, share_ids, nullptr);
@@ -728,7 +602,7 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToReceive(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView ghost_ids = sync_info->rankInfo(i).ghostIds();
+    Int32ConstArrayView ghost_ids = m_sync_info->rankInfo(i).ghostIds();
     sbuf->setMode(ISerializer::ModeGet);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, ghost_ids, nullptr);
@@ -743,18 +617,13 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerMultiDispatcherV2::
-synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
+synchronize(VariableCollection vars)
 {
-  ARCANE_CHECK_POINTER(sync_info);
-  m_sync_info = sync_info;
-
   ITraceMng* tm = m_parallel_mng->traceMng();
   MultiDataSynchronizeBuffer buffer(tm);
 
   const Int32 nb_var = vars.count();
   buffer.setNbData(nb_var);
-
-  tm->info() << "VarMultiSync nb_var=" << nb_var;
 
   // Récupère les emplacements mémoire des données des variables et leur taille
   Int32 all_datatype_size = 0;
@@ -767,17 +636,14 @@ synchronize(VariableCollection vars, ItemGroupSynchronizeInfo* sync_info)
         ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data",var->name());
       MutableMemoryView mem_view = numapi->memoryView();
       all_datatype_size += mem_view.datatypeSize();
-      tm->info() << "VarMultiSync name="  << var->name() << " datatype_size=" << mem_view.datatypeSize()
-                 << " cumul=" << all_datatype_size;
       buffer.setDataView(index,mem_view);
-      buffer.setDataOffset(index,all_datatype_size);
       ++index;
     }
   }
 
-  buffer.compute(m_buffer_copier,sync_info,all_datatype_size);
+  buffer.compute(m_buffer_copier,m_sync_info.get(),all_datatype_size);
 
-  m_implementation_instance->setItemGroupSynchronizeInfo(sync_info);
+  m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
   m_implementation_instance->compute();
   m_implementation_instance->beginSynchronize(buffer.genericBuffer());
   m_implementation_instance->endSynchronize(buffer.genericBuffer());
@@ -969,7 +835,7 @@ create(const VariableSynchronizeDispatcherBuildInfo& bi)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_MULTISYNCHRONIZE", true))
     if (v.value()>=1)
-      return new VariableSynchronizerMultiDispatcher(bi.parallelMng());
+      return new VariableSynchronizerMultiDispatcher(bi);
   return new VariableSynchronizerMultiDispatcherV2(bi);
 }
 

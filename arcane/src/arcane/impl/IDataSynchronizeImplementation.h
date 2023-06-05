@@ -23,8 +23,8 @@
 namespace Arcane
 {
 class IDataSynchronizeBuffer;
-class ItemGroupSynchronizeInfo;
 class IParallelMng;
+class DataSynchronizeInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,9 @@ ARCANE_DEPRECATED_REASON("Use 'IDataSynchronizeImplementationFactory' instead") 
 using AbstractGenericVariableSynchronizerDispatcher
 ARCANE_DEPRECATED_REASON("Use 'AbstractDataSynchronizeImplementation' instead") = AbstractDataSynchronizeImplementation;
 
+using ItemGroupSynchronizeInfo
+ARCANE_DEPRECATED_REASON("Use 'DataSynchronizeInfo' instead") = DataSynchronizeInfo;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -55,7 +58,7 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeImplementation
 
  public:
 
-  virtual void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) = 0;
+  virtual void setDataSynchronizeInfo(DataSynchronizeInfo* sync_info) = 0;
   virtual void compute() = 0;
   virtual void beginSynchronize(IDataSynchronizeBuffer* buf) = 0;
   virtual void endSynchronize(IDataSynchronizeBuffer* buf) = 0;
@@ -89,15 +92,15 @@ class AbstractDataSynchronizeImplementation
 {
  public:
 
-  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final { m_sync_info = sync_info; }
+  void setDataSynchronizeInfo(DataSynchronizeInfo* sync_info) final { m_sync_info = sync_info; }
 
  protected:
 
-  ItemGroupSynchronizeInfo* _syncInfo() const { return m_sync_info; }
+  DataSynchronizeInfo* _syncInfo() const { return m_sync_info; }
 
  private:
 
-  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+  DataSynchronizeInfo* m_sync_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
