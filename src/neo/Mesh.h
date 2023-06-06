@@ -464,11 +464,11 @@ class Mesh
   /*!
    * @brief prepare evolutive mesh api : schedule move node operation. Will be applied when applyScheduledOperations will be called
    * @param mesh
-   * @param node_family node family with moving nodes
-   * @param node_uids uids of the moving nodes
-   * @param node_coords new coordinates of the moving nodes given in \p node_uids
+   * @param item_lids_property node family with moving nodes
+   * @param item_coords_property uids of the moving nodes
+   * @param moved_item_new_coords new coordinates of the moving nodes given in \p node_uids
    */
-  void scheduleMoveNodes(Neo::Family& node_family, std::vector<Neo::utils::Int64> const& node_uids, std::vector<Neo::utils::Real3> const& node_coords);
+  void scheduleMoveItems(Neo::Family& item_lids_property, std::vector<Neo::utils::Int64> const& item_coords_property, std::vector<Neo::utils::Real3> const& moved_item_new_coords);
 
   /*!
    * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called

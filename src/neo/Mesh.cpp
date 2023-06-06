@@ -473,19 +473,19 @@ std::vector<Neo::utils::Int32> Neo::Mesh::localIds(Neo::Family const& item_famil
 
 /*-----------------------------------------------------------------------------*/
 
-void Neo::Mesh::scheduleMoveNodes(Neo::Family& node_family, std::vector<Neo::utils::Int64> const& node_uids, std::vector<Neo::utils::Real3> const& node_coords) {
-  auto coord_prop_name = _itemCoordPropertyName(node_family);
-  node_family.addProperty<Neo::utils::Real3>(coord_prop_name);
+void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& moved_item_uids, std::vector<Neo::utils::Real3> const& moved_item_new_coords) {
+  auto coord_prop_name = _itemCoordPropertyName(item_family);
+  item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ node_family, node_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
-  Neo::OutProperty{ node_family, coord_prop_name },
-  [&node_uids, node_coords](Neo::ItemLidsProperty const& node_lids_property,
-                            Neo::PropertyT<Neo::utils::Real3>& node_coords_property) {
-    Neo::print() << "Algorithm: move nodes" << std::endl;
+  Neo::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
+  Neo::OutProperty{ item_family, coord_prop_name },
+  [&moved_item_uids, moved_item_new_coords](Neo::ItemLidsProperty const& item_lids_property,
+                                            Neo::PropertyT<Neo::utils::Real3>& item_coords_property) {
+    Neo::print() << "Algorithm: move items" << std::endl;
     // get range from uids and append
-    auto moved_node_range = Neo::ItemRange{ Neo::ItemLocalIds::getIndexes(node_lids_property[node_uids]) };
-    node_coords_property.append(moved_node_range, node_coords);
-    node_coords_property.debugPrint();
+    auto moved_item_range = Neo::ItemRange{ Neo::ItemLocalIds::getIndexes(item_lids_property[moved_item_uids]) };
+    item_coords_property.append(moved_item_range, moved_item_new_coords);
+    item_coords_property.debugPrint();
   });
 }
 

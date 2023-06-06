@@ -77,7 +77,7 @@ TEST(EvolutiveMeshTest, MoveNodes) {
   auto& node_family = mesh.findFamily(Neo::ItemKind::IK_Node, node_family_name);
   std::vector<Neo::utils::Int64> moved_node_uids{ 6, 7, 8, 9, 10, 11 };
   std::vector<Neo::utils::Real3> node_coords{ { 0, 0, -1 }, { 0, 1.5, -1 }, { 0, 1.5, -1 }, { 0, 2.7, -1 }, { 0, 3.85, -1 }, { 0, 5, -1 } };
-  mesh.scheduleMoveNodes(node_family, moved_node_uids, node_coords);
+  mesh.scheduleMoveItems(node_family, moved_node_uids, node_coords);
   mesh.applyScheduledOperations();
   // Todo check new node coords
   auto moved_nodes = Neo::ItemRange{ Neo::ItemLocalIds::getIndexes(node_family._lidProp()[moved_node_uids]) };
