@@ -23,19 +23,20 @@
 #include "arcane/utils/SharedPtr.h"
 #include "arcane/utils/MemoryUtils.h"
 
-#include "arcane/ItemGroupObserver.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IItemOperationByBasicType.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemFunctor.h"
-#include "arcane/ItemGroupComputeFunctor.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/MeshPartInfo.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/ItemGroupObserver.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IItemOperationByBasicType.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemFunctor.h"
+#include "arcane/core/ItemGroupComputeFunctor.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 #include <algorithm>
@@ -309,6 +310,7 @@ _init()
     int property = IVariable::PSubDomainDepend | IVariable::PPrivate;
     VariableBuildInfo vbi(m_mesh,m_variable_name,property);
     m_variable_items_local_id = new VariableArrayInt32(vbi);
+    m_variable_items_local_id->variable()->setAllocationInfo(DataAllocationInfo(eMemoryLocationHint::HostAndDeviceMostlyRead));
     m_items_local_id = &m_variable_items_local_id->_internalTrueData()->_internalDeprecatedValue();
     updateTimestamp();
   }
