@@ -720,7 +720,7 @@ initialize()
   {
     bool force_tracer = false;
     String trace_str = platform::getEnvironmentVariable("ARCANE_TRACE_ENUMERATOR");
-    if (!trace_str.null() || force_tracer){
+    if (!trace_str.null() || ProfilingRegistry::profilingLevel()>=1 || force_tracer){
       if (!TaskFactory::isActive()){
         ServiceBuilder<IPerformanceCounterService> sbuilder(this);
         auto p = m_performance_counter_service;
