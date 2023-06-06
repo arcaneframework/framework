@@ -63,7 +63,7 @@ class CudaMemoryAllocatorBase
   : AlignedMemoryAllocator3(128)
   {}
 
-  bool hasRealloc(MemoryAllocationArgs) const final { return false; }
+  bool hasRealloc(MemoryAllocationArgs) const final { return true; }
   AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) final
   {
     void* out = nullptr;
@@ -75,8 +75,10 @@ class CudaMemoryAllocatorBase
   }
   AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) final
   {
+    AllocatedMemoryInfo a = allocate(args, new_size);
+    ARCANE_CHECK_CUDA(cudaMemcpy(a.baseAddress(), current_ptr.baseAddress(), current_ptr.size(), cudaMemcpyDefault));
     deallocate(args, current_ptr);
-    return allocate(args, new_size);
+    return a;
   }
   void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo mem_info) final
   {

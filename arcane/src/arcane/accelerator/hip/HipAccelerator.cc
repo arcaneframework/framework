@@ -61,7 +61,7 @@ class HipMemoryAllocatorBase
   : AlignedMemoryAllocator3(128)
   {}
 
-  bool hasRealloc(MemoryAllocationArgs) const override { return false; }
+  bool hasRealloc(MemoryAllocationArgs) const override { return true; }
   AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) override
   {
     void* out = nullptr;
@@ -73,8 +73,10 @@ class HipMemoryAllocatorBase
   }
   AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) override
   {
+    AllocatedMemoryInfo a = allocate(args, new_size);
+    ARCANE_CHECK_HIP(hipMemcpy(a.baseAddress(), current_ptr.baseAddress(), current_ptr.size(), hipMemcpyDefault));
     deallocate(args, current_ptr);
-    return allocate(args, new_size);
+    return a;
   }
   void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) override
   {
