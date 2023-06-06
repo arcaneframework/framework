@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <string>
 #include <chrono>
+#include <iterator>
 
 #ifdef NDEBUG
   static constexpr bool ndebug = true;
