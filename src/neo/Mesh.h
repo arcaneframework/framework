@@ -468,7 +468,7 @@ class Mesh
    * @param node_uids uids of the moving nodes
    * @param node_coords new coordinates of the moving nodes given in \p node_uids
    */
-  void scheduleMoveNodes(Neo::Family& node_family, std::vector<Neo::utils::Int64> const& node_uids, std::vector<Neo::utils::Real3>& node_coords);
+  void scheduleMoveNodes(Neo::Family& node_family, std::vector<Neo::utils::Int64> const& node_uids, std::vector<Neo::utils::Real3> const& node_coords);
 
   /*!
    * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called
