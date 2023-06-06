@@ -79,9 +79,9 @@ TEST(EvolutiveMeshTest, MoveNodes) {
   std::vector<Neo::utils::Real3> node_coords{ { 0, 0, -1 }, { 0, 1.5, -1 }, { 0, 1.5, -1 }, { 0, 2.7, -1 }, { 0, 3.85, -1 }, { 0, 5, -1 } };
   mesh.scheduleMoveItems(node_family, moved_node_uids, node_coords);
   mesh.applyScheduledOperations();
-  // Todo check new node coords
-  auto moved_nodes = Neo::ItemRange{ Neo::ItemLocalIds::getIndexes(node_family._lidProp()[moved_node_uids]) };
-  auto node_coords_new = mesh.getItemCoordProperty(node_family).view(moved_nodes);
+  // Todo check new node
+  auto moved_nodes = node_family.itemUniqueIdsToLocalids(moved_node_uids);
+  auto node_coords_new = mesh.getItemCoordProperty(node_family).view(Neo::ItemRange{ moved_nodes });
   EXPECT_TRUE(std::equal(node_coords_new.begin(), node_coords_new.end(), node_coords.begin(),
                          [](Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) { return a == b; }));
 }
