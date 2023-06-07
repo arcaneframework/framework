@@ -270,13 +270,21 @@ class BasicReaderWriterDatabaseCommon
 
  public:
 
-  BasicReaderWriterDatabaseCommon(ITraceMng* tm)
+  BasicReaderWriterDatabaseCommon(ITraceMng* tm, Int32 version)
   : TraceAccessor(tm)
   {
-    String hash_directory = platform::getEnvironmentVariable("ARCANE_HASHDATABASE_DIRECTORY");
-    if (!hash_directory.null()) {
-      std::cout << "Using Hash database at location '" << hash_directory << "'\n";
-      m_hash_database = createFileHashDatabase(tm, hash_directory);
+    if (version >= 3) {
+      String hash_directory = platform::getEnvironmentVariable("ARCANE_HASHDATABASE_DIRECTORY");
+      if (!hash_directory.null()) {
+        info() << "Using Hash database at location '" << hash_directory << "'";
+        m_hash_database = createFileHashDatabase(tm, hash_directory);
+      }
+      else {
+        String redis_machine = platform::getEnvironmentVariable("ARCANE_HASHDATABASE_REDIS");
+        if (!redis_machine.null())
+          info() << "Using Redis database at location '" << redis_machine << "'";
+        m_hash_database = createRedisHashDatabase(tm, redis_machine, 6379);
+      }
     }
   }
 
@@ -307,7 +315,7 @@ class KeyValueTextWriter::Impl
  public:
 
   Impl(ITraceMng* tm, const String& filename, Int32 version)
-  : BasicReaderWriterDatabaseCommon(tm)
+  : BasicReaderWriterDatabaseCommon(tm, version)
   , m_writer(filename)
   , m_version(version)
   {}
@@ -582,7 +590,7 @@ class KeyValueTextReader::Impl
  public:
 
   Impl(ITraceMng* tm, const String& filename, Int32 version)
-  : BasicReaderWriterDatabaseCommon(tm)
+  : BasicReaderWriterDatabaseCommon(tm, version)
   , m_reader(filename)
   , m_version(version)
   {}

@@ -16,6 +16,7 @@ set(ARCANE_SOURCES
   Hdf5VariableInfoBase.h
   Hdf5ReaderWriter.h
   Hdf5MpiReaderWriter.h
+  HiredisAdapter.cc
   HoneyCombMeshGenerator.cc
   HoneyCombMeshGenerator.h
   ArcaneCurveWriter.cc
@@ -25,6 +26,7 @@ set(ARCANE_SOURCES
   DumpWEnsight7.cc
   DumpWUCD.cc
   FileHashDatabase.cc
+  RedisHashDatabase.cc
   HashAlgorithmServices.cc
   JsonMessagePassingProfilingService.h
   JsonMessagePassingProfilingService.cc

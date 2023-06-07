@@ -921,6 +921,7 @@ initialize()
   String filename = _getBasicVariableFile(m_version,m_path,rank);
   m_text_writer = makeRef(new KeyValueTextWriter(traceMng(),filename,m_version));
   m_text_writer->setDataCompressor(m_data_compressor);
+  m_text_writer->setHashAlgorithm(m_hash_algorithm);
 
   // Permet de surcharger le service utilisé pour la compression par une
   // variable d'environnement si aucun n'est positionné
@@ -1548,6 +1549,7 @@ _readOwnMetaDataAndCreateReader(Int32 rank)
       // Il faut que ce lecteur ait le même gestionnaire de compression
       // que celui déjà créé
       text_reader->setDataCompressor(m_forced_rank_to_read_text_reader->dataCompressor());
+      text_reader->setHashAlgorithm(m_forced_rank_to_read_text_reader->hashAlgorithm());
     }
   }
 

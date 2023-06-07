@@ -18,9 +18,13 @@
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/std/internal/IRedisContext.h"
 
-#include <hiredis/hiredis.h>
+#include "arcane_packages.h"
 
 #include <string.h>
+
+#ifdef ARCANE_HAS_PACKAGE_HIREDIS
+
+#include <hiredis/hiredis.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,6 +99,11 @@ class HiredisContext
   HiredisContext(ITraceMng* tm)
   : TraceAccessor(tm)
   {}
+  ~HiredisContext()
+  {
+    if (m_redis_context)
+      ::redisFree(m_redis_context);
+  }
 
  public:
 
@@ -230,6 +239,11 @@ test()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#endif //ARCANE_HAS_PACKAGE_HIREDIS
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 
@@ -237,10 +251,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_STD_EXPORT void
-_testRedisAdapter(ITraceMng* tm)
+_testRedisAdapter([[maybe_unused]] ITraceMng* tm)
 {
-  Redis::HiredisAdapter h{tm};
+#ifdef ARCANE_HAS_PACKAGE_HIREDIS
+  Redis::HiredisAdapter h{ tm };
   h.test();
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -249,7 +265,12 @@ _testRedisAdapter(ITraceMng* tm)
 extern "C++" Ref<IRedisContext>
 createRedisContext(ITraceMng* tm)
 {
+#ifdef ARCANE_HAS_PACKAGE_HIREDIS
   return makeRef<IRedisContext>(new Redis::HiredisContext(tm));
+#else
+  ARCANE_FATAL("Can not create Redis context because Arcane is not "
+               "compiled with support for 'hiredis' library");
+#endif
 }
 
 /*---------------------------------------------------------------------------*/

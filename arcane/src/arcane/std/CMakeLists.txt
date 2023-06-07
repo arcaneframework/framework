@@ -106,12 +106,6 @@ if(DbgHelp_FOUND)
     DbgHelpStackTraceService.cc
     )
 endif()
-if (TARGET hiredis::hiredis)
-  list(APPEND ARCANE_SOURCES
-    HiredisAdapter.cc
-    )
-endif()
-
 if(ARCANE_HAS_LINUX_PERF_COUNTERS)
   list(APPEND ARCANE_SOURCES
     LinuxPerfPerformanceCounterService.cc
