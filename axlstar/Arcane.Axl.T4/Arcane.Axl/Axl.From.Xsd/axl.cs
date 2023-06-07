@@ -1589,6 +1589,22 @@ namespace Arcane.Axl.Xsd {
         
         private ServiceTypeList typeField;
         
+        private ServiceTypeList type2Field;
+        
+        private bool type2FieldSpecified;
+        
+        private ServiceTypeList type3Field;
+        
+        private bool type3FieldSpecified;
+        
+        private ServiceTypeList type4Field;
+        
+        private bool type4FieldSpecified;
+        
+        private ServiceTypeList type5Field;
+        
+        private bool type5FieldSpecified;
+        
         private bool singletonField;
         
         private string spaceField;
@@ -1704,6 +1720,94 @@ namespace Arcane.Axl.Xsd {
             }
             set {
                 this.typeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public ServiceTypeList type2 {
+            get {
+                return this.type2Field;
+            }
+            set {
+                this.type2Field = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool type2Specified {
+            get {
+                return this.type2FieldSpecified;
+            }
+            set {
+                this.type2FieldSpecified = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public ServiceTypeList type3 {
+            get {
+                return this.type3Field;
+            }
+            set {
+                this.type3Field = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool type3Specified {
+            get {
+                return this.type3FieldSpecified;
+            }
+            set {
+                this.type3FieldSpecified = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public ServiceTypeList type4 {
+            get {
+                return this.type4Field;
+            }
+            set {
+                this.type4Field = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool type4Specified {
+            get {
+                return this.type4FieldSpecified;
+            }
+            set {
+                this.type4FieldSpecified = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public ServiceTypeList type5 {
+            get {
+                return this.type5Field;
+            }
+            set {
+                this.type5Field = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool type5Specified {
+            get {
+                return this.type5FieldSpecified;
+            }
+            set {
+                this.type5FieldSpecified = value;
             }
         }
         

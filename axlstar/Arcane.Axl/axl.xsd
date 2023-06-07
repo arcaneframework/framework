@@ -183,7 +183,11 @@
         <xs:attribute name="namespace-name" type="xs:string" use="optional" />
         <xs:attribute name="parent-name" type="xs:string" use="optional" />
         <xs:attribute name="type" type="ServiceTypeList" default="caseoption" />
-	      <xs:attribute name="singleton" type="xs:boolean" default="false" />
+        <xs:attribute name="type2" type="ServiceTypeList" use="optional" />
+        <xs:attribute name="type3" type="ServiceTypeList" use="optional" />
+        <xs:attribute name="type4" type="ServiceTypeList" use="optional" />
+        <xs:attribute name="type5" type="ServiceTypeList" use="optional" />
+        <xs:attribute name="singleton" type="xs:boolean" default="false" />
         <xs:attributeGroup ref="createdAttrGroup" />
       </xs:extension>
     </xs:complexContent>
