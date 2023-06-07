@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshBuildInfo.h                                             (C) 2000-2020 */
+/* MeshBuildInfo.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Informations pour construire un maillage.                                 */
 /*---------------------------------------------------------------------------*/
@@ -15,8 +15,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemGroup.h"
+
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/MeshKind.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,7 +51,7 @@ class ARCANE_CORE_EXPORT MeshBuildInfo
   /*!
    * \brief Construit un maillage par défaut avec pour nom \a name.
    */
-  MeshBuildInfo(const String& name);
+  explicit MeshBuildInfo(const String& name);
 
  public:
 
@@ -59,13 +61,16 @@ class ARCANE_CORE_EXPORT MeshBuildInfo
   MeshBuildInfo& addParallelMng(Ref<IParallelMng> pm);
   //! Positionne le groupe de mailles pour un sous-maillage
   MeshBuildInfo& addParentGroup(const ItemGroup& parent_group);
- /*!
+  /*!
   * \brief Indique si le générateur nécessite d'appeler un partitionneur.
   *
-  * C'est le cas par exemple si le lecteur ne sait généré que des maillages
+  * C'est le cas par exemple si le lecteur ne sait générer que des maillages
   * séquentiels.
   */
   MeshBuildInfo& addNeedPartitioning(bool v);
+
+  //! Positionne les caractéristiques du maillage
+  MeshKind& addMeshKind(const MeshKind& v);
 
   //! Nom du nouveau maillage
   const String& name() const { return m_name; }
@@ -77,16 +82,17 @@ class ARCANE_CORE_EXPORT MeshBuildInfo
   const ItemGroup& parentGroup() const { return m_parent_group; }
   //! Indique si le lecteur/générateur nécessite un partitionnement
   bool isNeedPartitioning() const { return m_is_need_partitioning; }
+  //! Caractéristiques du maillage
+  const MeshKind meshKind() const { return m_mesh_kind; }
 
  private:
 
   String m_name;
-  String m_factory_name; 
+  String m_factory_name;
   Ref<IParallelMng> m_parallel_mng;
   ItemGroup m_parent_group;
   bool m_is_need_partitioning = false;
-
- private:
+  MeshKind m_mesh_kind;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -97,5 +103,4 @@ class ARCANE_CORE_EXPORT MeshBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
