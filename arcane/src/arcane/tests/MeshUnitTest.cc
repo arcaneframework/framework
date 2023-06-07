@@ -19,63 +19,64 @@
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/TestLogger.h"
 
-#include "arcane/BasicUnitTest.h"
+#include "arcane/core/BasicUnitTest.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MeshUnitTest_axl.h"
 
-#include "arcane/AbstractItemOperationByBasicType.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/ITiedInterface.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemInfoListView.h"
-#include "arcane/IItemConnectivityInfo.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/Directory.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/IndexedItemConnectivityView.h"
-#include "arcane/IIndexedIncrementalItemConnectivityMng.h"
-#include "arcane/IIndexedIncrementalItemConnectivity.h"
-#include "arcane/IIncrementalItemConnectivity.h"
+#include "arcane/core/AbstractItemOperationByBasicType.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/ITiedInterface.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemInfoListView.h"
+#include "arcane/core/IItemConnectivityInfo.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivityMng.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivity.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
 
-#include "arcane/ServiceFinder2.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/IMeshPartitioner.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/Properties.h"
-#include "arcane/Timer.h"
+#include "arcane/core/ServiceFinder2.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/IMeshPartitioner.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/Timer.h"
 
-#include "arcane/ItemArrayEnumerator.h"
-#include "arcane/ItemPairGroup.h"
-#include "arcane/ItemPairEnumerator.h"
-#include "arcane/ItemPairGroupBuilder.h"
+#include "arcane/core/ItemArrayEnumerator.h"
+#include "arcane/core/ItemPairGroup.h"
+#include "arcane/core/ItemPairEnumerator.h"
+#include "arcane/core/ItemPairGroupBuilder.h"
 
-#include "arcane/IPostProcessorWriter.h"
+#include "arcane/core/IPostProcessorWriter.h"
 
-#include "arcane/ItemVectorView.h"
-#include "arcane/ItemVector.h"
+#include "arcane/core/ItemVectorView.h"
+#include "arcane/core/ItemVector.h"
 
-#include "arcane/GeometricUtilities.h"
+#include "arcane/core/GeometricUtilities.h"
 
-#include "arcane/MeshVisitor.h"
+#include "arcane/core/MeshVisitor.h"
 
-#include "arcane/IMeshReader.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IIOMng.h"
-#include "arcane/MeshReaderMng.h"
-#include "arcane/UnstructuredMeshConnectivity.h"
-#include "arcane/MeshVisitor.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/MeshReaderMng.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
+#include "arcane/core/MeshVisitor.h"
+#include "arcane/core/MeshKind.h"
 
 #include <set>
 
@@ -207,6 +208,7 @@ public:
   void _logMeshInfos();
   void _testComputeLocalIdPattern();
   void _testGroupsAsBlocks();
+  void _testCoherency();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -299,6 +301,7 @@ executeTest()
     _testDeallocateMesh();
   _testComputeLocalIdPattern();
   _testGroupsAsBlocks();
+  _testCoherency();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1537,6 +1540,21 @@ _testGroupsAsBlocks()
     vc.areEqualArray(computed_values.constView(),group.view().localIds(),group.name());
   };
   meshvisitor::visitGroups(mesh(),xx);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testCoherency()
+{
+  MeshKind mk = mesh()->meshKind();
+  info() << "MeshKind amr=" << mk.meshAMRKind() << " structure=" << mk.meshStructure();
+  bool is_amr = mesh()->isAmrActivated();
+  if (is_amr && mk.meshAMRKind()==eMeshAMRKind::None)
+    ARCANE_FATAL("AMR incoherence: is_amr==true but eMeshAMRKind == None");
+  if (!is_amr && mk.meshAMRKind()!=eMeshAMRKind::None)
+    ARCANE_FATAL("AMR incoherence: is_amr==false but eMeshAMRKind != None");
 }
 
 /*---------------------------------------------------------------------------*/
