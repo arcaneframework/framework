@@ -156,7 +156,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
   
  public:
   
-  DynamicMesh(ISubDomain* sd,const MeshBuildInfo& mbi, bool is_submesh, bool is_amr);
+  DynamicMesh(ISubDomain* sd,const MeshBuildInfo& mbi, bool is_submesh);
   ~DynamicMesh();
 
  public:
