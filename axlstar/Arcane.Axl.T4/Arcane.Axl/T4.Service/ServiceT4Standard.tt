@@ -210,7 +210,7 @@ private:
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_REGISTER_SERVICE_<#= Xml.ClassName.ToUpper () #>(service_name,class_name) \
-  ARCANE_REGISTER_AXL_SERVICE(class_name,Arcane::ServiceProperty(#service_name,Arcane::ST_<#= Service.type.Name () #>,\
+  ARCANE_REGISTER_AXL_SERVICE(class_name,Arcane::ServiceProperty(#service_name,<#= Service.TypesToArcaneNames () #>,\
   <# if (Service.IsSingleton) { #> Arcane::SFP_Singleton <# } else { #> Arcane::SFP_None <# } #>))
   
 /*---------------------------------------------------------------------------*/
