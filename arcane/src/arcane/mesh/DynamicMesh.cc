@@ -147,7 +147,7 @@ const std::string DynamicMesh::PerfCounter::m_names[] = {
 /*---------------------------------------------------------------------------*/
 
 DynamicMesh::
-DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bool is_amr)
+DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 : MeshVariables(sub_domain,mbi.name())
 , TraceAccessor(mbi.parallelMngRef()->traceMng())
 , m_sub_domain(sub_domain)
@@ -178,7 +178,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 , m_extra_ghost_cells_builder(nullptr)
 , m_extra_ghost_particles_builder(nullptr)
 , m_initial_allocator(this)
-, m_is_amr_activated(is_amr)
+, m_is_amr_activated(mbi.meshKind().meshAMRKind()!=eMeshAMRKind::None)
 , m_is_dynamic(false)
 , m_tied_interface_mng(nullptr)
 , m_is_sub_connectivity_set(false)
@@ -192,6 +192,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 , m_mesh_part_info(makeMeshPartInfoFromParallelMng(m_parallel_mng))
 , m_item_type_mng(ItemTypeMng::_singleton())
 , m_indexed_connectivity_mng(new IndexedIncrementalItemConnectivityMng(m_parallel_mng->traceMng()))
+, m_mesh_kind(mbi.meshKind())
 {
   m_node_family = new NodeFamily(this,"Node");
   m_edge_family = new EdgeFamily(this,"Edge");
@@ -3257,19 +3258,31 @@ class ARCANE_MESH_EXPORT DynamicMeshFactoryBase
 , public IMeshFactory
 {
  public:
+
   DynamicMeshFactoryBase(const ServiceBuildInfo& sbi,bool is_amr)
   : AbstractService(sbi), m_is_amr(is_amr) {}
+
  public:
+
   void build() override {}
   IPrimaryMesh* createMesh(IMeshMng* mm,const MeshBuildInfo& build_info) override
   {
+    MeshBuildInfo mbi(build_info);
+    MeshKind mk(mbi.meshKind());
+    // Si on demande l'AMR mais que cela n'est pas indiqué dans MeshPart,
+    // on l'ajoute.
+    if (m_is_amr && mk.meshAMRKind()==eMeshAMRKind::None)
+      mk.setMeshAMRKind(eMeshAMRKind::Cell);
+    mbi.addMeshKind(mk);
     ISubDomain* sd = mm->variableMng()->_internalSubDomain();
-    bool is_submesh = !build_info.parentGroup().null();
+    bool is_submesh = !mbi.parentGroup().null();
     if (is_submesh && m_is_amr)
       ARCANE_FATAL("Submesh cannot be refined with AMR.");
-    return new DynamicMesh(sd,build_info,is_submesh,m_is_amr);
+    return new DynamicMesh(sd,mbi,is_submesh);
   }
+
  private:
+
   bool m_is_amr;
 };
 

@@ -72,6 +72,7 @@
 #include "arcane/MeshVariableArrayRef.h"
 #include "arcane/MeshPartialVariableScalarRef.h"
 #include "arcane/MeshPartInfo.h"
+#include "arcane/MeshKind.h"
 #include "arcane/IMeshUtilities.h"
 
 #include "arcane/ServiceInfo.h"

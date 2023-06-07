@@ -1181,8 +1181,8 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 : EmptyMesh{ subdomain->traceMng() }
 , m_subdomain{ subdomain }
 , m_mesh{ nullptr }
+, m_mesh_kind(mbi.meshKind())
 {
-  ARCANE_UNUSED(mbi);
 }
 
 /*---------------------------------------------------------------------------*/

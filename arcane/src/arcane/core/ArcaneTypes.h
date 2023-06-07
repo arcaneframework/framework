@@ -109,6 +109,7 @@ class IMeshBuilder;
 class MeshHandle;
 class MeshHandleOrMesh;
 class MeshBuildInfo;
+class MeshKind;
 class IPrimaryMesh;
 class IMeshInitialAllocator;
 class IIndexedIncrementalItemConnectivityMng;
@@ -117,6 +118,8 @@ class IMeshInitialAllocator;
 class UnstructuredMeshAllocateBuildInfo;
 class CartesianMeshAllocateBuildInfo;
 class IIncrementalItemConnectivity;
+enum class eMeshStructure;
+enum class eMeshAMRKind;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
