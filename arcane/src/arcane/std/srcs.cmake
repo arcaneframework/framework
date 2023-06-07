@@ -108,6 +108,7 @@ set(ARCANE_SOURCES
   internal/SodStandardGroupsBuilder.cc
 
   internal/IHashDatabase.h
+  internal/IRedisContext.h
 )
 
 set(AXL_FILES

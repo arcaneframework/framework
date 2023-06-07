@@ -15,7 +15,8 @@
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/std/internal/IRedisContext.h"
 
 #include <hiredis/hiredis.h>
 
@@ -86,10 +87,18 @@ class HiredisCommand
 /*---------------------------------------------------------------------------*/
 
 class HiredisContext
+: public TraceAccessor
+, public IRedisContext
 {
  public:
 
-  void open(const String& machine, int port)
+  HiredisContext(ITraceMng* tm)
+  : TraceAccessor(tm)
+  {}
+
+ public:
+
+  void open(const String& machine, Int32 port) override
   {
     redisContext* c = ::redisConnect(machine.localstr(), port);
     m_redis_context = c;
@@ -101,8 +110,9 @@ class HiredisContext
 
  public:
 
-  void sendBuffer(const String& key, Span<const std::byte> bytes)
+  void sendBuffer(const String& key, Span<const std::byte> bytes) override
   {
+    _checkContext();
     auto key_bytes = key.bytes();
     size_t key_len = key_bytes.size();
     size_t buf_size = bytes.size();
@@ -110,8 +120,9 @@ class HiredisContext
     command.sendCommand(m_redis_context, "SET %b %b", key_bytes.data(), key_len, bytes.data(), buf_size);
   }
 
-  void getBuffer(const String& key, Array<std::byte>& bytes)
+  void getBuffer(const String& key, Array<std::byte>& bytes) override
   {
+    _checkContext();
     auto key_bytes = key.bytes();
     size_t key_len = key_bytes.size();
     HiredisCommand command;
@@ -126,6 +137,14 @@ class HiredisContext
  public:
 
   ::redisContext* m_redis_context = nullptr;
+
+ private:
+
+  void _checkContext()
+  {
+    if (!m_redis_context)
+      ARCANE_FATAL("No redis context. You have to call open() to create a context");
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -138,6 +157,7 @@ class HiredisAdapter
 
   HiredisAdapter(ITraceMng* tm)
   : TraceAccessor(tm)
+  , m_context(tm)
   {}
 
  public:
@@ -180,7 +200,7 @@ test()
   for (Int64 i = 0, n = my_buffer.size(); i < n; ++i) {
     my_buffer[i] = i + 1;
   }
-  Span<const std::byte> send_buf(asBytes(my_buffer.span()));
+  Span<const std::byte> send_buf(asBytes(my_buffer));
   Int64 send_size = send_buf.size();
   info() << "SEND_SIZE=" << send_size;
   //command.sendCommand(c, "SET mytest %b", my_buffer.data(), (size_t)send_size);
@@ -194,7 +214,9 @@ test()
   if (reply_length != send_size)
     ARCANE_FATAL("Bad reply v={0} expected={1}", reply_length, send_size);
 
-  Span<Int64> receive_buf = Arccore::asSpan<Int64>(out_bytes.span());
+  Span<const Int64> receive_buf = Arccore::asSpan<Int64>(out_bytes.span());
+  if (receive_buf != my_buffer)
+    ARCANE_FATAL("Bad value");
   for (Int64 x = 0, n = receive_buf.size(); x < n; ++x)
     if (receive_buf[x] != my_buffer[x])
       ARCANE_FATAL("Bad value i={0} v={1} expected={2}", x, receive_buf[x], my_buffer[x]);
@@ -219,6 +241,15 @@ _testRedisAdapter(ITraceMng* tm)
 {
   Redis::HiredisAdapter h{tm};
   h.test();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Ref<IRedisContext>
+createRedisContext(ITraceMng* tm)
+{
+  return makeRef<IRedisContext>(new Redis::HiredisContext(tm));
 }
 
 /*---------------------------------------------------------------------------*/
