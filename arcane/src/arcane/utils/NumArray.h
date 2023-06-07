@@ -251,8 +251,21 @@ class NumArrayBase
     resize(extents);
   }
 
-  NumArrayBase(const ThatClass&) = default;
-  NumArrayBase(ThatClass&&) = default;
+  NumArrayBase(const ThatClass& rhs)
+  : m_span(rhs.m_span)
+  , m_data(rhs.m_data)
+  , m_total_nb_element(rhs.m_total_nb_element)
+  {
+    _updateSpanPointerFromData();
+  }
+
+  NumArrayBase(ThatClass&& rhs)
+  : m_span(rhs.m_span)
+  , m_data(std::move(rhs.m_data))
+  , m_total_nb_element(rhs.m_total_nb_element)
+  {
+  }
+
   ThatClass& operator=(ThatClass&&) = default;
 
   /*!
@@ -281,7 +294,7 @@ class NumArrayBase
   {
     m_total_nb_element = m_span.extents().totalNbElement();
     m_data.resize(m_total_nb_element);
-    m_span.m_ptr = m_data.to1DSpan().data();
+    _updateSpanPointerFromData();
   }
 
   /*!
@@ -341,6 +354,7 @@ class NumArrayBase
   {
     _checkHost(memoryRessource());
     m_data.copy(rhs.to1DSpan());
+    _updateSpanPointerFromData();
   }
 
   /*!
@@ -353,6 +367,7 @@ class NumArrayBase
   {
     this->resize(rhs.extents().dynamicExtents());
     m_data.copyOnly(rhs.m_data);
+    _updateSpanPointerFromData();
   }
 
   //! Référence constante pour l'élément \a idx
@@ -402,6 +417,13 @@ class NumArrayBase
   SpanType m_span;
   ArrayWrapper m_data;
   Int64 m_total_nb_element = 0;
+
+ private:
+
+  void _updateSpanPointerFromData()
+  {
+    m_span.m_ptr = m_data.to1DSpan().data();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
