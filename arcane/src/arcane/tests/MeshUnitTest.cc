@@ -297,6 +297,7 @@ executeTest()
   _testAdditionnalConnectivity();
   _testShrinkGroups();
   _testFaces();
+  _testUnstructuredConnectivities();
   if (options()->testDeallocateMesh())
     _testDeallocateMesh();
   _testComputeLocalIdPattern();
