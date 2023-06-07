@@ -527,6 +527,48 @@ TEST(NumArray, ReadFromText)
     ASSERT_EQ(real_values.to1DSpan(), ref_value.to1DSpan());
   }
 }
+namespace TestCopyNumArray
+{
+using Real = double;
+
+struct B
+{
+  Arcane::NumArray<Real, Arcane::MDDim1> a_;
+};
+
+auto bar()
+{
+  auto tpq = Arcane::NumArray<Real, Arcane::MDDim1>(5);
+  tpq.fill(1.526);
+  auto const& w = tpq;
+  std::cout << w.to1DSpan() << "\n";
+  B b{ w };
+  std::cout << b.a_.to1DSpan() << "\n";
+  return b;
+}
+
+auto bar2()
+{
+  auto tpq = Arcane::NumArray<Real, Arcane::MDDim1>(5);
+  tpq.fill(1.526);
+  std::cout << tpq.to1DSpan() << "\n";
+  return tpq;
+}
+
+} // namespace TestCopyNumArray
+
+TEST(NumArray, TestCopy)
+{
+  using namespace TestCopyNumArray;
+
+  auto test4 = bar();
+  std::cout << "Val 4 = "
+            << &test4.a_
+            << " " << test4.a_.to1DSpan() << "\n";
+  auto test5 = bar2();
+  std::cout << "Val 5 = " << &test5 << " " << test5.to1DSpan() << "\n";
+  ASSERT_EQ(test4.a_.to1DSpan(), test5.to1DSpan());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
