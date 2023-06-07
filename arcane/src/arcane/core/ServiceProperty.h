@@ -65,7 +65,10 @@ enum eServiceType
   //! Le service s'utilise au niveau du sous-domaine
   ST_SubDomain = 4,
   //! Le service s'utilise au niveau du jeu de données.
-  ST_CaseOption = 8
+  ST_CaseOption = 8,
+  // NOTE: Cette valeur n'est pas encore utilisée.
+  //! Le service s'utilise avec un maillage spécifié explicitement.
+  ST_Mesh = 16
 };
 
 /*---------------------------------------------------------------------------*/

@@ -111,8 +111,6 @@ class VtkHdfV2DataWriter
    */
   struct OffsetInfo
   {
-    // TODO: utiliser un nom supplémentaire pour faire la distinction
-    // entre les variables Arcane et les champs spécifiques HDF5.
     OffsetInfo() = default;
     explicit OffsetInfo(const String& name)
     : m_name(name)
@@ -1065,10 +1063,6 @@ class VtkHdfV2PostProcessor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(VtkHdfV2PostProcessor,
-                                   IPostProcessorWriter,
-                                   VtkHdfV2PostProcessor);
 
 ARCANE_REGISTER_SERVICE_VTKHDFV2POSTPROCESSOR(VtkHdfV2PostProcessor,
                                               VtkHdfV2PostProcessor);
