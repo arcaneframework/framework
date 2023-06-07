@@ -28,6 +28,7 @@
 #include "arcane/core/IItemFamilyNetwork.h"
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/IMeshInitialAllocator.h"
+#include "arcane/core/MeshKind.h"
 
 #include "arcane/mesh/SubMeshTools.h"
 #include "arcane/mesh/MeshVariables.h"
@@ -520,6 +521,10 @@ public:
   void allocate(UnstructuredMeshAllocateBuildInfo& build_info) override;
   void allocate(CartesianMeshAllocateBuildInfo& build_info) override;
 
+ public:
+
+  const MeshKind meshKind() const override { return m_mesh_kind; }
+
  private:
 
   IMeshUtilities* m_mesh_utilities;
@@ -574,6 +579,7 @@ public:
   IItemFamilyNetwork* m_item_family_network = nullptr;
   ItemTypeMng* m_item_type_mng = nullptr;
   std::unique_ptr<IIndexedIncrementalItemConnectivityMng> m_indexed_connectivity_mng;
+  MeshKind m_mesh_kind;
 
  private:
 

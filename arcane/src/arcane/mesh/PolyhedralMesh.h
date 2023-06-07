@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.h                                (C) 2000-2023             */
+/* PolyhedralMesh.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure                             */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,7 @@
 #include "arcane/utils/List.h"
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshKind.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include <vector>
@@ -76,6 +77,7 @@ class PolyhedralMesh
   MeshPartInfo m_mesh_part_info;
   bool m_is_allocated = false;
   ItemTypeMng* m_item_type_mng = nullptr;
+  MeshKind m_mesh_kind;
 
  public:
 
@@ -94,6 +96,8 @@ class PolyhedralMesh
   void read(String const& filename);
 
   void endUpdate();
+
+  const MeshKind meshKind() const override { return m_mesh_kind; }
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 

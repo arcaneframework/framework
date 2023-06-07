@@ -1,22 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMesh.h                                                     (C) 2000-2020 */
+/* IMesh.h                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'un maillage.                                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMESH_H
-#define ARCANE_IMESH_H
+#ifndef ARCANE_CORE_IMESH_H
+#define ARCANE_CORE_IMESH_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/IMeshBase.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/IMeshBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,11 +52,12 @@ class IMeshUniqueIdMng;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 //INFO: La doc complete est dans Mesh.dox
-class IMesh : public IMeshBase
+class IMesh
+: public IMeshBase
 {
  public:
 
-  virtual ~IMesh() {} //<! Libère les ressources
+  virtual ~IMesh() = default; //<! Libère les ressources
 
  public:
 
@@ -313,6 +314,9 @@ class IMesh : public IMeshBase
 
   //! Interface du gestionnaire des connectivités incrémentales indexées.
   virtual IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() =0;
+
+  //! Caractéristiques du maillage
+  virtual const MeshKind meshKind() const =0;
 
  public:
 

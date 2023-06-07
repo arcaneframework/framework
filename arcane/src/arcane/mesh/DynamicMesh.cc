@@ -192,6 +192,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 , m_mesh_part_info(makeMeshPartInfoFromParallelMng(m_parallel_mng))
 , m_item_type_mng(ItemTypeMng::_singleton())
 , m_indexed_connectivity_mng(new IndexedIncrementalItemConnectivityMng(m_parallel_mng->traceMng()))
+, m_mesh_kind(mbi.meshKind())
 {
   m_node_family = new NodeFamily(this,"Node");
   m_edge_family = new EdgeFamily(this,"Edge");
