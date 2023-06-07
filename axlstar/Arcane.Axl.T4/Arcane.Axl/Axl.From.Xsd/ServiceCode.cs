@@ -112,6 +112,8 @@ namespace Arcane.Axl.Xsd
         case ServiceTypeList.application:
           m_service_type_flags |= ServiceTypeFlags.Application;
           break;
+        default:
+          throw new ApplicationException($"Unknown type {t}");
       }
     }
     void _CreateTypesList()
