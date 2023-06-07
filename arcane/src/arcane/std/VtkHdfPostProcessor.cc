@@ -780,10 +780,6 @@ class VtkHdfPostProcessor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(VtkHdfPostProcessor,
-                                   IPostProcessorWriter,
-                                   VtkHdfPostProcessor);
-
 ARCANE_REGISTER_SERVICE_VTKHDFPOSTPROCESSOR(VtkHdfPostProcessor,
                                             VtkHdfPostProcessor);
 

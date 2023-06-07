@@ -1,7 +1,7 @@
 <?xml version="1.0" ?><!-- -*- SGML -*- -->
 
-<service name="VtkHdfPostProcessor" parent-name="PostProcessorWriterBase"
-         type="caseoption">
+<service name="VtkHdfV2PostProcessor" parent-name="PostProcessorWriterBase"
+         type="caseoption" type2="subdomain">
   <name lang='fr'>post-processeur-vtk-hdf</name>
   <description>
     Post Processeur au format VTK HDF (https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats)
