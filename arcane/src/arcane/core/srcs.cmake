@@ -462,6 +462,7 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshBuildInfo.h
   MeshHandle.cc
   MeshKind.h
+  MeshKind.cc
   MeshItemInternalList.cc
   MeshItemInternalList.h
   MeshMDVariableRef.cc

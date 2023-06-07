@@ -70,7 +70,7 @@ class ARCANE_CORE_EXPORT MeshBuildInfo
   MeshBuildInfo& addNeedPartitioning(bool v);
 
   //! Positionne les caractéristiques du maillage
-  MeshKind& addMeshKind(const MeshKind& v);
+  MeshBuildInfo& addMeshKind(const MeshKind& v);
 
   //! Nom du nouveau maillage
   const String& name() const { return m_name; }
