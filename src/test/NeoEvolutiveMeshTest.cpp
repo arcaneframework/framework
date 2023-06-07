@@ -100,16 +100,19 @@ TEST(EvolutiveMeshTest, RemoveCells) {
   auto& node_family = mesh.findFamily(Neo::ItemKind::IK_Node, node_family_name);
   mesh.scheduleAddConnectivity(node_family, node_family.all(), cell_family, 1,
                                node_to_cell, node2cells_con_name);
-  mesh.applyScheduledOperations();
   // Remove cell 0, 1 and 2
   std::vector<Neo::utils::Int64> removed_cells{ 0, 1, 2 };
   mesh.scheduleRemoveItems(cell_family, removed_cells);
-  // update connectivity must be donne automatically to check
   mesh.applyScheduledOperations();
-  auto node2cells = node_family.getConcreteProperty<Neo::ArrayProperty<Neo::utils::Int32>>(node2cells_con_name);
+  EXPECT_EQ(cell_family.nbElements(), 1);
+  auto remaining_cell_uids = mesh.uniqueIds(cell_family, cell_family.all().localIds());
+  EXPECT_EQ(remaining_cell_uids.size(), 1);
+  EXPECT_EQ(remaining_cell_uids.back(), 3);
   // compute a reference connectivity : replace removed cells by null lid
+  auto node2cells = mesh.getConnectivity(node_family, cell_family, node2cells_con_name);
   std::fill(node_to_cell.begin(), node_to_cell.end(), Neo::utils::NULL_ITEM_LID);
   node_to_cell[5] = 3;
   node_to_cell[11] = 3;
-  EXPECT_TRUE(std::equal(node2cells.view().begin(), node2cells.view().end(), node_to_cell.begin()));
+  node2cells.connectivity_value.debugPrint();
+  EXPECT_TRUE(std::equal(node2cells.connectivity_value.constView().begin(), node2cells.connectivity_value.constView().end(), node_to_cell.begin()));
 }
