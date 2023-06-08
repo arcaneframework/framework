@@ -18,6 +18,7 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/IMemoryAllocator.h"
 
 #include <iostream>
 

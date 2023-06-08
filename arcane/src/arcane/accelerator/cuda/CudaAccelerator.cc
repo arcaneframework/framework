@@ -19,6 +19,7 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/IMemoryAllocator.h"
 
 #include "arcane/accelerator/core/internal/MemoryTracer.h"
 
