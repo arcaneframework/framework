@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneGlobal.h                                              (C) 2000-2021 */
+/* ArcaneGlobal.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations générales de Arcane.                                         */
 /*---------------------------------------------------------------------------*/
@@ -565,6 +565,19 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 #endif
 
 #define ARCANE_DEPRECATED_REASON(reason) [[deprecated(reason)]]
+
+#ifdef ARCANE_NO_DEPRECATED_LONG_TERM
+#define ARCANE_DEPRECATED_LONG_TERM(reason)
+#else
+/*!
+ * \brief Macro pour l'attribut 'deprecated' à long terme.
+ *
+ * Cette macro est pour indiquer les types ou fonctions
+ * obsolète et donc qu'il est préférable de ne pas utiliser mais qui
+ * ne seront pas supprimés avant plusieurs versions.
+ */
+#define ARCANE_DEPRECATED_LONG_TERM(reason) [[deprecated(reason)]]
+#endif
 
 // Définir cette macro si on souhaite supprimer de la compilation les
 // méthodes et types obsolètes.
