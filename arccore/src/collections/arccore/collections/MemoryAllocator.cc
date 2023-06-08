@@ -19,6 +19,7 @@
 #include "arccore/collections/IMemoryAllocator.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <errno.h>
 
 #if defined(ARCCORE_OS_WIN32)
@@ -47,6 +48,16 @@ DefaultMemoryAllocator3 DefaultMemoryAllocator3::shared_null_instance;
 void IMemoryAllocator::
 notifyMemoryArgsChanged(MemoryAllocationArgs, MemoryAllocationArgs, AllocatedMemoryInfo)
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IMemoryAllocator::
+copyMemory([[maybe_unused]] MemoryAllocationArgs args, AllocatedMemoryInfo destination,
+           AllocatedMemoryInfo source)
+{
+  std::memcpy(destination.baseAddress(), source.baseAddress(), source.size());
 }
 
 /*---------------------------------------------------------------------------*/

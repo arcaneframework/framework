@@ -153,10 +153,11 @@ _reallocate(Int64 new_capacity, Int64 sizeof_true_type, MemoryPointer current)
       p = a->reallocate(alloc_args, current_info, elem_size).baseAddress();
     }
     else {
-      p = a->allocate(alloc_args, elem_size).baseAddress();
+      AllocatedMemoryInfo new_alloc_info = a->allocate(alloc_args, elem_size);
+      p = new_alloc_info.baseAddress();
       //GG: TODO: regarder si 'current' peut être nul (a priori je ne pense pas...)
       if (p && current) {
-        ::memcpy(p, current, current_size);
+        a->copyMemory(alloc_args, new_alloc_info, current_info);
         a->deallocate(alloc_args, current_info);
       }
     }

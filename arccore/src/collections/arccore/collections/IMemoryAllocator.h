@@ -21,7 +21,6 @@
 
 namespace Arccore
 {
-// TODO: retourner infos sur pointeur + taille dans allocate()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -123,11 +122,22 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
   /*!
    * \brief Notifie du changement des arguments spécifiques à l'instance.
    *
-   * \param Zone mémoire allouée
+   * \param ptr zone mémoire allouée
    * \param old_args ancienne valeur des arguments
    * \param new_args nouvelle valeur des arguments
    */
   virtual void notifyMemoryArgsChanged(MemoryAllocationArgs old_args, MemoryAllocationArgs new_args, AllocatedMemoryInfo ptr);
+
+  /*!
+   * \brief Copie la mémoire entre deux zones.
+   *
+   * L'implémentation par défaut utilise std::memcpy().
+   *
+   * \param args arguments de la zone mémoire
+   * \param destination destination de la copie
+   * \param destination source de la copie
+   */
+  virtual void copyMemory(MemoryAllocationArgs args, AllocatedMemoryInfo destination, AllocatedMemoryInfo source);
 
  public:
 
