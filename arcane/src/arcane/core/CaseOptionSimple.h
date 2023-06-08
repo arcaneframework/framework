@@ -96,7 +96,7 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
    * \deprecated L'implémentation interne ne doit pas être utilisée pour permettre
    * à terme d'utiliser un autre format que le XML.
    */
-  ARCANE_DEPRECATED_REASON("Y2022: Do not access XML item from option")
+  ARCANE_DEPRECATED_LONG_TERM("Y2022: Do not access XML item from option")
   XmlNode element() const { return m_element; }
 
   /*!

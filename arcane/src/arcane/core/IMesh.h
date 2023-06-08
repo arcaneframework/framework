@@ -116,7 +116,7 @@ class IMesh
  public:
 
   //! Sous-domaine associé
-  ARCCORE_DEPRECATED_2020("Do not use this method. Try to get 'ISubDomain' from another way")
+  ARCANE_DEPRECATED_LONG_TERM("Y2020: Do not use this method. Try to get 'ISubDomain' from another way")
   virtual ISubDomain* subDomain() =0;
 
  public:
