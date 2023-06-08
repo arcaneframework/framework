@@ -106,11 +106,12 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
  protected:
 
   using MemoryPointer = void*;
-
+  using ConstMemoryPointer = const void*;
   MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
   MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
   void _deallocate(MemoryPointer current,Int64 sizeof_true_type) ARCCORE_NOEXCEPT;
   void _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type);
+  void _copyFromMemory(MemoryPointer destination,ConstMemoryPointer source,Int64 sizeof_true_type);
 
  private:
 
@@ -634,6 +635,11 @@ class AbstractArray
     _updateReferences();
   }
 
+  void _copyFromMemory(const T* source)
+  {
+    m_md->_copyFromMemory(m_ptr,source,sizeof(T));
+  }
+
  private:
 
   void _directFirstAllocateWithAllocator(Int64 new_capacity,MemoryAllocationOptions options)
@@ -676,6 +682,7 @@ class AbstractArray
   {
     _setMP(reinterpret_cast<TrueImpl*>(m_md->_reallocate(new_capacity,sizeof(T),m_ptr)));
   }
+
  public:
 
   void printInfos(std::ostream& o)
@@ -831,11 +838,11 @@ class AbstractArray
   }
   void _copy(const T* rhs_begin,TrueType)
   {
-    std::memcpy(m_ptr,rhs_begin,((size_t)m_md->size)*sizeof(T));
+    _copyFromMemory(rhs_begin);
   }
   void _copy(const T* rhs_begin,FalseType)
   {
-    for( Int64 i=0, is=m_md->size; i<is; ++i )
+    for( Int64 i=0, n=m_md->size; i<n; ++i )
       m_ptr[i] = rhs_begin[i];
   }
   void _copy(const T* rhs_begin)
