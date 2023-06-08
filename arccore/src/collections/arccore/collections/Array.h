@@ -18,20 +18,6 @@
 #include "arccore/base/Span.h"
 #include "arccore/collections/MemoryAllocationOptions.h"
 
-// TODO (Mai 2023) Supprimer l'inclusion de ce fichier fin 2023
-// NOTE Le fichier 'IMemoryAllocator.h' n'est pas utilisé
-// par ce fichier d'en-tête.
-// On le garde néanmoins temporairement pour rester compatible
-// avec l'existant.
-// Cependant, depuis l'ajout des arguments 'MemoryAllocationArgs' le
-// compilateur 'nvcc' génère des avertissements qui sont des faux positifs lors
-// de l'inclusion de ce fichier dont on le désactive dans ce cas.
-// (les avertissements sont sur les méthode virtuelles partiellement surchargées).
-#if defined(__CUDACC__) || defined(__HIP__)
-#else
-#include "arccore/collections/IMemoryAllocator.h"
-#endif
-
 #include <memory>
 #include <initializer_list>
 #include <cstring>
@@ -106,11 +92,12 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
  protected:
 
   using MemoryPointer = void*;
-
+  using ConstMemoryPointer = const void*;
   MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
   MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
   void _deallocate(MemoryPointer current,Int64 sizeof_true_type) ARCCORE_NOEXCEPT;
   void _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type);
+  void _copyFromMemory(MemoryPointer destination,ConstMemoryPointer source,Int64 sizeof_true_type);
 
  private:
 
@@ -634,6 +621,11 @@ class AbstractArray
     _updateReferences();
   }
 
+  void _copyFromMemory(const T* source)
+  {
+    m_md->_copyFromMemory(m_ptr,source,sizeof(T));
+  }
+
  private:
 
   void _directFirstAllocateWithAllocator(Int64 new_capacity,MemoryAllocationOptions options)
@@ -676,6 +668,7 @@ class AbstractArray
   {
     _setMP(reinterpret_cast<TrueImpl*>(m_md->_reallocate(new_capacity,sizeof(T),m_ptr)));
   }
+
  public:
 
   void printInfos(std::ostream& o)
@@ -831,11 +824,11 @@ class AbstractArray
   }
   void _copy(const T* rhs_begin,TrueType)
   {
-    std::memcpy(m_ptr,rhs_begin,((size_t)m_md->size)*sizeof(T));
+    _copyFromMemory(rhs_begin);
   }
   void _copy(const T* rhs_begin,FalseType)
   {
-    for( Int64 i=0, is=m_md->size; i<is; ++i )
+    for( Int64 i=0, n=m_md->size; i<n; ++i )
       m_ptr[i] = rhs_begin[i];
   }
   void _copy(const T* rhs_begin)

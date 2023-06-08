@@ -98,24 +98,37 @@ _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void ArrayMetaData::
+_copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type)
+{
+  MemoryAllocationArgs args = _getAllocationArgs();
+  Int64 full_size = size * sizeof_true_type;
+  AllocatedMemoryInfo source_info(const_cast<void*>(source), full_size, full_size);
+  AllocatedMemoryInfo destination_info(destination, full_size, full_size);
+  _allocator()->copyMemory(args, destination_info, source_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ArrayMetaData::MemoryPointer ArrayMetaData::
-_allocate(Int64 new_capacity,Int64 sizeof_true_type)
+_allocate(Int64 new_capacity, Int64 sizeof_true_type)
 {
   _checkAllocator();
   MemoryAllocationArgs alloc_args = _getAllocationArgs();
   IMemoryAllocator* a = _allocator();
   size_t s_new_capacity = (size_t)new_capacity;
-  s_new_capacity = a->adjustedCapacity(alloc_args,s_new_capacity,sizeof_true_type);
+  s_new_capacity = a->adjustedCapacity(alloc_args, s_new_capacity, sizeof_true_type);
   size_t s_sizeof_true_type = (size_t)sizeof_true_type;
   size_t elem_size = s_new_capacity * s_sizeof_true_type;
-  MemoryPointer p = a->allocate(alloc_args,elem_size).baseAddress();
+  MemoryPointer p = a->allocate(alloc_args, elem_size).baseAddress();
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
             << " typesize=" << sizeof_true_type
             << " size=" << new_capacity << " datasize=" << sizeof_true_impl
             << " p=" << p << '\n';
 #endif
-  if (!p){
+  if (!p) {
     std::ostringstream ostr;
     ostr << " Bad ArrayImplBase::allocate() size=" << elem_size << " capacity=" << new_capacity
          << " sizeof_true_type=" << sizeof_true_type << '\n';
@@ -153,10 +166,11 @@ _reallocate(Int64 new_capacity, Int64 sizeof_true_type, MemoryPointer current)
       p = a->reallocate(alloc_args, current_info, elem_size).baseAddress();
     }
     else {
-      p = a->allocate(alloc_args, elem_size).baseAddress();
+      AllocatedMemoryInfo new_alloc_info = a->allocate(alloc_args, elem_size);
+      p = new_alloc_info.baseAddress();
       //GG: TODO: regarder si 'current' peut être nul (a priori je ne pense pas...)
       if (p && current) {
-        ::memcpy(p, current, current_size);
+        a->copyMemory(alloc_args, new_alloc_info, current_info);
         a->deallocate(alloc_args, current_info);
       }
     }
