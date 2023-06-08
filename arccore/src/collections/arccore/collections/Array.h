@@ -18,20 +18,6 @@
 #include "arccore/base/Span.h"
 #include "arccore/collections/MemoryAllocationOptions.h"
 
-// TODO (Mai 2023) Supprimer l'inclusion de ce fichier fin 2023
-// NOTE Le fichier 'IMemoryAllocator.h' n'est pas utilisé
-// par ce fichier d'en-tête.
-// On le garde néanmoins temporairement pour rester compatible
-// avec l'existant.
-// Cependant, depuis l'ajout des arguments 'MemoryAllocationArgs' le
-// compilateur 'nvcc' génère des avertissements qui sont des faux positifs lors
-// de l'inclusion de ce fichier dont on le désactive dans ce cas.
-// (les avertissements sont sur les méthode virtuelles partiellement surchargées).
-#if defined(__CUDACC__) || defined(__HIP__)
-#else
-#include "arccore/collections/IMemoryAllocator.h"
-#endif
-
 #include <memory>
 #include <initializer_list>
 #include <cstring>
