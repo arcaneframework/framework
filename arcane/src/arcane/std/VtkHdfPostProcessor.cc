@@ -251,6 +251,8 @@ beginWrite(const VariableCollection& vars)
   UniqueArray<Int64> cells_offset(nb_cell + 1);
   UniqueArray<unsigned char> cells_type(nb_cell);
   UniqueArray<unsigned char> cells_ghost_type(nb_cell);
+  UniqueArray<Int64> cell_ids(nb_cell);
+  Int64 ghost_id = -(pm->commRank() + 1);
   cells_offset[0] = 0;
   {
     Int32 connected_node_index = 0;
@@ -259,8 +261,14 @@ beginWrite(const VariableCollection& vars)
       Cell cell = *icell;
       Byte ghost_type = 0;
       bool is_ghost = !cell.isOwn();
-      if (is_ghost)
+      if (is_ghost) {
         ghost_type = VtkUtils::CellGhostTypes::DUPLICATECELL;
+        cell_ids[index] = ghost_id;
+        ghost_id -= pm->commSize();
+      }
+      else{
+        cell_ids[index] = icell->uniqueId();
+      }
       cells_ghost_type[index] = ghost_type;
       unsigned char vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
       cells_type[index] = vtk_type;
@@ -289,19 +297,32 @@ beginWrite(const VariableCollection& vars)
   number_of_connectivity_ids[0] = cells_connectivity.size();
   _writeDataSet1DCollective<Int64>(top_group, "NumberOfConnectivityIds", number_of_connectivity_ids);
 
+  ghost_id = -(pm->commRank() + 1);
   VariableNodeReal3& nodes_coordinates(m_mesh->nodesCoordinates());
   UniqueArray2<Real> points;
   points.resize(nb_node, 3);
+  UniqueArray<Int64> node_ids(nb_node);
   ENUMERATE_NODE (inode, all_nodes) {
     Int32 index = inode.index();
     Real3 pos = nodes_coordinates[inode];
     points[index][0] = pos.x;
     points[index][1] = pos.y;
     points[index][2] = pos.z;
+    if (!inode->isOwn()) {
+      node_ids[index] = ghost_id;
+      ghost_id -= pm->commSize();
+    }
+    else{
+      node_ids[index] = inode->uniqueId();
+    }
   }
+
   _writeDataSet2DCollective<Real>(top_group, "Points", points);
 
   _writeDataSet1DCollective<unsigned char>(m_cell_data_group, "vtkGhostType", cells_ghost_type);
+  _writeDataSet1DCollective<Int64>(m_cell_data_group, "vtkOriginalCellIds", cell_ids);
+  _writeDataSet1DCollective<Int64>(m_cell_data_group, "vtkVeryOriginalCellIds", cell_ids);
+  _writeDataSet1DCollective<Int64>(m_node_data_group, "GlobalNodeId", node_ids);
 }
 
 /*---------------------------------------------------------------------------*/
