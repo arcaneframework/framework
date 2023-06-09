@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/FunctorUtils.h"
+
 #include "arcane/Item.h"
 
 /*---------------------------------------------------------------------------*/
@@ -225,16 +227,6 @@ computeConnectivityPatternOccurence(IMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::MeshUtils
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::MeshUtils
-{
-// TODO: Mettre dans ce namespace les méthodes qui sont dans 'mesh_utils'.
-
 /*!
  * \brief Indique que les connectivités du maillages ne seront
  * pas régulièrement modifiées.
@@ -247,16 +239,87 @@ namespace Arcane::MeshUtils
  * informations entre l'accélérateur et l'hôte pour éviter des aller-retour
  * multiples si les connectivités sont utilisées sur les deux à la fois.
  */
-extern "C++" ARCANE_CORE_EXPORT
-void markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh);
+extern "C++" ARCANE_CORE_EXPORT void markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Visite l'ensemble des groupes de \a family avec le functor \a functor.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+visitGroups(IItemFamily* family, IFunctorWithArgumentT<ItemGroup&>* functor);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Visite l'ensemble des groupes de \a mesh avec le functor \a functor.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+visitGroups(IMesh* mesh, IFunctorWithArgumentT<ItemGroup&>* functor);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Visite l'ensemble des groupes de \a family avec la lambda \a f.
+ *
+ * Cette fonction permet d'appliquer un visiteur pour l'ensemble des
+ * groupes de la famille \a family.
+ *
+ * Par exemple:
+ *
+ * \code
+ * IMesh* mesh = ...;
+ * auto xx = [](const ItemGroup& x) { std::cout << "name=" << x.name(); };
+ * MeshUtils::visitGroups(mesh,xx);
+ * \endcode
+ */
+template <typename LambdaType> inline void
+visitGroups(IItemFamily* family, const LambdaType& f)
+{
+  StdFunctorWithArgumentT<ItemGroup&> sf(f);
+  // Il faut caster en le bon type pour que le compilateur utilise la bonne surcharge.
+  IFunctorWithArgumentT<ItemGroup&>* sf_addr = &sf;
+  visitGroups(family, sf_addr);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Visite l'ensemble des groupes de \a mesh avec la lambda \a f.
+ *
+ * Cette fonction permet d'appliquer un visiteur pour l'ensemble des
+ * groupes de l'ensemble des familles du maillage \a mesh
+ *
+ * Elle s'utilise comme suit:
+ *
+ * \code
+ * IMesh* mesh = ...;
+ * auto xx = [](const ItemGroup& x) { std::cout << "name=" << x.name(); };
+ * MeshVisitor::visitGroups(mesh,xx);
+ * \endcode
+ */
+template <typename LambdaType> inline void
+visitGroups(IMesh* mesh, const LambdaType& f)
+{
+  StdFunctorWithArgumentT<ItemGroup&> sf(f);
+  // Il faut caster en le bon pour que le compilateur utilise la bonne surcharge.
+  IFunctorWithArgumentT<ItemGroup&>* sf_addr = &sf;
+  visitGroups(mesh, sf_addr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::MeshUtils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::mesh_utils
 {
-
+// Using pour compatibilité avec l'existant.
+// Ces using ont été ajoutés pour la version 3.10 de Arcane (juin 2023).
+// On pourra les rendre obsolètes début 2024.
 using MeshUtils::checkMeshConnectivity;
 using MeshUtils::checkMeshProperties;
 using MeshUtils::computeConnectivityPatternOccurence;
