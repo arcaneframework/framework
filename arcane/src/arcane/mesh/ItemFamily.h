@@ -81,6 +81,7 @@ class ARCANE_MESH_EXPORT ItemFamily
  private:
 
   class Variables;
+  class InternalApi;
   class AdjencyInfo
   {
    public:
@@ -353,38 +354,51 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   String m_name;
   String m_full_name;
-  IMesh* m_mesh;
-  ISubDomain* m_sub_domain;
-  IItemFamily* m_parent_family;
-  Integer m_parent_family_depth;
+  IMesh* m_mesh = nullptr;
+  InternalApi* m_internal_api = nullptr;
+  ISubDomain* m_sub_domain = nullptr;
+  IItemFamily* m_parent_family = nullptr;
+  Integer m_parent_family_depth = 0;
+
  private:
+
   DynamicMeshKindInfos m_infos;
+
  protected:
+
   ItemGroupList m_item_groups;
-  bool m_need_prepare_dump;
-  MeshItemInternalList* m_item_internal_list;
+  bool m_need_prepare_dump = true;
+  MeshItemInternalList* m_item_internal_list = nullptr;
+
  private:
+
   ItemSharedInfo* m_common_item_shared_info = nullptr;
+
  protected:
-  ItemSharedInfoList* m_item_shared_infos;
+
+  ItemSharedInfoList* m_item_shared_infos = nullptr;
   ObserverPool m_observers;
   Ref<IVariableSynchronizer> m_variable_synchronizer;
-  Integer m_current_variable_item_size;
-  IItemInternalSortFunction* m_item_sort_function;
+  Integer m_current_variable_item_size = 0;
+  IItemInternalSortFunction* m_item_sort_function = nullptr;
   std::set<IVariable*> m_used_variables;
   UniqueArray<ItemFamily*> m_child_families;
-  ItemConnectivityInfo* m_local_connectivity_info;
-  ItemConnectivityInfo* m_global_connectivity_info;
-  Properties* m_properties;
+  ItemConnectivityInfo* m_local_connectivity_info = nullptr;
+  ItemConnectivityInfo* m_global_connectivity_info = nullptr;
+  Properties* m_properties = nullptr;
   typedef std::set<IItemConnectivity*> ItemConnectivitySet;
   ItemConnectivitySet m_source_item_connectivities; //! connectivite ou ItemFamily == SourceFamily
   ItemConnectivitySet m_target_item_connectivities;   //! connectivite ou ItemFamily == TargetFamily
-  IItemConnectivityMng* m_connectivity_mng;
+  IItemConnectivityMng* m_connectivity_mng = nullptr;
+
  private:
+
   UniqueArray<Ref<IIncrementalItemConnectivity>> m_source_incremental_item_connectivities;
   UniqueArray<Ref<IIncrementalItemConnectivity>> m_target_incremental_item_connectivities;
+
  protected:
-  IItemFamilyPolicyMng* m_policy_mng;
+
+  IItemFamilyPolicyMng* m_policy_mng = nullptr;
 
  protected:
 
@@ -395,10 +409,8 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
   void _endUpdate(bool need_check_remove);
   bool _partialEndUpdate();
-  //void _partialEndUpdateGroup(const ItemGroup& group);
   void _updateGroup(ItemGroup group,bool need_check_remove);
   void _updateVariable(IVariable* var);
-  //void _partialEndUpdateVariable(IVariable* variable);
 
   void _addConnectivitySelector(ItemConnectivitySelector* selector);
   void _buildConnectivitySelectors();
@@ -414,12 +426,18 @@ class ARCANE_MESH_EXPORT ItemFamily
   // TODO: a supprimer car redondant avec le champ correspondant de ItemSharedInfo
   Int64ArrayView m_items_unique_id_view;
   Variables* m_internal_variables = nullptr;
-  Int32 m_default_sub_domain_owner;
+  Int32 m_default_sub_domain_owner = A_NULL_RANK;
+
  protected:
-  Int32 m_sub_domain_id;
+
+  Int32 m_sub_domain_id = A_NULL_RANK;
+
  private:
-  bool m_is_parallel;
-  /*! \brief Identifiant de la famille.
+
+  bool m_is_parallel = false;
+
+  /*!
+   * \brief Identifiant de la famille.
    *
    * Cet identifiant est incrémenté à chaque fois que la famille change.
    * Il est sauvegardé lors d'une protection et en cas de relecture, par
@@ -428,15 +446,19 @@ class ARCANE_MESH_EXPORT ItemFamily
    * depuis la dernière sauvegarde et donc qu'il n'y a aucune recréation
    * d'entité à faire.
    */
-  Integer m_current_id;
-  bool m_item_need_prepare_dump;
+  Integer m_current_id  = 0;
+
+  bool m_item_need_prepare_dump = false;
+
  private:
-  Int64 m_nb_allocate_info;
+
+  Int64 m_nb_allocate_info = 0;
+
  private:
 
   AdjencyGroupMap m_adjency_groups;
   UniqueArray<ItemConnectivitySelector*> m_connectivity_selector_list;
-  IItemFamilyTopologyModifier* m_topology_modifier;
+  IItemFamilyTopologyModifier* m_topology_modifier = nullptr;
   //! Accesseur pour les connectités via Item et ItemInternal
   ItemInternalConnectivityList m_item_connectivity_list;
 
