@@ -157,7 +157,8 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
         }
       }
     }
-  });
+  },
+  Neo::MeshKernel::MeshBase::AlgorithmPersistence::KeepAfterExecution);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -492,7 +493,7 @@ void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::uti
 /*-----------------------------------------------------------------------------*/
 
 void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& removed_item_uids) {
-  const std::string removed_item_property_name{ "removed_" + family.name() + "_items" };
+  const std::string removed_item_property_name = _removeItemPropertyName(family);
   // Add an algo to clear removed_items property at the beginning of a mesh update
   // This algo will be executed before remove item algo
   const std::string ok_to_start_remove_property_name = "ok_to_start_remove_property";
