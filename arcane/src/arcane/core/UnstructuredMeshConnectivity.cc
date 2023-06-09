@@ -1,21 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UnstructuredMeshConnectivity.cc                             (C) 2000-2021 */
+/* UnstructuredMeshConnectivity.cc                             (C) 2000-2023 */
 /*                                                                           */
 /* Informations de connectivité d'un maillage non structuré.                 */
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-#include "arcane/UnstructuredMeshConnectivity.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +46,7 @@ _internalInit(ConnectivityView& cview,IMesh* mesh)
   eItemKind ik2 = ItemTraitsT<ItemType2>::kind();
 
   IItemFamily* family = mesh->itemFamily(ik1);
-  ItemInternalConnectivityList* clist = family->_unstructuredItemInternalConnectivityList();
+  ItemInternalConnectivityList* clist = family->_internalApi()->unstructuredItemInternalConnectivityList();
   auto item_index_type = _IDX((ItemType2*)nullptr);
   auto container_view = clist->containerView(item_index_type);
   cview = IndexedItemConnectivityViewBase(container_view,ik1,ik2);

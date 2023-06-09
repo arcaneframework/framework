@@ -718,12 +718,6 @@ class IItemFamily
    */
   virtual IItemFamilyTopologyModifier* _topologyModifier() =0;
 
-  /*!
-   * \internal
-   * \brief Informations sur les connectivités non structurés
-   */
-  virtual ItemInternalConnectivityList* _unstructuredItemInternalConnectivityList() =0;
-
  public:
 
   //! API interne à Arcane

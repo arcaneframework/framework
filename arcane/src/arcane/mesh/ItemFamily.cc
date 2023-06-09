@@ -123,6 +123,13 @@ class ItemFamily::InternalApi
 
   explicit InternalApi(ItemFamily* family): m_family(family){}
 
+ public:
+
+  ItemInternalConnectivityList* unstructuredItemInternalConnectivityList() override
+  {
+    return m_family->_unstructuredItemInternalConnectivityList();
+  }
+
  private:
 
   ItemFamily* m_family = nullptr;

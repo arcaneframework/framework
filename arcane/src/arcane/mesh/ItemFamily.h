@@ -275,10 +275,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   IItemFamilyPolicyMng* policyMng() override { return m_policy_mng; }
   Properties* properties() override { return m_properties; }
   IItemFamilyTopologyModifier* _topologyModifier() override { return m_topology_modifier; }
-  ItemInternalConnectivityList* _unstructuredItemInternalConnectivityList() override
-  {
-    return itemInternalConnectivityList();
-  }
   IItemFamilyInternal* _internalApi() override;
 
  public:
@@ -415,6 +411,10 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _addConnectivitySelector(ItemConnectivitySelector* selector);
   void _buildConnectivitySelectors();
   void _preAllocate(Int32 nb_item,bool pre_alloc_connectivity);
+  ItemInternalConnectivityList* _unstructuredItemInternalConnectivityList()
+  {
+    return itemInternalConnectivityList();
+  }
 
  private:
 

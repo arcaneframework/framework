@@ -25,7 +25,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Partie interne de IItemFamily.
  */
 class ARCANE_CORE_EXPORT IItemFamilyInternal
@@ -33,6 +32,11 @@ class ARCANE_CORE_EXPORT IItemFamilyInternal
  public:
 
   virtual ~IItemFamilyInternal() = default;
+
+ public:
+
+  //! Informations sur les connectivités non structurés
+  virtual ItemInternalConnectivityList* unstructuredItemInternalConnectivityList() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
