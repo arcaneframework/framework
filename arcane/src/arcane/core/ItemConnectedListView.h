@@ -268,13 +268,13 @@ class ItemConnectedListView
   //! Itérateur sur la première entité connectée
   const_iterator begin() const
   {
-    return const_iterator(m_shared_info, m_local_ids.data(), m_local_id_offset);
+    return const_iterator(m_shared_info, m_local_ids._data(), m_local_id_offset);
   }
 
   //! Itérateur sur après la dernière entité connectée
   const_iterator end() const
   {
-    return const_iterator(m_shared_info, (m_local_ids.data() + this->size()), m_local_id_offset);
+    return const_iterator(m_shared_info, (m_local_ids._data() + this->size()), m_local_id_offset);
   }
 
   friend std::ostream& operator<<(std::ostream& o, const ItemConnectedListView<Extent>& a)
