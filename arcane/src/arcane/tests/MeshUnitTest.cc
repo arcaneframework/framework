@@ -1177,6 +1177,22 @@ _testItemVectorView()
   vc.areEqual(wanted_diff3,diff3,"SameDiff3");
 
   vc.areEqual(cell_vector[12],*cell_iter5,"SameCell4");
+
+  {
+    UniqueArray<Int32> int32_lid1;
+    UniqueArray<Int32> int32_lid2;
+    cells.view().fillLocalIds(int32_lid1);
+    cells.view().indexes().fillLocalIds(int32_lid2);
+    Int32 index = 0;
+    ENUMERATE_(Cell,icell,cells){
+      Cell cell = *icell;
+      if (cell.localId()!=int32_lid1[index])
+        ARCANE_FATAL("Bad 1 local id v={0} expected={1}",cell.localId(),int32_lid1[index]);
+      if (cell.localId()!=int32_lid2[index])
+        ARCANE_FATAL("Bad 2 local id v={0} expected={1}",cell.localId(),int32_lid2[index]);
+      ++index;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
