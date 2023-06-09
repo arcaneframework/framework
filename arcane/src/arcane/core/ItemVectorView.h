@@ -22,9 +22,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//#define ARCANE_LOCALID_ADD_OFFSET(a) (m_local_id_offset + (a))
-//#define ARCANE_ARGS_AND_OFFSET(a,b,c) a,b,c
-
 namespace Arcane
 {
 
@@ -252,6 +249,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
  public:
 
   ItemVectorView() = default;
+  // TODO Rendre obsolète (3.11+)
   ItemVectorView(const ItemInternalVectorView& view)
   : m_local_ids(view.localIds())
   , m_shared_info(view.m_shared_info)
@@ -303,6 +301,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
  public:
 
+  // TODO: a supprimer
   operator ItemInternalVectorView() const
   {
     return ItemInternalVectorView(m_shared_info, m_local_ids, m_local_id_offset);
@@ -318,8 +317,18 @@ class ARCANE_CORE_EXPORT ItemVectorView
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this method")
   ItemInternalArrayView items() const { return m_shared_info->m_items_internal; }
 
-  //! Tableau des numéros locaux des entités
+  // TODO Rendre obsolète (3.11+)
+  /*!
+   * \brief Tableau des numéros locaux des entités.
+   *
+   * \deprecated Ne pas récupérer directement la liste des entités.
+   * Il est préférable de passer par des itérateurs ou par la méthode
+   * fillLocalIds() si on souhaite récupérer la liste des localId().
+   */
   Int32ConstArrayView localIds() const { return m_local_ids; }
+
+  //! Ajoute à \a ids la liste des localIds() du vecteur.
+  void fillLocalIds(Array<Int32>& ids) const;
 
   //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
   ItemVectorView subView(Integer abegin, Integer asize) const
@@ -328,11 +337,11 @@ class ARCANE_CORE_EXPORT ItemVectorView
   }
   const_iterator begin() const
   {
-    return const_iterator(m_shared_info, m_local_ids.data(), m_local_id_offset);
+    return const_iterator(m_shared_info, m_local_ids._data(), m_local_id_offset);
   }
   const_iterator end() const
   {
-    return const_iterator(m_shared_info, (m_local_ids.data() + this->size()), m_local_id_offset);
+    return const_iterator(m_shared_info, (m_local_ids._data() + this->size()), m_local_id_offset);
   }
   //! Vue sur le tableau des indices
   ItemIndexArrayView indexes() const { return m_local_ids; }
@@ -346,6 +355,10 @@ class ARCANE_CORE_EXPORT ItemVectorView
   ItemIndexArrayView m_local_ids;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
   Int32 m_local_id_offset = 0;
+
+ protected:
+
+  const Int32* _localIdsData() const { return m_local_ids._data(); }
 
  private:
 
@@ -431,11 +444,11 @@ class ItemVectorViewT
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data(), m_local_id_offset);
+    return const_iterator(m_shared_info, _localIdsData(), m_local_id_offset);
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info, m_local_ids.data() + this->size(), m_local_id_offset);
+    return const_iterator(m_shared_info, _localIdsData() + this->size(), m_local_id_offset);
   }
 };
 

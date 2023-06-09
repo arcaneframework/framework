@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemIndexArrayView.h                                        (C) 2000-2022 */
+/* ItemIndexArrayView.h                                        (C) 2000-2023 */
 /*                                                                           */
 /* Vue sur un tableau d'index (localIds()) d'entités.                        */
 /*---------------------------------------------------------------------------*/
@@ -35,8 +35,11 @@ namespace Arcane
  * En plus de la liste des entités, cette classe permet d'avoir des
  * informations supplémentaires comme par exemple si la liste est contigüe.
  */
-class ItemIndexArrayView
+class ARCANE_CORE_EXPORT ItemIndexArrayView
 {
+  friend class ItemVectorView;
+  template <int Extent> friend class ItemConnectedListView;
+
  public:
 
   // NOTE: Si on ajoute des valeurs ici, il faut vérifier s'il faut les
@@ -75,8 +78,12 @@ class ItemIndexArrayView
   //! Nombre d'éléments du vecteur
   inline Integer size() const { return m_local_ids.size(); }
 
+  // TODO Rendre obsolète (3.11+)
   //! Tableau des numéros locaux des entités
   inline Int32ConstArrayView localIds() const { return m_local_ids; }
+
+  //! Ajoute à \a ids la liste des localIds() du vecteur.
+  void fillLocalIds(Array<Int32>& ids) const;
 
   //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
   inline ItemIndexArrayView subView(Integer abegin,Integer asize) const
@@ -91,10 +98,15 @@ class ItemIndexArrayView
   //! Vrai si les localIds() sont contigüs
   bool isContigous() const { return m_flags & F_Contigous; }
 
+ private:
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Do not use it")
   const Int32* unguardedBasePointer() const
   {
     return m_local_ids.data();
   }
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Do not use it")
   const Int32* data() const
   {
     return m_local_ids.data();
@@ -104,6 +116,13 @@ class ItemIndexArrayView
   
   Int32ConstArrayView m_local_ids;
   Int32 m_flags;
+
+ private:
+
+  const Int32* _data() const
+  {
+    return m_local_ids.data();
+  }
 };
 
 /*---------------------------------------------------------------------------*/

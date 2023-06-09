@@ -321,6 +321,10 @@ class ItemConnectedListView
   ItemIndexArrayView m_local_ids;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
   Int32 m_local_id_offset = 0;
+
+ protected:
+
+  const Int32* _localIdsData() const { return m_local_ids._data(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -383,11 +387,11 @@ class ItemConnectedListViewT
 
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info, m_local_ids.data(), m_local_id_offset);
+    return const_iterator(m_shared_info, this->_localIdsData(), m_local_id_offset);
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info, (m_local_ids.data() + this->size()), m_local_id_offset);
+    return const_iterator(m_shared_info, (this->_localIdsData() + this->size()), m_local_id_offset);
   }
 
 #ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
