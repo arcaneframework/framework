@@ -256,7 +256,7 @@ class ItemConnectedListView
 
  public:
 
-  //! Accède au \a i-ème élément du vecteur
+  //! \a index-ème entité connectée
   Item operator[](Integer index) const
   {
     return Item(m_local_id_offset + m_local_ids[index], m_shared_info);
@@ -265,13 +265,13 @@ class ItemConnectedListView
   //! Nombre d'éléments du vecteur
   Int32 size() const { return m_local_ids.size(); }
 
-  // TODO: changer le type de l'iterateur
+  //! Itérateur sur la première entité connectée
   const_iterator begin() const
   {
     return const_iterator(m_shared_info, m_local_ids.data(), m_local_id_offset);
   }
 
-  // TODO: changer le type de l'iterateur
+  //! Itérateur sur après la dernière entité connectée
   const_iterator end() const
   {
     return const_iterator(m_shared_info, (m_local_ids.data() + this->size()), m_local_id_offset);
@@ -378,6 +378,7 @@ class ItemConnectedListViewT
 
  public:
 
+  //! \a index-ème entité connectée
   ItemType operator[](Integer index) const
   {
     return ItemType(m_local_id_offset + m_local_ids[index], m_shared_info);
@@ -385,10 +386,12 @@ class ItemConnectedListViewT
 
  public:
 
+  //! Itérateur sur la première entité connectée
   inline const_iterator begin() const
   {
     return const_iterator(m_shared_info, this->_localIdsData(), m_local_id_offset);
   }
+  //! Itérateur sur après la dernière entité connectée
   inline const_iterator end() const
   {
     return const_iterator(m_shared_info, (this->_localIdsData() + this->size()), m_local_id_offset);
