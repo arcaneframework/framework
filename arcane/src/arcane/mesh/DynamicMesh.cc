@@ -3253,6 +3253,15 @@ _updateItemFamilyDependencies(VariableScalarInteger connectivity)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IMeshInternal* DynamicMesh::
+_internalApi()
+{
+  ARCANE_FATAL("NotImplemented");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ARCANE_MESH_EXPORT DynamicMeshFactoryBase
 : public AbstractService
 , public IMeshFactory

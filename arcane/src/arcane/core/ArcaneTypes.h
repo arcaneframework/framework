@@ -103,6 +103,7 @@ class IVariableMng;
 class IMeshFactoryMng;
 class IMeshMng;
 class IMesh;
+class IMeshInternal;
 class IMeshBase;
 class IUserDataList;
 class IMeshBuilder;
@@ -373,6 +374,7 @@ class MeshMDVariableRefT;
 
 class CollectionBase;
 class IItemFamily;
+class IItemFamilyInternal;
 class IMesh;
 class IMeshPartitioner;
 class IMeshPartitionerBase;

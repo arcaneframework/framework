@@ -44,6 +44,7 @@ class IItemFamilyPolicyMng;
 class IItemFamilyTopologyModifier;
 class ItemInternalConnectivityList;
 class Properties;
+
 namespace mesh
 {
   class ItemDataList;
@@ -722,6 +723,11 @@ class IItemFamily
    * \brief Informations sur les connectivités non structurés
    */
   virtual ItemInternalConnectivityList* _unstructuredItemInternalConnectivityList() =0;
+
+ public:
+
+  //! API interne à Arcane
+  virtual IItemFamilyInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/

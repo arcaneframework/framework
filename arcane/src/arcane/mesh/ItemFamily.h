@@ -79,6 +79,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 , public IItemFamily
 {
  private:
+
   class Variables;
   class AdjencyInfo
   {
@@ -277,6 +278,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   {
     return itemInternalConnectivityList();
   }
+  IItemFamilyInternal* _internalApi() override;
 
  public:
 

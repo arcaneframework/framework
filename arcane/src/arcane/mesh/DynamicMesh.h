@@ -525,6 +525,8 @@ public:
 
   const MeshKind meshKind() const override { return m_mesh_kind; }
 
+  IMeshInternal* _internalApi() override;
+
  private:
 
   IMeshUtilities* m_mesh_utilities;

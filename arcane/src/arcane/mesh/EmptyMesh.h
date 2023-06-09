@@ -1,26 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EmptyMesh                                                   (C) 2000-2021 */
+/* EmptyMesh                                                   (C) 2000-2023 */
 /*                                                                           */
 /* Brief code description                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_EMPTYMESH_H
 #define ARCANE_EMPTYMESH_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/utils/IUserDataList.h"
+#include "arcane/utils/IUserData.h"
+#include "arcane/utils/Collection.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/NotImplementedException.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/ArcaneTypes.h"
 #include "arcane/VariableTypedef.h"
-#include "arcane/utils/ITraceMng.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/MeshItemInternalList.h"
 #include "arcane/XmlNode.h"
@@ -32,8 +35,6 @@
 #include "arcane/IMeshMng.h"
 #include "arcane/IGhostLayerMng.h"
 #include "arcane/Properties.h"
-#include "arcane/utils/IUserDataList.h"
-#include "arcane/utils/IUserData.h"
 #include "arcane/MeshPartInfo.h"
 #include "arcane/IItemFamilyNetwork.h"
 #include "arcane/IItemFamily.h"
@@ -44,7 +45,6 @@
 #include "arcane/MeshHandle.h"
 #include "arcane/IParticleExchanger.h"
 #include "arcane/IExtraGhostCellsBuilder.h"
-#include "arcane/utils/Collection.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,7 +55,8 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class EmptyMesh : public IPrimaryMesh
+class EmptyMesh
+: public IPrimaryMesh
 {
 
  public:
@@ -540,6 +541,11 @@ class EmptyMesh : public IPrimaryMesh
   {
     _error();
     return nullptr;
+  }
+
+  IMeshInternal* _internalApi() override
+  {
+    ARCANE_THROW(NotImplementedException,"");
   }
 };
 
