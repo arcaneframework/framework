@@ -115,4 +115,15 @@ TEST(EvolutiveMeshTest, RemoveCells) {
   node_to_cell[11] = 3;
   node2cells.connectivity_value.debugPrint();
   EXPECT_TRUE(std::equal(node2cells.connectivity_value.constView().begin(), node2cells.connectivity_value.constView().end(), node_to_cell.begin()));
+  // Remove last cell 3
+  mesh.scheduleRemoveItems(cell_family, { 3 });
+  mesh.applyScheduledOperations();
+  EXPECT_EQ(cell_family.nbElements(), 0);
+  remaining_cell_uids = mesh.uniqueIds(cell_family, cell_family.all().localIds());
+  EXPECT_EQ(remaining_cell_uids.size(), 0);
+  // compute a reference connectivity : replace removed cells by null lid
+  std::fill(node_to_cell.begin(), node_to_cell.end(), Neo::utils::NULL_ITEM_LID);
+  node2cells.connectivity_value.debugPrint();
+  EXPECT_TRUE(std::equal(node2cells.connectivity_value.constView().begin(), node2cells.connectivity_value.constView().end(), node_to_cell.begin()));
+  // todo also check evolution of source family connectivity
 }
