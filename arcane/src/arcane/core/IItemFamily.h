@@ -44,6 +44,7 @@ class IItemFamilyPolicyMng;
 class IItemFamilyTopologyModifier;
 class ItemInternalConnectivityList;
 class Properties;
+
 namespace mesh
 {
   class ItemDataList;
@@ -711,17 +712,10 @@ class IItemFamily
   //! Propriétés associées à cette famille.
   virtual Properties* properties() =0;
 
-  /*!
-   * \internal
-   * \brief Interface du modificateur de topologie.
-   */
-  virtual IItemFamilyTopologyModifier* _topologyModifier() =0;
+ public:
 
-  /*!
-   * \internal
-   * \brief Informations sur les connectivités non structurés
-   */
-  virtual ItemInternalConnectivityList* _unstructuredItemInternalConnectivityList() =0;
+  //! API interne à Arcane
+  virtual IItemFamilyInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/

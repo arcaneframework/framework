@@ -21,31 +21,31 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IVariable.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IApplication.h"
-#include "arcane/IDataFactoryMng.h"
-#include "arcane/ItemInfoListView.h"
-#include "arcane/ItemPairGroup.h"
-#include "arcane/ItemPairGroupImpl.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/ItemInternalSortFunction.h"
-#include "arcane/Properties.h"
-#include "arcane/ItemFamilyCompactInfos.h"
-#include "arcane/IMeshMng.h"
-#include "arcane/IMeshCompacter.h"
-#include "arcane/IMeshCompactMng.h"
-#include "arcane/MeshPartInfo.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IDataFactoryMng.h"
+#include "arcane/core/ItemInfoListView.h"
+#include "arcane/core/ItemPairGroup.h"
+#include "arcane/core/ItemPairGroupImpl.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/ItemInternalSortFunction.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/ItemFamilyCompactInfos.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/IMeshCompacter.h"
+#include "arcane/core/IMeshCompactMng.h"
+#include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
-
-#include "arcane/datatype/IDataOperation.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
+#include "arcane/core/datatype/IDataOperation.h"
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/ItemSharedInfoList.h"
@@ -53,16 +53,16 @@
 #include "arcane/mesh/ItemConnectivitySelector.h"
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 
-#include "arcane/parallel/GhostItemsVariableParallelOperation.h"
-#include "arcane/parallel/IStat.h"
+#include "arcane/core/parallel/GhostItemsVariableParallelOperation.h"
+#include "arcane/core/parallel/IStat.h"
 
-#include "arcane/IIncrementalItemConnectivity.h"
-#include "arcane/IItemConnectivityMng.h"
-#include "arcane/IItemFamilyPolicyMng.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
+#include "arcane/core/IItemConnectivityMng.h"
+#include "arcane/core/IItemFamilyPolicyMng.h"
 
-#include "arcane/ItemPrinter.h"
-#include "arcane/ConnectivityItemVector.h"
-#include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ConnectivityItemVector.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
 
 #include "arcane/mesh/ItemProperty.h"
 #include "arcane/mesh/ItemData.h"
@@ -112,6 +112,32 @@ _offsetArrayByOne(Array<DataType>* array)
 }
 
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ItemFamily::InternalApi
+: public IItemFamilyInternal
+{
+ public:
+
+  explicit InternalApi(ItemFamily* family): m_family(family){}
+
+ public:
+
+  ItemInternalConnectivityList* unstructuredItemInternalConnectivityList() override
+  {
+    return m_family->_unstructuredItemInternalConnectivityList();
+  }
+  IItemFamilyTopologyModifier* topologyModifier() override
+  {
+    return m_family->_topologyModifier();
+  }
+
+ private:
+
+  ItemFamily* m_family = nullptr;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -208,28 +234,14 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 : TraceAccessor(mesh->traceMng())
 , m_name(name)
 , m_mesh(mesh)
+, m_internal_api(new InternalApi(this))
 , m_sub_domain(mesh->subDomain())
-, m_parent_family(nullptr)
-, m_parent_family_depth(0)
 , m_infos(mesh,ik,name)
-, m_need_prepare_dump(true)
 , m_item_internal_list(mesh->meshItemInternalList())
 , m_common_item_shared_info(new ItemSharedInfo(this,m_item_internal_list,&m_item_connectivity_list))
 , m_item_shared_infos(new ItemSharedInfoList(this,m_common_item_shared_info))
-, m_current_variable_item_size(0)
-, m_item_sort_function(nullptr)
-, m_local_connectivity_info(nullptr)
-, m_global_connectivity_info(nullptr)
 , m_properties(new Properties(*mesh->properties(),name))
-, m_connectivity_mng(nullptr)
-, m_policy_mng(nullptr)
-, m_default_sub_domain_owner(NULL_SUB_DOMAIN_ID)
 , m_sub_domain_id(mesh->meshPartInfo().partRank())
-, m_is_parallel(false)
-, m_current_id(0)
-, m_item_need_prepare_dump(false)
-, m_nb_allocate_info(0)
-, m_topology_modifier(nullptr)
 {
   m_item_connectivity_list.m_items = mesh->meshItemInternalList();
   m_infos.setItemFamily(this);
@@ -254,10 +266,8 @@ ItemFamily::
   for( ItemConnectivitySelector* ics : m_connectivity_selector_list )
     delete ics;
 
-  //for( IIncrementalItemConnectivity* c : m_source_incremental_item_connectivities )
-  //delete c;
-
   delete m_common_item_shared_info;
+  delete m_internal_api;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2499,6 +2509,15 @@ _updateItemViews()
   m_common_item_shared_info->m_parent_item_ids = m_items_nb_parent->view();
 
   m_items_unique_id_view = _getView(m_items_unique_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamilyInternal* ItemFamily::
+_internalApi()
+{
+  return m_internal_api;
 }
 
 /*---------------------------------------------------------------------------*/

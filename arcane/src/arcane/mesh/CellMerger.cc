@@ -18,11 +18,12 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/Item.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IItemFamilyTopologyModifier.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IItemFamilyTopologyModifier.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
 
 #include "arcane/mesh/FaceReorienter.h"
 
@@ -46,9 +47,9 @@ class ItemSwapperUtils
   ItemSwapperUtils(IMesh* mesh)
   : TraceAccessor(mesh->traceMng()),
     m_face_reorienter(mesh),
-    m_cell_tm(mesh->cellFamily()->_topologyModifier()),
-    m_face_tm(mesh->faceFamily()->_topologyModifier()),
-    m_node_tm(mesh->nodeFamily()->_topologyModifier())
+    m_cell_tm(mesh->cellFamily()->_internalApi()->topologyModifier()),
+    m_face_tm(mesh->faceFamily()->_internalApi()->topologyModifier()),
+    m_node_tm(mesh->nodeFamily()->_internalApi()->topologyModifier())
   {
   }
  public:
@@ -127,7 +128,7 @@ class ItemSwapperUtils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/**
+/*!
  * \brief  Recherche la face commune à deux mailles.
  *
  * Cet fonction-classe a pour but de déterminer la face commune à deux
@@ -140,10 +141,10 @@ class CommonFaceFinder
   typedef std::set<Integer> NodesLIDSet;
 
  private:
-  Integer m_cell_1_local_number; /**< Numéro de la face commune dans la maille 1 */
-  Integer m_cell_2_local_number; /**< Numéro de la face commune dans la maille 2 */
+  Integer m_cell_1_local_number; //!< Numéro de la face commune dans la maille 1
+  Integer m_cell_2_local_number; //!< Numéro de la face commune dans la maille 2
 
-  NodesLIDSet m_nodes_lid_set;	/**< Ensemble des localId des sommets en communs */
+  NodesLIDSet m_nodes_lid_set;	//! Ensemble des localId des sommets en communs
 
  public:
   /*! 
@@ -156,7 +157,7 @@ class CommonFaceFinder
     return m_nodes_lid_set;
   }
 
-  /** 
+  /*!
    * Access en lecture seule au numéro local de la face commune dans
    * la maille 1
    * 
@@ -167,7 +168,7 @@ class CommonFaceFinder
     return m_cell_1_local_number;
   }
 
-  /** 
+  /*! 
    * Access en lecture seule au numéro local de la face commune dans
    * la maille 2
    * 
@@ -178,7 +179,7 @@ class CommonFaceFinder
     return m_cell_2_local_number;
   }
 
-  /** 
+  /*! 
    * Constructeur. C'est à l'appel du constructeur que toutes les
    * structures de données sont générées
    * 

@@ -339,6 +339,11 @@ class IMesh
 
   //! Gestionnaire de types d'entités associé
   virtual ItemTypeMng* itemTypeMng() const =0;
+
+ public:
+
+  //! API interne à Arcane
+  virtual IMeshInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -108,6 +108,8 @@
 #include "arcane/ISimpleTableReaderWriter.h"
 #include "arcane/ISimpleTableWriterHelper.h"
 #include "arcane/core/IMeshInitialAllocator.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
+#include "arcane/core/internal/IMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
