@@ -39,13 +39,13 @@ class IVariableSynchronizer;
 
 namespace Arcane::MeshUtils
 {
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 writeMeshItemInfo(ISubDomain*, Cell cell, bool depend_info = true);
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 writeMeshItemInfo(ISubDomain*, Node node, bool depend_info = true);
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 writeMeshItemInfo(ISubDomain*, Edge edge, bool depend_info = true);
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 writeMeshItemInfo(ISubDomain*, Face face, bool depend_info = true);
 
 /*---------------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ writeMeshItemInfo(ISubDomain*, Face face, bool depend_info = true);
  \retval true si la face change d'orientation lors de la renumérotation
  \retval false sinon.
 */
-ARCANE_CORE_EXPORT bool
+extern "C++" ARCANE_CORE_EXPORT bool
 reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids);
 
 /*---------------------------------------------------------------------------*/
@@ -99,7 +99,7 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids);
  \retval true si la face change d'orientation lors de la renumérotation
  \retval false sinon.
 */
-ARCANE_CORE_EXPORT bool
+extern "C++" ARCANE_CORE_EXPORT bool
 reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_index);
 
 /*---------------------------------------------------------------------------*/
@@ -114,7 +114,7 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
 
   \return la face correspondante ou 0 si la face n'est pas trouvé.
 */
-ARCANE_CORE_EXPORT Face
+extern "C++" ARCANE_CORE_EXPORT Face
 getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id);
 
 /*---------------------------------------------------------------------------*/
@@ -129,7 +129,7 @@ getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id);
 
   \return la face correspondante ou 0 si la face n'est pas trouvé.
 */
-ARCANE_CORE_EXPORT Face
+extern "C++" ARCANE_CORE_EXPORT Face
 getFaceFromNodesUnique(Node node, Int64ConstArrayView face_nodes_unique_id);
 
 /*---------------------------------------------------------------------------*/
@@ -142,7 +142,7 @@ getFaceFromNodesUnique(Node node, Int64ConstArrayView face_nodes_unique_id);
  * Les entités situées après l'entité supprimée sont décalées pour remplir le trou.
  * Si aucune valeur de \a items ne vaut \a local_id, une exception est levée.
  */
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 removeItemAndKeepOrder(Int32ArrayView items, Int32 local_id);
 
 /*---------------------------------------------------------------------------*/
@@ -157,7 +157,7 @@ removeItemAndKeepOrder(Int32ArrayView items, Int32 local_id);
  * n'est utilisable que pour les maillages ancienne génération (MeshV1) et
  * sera supprimée dès que cette option ne sera plus utilisée.
  */
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 checkMeshProperties(IMesh* mesh, bool is_sorted, bool has_no_hole, bool check_faces);
 
 /*!
@@ -166,10 +166,10 @@ checkMeshProperties(IMesh* mesh, bool is_sorted, bool has_no_hole, bool check_fa
  * Les identifiants des entités sont triés pour que le maillage soit
  * identique quel que soit la numérotation initiale.
  */
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 writeMeshInfosSorted(IMesh* mesh, const String& file_name);
 
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 writeMeshInfos(IMesh* mesh, const String& file_name);
 
 /*!
@@ -177,13 +177,13 @@ writeMeshInfos(IMesh* mesh, const String& file_name);
  *
  * La connectivité de chaque entité arête, face et maille est sauvée.
  */
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 writeMeshConnectivity(IMesh* mesh, const String& file_name);
 
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 checkMeshConnectivity(IMesh* mesh, const XmlNode& root_node, bool check_sub_domain);
 
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 checkMeshConnectivity(IMesh* mesh, const String& file_name, bool check_sub_domain);
 
 /*!
@@ -191,7 +191,7 @@ checkMeshConnectivity(IMesh* mesh, const String& file_name, bool check_sub_domai
  *
  * Pour l'affichage, un nom \a name est associé.
  */
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 printItems(std::ostream& ostr, const String& name, ItemGroup item_group);
 
 /*!
@@ -202,11 +202,11 @@ printItems(std::ostream& ostr, const String& name, ItemGroup item_group);
  *
  * En retour, indique la mémoire consommée en octets.
  */
-ARCANE_CORE_EXPORT Int64
+extern "C++" ARCANE_CORE_EXPORT Int64
 printMeshGroupsMemoryUsage(IMesh* mesh, Int32 print_level);
 
 //! Limite au plus juste l'usage mémoire des groupes.
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 shrinkMeshGroups(IMesh* mesh);
 
 /*!
@@ -215,14 +215,14 @@ shrinkMeshGroups(IMesh* mesh);
  * Ecrit dans le fichier \a filename les informations sur la topologie de \a var_syncer.
  * Cette méthode est collective. Seul le rang 0 écrit l'information de la topologie.
  */
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer, const String& filename);
 
 /*!
  * \interne
  * \brief Calcul et affiche les patterns communs dans les connectivités.
  */
-ARCANE_CORE_EXPORT void
+extern "C++" ARCANE_CORE_EXPORT void
 computeConnectivityPatternOccurence(IMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
@@ -239,7 +239,28 @@ computeConnectivityPatternOccurence(IMesh* mesh);
  * informations entre l'accélérateur et l'hôte pour éviter des aller-retour
  * multiples si les connectivités sont utilisées sur les deux à la fois.
  */
-extern "C++" ARCANE_CORE_EXPORT void markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh);
+extern "C++" ARCANE_CORE_EXPORT void
+markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*
+ * \brief Retourne l'entité de la famille \a family de numéro unique \a unique_id.
+ *
+ * Si aucune entité avec cet \a unique_id n'est trouvé, retourne l'entité nulle.
+ */
+extern "C++" ARCANE_CORE_EXPORT impl::ItemBase
+findOneItem(IItemFamily* family, Int64 unique_id);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*
+ * \brief Retourne l'entité de la famille \a family de numéro unique \a unique_id.
+ *
+ * Si aucune entité avec cet \a unique_id n'est trouvé, retourne l'entité nulle.
+ */
+extern "C++" ARCANE_CORE_EXPORT impl::ItemBase
+findOneItem(IItemFamily* family, ItemUniqueId unique_id);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

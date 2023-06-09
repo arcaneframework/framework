@@ -1745,6 +1745,30 @@ markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+impl::ItemBase MeshUtils::
+findOneItem(IItemFamily* family, Int64 unique_id)
+{
+  ItemInternal* v = family->findOneItem(unique_id);
+  if (v)
+    return {v};
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::ItemBase MeshUtils::
+findOneItem(IItemFamily* family, ItemUniqueId unique_id)
+{
+  ItemInternal* v = family->findOneItem(unique_id);
+  if (v)
+    return {v};
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
