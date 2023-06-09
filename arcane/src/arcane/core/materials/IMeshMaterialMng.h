@@ -35,7 +35,7 @@ class MeshEnvironmentBuildInfo;
 class MeshMaterialVariableIndexer;
 class AllEnvCellVectorView;
 class CellToAllEnvCellConverter;
-class AllCell2AllEnvCell;
+class AllCellToAllEnvCell;
 class IMeshMaterialModifierImpl;
 class IMeshComponent;
 class IMeshMaterialVariable;
@@ -497,7 +497,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
    * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
    */
-  virtual AllCell2AllEnvCell* getAllCell2AllEnvCell() const =0;
+  virtual AllCellToAllEnvCell* getAllCellToAllEnvCell() const =0;
   /*!
    * \internal
    * \brief Construit la table de "connectivité" CellLocalId -> AllEnvCell

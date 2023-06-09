@@ -338,9 +338,9 @@ forceRecompute(bool compute_all)
     }
   }
 
-  // Met à jour le AllCell2AllEnvCell s'il a été initialisé si la fonctionnalité est activé
+  // Met à jour le AllCellToAllEnvCell s'il a été initialisé si la fonctionnalité est activé
   if (m_material_mng->isCellToAllEnvCellForRunCommand()) {
-    auto* allCell2AllEnvCell(m_material_mng->getAllCell2AllEnvCell());
+    auto* allCell2AllEnvCell(m_material_mng->getAllCellToAllEnvCell());
     if (allCell2AllEnvCell)
       allCell2AllEnvCell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
     else

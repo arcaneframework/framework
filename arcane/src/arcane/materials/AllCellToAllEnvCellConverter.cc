@@ -22,14 +22,14 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
-AllCell2AllEnvCell::
-AllCell2AllEnvCell()
+AllCellToAllEnvCell::
+AllCellToAllEnvCell()
 : m_mm(nullptr), m_alloc(nullptr), m_nb_allcell(0), m_allcell_allenvcell(nullptr)
 {
 }
 */
-AllCell2AllEnvCell::
-AllCell2AllEnvCell(IMeshMaterialMng* mm, IMemoryAllocator* alloc, Integer nb_allcell)
+AllCellToAllEnvCell::
+AllCellToAllEnvCell(IMeshMaterialMng* mm, IMemoryAllocator* alloc, Integer nb_allcell)
 : m_mm(mm), m_alloc(alloc), m_nb_allcell(nb_allcell)
 , m_allcell_allenvcell(UniqueArray<UniqueArray<ComponentItemLocalId>>(alloc, nb_allcell))
 {
@@ -37,8 +37,8 @@ AllCell2AllEnvCell(IMeshMaterialMng* mm, IMemoryAllocator* alloc, Integer nb_all
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
-AllCell2AllEnvCell::
-~AllCell2AllEnvCell()
+AllCellToAllEnvCell::
+~AllCellToAllEnvCell()
 {
   reset();
 }
@@ -46,7 +46,7 @@ AllCell2AllEnvCell::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
-void AllCell2AllEnvCell::
+void AllCellToAllEnvCell::
 reset()
 {
   if (m_allcell_allenvcell) {
@@ -66,13 +66,13 @@ reset()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
-AllCell2AllEnvCell* AllCell2AllEnvCell::
+AllCellToAllEnvCell* AllCellToAllEnvCell::
 create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
 {
-  AllCell2AllEnvCell *_instance(nullptr);
-  _instance = reinterpret_cast<AllCell2AllEnvCell*>(alloc->allocate(sizeof(AllCell2AllEnvCell)));
+  AllCellToAllEnvCell *_instance(nullptr);
+  _instance = reinterpret_cast<AllCellToAllEnvCell*>(alloc->allocate(sizeof(AllCellToAllEnvCell)));
   if (!_instance)
-    ARCANE_FATAL("Unable to allocate memory for AllCell2AllEnvCell instance");
+    ARCANE_FATAL("Unable to allocate memory for AllCellToAllEnvCell instance");
 
   _instance->m_mm = mm;
   _instance->m_alloc = alloc;
@@ -103,14 +103,14 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   return _instance;
 }
 */
-AllCell2AllEnvCell* AllCell2AllEnvCell::
+AllCellToAllEnvCell* AllCellToAllEnvCell::
 create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
 {
-  AllCell2AllEnvCell *_instance(nullptr);
-  _instance = reinterpret_cast<AllCell2AllEnvCell*>(alloc->allocate(sizeof(AllCell2AllEnvCell)));
+  AllCellToAllEnvCell *_instance(nullptr);
+  _instance = reinterpret_cast<AllCellToAllEnvCell*>(alloc->allocate(sizeof(AllCellToAllEnvCell)));
   if (!_instance)
-    ARCANE_FATAL("Unable to allocate memory for AllCell2AllEnvCell instance");
-  _instance = new (_instance) AllCell2AllEnvCell(mm, alloc, mm->mesh()->allCells().itemFamily()->maxLocalId()+1);
+    ARCANE_FATAL("Unable to allocate memory for AllCellToAllEnvCell instance");
+  _instance = new (_instance) AllCellToAllEnvCell(mm, alloc, mm->mesh()->allCells().itemFamily()->maxLocalId()+1);
   //_instance->m_allcell_allenvcell.printInfos(std::cout);
 
   CellToAllEnvCellConverter all_env_cell_converter(mm);
@@ -130,25 +130,25 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
-void AllCell2AllEnvCell::
+void AllCellToAllEnvCell::
 bruteForceUpdate(Int32ConstArrayView ids)
 {
   // TODO: Je met un fatal, à supprimer une fois bien testé/exploré
-  //ARCANE_FATAL("AllCell2AllEnvCell::bruteForceUpdate call !!!");
+  //ARCANE_FATAL("AllCellToAllEnvCell::bruteForceUpdate call !!!");
   // A priori, je ne pense pas que le nb de maille ait changé quand on fait un 
   // ForceRecompute et le updateMaterialDirect. Mais ça doit arriver ailleurs... le endUpdate ?
   if (m_nb_allcell != m_mm->mesh()->allCells().size()) {
 
     // TODO: Je met un fatal, à supprimer une fois bien testé/exploré
-    //ARCANE_FATAL("The number of cells has changed since initialization of AllCell2AllEnvCell.");
+    //ARCANE_FATAL("The number of cells has changed since initialization of AllCellToAllEnvCell.");
 
-    AllCell2AllEnvCell *swap_ptr(create(m_mm, m_alloc));
+    AllCellToAllEnvCell *swap_ptr(create(m_mm, m_alloc));
     std::swap(this->m_mm,                 swap_ptr->m_mm);
     std::swap(this->m_alloc,              swap_ptr->m_alloc);
     std::swap(this->m_nb_allcell,         swap_ptr->m_nb_allcell);
     std::swap(this->m_allcell_allenvcell, swap_ptr->m_allcell_allenvcell);
     //swap_ptr->reset();
-    swap_ptr->~AllCell2AllEnvCell();
+    swap_ptr->~AllCellToAllEnvCell();
     m_alloc->deallocate(swap_ptr);
   } else {
     // Si le nb de maille n'a pas changé, on reconstruit en fonction de la liste de maille
@@ -178,20 +178,14 @@ bruteForceUpdate(Int32ConstArrayView ids)
   }
 }
 */
-void AllCell2AllEnvCell::
+void AllCellToAllEnvCell::
 bruteForceUpdate(Int32ConstArrayView ids)
 {
   // TODO: Je met un fatal, à supprimer une fois bien testé/exploré
-  //ARCANE_FATAL("AllCell2AllEnvCell::bruteForceUpdate call !!!");
+  //ARCANE_FATAL("AllCellToAllEnvCell::bruteForceUpdate call !!!");
   // NB: Le lien cell -> allenvcell se fait via le localid. Il se peut que le nb de maille diminue,
   // on n'utilise donc pas la taille des allCells, mais le maxLocalId (+1) comme taille de la table
   if (m_nb_allcell != m_mm->mesh()->allCells().itemFamily()->maxLocalId()+1) {
-
-    std::stringstream ss;
-    ss << "AllCells size is " << m_mm->mesh()->allCells().size() << ", was " << m_nb_allcell;
-    std::cout << ss.str() << std::endl;
-    //ARCANE_FATAL("");
-
     m_allcell_allenvcell.clear();
     m_nb_allcell = m_mm->mesh()->allCells().size();
     m_allcell_allenvcell.resize(m_mm->mesh()->allCells().itemFamily()->maxLocalId()+1);

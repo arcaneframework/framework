@@ -213,10 +213,10 @@ class MeshMaterialMng
     m_is_allcell_2_allenvcell = is_enable;
   }
   bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
-  AllCell2AllEnvCell* getAllCell2AllEnvCell() const override { return m_allcell_2_allenvcell; }
+  AllCellToAllEnvCell* getAllCellToAllEnvCell() const override { return m_allcell_2_allenvcell; }
   void createAllCell2AllEnvCell(IMemoryAllocator* alloc) override
   {
-    m_allcell_2_allenvcell = AllCell2AllEnvCell::create(this, alloc);
+    m_allcell_2_allenvcell = AllCellToAllEnvCell::create(this, alloc);
   }
 
  private:
@@ -272,7 +272,7 @@ class MeshMaterialMng
   std::unique_ptr<ObserverPool> m_observer_pool;
   String m_data_compressor_service_name;
 
-  AllCell2AllEnvCell* m_allcell_2_allenvcell;
+  AllCellToAllEnvCell* m_allcell_2_allenvcell;
   bool m_is_allcell_2_allenvcell;
 
  private:

@@ -49,7 +49,7 @@ namespace Arcane::Materials
  
  \code
  * 
- * auto* ac2aec = ::Arcane::Materials::AllCell2AllEnvCell::create(...);
+ * auto* ac2aec = ::Arcane::Materials::AllCellToAllEnvCell::create(...);
  * command << RUNCOMMAND_ENUMERATE(Cell, cid, allCells()) {
  *   for (Int32 i(0); i < ac2aec->getAllCell2AllEnvCellTable()[cid].size(); ++i) {
  *     const auto& mvi(ac2aec->getAllCell2AllEnvCellTable()[cid][i]);
@@ -60,22 +60,22 @@ namespace Arcane::Materials
  \endcode
  
  */
-class ARCANE_MATERIALS_EXPORT AllCell2AllEnvCell
+class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 {
  public:
-  explicit AllCell2AllEnvCell(IMeshMaterialMng* mm, IMemoryAllocator* alloc, Integer nb_allcell);
-  ~AllCell2AllEnvCell() = default;
+  explicit AllCellToAllEnvCell(IMeshMaterialMng* mm, IMemoryAllocator* alloc, Integer nb_allcell);
+  ~AllCellToAllEnvCell() = default;
   //void reset();
   
   //! Copies interdites
-  AllCell2AllEnvCell(const AllCell2AllEnvCell&) = delete;
-  AllCell2AllEnvCell& operator=(const AllCell2AllEnvCell&) = delete;
+  AllCellToAllEnvCell(const AllCellToAllEnvCell&) = delete;
+  AllCellToAllEnvCell& operator=(const AllCellToAllEnvCell&) = delete;
 
   /*!
    * La fonction de création. Il faut attendre que les données
    * relatives aux matériaux soient finalisées
    */
-  static AllCell2AllEnvCell* create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
+  static AllCellToAllEnvCell* create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
 
   // Rien d'intelligent ici, on refait tout. Il faut voir dans un 2nd temps 
   // pour faire qqch de plus malin et donc certainement plus rapide...
@@ -86,7 +86,7 @@ class ARCANE_MATERIALS_EXPORT AllCell2AllEnvCell
    * Méthode d'accès à la table de "connectivité" cell -> all env cells
    */
   //ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
-  ARCCORE_HOST_DEVICE UniqueArray<UniqueArray<ComponentItemLocalId>> internal() const
+  ARCCORE_HOST_DEVICE const UniqueArray<UniqueArray<ComponentItemLocalId>>& internal() const
   {
     return m_allcell_allenvcell;
   }
@@ -108,47 +108,51 @@ class ARCANE_MATERIALS_EXPORT AllCell2AllEnvCell
  *        via les RUNCOMMAND_...
  * \note Aucun interet en soit, mis à part le fait d'obliger l'utilisateur à créer
  * cet objet en amout de l'appel à un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL et donc 
- * de garantir la copie du pointeur AllCell2AllEnvCell pour la lambda à executer sur
+ * de garantir la copie du pointeur AllCellToAllEnvCell pour la lambda à executer sur
  * l'accélérateur
  */
-class ARCANE_MATERIALS_EXPORT Cell2AllEnvCellAccessor
+class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
 {
  public:
-  Cell2AllEnvCellAccessor()
+  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor()
   : m_cell_allenvcell(nullptr)
   {
   }
-  Cell2AllEnvCellAccessor(const IMeshMaterialMng* mmmng)
-  : m_cell_allenvcell(mmmng->getAllCell2AllEnvCell())
+  CellToAllEnvCellAccessor(const IMeshMaterialMng* mmmng)
+  : m_cell_allenvcell(mmmng->getAllCellToAllEnvCell())
   {
   }
-  ARCCORE_HOST_DEVICE Cell2AllEnvCellAccessor(const Cell2AllEnvCellAccessor& acc)
+  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor(CellToAllEnvCellAccessor& acc)
   : m_cell_allenvcell(acc.m_cell_allenvcell)
   {
   }
-  ARCCORE_HOST_DEVICE Cell2AllEnvCellAccessor(Cell2AllEnvCellAccessor& acc)
+  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor(const CellToAllEnvCellAccessor& acc)
   : m_cell_allenvcell(acc.m_cell_allenvcell)
   {
   }
 
-  ARCCORE_HOST_DEVICE Cell2AllEnvCellAccessor& operator=(Cell2AllEnvCellAccessor acc)
+  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor& operator=(CellToAllEnvCellAccessor acc)
   {
     m_cell_allenvcell = acc.m_cell_allenvcell;
     return *this;
   }
-  ARCCORE_HOST_DEVICE Cell2AllEnvCellAccessor& operator=(const Cell2AllEnvCellAccessor& acc)
+  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor& operator=(CellToAllEnvCellAccessor& acc)
+  {
+    m_cell_allenvcell = acc.m_cell_allenvcell;
+    return *this;
+  }  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor& operator=(const CellToAllEnvCellAccessor& acc)
   {
     m_cell_allenvcell = acc.m_cell_allenvcell;
     return *this;
   }
 
-  ARCCORE_HOST_DEVICE AllCell2AllEnvCell* getAllCell2AllEnvCell() const
+  ARCCORE_HOST_DEVICE const AllCellToAllEnvCell* getAllCellToAllEnvCell() const
   {
     return m_cell_allenvcell;
   }
 
  private:
-  AllCell2AllEnvCell* m_cell_allenvcell;
+  AllCellToAllEnvCell* m_cell_allenvcell;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -165,21 +169,21 @@ class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
 
  public:
   // La version CPU permet de vérifier qu'on a bien fait l'init avant l'ENUMERATE
-  ARCCORE_HOST_DEVICE explicit Cell2AllComponentCellEnumerator(Integer cell_id, const Cell2AllEnvCellAccessor& acc)
+  ARCCORE_HOST_DEVICE explicit Cell2AllComponentCellEnumerator(Integer cell_id, const CellToAllEnvCellAccessor& acc)
   : m_cid(cell_id), m_index(0)
 #if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
-  , m_ptr(&(acc.getAllCell2AllEnvCell()->internal()[cell_id]))
+  , m_ptr(&(acc.getAllCellToAllEnvCell()->internal()[cell_id]))
   , m_size((*m_ptr).size())
   {
   }
 #else
   , m_ptr(nullptr), m_size(0)
   {
-    if (acc.getAllCell2AllEnvCell()) {
-      m_ptr = &(acc.getAllCell2AllEnvCell()->internal()[cell_id]);
+    if (acc.getAllCellToAllEnvCell()) {
+      m_ptr = &(acc.getAllCellToAllEnvCell()->internal()[cell_id]);
       m_size = (*m_ptr).size();
     } else {
-      ARCANE_FATAL("Must create AllCell2AllEnvCell before using ENUMERATE_ALLENVCELL");
+      ARCANE_FATAL("Must create AllCellToAllEnvCell before using ENUMERATE_ALLENVCELL");
     }
   }
 #endif
@@ -188,21 +192,21 @@ class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
 
   ARCCORE_HOST_DEVICE bool hasNext() const { return m_index<m_size; }
 
-  ARCCORE_HOST_DEVICE ComponentItemLocalId& operator*() const { return (*m_ptr)[m_index]; }
+  ARCCORE_HOST_DEVICE const ComponentItemLocalId& operator*() const { return (*m_ptr)[m_index]; }
 
  private:
   Integer m_cid;
   index_type m_index;
   //Span<ComponentItemLocalId>* m_ptr;
-  UniqueArray<ComponentItemLocalId>* m_ptr;
+  const UniqueArray<ComponentItemLocalId>* m_ptr;
   size_type m_size;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 //! Macro pour itérer sur un groupe de mailles dans le but d'itérer sur les allenvcell de chaque maille
-//!\note En forçant l'utilisation du Cell2AllEnvCellAccessor dans la macro, on assure la capture par copie
-// du pointeur de AllCell2AllEnvCell, permettant l'utilisation du ENUMERATE_CELL_ALLENVCELL
+//!\note En forçant l'utilisation du CellToAllEnvCellAccessor dans la macro, on assure la capture par copie
+// du pointeur de AllCellToAllEnvCell, permettant l'utilisation du ENUMERATE_CELL_ALLENVCELL
 // TODO: Très certainement à déplacer ailleurs si on garde ce proto
 #define RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcellaccessor,iter_name,cell_group)         \
   A_FUNCINFO << cell_group << [=] ARCCORE_HOST_DEVICE (CellLocalId iter_name)
@@ -224,7 +228,7 @@ class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
  * \param iname nom de la variable (type MatVarIndex) permettant l'accès aux 
  *              données.
  * \param cid identifiant de la maille (type Integer).
- * \param cell2allenvcellaccessor connectivité cell->allenvcell (type Cell2AllEnvCellAccessor)
+ * \param cell2allenvcellaccessor connectivité cell->allenvcell (type CellToAllEnvCellAccessor)
  */
 // TODO: Très certainement à déplacer ailleurs si on garde ce proto
 #define ENUMERATE_CELL_ALLENVCELL(iname,cid,cell2allenvcellaccessor) \
