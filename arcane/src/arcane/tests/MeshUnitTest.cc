@@ -209,6 +209,7 @@ public:
   void _testComputeLocalIdPattern();
   void _testGroupsAsBlocks();
   void _testCoherency();
+  void _testFindOneItem();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -303,6 +304,7 @@ executeTest()
   _testComputeLocalIdPattern();
   _testGroupsAsBlocks();
   _testCoherency();
+  _testFindOneItem();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1530,7 +1532,7 @@ _testDeallocateMesh()
 void MeshUnitTest::
 _testComputeLocalIdPattern()
 {
-  mesh_utils::computeConnectivityPatternOccurence(mesh());
+  MeshUtils::computeConnectivityPatternOccurence(mesh());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1572,6 +1574,56 @@ _testCoherency()
     ARCANE_FATAL("AMR incoherence: is_amr==true but eMeshAMRKind == None");
   if (!is_amr && mk.meshAMRKind()!=eMeshAMRKind::None)
     ARCANE_FATAL("AMR incoherence: is_amr==false but eMeshAMRKind != None");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testFindOneItem()
+{
+  UniqueArray<Int64> unique_ids;
+  UniqueArray<Int32> local_ids;
+  {
+    Int32 index = 0;
+    ENUMERATE_(Cell,icell,allCells()){
+      if (index>100)
+        break;
+      Cell cell = *icell;
+      unique_ids.add(cell.uniqueId());
+      local_ids.add(cell.localId());
+      ++index;
+    }
+  }
+
+  IItemFamily* cell_family = mesh()->cellFamily();
+
+  // Teste l'entité nulle
+  {
+    Int64 max_uid = 0;
+    ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
+      Int64 uid = cell.uniqueId();
+      max_uid = math::max(max_uid,uid);
+    }
+
+    Cell cell = MeshUtils::findOneItem(cell_family,max_uid+1);
+    if (!cell.null())
+      ARCANE_FATAL("Expected null cell but found cell={0}",ItemPrinter(cell));
+  }
+
+  for( Int32 i=0, n=unique_ids.size(); i<n; ++i ){
+    Int64 uid = unique_ids[i];
+    ItemUniqueId true_uid(uid);
+    Cell cell1 = MeshUtils::findOneItem(cell_family,uid);
+    if (cell1.null())
+      ARCANE_FATAL("Unexpected null cell");
+    if (cell1.localId()!=local_ids[i])
+      ARCANE_FATAL("Bad local id cell1={0} expected_lid={1}",ItemPrinter(cell1),local_ids[i]);
+    Cell cell2 = MeshUtils::findOneItem(cell_family,true_uid);
+    if (cell1!=cell2)
+      ARCANE_FATAL("Unexpected different cell cell1={0} cell2={1}",ItemPrinter(cell1),ItemPrinter(cell2));
+  }
 }
 
 /*---------------------------------------------------------------------------*/
