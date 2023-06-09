@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshUtils.h                                                 (C) 2000-2023 */
 /*                                                                           */
-/* Fonctions diverses sur les éléments du maillage.                          */
+/* Fonctions utilitaires diverses sur le maillage.                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHUTILS_H
-#define ARCANE_MESHUTILS_H
+#ifndef ARCANE_CORE_MESHUTILS_H
+#define ARCANE_CORE_MESHUTILS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,21 +30,21 @@ namespace Arcane
 {
 class XmlNode;
 class IVariableSynchronizer;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::mesh_utils
+namespace Arcane::MeshUtils
 {
-  ARCANE_CORE_EXPORT void
-  writeMeshItemInfo(ISubDomain*,Cell cell,bool depend_info=true);
-  ARCANE_CORE_EXPORT void
-  writeMeshItemInfo(ISubDomain*,Node node,bool depend_info=true);
-  ARCANE_CORE_EXPORT void
-  writeMeshItemInfo(ISubDomain*,Edge edge,bool depend_info=true);
-  ARCANE_CORE_EXPORT void
-  writeMeshItemInfo(ISubDomain*,Face face,bool depend_info=true);
+ARCANE_CORE_EXPORT void
+writeMeshItemInfo(ISubDomain*, Cell cell, bool depend_info = true);
+ARCANE_CORE_EXPORT void
+writeMeshItemInfo(ISubDomain*, Node node, bool depend_info = true);
+ARCANE_CORE_EXPORT void
+writeMeshItemInfo(ISubDomain*, Edge edge, bool depend_info = true);
+ARCANE_CORE_EXPORT void
+writeMeshItemInfo(ISubDomain*, Face face, bool depend_info = true);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,7 +69,7 @@ namespace Arcane::mesh_utils
  \retval false sinon.
 */
 ARCANE_CORE_EXPORT bool
-reorderNodesOfFace(Int64ConstArrayView before_ids,Int64ArrayView after_ids);
+reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -98,7 +98,7 @@ reorderNodesOfFace(Int64ConstArrayView before_ids,Int64ArrayView after_ids);
  \retval false sinon.
 */
 ARCANE_CORE_EXPORT bool
-reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id,IntegerArrayView new_index);
+reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_index);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -113,7 +113,7 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id,IntegerArrayView new_ind
   \return la face correspondante ou 0 si la face n'est pas trouvé.
 */
 ARCANE_CORE_EXPORT Face
-getFaceFromNodesLocal(Node node,Int32ConstArrayView face_nodes_local_id);
+getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -128,7 +128,7 @@ getFaceFromNodesLocal(Node node,Int32ConstArrayView face_nodes_local_id);
   \return la face correspondante ou 0 si la face n'est pas trouvé.
 */
 ARCANE_CORE_EXPORT Face
-getFaceFromNodesUnique(Node node,Int64ConstArrayView face_nodes_unique_id);
+getFaceFromNodesUnique(Node node, Int64ConstArrayView face_nodes_unique_id);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ getFaceFromNodesUnique(Node node,Int64ConstArrayView face_nodes_unique_id);
  * Si aucune valeur de \a items ne vaut \a local_id, une exception est levée.
  */
 ARCANE_CORE_EXPORT void
-removeItemAndKeepOrder(Int32ArrayView items,Int32 local_id);
+removeItemAndKeepOrder(Int32ArrayView items, Int32 local_id);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -156,7 +156,7 @@ removeItemAndKeepOrder(Int32ArrayView items,Int32 local_id);
  * sera supprimée dès que cette option ne sera plus utilisée.
  */
 ARCANE_CORE_EXPORT void
-checkMeshProperties(IMesh* mesh,bool is_sorted,bool has_no_hole,bool check_faces);
+checkMeshProperties(IMesh* mesh, bool is_sorted, bool has_no_hole, bool check_faces);
 
 /*!
  * \brief Ecrit sur le fichier \a file_name les infos du maillage \a mesh
@@ -165,10 +165,10 @@ checkMeshProperties(IMesh* mesh,bool is_sorted,bool has_no_hole,bool check_faces
  * identique quel que soit la numérotation initiale.
  */
 ARCANE_CORE_EXPORT void
-writeMeshInfosSorted(IMesh* mesh,const String& file_name);
+writeMeshInfosSorted(IMesh* mesh, const String& file_name);
 
 ARCANE_CORE_EXPORT void
-writeMeshInfos(IMesh* mesh,const String& file_name);
+writeMeshInfos(IMesh* mesh, const String& file_name);
 
 /*!
  * \brief Ecrit sur le fichier \a file_name la connectivité du maillage \a mesh
@@ -176,14 +176,13 @@ writeMeshInfos(IMesh* mesh,const String& file_name);
  * La connectivité de chaque entité arête, face et maille est sauvée.
  */
 ARCANE_CORE_EXPORT void
-writeMeshConnectivity(IMesh* mesh,const String& file_name);
+writeMeshConnectivity(IMesh* mesh, const String& file_name);
 
 ARCANE_CORE_EXPORT void
-checkMeshConnectivity(IMesh* mesh,const XmlNode& root_node,bool check_sub_domain);
+checkMeshConnectivity(IMesh* mesh, const XmlNode& root_node, bool check_sub_domain);
 
 ARCANE_CORE_EXPORT void
-checkMeshConnectivity(IMesh* mesh,const String& file_name,bool check_sub_domain);
-
+checkMeshConnectivity(IMesh* mesh, const String& file_name, bool check_sub_domain);
 
 /*!
  * \brief Ecrit dans le flux \a ostr la description des items du groupe \a item_group
@@ -191,7 +190,7 @@ checkMeshConnectivity(IMesh* mesh,const String& file_name,bool check_sub_domain)
  * Pour l'affichage, un nom \a name est associé.
  */
 ARCANE_CORE_EXPORT void
-printItems(std::ostream& ostr,const String& name,ItemGroup item_group);
+printItems(std::ostream& ostr, const String& name, ItemGroup item_group);
 
 /*!
  * \brief Affiche l'utilisation mémoire des groupes du maillage.
@@ -202,7 +201,7 @@ printItems(std::ostream& ostr,const String& name,ItemGroup item_group);
  * En retour, indique la mémoire consommée en octets.
  */
 ARCANE_CORE_EXPORT Int64
-printMeshGroupsMemoryUsage(IMesh* mesh,Int32 print_level);
+printMeshGroupsMemoryUsage(IMesh* mesh, Int32 print_level);
 
 //! Limite au plus juste l'usage mémoire des groupes.
 ARCANE_CORE_EXPORT void
@@ -215,7 +214,7 @@ shrinkMeshGroups(IMesh* mesh);
  * Cette méthode est collective. Seul le rang 0 écrit l'information de la topologie.
  */
 ARCANE_CORE_EXPORT void
-dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer,const String& filename);
+dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer, const String& filename);
 
 /*!
  * \interne
@@ -227,7 +226,7 @@ computeConnectivityPatternOccurence(IMesh* mesh);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::mesh_utils
+} // namespace Arcane::MeshUtils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -255,5 +254,32 @@ void markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+namespace Arcane::mesh_utils
+{
 
+using MeshUtils::checkMeshConnectivity;
+using MeshUtils::checkMeshProperties;
+using MeshUtils::computeConnectivityPatternOccurence;
+using MeshUtils::dumpSynchronizerTopologyJSON;
+using MeshUtils::getFaceFromNodesLocal;
+using MeshUtils::getFaceFromNodesUnique;
+using MeshUtils::printItems;
+using MeshUtils::printMeshGroupsMemoryUsage;
+using MeshUtils::removeItemAndKeepOrder;
+using MeshUtils::reorderNodesOfFace;
+using MeshUtils::reorderNodesOfFace2;
+using MeshUtils::shrinkMeshGroups;
+using MeshUtils::writeMeshConnectivity;
+using MeshUtils::writeMeshInfos;
+using MeshUtils::writeMeshInfosSorted;
+using MeshUtils::writeMeshItemInfo;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::mesh_utils
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

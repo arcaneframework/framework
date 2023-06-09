@@ -152,7 +152,7 @@ _writeInfo(ISubDomain* mng,const VariableCollection& variables,const ItemType& i
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 writeMeshItemInfo(ISubDomain* sd,Cell cell,bool depend_info)
 {
   ITraceMng* trace = sd->traceMng();
@@ -214,7 +214,7 @@ writeMeshItemInfo(ISubDomain* sd,Cell cell,bool depend_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 writeMeshItemInfo(ISubDomain* sd,Node node,bool depend_info)
 {
   ITraceMng* trace = sd->traceMng();
@@ -268,7 +268,7 @@ writeMeshItemInfo(ISubDomain* sd,Node node,bool depend_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 writeMeshItemInfo(ISubDomain* sd,Edge edge,bool depend_info)
 {
   ITraceMng* trace = sd->traceMng();
@@ -323,7 +323,7 @@ writeMeshItemInfo(ISubDomain* sd,Edge edge,bool depend_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 writeMeshItemInfo(ISubDomain* sd,Face face,bool depend_info)
 {
   ITraceMng* trace = sd->traceMng();
@@ -511,7 +511,7 @@ _fillSorted(Item titem,Int32Array& local_ids,Int32ConstArrayView sorted_ids,cons
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 writeMeshInfosSorted(IMesh* mesh,const String& file_name)
 {
   if (!mesh)
@@ -681,7 +681,7 @@ writeMeshInfosSorted(IMesh* mesh,const String& file_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 writeMeshInfos(IMesh* mesh,const String& file_name)
 {
   if (!mesh)
@@ -803,7 +803,7 @@ _stringToIds(const String& str,Int64Array& ids)
 
 }
 
-void mesh_utils::
+void MeshUtils::
 writeMeshConnectivity(IMesh* mesh,const String& file_name)
 {
   std::ofstream ofile(file_name.localstr());
@@ -1070,7 +1070,7 @@ class MeshUtilsCheckConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 checkMeshConnectivity(IMesh* mesh,const XmlNode& doc_node,bool check_sub_domain)
 {
   if (!mesh)
@@ -1079,7 +1079,7 @@ checkMeshConnectivity(IMesh* mesh,const XmlNode& doc_node,bool check_sub_domain)
   v.doCheck();
 }
 
-void mesh_utils::
+void MeshUtils::
 checkMeshConnectivity(IMesh* mesh,const String& file_name,bool check_sub_domain)
 {
   ITraceMng* tm = mesh->traceMng();
@@ -1294,7 +1294,7 @@ doCheck()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 checkMeshProperties(IMesh* mesh,bool is_sorted,bool has_no_hole,bool check_faces)
 {
   if (!mesh)
@@ -1338,7 +1338,7 @@ checkMeshProperties(IMesh* mesh,bool is_sorted,bool has_no_hole,bool check_faces
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 printItems(std::ostream& ostr,const String& name,ItemGroup item_group)
 {
   ostr << " ------- " << name << '\n';
@@ -1350,7 +1350,7 @@ printItems(std::ostream& ostr,const String& name,ItemGroup item_group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool mesh_utils::
+bool MeshUtils::
 reorderNodesOfFace(Int64ConstArrayView before_ids,Int64ArrayView after_ids)
 {
   // \a true s'il faut réorienter les faces pour que leur orientation
@@ -1414,7 +1414,7 @@ reorderNodesOfFace(Int64ConstArrayView before_ids,Int64ArrayView after_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool mesh_utils::
+bool MeshUtils::
 reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id,IntegerArrayView new_index)
 {
   // \a true s'il faut réorienter les faces pour que leur orientation
@@ -1478,7 +1478,7 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id,IntegerArrayView new_ind
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Face mesh_utils::
+Face MeshUtils::
 getFaceFromNodesLocal(Node node,Int32ConstArrayView face_nodes_local_id)
 {
   Integer n = face_nodes_local_id.size();
@@ -1502,7 +1502,7 @@ getFaceFromNodesLocal(Node node,Int32ConstArrayView face_nodes_local_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Face mesh_utils::
+Face MeshUtils::
 getFaceFromNodesUnique(Node node,Int64ConstArrayView face_nodes_unique_id)
 {
   Integer n = face_nodes_unique_id.size();
@@ -1526,7 +1526,7 @@ getFaceFromNodesUnique(Node node,Int64ConstArrayView face_nodes_unique_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 removeItemAndKeepOrder(Int32ArrayView items,Int32 local_id)
 {
   Integer n = items.size();
@@ -1557,7 +1557,7 @@ removeItemAndKeepOrder(Int32ArrayView items,Int32 local_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 shrinkMeshGroups(IMesh* mesh)
 {
   auto f= [&](ItemGroup& group)
@@ -1570,7 +1570,7 @@ shrinkMeshGroups(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64 mesh_utils::
+Int64 MeshUtils::
 printMeshGroupsMemoryUsage(IMesh* mesh, Int32 print_level)
 {
   ITraceMng* tm = mesh->traceMng();
@@ -1599,7 +1599,7 @@ printMeshGroupsMemoryUsage(IMesh* mesh, Int32 print_level)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mesh_utils::
+void MeshUtils::
 dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer,const String& filename)
 {
   IParallelMng* pm = var_syncer->parallelMng();
@@ -1705,7 +1705,7 @@ namespace
   }
 } // namespace
 
-void mesh_utils::
+void MeshUtils::
 computeConnectivityPatternOccurence(IMesh* mesh)
 {
   ARCANE_CHECK_POINTER(mesh);
