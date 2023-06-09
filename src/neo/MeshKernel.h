@@ -89,6 +89,8 @@ namespace MeshKernel
   struct IAlgorithm
   {
     virtual void operator()() = 0;
+    virtual InProperty const& inProperty(int index = 0) const = 0;
+    virtual OutProperty const& outProperty(int index = 0) const = 0;
   };
 
   template <typename Algorithm>
@@ -103,6 +105,18 @@ namespace MeshKernel
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_in_property(), m_out_property());
+    }
+    InProperty const& inProperty(int index) const override {
+      if (index == 0)
+        return m_in_property;
+      else
+        throw std::invalid_argument("The current algo has only one inProperty. Cannot call IAlgorithm::inProperty(index) with index > 0");
+    }
+    OutProperty const& outProperty(int index) const override {
+      if (index == 0)
+        return m_out_property;
+      else
+        throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
     }
   };
 
@@ -121,6 +135,20 @@ namespace MeshKernel
     void operator()() override {
       tye::apply(m_algo, m_in_property1(), m_in_property2(), m_out_property());
     }
+    InProperty const& inProperty(int index) const override {
+      if (index == 0)
+        return m_in_property1;
+      else if (index == 1)
+        return m_in_property2;
+      else
+        throw std::invalid_argument("The current algo has only two inProperty. Cannot call IAlgorithm::inProperty(index) with index > 1");
+    }
+    OutProperty const& outProperty(int index) const override {
+      if (index == 0)
+        return m_out_property;
+      else
+        throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
+    }
   };
 
   template <typename Algorithm>
@@ -133,6 +161,15 @@ namespace MeshKernel
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_out_property());
+    }
+    InProperty const& inProperty(int index) const override {
+      throw std::invalid_argument("The current algo has no inProperty. Cannot call IAlgorithm::inProperty(index)");
+    }
+    OutProperty const& outProperty(int index) const override {
+      if (index == 0)
+        return m_out_property;
+      else
+        throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
     }
   };
 
@@ -148,6 +185,17 @@ namespace MeshKernel
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_out_property1(), m_out_property2());
+    }
+    InProperty const& inProperty(int index) const override {
+      throw std::invalid_argument("The current algo has no inProperty. Cannot call IAlgorithm::inProperty(index)");
+    }
+    OutProperty const& outProperty(int index) const override {
+      if (index == 0)
+        return m_out_property1;
+      else if (index == 1)
+        return m_out_property2;
+      else
+        throw std::invalid_argument("The current algo has only two outProperty. Cannot call IAlgorithm::inProperty(index) with index > 1");
     }
   };
 
