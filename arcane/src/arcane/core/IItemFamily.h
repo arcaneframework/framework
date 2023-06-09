@@ -712,12 +712,6 @@ class IItemFamily
   //! Propriétés associées à cette famille.
   virtual Properties* properties() =0;
 
-  /*!
-   * \internal
-   * \brief Interface du modificateur de topologie.
-   */
-  virtual IItemFamilyTopologyModifier* _topologyModifier() =0;
-
  public:
 
   //! API interne à Arcane

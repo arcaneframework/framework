@@ -21,6 +21,7 @@
 
 namespace Arcane
 {
+class IItemFamilyTopologyModifier;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,6 +38,9 @@ class ARCANE_CORE_EXPORT IItemFamilyInternal
 
   //! Informations sur les connectivités non structurés
   virtual ItemInternalConnectivityList* unstructuredItemInternalConnectivityList() = 0;
+
+  //! Interface du modificateur de topologie.
+  virtual IItemFamilyTopologyModifier* topologyModifier() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

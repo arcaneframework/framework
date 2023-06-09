@@ -129,6 +129,10 @@ class ItemFamily::InternalApi
   {
     return m_family->_unstructuredItemInternalConnectivityList();
   }
+  IItemFamilyTopologyModifier* topologyModifier() override
+  {
+    return m_family->_topologyModifier();
+  }
 
  private:
 

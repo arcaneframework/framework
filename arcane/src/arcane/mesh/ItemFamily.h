@@ -274,7 +274,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstArrayView owners) override;
   IItemFamilyPolicyMng* policyMng() override { return m_policy_mng; }
   Properties* properties() override { return m_properties; }
-  IItemFamilyTopologyModifier* _topologyModifier() override { return m_topology_modifier; }
   IItemFamilyInternal* _internalApi() override;
 
  public:
@@ -415,6 +414,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   {
     return itemInternalConnectivityList();
   }
+  IItemFamilyTopologyModifier* _topologyModifier() { return m_topology_modifier; }
 
  private:
 
