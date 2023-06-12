@@ -44,12 +44,14 @@ namespace Arcane
 class ARCANE_CORE_EXPORT ItemInfoListView
 {
   friend class mesh::ItemFamily;
-  // A supprimer lorqu'on n'aura plus besoin de _itemsInternal()
-  friend ItemVectorView;
   friend ItemVector;
-  friend class ItemPairEnumerator;
+  friend ItemPairEnumerator;
+  friend ItemGenericInfoListView;
   template<int Extent> friend class ItemConnectedListView;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
+
+  // A supprimer lorqu'on n'aura plus besoin de _itemsInternal()
+  friend ItemVectorView;
 
  public:
 

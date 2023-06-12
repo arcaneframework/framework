@@ -277,6 +277,8 @@ set(ARCANE_ORIGINAL_SOURCES
   ItemFamilySerializeArgs.h
   ItemFunctor.cc
   ItemFunctor.h
+  ItemGenericInfoListView.cc
+  ItemGenericInfoListView.h
   ItemGroup.cc
   ItemGroupComputeFunctor.cc
   ItemGroupComputeFunctor.h

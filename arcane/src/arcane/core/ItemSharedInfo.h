@@ -56,6 +56,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   friend class impl::ItemBase;
   friend class impl::MutableItemBase;
   friend class Item;
+  friend class ItemGenericInfoListView;
   friend class ItemInternal;
   friend class ItemInfoListView;
   friend class mesh::ItemFamily;
