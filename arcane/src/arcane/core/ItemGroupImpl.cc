@@ -246,8 +246,19 @@ class ItemGroupImplPrivate
 
  public:
 
-  //! Liste des numéros locaux par type d'entité.
+  //! Liste des localId() par type d'entité.
   UniqueArray<UniqueArray<Int32>> m_children_by_type_ids;
+
+  /*!
+   * \brief Indique le type des entités du groupe.
+   *
+   * Si différent de IT_NullType, cela signifie que toutes
+   * les entités du groupe sont du même type et donc on il n'est
+   * pas nécessaire de calculer le localId() des entités par type.
+   * On utilise dans ce cas directement le groupe en paramètre
+   * des applyOperation().
+   */
+  ItemTypeId m_unique_children_type {IT_NullType};
 
   //! Timestamp indiquant quand a été calculé la liste des ids des enfants
   Int64 m_children_by_type_ids_computed_timestamp = -1;
@@ -1796,11 +1807,18 @@ applyOperation(IItemOperationByBasicType* operation)
       _initChildrenByType();
   }
   IItemFamily* family = m_p->m_item_family;
+  const bool has_only_one_type = (m_p->m_unique_children_type != IT_NullType);
+  if (is_verbose)
+    tm->info() << "applyOperation has_only_one_type=" << has_only_one_type << " value=" << m_p->m_unique_children_type;
+  // TODO: Supprimer la macro et la remplacer par une fonction.
 
-#define APPLY_OPERATION_ON_TYPE(ITEM_TYPE)                    \
+#define APPLY_OPERATION_ON_TYPE(ITEM_TYPE)      \
   if (m_p->isUseV2ForApplyOperation()){\
-    Int32ConstArrayView sub_ids = m_p->m_children_by_type_ids[IT_##ITEM_TYPE]; \
-    if (is_verbose)\
+    Int16 type_id = IT_##ITEM_TYPE;\
+    Int32ConstArrayView sub_ids = m_p->m_children_by_type_ids[type_id]; \
+    if (has_only_one_type && type_id==m_p->m_unique_children_type)\
+      sub_ids = itemsLocalId(); \
+    if (is_verbose && sub_ids.size()>0)                                   \
       tm->info() << "Type=" << (int)IT_##ITEM_TYPE << " nb=" << sub_ids.size(); \
     if (sub_ids.size()!=0){\
       operation->apply##ITEM_TYPE(family->view(sub_ids)); \
@@ -2017,6 +2035,7 @@ void ItemGroupImpl::
 _computeChildrenByTypeV2()
 {
   ItemGroup that_group(this);
+  Int32 nb_item = size();
   ItemTypeMng* type_mng = m_p->mesh()->itemTypeMng();
   ITraceMng* trace = m_p->mesh()->traceMng();
   bool is_verbose = m_p->m_is_debug_apply_operation;
@@ -2024,6 +2043,7 @@ _computeChildrenByTypeV2()
     trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name();
 
   Int32 nb_basic_item_type = ItemTypeMng::nbBasicItemType();
+  m_p->m_unique_children_type = ItemTypeId{IT_NullType};
 
   UniqueArray<Int32> nb_items_by_type(nb_basic_item_type);
   nb_items_by_type.fill(0);
@@ -2034,12 +2054,30 @@ _computeChildrenByTypeV2()
       ++nb_items_by_type[item_type];
   }
 
+  Int32 nb_different_type = 0;
   for( Int32 i=0; i<nb_basic_item_type; ++i ){
     m_p->m_children_by_type_ids[i].clear();
-    m_p->m_children_by_type_ids[i].reserve(nb_items_by_type[i]);
+    const Int32 n = nb_items_by_type[i];
+    m_p->m_children_by_type_ids[i].reserve(n);
+    if (n>0)
+      ++nb_different_type;
     if (is_verbose)
       trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
-                    << " type=" << type_mng->typeName(i) << " nb=" << nb_items_by_type[i];
+                    << " type=" << type_mng->typeName(i) << " nb=" << n;
+  }
+  trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
+                << " nb_item=" << nb_item << " nb_different_type=" << nb_different_type;
+
+  // Si nb_different_type == 1, cela signifie qu'il n'y a qu'un seul
+  // type d'entité et on conserver juste ce type car dans ce cas on passera
+  // directement le groupe en argument de applyOperation().
+  if (nb_item>0 && nb_different_type==1){
+    ItemInfoListView lv(m_p->m_item_family->itemInfoListView());
+    m_p->m_unique_children_type = ItemTypeId{lv.typeId(m_p->itemsLocalId()[0])};
+    if (is_verbose)
+      trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
+                    << " unique_type=" << type_mng->typeName(m_p->m_unique_children_type);
+    return;
   }
 
   ENUMERATE_(Item,iitem,that_group){
