@@ -15,9 +15,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/Iterator.h"
 #include "arcane/utils/VersionInfo.h"
-#include "arcane/utils/String.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/TraceAccessor.h"
@@ -26,6 +24,7 @@
 #include "arcane/utils/Property.h"
 #include "arcane/utils/TraceAccessor2.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/IProcessorAffinityService.h"
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IVariableMng.h"
@@ -73,7 +72,6 @@
 #include "arcane/core/IServiceLoader.h"
 #include "arcane/core/ICheckpointReader.h"
 #include "arcane/core/IMeshPartitioner.h"
-#include "arcane/core/IMeshWriter.h"
 #include "arcane/core/ICaseMeshMasterService.h"
 #include "arcane/core/ILoadBalanceMng.h"
 #include "arcane/core/CaseNodeNames.h"
@@ -159,7 +157,7 @@ class SubDomain
   : public TraceAccessor
   {
    public:
-    PropertyMngCheckpoint(ISubDomain* sd)
+    explicit PropertyMngCheckpoint(ISubDomain* sd)
     : TraceAccessor(sd->traceMng()), m_sub_domain(sd),
       m_property_values(VariableBuildInfo(sd,"ArcaneProperties",IVariable::PPrivate))
     {
@@ -196,10 +194,6 @@ class SubDomain
  public:
   
   SubDomain(ISession*,Ref<IParallelMng>,Ref<IParallelMng>,const String& filename,ByteConstArrayView bytes);
-
- protected:
-  
-  ~SubDomain() override;
 
  public:
 	
@@ -355,12 +349,13 @@ class SubDomain
   void _doInitialPartition();
   void _doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_required);
   void _notifyWriteCheckpoint();
+  void _printCPUAffinity();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-static ISubDomain* global_sub_domain = 0;
+static ISubDomain* global_sub_domain = nullptr;
 
 /* HP: ARCANE_IMPL_EXPORT en attendant de trouver une solution 
  * pour accéder aux traces hors d'un service ou module */
@@ -391,7 +386,7 @@ arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi)
   trace_id += platform::getHostName();
   tm->setTraceId(trace_id.toString());
 
-  SubDomain* sd = new SubDomain(session,pm,all_replica_pm,case_file_name,bytes);
+  auto* sd = new SubDomain(session,pm,all_replica_pm,case_file_name,bytes);
   sd->build();
   //GG: l'init se fait par l'appelant
   //mng->initialize();
@@ -483,7 +478,7 @@ initialize()
     }
     m_accelerator_mng->initialize(config);
     Runner* runner = m_accelerator_mng->defaultRunner();
-    auto device_info = runner->deviceInfo();
+    const auto& device_info = runner->deviceInfo();
     info() << "DeviceInfo: name=" << device_info.name();
     info() << "DeviceInfo: description=" << device_info.description();
 
@@ -492,6 +487,8 @@ initialize()
       m_all_replica_parallel_mng->_internalApi()->setDefaultRunner(runner);
     }
   }
+
+  _printCPUAffinity();
 
   IMainFactory* mf = m_application->mainFactory();
 
@@ -529,7 +526,7 @@ initialize()
     // TODO: dans ce cas vérifier qu'on n'a pas l'élément 'maillage' historique.
   }
   // Créé le maillage par défaut. Il faut le faire avant la création
-  // des services car ces derniers peuvent en avoir besoin.
+  // des services, car ces derniers peuvent en avoir besoin.
   if (!m_has_mesh_service)
     if (!m_is_create_default_mesh_v2)
       m_legacy_mesh_builder->createDefaultMesh();
@@ -551,14 +548,6 @@ initialize()
                           &SubDomain::_notifyWriteCheckpoint,
                           m_checkpoint_mng->writeObservable());
   }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-SubDomain::
-~SubDomain()
-{
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -648,7 +637,7 @@ allocateMeshes()
 
   if (m_has_mesh_service){
     info() << "** Reading mesh from mesh service";
-    CaseNodeNames* cnn = caseMng()->caseDocument()->caseNodeNames();
+    const CaseNodeNames* cnn = caseMng()->caseDocument()->caseNodeNames();
     String default_service_name = "ArcaneCaseMeshMasterService";
 
     // NOTE: cet objet sera détruit par caseMng()
@@ -1000,14 +989,14 @@ dumpInternalInfos(XmlNode& root)
   }
 
   // Liste des blocs d'options
-  ICaseMng* cm = caseMng();
+  const ICaseMng* cm = caseMng();
   CaseOptionsCollection blocks = cm->blocks();
   XmlElement blocks_elem(root,"caseblocks");
   for( CaseOptionsCollection::Enumerator i(blocks); ++i; ){
-    ICaseOptions* block = *i;
+    const ICaseOptions* block = *i;
     XmlElement block_elem(blocks_elem,ustr_caseblock);
     block_elem.setAttrValue(ustr_tagname,block->rootTagName());
-    IModule* block_module = block->caseModule();
+    const IModule* block_module = block->caseModule();
     if (block_module)
       block_elem.setAttrValue(ustr_module,block_module->name());
   }
@@ -1052,6 +1041,50 @@ setIsInitialized()
   info(4) << "SubDomain::setIsInitialized()";
   Properties time_stats_properties(propertyMng(),"TimeStats");
   timeStats()->mergeTimeValues(&time_stats_properties);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Affiche l'affinité CPU de tous les rangs.
+ *
+ * Cela n'est pas actif par défaut et n'est utilisé que pour le debug.
+ */
+void SubDomain::
+_printCPUAffinity()
+{
+  bool do_print_affinity = false;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PRINT_CPUAFFINITY", true))
+    do_print_affinity = (v.value()>0);
+  if (!do_print_affinity)
+    return;
+  info() << "PrintCPUAffinity";
+  IProcessorAffinityService* pas = platform::getProcessorAffinityService();
+
+  // Il est possible que certains sous-domaines n'aient pas d'instance
+  // de 'IProcessorAffinityService'. Dans ce cas on n'affichera que des '0'.
+
+  UniqueArray<Byte> cpuset_bytes;
+  const Int32 nb_byte = 48;
+  if (pas){
+    String cpuset = pas->cpuSetString();
+    cpuset_bytes = cpuset.bytes();
+  }
+  cpuset_bytes.resize(nb_byte,Byte{0});
+  cpuset_bytes[nb_byte-1] = Byte{0};
+
+  IParallelMng* pm = parallelMng();
+  const Int32 nb_rank = pm->commSize();
+  bool is_master = pm->isMasterIO();
+
+  UniqueArray2<Byte> all_cpuset_bytes;
+  if (is_master)
+    all_cpuset_bytes.resize(nb_rank,nb_byte);
+  pm->gather(cpuset_bytes,all_cpuset_bytes.viewAsArray(),pm->masterIORank());
+  if (is_master)
+    for( Int32 i=0; i<nb_rank; ++i ){
+      info() << "CPUAffinity " << Trace::Width(5) << i << " = " << all_cpuset_bytes[i].data();
+    }
 }
 
 /*---------------------------------------------------------------------------*/
