@@ -530,6 +530,13 @@ void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils:
 }
 
 /*-----------------------------------------------------------------------------*/
+
+void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, Neo::ItemRange const& removed_items) {
+  auto unique_ids = uniqueIds(family, removed_items.localIds());
+  scheduleRemoveItems(family, unique_ids);
+}
+
+/*-----------------------------------------------------------------------------*/
 // design meshOperation
 //void Neo::Mesh::addOperation(Operation::StartingPoint when, Operation::Input input, Operation::Output output, IAlgorithm1Input1OutputPtr algo_ptr, Family& item_family) {
 //  m_mesh_graph->addAlgorithm(Neo::InProperty{ item_family, item_family.lidPropName() },

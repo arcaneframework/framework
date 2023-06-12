@@ -482,11 +482,10 @@ class Mesh
 
   /*!
    * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called
-   * @param mesh
-   * @param family
-   * @param removed_item_uids
+   * @param item_family item family of removed items
+   * @param removed_items item range of removed items
    */
-  void scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& removed_item_uids);
+  void scheduleRemoveItems(Neo::Family& item_family, Neo::ItemRange const& removed_items);
 
   /*!
    * Access to internal structure, for advanced use
