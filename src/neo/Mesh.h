@@ -500,7 +500,10 @@ class Mesh
     return item_family.name() + "_item_coordinates";
   }
 
-  [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}
+ private:
+  [[nodiscard]] std::string _removeItemPropertyName(Family const& item_family) const {
+    return "removed_" + item_family.name() + "_items";
+  }
 };
 
 } // end namespace Neo

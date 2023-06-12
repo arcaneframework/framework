@@ -138,12 +138,12 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
     source2target.debugPrint();
   });
   // update connectivity of removed items : this algo must be permanent (not removed by a call to applyScheduledOperations)
-  const std::string removed_item_property_name{ "removed_" + target_family.m_name + "_items" };
+  //  const std::string removed_item_property_name{ "removed_" + target_family.m_name + "_items" };
+  const std::string removed_item_property_name = _removeItemPropertyName(target_family);
   source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
-  std::string connectivity_name = source_family.m_name + "to" + target_family.m_name + "_connectivity";
   m_mesh_graph->addAlgorithm(
   Neo::InProperty{ target_family, removed_item_property_name },
-  Neo::OutProperty{ source_family, connectivity_name },
+  Neo::OutProperty{ source_family, connectivity_unique_name },
   [&source_family, &target_family](
   Neo::PropertyT<Neo::utils::Int32> const& target_family_removed_items,
   Neo::ArrayProperty<Neo::utils::Int32>& connectivity) {
