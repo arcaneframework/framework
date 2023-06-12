@@ -384,14 +384,16 @@ public:
 
   template <typename ArrayType>
   std::vector<DataType> _arrayAccessor (ArrayType items) const {
+    if (items.size() == 0)
+      return std::vector<DataType>{};
     // check bounds
     assert(("Max input item lid > max local id, In PropertyT[]",
-               *(std::max_element(items.begin(),items.end()))< (int)m_data.size()));
+            *(std::max_element(items.begin(), items.end())) < (int)m_data.size()));
 
     std::vector<DataType> values;
     values.reserve(items.size());
-    std::transform(items.begin(),items.end(),std::back_inserter(values),
-                   [this](auto item){return m_data[item];});
+    std::transform(items.begin(), items.end(), std::back_inserter(values),
+                   [this](auto item) { return m_data[item]; });
     return values;
   }
 
@@ -727,21 +729,23 @@ public:
     // TODO...; + il faut mettre en cache (dans la famille ?). ? de la mise à jour (la Propriété peut dire si la range est à jour)
     // 2 stratégies : on crée l'étendue continue avant ou après les non contigus...
     // (on estime que l'on décime les id les plus élevés ou les plus faibles), avoir le choix (avec un paramètre par défaut)
+    if (size() == 0)
+      return ItemRange{};
     ItemLocalIds item_local_ids{};
     if (m_empty_lids.empty()) { // range contiguous
-      item_local_ids = ItemLocalIds{{},0,m_last_id+1};
+      item_local_ids = ItemLocalIds{ {}, 0, m_last_id + 1 };
     }
-    else {// range discontiguous
+    else { // range discontiguous
       std::vector<Neo::utils::Int32> lids(m_last_id + 1);
       std::iota(lids.begin(), lids.end(), 0);
       std::for_each(m_empty_lids.begin(), m_empty_lids.end(),
-                    [&lids](auto const &emty_lid) {
-                      lids[emty_lid] = Neo::utils::NULL_ITEM_LID;
+                    [&lids](auto const& empty_lid) {
+                      lids[empty_lid] = Neo::utils::NULL_ITEM_LID;
                     });
       auto& active_lids = item_local_ids.m_non_contiguous_lids;
       active_lids.resize(lids.size() - m_empty_lids.size());
       std::copy_if(lids.begin(), lids.end(), active_lids.begin(),
-                   [](auto const &lid_source) {
+                   [](auto const& lid_source) {
                      return lid_source != Neo::utils::NULL_ITEM_LID;
                    });
     }

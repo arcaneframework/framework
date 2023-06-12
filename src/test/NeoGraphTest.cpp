@@ -59,6 +59,74 @@ TEST(NeoGraphTest, BaseTest) {
 
 //----------------------------------------------------------------------------/
 
+TEST(NeoGraphTest, AlgoPersistanceTest) {
+  Neo::MeshKernel::MeshBase mesh{ "test_mesh" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cell_family" };
+  cell_family.addProperty<Neo::utils::Int32>("prop1");
+  int nb_called_algo1 = 0;
+  int nb_called_algo2 = 0;
+  mesh.addAlgorithm(
+  Neo::OutProperty{ cell_family, "prop1" }, [&nb_called_algo1]([[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>& p1) {
+    std::cout << "Algo 1" << std::endl;
+    nb_called_algo1 += 1;
+  },
+  Neo::MeshKernel::MeshBase::AlgorithmPersistence::KeepAfterExecution);
+  mesh.addAlgorithm(
+  Neo::OutProperty{ cell_family, "prop1" }, [&nb_called_algo2]([[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>& p1) {
+    std::cout << "Algo 2" << std::endl;
+    nb_called_algo2 += 1;
+  },
+  Neo::MeshKernel::MeshBase::AlgorithmPersistence::DropAfterExecution);
+
+  mesh.applyAlgorithms(); // Apply all algorithms
+  EXPECT_EQ(nb_called_algo1, 1);
+  EXPECT_EQ(nb_called_algo2, 1);
+
+  mesh.applyAlgorithms(); // Apply only persistant algo : Algo1
+  EXPECT_EQ(nb_called_algo1, 2);
+  EXPECT_EQ(nb_called_algo2, 1);
+
+  // Remove kept algorithm
+  bool remove_kept_algorithm = true;
+  mesh.removeAlgorithms(remove_kept_algorithm);
+  mesh.applyAlgorithms(); // Does not call any algo
+  EXPECT_EQ(nb_called_algo1, 2);
+  EXPECT_EQ(nb_called_algo2, 1);
+
+  // Add both algorithms again
+  mesh.addAlgorithm(
+  Neo::OutProperty{ cell_family, "prop1" }, [&nb_called_algo1]([[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>& p1) {
+    std::cout << "Algo 1" << std::endl;
+    nb_called_algo1 += 1;
+  },
+  Neo::MeshKernel::MeshBase::AlgorithmPersistence::KeepAfterExecution);
+  mesh.addAlgorithm(
+  Neo::OutProperty{ cell_family, "prop1" }, [&nb_called_algo2]([[maybe_unused]] Neo::PropertyT<Neo::utils::Int32>& p1) {
+    std::cout << "Algo 2" << std::endl;
+    nb_called_algo2 += 1;
+  },
+  Neo::MeshKernel::MeshBase::AlgorithmPersistence::DropAfterExecution);
+  mesh.applyAndKeepAlgorithms(); // Apply and keep both algos
+  EXPECT_EQ(nb_called_algo1, 3);
+  EXPECT_EQ(nb_called_algo2, 2);
+  mesh.applyAndKeepAlgorithms(); // Apply and keep both algos
+  EXPECT_EQ(nb_called_algo1, 4);
+  EXPECT_EQ(nb_called_algo2, 3);
+  mesh.removeAlgorithms(); // remove only non-persistent algo
+  mesh.applyAlgorithms(); // Apply only Algo1
+  EXPECT_EQ(nb_called_algo1, 5);
+  EXPECT_EQ(nb_called_algo2, 3);
+  mesh.removeAlgorithms(remove_kept_algorithm); // remove Algo1
+  mesh.applyAlgorithms(); // not applying any algo
+  EXPECT_EQ(nb_called_algo1, 5);
+  EXPECT_EQ(nb_called_algo2, 3);
+  mesh.applyAlgorithms(); // still not applying any algo (to check that persistent algorithms are not rescheduled by call to applyAlgorithms)
+  EXPECT_EQ(nb_called_algo1, 5);
+  EXPECT_EQ(nb_called_algo2, 3);
+}
+
+//----------------------------------------------------------------------------/
+
 TEST(NeoGraphTest, OneProducingAlgoTest) {
   Neo::MeshKernel::MeshBase mesh{ "test_mesh" };
   Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cell_family" };

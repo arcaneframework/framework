@@ -137,13 +137,13 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
     }
     source2target.debugPrint();
   });
-  // update connectivity of removed items : todo this algo must be permanent (not removed by a call to applyScheduledOperations)
-  const std::string removed_item_property_name{ "removed_" + target_family.m_name + "_items" };
+  // update connectivity of removed items : this algo must be permanent (not removed by a call to applyScheduledOperations)
+  //  const std::string removed_item_property_name{ "removed_" + target_family.m_name + "_items" };
+  const std::string removed_item_property_name = _removeItemPropertyName(target_family);
   source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
-  std::string connectivity_name = source_family.m_name + "to" + target_family.m_name + "_connectivity";
   m_mesh_graph->addAlgorithm(
   Neo::InProperty{ target_family, removed_item_property_name },
-  Neo::OutProperty{ source_family, connectivity_name },
+  Neo::OutProperty{ source_family, connectivity_unique_name },
   [&source_family, &target_family](
   Neo::PropertyT<Neo::utils::Int32> const& target_family_removed_items,
   Neo::ArrayProperty<Neo::utils::Int32>& connectivity) {
@@ -157,7 +157,8 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
         }
       }
     }
-  });
+  },
+  Neo::MeshKernel::MeshBase::AlgorithmPersistence::KeepAfterExecution);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -473,24 +474,26 @@ std::vector<Neo::utils::Int32> Neo::Mesh::localIds(Neo::Family const& item_famil
 
 /*-----------------------------------------------------------------------------*/
 
-void Neo::Mesh::scheduleMoveNodes(Neo::Family& node_family, std::vector<Neo::utils::Int64> const& node_uids, std::vector<Neo::utils::Real3>& node_coords) {
+void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& moved_item_uids, std::vector<Neo::utils::Real3> const& moved_item_new_coords) {
+  auto coord_prop_name = _itemCoordPropertyName(item_family);
+  item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ node_family, node_family.lidPropName() },
-  Neo::OutProperty{ node_family, "node_coords" },
-  [&node_uids, &node_coords](Neo::ItemLidsProperty const& node_lids_property,
-                             Neo::PropertyT<Neo::utils::Real3>& node_coords_property) {
-    Neo::print() << "Algorithm: change node coords" << std::endl;
+  Neo::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
+  Neo::OutProperty{ item_family, coord_prop_name },
+  [&moved_item_uids, moved_item_new_coords](Neo::ItemLidsProperty const& item_lids_property,
+                                            Neo::PropertyT<Neo::utils::Real3>& item_coords_property) {
+    Neo::print() << "Algorithm: move items" << std::endl;
     // get range from uids and append
-    auto moved_node_range = Neo::ItemRange{ Neo::ItemLocalIds::getIndexes(node_lids_property[node_uids]) };
-    node_coords_property.append(moved_node_range, node_coords);
-    node_coords_property.debugPrint();
+    auto moved_item_range = Neo::ItemRange{ Neo::ItemLocalIds::getIndexes(item_lids_property[moved_item_uids]) };
+    item_coords_property.append(moved_item_range, moved_item_new_coords);
+    item_coords_property.debugPrint();
   });
 }
 
 /*-----------------------------------------------------------------------------*/
 
 void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& removed_item_uids) {
-  const std::string removed_item_property_name{ "removed_" + family.name() + "_items" };
+  const std::string removed_item_property_name = _removeItemPropertyName(family);
   // Add an algo to clear removed_items property at the beginning of a mesh update
   // This algo will be executed before remove item algo
   const std::string ok_to_start_remove_property_name = "ok_to_start_remove_property";
@@ -507,9 +510,11 @@ void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils:
   });
   // Remove item algo
   m_mesh_graph->addAlgorithm(
+  Neo::InProperty{ family, ok_to_start_remove_property_name },
   Neo::OutProperty{ family, family.lidPropName() },
   Neo::OutProperty{ family, removed_item_property_name },
-  [&removed_item_uids, &family](
+  [removed_item_uids, &family](
+  Neo::PropertyT<Neo::utils::Int32> const&, // ok_to_start_remove_property
   Neo::ItemLidsProperty& item_lids_property,
   Neo::PropertyT<Neo::utils::Int32>& removed_item_property) {
     Neo::print() << "Algorithm: remove items in " << family.name() << std::endl;
@@ -522,6 +527,13 @@ void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils:
       removed_item_property[removed_item] = 1;
     }
   });
+}
+
+/*-----------------------------------------------------------------------------*/
+
+void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, Neo::ItemRange const& removed_items) {
+  auto unique_ids = uniqueIds(family, removed_items.localIds());
+  scheduleRemoveItems(family, unique_ids);
 }
 
 /*-----------------------------------------------------------------------------*/

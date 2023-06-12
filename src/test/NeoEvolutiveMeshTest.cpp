@@ -74,11 +74,16 @@ TEST(EvolutiveMeshTest, MoveNodes) {
   std::cout << "Move node test " << std::endl;
   auto mesh = Neo::Mesh{ "evolutive_neo_mesh" };
   createMesh(mesh);
-  std::vector<Neo::utils::Int64> node_uids{ 6, 7, 8, 9, 10, 11 };
+  auto& node_family = mesh.findFamily(Neo::ItemKind::IK_Node, node_family_name);
+  std::vector<Neo::utils::Int64> moved_node_uids{ 6, 7, 8, 9, 10, 11 };
   std::vector<Neo::utils::Real3> node_coords{ { 0, 0, -1 }, { 0, 1.5, -1 }, { 0, 1.5, -1 }, { 0, 2.7, -1 }, { 0, 3.85, -1 }, { 0, 5, -1 } };
-  mesh.scheduleMoveNodes(mesh.findFamily(Neo::ItemKind::IK_Node, node_family_name), node_uids, node_coords);
+  mesh.scheduleMoveItems(node_family, moved_node_uids, node_coords);
   mesh.applyScheduledOperations();
-  // Todo check new node coords
+  // Todo check new node
+  auto moved_nodes = node_family.itemUniqueIdsToLocalids(moved_node_uids);
+  auto node_coords_new = mesh.getItemCoordProperty(node_family).view(Neo::ItemRange{ moved_nodes });
+  EXPECT_TRUE(std::equal(node_coords_new.begin(), node_coords_new.end(), node_coords.begin(),
+                         [](Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) { return a == b; }));
 }
 
 //----------------------------------------------------------------------------/
@@ -95,16 +100,60 @@ TEST(EvolutiveMeshTest, RemoveCells) {
   auto& node_family = mesh.findFamily(Neo::ItemKind::IK_Node, node_family_name);
   mesh.scheduleAddConnectivity(node_family, node_family.all(), cell_family, 1,
                                node_to_cell, node2cells_con_name);
-  mesh.applyScheduledOperations();
   // Remove cell 0, 1 and 2
   std::vector<Neo::utils::Int64> removed_cells{ 0, 1, 2 };
   mesh.scheduleRemoveItems(cell_family, removed_cells);
-  // update connectivity must be donne automatically to check
   mesh.applyScheduledOperations();
-  auto node2cells = node_family.getConcreteProperty<Neo::ArrayProperty<Neo::utils::Int32>>(node2cells_con_name);
+  EXPECT_EQ(cell_family.nbElements(), 1);
+  auto remaining_cell_uids = mesh.uniqueIds(cell_family, cell_family.all().localIds());
+  EXPECT_EQ(remaining_cell_uids.size(), 1);
+  EXPECT_EQ(remaining_cell_uids.back(), 3);
   // compute a reference connectivity : replace removed cells by null lid
+  auto node2cells = mesh.getConnectivity(node_family, cell_family, node2cells_con_name);
   std::fill(node_to_cell.begin(), node_to_cell.end(), Neo::utils::NULL_ITEM_LID);
   node_to_cell[5] = 3;
   node_to_cell[11] = 3;
-  EXPECT_TRUE(std::equal(node2cells.view().begin(), node2cells.view().end(), node_to_cell.begin()));
+  node2cells.connectivity_value.debugPrint();
+  EXPECT_TRUE(std::equal(node2cells.connectivity_value.constView().begin(), node2cells.connectivity_value.constView().end(), node_to_cell.begin()));
+  // Remove last cell 3
+  mesh.scheduleRemoveItems(cell_family, { 3 });
+  mesh.applyScheduledOperations();
+  EXPECT_EQ(cell_family.nbElements(), 0);
+  remaining_cell_uids = mesh.uniqueIds(cell_family, cell_family.all().localIds());
+  EXPECT_EQ(remaining_cell_uids.size(), 0);
+  // compute a reference connectivity : replace removed cells by null lid
+  std::fill(node_to_cell.begin(), node_to_cell.end(), Neo::utils::NULL_ITEM_LID);
+  node2cells.connectivity_value.debugPrint();
+  EXPECT_TRUE(std::equal(node2cells.connectivity_value.constView().begin(), node2cells.connectivity_value.constView().end(), node_to_cell.begin()));
+
+  // test Remove with ItemRange, no real mesh, only ids to test
+  Neo::Mesh mesh2{ "mesh2" };
+  auto& cell_family2 = mesh2.addFamily(Neo::ItemKind::IK_Cell, "cell_family2");
+  std::vector<Neo::utils::Int64> cell_uids{ 0, 1, 2, 3, 4, 5 };
+  Neo::FutureItemRange future_cells{};
+  mesh2.scheduleAddItems(cell_family2, cell_uids, future_cells);
+  auto end_of_mesh_update = mesh2.applyScheduledOperations();
+  auto added_cells = future_cells.get(end_of_mesh_update);
+  mesh2.scheduleRemoveItems(cell_family2, added_cells);
+  mesh2.applyScheduledOperations();
+  EXPECT_EQ(cell_family2.nbElements(), 0);
+
+  // test several scheduleRemove in the same applyMeshOperations, no real mesh, only ids to test
+  auto node_uids = cell_uids;
+  Neo::FutureItemRange future_nodes{};
+  future_cells = Neo::FutureItemRange{};
+  auto& node_family2 = mesh2.addFamily(Neo::ItemKind::IK_Node, "node_family2");
+  mesh2.scheduleAddItems(cell_family2, cell_uids, future_cells);
+  mesh2.scheduleAddItems(node_family2, node_uids, future_nodes);
+  mesh2.scheduleAddConnectivity(node_family2, future_cells,
+                                cell_family2, 1, node_uids,
+                                "fictive_node_to_cells");
+  mesh2.applyScheduledOperations();
+  mesh2.scheduleRemoveItems(cell_family2, { 0, 1, 2 });
+  mesh2.scheduleRemoveItems(cell_family2, { 3, 4, 5 });
+  mesh2.applyScheduledOperations();
+  std::vector<Neo::utils::Int64> fictive_node2cell_ref{ -1, -1, -1, -1, -1, -1 };
+  auto fictive_node2cell = mesh2.getConnectivity(node_family2, cell_family2, "fictive_node_to_cells");
+  fictive_node2cell.connectivity_value.debugPrint();
+  EXPECT_TRUE(std::equal(fictive_node2cell.connectivity_value.constView().begin(), fictive_node2cell.connectivity_value.constView().end(), fictive_node2cell_ref.begin()));
 }

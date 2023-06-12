@@ -719,6 +719,9 @@ TEST(NeoTestPropertyGraph, test_property_graph_info) {
 TEST(NeoTestLidsProperty, test_lids_property) {
   std::cout << "Test lids_range Property" << std::endl;
   auto lid_prop = Neo::ItemLidsProperty{ "test_property" };
+  // Check empty property
+  auto empty_range = lid_prop.values();
+  EXPECT_EQ(empty_range.size(), 0);
   std::vector<Neo::utils::Int64> uids{ 1, 2, 3, 4, 5 };
   auto nb_item = uids.size();
   // Checking append

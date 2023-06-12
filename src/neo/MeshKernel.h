@@ -89,6 +89,8 @@ namespace MeshKernel
   struct IAlgorithm
   {
     virtual void operator()() = 0;
+    virtual InProperty const& inProperty(int index = 0) const = 0;
+    virtual OutProperty const& outProperty(int index = 0) const = 0;
   };
 
   template <typename Algorithm>
@@ -103,6 +105,18 @@ namespace MeshKernel
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_in_property(), m_out_property());
+    }
+    InProperty const& inProperty(int index) const override {
+      if (index == 0)
+        return m_in_property;
+      else
+        throw std::invalid_argument("The current algo has only one inProperty. Cannot call IAlgorithm::inProperty(index) with index > 0");
+    }
+    OutProperty const& outProperty(int index) const override {
+      if (index == 0)
+        return m_out_property;
+      else
+        throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
     }
   };
 
@@ -121,6 +135,51 @@ namespace MeshKernel
     void operator()() override {
       tye::apply(m_algo, m_in_property1(), m_in_property2(), m_out_property());
     }
+    InProperty const& inProperty(int index) const override {
+      if (index == 0)
+        return m_in_property1;
+      else if (index == 1)
+        return m_in_property2;
+      else
+        throw std::invalid_argument("The current algo has only two inProperty. Cannot call IAlgorithm::inProperty(index) with index > 1");
+    }
+    OutProperty const& outProperty(int index) const override {
+      if (index == 0)
+        return m_out_property;
+      else
+        throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
+    }
+  };
+
+  template <typename Algorithm>
+  struct DualOutAlgoHandler : public IAlgorithm
+  {
+    DualOutAlgoHandler(InProperty&& in_prop, OutProperty&& out_prop1, OutProperty&& out_prop2, Algorithm&& algo)
+    : m_in_property(std::move(in_prop))
+    , m_out_property1(std::move(out_prop1))
+    , m_out_property2(std::move(out_prop2))
+    , m_algo(std::forward<Algorithm>(algo)) {}
+    InProperty m_in_property;
+    OutProperty m_out_property1;
+    OutProperty m_out_property2;
+    Algorithm m_algo;
+    void operator()() override {
+      tye::apply(m_algo, m_in_property(), m_out_property1(), m_out_property2());
+    }
+    InProperty const& inProperty(int index) const override {
+      if (index == 0)
+        return m_in_property;
+      else
+        throw std::invalid_argument("The current algo has only one inProperty. Cannot call IAlgorithm::inProperty(index) with index > 0");
+    }
+    OutProperty const& outProperty(int index) const override {
+      if (index == 0)
+        return m_out_property1;
+      else if (index == 1)
+        return m_out_property2;
+      else
+        throw std::invalid_argument("The current algo has only two outProperty. Cannot call IAlgorithm::outProperty(index) with index > 1");
+    }
   };
 
   template <typename Algorithm>
@@ -133,6 +192,15 @@ namespace MeshKernel
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_out_property());
+    }
+    InProperty const& inProperty(int index) const override {
+      throw std::invalid_argument("The current algo has no inProperty. Cannot call IAlgorithm::inProperty(index)");
+    }
+    OutProperty const& outProperty(int index) const override {
+      if (index == 0)
+        return m_out_property;
+      else
+        throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
     }
   };
 
@@ -149,6 +217,17 @@ namespace MeshKernel
     void operator()() override {
       tye::apply(m_algo, m_out_property1(), m_out_property2());
     }
+    InProperty const& inProperty(int index) const override {
+      throw std::invalid_argument("The current algo has no inProperty. Cannot call IAlgorithm::inProperty(index)");
+    }
+    OutProperty const& outProperty(int index) const override {
+      if (index == 0)
+        return m_out_property1;
+      else if (index == 1)
+        return m_out_property2;
+      else
+        throw std::invalid_argument("The current algo has only two outProperty. Cannot call IAlgorithm::inProperty(index) with index > 1");
+    }
   };
 
   class MeshBase
@@ -164,57 +243,90 @@ namespace MeshKernel
     using PropertyHolderLessComparator = decltype(m_prop_holder_less_comparator);
     std::map<PropertyHolder, std::pair<ProducingAlgoArray, ConsumingAlgoArray>, PropertyHolderLessComparator> m_property_algorithms{ m_prop_holder_less_comparator };
     SGraph::DirectedAcyclicGraph<AlgoPtr, PropertyHolder> m_dag;
+    std::list<AlgoPtr> m_kept_in_out_algos;
+    std::list<AlgoPtr> m_kept_out_algos;
+    std::list<AlgoPtr> m_kept_dual_out_algos;
+    std::list<AlgoPtr> m_kept_dual_in_algos;
+    std::list<AlgoPtr> m_kept_no_deps_dual_out_algos;
     enum class AlgorithmExecutionOrder
     {
       FIFO,
       LIFO,
       DAG
     };
+    enum class AlgorithmPersistence
+    {
+      DropAfterExecution,
+      KeepAfterExecution
+    };
 
    public:
     template <typename Algorithm>
-    void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-      auto algo_hander = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property), std::move(out_property), std::forward<Algorithm>(algo));
-      m_algos.push_back(algo_hander);
-      _addProducingAlgo(algo_hander->m_out_property, algo_hander);
-      _addConsumingAlgo(algo_hander->m_in_property, algo_hander);
+    void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
+      auto algo_handler = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property), std::move(out_property), std::forward<Algorithm>(algo));
+      m_algos.push_back(algo_handler);
+      _addAlgoFromHandler(algo_handler);
+      if (persistance == AlgorithmPersistence::KeepAfterExecution)
+        m_kept_in_out_algos.push_back(algo_handler);
     }
 
     template <typename Algorithm>
-    void addAlgorithm(OutProperty&& out_property, Algorithm algo) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
+    void addAlgorithm(OutProperty&& out_property, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
       auto algo_handler = std::make_shared<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property), std::forward<Algorithm>(algo));
       m_algos.push_back(algo_handler);
-      _addProducingAlgo(algo_handler->m_out_property, algo_handler);
+      _addAlgoFromNoDepsHandler(algo_handler);
+      if (persistance == AlgorithmPersistence::KeepAfterExecution)
+        m_kept_out_algos.push_back(algo_handler);
     }
 
     template <typename Algorithm>
-    void addAlgorithm(InProperty&& in_property1, InProperty&& in_property2, OutProperty&& out_property, Algorithm algo) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
+    void addAlgorithm(InProperty&& in_property1, InProperty&& in_property2, OutProperty&& out_property, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
       auto algo_handler = std::make_shared<DualInAlgoHandler<decltype(algo)>>(
       std::move(in_property1),
       std::move(in_property2),
       std::move(out_property),
       std::forward<Algorithm>(algo));
       m_algos.push_back(algo_handler);
-      _addProducingAlgo(algo_handler->m_out_property, algo_handler);
-      _addConsumingAlgo(algo_handler->m_in_property1, algo_handler);
-      _addConsumingAlgo(algo_handler->m_in_property2, algo_handler);
+      _addAlgoFromDualInHandler(algo_handler);
+      if (persistance == AlgorithmPersistence::KeepAfterExecution)
+        m_kept_dual_in_algos.push_back(algo_handler);
     }
 
     template <typename Algorithm>
-    void addAlgorithm(OutProperty&& out_property1, OutProperty&& out_property2, Algorithm algo) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
+    void addAlgorithm(InProperty&& in_property, OutProperty&& out_property1, OutProperty&& out_property2, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
+      auto algo_handler = std::make_shared<DualOutAlgoHandler<decltype(algo)>>(std::move(in_property), std::move(out_property1), std::move(out_property2), std::forward<Algorithm>(algo));
+      m_algos.push_back(algo_handler);
+      _addAlgoFromDualOutHandler(algo_handler);
+      if (persistance == AlgorithmPersistence::KeepAfterExecution)
+        m_kept_dual_out_algos.push_back(algo_handler);
+    }
+
+    template <typename Algorithm>
+    void addAlgorithm(OutProperty&& out_property1, OutProperty&& out_property2, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
       auto algo_handler = std::make_shared<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1), std::move(out_property2), std::forward<Algorithm>(algo));
       m_algos.push_back(algo_handler);
-      _addProducingAlgo(algo_handler->m_out_property1, algo_handler);
-      _addProducingAlgo(algo_handler->m_out_property2, algo_handler);
+      _addAlgoFromNoDepsDualOutHandler(algo_handler);
+      if (persistance == AlgorithmPersistence::KeepAfterExecution)
+        m_kept_no_deps_dual_out_algos.push_back(algo_handler);
     }
 
     /*!
- * @brief Remove all added algorithms
+ * @brief Remove all added algorithms, only not-persistent by default
  */
-    void removeAlgorithms() {
+    void removeAlgorithms(bool remove_kept_algorithm = false) {
       m_algos.clear();
       m_property_algorithms.clear();
       m_dag.clear();
+      if (remove_kept_algorithm) {
+        m_kept_in_out_algos.clear();
+        m_kept_dual_in_algos.clear();
+        m_kept_out_algos.clear();
+        m_kept_dual_out_algos.clear();
+        m_kept_no_deps_dual_out_algos.clear();
+      }
+      else {
+        _addKeptAlgorithms(); // Kept algorithm are rescheduled
+      }
     }
 
     /*!
@@ -264,6 +376,7 @@ namespace MeshKernel
       }
       if (!do_keep_algorithms)
         removeAlgorithms();
+      _addKeptAlgorithms(); // Add again the algorithms that must be kept
       return EndOfMeshUpdate{};
     }
 
@@ -308,6 +421,32 @@ namespace MeshKernel
       }
     }
 
+    void _addAlgoFromHandler(std::shared_ptr<IAlgorithm> algo_handler) {
+      _addProducingAlgo(algo_handler->outProperty(), algo_handler);
+      _addConsumingAlgo(algo_handler->inProperty(), algo_handler);
+    }
+
+    void _addAlgoFromNoDepsHandler(std::shared_ptr<IAlgorithm> algo_handler) {
+      _addProducingAlgo(algo_handler->outProperty(), algo_handler);
+    }
+
+    void _addAlgoFromDualInHandler(std::shared_ptr<IAlgorithm> algo_handler) {
+      _addProducingAlgo(algo_handler->outProperty(), algo_handler);
+      _addConsumingAlgo(algo_handler->inProperty(0), algo_handler);
+      _addConsumingAlgo(algo_handler->inProperty(1), algo_handler);
+    }
+
+    void _addAlgoFromDualOutHandler(std::shared_ptr<IAlgorithm> algo_handler) {
+      _addProducingAlgo(algo_handler->outProperty(0), algo_handler);
+      _addProducingAlgo(algo_handler->outProperty(1), algo_handler);
+      _addConsumingAlgo(algo_handler->inProperty(), algo_handler);
+    }
+
+    void _addAlgoFromNoDepsDualOutHandler(std::shared_ptr<IAlgorithm> algo_handler) {
+      _addProducingAlgo(algo_handler->outProperty(0), algo_handler);
+      _addProducingAlgo(algo_handler->outProperty(1), algo_handler);
+    }
+
     void _addProducingAlgo(OutProperty const& out_property, std::shared_ptr<IAlgorithm> algo) {
       // add algo as one of producing algo of out_property
       auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[out_property];
@@ -318,6 +457,24 @@ namespace MeshKernel
       // add algo as one of the consuming algos of out_property
       auto& [producing_algo_array, consuming_algo_array] = m_property_algorithms[in_property];
       consuming_algo_array.push_back(algo);
+    }
+
+    void _addKeptAlgorithms() {
+      for (auto& kept_algo : m_kept_in_out_algos) {
+        _addAlgoFromHandler(kept_algo);
+      }
+      for (auto& kept_dual_in_algo : m_kept_dual_in_algos) {
+        _addAlgoFromDualInHandler(kept_dual_in_algo);
+      }
+      for (auto& kept_out_algo : m_kept_out_algos) {
+        _addAlgoFromNoDepsHandler(kept_out_algo);
+      }
+      for (auto& kept_dual_out_algo : m_kept_dual_out_algos) {
+        _addAlgoFromDualOutHandler(kept_dual_out_algo);
+      }
+      for (auto& kept_dual_out_algo : m_kept_no_deps_dual_out_algos) {
+        _addAlgoFromNoDepsDualOutHandler(kept_dual_out_algo);
+      }
     }
   };
 

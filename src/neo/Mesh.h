@@ -20,6 +20,7 @@
 
 #include "Neo.h"
 #include "Utils.h"
+#include "MeshKernel.h" //todo remove when replaced by new addMeshOperation API
 
 namespace Neo
 {
@@ -389,11 +390,13 @@ class Mesh
                                        bool do_check_orientation = false);
 
   /*!
-   * @brief Schedule an set item coordinates. Will be applied when applyScheduledOperations will be called
+   * @brief Schedule a set item coordinates. Will be applied when applyScheduledOperations will be called
    * @param item_family Family of the items whose coords will be modified
    * @param future_added_item_range Set of the items whose coords will be modified. These items are not created yet.
    * They will be created in applyScheduledOperations before the call to this coords set.
    * @param item_coords Value of the items coordinates
+   *
+   * To use for first definition of item coordinates. To change coordinates, use scheduleMoveItems
    */
   void scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemRange& future_added_item_range, std::vector<Neo::utils::Real3> item_coords) noexcept;
 
@@ -464,19 +467,25 @@ class Mesh
   /*!
    * @brief prepare evolutive mesh api : schedule move node operation. Will be applied when applyScheduledOperations will be called
    * @param mesh
-   * @param node_family node family with moving nodes
-   * @param node_uids uids of the moving nodes
-   * @param node_coords new coordinates of the moving nodes given in \p node_uids
+   * @param item_family item family with moving items
+   * @param moved_item_uids uids of the moving items
+   * @param moved_item_new_coords new coordinates of the moving nodes given in \p node_uids
    */
-  void scheduleMoveNodes(Neo::Family& node_family, std::vector<Neo::utils::Int64> const& node_uids, std::vector<Neo::utils::Real3>& node_coords);
+  void scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& moved_item_uids, std::vector<Neo::utils::Real3> const& moved_item_new_coords);
 
   /*!
    * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called
-   * @param mesh
-   * @param family
-   * @param removed_item_uids
+   * @param item_family item family of removed items
+   * @param removed_item_uids unique ids of removed items
    */
-  void scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils::Int64> const& removed_item_uids);
+  void scheduleRemoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& removed_item_uids);
+
+  /*!
+   * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called
+   * @param item_family item family of removed items
+   * @param removed_items item range of removed items
+   */
+  void scheduleRemoveItems(Neo::Family& item_family, Neo::ItemRange const& removed_items);
 
   /*!
    * Access to internal structure, for advanced use
@@ -490,7 +499,10 @@ class Mesh
     return item_family.name() + "_item_coordinates";
   }
 
-  [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}
+ private:
+  [[nodiscard]] std::string _removeItemPropertyName(Family const& item_family) const {
+    return "removed_" + item_family.name() + "_items";
+  }
 };
 
 } // end namespace Neo
