@@ -510,9 +510,11 @@ void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils:
   });
   // Remove item algo
   m_mesh_graph->addAlgorithm(
+  Neo::InProperty{ family, ok_to_start_remove_property_name },
   Neo::OutProperty{ family, family.lidPropName() },
   Neo::OutProperty{ family, removed_item_property_name },
   [removed_item_uids, &family](
+  Neo::PropertyT<Neo::utils::Int32> const&, // ok_to_start_remove_property
   Neo::ItemLidsProperty& item_lids_property,
   Neo::PropertyT<Neo::utils::Int32>& removed_item_property) {
     Neo::print() << "Algorithm: remove items in " << family.name() << std::endl;
