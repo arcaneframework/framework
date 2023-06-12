@@ -123,7 +123,7 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
       EnvCell ev = *ienvcell;
       env_cells.add(ComponentItemLocalId(ev._varIndex()));      
     }
-    _instance->m_allcell_allenvcell[cid] = env_cells;
+    _instance->m_allcell_allenvcell[cid].swap(env_cells);
   }
   return _instance;
 }

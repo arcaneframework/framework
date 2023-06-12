@@ -348,7 +348,7 @@ forceRecompute(bool compute_all)
 //"/home/letiercef/Arcane/build/bin/arcane_test_driver" "launch" "-E" "arcanecea_tests_exec" "-n" "4" "-m 20" "/home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc"
 // ./lib/arcanecea_tests_exec -A,S=4 -A,MaxIteration=20 /home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc
 // ARCANE_DEBUGGER=memcheck bin/arcane_test_driver launch -E arcanecea_tests_exec -m 20 /home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc
-      m_material_mng->createAllCell2AllEnvCell(platform::getDefaultDataAllocator());
+      m_material_mng->createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
   }
 }
 

@@ -214,7 +214,7 @@ class MeshMaterialMng
   }
   bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
   AllCellToAllEnvCell* getAllCellToAllEnvCell() const override { return m_allcell_2_allenvcell; }
-  void createAllCell2AllEnvCell(IMemoryAllocator* alloc) override
+  void createAllCellToAllEnvCell(IMemoryAllocator* alloc) override
   {
     m_allcell_2_allenvcell = AllCellToAllEnvCell::create(this, alloc);
   }

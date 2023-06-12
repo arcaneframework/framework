@@ -504,7 +504,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
    * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
    */
-  virtual void createAllCell2AllEnvCell(IMemoryAllocator* alloc) =0;
+  virtual void createAllCellToAllEnvCell(IMemoryAllocator* alloc) =0;
 
  private:
 
