@@ -125,5 +125,35 @@ TEST(EvolutiveMeshTest, RemoveCells) {
   std::fill(node_to_cell.begin(), node_to_cell.end(), Neo::utils::NULL_ITEM_LID);
   node2cells.connectivity_value.debugPrint();
   EXPECT_TRUE(std::equal(node2cells.connectivity_value.constView().begin(), node2cells.connectivity_value.constView().end(), node_to_cell.begin()));
-  // todo also check evolution of source family connectivity
+
+  // test Remove with ItemRange, no real mesh, only ids to test
+  Neo::Mesh mesh2{ "mesh2" };
+  auto& cell_family2 = mesh2.addFamily(Neo::ItemKind::IK_Cell, "cell_family2");
+  std::vector<Neo::utils::Int64> cell_uids{ 0, 1, 2, 3, 4, 5 };
+  Neo::FutureItemRange future_cells{};
+  mesh2.scheduleAddItems(cell_family2, cell_uids, future_cells);
+  auto end_of_mesh_update = mesh2.applyScheduledOperations();
+  auto added_cells = future_cells.get(end_of_mesh_update);
+  mesh2.scheduleRemoveItems(cell_family2, added_cells);
+  mesh2.applyScheduledOperations();
+  EXPECT_EQ(cell_family2.nbElements(), 0);
+
+  // test several scheduleRemove in the same applyMeshOperations, no real mesh, only ids to test
+  auto node_uids = cell_uids;
+  Neo::FutureItemRange future_nodes{};
+  future_cells = Neo::FutureItemRange{};
+  auto& node_family2 = mesh2.addFamily(Neo::ItemKind::IK_Node, "node_family2");
+  mesh2.scheduleAddItems(cell_family2, cell_uids, future_cells);
+  mesh2.scheduleAddItems(node_family2, node_uids, future_nodes);
+  mesh2.scheduleAddConnectivity(node_family2, future_cells,
+                                cell_family2, 1, node_uids,
+                                "fictive_node_to_cells");
+  mesh2.applyScheduledOperations();
+  mesh2.scheduleRemoveItems(cell_family2, { 0, 1, 2 });
+  mesh2.scheduleRemoveItems(cell_family2, { 3, 4, 5 });
+  mesh2.applyScheduledOperations();
+  std::vector<Neo::utils::Int64> fictive_node2cell_ref{ -1, -1, -1, -1, -1, -1 };
+  auto fictive_node2cell = mesh2.getConnectivity(node_family2, cell_family2, "fictive_node_to_cells");
+  fictive_node2cell.connectivity_value.debugPrint();
+  EXPECT_TRUE(std::equal(fictive_node2cell.connectivity_value.constView().begin(), fictive_node2cell.connectivity_value.constView().end(), fictive_node2cell_ref.begin()));
 }
