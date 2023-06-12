@@ -12,10 +12,8 @@ if(ARCANE_HAS_SOLVERS)
   set(TEST_LIBS ${TEST_LIBS} arcane_solvers)
 endif()
 
-if(ARCANE_HAS_GEOMETRY)
-  set(TEST_DIRS ${TEST_DIRS} geometry)
-  set(TEST_LIBS ${TEST_LIBS} arcane_geometry)
-endif()
+list(APPEND TEST_DIRS geometry)
+list(APPEND TEST_LIBS arcane_geometry)
 
 if(GEOMETRYKERNEL_FOUND)
   set(TEST_DIRS ${TEST_DIRS} corefinement)
@@ -659,10 +657,9 @@ arcane_add_test_sequential(pdes_random_number_generator_service testPDESRandomNu
 arcane_add_test_sequential(simple_csv_output_service testSimpleCsvOutputService.arc)
 arcane_add_test_sequential(simple_csv_comparator_service testSimpleCsvComparatorService.arc)
 
+arcane_add_test(geometry testGeom.arc)
+arcane_add_test(geometry_applyoperation_v2 testGeom.arc -We,ARCANE_APPLYOPERATION_VERSION,2 -We,ARCANE_DEBUG_APPLYOPERATION,1)
 
-if(ARCANE_HAS_GEOMETRY)
-  ARCANE_ADD_TEST(geometry testGeom.arc)
-endif()
 if(ARCANE_HAS_SOLVERS)
   ARCANE_ADD_TEST_PARALLEL(solver testSolver.arc 1)
   ARCANE_ADD_TEST_PARALLEL(solver testSolver.arc 4)
