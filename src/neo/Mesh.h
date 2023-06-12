@@ -20,6 +20,7 @@
 
 #include "Neo.h"
 #include "Utils.h"
+#include "MeshKernel.h" //todo remove when replaced by new addMeshOperation API
 
 namespace Neo
 {
