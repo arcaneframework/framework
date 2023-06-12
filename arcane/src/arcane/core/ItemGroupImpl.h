@@ -449,6 +449,10 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   void _initChildrenByType();
   //! Méthode de calcul des sous-groupes par type
   void _computeChildrenByType();
+  //! Initialisation des sous-groupes par types
+  void _initChildrenByTypeV2();
+  //! Méthode de calcul des sous-groupes par type
+  void _computeChildrenByTypeV2();
   //! Invalidation des sous-groupes
   void _executeExtend(const Int32ConstArrayView * info);
   //! Invalidation des sous-groupes

@@ -22,6 +22,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/SharedPtr.h"
 #include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/ItemGroupObserver.h"
 #include "arcane/core/IItemFamily.h"
@@ -223,12 +224,48 @@ class ItemGroupImplPrivate
 
   void resetSubGroups();
 
+ public:
+
+  bool isUseV2ForApplyOperation() const { return m_use_v2_for_apply_operation; }
+
  private:
+
   UniqueArray<Int32> m_local_buffer{MemoryUtils::getAllocatorForMostlyReadOnlyData()};
   Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
   VariableArrayInt32* m_variable_items_local_id = nullptr;
- private:
   bool m_is_contigous = false; //! Vrai si les localIds sont consécutifs.
+
+ private:
+
+  // TODO: Mettre cela dans une classe spécifique ce qui permettre
+  // de l'utiliser par exemple pour ItemVector
+
+  //! Gestion pour applyOperation() Version 2
+  //@{
+  bool m_use_v2_for_apply_operation = false;
+
+ public:
+
+  //! Liste des localId() par type d'entité.
+  UniqueArray<UniqueArray<Int32>> m_children_by_type_ids;
+
+  /*!
+   * \brief Indique le type des entités du groupe.
+   *
+   * Si différent de IT_NullType, cela signifie que toutes
+   * les entités du groupe sont du même type et donc on il n'est
+   * pas nécessaire de calculer le localId() des entités par type.
+   * On utilise dans ce cas directement le groupe en paramètre
+   * des applyOperation().
+   */
+  ItemTypeId m_unique_children_type {IT_NullType};
+
+  //! Timestamp indiquant quand a été calculé la liste des ids des enfants
+  Int64 m_children_by_type_ids_computed_timestamp = -1;
+
+  bool m_is_debug_apply_operation = false;
+  //@}
+
  private:
 
   void _init();
@@ -314,6 +351,13 @@ _init()
     m_items_local_id = &m_variable_items_local_id->_internalTrueData()->_internalDeprecatedValue();
     updateTimestamp();
   }
+
+  // Regarde si on utilise la version 2 pour ApplyOperationByBasicType
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_APPLYOPERATION_VERSION", true))
+    m_use_v2_for_apply_operation = (v.value()==2);
+
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_APPLYOPERATION", true))
+    m_is_debug_apply_operation = (v.value()>0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -343,6 +387,7 @@ resetSubGroups()
   m_level_cell_group.clear();
   m_own_level_cell_group.clear();
   m_children_by_type.clear();
+  m_children_by_type_ids.clear();
   m_sub_groups.clear();
 }
 
@@ -1740,12 +1785,46 @@ void ItemGroupImpl::
 applyOperation(IItemOperationByBasicType* operation)
 {
   ARCANE_ASSERT((!m_p->m_need_recompute),("Operation on invalid group"));
-  if (m_p->m_children_by_type.empty()){
-    _initChildrenByType();
-  }
+  bool is_verbose = m_p->m_is_debug_apply_operation;
 
-#define APPLY_OPERATION_ON_TYPE(ITEM_TYPE)                    \
-  {                                                           \
+  ITraceMng* tm = m_p->mesh()->traceMng();
+  if (is_verbose)
+    tm->info() << "applyOperation name=" << name() << " nb_item=" << size();
+  if (m_p->isUseV2ForApplyOperation()){
+    if (m_p->m_children_by_type_ids.empty()){
+      _initChildrenByTypeV2();
+    }
+    Int64 t = m_p->timestamp();
+    if (is_verbose)
+      tm->info() << "applyOperation timestamp=" << t << " last=" << m_p->m_children_by_type_ids_computed_timestamp;
+    if (m_p->m_children_by_type_ids_computed_timestamp != t){
+      _computeChildrenByTypeV2();
+      m_p->m_children_by_type_ids_computed_timestamp = t;
+    }
+  }
+  else{
+    if (m_p->m_children_by_type.empty())
+      _initChildrenByType();
+  }
+  IItemFamily* family = m_p->m_item_family;
+  const bool has_only_one_type = (m_p->m_unique_children_type != IT_NullType);
+  if (is_verbose)
+    tm->info() << "applyOperation has_only_one_type=" << has_only_one_type << " value=" << m_p->m_unique_children_type;
+  // TODO: Supprimer la macro et la remplacer par une fonction.
+
+#define APPLY_OPERATION_ON_TYPE(ITEM_TYPE)      \
+  if (m_p->isUseV2ForApplyOperation()){\
+    Int16 type_id = IT_##ITEM_TYPE;\
+    Int32ConstArrayView sub_ids = m_p->m_children_by_type_ids[type_id]; \
+    if (has_only_one_type && type_id==m_p->m_unique_children_type)\
+      sub_ids = itemsLocalId(); \
+    if (is_verbose && sub_ids.size()>0)                                   \
+      tm->info() << "Type=" << (int)IT_##ITEM_TYPE << " nb=" << sub_ids.size(); \
+    if (sub_ids.size()!=0){\
+      operation->apply##ITEM_TYPE(family->view(sub_ids)); \
+    }\
+  }\
+  else {                                                     \
     ItemGroup group(m_p->m_children_by_type[IT_##ITEM_TYPE]); \
     if (!group.empty())                                       \
       operation->apply##ITEM_TYPE(group.view());              \
@@ -1904,6 +1983,23 @@ _initChildrenByType()
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupImpl::
+_initChildrenByTypeV2()
+{
+  bool is_verbose = m_p->m_is_debug_apply_operation;
+  if (is_verbose)
+    m_p->mesh()->traceMng()->info() << "ItemGroupImpl::_initChildrenByTypeV2() name=" << name();
+
+  Int32 nb_basic_item_type= ItemTypeMng::nbBasicItemType();
+  m_p->m_children_by_type_ids.resize(nb_basic_item_type);
+  for( Integer i=0; i<nb_basic_item_type; ++i ){
+    m_p->m_children_by_type_ids[i] = UniqueArray<Int32>{MemoryUtils::getAllocatorForMostlyReadOnlyData()};
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupImpl::
 _computeChildrenByType()
 {
   ItemGroup that_group(this);
@@ -1929,6 +2025,66 @@ _computeChildrenByType()
     ItemGroupImpl * impl = m_p->m_children_by_type[i];
     impl->setItems(items_by_type[i]);
     impl->endTransaction();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupImpl::
+_computeChildrenByTypeV2()
+{
+  ItemGroup that_group(this);
+  Int32 nb_item = size();
+  ItemTypeMng* type_mng = m_p->mesh()->itemTypeMng();
+  ITraceMng* trace = m_p->mesh()->traceMng();
+  bool is_verbose = m_p->m_is_debug_apply_operation;
+  if (is_verbose)
+    trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name();
+
+  Int32 nb_basic_item_type = ItemTypeMng::nbBasicItemType();
+  m_p->m_unique_children_type = ItemTypeId{IT_NullType};
+
+  UniqueArray<Int32> nb_items_by_type(nb_basic_item_type);
+  nb_items_by_type.fill(0);
+  ENUMERATE_(Item,iitem,that_group){
+    Item item = *iitem;
+    Int16 item_type = item.type();
+    if (item_type<nb_basic_item_type)
+      ++nb_items_by_type[item_type];
+  }
+
+  Int32 nb_different_type = 0;
+  for( Int32 i=0; i<nb_basic_item_type; ++i ){
+    m_p->m_children_by_type_ids[i].clear();
+    const Int32 n = nb_items_by_type[i];
+    m_p->m_children_by_type_ids[i].reserve(n);
+    if (n>0)
+      ++nb_different_type;
+    if (is_verbose)
+      trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
+                    << " type=" << type_mng->typeName(i) << " nb=" << n;
+  }
+  trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
+                << " nb_item=" << nb_item << " nb_different_type=" << nb_different_type;
+
+  // Si nb_different_type == 1, cela signifie qu'il n'y a qu'un seul
+  // type d'entité et on conserver juste ce type car dans ce cas on passera
+  // directement le groupe en argument de applyOperation().
+  if (nb_item>0 && nb_different_type==1){
+    ItemInfoListView lv(m_p->m_item_family->itemInfoListView());
+    m_p->m_unique_children_type = ItemTypeId{lv.typeId(m_p->itemsLocalId()[0])};
+    if (is_verbose)
+      trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
+                    << " unique_type=" << type_mng->typeName(m_p->m_unique_children_type);
+    return;
+  }
+
+  ENUMERATE_(Item,iitem,that_group){
+    Item item = *iitem;
+    Integer item_type = item.type();
+    if (item_type<nb_basic_item_type)
+      m_p->m_children_by_type_ids[item_type].add(iitem.itemLocalId());
   }
 }
 

@@ -1132,6 +1132,15 @@ typeName(Integer id) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+String ItemTypeMng::
+typeName(ItemTypeId id) const
+{
+  return typeFromId(id)->typeName();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 // Recopie de la fonction obsolète Item::typeName().
 // TODO: voir pourquoi il y a un test sur nBasicItemType().
 String ItemTypeMng::
