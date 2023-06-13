@@ -108,16 +108,19 @@
 	  Liste des variables à initialiser
         </description>
         <simple name="name" type="string">
+          <userclass>User</userclass>
           <description>
             Nom de la variable à initialiser
           </description>
         </simple>
         <simple name="value" type="string">
+          <userclass>User</userclass>
           <description>
             Valeur de la variable. La chaîne de caractères doit être convertible en le type de la variable
           </description>
         </simple>
         <simple name="group" type="string">
+          <userclass>User</userclass>
           <description>
             Nom du groupe sur lequel on veut positionner les valeurs
           </description>
