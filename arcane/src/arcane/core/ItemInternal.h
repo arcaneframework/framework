@@ -16,14 +16,14 @@
 
 #include "arcane/utils/Array.h"
 
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemIndexedListView.h"
-#include "arcane/ItemSharedInfo.h"
-#include "arcane/ItemUniqueId.h"
-#include "arcane/ItemLocalId.h"
-#include "arcane/ItemTypeId.h"
-#include "arcane/ItemConnectivityContainerView.h"
-#include "arcane/ItemInternalVectorView.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemIndexedListView.h"
+#include "arcane/core/ItemSharedInfo.h"
+#include "arcane/core/ItemUniqueId.h"
+#include "arcane/core/ItemLocalId.h"
+#include "arcane/core/ItemTypeId.h"
+#include "arcane/core/ItemConnectivityContainerView.h"
+#include "arcane/core/ItemInternalVectorView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,6 +46,12 @@
 namespace Arcane::impl
 {
 class ItemBase;
+}
+
+namespace Arcane::mesh
+{
+class IncrementalItemConnectivityBase;
+class PolyhedralFamily;
 }
 
 namespace Arcane
@@ -129,6 +135,10 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   friend class impl::ItemBase;
   friend class ItemInternal;
   friend class Item;
+
+  // Pour accès à _setConnectivity*
+  friend mesh::IncrementalItemConnectivityBase;
+  friend mesh::PolyhedralFamily;
 
  private:
 
@@ -248,23 +258,21 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   //! Nombre d'appel à itemLocalIds()
   Int64 nbAccessAll() const { return 0; }
 
- public:
-
-  // TODO Rendre les méthodes setConnectivity* internes
+ private:
 
   //! Positionne le tableau d'index des connectivités
-  void setConnectivityIndex(Int32 item_kind,ConstArrayView<Int32> v)
+  void _setConnectivityIndex(Int32 item_kind,ConstArrayView<Int32> v)
   {
     m_indexes[item_kind] = v;
   }
   //! Positionne le tableau contenant la liste des connectivités
-  void setConnectivityList(Int32 item_kind,ConstArrayView<Int32> v)
+  void _setConnectivityList(Int32 item_kind,ConstArrayView<Int32> v)
   {
     m_list[item_kind] = v;
     m_offset[item_kind] = ConstArrayView<Int32>{};
   }
   //! Positionne le tableau contenant le nombre d'entités connectées.
-  void setConnectivityNbItem(Int32 item_kind,ConstArrayView<Int32> v)
+  void _setConnectivityNbItem(Int32 item_kind,ConstArrayView<Int32> v)
   {
     m_nb_item[item_kind] = v;
   }

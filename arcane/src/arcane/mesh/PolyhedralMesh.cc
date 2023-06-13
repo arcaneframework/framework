@@ -162,9 +162,9 @@ namespace mesh
     {
       auto item_internal_connectivity_list = itemInternalConnectivityList();
       for (auto item_kind = 0; item_kind < ItemInternalConnectivityList::MAX_ITEM_KIND; ++item_kind) {
-        item_internal_connectivity_list->setConnectivityList(item_kind, m_empty_connectivity);
-        item_internal_connectivity_list->setConnectivityIndex(item_kind, m_empty_connectivity_indexes);
-        item_internal_connectivity_list->setConnectivityNbItem(item_kind, m_empty_connectivity_nb_item);
+        item_internal_connectivity_list->_setConnectivityList(item_kind, m_empty_connectivity);
+        item_internal_connectivity_list->_setConnectivityIndex(item_kind, m_empty_connectivity_indexes);
+        item_internal_connectivity_list->_setConnectivityNbItem(item_kind, m_empty_connectivity_nb_item);
       }
     }
   };
