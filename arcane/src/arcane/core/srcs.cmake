@@ -65,6 +65,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IParallelMngInternal.h
   internal/IItemFamilyInternal.h
   internal/IMeshInternal.h
+  internal/ItemGroupInternal.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -283,6 +284,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ItemGroupComputeFunctor.cc
   ItemGroupComputeFunctor.h
   ItemGroupImpl.cc
+  ItemGroupInternal.cc
   ItemGroupObserver.h
   ItemGroupRangeIterator.cc
   ItemGroupRangeIterator.h

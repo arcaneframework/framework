@@ -109,7 +109,6 @@ namespace mesh
  */
 class IItemFamily
 {
-  friend class ItemGroupImplPrivate;
   friend class mesh::DynamicMesh;
   friend class mesh::ItemFamily;
 
