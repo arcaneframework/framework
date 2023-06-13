@@ -24,7 +24,10 @@
 
 namespace Arcane
 {
-
+namespace mesh
+{
+class IndexedItemConnectivityAccessor;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -221,6 +224,7 @@ class ItemVectorViewConstIteratorT
 class ARCANE_CORE_EXPORT ItemVectorView
 {
   friend class ItemVector;
+  friend mesh::IndexedItemConnectivityAccessor;
 
  public:
 
