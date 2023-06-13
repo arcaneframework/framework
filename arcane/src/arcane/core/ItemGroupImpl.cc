@@ -127,7 +127,7 @@ checkSharedNull()
 
 ItemGroupImpl::
 ItemGroupImpl(IItemFamily* family,const String& name)
-: m_p (new ItemGroupImplPrivate(family,name))
+: m_p (new ItemGroupInternal(family,name))
 {
 }
 
@@ -136,7 +136,7 @@ ItemGroupImpl(IItemFamily* family,const String& name)
 
 ItemGroupImpl::
 ItemGroupImpl(IItemFamily* family,ItemGroupImpl* parent,const String& name)
-: m_p(new ItemGroupImplPrivate(family,parent,name))
+: m_p(new ItemGroupInternal(family,parent,name))
 {
 }
 
@@ -145,7 +145,7 @@ ItemGroupImpl(IItemFamily* family,ItemGroupImpl* parent,const String& name)
 
 ItemGroupImpl::
 ItemGroupImpl()
-: m_p (new ItemGroupImplPrivate())
+: m_p (new ItemGroupInternal())
 {
 }
 
@@ -332,7 +332,7 @@ ItemGroupImpl* ItemGroupImpl::
 ownGroup()
 {
 	ItemGroupImpl* ii = m_p->m_own_group;
-	// Le flag est déjà positionné dans le ItemGroupImplPrivate::_init ou ItemGroupImpl::setOwn
+	// Le flag est déjà positionné dans le ItemGroupInternal::_init ou ItemGroupImpl::setOwn
 	if (!ii) {
 		if (m_p->m_is_own){
 			ii = this;
@@ -504,7 +504,7 @@ ownActiveCellGroup()
   if (itemKind()!=IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_own_active_cell_group;
-  // Le flag est déjà positionné dans le ItemGroupImplPrivate::_init ou ItemGroupImpl::setOwn
+  // Le flag est déjà positionné dans le ItemGroupInternal::_init ou ItemGroupImpl::setOwn
   if (!ii) {
     ii = createSubGroup("OwnActiveCells",m_p->m_mesh->cellFamily(),
                         new OwnActiveCellGroupComputeFunctor());
@@ -540,7 +540,7 @@ ownLevelCellGroup(const Integer& level)
   if (itemKind()!=IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_own_level_cell_group[level];
-  // Le flag est déjà positionné dans le ItemGroupImplPrivate::_init ou ItemGroupImpl::setOwn
+  // Le flag est déjà positionné dans le ItemGroupInternal::_init ou ItemGroupImpl::setOwn
   if (!ii) {
     ii = createSubGroup(String::format("OwnLevelCells{0}",level),
                         m_p->m_mesh->cellFamily(),
@@ -1773,7 +1773,7 @@ destroy()
     m_p->resetSubGroups();
   else{
     delete m_p;
-    m_p = new ItemGroupImplPrivate();
+    m_p = new ItemGroupInternal();
   }
 }
 

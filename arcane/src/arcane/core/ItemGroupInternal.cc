@@ -30,8 +30,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemGroupImplPrivate::
-ItemGroupImplPrivate()
+ItemGroupInternal::
+ItemGroupInternal()
 : m_mesh(nullptr)
 , m_item_family(nullptr)
 , m_parent(nullptr)
@@ -45,8 +45,8 @@ ItemGroupImplPrivate()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemGroupImplPrivate::
-ItemGroupImplPrivate(IItemFamily* family,const String& name)
+ItemGroupInternal::
+ItemGroupInternal(IItemFamily* family,const String& name)
 : m_mesh(family->mesh())
 , m_item_family(family)
 , m_parent(nullptr)
@@ -61,8 +61,8 @@ ItemGroupImplPrivate(IItemFamily* family,const String& name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemGroupImplPrivate::
-ItemGroupImplPrivate(IItemFamily* family,ItemGroupImpl* parent,const String& name)
+ItemGroupInternal::
+ItemGroupInternal(IItemFamily* family,ItemGroupImpl* parent,const String& name)
 : m_mesh(parent->mesh())
 , m_item_family(family)
 , m_parent(parent)
@@ -77,8 +77,8 @@ ItemGroupImplPrivate(IItemFamily* family,ItemGroupImpl* parent,const String& nam
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemGroupImplPrivate::
-~ItemGroupImplPrivate()
+ItemGroupInternal::
+~ItemGroupInternal()
 {
   // (HP) TODO: vérifier qu'il n'y a plus d'observer à cet instant
   // Ceux des sous-groupes n'ont pas été détruits
@@ -92,7 +92,7 @@ ItemGroupImplPrivate::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupImplPrivate::
+void ItemGroupInternal::
 _init()
 {
   if (m_item_family)
@@ -119,7 +119,7 @@ _init()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternalList ItemGroupImplPrivate::
+ItemInternalList ItemGroupInternal::
 items() const
 {
   if (m_item_family)
@@ -130,7 +130,7 @@ items() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 ItemGroupImplPrivate::
+Int32 ItemGroupInternal::
 maxLocalId() const
 {
   return m_item_family->maxLocalId();
@@ -139,7 +139,7 @@ maxLocalId() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInfoListView ItemGroupImplPrivate::
+ItemInfoListView ItemGroupInternal::
 itemInfoListView() const
 {
   if (m_item_family)
@@ -150,7 +150,7 @@ itemInfoListView() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupImplPrivate::
+void ItemGroupInternal::
 resetSubGroups()
 {
   if (!m_is_all_items)
@@ -181,7 +181,7 @@ resetSubGroups()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupImplPrivate::
+void ItemGroupInternal::
 notifyExtendObservers(const Int32ConstArrayView * info)
 {
   ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
@@ -196,7 +196,7 @@ notifyExtendObservers(const Int32ConstArrayView * info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupImplPrivate::
+void ItemGroupInternal::
 notifyReduceObservers(const Int32ConstArrayView * info)
 {
   ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
@@ -211,7 +211,7 @@ notifyReduceObservers(const Int32ConstArrayView * info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupImplPrivate::
+void ItemGroupInternal::
 notifyCompactObservers(const Int32ConstArrayView * info)
 {
   ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
@@ -226,7 +226,7 @@ notifyCompactObservers(const Int32ConstArrayView * info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemGroupImplPrivate::
+void ItemGroupInternal::
 notifyInvalidateObservers()
 {
 #ifndef NO_USER_WARNING
@@ -247,7 +247,7 @@ notifyInvalidateObservers()
 /*!
  * \brief Vérifie que les localIds() sont contigüs.
  */
-void ItemGroupImplPrivate::
+void ItemGroupInternal::
 checkIsContigous()
 {
   m_is_contigous = false;

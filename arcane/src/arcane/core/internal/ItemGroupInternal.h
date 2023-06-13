@@ -47,14 +47,14 @@ class ItemGroupImpl;
  - ces groupes ne doivent pas être transférés d'un sous-domaine à l'autre
  - ils ne peuvent pas être modifiés directement.
  */
-class ItemGroupImplPrivate
+class ItemGroupInternal
 {
  public:
 
-  ItemGroupImplPrivate();
-  ItemGroupImplPrivate(IItemFamily* family, const String& name);
-  ItemGroupImplPrivate(IItemFamily* family, ItemGroupImpl* parent, const String& name);
-  ~ItemGroupImplPrivate();
+  ItemGroupInternal();
+  ItemGroupInternal(IItemFamily* family, const String& name);
+  ItemGroupInternal(IItemFamily* family, ItemGroupImpl* parent, const String& name);
+  ~ItemGroupInternal();
 
  public:
 

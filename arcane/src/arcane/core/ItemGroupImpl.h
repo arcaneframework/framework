@@ -38,7 +38,7 @@ class IItemGroupObserver;
 class IObservable;
 class ItemGroupComputeFunctor;
 class IMesh;
-class ItemGroupImplPrivate;
+class ItemGroupInternal;
 class ItemPairGroupImpl;
 class GroupIndexTable;
 class IVariableSynchronizer;
@@ -475,7 +475,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 
 private:
 
-  ItemGroupImplPrivate* m_p; //!< Implémentation du groupe
+ ItemGroupInternal* m_p; //!< Implémentation du groupe
 };
 
 /*---------------------------------------------------------------------------*/
