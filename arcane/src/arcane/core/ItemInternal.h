@@ -20,7 +20,7 @@
 #include "arcane/core/ItemIndexedListView.h"
 #include "arcane/core/ItemSharedInfo.h"
 #include "arcane/core/ItemUniqueId.h"
-#include "arcane/core/ItemLocalId.h"
+#include "arcane/core/ItemLocalIdListView.h"
 #include "arcane/core/ItemTypeId.h"
 #include "arcane/core/ItemConnectivityContainerView.h"
 #include "arcane/core/ItemInternalVectorView.h"
