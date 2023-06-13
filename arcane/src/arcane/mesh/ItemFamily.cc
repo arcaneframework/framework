@@ -133,6 +133,10 @@ class ItemFamily::InternalApi
   {
     return m_family->_topologyModifier();
   }
+  ItemSharedInfo* commonItemSharedInfo() override
+  {
+    return m_family->commonItemSharedInfo();
+  }
 
  private:
 
