@@ -1348,10 +1348,7 @@ _testAdditionnalConnectivity()
   ENUMERATE_(Cell,icell,cells){
     for( FaceLocalId face : cn_view.faces(icell) )
       total_face_lid += face.localId();
-    // Vérifie la cohérence entre les méthodes
-    Span<const FaceLocalId> f1 = cn_view.faces(icell).ids();
-    Span<const FaceLocalId> f2 = cn_view.faceIds(icell).ids();
-    vc.areEqualArray(f1,f2,"SameArray");
+    vc.areEqual(cn_view.faces(icell),cn_view.faceIds(icell),"SameArray");
     Int32 n = cn_view.nbFace(icell);
     vc.areEqual(n,cn_view.faceIds(icell).size(),"SameSize");
     for( Int32 i=0; i<n; ++i )
@@ -1385,11 +1382,11 @@ _testUnstructuredConnectivities()
     ENUMERATE_(Cell,icell,allCells()){
       Cell cell = *icell;
       // Vérifie la cohérence entre les méthodes
-      Span<const FaceLocalId> f1 = icv.faces(icell).ids();
-      Span<const FaceLocalId> f2 = icv.faceIds(icell).ids();
-      Span<const FaceLocalId> f3 = cell.faceIds().ids();
-      vc.areEqualArray(f1,f2,"SameFaceArray1");
-      vc.areEqualArray(f1,f3,"SameFaceArray2");
+      auto f1 = icv.faces(icell);
+      auto f2 = icv.faceIds(icell);
+      auto f3 = cell.faceIds();
+      vc.areEqual(f1,f2,"SameFaceArray1");
+      vc.areEqual(f1,f3,"SameFaceArray2");
       Int32 n = icv.nbFace(icell);
       vc.areEqual(n,icv.faceIds(icell).size(),"SameFaceSize");
       for( Int32 i=0; i<n; ++i )
@@ -1403,11 +1400,11 @@ _testUnstructuredConnectivities()
     ENUMERATE_(Cell,icell,allCells()){
       Cell cell = *icell;
       // Vérifie la cohérence entre les méthodes
-      Span<const NodeLocalId> f1 = icv.nodes(icell).ids();
-      Span<const NodeLocalId> f2 = icv.nodeIds(icell).ids();
-      Span<const NodeLocalId> f3 = cell.nodeIds().ids();
-      vc.areEqualArray(f1,f2,"SameNodeArray1");
-      vc.areEqualArray(f1,f3,"SameNodeArray2");
+      auto f1 = icv.nodes(icell);
+      auto f2 = icv.nodeIds(icell);
+      auto f3 = cell.nodeIds();
+      vc.areEqual(f1,f2,"SameNodeArray1");
+      vc.areEqual(f1,f3,"SameNodeArray2");
       Int32 n = icv.nbNode(icell);
       vc.areEqual(n,icv.nodeIds(icell).size(),"SameNodeSize");
       for( Int32 i=0; i<n; ++i )
@@ -1421,11 +1418,11 @@ _testUnstructuredConnectivities()
     ENUMERATE_(Cell,icell,allCells()){
       Cell cell = *icell;
       // Vérifie la cohérence entre les méthodes
-      Span<const EdgeLocalId> f1 = icv.edges(icell).ids();
-      Span<const EdgeLocalId> f2 = icv.edgeIds(icell).ids();
-      Span<const EdgeLocalId> f3 = cell.edgeIds().ids();
-      vc.areEqualArray(f1,f2,"SameEdgeArray1");
-      vc.areEqualArray(f1,f3,"SameEdgeArray2");
+      auto f1 = icv.edges(icell);
+      auto f2 = icv.edgeIds(icell);
+      auto f3 = cell.edgeIds();
+      vc.areEqual(f1,f2,"SameEdgeArray1");
+      vc.areEqual(f1,f3,"SameEdgeArray2");
       Int32 n = icv.nbEdge(icell);
       vc.areEqual(n,icv.edgeIds(icell).size(),"SameEdgeSize");
       for( Int32 i=0; i<n; ++i )
@@ -1439,11 +1436,11 @@ _testUnstructuredConnectivities()
     ENUMERATE_(Node,inode,allNodes()){
       Node node = *inode;
       // Vérifie la cohérence entre les méthodes
-      Span<const CellLocalId> f1 = icv.cells(inode).ids();
-      Span<const CellLocalId> f2 = icv.cellIds(inode).ids();
-      Span<const CellLocalId> f3 = node.cellIds().ids();
-      vc.areEqualArray(f1,f2,"SameCellArray1");
-      vc.areEqualArray(f1,f3,"SameCellArray2");
+      auto f1 = icv.cells(inode);
+      auto f2 = icv.cellIds(inode);
+      auto f3 = node.cellIds();
+      vc.areEqual(f1,f2,"SameCellArray1");
+      vc.areEqual(f1,f3,"SameCellArray2");
       Int32 n = icv.nbCell(inode);
       vc.areEqual(n,icv.cellIds(inode).size(),"SameCellSize");
       for( Int32 i=0; i<n; ++i )

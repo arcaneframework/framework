@@ -166,13 +166,15 @@ class ItemLocalIdListViewConstIteratorT
  */
 class ARCANE_CORE_EXPORT ItemLocalIdListView
 {
+  template <typename ItemType> friend class ItemLocalIdViewT;
+
  public:
 
   using ThatClass = ItemLocalIdListView;
 
  private:
 
-  ItemLocalIdListView(const Int32* ids, Int32 s, Int32 local_id_offset)
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdListView(const Int32* ids, Int32 s, Int32 local_id_offset)
   : m_local_ids(ids)
   , m_local_id_offset(local_id_offset)
   , m_size(s)
@@ -180,20 +182,21 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
 
  public:
 
-  ARCCORE_HOST_DEVICE Int32 operator[](Int32 index) const
+  ARCCORE_HOST_DEVICE ItemLocalId operator[](Int32 index) const
   {
     ARCANE_CHECK_AT(index, m_size);
-    return m_local_ids[index] + m_local_id_offset;
+    return ItemLocalId(m_local_ids[index] + m_local_id_offset);
   }
   constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_size; }
 
  public:
 
   friend ARCANE_CORE_EXPORT bool operator==(const ThatClass& lhs, const ThatClass& rhs);
-  friend ARCANE_CORE_EXPORT bool operator!=(const ThatClass& lhs, const ThatClass& rhs)
+  friend inline bool operator!=(const ThatClass& lhs, const ThatClass& rhs)
   {
     return !operator==(lhs, rhs);
   }
+  friend ARCANE_CORE_EXPORT std::ostream& operator<<(std::ostream& o, const ThatClass& lhs);
 
  private:
 
@@ -213,6 +216,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
  */
 template <typename ItemType>
 class ItemLocalIdViewT
+: public ItemLocalIdListView
 {
   friend class ItemConnectivityContainerView;
   friend mesh::IndexedItemConnectivityAccessor;
@@ -223,7 +227,6 @@ class ItemLocalIdViewT
  public:
 
   using LocalIdType = typename ItemLocalIdTraitsT<ItemType>::LocalIdType;
-  using SpanType = SmallSpan<const LocalIdType>;
   using const_iterator = ItemLocalIdListViewConstIteratorT<ItemType>;
 
  public:
@@ -232,47 +235,40 @@ class ItemLocalIdViewT
 
  private:
 
-  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const LocalIdType* ids, Int32 s, Int32 local_id_offset)
-  : m_ids(ids, s)
-  , m_local_id_offset(local_id_offset)
+  // TODO: a supprimer
+  ARCCORE_HOST_DEVICE ItemLocalIdViewT(const LocalIdType* ids, Int32 s, Int32 local_id_offset)
+  : ItemLocalIdListView(reinterpret_cast<const Int32*>(ids), s, local_id_offset)
   {}
 
-  ItemLocalIdViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
-  : m_ids(reinterpret_cast<const LocalIdType*>(ids), s)
-  , m_local_id_offset(local_id_offset)
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
+  : ItemLocalIdListView(ids, s, local_id_offset)
   {}
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const
+  ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const
   {
-    return LocalIdType(m_ids[i].localId() + m_local_id_offset);
+    ARCANE_CHECK_AT(i, m_size);
+    return LocalIdType(m_local_ids[i] + m_local_id_offset);
   }
-  constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_ids.size(); }
 
   constexpr ARCCORE_HOST_DEVICE const_iterator begin() const
   {
-    return const_iterator(reinterpret_cast<const Int32*>(m_ids.data()), m_local_id_offset);
+    return const_iterator(m_local_ids, m_local_id_offset);
   }
   constexpr ARCCORE_HOST_DEVICE const_iterator end() const
   {
-    return const_iterator(reinterpret_cast<const Int32*>(m_ids.data() + m_ids.size()), m_local_id_offset);
+    return const_iterator(m_local_ids + m_size, m_local_id_offset);
   }
 
  private:
+
+  using ItemLocalIdListView::localIdOffset;
 
   ConstArrayView<Int32> toViewInt32() const
   {
-    return { size(), reinterpret_cast<const Int32*>(m_ids.data()) };
+    return { size(), m_local_ids };
   }
-  constexpr ARCCORE_HOST_DEVICE Int32 localIdOffset() const { return m_local_id_offset; }
-
-  constexpr ARCCORE_HOST_DEVICE SpanType ids() const { return m_ids; }
-
- private:
-
-  SpanType m_ids;
-  Int32 m_local_id_offset = 0;
 };
 
 /*---------------------------------------------------------------------------*/

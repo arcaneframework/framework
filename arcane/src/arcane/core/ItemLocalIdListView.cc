@@ -37,6 +37,25 @@ bool operator==(const ItemLocalIdListView& lhs, const ItemLocalIdListView& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+std::ostream&
+operator<<(std::ostream& o, const ItemLocalIdListView& lhs)
+{
+  const Int32 n = lhs.m_size;
+  if (n == 0) {
+    o << "{}";
+  }
+  else {
+    o << "{ " << lhs[0];
+    for (Int32 i = 1; i < n; ++i)
+      o << ", " << lhs[i];
+    o << " }";
+  }
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // Pour tester l'instantiation de ces classes
 template class ItemLocalIdViewT<Node>;
 
