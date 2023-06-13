@@ -4,31 +4,71 @@
 
 ## Types tableaux {#arcanedoc_core_types_array_usage_type}
 
+\note Même si on fait référence à %Arcane dans cette partie,
+les classes gérant les tableaux et les vues sont dans %Arccore et
+sont donc définies dans le namespace Arccore. Il y a néanmoins
+un `using` dans %Arcane pour ces classes ce qui permet de les
+utiliser comme étant dans le namespace Arcane.
+
 L'utilisation des tableaux dans %Arcane utilise deux types de
-classes : les \a conteneurs et les \a vues.
+classes : les \a conteneurs et les \a vues:
 
-Les conteneurs tableaux permettent de
-stocker des éléments et gèrent la
-mémoire pour ce stockage. Les vues représentent un sous-ensemble
-d'un conteneur et sont des objets <strong>temporaires</strong>.
+- Les conteneurs tableaux permettent de stocker des éléments et gèrent la
+  mémoire pour ce stockage à la manière de `std::vector`. Ils possèdent
+  des opérations permettant d'ajouter ou supprimer des éléments. La
+  mémoire nécessair est automatiquement gérée en cas d'ajout d'éléments
+  par exemple.
+- Les vues représentent un sous-ensemble d'un conteneur et sont des
+  objets <strong>temporaires</strong> : les vues ne doivent pas être
+  conservées entre deux évolutions du nombre d'éléments du conteneur
+  associé.
 
-Les classes gérant les conteneurs ont un nom qui finit par \a
-%Array. Les conteneurs ont les caractéristiques suivantes :
+Les classes gérant les conteneurs ont un nom qui finit par
+\a %Array (par exemple \arccore{UniqueArray} ou \arccore{SharedArray}.
+Les conteneurs ont les caractéristiques suivantes :
+
 - ils gèrent la mémoire nécessaire pour conserver leurs éléments.
 - les éléments sont conservés de manière contigüe en mémoire. Il est
-donc possible d'utiliser ces conteneurs à des fonctions en langage C par
-exemple qui prennent en argument des pointeurs. 
+  donc possible d'utiliser ces conteneurs à des fonctions en langage C par
+  exemple qui prennent en argument des pointeurs. 
 
-Les classes gérant les vues ont un nom qui finit par \a View, comme ArrayView
-ou ConstArrayView. Les vues ont les caractéristiques suivantes :
+Dans %Arcane, il existe deux types de classes pour gérer les vues :
+- les classes dont le nom finit par \a View (\arccore{ArrayView},
+  \arccore{ConstArrayView}. Il s'agit des classes
+  utilisées historiquement dans %Arcane. Pour ces classes le nombre
+  d'éléments est conservé dans un \arccore{Int32}.
+- les classes dont le nom finit par \a Span (\arccore{Span}, \arccore{SmallSpan}). Ces
+  classes ont été ajoutées à partir de 2018 et sont similaires à la
+  classe `std::span` (https://en.cppreference.com/w/cpp/container/span)
+  du C++20. Pour ces classes le nombre d'éléments
+  est conservé dans un \arccore{Int64} pour \arccore{Span} et dans un
+  \arccore{Int32} pour \arccore{SmallSpan}.
+
+La différence majeure entre les vues historiques et \arccore{Span} est qu'il
+n'y a qu'une seule classe pour gérer les éléments constant ou non constant
+et que les opérateurs d'accès (\arccore{Span::operator[]()}) sont `const`
+pour les `Span` ce qui permet de les utiliser dans les lambda.
+Il est donc préférable d'utiliser \arccore{Span} ou \arccore{SmallSpan}
+à la place de \arccore{ArrayView} ou \arccore{ConstArrayView}.
+
+Les vues ont les caractéristiques suivantes :
 - elles ne gèrent aucune mémoire et sont toutes issues d'un
-conteneur (qui n'est pas nécessairement une classe Arcane)
-- elles ne sont valide que tant que le conteneur associé existe et
-n'est pas modifié.
-- elles s'utilisent toujours par valeur et jamais par référence (on
-ne leur applique pas l'opérateur &).
+  conteneur (qui n'est pas nécessairement une classe %Arcane)
+- elles ne sont valides que tant que le conteneur associé existe et
+  le nombre de ces éléments n'est pas modifié.
+- elles s'utilisent en général par valeur plutôt que par référence (on
+  ne leur applique pas l'opérateur &).
+- leur taille est petite (en général 16 octets) et on peut donc les
+  conserver et les copier facilement.
 
-En général, il ne faut donc pas utiliser de vue comme champ d'une classe.
+\warning Pour des raisons de performance, les classes tableaux ne gèrent par
+l'initialisation des éléments de la même manière si le type est considéré
+comme un type POD (Plain Object Data) poure %Arcane.
+La macro ARCCORE_DEFINE_ARRAY_PODTYPE(type) permet
+d'indiquer que \a type est un type POD pour \arccore{Array}. L'utilisation
+de cette macro doit se faire avant la définition d'une instance de tableau
+pour le type \a type. Tout les types de base du C++ (`char`, `int`, `double`, ...)
+sont considérés comme des types POD pour %Arcane.
 
 Le tableau suivant donne la liste des classes gérant les tableaux et
 les vues associées :
@@ -47,15 +87,15 @@ les vues associées :
 <td>\arccore{Array}</td>
 <td>\arccore{SharedArray}</td>
 <td>\arccore{UniqueArray}</td>
-<td>\arccore{ArrayView}</td>
-<td>\arccore{ConstArrayView}</td></tr>
+<td>\arccore{ArrayView} <br/> \arccore{Span<T>} <br/> \arccore{SmallSpan<T>}</td>
+<td>\arccore{ConstArrayView} <br/> \arccore{Span<const T>} <br/> \arccore{SmallSpan<const T>}</td></tr>
 <tr>
 <td>Tableau 2D classique</td>
 <td>\arccore{Array2}</td>
 <td>\arccore{SharedArray2}</td>
 <td>\arccore{UniqueArray2}</td>
-<td>\arccore{Array2View}</td>
-<td>\arccore{ConstArray2View}</td>
+<td>\arccore{Array2View} <br/> \arccore{Span2<T>} <br/> \arccore{SmallSpan2<T>}</td>
+<td>\arccore{ConstArray2View} <br/> \arccore{Span2<const T>} <br/> \arccore{SmallSpan2<const T>}</td>
 </tr>
 <tr>
 <td>Tableau 2D avec 2-ème dimension variable</td>
@@ -78,8 +118,8 @@ b</em>, alors \a a devient une référence sur \a b et toute modification de \a 
 aussi \a a.
 
 ```cpp
-SharedArray<int> a1(5);
-SharedArray<int> a2;
+Arcane::SharedArray<int> a1(5);
+Arcane::SharedArray<int> a2;
 a2 = a1; // a2 et a1 font référence à la même zone mémoire.
 a1[3] = 1;
 a2[3] = 2;
@@ -91,8 +131,8 @@ b</em>, alors \a a devient une copie des valeurs de \a b et par la suite les
 tableaux \a a et \a b sont indépendants.
 
 ```cpp
-UniqueArray<int> a1(5);
-UniqueArray<int> a2;
+Arcane::UniqueArray<int> a1(5);
+Arcane::UniqueArray<int> a2;
 a2 = a1; // a2 devient une copie de a1.
 a1[3] = 1;
 a2[3] = 2;
@@ -111,7 +151,7 @@ Voici les règles de bonnes pratiques à respecter pour le passage de tableaux e
 <th>Opérations possibles</th>
 </tr>
 <tr>
-<td>ConstArrayView</td>
+<td>\arccore{ConstArrayView} <br/> \arccore{Span<const T>} <br/> \arccore{SmallSpan<const T>}</td>
 <td>Tableau 1D en lecture seule</td>
 <td>
 
@@ -122,7 +162,7 @@ x = a[i];
 </td>
 </tr>
 <tr>
-<td>ArrayView</td>
+<td>\arccore{ArrayView} <br/> \arccore{Span<T>} <br/> \arccore{SmallSpan<T>}</td>
 <td>Tableau 1D en lecture et/ou écriture mais dont la taille n'est
 pas modifiable</td> 
 <td>
@@ -135,7 +175,7 @@ a[i] = y;
 </td>
 </tr>
 <tr>
-<td>Array&</td>
+<td>\arccore{Array}&</td>
 <td>Tableau 1D modifiable et pouvant changer de nombre d'éléments</td>
 <td>
 
@@ -149,12 +189,12 @@ a.add(v);
 </td>
 </tr>
 <tr>
-<td>const Array&</td>
-<td>Interdit. Utiliser ConstArrayView à la place</td>
+<td>const \arccore{Array}&</td>
+<td>Interdit. Utiliser \arccore{ConstArrayView} ou \arccore{Span<const T>} à la place</td>
 <td></td>
 </tr>
 <tr>
-<td>ConstArray2View</td>
+<td>\arccore{ConstArray2View} <br/> \arccore{Span2<const T>} <br/> \arccore{SmallSpan2<const T>}</td>
 <td>Tableau 2D en lecture seule</td>
 <td>
 
@@ -165,7 +205,7 @@ x = a[i][j];
 </td>
 </tr>
 <tr>
-<td>Array2View</td>
+<td>\arccore{Array2View} <br/> \arccore{Span2<T>} <br/> \arccore{SmallSpan2<T>}</td>
 <td>Tableau 2D en lecture et/ou écriture mais dont la taille n'est pas modifiable</td>
 <td>
 
@@ -177,7 +217,7 @@ a[i][j] = y;
 </td>
 </tr>
 <tr>
-<td>Array2&</td>
+<td>\arccore{Array}&</td>
 <td>Tableau 2D modifiable et pouvant changer de nombre d'éléments</td>
 <td>
 
@@ -190,8 +230,8 @@ a.resize(u,v);
 </td>
 </tr>
 <tr>
-<td>const Array&</td>
-<td>Interdit. Utiliser ConstArrayView à la place</td>
+<td>const \arccore{Array2}&</td>
+<td>Interdit. Utiliser \arccore{ConstArray2View} ou \arccore{Span2<const T>} à la place</td>
 <td></td>
 </tr>
 </table>

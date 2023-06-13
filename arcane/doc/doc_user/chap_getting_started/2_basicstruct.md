@@ -17,7 +17,7 @@ Les types de bases sont :
 
 <table>
 <tr><td><b>Nom de la classe</b></td><td><b>Correspondance dans les spécifications</b></td></tr>
-<tr><td>\arccore{Integer}   </td><td> entier signé </td></tr>
+<tr><td>\arccore{Integer}   </td><td> entier signé sur 32 bits </td></tr>
 <tr><td>\arccore{Int16}     </td><td> entier signé sur 16 bits </td></tr>
 <tr><td>\arccore{Int32}     </td><td> entier signé sur 32 bits </td></tr>
 <tr><td>\arccore{Int64}     </td><td> entier signé sur 64 bits </td></tr>
@@ -27,12 +27,10 @@ Les types de bases sont :
 <tr><td>\arcane{Real3}      </td><td> coordonnée 3D, vecteur de trois réels </td></tr>
 <tr><td>\arcane{Real2x2}    </td><td> tenseur 2D, vecteur de quatre réels </td></tr>
 <tr><td>\arcane{Real3x3}    </td><td> tenseur 3D, vecteur de neufs réels </td></tr>
-<tr><td>\arccore{String}    </td><td> chaîne de caractères ISO-8859-1 </td></tr>
+<tr><td>\arccore{String}    </td><td> chaîne de caractères au format UTF-8 </td></tr>
 </table>
 
-Par défaut, les entiers (\arccore{Integer}) sont stockés sur 4 octets mais il
-est possible de passer sur 8 octets en compilant avec la macro
-**ARCANE_64BIT**. Par défaut, les flottants (\arccore{Real}, \arcane{Real2}, \arcane{Real2x2},
+Les flottants (\arccore{Real}, \arcane{Real2}, \arcane{Real2x2},
 \arcane{Real3}, \arcane{Real3x3}) utilisent des réels double précision de la norme IEEE
 754 et sont stockés sur 8 octets.
 
@@ -47,18 +45,23 @@ un groupe d'une entité a pour nom celui de l'entité suffixée par
 <table>
 <tr><td><b>Nom de la classe</b></td><td><b>Correspondance dans les spécifications</b></td></tr>
 <tr><td>\arcane{Node}      </td><td> un noeud </td></tr>
+<tr><td>\arcane{Cell}      </td><td> une maille </td></tr>
 <tr><td>\arcane{Face}      </td><td> une face en 3D, une arête en 2D</td></tr>
 <tr><td>\arcane{Edge}      </td><td> une arête en 3D</td></tr>
-<tr><td>\arcane{Cell}      </td><td> une maille </td></tr>
+<tr><td>\arcane{Particle}  </td><td> une particule</td></tr>
+<tr><td>\arcane{DoF}       </td><td> un degré de liberté</td></tr>
 <tr><td>\arcane{NodeGroup} </td><td> un groupe de noeuds </td></tr>
-<tr><td>\arcane{EdgeGroup} </td><td> un groupe d'arêtes </td></tr>
-<tr><td>\arcane{FaceGroup} </td><td> un groupe de faces </td></tr>
 <tr><td>\arcane{CellGroup} </td><td> un groupe de mailles </td></tr>
+<tr><td>\arcane{FaceGroup} </td><td> un groupe de faces </td></tr>
+<tr><td>\arcane{EdgeGroup} </td><td> un groupe d'arêtes </td></tr>
+<tr><td>\arcane{ParticleGroup} </td><td> un groupe de particules</td></tr>
+<tr><td>\arcane{DoFGroup} </td><td> un groupe de degrés de liberté</td></tr>
 </table>
 
 \note
-En dimension 2, les faces correspondent aux arêtes et en dimension 3 aux
-faces. Ceci permet aux algorithmes numériques de parcourir le maillage
+Les faces \arcane{Face} sont les entités de dimension N-1 avec N la dimension
+des mailles. En dimension 2, les faces correspondent donc aux arêtes et en dimension 3 aux
+faces des polyèdres. Ceci permet aux algorithmes numériques de parcourir le maillage
 indépendamment de sa dimension. L'entité arête (\arcane{Edge}) n'existe que
 pour les maillages 3D et correspond alors à une arête.
 
@@ -66,16 +69,12 @@ Chaque entité du maillage correspond à une instance d'une classe. Par
 exemple, si le maillage contient 15 mailles, il y a 15 instances du
 type \arcane{Cell}. Chaque classe fournit un certain nombre d'opérations
 permettant de relier les instances entre elles. Par exemple, la méthode
-\arcane{Cell::node}(\arccore{Integer}) de la classe \arcane{Cell} permet de récupérer le i-ème
-noeud de cette maille. De même, la méthode \arcane{Cell::nbNode()} permet de
+\arcane{Cell::node}(\arccore{Int32}) de la classe \arcane{Cell} permet de récupérer le
+\a i-ème noeud de cette maille. De même, la méthode \arcane{Cell::nbNode()} permet de
 récupérer le nombre de noeuds de la maille. Pour plus de
 renseignements sur les opérations supportées, il est nécessaire de se
 reporter à la documentation en ligne des classes correspondantes
-(\arcane{Node}, \arcane{Edge}, \arcane{Face}, \arcane{Cell}).
-
-Il existe d'autres types d'entités comme les particules (\arcane{Particle}),
-les liens (\arcane{Link}), les noeuds duaux (\arcane{DualNode}) ou les degrés de liberté
-(\arcane{DoF}).
+(\arcane{Node}, \arcane{Edge}, \arcane{Face}, \arcane{Cell}, \arcane{Particle}, \arcane{DoF}).
 
 ____
 

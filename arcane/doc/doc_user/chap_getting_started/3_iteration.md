@@ -49,7 +49,7 @@ l'ensemble des éléments se fait en fournissant un itérateur de début
 et de fin, autrement appelé un *énumérateur*
 
 Dans %Arcane, cet énumérateur dérive de la classe de base
-ItemEnumerator et possède les méthodes suivantes :
+\arcane{ItemEnumerator} et possède les méthodes suivantes:
 
 - un constructeur prenant en argument un groupe d'entité du maillage ;
 - *operator++()* : pour accéder à l'élément suivant ;
@@ -58,33 +58,39 @@ ItemEnumerator et possède les méthodes suivantes :
 
 Afin d'ajouter un niveau d'abstraction supplémentaire et de
 permettre d'instrumenter le code, %Arcane fournit une fonction
-sous forme de macro pour chaque type d'énumérateur. Cette fonction
+sous forme de macro pour chaque type d'énumérateur. Il n'est donc pas
+nécessaire d'utiliser les méthodes de \arcane{ItemEnumerator}. Cette fonction
 possède le prototype suivant :
 
 ```cpp
-ENUMERATE_[type]( nom_iterateur, nom_groupe )
+ENUMERATE_(kind, nom_iterateur, nom_groupe )
 ```
 
 avec:
-- **[type]** le type d'élément (\c NODE, \c CELL, ...),
+- **kind** le genre de l'entité (\arcane{Node}, \arcane{Cell}, ...),
 - **nom_iterateur** le nom de l'itérateur
-- **nom_groupe** le nom du groupe sur lequel on itère.
+- **nom_groupe** le nom du groupe (\arcane{ItemGroup}) sur lequel on itère.
 
-Par exemple, pour itérer sur toutes les mailles, avec **i** le nom de l'itérateur :
+Lorsqu'on se trouve dans un module (dont la classe de base est \arcane{BasicModule})
+ou un service (dont la classe de base est \arcane{BasicService}), %Arcane
+fournit des méthodes pour accéder au groupe contenant toute les entités d'un genre
+d'entité donné. Par exemple la méthode \arcane{BasicModule::allCells()} permet
+de récupérer le groupe de toutes les mailles. Ainsi, pour itérer sur toutes les
+mailles, avec **i** le nom de l'itérateur, on peut faire comme cela :
 
 ```cpp
-ENUMERATE_CELL(i,allCells())
+ENUMERATE_(Cell,i,allCells())
 ```
 
 La boucle de calcul de la masse décrite précédemment devient alors :
 
 ```cpp
-ENUMERATE_CELL(i,allCells()){
+ENUMERATE_(Cell,i,allCells()){
   m_cell_mass[i] = m_density[i] * m_volume[i];
 }
 ```
 
-Le type d'un énumérateur dépend du type d'élément de maillage : un
+Le type d'un énumérateur dépend du genre de l'élément de maillage : un
 énumérateur sur un groupe de noeuds n'est pas du même type qu'un
 énumérateur sur un groupe de mailles et ils sont donc
 incompatibles. Par exemple, si la vitesse est une variable aux noeuds,
@@ -97,24 +103,24 @@ cout << m_velocity[i]; // Erreur!
 De même, il est impossible d'écrire :
 
 ```cpp
-ENUMERATE_CELL(i,allNodes()) // Erreur!
+ENUMERATE_(Cell,i,allNodes()) // Erreur!
 ```
 
-car **allNodes()** est un groupe de noeud et **i** un énumérateur sur un
+car \arcane{BasicModule::allNodes()} est un groupe de noeud et **i** un énumérateur sur un
 groupe de mailles.
 
 Notons que l'opérateur '*' de l'énumérateur permet d'accéder à l'élément courant :
 ```cpp
-ENUMERATE_CELL(i,allCells()){
-  Cell cell = *i;
+ENUMERATE_(Cell,icell,allCells()){
+  Cell cell = *icell;
 }
 ```
 
 Il est possible d'utiliser l'entité elle-même pour récupérer la valeur d'une variable
 mais, pour des raisons de performances, il faut privilégier l'accès par l'itérateur :
 ```cpp
-ENUMERATE_CELL(icell,allCells()){
-  Cell cell = *i;
+ENUMERATE_(Cell,icell,allCells()){
+  Cell cell = *icell;
   m_cell_mass[cell] = m_density[cell] * m_volume[cell]; // moins performant
   m_cell_mass[icell] = m_density[icell] * m_volume[icell]; // plus performant
 }
