@@ -65,6 +65,81 @@ _testSum(IAcceleratorMng* acc_mng)
 /*---------------------------------------------------------------------------*/
 
 void
+_testBinOp(IAcceleratorMng* acc_mng)
+{
+  // Test des opérateurs binaires pour les views
+
+  int nb_value = 10000;
+  NumArray<Int64,MDDim1> a(nb_value);
+  NumArray<Int64,MDDim1> b(nb_value);
+  for( int i=0; i<nb_value; ++i ){
+    a.s(i) = 1;
+    b.s(i) = 2;
+  }
+
+  // *=
+  {
+    auto command = makeCommand(acc_mng->defaultQueue());
+    auto in_out_a = viewInOut(command,a);
+    command << RUNCOMMAND_LOOP1(iter,nb_value)
+    {
+      auto [i] = iter();
+      in_out_a(i) *= 2.;
+    };
+  }
+  Int64 total = 0.0;
+  for( int i=0; i<nb_value; ++i )
+    total += a(i);
+  std::cout << "TOTAL=" << total << "\n";
+  Int64 expected_total = nb_value *2 ;
+  if (total!=expected_total)
+    ARCANE_FATAL("Bad value for operator*= {0} (expected={1})",total,expected_total);
+
+  // +=
+  {
+    auto command = makeCommand(acc_mng->defaultQueue());
+    auto out_a = viewOut(command,a);
+    auto in_b = viewIn(command,b);
+    command << RUNCOMMAND_LOOP1(iter,nb_value)
+    {
+      auto [i] = iter();
+      out_a(i) += in_b(i);
+    };
+  }
+  total = 0.0;
+  for( int i=0; i<nb_value; ++i )
+    total += a(i);
+  std::cout << "TOTAL=" << total << "\n";
+  expected_total = nb_value *4 ;
+  if (total!=expected_total)
+    ARCANE_FATAL("Bad value for operator+= {0} (expected={1})",total,expected_total);
+
+  // -= et /=
+  {
+    auto command = makeCommand(acc_mng->defaultQueue());
+    auto in_out_a = viewInOut(command,a);
+    auto in_b = viewIn(command,b);
+    command << RUNCOMMAND_LOOP1(iter,nb_value)
+    {
+      auto [i] = iter();
+      in_out_a(i) -= in_b(i);
+      in_out_a(i) /= 2;
+    };
+  }
+  total = 0.0;
+  for( int i=0; i<nb_value; ++i )
+    total += a(i);
+  std::cout << "TOTAL=" << total << "\n";
+  expected_total = nb_value;
+  if (total!=expected_total)
+    ARCANE_FATAL("Bad value {0} (expected={1})",total,expected_total);
+  
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void
 _testEmptyKernel(IAcceleratorMng* acc_mng)
 {
   // Lance un kernel vide pour évaluer le coup du lancement.
@@ -99,6 +174,8 @@ _testStandaloneLauncher(const CommandLineArguments& cmd_line_args,
   IAcceleratorMng* acc_mng = launcher.acceleratorMng();
   if (method_name=="TestSum")
     _testSum(acc_mng);
+  else if (method_name=="TestBinOp")
+    _testBinOp(acc_mng);
   else if (method_name=="TestEmptyKernel")
     _testEmptyKernel(acc_mng);
   else

@@ -318,7 +318,9 @@ ADD_TEST(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane 
 # ----------------------------------------------------------------------------
 
 arcane_add_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+arcane_add_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
 arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
 arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
 
 arcane_add_test_sequential(standalone_subdomain1 dummy.arc "-A,StandaloneSubDomainMethod=Test1")
