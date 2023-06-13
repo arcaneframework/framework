@@ -406,7 +406,7 @@ _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const
 ItemConnectivityContainerView IncrementalItemConnectivityBase::
 connectivityContainerView() const
 {
-  return { ItemLocalId::fromSpanInt32(m_connectivity_list), m_connectivity_index, m_connectivity_nb_item };
+  return { m_connectivity_list, m_connectivity_index, m_connectivity_nb_item };
 }
 
 /*---------------------------------------------------------------------------*/

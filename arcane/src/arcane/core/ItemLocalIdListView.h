@@ -167,6 +167,7 @@ class ItemLocalIdListViewConstIteratorT
 class ARCANE_CORE_EXPORT ItemLocalIdListView
 {
   template <typename ItemType> friend class ItemLocalIdViewT;
+  friend class ItemVectorView;
 
  public:
 
@@ -200,7 +201,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
 
  private:
 
-  constexpr ARCCORE_HOST_DEVICE Int32 localIdOffset() const { return m_local_id_offset; }
+  ConstArrayView<Int32> _idsWithoutOffset() const { return { m_size, m_local_ids }; }
 
  private:
 
@@ -235,11 +236,6 @@ class ItemLocalIdViewT
 
  private:
 
-  // TODO: a supprimer
-  ARCCORE_HOST_DEVICE ItemLocalIdViewT(const LocalIdType* ids, Int32 s, Int32 local_id_offset)
-  : ItemLocalIdListView(reinterpret_cast<const Int32*>(ids), s, local_id_offset)
-  {}
-
   constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
   : ItemLocalIdListView(ids, s, local_id_offset)
   {}
@@ -259,15 +255,6 @@ class ItemLocalIdViewT
   constexpr ARCCORE_HOST_DEVICE const_iterator end() const
   {
     return const_iterator(m_local_ids + m_size, m_local_id_offset);
-  }
-
- private:
-
-  using ItemLocalIdListView::localIdOffset;
-
-  ConstArrayView<Int32> toViewInt32() const
-  {
-    return { size(), m_local_ids };
   }
 };
 

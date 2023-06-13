@@ -224,14 +224,15 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   }
 
  private:
+
   /*!
    * \brief Liste des localId() des entités de type \a item_kind
    * connectées à l'entité de de localid() \a lid.
    */
   const Int32* itemLocalIds(Int32 item_kind,Int32 lid) const
   {
-    const ItemLocalId* ptr =  &(m_list[item_kind][ m_indexes[item_kind][lid] ]);
-    return reinterpret_cast<const Int32*>(ptr);
+    const Int32* ptr =  &(m_list[item_kind][ m_indexes[item_kind][lid] ]);
+    return ptr;
   }
 
   /*!
@@ -249,6 +250,8 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  public:
 
+  // TODO Rendre les méthodes setConnectivity* internes
+
   //! Positionne le tableau d'index des connectivités
   void setConnectivityIndex(Int32 item_kind,ConstArrayView<Int32> v)
   {
@@ -256,12 +259,6 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   }
   //! Positionne le tableau contenant la liste des connectivités
   void setConnectivityList(Int32 item_kind,ConstArrayView<Int32> v)
-  {
-    auto* ids = reinterpret_cast<const ItemLocalId*>(v.data());
-    m_list[item_kind] = ConstArrayView<ItemLocalId>(v.size(),ids);
-  }
-  //! Positionne le tableau contenant la liste des connectivités
-  void setConnectivityList(Int32 item_kind,ConstArrayView<ItemLocalId> v)
   {
     m_list[item_kind] = v;
     m_offset[item_kind] = ConstArrayView<Int32>{};
@@ -312,7 +309,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
   ItemConnectivityContainerView containerView(Int32 item_kind) const
   {
-    return { m_list[item_kind], m_indexes[item_kind], m_nb_item[item_kind] };
+    return ItemConnectivityContainerView( m_list[item_kind], m_indexes[item_kind], m_nb_item[item_kind] );
   }
 
  private:
@@ -464,7 +461,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
   ConstArrayView<Int32> m_indexes[MAX_ITEM_KIND];
   Int32View m_nb_item[MAX_ITEM_KIND];
-  ConstArrayView<ItemLocalId> m_list[MAX_ITEM_KIND];
+  ConstArrayView<Int32> m_list[MAX_ITEM_KIND];
   ConstArrayView<Int32> m_offset[MAX_ITEM_KIND];
   Int32 m_max_nb_item[MAX_ITEM_KIND];
 

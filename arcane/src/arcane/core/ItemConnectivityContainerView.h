@@ -54,7 +54,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
  private:
 
   ItemConnectivityContainerView() = default;
-  ItemConnectivityContainerView(SmallSpan<const ItemLocalId> _list,
+  ItemConnectivityContainerView(SmallSpan<const Int32> _list,
                                 SmallSpan<const Int32> _indexes,
                                 SmallSpan<const Int32> _nb_connected_item)
   : m_list_data(_list.data())
@@ -84,11 +84,10 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
   ItemLocalIdViewT<ItemType>
   itemsIds(ItemLocalId lid) const
   {
-    using LocalIdType = typename ItemLocalIdViewT<ItemType>::LocalIdType;
     ARCANE_CHECK_AT(lid.localId(), m_nb_item);
     Int32 x = m_indexes[lid];
     ARCANE_CHECK_AT(x, m_list_data_size);
-    auto* p = static_cast<const LocalIdType*>(&m_list_data[x]);
+    auto* p = &m_list_data[x];
     // TODO: LOCAL_ID_OFFSET
     return { p, m_nb_connected_items[lid], 0 };
   }
@@ -104,10 +103,6 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
     return ItemLocalIdType(m_list_data[x]);
   }
 
-  //! Tableau des connectivités
-  constexpr ARCCORE_HOST_DEVICE SmallSpan<const ItemLocalId>
-  listData() const { return { m_list_data, m_list_data_size }; }
-
   //! Tableau des indices dans la table de connectivités
   constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32>
   indexes() const { return { m_indexes, m_nb_item }; }
@@ -121,7 +116,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
 
  private:
 
-  const ItemLocalId* m_list_data = nullptr;
+  const Int32* m_list_data = nullptr;
   const Int32* m_indexes = nullptr;
   const Int32* m_nb_connected_items = nullptr;
   Int32 m_list_data_size = 0;

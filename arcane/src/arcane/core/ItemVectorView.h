@@ -282,6 +282,12 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
  protected:
 
+  ItemVectorView(ItemSharedInfo* shared_info, const ItemLocalIdListView& local_ids)
+  : m_local_ids(local_ids._idsWithoutOffset())
+  , m_shared_info(shared_info)
+  , m_local_id_offset(local_ids.m_local_id_offset)
+  {}
+
   ItemVectorView(ItemSharedInfo* shared_info, ConstArrayView<Int32> local_ids, Int32 local_id_offset)
   : m_local_ids(local_ids)
   , m_shared_info(shared_info)

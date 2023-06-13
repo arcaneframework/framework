@@ -65,7 +65,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
   void init(SmallSpan<const Int32> nb_item, SmallSpan<const Int32> indexes,
             SmallSpan<const Int32> list_data, eItemKind source_kind, eItemKind target_kind)
   {
-    m_container_view = ItemConnectivityContainerView(ItemLocalId::fromSpanInt32(list_data), indexes, nb_item);
+    m_container_view = ItemConnectivityContainerView(list_data, indexes, nb_item);
     m_source_kind = source_kind;
     m_target_kind = target_kind;
   }
