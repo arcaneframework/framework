@@ -89,7 +89,8 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
     Int32 x = m_indexes[lid];
     ARCANE_CHECK_AT(x, m_list_data_size);
     auto* p = static_cast<const LocalIdType*>(&m_list_data[x]);
-    return { p, m_nb_connected_items[lid] };
+    // TODO: LOCAL_ID_OFFSET
+    return { p, m_nb_connected_items[lid], 0 };
   }
 
   //! \a index-ème entité connectée à l'entité de localId() \a lid

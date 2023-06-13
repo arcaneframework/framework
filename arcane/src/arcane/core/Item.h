@@ -437,10 +437,10 @@ class ARCANE_CORE_EXPORT Item
   impl::ItemIndexedListView<DynExtent> _edgeList() const { return _connectivity()->edgeList(m_local_id); }
   impl::ItemIndexedListView<DynExtent> _faceList() const { return _connectivity()->faceList(m_local_id); }
   impl::ItemIndexedListView<DynExtent> _cellList() const { return _connectivity()->cellList(m_local_id); }
-  NodeLocalIdView _nodeIds() const { return NodeLocalIdView::fromIds(_connectivity()->nodeLocalIdsV2(m_local_id)); }
-  EdgeLocalIdView _edgeIds() const { return EdgeLocalIdView::fromIds(_connectivity()->edgeLocalIdsV2(m_local_id)); }
-  FaceLocalIdView _faceIds() const { return FaceLocalIdView::fromIds(_connectivity()->faceLocalIdsV2(m_local_id)); }
-  CellLocalIdView _cellIds() const { return CellLocalIdView::fromIds(_connectivity()->cellLocalIdsV2(m_local_id)); }
+  NodeLocalIdView _nodeIds() const { return _connectivity()->nodeLocalIdsView(m_local_id); }
+  EdgeLocalIdView _edgeIds() const { return _connectivity()->edgeLocalIdsView(m_local_id); }
+  FaceLocalIdView _faceIds() const { return _connectivity()->faceLocalIdsView(m_local_id); }
+  CellLocalIdView _cellIds() const { return _connectivity()->cellLocalIdsView(m_local_id); }
 
   inline Node _node(Int32 index) const;
   inline Edge _edge(Int32 index) const;
