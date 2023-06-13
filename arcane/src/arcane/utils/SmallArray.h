@@ -76,31 +76,34 @@ namespace Arcane
 /*!
  * \ingroup Collection
  *
- * \brief Tableau 1D de données avec buffer pré-alloué.
+ * \brief Tableau 1D de données avec buffer pré-alloué sur la pile.
  *
  * Cette classe s'utilise comme UniqueArray mais contient un buffer de taille
- * fixe égale à \a BufSize qui est utilisé si la quantité de mémoire nécessaire
- * est inférieur à \a BufSize. Cela permet d'éviter des allocations dynamiques
- * lorsque le nombre d'éléments est faible. Si la mémoire nécessaire est
- * supérieure à BufSize, On utilise une allocation dynamique standard.
+ * fixe pour conserver \a NbElement éléments qui est utilisé si le tableau contient
+ * au plus \a NbElement éléments. Cela permet d'éviter des allocations dynamiques
+ * lorsque le nombre d'éléments est faible.
+ *
+ * Si le tableau doit contenir plus de \a NbElement éléments, alors on utilise
+ * une allocation dynamique standard.
  */
-template <typename T, size_t BufSize = 128>
+template <typename T, Int32 NbElement = 32>
 class SmallArray final
 : public Array<T>
 {
   using BaseClassType = AbstractArray<T>;
-  static constexpr Int64 nb_element_in_buf = (BufSize != 0) ? (BufSize / sizeof(T)) : 0;
+  static constexpr Int32 SizeOfType = static_cast<Int32>(sizeof(T));
+  static constexpr Int32 nb_element_in_buf = NbElement;
 
  public:
 
   using typename BaseClassType::ConstReferenceType;
-  static constexpr size_t MemorySize = BufSize;
+  static constexpr Int32 MemorySize = NbElement * SizeOfType;
 
  public:
 
   //! Créé un tableau vide
   SmallArray()
-  : m_stack_allocator(m_stack_buffer, BufSize)
+  : m_stack_allocator(m_stack_buffer, MemorySize)
   {
     this->_initFromAllocator(&m_stack_allocator, nb_element_in_buf);
   }
@@ -211,12 +214,12 @@ class SmallArray final
 
  public:
 
-  template <size_t N> SmallArray(SmallArray<T, N>&& rhs) = delete;
-  template <size_t N> SmallArray<T, BufSize> operator=(SmallArray<T, N>&& rhs) = delete;
+  template <Int32 N> SmallArray(SmallArray<T, N>&& rhs) = delete;
+  template <Int32 N> SmallArray<T, NbElement> operator=(SmallArray<T, N>&& rhs) = delete;
 
  private:
 
-  char m_stack_buffer[BufSize];
+  char m_stack_buffer[MemorySize];
   impl::StackMemoryAllocator m_stack_allocator;
 };
 
