@@ -11,38 +11,24 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemGroupImpl.h"
+#include "arcane/core/ItemGroupImpl.h"
 
-#include "arcane/utils/Iostream.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
-#include "arcane/utils/Array.h"
-#include "arcane/utils/SharedPtr.h"
-#include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/ItemGroupObserver.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ItemPrinter.h"
-#include "arcane/core/VariableTypes.h"
 #include "arcane/core/IItemOperationByBasicType.h"
-#include "arcane/core/IParallelMng.h"
-#include "arcane/core/ItemFunctor.h"
 #include "arcane/core/ItemGroupComputeFunctor.h"
 #include "arcane/core/IVariableSynchronizer.h"
 #include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/ParallelMngUtils.h"
-#include "arcane/core/datatype/DataAllocationInfo.h"
-#include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/ItemGroupInternal.h"
 
-#include <algorithm>
-#include <set>
-#include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -89,404 +75,6 @@ class ItemGroupImplNull
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Implémentation de la classe ItemGroupImpl.
- *
- Le container contenant la liste des entités du groupe est soit une
- variable dans le cas d'une groupe standard, soit un tableau simple
- dans le cas d'un groupe ayant un parent. En effet, les groupes
- ayant des parents sont des groupes générés dynamiquement (par
- exemple le groupe des entités propres) et ne sont donc pas
- toujours présents sur tous les sous-domaines (une variable doit toujours
- exister sur tous les sous-domaines). De plus, leur valeur n'a
- pas besoin d'être sauvée lors d'une protection.
-
- \todo ajouter notion de groupe générée, avec les propriétés suivantes:
- - ces groupes ne doivent pas être transférés d'un sous-domaine à l'autre
- - ils ne peuvent pas être modifiés directement.
- */
-class ItemGroupImplPrivate
-{
- public:
-
-  ItemGroupImplPrivate();
-  ItemGroupImplPrivate(IItemFamily* family,const String& name);
-  ItemGroupImplPrivate(IItemFamily* family,ItemGroupImpl* parent,const String& name);
-  virtual ~ItemGroupImplPrivate();
-
- public:
-
-  const String& name() const { return m_name; }
-  const String& fullName() const { return m_full_name; }
-  bool null() const { return m_is_null; }
-  IMesh* mesh() const { return m_mesh; }
-  eItemKind kind() const { return m_kind; }
-  Integer maxLocalId() const { return m_item_family->maxLocalId(); }
-  ItemInternalList items() const
-  {
-    if (m_item_family)
-      return m_item_family->itemsInternal();
-    return m_mesh->itemsInternal(m_kind);
-  }
-  ItemInfoListView itemInfoListView() const
-  {
-    if (m_item_family)
-      return m_item_family->itemInfoListView();
-    return m_mesh->itemFamily(m_kind)->itemInfoListView();
-  }
-
-  Int32ArrayView itemsLocalId() { return *m_items_local_id; }
-  Int32ConstArrayView itemsLocalId() const { return *m_items_local_id; }
-  Int32Array& mutableItemsLocalId() { return *m_items_local_id; }
-  VariableArrayInt32* variableItemsLocalid() { return m_variable_items_local_id; }
-
-  Int64 timestamp() const { return m_timestamp; }
-  bool isContigous() const { return m_is_contigous; }
-  void checkIsContigous();
-
-  void updateTimestamp()
-  {
-    ++m_timestamp;
-    m_is_contigous = false;
-  }
-
-  void setNeedRecompute()
-  {
-    // NOTE: normalement il ne faudrait mettre cette valeur à 'true' que pour
-    // les groupes recalculés (qui ont un parent ou pour lequel 'm_compute_functor' n'est
-    // pas nul). Cependant, cette méthode est aussi appelé sur le groupe de toutes les entités
-    // et peut-être d'autres groupes.
-    // Changer ce comportement risque d'impacter pas mal de code donc il faudrait bien vérifier
-    // que tout est OK avant de faire cette modification.
-    m_need_recompute = true;
-  }
-
- public:
-
-  IMesh* m_mesh; //!< Gestionnare de groupe associé
-  IItemFamily* m_item_family; //!< Famille associée
-  ItemGroupImpl* m_parent; //! Groupe parent (groupe null si aucun)
-  String m_variable_name; //!< Nom de la variable contenant les indices des éléments du groupe
-  String m_full_name; //!< Nom complet du groupe.
-  bool m_is_null; //!< \a true si le groupe est nul
-  eItemKind m_kind; //!< Genre de entités du groupe
-  String m_name; //!< Nom du groupe
-  bool m_is_own = false; //!< \a true si groupe local.
- private:
-  Int64 m_timestamp = -1; //!< Temps de la derniere modification
- public:
-  Int64 m_simd_timestamp = -1; //!< Temps de la derniere modification pour le calcul des infos SIMD
-  //@{ @name alias locaux à des sous-groupes de m_sub_groups
-  ItemGroupImpl* m_own_group = nullptr;        //!< Items owned by the subdomain
-  ItemGroupImpl* m_ghost_group = nullptr;      //!< Items not owned by the subdomain
-  ItemGroupImpl* m_interface_group = nullptr;  //!< Items on the boundary of two subdomains
-  ItemGroupImpl* m_node_group = nullptr;       //!< Groupe des noeuds
-  ItemGroupImpl* m_edge_group = nullptr;       //!< Groupe des arêtes
-  ItemGroupImpl* m_face_group = nullptr;       //!< Groupe des faces
-  ItemGroupImpl* m_cell_group = nullptr;       //!< Groupe des mailles
-  ItemGroupImpl* m_inner_face_group = nullptr; //!< Groupe des faces internes
-  ItemGroupImpl* m_outer_face_group = nullptr; //!< Groupe des faces externes
-  //! AMR
-  // FIXME on peut éviter de stocker ces groupes en introduisant des predicats
-  // sur les groupes parents
-  ItemGroupImpl* m_active_cell_group = nullptr;       //!< Groupe des mailles actives
-  ItemGroupImpl* m_own_active_cell_group = nullptr;   //!< Groupe des mailles propres actives
-  ItemGroupImpl* m_active_face_group = nullptr;       //!< Groupe des faces actives
-  ItemGroupImpl* m_own_active_face_group = nullptr;   //!< Groupe des faces actives propres
-  ItemGroupImpl* m_inner_active_face_group = nullptr; //!< Groupe des faces internes actives
-  ItemGroupImpl* m_outer_active_face_group = nullptr; //!< Groupe des faces externes actives
-  std::map<Integer, ItemGroupImpl*>  m_level_cell_group;        //!< Groupe des mailles de niveau
-  std::map<Integer, ItemGroupImpl*> m_own_level_cell_group;    //!< Groupe des mailles propres de niveau
-
-  UniqueArray<ItemGroupImpl*> m_children_by_type; //!< Liste des fils de ce groupe par type d'entité
-  //@}
-  std::map<String,AutoRefT<ItemGroupImpl>> m_sub_groups; //!< Ensemble de tous les sous-groupes
-  bool m_need_recompute = false; //!< Vrai si le groupe doit être recalculé
-  bool m_need_invalidate_on_recompute = false; //!< Vrai si l'on doit activer les invalidate observers en cas de recalcul
-  bool m_transaction_mode = false; //!< Vrai si le groupe est en mode de transaction directe
-  bool m_is_local_to_sub_domain = false; //!< Vrai si le groupe est local au sous-domaine
-  IFunctor* m_compute_functor = nullptr; //!< Fonction de calcul du groupe
-  bool m_is_all_items = false; //!< Indique s'il s'agit du groupe de toutes les entités
-
-  SharedPtrT<GroupIndexTable> m_group_index_table; //!< Table de hachage du local id des items vers leur position en enumeration
-  Ref<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
-
-  // Anciennement dans DynamicMeshKindInfo
-  Int32UniqueArray m_items_index_in_all_group; //! localids -> index (UNIQUEMENT ALLITEMS)
-  
-  std::map<const void*,IItemGroupObserver*> m_observers; //!< Observers du groupe
-  bool m_observer_need_info = false; //!< Synthése de besoin de observers en informations de transition
-  void notifyExtendObservers(const Int32ConstArrayView * info);
-  void notifyReduceObservers(const Int32ConstArrayView * info);
-  void notifyCompactObservers(const Int32ConstArrayView * info);
-  void notifyInvalidateObservers();
-
-  void resetSubGroups();
-
- public:
-
-  bool isUseV2ForApplyOperation() const { return m_use_v2_for_apply_operation; }
-
- private:
-
-  UniqueArray<Int32> m_local_buffer{MemoryUtils::getAllocatorForMostlyReadOnlyData()};
-  Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
-  VariableArrayInt32* m_variable_items_local_id = nullptr;
-  bool m_is_contigous = false; //! Vrai si les localIds sont consécutifs.
-
- private:
-
-  // TODO: Mettre cela dans une classe spécifique ce qui permettre
-  // de l'utiliser par exemple pour ItemVector
-
-  //! Gestion pour applyOperation() Version 2
-  //@{
-  bool m_use_v2_for_apply_operation = false;
-
- public:
-
-  //! Liste des localId() par type d'entité.
-  UniqueArray<UniqueArray<Int32>> m_children_by_type_ids;
-
-  /*!
-   * \brief Indique le type des entités du groupe.
-   *
-   * Si différent de IT_NullType, cela signifie que toutes
-   * les entités du groupe sont du même type et donc on il n'est
-   * pas nécessaire de calculer le localId() des entités par type.
-   * On utilise dans ce cas directement le groupe en paramètre
-   * des applyOperation().
-   */
-  ItemTypeId m_unique_children_type {IT_NullType};
-
-  //! Timestamp indiquant quand a été calculé la liste des ids des enfants
-  Int64 m_children_by_type_ids_computed_timestamp = -1;
-
-  bool m_is_debug_apply_operation = false;
-  //@}
-
- private:
-
-  void _init();
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemGroupImplPrivate::
-ItemGroupImplPrivate()
-: m_mesh(nullptr)
-, m_item_family(nullptr)
-, m_parent(nullptr)
-, m_variable_name()
-, m_is_null(true)
-, m_kind(IK_Unknown)
-{
-  _init();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemGroupImplPrivate::
-ItemGroupImplPrivate(IItemFamily* family,const String& name)
-: m_mesh(family->mesh())
-, m_item_family(family)
-, m_parent(nullptr)
-, m_variable_name(String("GROUP_")+family->name()+name)
-, m_is_null(false)
-, m_kind(family->itemKind())
-, m_name(name)
-{
-  _init();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemGroupImplPrivate::
-ItemGroupImplPrivate(IItemFamily* family,ItemGroupImpl* parent,const String& name)
-: m_mesh(parent->mesh())
-, m_item_family(family)
-, m_parent(parent)
-, m_variable_name(String("GROUP_")+m_item_family->name()+name)
-, m_is_null(false)
-, m_kind(family->itemKind())
-, m_name(name)
-{
-  _init();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemGroupImplPrivate::
-~ItemGroupImplPrivate()
-{
-  // (HP) TODO: vérifier qu'il n'y a plus d'observer à cet instant
-  // Ceux des sous-groupes n'ont pas été détruits
-  for( const auto& i : m_observers ) {
-    delete i.second;
-  }
-  delete m_variable_items_local_id;
-  delete m_compute_functor;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupImplPrivate::
-_init()
-{
-  if (m_item_family)
-    m_full_name = m_item_family->fullName() + "_" + m_name;
-  // Si maillage associé et pas un groupe enfant alors les données du groupe
-  // sont conservées dans une variable.
-  if (m_mesh && !m_parent){
-    int property = IVariable::PSubDomainDepend | IVariable::PPrivate;
-    VariableBuildInfo vbi(m_mesh,m_variable_name,property);
-    m_variable_items_local_id = new VariableArrayInt32(vbi);
-    m_variable_items_local_id->variable()->setAllocationInfo(DataAllocationInfo(eMemoryLocationHint::HostAndDeviceMostlyRead));
-    m_items_local_id = &m_variable_items_local_id->_internalTrueData()->_internalDeprecatedValue();
-    updateTimestamp();
-  }
-
-  // Regarde si on utilise la version 2 pour ApplyOperationByBasicType
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_APPLYOPERATION_VERSION", true))
-    m_use_v2_for_apply_operation = (v.value()==2);
-
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_APPLYOPERATION", true))
-    m_is_debug_apply_operation = (v.value()>0);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupImplPrivate::
-resetSubGroups()
-{
-  if (!m_is_all_items)
-    ARCANE_FATAL("Call to _resetSubGroups() is only valid for group of AllItems");
-
-  m_own_group = nullptr;
-  m_ghost_group = nullptr;
-  m_interface_group = nullptr;
-  m_node_group = nullptr;
-  m_edge_group = nullptr;
-  m_face_group = nullptr;
-  m_cell_group = nullptr;
-  m_inner_face_group = nullptr;
-  m_outer_face_group = nullptr;
-  m_active_cell_group = nullptr;
-  m_own_active_cell_group = nullptr;
-  m_active_face_group = nullptr;
-  m_own_active_face_group = nullptr;
-  m_inner_active_face_group = nullptr;
-  m_outer_active_face_group = nullptr;
-  m_level_cell_group.clear();
-  m_own_level_cell_group.clear();
-  m_children_by_type.clear();
-  m_children_by_type_ids.clear();
-  m_sub_groups.clear();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupImplPrivate::
-notifyExtendObservers(const Int32ConstArrayView * info)
-{
-  ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
-  for( const auto& i : m_observers ) {
-    IItemGroupObserver * obs = i.second;
-    obs->executeExtend(info);
-  }
-  if (m_group_index_table.isUsed())
-    m_group_index_table->update();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupImplPrivate::
-notifyReduceObservers(const Int32ConstArrayView * info)
-{
-  ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
-  for( const auto& i : m_observers ) {
-    IItemGroupObserver * obs = i.second;
-    obs->executeReduce(info);
-  }
-  if (m_group_index_table.isUsed())
-    m_group_index_table->update();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupImplPrivate::
-notifyCompactObservers(const Int32ConstArrayView * info)
-{
-  ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
-  for( const auto& i : m_observers ) {
-    IItemGroupObserver * obs = i.second;
-    obs->executeCompact(info);
-  }
-  if (m_group_index_table.isUsed())
-    m_group_index_table->compact(info);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupImplPrivate::
-notifyInvalidateObservers()
-{
-#ifndef NO_USER_WARNING
-#warning "(HP) Assertion need fix"
-#endif /* NO_USER_WARNING */
-  // Cela peut se produire en cas d'invalidation en cascade
-  // ARCANE_ASSERT((!m_need_recompute),("Operation on invalid group"));
-  for( const auto& i : m_observers ) {
-    IItemGroupObserver * obs = i.second;
-    obs->executeInvalidate();
-  }
-  if (m_group_index_table.isUsed())
-    m_group_index_table->update();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vérifie que les localIds() sont contigüs.
- */
-void ItemGroupImplPrivate::
-checkIsContigous()
-{
-  m_is_contigous = false;
-  Int32ConstArrayView lids = itemsLocalId();
-  if (lids.empty()){
-    m_is_contigous = false;
-    return;
-  }
-  Int32 first_lid = lids[0];
-
-  bool is_bad = false;
-  for( Integer i=0, n=lids.size(); i<n; ++i ){
-    if (lids[i]!=(first_lid+i)){
-      is_bad = true;
-      break;
-    }
-  }
-  if (!is_bad)
-    m_is_contigous = true;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 ItemGroupImpl* ItemGroupImpl::shared_null= 0;
 
@@ -497,21 +85,25 @@ class ItemGroupImplItemGroupComputeFunctor
 : public ItemGroupComputeFunctor
 {
  private:
+
   typedef void (ItemGroupImpl::*FuncPtr)();
 
  public:
+
   ItemGroupImplItemGroupComputeFunctor(ItemGroupImpl * parent, FuncPtr funcPtr)
-    : ItemGroupComputeFunctor()
-    , m_parent(parent)
-    , m_function(funcPtr) { }
+  : ItemGroupComputeFunctor()
+  , m_parent(parent)
+  , m_function(funcPtr) { }
 
  public:
-  virtual void executeFunctor()
+
+  void executeFunctor() override
   {
     (m_parent->*m_function)();
   }
 
  private:
+
   ItemGroupImpl * m_parent;
   FuncPtr m_function;
 };
@@ -1037,10 +629,6 @@ createSubGroup(const String& suffix, IItemFamily* family, ItemGroupComputeFuncto
                  suffix, name());
   }
   ItemGroup ig = family->createGroup(sub_name,ItemGroup(this));
-#ifndef NO_USER_WARNING
-#warning "(HP) Assertion need fix"
-#endif /* NO_USER_WARNING */
-  // ARCANE_ASSERT((m_p->variableItemsLocalid() == NULL),("localIds variable for subGroup not allowed"));
   ItemGroupImpl* ii = ig.internal();
   ii->setComputeFunctor(functor);
   functor->setGroup(ii);
@@ -1112,9 +700,7 @@ changeIds(Int32ConstArrayView old_to_new_ids)
     m_p->notifyCompactObservers(&old_to_new_ids);
   } else {
     // Pas besoin d'infos, on peut changer arbitrairement leur ordre
-#ifndef NO_USER_WARNING
-#warning "(HP) Connexion de ce triage d'item avec la famille ?"
-#endif /* NO_USER_WARNING */
+    // TODO: #warning "(HP) Connexion de ce triage d'item avec la famille ?"
     std::sort(std::begin(items_lid),std::end(items_lid));
     m_p->notifyCompactObservers(nullptr);
   }
@@ -1132,13 +718,6 @@ invalidate(bool force_recompute)
   msg->debug(Trace::High) << "ItemGroupImpl::invalidate(force=" << force_recompute << ")"
                           << " name=" << name();
 //   }
-#endif
-#ifndef NO_USER_WARNING
-#warning "(GG) Vérifier si test suivant OK"
-#endif /* NO_USER_WARNING */
-#if 0
-  if (force_recompute)
-    throw NotImplementedException(A_FUNCINFO,"remove this protection if force_recomputed is used");
 #endif
 
   m_p->updateTimestamp();
@@ -1524,15 +1103,10 @@ class ItemCheckSuppressedFunctor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef NO_USER_WARNING
-#warning "(HP) Check function call in the code"
-#endif /* NO_USER_WARNING */
 void ItemGroupImpl::
 removeSuppressedItems()
 {
-#ifndef NO_USER_WARNING
-#warning "(HP) Assertion need fix"
-#endif /* NO_USER_WARNING */
+  // TODO: (HP) Assertion need fix"
   // ARCANE_ASSERT((!m_p->m_need_recompute),("Operation on invalid group"));
   ITraceMng* trace = m_p->mesh()->traceMng();
   if (m_p->m_compute_functor) {
@@ -1725,10 +1299,10 @@ checkNeedUpdate()
  * Par exemple, on supporse une taille d'un vecteur SIMD de 8 (ce qui est le maximum
  * actuellement avec l'AVX512) et un groupe \a grp de 13 éléments. Il faut donc
  * remplit le groupe comme suit:
- \code
- Int32 last_local_id = grp[12];
- grp[13] = grp[14] = grp[15] = last_local_id.
- \endcode
+ * \code
+ * Int32 last_local_id = grp[12];
+ * grp[13] = grp[14] = grp[15] = last_local_id.
+ * \endcode
  *
  * A noter que la taille du groupe reste effectivement de 13 éléments. Le
  * padding supplémentaire n'est que pour les itérations via ENUMERATE_SIMD.
