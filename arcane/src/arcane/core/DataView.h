@@ -94,9 +94,61 @@ class DataViewSetter
 
  public:
 
-  ARCCORE_HOST_DEVICE void operator+=(const DataType& v)
+  // Binary arithmetic operators
+  // +=
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator+=(const DataType& v)
   {
     *m_ptr = (*m_ptr) + v;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator+=(const DataViewSetter<DataType>& v)
+  {
+    *m_ptr = (*m_ptr) + *(v.m_ptr);
+    return (*this);
+  }
+
+  // -=
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator-=(const DataType& v)
+  {
+    *m_ptr = (*m_ptr) - v;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator-=(const DataViewSetter<DataType>& v)
+  {
+    *m_ptr = (*m_ptr) - *(v.m_ptr);
+    return (*this);
+  }
+
+  // *=
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator*=(const DataType& v)
+  {
+    *m_ptr = (*m_ptr) * v;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator*=(const DataViewSetter<DataType>& v)
+  {
+    *m_ptr = (*m_ptr) * *(v.m_ptr);
+    return (*this);
+  }
+
+  // /=
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator/=(const DataType& v)
+  {
+    *m_ptr = (*m_ptr) / v;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
+  operator/=(const DataViewSetter<DataType>& v)
+  {
+    *m_ptr = (*m_ptr) / *(v.m_ptr);
+    return (*this);
   }
 
  public:
