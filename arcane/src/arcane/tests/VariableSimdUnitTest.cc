@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSimdUnitTest.cc                                     (C) 2000-2022 */
+/* VariableSimdUnitTest.cc                                     (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des variables.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/SimdOperation.h"
@@ -49,6 +47,36 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace
+{
+
+//! Classe pour tester l'utilisation des vues avec une indirection supplémentaire
+template<typename T>
+class IndirectArrayView
+{
+ public:
+  IndirectArrayView() = default;
+  IndirectArrayView(const ArrayView<T>& h): m_array_view(h)
+  {
+    m_array_view_ptr = &m_array_view;
+  }
+  T& operator[](Int32 i) { return (*m_array_view_ptr)[i]; }
+  IndirectArrayView& operator=(const ArrayView<T>& v)
+  {
+    m_array_view = v;
+    m_array_view_ptr = &m_array_view;
+    return (*this);
+  }
+ private:
+  ArrayView<T>* m_array_view_ptr = nullptr;
+  ArrayView<T> m_array_view;
+};
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Service de test de la vectorisation sur les variables.
  */
@@ -72,6 +100,13 @@ class VariableSimdUnitTest
   VariableCellReal m_var3;
   VariableCellReal m_var4;
 
+  // Ces classes gardent une référence sur une vue de la variable associée.
+  // Il faut donc les initialiser qu'une fois que les variables sont allouées
+  IndirectArrayView<Real> m_var1_indirect_array_view;
+  IndirectArrayView<Real> m_var2_indirect_array_view;
+  IndirectArrayView<Real> m_var3_indirect_array_view;
+  IndirectArrayView<Real> m_var4_indirect_array_view;
+
  private:
 
   Timer m_timer;
@@ -84,6 +119,7 @@ class VariableSimdUnitTest
   void _doItem();
   void _doItemView();
   void _doItemDirect();
+  void _doItemDirectDereference();
   void _doItemPointer() ARCANE_GCC_VECTORIZE;
   void _doItemNoIndirect() ARCANE_GCC_VECTORIZE;
   void _doTest( void (VariableSimdUnitTest::*functor)(), const String& name);
@@ -238,6 +274,23 @@ _doItemDirect()
 /*---------------------------------------------------------------------------*/
 
 void VariableSimdUnitTest::
+_doItemDirectDereference()
+{
+  Int32ConstArrayView idx = m_cells.view().localIds();
+  IndirectArrayView<Real> out_v1 = m_var1_indirect_array_view;
+  IndirectArrayView<Real> in_v2 = m_var2_indirect_array_view;
+  IndirectArrayView<Real> in_v3 = m_var3_indirect_array_view;
+  IndirectArrayView<Real> in_v4 = m_var4_indirect_array_view;
+
+  for( Integer i=0, n=idx.size(); i<n; ++i ){
+    out_v1[idx[i]] = in_v2[idx[i]] * in_v3[idx[i]] + in_v4[idx[i]];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSimdUnitTest::
 _doItemPointer()
 {
   Int32ConstArrayView aidx = m_cells.view().localIds();
@@ -285,7 +338,7 @@ _doItemNoIndirect()
 void VariableSimdUnitTest::
 _doTest( void (VariableSimdUnitTest::*functor)(), const String& name)
 {
-  info() << "Begin test name=" << name;
+  info(4) << "Begin test name=" << name;
   // Multiplier cette valeur par 40 si on veut faire des tests de performances
   Integer nb_z = 500;
   // Réduit la taille du test en débug pour qu'il ne dure pas trop longtemps
@@ -307,7 +360,7 @@ _doTest( void (VariableSimdUnitTest::*functor)(), const String& name)
 void VariableSimdUnitTest::
 executeTest()
 {
-  info() << "Execute test";
+  info() << "Execute test nb_cell=" << m_cells.size();
   info() << "Init values";
   ENUMERATE_CELL(icell,m_cells){
     Cell cell = *icell;
@@ -353,6 +406,7 @@ executeTest()
   _doTest(&VariableSimdUnitTest::_doItem,"Item");
   _doTest(&VariableSimdUnitTest::_doItemView,"ItemView");
   _doTest(&VariableSimdUnitTest::_doItemDirect,"ItemDirect");
+  _doTest(&VariableSimdUnitTest::_doItemDirectDereference,"ItemDirectDereference");
   _doTest(&VariableSimdUnitTest::_doItemPointer,"ItemPointer");
   _doTest(&VariableSimdUnitTest::_doItemNoIndirect,"ItemNoIndirect");
 }
@@ -389,6 +443,11 @@ initializeTest()
     throw FatalErrorException(A_FUNCINFO,"Bad size");
   
   m_cells = mesh()->cellFamily()->createGroup("PrimeCells",ids);
+
+  m_var1_indirect_array_view = m_var1.asArray();
+  m_var2_indirect_array_view = m_var2.asArray();
+  m_var3_indirect_array_view = m_var3.asArray();
+  m_var4_indirect_array_view = m_var4.asArray();
 }
 
 /*---------------------------------------------------------------------------*/
