@@ -101,7 +101,7 @@ class ARCANE_CORE_EXPORT ItemVector
   void clear() { m_local_ids.clear(); }
 
   //! Vue sur le vecteur
-  ItemVectorView view() const { return ItemVectorView(m_shared_info, m_local_ids); }
+  ItemVectorView view() const { return ItemVectorView(m_shared_info, m_local_ids, 0); }
 
   //! Vue sur les numéros locaux
   ArrayView<Int32> viewAsArray() { return m_local_ids.view(); }
@@ -205,7 +205,7 @@ class ItemVectorT
   //! Vue sur le tableau entier
   ItemVectorViewT<ItemType> view() const
   {
-    return ItemVectorViewT<ItemType>(m_shared_info, m_local_ids.constView());
+    return ItemVectorViewT<ItemType>(m_shared_info, m_local_ids.constView(), 0);
   }
 
   //! Enumérateur

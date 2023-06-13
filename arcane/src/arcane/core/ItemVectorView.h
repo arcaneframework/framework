@@ -24,7 +24,10 @@
 
 namespace Arcane
 {
-
+namespace mesh
+{
+class IndexedItemConnectivityAccessor;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -221,6 +224,7 @@ class ItemVectorViewConstIteratorT
 class ARCANE_CORE_EXPORT ItemVectorView
 {
   friend class ItemVector;
+  friend mesh::IndexedItemConnectivityAccessor;
 
  public:
 
@@ -278,9 +282,10 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
  protected:
 
-  ItemVectorView(ItemSharedInfo* shared_info, ConstArrayView<Int32> local_ids)
+  ItemVectorView(ItemSharedInfo* shared_info, ConstArrayView<Int32> local_ids, Int32 local_id_offset)
   : m_local_ids(local_ids)
   , m_shared_info(shared_info)
+  , m_local_id_offset(local_id_offset)
   {}
 
   // Temporaire pour éviter un avertissement de compilation lorsqu'on utilise le
@@ -333,7 +338,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
   ItemVectorView subView(Integer abegin, Integer asize) const
   {
-    return ItemVectorView(m_shared_info, m_local_ids.subView(abegin, asize));
+    return ItemVectorView(m_shared_info, m_local_ids.subView(abegin, asize), m_local_id_offset);
   }
   const_iterator begin() const
   {
@@ -426,8 +431,8 @@ class ItemVectorViewT
 
  protected:
 
-  ItemVectorViewT(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids)
-  : ItemVectorView(shared_info,local_ids) { }
+  ItemVectorViewT(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids,Int32 local_id_offset)
+  : ItemVectorView(shared_info,local_ids,local_id_offset) { }
 
  public:
 

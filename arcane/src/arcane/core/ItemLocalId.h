@@ -137,6 +137,7 @@ class ItemLocalIdViewT
   friend mesh::IndexedItemConnectivityAccessor;
   friend ArcaneTest::MeshUnitTest;
   friend class Item;
+  friend class ItemInternalConnectivityList;
 
  public:
 
@@ -151,43 +152,40 @@ class ItemLocalIdViewT
 
  private:
 
-  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(SpanType ids)
-  : m_ids(ids)
-  {}
-  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const LocalIdType* ids, Int32 s)
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const LocalIdType* ids, Int32 s, Int32 local_id_offset)
   : m_ids(ids, s)
+  , m_local_id_offset(local_id_offset)
+  {}
+
+  ItemLocalIdViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
+  : m_ids(reinterpret_cast<const LocalIdType*>(ids), s)
+  , m_local_id_offset(local_id_offset)
   {}
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const { return m_ids[i]; }
+  constexpr ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const { return LocalIdType(m_ids[i].localId() + m_local_id_offset); }
   constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_ids.size(); }
+
+  // TODO: Changer le type de retour de l'itérateur
   constexpr ARCCORE_HOST_DEVICE const_iterator begin() const { return m_ids.begin(); }
+  // TODO: Changer le type de retour de l'itérateur
   constexpr ARCCORE_HOST_DEVICE const_iterator end() const { return m_ids.end(); }
 
- public:
  private:
-
-  static ARCCORE_HOST_DEVICE ItemLocalIdViewT<ItemType>
-  fromIds(SmallSpan<const Int32> v)
-  {
-    return ItemLocalIdViewT<ItemType>(reinterpret_cast<const LocalIdType*>(v.data()), v.size());
-  }
 
   ConstArrayView<Int32> toViewInt32() const
   {
-    return { size(), reinterpret_cast<const Int32*>(data()) };
+    return { size(), reinterpret_cast<const Int32*>(m_ids.data()) };
   }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int32> toSpanInt32() const
-  {
-    return { reinterpret_cast<const Int32*>(data()), size() };
-  }
-  constexpr ARCCORE_HOST_DEVICE const LocalIdType* data() const { return m_ids.data(); }
+  Int32 localIdOffset() const { return m_local_id_offset; }
+
   constexpr ARCCORE_HOST_DEVICE SpanType ids() const { return m_ids; }
 
  private:
 
   SpanType m_ids;
+  Int32 m_local_id_offset = 0;
 };
 
 /*---------------------------------------------------------------------------*/

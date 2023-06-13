@@ -41,6 +41,9 @@ class ARCANE_CORE_EXPORT IItemFamilyInternal
 
   //! Interface du modificateur de topologie.
   virtual IItemFamilyTopologyModifier* topologyModifier() = 0;
+
+  //! Instance de ItemSharedInfo pour les entités de la famille
+  virtual ItemSharedInfo* commonItemSharedInfo() =0;
 };
 
 /*---------------------------------------------------------------------------*/

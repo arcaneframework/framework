@@ -372,6 +372,8 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   ItemInternalVectorView cellsV2(Int32 lid) const
   { return ItemInternalVectorView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid),_cellOffset(lid)); }
 
+  // NOTE: Ces 4 méthodes n'utilisent pas les offsets et ne doivent donc pas être utilisées
+  // à terme
   Int32ConstArrayView nodeLocalIdsV2(Int32 lid) const
   { return Int32ConstArrayView(_nbNodeV2(lid),_nodeLocalIdsV2(lid)); }
   Int32ConstArrayView edgeLocalIdsV2(Int32 lid) const
@@ -380,6 +382,15 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   { return Int32ConstArrayView(_nbFaceV2(lid), _faceLocalIdsV2(lid)); }
   Int32ConstArrayView cellLocalIdsV2(Int32 lid) const
   { return Int32ConstArrayView(_nbCellV2(lid),_cellLocalIdsV2(lid)); }
+
+  NodeLocalIdView nodeLocalIdsView(Int32 lid) const
+  { return NodeLocalIdView( _nodeLocalIdsV2(lid), _nbNodeV2(lid), _nodeOffset(lid) ); }
+  EdgeLocalIdView edgeLocalIdsView(Int32 lid) const
+  { return EdgeLocalIdView( _edgeLocalIdsV2(lid), _nbEdgeV2(lid), _edgeOffset(lid) ); }
+  FaceLocalIdView faceLocalIdsView(Int32 lid) const
+  { return FaceLocalIdView( _faceLocalIdsV2(lid), _nbFaceV2(lid), _faceOffset(lid) ); }
+  CellLocalIdView cellLocalIdsView(Int32 lid) const
+  { return CellLocalIdView( _cellLocalIdsV2(lid), _nbCellV2(lid), _cellOffset(lid) ); }
 
  private:
 

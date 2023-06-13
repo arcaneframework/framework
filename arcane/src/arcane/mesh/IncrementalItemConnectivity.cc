@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalItemConnectivity.cc                              (C) 2000-2022 */
+/* IncrementalItemConnectivity.cc                              (C) 2000-2023 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,7 @@
 #include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +41,7 @@ namespace Arcane::mesh
 IndexedItemConnectivityAccessor::
 IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family)
 : IndexedItemConnectivityViewBase(view)
-, m_target_item_family(target_item_family)
+, m_item_shared_info(target_item_family->_internalApi()->commonItemSharedInfo())
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -48,7 +49,7 @@ IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamil
 
 IndexedItemConnectivityAccessor::
 IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity)
-: m_target_item_family(connectivity->targetFamily())
+: m_item_shared_info(connectivity->targetFamily()->_internalApi()->commonItemSharedInfo())
 {
   auto* ptr = dynamic_cast<mesh::IncrementalItemConnectivityBase*>(connectivity);
   if (ptr)
