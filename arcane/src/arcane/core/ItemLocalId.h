@@ -9,27 +9,23 @@
 /*                                                                           */
 /* Index local sur une entité du maillage.                                   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMLOCALID_H
-#define ARCANE_ITEMLOCALID_H
+#ifndef ARCANE_CORE_ITEMLOCALID_H
+#define ARCANE_CORE_ITEMLOCALID_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
+#include "arcane/utils/ArrayView.h"
+
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace ArcaneTest
-{
-class MeshUnitTest;
-}
 
 namespace Arcane
 {
-namespace mesh
-{
-  class IndexedItemConnectivityAccessor;
-}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // TODO: rendre obsolète les constructeurs qui prennent un argument
 // un ItemEnumerator
@@ -127,71 +123,13 @@ class ItemLocalIdT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue typée sur une liste d'entités d'une connectivité.
- */
-template <typename ItemType>
-class ItemLocalIdViewT
-{
-  friend class ItemConnectivityContainerView;
-  friend mesh::IndexedItemConnectivityAccessor;
-  friend ArcaneTest::MeshUnitTest;
-  friend class Item;
-  friend class ItemInternalConnectivityList;
 
- public:
-
-  using LocalIdType = typename ItemLocalIdTraitsT<ItemType>::LocalIdType;
-  using SpanType = SmallSpan<const LocalIdType>;
-  using iterator = typename SpanType::iterator;
-  using const_iterator = typename SpanType::const_iterator;
-
- public:
-
-  ItemLocalIdViewT() = default;
-
- private:
-
-  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const LocalIdType* ids, Int32 s, Int32 local_id_offset)
-  : m_ids(ids, s)
-  , m_local_id_offset(local_id_offset)
-  {}
-
-  ItemLocalIdViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
-  : m_ids(reinterpret_cast<const LocalIdType*>(ids), s)
-  , m_local_id_offset(local_id_offset)
-  {}
-
- public:
-
-  constexpr ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const { return LocalIdType(m_ids[i].localId() + m_local_id_offset); }
-  constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_ids.size(); }
-
-  // TODO: Changer le type de retour de l'itérateur
-  constexpr ARCCORE_HOST_DEVICE const_iterator begin() const { return m_ids.begin(); }
-  // TODO: Changer le type de retour de l'itérateur
-  constexpr ARCCORE_HOST_DEVICE const_iterator end() const { return m_ids.end(); }
-
- private:
-
-  ConstArrayView<Int32> toViewInt32() const
-  {
-    return { size(), reinterpret_cast<const Int32*>(m_ids.data()) };
-  }
-  Int32 localIdOffset() const { return m_local_id_offset; }
-
-  constexpr ARCCORE_HOST_DEVICE SpanType ids() const { return m_ids; }
-
- private:
-
-  SpanType m_ids;
-  Int32 m_local_id_offset = 0;
-};
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+#include "arcane/core/ItemLocalIdListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

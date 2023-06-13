@@ -298,6 +298,8 @@ set(ARCANE_ORIGINAL_SOURCES
   ItemInternalSortFunction.h
   ItemInternalVectorView.h
   ItemLocalId.h
+  ItemLocalIdListView.h
+  ItemLocalIdListView.cc
   ItemLoop.h
   ItemPairEnumerator.cc
   ItemPairEnumerator.h
