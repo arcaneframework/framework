@@ -246,30 +246,27 @@ beginWrite(const VariableCollection& vars)
   }
 
   // Pour les connectivités, la taille du tableau est égal
-  // au nombre de mailes plus 1.
+  // au nombre de mailles plus 1.
   UniqueArray<Int64> cells_connectivity(total_nb_connected_node);
   UniqueArray<Int64> cells_offset(nb_cell + 1);
-  UniqueArray<unsigned char> cells_type(nb_cell);
   UniqueArray<unsigned char> cells_ghost_type(nb_cell);
-  UniqueArray<Int64> cell_ids(nb_cell);
-  Int64 ghost_id = -(pm->commRank() + 1);
+  UniqueArray<unsigned char> cells_type(nb_cell);
+  UniqueArray<Int64> cells_uid(nb_cell);
   cells_offset[0] = 0;
   {
     Int32 connected_node_index = 0;
     ENUMERATE_CELL (icell, all_cells) {
       Int32 index = icell.index();
       Cell cell = *icell;
+
+      cells_uid[index] = icell->uniqueId();
+
       Byte ghost_type = 0;
       bool is_ghost = !cell.isOwn();
-      if (is_ghost) {
+      if (is_ghost)
         ghost_type = VtkUtils::CellGhostTypes::DUPLICATECELL;
-        cell_ids[index] = ghost_id;
-        ghost_id -= pm->commSize();
-      }
-      else{
-        cell_ids[index] = icell->uniqueId();
-      }
       cells_ghost_type[index] = ghost_type;
+
       unsigned char vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
       cells_type[index] = vtk_type;
       for (NodeLocalId node : cell.nodeIds()) {
@@ -285,44 +282,61 @@ beginWrite(const VariableCollection& vars)
   _writeDataSet1DCollective<Int64>(top_group, "Connectivity", cells_connectivity);
   _writeDataSet1DCollective<unsigned char>(top_group, "Types", cells_type);
 
-  UniqueArray<Int64> nb_cell_by_ranks(1);
-  nb_cell_by_ranks[0] = nb_cell;
-  _writeDataSet1DCollective<Int64>(top_group, "NumberOfCells", nb_cell_by_ranks);
+  {
+    UniqueArray<Int64> nb_cell_by_ranks(1);
+    nb_cell_by_ranks[0] = nb_cell;
+    _writeDataSet1DCollective<Int64>(top_group, "NumberOfCells", nb_cell_by_ranks);
 
-  UniqueArray<Int64> nb_node_by_ranks(1);
-  nb_node_by_ranks[0] = nb_node;
-  _writeDataSet1DCollective<Int64>(top_group, "NumberOfPoints", nb_node_by_ranks);
+    UniqueArray<Int64> nb_node_by_ranks(1);
+    nb_node_by_ranks[0] = nb_node;
+    _writeDataSet1DCollective<Int64>(top_group, "NumberOfPoints", nb_node_by_ranks);
 
-  UniqueArray<Int64> number_of_connectivity_ids(1);
-  number_of_connectivity_ids[0] = cells_connectivity.size();
-  _writeDataSet1DCollective<Int64>(top_group, "NumberOfConnectivityIds", number_of_connectivity_ids);
-
-  ghost_id = -(pm->commRank() + 1);
-  VariableNodeReal3& nodes_coordinates(m_mesh->nodesCoordinates());
-  UniqueArray2<Real> points;
-  points.resize(nb_node, 3);
-  UniqueArray<Int64> node_ids(nb_node);
-  ENUMERATE_NODE (inode, all_nodes) {
-    Int32 index = inode.index();
-    Real3 pos = nodes_coordinates[inode];
-    points[index][0] = pos.x;
-    points[index][1] = pos.y;
-    points[index][2] = pos.z;
-    if (!inode->isOwn()) {
-      node_ids[index] = ghost_id;
-      ghost_id -= pm->commSize();
-    }
-    else{
-      node_ids[index] = inode->uniqueId();
-    }
+    UniqueArray<Int64> number_of_connectivity_ids(1);
+    number_of_connectivity_ids[0] = cells_connectivity.size();
+    _writeDataSet1DCollective<Int64>(top_group, "NumberOfConnectivityIds", number_of_connectivity_ids);
   }
 
-  _writeDataSet2DCollective<Real>(top_group, "Points", points);
+  // Sauve les uniqueIds, les types et les coordonnées des noeuds.
+  {
+    UniqueArray<Int64> nodes_uid(nb_node);
+    UniqueArray<unsigned char> nodes_ghost_type(nb_node);
+    VariableNodeReal3& nodes_coordinates(m_mesh->nodesCoordinates());
+    UniqueArray2<Real> points;
+    points.resize(nb_node, 3);
+    ENUMERATE_NODE (inode, all_nodes) {
+      Int32 index = inode.index();
+      Node node = *inode;
 
+      nodes_uid[index] = inode->uniqueId();
+
+      Byte ghost_type = 0;
+      bool is_ghost = !node.isOwn();
+      if (is_ghost)
+        ghost_type = VtkUtils::PointGhostTypes::DUPLICATEPOINT;
+      nodes_ghost_type[index] = ghost_type;
+
+      Real3 pos = nodes_coordinates[inode];
+      points[index][0] = pos.x;
+      points[index][1] = pos.y;
+      points[index][2] = pos.z;
+    }
+
+    // Sauve l'uniqueId de chaque noeud dans le dataset "GlobalNodeId".
+    _writeDataSet1DCollective<Int64>(m_node_data_group, "GlobalNodeId", nodes_uid);
+
+    // Sauve les informations sur le type de noeud (réel ou fantôme).
+    _writeDataSet1DCollective<unsigned char>(m_node_data_group, "vtkGhostType", nodes_ghost_type);
+
+    // Sauve les coordonnées des noeuds.
+    _writeDataSet2DCollective<Real>(top_group, "Points", points);
+  }
+
+  // Sauve les informations sur le type de maille (réel ou fantôme)
+  _writeDataSet1DCollective<Int64>(m_cell_data_group, "GlobalCellId", cells_uid);
+
+  // Sauve l'uniqueId de chaque maille dans le dataset "GlobalCellId".
+  // L'utilisation du dataset "vtkOriginalCellIds" ne fonctionne pas dans Paraview.
   _writeDataSet1DCollective<unsigned char>(m_cell_data_group, "vtkGhostType", cells_ghost_type);
-  _writeDataSet1DCollective<Int64>(m_cell_data_group, "vtkOriginalCellIds", cell_ids);
-  _writeDataSet1DCollective<Int64>(m_cell_data_group, "vtkVeryOriginalCellIds", cell_ids);
-  _writeDataSet1DCollective<Int64>(m_node_data_group, "GlobalNodeId", node_ids);
 }
 
 /*---------------------------------------------------------------------------*/

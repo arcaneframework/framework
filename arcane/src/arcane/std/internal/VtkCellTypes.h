@@ -110,7 +110,7 @@ const unsigned char VTK_BEZIER_PYRAMID = 81;
 extern "C++" Int16 vtkToArcaneCellType(int vtk_type, Int32 nb_node);
 extern "C++" unsigned char arcaneToVtkCellType(Int16 arcane_type);
 
-// Les valeurs pour le type 'CellGhostTypes' sont définies
+// Les valeurs pour les types 'CellGhostTypes' et 'PointGhostTypes' sont définies
 // dans le fichier vtkDataSetAttributes.h.
 enum CellGhostTypes
 {
@@ -121,6 +121,13 @@ enum CellGhostTypes
   EXTERIORCELL = 16, // the cell is on the exterior of the data set
   HIDDENCELL = 32 // the cell is needed to maintain connectivity, but the data values should be ignored.
 };
+
+enum PointGhostTypes
+{
+  DUPLICATEPOINT = 1, // the point is present on multiple processors
+  HIDDENPOINT = 2 // the point is needed to maintain connectivity, but the data values should be ignored.
+};
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
