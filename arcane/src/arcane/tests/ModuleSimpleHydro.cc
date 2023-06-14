@@ -137,7 +137,7 @@ class ModuleSimpleHydro
   void hydroBuild();
   void hydroStartInit();
   void hydroInit();
-  void hydroContinueInit() {}
+  void hydroContinueInit(){}
   void hydroExit();
 
   void computeForces();
@@ -886,11 +886,22 @@ hydroInit()
     subDomain()->timeLoopMng()->setBackwardSavePeriod(10);
     m_secondary_variables = new SecondaryVariables(this);
   }
+  Real dt = m_global_deltat();
+  Real dt_max = options()->deltatMax();
   info() << "INIT: DTmin=" << options()->deltatMin()
-         << " DTmax="<< options()->deltatMax()
-         << " DT="<< m_global_deltat();
-  if (m_global_deltat() > options()->deltatMax())
-    fatal() << "DeltaT > DTMax";
+         << " DTmax="<< dt_max
+         << " DT="<< dt;
+  if (dt > dt_max)
+    ARCANE_FATAL("DeltaT ({0}) > DTMax ({1})",dt,dt_max);
+
+  if (subDomain()->isContinue()){
+    if (platform::getEnvironmentVariable("ARCANE_CONTINUE_OLD_CHECKPOINT")!="1"){
+      Int64 t = defaultMesh()->timestamp();
+      info() << "HydroContinueInit: MeshTimeStamp=" << t;
+      if (t==0)
+        ARCANE_FATAL("Mesh timestamp should not be zero");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

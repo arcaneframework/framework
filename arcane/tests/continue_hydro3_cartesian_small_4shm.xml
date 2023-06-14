@@ -1,4 +1,4 @@
 <?xml version="1.0" ?>
 <commands>
-  <test>-m 5 -arcane_opt continue -We,ARCANE_ALLOW_DIFFERENT_CHECKPOINT_HASH,1 @ARCANE_TEST_CASEPATH@/testHydro-3-cartesian-small-nodump.arc</test>
+  <test>-m 5 -arcane_opt continue  -We,ARCANE_CONTINUE_OLD_CHECKPOINT,1 -We,ARCANE_ALLOW_DIFFERENT_CHECKPOINT_HASH,1 @ARCANE_TEST_CASEPATH@/testHydro-3-cartesian-small-nodump.arc</test>
 </commands>

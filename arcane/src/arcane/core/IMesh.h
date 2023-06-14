@@ -107,9 +107,10 @@ class IMesh
 
   /*!
    * \brief Compteur indiquant le temps de dernière modification du maillage.
+   *
    * Ce compteur augmente à chaque appel à endUpdate(). Il vaut 0 lors
-   * de l'initialisation.
-   * \node Actuellement, ce compteur n'est pas sauvegardé lors d'une protection.
+   * de l'initialisation. Il permet par exemple de vérifier si la topologie
+   * du maillage a évoluée entre deux parties du code.
    */
   virtual Int64 timestamp() =0;
   
@@ -130,7 +131,7 @@ class IMesh
   /*! Cet objet permet de lire/modifier la connectivité */
   virtual VariableScalarInteger connectivity() = 0;
 
-//! AMR
+  //! AMR
   //! Groupe de toutes les mailles actives
   virtual CellGroup allActiveCells() =0;
 
@@ -154,9 +155,6 @@ class IMesh
 
   //! Groupe de toutes les faces actives sur la frontière.
   virtual FaceGroup outerActiveFaces() =0;
-
-  //!
-//  virtual void readAmrActivator(const XmlNode& xml_node) =0;
 
  public:
 
@@ -224,6 +222,7 @@ class IMesh
   virtual IMeshPartitionConstraintMng* partitionConstraintMng() =0;
 
  public:
+
   //! Interface des fonctions utilitaires associée
   virtual IMeshUtilities* utilities() =0;
 
@@ -237,23 +236,34 @@ class IMesh
 
  public:
 
-  //! Coordonnées des noeuds
-  /*! Retourne un tableau natif (non partagé comme SharedVariable) des coordonnées.
-   *  Cet appel n'est légal que sur un maillage primaire (non sous-maillage).
+  /*!
+   * \brief Coordonnées des noeuds.
+   *
+   * Retourne un tableau natif (non partagé comme SharedVariable) des coordonnées.
+   * Cet appel n'est valide que sur un maillage primaire (non sous-maillage).
    */
   virtual VariableNodeReal3& nodesCoordinates() =0;
 
   //@{ @name Interface des sous-maillages
-  //! Définit les maillage et groupe parents
-  /*! Doit être positionné sur le maillage en construction _avant_ la phase build() */
+  /*!
+   * \brief Définit les maillage et groupe parents.
+   *
+   *  Doit être positionné sur le maillage en construction _avant_ la phase build()
+   */
   virtual void defineParentForBuild(IMesh * mesh, ItemGroup group) =0;
 
-  //! Accès au maillage parent
-  /*! (NULL si n'a pas de maillage parent) */
-  virtual IMesh * parentMesh() const = 0;
+  /*!
+   * \brief Accès au maillage parent.
+   *
+   * Retourne \a nullptr si le maillage nn'a pas de maillage parent.
+   */
+  virtual IMesh* parentMesh() const = 0;
 
-  //! Accès au maillage prent
-  /*! (null() si n'a pas de maillage parent) */
+  /*!
+   * \brief Groupe parent.
+   *
+   * Retourne le groupe nul si le maillage n'a pas de parent.
+   */
   virtual ItemGroup parentGroup() const = 0;
 
   //! Ajoute un sous-maillage au maillage parent
@@ -261,7 +271,6 @@ class IMesh
 
   //! Liste des sous-maillages du maillage courant
   virtual MeshCollection childMeshes() const = 0;
-
   //@}
 
  public:
