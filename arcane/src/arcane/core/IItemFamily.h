@@ -160,17 +160,29 @@ class IItemFamily
    */
   virtual IItemFamily* parentFamily() const = 0;
 
-  //! Positionne l'IItemFamily parent
-  /*! A utiliser avant build() pour les sous-maillages construit dynamiquement, 
-   *   ie pas depuis un reprise */
-  virtual void setParentFamily(IItemFamily * parent) = 0;
+  /*!
+   * \internal
+   * \brief Positionne l'IItemFamily parent.
+   *
+   * A utiliser avant build() pour les sous-maillages construit dynamiquement
+   * (i.e. pas depuis un reprise).
+   *
+   * TODO: A mettre dans l'API interne
+   */
+  virtual void setParentFamily(IItemFamily* parent) = 0;
 
   //! Donne la profondeur d'imbrication du maillage courant
   virtual Integer parentFamilyDepth() const = 0;
 
-  //! Ajoute d'une famile en dépendance
-  /*! Opération en symétrie de setParentFamily */
-  virtual void addChildFamily(IItemFamily * family) = 0;
+  /*!
+   * \internal
+   * \brief Ajoute d'une famile en dépendance
+   *
+   * Opération en symétrie de setParentFamily
+   *
+   * TODO: A mettre dans l'API interne
+   */
+  virtual void addChildFamily(IItemFamily* family) = 0;
 
   //! Familles enfantes de cette famille
   virtual IItemFamilyCollection childFamilies() = 0;
@@ -226,14 +238,22 @@ class IItemFamily
    * \brief Supprime des entités.
    *
    * Utilise le graphe (Familles, Connectivités) ItemFamilyNetwork
+   *
+   * TODO: A mettre dans l'API interne
    */
   virtual void removeItems2(mesh::ItemDataList& item_data_list) =0;
 
   /*!
-   * \brief Supprime des entités et met a jour les connectivites. Ne supprime pas d'eventuels sous items orphelins.
+   * \internal
+   * \brief Supprime des entités et met a jour les connectivites.
    *
-   * Contexte d'utilisation avec un graphe des familles. Les sous items orphelins ont du eux aussi etre marque NeedRemove.
+   * Ne supprime pas d'eventuels sous items orphelins.
+   *
+   * Contexte d'utilisation avec un graphe des familles. Les sous items
+   * orphelins ont du eux aussi etre marque NeedRemove.
    * Il n'y a donc pas besoin de les gerer dans les familles parentes.
+   *
+   * TODO: A mettre dans l'API interne
    */
   virtual void removeNeedRemoveMarkedItems() =0;
 
@@ -297,7 +317,7 @@ class IItemFamily
 
   /*!
    * \internal
-   * \brief Redimensionne les variables
+   * \brief Redimensionne les variables.
    */
   virtual void resizeVariables(bool force_resize=false) =0;
 
@@ -386,30 +406,6 @@ class IItemFamily
    * \sa setItemSortFunction()
    */
   virtual IItemInternalSortFunction* itemSortFunction() const =0;
-
- public:
-
-  /*!
-   * \internal
-   * \brief Indique une fin d'allocation.
-   *
-   * Cette méthode ne doit normalement être appelée que par le maillage (IMesh)
-   * au moment de l'allocate.
-   *
-   * Cette méthode est collective.
-   */
-  virtual void endAllocate() =0;
-
-  /*!
-   * \internal
-   * \brief Indique une fin de modification par le maillage.
-   *
-   * Cette méthode ne doit normalement être appelée que par le maillage (IMesh)
-   * à la fin d'un endUpdate().
-   *
-   * Cette méthode est collective.
-   */
-  virtual void notifyEndUpdateFromMesh() =0;
 
  public:
 

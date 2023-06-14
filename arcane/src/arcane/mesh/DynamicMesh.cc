@@ -20,43 +20,44 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/ITimeStats.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/Properties.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/Timer.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IPropertyMng.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/MeshStats.h"
-#include "arcane/IMeshFactory.h"
-#include "arcane/IMeshPartitionConstraintMng.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/Connectivity.h"
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/MeshToMeshTransposer.h"
-#include "arcane/IItemFamilyCompactPolicy.h"
-#include "arcane/IItemFamilyExchanger.h"
-#include "arcane/IItemFamilySerializer.h"
-#include "arcane/IItemFamilyPolicyMng.h"
-#include "arcane/IMeshExchanger.h"
-#include "arcane/IMeshCompacter.h"
-#include "arcane/MeshVisitor.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/IMeshMng.h"
-#include "arcane/MeshBuildInfo.h"
-#include "arcane/ICaseMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ITimeStats.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IPropertyMng.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/MeshStats.h"
+#include "arcane/core/IMeshFactory.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/Connectivity.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/MeshToMeshTransposer.h"
+#include "arcane/core/IItemFamilyCompactPolicy.h"
+#include "arcane/core/IItemFamilyExchanger.h"
+#include "arcane/core/IItemFamilySerializer.h"
+#include "arcane/core/IItemFamilyPolicyMng.h"
+#include "arcane/core/IMeshExchanger.h"
+#include "arcane/core/IMeshCompacter.h"
+#include "arcane/core/MeshVisitor.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/MeshBuildInfo.h"
+#include "arcane/core/ICaseMng.h"
 
 #include "arcane/core/internal/UnstructuredMeshAllocateBuildInfoInternal.h"
 #include "arcane/core/internal/CartesianMeshAllocateBuildInfoInternal.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
 
 #include "arcane/mesh/ExtraGhostCellsBuilder.h"
 #include "arcane/mesh/ExtraGhostParticlesBuilder.h"
@@ -741,7 +742,7 @@ endAllocate()
   _compactItems(true,false);
   _compactItemInternalReferences();
   for( IItemFamily* family : m_item_families )
-    family->endAllocate();
+    family->_internalApi()->endAllocate();
 
   if (print_stats)
     ts->dumpTimeAndMemoryUsage(pm);
@@ -2314,7 +2315,7 @@ void DynamicMesh::
 _notifyEndUpdateForFamilies()
 {
   for( IItemFamily* family : m_item_families )
-    family->notifyEndUpdateFromMesh();
+    family->_internalApi()->notifyEndUpdateFromMesh();
 }
 
 /*---------------------------------------------------------------------------*/

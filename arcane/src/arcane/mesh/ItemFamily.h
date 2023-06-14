@@ -252,7 +252,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   IParticleFamily* toParticleFamily() override { return nullptr; }
   void setItemSortFunction(IItemInternalSortFunction* sort_function) override;
   IItemInternalSortFunction* itemSortFunction() const override;
-  void endAllocate() override;
 
  public:
   
@@ -260,8 +259,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   void removeVariable(IVariable* var) override;
 
  public:
-  
-  void notifyEndUpdateFromMesh() override;
 
   void addSourceConnectivity(IItemConnectivity* connectivity) override;
   void addTargetConnectivity(IItemConnectivity* connectivity) override;
@@ -342,6 +339,9 @@ class ARCANE_MESH_EXPORT ItemFamily
   }
 
   void _detachCells2(Int32ConstArrayView local_ids);
+
+  virtual void _endAllocate();
+  virtual void _notifyEndUpdateFromMesh();
 
  protected:
 

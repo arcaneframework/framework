@@ -145,6 +145,14 @@ class ItemFamily::InternalApi
   {
     m_family->_addTargetConnectivity(connectivity);
   }
+  void endAllocate() override
+  {
+    return m_family->_endAllocate();
+  }
+  void notifyEndUpdateFromMesh() override
+  {
+    return m_family->_notifyEndUpdateFromMesh();
+  }
 
  private:
 
@@ -502,7 +510,7 @@ checkValidConnectivity()
  * collectives une fois les modifications de maillage terminées.
  */
 void ItemFamily::
-notifyEndUpdateFromMesh()
+_notifyEndUpdateFromMesh()
 {
   // Recalcule les infos de connectivités locale et globales à tous les sous-domaines
   _computeConnectivityInfo(m_local_connectivity_info);
@@ -527,7 +535,7 @@ endUpdate()
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-endAllocate()
+_endAllocate()
 {
   // La variable n'est pas "used" par défaut car la famille n'est pas encore prête.
   // Sur les sous-familles, il suffit donc de filtrer setUsed au moment du endAllocate

@@ -43,12 +43,30 @@ class ARCANE_CORE_EXPORT IItemFamilyInternal
   virtual IItemFamilyTopologyModifier* topologyModifier() = 0;
 
   //! Instance de ItemSharedInfo pour les entités de la famille
-  virtual ItemSharedInfo* commonItemSharedInfo() =0;
+  virtual ItemSharedInfo* commonItemSharedInfo() = 0;
 
- public:
+  /*!
+   * \brief Indique une fin d'allocation.
+   *
+   * Cette méthode ne doit normalement être appelée que par le maillage (IMesh)
+   * au moment de l'allocate.
+   *
+   * Cette méthode est collective.
+   */
+  virtual void endAllocate() = 0;
 
-  virtual void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) =0;
-  virtual void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) =0;
+  /*!
+   * \brief Indique une fin de modification par le maillage.
+   *
+   * Cette méthode ne doit normalement être appelée que par le maillage (IMesh)
+   * à la fin d'un endUpdate().
+   *
+   * Cette méthode est collective.
+   */
+  virtual void notifyEndUpdateFromMesh() = 0;
+
+  virtual void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
+  virtual void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
