@@ -65,6 +65,22 @@ class ARCANE_CORE_EXPORT IItemFamilyInternal
    */
   virtual void notifyEndUpdateFromMesh() = 0;
 
+  /*!
+   * \brief Ajoute une variable à cette famille.
+   *
+   * Cette méthode est appelée par la variable elle même et ne doit pas
+   * être apelée dans d'autres conditions.
+   */
+  virtual void addVariable(IVariable* var) = 0;
+
+  /*!
+   * \brief Supprime une variable à cette famille.
+   *
+   * Cette méthode est appelée par la variable elle même et ne doit pas
+   * être apelée dans d'autres conditions.
+   */
+  virtual void removeVariable(IVariable* var) = 0;
+
   virtual void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
   virtual void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
 };

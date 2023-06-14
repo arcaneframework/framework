@@ -260,7 +260,9 @@ class IItemFamily
   /*
    * \brief Entité de numéro unique \a unique_id.
    *
-   * Si aucune entité avec cet \a unique_id n'est trouvé, retourne null.
+   * Si aucune entité avec cet \a unique_id n'est trouvé, retourne \a nullptr.
+   *
+   * \pre hasUniqueIdMap()
    */
   virtual ItemInternal* findOneItem(Int64 unique_id) =0;
 
@@ -289,7 +291,7 @@ class IItemFamily
 
   /*!
    * \brief Met à jour un groupe.
-   
+   *
    * Met à jour le groupe \a group après une modification de la famille.
    * La mise à jour consiste à supprimer du groupe les entités de la famille
    * éventuellement détruites lors de la modification.
@@ -335,6 +337,9 @@ class IItemFamily
    * \brief Indique si la famille possède une table de conversion
    * uniqueId vers localId.
    *
+   * La table de conversion permet d'utiliser les méthodes
+   * itemsUniqueIdToLocalId() ou findOneItem().
+   *
    * Cette méthode ne peut être appelée que lorsqu'il n'y a aucune
    * entité de la famille.
    *
@@ -349,37 +354,39 @@ class IItemFamily
  public:
 
   /*!
-    \brief Converti un tableau de numéros uniques en numéros locaux.
-
-    Cette opération prend en entrée le tableau \a unique_ids contenant les
-    numéros uniques des entités du type \a item_kind et retourne dans
-    \a local_ids le numéro local à ce sous-domaine correspondant.
-
-    La complexité de cette opération dépend de l'implémentation.
-    L'implémentation par défaut utilise une table de hachage. La complexité
-    moyenne est donc constante.
-
-    Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
-    pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
-  */
+   * \brief Converti un tableau de numéros uniques en numéros locaux.
+   *
+   *  Cette opération prend en entrée le tableau \a unique_ids contenant les
+   * numéros uniques des entités du type \a item_kind et retourne dans
+   * \a local_ids le numéro local à ce sous-domaine correspondant.
+   *
+   * La complexité de cette opération dépend de l'implémentation.
+   * L'implémentation par défaut utilise une table de hachage. La complexité
+   * moyenne est donc constante.
+   *
+   * Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
+   * pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
+   *
+   * \pre hasUniqueIdMap()
+   */
   virtual void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                                       Int64ConstArrayView unique_ids,
                                       bool do_fatal=true) const =0;
 
   /*!
-    \brief Converti un tableau de numéros uniques en numéros locaux.
-
-    Cette opération prend en entrée le tableau \a unique_ids contenant les
-    numéros uniques des entités du type \a item_kind et retourne dans
-    \a local_ids le numéro local à ce sous-domaine correspondant.
-
-    La complexité de cette opération dépend de l'implémentation.
-    L'implémentation par défaut utilise une table de hachage. La complexité
-    moyenne est donc constante.
-
-    Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
-    pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
-  */
+   * \brief Converti un tableau de numéros uniques en numéros locaux.
+   *
+   * Cette opération prend en entrée le tableau \a unique_ids contenant les
+   * numéros uniques des entités du type \a item_kind et retourne dans
+   * \a local_ids le numéro local à ce sous-domaine correspondant.
+   *
+   * La complexité de cette opération dépend de l'implémentation.
+   * L'implémentation par défaut utilise une table de hachage. La complexité
+   * moyenne est donc constante.
+   *
+   * Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
+   * pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
+   */
   virtual void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                                       ConstArrayView<ItemUniqueId> unique_ids,
                                       bool do_fatal=true) const =0;
@@ -468,7 +475,7 @@ class IItemFamily
   /*!
    * \brief Créé un groupe d'entités de nom \a name
    *
-   * Le groupe ne doit pas déjà exister.
+   * Le groupe ne doit pas déjà exister sinon une exception est levée.
    *
    * \param name nom du groupe
    * \return le groupe créé
@@ -542,26 +549,6 @@ class IItemFamily
 
   //! Compacte les entités.
   virtual void compactItems(bool do_sort) =0;
-
- public:
-
-  /*!
-   * \internal
-   * \brief Ajoute une variable à cette famille.
-   *
-   * Cette méthode est appelée par la variable elle même et ne doit pas
-   * être apelée dans d'autres conditions.
-   */
-  virtual void addVariable(IVariable* var) =0;
-  
-  /*!
-   * \internal
-   * \brief Supprime une variable à cette famille.
-   *
-   * Cette méthode est appelée par la variable elle même et ne doit pas
-   * être apelée dans d'autres conditions.
-   */
-  virtual void removeVariable(IVariable* var) =0;
 
  public:
 

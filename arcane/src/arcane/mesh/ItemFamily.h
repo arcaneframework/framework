@@ -254,11 +254,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   IItemInternalSortFunction* itemSortFunction() const override;
 
  public:
-  
-  void addVariable(IVariable* var) override;
-  void removeVariable(IVariable* var) override;
-
- public:
 
   void addSourceConnectivity(IItemConnectivity* connectivity) override;
   void addTargetConnectivity(IItemConnectivity* connectivity) override;
@@ -541,6 +536,8 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   void _addSourceConnectivity(IIncrementalItemConnectivity* c);
   void _addTargetConnectivity(IIncrementalItemConnectivity* c);
+  void _addVariable(IVariable* var);
+  void _removeVariable(IVariable* var);
 };
 
 /*---------------------------------------------------------------------------*/

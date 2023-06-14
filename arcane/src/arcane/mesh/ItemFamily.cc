@@ -153,6 +153,14 @@ class ItemFamily::InternalApi
   {
     return m_family->_notifyEndUpdateFromMesh();
   }
+  void addVariable(IVariable* var) override
+  {
+    return m_family->_addVariable(var);
+  }
+  void removeVariable(IVariable* var) override
+  {
+    return m_family->_removeVariable(var);
+  }
 
  private:
 
@@ -1932,7 +1940,7 @@ view()
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-addVariable(IVariable* var)
+_addVariable(IVariable* var)
 {
   //info() << "Add var=" << var->fullName() << " to family=" << name();
   if (var->itemFamily()!=this)
@@ -1944,7 +1952,7 @@ addVariable(IVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-removeVariable(IVariable* var)
+_removeVariable(IVariable* var)
 {
   //info() << "Remove var=" << var->fullName() << " to family=" << name();
   m_used_variables.erase(var);
