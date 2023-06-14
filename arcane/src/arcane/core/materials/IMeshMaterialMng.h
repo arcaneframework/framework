@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IFunctorWithArgument.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 #include "arcane/core/ItemTypes.h"
@@ -474,11 +475,13 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   virtual IMeshMaterialVariableFactoryMng* variableFactoryMng() const =0;
 
   /*!
-   * \brief Active la construction et la mise à jour de la table de 
+   * \brief Active ou désactive la construction et la mise à jour de la table de 
    * "connectivité" CellLocalId -> AllEnvCell pour les RUNCOMMAND
-   * Peut également être positionné par la macro ARCANE_ALLENVCELL_FOR_RUNCOMMAND
+   * On peut activer également par la variable d'environnement ARCANE_ALLENVCELL_FOR_RUNCOMMAND.
+   * En option, on peut forcer la création de la table, ce qui peut être util lors d'un appel tardif
+   * de cette méthode par rapport à celui du ForceRecompute()
    */
-  virtual void enableCellToAllEnvCellForRunCommand(bool is_enable) =0;
+  virtual void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) =0;
   virtual bool isCellToAllEnvCellForRunCommand() const =0;
 
  public:
@@ -503,8 +506,10 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * \brief Construit la table de "connectivité" CellLocalId -> AllEnvCell
    * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
    * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
+   * Si aucun allocateur n'est spécifié alors la méthode
+   * platform::getDefaultDataAllocator() est utilisée
    */
-  virtual void createAllCellToAllEnvCell(IMemoryAllocator* alloc) =0;
+  virtual void createAllCellToAllEnvCell(IMemoryAllocator* alloc=platform::getDefaultDataAllocator()) =0;
 
  private:
 

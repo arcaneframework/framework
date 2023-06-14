@@ -47,25 +47,16 @@ namespace Arcane::Materials
  Une fois l'instance créée, elle doit être mise à jour à chaque fois que 
  la topologie des matériaux/environnements change (ce qui est également cher).
  
- \code
- * 
- * auto* ac2aec = ::Arcane::Materials::AllCellToAllEnvCell::create(...);
- * command << RUNCOMMAND_ENUMERATE(Cell, cid, allCells()) {
- *   for (Int32 i(0); i < ac2aec->getAllCell2AllEnvCellTable()[cid].size(); ++i) {
- *     const auto& mvi(ac2aec->getAllCell2AllEnvCellTable()[cid][i]);
- *     sum2 += in_menv_var2[mvi]/in_menv_var2_g[cid];
- *     ...
- *   }
- * };
- \endcode
+ Cette classe est une classe interne et ne doit pas être manipulée directement.
+ Il faut passer par les helpers associés dans le IMeshMaterialMng et
+ la classe CellToAllEnvCellAccessor.
  
  */
 class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 {
  public:
-  explicit AllCellToAllEnvCell(IMeshMaterialMng* mm, IMemoryAllocator* alloc, Integer nb_allcell);
+  AllCellToAllEnvCell();
   ~AllCellToAllEnvCell() = default;
-  //void reset();
   
   //! Copies interdites
   AllCellToAllEnvCell(const AllCellToAllEnvCell&) = delete;
@@ -76,6 +67,8 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
    * relatives aux matériaux soient finalisées
    */
   static AllCellToAllEnvCell* create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
+  ///! Fonction de destruction
+  static void destroy(AllCellToAllEnvCell* instance);
 
   // Rien d'intelligent ici, on refait tout. Il faut voir dans un 2nd temps 
   // pour faire qqch de plus malin et donc certainement plus rapide...
@@ -85,18 +78,19 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   /*!
    * Méthode d'accès à la table de "connectivité" cell -> all env cells
    */
-  //ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
-  ARCCORE_HOST_DEVICE const UniqueArray<UniqueArray<ComponentItemLocalId>>& internal() const
+  ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
   {
     return m_allcell_allenvcell;
   }
 
  private:
+  void reset();
+
+ private:
   IMeshMaterialMng* m_mm;
   IMemoryAllocator* m_alloc;
-  Integer m_nb_allcell;
-  //Span<ComponentItemLocalId>* m_allcell_allenvcell;
-  UniqueArray<UniqueArray<ComponentItemLocalId>> m_allcell_allenvcell;
+  Integer m_size;
+  Span<ComponentItemLocalId>* m_allcell_allenvcell;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -162,10 +156,8 @@ class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
   friend class EnumeratorTracer;
 
  public:
-  //using index_type = Span<ComponentItemLocalId>::index_type;
-  using index_type = UniqueArray<ComponentItemLocalId>::size_type;
-  //using size_type = Span<ComponentItemLocalId>::size_type;
-  using size_type = UniqueArray<ComponentItemLocalId>::size_type;
+  using index_type = Span<ComponentItemLocalId>::index_type;
+  using size_type = Span<ComponentItemLocalId>::size_type;
 
  public:
   // La version CPU permet de vérifier qu'on a bien fait l'init avant l'ENUMERATE
@@ -197,8 +189,7 @@ class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
  private:
   Integer m_cid;
   index_type m_index;
-  //Span<ComponentItemLocalId>* m_ptr;
-  const UniqueArray<ComponentItemLocalId>* m_ptr;
+  Span<ComponentItemLocalId>* m_ptr;
   size_type m_size;
 };
 

@@ -344,10 +344,6 @@ forceRecompute(bool compute_all)
     if (allCell2AllEnvCell)
       allCell2AllEnvCell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
     else
-      // FIXME: C'est ici que ça plante en // dans
-//"/home/letiercef/Arcane/build/bin/arcane_test_driver" "launch" "-E" "arcanecea_tests_exec" "-n" "4" "-m 20" "/home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc"
-// ./lib/arcanecea_tests_exec -A,S=4 -A,MaxIteration=20 /home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc
-// ARCANE_DEBUGGER=memcheck bin/arcane_test_driver launch -E arcanecea_tests_exec -m 20 /home/letiercef/arcaneframework/framework/arcane/ceapart/tests/testMaterial-3-opt7-lb.arc
       m_material_mng->createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
   }
 }

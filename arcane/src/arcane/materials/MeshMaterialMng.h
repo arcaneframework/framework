@@ -208,15 +208,18 @@ class MeshMaterialMng
 
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
-  void enableCellToAllEnvCellForRunCommand(bool is_enable) override
+  void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) override
   {
     m_is_allcell_2_allenvcell = is_enable;
+    if (force_create)
+      createAllCellToAllEnvCell();
   }
   bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
   AllCellToAllEnvCell* getAllCellToAllEnvCell() const override { return m_allcell_2_allenvcell; }
-  void createAllCellToAllEnvCell(IMemoryAllocator* alloc) override
+  void createAllCellToAllEnvCell(IMemoryAllocator* alloc=platform::getDefaultDataAllocator()) override
   {
-    m_allcell_2_allenvcell = AllCellToAllEnvCell::create(this, alloc);
+    if (!m_allcell_2_allenvcell)
+      m_allcell_2_allenvcell = AllCellToAllEnvCell::create(this, alloc);
   }
 
  private:
