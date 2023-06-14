@@ -1298,6 +1298,7 @@ _saveProperties()
   p->setInt32("part-info-replication-rank",m_mesh_part_info.replicationRank());
   p->setInt32("part-info-nb-replication",m_mesh_part_info.nbReplication());
   p->setBool("has-itemsharedinfo-variables",true);
+  p->setInt64("mesh-timestamp",m_timestamp);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1328,6 +1329,9 @@ _loadProperties()
       m_mesh_part_info.setReplicationRank(x);
     if (p->get("part-info-nb-replication",x))
       m_mesh_part_info.setNbReplication(x);
+    Int64 x2 = 0;
+    if (p->get("mesh-timestamp",x2))
+      m_timestamp = x2;
   }
 }
 
