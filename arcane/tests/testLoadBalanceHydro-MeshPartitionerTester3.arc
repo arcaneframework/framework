@@ -45,7 +45,10 @@
    </output>
  </arcane-post-processing>
  <arcane-checkpoint>
-  <do-dump-at-end>false</do-dump-at-end>
+   <checkpoint-service name="ArcaneBasic2CheckpointWriter">
+     <format-version>3</format-version>
+   </checkpoint-service>
+  <do-dump-at-end>true</do-dump-at-end>
  </arcane-checkpoint>
 
  <!-- Configuration du module hydrodynamique -->

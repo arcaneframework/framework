@@ -687,6 +687,7 @@ endif()
 
 arcane_add_test_parallel(loadbalance_test1 testLoadBalanceHydro-MeshPartitionerTester.arc 4 -m 30)
 arcane_add_test_parallel(loadbalance_test1_d2 testLoadBalanceHydro-MeshPartitionerTester2.arc 4 -m 30)
+arcane_add_test_parallel(loadbalance_test1_checkpoint testLoadBalanceHydro-MeshPartitionerTester3.arc 4 -c 3 -m 15)
 arcane_add_test_parallel(loadbalance_test1 testLoadBalanceHydro-MeshPartitionerTester.arc 12 -m 30)
 arcane_add_test_parallel(loadbalance_test1_3exchange_v1 testLoadBalanceHydro-MeshPartitionerTester.arc 6 -We,ARCANE_NB_EXCHANGE=3 -m 30)
 arcane_add_test_parallel(loadbalance_test1_3exchange_v2 testLoadBalanceHydro-MeshPartitionerTester.arc 6 -We,ARCANE_NB_EXCHANGE,3 -We,ARCANE_MESH_EXCHANGE_VERSION,2 -m 30)
