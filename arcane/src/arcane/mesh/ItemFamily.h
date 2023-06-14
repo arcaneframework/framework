@@ -264,9 +264,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void notifyEndUpdateFromMesh() override;
 
   void addSourceConnectivity(IItemConnectivity* connectivity) override;
-  void addSourceConnectivity(IIncrementalItemConnectivity* c) override;
   void addTargetConnectivity(IItemConnectivity* connectivity) override;
-  void addTargetConnectivity(IIncrementalItemConnectivity* c) override;
   void removeSourceConnectivity(IItemConnectivity* connectivity) override;
   void removeTargetConnectivity(IItemConnectivity* connectivity) override;
   void setConnectivityMng(IItemConnectivityMng* connectivity_mng) override;
@@ -540,6 +538,9 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _updateItemViews();
   void _resizeItemVariables(Int32 new_size,bool force_resize);
   void _handleOldCheckpoint();
+
+  void _addSourceConnectivity(IIncrementalItemConnectivity* c);
+  void _addTargetConnectivity(IIncrementalItemConnectivity* c);
 };
 
 /*---------------------------------------------------------------------------*/

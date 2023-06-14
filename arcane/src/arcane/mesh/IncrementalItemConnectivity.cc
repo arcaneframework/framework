@@ -72,8 +72,8 @@ AbstractIncrementalItemConnectivity(IItemFamily* source_family,
   m_families.add(m_target_family);
 
   //TODO: il faudra supprimer ces références lors de la destruction.
-  source_family->addSourceConnectivity(this);
-  target_family->addTargetConnectivity(this);
+  source_family->_internalApi()->addSourceConnectivity(this);
+  target_family->_internalApi()->addTargetConnectivity(this);
 }
 
 /*---------------------------------------------------------------------------*/

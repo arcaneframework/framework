@@ -44,6 +44,11 @@ class ARCANE_CORE_EXPORT IItemFamilyInternal
 
   //! Instance de ItemSharedInfo pour les entités de la famille
   virtual ItemSharedInfo* commonItemSharedInfo() =0;
+
+ public:
+
+  virtual void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) =0;
+  virtual void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -678,9 +678,7 @@ class IItemFamily
    */
   //@{
   virtual void addSourceConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) =0;
   virtual void addTargetConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) =0;
   virtual void removeSourceConnectivity(IItemConnectivity* connectivity) =0;
   virtual void removeTargetConnectivity(IItemConnectivity* connectivity) =0;
   virtual void setConnectivityMng(IItemConnectivityMng* connectivity_mng) =0;
