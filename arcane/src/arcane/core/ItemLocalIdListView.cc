@@ -5,59 +5,64 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexedItemConnectivityAccessor.h                           (C) 2000-2023 */
+/* ItemLocalIdListView.cc                                      (C) 2000-2023 */
 /*                                                                           */
-/* Connectivité incrémentale des entités.                                    */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESH_INDEXEDITEMCONNECTIVITYACCESSOR_H
-#define ARCANE_MESH_INDEXEDITEMCONNECTIVITYACCESSOR_H
+/* Vue sur une liste de ItemLocalId.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/TraceAccessor.h"
-
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemVector.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IIncrementalItemConnectivity.h"
-
-#include "arcane/mesh/MeshGlobal.h"
+#include "arcane/core/ItemLocalIdListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::mesh
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
-: public IndexedItemConnectivityViewBase
+bool operator==(const ItemLocalIdListView& lhs, const ItemLocalIdListView& rhs)
 {
- public:
+  Int32 size1 = lhs.size();
+  Int32 size2 = rhs.size();
+  if (size1 != size2)
+    return false;
+  for (Int32 i = 0; i < size1; ++i)
+    if (lhs[i] != rhs[i])
+      return false;
+  return true;
+}
 
-  IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family);
-  IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity);
-  IndexedItemConnectivityAccessor() = default;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  ItemVectorView operator()(ItemLocalId lid) const
-  {
-    ItemLocalIdViewT<Item> x = this->items(lid);
-    return { m_item_shared_info , x };
+std::ostream&
+operator<<(std::ostream& o, const ItemLocalIdListView& lhs)
+{
+  const Int32 n = lhs.m_size;
+  if (n == 0) {
+    o << "{}";
   }
-
- private:
-
-  ItemSharedInfo* m_item_shared_info;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::mesh
+  else {
+    o << "{ " << lhs[0];
+    for (Int32 i = 1; i < n; ++i)
+      o << ", " << lhs[i];
+    o << " }";
+  }
+  return o;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+// Pour tester l'instantiation de ces classes
+template class ItemLocalIdViewT<Node>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

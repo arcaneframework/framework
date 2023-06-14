@@ -259,7 +259,7 @@ _notifyConnectivityListChanged()
 {
   m_connectivity_list = m_p->m_connectivity_list_array.view();
   if (m_item_connectivity_list)
-    m_item_connectivity_list->setConnectivityList(m_item_connectivity_index,m_connectivity_list);
+    m_item_connectivity_list->_setConnectivityList(m_item_connectivity_index,m_connectivity_list);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -270,7 +270,7 @@ _notifyConnectivityIndexChanged()
 {
   m_connectivity_index = m_p->m_connectivity_index_array.view();
   if (m_item_connectivity_list)
-    m_item_connectivity_list->setConnectivityIndex(m_item_connectivity_index,m_connectivity_index);
+    m_item_connectivity_list->_setConnectivityIndex(m_item_connectivity_index,m_connectivity_index);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -281,7 +281,7 @@ _notifyConnectivityNbItemChanged()
 {
   m_connectivity_nb_item = m_p->m_connectivity_nb_item_array.view();
   if (m_item_connectivity_list)
-    m_item_connectivity_list->setConnectivityNbItem(m_item_connectivity_index,m_connectivity_nb_item);
+    m_item_connectivity_list->_setConnectivityNbItem(m_item_connectivity_index,m_connectivity_nb_item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -406,7 +406,7 @@ _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const
 ItemConnectivityContainerView IncrementalItemConnectivityBase::
 connectivityContainerView() const
 {
-  return { ItemLocalId::fromSpanInt32(m_connectivity_list), m_connectivity_index, m_connectivity_nb_item };
+  return { m_connectivity_list, m_connectivity_index, m_connectivity_nb_item };
 }
 
 /*---------------------------------------------------------------------------*/
