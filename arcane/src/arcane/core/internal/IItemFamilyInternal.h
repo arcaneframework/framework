@@ -81,6 +81,11 @@ class ARCANE_CORE_EXPORT IItemFamilyInternal
    */
   virtual void removeVariable(IVariable* var) = 0;
 
+  /*!
+   * \brief Redimensionne les variables de cette famille.
+   */
+  virtual void resizeVariables(bool force_resize) = 0;
+
   virtual void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
   virtual void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
 };

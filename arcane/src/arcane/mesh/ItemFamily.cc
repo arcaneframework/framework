@@ -161,6 +161,10 @@ class ItemFamily::InternalApi
   {
     return m_family->_removeVariable(var);
   }
+  void resizeVariables(bool force_resize) override
+  {
+    return m_family->_resizeVariables(force_resize);
+  }
 
  private:
 
@@ -594,7 +598,7 @@ _endUpdate(bool need_check_remove)
   if (_partialEndUpdate())
     return;
 
-  resizeVariables(false);
+  _resizeVariables(false);
   info(4) << "ItemFamily:endUpdate(): " << fullName()
           << " hashmapsize=" << itemsMap().buckets().size()
           << " nb_group=" << m_item_groups.count();
@@ -674,7 +678,7 @@ _updateVariable(IVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-resizeVariables(bool force_resize)
+_resizeVariables(bool force_resize)
 {
   debug(Trace::High) << "ItemFamily::resizeVariables: name=" << fullName()
                      << " varsize=" << maxLocalId()

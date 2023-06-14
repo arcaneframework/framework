@@ -2259,7 +2259,7 @@ _internalEndUpdateResizeVariables()
 {
   // Réalloue les variables du maillage car leur groupe a évolué
   for( IItemFamily* family : m_item_families )
-    family->resizeVariables(true);
+    family->_internalApi()->resizeVariables(true);
 }
 
 /*---------------------------------------------------------------------------*/

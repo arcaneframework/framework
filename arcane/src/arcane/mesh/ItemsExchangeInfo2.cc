@@ -17,23 +17,24 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemEnumerator.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemEnumerator.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IParticleFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/MeshToMeshTransposer.h"
-#include "arcane/IItemFamilyPolicyMng.h"
-#include "arcane/IItemFamilySerializer.h"
-#include "arcane/ItemFamilySerializeArgs.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParticleFamily.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/MeshToMeshTransposer.h"
+#include "arcane/core/IItemFamilyPolicyMng.h"
+#include "arcane/core/IItemFamilySerializer.h"
+#include "arcane/core/ItemFamilySerializeArgs.h"
+#include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
 
 #include "arcane/mesh/ItemGroupsSerializer2.h"
 #include "arcane/mesh/TiedInterfaceExchanger.h"
@@ -460,7 +461,7 @@ readVariables()
   // de l'appel à DynamicMesh::_internalEndUpdateInit() dans _exchangeItemsNew()
   // pour toutes les familles.
   for( IItemFamily* family : m_families_to_exchange )
-    family->resizeVariables(true);
+    family->_internalApi()->resizeVariables(true);
 
   _applyDeserializePhase(IItemFamilySerializeStep::PH_Variable);
 }

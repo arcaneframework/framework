@@ -201,7 +201,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   ItemGroup createGroup(const String& name,const ItemGroup& parent,bool do_override=false) override;
   ItemGroupCollection groups() const override;
   void notifyItemsUniqueIdChanged() override;
-  void resizeVariables(bool force_resize) override;
   void destroyGroups() override;
 
  public:
@@ -538,6 +537,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _addTargetConnectivity(IIncrementalItemConnectivity* c);
   void _addVariable(IVariable* var);
   void _removeVariable(IVariable* var);
+  void _resizeVariables(bool force_resize);
 };
 
 /*---------------------------------------------------------------------------*/

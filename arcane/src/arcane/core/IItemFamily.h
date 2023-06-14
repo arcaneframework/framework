@@ -317,12 +317,6 @@ class IItemFamily
   //! Notifie que les numéros uniques des entités ont été modifiées
   virtual void notifyItemsUniqueIdChanged() =0;
 
-  /*!
-   * \internal
-   * \brief Redimensionne les variables.
-   */
-  virtual void resizeVariables(bool force_resize=false) =0;
-
  public:
 
   //! Informations sur la connectivité locale au sous-domaine pour à cette famille
