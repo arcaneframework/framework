@@ -144,11 +144,11 @@ preAllocate(Integer nb_item)
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-endAllocate()
+_endAllocate()
 {
   if (m_nodes_coords)
     m_nodes_coords->setUsed(true);
-  ItemFamily::endAllocate();
+  ItemFamily::_endAllocate();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -55,6 +55,7 @@
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/datatype/DataAllocationInfo.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
 
 #include <map>
 #include <set>
@@ -670,7 +671,7 @@ _removeMeshReference()
 {
   IItemFamily* family = m_p->m_item_family;
   if (family)
-    family->removeVariable(this);
+    family->_internalApi()->removeVariable(this);
   
   if (isPartial())
     m_p->m_item_group.internal()->detachObserver(this);
@@ -1003,7 +1004,7 @@ _checkSetItemFamily()
   debug(Trace::High) << "Variable::setItemFamily() name=" << name()
                      << " family=" << family
                      << " familyname='" << family_name << "'";
-  family->addVariable(this);
+  family->_internalApi()->addVariable(this);
 }
 
 /*---------------------------------------------------------------------------*/

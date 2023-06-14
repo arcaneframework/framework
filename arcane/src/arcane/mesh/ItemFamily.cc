@@ -137,6 +137,34 @@ class ItemFamily::InternalApi
   {
     return m_family->commonItemSharedInfo();
   }
+  void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) override
+  {
+    m_family->_addSourceConnectivity(connectivity);
+  }
+  void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) override
+  {
+    m_family->_addTargetConnectivity(connectivity);
+  }
+  void endAllocate() override
+  {
+    return m_family->_endAllocate();
+  }
+  void notifyEndUpdateFromMesh() override
+  {
+    return m_family->_notifyEndUpdateFromMesh();
+  }
+  void addVariable(IVariable* var) override
+  {
+    return m_family->_addVariable(var);
+  }
+  void removeVariable(IVariable* var) override
+  {
+    return m_family->_removeVariable(var);
+  }
+  void resizeVariables(bool force_resize) override
+  {
+    return m_family->_resizeVariables(force_resize);
+  }
 
  private:
 
@@ -494,7 +522,7 @@ checkValidConnectivity()
  * collectives une fois les modifications de maillage terminées.
  */
 void ItemFamily::
-notifyEndUpdateFromMesh()
+_notifyEndUpdateFromMesh()
 {
   // Recalcule les infos de connectivités locale et globales à tous les sous-domaines
   _computeConnectivityInfo(m_local_connectivity_info);
@@ -519,7 +547,7 @@ endUpdate()
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-endAllocate()
+_endAllocate()
 {
   // La variable n'est pas "used" par défaut car la famille n'est pas encore prête.
   // Sur les sous-familles, il suffit donc de filtrer setUsed au moment du endAllocate
@@ -570,7 +598,7 @@ _endUpdate(bool need_check_remove)
   if (_partialEndUpdate())
     return;
 
-  resizeVariables(false);
+  _resizeVariables(false);
   info(4) << "ItemFamily:endUpdate(): " << fullName()
           << " hashmapsize=" << itemsMap().buckets().size()
           << " nb_group=" << m_item_groups.count();
@@ -650,7 +678,7 @@ _updateVariable(IVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-resizeVariables(bool force_resize)
+_resizeVariables(bool force_resize)
 {
   debug(Trace::High) << "ItemFamily::resizeVariables: name=" << fullName()
                      << " varsize=" << maxLocalId()
@@ -1916,7 +1944,7 @@ view()
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-addVariable(IVariable* var)
+_addVariable(IVariable* var)
 {
   //info() << "Add var=" << var->fullName() << " to family=" << name();
   if (var->itemFamily()!=this)
@@ -1928,7 +1956,7 @@ addVariable(IVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-removeVariable(IVariable* var)
+_removeVariable(IVariable* var)
 {
   //info() << "Remove var=" << var->fullName() << " to family=" << name();
   m_used_variables.erase(var);
@@ -2304,7 +2332,7 @@ setConnectivityMng(IItemConnectivityMng* connectivity_mng)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-addSourceConnectivity(IIncrementalItemConnectivity* c)
+_addSourceConnectivity(IIncrementalItemConnectivity* c)
 {
   m_source_incremental_item_connectivities.add(c->toReference());
 }
@@ -2313,7 +2341,7 @@ addSourceConnectivity(IIncrementalItemConnectivity* c)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-addTargetConnectivity(IIncrementalItemConnectivity* c)
+_addTargetConnectivity(IIncrementalItemConnectivity* c)
 {
   m_target_incremental_item_connectivities.add(c->toReference());
 }

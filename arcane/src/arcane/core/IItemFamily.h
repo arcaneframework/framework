@@ -160,17 +160,29 @@ class IItemFamily
    */
   virtual IItemFamily* parentFamily() const = 0;
 
-  //! Positionne l'IItemFamily parent
-  /*! A utiliser avant build() pour les sous-maillages construit dynamiquement, 
-   *   ie pas depuis un reprise */
-  virtual void setParentFamily(IItemFamily * parent) = 0;
+  /*!
+   * \internal
+   * \brief Positionne l'IItemFamily parent.
+   *
+   * A utiliser avant build() pour les sous-maillages construit dynamiquement
+   * (i.e. pas depuis un reprise).
+   *
+   * TODO: A mettre dans l'API interne
+   */
+  virtual void setParentFamily(IItemFamily* parent) = 0;
 
   //! Donne la profondeur d'imbrication du maillage courant
   virtual Integer parentFamilyDepth() const = 0;
 
-  //! Ajoute d'une famile en dépendance
-  /*! Opération en symétrie de setParentFamily */
-  virtual void addChildFamily(IItemFamily * family) = 0;
+  /*!
+   * \internal
+   * \brief Ajoute d'une famile en dépendance
+   *
+   * Opération en symétrie de setParentFamily
+   *
+   * TODO: A mettre dans l'API interne
+   */
+  virtual void addChildFamily(IItemFamily* family) = 0;
 
   //! Familles enfantes de cette famille
   virtual IItemFamilyCollection childFamilies() = 0;
@@ -226,21 +238,31 @@ class IItemFamily
    * \brief Supprime des entités.
    *
    * Utilise le graphe (Familles, Connectivités) ItemFamilyNetwork
+   *
+   * TODO: A mettre dans l'API interne
    */
   virtual void removeItems2(mesh::ItemDataList& item_data_list) =0;
 
   /*!
-   * \brief Supprime des entités et met a jour les connectivites. Ne supprime pas d'eventuels sous items orphelins.
+   * \internal
+   * \brief Supprime des entités et met a jour les connectivites.
    *
-   * Contexte d'utilisation avec un graphe des familles. Les sous items orphelins ont du eux aussi etre marque NeedRemove.
+   * Ne supprime pas d'eventuels sous items orphelins.
+   *
+   * Contexte d'utilisation avec un graphe des familles. Les sous items
+   * orphelins ont du eux aussi etre marque NeedRemove.
    * Il n'y a donc pas besoin de les gerer dans les familles parentes.
+   *
+   * TODO: A mettre dans l'API interne
    */
   virtual void removeNeedRemoveMarkedItems() =0;
 
   /*
    * \brief Entité de numéro unique \a unique_id.
    *
-   * Si aucune entité avec cet \a unique_id n'est trouvé, retourne null.
+   * Si aucune entité avec cet \a unique_id n'est trouvé, retourne \a nullptr.
+   *
+   * \pre hasUniqueIdMap()
    */
   virtual ItemInternal* findOneItem(Int64 unique_id) =0;
 
@@ -269,7 +291,7 @@ class IItemFamily
 
   /*!
    * \brief Met à jour un groupe.
-   
+   *
    * Met à jour le groupe \a group après une modification de la famille.
    * La mise à jour consiste à supprimer du groupe les entités de la famille
    * éventuellement détruites lors de la modification.
@@ -295,12 +317,6 @@ class IItemFamily
   //! Notifie que les numéros uniques des entités ont été modifiées
   virtual void notifyItemsUniqueIdChanged() =0;
 
-  /*!
-   * \internal
-   * \brief Redimensionne les variables
-   */
-  virtual void resizeVariables(bool force_resize=false) =0;
-
  public:
 
   //! Informations sur la connectivité locale au sous-domaine pour à cette famille
@@ -314,6 +330,9 @@ class IItemFamily
   /*!
    * \brief Indique si la famille possède une table de conversion
    * uniqueId vers localId.
+   *
+   * La table de conversion permet d'utiliser les méthodes
+   * itemsUniqueIdToLocalId() ou findOneItem().
    *
    * Cette méthode ne peut être appelée que lorsqu'il n'y a aucune
    * entité de la famille.
@@ -329,37 +348,39 @@ class IItemFamily
  public:
 
   /*!
-    \brief Converti un tableau de numéros uniques en numéros locaux.
-
-    Cette opération prend en entrée le tableau \a unique_ids contenant les
-    numéros uniques des entités du type \a item_kind et retourne dans
-    \a local_ids le numéro local à ce sous-domaine correspondant.
-
-    La complexité de cette opération dépend de l'implémentation.
-    L'implémentation par défaut utilise une table de hachage. La complexité
-    moyenne est donc constante.
-
-    Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
-    pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
-  */
+   * \brief Converti un tableau de numéros uniques en numéros locaux.
+   *
+   *  Cette opération prend en entrée le tableau \a unique_ids contenant les
+   * numéros uniques des entités du type \a item_kind et retourne dans
+   * \a local_ids le numéro local à ce sous-domaine correspondant.
+   *
+   * La complexité de cette opération dépend de l'implémentation.
+   * L'implémentation par défaut utilise une table de hachage. La complexité
+   * moyenne est donc constante.
+   *
+   * Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
+   * pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
+   *
+   * \pre hasUniqueIdMap()
+   */
   virtual void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                                       Int64ConstArrayView unique_ids,
                                       bool do_fatal=true) const =0;
 
   /*!
-    \brief Converti un tableau de numéros uniques en numéros locaux.
-
-    Cette opération prend en entrée le tableau \a unique_ids contenant les
-    numéros uniques des entités du type \a item_kind et retourne dans
-    \a local_ids le numéro local à ce sous-domaine correspondant.
-
-    La complexité de cette opération dépend de l'implémentation.
-    L'implémentation par défaut utilise une table de hachage. La complexité
-    moyenne est donc constante.
-
-    Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
-    pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
-  */
+   * \brief Converti un tableau de numéros uniques en numéros locaux.
+   *
+   * Cette opération prend en entrée le tableau \a unique_ids contenant les
+   * numéros uniques des entités du type \a item_kind et retourne dans
+   * \a local_ids le numéro local à ce sous-domaine correspondant.
+   *
+   * La complexité de cette opération dépend de l'implémentation.
+   * L'implémentation par défaut utilise une table de hachage. La complexité
+   * moyenne est donc constante.
+   *
+   * Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
+   * pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
+   */
   virtual void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                                       ConstArrayView<ItemUniqueId> unique_ids,
                                       bool do_fatal=true) const =0;
@@ -386,30 +407,6 @@ class IItemFamily
    * \sa setItemSortFunction()
    */
   virtual IItemInternalSortFunction* itemSortFunction() const =0;
-
- public:
-
-  /*!
-   * \internal
-   * \brief Indique une fin d'allocation.
-   *
-   * Cette méthode ne doit normalement être appelée que par le maillage (IMesh)
-   * au moment de l'allocate.
-   *
-   * Cette méthode est collective.
-   */
-  virtual void endAllocate() =0;
-
-  /*!
-   * \internal
-   * \brief Indique une fin de modification par le maillage.
-   *
-   * Cette méthode ne doit normalement être appelée que par le maillage (IMesh)
-   * à la fin d'un endUpdate().
-   *
-   * Cette méthode est collective.
-   */
-  virtual void notifyEndUpdateFromMesh() =0;
 
  public:
 
@@ -472,7 +469,7 @@ class IItemFamily
   /*!
    * \brief Créé un groupe d'entités de nom \a name
    *
-   * Le groupe ne doit pas déjà exister.
+   * Le groupe ne doit pas déjà exister sinon une exception est levée.
    *
    * \param name nom du groupe
    * \return le groupe créé
@@ -546,26 +543,6 @@ class IItemFamily
 
   //! Compacte les entités.
   virtual void compactItems(bool do_sort) =0;
-
- public:
-
-  /*!
-   * \internal
-   * \brief Ajoute une variable à cette famille.
-   *
-   * Cette méthode est appelée par la variable elle même et ne doit pas
-   * être apelée dans d'autres conditions.
-   */
-  virtual void addVariable(IVariable* var) =0;
-  
-  /*!
-   * \internal
-   * \brief Supprime une variable à cette famille.
-   *
-   * Cette méthode est appelée par la variable elle même et ne doit pas
-   * être apelée dans d'autres conditions.
-   */
-  virtual void removeVariable(IVariable* var) =0;
 
  public:
 
@@ -678,9 +655,7 @@ class IItemFamily
    */
   //@{
   virtual void addSourceConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) =0;
   virtual void addTargetConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) =0;
   virtual void removeSourceConnectivity(IItemConnectivity* connectivity) =0;
   virtual void removeTargetConnectivity(IItemConnectivity* connectivity) =0;
   virtual void setConnectivityMng(IItemConnectivityMng* connectivity_mng) =0;

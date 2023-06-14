@@ -201,7 +201,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   ItemGroup createGroup(const String& name,const ItemGroup& parent,bool do_override=false) override;
   ItemGroupCollection groups() const override;
   void notifyItemsUniqueIdChanged() override;
-  void resizeVariables(bool force_resize) override;
   void destroyGroups() override;
 
  public:
@@ -252,21 +251,11 @@ class ARCANE_MESH_EXPORT ItemFamily
   IParticleFamily* toParticleFamily() override { return nullptr; }
   void setItemSortFunction(IItemInternalSortFunction* sort_function) override;
   IItemInternalSortFunction* itemSortFunction() const override;
-  void endAllocate() override;
 
  public:
-  
-  void addVariable(IVariable* var) override;
-  void removeVariable(IVariable* var) override;
-
- public:
-  
-  void notifyEndUpdateFromMesh() override;
 
   void addSourceConnectivity(IItemConnectivity* connectivity) override;
-  void addSourceConnectivity(IIncrementalItemConnectivity* c) override;
   void addTargetConnectivity(IItemConnectivity* connectivity) override;
-  void addTargetConnectivity(IIncrementalItemConnectivity* c) override;
   void removeSourceConnectivity(IItemConnectivity* connectivity) override;
   void removeTargetConnectivity(IItemConnectivity* connectivity) override;
   void setConnectivityMng(IItemConnectivityMng* connectivity_mng) override;
@@ -344,6 +333,9 @@ class ARCANE_MESH_EXPORT ItemFamily
   }
 
   void _detachCells2(Int32ConstArrayView local_ids);
+
+  virtual void _endAllocate();
+  virtual void _notifyEndUpdateFromMesh();
 
  protected:
 
@@ -540,6 +532,12 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _updateItemViews();
   void _resizeItemVariables(Int32 new_size,bool force_resize);
   void _handleOldCheckpoint();
+
+  void _addSourceConnectivity(IIncrementalItemConnectivity* c);
+  void _addTargetConnectivity(IIncrementalItemConnectivity* c);
+  void _addVariable(IVariable* var);
+  void _removeVariable(IVariable* var);
+  void _resizeVariables(bool force_resize);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -51,7 +51,7 @@ class ARCANE_MESH_EXPORT NodeFamily
 
   void build() override;
   void computeSynchronizeInfos() override;
-  void endAllocate() override;
+  void _endAllocate() override;
 
  public:
 
