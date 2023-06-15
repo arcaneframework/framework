@@ -314,7 +314,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   // TODO: a supprimer
   operator ItemInternalVectorView() const
   {
-    return ItemInternalVectorView(m_shared_info, m_index_view._localIds(), m_local_id_offset);
+    return ItemInternalVectorView(m_shared_info, m_index_view._localIds(), _localIdOffset());
   }
 
   //! Accède au \a i-ème élément du vecteur
@@ -343,15 +343,15 @@ class ARCANE_CORE_EXPORT ItemVectorView
   //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
   ItemVectorView subView(Integer abegin, Integer asize) const
   {
-    return ItemVectorView(m_shared_info, m_index_view.subView(abegin, asize)._localIds(), m_local_id_offset);
+    return ItemVectorView(m_shared_info, m_index_view.subView(abegin, asize)._localIds(), _localIdOffset());
   }
   const_iterator begin() const
   {
-    return const_iterator(m_shared_info, m_index_view._data(), m_local_id_offset);
+    return const_iterator(m_shared_info, m_index_view._data(), _localIdOffset());
   }
   const_iterator end() const
   {
-    return const_iterator(m_shared_info, (m_index_view._data() + this->size()), m_local_id_offset);
+    return const_iterator(m_shared_info, (m_index_view._data() + this->size()), _localIdOffset());
   }
   //! Vue sur le tableau des indices
   ItemIndexArrayView indexes() const { return m_index_view; }
@@ -364,11 +364,11 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   ItemIndexArrayView m_index_view;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
-  Int32 m_local_id_offset = 0;
 
  protected:
 
   const Int32* _localIdsData() const { return m_index_view._data(); }
+  Int32 _localIdOffset() const { return m_index_view._localIdOffset(); }
 
  private:
 
@@ -450,15 +450,15 @@ class ItemVectorViewT
   
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_shared_info,m_index_view.localIds());
+    return ItemEnumeratorT<ItemType>(m_shared_info,m_index_view.m_view);
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info, _localIdsData(), m_local_id_offset);
+    return const_iterator(m_shared_info, _localIdsData(), _localIdOffset());
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info, _localIdsData() + this->size(), m_local_id_offset);
+    return const_iterator(m_shared_info, _localIdsData() + this->size(), _localIdOffset());
   }
 };
 

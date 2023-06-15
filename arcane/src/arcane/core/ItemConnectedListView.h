@@ -405,7 +405,7 @@ class ItemConnectedListViewT
   // TODO: rendre obsolète
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_shared_info, m_index_view);
+    return ItemEnumeratorT<ItemType>(m_shared_info, m_index_view.m_view);
   }
 };
 

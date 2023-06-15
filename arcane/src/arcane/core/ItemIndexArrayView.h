@@ -41,6 +41,8 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
   friend ItemVectorView;
   friend ItemGroup;
   template <int Extent> friend class ItemConnectedListView;
+  template <typename ItemType, int Extent> friend class ItemConnectedListViewT;
+  template <typename ItemType> friend class ItemVectorViewT;
 
  public:
 

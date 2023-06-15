@@ -67,8 +67,7 @@ class ItemEnumeratorBase
   , m_group_impl(agroup)
   {}
   ItemEnumeratorBase(const ItemVectorView& rhs)
-  : m_view(rhs.localIds(), rhs.m_local_id_offset)
-    //  : ItemEnumeratorBase((const ItemInternalVectorView&)rhs, nullptr)
+  : m_view(rhs.localIds(), rhs._localIdOffset())
   {}
   template <int E> ItemEnumeratorBase(const ItemConnectedListView<E>& rhs)
   : m_view(rhs._localIds(), rhs._localIdOffset())
