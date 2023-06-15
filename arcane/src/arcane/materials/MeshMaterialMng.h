@@ -25,11 +25,10 @@
 #include "arcane/materials/MeshEnvironment.h"
 #include "arcane/materials/MeshBlock.h"
 #include "arcane/materials/MatItemEnumerator.h"
+#include "arcane/materials/AllCellToAllEnvCellConverter.h"
 
 #include <map>
 #include <memory>
-
-#include "arcane/materials/AllCellToAllEnvCellConverter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

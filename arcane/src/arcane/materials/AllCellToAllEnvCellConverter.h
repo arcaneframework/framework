@@ -16,6 +16,7 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/IMemoryAllocator.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/materials/MatItem.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
