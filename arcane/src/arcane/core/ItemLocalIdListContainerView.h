@@ -64,12 +64,12 @@ class ARCANE_CORE_EXPORT ItemLocalIdListContainerView
 
  public:
 
-  ARCCORE_HOST_DEVICE Int32 operator[](Int32 index) const
+  constexpr ARCCORE_HOST_DEVICE Int32 operator[](Int32 index) const
   {
     ARCANE_CHECK_AT(index, m_size);
     return m_local_ids[index] + m_local_id_offset;
   }
-  ARCCORE_HOST_DEVICE Int32 localId(Int32 index) const
+  constexpr ARCCORE_HOST_DEVICE Int32 localId(Int32 index) const
   {
     ARCANE_CHECK_AT(index, m_size);
     return m_local_ids[index] + m_local_id_offset;
