@@ -1,11 +1,7 @@
-name: Header/Encoding checker
+name: Header/Encoding checker (all src)
 
 on:
-  push:
-    branches: [ main, dev/cea ]
-  pull_request:
-    branches: [ main, dev/cea ]
-  # A executer lorsque l'on demande.
+  # A executer que lorsque l'on demande.
   workflow_dispatch:
 
 env:
@@ -27,7 +23,7 @@ jobs:
         shell: bash
         run: |
           cd ${{ env.ARCANE_SOURCE_DIR }}
-          export CC_H_FILES=$(git diff --name-only main -- '*.cc' '*.h')
+          export CC_H_FILES=$(find . -name '*.cc' -or -name '*.h')
           chmod u+x ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh
           ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh > ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
