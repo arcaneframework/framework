@@ -64,7 +64,7 @@ namespace Arcane
 
     public Int32 NodeLocalId(Int32 local_id,Int32 index)
     {
-      return m_list_node[ m_indexes_node[local_id] + index ];
+      return m_container_node.m_list[ m_container_node.m_indexes[local_id] + index ];
     }
     public ItemInternal* Node(Int32 local_id,Int32 index)
     {
@@ -72,17 +72,17 @@ namespace Arcane
     }
     public NodeList Nodes(Int32 local_id)
     {
-      int nb_node = m_nb_item_node[local_id];
-      return new NodeList(m_items->nodes.m_ptr,m_list_node._UnguardedBasePointer()+m_indexes_node[local_id],nb_node);
+      int nb_node = m_container_node.m_nb_item[local_id];
+      return new NodeList(m_items->nodes.m_ptr,m_container_node.m_list._UnguardedBasePointer()+m_container_node.m_indexes[local_id],nb_node);
     }
     public Int32 NbNode(Int32 local_id)
     {
-      return m_nb_item_node[local_id];
+      return m_container_node.m_nb_item[local_id];
     }
 
     public Int32 FaceLocalId(Int32 local_id,Int32 index)
     {
-      return m_list_face[ m_indexes_face[local_id] + index ];
+      return m_container_face.m_list[ m_container_face.m_indexes[local_id] + index ];
     }
     public ItemInternal* Face(Int32 local_id,Int32 index)
     {
@@ -90,17 +90,17 @@ namespace Arcane
     }
     public ItemList<Face> Faces(Int32 local_id)
     {
-      int nb_face = m_nb_item_face[local_id];
-      return new ItemList<Face>(m_items->faces.m_ptr,m_list_face._UnguardedBasePointer()+m_indexes_face[local_id],nb_face);
+      int nb_face = m_container_face.m_nb_item[local_id];
+      return new ItemList<Face>(m_items->faces.m_ptr,m_container_face.m_list._UnguardedBasePointer()+m_container_face.m_indexes[local_id],nb_face);
     }
     public Int32 NbFace(Int32 local_id)
     {
-      return m_nb_item_face[local_id];
+      return m_container_face.m_nb_item[local_id];
     }
 
     public Int32 CellLocalId(Int32 local_id,Int32 index)
     {
-      return m_list_cell[ m_indexes_cell[local_id] + index ];
+      return m_container_cell.m_list[ m_container_cell.m_indexes[local_id] + index ];
     }
     public ItemInternal* Cell(Int32 local_id,Int32 index)
     {
@@ -108,83 +108,49 @@ namespace Arcane
     }
     public ItemList<Cell> Cells(Int32 local_id)
     {
-      int nb_cell = m_nb_item_cell[local_id];
-      return new ItemList<Cell>(m_items->cells.m_ptr,m_list_cell._UnguardedBasePointer()+m_indexes_cell[local_id],nb_cell);
+      int nb_cell = m_container_node.m_nb_item[local_id];
+      return new ItemList<Cell>(m_items->cells.m_ptr,m_container_cell.m_list._UnguardedBasePointer()+m_container_cell.m_indexes[local_id],nb_cell);
     }
     public Int32 NbCell(Int32 local_id)
     {
-      return m_nb_item_cell[local_id];
+      return m_container_cell.m_nb_item[local_id];
     }
 
     // NOTE: Une fois qu'on sera passé à la version C# 10, on pourra utiliser
     // des tableaux de taille fixe
 
-    Int32ArrayView m_indexes_node;
-    Int32ArrayView m_indexes_edge;
-    Int32ArrayView m_indexes_face;
-    Int32ArrayView m_indexes_cell;
-    Int32ArrayView m_indexes_hparent;
-    Int32ArrayView m_indexes_hchild;
+    [StructLayout(LayoutKind.Sequential)]
+    struct Container
+    {
+      public Int32ArrayView m_indexes;
+      public Int32ArrayView m_nb_item;
+      public Int32ArrayView m_list;
+      public Int32ArrayView m_offset;
+    }
 
-    Int32ArrayView m_nb_item_node;
-    Int32ArrayView m_nb_item_edge;
-    Int32ArrayView m_nb_item_face;
-    Int32ArrayView m_nb_item_cell;
-    Int32ArrayView m_nb_item_hparent;
-    Int32ArrayView m_nb_item_hchild;
+    [StructLayout(LayoutKind.Sequential)]
+    struct KindInfo
+    {
+      public Int32 m_max_nb_item;
+      public Int32 m_nb_item_null_data0;
+      public Int32 m_nb_item_null_data1;
+    }
 
-    Int32ConstArrayView m_list_node;
-    Int32ConstArrayView m_list_edge;
-    Int32ConstArrayView m_list_face;
-    Int32ConstArrayView m_list_cell;
-    Int32ConstArrayView m_list_hparent;
-    Int32ConstArrayView m_list_hchild;
+    Container m_container_node;
+    Container m_container_edge;
+    Container m_container_face;
+    Container m_container_cell;
+    Container m_container_hparent;
+    Container m_container_hchild;
 
-    Int32ConstArrayView m_offset_node;
-    Int32ConstArrayView m_offset_edge;
-    Int32ConstArrayView m_offset_face;
-    Int32ConstArrayView m_offset_cell;
-    Int32ConstArrayView m_offset_hparent;
-    Int32ConstArrayView m_offset_hchild;
-
-    Int32 m_max_nb_item0;
-    Int32 m_max_nb_item1;
-    Int32 m_max_nb_item2;
-    Int32 m_max_nb_item3;
-    Int32 m_max_nb_item4;
-    Int32 m_max_nb_item5;
+    KindInfo m_kind_node;
+    KindInfo m_kind_edge;
+    KindInfo m_kind_face;
+    KindInfo m_kind_cell;
+    KindInfo m_kind_hparent;
+    KindInfo m_kind_hchild;
 
     MeshItemInternalList* m_items;
-
-    Int64 m_nb_access_all;
-    Int64 m_nb_access;
-
-    IntPtr m_indexes_array0;
-    IntPtr m_indexes_array1;
-    IntPtr m_indexes_array2;
-    IntPtr m_indexes_array3;
-    IntPtr m_indexes_array4;
-    IntPtr m_indexes_array5;
-
-    IntPtr m_nb_item_array0;
-    IntPtr m_nb_item_array1;
-    IntPtr m_nb_item_array2;
-    IntPtr m_nb_item_array3;
-    IntPtr m_nb_item_array4;
-    IntPtr m_nb_item_array5;
-
-    Int32 m_nb_item_null_data_0_0;
-    Int32 m_nb_item_null_data_0_1;
-    Int32 m_nb_item_null_data_1_0;
-    Int32 m_nb_item_null_data_1_1;
-    Int32 m_nb_item_null_data_2_0;
-    Int32 m_nb_item_null_data_2_1;
-    Int32 m_nb_item_null_data_3_0;
-    Int32 m_nb_item_null_data_3_1;
-    Int32 m_nb_item_null_data_4_0;
-    Int32 m_nb_item_null_data_4_1;
-    Int32 m_nb_item_null_data_5_0;
-    Int32 m_nb_item_null_data_5_1;
   }
 
   /*---------------------------------------------------------------------------*/

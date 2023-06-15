@@ -291,7 +291,7 @@ void IncrementalItemConnectivityBase::
 _setMaxNbConnectedItemsInConnectivityList()
 {
   if (m_item_connectivity_list)
-    m_item_connectivity_list->setMaxNbConnectedItem(m_item_connectivity_index,m_p->m_max_nb_item);
+    m_item_connectivity_list->_setMaxNbConnectedItem(m_item_connectivity_index,m_p->m_max_nb_item);
 }
 
 /*---------------------------------------------------------------------------*/
