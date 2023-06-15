@@ -88,6 +88,7 @@ class IndexedItemConnectivityViewBase2;
 class IndexedItemConnectivityAccessor;
 class ItemInternalConnectivityList;
 class ItemInternalVectorView;
+class ItemIndexArrayView;
 class ItemLocalIdListView;
 template<typename T> class ItemLocalIdViewT;
 

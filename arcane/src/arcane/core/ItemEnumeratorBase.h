@@ -71,7 +71,7 @@ class ItemEnumeratorBase
     //  : ItemEnumeratorBase((const ItemInternalVectorView&)rhs, nullptr)
   {}
   template <int E> ItemEnumeratorBase(const ItemConnectedListView<E>& rhs)
-  : m_view(rhs._localIds(), rhs.m_local_id_offset)
+  : m_view(rhs._localIds(), rhs._localIdOffset())
   {}
 
   ItemEnumeratorBase(const ItemEnumerator& rhs);
@@ -128,6 +128,11 @@ class ItemEnumeratorBase
   : m_view(view)
   , m_index(index)
   , m_group_impl(agroup)
+  {
+  }
+
+  explicit ItemEnumeratorBase(const impl::ItemLocalIdListContainerView& view)
+  : m_view(view)
   {
   }
 
@@ -199,6 +204,12 @@ class ItemEnumeratorBaseT
   : BaseClass(rhs)
   , m_item(NULL_ITEM_LOCAL_ID, rhs.m_shared_info)
   {}
+
+  ItemEnumeratorBaseT(ItemSharedInfo* si, const impl::ItemLocalIdListContainerView& view)
+  : BaseClass(view)
+  , m_item(NULL_ITEM_LOCAL_ID, si)
+  {
+  }
 
  protected:
 

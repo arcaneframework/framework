@@ -245,13 +245,12 @@ class ItemConnectedListView
  protected:
 
   ItemConnectedListView(const impl::ItemIndexedListView<DynExtent>& view)
-  : m_local_ids(view.constLocalIds())
+  : m_index_view(view.m_local_ids,view.m_local_id_offset,0)
   , m_shared_info(view.m_shared_info)
   {}
   ItemConnectedListView(ItemSharedInfo* shared_info, ConstArrayView<Int32> local_ids, Int32 local_id_offset)
-  : m_local_ids(local_ids)
+  : m_index_view(local_ids,local_id_offset,0)
   , m_shared_info(shared_info)
-  , m_local_id_offset(local_id_offset)
   {}
 
  public:
@@ -259,32 +258,32 @@ class ItemConnectedListView
   //! \a index-ème entité connectée
   Item operator[](Integer index) const
   {
-    return Item(m_local_id_offset + m_local_ids[index], m_shared_info);
+    return Item(m_index_view[index], m_shared_info);
   }
 
   //! Nombre d'éléments du vecteur
-  Int32 size() const { return m_local_ids.size(); }
+  Int32 size() const { return m_index_view.size(); }
 
   //! Itérateur sur la première entité connectée
   const_iterator begin() const
   {
-    return const_iterator(m_shared_info, m_local_ids._data(), m_local_id_offset);
+    return const_iterator(m_shared_info, m_index_view._data(), _localIdOffset());
   }
 
   //! Itérateur sur après la dernière entité connectée
   const_iterator end() const
   {
-    return const_iterator(m_shared_info, (m_local_ids._data() + this->size()), m_local_id_offset);
+    return const_iterator(m_shared_info, (m_index_view._data() + this->size()), _localIdOffset());
   }
 
   friend std::ostream& operator<<(std::ostream& o, const ItemConnectedListView<Extent>& a)
   {
-    o << a.m_local_ids.localIds();
+    o << a.m_index_view;
     return o;
   }
 
   ARCANE_DEPRECATED_REASON("Y2023: Use iterator to get values or use operator[]")
-  Int32ConstArrayView localIds() const { return m_local_ids; }
+  Int32ConstArrayView localIds() const { return m_index_view._localIds(); }
 
 #ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
  private:
@@ -296,7 +295,7 @@ class ItemConnectedListView
   // Temporaire pour rendre les sources compatibles
   operator ItemInternalVectorView() const
   {
-    return ItemInternalVectorView(m_shared_info, m_local_ids, m_local_id_offset);
+    return ItemInternalVectorView(m_shared_info, m_index_view._localIds(), _localIdOffset());
   }
 
   // TODO: rendre obsolète
@@ -307,24 +306,24 @@ class ItemConnectedListView
   //! Vue sur le tableau des indices
   ItemIndexArrayView indexes() const
   {
-    return m_local_ids;
+    return m_index_view;
   }
 
   //! Vue sur le tableau des indices
   Int32ConstArrayView _localIds() const
   {
-    return m_local_ids._localIds();
+    return m_index_view._localIds();
   }
 
  protected:
 
-  ItemIndexArrayView m_local_ids;
+  ItemIndexArrayView m_index_view;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
-  Int32 m_local_id_offset = 0;
 
  protected:
 
-  const Int32* _localIdsData() const { return m_local_ids._data(); }
+  const Int32* _localIdsData() const { return m_index_view._data(); }
+  Int32 _localIdOffset() const { return m_index_view._localIdOffset(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -350,8 +349,7 @@ class ItemConnectedListViewT
   template <typename T> friend class ItemConnectedEnumeratorBaseT;
 
   using BaseClass = ItemConnectedListView<Extent>;
-  using BaseClass::m_local_id_offset;
-  using BaseClass::m_local_ids;
+  using BaseClass::m_index_view;
   using BaseClass::m_shared_info;
 
  public:
@@ -381,7 +379,7 @@ class ItemConnectedListViewT
   //! \a index-ème entité connectée
   ItemType operator[](Integer index) const
   {
-    return ItemType(m_local_id_offset + m_local_ids[index], m_shared_info);
+    return ItemType(m_index_view[index], m_shared_info);
   }
 
  public:
@@ -389,12 +387,12 @@ class ItemConnectedListViewT
   //! Itérateur sur la première entité connectée
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info, this->_localIdsData(), m_local_id_offset);
+    return const_iterator(m_shared_info, this->_localIdsData(), this->_localIdOffset());
   }
   //! Itérateur sur après la dernière entité connectée
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info, (this->_localIdsData() + this->size()), m_local_id_offset);
+    return const_iterator(m_shared_info, (this->_localIdsData() + this->size()), this->_localIdOffset());
   }
 
 #ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
@@ -407,7 +405,7 @@ class ItemConnectedListViewT
   // TODO: rendre obsolète
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_shared_info, m_local_ids.localIds());
+    return ItemEnumeratorT<ItemType>(m_shared_info, m_index_view);
   }
 };
 

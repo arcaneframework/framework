@@ -124,8 +124,13 @@ class ItemEnumerator
 
  protected:
 
+  // TODO A supprimer
   ItemEnumerator(ItemSharedInfo* s, const Int32ConstArrayView& local_ids)
   : BaseClass(s, local_ids)
+  {}
+
+  ItemEnumerator(ItemSharedInfo* s, const impl::ItemLocalIdListContainerView& view)
+  : BaseClass(s, view)
   {}
 
  public:
@@ -275,8 +280,12 @@ class ItemEnumeratorT
 
  private:
 
+  // TODO: a supprimer
   ItemEnumeratorT(ItemSharedInfo* s,const Int32ConstArrayView& local_ids)
   : BaseClass(s,local_ids){}
+
+  ItemEnumeratorT(ItemSharedInfo* s,const impl::ItemLocalIdListContainerView& view)
+  : BaseClass(s,view){}
 
  public:
 
@@ -302,7 +311,7 @@ class ItemEnumeratorT
 inline ItemEnumerator ItemVectorView::
 enumerator() const
 {
-  return ItemEnumerator(m_shared_info,m_local_ids._localIds());
+  return ItemEnumerator(m_shared_info,m_index_view._localIds());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -312,7 +321,7 @@ template<int Extent>
 inline ItemEnumerator ItemConnectedListView<Extent>::
 enumerator() const
 {
-  return ItemEnumerator(m_shared_info,m_local_ids);
+  return ItemEnumerator(m_shared_info,m_index_view);
 }
 
 /*---------------------------------------------------------------------------*/

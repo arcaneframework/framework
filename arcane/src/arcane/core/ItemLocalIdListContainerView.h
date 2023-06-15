@@ -45,6 +45,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListContainerView
   friend ItemInternalVectorView;
   friend ItemEnumeratorBase;
   friend SimdItemEnumeratorBase;
+  friend ItemIndexArrayView;
 
  private:
 
@@ -74,6 +75,11 @@ class ARCANE_CORE_EXPORT ItemLocalIdListContainerView
     return m_local_ids[index] + m_local_id_offset;
   }
   constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_size; }
+
+  void fillLocalIds(Array<Int32>& ids) const;
+
+  friend ARCANE_CORE_EXPORT std::ostream&
+  operator<<(std::ostream& o, const ItemLocalIdListContainerView& lhs);
 
  private:
 

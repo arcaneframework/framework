@@ -203,7 +203,12 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
   {
     return !operator==(lhs, rhs);
   }
-  friend ARCANE_CORE_EXPORT std::ostream& operator<<(std::ostream& o, const ThatClass& lhs);
+  friend ARCANE_CORE_EXPORT std::ostream& operator<<(std::ostream& o, const ThatClass& lhs)
+  {
+    const BaseClass& v = lhs;
+    o << v;
+    return o;
+  }
 
  private:
 
