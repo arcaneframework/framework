@@ -15,8 +15,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemSharedInfo.h"
+
+#include "arcane/core/ItemSharedInfo.h"
+#include "arcane/core/ItemLocalIdListContainerView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,10 +64,10 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
     ARCANE_ASSERT(m_shared_info, ("null shared_info"));
   }
 
-  constexpr ItemIndexedListView(ItemSharedInfo* si, const Int32* local_ids, Int32 count, Int32 local_id_offset)
-  : m_local_ids(local_ids, count)
+  constexpr ItemIndexedListView(ItemSharedInfo* si, const impl::ItemLocalIdListContainerView& container_view)
+  : m_local_ids(container_view.m_local_ids, container_view.m_size)
   , m_shared_info(si)
-  , m_local_id_offset(local_id_offset)
+  , m_local_id_offset(container_view.m_local_id_offset)
   {
     ARCANE_ASSERT(m_shared_info, ("null shared info"));
   }

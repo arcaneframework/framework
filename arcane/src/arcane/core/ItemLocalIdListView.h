@@ -183,6 +183,9 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
   constexpr ARCCORE_HOST_DEVICE ItemLocalIdListView(const Int32* ids, Int32 s, Int32 local_id_offset)
   : BaseClass(ids,s,local_id_offset)
   {}
+  explicit constexpr ARCCORE_HOST_DEVICE ItemLocalIdListView(const BaseClass& view)
+  : BaseClass(view)
+  {}
 
  public:
 
@@ -191,6 +194,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
     return ItemLocalId(localId(index));
   }
   constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_size; }
+  impl::ItemLocalIdListContainerView containerView() const { return (*this); }
 
  public:
 
@@ -234,6 +238,9 @@ class ItemLocalIdViewT
 
   constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
   : ItemLocalIdListView(ids, s, local_id_offset)
+  {}
+  explicit constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const impl::ItemLocalIdListContainerView& view)
+  : ItemLocalIdListView(view)
   {}
 
  public:

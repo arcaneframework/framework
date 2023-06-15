@@ -86,6 +86,8 @@ using DoFLocalId = ItemLocalIdT<DoF>;
 class IndexedItemConnectivityViewBase;
 class IndexedItemConnectivityViewBase2;
 class IndexedItemConnectivityAccessor;
+class ItemInternalConnectivityList;
+class ItemInternalVectorView;
 class ItemLocalIdListView;
 template<typename T> class ItemLocalIdViewT;
 

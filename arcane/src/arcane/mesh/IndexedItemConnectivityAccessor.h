@@ -43,8 +43,7 @@ class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
 
   ItemVectorView operator()(ItemLocalId lid) const
   {
-    ItemLocalIdViewT<Item> x = this->items(lid);
-    return { m_item_shared_info , x };
+    return { m_item_shared_info, this->items(lid).containerView() };
   }
 
  private:
