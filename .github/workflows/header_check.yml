@@ -38,6 +38,12 @@ jobs:
           chmod u+x ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh
           ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh > ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
+      - name: Display logs
+        if: failure()
+        shell: bash
+        run: |
+          cat ${{ env.ARCANE_SOURCE_DIR }}/output.log
+
       - name: Upload log artifact
         uses: actions/upload-artifact@v3
         if: failure()
