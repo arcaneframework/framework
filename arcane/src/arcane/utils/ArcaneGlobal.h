@@ -872,7 +872,7 @@ arcaneRangeError [[noreturn]] (Int64 i,Int64 max_size);
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
  */
-static inline ARCCORE_HOST_DEVICE void
+static inline constexpr ARCCORE_HOST_DEVICE void
 arcaneCheckAt(Int64 i,Int64 max_size)
 {
 #ifndef ARCCORE_DEVICE_CODE
