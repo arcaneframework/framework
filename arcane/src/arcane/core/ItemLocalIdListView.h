@@ -132,7 +132,10 @@ class ItemLocalIdListViewConstIteratorT
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE LocalIdType operator*() const { return LocalIdType(m_local_id_offset + (*m_local_id_ptr)); }
+  constexpr ARCCORE_HOST_DEVICE LocalIdType operator*() const
+  {
+    return LocalIdType(m_local_id_offset + (*m_local_id_ptr));
+  }
 
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator++()
   {
@@ -189,7 +192,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
 
  public:
 
-  ARCCORE_HOST_DEVICE ItemLocalId operator[](Int32 index) const
+  constexpr ARCCORE_HOST_DEVICE ItemLocalId operator[](Int32 index) const
   {
     return ItemLocalId(localId(index));
   }
@@ -250,10 +253,7 @@ class ItemLocalIdViewT
 
  public:
 
-  ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const
-  {
-    return LocalIdType(localId(i));
-  }
+  constexpr ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const { return LocalIdType(localId(i)); }
 
   constexpr ARCCORE_HOST_DEVICE const_iterator begin() const
   {
