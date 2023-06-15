@@ -223,7 +223,8 @@ class ItemVectorViewConstIteratorT
  */
 class ARCANE_CORE_EXPORT ItemVectorView
 {
-  friend class ItemVector;
+  friend ItemVector;
+  friend ItemEnumeratorBase;
   friend mesh::IndexedItemConnectivityAccessor;
 
  public:
@@ -238,14 +239,14 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   ARCANE_DEPRECATED_REASON("Y2022: Use constructor with ItemInfoListView instead")
   ItemVectorView(const ItemInternalArrayView& aitems, const Int32ConstArrayView& local_ids)
-  : m_local_ids(local_ids)
+  : m_index_view(local_ids)
   {
     _init(aitems);
   }
 
   ARCANE_DEPRECATED_REASON("Y2022: Use constructor with ItemInfoListView instead")
   ItemVectorView(ItemInternalArrayView aitems, ItemIndexArrayView indexes)
-  : m_local_ids(indexes)
+  : m_index_view(indexes)
   {
     _init(aitems);
   }
@@ -255,49 +256,47 @@ class ARCANE_CORE_EXPORT ItemVectorView
   ItemVectorView() = default;
   // TODO Rendre obsolète (3.11+)
   ItemVectorView(const ItemInternalVectorView& view)
-  : m_local_ids(view.localIds())
+  : m_index_view(view.localIds(),view.m_local_id_offset,0)
   , m_shared_info(view.m_shared_info)
   {}
+  // TODO A supprimer
   ItemVectorView(ItemInfoListView item_info_list_view, ConstArrayView<Int32> local_ids)
-  : m_local_ids(local_ids)
+  : m_index_view(local_ids,0,0)
   , m_shared_info(item_info_list_view.m_item_shared_info)
   {}
   ItemVectorView(ItemInfoListView item_info_list_view, ItemIndexArrayView indexes)
-  : m_local_ids(indexes)
+  : m_index_view(indexes)
   , m_shared_info(item_info_list_view.m_item_shared_info)
   {}
   ItemVectorView(IItemFamily* family, ConstArrayView<Int32> local_ids);
   ItemVectorView(IItemFamily* family, ItemIndexArrayView indexes);
   ItemVectorView(const impl::ItemIndexedListView<DynExtent>& view)
-  : m_local_ids(view.constLocalIds())
+  : m_index_view(view.constLocalIds(),view.m_local_id_offset,0)
   , m_shared_info(view.m_shared_info)
   {}
 
   // Temporaire (01/2023) pour conversion avec nouveau type ItemConnectedListView
   ItemVectorView(const ItemConnectedListView<DynExtent>& v)
-  : m_local_ids(v.m_local_ids)
+  : m_index_view(v.m_index_view)
   , m_shared_info(v.m_shared_info)
-  , m_local_id_offset(v.m_local_id_offset)
   {}
 
  protected:
 
-  ItemVectorView(ItemSharedInfo* shared_info, const ItemLocalIdListView& local_ids)
-  : m_local_ids(local_ids._idsWithoutOffset())
+  ItemVectorView(ItemSharedInfo* shared_info, const impl::ItemLocalIdListContainerView& local_ids)
+  : m_index_view(local_ids)
   , m_shared_info(shared_info)
-  , m_local_id_offset(local_ids.m_local_id_offset)
   {}
 
   ItemVectorView(ItemSharedInfo* shared_info, ConstArrayView<Int32> local_ids, Int32 local_id_offset)
-  : m_local_ids(local_ids)
+  : m_index_view(local_ids,local_id_offset,0)
   , m_shared_info(shared_info)
-  , m_local_id_offset(local_id_offset)
   {}
 
   // Temporaire pour éviter un avertissement de compilation lorsqu'on utilise le
   // constructeur obsolète de ItemVectorViewT
   ItemVectorView(const ItemInternalArrayView& aitems, const Int32ConstArrayView& local_ids, bool)
-  : m_local_ids(local_ids)
+  : m_index_view(local_ids)
   {
     _init(aitems);
   }
@@ -305,7 +304,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   // Temporaire pour éviter un avertissement de compilation lorsqu'on utilise le
   // constructeur obsolète de ItemVectorViewT
   ItemVectorView(ItemInternalArrayView aitems, ItemIndexArrayView indexes, bool)
-  : m_local_ids(indexes)
+  : m_index_view(indexes)
   {
     _init(aitems);
   }
@@ -315,14 +314,14 @@ class ARCANE_CORE_EXPORT ItemVectorView
   // TODO: a supprimer
   operator ItemInternalVectorView() const
   {
-    return ItemInternalVectorView(m_shared_info, m_local_ids, m_local_id_offset);
+    return ItemInternalVectorView(m_shared_info, m_index_view._localIds(), _localIdOffset());
   }
 
   //! Accède au \a i-ème élément du vecteur
-  Item operator[](Integer index) const { return Item(m_local_id_offset + m_local_ids[index], m_shared_info); }
+  Item operator[](Integer index) const { return Item(m_index_view[index], m_shared_info); }
 
   //! Nombre d'éléments du vecteur
-  Int32 size() const { return m_local_ids.size(); }
+  Int32 size() const { return m_index_view.size(); }
 
   //! Tableau des entités
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this method")
@@ -336,7 +335,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
    * Il est préférable de passer par des itérateurs ou par la méthode
    * fillLocalIds() si on souhaite récupérer la liste des localId().
    */
-  Int32ConstArrayView localIds() const { return m_local_ids; }
+  Int32ConstArrayView localIds() const { return m_index_view._localIds(); }
 
   //! Ajoute à \a ids la liste des localIds() du vecteur.
   void fillLocalIds(Array<Int32>& ids) const;
@@ -344,18 +343,18 @@ class ARCANE_CORE_EXPORT ItemVectorView
   //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
   ItemVectorView subView(Integer abegin, Integer asize) const
   {
-    return ItemVectorView(m_shared_info, m_local_ids.subView(abegin, asize), m_local_id_offset);
+    return ItemVectorView(m_shared_info, m_index_view.subView(abegin, asize)._localIds(), _localIdOffset());
   }
   const_iterator begin() const
   {
-    return const_iterator(m_shared_info, m_local_ids._data(), m_local_id_offset);
+    return const_iterator(m_shared_info, m_index_view._data(), _localIdOffset());
   }
   const_iterator end() const
   {
-    return const_iterator(m_shared_info, (m_local_ids._data() + this->size()), m_local_id_offset);
+    return const_iterator(m_shared_info, (m_index_view._data() + this->size()), _localIdOffset());
   }
   //! Vue sur le tableau des indices
-  ItemIndexArrayView indexes() const { return m_local_ids; }
+  ItemIndexArrayView indexes() const { return m_index_view; }
 
  public:
 
@@ -363,13 +362,13 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
  protected:
 
-  ItemIndexArrayView m_local_ids;
+  ItemIndexArrayView m_index_view;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
-  Int32 m_local_id_offset = 0;
 
  protected:
 
-  const Int32* _localIdsData() const { return m_local_ids._data(); }
+  const Int32* _localIdsData() const { return m_index_view._data(); }
+  Int32 _localIdOffset() const { return m_index_view._localIdOffset(); }
 
  private:
 
@@ -444,22 +443,22 @@ class ItemVectorViewT
 
   ItemType operator[](Integer index) const
   {
-    return ItemType(m_local_ids[index],m_shared_info);
+    return ItemType(m_index_view[index],m_shared_info);
   }
 
  public:
   
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_shared_info,m_local_ids.localIds());
+    return ItemEnumeratorT<ItemType>(m_shared_info,m_index_view.m_view);
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info, _localIdsData(), m_local_id_offset);
+    return const_iterator(m_shared_info, _localIdsData(), _localIdOffset());
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info, _localIdsData() + this->size(), m_local_id_offset);
+    return const_iterator(m_shared_info, _localIdsData() + this->size(), _localIdOffset());
   }
 };
 

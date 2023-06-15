@@ -249,7 +249,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   {
     // TODO: Supprimer à terme cette méthode car elle ne retourne pas l'offset
     // associé à l'entité
-    return m_container[item_kind].itemLocalIds(lid);
+    return m_container[item_kind].itemLocalIdsData(lid);
   }
 
   /*!
@@ -325,25 +325,18 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  // TODO: Rendre obsolète les méthodes suivantes
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
-  ItemInternal* nodeV2(Int32 lid,Int32 aindex) const
-  { return m_items->nodes[ _nodeLocalIdV2(lid,aindex) ]; }
+  ItemInternal* nodeV2(Int32 lid,Int32 aindex) const { return m_items->nodes[ _nodeLocalIdV2(lid,aindex) ]; }
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
-  ItemInternal* edgeV2(Int32 lid,Int32 aindex) const
-  { return m_items->edges[ _edgeLocalIdV2(lid,aindex) ]; }
+  ItemInternal* edgeV2(Int32 lid,Int32 aindex) const { return m_items->edges[ _edgeLocalIdV2(lid,aindex) ]; }
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
-  ItemInternal* faceV2(Int32 lid,Int32 aindex) const
-  { return m_items->faces[ _faceLocalIdV2(lid,aindex) ]; }
+  ItemInternal* faceV2(Int32 lid,Int32 aindex) const { return m_items->faces[ _faceLocalIdV2(lid,aindex) ]; }
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
-  ItemInternal* cellV2(Int32 lid,Int32 aindex) const
-  { return m_items->cells[ _cellLocalIdV2(lid,aindex) ]; }
+  ItemInternal* cellV2(Int32 lid,Int32 aindex) const { return m_items->cells[ _cellLocalIdV2(lid,aindex) ]; }
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
-  ItemInternal* hParentV2(Int32 lid,Int32 aindex) const
-  { return m_items->cells[ _hParentLocalIdV2(lid,aindex) ]; }
+  ItemInternal* hParentV2(Int32 lid,Int32 aindex) const { return m_items->cells[ _hParentLocalIdV2(lid,aindex) ]; }
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane and should not be used.")
-  ItemInternal* hChildV2(Int32 lid,Int32 aindex) const
-  { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
+  ItemInternal* hChildV2(Int32 lid,Int32 aindex) const { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
 
  public:
 
@@ -360,54 +353,42 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   ItemBaseBuildInfo hChildBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_hChildLocalIdV2(lid,aindex),A_INTERNAL_SI(cell)); }
 
-  auto nodeList(Int32 lid) const
-  { return impl::ItemIndexedListView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid),_nodeOffset(lid)); }
-  auto edgeList(Int32 lid) const
-  { return impl::ItemIndexedListView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid),_edgeOffset(lid)); }
-  auto faceList(Int32 lid) const
-  { return impl::ItemIndexedListView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid),_faceOffset(lid)); }
-  auto cellList(Int32 lid) const
-  { return impl::ItemIndexedListView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid),_cellOffset(lid)); }
+  auto nodeList(Int32 lid) const { return impl::ItemIndexedListView { A_INTERNAL_SI(node),_itemLocalIdListView(NODE_IDX,lid) }; }
+  auto edgeList(Int32 lid) const { return impl::ItemIndexedListView { A_INTERNAL_SI(edge),_itemLocalIdListView(EDGE_IDX,lid) }; }
+  auto faceList(Int32 lid) const { return impl::ItemIndexedListView { A_INTERNAL_SI(face),_itemLocalIdListView(FACE_IDX,lid) }; }
+  auto cellList(Int32 lid) const { return impl::ItemIndexedListView { A_INTERNAL_SI(cell),_itemLocalIdListView(CELL_IDX,lid) }; }
 
  private:
 
-  ItemInternalVectorView nodesV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid),_nodeOffset(lid)); }
-  ItemInternalVectorView edgesV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid),_edgeOffset(lid)); }
-  ItemInternalVectorView facesV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid),_faceOffset(lid)); }
-  ItemInternalVectorView cellsV2(Int32 lid) const
-  { return ItemInternalVectorView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid),_cellOffset(lid)); }
+  ItemInternalVectorView nodesV2(Int32 lid) const { return { A_INTERNAL_SI(node),_itemLocalIdListView(NODE_IDX,lid) }; }
+  ItemInternalVectorView edgesV2(Int32 lid) const { return { A_INTERNAL_SI(edge),_itemLocalIdListView(EDGE_IDX,lid) }; }
+  ItemInternalVectorView facesV2(Int32 lid) const { return { A_INTERNAL_SI(face),_itemLocalIdListView(FACE_IDX,lid) }; }
+  ItemInternalVectorView cellsV2(Int32 lid) const { return { A_INTERNAL_SI(cell),_itemLocalIdListView(CELL_IDX,lid) }; }
 
-  // NOTE: Ces 4 méthodes n'utilisent pas les offsets et ne doivent donc pas être utilisées
-  // à terme
-  Int32ConstArrayView nodeLocalIdsV2(Int32 lid) const
-  { return Int32ConstArrayView(_nbNodeV2(lid),_nodeLocalIdsV2(lid)); }
-  Int32ConstArrayView edgeLocalIdsV2(Int32 lid) const
-  { return Int32ConstArrayView(_nbEdgeV2(lid), _edgeLocalIdsV2(lid)); }
-  Int32ConstArrayView faceLocalIdsV2(Int32 lid) const
-  { return Int32ConstArrayView(_nbFaceV2(lid), _faceLocalIdsV2(lid)); }
-  Int32ConstArrayView cellLocalIdsV2(Int32 lid) const
-  { return Int32ConstArrayView(_nbCellV2(lid),_cellLocalIdsV2(lid)); }
-
-  NodeLocalIdView nodeLocalIdsView(Int32 lid) const
-  { return NodeLocalIdView( _nodeLocalIdsV2(lid), _nbNodeV2(lid), _nodeOffset(lid) ); }
-  EdgeLocalIdView edgeLocalIdsView(Int32 lid) const
-  { return EdgeLocalIdView( _edgeLocalIdsV2(lid), _nbEdgeV2(lid), _edgeOffset(lid) ); }
-  FaceLocalIdView faceLocalIdsView(Int32 lid) const
-  { return FaceLocalIdView( _faceLocalIdsV2(lid), _nbFaceV2(lid), _faceOffset(lid) ); }
-  CellLocalIdView cellLocalIdsView(Int32 lid) const
-  { return CellLocalIdView( _cellLocalIdsV2(lid), _nbCellV2(lid), _cellOffset(lid) ); }
+  NodeLocalIdView nodeLocalIdsView(Int32 lid) const { return NodeLocalIdView(_itemLocalIdListView(NODE_IDX,lid)); }
+  EdgeLocalIdView edgeLocalIdsView(Int32 lid) const { return EdgeLocalIdView(_itemLocalIdListView(EDGE_IDX,lid)); }
+  FaceLocalIdView faceLocalIdsView(Int32 lid) const { return FaceLocalIdView(_itemLocalIdListView(FACE_IDX,lid)); }
+  CellLocalIdView cellLocalIdsView(Int32 lid) const { return CellLocalIdView(_itemLocalIdListView(CELL_IDX,lid)); }
 
  private:
 
+  // NOTE: Ces 4 méthodes n'utilisent pas les offsets et ne doivent
+  // donc pas être utilisées à terme
+  Int32ConstArrayView nodeLocalIdsV2(Int32 lid) const { return { _nbNodeV2(lid), _nodeLocalIdsV2(lid) }; }
+  Int32ConstArrayView edgeLocalIdsV2(Int32 lid) const { return { _nbEdgeV2(lid), _edgeLocalIdsV2(lid) }; }
+  Int32ConstArrayView faceLocalIdsV2(Int32 lid) const { return { _nbFaceV2(lid), _faceLocalIdsV2(lid) }; }
+  Int32ConstArrayView cellLocalIdsV2(Int32 lid) const { return { _nbCellV2(lid), _cellLocalIdsV2(lid) }; }
+
+  // NOTE: Ces 6 méthodes n'utilisent pas les offsets et ne doivent
+  // donc pas être utilisées à terme
   const Int32* _nodeLocalIdsV2(Int32 lid) const { return itemLocalIds(NODE_IDX,lid); }
   const Int32* _edgeLocalIdsV2(Int32 lid) const { return itemLocalIds(EDGE_IDX,lid); }
   const Int32* _faceLocalIdsV2(Int32 lid) const { return itemLocalIds(FACE_IDX,lid); }
   const Int32* _cellLocalIdsV2(Int32 lid) const { return itemLocalIds(CELL_IDX,lid); }
   const Int32* _hParentLocalIdsV2(Int32 lid) const { return itemLocalIds(HPARENT_IDX,lid); }
   const Int32* _hChildLocalIdsV2(Int32 lid) const { return itemLocalIds(HCHILD_IDX,lid); }
+
+ private:
 
   Int32 _nodeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(NODE_IDX,lid,index); }
   Int32 _edgeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(EDGE_IDX,lid,index); }
@@ -444,9 +425,22 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
+  impl::ItemLocalIdListContainerView _itemLocalIdListView(Int32 item_kind,Int32 lid) const
+  {
+    return m_container[item_kind].itemLocalIdListView(lid);
+  }
+
+ private:
+
+  // NOTE: à terme, il faudra fusionné cette classe avec ItemConnectivityContainerView
+  //! Conteneur des vues pour les informations de connectivité d'une famille
   struct Container
   {
-    const Int32* itemLocalIds(Int32 lid) const
+    impl::ItemLocalIdListContainerView itemLocalIdListView(Int32 lid) const
+    {
+      return impl::ItemLocalIdListContainerView(itemLocalIdsData(lid),m_nb_item[lid],itemOffset(lid));
+    }
+    const Int32* itemLocalIdsData(Int32 lid) const
     {
       return &(m_list[ m_indexes[lid] ]);
     }

@@ -149,10 +149,20 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
     ARCANE_ASSERT(_isValid(), ("Bad ItemInternalVectorView"));
   }
 
+#if 0
   ItemInternalVectorView(ItemSharedInfo* si, const Int32* local_ids, Integer count, Int32 local_id_offset)
   : m_local_ids(count, local_ids)
   , m_shared_info(si)
   , m_local_id_offset(local_id_offset)
+  {
+    ARCANE_ASSERT(_isValid(), ("Bad ItemInternalVectorView"));
+  }
+#endif
+
+  ItemInternalVectorView(ItemSharedInfo* si, const impl::ItemLocalIdListContainerView& local_ids)
+  : m_local_ids(local_ids._idsWithoutOffset())
+  , m_shared_info(si)
+  , m_local_id_offset(local_ids.m_local_id_offset)
   {
     ARCANE_ASSERT(_isValid(), ("Bad ItemInternalVectorView"));
   }
@@ -168,6 +178,7 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   //! Nombre d'éléments du vecteur
   Integer size() const { return m_local_ids.size(); }
 
+  // TODO: à supprimer
   //! Tableau des numéros locaux des entités
   Int32ConstArrayView localIds() const { return m_local_ids; }
 
@@ -218,9 +229,6 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
-
-#undef ARCANE_LOCALID_ADD_OFFSET
-#undef ARCANE_ARGS_AND_OFFSET
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

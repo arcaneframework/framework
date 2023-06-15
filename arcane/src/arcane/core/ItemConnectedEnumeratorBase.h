@@ -52,7 +52,7 @@ class ItemConnectedEnumeratorBase
   template <int E> explicit ItemConnectedEnumeratorBase(const ItemConnectedListView<E>& rhs)
   : m_local_ids(rhs._localIds().data())
   , m_count(rhs._localIds().size())
-  , m_local_id_offset(rhs.m_local_id_offset)
+  , m_local_id_offset(rhs._localIdOffset())
   {}
   ItemConnectedEnumeratorBase(const Int32* local_ids, Int32 index, Int32 n)
   : m_local_ids(local_ids)

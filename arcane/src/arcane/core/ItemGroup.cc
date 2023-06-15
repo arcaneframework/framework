@@ -558,7 +558,8 @@ view() const
   Int32 flags = 0;
   if (m_impl->isContigousLocalIds())
     flags |= ItemIndexArrayView::F_Contigous;
-  return ItemVectorView(m_impl->itemFamily(),ItemIndexArrayView(m_impl->itemsLocalId(),flags));
+  // TODO: gérer l'offset
+  return ItemVectorView(m_impl->itemFamily(),ItemIndexArrayView(m_impl->itemsLocalId(),0,flags));
 }
 
 /*---------------------------------------------------------------------------*/

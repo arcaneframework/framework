@@ -15,8 +15,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemSharedInfo.h"
+
+#include "arcane/core/ItemSharedInfo.h"
+#include "arcane/core/ItemLocalIdListContainerView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +33,9 @@ namespace Arcane::impl
  *
  * Celle classe n'est utile que pour construire des listes d'entités utilisées
  * en interne de %Arcane. La version utilisateur de cette classe est
- * ItemConnectivityView.
+ * ItemConnectivityView. La principale différence entre les deux classes est
+ * que celle-ci maintient juste les listes mais ne permet pas par exemple
+ * de retourner une entité typée.
  *
  * \sa ItemConnectedListView
  */
@@ -55,6 +58,7 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
 
  private:
 
+  // TODO: A supprimer
   constexpr ItemIndexedListView(ItemSharedInfo* si, SmallSpan<const Int32> local_ids, Int32 local_id_offset)
   : m_local_ids(local_ids)
   , m_shared_info(si)
@@ -63,10 +67,10 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
     ARCANE_ASSERT(m_shared_info, ("null shared_info"));
   }
 
-  constexpr ItemIndexedListView(ItemSharedInfo* si, const Int32* local_ids, Int32 count, Int32 local_id_offset)
-  : m_local_ids(local_ids, count)
+  constexpr ItemIndexedListView(ItemSharedInfo* si, const impl::ItemLocalIdListContainerView& container_view)
+  : m_local_ids(container_view.m_local_ids, container_view.m_size)
   , m_shared_info(si)
-  , m_local_id_offset(local_id_offset)
+  , m_local_id_offset(container_view.m_local_id_offset)
   {
     ARCANE_ASSERT(m_shared_info, ("null shared info"));
   }

@@ -26,7 +26,7 @@ namespace Arcane
 
 ItemVectorView::
 ItemVectorView(IItemFamily* family, ConstArrayView<Int32> local_ids)
-: m_local_ids(local_ids)
+: m_index_view(local_ids)
 {
   _init2(family);
 }
@@ -36,7 +36,7 @@ ItemVectorView(IItemFamily* family, ConstArrayView<Int32> local_ids)
 
 ItemVectorView::
 ItemVectorView(IItemFamily* family, ItemIndexArrayView indexes)
-: m_local_ids(indexes)
+: m_index_view(indexes)
 {
  _init2(family);
 }
@@ -61,7 +61,7 @@ _init2(IItemFamily* family)
 void ItemVectorView::
 fillLocalIds(Array<Int32>& ids) const
 {
-  ids.addRange(m_local_ids);
+  m_index_view.fillLocalIds(ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ fillLocalIds(Array<Int32>& ids) const
 void ItemIndexArrayView::
 fillLocalIds(Array<Int32>& ids) const
 {
-  ids.addRange(m_local_ids);
+  m_view.fillLocalIds(ids);
 }
 
 /*---------------------------------------------------------------------------*/

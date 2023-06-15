@@ -124,8 +124,13 @@ class ItemEnumerator
 
  protected:
 
+  // TODO A supprimer
   ItemEnumerator(ItemSharedInfo* s, const Int32ConstArrayView& local_ids)
   : BaseClass(s, local_ids)
+  {}
+
+  ItemEnumerator(ItemSharedInfo* s, const impl::ItemLocalIdListContainerView& view)
+  : BaseClass(s, view)
   {}
 
  public:
@@ -137,9 +142,9 @@ class ItemEnumerator
 
  private:
 
-  ItemEnumerator(const Int32* local_ids, Int32 index, Int32 n,
+  ItemEnumerator(const impl::ItemLocalIdListContainerView& view, Int32 index,
                  const ItemGroupImpl* agroup, Item item_base)
-  : BaseClass(local_ids, index, n, agroup, item_base)
+  : BaseClass(view, index, agroup, item_base)
   {}
 };
 
@@ -152,9 +157,8 @@ class ItemEnumerator
 //! Constructeur seulement utilisé par fromItemEnumerator()
 inline ItemEnumeratorBase::
 ItemEnumeratorBase(const ItemEnumerator& rhs, bool)
-: m_local_ids(rhs.unguardedLocalIds())
+: m_view(rhs.m_view)
 , m_index(rhs.index())
-, m_count(rhs.count())
 , m_group_impl(rhs.group())
 {
 }
@@ -175,9 +179,8 @@ ItemEnumeratorBaseT(const ItemEnumerator& rhs,bool v)
 
 inline ItemEnumeratorBase::
 ItemEnumeratorBase(const ItemEnumerator& rhs)
-: m_local_ids(rhs.unguardedLocalIds())
+: m_view(rhs.m_view)
 , m_index(rhs.index())
-, m_count(rhs.count())
 , m_group_impl(rhs.group())
 {
 }
@@ -207,7 +210,7 @@ ItemEnumeratorBaseT(const ItemInternalEnumerator& rhs)
 template<typename ItemType> inline ItemEnumerator ItemEnumeratorBaseT<ItemType>::
 toItemEnumerator() const
 {
-  return ItemEnumerator(m_local_ids,m_index,m_count,m_group_impl,m_item);
+  return ItemEnumerator(m_view,m_index,m_group_impl,m_item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -277,8 +280,12 @@ class ItemEnumeratorT
 
  private:
 
+  // TODO: a supprimer
   ItemEnumeratorT(ItemSharedInfo* s,const Int32ConstArrayView& local_ids)
   : BaseClass(s,local_ids){}
+
+  ItemEnumeratorT(ItemSharedInfo* s,const impl::ItemLocalIdListContainerView& view)
+  : BaseClass(s,view){}
 
  public:
 
@@ -304,7 +311,7 @@ class ItemEnumeratorT
 inline ItemEnumerator ItemVectorView::
 enumerator() const
 {
-  return ItemEnumerator(m_shared_info,m_local_ids);
+  return ItemEnumerator(m_shared_info,m_index_view._localIds());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -314,7 +321,7 @@ template<int Extent>
 inline ItemEnumerator ItemConnectedListView<Extent>::
 enumerator() const
 {
-  return ItemEnumerator(m_shared_info,m_local_ids);
+  return ItemEnumerator(m_shared_info,m_index_view);
 }
 
 /*---------------------------------------------------------------------------*/
