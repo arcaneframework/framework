@@ -281,12 +281,8 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   {
     m_container[item_kind].m_nb_item = v;
   }
-
- public:
-
-  // TODO: Rendre privé
   //! Positionne le nombre maximum d'entités connectées.
-  void setMaxNbConnectedItem(Int32 item_kind,Int32 v)
+  void _setMaxNbConnectedItem(Int32 item_kind,Int32 v)
   {
     m_kind_info[item_kind].m_max_nb_item = v;
   }

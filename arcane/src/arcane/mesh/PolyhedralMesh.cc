@@ -390,18 +390,18 @@ namespace mesh
                                 auto& connectivity_values = source_family.getConcreteProperty<Neo::Mesh::ConnectivityPropertyType>(connectivity_name.localstr());
                                 auto nb_item_data = connectivity_values.m_offsets.data();
                                 auto nb_item_size = connectivity_values.m_offsets.size();
-                                item_internal_connectivity_list->setConnectivityNbItem(arcane_target_item_family->itemKind(),
+                                item_internal_connectivity_list->_setConnectivityNbItem(arcane_target_item_family->itemKind(),
                                                                                        Int32ArrayView{ Integer(nb_item_size), nb_item_data });
                                 auto max_nb_connected_items = *std::max_element(connectivity_values.m_offsets.begin(), connectivity_values.m_offsets.end());
-                                item_internal_connectivity_list->setMaxNbConnectedItem(arcane_target_item_family->itemKind(), max_nb_connected_items);
+                                item_internal_connectivity_list->_setMaxNbConnectedItem(arcane_target_item_family->itemKind(), max_nb_connected_items);
                                 auto connectivity_values_data = connectivity_values.m_data.data();
                                 auto connectivity_values_size = connectivity_values.m_data.size();
-                                item_internal_connectivity_list->setConnectivityList(arcane_target_item_family->itemKind(),
-                                                                                     Int32ArrayView{ Integer(connectivity_values_size), connectivity_values_data });
+                                item_internal_connectivity_list->_setConnectivityList(arcane_target_item_family->itemKind(),
+                                                                                      Int32ArrayView{ Integer(connectivity_values_size), connectivity_values_data });
                                 auto connectivity_index_data = connectivity_values.m_indexes.data();
                                 auto connectivity_index_size = connectivity_values.m_indexes.size();
-                                item_internal_connectivity_list->setConnectivityIndex(arcane_target_item_family->itemKind(),
-                                                                                      Int32ArrayView{ Integer(connectivity_index_size), connectivity_index_data });
+                                item_internal_connectivity_list->_setConnectivityIndex(arcane_target_item_family->itemKind(),
+                                                                                       Int32ArrayView{ Integer(connectivity_index_size), connectivity_index_data });
                               });
       // If FaceToCellConnectivity Add face flags II_Boundary, II_SubdomainBoundary, II_HasFrontCell, II_HasBackCell
       if (arcane_source_item_family->itemKind() == IK_Face && arcane_target_item_family->itemKind() == IK_Cell) {
