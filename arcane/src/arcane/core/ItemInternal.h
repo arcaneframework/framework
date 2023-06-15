@@ -140,6 +140,9 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   friend mesh::IncrementalItemConnectivityBase;
   friend mesh::PolyhedralFamily;
 
+  // Pour accès à m_items
+  friend mesh::ItemFamily;
+
  private:
 
   /*!
@@ -484,20 +487,18 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     Int32 m_nb_item_null_data[2];
   };
 
+ private:
+
   Container m_container[MAX_ITEM_KIND];
   KindInfo m_kind_info[MAX_ITEM_KIND];
-
- public:
 
   MeshItemInternalList* m_items;
 
  private:
 
 #ifdef ARCANE_CONNECTIVITYLIST_USE_OWN_SHAREDINFO
- impl::MeshItemSharedInfoList m_shared_infos;
+  impl::MeshItemSharedInfoList m_shared_infos;
 #endif
-
- private:
 };
 
 /*---------------------------------------------------------------------------*/
