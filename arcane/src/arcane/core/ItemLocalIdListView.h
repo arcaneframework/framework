@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemLocalIdListView.h                                       (C) 2000-2023 */
 /*                                                                           */
-/* Index local sur une entité du maillage.                                   */
+/* Vue sur une liste de ItemLocalId.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMLOCALIDLISTVIEW_H
 #define ARCANE_CORE_ITEMLOCALIDLISTVIEW_H
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ItemLocalId.h"
+#include "arcane/core/ItemLocalIdListContainerView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -165,28 +166,29 @@ class ItemLocalIdListViewConstIteratorT
  * \brief Vue sur une liste de ItemLocalId.
  */
 class ARCANE_CORE_EXPORT ItemLocalIdListView
+: private impl::ItemLocalIdListContainerView
 {
   template <typename ItemType> friend class ItemLocalIdViewT;
   friend class ItemVectorView;
+  using impl::ItemLocalIdListContainerView::m_size;
+  using impl::ItemLocalIdListContainerView::localId;
 
  public:
 
   using ThatClass = ItemLocalIdListView;
+  using BaseClass = impl::ItemLocalIdListContainerView;
 
  private:
 
   constexpr ARCCORE_HOST_DEVICE ItemLocalIdListView(const Int32* ids, Int32 s, Int32 local_id_offset)
-  : m_local_ids(ids)
-  , m_local_id_offset(local_id_offset)
-  , m_size(s)
+  : BaseClass(ids,s,local_id_offset)
   {}
 
  public:
 
   ARCCORE_HOST_DEVICE ItemLocalId operator[](Int32 index) const
   {
-    ARCANE_CHECK_AT(index, m_size);
-    return ItemLocalId(m_local_ids[index] + m_local_id_offset);
+    return ItemLocalId(localId(index));
   }
   constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_size; }
 
@@ -201,13 +203,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
 
  private:
 
-  ConstArrayView<Int32> _idsWithoutOffset() const { return { m_size, m_local_ids }; }
-
- private:
-
-  const Int32* m_local_ids = nullptr;
-  Int32 m_local_id_offset = 0;
-  Int32 m_size = 0;
+  ConstArrayView<Int32> _idsWithoutOffset() const { return BaseClass::_idsWithoutOffset(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -244,8 +240,7 @@ class ItemLocalIdViewT
 
   ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const
   {
-    ARCANE_CHECK_AT(i, m_size);
-    return LocalIdType(m_local_ids[i] + m_local_id_offset);
+    return LocalIdType(localId(i));
   }
 
   constexpr ARCCORE_HOST_DEVICE const_iterator begin() const

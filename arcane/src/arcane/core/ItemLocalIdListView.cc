@@ -40,7 +40,7 @@ bool operator==(const ItemLocalIdListView& lhs, const ItemLocalIdListView& rhs)
 std::ostream&
 operator<<(std::ostream& o, const ItemLocalIdListView& lhs)
 {
-  const Int32 n = lhs.m_size;
+  const Int32 n = lhs.size();
   if (n == 0) {
     o << "{}";
   }

@@ -64,6 +64,7 @@ namespace impl
 class ItemBase;
 class MutableItemBase;
 template<int Extent = DynExtent> class ItemIndexedListView;
+class ItemLocalIdListContainerView;
 }
 
 
@@ -85,6 +86,8 @@ using DoFLocalId = ItemLocalIdT<DoF>;
 class IndexedItemConnectivityViewBase;
 class IndexedItemConnectivityViewBase2;
 class IndexedItemConnectivityAccessor;
+class ItemLocalIdListView;
+template<typename T> class ItemLocalIdViewT;
 
 class ItemGroup;
 class ItemGroupImpl;
