@@ -346,19 +346,24 @@ beginWrite(const VariableCollection& vars)
   // au nombre de mailles plus 1.
   UniqueArray<Int64> cells_connectivity(total_nb_connected_node);
   UniqueArray<Int64> cells_offset(nb_cell + 1);
-  UniqueArray<unsigned char> cells_type(nb_cell);
   UniqueArray<unsigned char> cells_ghost_type(nb_cell);
+  UniqueArray<unsigned char> cells_type(nb_cell);
+  UniqueArray<Int64> cells_uid(nb_cell);
   cells_offset[0] = 0;
   {
     Int32 connected_node_index = 0;
     ENUMERATE_CELL (icell, all_cells) {
       Int32 index = icell.index();
       Cell cell = *icell;
+
+      cells_uid[index] = cell.uniqueId();
+
       Byte ghost_type = 0;
       bool is_ghost = !cell.isOwn();
       if (is_ghost)
         ghost_type = VtkUtils::CellGhostTypes::DUPLICATECELL;
       cells_ghost_type[index] = ghost_type;
+
       unsigned char vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
       cells_type[index] = vtk_type;
       for (NodeLocalId node : cell.nodeIds()) {
@@ -390,24 +395,47 @@ beginWrite(const VariableCollection& vars)
                                      asConstSpan(&number_of_connectivity_ids));
   }
 
-  // Sauve les coordonnées des noeuds
+  // Sauve les uniqueIds, les types et les coordonnées des noeuds.
   {
+    UniqueArray<Int64> nodes_uid(nb_node);
+    UniqueArray<unsigned char> nodes_ghost_type(nb_node);
     VariableNodeReal3& nodes_coordinates(m_mesh->nodesCoordinates());
     UniqueArray2<Real> points;
     points.resize(nb_node, 3);
     ENUMERATE_ (Node, inode, all_nodes) {
       Int32 index = inode.index();
+      Node node = *inode;
+
+      nodes_uid[index] = node.uniqueId();
+
+      Byte ghost_type = 0;
+      bool is_ghost = !node.isOwn();
+      if (is_ghost)
+        ghost_type = VtkUtils::PointGhostTypes::DUPLICATEPOINT;
+      nodes_ghost_type[index] = ghost_type;
+
       Real3 pos = nodes_coordinates[inode];
       points[index][0] = pos.x;
       points[index][1] = pos.y;
       points[index][2] = pos.z;
     }
 
+    // Sauve l'uniqueId de chaque noeud dans le dataset "GlobalNodeId".
+    _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalNodeId" }, m_cell_offset_info }, nodes_uid);
+
+    // Sauve les informations sur le type de noeud (réel ou fantôme).
+    _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, nodes_ghost_type);
+
+    // Sauve les coordonnées des noeuds.
     _writeDataSet2DCollective<Real>({ { m_top_group, "Points" }, m_point_offset_info }, points);
   }
 
   // Sauve les informations sur le type de maille (réel ou fantôme)
   _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, m_cell_offset_info }, cells_ghost_type);
+
+  // Sauve l'uniqueId de chaque maille dans le dataset "GlobalCellId".
+  // L'utilisation du dataset "vtkOriginalCellIds" ne fonctionne pas dans Paraview.
+  _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalCellId" }, m_cell_offset_info }, cells_uid);
 
   if (m_is_writer) {
 
