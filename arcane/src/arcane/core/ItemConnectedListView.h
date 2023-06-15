@@ -313,7 +313,7 @@ class ItemConnectedListView
   //! Vue sur le tableau des indices
   Int32ConstArrayView _localIds() const
   {
-    return m_local_ids;
+    return m_local_ids._localIds();
   }
 
  protected:

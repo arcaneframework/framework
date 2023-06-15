@@ -169,10 +169,12 @@ class ItemEnumeratorBaseT
   : BaseClass()
   , m_item(NULL_ITEM_LOCAL_ID, ItemSharedInfo::nullInstance())
   {}
+  // TODO: gérer offset
   ItemEnumeratorBaseT(ItemSharedInfo* shared_info, const Int32ConstArrayView& local_ids)
   : BaseClass(local_ids)
   , m_item(NULL_ITEM_LOCAL_ID, shared_info)
   {}
+  // TODO: gérer offset
   ItemEnumeratorBaseT(const ItemInfoListView& items, const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup)
   : BaseClass(local_ids, agroup)
   , m_item(NULL_ITEM_LOCAL_ID, items.m_item_shared_info)

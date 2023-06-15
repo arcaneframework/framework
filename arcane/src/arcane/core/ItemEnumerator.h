@@ -302,7 +302,7 @@ class ItemEnumeratorT
 inline ItemEnumerator ItemVectorView::
 enumerator() const
 {
-  return ItemEnumerator(m_shared_info,m_local_ids);
+  return ItemEnumerator(m_shared_info,m_local_ids._localIds());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -316,7 +316,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   // TODO: a supprimer
   operator ItemInternalVectorView() const
   {
-    return ItemInternalVectorView(m_shared_info, m_local_ids, m_local_id_offset);
+    return ItemInternalVectorView(m_shared_info, m_local_ids._localIds(), m_local_id_offset);
   }
 
   //! Accède au \a i-ème élément du vecteur
@@ -337,7 +337,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
    * Il est préférable de passer par des itérateurs ou par la méthode
    * fillLocalIds() si on souhaite récupérer la liste des localId().
    */
-  Int32ConstArrayView localIds() const { return m_local_ids; }
+  Int32ConstArrayView localIds() const { return m_local_ids._localIds(); }
 
   //! Ajoute à \a ids la liste des localIds() du vecteur.
   void fillLocalIds(Array<Int32>& ids) const;
@@ -345,7 +345,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
   ItemVectorView subView(Integer abegin, Integer asize) const
   {
-    return ItemVectorView(m_shared_info, m_local_ids.subView(abegin, asize), m_local_id_offset);
+    return ItemVectorView(m_shared_info, m_local_ids.subView(abegin, asize)._localIds(), m_local_id_offset);
   }
   const_iterator begin() const
   {

@@ -95,7 +95,7 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
   //! Tableau des numéros locaux des entités
   Int32ConstArrayView localIds() const { return m_local_ids; }
 
-  // TODO Rendre obsolète (3.11+)
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Do not use it")
   operator Int32ConstArrayView() const
   {
     return m_local_ids;
@@ -126,6 +126,7 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
   {
     return m_local_ids.data();
   }
+  Int32ConstArrayView _localIds() const { return m_local_ids; }
 };
 
 /*---------------------------------------------------------------------------*/
