@@ -209,6 +209,7 @@ class ItemConnectedEnumeratorT;
 class EnumeratorTraceInfo;
 class SimdItemEnumeratorBase;
 
+class ItemEnumeratorBase;
 template<typename ItemType>
 class ItemEnumeratorBaseT;
 

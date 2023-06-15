@@ -43,13 +43,22 @@ class ARCANE_CORE_EXPORT ItemLocalIdListContainerView
   friend ItemLocalIdListView;
   friend ItemInternalConnectivityList;
   friend ItemInternalVectorView;
+  friend ItemEnumeratorBase;
+  friend SimdItemEnumeratorBase;
 
  private:
 
+  ItemLocalIdListContainerView() = default;
   constexpr ARCCORE_HOST_DEVICE ItemLocalIdListContainerView(const Int32* ids, Int32 s, Int32 local_id_offset)
   : m_local_ids(ids)
   , m_local_id_offset(local_id_offset)
   , m_size(s)
+  {}
+
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdListContainerView(SmallSpan<const Int32> ids, Int32 local_id_offset)
+  : m_local_ids(ids.data())
+  , m_local_id_offset(local_id_offset)
+  , m_size(ids.size())
   {}
 
  public:

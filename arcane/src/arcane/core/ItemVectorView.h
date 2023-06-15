@@ -223,7 +223,8 @@ class ItemVectorViewConstIteratorT
  */
 class ARCANE_CORE_EXPORT ItemVectorView
 {
-  friend class ItemVector;
+  friend ItemVector;
+  friend ItemEnumeratorBase;
   friend mesh::IndexedItemConnectivityAccessor;
 
  public:

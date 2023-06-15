@@ -178,6 +178,7 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   //! Nombre d'éléments du vecteur
   Integer size() const { return m_local_ids.size(); }
 
+  // TODO: à supprimer
   //! Tableau des numéros locaux des entités
   Int32ConstArrayView localIds() const { return m_local_ids; }
 

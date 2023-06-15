@@ -33,7 +33,9 @@ namespace Arcane::impl
  *
  * Celle classe n'est utile que pour construire des listes d'entités utilisées
  * en interne de %Arcane. La version utilisateur de cette classe est
- * ItemConnectivityView.
+ * ItemConnectivityView. La principale différence entre les deux classes est
+ * que celle-ci maintient juste les listes mais ne permet pas par exemple
+ * de retourner une entité typée.
  *
  * \sa ItemConnectedListView
  */
@@ -56,6 +58,7 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
 
  private:
 
+  // TODO: A supprimer
   constexpr ItemIndexedListView(ItemSharedInfo* si, SmallSpan<const Int32> local_ids, Int32 local_id_offset)
   : m_local_ids(local_ids)
   , m_shared_info(si)

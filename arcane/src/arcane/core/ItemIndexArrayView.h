@@ -64,11 +64,6 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
 
  public:
 
-  operator Int32ConstArrayView() const
-  {
-    return m_local_ids;
-  }
-
   //! Accède au \a i-ème élément du vecteur
   inline Int32 operator[](Integer index) const
   {
@@ -76,11 +71,7 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
   }
 
   //! Nombre d'éléments du vecteur
-  inline Integer size() const { return m_local_ids.size(); }
-
-  // TODO Rendre obsolète (3.11+)
-  //! Tableau des numéros locaux des entités
-  inline Int32ConstArrayView localIds() const { return m_local_ids; }
+  Int32 size() const { return m_local_ids.size(); }
 
   //! Ajoute à \a ids la liste des localIds() du vecteur.
   void fillLocalIds(Array<Int32>& ids) const;
@@ -97,6 +88,18 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
 
   //! Vrai si les localIds() sont contigüs
   bool isContigous() const { return m_flags & F_Contigous; }
+
+ public:
+
+  // TODO Rendre obsolète (3.11+)
+  //! Tableau des numéros locaux des entités
+  Int32ConstArrayView localIds() const { return m_local_ids; }
+
+  // TODO Rendre obsolète (3.11+)
+  operator Int32ConstArrayView() const
+  {
+    return m_local_ids;
+  }
 
  private:
 
