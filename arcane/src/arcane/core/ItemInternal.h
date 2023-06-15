@@ -247,7 +247,9 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
    */
   const Int32* itemLocalIds(Int32 item_kind,Int32 lid) const
   {
-    return &(m_container[item_kind].m_list[ m_container[item_kind].m_indexes[lid] ]);
+    // TODO: Supprimer à terme cette méthode car elle ne retourne pas l'offset
+    // associé à l'entité
+    return m_container[item_kind].itemLocalIds(lid);
   }
 
   /*!
@@ -256,7 +258,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
    */
   Int32 itemLocalId(Int32 item_kind,Int32 lid,Integer index) const
   {
-    return m_container[item_kind].m_list[ m_container[item_kind].m_indexes[lid] + index] + _itemOffset(item_kind,lid);
+    return m_container[item_kind].itemLocalId(lid,index);
   }
   //! Nombre d'appel à itemLocalId()
   Int64 nbAccess() const { return 0; }
@@ -299,8 +301,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
   Int32ConstArrayView connectivityList(Int32 item_kind) const
   {
-    auto* ids = m_container[item_kind].m_list.data();
-    return { m_container[item_kind].m_list.size(), ids };
+    return m_container[item_kind].m_list;
   }
   //! Tableau contenant le nombre d'entités connectées pour les entités de genre \a item_kind
   ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
@@ -319,7 +320,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
   ItemConnectivityContainerView containerView(Int32 item_kind) const
   {
-    return ItemConnectivityContainerView( m_container[item_kind].m_list, m_container[item_kind].m_indexes, m_container[item_kind].m_nb_item );
+    return m_container[item_kind].containerView();
   }
 
  private:
@@ -401,46 +402,28 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  const Int32* _nodeLocalIdsV2(Int32 lid) const
-  { return itemLocalIds(ItemInternalConnectivityList::NODE_IDX,lid); }
-  const Int32* _edgeLocalIdsV2(Int32 lid) const
-  { return itemLocalIds(ItemInternalConnectivityList::EDGE_IDX,lid); }
-  const Int32* _faceLocalIdsV2(Int32 lid) const
-  { return itemLocalIds(ItemInternalConnectivityList::FACE_IDX,lid); }
-  const Int32* _cellLocalIdsV2(Int32 lid) const
-  { return itemLocalIds(ItemInternalConnectivityList::CELL_IDX,lid); }
-  const Int32* _hParentLocalIdsV2(Int32 lid) const
-  { return itemLocalIds(ItemInternalConnectivityList::HPARENT_IDX,lid); }
-  const Int32* _hChildLocalIdsV2(Int32 lid) const
-  { return itemLocalIds(ItemInternalConnectivityList::HCHILD_IDX,lid); }
+  const Int32* _nodeLocalIdsV2(Int32 lid) const { return itemLocalIds(NODE_IDX,lid); }
+  const Int32* _edgeLocalIdsV2(Int32 lid) const { return itemLocalIds(EDGE_IDX,lid); }
+  const Int32* _faceLocalIdsV2(Int32 lid) const { return itemLocalIds(FACE_IDX,lid); }
+  const Int32* _cellLocalIdsV2(Int32 lid) const { return itemLocalIds(CELL_IDX,lid); }
+  const Int32* _hParentLocalIdsV2(Int32 lid) const { return itemLocalIds(HPARENT_IDX,lid); }
+  const Int32* _hChildLocalIdsV2(Int32 lid) const { return itemLocalIds(HCHILD_IDX,lid); }
 
-  Int32 _nodeLocalIdV2(Int32 lid,Int32 index) const
-  { return itemLocalId(ItemInternalConnectivityList::NODE_IDX,lid,index); }
-  Int32 _edgeLocalIdV2(Int32 lid,Int32 index) const
-  { return itemLocalId(ItemInternalConnectivityList::EDGE_IDX,lid,index); }
-  Int32 _faceLocalIdV2(Int32 lid,Int32 index) const
-  { return itemLocalId(ItemInternalConnectivityList::FACE_IDX,lid,index); }
-  Int32 _cellLocalIdV2(Int32 lid,Int32 index) const
-  { return itemLocalId(ItemInternalConnectivityList::CELL_IDX,lid,index); }
-  Int32 _hParentLocalIdV2(Int32 lid,Int32 index) const
-  { return itemLocalId(ItemInternalConnectivityList::HPARENT_IDX,lid,index); }
-  Int32 _hChildLocalIdV2(Int32 lid,Int32 index) const
-  { return itemLocalId(ItemInternalConnectivityList::HCHILD_IDX,lid,index); }
+  Int32 _nodeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(NODE_IDX,lid,index); }
+  Int32 _edgeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(EDGE_IDX,lid,index); }
+  Int32 _faceLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(FACE_IDX,lid,index); }
+  Int32 _cellLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(CELL_IDX,lid,index); }
+  Int32 _hParentLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HPARENT_IDX,lid,index); }
+  Int32 _hChildLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HCHILD_IDX,lid,index); }
 
  private:
 
-  ItemInternal* _nodeV2(Int32 lid,Int32 aindex) const
-  { return m_items->nodes[ _nodeLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _edgeV2(Int32 lid,Int32 aindex) const
-  { return m_items->edges[ _edgeLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _faceV2(Int32 lid,Int32 aindex) const
-  { return m_items->faces[ _faceLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _cellV2(Int32 lid,Int32 aindex) const
-  { return m_items->cells[ _cellLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _hParentV2(Int32 lid,Int32 aindex) const
-  { return m_items->cells[ _hParentLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _hChildV2(Int32 lid,Int32 aindex) const
-  { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _nodeV2(Int32 lid,Int32 aindex) const { return m_items->nodes[ _nodeLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _edgeV2(Int32 lid,Int32 aindex) const { return m_items->edges[ _edgeLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _faceV2(Int32 lid,Int32 aindex) const { return m_items->faces[ _faceLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _cellV2(Int32 lid,Int32 aindex) const { return m_items->cells[ _cellLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _hParentV2(Int32 lid,Int32 aindex) const { return m_items->cells[ _hParentLocalIdV2(lid,aindex) ]; }
+  ItemInternal* _hChildV2(Int32 lid,Int32 aindex) const { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
 
  private:
 
@@ -453,24 +436,39 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-#ifdef ARCANE_USE_OFFSET_FOR_CONNECTIVITY
-  Int32 _nodeOffset(Int32 lid) const { return m_container[NODE_IDX].m_offset[lid]; }
-  Int32 _edgeOffset(Int32 lid) const { return m_container[EDGE_IDX].m_offset[lid]; }
-  Int32 _faceOffset(Int32 lid) const { return m_container[FACE_IDX].m_offset[lid]; }
-  Int32 _cellOffset(Int32 lid) const { return m_container[CELL_IDX].m_offset[lid]; }
-  Int32 _itemOffset(Int32 item_kind,Int32 lid) const { return m_container[item_kind].m_offset[lid]; }
-#else
-  constexpr Int32 _nodeOffset([[maybe_unused]] Int32 lid) const { return 0; }
-  constexpr Int32 _edgeOffset([[maybe_unused]] Int32 lid) const { return 0; }
-  constexpr Int32 _faceOffset([[maybe_unused]] Int32 lid) const { return 0; }
-  constexpr Int32 _cellOffset([[maybe_unused]] Int32 lid) const { return 0; }
-  constexpr Int32 _itemOffset([[maybe_unused]] Int32 item_kind,[[maybe_unused]] Int32 lid) const { return 0; }
-#endif
+  Int32 _nodeOffset(Int32 lid) const { return m_container[NODE_IDX].itemOffset(lid); }
+  Int32 _edgeOffset(Int32 lid) const { return m_container[EDGE_IDX].itemOffset(lid); }
+  Int32 _faceOffset(Int32 lid) const { return m_container[FACE_IDX].itemOffset(lid); }
+  Int32 _cellOffset(Int32 lid) const { return m_container[CELL_IDX].itemOffset(lid); }
+  Int32 _itemOffset(Int32 item_kind,Int32 lid) const { return m_container[item_kind].itemOffset(lid); }
 
  private:
 
   struct Container
   {
+    const Int32* itemLocalIds(Int32 lid) const
+    {
+      return &(m_list[ m_indexes[lid] ]);
+    }
+    Int32 itemLocalId(Int32 lid,Integer index) const
+    {
+      return m_list[ m_indexes[lid] + index] + itemOffset(lid);
+    }
+    ItemConnectivityContainerView containerView() const
+    {
+      return ItemConnectivityContainerView( m_list, m_indexes, m_nb_item );
+    }
+    Int32 itemOffset([[maybe_unused]] Int32 lid) const
+    {
+#ifdef ARCANE_USE_OFFSET_FOR_CONNECTIVITY
+      return m_offset[lid];
+#else
+      return 0;
+#endif
+    }
+
+   public:
+
     ConstArrayView<Int32> m_indexes;
     Int32View m_nb_item;
     ConstArrayView<Int32> m_list;
