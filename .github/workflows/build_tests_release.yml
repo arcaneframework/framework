@@ -5,7 +5,18 @@ on:
     branches: [ main, dev/cea ]
   pull_request:
     branches: [ main, dev/cea ]
-  # A executer lorsque l'on demande.
+    paths:
+      - '**.c'
+      - '**.cc'
+      - '**.cpp'
+      - '**.cu'
+      - '**.h'
+      - '**.hh'
+      - '**.arc'
+      - '**.axl'
+      - '**/CMakeLists.txt'
+      - '**.config'
+      - '**.cs'
   workflow_dispatch:
 
 env:

@@ -9,6 +9,18 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '**.c'
+      - '**.cc'
+      - '**.cpp'
+      - '**.cu'
+      - '**.h'
+      - '**.hh'
+      - '**.arc'
+      - '**.axl'
+      - '**/CMakeLists.txt'
+      - '**.config'
+      - '**.cs'
 
 jobs:
   job:

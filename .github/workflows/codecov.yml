@@ -6,6 +6,18 @@ on:
   push:
   pull_request:
     branches: [ main, dev/cea ]
+    paths:
+      - '**.c'
+      - '**.cc'
+      - '**.cpp'
+      - '**.cu'
+      - '**.h'
+      - '**.hh'
+      - '**.arc'
+      - '**.axl'
+      - '**/CMakeLists.txt'
+      - '**.config'
+      - '**.cs'
   # A executer lorsque l'on demande.
   workflow_dispatch:
   
