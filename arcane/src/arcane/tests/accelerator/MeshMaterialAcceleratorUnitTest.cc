@@ -16,6 +16,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueChecker.h"
+#include "arcane/utils/IMemoryAllocator.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceBuilder.h"
@@ -566,6 +567,11 @@ _executeTest4(Integer nb_z)
       a_ref[icell] = sum3;
     }
   }
+
+  // Some further functions testing, not really usefull here, but it improves cover
+  AllCellToAllEnvCell *useless(nullptr);
+  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
+  AllCellToAllEnvCell::destroy(useless);
 
   // GPU
   {

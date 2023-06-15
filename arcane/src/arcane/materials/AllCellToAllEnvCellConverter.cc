@@ -33,11 +33,9 @@ void AllCellToAllEnvCell::
 reset()
 {
   if (m_allcell_allenvcell) {
-    for (auto i(0); i < m_size; ++i) {
-      if (!m_allcell_allenvcell[i].empty()) {
-        m_allcell_allenvcell[i].~Span<ComponentItemLocalId>();
-        m_alloc->deallocate(&(m_allcell_allenvcell[i]));
-      }
+    for (auto i(m_size-1); i >= 0; --i) {
+      m_allcell_allenvcell[i].~Span<ComponentItemLocalId>();
+      // memory will be freed because we have used placement new at creation
     }
     m_alloc->deallocate(m_allcell_allenvcell);
     m_allcell_allenvcell = nullptr;
@@ -71,11 +69,10 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   _instance->m_alloc = alloc;
   _instance->m_size = mm->mesh()->allCells().itemFamily()->maxLocalId()+1;
 
-  CellToAllEnvCellConverter all_env_cell_converter(mm);
-
   _instance->m_allcell_allenvcell = reinterpret_cast<Span<ComponentItemLocalId>*>(
     alloc->allocate(sizeof(Span<ComponentItemLocalId>) * _instance->m_size));
 
+  CellToAllEnvCellConverter all_env_cell_converter(mm);
   ENUMERATE_CELL(icell, mm->mesh()->allCells())
   {
     Int32 cid = icell->itemLocalId();
@@ -87,7 +84,7 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
       Integer i(0);
       ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell) {
         EnvCell ev = *ienvcell;
-        env_cells[i] = ComponentItemLocalId(ev._varIndex());
+        env_cells[i] = *(new (env_cells+i) ComponentItemLocalId(ev._varIndex()));
         ++i;
       }
     }
