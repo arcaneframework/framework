@@ -35,7 +35,7 @@ reset()
   if (m_allcell_allenvcell) {
     for (auto i(m_size-1); i >= 0; --i) {
       m_allcell_allenvcell[i].~Span<ComponentItemLocalId>();
-      // memory will be freed because we have used placement new at creation
+      // la memoire sera liberee avec l'appel manuel du dtor a cause du placement new dans create
     }
     m_alloc->deallocate(m_allcell_allenvcell);
     m_allcell_allenvcell = nullptr;
@@ -113,7 +113,6 @@ bruteForceUpdate(Int32ConstArrayView ids)
       // Si c'est pas vide, on efface et on refait
       if (!m_allcell_allenvcell[lid].empty()) {
         m_allcell_allenvcell[i].~Span<ComponentItemLocalId>();
-        m_alloc->deallocate(&(m_allcell_allenvcell[lid]));
       }
       AllEnvCell all_env_cell = all_env_cell_converter[lid];
       ComponentItemLocalId* env_cells(nullptr);
@@ -123,7 +122,7 @@ bruteForceUpdate(Int32ConstArrayView ids)
         Integer i(0);
         ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell) {
           EnvCell ev = *ienvcell;
-          env_cells[i] = ComponentItemLocalId(ev._varIndex());
+          env_cells[i] = *(new (env_cells+i) ComponentItemLocalId(ev._varIndex()));
           ++i;
         }
       }
