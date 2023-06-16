@@ -5,18 +5,25 @@ on:
     branches: [ main, dev/cea ]
   pull_request:
     branches: [ main, dev/cea ]
-    paths:
-      - '**.c'
-      - '**.cc'
-      - '**.cpp'
-      - '**.cu'
-      - '**.h'
-      - '**.hh'
-      - '**.arc'
-      - '**.axl'
-      - '**/CMakeLists.txt'
-      - '**.config'
-      - '**.cs'
+    paths-ignore:
+      - '**.css'
+      - '**.dox'
+      - '**.doxyfile'
+      - '**.geo'
+      - '**.goto'
+      - '**.html'
+      - '**.jpg'
+      - '**.js'
+      - '**.markdown'
+      - '**.md'
+      - '**.odg'
+      - '**.old'
+      - '**.png'
+      - '**.py'
+      - '**.samples'
+      - '**.svg'
+      - '**.webp'
+      - '**.yml'
   workflow_dispatch:
 
 env:

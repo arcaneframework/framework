@@ -6,19 +6,25 @@ on:
   push:
   pull_request:
     branches: [ main, dev/cea ]
-    paths:
-      - '**.c'
-      - '**.cc'
-      - '**.cpp'
-      - '**.cu'
-      - '**.h'
-      - '**.hh'
-      - '**.arc'
-      - '**.axl'
-      - '**/CMakeLists.txt'
-      - '**.config'
-      - '**.cs'
-  # A executer lorsque l'on demande.
+    paths-ignore:
+      - '**.css'
+      - '**.dox'
+      - '**.doxyfile'
+      - '**.geo'
+      - '**.goto'
+      - '**.html'
+      - '**.jpg'
+      - '**.js'
+      - '**.markdown'
+      - '**.md'
+      - '**.odg'
+      - '**.old'
+      - '**.png'
+      - '**.py'
+      - '**.samples'
+      - '**.svg'
+      - '**.webp'
+      - '**.yml'
   workflow_dispatch:
   
 env:
