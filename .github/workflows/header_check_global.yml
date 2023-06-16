@@ -1,16 +1,7 @@
-name: Header/Encoding checker
+name: Header/Encoding checker (all src)
 
 on:
-  push:
-    branches: [ main, dev/cea ]
-    paths:
-      - '**.cc'
-      - '**.h'
-  pull_request:
-    branches: [ main, dev/cea ]
-    paths:
-      - '**.cc'
-      - '**.h'
+  # A executer que lorsque l'on demande.
   workflow_dispatch:
 
 env:
@@ -27,22 +18,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ${{ env.ARCANE_SOURCE_DIR }}
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
           
       - name: Check files
         shell: bash
         run: |
           cd ${{ env.ARCANE_SOURCE_DIR }}
-          export CC_H_FILES=$(git diff --name-only origin/main -- '*.cc' '*.h')
+          export CC_H_FILES=$(find . -name '*.cc' -or -name '*.h')
           chmod u+x ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh
           ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh > ${{ env.ARCANE_SOURCE_DIR }}/output.log
-
-      - name: Display logs
-        if: failure()
-        shell: bash
-        run: |
-          cat ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
       - name: Upload log artifact
         uses: actions/upload-artifact@v3

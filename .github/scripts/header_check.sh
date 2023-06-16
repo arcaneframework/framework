@@ -15,10 +15,6 @@ REGEX_EXCLUDE_FILES="/arcane/extras/\
 |.*Licensed.*\
 "
 
-CC_H_FILES=$(find "$SOURCE" -name '*.cc')
-CC_H_FILES+=" "
-CC_H_FILES+=$(find "$SOURCE" -name '*.h')
-
 NUM_FILES_ERROR=0
 
 OUTPUT_LOG="Begin script\n\n"
