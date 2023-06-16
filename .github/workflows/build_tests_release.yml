@@ -5,7 +5,25 @@ on:
     branches: [ main, dev/cea ]
   pull_request:
     branches: [ main, dev/cea ]
-  # A executer lorsque l'on demande.
+    paths-ignore:
+      - '**.css'
+      - '**.dox'
+      - '**.doxyfile'
+      - '**.geo'
+      - '**.goto'
+      - '**.html'
+      - '**.jpg'
+      - '**.js'
+      - '**.markdown'
+      - '**.md'
+      - '**.odg'
+      - '**.old'
+      - '**.png'
+      - '**.py'
+      - '**.samples'
+      - '**.svg'
+      - '**.webp'
+      - '**.yml'
   workflow_dispatch:
 
 env:

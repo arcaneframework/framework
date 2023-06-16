@@ -9,6 +9,25 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**.css'
+      - '**.dox'
+      - '**.doxyfile'
+      - '**.geo'
+      - '**.goto'
+      - '**.html'
+      - '**.jpg'
+      - '**.js'
+      - '**.markdown'
+      - '**.md'
+      - '**.odg'
+      - '**.old'
+      - '**.png'
+      - '**.py'
+      - '**.samples'
+      - '**.svg'
+      - '**.webp'
+      - '**.yml'
 
 jobs:
   job:
