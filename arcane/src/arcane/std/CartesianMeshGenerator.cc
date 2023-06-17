@@ -46,6 +46,7 @@
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
 #include "arcane/core/CartesianMeshAllocateBuildInfo.h"
+#include "arcane/core/internal/CartesianMeshAllocateBuildInfoInternal.h"
 
 #include "arcane/std/Cartesian2DMeshGenerator_axl.h"
 #include "arcane/std/Cartesian3DMeshGenerator_axl.h"
@@ -906,6 +907,11 @@ generateMesh()
     }
   }
 
+  const Int32 face_numbering_version = m_build_info.m_face_numbering_version;
+  info() << "FaceNumberingVersion = " << face_numbering_version;
+  const Int32 edge_numbering_version = m_build_info.m_edge_numbering_version;
+  info() << "EdgeNumberingVersion = " << edge_numbering_version;
+
   if (use_specific_allocator){
     info() << "Set Specific info for cartesian mesh";
     if (m_mesh_dimension==3)
@@ -919,17 +925,22 @@ generateMesh()
     }
     else
       ARCANE_FATAL("Invalid dimensionn '{0}' (valid values are 2 or 3)",m_mesh_dimension);
+
+    if (face_numbering_version>=0)
+      cartesian_mesh_build_info._internal()->setFaceBuilderVersion(face_numbering_version);
+    if (edge_numbering_version>=0)
+      cartesian_mesh_build_info._internal()->setEdgeBuilderVersion(edge_numbering_version);
+
   }
-  else
+  else{
     mesh->setDimension(m_mesh_dimension);
 
-  info() << "FaceNumberingVersion = " << m_build_info.m_face_numbering_version;
-  if (m_build_info.m_face_numbering_version>=0)
-    mesh->meshUniqueIdMng()->setFaceBuilderVersion(m_build_info.m_face_numbering_version);
+    if (face_numbering_version>=0)
+      mesh->meshUniqueIdMng()->setFaceBuilderVersion(face_numbering_version);
+    if (edge_numbering_version>=0)
+      mesh->meshUniqueIdMng()->setEdgeBuilderVersion(edge_numbering_version);
+  }
 
-  info() << "EdgeNumberingVersion = " << m_build_info.m_edge_numbering_version;
-  if (m_build_info.m_edge_numbering_version>=0)
-    mesh->meshUniqueIdMng()->setEdgeBuilderVersion(m_build_info.m_edge_numbering_version);
 
   if (use_specific_allocator){
     cartesian_mesh_build_info.allocateMesh();

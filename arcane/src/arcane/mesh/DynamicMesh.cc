@@ -56,7 +56,6 @@
 #include "arcane/core/ICaseMng.h"
 
 #include "arcane/core/internal/UnstructuredMeshAllocateBuildInfoInternal.h"
-#include "arcane/core/internal/CartesianMeshAllocateBuildInfoInternal.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 
 #include "arcane/mesh/ExtraGhostCellsBuilder.h"
@@ -94,6 +93,7 @@
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 
 #include <functional>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -120,6 +120,9 @@ createParticleFamilyPolicyMng(ItemFamily* family);
 
 extern "C++" ARCANE_MESH_EXPORT IItemFamilyPolicyMng*
 createDoFFamilyPolicyMng(ItemFamily* family);
+
+extern "C++" ARCANE_MESH_EXPORT void
+allocateCartesianMesh(DynamicMesh* mesh,CartesianMeshAllocateBuildInfo& build_info);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -690,14 +693,14 @@ deallocate()
 void DynamicMesh::
 allocateCells(Integer mesh_nb_cell,Int64ConstArrayView cells_infos,bool one_alloc)
 {
-  const char* func_name = "DynamicMesh::allocateAnyMesh()";
-  Trace::Setter mci(traceMng(),_className());
   if (mesh_nb_cell==0 && !cells_infos.empty())
-    throw FatalErrorException(func_name,"Not implemented: computing dynamically the number of cells");
+    ARCANE_FATAL("Can not dynamically compute the number of cells");
+
+  Trace::Setter mci(traceMng(),_className());
 
   setEstimatedCells(mesh_nb_cell);
 
-  Timer timer(subDomain(),func_name,Timer::TimerReal);
+  Timer timer(subDomain(),"AllocateCells",Timer::TimerReal);
   {
     Timer::Sentry sentry(&timer);
     _allocateCells(mesh_nb_cell,cells_infos);
@@ -871,9 +874,9 @@ allocate(UnstructuredMeshAllocateBuildInfo& build_info)
 void DynamicMesh::
 allocate(CartesianMeshAllocateBuildInfo& build_info)
 {
-  auto* x = build_info._internal();
-  setDimension(x->meshDimension());
-  allocateCells(x->nbCell(),x->cellsInfos(),true);
+  // L'allocation des entités du maillage est effectuée par la
+  // classe DynamicMeshCartesianBuilder.
+  allocateCartesianMesh(this,build_info);
 }
 
 /*---------------------------------------------------------------------------*/
