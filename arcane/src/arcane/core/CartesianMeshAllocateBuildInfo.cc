@@ -48,6 +48,8 @@ class CartesianMeshAllocateBuildInfo::Impl
   Int32 m_mesh_dimension = -1;
   UniqueArray<Int64> m_cells_infos;
   Int32 m_nb_cell = 0;
+  Int32 m_face_builder_version = -1;
+  Int32 m_edge_builder_version = -1;
   CartesianMeshAllocateBuildInfoInternal m_internal;
 };
 
@@ -79,6 +81,42 @@ Int32 CartesianMeshAllocateBuildInfoInternal::
 nbCell() const
 {
   return m_p->m_nb_cell;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAllocateBuildInfoInternal::
+setFaceBuilderVersion(Int32 version)
+{
+  m_p->m_face_builder_version = version;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 CartesianMeshAllocateBuildInfoInternal::
+faceBuilderVersion() const
+{
+  return m_p->m_face_builder_version;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAllocateBuildInfoInternal::
+setEdgeBuilderVersion(Int32 version)
+{
+  m_p->m_edge_builder_version = version;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 CartesianMeshAllocateBuildInfoInternal::
+edgeBuilderVersion() const
+{
+  return m_p->m_edge_builder_version;
 }
 
 /*---------------------------------------------------------------------------*/

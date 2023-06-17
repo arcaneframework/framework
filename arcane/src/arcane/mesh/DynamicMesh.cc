@@ -872,7 +872,16 @@ void DynamicMesh::
 allocate(CartesianMeshAllocateBuildInfo& build_info)
 {
   auto* x = build_info._internal();
+
   setDimension(x->meshDimension());
+
+  Int32 face_builder_version = x->faceBuilderVersion();
+  if (face_builder_version>=0)
+    meshUniqueIdMng()->setFaceBuilderVersion(face_builder_version);
+  Int32 edge_builder_version = x->edgeBuilderVersion();
+  if (edge_builder_version>=0)
+    meshUniqueIdMng()->setEdgeBuilderVersion(edge_builder_version);
+
   allocateCells(x->nbCell(),x->cellsInfos(),true);
 }
 

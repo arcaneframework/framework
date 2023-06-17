@@ -25,7 +25,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Partie interne de CartesianMeshAllocateBuildInfo
+ * \brief Partie interne de CartesianMeshAllocateBuildInfo.
  */
 class ARCANE_CORE_EXPORT CartesianMeshAllocateBuildInfoInternal
 {
@@ -36,6 +36,18 @@ class ARCANE_CORE_EXPORT CartesianMeshAllocateBuildInfoInternal
   ConstArrayView<Int64> cellsInfos() const;
   Int32 meshDimension() const;
   Int32 nbCell() const;
+
+  //! Positionne la version utilisée pour le calcul des uniqueId() des faces
+  void setFaceBuilderVersion(Int32 version);
+
+  //! Version utilisée pour le calcul des des uniqueId() des faces
+  Int32 faceBuilderVersion() const;
+
+  //! Positionne la version utilisée pour le calcul des uniqueId() des arêtes
+  void setEdgeBuilderVersion(Int32 version);
+
+  //! Version utilisée pour le calcul des uniqueId() des arêtes
+  Int32 edgeBuilderVersion() const;
 
  private:
 
