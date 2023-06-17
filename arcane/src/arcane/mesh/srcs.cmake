@@ -11,6 +11,7 @@ set( ARCANE_SOURCES
   DynamicMeshKindInfos.h
   DynamicMeshIncrementalBuilder.cc
   DynamicMeshIncrementalBuilder.h
+  DynamicMeshCartesianBuilder.cc
   DynamicMeshChecker.cc
   DynamicMeshChecker.h
   DynamicMeshMerger.cc
