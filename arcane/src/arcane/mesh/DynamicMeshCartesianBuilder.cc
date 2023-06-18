@@ -14,6 +14,7 @@
 #include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/core/IMeshUniqueIdMng.h"
+#include "arcane/core/CartesianGridDimension.h"
 #include "arcane/core/internal/CartesianMeshAllocateBuildInfoInternal.h"
 
 #include "arcane/mesh/DynamicMesh.h"
@@ -82,23 +83,21 @@ class DynamicMeshCartesian2DBuilder
 void DynamicMeshCartesian2DBuilder::
 _buildCellList()
 {
+  UniqueArray<Int64>& cells_infos = m_cells_infos;
+
   const Int64 cell_unique_id_offset = m_build_info->cellUniqueIdOffset();
   const Int64 node_unique_id_offset = m_build_info->nodeUniqueIdOffset();
 
-  auto own_nb_cells = m_build_info->ownNbCells();
-  auto global_nb_cells = m_build_info->globalNbCells();
+  CartesianGridDimension all_grid_dimension(m_build_info->globalNbCells());
+  CartesianGridDimension own_grid_dimension(m_build_info->ownNbCells());
 
-  UniqueArray<Int64>& cells_infos = m_cells_infos;
+  Int64x3 all_nb_cell = all_grid_dimension.nbCell();
+  Int64x3 own_nb_cell = own_grid_dimension.nbCell();
+  Int64x3 all_nb_node = all_grid_dimension.nbNode();
 
-  const Int32 own_nb_cell_x = own_nb_cells[0];
-  const Int32 own_nb_cell_y = own_nb_cells[1];
-  const Int64 all_nb_cell_x = global_nb_cells[0];
+  const Int64 own_nb_cell_xy = own_nb_cell.x * own_nb_cell.y;
 
-  Int32 own_nb_cell_xy = CheckedConvert::multiply(own_nb_cell_x, own_nb_cell_y);
-
-  Int64 all_nb_node_x = all_nb_cell_x + 1;
-
-  m_nb_cell = own_nb_cell_xy;
+  m_nb_cell = CheckedConvert::toInt32(own_nb_cell_xy);
 
   cells_infos.resize(own_nb_cell_xy * (1 + 1 + 4));
 
@@ -126,11 +125,11 @@ _buildCellList()
   };
 
   Integer cells_infos_index = 0;
-  NodeUniqueIdComputer node_uid_computer(node_unique_id_offset, all_nb_node_x);
+  NodeUniqueIdComputer node_uid_computer(node_unique_id_offset, all_nb_node.x);
 
-  for (Integer y = 0; y < own_nb_cell_y; ++y) {
-    for (Integer x = 0; x < own_nb_cell_x; ++x) {
-      Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell_x;
+  for (Integer y = 0; y < own_nb_cell.y; ++y) {
+    for (Integer x = 0; x < own_nb_cell.x; ++x) {
+      Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell.x;
       cells_infos[cells_infos_index] = IT_Quad4;
       ++cells_infos_index;
       cells_infos[cells_infos_index] = cell_unique_id;
@@ -177,19 +176,18 @@ _buildCellList()
   const Int64 cell_unique_id_offset = m_build_info->cellUniqueIdOffset();
   const Int64 node_unique_id_offset = m_build_info->nodeUniqueIdOffset();
 
-  auto [own_nb_cell_x, own_nb_cell_y, own_nb_cell_z] = m_build_info->ownNbCells();
-  auto [all_nb_cell_x, all_nb_cell_y, all_nb_cell_z] = m_build_info->globalNbCells();
+  CartesianGridDimension all_grid_dimension(m_build_info->globalNbCells());
+  CartesianGridDimension own_grid_dimension(m_build_info->ownNbCells());
 
-  Int32 own_nb_cell_xy = CheckedConvert::multiply(own_nb_cell_x, own_nb_cell_y);
-  Int32 own_nb_cell_xyz = CheckedConvert::multiply(own_nb_cell_xy, own_nb_cell_z);
+  Int64x3 all_nb_cell = all_grid_dimension.nbCell();
+  Int64x3 own_nb_cell = own_grid_dimension.nbCell();
+  Int64x3 all_nb_node = all_grid_dimension.nbNode();
 
-  Int64 all_nb_cell_xy = all_nb_cell_x * all_nb_cell_y;
+  const Int64 all_nb_cell_xy = all_nb_cell.x * all_nb_cell.y;
+  const Int64 all_nb_node_xy = all_nb_node.x * all_nb_node.y;
 
-  Int64 all_nb_node_x = all_nb_cell_x + 1;
-  Int64 all_nb_node_y = all_nb_cell_y + 1;
-  Int64 all_nb_node_xy = all_nb_node_x * all_nb_node_y;
-
-  m_nb_cell = own_nb_cell_xyz;
+  const Int64 own_nb_cell_xyz = own_grid_dimension.totalNbCell();
+  m_nb_cell = CheckedConvert::toInt32(own_nb_cell_xyz);
 
   cells_infos.resize(own_nb_cell_xyz * (1 + 1 + 8));
 
@@ -219,12 +217,12 @@ _buildCellList()
   };
 
   Integer cells_infos_index = 0;
-  NodeUniqueIdComputer node_uid_computer(node_unique_id_offset, all_nb_node_x, all_nb_node_xy);
+  NodeUniqueIdComputer node_uid_computer(node_unique_id_offset, all_nb_node.x, all_nb_node_xy);
 
-  for (Integer z = 0; z < own_nb_cell_z; ++z) {
-    for (Integer y = 0; y < own_nb_cell_y; ++y) {
-      for (Integer x = 0; x < own_nb_cell_x; ++x) {
-        Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell_x + z * all_nb_cell_xy;
+  for (Integer z = 0; z < own_nb_cell.z; ++z) {
+    for (Integer y = 0; y < own_nb_cell.y; ++y) {
+      for (Integer x = 0; x < own_nb_cell.x; ++x) {
+        Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell.x + z * all_nb_cell_xy;
         cells_infos[cells_infos_index] = IT_Hexaedron8;
         ++cells_infos_index;
         cells_infos[cells_infos_index] = cell_unique_id;
