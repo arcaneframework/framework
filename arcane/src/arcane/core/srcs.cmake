@@ -384,6 +384,8 @@ set(ARCANE_ORIGINAL_SOURCES
   BasicUnitTest.h
   BlockIndexList.h
   BlockIndexList.cc
+  CartesianGridDimension.h
+  CartesianGridDimension.cc
   CartesianMeshAllocateBuildInfo.h
   CartesianMeshAllocateBuildInfo.cc
   CaseDatasetSource.cc
