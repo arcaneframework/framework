@@ -27,6 +27,7 @@
 #include "arcane/materials/MeshMaterialMng.h"
 #include "arcane/materials/ComponentItemListBuilder.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
+#include "arcane/materials/CellToAllEnvCellConverter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -315,8 +316,7 @@ forceRecompute(bool compute_all)
 
   if (is_verbose){
     OStringStream ostr;
-    m_material_mng->dumpInfos2(ostr());
-    info() << ostr.str();
+    m_material_mng->dumpInfos2(ostr());    info() << ostr.str();
   }
 
   // Vérifie la cohérence des localIds() du variableIndexer()
@@ -336,6 +336,15 @@ forceRecompute(bool compute_all)
         ++index;
       }
     }
+  }
+
+  // Met à jour le AllCellToAllEnvCell s'il a été initialisé si la fonctionnalité est activé
+  if (m_material_mng->isCellToAllEnvCellForRunCommand()) {
+    auto* allCell2AllEnvCell(m_material_mng->getAllCellToAllEnvCell());
+    if (allCell2AllEnvCell)
+      allCell2AllEnvCell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
+    else
+      m_material_mng->createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
   }
 }
 

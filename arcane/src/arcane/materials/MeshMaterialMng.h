@@ -25,6 +25,7 @@
 #include "arcane/materials/MeshEnvironment.h"
 #include "arcane/materials/MeshBlock.h"
 #include "arcane/materials/MatItemEnumerator.h"
+#include "arcane/materials/AllCellToAllEnvCellConverter.h"
 
 #include <map>
 #include <memory>
@@ -206,6 +207,20 @@ class MeshMaterialMng
 
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
+  void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) override
+  {
+    m_is_allcell_2_allenvcell = is_enable;
+    if (force_create)
+      createAllCellToAllEnvCell();
+  }
+  bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
+  AllCellToAllEnvCell* getAllCellToAllEnvCell() const override { return m_allcell_2_allenvcell; }
+  void createAllCellToAllEnvCell(IMemoryAllocator* alloc=platform::getDefaultDataAllocator()) override
+  {
+    if (!m_allcell_2_allenvcell)
+      m_allcell_2_allenvcell = AllCellToAllEnvCell::create(this, alloc);
+  }
+
  private:
 
   //! Type de la liste des variables par nom complet
@@ -258,6 +273,9 @@ class MeshMaterialMng
   IMeshMaterialVariableFactoryMng* m_variable_factory_mng = nullptr;
   std::unique_ptr<ObserverPool> m_observer_pool;
   String m_data_compressor_service_name;
+
+  AllCellToAllEnvCell* m_allcell_2_allenvcell;
+  bool m_is_allcell_2_allenvcell;
 
  private:
 

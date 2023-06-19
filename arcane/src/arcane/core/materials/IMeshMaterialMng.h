@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IFunctorWithArgument.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 #include "arcane/core/ItemTypes.h"
@@ -35,6 +36,7 @@ class MeshEnvironmentBuildInfo;
 class MeshMaterialVariableIndexer;
 class AllEnvCellVectorView;
 class CellToAllEnvCellConverter;
+class AllCellToAllEnvCell;
 class IMeshMaterialModifierImpl;
 class IMeshComponent;
 class IMeshMaterialVariable;
@@ -472,6 +474,16 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   //! Interface de la fabrique de variables
   virtual IMeshMaterialVariableFactoryMng* variableFactoryMng() const =0;
 
+  /*!
+   * \brief Active ou désactive la construction et la mise à jour de la table de 
+   * "connectivité" CellLocalId -> AllEnvCell pour les RUNCOMMAND
+   * On peut activer également par la variable d'environnement ARCANE_ALLENVCELL_FOR_RUNCOMMAND.
+   * En option, on peut forcer la création de la table, ce qui peut être util lors d'un appel tardif
+   * de cette méthode par rapport à celui du ForceRecompute()
+   */
+  virtual void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) =0;
+  virtual bool isCellToAllEnvCellForRunCommand() const =0;
+
  public:
 
   //!\internal
@@ -481,6 +493,23 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
     virtual ~IFactory() = default;
     virtual Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool is_create) =0;
   };
+
+  /*!
+   * \internal
+   * \brief Renvoie la table de "connectivité" CellLocalId -> AllEnvCell
+   * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
+   * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
+   */
+  virtual AllCellToAllEnvCell* getAllCellToAllEnvCell() const =0;
+  /*!
+   * \internal
+   * \brief Construit la table de "connectivité" CellLocalId -> AllEnvCell
+   * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
+   * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
+   * Si aucun allocateur n'est spécifié alors la méthode
+   * platform::getDefaultDataAllocator() est utilisée
+   */
+  virtual void createAllCellToAllEnvCell(IMemoryAllocator* alloc=platform::getDefaultDataAllocator()) =0;
 
  private:
 

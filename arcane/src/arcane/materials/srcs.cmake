@@ -1,4 +1,6 @@
 set(ARCANE_SOURCES
+  AllCellToAllEnvCellConverter.cc
+  AllCellToAllEnvCellConverter.h
   AllEnvData.cc
   AllEnvData.h
   ComponentItemInternal.h
