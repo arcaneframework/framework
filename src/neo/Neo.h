@@ -147,46 +147,43 @@ struct ItemRange {
   bool isEmpty() const  {return size() == 0;}
   utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId();}
 
+  friend inline std::ostream& operator<<(std::ostream& os, const Neo::ItemRange& item_range) {
+    os << "Item Range : lids ";
+    for (auto lid : item_range.m_item_lids.m_non_contiguous_lids) {
+      os << lid;
+      os << " ";
+    }
+    auto last_contiguous_lid = item_range.m_item_lids.m_first_contiguous_lid + item_range.m_item_lids.m_nb_contiguous_lids;
+    for (auto i = item_range.m_item_lids.m_first_contiguous_lid; i < last_contiguous_lid; ++i) {
+      os << i;
+      os << " ";
+    }
+    os << std::endl;
+    return os;
+  }
 };
 //----------------------------------------------------------------------------/
 
 }// namespace Neo
 
 //----------------------------------------------------------------------------/
-
-inline
-std::ostream &operator<<(std::ostream &os, const Neo::ItemRange &item_range){
-  os << "Item Range : lids ";
-  for (auto lid : item_range.m_item_lids.m_non_contiguous_lids) {
-    os << lid;
-    os << " ";
-  }
-  auto last_contiguous_lid = item_range.m_item_lids.m_first_contiguous_lid + item_range.m_item_lids.m_nb_contiguous_lids;
-  for (auto i = item_range.m_item_lids.m_first_contiguous_lid; i < last_contiguous_lid; ++i) {
-    os << i;
-    os << " ";
-  }
-  os << std::endl;
-  return os;
-}
-
 //----------------------------------------------------------------------------/
 
-namespace Neo{
-namespace utils { // not defined in Utils.h since needs Neo::ItemRange
-inline
-Int32 maxItem(ItemRange const &item_range) {
-  if (item_range.isEmpty())
-    return utils::NULL_ITEM_LID;
-  return *std::max_element(item_range.begin(), item_range.end());
-}
+namespace Neo
+{
+namespace utils
+{ // not defined in Utils.h since needs Neo::ItemRange
+  inline Int32 maxItem(ItemRange const& item_range) {
+    if (item_range.isEmpty())
+      return utils::NULL_ITEM_LID;
+    return *std::max_element(item_range.begin(), item_range.end());
+  }
 
-inline
-Int32 minItem(ItemRange const &item_range) {
-  if (item_range.isEmpty())
-    return utils::NULL_ITEM_LID;
-  return *std::min_element(item_range.begin(), item_range.end());
-}
+  inline Int32 minItem(ItemRange const& item_range) {
+    if (item_range.isEmpty())
+      return utils::NULL_ITEM_LID;
+    return *std::min_element(item_range.begin(), item_range.end());
+  }
 } // namespace utils
 
 //----------------------------------------------------------------------------/
@@ -910,10 +907,11 @@ class Family
 
 
 
-private :
+ private:
   Property& _getProperty(const std::string& name) {
     auto found_property = m_properties.find(name);
-    if (found_property == m_properties.end()) throw std::invalid_argument("Cannot find Property "+name);
+    if (found_property == m_properties.end())
+      throw std::invalid_argument("Cannot find Property " + name);
     return found_property->second;
   }
 };
@@ -1126,20 +1124,26 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
     std::map<item_id, int> uid_index_map;
     auto index = 0;
     for (auto uid : future_item_range_ids) {
-      uid_index_map.insert({uid,index++});
+        uid_index_map.insert({ uid, index++ });
     }
     auto error = 0;
     auto i = 0;
     for (auto uid : ids_subset) {
-      auto iterator = uid_index_map.find(uid);
-      if (iterator == uid_index_map.end()) ++error;
-      else filter[i++] = (*iterator).second;
+        auto iterator = uid_index_map.find(uid);
+        if (iterator == uid_index_map.end())
+      ++error;
+        else
+      filter[i++] = (*iterator).second;
     }
-    if (error > 0 ) throw std::runtime_error("in make_future_range, ids_subset contains element not present in future_item_range_ids");
+    if (error > 0)
+        throw std::runtime_error("in make_future_range, ids_subset contains element not present in future_item_range_ids");
 
-  return FilteredFutureItemRange{future_item_range,std::move(filter)};
-
+    return FilteredFutureItemRange{ future_item_range, std::move(filter) };
 }
+
+//----------------------------------------------------------------------------/
+
+} // namespace Neo
 
 //----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/
