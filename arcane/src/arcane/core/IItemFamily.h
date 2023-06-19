@@ -688,6 +688,11 @@ class IItemFamily
 
  public:
 
+  //! Interface du modificateur de topologie.
+  virtual IItemFamilyTopologyModifier* _topologyModifier() = 0;
+
+ public:
+
   //! API interne à Arcane
   virtual IItemFamilyInternal* _internalApi() =0;
 };

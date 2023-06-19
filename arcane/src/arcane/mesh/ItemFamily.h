@@ -406,7 +406,10 @@ class ARCANE_MESH_EXPORT ItemFamily
   {
     return itemInternalConnectivityList();
   }
-  IItemFamilyTopologyModifier* _topologyModifier() { return m_topology_modifier; }
+
+ public:
+
+  IItemFamilyTopologyModifier* _topologyModifier() override { return m_topology_modifier; }
 
  private:
 
