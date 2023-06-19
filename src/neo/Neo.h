@@ -136,16 +136,18 @@ struct ItemIterator {
   int m_index;
   ItemLocalIds m_item_indexes;
 };
-struct ItemRange {
+struct ItemRange
+{
   ItemLocalIds m_item_lids;
+  using size_type = int;
 
-  std::vector<utils::Int32> localIds() const {return m_item_lids.itemArray();}
-  bool isContiguous() const {return m_item_lids.m_non_contiguous_lids.empty();};
-  ItemIterator begin() const {return ItemIterator{m_item_lids,0};}
-  ItemIterator end() const {return ItemIterator{m_item_lids,int(m_item_lids.size())};} // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
-  std::size_t size() const {return m_item_lids.size();}
-  bool isEmpty() const  {return size() == 0;}
-  utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId();}
+  std::vector<utils::Int32> localIds() const { return m_item_lids.itemArray(); }
+  bool isContiguous() const { return m_item_lids.m_non_contiguous_lids.empty(); };
+  ItemIterator begin() const { return ItemIterator{ m_item_lids, 0 }; }
+  ItemIterator end() const { return ItemIterator{ m_item_lids, int(m_item_lids.size()) }; } // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
+  size_type size() const { return (size_type)m_item_lids.size(); }
+  bool isEmpty() const { return size() == 0; }
+  utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId(); }
 
   friend inline std::ostream& operator<<(std::ostream& os, const Neo::ItemRange& item_range) {
     os << "Item Range : lids ";
