@@ -50,8 +50,12 @@ TEST(NeoUtils, test_array_view) {
   EXPECT_TRUE(std::equal(dim2_vec.begin(), dim2_vec.end(), dim2_const_view_vector_copy.begin()));
   // Try out of bound error
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
-  if constexpr (_debug) {EXPECT_DEATH(view[4], ".*i<m_size.*");}
-  if constexpr (_debug) {EXPECT_DEATH(dim2_view[0][4], ".*i<m_size.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(view[4], ".*i < m_size.*");
+  }
+  if constexpr (_debug) {
+    EXPECT_DEATH(dim2_view[0][4], ".*i < m_size.*");
+  }
 #endif
 }
 
