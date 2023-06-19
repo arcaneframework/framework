@@ -11,7 +11,7 @@
 # La variable '${ARCCON_MSBUILD_RESTORE_ARGS}' peut être définie par l'utilisateur
 # pour spécifier des arguments pour la restauration, comme par exemple
 # le chemin des packages NuGet si on n'a pas accès à internet.
-set(ARCCON_MSBUILD_COMMON_ARGS /nodeReuse:false /v:Normal ${ARCCON_MSBUILD_RESTORE_ARGS})
+set(ARCCON_MSBUILD_COMMON_ARGS /nodeReuse:false ${ARCCON_MSBUILD_RESTORE_ARGS})
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
