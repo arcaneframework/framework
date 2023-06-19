@@ -907,7 +907,13 @@ class Family
     return std::get<ItemLidsProperty>(prop_iterator->second);
   }
 
+  friend inline bool operator==(Neo::Family const& family1, Neo::Family const& family2) {
+    return (family1.itemKind() == family2.itemKind() && family1.name() == family2.name());
+  }
 
+  friend inline bool operator!=(Neo::Family const& family1, Neo::Family const& family2) {
+    return !(family1 == family2);
+  }
 
  private:
   Property& _getProperty(const std::string& name) {
@@ -1149,8 +1155,5 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
 
 //----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/
-
-}// namespace Neo
-
 
 #endif // SRC_NEO_H
