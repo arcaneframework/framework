@@ -17,6 +17,8 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
 
+#include <cmath>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -100,7 +102,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Byte>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Byte v1, Byte v2, Byte& diff)
+  static bool verifDifferent(Byte v1, Byte v2, Byte& diff,
+                             [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
       if (math::isZero(v1))
@@ -163,8 +166,12 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Real v1, Real v2, Real& diff)
+  static bool verifDifferent(Real v1, Real v2, Real& diff, bool is_nan_equal = false)
   {
+    if (is_nan_equal) {
+      if (std::isnan(v1) && std::isnan(v2))
+        return false;
+    }
     // Vérifie avant de les comparer que les deux nombres sont valides
     // pour éviter une exception flottante sur certaines plates-formes
     if (platform::isDenormalized(v1) || platform::isDenormalized(v2)) {
@@ -231,7 +238,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int16>
    * \retval false si la conversion est un succès
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
-  static bool verifDifferent(Int16 v1, Int16 v2, Int16& diff)
+  static bool verifDifferent(Int16 v1, Int16 v2, Int16& diff,
+                             [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
       if (math::isZero(v1))
@@ -292,7 +300,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int32>
    * \retval false si la conversion est un succès
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
-  static bool verifDifferent(Int32 v1, Int32 v2, Int32& diff)
+  static bool verifDifferent(Int32 v1, Int32 v2, Int32& diff,
+                             [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
       if (math::isZero(v1))
@@ -354,7 +363,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Type v1, Type v2, Type& diff)
+  static bool verifDifferent(Type v1, Type v2, Type& diff,
+                             [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
       if (math::isZero(v1))
@@ -416,7 +426,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<String>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(const Type v1, const Type& v2, Type&)
+  static bool verifDifferent(const Type v1, const Type& v2, Type&,
+                             [[maybe_unused]] bool is_nan_equal = false)
   {
     return (v1 != v2);
   }
@@ -475,11 +486,11 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Real2 v1, Real2 v2, Real2& diff)
+  static bool verifDifferent(Real2 v1, Real2 v2, Real2& diff, bool is_nan_equal = false)
   {
     bool is_different = false;
-    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x);
-    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y);
+    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x, is_nan_equal);
+    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y, is_nan_equal);
     return is_different;
   }
 
@@ -540,12 +551,12 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Real3 v1, Real3 v2, Real3& diff)
+  static bool verifDifferent(Real3 v1, Real3 v2, Real3& diff, bool is_nan_equal = false)
   {
     bool is_different = false;
-    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x);
-    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y);
-    is_different |= SubTraits::verifDifferent(v1.z, v2.z, diff.z);
+    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x, is_nan_equal);
+    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y, is_nan_equal);
+    is_different |= SubTraits::verifDifferent(v1.z, v2.z, diff.z, is_nan_equal);
     return is_different;
   }
 
@@ -607,11 +618,11 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
    */
   static bool getValue(Type&, const String&) { return true; }
 
-  static bool verifDifferent(Real2x2 v1, Real2x2 v2, Real2x2& diff)
+  static bool verifDifferent(Real2x2 v1, Real2x2 v2, Real2x2& diff, bool is_nan_equal = false)
   {
     bool is_different = false;
-    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x);
-    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y);
+    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x, is_nan_equal);
+    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y, is_nan_equal);
     return is_different;
   }
 
@@ -672,12 +683,12 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3x3>
    */
   static bool getValue(Type&, const String&) { return true; }
 
-  static bool verifDifferent(Real3x3 v1, Real3x3 v2, Real3x3& diff)
+  static bool verifDifferent(Real3x3 v1, Real3x3 v2, Real3x3& diff, bool is_nan_equal = false)
   {
     bool is_different = false;
-    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x);
-    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y);
-    is_different |= SubTraits::verifDifferent(v1.z, v2.z, diff.z);
+    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x, is_nan_equal);
+    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y, is_nan_equal);
+    is_different |= SubTraits::verifDifferent(v1.z, v2.z, diff.z, is_nan_equal);
     return is_different;
   }
 
