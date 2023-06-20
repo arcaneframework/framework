@@ -100,7 +100,7 @@ class ArrayVariableDiff
       else{
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff)){
+        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
           this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,NULL_ITEM_ID));
           ++nb_diff;
         }
@@ -152,7 +152,7 @@ class ArrayVariableDiff
       else{
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff)){
+        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
           this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,index,NULL_ITEM_ID));
           ++nb_diff;
         }
@@ -208,7 +208,7 @@ class ArrayVariableDiff
       DataType diff = DataType();
       DataType min_val = min_values[index];
       DataType max_val = max_values[index];
-      if (VarDataTypeTraits::verifDifferent(min_val,max_val,diff)){
+      if (VarDataTypeTraits::verifDifferent(min_val,max_val,diff,true)){
         this->m_diffs_info.add(DiffInfo(min_val,max_val,diff,index,NULL_ITEM_ID));
         ++nb_diff;
       }

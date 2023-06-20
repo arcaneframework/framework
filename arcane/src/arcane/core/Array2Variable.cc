@@ -112,7 +112,7 @@ class Array2VariableDiff
         DataType diff = DataType();
         DataType dref = lref[z];
         DataType dcurrent = lcurrent[z];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff)){
+        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
           this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,z));
           ++nb_diff;
         }
@@ -209,7 +209,7 @@ class Array2VariableDiff
         DataType diff = DataType();
         DataType dref = lref[z];
         DataType dcurrent = lcurrent[z];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff)){
+        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
           this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,z));
           ++nb_diff;
         }
