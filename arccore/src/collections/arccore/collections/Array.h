@@ -572,7 +572,7 @@ class AbstractArray
       //std::cout << " REALLOC: want=" << wanted_size << " new_capacity=" << capacity << '\n';
     }
     // Si la nouvelle capacité est inférieure à la courante,ne fait rien.
-    if (acapacity<m_md->capacity)
+    if (acapacity <= m_md->capacity)
       return;
     _internalReallocate(acapacity,IsPODType());
   }
