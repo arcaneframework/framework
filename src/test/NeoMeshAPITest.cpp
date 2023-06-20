@@ -74,6 +74,8 @@ TEST(NeoMeshApiTest, AddItemTest) {
   for (auto item : new_cells3) {
     std::cout << "Added local id " << item << std::endl;
   }
+  // Check range are equals for added cells 1 and 3 : uids are the same
+  EXPECT_TRUE(std::equal(new_cells.begin(), new_cells.end(), new_cells3.begin()));
   // API for uids
   // get uid property
   auto const& cell_uid_property = mesh.getItemUidsProperty(cell_family);
@@ -99,6 +101,10 @@ TEST(NeoMeshApiTest, AddItemTest) {
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;
     EXPECT_EQ(cell_uids3[i++], cell_uid_property[item]);
   }
+  EXPECT_TRUE(std::equal(cell_uids.begin(), cell_uids.end(), cell_uids_ref.begin()));
+  EXPECT_TRUE(std::equal(cell_uids2.begin(), cell_uids2.end(), cell_uids2_ref.begin()));
+  EXPECT_TRUE(std::equal(cell_uids3.begin(), cell_uids3.end(), cell_uids3_ref.begin()));
+
   // API for lids
   auto cell_lids = mesh.localIds(cell_family, cell_uids);
   auto cell_lids2 = mesh.localIds(cell_family, cell_uids2);
@@ -110,12 +116,32 @@ TEST(NeoMeshApiTest, AddItemTest) {
   EXPECT_TRUE(std::equal(cell_lids_ref2.begin(), cell_lids_ref2.end(), cell_lids2.begin()));
   EXPECT_TRUE(std::equal(cell_lids_ref3.begin(), cell_lids_ref3.end(), cell_lids3.begin()));
   // Get uids view
-  auto uid_view = cell_uid_property.constView(new_cells);
-  // Print uids
+  // Check uids1
+  auto uid1_view = cell_uid_property.constView(new_cells);
   for (auto i = 0; i < new_cells.size(); ++i) {
-    std::cout << "uid view index " << i << " = " << uid_view[i]<< std::endl;
+    std::cout << "uid1 view index " << i << " = " << uid1_view[i] << std::endl;
   }
- }
+  EXPECT_TRUE(std::equal(cell_uids_ref.begin(), cell_uids_ref.end(), uid1_view.begin()));
+  // Check uids2
+  auto uid2_view = cell_uid_property.constView(new_cells2);
+  for (auto i = 0; i < new_cells.size(); ++i) {
+    std::cout << "uid2 view index " << i << " = " << uid2_view[i] << std::endl;
+  }
+  EXPECT_TRUE(std::equal(cell_uids2_ref.begin(), cell_uids2_ref.end(), uid2_view.begin()));
+  // Check uids3
+  auto uid3_view = cell_uid_property.constView(new_cells3);
+  for (auto i = 0; i < new_cells.size(); ++i) {
+    std::cout << "uid3 view index " << i << " = " << uid3_view[i] << std::endl;
+  }
+  EXPECT_TRUE(std::equal(cell_uids3_ref.begin(), cell_uids3_ref.end(), uid3_view.begin()));
+  // Check uids complete
+  auto uid_complete_view = cell_uid_property.constView();
+  for (auto i = 0; i < new_cells.size(); ++i) {
+    std::cout << "uid_complete view index " << i << " = " << uid_complete_view[i] << std::endl;
+  }
+  std::vector<Neo::utils::Int64> cell_uids_complete_ref = { 1, 10, 100, 2, 3, 4 };
+  EXPECT_TRUE(std::equal(cell_uids_complete_ref.begin(), cell_uids_complete_ref.end(), uid_complete_view.begin()));
+}
 
 /*---------------------------------------------------------------------------*/
 
