@@ -2597,6 +2597,10 @@ _compactItems(bool do_sort,bool compact_variables_and_groups)
   }
 
   m_need_compact = false;
+
+  // Considère le compactage comme une évolution du maillage car cela
+  // change les structures associées aux entités et leurs connectivités
+  ++m_timestamp;
 }
 
 /*---------------------------------------------------------------------------*/
