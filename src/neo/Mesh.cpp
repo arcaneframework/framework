@@ -399,6 +399,9 @@ Neo::Mesh::Connectivity Neo::Mesh::getConnectivity(Neo::Family const& source_fam
   auto connectivity_iter = m_connectivities.find(connectivity_name);
   if (connectivity_iter == m_connectivities.end())
     throw std::invalid_argument("Cannot find Connectivity " + connectivity_name);
+  else if (connectivity_iter->second.source_family != source_family || connectivity_iter->second.target_family != target_family) {
+    throw std::invalid_argument("Error in getConnectivity. The Connectivity " + connectivity_name + " does not connect the family " + source_family.name() + " to " + target_family.name() + " it connects family " + connectivity_iter->second.source_family.name() + " to family " + connectivity_iter->second.target_family.name());
+  }
   return connectivity_iter->second;
   // todo check source and target family type...(add operator== on family)
 }
@@ -418,7 +421,7 @@ std::vector<Neo::Mesh::Connectivity> Neo::Mesh::items(Neo::Family const& source_
   std::vector<Connectivity> item_connectivities_vector{};
   std::copy_if(connectivities_vector.begin(), connectivities_vector.end(), std::back_inserter(item_connectivities_vector),
                [&source_family, item_kind](auto& connectivity) {
-                 return (connectivity.source_family.name() == source_family.name() && // todo replace by a comparison operator between families
+                 return (connectivity.source_family == source_family &&
                          connectivity.target_family.itemKind() == item_kind);
                });
   return item_connectivities_vector;
