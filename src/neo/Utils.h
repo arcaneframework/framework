@@ -23,29 +23,47 @@
 #include <iterator>
 
 #ifdef NDEBUG
-  static constexpr bool ndebug = true;
-  static constexpr bool _debug  = false;
+static constexpr bool ndebug = true;
+static constexpr bool _debug = false;
 #ifdef _MSC_VER
 #define _MS_REL_
 #endif
 #else
-  static constexpr bool ndebug = false;
-  static constexpr bool _debug  = true;
+static constexpr bool ndebug = false;
+static constexpr bool _debug = true;
 #endif
 
-namespace Neo {
-  struct NullOstream : public std::ostream {};
-  struct NeoOutputStream{
-    mutable NullOstream m_null_ostream;
-  };
-  inline NeoOutputStream print() {return NeoOutputStream{};}
+namespace Neo
+{
+struct NullOstream : public std::ostream
+{};
+struct NeoOutputStream
+{
+  mutable NullOstream m_null_ostream;
+};
+inline NeoOutputStream print() {
+  return NeoOutputStream{};
+}
 
-namespace utils {
+namespace utils
+{
   using Int64 = std::int64_t;
   using Int32 = std::int32_t;
-  struct Real3 { double x,y,z;};
+  using Real = double;
+  struct Real3
+  {
+    double x, y, z;
+  };
+
+  /*!
+     * \brief View of a data array
+     * @tparam T view data type
+     * Will be replaced by std::span when moving to C++20
+    */
+  // todo use std::span instead when moving to C++20
   template <typename T>
-  struct ArrayView {
+  struct ArrayView
+  {
     using value_type = T;
     using size_type = int;
     using vector_size_type = typename std::vector<T>::size_type;
@@ -53,17 +71,25 @@ namespace utils {
     size_type m_size = 0;
     T* m_ptr = nullptr;
 
-    ArrayView(size_type size, T* data) : m_size(size), m_ptr(data){}
-    ArrayView(vector_size_type size, T* data) : m_size(size), m_ptr(data){}
+    ArrayView(size_type size, T* data)
+    : m_size(size)
+    , m_ptr(data) {}
+    ArrayView(vector_size_type size, T* data)
+    : m_size(size)
+    , m_ptr(data) {}
     ArrayView() = default;
 
-    T& operator[](int i) {assert(i<m_size); return *(m_ptr+i);}
+    T& operator[](int i) {
+      assert(i < m_size);
+      return *(m_ptr + i);
+    }
 
-    T* begin() {return m_ptr;}
-    T* end()   {return m_ptr+m_size;}
+    T* begin() { return m_ptr; }
+    T* end() { return m_ptr + m_size; }
 
-    int size() const {return m_size;}
-    std::vector<T> copy() { std::vector<T> vec(m_size);
+    int size() const { return m_size; }
+    std::vector<T> copy() {
+      std::vector<T> vec(m_size);
       std::copy(this->begin(), this->end(), vec.begin());
       return vec;
     }
@@ -97,7 +123,9 @@ namespace utils {
    * The second dimension varies first {(i,j),(i,j+1),(i+1,j),(i+1,j+1)}...
    * \fn operator[i] returns a view of size \refitem Array2View.m_dim2_size
    * @tparam T view data type
+   * Will be replaced by std::mdspan when moving to C++23
    */
+  // todo use std::mdspan instead when moving to C++23
   template <typename T>
   struct Array2View {
     using value_type = T;
@@ -190,25 +218,32 @@ namespace utils {
     }
   };
 
-}// end namespace utils
+  // Some useful using
+  using Int32Span = ArrayView<Int32>;
+  using Int64Span = ArrayView<Int64>;
+  using Int32ConstSpan = ConstArrayView<Int32>;
+  using Int64ConstSpan = ConstArrayView<Int64>;
+  using Int32Span2D = Array2View<Int32>; // todo check name see stl MDSpan et Arcane ?
+  using Int64Span2D = Array2View<Int64>;
+  using Int32ConstSpan2D = ConstArray2View<Int32>; // todo check name see stl MDSpan et Arcane ?
+  using Int64SConstpan2D = ConstArray2View<Int64>;
 
-}// end namespace Neo
+} // end namespace utils
+
+} // end namespace Neo
 
 // Real3 utilities
-inline
-std::ostream& operator<<(std::ostream& oss, Neo::utils::Real3 const& real3){
-  oss << "{" << real3.x  << ","  << real3.y << "," << real3.z << "}";
+inline std::ostream& operator<<(std::ostream& oss, Neo::utils::Real3 const& real3) {
+  oss << "{" << real3.x << "," << real3.y << "," << real3.z << "}";
   return oss;
 }
-inline
-bool operator==(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b){
+inline bool operator==(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) {
   return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
 // Array utilities
 template <typename T>
-std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container)
-{
+std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container) {
   return Neo::utils::_printContainer(container, oss);
 }
 
