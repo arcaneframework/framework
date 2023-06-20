@@ -236,8 +236,19 @@ TEST(NeoMeshApiTest, SetNodeCoordsTest) {
   EXPECT_THROW(mesh.getItemCoordProperty(cell_family), std::invalid_argument);
 }
 
-TEST(NeoMeshApiTest,AddItemConnectivity) {
-  auto mesh = Neo::Mesh{"AddItemConnectivityTestMesh"};
+/*---------------------------------------------------------------------------*/
+
+bool areEqual(Neo::Mesh::Connectivity const con1, Neo::Mesh::Connectivity const con2) {
+  bool are_equal = con1.name == con2.name;
+  are_equal &= &con1.source_family == &con2.source_family;
+  are_equal &= &con1.target_family == &con2.target_family;
+  are_equal &= &con1.connectivity_value == &con2.connectivity_value;
+  are_equal &= &con1.connectivity_orientation == &con2.connectivity_orientation;
+  return are_equal;
+}
+
+TEST(NeoMeshApiTest, AddItemConnectivity) {
+  auto mesh = Neo::Mesh{ "AddItemConnectivityTestMesh" };
   auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
   auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
   auto dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "DoFFamily");
@@ -290,101 +301,178 @@ TEST(NeoMeshApiTest,AddItemConnectivity) {
   EXPECT_EQ(cell_to_nodes_connectivity_name, cell_to_nodes.name);
   EXPECT_EQ(&cell_family, &cell_to_nodes.source_family);
   EXPECT_EQ(&node_family, &cell_to_nodes.target_family);
+  auto connected_nodes = mesh.uniqueIds(node_family, cell_to_nodes.connectivity_value.constView());
+  std::vector<Neo::utils::Int64> cell_nodes_ref{ 0, 1, 2, 3, 5, 0, 3, 4 };
+  EXPECT_TRUE(std::equal(connected_nodes.begin(), connected_nodes.end(), cell_nodes_ref.begin()));
+  std::vector<Neo::utils::Int32> cell_nodes_lids_ref = node_family.itemUniqueIdsToLocalids(cell_nodes_ref);
+  auto i = 0;
   for (auto const cell : added_cells) {
-    std::cout << "cell lid " << cell << " nodes lids " << cell_to_nodes[cell]
+    auto current_cell_nodes = cell_to_nodes[cell];
+    std::cout << "cell lid " << cell << " connected nodes lids " << current_cell_nodes
               << std::endl;
+    for (auto const& node_lid : current_cell_nodes) {
+      EXPECT_EQ(node_lid, cell_nodes_lids_ref[i++]);
+    }
   }
-  auto const cell_to_dofs = mesh.getConnectivity(
-      cell_family, dof_family, cell_to_dofs_connectivity_name);
+  // check cell_to_dofs
+  auto cell_to_dofs = mesh.getConnectivity(
+  cell_family, dof_family, cell_to_dofs_connectivity_name);
   EXPECT_EQ(cell_to_dofs_connectivity_name, cell_to_dofs.name);
   EXPECT_EQ(&cell_family, &cell_to_dofs.source_family);
   EXPECT_EQ(&dof_family, &cell_to_dofs.target_family);
-  std::vector<Neo::utils::Int32> cell_dofs_lids =
-      dof_family.itemUniqueIdsToLocalids(cell_dofs_ref);
+  auto connected_dofs = cell_to_dofs.connectivity_value.constView();
+  std::vector<Neo::utils::Int32> cell_dofs_lids_ref = dof_family.itemUniqueIdsToLocalids(cell_dofs_ref);
+  EXPECT_TRUE(std::equal(connected_dofs.begin(), connected_dofs.end(), cell_dofs_lids_ref.begin()));
+  i = 0;
   for (auto const cell : added_cells) {
     auto current_cell_dofs = cell_to_dofs[cell];
-    std::cout << "cell lid " << cell << " dofs lids " << current_cell_dofs
+    std::cout << "cell lid " << cell << " connected dofs lids " << current_cell_dofs
               << std::endl;
-    auto i = 0;
-    for (auto dof_lid : current_cell_dofs) {
-      EXPECT_EQ(dof_lid, current_cell_dofs[i++]);
+    for (auto const& dof_lid : current_cell_dofs) {
+      EXPECT_EQ(dof_lid, cell_dofs_lids_ref[i++]);
     }
   }
-  // Check another connectivity getter
-  auto cell_to_nodes_connectivities = mesh.nodes(
-      cell_family); // returns all IK_Node families connected wih cell_family
-  for (auto connectivity : cell_to_nodes_connectivities) {
-    std::cout << "Connectivity name " << connectivity.name;
+  // check node_to_cells
+  auto node_to_cells = mesh.getConnectivity(node_family, cell_family, node_to_cells_connectivity_name);
+  EXPECT_EQ(node_to_cells_connectivity_name, node_to_cells.name);
+  EXPECT_EQ(&node_family, &node_to_cells.source_family);
+  EXPECT_EQ(&cell_family, &node_to_cells.target_family);
+  auto connected_cells = mesh.uniqueIds(cell_family, node_to_cells.connectivity_value.constView());
+  std::vector<Neo::utils::Int64> node_cells_ref{ 0, 1, 0, 0, 0, 1, 1, 1 };
+  std::vector<Neo::utils::Int32> node_cells_lids_ref = node_family.itemUniqueIdsToLocalids(node_cells_ref);
+  EXPECT_TRUE(std::equal(connected_cells.begin(), connected_cells.end(), node_cells_lids_ref.begin()));
+  i = 0;
+  for (auto const node : added_nodes) {
+    auto current_node_cells = node_to_cells[node];
+    std::cout << "node lid " << node << " connected cell lids " << current_node_cells
+              << std::endl;
+    for (auto const& cell_lid : current_node_cells) {
+      EXPECT_EQ(cell_lid, node_cells_lids_ref[i++]);
+    }
   }
-  auto cell_to_dofs_connectivities = mesh.dofs(
-      cell_family); // returns all IK_Node families connected wih cell_family
-  for (auto connectivity : cell_to_dofs_connectivities) {
-    std::cout << "Connectivity name " << connectivity.name;
+  // check node_to_dofs
+  auto node_to_dofs = mesh.getConnectivity(node_family, dof_family, node_to_dofs_connectivity_name);
+  EXPECT_EQ(node_to_dofs_connectivity_name, node_to_dofs.name);
+  EXPECT_EQ(&node_family, &node_to_cells.source_family);
+  EXPECT_EQ(&dof_family, &node_to_dofs.target_family);
+  connected_dofs = node_to_dofs.connectivity_value.constView();
+  std::vector<Neo::utils::Int64> node_dofs_ref{ 0, 1, 2, 3, 4, 0 };
+  std::vector<Neo::utils::Int32> node_dofs_lids_ref = dof_family.itemUniqueIdsToLocalids(node_dofs_ref);
+  EXPECT_TRUE(std::equal(connected_dofs.begin(), connected_dofs.end(), node_dofs_lids_ref.begin()));
+  i = 0;
+  for (auto const node : added_nodes) {
+    auto current_node_dofs = node_to_dofs[node];
+    std::cout << "node lid " << node << " connected dof lids " << current_node_dofs
+              << std::endl;
+    for (auto const& dof_lid : current_node_dofs) {
+      EXPECT_EQ(dof_lid, node_dofs_lids_ref[i++]);
+    }
   }
-  // Add new connectivities
-  std::vector<Neo::utils::Int64> cell_nodes2{
-      0, 3, 4, 5, 0, 1, 2, 3,
-      0, 1, 2, 3, 0, 3, 4, 5}; // node + neighbour cell nodes
-  std::vector<Neo::utils::Int64> face_uids{0, 1, 2, 3, 4, 5, 6};
-  std::vector<Neo::utils::Int64> cell_faces{0, 1, 2, 3, 4, 5, 6, 1};
-  std::vector<Neo::utils::Int64> edge_uids{0, 1, 2, 3, 4, 5, 6};
-  std::vector<Neo::utils::Int64> cell_edges{0, 1, 2, 3, 4, 5, 6, 1};
-  std::vector<Neo::utils::Int64> cell_dofs2{0, 1, 2, 3, 0, 4};
-  auto &face_family = mesh.addFamily(Neo::ItemKind::IK_Face, "face_family");
-  auto &edge_family = mesh.addFamily(Neo::ItemKind::IK_Edge, "edge_family");
-  auto promised_faces = Neo::FutureItemRange{};
-  auto promised_edges = Neo::FutureItemRange{};
-  mesh.scheduleAddItems(face_family, face_uids, promised_faces);
-  mesh.scheduleAddItems(edge_family, edge_uids, promised_edges);
-  mesh.scheduleAddConnectivity(cell_family, added_cells, node_family, 8,
-                               cell_nodes2, "cell_to_nodes_2");
-  mesh.scheduleAddConnectivity(cell_family, added_cells, face_family, 4,
-                               cell_faces, "cell_to_faces");
-  mesh.scheduleAddConnectivity(cell_family, added_cells, edge_family, 4,
-                               cell_edges, "cell_to_edges");
-  mesh.scheduleAddConnectivity(cell_family, added_cells, dof_family, 3,
-                               cell_dofs2, "cell_to_dofs_2");
+  // Add a second connectivity cell -> dofs
+  auto& dof_family2 = mesh.addFamily(Neo::ItemKind::IK_Dof, "dof_family2");
+  mesh.scheduleAddConnectivity(cell_family, added_cells, dof_family2, { 2, 2 }, { 10, 11, 10, 11 }, "cell_to_dofs2");
   mesh.applyScheduledOperations();
-  // connectivity access
-  cell_to_nodes_connectivities = mesh.nodes(
-      cell_family); // returns all IK_Node families connected wih cell_family
+  auto cell_to_dofs2 = mesh.getConnectivity(cell_family, dof_family2, "cell_to_dofs2");
+  // Check another connectivity getter
+  // cell to nodes
+  auto cell_to_nodes_connectivities = mesh.nodes(
+  cell_family); // returns all IK_Node families connected wih cell_family
   for (auto connectivity : cell_to_nodes_connectivities) {
-    std::cout << "Connectivity name " << connectivity.name;
+    std::cout << "Connectivity name " << connectivity.name << std::endl;
   }
-  cell_to_dofs_connectivities = mesh.dofs(
-      cell_family); // returns all IK_Node families connected wih cell_family
+  EXPECT_EQ(cell_to_nodes_connectivities.size(), 1);
+  EXPECT_TRUE(areEqual(cell_to_nodes_connectivities[0], cell_to_nodes));
+  // cell to dofs & cell to dofs 2
+  auto cell_to_dofs_connectivities = mesh.dofs(cell_family); // returns all IK_Node families connected wih cell_family
   for (auto connectivity : cell_to_dofs_connectivities) {
-    std::cout << "Connectivity name " << connectivity.name;
+    std::cout << "Connectivity name " << connectivity.name << std::endl;
   }
-  // check asking non existing connectivity
-  EXPECT_THROW(
-      mesh.getConnectivity(cell_family, node_family, "unexisting_connectivity"),
-      std::invalid_argument);
+  EXPECT_EQ(cell_to_dofs_connectivities.size(), 2);
+  EXPECT_TRUE(areEqual(cell_to_dofs_connectivities[0], cell_to_dofs));
+  EXPECT_TRUE(areEqual(cell_to_dofs_connectivities[1], cell_to_dofs2));
+
+  // node to cells
+  auto node_to_cells_connectivities = mesh.cells(node_family); // returns all IK_Cell families connected wih, node_family
+  for (auto connectivity : node_to_cells_connectivities) {
+    std::cout << "Connectivity name " << connectivity.name << std::endl;
+  }
+  EXPECT_EQ(node_to_cells_connectivities.size(), 1);
+  EXPECT_TRUE(areEqual(node_to_cells_connectivities[0], node_to_cells));
+  // node to dofs
+  auto node_to_dofs_connectivities = mesh.dofs(node_family); // returns all IK_Cell families connected wih, node_family
+  for (auto connectivity : node_to_dofs_connectivities) {
+    std::cout << "Connectivity name " << connectivity.name << std::endl;
+  }
+  EXPECT_EQ(node_to_dofs_connectivities.size(), 1);
+  EXPECT_TRUE(areEqual(node_to_dofs_connectivities[0], node_to_dofs));
+  // check asking non-existing connectivity
+  EXPECT_THROW(mesh.getConnectivity(cell_family, node_family, "unexisting_connectivity"), std::invalid_argument);
+  // check asking an existing connectivity with wrong families
+  EXPECT_THROW(mesh.getConnectivity(cell_family, node_family, node_to_cells_connectivity_name), std::invalid_argument);
+  EXPECT_THROW(mesh.getConnectivity(cell_family, dof_family, cell_to_nodes_connectivity_name), std::invalid_argument);
+  EXPECT_THROW(mesh.getConnectivity(dof_family, node_family, cell_to_nodes_connectivity_name), std::invalid_argument);
+  auto& cell_family2 = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family2");
+  auto& node_family2 = mesh.addFamily(Neo::ItemKind::IK_Node, "node_family2");
+  EXPECT_THROW(mesh.getConnectivity(node_family2, cell_family2, cell_to_nodes_connectivity_name), std::invalid_argument);
+}
+
+/*---------------------------------------------------------------------------*/
+
+TEST(NeoMeshApiTest, AddAndChangeItemConnectivity) {
+  // Add new connectivities
+  auto mesh = Neo::Mesh{ "AddAndChangeItemConnectivityTestMesh" };
+  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  auto& dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "dof_family");
+  std::vector<Neo::utils::Int64> cell_uids{ 0, 1 };
+  std::vector<Neo::utils::Int64> dof_uids{ 0, 1, 2, 3, 4 };
+  std::vector<Neo::utils::Int64> cell_dofs{ 0, 1, 2, 3, 0, 4 };
+  auto future_cells = Neo::FutureItemRange{};
+  auto future_dofs = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(cell_family, cell_uids, future_cells);
+  mesh.scheduleAddItems(dof_family, dof_uids, future_dofs);
+  mesh.scheduleAddConnectivity(cell_family, future_cells, dof_family, 3,
+                               cell_dofs, "cell_to_dofs");
+  mesh.applyScheduledOperations();
+
   // Change an existing connectivity : cell 0 now points to dofs uids {3,4}
-  auto cell_lids = cell_family.itemUniqueIdsToLocalids({0});
-  Neo::ItemRange cell_range{cell_lids};
-  auto connected_dofs = std::vector<Neo::utils::Int64>{3, 4};
+  auto cell_lids = cell_family.itemUniqueIdsToLocalids({ 0 });
+  Neo::ItemRange cell_range{ cell_lids };
+  auto connected_dofs = std::vector<Neo::utils::Int64>{ 3, 4 };
   mesh.scheduleAddConnectivity(cell_family, cell_range, dof_family, 2,
-                               connected_dofs, cell_to_dofs_connectivity_name,
+                               connected_dofs, "cell_to_dofs",
                                Neo::Mesh::ConnectivityOperation::Modify);
   mesh.applyScheduledOperations();
+  // check modification
+  cell_dofs = { 3, 4, 3, 0, 4 }; // cell 0 => dof 3&4 (modif), cell1 => dof 3,0,4 (unmodified)
+  auto connected_dofs_new_lids = mesh.dofs(cell_family)[0].connectivity_value.constView();
+  auto connected_dofs_new_uids = mesh.uniqueIds(dof_family, connected_dofs_new_lids);
+  EXPECT_TRUE(std::equal(connected_dofs_new_uids.begin(), connected_dofs_new_uids.end(), cell_dofs.begin()));
   // Try to connect a subpart of added items by index
   {
-    cell_uids = {2, 3, 4};
-    dof_uids = {5, 6};
+    cell_uids = { 2, 3, 4 };
+    dof_uids = { 5, 6 };
     auto added_cells_future_new = Neo::FutureItemRange{};
     auto added_dofs_future_new = Neo::FutureItemRange{};
     mesh.scheduleAddItems(cell_family, cell_uids, added_cells_future_new);
     mesh.scheduleAddItems(dof_family, dof_uids, added_dofs_future_new);
     // Create a filtered ItemRange containing elements with indexes 0 & 1
-    auto filtered_future_cell_range =
-        Neo::make_future_range(added_cells_future, {0, 1});
+    std::vector<int> cell_indexes = { 0, 1 };
+    auto filtered_future_cell_range = Neo::make_future_range(added_cells_future_new, cell_indexes);
     mesh.scheduleAddConnectivity(cell_family, filtered_future_cell_range,
-                                 dof_family, {1, 2}, {5, 5, 6},
+                                 dof_family, { 1, 2 }, { 5, 5, 6 },
                                  "cell_to_dofs_new");
     auto end_update = mesh.applyScheduledOperations();
+    std::vector<Neo::utils::Int64> connected_dof_uids_ref{ 5, 5, 6 };
     auto added_cells_filtered = filtered_future_cell_range.get(end_update);
+    auto added_cells_filtered_uids = mesh.uniqueIds(cell_family, added_cells_filtered.localIds());
     auto added_cells2 = added_cells_future_new.get(end_update);
+    auto added_cells2_uids = mesh.uniqueIds(cell_family, added_cells2.localIds());
+    std::vector<Neo::utils::Int64> added_cells_filtered_ref = { cell_uids[cell_indexes[0]], cell_uids[cell_indexes[1]] }; // two first uids given
+    EXPECT_TRUE(std::equal(added_cells_filtered_uids.begin(), added_cells_filtered_uids.end(), added_cells_filtered_ref.begin()));
+    EXPECT_TRUE(std::equal(added_cells2_uids.begin(), added_cells2_uids.end(), cell_uids.begin()));
+    auto connected_dof_lids = mesh.getConnectivity(cell_family, dof_family, "cell_to_dofs_new").connectivity_value.constView();
+    auto connected_dof_uids = mesh.uniqueIds(dof_family, connected_dof_lids);
+    EXPECT_TRUE(std::equal(connected_dof_uids.begin(), connected_dof_uids.end(), connected_dof_uids_ref.begin()));
   }
   // Try to connect a subpart of added items by an uids vector
   {
@@ -404,26 +492,30 @@ TEST(NeoMeshApiTest,AddItemConnectivity) {
                                  dof_family, { 2, 1, 2 }, { 7, 8, 7, 8, 7 },
                                  "cell_to_dofs_new3");
     auto end_update = mesh.applyScheduledOperations();
-    auto cell_to_dofs_new = mesh.dofs(cell_family).back(); // get the last cell to dof connectivity
-    auto cell_dofs_cons = mesh.dofs(cell_family);
     auto added_cell_new = added_cells_future_new.get(end_update);
+    // Enumerate cell_to_dofs_new2
+    auto cell_to_dofs_new2 = mesh.getConnectivity(cell_family, dof_family, "cell_to_dofs_new2");
     for (auto cell : added_cell_new) {
-      for (auto dof : cell_to_dofs_new[cell]) {
+      for (auto dof : cell_to_dofs_new2[cell]) {
         std::cout << "cell " << cell << " connected with dof " << dof << std::endl;
       }
     }
-    //    auto source_cell_lids = mesh.localIds(cell_family,{5,7});
-//    std::vector<Neo::utils::Int32> connected_dofs_lids;
-//    connected_dofs_lids.reserve(2);
-//    for (const auto cell : source_cell_lids) {
-//      for (auto dof : cell_to_dofs_new[cell]) {
-//        connected_dofs_lids.push_back(dof);
-//      }
-//    }
-//    std::vector<Neo::utils::Int64> connected_dofs_uids = mesh.uniqueIds(dof_family,connected_dofs_lids);
-//    std::vector<Neo::utils::Int64> connected_dofs_uids_ref {7,8,7};
-//    EXPECT_TRUE(std::equal(connected_dofs_uids_ref.begin(),
-//                           connected_dofs_uids_ref.end(),
-//                           connected_dofs_uids.begin()));
+    // Enumerate cell_to_dofs_new3
+    auto cell_to_dofs_new3 = mesh.getConnectivity(cell_family, dof_family, "cell_to_dofs_new3");
+    for (auto cell : added_cell_new) {
+      for (auto dof : cell_to_dofs_new3[cell]) {
+        std::cout << "cell " << cell << " connected with dof " << dof << std::endl;
+      }
+    }
+    // Check cell_to_dofs_new2
+    auto connected_dofs_new2_lids = cell_to_dofs_new2.connectivity_value.constView();
+    auto connected_dofs_new2_uids = mesh.uniqueIds(dof_family, connected_dofs_new2_lids);
+    std::vector<Neo::utils::Int64> connected_dofs_new2_uids_ref{ 7, 8, 7 };
+    EXPECT_TRUE(std::equal(connected_dofs_new2_lids.begin(), connected_dofs_new2_lids.end(), connected_dofs_new2_uids_ref.begin()));
+    // Check cell_to_dofs_new3
+    auto connected_dofs_new3_lids = cell_to_dofs_new3.connectivity_value.constView();
+    auto connected_dofs_new3_uids = mesh.uniqueIds(dof_family, connected_dofs_new3_lids);
+    std::vector<Neo::utils::Int64> connected_dofs_new3_uids_ref{ 7, 8, 7, 8, 7 };
+    EXPECT_TRUE(std::equal(connected_dofs_new3_lids.begin(), connected_dofs_new3_lids.end(), connected_dofs_new3_uids_ref.begin()));
   }
 }
