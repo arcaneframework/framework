@@ -455,7 +455,10 @@ class Mesh
    * @param item_lids Given item local ids
    * @return Given item unique ids
    */
-  std::vector<Neo::utils::Int64> uniqueIds(Family const& item_family, const std::vector<Neo::utils::Int32>& item_lids) const noexcept;
+  std::vector<Neo::utils::Int64> uniqueIds(Family const& item_family, std::vector<Neo::utils::Int32> const& item_lids) const noexcept;
+
+  std::vector<Neo::utils::Int64> uniqueIds(Family const& item_family, Neo::utils::Int32ConstSpan item_lids) const noexcept;
+
   /*!
    * Get local ids from \p item_uids (unique ids) in \p item_family
    * @param item_family Family of given items
