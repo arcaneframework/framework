@@ -6,7 +6,7 @@
   <boucle-en-temps>UnitTest</boucle-en-temps>
  </arcane>
 
- <maillage utilise-unite="false">
+ <maillage use-unit="false">
   <fichier internal-partition="true">tube5x5x100.unf</fichier>
  </maillage>
 

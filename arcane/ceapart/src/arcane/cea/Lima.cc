@@ -446,6 +446,16 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
     }
     use_unit_attr_name = "use-unit";
   }
+  else{
+    // Si non anglais et que 'utilise-unite' n'est pas trouvé,
+    // essaie d'utiliser 'use-unit'. Cela est nécessaire pour prendre en compte
+    // MeshReaderMng::isUseMeshUnit().
+    if (use_unit_str.null()){
+      info() << "Attribute '" << use_unit_attr_name << "' is not found. Trying with 'use-unit'";
+      use_unit_attr_name = "use-unit";
+    }
+  }
+
   // Depuis la 2.8.0 de Arcane, on lit par défaut les unités de longueur si
   // si la variable d'environnement ARCANE_LIMA_DEFAULT_NO_UNIT est définie.
   bool use_length_unit = true;
