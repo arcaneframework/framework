@@ -519,3 +519,34 @@ TEST(NeoMeshApiTest, AddAndChangeItemConnectivity) {
     EXPECT_TRUE(std::equal(connected_dofs_new3_lids.begin(), connected_dofs_new3_lids.end(), connected_dofs_new3_uids_ref.begin()));
   }
 }
+
+/*---------------------------------------------------------------------------*/
+
+TEST(NeoMeshApiTest, AddItemConnectivityWithSubsteps) {
+  // Add new connectivities
+  auto mesh = Neo::Mesh{ "AddAndChangeItemConnectivityTestMesh" };
+  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  auto& dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "dof_family");
+  std::vector<Neo::utils::Int64> cell_uids1{ 0 };
+  std::vector<Neo::utils::Int64> cell_uids2{ 1 };
+  std::vector<Neo::utils::Int64> dof_uids{ 0, 1, 2, 3, 4 };
+  std::vector<Neo::utils::Int64> cell_dofs1{ 0, 1, 2 };
+  std::vector<Neo::utils::Int64> cell_dofs2{ 3, 0, 4 };
+  auto future_cells1 = Neo::FutureItemRange{};
+  auto future_cells2 = Neo::FutureItemRange{};
+  auto future_dofs = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(cell_family, cell_uids1, future_cells1);
+  mesh.scheduleAddItems(cell_family, cell_uids2, future_cells2);
+  mesh.scheduleAddItems(dof_family, dof_uids, future_dofs);
+  mesh.scheduleAddConnectivity(cell_family, future_cells2, dof_family, 3,
+                               cell_dofs2, "cell_to_dofs");
+  mesh.scheduleAddConnectivity(cell_family, future_cells1, dof_family, 3,
+                               cell_dofs1, "cell_to_dofs", Neo::Mesh::ConnectivityOperation::Modify);
+  mesh.applyScheduledOperations();
+  // Check
+  auto cell_to_dofs = mesh.dofs(cell_family)[0]; // only one cell to dof connectivity
+  auto connected_dofs_lids = cell_to_dofs.connectivity_value.constView();
+  auto connected_dofs_uids = mesh.uniqueIds(dof_family, connected_dofs_lids);
+  std::vector<Neo::utils::Int64> connected_dofs_uids_ref{ 0, 1, 2, 3, 0, 4 };
+  EXPECT_TRUE(std::equal(connected_dofs_lids.begin(), connected_dofs_lids.end(), connected_dofs_uids_ref.begin()));
+}
