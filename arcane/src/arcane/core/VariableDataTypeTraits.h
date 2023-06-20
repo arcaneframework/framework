@@ -83,14 +83,14 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Byte>
 
   typedef Byte BasicType;
 
-  static Integer nbBasicType() { return 1; }
+  static constexpr Integer nbBasicType() { return 1; }
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "Byte"; }
+  static constexpr const char* typeName() { return "Byte"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_Byte; }
+  static constexpr eDataType type() { return DT_Byte; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
@@ -146,14 +146,14 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
 
   typedef Real BasicType;
 
-  static Integer nbBasicType() { return 1; }
+  static constexpr Integer nbBasicType() { return 1; }
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "Real"; }
+  static constexpr const char* typeName() { return "Real"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_Real; }
+  static constexpr eDataType type() { return DT_Real; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
@@ -215,14 +215,14 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int16>
 
   typedef Int16 BasicType;
 
-  static Integer nbBasicType() { return 1; }
+  static constexpr Integer nbBasicType() { return 1; }
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "Int16"; }
+  static constexpr const char* typeName() { return "Int16"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_Int16; }
+  static constexpr eDataType type() { return DT_Int16; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
@@ -276,14 +276,14 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int32>
 
   typedef Int32 BasicType;
 
-  static Integer nbBasicType() { return 1; }
+  static constexpr Integer nbBasicType() { return 1; }
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "Int32"; }
+  static constexpr const char* typeName() { return "Int32"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_Int32; }
+  static constexpr eDataType type() { return DT_Int32; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
@@ -337,14 +337,14 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
 
   typedef Int64 BasicType;
 
-  static Integer nbBasicType() { return 1; }
+  static constexpr Integer nbBasicType() { return 1; }
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "Int64"; }
+  static constexpr const char* typeName() { return "Int64"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_Int64; }
+  static constexpr eDataType type() { return DT_Int64; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
@@ -399,14 +399,14 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<String>
 
   typedef String BasicType;
 
-  static Integer nbBasicType() { return 1; }
+  static constexpr Integer nbBasicType() { return 1; }
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "String"; }
+  static constexpr const char* typeName() { return "String"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_String; }
+  static constexpr eDataType type() { return DT_String; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type& v) { s = v; }
   /*!
@@ -454,14 +454,18 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
 
   typedef Real BasicType;
 
-  static Integer nbBasicType() { return 2; }
+  static constexpr Integer nbBasicType() { return 2; }
+
+ private:
+
+  using SubTraits = VariableDataTypeTraitsT<Real>;
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "Real2"; }
+  static constexpr const char* typeName() { return "Real2"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_Real2; }
+  static constexpr eDataType type() { return DT_Real2; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type&) { s = "N/A"; }
   /*!
@@ -474,15 +478,15 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
   static bool verifDifferent(Real2 v1, Real2 v2, Real2& diff)
   {
     bool is_different = false;
-    is_different |= VariableDataTypeTraitsT<Real>::verifDifferent(v1.x, v2.x, diff.x);
-    is_different |= VariableDataTypeTraitsT<Real>::verifDifferent(v1.y, v2.y, diff.y);
+    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x);
+    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y);
     return is_different;
   }
 
   static Real normeMax(const Real2& v)
   {
-    Real vx = VariableDataTypeTraitsT<Real>::normeMax(v.x);
-    Real vy = VariableDataTypeTraitsT<Real>::normeMax(v.y);
+    Real vx = SubTraits::normeMax(v.x);
+    Real vy = SubTraits::normeMax(v.y);
     return math::max(vx, vy);
   }
 };
@@ -515,14 +519,18 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
 
   typedef Real BasicType;
 
-  static Integer nbBasicType() { return 3; }
+  static constexpr Integer nbBasicType() { return 3; }
+
+ private:
+
+  using SubTraits = VariableDataTypeTraitsT<Real>;
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "Real3"; }
+  static constexpr const char* typeName() { return "Real3"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_Real3; }
+  static constexpr eDataType type() { return DT_Real3; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type&) { s = "N/A"; }
   /*!
@@ -535,17 +543,17 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
   static bool verifDifferent(Real3 v1, Real3 v2, Real3& diff)
   {
     bool is_different = false;
-    is_different |= VariableDataTypeTraitsT<Real>::verifDifferent(v1.x, v2.x, diff.x);
-    is_different |= VariableDataTypeTraitsT<Real>::verifDifferent(v1.y, v2.y, diff.y);
-    is_different |= VariableDataTypeTraitsT<Real>::verifDifferent(v1.z, v2.z, diff.z);
+    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x);
+    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y);
+    is_different |= SubTraits::verifDifferent(v1.z, v2.z, diff.z);
     return is_different;
   }
 
   static Real normeMax(const Real3& v)
   {
-    Real vx = VariableDataTypeTraitsT<Real>::normeMax(v.x);
-    Real vy = VariableDataTypeTraitsT<Real>::normeMax(v.y);
-    Real vz = VariableDataTypeTraitsT<Real>::normeMax(v.z);
+    Real vx = SubTraits::normeMax(v.x);
+    Real vy = SubTraits::normeMax(v.y);
+    Real vz = SubTraits::normeMax(v.z);
     return math::max(vx, math::max(vy, vz));
   }
 };
@@ -578,14 +586,18 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
 
   typedef Real BasicType;
 
-  static Integer nbBasicType() { return 4; }
+  static constexpr Integer nbBasicType() { return 4; }
+
+ private:
+
+  using SubTraits = VariableDataTypeTraitsT<Real2>;
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "Real2x2"; }
+  static constexpr const char* typeName() { return "Real2x2"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_Real2x2; }
+  static constexpr eDataType type() { return DT_Real2x2; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type&) { s = "N/A"; }
   /*!
@@ -598,16 +610,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
   static bool verifDifferent(Real2x2 v1, Real2x2 v2, Real2x2& diff)
   {
     bool is_different = false;
-    is_different |= VariableDataTypeTraitsT<Real2>::verifDifferent(v1.x, v2.x, diff.x);
-    is_different |= VariableDataTypeTraitsT<Real2>::verifDifferent(v1.y, v2.y, diff.y);
+    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x);
+    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y);
     return is_different;
   }
 
   static Real normeMax(const Real2x2& v)
   {
-    Real vx = VariableDataTypeTraitsT<Real2>::normeMax(v.x);
-    Real vy = VariableDataTypeTraitsT<Real2>::normeMax(v.y);
-    return VariableDataTypeTraitsT<Real2>::normeMax(Real2(vx, vy));
+    Real vx = SubTraits::normeMax(v.x);
+    Real vy = SubTraits::normeMax(v.y);
+    return SubTraits::normeMax(Real2(vx, vy));
   }
 };
 
@@ -639,14 +651,18 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3x3>
 
   typedef Real BasicType;
 
-  static Integer nbBasicType() { return 9; }
+  static constexpr Integer nbBasicType() { return 9; }
+
+ private:
+
+  using SubTraits = VariableDataTypeTraitsT<Real3>;
 
  public:
 
   //! Retourne le nom du type de la variable
-  static const char* typeName() { return "Real3x3"; }
+  static constexpr const char* typeName() { return "Real3x3"; }
   //! Retourne le type de la variable
-  static eDataType type() { return DT_Real3x3; }
+  static constexpr eDataType type() { return DT_Real3x3; }
   //! Ecrit dans la chaîne \a s la valeur de \a v
   static void dumpValue(String& s, const Type&) { s = "N/A"; }
   /*!
@@ -659,17 +675,17 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3x3>
   static bool verifDifferent(Real3x3 v1, Real3x3 v2, Real3x3& diff)
   {
     bool is_different = false;
-    is_different |= VariableDataTypeTraitsT<Real3>::verifDifferent(v1.x, v2.x, diff.x);
-    is_different |= VariableDataTypeTraitsT<Real3>::verifDifferent(v1.y, v2.y, diff.y);
-    is_different |= VariableDataTypeTraitsT<Real3>::verifDifferent(v1.z, v2.z, diff.z);
+    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x);
+    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y);
+    is_different |= SubTraits::verifDifferent(v1.z, v2.z, diff.z);
     return is_different;
   }
 
   static Real normeMax(const Real3x3& v)
   {
-    Real vx = VariableDataTypeTraitsT<Real3>::normeMax(v.x);
-    Real vy = VariableDataTypeTraitsT<Real3>::normeMax(v.y);
-    Real vz = VariableDataTypeTraitsT<Real3>::normeMax(v.z);
+    Real vx = SubTraits::normeMax(v.x);
+    Real vy = SubTraits::normeMax(v.y);
+    Real vz = SubTraits::normeMax(v.z);
     return VariableDataTypeTraitsT<Real3>::normeMax(Real3(vx, vy, vz));
   }
 };
