@@ -582,6 +582,7 @@ public:
   ItemTypeMng* m_item_type_mng = nullptr;
   std::unique_ptr<IIndexedIncrementalItemConnectivityMng> m_indexed_connectivity_mng;
   MeshKind m_mesh_kind;
+  bool m_do_not_save_need_compact = false;
 
  private:
 
