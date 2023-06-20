@@ -92,7 +92,7 @@ class ScalarVariableDiff
       else{
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff)){
+        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
           this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,NULL_ITEM_ID));
           ++nb_diff;
         }
@@ -146,7 +146,7 @@ class ScalarVariableDiff
 
     Integer nb_diff = 0;
     DataType diff = DataType();
-    if (VarDataTypeTraits::verifDifferent(min_value,max_value,diff)){
+    if (VarDataTypeTraits::verifDifferent(min_value,max_value,diff,true)){
       this->m_diffs_info.add(DiffInfo(min_value,max_value,diff,0,NULL_ITEM_ID));
       ++nb_diff;
     }
