@@ -1362,16 +1362,28 @@ _prepareForDump()
   bool want_dump = m_properties->getBool("dump");
   info(4) << "DynamicMesh::prepareForDump() name=" << name()
           << " need_compact?=" << m_need_compact
-          << " want_dump?=" << want_dump;
-
-  _saveProperties();
+          << " want_dump?=" << want_dump
+          << " timestamp=" << m_timestamp;
 
   // Si le maillage n'est pas sauvé, ne fait rien. Cela évite de compacter
   // et trier le maillage ce qui n'est pas souhaitable si les propriétés
   // 'sort' et 'compact' sont à 'false'.
-  if (!want_dump)
-    return;
+  if (want_dump)
+    _prepareForDumpReal();
 
+  // Sauve les propriétés. Il faut le faire à la fin car l'appel à
+  // prepareForDumpReal() peut modifier ces propriétés
+  _saveProperties();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Prépare les variables pour une protection.
+ */
+void DynamicMesh::
+_prepareForDumpReal()
+{
   if (m_need_compact){
     // Pour l'instant, il faut trier et compacter les entites
     // avant une sauvegarde

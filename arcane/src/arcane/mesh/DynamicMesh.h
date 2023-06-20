@@ -597,6 +597,7 @@ public:
   void _allocateCells2(DynamicMeshIncrementalBuilder* mib);
   void _itemsUniqueIdsToLocalIdsSorted(eItemKind item_kind,ArrayView<Integer> ids);
   void _prepareForDump();
+  void _prepareForDumpReal();
   void _readFromDump();
 
   void _setOwnersFromCells();
