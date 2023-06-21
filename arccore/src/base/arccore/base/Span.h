@@ -191,6 +191,7 @@ class SpanImpl
  public:
 
   //! Intervalle d'itération du premier au dernièr élément.
+  ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<pointer> range() const
   {
     return ArrayRange<pointer>(m_ptr,m_ptr+m_size);

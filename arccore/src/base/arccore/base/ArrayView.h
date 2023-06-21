@@ -259,11 +259,13 @@ class ArrayView
  public:
 
   //! Intervalle d'itération du premier au dernièr élément.
+  ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<pointer> range()
   {
     return ArrayRange<pointer>(m_ptr,m_ptr+m_size);
   }
   //! Intervalle d'itération du premier au dernièr élément.
+  ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<const_pointer> range() const
   {
     return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
@@ -763,6 +765,7 @@ class ConstArrayView
   constexpr const_pointer data() const noexcept { return m_ptr; }
 
   //! Intervalle d'itération du premier au dernièr élément.
+  ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<const_pointer> range() const
   {
     return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
