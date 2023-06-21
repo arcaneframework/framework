@@ -266,6 +266,12 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 
   m_extra_ghost_cells_builder = new ExtraGhostCellsBuilder(this);
   m_extra_ghost_particles_builder = new ExtraGhostParticlesBuilder(this);
+
+  // Pour garder la compatibilité avec l'existant, autorise de ne pas
+  // sauvegarder l'attribut 'need-compact'. Cela a été ajouté pour la version 3.10
+  // de Arcane (juin 2023). A supprimer avant fin 2023.
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_NO_SAVE_NEED_COMPACT", true))
+    m_do_not_save_need_compact = v.value();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1302,6 +1308,8 @@ _saveProperties()
   p->setInt32("part-info-nb-replication",m_mesh_part_info.nbReplication());
   p->setBool("has-itemsharedinfo-variables",true);
   p->setInt64("mesh-timestamp",m_timestamp);
+  if (!m_do_not_save_need_compact)
+    p->setBool("need-compact",m_need_compact);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1332,6 +1340,11 @@ _loadProperties()
       m_mesh_part_info.setReplicationRank(x);
     if (p->get("part-info-nb-replication",x))
       m_mesh_part_info.setNbReplication(x);
+    if (!m_do_not_save_need_compact){
+      bool xb = false;
+      if (p->get("need-compact",xb))
+        m_need_compact = xb;
+    }
     Int64 x2 = 0;
     if (p->get("mesh-timestamp",x2))
       m_timestamp = x2;
@@ -1349,16 +1362,28 @@ _prepareForDump()
   bool want_dump = m_properties->getBool("dump");
   info(4) << "DynamicMesh::prepareForDump() name=" << name()
           << " need_compact?=" << m_need_compact
-          << " want_dump?=" << want_dump;
-
-  _saveProperties();
+          << " want_dump?=" << want_dump
+          << " timestamp=" << m_timestamp;
 
   // Si le maillage n'est pas sauvé, ne fait rien. Cela évite de compacter
   // et trier le maillage ce qui n'est pas souhaitable si les propriétés
   // 'sort' et 'compact' sont à 'false'.
-  if (!want_dump)
-    return;
+  if (want_dump)
+    _prepareForDumpReal();
 
+  // Sauve les propriétés. Il faut le faire à la fin car l'appel à
+  // prepareForDumpReal() peut modifier ces propriétés
+  _saveProperties();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Prépare les variables pour une protection.
+ */
+void DynamicMesh::
+_prepareForDumpReal()
+{
   if (m_need_compact){
     // Pour l'instant, il faut trier et compacter les entites
     // avant une sauvegarde
@@ -2572,6 +2597,10 @@ _compactItems(bool do_sort,bool compact_variables_and_groups)
   }
 
   m_need_compact = false;
+
+  // Considère le compactage comme une évolution du maillage car cela
+  // change les structures associées aux entités et leurs connectivités
+  ++m_timestamp;
 }
 
 /*---------------------------------------------------------------------------*/
