@@ -260,6 +260,15 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator
 {
  public:
 
+  using IMemoryAllocator::adjustCapacity;
+  using IMemoryAllocator::allocate;
+  using IMemoryAllocator::deallocate;
+  using IMemoryAllocator::guarantedAlignment;
+  using IMemoryAllocator::hasRealloc;
+  using IMemoryAllocator::reallocate;
+
+ public:
+
   bool hasRealloc() const override;
   void* allocate(size_t new_size) override;
   void* reallocate(void* current_ptr, size_t new_size) override;
@@ -279,6 +288,15 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator3
 : public IMemoryAllocator3
 {
   friend class ArrayMetaData;
+
+ public:
+
+  using IMemoryAllocator::adjustCapacity;
+  using IMemoryAllocator::allocate;
+  using IMemoryAllocator::deallocate;
+  using IMemoryAllocator::guarantedAlignment;
+  using IMemoryAllocator::hasRealloc;
+  using IMemoryAllocator::reallocate;
 
  private:
 
@@ -318,6 +336,15 @@ namespace impl
 class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
 : public IMemoryAllocator
 {
+ public:
+
+  using IMemoryAllocator::adjustCapacity;
+  using IMemoryAllocator::allocate;
+  using IMemoryAllocator::deallocate;
+  using IMemoryAllocator::guarantedAlignment;
+  using IMemoryAllocator::hasRealloc;
+  using IMemoryAllocator::reallocate;
+
  private:
 
   static AlignedMemoryAllocator SimdAllocator;
@@ -396,6 +423,15 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
 class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator3
 : public IMemoryAllocator3
 {
+ public:
+
+  using IMemoryAllocator::adjustCapacity;
+  using IMemoryAllocator::allocate;
+  using IMemoryAllocator::deallocate;
+  using IMemoryAllocator::guarantedAlignment;
+  using IMemoryAllocator::hasRealloc;
+  using IMemoryAllocator::reallocate;
+
  private:
 
   static AlignedMemoryAllocator3 SimdAllocator;
@@ -473,6 +509,12 @@ class ARCCORE_COLLECTIONS_EXPORT PrintableMemoryAllocator
 : public DefaultMemoryAllocator
 {
   using Base = DefaultMemoryAllocator;
+
+ public:
+
+  using IMemoryAllocator::allocate;
+  using IMemoryAllocator::deallocate;
+  using IMemoryAllocator::reallocate;
 
  public:
 

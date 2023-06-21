@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -393,7 +393,6 @@ void _testArrayNewInternal()
   {
     UniqueArray<IntPtrSubClass> vx;
     vx.add(IntPtrSubClass(5));
-    [[maybe_unused]] auto range = vx.range();
     UniqueArray<IntPtrSubClass>::iterator i = vx.begin();
     UniqueArray<IntPtrSubClass>::const_iterator ci = i;
     std::cout << "V=" << i->m_v << " " << ci->m_v << '\n';
@@ -404,7 +403,6 @@ void _testArrayNewInternal()
   {
     UniqueArray<IntPtrSubClass> vx;
     vx.add(IntPtrSubClass(5));
-    [[maybe_unused]] auto r = vx.range();
     UniqueArray<IntPtrSubClass>::iterator i = std::begin(vx);
     UniqueArray<IntPtrSubClass>::iterator iend = std::end(vx);
     UniqueArray<IntPtrSubClass>::const_iterator ci = i;

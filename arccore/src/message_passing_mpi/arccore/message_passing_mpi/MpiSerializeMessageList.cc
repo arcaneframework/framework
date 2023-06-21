@@ -230,7 +230,7 @@ _waitMessages2(eWaitType wait_type)
   UniqueArray<Request> requests(nb_message);
   UniqueArray<bool> done_indexes(nb_message);
   done_indexes.fill(false);
-  if (msg->verbosityLevel()>=4)
+  if (msg->verbosityLevel()>=6)
     m_is_verbose = true;
 
   for( Integer z=0; z<nb_message; ++z ){
@@ -242,12 +242,12 @@ _waitMessages2(eWaitType wait_type)
 
     for( Integer z=0; z<nb_message; ++z ){
       BasicSerializeMessage* msm = m_messages_request[z].m_mpi_message;
-      msg->info(4) << "Waiting for message: "
-                   << " rank=" << comm_rank
-                   << " issend=" << msm->isSend()
-                   << " dest=" << msm->destination()
-                   << " tag=" << msm->internalTag()
-                   << " request=" << requests[z];
+      msg->info() << "Waiting for message: "
+                  << " rank=" << comm_rank
+                  << " issend=" << msm->isSend()
+                  << " dest=" << msm->destination()
+                  << " tag=" << msm->internalTag()
+                  << " request=" << requests[z];
     }
   }
 

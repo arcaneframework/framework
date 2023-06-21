@@ -1409,11 +1409,14 @@ class Array
  public:
 
   //! Intervalle d'itération du premier au dernièr élément.
+  ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<pointer> range()
   {
     return ArrayRange<pointer>(m_ptr,m_ptr+m_md->size);
   }
+
   //! Intervalle d'itération du premier au dernièr élément.
+  ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<const_pointer> range() const
   {
     return ArrayRange<const_pointer>(m_ptr,m_ptr+m_md->size);
