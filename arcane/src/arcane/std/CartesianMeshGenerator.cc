@@ -114,7 +114,7 @@ readOptionsFromXml(XmlNode cartesian_node)
       px = 1.0;
     m_bloc_px.add(px);
   }
-  for (XmlNode& ly_node : ly_node_list.range()) {
+  for (XmlNode& ly_node : ly_node_list) {
     m_bloc_ly.add(ly_node.valueAsReal(true));
     m_bloc_ny.add(ly_node.attr("ny", true).valueAsInteger(true));
     Real py = ly_node.attr("pry").valueAsReal(true);
@@ -123,7 +123,7 @@ readOptionsFromXml(XmlNode cartesian_node)
     m_bloc_py.add(py);
   }
   if (m_mesh_dimension == 3) {
-    for (XmlNode& lz_node : lz_node_list.range()) {
+    for (XmlNode& lz_node : lz_node_list) {
       m_bloc_lz.add(lz_node.valueAsReal(true));
       m_bloc_nz.add(lz_node.attr("nz", true).valueAsInteger(true));
       Real pz = lz_node.attr("prz").valueAsReal(true);

@@ -292,7 +292,7 @@ print(std::ostream& o) const
 	Integer size = x.size();
 	o << "(dimension=" << size << ") ";
 	if (size<=150){
-		for( auto& i : x.range() ){
+		for( auto& i : x ){
 			o << i << '\n';
 		}
 	}

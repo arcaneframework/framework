@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshMerger.cc                                        (C) 2000-2022 */
+/* DynamicMeshMerger.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Fusion de plusieurs maillages.                                            */
 /*---------------------------------------------------------------------------*/
@@ -312,7 +312,7 @@ mergeMeshes(ConstArrayView<DynamicMesh*> meshes)
   // Le premier maillage de \a all_meshes est celui qui contiendra
   // à la fin la fusion des maillages de \a meshes.
   all_meshes.add(m_mesh);
-  for( auto mesh : meshes.range() )
+  for( auto mesh : meshes )
     all_meshes.add(mesh);
 
   // L'algorithme de fusion utilise le même mécanisme que pour les échanges

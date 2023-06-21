@@ -307,7 +307,7 @@ changeOwners()
   Int64UniqueArray cells_uid;
   Int32UniqueArray cells_owner;
 
-  for( auto i : m_true_first_uid.buckets().range() )
+  for( auto i : m_true_first_uid.buckets() )
     for( ItemFirstUidData* nbid = i; nbid; nbid = nbid->next() ){
       cells_uid.add(nbid->key());
       cells_owner.add(m_uids_owner[nbid->value()]);
@@ -343,7 +343,7 @@ computeList(MultiArray2<Int64> & tied_uids)
   nb_tieds.reserve(1000);
   HashTableMapT<Int64,Integer> uids_tied_index(5000,true);
 
-  for( auto i : m_true_first_uid.buckets().range() )
+  for( auto i : m_true_first_uid.buckets() )
     for( ItemFirstUidData* nbid = i; nbid; nbid = nbid->next() ){
       Int64 tied_uid = nbid->value();
       HashTableMapT<Int64,Integer>::Data* d = uids_tied_index.lookup(tied_uid);
@@ -360,7 +360,7 @@ computeList(MultiArray2<Int64> & tied_uids)
   tied_uids.resize(nb_tieds);
   nb_tieds.fill(0);
 
-  for( auto i : m_true_first_uid.buckets().range() )
+  for( auto i : m_true_first_uid.buckets() )
     for( ItemFirstUidData* nbid = i; nbid; nbid = nbid->next() ){
       Int64 tied_uid = nbid->value();
       Integer index = uids_tied_index[tied_uid];

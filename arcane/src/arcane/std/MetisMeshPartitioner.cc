@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisMeshPartitioner.cc                                     (C) 2000-2021 */
+/* MetisMeshPartitioner.cc                                     (C) 2000-2023 */
 /*                                                                           */
 /* Partitioneur de maillage utilisant la bibliothèque PARMetis.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#include <chrono>
+
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -52,6 +52,8 @@ typedef idx_t idxtype;
 #include "arcane/std/PartitionConverter.h"
 #include "arcane/std/GraphDistributor.h"
 #include "arcane/std/MetisWrapper.h"
+
+#include <chrono>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -379,7 +381,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
     if (!cond) {
       info() << "We have to increase imbalance :";
       info() << metis_ubvec;
-      for (auto& tol: metis_ubvec.range() ) {
+      for (auto& tol: metis_ubvec ) {
         tol *= 1.5f;
       }
     }

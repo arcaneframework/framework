@@ -2405,7 +2405,7 @@ synchronizeGroupsAndVariables()
   // Peu tester dans le cas où le groupe parent d'un sous-maillage 
   // avant l'appel aux maillages enfants.
   // Cela pourrait peut-être nécessité une mise à jour des synchronisers enfants
-  for( DynamicMesh* child_mesh : m_child_meshes.range() )
+  for( DynamicMesh* child_mesh : m_child_meshes )
     child_mesh->synchronizeGroupsAndVariables();
 }
 

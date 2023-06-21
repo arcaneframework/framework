@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfilingInfo.cc                                            (C) 2000-2022 */
+/* ProfilingInfo.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Informations de profiling.                                                */
 /*---------------------------------------------------------------------------*/
@@ -952,7 +952,7 @@ printInfos(bool dump_file)
     std::ofstream ofile;
     ofile.open(file_name.localstr());
 
-    for( const auto& x : sorted_stacks.range() ){
+    for( const auto& x : sorted_stacks ){
       const ProfStackInfo& psi = x.stackInfo();
       Int64 nb_stack = x.nbCount();
       if (nb_stack<2)
@@ -1133,7 +1133,7 @@ dumpJSON(JSONWriter& writer)
 
     writer.writeKey("StackMap");
     writer.beginArray();
-    for( const auto& x : sorted_stacks.range() ){
+    for( const auto& x : sorted_stacks ){
       const ProfStackInfo& psi = x.stackInfo();
       Int64 nb_stack = x.nbCount();
       if (nb_stack<2)

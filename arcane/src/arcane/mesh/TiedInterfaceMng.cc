@@ -84,7 +84,7 @@ computeTiedInterfaces(const XmlNode& mesh_node)
   UniqueArray<bool> is_structured_list;
   UniqueArray<Real> planar_tolerance_list;
   FaceFamily& face_family = m_mesh->trueFaceFamily();
-  for( auto& i : child_list.range() ){
+  for( auto& i : child_list ){
     XmlNode group_attr = i.attr(name_attribute);
     if (group_attr.null()){
       error() << "Attribute '" << name_attribute << "' missing";
