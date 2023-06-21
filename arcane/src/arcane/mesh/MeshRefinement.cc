@@ -270,11 +270,10 @@ _updateMaxUid(ArrayView<ItemInternal*> cells)
         max_nb_hChildren = nb_hChildren;
 
         //UPDATE MAX NODE UID
-        for( ItemEnumerator inode(child.nodes()); inode(); ++inode ){
-          const Int64 uid = inode->uniqueId();
+        for( Node inode : child.nodes() ){
+          const Int64 uid = inode.uniqueId();
           insert_return_type value = node_list.insert(uid) ;
-          if(value.second)
-          {
+          if(value.second){
             if (uid>max_node_uid)
               max_node_uid = uid;
           }
@@ -282,11 +281,10 @@ _updateMaxUid(ArrayView<ItemInternal*> cells)
 
 
         //UPDATE MAX FACE UID
-        for( ItemEnumerator iface(child.faces()); iface(); ++iface ){
-          const Int64 uid = iface->uniqueId();
+        for( Face iface : child.faces() ){
+          const Int64 uid = iface.uniqueId();
           insert_return_type value = face_list.insert(uid) ;
-          if(value.second)
-          {
+          if(value.second){
             if (uid>max_face_uid)
               max_face_uid = uid;
           }
@@ -836,8 +834,7 @@ _checkLevelOne(bool arcane_assert_pass)
   ENUMERATE_CELL(icell,m_mesh->allActiveCells())
   {
     Cell cell = *icell;
-    for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ) {
-      Face face = *iface;
+    for( Face face : cell.faces() ) {
       if (face.nbCell()!=2)
         continue;
       Cell back_cell = face.backCell();
@@ -1138,8 +1135,7 @@ _makeCoarseningCompatible(const bool maintain_level_one)
         Integer f = cell.itemBase().flags();
         if (f & ItemFlags::II_Coarsen){ // Si l'item est actif et le flag de déraffinement est placé
           const Int32 my_level = cell.level();
-          for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ) {
-            Face face = *iface;
+          for( Face face : cell.faces() ) {
             if (face.nbCell()!=2)
               continue;
             Cell back_cell = face.backCell();
@@ -1187,9 +1183,7 @@ _makeCoarseningCompatible(const bool maintain_level_one)
         // retourner compatible_with_refinement= false, parce que
         //notre changement doit être propager aux processeurs voisins
         if (my_flag_changed && m_mesh->parallelMng()->isParallel())
-          for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface )
-          {
-            Face face = *iface;
+          for( Face face : cell.faces() ){
             if (face.nbCell()!=2)
               continue;
             Cell back_cell = face.backCell();
@@ -1198,8 +1192,7 @@ _makeCoarseningCompatible(const bool maintain_level_one)
             // On choisit l'autre cellule du cote de la face
             Cell neighbor = (back_cell==cell)?front_cell:back_cell;
             //ItemInternal* ineighbor = neighbor.internal();
-            if (neighbor.owner() != sid) // J'ai un voisin ici
-            {
+            if (neighbor.owner() != sid){ // J'ai un voisin ici
               compatible_with_refinement = false;
               break;
             }
@@ -1347,8 +1340,7 @@ _makeRefinementCompatible(const bool maintain_level_one)
           const Int32 my_level = cell.level();
           bool refinable = true;
           //check if refinable
-          for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-            Face face = *iface;
+          for( Face face : cell.faces() ){
             if (face.nbCell()!=2)
               continue;
             Cell back_cell = face.backCell();
@@ -1377,8 +1369,7 @@ _makeRefinementCompatible(const bool maintain_level_one)
             }
           }
           if(refinable)
-            for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-              Face face = *iface;
+            for( Face face : cell.faces() ){
               if (face.nbCell()!=2)
                 continue;
               Cell back_cell = face.backCell();
@@ -1922,8 +1913,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
 
   for (Integer i = 0, is = cell_to_remove_lids.size(); i < is; i++){
     Cell item = cells_list[cell_to_remove_lids[i]];
-    for (NodeEnumerator inode(item.nodes()); inode(); ++inode){
-      Node node = *inode;
+    for (Node node : item.nodes()){
 
       if (marker.find(node.localId()) != marker.end())
         continue;
@@ -1971,8 +1961,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
         continue;
       const Int32 owner = face.owner();
       bool is_ok = false;
-      for (CellEnumerator icell(face.cells()); icell.hasNext(); ++icell){
-        Cell cell = *icell;
+      for (Cell cell : face.cells() ){
         if ((item.uniqueId() == cell.uniqueId()) || !(item.level() == cell.level()))
           continue;
         if (cell.owner() == owner){
@@ -1981,8 +1970,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
         }
       }
       if (!is_ok){
-        for (CellEnumerator icell(face.cells()); icell.hasNext(); ++icell){
-          Cell cell2 = *icell;
+        for (Cell cell2 : face.cells()){
           if (item.uniqueId() == cell2.uniqueId())
             continue;
           faces_owner[face] = cell2.owner();
@@ -2034,8 +2022,7 @@ _updateItemOwner2()
     Node node = (*inode);
     Int32 owner = node.owner();
     bool is_ok = false;
-    for( CellEnumerator icell(node.cells()); icell(); ++icell ){
-      Cell cell = *icell;
+    for( Cell cell : node.cells() ){
       if (cell.owner()==owner){
         is_ok = true;
         break;
@@ -2043,8 +2030,7 @@ _updateItemOwner2()
     }
     if (!is_ok){
       Cell cell;
-      for( CellEnumerator icell(node.cells()); icell(); ++icell ){
-        Cell cell2 = *icell;
+      for( Cell cell2 : node.cells() ){
         if (cell.null() || cell2.uniqueId() < cell.uniqueId())
           cell = cell2;
       }
@@ -2069,8 +2055,7 @@ _updateItemOwner2()
     Face face = (*iface);
     Int32 owner = face.owner();
     bool is_ok = false;
-    for( CellEnumerator icell(face.cells()); icell(); ++icell ){
-      Cell cell = *icell;
+    for( Cell cell : face.cells() ){
       if (cell.owner()==owner){
         is_ok = true;
         break;

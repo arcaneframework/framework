@@ -840,7 +840,7 @@ _createCorrespondance(IVariable* var,CorrespondanceInfo* ci,Int64ConstArrayView 
       if (!item.isOwn())
         continue;
       Integer nb_node = item.nbNode();
-      for( NodeEnumerator inode(item.nodes()); inode.hasNext(); ++inode ){
+      for( NodeLocalId inode : item.nodeIds() ){
         item_center += nodes_coords[inode];
       }
       item_center /= nb_node;

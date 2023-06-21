@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParticleUnitTest.cc                                         (C) 2000-2020 */
+/* ParticleUnitTest.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Service de test de la gestion des particules.                             */
 /*---------------------------------------------------------------------------*/
@@ -448,8 +448,7 @@ computeExtraParticlesToSend()
     std::map<Integer,std::set<Integer> > boundary_cells_neighbs;
     ENUMERATE_CELL(icell,ownCells()){
       Cell cell = *icell;
-      for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-        Face face = *iface;
+      for( Face face : cell.faces() ){
         Cell opposite_cell = face.oppositeCell(cell);
         if (opposite_cell.null())
           continue;

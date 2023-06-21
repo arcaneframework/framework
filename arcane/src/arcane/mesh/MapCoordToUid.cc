@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MapCoordToUid.cc                                            (C) 2000-2022 */
+/* MapCoordToUid.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Recherche d'entités à partir de ses coordonnées.                          */
 /*---------------------------------------------------------------------------*/
@@ -571,8 +571,8 @@ check()
   ENUMERATE_FACE(iface,m_mesh->allFaces()){
     Int64 uid = iface->uniqueId() ;
     m_mesh->traceMng()->debug(Trace::Highest)<<"\t[FACE MapCoordToUid::fill] face_"<<iface->localId()<<", uid="<<uid;
-    for( NodeEnumerator inode(iface->nodes()); inode.hasNext(); ++inode ){
-      m_mesh->traceMng()->debug(Trace::Highest)<<"\t\t[FACE MapCoordToUid::fill] node_"<<inode->localId();
+    for( Node inode : iface->nodes() ){
+      m_mesh->traceMng()->debug(Trace::Highest)<<"\t\t[FACE MapCoordToUid::fill] node_"<<inode.localId();
     }
     Int64 map_uid = find(m_face_center[iface]);
     set.insert(uid) ;

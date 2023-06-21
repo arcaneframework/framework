@@ -918,7 +918,7 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
     Int32UniqueArray zmax_surface_lid;
 
     ENUMERATE_FACE (iface, mesh->allFaces()) {
-      const Face& face = *iface;
+      Face face = *iface;
       Integer face_local_id = face.localId();
       bool is_xmin = true;
       bool is_xmax = true;
@@ -926,8 +926,7 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
       bool is_ymax = true;
       bool is_zmin = true;
       bool is_zmax = true;
-      for (NodeEnumerator inode(face.nodes()); inode(); ++inode) {
-        Node node = *inode;
+      for (Node node : face.nodes() ) {
         Int64 node_unique_id = node.uniqueId().asInt64();
         Int64 node_z = node_unique_id / nb_node_xy;
         Int64 node_y = (node_unique_id - node_z * nb_node_xy) / nb_node_x;
@@ -1951,8 +1950,8 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
       const ItemWithNodes& item = *iitem;
       Integer item_nb_node = item.nbNode();
       ofile << item_nb_node;
-      for (NodeEnumerator inode(item.nodes()); inode(); ++inode) {
-        ofile << ' ' << nodes_local_id_to_current[inode->localId()];
+      for (NodeLocalId inode_lid : item.nodes() ) {
+        ofile << ' ' << nodes_local_id_to_current[inode_lid];
       }
       ofile << '\n';
     }

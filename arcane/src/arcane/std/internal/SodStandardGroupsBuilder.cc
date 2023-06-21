@@ -45,7 +45,7 @@ _createFaceGroup(IMesh* mesh,const String& name, Int32ConstArrayView faces_lid)
     for( Integer z=0, zs=faces_lid.size(); z<zs; ++ z){
       Face face(mesh_faces[faces_lid[z]]);
       debug(Trace::High) << "Face " << ItemPrinter(face);
-      for( NodeEnumerator inode(face.nodes()); inode(); ++inode )
+      for( NodeLocalId inode : face.nodes() )
         debug(Trace::Highest) << "XYZ= " << var_nodes[inode];
     }
   }
@@ -91,7 +91,7 @@ generateGroups(IMesh* mesh,Real3 min_pos,Real3 max_pos,Real middle_x,Real middle
       bool is_zmin = true;
       bool is_zmax = true;
       //info() << "Face local id = " << face_local_id;
-      for( NodeEnumerator inode(face.nodes()); inode(); ++inode ){
+      for( Node inode : face.nodes() ){
         Real3 coord = nodes_coord_var[inode];
         if (!math::isNearlyEqual(coord.x,min_x))
           is_xmin = false;
@@ -145,7 +145,7 @@ generateGroups(IMesh* mesh,Real3 min_pos,Real3 max_pos,Real middle_x,Real middle
       bool is_in_zg = false;
       const Cell& cell = *icell;
       Integer local_id = cell.localId();
-      for( NodeEnumerator inode(cell.nodes()); inode(); ++inode ){
+      for( Node inode : cell.nodes() ){
         Real x = nodes_coord_var[inode].x;
         if (math::isNearlyEqual(x,xlimit))
           continue;
@@ -156,7 +156,7 @@ generateGroups(IMesh* mesh,Real3 min_pos,Real3 max_pos,Real middle_x,Real middle
       }
       if (is_in_zg){
         if (is_in_zd){
-          for( NodeEnumerator inode(cell.nodes()); inode(); ++inode ){
+          for( Node inode : cell.nodes() ){
             Real x = nodes_coord_var[inode].x;
             info() << " X=" << x;
             if (math::isNearlyEqual(x,xlimit))
@@ -203,7 +203,7 @@ generateGroups(IMesh* mesh,Real3 min_pos,Real3 max_pos,Real middle_x,Real middle
       bool is_in_zd_haut = false;
       Cell cell = *icell;
       Integer local_id = cell.localId();
-      for(NodeEnumerator inode(cell.nodes()); inode(); ++inode ){
+      for( Node inode : cell.nodes() ){
         Real height = (mesh_dimension==2)?nodes_coord_var[inode].y:nodes_coord_var[inode].z;
         //info()<< "\tcoords="<<nodes_coord_var[inode]<<", height="<<height<<" vs "<<height_limit;
         if (math::isNearlyEqual(height, height_limit))

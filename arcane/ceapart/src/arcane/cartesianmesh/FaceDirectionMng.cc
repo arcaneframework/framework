@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceDirectionMng.cc                                         (C) 2000-2022 */
+/* FaceDirectionMng.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Infos sur les faces d'une direction X Y ou Z d'un maillage structuré.     */
 /*---------------------------------------------------------------------------*/
@@ -165,8 +165,8 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
 bool FaceDirectionMng::
 _hasFace(Cell cell,Int32 face_local_id) const
 {
-  for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-    if (iface->localId()==face_local_id)
+  for( FaceLocalId iface_lid : cell.faceIds() ){
+    if (iface_lid==face_local_id)
       return true;
   }
   return false;

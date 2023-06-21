@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HyodaMixedCellsUnitTest.cc                                  (C) 2000-2013 */
+/* HyodaMixedCellsUnitTest.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Service du test de l'affichage des mailles mixtes.                        */
 /*---------------------------------------------------------------------------*/
@@ -116,7 +116,7 @@ public:
     Real maxX=0.0;
     Real maxY=0.0;
     ENUMERATE_CELL(cell, allCells()){
-      for(NodeEnumerator node(cell->nodes()); node.hasNext(); ++node){
+      for (Node node : cell->nodes() ){
         maxX=math::max(maxX, nodesCoordinates()[node].x);
         maxY=math::max(maxY, nodesCoordinates()[node].y);
       }

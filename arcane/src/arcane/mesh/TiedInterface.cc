@@ -740,8 +740,7 @@ _computeMasterInterface()
     Integer nb_node = face.nbNode();
     bool is_master_face = true;
     // Une face est maître si chacun de ses noeuds est dans la liste des noeuds esclaves
-    for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode ){
-      const Node& node = *inode;
+    for( Node node : face.nodes() ){
       ItemUniqueId uid = node.uniqueId();
       if (!m_nodes_info.lookup(uid)){
         is_master_face = false;
@@ -753,8 +752,7 @@ _computeMasterInterface()
       if (nb_node!=4 && nb_node!=2)
         has_not_handled_face = true;
       master_faces_lid.add(face.localId());
-      for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode ){
-        Node node = *inode;
+      for( Node node : face.nodes() ){
         TiedInterfaceNodeInfo& znode = m_nodes_info[node.uniqueId()];
         znode.m_connected_master_faces.add(face.uniqueId());
       }
@@ -779,8 +777,7 @@ _addFaceToList(const Face& face,TiedInterfaceFaceMap& face_map)
   Integer nb_node = face.nbNode();
   Real3 center(0.,0.,0.);
   Integer data_index = m_face_info_mng.size();
-  for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode ){
-    const Node& node = *inode;
+  for( Node node : face.nodes() ){
     Real3 node_coord = m_nodes_coord[node];
     ItemUniqueId uid = node.uniqueId();
     NodeInfoList::Data* i = m_nodes_info.lookup(uid);
@@ -1793,8 +1790,8 @@ class TiedInterfacePartitionConstraint
       Cell cell = face.cell(0);
       Int64 cell_uid = cell.uniqueId();
       Int32 owner = cell.owner();
-      for(FaceEnumerator isubface(face.slaveFaces()); isubface.hasNext(); ++isubface){
-        Cell sub_cell = isubface->cell(0);
+      for( Face isubface : face.slaveFaces() ){
+        Cell sub_cell = isubface.cell(0);
         Int64 sub_cell_uid = sub_cell.uniqueId();
         if (sub_cell_uid<cell_uid){
           linked_cells.add(sub_cell_uid);
@@ -1959,8 +1956,8 @@ rebuild(ITiedInterfaceRebuilder* rebuilder,
     ++master_index;
 
     info(4) << "NEW VALUES face=" << ItemPrinter(face) << " n=" << face_tied_nodes.size() << " m=" << face_tied_faces.size();
-    for(NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
-      info(4) << "MasterFace node=" << ItemPrinter(*inode);
+    for( Node inode : face.nodes() )
+      info(4) << "MasterFace node=" << ItemPrinter(inode);
     Integer nb_node = face_tied_nodes.size();
     Integer nb_face = face_tied_faces.size();
     work_nodes_local_id.resize(nb_node);
@@ -2037,8 +2034,8 @@ _checkValid(bool is_print)
                 << " cell_owner=" << cell_face_owner;
     }
     if (is_print)
-      for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
-        info() << "Master face node uid=" << inode->uniqueId();
+      for( Node inode : face.nodes()  )
+        info() << "Master face node uid=" << inode.uniqueId();
     for( Integer zz=0, zs=tied_nodes[iface.index()].size(); zz<zs; ++zz ){
       const TiedNode& tn = tied_nodes[iface.index()][zz];
       nodes_in_master_face.insert(tn.node().uniqueId());
@@ -2048,11 +2045,11 @@ _checkValid(bool is_print)
                << " kind=" << tn.node().kind();
       }
     }
-    for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
+    for( Node inode : face.nodes() )
       if (nodes_in_master_face.find(inode->uniqueId())==nodes_in_master_face.end()){
         ++nb_error;
         if (nb_error<max_print_error)
-          error() << "node in master face not in slave node list node=" << ItemPrinter(*inode);
+          error() << "node in master face not in slave node list node=" << ItemPrinter(inode);
       }
     Integer nb_tied = tied_faces[iface.index()].size();
     if (nb_tied!=slave_faces.size()){

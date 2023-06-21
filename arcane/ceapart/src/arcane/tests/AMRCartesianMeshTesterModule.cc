@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRCartesianMeshTesterModule.cc                             (C) 2000-2021 */
+/* AMRCartesianMeshTesterModule.cc                             (C) 2000-2023 */
 /*                                                                           */
 /* Module de test du gestionnaire de maillages cartésiens AMR.               */
 /*---------------------------------------------------------------------------*/
@@ -438,7 +438,7 @@ _computeCenters()
     ENUMERATE_CELL(icell,allCells()){
       Cell cell = *icell;
       Real3 center;
-      for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
+      for( NodeLocalId inode : cell.nodes() )
         center += nodes_coord[inode];
       center /= cell.nbNode();
       m_cell_center[icell] = center;
@@ -451,7 +451,7 @@ _computeCenters()
     ENUMERATE_FACE(iface,allFaces()){
       Face face = *iface;
       Real3 center;
-      for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
+      for( NodeLocalId inode : face.nodes() )
         center += nodes_coord[inode];
       center /= face.nbNode();
       m_face_center[iface] = center;

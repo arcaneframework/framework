@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PartialVariableTester.cc                                    (C) 2000-2021 */
+/* PartialVariableTester.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des variables partielles.                                 */
 /*---------------------------------------------------------------------------*/
@@ -246,8 +246,8 @@ compute()
 
   ENUMERATE_NODE(inode,allNodes()){
     Real t = 0.0;
-    const Node& node = *inode;
-    for( CellEnumerator icell(node.cells()); icell.hasNext(); ++icell )
+    Node node = *inode;
+    for( CellLocalId icell : node.cellIds() )
       t += m_cell_temperature[icell];
     m_node_temperature[inode] = t / (Real)node.nbCell();
   }
@@ -256,7 +256,7 @@ compute()
   ENUMERATE_CELL(icell,allCells()){
     Real t = 0.0;
     const Cell& cell = *icell;
-    for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
+    for( NodeLocalId inode : cell.nodeIds() )
       t += m_node_temperature[inode];
     m_cell_temperature[icell] = t / (Real)cell.nbNode();
   }
