@@ -335,7 +335,7 @@ open(bool is_start)
   // Lecture des variables pour l'initialisation
   if (is_start){
     XmlNodeList variables_elem = root_element.children("init-variable");
-    for( XmlNode elem : variables_elem.range() ){
+    for( XmlNode elem : variables_elem ){
       String var_name = elem.attrValue("name",true);
       String var_family = elem.attrValue("family",true);
       String var_path = elem.attrValue("path",true);
@@ -349,7 +349,7 @@ open(bool is_start)
 
 
   XmlNodeList variables_elem = root_element.children("time-variable");
-  for( XmlNode elem : variables_elem.range() ){
+  for( XmlNode elem : variables_elem ){
     String var_name = elem.attrValue("name",true);
     String var_family = elem.attrValue("family",true);
     info() << "TIME_VARIABLE: name=" << var_name << " family=" << var_family;
@@ -366,7 +366,7 @@ open(bool is_start)
 
     XmlNodeList times_elem = elem.children("time-value");
     Real last_var_time = -1.0;
-    for( XmlNode time_elem : times_elem.range() ){
+    for( XmlNode time_elem : times_elem ){
       String var_path = time_elem.attrValue("path",true);
       XmlNode var_time_node = time_elem.attr("global-time",true);
       Real var_time = var_time_node.valueAsReal(true);

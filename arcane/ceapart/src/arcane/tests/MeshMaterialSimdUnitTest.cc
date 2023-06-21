@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSimdUnitTest.cc                                 (C) 2000-2017 */
+/* MeshMaterialSimdUnitTest.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Service de test unitaire de la vectorisation des matériaux/milieux.       */
 /*---------------------------------------------------------------------------*/
@@ -375,7 +375,7 @@ initializeTest()
 
   // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
   UniqueArray<String> mat_names = { "MAT1", "MAT2", "MAT3" };
-  for( String v : mat_names.range() ){
+  for( String v : mat_names ){
     mm->registerMaterialInfo(v);
   }
 
@@ -454,7 +454,7 @@ initializeTest()
     }
   }
 
-  for( IMeshEnvironment* env : mm->environments().range() ){
+  for( IMeshEnvironment* env : mm->environments() ){
     info() << "** ** ENV name=" << env->name() << " nb_item=" << env->view().nbItem();
     Integer nb_pure_env = 0;
     ENUMERATE_ENVCELL(ienvcell,env){

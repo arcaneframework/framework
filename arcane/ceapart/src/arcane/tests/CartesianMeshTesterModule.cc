@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTesterModule.cc                                (C) 2000-2022 */
+/* CartesianMeshTesterModule.cc                                (C) 2000-2023 */
 /*                                                                           */
 /* Module de test du gestionnaire de maillages cartésiens.                   */
 /*---------------------------------------------------------------------------*/
@@ -172,7 +172,7 @@ class CartesianMeshInitialPartitioner
   void build() override {}
   void partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes) override
   {
-    for( IMesh* mesh : meshes.range() ){
+    for( IMesh* mesh : meshes ){
       info() << "Partitioning mesh name=" << mesh->name();
       _doPartition(mesh);
     }
@@ -570,7 +570,7 @@ _testXmlInfos()
   // Récupère et affiche les infos pour <lx>.
   XmlNodeList lx_node_list = cartesian_node.children("lx");
   info() << "NB_X=" << lx_node_list.size();
-  for( XmlNode lx_node : lx_node_list.range() ){
+  for( XmlNode lx_node : lx_node_list ){
     Real lx_value = lx_node.valueAsReal(true);
     Integer nx_value = lx_node.attr("nx",true).valueAsInteger(true);
     Real px_value = lx_node.attr("prx").valueAsReal(true);

@@ -260,7 +260,7 @@ template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
 resize(Integer dim2_size)
 {
-  for( PrivatePartType* pvar : m_vars.range() ){
+  for( PrivatePartType* pvar : m_vars ){
     if (pvar){
       Integer dim1_size = pvar->valueView().dim1Size();
       pvar->directResize(dim1_size,dim2_size);

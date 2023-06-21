@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyPolicyMng.cc                                      (C) 2000-2018 */
+/* ItemFamilyPolicyMng.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire des politiques d'une famille d'entités.                      */
 /*---------------------------------------------------------------------------*/
@@ -26,8 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,7 +45,7 @@ IItemFamilyExchanger* ItemFamilyPolicyMng::
 createExchanger()
 {
   ItemsExchangeInfo2* exchanger = _createExchanger();
-  for( IItemFamilySerializeStepFactory* factory : m_serialize_step_factories.range() ){
+  for( IItemFamilySerializeStepFactory* factory : m_serialize_step_factories ){
     IItemFamilySerializeStep* step = factory->createStep(m_item_family);
     if (step)
       exchanger->addSerializeStep(step);
@@ -105,11 +105,7 @@ _createExchanger()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

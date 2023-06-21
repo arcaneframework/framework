@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExternalPartitionConstraint.cc                              (C) 2000-2014 */
+/* ExternalPartitionConstraint.cc                              (C) 2000-2023 */
 /*                                                                           */
 /* Informations sur les contraintes pour le partitionnement.                 */
 /*---------------------------------------------------------------------------*/
@@ -20,12 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,7 +38,7 @@ addLinkedCells(Int64Array& linked_cells,Int32Array& linked_owners)
   Integer marque = 0;
   filtre_cell.fill(marque);
 
-  for( ItemGroup& group : m_constraints.range() ){
+  for( ItemGroup& group : m_constraints ){
     // tableau contenant la liste des mailles à maintenir ensemble
     // cette liste est distribuée sur les processeurs 
     // et comporte comme éléments communs les mailles fantômes
@@ -106,8 +102,7 @@ addLinkedCells(Int64Array& linked_cells,Int32Array& linked_owners)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

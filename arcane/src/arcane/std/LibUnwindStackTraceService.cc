@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LibUnwindStackTraceService.cc                               (C) 2000-2022 */
+/* LibUnwindStackTraceService.cc                               (C) 2000-2023 */
 /*                                                                           */
 /* Service de trace des appels de fonctions utilisant 'libunwind'.           */
 /*---------------------------------------------------------------------------*/
@@ -15,7 +15,7 @@
 #include "arcane/utils/IStackTraceService.h"
 #include "arcane/utils/StackTrace.h"
 #include "arcane/utils/StringBuilder.h"
-#include "arcane/utils/Array.h"
+#include "arcane/utils/Array.h"2
 #include "arcane/utils/Process.h"
 
 #include "arcane/utils/ISymbolizerService.h"
@@ -362,7 +362,7 @@ _backtraceStackTrace(const FixedStackFrameArray& stack_frames)
 
   StringBuilder message;
   ConstArrayView<StackFrame> frames_view = stack_frames.view();
-  for( StackFrame f : frames_view.range() ){
+  for( StackFrame f : frames_view ){
     intptr_t ip = f.address();
     ProcInfo pinfo = _getFuncInfo((void*)ip);
     String func_name = pinfo.name();
@@ -396,7 +396,7 @@ _generateFileAndOffset(const FixedStackFrameArray& stack_frames)
 
   StringBuilder message;
   ConstArrayView<StackFrame> frames_view = stack_frames.view();
-  for( StackFrame f : frames_view.range() ){
+  for( StackFrame f : frames_view ){
     intptr_t ip = f.address();
     ProcInfo pinfo = _getFuncInfo((void*)ip);
     message += (pinfo.fileName() ? pinfo.fileName() : "()");

@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelTesterModule.cc                                     (C) 2000-2021 */
+/* ParallelTesterModule.cc                                     (C) 2000-2023 */
 /*                                                                           */
 /* Module de test du parallèlisme.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/ScopedPtr.h"
@@ -498,7 +496,7 @@ _doInit()
     pf3->toParticleFamily()->setEnableGhostItems(true) ;
     m_particle_family_testers.add(new ParticleFamilyTester(pf3));
   }
-  for( ParticleFamilyTester* p : m_particle_family_testers.range() )
+  for( ParticleFamilyTester* p : m_particle_family_testers )
     p->addParticles();
   //mesh->modifier()->endUpdate(true,false);
   mesh->modifier()->endUpdate();

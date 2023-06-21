@@ -280,7 +280,7 @@ _dumpLegacyConnectivityMemoryUsage()
     String name = family->name();
     Real family_memory = 0.0;
     info(4) << "Family name=" << family->name();
-    for( String s : var_names.range() ){
+    for( String s : var_names ){
       IVariable* v = vm->findMeshVariable(m_mesh,name+s);
       if (v){
         Real v_memory = v->allocatedMemory();

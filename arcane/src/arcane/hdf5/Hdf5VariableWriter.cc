@@ -93,7 +93,7 @@ open()
   // Lecture des variables pour les sorties finales
   {
     XmlNodeList variables_elem = root_element.children("exit-variable");
-    for( XmlNode elem : variables_elem.range() ){
+    for( XmlNode elem : variables_elem ){
       String var_name = elem.attrValue("name",true);
       String var_family = elem.attrValue("family",true);
       String var_path = elem.attrValue("path",true);

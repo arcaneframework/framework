@@ -1197,7 +1197,7 @@ _createSingletonServices(IServiceLoader* service_loader)
     String ustr_name("name");
     String ustr_active("active");
     XmlNodeList services = services_element.children("service");
-    for( XmlNode x : services.range() ) {
+    for( XmlNode x : services ) {
       String name = x.attrValue(ustr_name);
       XmlNode active_node = x.attr(ustr_active);
       bool is_active = true;

@@ -125,7 +125,7 @@ CaseOptionEnumValues()
 CaseOptionEnumValues::
 ~CaseOptionEnumValues()
 {
-  for( auto i : m_enum_values->range() ){
+  for( auto i : (*m_enum_values) ){
     delete i;
   }
   delete m_enum_values;
@@ -165,7 +165,7 @@ nbEnumValue() const
 bool CaseOptionEnumValues::
 valueOfName(const String& name,const String& lang,int& value) const
 {
-  for( auto ev : m_enum_values->range() ){
+  for( auto ev : (*m_enum_values) ){
     const String& n = ev->name(lang);
     if (n==name){
       value = ev->value();
@@ -182,7 +182,7 @@ String CaseOptionEnumValues::
 nameOfValue(int value,const String& lang) const
 {
   String s;
-  for( auto ev : m_enum_values->range() ){
+  for( auto ev : (*m_enum_values) ){
     if (ev->value()==value){
       s = ev->name(lang);
       break;
@@ -197,7 +197,7 @@ nameOfValue(int value,const String& lang) const
 void CaseOptionEnumValues::
 getValidNames(const String& lang,StringArray& names) const
 {
-  for( auto ev : m_enum_values->range() ){
+  for( auto ev : (*m_enum_values) ){
     names.add(ev->name(lang));
   }
 }
