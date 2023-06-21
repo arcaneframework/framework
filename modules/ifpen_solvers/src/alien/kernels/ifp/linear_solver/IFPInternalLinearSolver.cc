@@ -43,7 +43,6 @@ IFPInternalLinearSolver::IFPInternalLinearSolver(
 : m_parallel_mng(parallel_mng)
 , m_print_info(0)
 , m_options(options)
-, m_stater(this)
 {
 }
 
@@ -59,7 +58,7 @@ IFPInternalLinearSolver::~IFPInternalLinearSolver()
 void
 IFPInternalLinearSolver::init()
 {
-  SolverStatSentry<IFPInternalLinearSolver> sentry(m_stater, BaseSolverStater::eInit);
+  SolverStatSentry<IFPInternalLinearSolver> sentry(this, SolverStater::eInit);
   if (m_parallel_mng == nullptr)
     return;
 
@@ -174,6 +173,12 @@ IFPInternalLinearSolver::getStatus() const
   return m_status;
 }
 
+Alien::SolverStatus&
+IFPInternalLinearSolver::getStatusRef()
+{
+  return m_status;
+}
+
 /*---------------------------------------------------------------------------*/
 
 bool
@@ -184,7 +189,7 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
 
   bool isSolverOk = false;
 
-  SolverStatSentry<IFPInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+  SolverStatSentry<IFPInternalLinearSolver> sentry(this, SolverStater::ePrepare);
 
   // m_stater.startPrepareMeasure();
 
@@ -218,7 +223,7 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
     m_ilu0_algo = 4;
   sentry.release();
 
-  SolverStatSentry<IFPInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
+  SolverStatSentry<IFPInternalLinearSolver> sentry2(this, SolverStater::eSolve);
   if (matrix.internal()->m_system_is_resizeable == true)
     isSolverOk = _solveRs(matrix.internal()->m_system_is_resizeable);
   else

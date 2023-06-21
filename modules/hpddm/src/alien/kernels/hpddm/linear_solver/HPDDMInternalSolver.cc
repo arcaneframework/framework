@@ -54,7 +54,6 @@ HPDDMInternalSolver::HPDDMInternalSolver(
     IMessagePassingMng* parallel_mng, IOptionsHPDDMSolver* options)
 : m_parallel_mng(parallel_mng)
 , m_options(options)
-, m_stater(this)
 {
 }
 
@@ -158,7 +157,7 @@ HPDDMInternalSolver::solve(
     alien_info([&] { cout() << "HPDDMSolver::solve"; });
 
   {
-    Alien::BaseSolverStater::Sentry s(m_init_solver_time);
+    Alien::SolverStater::Sentry s(m_init_solver_time);
 
     HPDDM::Option& opt = *HPDDM::Option::get();
     bool schwarz_coarse_correction = opt.set("schwarz_coarse_correction");
@@ -169,7 +168,7 @@ HPDDMInternalSolver::solve(
   }
 
   {
-    Alien::BaseSolverStater::Sentry s(m_iter_solver_time);
+    Alien::SolverStater::Sentry s(m_iter_solver_time);
     m_status.iteration_count =
         HPDDM::IterativeMethod::solve(m_hpddm_matrix.matrix(), m_hpddm_rhs.data(),
             m_hpddm_sol.data(), 1, m_hpddm_matrix.matrix().getCommunicator());
@@ -195,7 +194,7 @@ HPDDMInternalSolver::solve(CSRMatrixType const& Ad, CSRMatrixType const& An,
     alien_info([&] { cout() << "HPDDMSolver::solve"; });
   {
 
-    Alien::BaseSolverStater::Sentry s(m_init_solver_time);
+    Alien::SolverStater::Sentry s(m_init_solver_time);
 
     HPDDM::Option& opt = *HPDDM::Option::get();
     bool schwarz_coarse_correction = opt.set("schwarz_coarse_correction");
@@ -207,7 +206,7 @@ HPDDMInternalSolver::solve(CSRMatrixType const& Ad, CSRMatrixType const& An,
   }
 
   {
-    Alien::BaseSolverStater::Sentry s(m_iter_solver_time);
+    Alien::SolverStater::Sentry s(m_iter_solver_time);
     m_status.iteration_count =
         HPDDM::IterativeMethod::solve(m_hpddm_matrix.matrix(), m_hpddm_rhs.data(),
             m_hpddm_sol.data(), 1, m_hpddm_matrix.matrix().getCommunicator());
@@ -246,13 +245,13 @@ HPDDMInternalSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   using namespace Alien;
 
 #ifdef ALIEN_USE_HPDDM
-  SolverStatSentry<HPDDMInternalSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+  SolverStatSentry<HPDDMInternalSolver> sentry(this, SolverStater::ePrepare);
   CSRMatrixType const& matrix = A.impl()->get<BackEnd::tag::simplecsr>();
   CSRVectorType const& rhs = b.impl()->get<BackEnd::tag::simplecsr>();
   CSRVectorType& sol = x.impl()->get<BackEnd::tag::simplecsr>(true);
   sentry.release();
 
-  SolverStatSentry<HPDDMInternalSolver> sentry2(m_stater, BaseSolverStater::eSolve);
+  SolverStatSentry<HPDDMInternalSolver> sentry2(this, SolverStater::eSolve);
   return solve(matrix, rhs, sol);
 #else
   return false;
@@ -266,14 +265,14 @@ HPDDMInternalSolver::solve(
   using namespace Alien;
 
 #ifdef ALIEN_USE_HPDDM
-  SolverStatSentry<HPDDMInternalSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+  SolverStatSentry<HPDDMInternalSolver> sentry(this, SolverStater::ePrepare);
   CSRMatrixType const& matrixD = Ad.impl()->get<BackEnd::tag::simplecsr>();
   CSRMatrixType const& matrixN = An.impl()->get<BackEnd::tag::simplecsr>();
   CSRVectorType const& rhs = b.impl()->get<BackEnd::tag::simplecsr>();
   CSRVectorType& sol = x.impl()->get<BackEnd::tag::simplecsr>(true);
   sentry.release();
 
-  SolverStatSentry<HPDDMInternalSolver> sentry2(m_stater, BaseSolverStater::eSolve);
+  SolverStatSentry<HPDDMInternalSolver> sentry2(this, SolverStater::eSolve);
   return solve(matrixD, matrixN, rhs, sol);
 #else
   return false;

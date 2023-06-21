@@ -61,10 +61,15 @@ class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver
 
   //! Etat du solveur
   const Status& getStatus() const;
+  Status& getStatusRef() ;
 
   //! Statistiques du solveur
   const SolverStat& getSolverStat() const { return m_stat; }
   SolverStat& getSolverStat() { return m_stat; }
+
+  SolverStater& getSolverStater() {
+     return m_stater;
+  }
 
   //! Etat du solveur
   void setNullSpaceConstantOption(bool flag);
@@ -91,7 +96,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
   Status m_status;
   SolverStat m_stat; //<! Statistiques d'exécution du solveur
-  SolverStater<IFPInternalLinearSolver> m_stater;
+  SolverStater m_stater;
   Integer m_print_info;
   IOptionsIFPLinearSolver* m_options;
 };
