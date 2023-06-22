@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshChecker.cc                                       (C) 2000-2022 */
+/* DynamicMeshChecker.cc                                       (C) 2000-2023 */
 /*                                                                           */
 /* Classe fournissant des méthodes de vérification sur le maillage.          */
 /*---------------------------------------------------------------------------*/
@@ -241,11 +241,9 @@ checkValidConnectivity()
   // est réciproque
   ENUMERATE_NODE(inode,m_mesh->allNodes()){
     Node node = *inode;
-    for( CellEnumerator icell(node.cells()); icell(); ++icell ){
-      Cell cell = *icell;
+    for( Cell cell : node.cells() ){
       bool has_found = false;
-      for( NodeEnumerator inode2(cell.nodes()); inode2(); ++inode2 ){
-        Node node2 = *inode2;
+      for( Node node2 : cell.nodes() ){
         if (node2==node){
           has_found = true;
           break;
@@ -266,11 +264,9 @@ checkValidConnectivity()
     // est réciproque
     ENUMERATE_EDGE(iedge,m_mesh->allEdges()){
       Edge edge = *iedge;
-      for( CellEnumerator icell(edge.cells()); icell(); ++icell ){
-        Cell cell = *icell;
+      for( Cell cell : edge.cells() ){
         bool has_found = false;
-        for( EdgeEnumerator iedge2(cell.edges()); iedge2(); ++iedge2 ){
-          Edge edge2 = *iedge2;
+        for( Edge edge2 : cell.edges() ){
           if (edge2==edge){
             has_found = true;
             break;
@@ -288,11 +284,9 @@ checkValidConnectivity()
   ENUMERATE_FACE(iface,m_mesh->allFaces()){
 	  Face face = *iface;
 	  if(!m_mesh->isAmrActivated()){
-		  for( CellEnumerator icell(face.cells()); icell(); ++icell ){
-			  Cell cell = *icell;
+		  for( Cell cell : face.cells() ){
 			  bool has_found = false;
-			  for( FaceEnumerator iface2(cell.faces()); iface2(); ++iface2 ){
-				  Face face2 = *iface2;
+			  for( Face face2 : cell.faces() ){
 				  if (face2==face){
 					  has_found = true;
 					  break;
@@ -304,11 +298,9 @@ checkValidConnectivity()
 			  }
 		  }
 	  }
-    for( CellEnumerator icell(face.cells()); icell(); ++icell ){
-      Cell cell = *icell;
+    for( Cell cell : face.cells() ){
       bool has_found = false;
-      for( FaceEnumerator iface2(cell.faces()); iface2(); ++iface2 ){
-        Face face2 = *iface2;
+      for( Face face2 : cell.faces() ){
         if (face2==face){
           has_found = true;
           break;
@@ -652,10 +644,8 @@ checkGhostCells()
     if (cell.isOwn())
       continue;
     bool is_ok = false;
-    for (NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode) {
-      Node node = *inode;
-      for (CellEnumerator icell2(node.cells()); icell2.hasNext(); ++icell2) {
-        Cell cell2 = *icell2;
+    for (Node node : cell.nodes()) {
+      for (Cell cell2 : node.cells()) {
         if (cell2.owner() == sid) {
           is_ok = true;
         }

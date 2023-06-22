@@ -262,7 +262,7 @@ computeDirections()
   ENUMERATE_CELL(icell,m_mesh->allCells()){
     Cell cell = *icell;
     Real3 center;
-    for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
+    for( NodeLocalId inode : cell.nodeIds() )
       center += nodes_coord[inode];
     center /= cell.nbNode();
     cells_center[icell] = center;
@@ -270,7 +270,7 @@ computeDirections()
   ENUMERATE_FACE(iface,m_mesh->allFaces()){
     Face face = *iface;
     Real3 center;
-    for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
+    for( NodeLocalId inode : face.nodeIds() )
       center += nodes_coord[inode];
     center /= face.nbNode();
     faces_center[iface] = center;
@@ -523,7 +523,7 @@ _refinePatch(Real3 position,Real3 length,bool is_3d)
   ENUMERATE_CELL(icell,m_mesh->allActiveCells()){
     Cell cell = *icell;
     Real3 center;
-    for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
+    for( NodeLocalId inode : cell.nodeIds() )
       center += nodes_coord[inode];
     center /= cell.nbNode();
     bool is_inside_x = center.x>min_pos.x && center.x<max_pos.x;

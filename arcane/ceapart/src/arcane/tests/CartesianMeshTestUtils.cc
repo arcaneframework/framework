@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTestUtils.cc                                   (C) 2000-2022 */
+/* CartesianMeshTestUtils.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
 /*---------------------------------------------------------------------------*/
@@ -118,7 +118,7 @@ _computeCenters()
     ENUMERATE_CELL (icell, m_mesh->allCells()) {
       Cell cell = *icell;
       Real3 center;
-      for (NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode)
+      for (NodeLocalId inode : cell.nodeIds() )
         center += nodes_coord[inode];
       center /= cell.nbNode();
       m_cell_center[icell] = center;
@@ -131,7 +131,7 @@ _computeCenters()
     ENUMERATE_FACE (iface, m_mesh->allFaces()) {
       Face face = *iface;
       Real3 center;
-      for (NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode)
+      for (NodeLocalId inode : face.nodeIds() )
         center += nodes_coord[inode];
       center /= face.nbNode();
       m_face_center[iface] = center;

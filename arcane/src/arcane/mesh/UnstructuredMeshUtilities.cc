@@ -421,13 +421,13 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
   NodeOccurenceMap nodes_occurence(nb_node*2,true,nb_node);
   ENUMERATE_FACE(iface,face_group){
     Face face = *iface;
-    for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode ){
-      NodeOccurenceMap::Data* v = nodes_occurence.lookup(inode.localId());
+    for( NodeLocalId inode : face.nodeIds() ){
+      NodeOccurenceMap::Data* v = nodes_occurence.lookup(inode);
       if (v)
         ++v->value();
       else{
         //info() << " ADD NODE " << ItemPrinter(*inode) << " coord=" << nodes_coord[inode];
-        nodes_occurence.add(inode.localId(),1);
+        nodes_occurence.add(inode,1);
       }
     }
   }

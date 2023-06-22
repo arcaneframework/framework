@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatVecUnitTest.cc                                           (C) 2000-2007 */
+/* MatVecUnitTest.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des matrices/vecteurs.                                    */
 /*---------------------------------------------------------------------------*/
@@ -281,8 +281,7 @@ _initMatrix()
       //Integer nb_face = cell.nbFace();
       Integer cell_row = m_cell_matrix_row[icell];
       Integer nb_col = 0;
-      for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-        const Face& face = *iface;
+      for( Face face : cell.faces() ){
         Integer face_nb_cell = face.nbCell();
         if (face_nb_cell==2){
           Cell opposite_cell = (face.cell(0)==cell) ? face.cell(1) : face.cell(0);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EnsightHdfPostProcessor.cc                                  (C) 2000-2015 */
+/* EnsightHdfPostProcessor.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Exportations des fichiers au format Ensight HDF.                          */
 /*---------------------------------------------------------------------------*/
@@ -233,8 +233,8 @@ _saveGroup(const ItemGroup& group,HGroup& domain_group)
       const Item& _item = *iitem;
       const ItemWithNodes& item = _item.toItemWithNodes();
       //Integer index = 0;
-      for( NodeEnumerator inode(item.nodes()); inode.hasNext(); ++inode ){
-        node_local_indexes[inode.itemLocalId()] = 0;
+      for( NodeLocalId inode_lid : item.nodeIds() ){
+        node_local_indexes[inode_lid] = 0;
       }
     }
     Integer current_index = 1;
@@ -287,16 +287,8 @@ _saveGroup(const ItemGroup& group,HGroup& domain_group)
     ENUMERATE_ITEM(iitem,all_items){
       const Item& _item = *iitem;
       const ItemWithNodes& item = _item.toItemWithNodes();
-      [[maybe_unused]] Integer index = 0;
-      for( NodeEnumerator inode(item.nodes()); inode.hasNext(); ++inode ){
-        //const Node& node = *inode;
-        item_node_ids.add(node_local_indexes[inode.itemLocalId()]);
-#if 0
-        info() << " CELL uid=" << item.uniqueId() << " id=" << inode.itemLocalId()
-               << " id2=" << item.node(index).localId()
-               << " node_uid=" << node.uniqueId();
-#endif
-        ++index;
+      for( NodeLocalId inode_lid : item.nodeIds() ){
+        item_node_ids.add(node_local_indexes[inode_lid]);
       }
     }
     hsize_t dims[1];

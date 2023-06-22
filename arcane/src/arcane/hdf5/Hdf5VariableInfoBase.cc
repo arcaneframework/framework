@@ -295,7 +295,7 @@ writeGroup(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st,
         ItemWithNodes item = (*iitem).toItemWithNodes();
         Integer nb_node = item.nbNode();
         Real3 item_center;
-        for( NodeEnumerator inode(item.nodes()); inode.hasNext(); ++inode ){
+        for( NodeLocalId inode : item.nodeIds() ){
           coords.add(nodes_coords[inode]);
           item_center += nodes_coords[inode];
         }

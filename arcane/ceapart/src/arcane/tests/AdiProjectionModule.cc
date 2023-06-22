@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AdiProjectionModule.cc                                      (C) 2000-2022 */
+/* AdiProjectionModule.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Module de test d'une projection sur maillage cartésien.                   */
 /*---------------------------------------------------------------------------*/
@@ -561,11 +561,7 @@ _evolveDualUpwindedVariables1()
     Real nodal_mass_flux_right_accumulation = 0.0;
     Real nodal_mass_flux_left_accumulation = 0.0;
 
-    CellEnumerator node_cells = node.cells();
-
-    for (CellEnumerator icell(node_cells); icell(); ++icell) {
-
-      Cell node_cell = *icell;
+    for (Cell node_cell : node.cells() ) {
 
       nodal_density_sum += m_density[node_cell];
       old_nodal_density_sum += m_old_density[node_cell];

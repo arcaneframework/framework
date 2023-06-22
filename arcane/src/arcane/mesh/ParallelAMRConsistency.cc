@@ -132,8 +132,7 @@ _addFaceToList(Face face, FaceInfoMap& face_map)
   Integer nb_node = face.nbNode();
   Real3 center(0., 0., 0.);
   Integer data_index = m_face_info_mng.size();
-  for (NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode){
-    const Node& node = *inode;
+  for (Node node : face.nodes()){
     Real3 node_coord = m_nodes_coord[node];
     ItemUniqueId uid = node.uniqueId();
     m_face_info_mng.add(uid);
@@ -559,8 +558,7 @@ _addFaceToList2(Face face, FaceInfoMap2& face_map)
   FaceInfoMap2::Data* i = face_map.lookup(uid);
   if (!i){
     Real3 center(0., 0., 0.);
-    for (NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode){
-      const Node& node = *inode;
+    for (Node node : face.nodes() ){
       Real3 node_coord = m_nodes_coord[node];
       center += node_coord;
     }

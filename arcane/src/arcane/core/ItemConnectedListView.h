@@ -34,7 +34,7 @@ namespace Arcane
  *
  * \code
  * Node node;
- * for( Item item : node.cell() )
+ * for( Item item : node.cells() )
  *    ;
  * \endcode
  */

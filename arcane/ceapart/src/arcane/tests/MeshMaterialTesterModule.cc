@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialTesterModule.cc                                 (C) 2000-2022 */
+/* MeshMaterialTesterModule.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Module de test du gestionnaire des matériaux.                             */
 /*---------------------------------------------------------------------------*/
@@ -2062,7 +2062,7 @@ _fillDensity(IMeshMaterial* mat,VariableCellReal& tmp_cell_mat_density,
   // La valeur aux noeuds est la moyenne de la valeur aux mailles autour
   ENUMERATE_NODE(inode,allNodes()){
     Real v = 0.0;
-    for( CellEnumerator icell(inode->cells()); icell.hasNext(); ++icell )
+    for( CellLocalId icell : inode->cellIds() )
       v += tmp_cell_mat_density[icell];
     v /= (Real)inode->nbCell();
     v *= 0.8;
@@ -2077,7 +2077,7 @@ _fillDensity(IMeshMaterial* mat,VariableCellReal& tmp_cell_mat_density,
       Real current_density = tmp_cell_mat_density[icell];
       Real new_density = 0.0;
       bool has_material = (m_present_material[cell] & (1<<mat_id));
-      for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
+      for( NodeLocalId inode : cell.nodeIds() )
         new_density += tmp_node_mat_density[inode];
       new_density /= (Real)cell.nbNode();
       if (new_density>=0.5 && !has_material && current_density==0.0){
@@ -2099,7 +2099,7 @@ _fillDensity(IMeshMaterial* mat,VariableCellReal& tmp_cell_mat_density,
     ENUMERATE_CELL(icell,allCells()){
       Cell cell = *icell;
       Real new_density = 0.0;
-      for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
+      for( NodeLocalId inode : cell.nodeIds() )
         new_density += tmp_node_mat_density[inode];
       new_density /= (Real)cell.nbNode();
       tmp_cell_mat_density[icell] = new_density;

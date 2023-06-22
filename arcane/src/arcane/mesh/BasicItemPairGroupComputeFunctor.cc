@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicItemPairGroupComputeFunctor.cc                         (C) 2000-2022 */
+/* BasicItemPairGroupComputeFunctor.cc                         (C) 2000-2023 */
 /*                                                                           */
 /* Fonctions basiques de calcul des valeurs des ItemPairGroup.               */
 /*---------------------------------------------------------------------------*/
@@ -179,8 +179,7 @@ _computeCellCellFaceAdjency(ItemPairGroupImpl* array)
   ENUMERATE_CELL(icell,group){
     Cell cell = *icell;
     //Integer local_id = cell.localId();
-    for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-      Face face = *iface;
+    for( Face face : cell.faces() ){
       if (face.nbCell()!=2)
         continue;
       Cell back_cell = face.backCell();
@@ -228,9 +227,8 @@ _computeFaceCellNodeAdjency(ItemPairGroupImpl* array)
   ENUMERATE_FACE(iface,group){
     Face face = *iface;
     Int32 local_id = face.localId();
-    for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode ){
-      Node node = *inode;
-      for( CellEnumerator isubcell(node.cells()); isubcell.hasNext(); ++isubcell ){
+    for( Node node : face.nodes() ){
+      for( Cell isubcell : node.cells() ){
         Int32 sub_local_id = isubcell.localId();
         if (items_list[sub_local_id]==forbidden_value || items_list[sub_local_id]==local_id)
           continue;
@@ -273,9 +271,8 @@ _computeCellFaceFaceAdjency(ItemPairGroupImpl* array)
   indexes.add(0);
   ENUMERATE_CELL(icell,group){
     Cell cell = *icell;
-    // Integer local_id = cell.localId();
-    for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-      Integer sub_local_id = iface.localId();
+    for( FaceLocalId iface : cell.faceIds() ){
+      Int32 sub_local_id = iface.localId();
       // Les controles sur les faces sont inutiles car on ne peut pas retomber dessus par l'énumération actuelle.
       if (items_list[sub_local_id]==forbidden_value /* or items_list[sub_local_id]==local_id */)
         continue;

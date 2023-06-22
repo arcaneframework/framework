@@ -338,7 +338,7 @@ init()
     ENUMERATE_CELL(icell,allCells()){
       Cell cell = *icell;
       Real3 center;
-      for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
+      for( NodeLocalId inode : cell.nodeIds() )
         center += nodes_coord[inode];
       center /= cell.nbNode();
       m_cell_center[icell] = center;
@@ -351,7 +351,7 @@ init()
     ENUMERATE_FACE(iface,allFaces()){
       Face face = *iface;
       Real3 center;
-      for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
+      for( NodeLocalId inode : face.nodeIds() )
         center += nodes_coord[inode];
       center /= face.nbNode();
       m_face_center[iface] = center;
