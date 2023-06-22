@@ -525,7 +525,7 @@ TEST(NeoMeshApiTest, AddAndChangeItemConnectivity) {
 TEST(NeoMeshApiTest, AddItemConnectivityWithSubsteps) {
   // Add new connectivities
   auto mesh = Neo::Mesh{ "AddAndChangeItemConnectivityTestMesh" };
-  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
   auto& dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "dof_family");
   std::vector<Neo::utils::Int64> cell_uids1{ 0 };
   std::vector<Neo::utils::Int64> cell_uids2{ 1 };
