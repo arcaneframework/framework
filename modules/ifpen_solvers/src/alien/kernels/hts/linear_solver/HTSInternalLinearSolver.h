@@ -70,14 +70,9 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
 
   //! Etat du solveur
   const Alien::SolverStatus& getStatus() const;
-  Alien::SolverStatus& getStatusRef() ;
 
   const SolverStat& getSolverStat() const { return m_stat; }
   SolverStat& getSolverStat() { return m_stat; }
-
-  SolverStater& getSolverStater() {
-     return m_stater;
-  }
 
   String getName() const { return "htssolver"; }
 
@@ -175,7 +170,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
   Real m_int_total_finish_time = 0.;
 
   SolverStat m_stat;
-  SolverStater m_stater;
+  SolverStater<HTSInternalLinearSolver> m_stater;
 
   IOptionsHTSSolver* m_options = nullptr;
   std::vector<double> m_pressure_diag;

@@ -545,7 +545,7 @@ MatrixInternal<ValueT>::_compute(HPDDM::MatrixCSR<ValueT>* matrix_dirichlet,
       // unsigned short nu = ref;
       Real eigen_solver_time = 0.;
       if (nu > 0) {
-        Alien::SolverStater::Sentry s(eigen_solver_time);
+        Alien::BaseSolverStater::Sentry s(eigen_solver_time);
         m_matrix.template solveGEVP<EIGENSOLVER>(matrix_neumann);
         // nu = opt["geneo_nu"];
         // m_hpddm_matrix.super::initialize(nu);
