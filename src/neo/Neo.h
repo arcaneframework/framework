@@ -299,30 +299,33 @@ public:
 template <typename ValueType>
 class PropertyConstView
 {
-public:
+ public:
   std::vector<int> const m_indexes;
   Neo::utils::ConstArrayView<ValueType> m_data_view;
 
-  int size() const noexcept {return m_indexes.size();}
+  int size() const noexcept { return m_indexes.size(); }
 
-  ValueType const& operator[] (int index) const{
-    assert(("Error, exceeds property view size",index < m_indexes.size()));
-    return m_data_view[m_indexes[index]];}
+  ValueType const& operator[](int index) const {
+    assert(("Error, exceeds property view size", index < m_indexes.size()));
+    return m_data_view[m_indexes[index]];
+  }
 
-  PropertyViewIterator<ValueType const> begin() { return {m_indexes,m_indexes.begin()++,m_data_view.begin()+m_indexes[0]};}
-  PropertyViewIterator<ValueType const> end()   { return {m_indexes,m_indexes.end(),m_data_view.end()};}
+  PropertyViewIterator<ValueType const> begin() { return { m_indexes, m_indexes.begin()++, m_data_view.begin() + m_indexes[0] }; }
+  PropertyViewIterator<ValueType const> end() { return { m_indexes, m_indexes.end(), m_data_view.end() }; }
 };
 
 //----------------------------------------------------------------------------/
 
-class PropertyBase{
-public:
+class PropertyBase
+{
+ public:
   std::string m_name;
 };
 
 template <typename DataType>
-class PropertyT : public PropertyBase  {
-public:
+class PropertyT : public PropertyBase
+{
+ public:
   std::vector<DataType> m_data;
 
   /*!
@@ -330,11 +333,11 @@ public:
    * @param item_range: range containing the items that will be set to the \a value
    * @param value
    */
-  void init(const ItemRange& item_range, const DataType& value){
+  void init(const ItemRange& item_range, const DataType& value) {
     if (isInitializableFrom(item_range))
-      init(item_range, std::vector<DataType>(item_range.size(), value));
+          init(item_range, std::vector<DataType>(item_range.size(), value));
     else
-      append(item_range,std::vector<DataType>(item_range.size(), value));
+          append(item_range, std::vector<DataType>(item_range.size(), value));
   }
 
   bool isInitializableFrom(const ItemRange& item_range) const {return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
