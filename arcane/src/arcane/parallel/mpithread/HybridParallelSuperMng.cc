@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelSuperMng.cc                                   (C) 2000-2020 */
+/* HybridParallelSuperMng.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI et mémoire partagée.           */
 /*---------------------------------------------------------------------------*/
@@ -397,7 +397,9 @@ build()
   int thread_wanted = MPI_THREAD_MULTIPLE;
   int thread_provided = 0;
 
+  Real start_time = platform::getRealTime();
   arcaneInitializeMPI(argc,argv,thread_wanted);
+  Real end_time = platform::getRealTime();
   MPI_Query_thread(&thread_provided);
 
   if (thread_provided < MPI_THREAD_MULTIPLE) {
@@ -435,6 +437,14 @@ build()
   if (n==0)
     ARCANE_FATAL("Number of shared memory sub-domains is not defined");
   m_local_nb_rank = n;
+
+  if (rank==0){
+    ITraceMng* tm = app->traceMng();
+    tm->info() << "MPI has non blocking collective";
+    tm->info() << "MPI: sizeof(MPI_Count)=" << sizeof(MPI_Count);
+    tm->info() << "MPI: is Cuda Aware?=" << arcaneIsCudaAwareMPI();
+    tm->info() << "MPI: init_time (seconds)=" << (end_time-start_time);
+  }
 
   /*cout << "ThreadSuperParallelMng: nb_sub_domain=" << m_local_nb_rank
        << " env=" << s

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelSuperMng.cc                                      (C) 2000-2022 */
+/* MpiParallelSuperMng.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -221,7 +221,10 @@ build()
 {
   ITraceMng* tm = m_application->traceMng();
 
+  // TODO: Regarder s'il faut faire une réduction sur tous les temps.
+  Real start_time = platform::getRealTime();
   initMPI(m_application);
+  Real end_time = platform::getRealTime();
 
   MPI_Comm_dup(MPI_COMM_WORLD,&m_mpi_main_communicator);
   m_main_communicator = MP::Communicator(m_mpi_main_communicator);
@@ -237,6 +240,7 @@ build()
     tm->info() << "MPI has non blocking collective";
     tm->info() << "MPI: sizeof(MPI_Count)=" << sizeof(MPI_Count);
     tm->info() << "MPI: is Cuda Aware?=" << arcaneIsCudaAwareMPI();
+    tm->info() << "MPI: init_time (seconds)=" << (end_time-start_time);
   }
 
   m_rank = rank;
