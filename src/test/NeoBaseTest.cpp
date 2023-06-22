@@ -189,12 +189,22 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
 
 //----------------------------------------------------------------------------/
 
+TEST(NeoTestProperty, test_scalar_property) {
+  Neo::ScalarPropertyT<Neo::utils::Int32> scalar_property{ "test_scalar_property" };
+  scalar_property.set(42);
+  EXPECT_EQ(42, scalar_property.get());
+  auto& const_scalar_property = scalar_property;
+  EXPECT_EQ(42, const_scalar_property.get());
+}
+
+//----------------------------------------------------------------------------/
+
 TEST(NeoTestProperty, test_property) {
   Neo::PropertyT<Neo::utils::Int32> property{ "test_property" };
   std::vector<Neo::utils::Int32> values{ 1, 2, 3 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 3 } };
   EXPECT_TRUE(property.isInitializableFrom(item_range));
-  property.init(item_range, { 1,2,3 });
+  property.init(item_range, { 1, 2, 3 });
   // Cannot init twice : test assertion
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {EXPECT_DEATH(property.init(item_range, values),".*Property must be empty.*");}
