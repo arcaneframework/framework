@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Application.cc                                              (C) 2000-2022 */
+/* Application.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* Superviseur.                                                              */
 /*---------------------------------------------------------------------------*/
@@ -35,40 +35,43 @@
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/Profiling.h"
 
-#include "arcane/ArcaneVersion.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IArcaneMain.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/IServiceLoader.h"
-#include "arcane/IServiceMng.h"
-#include "arcane/ICodeService.h"
-#include "arcane/ISession.h"
-#include "arcane/IDataFactory.h"
-#include "arcane/IDataFactoryMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/ItemTypeMng.h"
-#include "arcane/Concurrency.h"
-#include "arcane/IPhysicalUnitSystemService.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/Configuration.h"
-#include "arcane/Directory.h"
-#include "arcane/IServiceAndModuleFactoryMng.h"
-#include "arcane/ApplicationBuildInfo.h"
+#include "arcane/core/ArcaneVersion.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IArcaneMain.h"
+#include "arcane/core/IRessourceMng.h"
+#include "arcane/core/IServiceLoader.h"
+#include "arcane/core/IServiceMng.h"
+#include "arcane/core/ICodeService.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/IDataFactory.h"
+#include "arcane/core/IDataFactoryMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/Concurrency.h"
+#include "arcane/core/IPhysicalUnitSystemService.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/Configuration.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/IServiceAndModuleFactoryMng.h"
+#include "arcane/core/ApplicationBuildInfo.h"
 
-#include "arcane/IItemEnumeratorTracer.h"
+#include "arcane/core/IItemEnumeratorTracer.h"
 #include "arcane/impl/Application.h"
 #include "arcane/impl/ConfigurationReader.h"
+#include "arcane/impl/ArcaneMain.h"
 
-#include "arcane/ItemEnumerator.h"
-#include "arcane/Item.h"
-#include "arcane/IndexedItemConnectivityView.h"
-#include "arcane/UnstructuredMeshConnectivity.h"
+// Ces fichiers ne sont utilisés que pour afficher des tailles
+// des classes définies dans ces fichiers
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
 
 #include "arccore_version.h"
 
@@ -606,6 +609,7 @@ initialize()
   m_trace->info() << "Current process pid=" << platform::getProcessId()
                   << " machine=" << platform::getHostName();
   m_trace->info() << "MessagePassing service=" << applicationBuildInfo().messagePassingService();
+
   if (platform::getStackTraceService()){
     m_trace->info() << "Stack trace service is available";
   }
@@ -752,6 +756,12 @@ initialize()
                   << " ItemEnumeratorVersion=" << ItemEnumerator::version();
   m_trace->info() << "sizeof(eItemKind)=" << sizeof(eItemKind)
                   << " sizeof(IndexedItemConnectivityViewBase)=" << sizeof(IndexedItemConnectivityViewBase);
+
+  {
+    Real init_time_accelerator = ArcaneMain::initializationTimeForAccelerator() * 1000.0;
+    if (init_time_accelerator!=0.0)
+      m_trace->info() << "Time (in ms) to initialize Accelerators = " << init_time_accelerator;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
