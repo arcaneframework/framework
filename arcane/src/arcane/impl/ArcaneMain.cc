@@ -87,6 +87,7 @@
 
 #include <set>
 #include <map>
+#include <chrono>
 
 #ifdef ARCANE_FLEXLM
 #include "arcane/impl/FlexLMTools.h"
@@ -110,7 +111,12 @@ class ArcaneMainStaticInfo
   String m_dotnet_assembly;
   String m_arcane_lib_path;
   IDirectSubDomainExecuteFunctor* m_direct_exec_functor = nullptr;
+  //! Nombre de fois qu'on a lancé l'auto-détection pour MPI et les accélérateurs
   std::atomic<Int32> m_nb_autodetect = 0;
+  //! Code retour pour l'auto-détection
+  Int32 m_autodetect_return_value = 0;
+  //! Temps passé (en seconde) dans l'initialisation pour les accélérateurs
+  Real m_init_time_accelerator = 0.0;
 };
 } // namespace Arcane
 
@@ -309,21 +315,36 @@ class ArcaneMainAutoDetectRuntimeHelper
   {
     auto* x = _staticInfo();
     if (x->m_nb_autodetect > 0)
-      return m_return_value;
+      return x->m_autodetect_return_value;
+
+    std::chrono::high_resolution_clock clock;
 
     // TODO: rendre thread-safe
     {
       ArcaneMain::_checkAutoDetectMPI();
 
-      m_return_value = ArcaneMain::_checkAutoDetectAccelerator();
+      bool has_accelerator = false;
+      // Mesure le temps de l'initialisation.
+      // Comme ici on n'a pas encore initialié Arcane il ne faut
+      // pas utiliser de méthode du namespace 'platform'.
+      auto start_time = clock.now();
+      x->m_autodetect_return_value = ArcaneMain::_checkAutoDetectAccelerator(has_accelerator);
+      auto end_time = clock.now();
+      // Ne récupère le temps que si on a utilise un accélérateur
+      if (has_accelerator)
+        x->m_init_time_accelerator = _getTime(end_time,start_time);
       ++x->m_nb_autodetect;
     }
-    return m_return_value;
+    return x->m_autodetect_return_value;
   }
 
- public:
-
-  Int32 m_return_value = 0;
+  template<typename TimeType>
+  Real _getTime(TimeType end_time,TimeType start_time)
+  {
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+    Real x = static_cast<Real>(duration.count());
+    return x / 1.0e9;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -852,6 +873,15 @@ acceleratorRuntimeInitialisationInfo() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Real ArcaneMain::
+initializationTimeForAccelerator()
+{
+  return _staticInfo()->m_init_time_accelerator;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 int ArcaneMain::
 arcaneMain(const ApplicationInfo& app_info, IMainFactory* factory)
 {
@@ -932,7 +962,7 @@ run()
     r = _runDotNet();
     // Avant la version 3.7.8 on n'appelait par arcaneFinalize() car cela pouvait
     // poser des problèmes avec le Garbage Collector de '.Net'. Normalement ces
-    // problèmes sont corrigés mais on autorisele comportement d'avant au cas où.
+    // problèmes sont corrigés mais on autorise le comportement d'avant au cas où.
     bool do_finalize = false;
     String x = platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY");
     if (x == "1")
@@ -1068,22 +1098,28 @@ _checkAutoDetectMPI()
 /*!
  * \brief Détecte et charge la gestion du runtime des accélérateurs.
  *
- * \note Ne pas appeler directement mais passer par ArcaneMainAutoDetectHelper.
+ * En retour, has_accelerator est vrai si on a chargé un runtime accélérateur.
+ *
+ * \retval 0 si tout est OK
+ *
+ * \note Ne pas appeler directement cette méthode mais
+ * passer par ArcaneMainAutoDetectHelper.
  */
 int ArcaneMain::
-_checkAutoDetectAccelerator()
+_checkAutoDetectAccelerator(bool& has_accelerator)
 {
+  has_accelerator = false;
+
   auto si = _staticInfo();
   AcceleratorRuntimeInitialisationInfo& init_info = si->m_accelerator_init_info;
   if (!init_info.isUsingAcceleratorRuntime())
     return 0;
   String runtime_name = init_info.acceleratorRuntime();
-  //std::cout << "RUNTIME=" << runtime_name << "\n";
   if (runtime_name.empty())
     return 0;
 
   try {
-    // Pour l'instant, seul le runtime 'cuda' est autorisé
+    // Pour l'instant, seul les runtimes 'cuda' et 'hip' sont autorisés
     if (runtime_name != "cuda" && runtime_name != "hip")
       ARCANE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda' or 'hip' is allowed", runtime_name);
 
@@ -1113,6 +1149,7 @@ _checkAutoDetectAccelerator()
 
     auto my_functor = reinterpret_cast<ArcaneAutoDetectAcceleratorFunctor>(functor_addr);
     (*my_functor)();
+    has_accelerator = true;
   }
   catch (const Exception& ex) {
     return arcanePrintArcaneException(ex, nullptr);

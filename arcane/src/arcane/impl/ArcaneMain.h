@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.h                                                (C) 2000-2022 */
+/* ArcaneMain.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -260,6 +260,14 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   //! Indique si on exécute une assembly '.Net' depuis un `main` en C++.
   static bool hasDotNetWrapper();
 
+  /*!
+   * \brief Retourne le temps (en seconde) pour l'initialisation
+   * des runtimes accélérateurs pour ce processus.
+   *
+   * Retourne 0.0 si aucun runtime accélérateur n'a pas été initialisé.
+   */
+  static Real initializationTimeForAccelerator();
+
  public:
   
   /*!
@@ -350,7 +358,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   static void _checkCreateDynamicLibraryLoader();
   static int _runDotNet();
   static void _checkAutoDetectMPI();
-  static int _checkAutoDetectAccelerator();
+  static int _checkAutoDetectAccelerator(bool& has_accelerator);
   static void _setArcaneLibraryPath();
   static int _initRuntimes();
   static int _checkTestLoggerResult();
