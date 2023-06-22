@@ -323,6 +323,25 @@ class PropertyBase
 };
 
 template <typename DataType>
+class ScalarPropertyT : public PropertyBase
+{
+ public:
+  DataType m_data;
+
+  void set(DataType const& value) noexcept {
+    m_data = value;
+  }
+
+  DataType& get() noexcept {
+    return m_data;
+  }
+
+  DataType const& get() const noexcept {
+    return m_data;
+  }
+};
+
+template <typename DataType>
 class PropertyT : public PropertyBase
 {
  public:
@@ -789,13 +808,12 @@ private:
 //----------------------------------------------------------------------------/
 
 using Property = std::variant<
-    PropertyT<utils::Int32>,
-    //PropertyT<int>, // int and Int32 are same types
-    PropertyT<utils::Real3>,
-    PropertyT<utils::Int64>,
-    ItemLidsProperty,
-    //ArrayProperty<int>, // int and Int32 are same types
-    ArrayProperty<utils::Int32>>;
+PropertyT<utils::Int32>,
+PropertyT<utils::Real3>,
+PropertyT<utils::Int64>,
+ItemLidsProperty,
+ArrayProperty<utils::Int32>,
+ScalarPropertyT<utils::Int32>>;
 
 //----------------------------------------------------------------------------/
 
@@ -825,6 +843,14 @@ class Family
   void itemUniqueIdsToLocalids(std::vector<Neo::utils::Int32>& item_lids, std::vector<Neo::utils::Int64> const& item_uids) const {
     assert(("In itemUniqueIdsToLocalIds, lids and uids sizes differ.", item_lids.size() == item_uids.size()));
     _lidProp()._getLidsFromUids(item_lids, item_uids);
+  }
+
+  template <typename T>
+  void addScalarProperty(std::string const& name) {
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ScalarPropertyT<T>{ name }));
+    if (is_inserted)
+      Neo::print() << "Add scalar property " << name << " in Family " << m_name
+                   << std::endl;
   }
 
   template <typename T>
