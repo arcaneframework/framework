@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelDispatch.h                                    (C) 2000-2020 */
+/* HybridParallelDispatch.h                                    (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation des messages en mode hybride MPI/Mémoire partagée..        */
 /*---------------------------------------------------------------------------*/
@@ -131,11 +131,18 @@ class HybridParallelDispatch
     Type m_sum_value = Type();
   };
  public:
+
   HybridParallelDispatch(ITraceMng* tm,HybridParallelMng* parallel_mng,HybridMessageQueue* message_queue,
                          ArrayView<HybridParallelDispatch<Type>*> all_dispatchs);
   ~HybridParallelDispatch() override;
   void finalize() override;
+
  public:
+
+  using ITypeDispatcher<Type>::gather;
+
+ public:
+
   //@{ // From MessagePassing
   void broadcast(Span<Type> send_buf,Int32 sub_domain) override;
   void allGather(Span<const Type> send_buf,Span<Type> recv_buf) override;
@@ -160,6 +167,7 @@ class HybridParallelDispatch
   Request nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                                       ConstArrayView<Int32> send_index, Span<Type> recv_buf,
                                       ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) override;
+  Request gather(Arccore::MessagePassing::GatherMessageInfo<Type>&) override;
   //@}
 
   void broadcast(ArrayView<Type> send_buf,Integer sub_domain) override

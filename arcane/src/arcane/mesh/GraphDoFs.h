@@ -1,15 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GraphDoFs.h                                                 (C) 2000-2021 */
+/* GraphDoFs.h                                                 (C) 2000-2023 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_GRAPHDOFS_H
 #define ARCANE_MESH_GRAPHDOFS_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arcane/IGraph2.h"
 #include "arcane/IGraphModifier2.h"
@@ -146,14 +148,15 @@ class ARCANE_MESH_EXPORT GraphDoFs
     return m_graph_connectivity.get();
   }
 
-  Integer registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer)
+  Integer registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer) override
   {
     Integer id = m_connectivity_observer.size() ;
     m_connectivity_observer.push_back(std::unique_ptr<IGraphConnectivityObserver>(observer)) ;
     return id ;
   }
 
-  void releaseGraphConnectivityObserver(Integer observer_id) {
+  void releaseGraphConnectivityObserver(Integer observer_id) override
+  {
     if((observer_id>=0)&&(observer_id < (Integer) m_connectivity_observer.size()))
       m_connectivity_observer[observer_id].reset() ;
   }

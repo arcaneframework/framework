@@ -2046,7 +2046,7 @@ _checkValid(bool is_print)
       }
     }
     for( Node inode : face.nodes() )
-      if (nodes_in_master_face.find(inode->uniqueId())==nodes_in_master_face.end()){
+      if (nodes_in_master_face.find(inode.uniqueId())==nodes_in_master_face.end()){
         ++nb_error;
         if (nb_error<max_print_error)
           error() << "node in master face not in slave node list node=" << ItemPrinter(inode);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelDispatch.cc                                      (C) 2000-2022 */
+/* MpiParallelDispatch.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant les threads et MPI.                */
 /*---------------------------------------------------------------------------*/
@@ -964,6 +964,15 @@ scan(eReduceType op,ArrayView<Type> send_buf)
 {
   ARCANE_UNUSED(op);
   ARCANE_UNUSED(send_buf);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+gather(Arccore::MessagePassing::GatherMessageInfo<Type>&)
+{
   throw NotImplementedException(A_FUNCINFO);
 }
 

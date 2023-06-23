@@ -321,7 +321,7 @@ template<int Extent>
 inline ItemEnumerator ItemConnectedListView<Extent>::
 enumerator() const
 {
-  return ItemEnumerator(m_shared_info,m_index_view);
+  return ItemEnumerator(m_shared_info,m_index_view._localIds());
 }
 
 /*---------------------------------------------------------------------------*/
