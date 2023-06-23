@@ -1,7 +1,9 @@
 ﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 set(BUILD_SHARED_LIBS TRUE)
 if (NOT Arcane_DIR)
-  include(ArcaneCompilerConfig.cmake)
+  if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/ArcaneCompilerConfig.cmake")
+    include(ArcaneCompilerConfig.cmake)
+  endif()
   message(STATUS "ArcaneRoot = ${Arcane_DIR}")
   message(STATUS "AxlstarRoot = ${Axlstar_DIR}")
   message(STATUS "ArcconRoot = ${Arccon_DIR}")
@@ -9,11 +11,15 @@ if (NOT Arcane_DIR)
 endif()
 project(ArcaneSamples LANGUAGES C CXX)
 
-# Si le répertoire d'installation est différent du répertoire
-# des sources, il faut recopier les infos pour Nuget.
+find_package(Arcane REQUIRED)
+arcane_accelerator_enable()
+
+message(STATUS "Arcane installation prefix is '${ARCANE_PREFIX_DIR}'")
+
+# Recopie les fichiers nécessaires pour nuget
 if(NOT CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  configure_file(nuget.config ${CMAKE_BINARY_DIR}/nuget.config)
-  file(COPY _nuget_fallback DESTINATION ${CMAKE_BINARY_DIR})
+  file(COPY ${ARCANE_PREFIX_DIR}/samples/nuget.config DESTINATION ${CMAKE_BINARY_DIR})
+  file(COPY ${ARCANE_PREFIX_DIR}/samples/_nuget_fallback DESTINATION ${CMAKE_BINARY_DIR})
 endif()
 
 enable_testing()
