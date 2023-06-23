@@ -1725,6 +1725,8 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
 void ItemFamily::
 _preAllocate(Int32 nb_item,bool pre_alloc_connectivity)
 {
+  if (nb_item>1000)
+    m_infos.itemsMap().resize(nb_item,true);
   _resizeItemVariables(nb_item,false);
   for( auto& c : m_source_incremental_item_connectivities )
     c->reserveMemoryForNbSourceItems(nb_item,pre_alloc_connectivity);
