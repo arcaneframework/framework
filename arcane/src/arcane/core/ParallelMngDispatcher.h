@@ -279,7 +279,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 
  public:
 
-  IParallelMngInternal* _internalApi() { return m_parallel_mng_internal; }
+  IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
 
  protected:
 

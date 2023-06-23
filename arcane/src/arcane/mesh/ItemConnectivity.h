@@ -154,7 +154,7 @@ public:
     return 1;
   }
 
-  virtual Int32 connectedItemLocalId(ItemLocalId lid,Integer index) const
+  virtual Int32 connectedItemLocalId(ItemLocalId lid,[[maybe_unused]] Integer index) const
   {
     ARCANE_ASSERT((index==0),("Invalid value for index"))
     return m_item_property[lid];
