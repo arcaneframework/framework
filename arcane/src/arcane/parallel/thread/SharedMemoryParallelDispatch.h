@@ -299,6 +299,7 @@ class SharedMemoryParallelDispatch
   Request nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                                       ConstArrayView<Int32> send_index, Span<Type> recv_buf,
                                       ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) override;
+  Request gather(Arccore::MessagePassing::GatherMessageInfo<Type>&) override;
   //@}
 
   void broadcast(ArrayView<Type> send_buf, Integer sub_domain) override

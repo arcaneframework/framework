@@ -774,6 +774,15 @@ waitAll()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<class Type> Request SharedMemoryParallelDispatch<Type>::
+gather(Arccore::MessagePassing::GatherMessageInfo<Type>&)
+{
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template class SharedMemoryParallelDispatch<char>;
 template class SharedMemoryParallelDispatch<signed char>;
 template class SharedMemoryParallelDispatch<unsigned char>;
