@@ -53,7 +53,6 @@ namespace
     Int32 size = bytes.smallView().size();
     return { size, reinterpret_cast<Byte*>(data) };
   }
-
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -153,8 +152,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 /*!
  * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
- * \todo: ne pas allouer les tampons car leur conservation est couteuse en
- * terme de memoire.
  */
 void VariableSynchronizeBufferBase::
 compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_size)
@@ -272,8 +269,13 @@ class VariableSynchronizerDispatcherBase
 
   IParallelMng* m_parallel_mng = nullptr;
   IBufferCopier* m_buffer_copier = nullptr;
+  Runner* m_runner = nullptr;
   Ref<DataSynchronizeInfo> m_sync_info;
   Ref<IDataSynchronizeImplementation> m_implementation_instance;
+
+ protected:
+
+  void _setCurrentDevice();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -301,6 +303,7 @@ VariableSynchronizerDispatcherBase(const VariableSynchronizeDispatcherBuildInfo&
   // buffer sur le device. On pourrait utiliser le mémoire managée mais certaines
   // implémentations MPI (i.e: BXI) ne le supportent pas.
   if (runner && is_accelerator_aware) {
+    m_runner = runner;
     m_buffer_copier->setRunQueue(internal_pm->defaultQueue());
     auto* a = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
     m_buffer_copier->setAllocator(a);
@@ -314,6 +317,22 @@ VariableSynchronizerDispatcherBase::
 ~VariableSynchronizerDispatcherBase()
 {
   delete m_buffer_copier;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Positionne le device associé à notre RunQueue comme le device courant.
+ *
+ * Si on utilise une RunQueue, positionne le device associé à celui
+ * de cette RunQueue. Cela permet de garantir que les allocations mémoires
+ * effectuées lors des synchronisations seront sur le bon device.
+ */
+void VariableSynchronizerDispatcherBase::
+_setCurrentDevice()
+{
+  if (m_runner)
+    m_runner->setAsCurrentDevice();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -388,6 +407,7 @@ beginSynchronize(INumericDataInternal* data)
   m_is_empty_sync = (mem_view.bytes().size() == 0);
   if (m_is_empty_sync)
     return;
+  _setCurrentDevice();
   m_sync_buffer.compute(m_buffer_copier, m_sync_info.get(), full_datatype_size);
   m_sync_buffer.setDataView(mem_view);
   _beginSynchronize(m_sync_buffer);
@@ -401,8 +421,10 @@ endSynchronize()
 {
   if (!m_is_in_sync)
     ARCANE_FATAL("No pending synchronize(). You need to call beginSynchronize() before");
-  if (!m_is_empty_sync)
+  if (!m_is_empty_sync) {
+    _setCurrentDevice();
     _endSynchronize(m_sync_buffer);
+  }
   m_is_in_sync = false;
 }
 
@@ -417,6 +439,7 @@ compute()
 {
   if (!m_sync_info)
     ARCANE_FATAL("The instance is not initialized. You need to call setDataSynchronizeInfo() before");
+  _setCurrentDevice();
   m_implementation_instance->compute();
 }
 
@@ -633,15 +656,17 @@ synchronize(VariableCollection vars)
       IVariable* var = *ivar;
       INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
       if (!numapi)
-        ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data",var->name());
+        ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data", var->name());
       MutableMemoryView mem_view = numapi->memoryView();
       all_datatype_size += mem_view.datatypeSize();
-      buffer.setDataView(index,mem_view);
+      buffer.setDataView(index, mem_view);
       ++index;
     }
   }
 
-  buffer.compute(m_buffer_copier,m_sync_info.get(),all_datatype_size);
+  _setCurrentDevice();
+
+  buffer.compute(m_buffer_copier, m_sync_info.get(), all_datatype_size);
 
   m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
   m_implementation_instance->compute();
