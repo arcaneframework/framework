@@ -14,7 +14,7 @@ ___
 ### Nouveautés/Améliorations
 
 - Création d'une classe Arcane::SmallArray pour gérer des tableaux de
-  petite taille avec la mémoire allouée sur la pile (\pr{615}).
+  petite taille avec la mémoire allouée sur la pile (\pr{615}, \pr{732}).
 - Ajoute possibilité dans l'implémentation PETSc de Aleph de passer
   des arguments qui seront utilisés pour initialiser PETSc via l'appel
   à `PetscInitialize()` (\pr{621}).
@@ -34,7 +34,7 @@ ___
   mode échange de message en mémoire partagé et en mode hybride
   (\pr{631}, \pr{644}, \pr{645}, \pr{646}, \pr{654}, \pr{661},
   \pr{680}, \pr{681}).
-- Ajoute écrivain de post-traitement au format 'VTK HDF V2'. Ce format
+- Ajoute écrivain de post-traitement au format `VTK HDF V2`. Ce format
   permet de mettre dans le même fichier au format HDF5 plusieurs
   temps de dépouillement (\pr{637}, \pr{638}, \pr{639}).
 - Autorise la copie de Arcane::NumArray depuis différentes zones
@@ -61,9 +61,26 @@ ___
 - Ajoute méthode MeshUtils::markMeshConnectivitiesAsMostlyReadOnly()
   pour indiquer que les variables gérant la connectivité ne seront pas
   modifiées fréquemment. Cela permet d'optimiser la gestion mémoire
-  entre accélérateur et CPU pour éviter des recopies (\pr{691})
+  entre accélérateur et CPU pour éviter des recopies. Par défaut les
+  groupes d'entités (Arcane::ItemGroup) utilisent cet attribut
+  (\pr{691}, \pr{714}).
 - Possibilité de calculer dynamiquement le nom du répertoire de sortie
   dans Arcane::SimpleTableWriterHelper (\pr{607}).
+- Ajoute fonctions de calcul de hash SHA3 (\pr{695}, \pr{697}, \pr{705}).
+- Ajoute classe Arcane::ItemGenericInfoListView pour rendre accessible
+  sur accélérateur les informations génériques sur les entités (comme
+  Arcane::Item::owner(), Arcane::Item::uniqueId(), ...) (\pr{727}).
+- Optimise Arcane::ItemGroup::applyOperation() pour ne pas passer par
+  des sous-groupes et pour directement utiliser le groupe de base si
+  toutes les entités sont de même type. Ce mécanisme n'est pas actif
+  par défaut. Il faut positionner la variable d'environnement
+  `ARCANE_APPLYOPERATION_VERSION` à `2` pour l'utiliser (\pr{728}).
+- Ajoute opérateurs `-=`, `*=` et `/=` pour les vues (via Arcane::DataSetter)
+  {\pr{733}).
+- Rend accessible sur accélérateur les informations conservées dans
+  Arcane::Materials::AllEnvCell (\pr{742}).
+- Ajoute classe Arcane::Vector3 pour généraliser Arcane::Real3
+  pour d'autres types (\pr{750}).
 
 ### Changements
 
@@ -84,6 +101,25 @@ ___
 - Rend privées ou obsolètes les méthodes internes à %Arcane de
   Arcane::ItemInternalConnectivityList et Arcane::ItemInternal
   (\pr{787}).
+- Rend obsolète Arcane::IDeflateService. Il faut utiliser
+  Arcane::IDataCompressor à la place (\pr{706}).
+- Regroupe dans le namespace Arcane::MeshUtils les fonctions de
+  Arcane::mesh_utils et Arcane::meshvisitor (\pr{725}).
+- Déplace les méthodes internes à %Arcane de Arcane::IMesh et
+  Arcane::IItemFamily dans une interface interne (\pr{726}, \pr{738}, \pr{752}).
+- Rend obsolète Arcane::IPostProcessorWriter::setMesh() qui ne fait
+  rien par défaut. Il faut spécifier le maillage souhaité lors de la
+  construction du service (vis Arcane::ServiceBuilder) (\pr{748}).
+- Dans les comparaisons bit à bit, ne considère pas qu'il y a des
+  différences si les deux valeurs à comparer sont des `NaN`.
+- Ajoute affichage du temps passé dans l'initialisation MPI et du
+  runtime accélérateur (\pr{760}).
+- Rend obsolète Arcane::IHashAlgorithm::computeHash(). Il faut
+  utiliser la version Arcane::IHashAlgorithm::computeHash64() à la
+  place. Ajoute les méthodes Arcane::IHashAlgorithm::hashSize() et
+  Arcane::IHashAlgorithm::name() pour récupérer les informations sur
+  l'algorithme et pouvoir le créer dynamiquement via un service
+  (\pr{696}, \pr{707}).
 
 ### Corrections
 
@@ -91,6 +127,28 @@ ___
   Arcane::StandaloneSubDomain. Avant l'instance était détruite dans
   les destructeurs globaux après la fin de `main()` ce qui pouvait
   poser problème dans certains cas (\pr{619}).
+- Corrige erreurs dans le constructeur de recopie de Arcane::NumArray
+  (\pr{717}).
+- Dans Arcane::FloatingPointExceptionSentry, positionne de manière
+  inconditionnelle le flag de gestion des exceptions. Auparavant on
+  testait si les exceptions étaient actives et si ce n'était pas le
+  cas on ne faisait rien. Mais ce mécanisme de détection n'est pas
+  toujours fiable (\pr{720}).
+- Sauvegarde dans les protections le `timestamp` de modification des
+  maillages ainsi que l'attribut `need-compact` pour avoir le même
+  comportement avec ou sans reprise. Notamment, `need-compact` était
+  toujours mis à `true` lors d'une reprise ce qui faisait qu'on
+  recompactait toujours au moins une après une reprise. Comme les
+  entités étaient compactées cela ne changeait pas les résultats mais
+  pouvait provoquer des réallocations qui invalidaient les structures
+  calculées telles que les informations de maillage cartésien
+  (\pr{739}, \pr{756})
+- Corrige utilisation de Arcane::MeshReaderMng::setUseMeshUnit() qui
+  n'était pas pris en compte lorsque la langue du jeu de donnée est
+  en francais (\pr{754}).
+- Supprime réallocation inutile dans Arccore::AbstractArray lorsque la
+  nouvelle capacité est indentique à l'ancienne (commit
+  cac7fae3c471f6).
 
 ### Interne
 
@@ -106,15 +164,51 @@ ___
 - Améliorations diverses de la gestion des accélérateurs (\pr{647}).
 - Corrige compilation avec PAPI 7.0 et PETSc 3.19 (\pr{648}).
 - Ajoute champ de type Arcane::Int32 dans les différentes classes
-  gérant les connectivités pour gérer un offset sur les
+  gérant les connectivités pour gérer un offsett sur les
   localId(). Pour l'instant cela n'est pas utilisé et l'offset vaut
-  toujours 0 (\pr{649}).
+  toujours 0 (\pr{649}, \pr{712}, \pr{723}, \pr{736}, \pr{737}, \pr{744})
 - Support pour utiliser un driver spécifique pour lancer les tests
   (\pr{663}).
 - Remplace l'utilisation de `ENUMERATE_*` pour accéder aux
-  connectivités par des for-range (\pr{666}).
+  connectivités par des for-range (\pr{666}, \pr{759}).
+- Ajoute interface spécifique pour créer des maillages cartésiens.
+  Cela permettra à terme de fournir des méthodes spécialisées pour ces
+  maillages pour que la génération soit plus rapide et directement
+  avec la bonne numérotation (\pr{694}, \pr{749}, \pr{751}).
+- Ajoute typedefs dans Arcane::MDSpan pour récupérer le type de
+  l'élément et du Layout (\pr{699}).
+- Ajoute support pour utiliser des hash communs dans
+  Arcane::BasicReaderWriter ce qui pourra être utilisé pour les
+  comparaisons bit à bit et rend générique le mécanisme d'accès à
+  cette base de hash (\pr{698}, \pr{700}, \pr{701}).
+- Ajoute adapteur pour la base de donnée Redis {\pr{702}).
+- Refonte interne du mécanisme de synchronisation pour le rendre
+  indépendant du type de données (\pr{704}, \pr{708}, \pr{709}, \pr{711})
+- Utilise un seul buffer pour la synchronisation multiple de variables
+  au lieu de passer par la sérialisation (\pr{710}).
+- Ajoute classe Arcane::MeshKind pour gérer les propriétés sur la
+  structure de maillage (cartésien, non-structuré, amr, ...)
+  (\pr{718}).
+- Ajoute macro spécifique pour les méthodes obsolètes mais qui
+  ne seront pas supprimées immédiatement afin de pouvoir désactiver
+  les avertissements de compilation pour ces méthodes (\pr{722}).
+- Ajoute possibilité d'afficher l'affinitée CPU de tous les rangs
+  (\pr{729}).
+- Ajoute pour les format `VTK HDF` les informations sur les
+  Arcane::Item::uniqueId() des noeuds et des mailles (\pr{741}).
+- Amélioration de l'intégration continue pour ne pas lancer les tests
+  si suelement certains fichiers sont modifiés (par exemple uniquement
+  les `.md`) et ajoute vérification de la date et de la licence
+  (\pr{743}, \pr{745}).
+- Rend privé les méthodes de Arcane::ItemInternalConnectivityList
+  internes à Arcane et simplifie la gestion de la classe en regroupant
+  les informations de connectivités dans une sous-structure
+  (\pr{640}).
+- Déplace la classe Arcane::ItemGroupImplPrivate dans son propre
+  fichier (\pr{730}).
+- Rend `constexpr` la fonction Arcane::arcaneCheckAt() (\pr{746}).
 
-### Arccore (2.4+)
+### Arccore (2.5.0)
 
 - Propage l'allocateur de la source dans le constructeur et
   l'opérateur de recopie de Arccore::UniqueArray et
@@ -138,7 +232,7 @@ ___
 - Ajoute interface Arccore::IMemoryAllocator3 qui enrichit
   Arccore::IMemoryAllocator pour passer plus d'informations à
   l'allocateur. Cela permet d'ajouter par exemple la taille allouée ou
-  le nom du tableau (\pr{662}, \pr{673}, \pr{677}).
+  le nom du tableau (\pr{662}, \pr{673}, \pr{677}, \pr{713}, \pr{719}).
 - Ajoute type `Int8` et `BFloat16` dans Arccore::eBasicDataType (\pr{669})
 - Ajoute différentes fonctions de conversions entre les Arccore::Span
   et `std::array`. Ajoute aussi les méthodes `subPart` et
@@ -148,6 +242,17 @@ ___
 - Support pour donner un nom aux tableaux Arccore::Array. Cela est
   utilisé dans Arccore::IMemoryAllocator3 pour afficher les
   informations d'allocation (\pr{676}, \pr{682}).
+- Déplace les opérateurs tels que '==', '!=', '<<' et '<' dans les
+  classes correspondantes en tant que fonction `friend` (\pr{703}).
+- Rend obsolète les méthodes Arccore::ArrayView::range(),
+  Arrcore::Span::range() et Arccore::AbstractArray::range()
+  (\pr{757}).
+
+### Axlstar (2.2.0)
+
+- Ajoute pour expérimentation la possibilité de spécifier plusieurs
+  types (`caseoption`, `subdomain`, ...) pour les services
+  (\pr{715}).
 
 ## Arcane Version 3.9.5 (04 avril 2023) {#arcanedoc_version390}
 
