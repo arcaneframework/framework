@@ -287,11 +287,14 @@ ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_category testCaseOptions-5.arc -We,ARCANE
 arcane_add_test_sequential(caseoptions_multiplemesh testCaseOptions-multiple-mesh.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 arcane_add_test_sequential(caseoptions_multiplemesh_legacy testCaseOptions-multiple-mesh-legacy.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 arcane_add_test_sequential(casefunction1 testCaseFunction-1.arc)
-if (hiredis_FOUND)
+# Mettre à vrai pour tester Redis mais il faut que le server tourne
+# (on peut tester cela avec la commande 'redis-cli PING')
+set(ARCANE_ENABLE_REDIS_TEST FALSE)
+if (hiredis_FOUND AND ARCANE_ENABLE_REDIS_TEST)
   # Pour ce test on a aussi besoin qu'une base redis soit accessible
   # Comme il n'y a pas de moyen simple de le savoir, ce test n'est pas actif
   # par défaut.
-  # arcane_add_test_sequential(redis1 testRedis-1.arc)
+  arcane_add_test_sequential(redis1 testRedis-1.arc)
 endif()
 
 ARCANE_ADD_TEST(timehistory testTimeHistory-1.arc)
@@ -523,7 +526,11 @@ ARCANE_ADD_TEST(checkpoint_basic testCheckpoint-3.arc -c 3 -m 5)
 ARCANE_ADD_TEST(checkpoint_basic2-v1 testCheckpoint-basic2-v1.arc -c 3 -m 5)
 ARCANE_ADD_TEST(checkpoint_basic2 testCheckpoint-basic2.arc -c 3 -m 5)
 ARCANE_ADD_TEST(checkpoint_basic2-v3 testCheckpoint-basic2-v3.arc -c 3 -m 5)
-arcane_add_test(checkpoint_basic_hash testCheckpoint-basic2-v3.arc -c 3 -m 5 -We,ARCANE_HASHDATABASE_DIRECTORY,${CMAKE_CURRENT_BINARY_DIR}/hashdb)
+arcane_add_test(checkpoint_basic_hash_file testCheckpoint-basic2-v3.arc -c 3 -m 5 -We,ARCANE_HASHDATABASE_DIRECTORY,${CMAKE_CURRENT_BINARY_DIR}/hashdb)
+
+if (ARCANE_ENABLE_REDIS_TEST)
+  arcane_add_test(checkpoint_basic_hash_redis testCheckpoint-basic2-v3.arc -c 3 -m 5 "-We,ARCANE_HASHDATABASE_REDIS,127.0.0.1")
+endif()
 if (LZ4_FOUND)
   arcane_add_test_sequential(checkpoint_basic2-v3-lz4 testCheckpoint-basic2-v3-lz4.arc -c 3 -m 5 -We,ARCANE_OUTPUT_LEVEL,5)
   arcane_add_test_sequential(checkpoint_basic_hash_lz4 testCheckpoint-basic2-v3-lz4.arc -c 3 -m 5 -We,ARCANE_HASHALGORITHM,SHA3_512 -We,ARCANE_HASHDATABASE_DIRECTORY,${CMAKE_CURRENT_BINARY_DIR}/hashdb2)
