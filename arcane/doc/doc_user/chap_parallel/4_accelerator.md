@@ -4,26 +4,33 @@
 
 [TOC]
 
-\warning L'API d'utilisation des accélérateurs est en cours de
-développement et n'est pas figée. De plus il ne faut pas utiliser les
-classes autres que celles documentées dans cette page.
-
-On appelle accélérateur un co-processeur dedié différent du processeur
-principal utilisé pour exécuter le code de calcul.
+Dans ce chapître, on appellera accélérateur un co-processeur dedié
+différent du processeur principal utilisé pour exécuter le code de
+calcul. Dans la version actuelle de %Arcane, il s'agit d'accélérateurs
+de type GPGPU.
 
 L'API %Arcane pour gérer les accélérateurs s'inspire des bibliothèques
 telles que [RAJA](https://github.com/LLNL/RAJA) ou
 [Kokkos](https://github.com/kokkos/kokkos) mais se restreint aux
 besoins spécifiques de %Arcane.
 
-\note L'implémentation actuelle supporte uniquement comme accélérateur les
-cartes graphiques NVidia.
+\note L'API accélérateur de %Arcane peut s'utiliser indépendamment des
+mécanismes associés aux codes de calcul tels que les modules, le
+maillage ou les services. Pour un exemple de fonctionnement autonome,
+se reporter au chapître \ref arcanedoc_parallel_accelerator_standalone.
 
-Le but de L'API est :
+L'implémentation actuelle supporte uniquement comme accélérateur les
+cartes graphiques NVidia (via CUDA) ou AMD (via ROCm).
 
-- pouvoir choisir dynamiquement où sera exécuté le code : CPU ou
-  accélérateur (ou les deux à la fois)
-- avoir un code source indépendant du compilateur
+L'API accélérateur de %Arcane répond aux objectifs suivants:
+
+- unifier le comportement entre CPU séquentiel, CPU multi-thread et
+  accélérateur.
+- avoir un seul exécutable et pouvoir choisir dynamiquement où sera
+  exécuté le code : CPU ou accélérateur (ou les deux à la fois).
+- avoir un code source indépendant du compilateur et donc on n'utilise
+  pas de mécanismes tels que les `#pragma` comme dans les normes
+  OpenMP ou OpenACC.
 
 Le principe de fonctionnement est l'exécution de noyaux de calcul
 déportés. Le code est exécuté par défaut sur le CPU (l'hôte) et
@@ -33,28 +40,56 @@ déport se fait via des appels spécifiques.
 ## Utilisation dans Arcane {#arcanedoc_parallel_accelerator_usage}
 
 L'ensemble des types utilisés pour la gestion des accélérateurs est
-dans l'espace de nom Arcane::Accelerator. Les classes principales
-sont:
+dans l'espace de nom Arcane::Accelerator. Il y a deux composantes pour
+gérer les accélérateurs :
 
-- Arcane::Accelerator::IAcceleratorMng qui permet d'accéder à
+- `arcane_accelerator_core` dont les fichiers d'en-tête sont inclus
+  via `#include <arcane/accelerator/core>`. Cette composante comporte
+  les classes indépendantes du type de l'accélérateur.
+
+- `arcane_accelerator` dont les fichiers d'en-tête sont inclus
+  via `#include <arcane/accelerator>`. Cette composante comporte
+  les classes permettant de déporter des noyaux de calcul sur un
+  l'accélérateur spécifique.
+  
+Les classes principales pour gérer les accélérateurs sont:
+
+- \arcaneacc{IAcceleratorMng} qui permet d'accéder à
   l'environnement d'exécution par défaut.
-- Arcane::Accelerator::Runner qui représente un environnement d'exécution
-- Arcane::Accelerator::RunQueue qui représente une file d'exécution
-- Arcane::Accelerator::RunCommand qui représente une commande (un
+- \arcaneacc{Runner} qui représente un environnement d'exécution
+- \arcaneacc{RunQueue} qui représente une file d'exécution
+- \arcaneacc{RunCommand} qui représente une commande (un
   noyau de calcul) associée à une file d'exécution.
 
 Il existe deux possibilités pour utiliser les accélérateurs dans
-Arcane :
-- via une instance de Arcane::Accelerator::IAcceleratorMng créé et
-  initialisée par %Arcane au moment du lancement de l'exécutable.
-- via une instgance de Arcane::Accelerator::Runner créée et
-  initialisée manuellement.
+%Arcane :
+
+- via une instance de \arcaneacc{IAcceleratorMng} créé et
+  initialisée par %Arcane au moment du lancement de
+  l'exécutable (\ref arcanedoc_parallel_accelerator_module). C'est la
+  méthode recommandée.
+- via une instance de \arcaneacc{Runner} créée et
+  initialisée manuellement (\ref arcanedoc_parallel_accelerator_runner).
+
+Pour lancer un calcul sur accélérateur, il faut instancier une file
+d'exécution. La classe \arcaneacc{RunQueue} gère une telle
+file. La fonction \arcaneacc{makeQueue()} permet de créer une
+telle file. Les files d'exécution peuvent être temporaires ou
+persistantes mais ne peuvent pas être copiées. La méthode
+\arcaneacc{makeQueueRef()} permet de créer une référence à
+une file qui peut être copiée.
+
+\note Par défaut la création de \arcaneacc{RunQueue} à partir
+d'un \arcaneacc{Runner} n'est pas thread-safe pour des
+raisons de performance. Si on veut pouvoir lancer plusieurs files
+d'exécution à partir de la même instance de \arcaneacc{Runner} il faut appeler
+la méthode \arcaneacc{Runner::setConcurrentQueueCreation(true)} avant
 
 ### Utilisation dans les modules {#arcanedoc_parallel_accelerator_module}
 
 Il est possible pour tout module de récupérer une implémentation de
-l'interface Arcane::Accelerator::IAcceleratorMng via la méthode
-Arcane::AbstractModule::acceleratorMng(). Le code suivant permet par
+l'interface \arcaneacc{IAcceleratorMng} via la méthode
+\arcane{AbstractModule::acceleratorMng()}. Le code suivant permet par
 exemple d'utiliser les accélérateurs depuis un point d'entrée :
 
 ```cpp
@@ -77,32 +112,36 @@ class MyModule
  public:
   void myEntryPoint()
   {
+    RunQueue* queue = acceleratorMng()->defaultQueue();
     // Boucle sur les mailles déportée sur accélérateur
-    auto command1 = makeCommand(acceleratorMng()->defaultQueue());
+    auto command1 = makeCommand(queue);
     command1 << RUNCOMMAND_ENUMERATE(Cell,vi,allCells()){
     };
 
     // Boucle classique 1D déportée sur accélérateur
-    auto command2 = makeCommand(acceleratorMng()->defaultQueue());
+    auto command2 = makeCommand(queue)
     command2 << RUNCOMMAND_LOOP1(iter,5){
     };
   }
 };
 ```
 
-### Utilisation via une instance spécifique de 'Runner' {#arcanedoc_parallel_accelerator_runner}
+### Instance spécifique de Runner {#arcanedoc_parallel_accelerator_runner}
 
-L'objet principal est la classe Arcane::Accelerator::Runner. Il est
-possible de créer plusieurs instances de cet objet Arcane::Accelerator::Runner.
-
-\note Actuellement, les méthodes de Arcane::Accelerator::Runner ne
-sont pas thread-safe.
+Il est possible de créer plusieurs instances de l'objet
+\arcaneacc{Runner}. 
 
 Une instance de cette classe est associée à une politique d'exécution
 dont les valeurs possibles sont données par l'énumération
-Arcane::Accelerator::eExecutionPolicy. Par défaut, la politique
-d'exécution est Arcane::Accelerator::eExecutionPolicy::Sequential, ce
+\arcaneacc{eExecutionPolicy}. Par défaut, la politique
+d'exécution est \arcaneacc{eExecutionPolicy::Sequential}, ce
 qui signifie que les noyaux de calcul seront exécutés en séquentiel. 
+
+\note Lorsqu'on créé une instance de \arcaneacc{Runner} sur
+accélérateur, il est possible de spécifier un autre accélérateur que
+l'accélérateur par défaut (si plusieurs sont disponibles). Cela
+complique significativement la gestion de la mémoire. Le chapître \ref
+arcanedoc_parallel_accelerator_multi explique comment gérer cela.
 
 Il est aussi possible d'initialiser automatiquement une instance de cette
 classe en fonction des arguments de la ligne de commande :
@@ -117,35 +156,6 @@ IApplication* app = ...;
 initializeRunner(runner,tm,app->acceleratorRuntimeInitialisationInfo());
 ```
 
-Pour lancer un calcul sur accélérateur, il faut instancier une file
-d'exécution. La classe Arcane::Accelerator::RunQueue gère une telle
-file. La fonction Arcane::Accelerator::makeQueue() permet de créer une
-telle file. Les files d'exécution peuvent être temporaires ou
-persistantes mais ne peuvent pas être copiées. La méthode
-Arcane::Accelerator::makeQueueRef() permet de créer une référence à
-une file qui peut être copiée.
-
-## Exemple d'utilisation d'une boucle complexe {#arcanedoc_parallel_accelerator_complexeloop}
-
-```cpp
-using namespace Arcane;
-using namespace Arcane::Accelerator;
-{
-  Arcane::Accelerator::Runner runner = ...;
-  auto queue = makeQueue(runner);
-  auto command = makeCommand(queue);
-  auto out_t1 = viewOut(command,t1);
-  Int64 base = 300;
-  Int64 s1 = 400;
-  auto b = makeLoopRanges({base,s1},n2,n3,n4);
-  command << RUNCOMMAND_LOOP(iter,b)
-  {
-    auto [i, j, k, l] = iter();
-    out_t1(i,j,k,l) = _getValue(i,j,k,l);
-  };
-}
-```
-
 ## Compilation {#arcanedoc_parallel_accelerator_compilation}
 
 %Arcane propose une intégration pour compiler avec le support des
@@ -153,7 +163,7 @@ accélérateurs via CMake. Ceux qui utilisent un autre système de
 compilation doivent gérer aux même ce support.
 
 Pour pouvoir utiliser des noyaux de calcul sur accélérateur, il faut
-en général utiliser un compilateur spécifique. L'implémentation
+en général utiliser un compilateur spécifique. Par exemple, l'implémentation
 actuelle de %Arcane via CUDA utilise le compilateur `nvcc` de NVIDIA
 pour cela. Ce compilateur se charge de compiler la partie associée à
 l'accélérateur. La partie associée au CPU est compilée avec le même
@@ -174,17 +184,18 @@ CMake suivantes :
   cible `mytarget` a besoin de l'environnement accélérateur.
 
 Si %Arcane est compilé en environnement CUDA, la variable CMake
-`ARCANE_HAS_CUDA` est définie.
+`ARCANE_HAS_CUDA` est définie. Si %Arcane est compilé en environnement
+HIP/ROCm, alors `ARCANE_HAS_HIP` est défini.
 
 ## Exécution {#arcanedoc_parallel_accelerator_exec}
 
 Le choix de l'environnement d'exécution par défaut
-(Arcane::Accelerator::IAcceleratorMng::defaultRunner()) est déterminé
+(\arcaneacc{IAcceleratorMng::defaultRunner()}) est déterminé
 par la ligne de commande :
 
 - Si l'option `AcceleratorRuntime` est spécifiée, on utilise ce
-  runtime. Actuellement la seule valeur possible est `cuda`. Par
-  exemple :
+  runtime. Actuellement les seules valeurs possibles sont `cuda` ou
+  `hip`. Par exemple :
   ```sh
   MyExec -A,AcceleratorRuntime=cuda data.arc
   ```
@@ -193,7 +204,61 @@ par la ligne de commande :
   plusieurs threads,
 - Sinon, les noyaux de calcul sont exécutés en séquentiel.
 
-## Utilisation des vues {#arcanedoc_parallel_accelerator_view}
+## Noyaux de calcul (RunCommand)
+
+Une fois qu'on dispose d'une instance de \arcaneacc{RunQueue}, il est
+possible de créér une commande qui pourra être déportée sur
+accélérateur. Les commandes sont toujours des boucles qui peuvent être
+de la forme suivante:
+
+- Boucle classique de dimension 1 à 4. Cela se fait via les macros
+  RUNCOMMAND_LOOP(), RUNCOMMAND_LOOP1(), RUNCOMMAND_LOOP2(),
+  RUNCOMMAND_LOOP3() ou RUNCOMMAND_LOOP4().
+- Boucle sur les entités du maillage. Cela se fait via la macro
+  RUNCOMMAND_ENUMERATE().
+
+Le chapître \ref arcanedoc_parallel_accelerator_lambda décrit la
+syntaxe de ces boucles.
+
+Le code suivant permet par exemple d'utiliser les accélérateurs depuis
+un point d'entrée :
+
+```cpp
+// Fichiers à inclure tout le temps
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/core/RunQueue.h"
+
+// Fichier à inclure pour avoir RUNCOMMAND_ENUMERATE
+#include "arcane/accelerator/RunCommandEnumerate.h"
+
+// Fichier à inclure pour avoir RUNCOMMAND_LOOP
+#include "arcane/accelerator/RunCommandLoop.h"
+
+using namespace Arcane;
+using namespace Arcane::Accelerator;
+
+class MyModule
+: public Arcane::BasicModule
+{
+ public:
+  void myEntryPoint()
+  {
+    RunQueue* queue = ...;
+
+    // Boucle sur les mailles déportée sur accélérateur
+    auto command1 = makeCommand(queue);
+    command1 << RUNCOMMAND_ENUMERATE(Cell,vi,allCells()){
+    };
+
+    // Boucle classique 1D déportée sur accélérateur
+    auto command2 = makeCommand(queue)
+    command2 << RUNCOMMAND_LOOP1(iter,5){
+    };
+  }
+};
+```
+
+### Utilisation des vues {#arcanedoc_parallel_accelerator_view}
 
 Les accélérateurs ont en général leur propre mémoire qui est
 différente de celle de l'hôte. Il est donc nécessaire de spécifier
@@ -203,55 +268,109 @@ appelé une vue qui permet de spécifier pour une variable ou un tableau
 s'il va être utilisé en entrée, en sortie ou les deux.
 
 \warning Une vue est un objet **TEMPORAIRE** et est toujours associée
-à une commande (Arcane::Accelerator::RunCommand) et un conteneur
+à une commande (\arcaneacc{RunCommand}) et un conteneur
 (Variable %Arcane ou tableau) et ne doit pas être utilisée lorsque la commande
 associée est terminée ou le conteneur associé est modifié.
 
-%Arcane propose des vues sur les variables (Arcane::IVariable) ou sur la classe Arcane::NumArray.
+%Arcane propose des vues sur les variables (\arcane{VariableRef}) ou
+sur la classe \arcane{NumArray} (La page \ref
+arcanedoc_core_types_numarray décrit plus précisément l'utilisation de
+cette classe).
 
 Quel que soit le conteneur associé, la déclaration des vues est la
-même. Les constantes Arcane::MDDim1, Arcane::MDDim2, Arcane::MDDim3 et
-Arcane::MDDim4 permettent de spécifier le rang (la dimension) du
-tableau Arcane::NumArray (A partir de la version 3.7.7 de %Arcane).
-
-La page \ref arcanedoc_core_types_numarray décrit plus précisément
-l'utilisation de la classe Arcane::NumArray
+même et utilise les méthodes \arcaneacc{viewIn()},
+\arcaneacc{viewOut()} ou \arcaneacc{viewInOut()}.
 
 ```cpp
+// Pour avoir les NumArray
 #include "arcane/utils/NumArray.h"
+
 // Pour avoir les vues sur les variables
 #include "arcane/accelerator/VariableViews.h"
+
 // Pour avoir les vues sur les NumArray
 #include "arcane/accelerator/NumArrayViews.h"
-using namespace Arcane;
-using namespace Arcane::Accelerator;
+
 Arcane::Accelerator::RunCommand& command = ...;
+// Tableaux 1D
 Arcane::NumArray<Real,MDDim1> a;
 Arcane::NumArray<Real,MDDim1> b;
 Arcane::NumArray<Real,MDDim1> c;
+
+// Variable 1D aux mailles
 VariableCellReal var_c = ...;
-auto in_a = viewIn(command,a); // Vue en entrée
-auto inout_b = viewInOut(command,b); // Vue en entrée/sortie
-auto out_c = viewOut(command,var_c); // Vue en sortie.
+
+// Vue en entrée (en lecture seule)
+auto in_a = viewIn(command,a);
+
+// Vue en entrée/sortie
+auto inout_b = viewInOut(command,b);
+
+// Vue en sortie (en écriture seule) sur la variable 'var_c'
+auto out_c = viewOut(command,var_c);
 ```
 
-## Utilisation des lambda {#arcanedoc_parallel_accelerator_lambda}
+### Gestion mémoire des données gérées par Arcane
 
-Actuellement il est possible de déporter deux types de boucles sur
-accélérateurs:
-- les boucles sur les entités du maillage via la macro
-  RUNCOMMAND_ENUMERATE()
-- les boucles classiques sur des tableaux via la commande
-  RUNCOMMAND_LOOP().
+Lorqu'on utilise les accélérateurs, %Arcane utilise la mémoire unifée
+(aussi appelée mémoire "managée") pour toutes les variables
+(\arcane{VariableRef}), pour les groupes d'entités
+(\arcane{ItemGroup}) et par défaut pour les \arcane{NumArray}. Cela
+signifie que les données correspondantes à ces objets sont accessibles
+à la fois sur l'hôte (CPU) et sur les accélérateurs.
 
-Ces deux macros permettent de définir après un bout de code qui est
-une fonction lambda du C++11 (TODO: ajouter référence) et qui sera
-déporté sur accélérateur. Ces macros s'utilisent via l'opérateur
-'operator<<' sur une commande (Arcane::Accelerator::RunCommand). Le
-code après la macro est un code identique à celui d'une boucle C++
-classique avec les modifications suivantes :
+Avec la mémoire unifiée, c'est l'accélérateur qui gère automatiquement
+les éventules transferts mémoire entre l'accélérateur et l'hôte. Ces
+transferts peuvent être coûteux en temps s'ils sont fréquents mais si
+une donnée n'est utilisée que sur CPU ou que sur accélérateur, il n'y
+aura pas de transferts mémoire et donc les performances ne seront pas
+impactées.
 
-- les accolades sont obligatoires
+%Arcane fournit des mécanismes permettant de donner des informations
+permettant d'optimiser la gestion de cette mémoire. Ces mécanismes
+sont dépendants du type de l'accélérateur et peuvent ne pas être
+disponible partout. Ils sont accessibles via la méthode
+\arcaneacc{Runner::setMemoryAdvice()}.
+
+### Exemple d'utilisation d'une boucle complexe {#arcanedoc_parallel_accelerator_complexloop}
+
+L'exemple suivant montre comment modifier l'intervalle d'itération
+pour ne pas partir de zéro :
+
+```cpp
+using namespace Arcane;
+using namespace Arcane::Accelerator;
+{
+  Arcane::Accelerator::Runner runner = ...;
+  auto queue = makeQueue(runner);
+  auto command = makeCommand(queue);
+  auto out_t1 = viewOut(command,t1);
+  Int64 base = 300;
+  Int64 s1 = 400;
+  auto b = makeLoopRanges({base,s1},n2,n3,n4);
+  command << RUNCOMMAND_LOOP(iter,b)
+  {
+    auto [i, j, k, l] = iter();
+    out_t1(i,j,k,l) = _getValue(i,j,k,l);
+  };
+}
+```
+
+### Utilisation des lambda {#arcanedoc_parallel_accelerator_lambda}
+
+Quelle que soit la macro (RUNCOMMAND_ENUMERATE(),
+RUNCOMMAND_LOOP(), ...) utilisée pour la boucle, le code qui suit doit
+être une une fonction [lambda du
+C++11](https://en.cppreference.com/w/cpp/language/lambda). C'est cette
+fonction lambda qui sera éventuellement déportée sur accélérateur.
+
+%Arcane utilise l'opérateur `operator<<` pour "envoyer" la boucle sur
+une commande (\arcaneacc{RunCommand}) ce qui permet d'écrire le code
+de manière similaire à celui d'une boucle C++ classique (ou une boucle
+ENUMERATE_() dans le cas des entités du maillage) avec les quelques
+modifications suivantes :
+
+- les accolades (`{` et `}`) sont obligatoires
 - il faut ajouter un `;` après la dernière accolade.
 - le corps d'une lambda est une fonction et pas une boucle. Par
   conséquent, il n'est pas possible d'utiliser les mots clés tels que
@@ -280,9 +399,10 @@ command << RUNCOMMAND_ENUMERATE(Cell,icell,my_group)
 ```
 
 Lorsque'un noyau de calcul est déporté sur accélérateur, il ne faut
-pas accéder à la mémoire associée aux vues pendant l'exécution sous
-peine de plantage. En général cela ne peut se produire que lorsque les
-Arcane::Accelerator::RunQueue sont asynchrones. Par exemple :
+pas accéder à la mémoire associée aux vues depuis une autre partie du
+code pendant l'exécution sous peine de plantage. En général cela ne
+peut se produire que lorsque les \arcaneacc{RunQueue} sont
+asynchrones. Par exemple :
 
 ```cpp
 #include "arcane/accelerator/Views.h"
@@ -312,13 +432,13 @@ queue.barrier();
 // commande est terminée)
 ```
 
-## Limitation des lambda C++ sur accélérateurs {#arcanedoc_parallel_accelerator_limitlambda}
+### Limitation des lambda C++ sur accélérateurs {#arcanedoc_parallel_accelerator_limitlambda}
 
 Les mécanismes de compilation et la gestion mémoire sur accélérateurs
 font qu'il y a des restrictions sur l'utilisation des lambda
 classiques du C++
 
-### Appel d'autres fonctions dans les lambda {#arcanedoc_parallel_accelerator_callslambda}
+#### Appel d'autres fonctions dans les lambda {#arcanedoc_parallel_accelerator_callslambda}
 
 Dans une lambda prévue pour être déportée sur accélérateur, on ne peut
 appeler que :
@@ -332,7 +452,7 @@ Il n'est pas possible d'appeler des fonctions externes qui sont
 définies dans d'autres unités de compilation (par exemple d'autres
 bibliothèques)
 
-### Utilisation des champs d'une instance de classe {#arcanedoc_parallel_accelerator_classinstance}
+#### Utilisation des champs d'une instance de classe {#arcanedoc_parallel_accelerator_classinstance}
 
 Il ne faut pas utiliser dans les lambdas une référence à un champ
 d'une classe car ce dernier est capturé par référence. Cela provoquera
@@ -371,70 +491,101 @@ void A::f2()
 }
 ```
 
+## Utilisation du mécanisme d'échange de message
+
+A partir de la version 3.10, %Arcane supporte les bibliothèques MPI
+"Accelerator Aware". Dans ce cas, le buffer utilisé pour les
+synchronisations des variables est alloué directement sur
+l'accélérateur. Si une variable est utilisée sur accélérateur cela
+permet donc d'éviter des recopies inutiles entre l'hôte et
+l'accélérateur. Le mode échange de message en mémoire partagée
+supporte aussi ce mécanisme.
+
+En cas de problèmes, il est possible de désactiver ce support en
+positionnant la variable d'environnement
+`ARCANE_DISABLE_ACCELERATOR_AWARE_MESSAGE_PASSING` à une valeur non
+nulle.
+
+## Gestion des multi-accélérateurs {#arcanedoc_parallel_accelerator_multi}
+
+%Arcane associe lors de la création d'un sous-domaine une instance de
+\arcaneacc{Runner} (accessible via
+\arcane{ISubDomain::acceleratorMng()}).
+Lorsqu'une machine dispose de plusieurs accélérateurs, %Arcane choisi
+par défaut le premier qui est retourné dans les accélérateurs
+disponibles. Il est possible de changer ce comportement en
+positionnant la variable d'environnement
+`ARCANE_ACCELERATOR_PARALLELMNG_RANK_FOR_DEVICE` à une valeur
+strictement positive indiquant le modulo entre le rang de sous-domaine
+(retourné par \arcane{IParallelMng::commRank()} de
+\arcane{ISubDomain::parallelMng()}) et l'index de l'accélérateur dans
+la liste des accélérateurs. Par exemple si cette variable
+d'environnement vaut 8, alors le sous-domaine de rang N sera associé à
+l'accélérateur d'index \a (N % 8). Pour que ce mécanisme fonctionne,
+la valeur de cette variable d'environnemetn doit donc être inférieure
+au nombre d'accélérateurs disponibles sur la machine.
+
+### Gestion mémoire
+
+Lorsque plusieurs accélérateurs sont disponibles sur une même
+machine, il existe en général un accélérateur "courant" pour chaque
+thread (par exemple avec CUDA il est possible de le récupérer par la méthode
+`cudaGetDevice()` et on peut le changer par la méthode
+`cudaSetDevice()`). Lorsqu'on alloue de la mémoire sur
+accélérateur, c'est sur cet accélérateur "courant" et cette mémoire ne
+sera pas disponible sur d'autres accélérateurs. Une instance de
+\arcaneacc{RunQueue} est associée à un accélérateur donné et
+il faut donc s'assurer que les zones mémoires utilisées par une
+commande sont bien accessibles. Si ce n'est pas le cas cela produira
+une erreur lors de l'exécution (Par exemple, avec CUDA, il s'agit de l'erreur 400
+dont le message est "invalid resource handle").
+
+Si l'accélérateur "courant" a été modifié par exemple lors de l'appel
+à une bibliothèque externe il est possible de le changer en appelant
+la méthode \arcaneacc{Runner::setAsCurrentDevice()}.
+
+## Gestion des connectivités
+
+TODO: expliquer l'utilisation des connectivités et pourquoi on ne peut
+pas accéder aux entités classiques (\arcane{Cell},\arcane{Node}, ...)
+sur accélérateur.
+
+## Réductions
+
+TODO
+
+## Utilisation de CUPTI
+
+TODO
+
 ## Mode Autonome {#arcanedoc_parallel_accelerator_standalone}
 
 Il est possible d'utiliser le mode accélérateur de %Arcane sans le
 support des objets de haut niveau tel que les maillages ou les
-sous-domaines. L'exemple 'standalone_accelerator' montre une telle
+sous-domaines.
+
+Dans ce mode, il est possible d'utiliser l'API accélérateur de %Arcane
+directement depuis la fonction `main()` par exemple. Pour utiliser ce
+mode, il suffit d'utiliser la méthode de classe
+\arcane{ArcaneLauncher::createStandaloneAcceleratorMng()} après avoir
+initialiser %Arcane :
+
+```cpp
+Arcane::ArcaneLauncher::init(Arcane::CommandLineArguments(&argc, &argv));
+Arcane::StandaloneAcceleratorMng launcher(Arcane::ArcaneLauncher::createStandaloneAcceleratorMng());
+```
+
+L'instance `launcher` doit rester valide tant qu'on souhaite utiliser
+l'API accélérateur. Il est donc préférable de la définir dans le
+`main()` du code. La classe \arcane{StandaloneAcceleratorMng} utilise
+une sématique par référence. Il est donc possible de conserver une
+référence vers l'instance n'importe où dans le code si nécessaire.
+
+L'exemple 'standalone_accelerator' montre une telle
 utilisation. Par exemple, le code suivant permet de déporter sur
 accélérateur la somme de deux tableaux `a` et `b` dans un tabeau `c`.
 
-```cpp
-int
-main(int argc,char* argv[])
-{
-  using namespace Arcane;
-
-  // Teste la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
-  try{
-    ArcaneLauncher::init(CommandLineArguments(&argc,&argv));
-    Arcane::StandaloneAcceleratorMng launcher(ArcaneLauncher::createStandaloneAcceleratorMng());
-    IAcceleratorMng* acc_mng = launcher.acceleratorMng();
-
-    constexpr int nb_value = 10000;
-
-
-    // Définit 2 tableaux 'a' et 'b' et effectue leur initialisation.
-    Arcane::Accelerator::NumArray<Int64,MDDim1> a(nb_value);
-    Arcane::Accelerator::NumArray<Int64,MDDim1> b(nb_value);
-    for( int i=0; i<nb_value; ++i ){
-      a.s(i) = i+2;
-      b.s(i) = i+3;
-    }
-
-    // Defínit le tableau 'c' qui contiendra la somme de 'a' et 'b'
-    Arcane::Accelerator::NumArray<Int64,1> c(nb_value);
-
-    // Noyau de calcul déporté sur accélérateur.
-    {
-      auto command = makeCommand(acc_mng->defaultQueue());
-      // Indique que 'a' et 'b' seront en entrée et 'c' en sortie
-
-      auto in_a = viewIn(command,a);
-      auto in_b = viewIn(command,b);
-      auto out_c = viewOut(command,c);
-      command << RUNCOMMAND_LOOP1(iter,nb_value)
-      {
-        out_c(iter) = in_a(iter) + in_b(iter);
-      };
-    }
-  }
-  catch(const Arcane::Accelerator::Exception& ex){
-    std::cerr << "EXCEPTION: " << ex << "\n";
-    return 1;
-  }
-  return 0;
-}
-```
-
-
-## TODO
-
-TODO: expliquer utilisation des NumArray.
-
-TODO: expliquer l'utilisation des connectivités et pourquoi on ne peut
-pas accéder aux entités classiques (Cell,Node, ...) sur accélérateur.
-
+\snippet standalone_accelerator/main.cc StandaloneAcceleratorFull
 
 ____
 

@@ -1,7 +1,7 @@
-# Accélérer un code {#arcanedoc_parallel}
+# Paralléliser un code {#arcanedoc_parallel}
 
 Si vous souhaiter accélérer votre code, ce chapitre devrait vous intéresser.  
-Divers méthodes sont disponibles dans %Arcane pour permettre d'accélérer un
+Diveres méthodes sont disponibles dans %Arcane pour permettre d'accélérer un
 code : utilisation de tous les coeurs CPU disponibles, utilisation
 des unités vectoriels du CPU et utilisation d'accélérateurs (GPU).  
 Dans le cas d'un code déséquilibré, il est aussi possible d'utiliser
