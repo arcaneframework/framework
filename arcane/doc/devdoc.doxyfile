@@ -277,6 +277,7 @@ TAB_SIZE               = 2
 
 ALIASES                = "arcane{1}=\ref Arcane::\1 \"\1\"" \
                          "arccore{1}=\ref Arccore::\1 \"\1\"" \
+                         "arcaneacc{1}=\ref Arcane::Accelerator::\1 \"\1\"" \
                          "pr{1}=[PR #\1](https://github.com/arcaneframework/framework/pull/\1)"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
@@ -2343,6 +2344,8 @@ PREDEFINED             = DOXYGEN_DOC=1 \
                          "ARCANE_BEGIN_NAMESPACE=namespace Arcane {" \
                          "ARCANE_END_NAMESPACE=}" \
                          "ARCANE_CORE_EXPORT=" \
+                         "ARCANE_ACCELERATOR_EXPORT=" \
+                         "ARCANE_ACCELERATOR_CORE_EXPORT=" \
                          "ARCANE_UTILS_EXPORT=" \
                          "ARCANE_IMPL_EXPORT=" \
                          ARCANE_MATERIALS_EXPORT \
