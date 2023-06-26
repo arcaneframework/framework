@@ -1,0 +1,37 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: sphinx-doc
+    runs-on: ubuntu-latest
+    container: ghcr.io/arcaneframework/alien-ci-ubuntu22.04:main
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure CMake
+        run:
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON -G Ninja -DCMAKE_INSTALL_PREFIX=/opt/alien -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_GENERATE_DOCUMENTATION:BOOL=ON -DCMAKE_PREFIX_PATH="/opt/arccon;/opt/arccore"
+
+      - name: Build documentation
+        run:
+          cmake --build build --target alien_doc
+
+      - name: Install deploy dependencies 📚
+        if: github.ref == 'refs/heads/main'
+        run: |
+          apt-get update && apt-get install -y rsync git
+
+      - name: Deploy Docs
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@364c31d33bb99327c77b3a5438a83a357a6729ad # v3.4.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./build/alien_doc
+          force_orphan: true

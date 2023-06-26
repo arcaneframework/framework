@@ -1,0 +1,185 @@
+name: CMake
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  CCACHE_BASEDIR: ${{github.workspace}}
+  CCACHE_DIR: /tmp/ccache
+  CCACHE_COMPRESS: true
+  CCACHE_COMPRESSLEVEL: 6
+  CCACHE_MAXSIZE: 400M
+  BUILD_DIR: /tmp/build
+  INSTALL_DIR: /tmp/install
+  SPACK_USER_CONFIG_PATH: /tmp/fake-home
+  SPACK_USER_CACHE_PATH: /tmp/fake-home
+  SPACK_ENV_FILE: /tmp/spack-env
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    name: ${{matrix.config.name}}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{matrix.config.container}}
+      options: --user root  # Avoid to match github UID in container.
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: "ubuntu20.04 release",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu20.04:main",
+            precommand: "",
+            build_type: "RelWithDebInfo",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            isspack: false
+          }
+          - {
+            name: "ubuntu22.04 release",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu22.04:main",
+            precommand: "",
+            build_type: "RelWithDebInfo",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON  -DALIEN_PLUGIN_TRILINOS:BOOL=ON -DALIEN_PLUGIN_TRILINOS_SERIAL:BOOL=ON",
+            isspack: false
+          }
+          - {
+            name: "ubuntu20.04 debug",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu20.04:main",
+            precommand: "",
+            build_type: "Debug",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_ADDRESS:BOOL=ON -DENABLE_SANITIZER_UNDEFINED_BEHAVIOR:BOOL=ON",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            isspack: false
+          }
+          - {
+            name: "ubuntu20.04 debug memory",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu20.04:main",
+            precommand: "",
+            build_type: "Debug",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_MEMORY:BOOL=ON",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON  -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            isspack: false
+          }
+          - {
+            name: "ubuntu20.04 debug minimal",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu20.04:main",
+            precommand: "",
+            build_type: "Debug",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON  -DALIEN_DEFAULT_OPTIONS:BOOL=OFF -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            isspack: false
+          }
+          - {
+            name: "centos7 gimkl 2018b release",
+            container: " ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest",
+            precommand: ". /env.sh",
+            build_type: "RelWithDebInfo",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
+            isspack: false
+          }
+          - {
+            name: "rocky8 gimkl 2018b release",
+            container: "ghcr.io/arcaneframework/rockylinux-gimkl-2018b-alienlegacy:8-latest",
+            precommand: ". /env.sh",
+            build_type: "RelWithDebInfo",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
+            isspack: false
+          }
+          - {
+            name: "rhel8 spack release",
+            container: "ghcr.io/arcaneframework/arcane-spack-rhel8:main",
+            precommand: "source .devcontainer/use_spack.sh /tmp/spack-env",
+            build_type: "RelWithDebInfo",
+            build_options: "",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON",
+            isspack: true
+          }
+    steps:
+      # Checkout v2 does not include files listed in .gitattributes
+      - uses: actions/checkout@v3
+
+      # Setting up ccache from github cached files
+      - name: Prepare ccache timestamp
+        id: ccache_timestamp
+        # Disabled for `act`
+        if: ${{ !env.ACT }}
+        run: echo "::set-output name=timestamp::$(date +'%Y-%m-%d-%H;%M;%S')"
+
+      - name: ccache files
+        uses: actions/cache@v3
+        # Disabled for `act`
+        if: ${{ !env.ACT }}
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: alien-ccache-${{matrix.config.name}}-${{ steps.ccache_timestamp.outputs.timestamp }}
+          restore-keys: |
+            alien-ccache-${{matrix.config.name}}
+
+      # setting up spack build env
+      - name: Setup spack build env
+        shell: bash
+        if: matrix.config.isspack
+        run: |
+          bash .devcontainer/use_spack.sh ${{env.SPACK_ENV_FILE}}
+
+      - name: Configure CMake
+        shell: bash
+        # Configure CMake in a 'build' subdirectory. `C MAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        run: |
+          ${{matrix.config.precommand}}
+          cmake -B ${{env.BUILD_DIR}} -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON ${{matrix.config.alien_options}} -DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}} ${{matrix.config.build_options}}
+
+      - uses: ammaraskar/gcc-problem-matcher@master
+        # Disabled for `act`
+        if: ${{ !env.ACT }}
+
+      - name: Build
+        shell: bash
+        # Build your program with the given configuration
+        run: |
+          ${{matrix.config.precommand}}
+          cmake --build ${{env.BUILD_DIR}} --config ${{matrix.config.build_type}} -j $(nproc)
+
+      #      - name: ccache status
+      #        run: ccache -s
+
+      - name: Test
+        shell: bash
+        # Execute tests defined by the CMake configuration.
+        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+        # OMPI_ALLOW_RUN_AS_ROOT are set in script to allow `act` to work (env section was not working)
+        # ASAN_OPTIONS=detect_leaks=0 to disable memory leak detection for now
+        run: |
+          ${{matrix.config.precommand}}
+          cd ${{env.BUILD_DIR}}
+          ctest -V -C ${{matrix.config.build_type}}
+        env:
+          OMPI_ALLOW_RUN_AS_ROOT: 1
+          OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+          ASAN_OPTIONS: detect_leaks=0
+
+      - name: Install
+        shell: bash
+        run: |
+          ${{matrix.config.precommand}}
+          cd ${{env.BUILD_DIR}} && cmake --install ${{env.BUILD_DIR}}
+
+      - name: TestInstallHypre
+        shell: bash
+        run: |
+          ${{matrix.config.precommand}}
+          cmake -B ${{env.BUILD_DIR}}/hypre -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_PREFIX_PATH=${{env.INSTALL_DIR}} ${{env.INSTALL_DIR}}/share/doc/Alien/examples/hypre
+          cmake --build ${{env.BUILD_DIR}}/hypre
