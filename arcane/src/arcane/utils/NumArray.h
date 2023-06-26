@@ -153,11 +153,21 @@ class NumArrayContainer
     _memoryAwareCopy(v);
   }
 
+  void copyOnly(const Span<const DataType>& v)
+  {
+    _memoryAwareCopy(v);
+  }
+
  private:
 
   void _memoryAwareCopy(const ThatClass& v)
   {
     NumArrayBaseCommon::_memoryAwareCopy(asBytes(v.to1DSpan()), v.m_memory_ressource,
+                                         asWritableBytes(to1DSpan()), m_memory_ressource);
+  }
+  void _memoryAwareCopy(const Span<const DataType>& v)
+  {
+    NumArrayBaseCommon::_memoryAwareCopy(asBytes(v), eMemoryRessource::Unknown,
                                          asWritableBytes(to1DSpan()), m_memory_ressource);
   }
   void _resizeAndCopy(const ThatClass& v)
@@ -347,13 +357,13 @@ class NumArrayBase
   /*!
    * \brief Copie dans l'instance les valeurs de \a rhs.
    *
-   * Cette opération se fait sur l'hôte et donc la mémoire associée
-   * à cette instance doit être accessible depuis l'hôte.
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
    */
   void copy(ConstSpanType rhs)
   {
-    _checkHost(memoryRessource());
-    m_data.copy(rhs.to1DSpan());
+    this->resize(rhs.extents().dynamicExtents());
+    m_data.copyOnly(rhs.to1DSpan());
     _updateSpanPointerFromData();
   }
 
