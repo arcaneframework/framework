@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4662BA68-2614-4931-A312-FDA08993D054}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>axl2ccT4</RootNamespace>
+    <AssemblyName>axl2ccT4</AssemblyName>
+    <BaseDirectory>..</BaseDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>..\bin</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>True</Externalconsole>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>..\bin</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>True</Externalconsole>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Arcane.Axl\T4.CaseOptions\CasOptionsT4Code.cs" />
+    <Compile Include="Arcane.Axl\T4.CaseOptions\CaseOptionsT4.cs">
+      <DependentUpon>CaseOptionsT4.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.Module\ModuleT4.cs">
+      <DependentUpon>ModuleT4.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.Module\ModuleT4Code.cs" />
+    <Compile Include="Arcane.Axl\Extensions\WhereExtensions.cs" />
+    <Compile Include="Arcane.Axl\Extensions\StringExtensions.cs" />
+    <Compile Include="Arcane.Axl\Extensions\SimpleTypeExtensions.cs" />
+    <Compile Include="Arcane.Axl\Extensions\PropertyExtensions.cs" />
+    <Compile Include="Arcane.Axl\Extensions\ItemKindExtensions.cs" />
+    <Compile Include="Arcane.Axl\Extensions\DataTypeExtensions.cs" />
+    <Compile Include="Arcane.Axl\Axl.From.Xsd\axl.cs" />
+    <Compile Include="Arcane.Axl\Axl.From.Xsd\BaseCode.cs" />
+    <Compile Include="Arcane.Axl\Axl.From.Xsd\ComplexCode.cs" />
+    <Compile Include="Arcane.Axl\Axl.From.Xsd\OptionCode.cs" />
+    <Compile Include="Arcane.Axl\Axl.From.Xsd\VariableCode.cs" />
+    <Compile Include="Arcane.Axl\Axl.From.Xsd\OptionHandler.cs" />
+    <Compile Include="Arcane.Axl\Axl.From.Xsd\ModuleCode.cs" />
+    <Compile Include="Arcane.Axl\Axl.From.Xsd\ServiceCode.cs" />
+    <Compile Include="Arcane.Axl\Axl.From.Xsd\TestsCode.cs" />
+    <Compile Include="Arcane.Axl\Extensions\ServiceTypeListExtensions.cs" />
+    <Compile Include="MainAXL2CCT4.cs" />
+    <Compile Include="Arcane.Axl\T4.StrongOptions\StrongOptions_h.cs">
+      <DependentUpon>StrongOptions_h.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.StrongOptions\StrongOptionsCode_h.cs" />
+    <Compile Include="Arcane.Axl\T4.StrongOptions\IOptions.cs">
+      <DependentUpon>IOptions.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.StrongOptions\IOptionsCode.cs" />
+    <Compile Include="Arcane.Axl\T4.StrongOptions\CaseOptionsT.cs">
+      <DependentUpon>CaseOptionsT.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.StrongOptions\CaseOptionsTCode.cs" />
+    <Compile Include="Arcane.Axl\AXLGlobal.cs" />
+    <Compile Include="Arcane.Axl\T4.StrongOptions\StrongOptionsFactoryCode.cs" />
+    <Compile Include="Arcane.Axl\T4.StrongOptions\StrongOptionsFactory.cs">
+      <DependentUpon>StrongOptionsFactory.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.StrongOptions\OptionsUtils.cs">
+      <DependentUpon>OptionsUtils.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.StrongOptions\OptionsUtilsCode.cs" />
+    <Compile Include="Arcane.Axl\T4.Service\ServiceT4StrongOnly.cs">
+      <DependentUpon>ServiceT4StrongOnly.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.Service\ServiceT4StrongOnlyCode.cs" />
+    <Compile Include="Arcane.Axl\T4.Service\ServiceT4CaseAndStrongCode.cs" />
+    <Compile Include="Arcane.Axl\T4.Service\ServiceT4CaseAndStrong.cs">
+      <DependentUpon>ServiceT4CaseAndStrong.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.Service\ServiceGenerator.cs" />
+    <Compile Include="Arcane.Axl\T4.Service\ServiceT4Standard.cs">
+      <DependentUpon>ServiceT4Standard.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Arcane.Axl\T4.Service\ServiceT4StandardCode.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="Arcane.Axl\T4.Module\ModuleT4.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+      <LastGenOutput>ModuleT4.cs</LastGenOutput>
+    </None>
+    <None Include="Arcane.Axl\T4.StrongOptions\IOptions.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>IOptions.cs</LastGenOutput>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+    </None>
+    <None Include="Arcane.Axl\T4.StrongOptions\CaseOptionsT.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CaseOptionsT.cs</LastGenOutput>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+    </None>
+    <None Include="Arcane.Axl\T4.CaseOptions\CaseOptionsT4.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+      <LastGenOutput>CaseOptionsT4.cs</LastGenOutput>
+    </None>
+    <None Include="Arcane.Axl\T4.StrongOptions\StrongOptions_h.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+      <LastGenOutput>StrongOptions_h.cs</LastGenOutput>
+    </None>
+    <None Include="Arcane.Axl\T4.StrongOptions\StrongOptionsFactory.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+      <LastGenOutput>StrongOptionsFactory.cs</LastGenOutput>
+    </None>
+    <None Include="Arcane.Axl\T4.StrongOptions\OptionsUtils.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>OptionsUtils.cs</LastGenOutput>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+    </None>
+    <None Include="Arcane.Axl\T4.Service\ServiceT4StrongOnly.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+      <LastGenOutput>ServiceT4StrongOnly.cs</LastGenOutput>
+    </None>
+    <None Include="Arcane.Axl\T4.Service\ServiceT4CaseAndStrong.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+      <LastGenOutput>ServiceT4CaseAndStrong.cs</LastGenOutput>
+    </None>
+    <None Include="Arcane.Axl\T4.Service\ServiceT4Standard.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <CustomToolNamespace>Arcane.Axl</CustomToolNamespace>
+      <LastGenOutput>ServiceT4Standard.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Arcane.Axl\T4.Module\" />
+    <Folder Include="Arcane.Axl\T4.CaseOptions\" />
+    <Folder Include="Arcane.Axl\Extensions\" />
+    <Folder Include="Arcane.Axl\Axl.From.Xsd\" />
+    <Folder Include="Arcane.Axl\T4.Service\" />
+    <Folder Include="Arcane.Axl\T4.StrongOptions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Arcane.Axl.csproj">
+      <Project>{76B51885-D1BB-4C67-AD32-DCF21970BDB8}</Project>
+      <Name>Arcane.Axl</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

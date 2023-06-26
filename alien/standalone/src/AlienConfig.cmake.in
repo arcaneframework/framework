@@ -1,0 +1,24 @@
+@PACKAGE_INIT@
+
+# Set and Check must go first else macro might be redefined by find_dependency ...
+set_and_check(ALIEN_TARGET_FILE "${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ALIEN_EXPORT_TARGET@.cmake")
+set_and_check(ALIEN_MODULE_PATH "@PACKAGE_ALIEN_MODULE_PATH@")
+
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(Arccon)
+# Add FindPackage from Arccon
+list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+find_dependency(Arccore)
+
+find_dependency(BLAS)
+find_dependency(Boost)
+
+# Remove FindPackage Arccon paths
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+# set_and_check already done.
+include(${ALIEN_TARGET_FILE})
+list(APPEND CMAKE_MODULE_PATH ${ALIEN_MODULE_PATH})
+

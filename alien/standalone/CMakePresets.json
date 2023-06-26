@@ -1,0 +1,79 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "minimal",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ALIEN_DEFAULT_OPTIONS": "OFF"
+      },
+      "warnings": {
+        "uninitialized": true
+      }
+    },
+    {
+      "name": "standalone",
+      "cacheVariables": {
+        "ALIENDEV_EMBEDDED": "ON"
+      }
+    },
+    {
+      "name": "full",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/full",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ALIEN_DEFAULT_OPTIONS": "ON",
+        "ALIEN_PLUGIN_HYPRE": "ON",
+        "ALIEN_PLUGIN_PETSC": "ON",
+        "ALIEN_UNIT_TESTS": "ON"
+      }
+    },
+    {
+      "name": "minimal-ccache",
+      "inherits": [
+        "minimal",
+        "standalone"
+      ],
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+      }
+    },
+    {
+      "name": "dev-full",
+      "inherits": [
+        "full",
+        "standalone"
+      ],
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+      }
+    },
+    {
+      "name": "dev-debug",
+      "inherits": "dev-full",
+      "binaryDir": "${sourceDir}/build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ALIEN_EXPAND_TESTS": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "minimal",
+      "configurePreset": "minimal"
+    },
+    {
+      "name": "dev-full",
+      "configurePreset": "dev-full"
+    },
+    {
+      "name": "dev-debug",
+      "configurePreset": "dev-debug"
+    }
+  ]
+}

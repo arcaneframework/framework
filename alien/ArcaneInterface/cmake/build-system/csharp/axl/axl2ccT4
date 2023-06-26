@@ -1,0 +1,4 @@
+#!/bin/sh
+. @ARCANE_INSTALL_PATH@/bin/arcane_mono_env
+@MONO_EXEC@ --debug @ARCANE_INSTALL_PATH@/bin/axl2ccT4.exe $*
+

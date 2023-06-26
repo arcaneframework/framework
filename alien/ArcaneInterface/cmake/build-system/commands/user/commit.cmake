@@ -1,0 +1,165 @@
+function(__commit_library target)
+
+  # export pour les dlls
+  get_target_property(export_dll ${target} BUILDSYSTEM_EXPORT_DLL)
+
+  generate_export_header(${target}
+    EXPORT_FILE_NAME ${export_dll}
+    )
+  target_sources(${target} PRIVATE ${export_dll})
+
+  get_filename_component(path ${export_dll} DIRECTORY)
+
+  # installation du fichier d'export pour les dll
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${export_dll}
+	  DESTINATION include/${path}
+	  )
+
+  # installation de la librairie
+  install(TARGETS ${target}
+	  DESTINATION lib
+	  EXPORT ${PROJECT_NAME}Targets
+	  )
+
+  # installation du CMake pour l'installation
+  install(EXPORT ${PROJECT_NAME}Targets
+	  DESTINATION lib/cmake
+	  EXPORT_LINK_INTERFACE_LIBRARIES
+	  )
+
+  # sources
+  get_target_property(sources ${target} BUILDSYSTEM_SOURCES)
+
+  target_sources(${target} PRIVATE ${sources})
+
+  # libraries
+  get_target_property(libraries ${target} BUILDSYSTEM_LIBRARIES)
+
+  list(REMOVE_DUPLICATES libraries)
+
+  # cibles internes (compilées par le projet et déclarées via createLibrary)
+  get_property(BUILTIN GLOBAL PROPERTY BUILDSYSTEM_BUILTIN_LIBRARIES)
+
+  # check
+  foreach(library ${libraries})
+    if(NOT TARGET ${library})
+      logFatalError("undefined library ${library} linked with ${target}")
+    endif()
+    if(${library} IN_LIST BUILTIN)
+      get_target_property(committed ${library} BUILDSYSTEM_COMMITTED)
+      if(NOT ${committed})
+        logFatalError("builtin library ${library} is not committed - add commit(${library}) in CMakeLists.txt")
+      endif()
+    else()
+	set_property(GLOBAL APPEND PROPERTY BUILDSYSTEM_EXTERNAL_LIBRARIES ${library})
+    endif()
+  endforeach()
+
+  target_link_libraries(${target} PUBLIC ${libraries})
+
+endfunction()
+
+function(__commit_executable target)
+
+  # sources
+  get_target_property(sources ${target} BUILDSYSTEM_SOURCES)
+
+  target_sources(${target} PRIVATE ${sources})
+
+  # libraries
+  get_target_property(libraries ${target} BUILDSYSTEM_LIBRARIES)
+
+  list(REMOVE_DUPLICATES libraries)
+
+  # cibles internes (compilées par le projet et déclarées via createLibrary)
+  get_property(BUILTIN GLOBAL PROPERTY BUILDSYSTEM_BUILTIN_LIBRARIES)
+
+  set(libraries_whole_archive)
+
+  foreach(library ${libraries})
+
+    # check
+    if(NOT TARGET ${library})
+      logFatalError("undefined library ${library} linked with ${target}")
+    endif()
+
+    if(${library} IN_LIST BUILTIN)
+      get_target_property(committed ${library} BUILDSYSTEM_COMMITTED)
+      if(NOT ${committed})
+	logFatalError("builtin library ${library} is not committed - add commit(${library}) in CMakeLists.txt")
+      endif()
+      get_target_property(lib_type ${library} BUILDSYSTEM_TYPE)
+      if(${lib_type} STREQUAL LIBRARY)
+	    list(APPEND libraries_whole_archive ${library})
+	# pour le chargement dynamique
+	if(${BUILD_SHARED_LIBS} AND WIN32)
+	  set_property(TARGET ${target} APPEND PROPERTY DYNAMIC_LIBRARIES ${library})
+	endif()
+      else()
+	    target_link_libraries(${target} PUBLIC ${library})
+      endif()
+    else()
+      target_link_libraries(${target} PUBLIC ${library})
+    endif()
+
+  endforeach()
+
+  # whole archive sur les libraries builtin
+  linkWholeArchiveLibraries(${target} PUBLIC ${libraries_whole_archive})
+
+  generateDynamicLoading(${target})
+
+endfunction()
+
+function(commit target)
+
+  set(options       )
+  set(oneValueArgs  )
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if(ARGS_UNPARSED_ARGUMENTS)
+    logFatalError("commit error, argument error : ${ARGS_UNPARSED_ARGUMENTS}")
+  endif()
+
+  # commit ?
+  get_target_property(committed ${target} BUILDSYSTEM_COMMITTED)
+
+  if(${committed})
+    message(FATAL_ERROR "target ${target} is alreday committed")
+  endif()
+
+  # librairie ou executable
+  get_target_property(type ${target} BUILDSYSTEM_TYPE)
+
+  set(is_exe OFF)
+  set(is_lib OFF)
+
+  if(${type} STREQUAL EXECUTABLE)
+    set(is_exe ON)
+  endif()
+  if(${type} STREQUAL LIBRARY)
+    set(is_lib ON)
+  endif()
+
+  if(${is_exe} AND ${is_lib})
+    logFatalError("Internal error, target is library and executable")
+  endif()
+
+  if(NOT ${is_exe} AND NOT ${is_lib})
+    logWarning("target is not library neither executable built by buildsystem")
+    return()
+  endif()
+
+  if(${is_lib})
+    __commit_library(${target})
+  endif()
+
+  if(${is_exe})
+    __commit_executable(${target})
+  endif()
+
+  set_target_properties(${target} PROPERTIES BUILDSYSTEM_COMMITTED ON)
+
+endfunction()

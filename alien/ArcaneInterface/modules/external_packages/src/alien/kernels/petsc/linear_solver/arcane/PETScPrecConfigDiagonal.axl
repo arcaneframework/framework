@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<service name="PETScPrecConfigDiagonal" version="1.0" type="caseoption">
+	<description>Service PETScPrecConfigDiagonal</description>
+	<interface name="Alien::IPETScPC" />
+
+  <!-- Eviter l'utilisation de variable gloable dans un service -->
+  <variables/>
+
+	<options>
+	</options>
+</service>

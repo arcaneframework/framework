@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<module name="AlienTest" version="1.0">
+
+    <description>Descripteur du module Laplacian</description>
+
+    <variables>
+        <variable
+                field-name="u"
+                name="U"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                dump="true"
+                need-sync="true"
+        />
+
+        <variable
+                field-name="w"
+                name="W"
+                data-type="real"
+                item-kind="cell"
+                dim="1"
+                dump="true"
+                need-sync="true"
+        />
+
+        <variable
+                field-name="p"
+                name="P"
+                data-type="real"
+                item-kind="node"
+                dim="0"
+                dump="true"
+                need-sync="true"
+        />
+
+        <variable
+                field-name="P"
+                name="PP"
+                data-type="real"
+                item-kind="node"
+                dim="0"
+                dump="true"
+                need-sync="true"
+        />
+
+
+        <variable
+                field-name="T"
+                name="TT"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                dump="true"
+                need-sync="true"
+        />
+
+        <variable
+                field-name="S1"
+                name="S1"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                dump="true"
+                need-sync="true"
+        />
+
+        <variable
+                field-name="S2"
+                name="S2"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                dump="true"
+                need-sync="true"
+        />
+
+        <variable
+                field-name="split"
+                name="Split"
+                data-type="integer"
+                item-kind="cell"
+                dim="0"
+                dump="true"
+                need-sync="true"
+        />
+
+    </variables>
+
+    <entry-points>
+        <entry-point method-name="init" name="Init" where="start-init" property="none"/>
+        <entry-point method-name="test" name="Test" where="compute-loop" property="none"/>
+    </entry-points>
+
+    <options>
+        <simple name="extra-equation-count" type="integer" default="0">
+            <description>Nombre d'équations supplémentaires non portées par le maillage</description>
+        </simple>
+
+        <simple name="diagonal-coefficient" type="real">
+            <description>Valeur du coefficient diagonal</description>
+        </simple>
+
+        <simple name="vect-size" type="integer" default="1">
+            <description>taille de block vectoriel</description>
+        </simple>
+
+        <enumeration name="stencil-by" type="AlienTestOptionTypes::eStencilKind" default="node">
+            <description>type de voisinage</description>
+            <enumvalue name="node" genvalue="AlienTestOptionTypes::StencilByNode"/>
+            <enumvalue name="face" genvalue="AlienTestOptionTypes::StencilByFace"/>
+        </enumeration>
+
+        <simple name="check-memory" type="bool" default="false">
+            <description>
+                Active les analyses mémoires.
+                Attention, ceci a un gros impact sur les performances.
+            </description>
+        </simple>
+
+        <simple name="building-only" type="bool" default="false">
+            <description>
+                Ne lance pas les solveurs, uniquement les builders.
+            </description>
+        </simple>
+
+        <simple name="repeat-loop" type="integer" default="1">
+            <description>
+                Nombre de remplissages successifs de la matrice pour simuler une boucle non-linéaire
+            </description>
+        </simple>
+
+        <enumeration name="builder" type="AlienTestOptionTypes::eBuilderType" minOccurs="0" maxOccurs="unbounded">
+            <description>builder type</description>
+            <enumvalue name="DirectBuilder" genvalue="AlienTestOptionTypes::DirectBuilder"/>
+            <enumvalue name="ProfiledBuilder" genvalue="AlienTestOptionTypes::ProfiledBuilder"/>
+            <enumvalue name="StreamBuilder" genvalue="AlienTestOptionTypes::StreamBuilder"/>
+        </enumeration>
+
+        <service-instance name="linear-solver" type="Alien::ILinearSolver" minOccurs="0" maxOccurs="unbounded">
+            <description>Service solveur</description>
+        </service-instance>
+    </options>
+</module>

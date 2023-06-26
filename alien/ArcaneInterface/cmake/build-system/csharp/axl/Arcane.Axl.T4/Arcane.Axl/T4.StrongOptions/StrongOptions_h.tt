@@ -1,0 +1,387 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<# // -----------------------------------n #>
+<# // I - External definition of option types #>
+<# // -----------------------------------n #>
+<#  Action<OptionHandler, String, bool> optionsDeclarationSection = (OptionHandler _xml, String beginLineSpace, bool external) => { #>
+<# foreach(var simple in _xml.Simple) { #>
+<#=beginLineSpace#>DECLARE_OPTION<#if(external){#>_EXTERN<#}#>(<#= simple.Name.ToFuncName() #>,<#= simple.type.QualifiedName() #><#if(external){#>, <#=SimpleTypeExtensions.Export()#><#}#>);<#if(!external){#> \<#}#>
+
+<# } #>
+<# foreach(var enumerator in _xml.Enumeration) { #>
+<#=beginLineSpace#>DECLARE_OPTION<#if(external){#>_EXTERN<#}#>(<#= enumerator.Name.ToFuncName() #>,<#= enumerator.type #><#if(external){#>, <#=SimpleTypeExtensions.Export()#><#}#>);<#if(!external){#> \<#}#>
+
+<# } #>
+<# foreach(var service in _xml.ServiceInstance) { #>
+<#=beginLineSpace#>DECLARE_OPTION<#if(external){#>_EXTERN<#}#>(<#= service.Name.ToFuncName() #>,std::shared_ptr<<#= service.type #>><#if(external){#>, <#=SimpleTypeExtensions.Export()#><#}#>);<#if(!external){#> \<#}#>
+
+<# } #>
+<# foreach(var complex in _xml.Complex.Where( p => !p.IsRef) ) { #>
+<#=beginLineSpace#>DECLARE_OPTION<#if(external){#>_EXTERN<#}#>(<#= complex.Name.ToFuncName() #>,std::shared_ptr<IOptions<#= Xml.ClassName #>::IOptions<#= complex.type #>><#if(external){#>, <#=SimpleTypeExtensions.Export()#><#}#>);<#if(!external){#> \<#}#>
+
+<# } #>
+<# }; #>
+<# // -----------------------------------n #>
+<# // II - Constructor section #>
+<# // -----------------------------------n #>
+<#  Action<OptionHandler> checkTypeRestrictionSection = (OptionHandler _xml) => { #>
+<# IEnumerable<Xsd.Option> allOptions = _xml.Simple.Cast<Xsd.Option> ();
+    allOptions = allOptions.Union (_xml.Enumeration.Cast<Xsd.Option> ()); 
+    allOptions = allOptions.Union (_xml.ServiceInstance.Cast<Xsd.Option> ()); 
+    allOptions = allOptions.Union (_xml.Complex.Where( p => !p.IsRef).Cast<Xsd.Option> ());
+    if (allOptions.Count() > 0) { 
+     	var splitOptions= allOptions.Where((x,i) => i % 3 == 0).Select((x,i) => allOptions.Skip(i * 3).Take(3)); #>
+    OptionTools::checkRestriction<std::tuple<
+<#		foreach(var groupOption in splitOptions) { #>
+      <#   foreach(var option in groupOption) { #><#= option.Name.ToFuncName() #>_ <# if(option != allOptions.Last()){ #>,<# } } #>
+
+<#	  } #>
+    >,Args...>(args...);
+ <#	} #>
+<# }; #>
+<# // -----------------------------------n #>
+<# // III - Deserialized options section #>
+<# // -----------------------------------n #>
+<#  Action<Xsd.Option, bool, String, bool> standardDeserializerSection = (Xsd.Option _option, bool hasDefault, String _option_default, bool problemStdArray) => { #>
+<# 	if (_option.IsSingle == true) { #>
+<# 		if (hasDefault) { #>
+    m_<#= _option.Name.DashToUnderscore() #> = <#= _option_default #>;
+    OptionTools::optionalSimple<<#= _option.Name.ToFuncName() #>_, Args...>(m_<#= _option.Name.DashToUnderscore() #>, std::move(args)...);
+<# 		} 
+		else { 
+			if(problemStdArray) { #>
+    static bool exist_<#= _option.Name.DashToUnderscore() #> = OptionTools::optionalSimple<<#= _option.Name.ToFuncName() #>_, Args...>(m_<#= _option.Name.DashToUnderscore() #>, std::move(args)...);
+    // todo replace by static assert	
+    if(!exist_<#= _option.Name.DashToUnderscore() #>)
+      throw <#=SimpleTypeExtensions.Namespace()#>::FatalErrorException(A_FUNCINFO, "missing required option <#= _option.Name.ToFuncName() #>");
+<#			}
+			else { #>
+	m_<#= _option.Name.DashToUnderscore() #> = OptionTools::requiredFixedArray<<#= _option.Name.ToFuncName() #>_, 1, Args...>(std::move(args)...)[0];
+<#          }
+  	    }   
+    } #>
+<# 	else { #>
+<# 		if (hasDefault) { #>
+//#warning "Default for multi options not used"
+<# 		} #>
+    m_<#= _option.Name.DashToUnderscore() #> = OptionTools::requiredVariableArray<<#= _option.Name.ToFuncName() #>_, <#= _option.MinOccurs #>, -1, Args...>(std::move(args)...);
+<# 	} #>
+
+<# }; #>
+<#  Action<OptionHandler> deserializedStrongOptionsSection = (OptionHandler _xml) => { #>
+<# foreach(var simple in _xml.Simple) {
+	bool hasDefault = simple.@default != null;
+	bool isString = simple.type.ToString() == "string";
+    string simple_default = (isString) ? simple.Default : simple.@default; 
+	standardDeserializerSection(simple, hasDefault, simple_default, isString);
+  } #>
+<# // #>
+<# foreach(var enumerator in _xml.Enumeration) {
+	bool hasDefault = enumerator.@default != null;
+	string enum_default = null;
+ 	foreach(var ee in enumerator.enumvalue)
+ 		if (ee.Name == enumerator.@default) enum_default = ee.genvalue;
+ 	standardDeserializerSection(enumerator, hasDefault, enum_default, false);
+ } #>
+<# // #>
+<# foreach(var service in _xml.ServiceInstance) {
+	bool hasDefault = service.@default != null;
+ 	string service_default = "std::move(InstanceBuilder<" + service.type +">::create("+ service.Default +"))";
+ 	standardDeserializerSection(service, hasDefault, service_default, true);
+ } #>
+<# // #>
+<# foreach(var complex in _xml.Complex.Where( p => !p.IsRef) ) { 
+   bool hasDefault = fullDefault(complex);
+   string complex_default = "std::make_shared<StrongOptions" + complex.type + ">()";
+   standardDeserializerSection(complex, hasDefault, complex_default, true);
+   } #>
+<# }; #>
+<# // -----------------------------------n #>
+<# // IV - Getter setter section #>
+<# // -----------------------------------n #>
+<#  Action<Xsd.Option, String> dynamicMultiSetterSection = (Xsd.Option _option, String _option_type) => { #>
+  void <#= _option.Name.ToFuncName()#>(std::list<<#= _option_type #>> _<#= _option.Name.DashToUnderscore()#>) 
+  {
+    auto input_size = _<#= _option.Name.DashToUnderscore()#>.size();
+<# if (_option.MinOccurs > 0) { #>
+    if(input_size <<#=_option.MinOccurs.ToString()#>)
+      throw <#=SimpleTypeExtensions.Namespace()#>::FatalErrorException(A_FUNCINFO, "illegal option (no conformity with axl) list size < <#=_option.MinOccurs.ToString()#>");
+<# } #>
+<# if (_option.maxOccurs != "unbounded") { #>
+    if(input_size ><#=_option.MaxOccurs.ToString()#>)
+      throw <#=SimpleTypeExtensions.Namespace()#>::FatalErrorException(A_FUNCINFO, "illegal option (no conformity with axl) list size > <#=_option.MaxOccurs.ToString()#>");
+<# } #>
+    m_<#= _option.Name.DashToUnderscore() #>.resize(input_size);
+    int i = 0;
+    for(auto iter : _<#= _option.Name.DashToUnderscore()#>)
+      m_<#= _option.Name.DashToUnderscore() #>[i++] = iter; 
+  }
+
+<# }; #>
+<#  Action<Xsd.Option, String> multiSharedPtrGetterSection = (Xsd.Option _option, String _option_type) => { 
+ string field_name = "m_"+ _option.Name.DashToUnderscore();#>
+  <#= _option_type.ToArrayType() #> <#= _option.Name.ToFuncName() #>() const 
+  {
+    <#= _option_type.ToUniqueArrayType() #> ret_array(<#= field_name #>.size());
+    int i = 0;
+    for(auto iter=<#= field_name #>.begin();iter!=<#= field_name #>.end();++iter)
+      ret_array[i++] = iter->get();
+  	return ret_array;
+  }
+
+<# }; #>
+<# Action<Xsd.Option, String> simpleEnumAccessoreAction = (Xsd.Option _option, String _option_type) => { #>
+<#		if (_option.IsSingle == true) { #>
+  <#= _option_type #> <#= _option.Name.ToFuncName() #>() const
+  {
+    return m_<#= _option.Name.DashToUnderscore() #>;
+  }
+
+  void <#= _option.Name.ToFuncName()#>(<#= _option_type #> _<#= _option.Name.DashToUnderscore()#>) 
+  { 
+    m_<#= _option.Name.DashToUnderscore() #> = _<#= _option.Name.DashToUnderscore() #>; 
+  }
+<#	} else {#>
+  <#= _option_type.ToArrayType() #> <#= _option.Name.ToFuncName() #>() const
+  { 
+    return m_<#= _option.Name.DashToUnderscore() #>;
+  }
+
+<# dynamicMultiSetterSection(_option, _option_type); #>
+<# } #>
+<# }; #>
+<#  Action<OptionHandler, String> getterSection = (OptionHandler _xml, String _className) => { #>
+<# foreach(var simple in _xml.Simple)
+	simpleEnumAccessoreAction(simple, simple.type.QualifiedName()); #>
+<# // #>
+<# foreach(var enumerator in _xml.Enumeration) 
+	simpleEnumAccessoreAction(enumerator, enumerator.type); #>
+<# // #>
+<# foreach(var service in _xml.ServiceInstance) {
+  if (service.IsSingle == true) { #>
+  <#= service.type #>* <#= service.Name.ToFuncName() #>() const
+  {
+    return m_<#= service.Name.DashToUnderscore()#>.get(); 
+  }
+  
+  void <#= service.Name.ToFuncName()#>(std::shared_ptr<<#= service.type #>>  _<#= service.Name.DashToUnderscore()#>) 
+  {
+    m_<#= service.Name.DashToUnderscore() #> = _<#= service.Name.DashToUnderscore() #>;
+  }
+
+<# } else {
+	multiSharedPtrGetterSection(service, service.type + "*");
+	dynamicMultiSetterSection(service, "std::shared_ptr<"+service.type+">");
+ 	} #>
+<#} #>
+<# // #>
+<# foreach(var complex in _xml.Complex.Where( p => !p.IsRef) ) {
+	string complex_type = "IOptions" + Xml.ClassName + "::IOptions"+complex.type;
+ if (complex.IsSingle == true) { #>
+  const <#= complex_type #>& <#= complex.Name.ToFuncName() #>() const
+  {
+    return *m_<#= complex.Name.DashToUnderscore() #>.get(); 
+  }
+  
+  void <#= complex.Name.ToFuncName()#>(std::shared_ptr<<#= complex_type #>> _<#= complex.Name.DashToUnderscore()#>) 
+  {
+    m_<#= complex.Name.DashToUnderscore() #> = _<#= complex.Name.DashToUnderscore() #>;
+  }
+
+<#} else { 
+	multiSharedPtrGetterSection(complex, complex_type + "*");
+	dynamicMultiSetterSection(complex, "std::shared_ptr<"+complex_type+">"); 
+  } #>
+<# } #>
+<# }; #>
+<# // -----------------------------------n #>
+<# // VI - Members declaration section #>
+<# // -----------------------------------n #>
+<#  Action<OptionHandler> memberDeclarationSection = (OptionHandler _xml) => { #>
+<# foreach(var simple in _xml.Simple) {
+	string option_type = simple.IsSingle ? simple.type.QualifiedName() : simple.type.QualifiedName().ToUniqueArrayType(); #>
+  <#= option_type #> m_<#= simple.Name.DashToUnderscore() #>;
+<# } #>
+<# foreach(var enumerator in _xml.Enumeration) {
+	string option_type = enumerator.IsSingle ? enumerator.type : enumerator.type.ToUniqueArrayType(); #>
+  <#= option_type #> m_<#= enumerator.Name.DashToUnderscore() #>;
+<# } #>
+<# foreach(var service in _xml.ServiceInstance) {
+	string option_type_single = "std::shared_ptr<"+service.type+">";
+	string option_type = service.IsSingle ? option_type_single : option_type_single.ToUniqueArrayType(); #>
+  <#= option_type #> m_<#= service.Name.DashToUnderscore() #>;
+<# } #>
+<# foreach(var complex in _xml.Complex.Where( p => !p.IsRef) ) {
+	string option_type_single = "std::shared_ptr<IOptions" + Xml.ClassName + "::IOptions"+complex.type+">";
+	string option_type = complex.IsSingle ? option_type_single : option_type_single.ToUniqueArrayType(); #>
+  <#= option_type #> m_<#= complex.Name.DashToUnderscore() #>;
+<# } #>
+<# }; #>
+
+<#  Action<OptionHandler, String, String> StrongClassMainSection = (OptionHandler _xml, String className, String motherInterfaceName) => { #>
+<#if(optionsCount(_xml)> 0) { #>
+namespace <#= className #>OptionsNames
+{
+  using namespace StrongOptions;
+<# optionsDeclarationSection(_xml,"  ", true);  #>
+}
+<# } #>
+class StrongOptions<#= className #> : public <#= motherInterfaceName #>
+{
+public:
+
+<# // II - 1 Constructor #>
+<# // #>
+  template<typename... Args>
+  StrongOptions<#= className #>(Args&&... args)
+  {
+<# if(optionsCount(_xml) > 0) { #>
+    using namespace StrongOptions;
+    using namespace <#= className #>OptionsNames;
+
+<# checkTypeRestrictionSection(_xml);  #>
+
+<# deserializedStrongOptionsSection(_xml);  #>
+<# } #>
+  }
+
+<# //  Destructor #>
+  virtual ~StrongOptions<#= className #>(){}	
+
+<# // II - 2 Getters #>
+<# // #>
+  const StrongOptions<#= className #>* operator->() const { return this; }
+
+<# getterSection(_xml, "StrongOptions" + className);  #>
+
+private:
+
+<# // II - 3 Declaration of data members #>
+<# // #>
+<# memberDeclarationSection(_xml);  #>
+
+};
+<# }; #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// #WARNING#: This file has been generated automatically. Do not edit.
+// Arcane version <#= Version #> : <#= DateTime.Now #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#ifndef ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_H
+#define ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "<#= Xml.ClassName #>_IOptions.h"
+<# if(WithArcane) { #>
+#include "arcane/ServiceOptions.h"
+<# } #>
+#include <list>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+<# // I Complex options #>
+<# // #>
+namespace <#= Xml.ClassName #>OptionsNames
+{
+<# foreach(var complex in Xml.FlatteningComplex.Where(p => !p.IsRef) ) { 
+	StrongClassMainSection(complex.Xml, complex.type, "IOptions"+ Xml.ClassName + "::IOptions"+ complex.type);
+} #>
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<# StrongClassMainSection(Xml, Xml.ClassName, "IOptions"+ Xml.ClassName);  #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+#endif // ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_H
+
+<# // I - Marco for External definition of option types call by service implementatation #>
+
+#define REGISTER_STRONG_OPTIONS_<#= Xml.ClassName.ToUpper() #>()<#if(optionsCount(Xml) > 0) { #> \
+namespace <#= Xml.ClassName #>OptionsNames{ \
+  using namespace StrongOptions; \
+<# optionsDeclarationSection(Xml, "  ", false);  #>
+<# foreach(var complex in complexWithOptions(Xml) ) { #>
+  namespace <#= complex.type #>OptionsNames{ \
+<# optionsDeclarationSection(complex.Xml, "    ", false);  #>
+  } \
+<# } #>
+}
+<# } #>
+
+<# // II - Marco for register service instance call by service implementatation #>
+<# if(fullDefault(Xml)) { #>
+#define REGISTER_INSTANCE_<#= Xml.ClassName.ToUpper() #>(instance_name, service_name, interface_name) \
+template <> std::unique_ptr<InstanceBuilder<interface_name>> InstanceBuilder<interface_name>::m_instance = NULL; \
+namespace { InstanceRegisterer<interface_name, service_name, StrongOptions<#= Xml.ClassName #>> ARCANE_JOIN_WITH_LINE(Registerer_)(#instance_name); }	
+<# } else { #>
+#define REGISTER_INSTANCE_<#= Xml.ClassName.ToUpper() #>(instance_name, service_name, interface_name) \
+static_assert(false,"Impossible to register <#= Xml.ClassName #> instance because some options have no default")
+<# } #>
+
+#define USING_NAMESPACES_<#= Xml.ClassName.ToUpper() #>()<#if(optionsCount(Xml) > 0) { #> \
+using namespace <#= Xml.ClassName #>OptionsNames; \
+<# var complexWithOpt = complexWithOptions(Xml);
+foreach(var complex in complexWithOpt ) { #>
+using namespace <#= complex.type #>OptionsNames<# if(complex != complexWithOpt.Last() ) { #>; \
+<# } #>
+<# } #>
+<# } #>
+
+<#+ 
+public int optionsCount(OptionHandler _xml) {
+	return _xml.Simple.Count() + _xml.Enumeration.Count() 
+						+ _xml.ServiceInstance.Count() + _xml.Complex.Where( p => !p.IsRef).Count(); 
+}
+public List<Xsd.Complex> complexWithOptions(OptionHandler _xml) {
+	List<Xsd.Complex> retComplex = new List<Xsd.Complex>();
+	foreach(var complex in _xml.FlatteningComplex.Where(p => !p.IsRef) ) {
+		if(optionsCount(complex.Xml) > 0) {
+			retComplex.Add(complex);
+		}
+	}
+	return retComplex;
+}
+public bool fullDefault(OptionHandler _xml) {
+	IEnumerable<Xsd.Option> nonComplexOptions = _xml.Simple.Cast<Xsd.Option> ();
+    nonComplexOptions = nonComplexOptions.Union (_xml.Enumeration.Cast<Xsd.Option> ()); 
+    nonComplexOptions = nonComplexOptions.Union (_xml.ServiceInstance.Cast<Xsd.Option> ()); 
+	foreach(var option in nonComplexOptions) {
+		if(!option.IsSingle && option.MinOccurs>0)
+			return false;
+		if (option.IsSingle && option.@default==null)
+			return false;
+	}
+	bool isFullDefault = true;
+	foreach(var complex in _xml.Complex.Where( p => !p.IsRef) ) {
+		isFullDefault = isFullDefault && fullDefault(complex);
+	}
+	return isFullDefault;
+}
+public bool fullDefault(Xsd.Complex _complex) {
+	if(!_complex.IsSingle)
+	{
+		if(_complex.MinOccurs==0) 
+			return true;
+		else 
+			return false;
+	}
+	else
+		return fullDefault(_complex.Xml);
+}
+// belle verrue en attendant ArcCore
+public string stringFormat() {
+	if(SimpleTypeExtensions.Namespace() == "Arcane")
+		return "Arcane::String::format";
+	else
+		return SimpleTypeExtensions.Namespace() + "::String::format";
+}
+#>

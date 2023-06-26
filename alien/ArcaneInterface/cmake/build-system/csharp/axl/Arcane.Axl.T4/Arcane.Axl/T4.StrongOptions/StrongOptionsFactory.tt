@@ -1,0 +1,162 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+<#  Action<OptionHandler, String, String, String> bodySection = (OptionHandler _xml, String className, String parentClassName, String beginLineSpace) => { #>
+<# String fullStrongClassName = "StrongOptions"+className;
+if(parentClassName!=null) fullStrongClassName = "StrongOptions"+parentClassName+"::" + fullStrongClassName; #>
+<#=beginLineSpace#>static <#= fullStrongClassName #>* createFromParameter(
+<# foreach(var service in _xml.ServiceInstance) {
+ if(service.@default == null){
+	string return_type = service.type + "*";
+	if (service.IsSingle == false) {
+		return_type = return_type.ToArrayType();
+	} #>
+<#=beginLineSpace#>											<#= return_type  #> <#=  service.Name.DashToUnderscore() #>,
+<# } #>
+<# } #>
+<#=beginLineSpace#>											Alien::BaseParameterMng* parameters)
+<#=beginLineSpace#>{
+<#=beginLineSpace#>	_checkUnusedParameter(parameters);
+<#=beginLineSpace#>	using namespace StrongOptions;
+<# if(parentClassName != null) {#>
+<#=beginLineSpace#>	using namespace <#= parentClassName #>OptionsNames;<# } #>
+<#=beginLineSpace#>	using namespace <#= className #>OptionsNames;
+<#=beginLineSpace#>	<#= fullStrongClassName #>* options = new <#= fullStrongClassName #>
+<#=beginLineSpace#>	{
+<# string beginLineSeparator = "  ";
+   foreach(var simple in _xml.Simple) {
+	if (simple.IsSingle && (simple.@default == null)) { #>
+<#=beginLineSpace#>		<#= beginLineSeparator #><# beginLineSeparator = ", "; #>_<#= simple.Name.ToFuncName() #> = std::move(parameters->getParams<<#= simple.type.NameParameter() #>>().find("<#= simple.Name #>")->second)
+<# 	} #>
+<# 	} #>
+<# foreach(var enumerator in _xml.Enumeration) {
+	if (enumerator.IsSingle && (enumerator.@default == null)) { #>
+<#=beginLineSpace#>		<#= beginLineSeparator #><# beginLineSeparator = ", "; #>_<#= enumerator.Name.ToFuncName() #> = std::move(Options<#= Xml.ClassName #>Utils::<#= enumerator.Name.DashToUnderscore() #>_enum_str(parameters->getParams<std::string>().find("<#= enumerator.Name #>")->second))
+<# } #>
+<# } #>
+<# foreach(var service in _xml.ServiceInstance) {
+	if (service.@default == null) { #>
+<#=beginLineSpace#>		<#= beginLineSeparator #><# beginLineSeparator = ", "; #>_<#= service.Name.ToFuncName() #> = std::move(<#= service.Name.DashToUnderscore() #>)
+<# 	} #>
+<# } #>
+<#=beginLineSpace#>	};
+<# // #>
+<# foreach(var simple in _xml.Simple) {
+	if (simple.IsSingle && (simple.@default != null)) { #>
+<#=beginLineSpace#>	{	
+<#=beginLineSpace#>		auto iter = parameters->getParams<<#= simple.type.NameParameter() #>>().find("<#= simple.Name #>") ;
+<#=beginLineSpace#>		if(iter != parameters->getParams<<#= simple.type.NameParameter() #>>().end()){
+<#=beginLineSpace#>			options-><#= simple.Name.ToFuncName() #>(iter->second);
+<#=beginLineSpace#>		}
+<#=beginLineSpace#>	}
+<#	} #>
+<# } #>
+<# foreach(var enumerator in _xml.Enumeration) {
+	if (enumerator.IsSingle && (enumerator.@default != null)) { #>
+<#=beginLineSpace#>	{	
+<#=beginLineSpace#>		auto iter = parameters->getParams<std::string>().find("<#= enumerator.Name #>") ;
+<#=beginLineSpace#>		if(iter != parameters->getParams<std::string>().end()){
+<#=beginLineSpace#>			auto type = Options<#= className #>Utils::<#= enumerator.Name.DashToUnderscore() #>_enum_str(iter->second);
+<#=beginLineSpace#>			options-><#= enumerator.Name.ToFuncName() #>(type);
+<#=beginLineSpace#>		}
+<#=beginLineSpace#>	}
+<#	} #>
+<# } #>
+<# // #>
+<# foreach(var service in _xml.ServiceInstance) {
+	if (service.@default != null) { #>
+<#=beginLineSpace#>	{	
+<#=beginLineSpace#>		if(<#= service.Name #> != null_ptr){
+<#=beginLineSpace#>			options-><#= service.Name.ToFuncName() #>(<#= service.Name #>);
+<#=beginLineSpace#>		}
+<#=beginLineSpace#>	}
+<# } #>
+<# } #>
+<# // #>
+<# foreach(var complex in _xml.Complex.Where( p => !p.IsRef) ) {
+	string return_type;
+	if (complex.IsSingle == true)
+		return_type = "const I" + complex.type + "&";
+	else {
+		return_type = "I" + complex.type + "*";
+		return_type = return_type.ToArrayType();
+	} #>
+<#=beginLineSpace#>//virtual <#= return_type #> <#= complex.Name.ToFuncName() #>() const = 0;
+<# } #>
+<#=beginLineSpace#>	return options;
+<#=beginLineSpace#>}
+<# }; #>
+
+<#  Action<OptionHandler, String> checkUnusedParameter = (OptionHandler _xml, String beginLineSpace) => { #>
+<#=beginLineSpace#>static void _checkUnusedParameter(Alien::BaseParameterMng* parameters)
+<#=beginLineSpace#>{
+<# // #>
+<#=beginLineSpace#>	// static allowed keys from axl
+<#=beginLineSpace#>	std::set<std::string> parameter_allowed_keys;
+<# foreach(var simple in _xml.Simple) { #>
+<#=beginLineSpace#>	parameter_allowed_keys.insert("<#= simple.Name #>") ;
+<# } #>
+<# foreach(var enumerator in _xml.Enumeration) { #>
+<#=beginLineSpace#>	parameter_allowed_keys.insert("<#= enumerator.Name #>") ;
+<# } #>
+<# // #>
+<#=beginLineSpace#>	std::vector<std::string> parameter_error_keys;
+<#=beginLineSpace#>	for (auto const& element : parameters->getParams<std::string>()) 
+<#=beginLineSpace#>	{
+<#=beginLineSpace#>		if(parameter_allowed_keys.count(element.first) == 0)
+<#=beginLineSpace#>			parameter_error_keys.push_back(element.first);
+<#=beginLineSpace#>	}
+<#=beginLineSpace#>	if(!parameter_error_keys.empty())
+<#=beginLineSpace#>	{
+<#=beginLineSpace#>		std::string error_message;
+<#=beginLineSpace#>		for (auto const& element : parameter_error_keys)
+<#=beginLineSpace#>			error_message += (element+" ");
+<#=beginLineSpace#>		throw <#=SimpleTypeExtensions.Namespace()#>::FatalErrorException(A_FUNCINFO, Arccore::String::format("Parameter key(s): {0} are not consistent with axl definition.", error_message));
+<#=beginLineSpace#>	}
+<#=beginLineSpace#>}
+<# }; #>
+
+
+#ifndef ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_FACTORY_H
+#define ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_FACTORY_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include <alien/utils/parameter_manager/BaseParameterManager.h>
+#include <set>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+<# var non_ref_complex = Xml.FlatteningComplex.Where(p => !p.IsRef); #>
+class StrongOptions<#= Xml.ClassName #>Factory
+{
+public:
+<# // I - Complex Options Definition #>
+<# // #>
+<# foreach(var complex in non_ref_complex ) { #>
+	class StrongOptions<#= complex.type #>Factory
+	{
+	public:
+<# // #>
+<# // I - Complex Options #>
+<# bodySection(complex.Xml, complex.type, Xml.ClassName, "		"); #>
+	private:
+<# checkUnusedParameter(complex.Xml, "		"); #>
+	};
+<# } #>
+<# // #>
+<# bodySection(Xml, Xml.ClassName, null, "	"); #>
+private:
+<# checkUnusedParameter(Xml, "	"); #>
+};
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif // ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_FACTORY_H

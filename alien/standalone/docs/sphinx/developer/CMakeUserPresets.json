@@ -1,0 +1,47 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "ginkgo",
+      "cacheVariables": {
+        "ALIEN_PLUGIN_GINKGO": "ON",
+        "ALIEN_PLUGIN_GINKGO_OMP": "ON",
+        "CMAKE_PREFIX_PATH": "/opt/ginkgo"
+      }
+    },
+    {
+      "name": "trilinos",
+      "cacheVariables": {
+        "ALIEN_PLUGIN_TRILINOS": "ON",
+        "ALIEN_PLUGIN_TRILINOS_SERIAL": "ON",
+        "ALIEN_PLUGIN_TRILINOS_OMP": "OFF"
+      }
+    },
+    {
+      "name": "all-release",
+      "inherits": [
+        "dev-full",
+        "ginkgo",
+        "trilinos"
+      ]
+    },
+    {
+      "name": "all-debug",
+      "inherits": [
+        "dev-debug",
+        "ginkgo",
+        "trilinos"
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "all-release",
+      "configurePreset": "all-release"
+    },
+    {
+      "name": "all-debug",
+      "configurePreset": "all-debug"
+    }
+  ]
+}
