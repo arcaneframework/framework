@@ -351,6 +351,10 @@ class SpecificMemoryCopy
   void _copyFrom(SmallSpan<const Int32> indexes, Span<const DataType> source,
                  Span<DataType> destination)
   {
+    ARCANE_CHECK_POINTER(indexes.data());
+    ARCANE_CHECK_POINTER(source.data());
+    ARCANE_CHECK_POINTER(destination.data());
+
     Int32 nb_index = indexes.size();
     for (Int32 i = 0; i < nb_index; ++i) {
       Int64 z_index = (Int64)i * m_extent.v;
@@ -362,6 +366,10 @@ class SpecificMemoryCopy
   void _copyFrom(SmallSpan<const Int32> indexes, SmallSpan<Span<std::byte>> multi_views,
                  Span<const DataType> source)
   {
+    ARCANE_CHECK_POINTER(indexes.data());
+    ARCANE_CHECK_POINTER(source.data());
+    ARCANE_CHECK_POINTER(multi_views.data());
+
     const Int32 value_size = indexes.size() / 2;
     for (Int32 i = 0; i < value_size; ++i) {
       Int32 index0 = indexes[i * 2];
@@ -381,6 +389,10 @@ class SpecificMemoryCopy
   void _copyTo(SmallSpan<const Int32> indexes, Span<const DataType> source,
                Span<DataType> destination)
   {
+    ARCANE_CHECK_POINTER(indexes.data());
+    ARCANE_CHECK_POINTER(source.data());
+    ARCANE_CHECK_POINTER(destination.data());
+
     Int32 nb_index = indexes.size();
 
     for (Int32 i = 0; i < nb_index; ++i) {
@@ -394,6 +406,10 @@ class SpecificMemoryCopy
   void _copyTo(SmallSpan<const Int32> indexes, SmallSpan<const Span<const std::byte>> multi_views,
                Span<DataType> destination)
   {
+    ARCANE_CHECK_POINTER(indexes.data());
+    ARCANE_CHECK_POINTER(destination.data());
+    ARCANE_CHECK_POINTER(multi_views.data());
+
     const Int32 value_size = indexes.size() / 2;
     for (Int32 i = 0; i < value_size; ++i) {
       Int32 index0 = indexes[i * 2];
