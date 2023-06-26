@@ -410,6 +410,7 @@ class ARCANE_MESH_EXPORT ItemFamily
  public:
 
   IItemFamilyTopologyModifier* _topologyModifier() override { return m_topology_modifier; }
+  void resizeVariables(bool force_resize) override { _resizeVariables(force_resize); }
 
  private:
 

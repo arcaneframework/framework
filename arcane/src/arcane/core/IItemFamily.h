@@ -688,6 +688,13 @@ class IItemFamily
 
  public:
 
+  /*!
+   * \brief Redimensionne les variables de cette famille.
+   */
+  virtual void resizeVariables(bool force_resize) = 0;
+
+ public:
+
   //! Interface du modificateur de topologie.
   virtual IItemFamilyTopologyModifier* _topologyModifier() = 0;
 
