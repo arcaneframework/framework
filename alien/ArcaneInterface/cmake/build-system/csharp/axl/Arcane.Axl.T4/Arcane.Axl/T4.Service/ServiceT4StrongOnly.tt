@@ -1,0 +1,169 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// #WARNING#: This file has been generated automatically. Do not edit.
+// Arcane version <#= Version #> : <#= DateTime.Now #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#ifndef ARCANE_MODULE_<#= Xml.ClassName.ToUpper() #>_H
+#define ARCANE_MODULE_<#= Xml.ClassName.ToUpper() #>_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+<# if (WithArcane) { #>
+#include "arcane/VariableTypes.h"
+#include "arcane/ServiceInfo.h"
+#include "arcane/IService.h"
+#include "arcane/IBase.h"
+#include "arcane/IParallelMng.h"
+<# if(WithMesh) { #>
+#include "arcane/ISubDomain.h"
+#include "arcane/MeshAccessor.h"
+#include "arcane/CommonVariables.h"
+<#	} #>
+<#  } #>
+
+#include "<#= Xml.ClassName #>_IOptions.h"
+#include "<#= Xml.ClassName #>_StrongOptions.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  if (Xml.LesserThanVersionOne) { #>
+
+
+ARCANE_BEGIN_NAMESPACE
+ 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  }
+	if(Xml.NamespaceMacroName != null) { #>
+
+<#= Xml.NamespaceMacroName #>_BEGIN_NAMESPACE
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+    if(Xml.NamespaceName != null) { #>
+
+namespace <#= Xml.NamespaceName #> {
+<#  } #>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Generation de la classe de base du Service
+class Arcane<#= Xml.ClassName #>Object
+<# if (WithArcane) { #>
+  : public <#= SimpleTypeExtensions.Namespace() #>::IService
+<# if(WithMesh) { #>
+	, public Arcane::MeshAccessor
+	, public Arcane::CommonVariables
+<#	} #>
+<#  }  #>	
+<#
+    string comma = ",";
+    if (!WithArcane) {
+      comma = ":";
+    }
+    foreach(var i in Service.InheritedInterfaces) { #>
+    <#= comma #> public <#= i.name #>
+<#	comma = ","; } #>
+{
+  
+public:
+<# if (!WithArcane) { #>
+  Arcane<#= Xml.ClassName #>Object(std::shared_ptr<IOptions<#= Xml.ClassName #>>& _options)
+   	: m_options(_options){}	
+<#  } else { #> 
+<# if (WithMesh) { #>
+  Arcane<#= Xml.ClassName #>Object(std::shared_ptr<IOptions<#= Xml.ClassName #>>& _options,
+  								Arcane::IServiceInfo* _service_info,
+								Arcane::IBase* _parent,
+								Arcane::ISubDomain* _sub_domain)
+	: MeshAccessor(_sub_domain)
+	, CommonVariables(_sub_domain)
+	, m_sub_domain(_sub_domain)
+  	, m_service_info(_service_info)
+	, m_parent(_parent)
+   	, m_options(_options){} 
+<#  } else { #> 
+  Arcane<#= Xml.ClassName #>Object(std::shared_ptr<IOptions<#= Xml.ClassName #>>& _options,
+  								Arcane::IServiceInfo* _service_info,
+								Arcane::IBase* _parent)
+  	: m_service_info(nullptr)
+	, m_parent(nullptr)
+   	, m_options(_options){}	
+<#  } #>
+<#  } #>
+   
+  //! Destructeur
+  virtual ~Arcane<#= Xml.ClassName #>Object(){}
+  
+public:
+  //! Options du jeu de données du service
+  IOptions<#= Xml.ClassName #>* options() const { return m_options.get(); }
+  
+<# if (WithArcane) { #>
+  //! Informations du service
+  virtual Arcane::IServiceInfo* serviceInfo() const { return m_service_info; }
+  
+  //! Acces a  l'interface de base des principaux objets Arcane
+  virtual Arcane::IBase* serviceParent() const { return m_parent; }
+
+  //! Retourne l'interface bas niveau \a IService du service
+  virtual Arcane::IService* serviceInterface() { return this; }
+  
+  virtual void build() {}
+<#  } #>
+
+private:
+<# if (WithArcane) { #>
+<# if (WithMesh) { #>
+  Arcane::ISubDomain* m_sub_domain;
+<#  } #>
+  //! required by IService report from AbstractService
+  Arcane::IServiceInfo* m_service_info;
+  Arcane::IBase* m_parent;
+<#  } #>
+  std::shared_ptr<IOptions<#= Xml.ClassName #>> m_options;
+  
+};
+  
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  if(Xml.NamespaceMacroName != null) { #>
+
+<#= Xml.NamespaceMacroName #>_}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+    if(Xml.NamespaceName != null) { #>
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } 
+  	if (Xml.LesserThanVersionOne) { #>
+
+ARCANE_}
+ 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+<#  } #>
+
+<# if(WithArcane) { #>
+#define ARCANE_REGISTER_SERVICE_<#= Xml.ClassName.ToUpper () #>(service_name,class_name) \
+  ARCANE_REGISTER_AXL_SERVICE(class_name,Arcane::ServiceProperty(#service_name,Arcane::ST_<#= Service.type.Name () #>))
+<# } else { #> 
+#define ARCANE_REGISTER_SERVICE_<#= Xml.ClassName.ToUpper () #>(service_name,class_name)
+<# } #>
+  
+#endif

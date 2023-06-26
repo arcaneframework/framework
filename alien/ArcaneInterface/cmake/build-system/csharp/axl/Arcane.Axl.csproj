@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{76B51885-D1BB-4C67-AD32-DCF21970BDB8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>Arcane.Axl</AssemblyName>
+    <RootNamespace>Arcane.Axl</RootNamespace>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>bin</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>bin</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Arcane.Axl\AXLGlobal.cs" />
+    <Compile Include="Arcane.Axl\AXLParser.cs" />
+    <Compile Include="Arcane.Axl\ComplexOptionInfo.cs" />
+    <Compile Include="Arcane.Axl\EntryPointInfo.cs" />
+    <Compile Include="Arcane.Axl\EnumerationOptionInfo.cs" />
+    <Compile Include="Arcane.Axl\EnumValueOptionInfo.cs" />
+    <Compile Include="Arcane.Axl\ExtendedOptionInfo.cs" />
+    <Compile Include="Arcane.Axl\ItemKind.cs" />
+    <Compile Include="Arcane.Axl\ModuleInfo.cs" />
+    <Compile Include="Arcane.Axl\NameTranslationsInfo.cs" />
+    <Compile Include="Arcane.Axl\OptionInfo.cs" />
+    <Compile Include="Arcane.Axl\ScriptOptionInfo.cs" />
+    <Compile Include="Arcane.Axl\ServiceInfo.cs" />
+    <Compile Include="Arcane.Axl\ServiceInstanceOptionInfo.cs" />
+    <Compile Include="Arcane.Axl\ServiceOrModuleInfo.cs" />
+    <Compile Include="Arcane.Axl\SimpleOptionInfo.cs" />
+    <Compile Include="Arcane.Axl\Utils.cs" />
+    <Compile Include="Arcane.Axl\VariableInfo.cs" />
+    <Compile Include="Arcane.Axl\XmlInfo.cs" />
+    <Compile Include="Arcane.Axl\AxlEntities.cs" />
+    <Compile Include="Arcane.Axl\IAXLObjectFactory.cs" />
+    <Compile Include="Arcane.Axl\DefaultAXLObjectFactory.cs" />
+    <Compile Include="Arcane.Axl\IAXLParser.cs" />
+    <Compile Include="Arcane.Axl\TestInfo.cs" />
+    <Compile Include="Arcane.Axl\TestsInfo.cs" />
+    <Compile Include="Arcane.Axl.Generator.CSharp\CSharpCaseOptionsGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.CSharp\CSharpCodeGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.CSharp\CSharpGeneratorVisitor.cs" />
+    <Compile Include="Arcane.Axl.Generator.CSharp\CSharpModuleGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.CSharp\CSharpServiceGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppCodeGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator\CodeGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppOptionBuilderGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppVariableDefinitionGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppClassDefinitionGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppExternFunctionGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppBuilderBodyGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppCaseOptionsGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppModuleBaseGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppServiceBaseGenerator.cs" />
+    <Compile Include="Arcane.Axl\OptionTypeCounterVisitor.cs" />
+    <Compile Include="Arcane.Axl\IOptionInfoVisitor.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppInterfaceImplementationGenerator.cs" />
+    <Compile Include="Arcane.Axl.Generator.Cpp\CppUtils.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+  <ItemGroup>
+    <EmbeddedResource Include="axl.xsd">
+      <SubType>Designer</SubType>
+      <LogicalName>axl.xsd</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Arcane.Axl.Generator\" />
+    <Folder Include="Arcane.Axl.Generator.Cpp\" />
+    <Folder Include="Arcane.Axl.Generator.CSharp\" />
+  </ItemGroup>
+</Project>

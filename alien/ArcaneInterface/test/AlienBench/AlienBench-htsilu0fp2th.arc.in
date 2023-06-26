@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<case codeversion="1.0" codename="AlienBench" xml:lang="en">
+  <arcane>
+    <title>Test unitaires des solveurs lineaires</title>
+    <timeloop>BenchLoop</timeloop>
+  </arcane>
+
+  <arcane-post-processing>
+    <output-period>1</output-period>
+    <output>
+      <variable>U</variable>
+      <variable>X</variable>
+      <variable>K</variable>
+      <variable>S</variable>
+    </output>
+  </arcane-post-processing>
+
+  <mesh>
+    <meshgenerator>
+      <cartesian>
+        <origine>0. 0. 0.</origine>
+        <nsd>[% PARAM2 %] [% PARAM3 %] 1</nsd>
+        <lx nx="[% PARAM1 %]">1.</lx>
+        <ly ny="[% PARAM1 %]">1.</ly>
+        <lz nz="[% PARAM1 %]">1.</lz>
+      </cartesian>
+    </meshgenerator>
+  </mesh>
+
+
+    <alien-bench>
+      <redistribution>false</redistribution>
+      <!-- big diagonal-coefficient keep diagonal dominant matrix -->
+      <diagonal-coefficient>0.</diagonal-coefficient>
+      <lambdax>0.125</lambdax>
+      <lambday>0.25</lambday>
+      <alpha>10.</alpha>
+      <sigma>1000000.</sigma>
+      <epsilon>0.01</epsilon>
+
+      <linear-solver name="HTSSolver">
+        <solver>BiCGStab</solver>
+        <max-iteration-num>1000</max-iteration-num>
+        <stop-criteria-value>1e-8</stop-criteria-value>
+	<preconditioner>ILU0FP</preconditioner>
+	<ilufp-solver-niter>3</ilufp-solver-niter>
+        <output>1</output>
+	<thread-env-type>1</thread-env-type>
+        <use-thread>true</use-thread>
+        <nb-threads>[% PARAM5 %]</nb-threads>
+        <nb-part>[% PARAM4 %]</nb-part>
+        <nb-subpart>[% PARAM4 %]</nb-subpart>
+        <metis>0</metis>
+      </linear-solver>
+
+    
+  </alien-bench>
+</case>

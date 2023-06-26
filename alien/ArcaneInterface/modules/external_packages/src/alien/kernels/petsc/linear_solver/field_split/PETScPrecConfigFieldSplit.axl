@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!-- Author : gratienj -->
+
+<service name="PETScPrecConfigFieldSplit" version="1.0" type="caseoption">
+  <description>Service Préconditionneur FieldSplit de PETSc</description>
+  <interface name="Alien::IPETScPC" />
+
+  <!-- Eviter l'utilisation de variable gloable dans un service -->
+  <variables/>
+
+  <options>
+    <simple name="block-tag" type="string" default="block-tag"/>
+
+    <simple name="verbose" type="bool" default="false"/>
+
+    <service-instance name="type" type="Alien::IFieldSplitType">
+      <description>Type of split split decomposition. More details are available in PETSc 3.3 documentation "Solving Block Matrices" http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf page 86.</description>
+    </service-instance>
+
+    <complex name="block" type="FieldSolver" minOccurs="1" maxOccurs="unbounded">
+      <simple name="tag" type="string">
+		<description>Select Entries with 'tag' value; 'default' is a reserved keyword.</description>
+      </simple>
+      <service-instance name="solver" type="Alien::IPETScKSP">
+		<description>Description of linear solver</description>
+      </service-instance>
+    </complex>
+
+    <complex name="default-block" type="DefaultFieldSolver" minOccurs="0" maxOccurs="1">
+      <description>The complementary of the block decomposition will be solved using that default-block solver</description>
+      <service-instance name="solver" type="Alien::IPETScKSP">
+		<description>Description of linear solver for not specified blocks</description>
+      </service-instance>
+    </complex>
+
+  </options>
+</service>

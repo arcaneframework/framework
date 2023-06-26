@@ -1,0 +1,14 @@
+#!/bin/sh
+MONO_PATH=@ARCANE_INSTALL_PATH@
+export MONO_PATH
+_USER_DIR=/tmp/${USER}
+if [ -d ${_USER_DIR} ]; then
+  MONO_SHARED_DIR=${_USER_DIR}
+  echo Set mono shared dir to ${MONO_SHARED_DIR}
+  export MONO_SHARED_DIR
+fi
+LANG=en_US.ISO-8859-1
+export LANG=en_US.ISO-8859-1
+LD_LIBRARY_PATH=@MONO_EXEC@/../lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH
+

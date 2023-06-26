@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<service name="HTSEigenSolver" version="1.0">
+
+  <description>Service de solveur HTS</description>
+  <interface name="Alien::IEigenSolver" inherited="false"/>
+
+  <options>
+    <simple name="output" type="integer" default="0">
+      <description>output level</description>
+    </simple>
+
+    <simple name="max-iteration-num" type="integer" default="1000">
+      <description>Maximal number of iterations</description>
+    </simple>
+    
+    <simple name="tol" type="real" default="0.5">
+       <description>ML tolerance</description>
+     </simple>
+    
+     <simple name="nev" type="integer" default="1">
+       <description>nb max of eigen values</description>
+     </simple>
+    
+     <simple name="ev-type" type="integer" default="1">
+           <description>Eigen Solver type :
+                           0->SLEPC 
+                           1->ARPACK 
+                           2->Spectra
+            </description>
+     </simple>
+     
+     <simple name="ev-order" type="integer" default="0.">
+       <description>eigen values order 0-> smallest, 1-> largest</description>
+     </simple>
+     
+     <simple name="ev-bound" type="real" default="0.">
+       <description>nb max of eigen values</description>
+     </simple>
+  </options>
+</service>

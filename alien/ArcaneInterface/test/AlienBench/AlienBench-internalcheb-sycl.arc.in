@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<case codeversion="1.0" codename="AlienBench" xml:lang="en">
+  <arcane>
+    <title>Test unitaires des solveurs lineaires</title>
+    <timeloop>BenchLoop</timeloop>
+  </arcane>
+
+  <arcane-post-processing>
+    <output-period>1</output-period>
+    <output>
+      <variable>U</variable>
+      <variable>X</variable>
+      <variable>K</variable>
+      <variable>S</variable>
+    </output>
+  </arcane-post-processing>
+
+  <mesh>
+    <meshgenerator>
+      <cartesian>
+        <origine>0. 0. 0.</origine>
+        <nsd>[% PARAM2 %] [% PARAM3 %] 1</nsd>
+        <lx nx="[% PARAM1 %]">1.</lx>
+        <ly ny="[% PARAM1 %]">1.</ly>
+        <lz nz="[% PARAM1 %]">1.</lz>
+      </cartesian>
+    </meshgenerator>
+  </mesh>
+
+
+    <alien-bench>
+      <!-- big diagonal-coefficient keep diagonal dominant matrix -->
+      <redistribution>false</redistribution>
+      <diagonal-coefficient>0.</diagonal-coefficient>
+      <lambdax>0.125</lambdax>
+      <lambday>0.25</lambday>
+      <alpha>10.</alpha>
+      <sigma>1000000.</sigma>
+      <epsilon>0.01</epsilon>
+
+     <alien-core-solver>
+        <backend>SYCL</backend>
+        <solver>BCGS</solver>
+        <preconditioner>ChebyshevPoly</preconditioner>
+	<poly-order>1</poly-order>
+	<poly-factor>30.</poly-factor>
+	<poly-factor-max-iter>10</poly-factor-max-iter>
+        <max-iter>1000</max-iter>
+        <tol>1e-8</tol>
+        <output-level>2</output-level>
+      </alien-core-solver>
+      <linear-solver name="HypreSolver">
+        <solver>BiCGStab</solver>
+        <num-iterations-max>1000</num-iterations-max>
+        <stop-criteria-value>1e-8</stop-criteria-value>
+        <preconditioner>Euclid</preconditioner>
+        <verbose>true</verbose>
+      </linear-solver>
+
+    
+  </alien-bench>
+</case>
