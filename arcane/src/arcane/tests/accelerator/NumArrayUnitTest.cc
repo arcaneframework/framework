@@ -14,14 +14,16 @@
 #include "arcane/utils/NumArray.h"
 
 #include "arcane/utils/ValueChecker.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ServiceFactory.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceFactory.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/NumArrayViews.h"
+#include "arcane/accelerator/SpanViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
@@ -39,6 +41,15 @@ namespace ArcaneTest
 {
 using namespace Arcane;
 namespace ax = Arcane::Accelerator;
+
+namespace
+{
+inline MDSpan<double,MDDim1> _toMDSpan(const Span<double>& v)
+{
+  std::array<Int32,1> sizes = { (Int32)v.size() };
+  return MDSpan<double,MDDim1>(v.data(),sizes);
+}
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,6 +116,7 @@ class NumArrayUnitTest
   void _executeTest1(eMemoryRessource mem_kind);
   void _executeTest2();
   void _executeTest3();
+  void _executeTest4(eMemoryRessource mem_kind);
 
  private:
 
@@ -160,10 +172,17 @@ executeTest()
     _executeTest1(eMemoryRessource::UnifiedMemory);
     _executeTest1(eMemoryRessource::HostPinned);
     _executeTest1(eMemoryRessource::Device);
+
+    info() << "ExecuteTest4: using accelerator";
+    _executeTest4(eMemoryRessource::UnifiedMemory);
+    _executeTest4(eMemoryRessource::HostPinned);
+    _executeTest4(eMemoryRessource::Device);
   }
   else {
     info() << "ExecuteTest1: using host";
     _executeTest1(eMemoryRessource::Host);
+    info() << "ExecuteTest4: using host";
+    _executeTest4(eMemoryRessource::Host);
   }
 
   // Appelle deux fois _executeTest2() pour vérifier l'utilisation des pools
@@ -562,6 +581,93 @@ _executeTest3()
 {
   Arcane::_arcaneTestRealArrayVariant();
   Arcane::_arcaneTestRealArray2Variant();
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NumArrayUnitTest::
+_executeTest4(eMemoryRessource mem_kind)
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  info() << "Execute Test4 memory_ressource=" << mem_kind;
+
+  auto queue = makeQueue(m_runner);
+
+  // Ne pas changer les dimensions du tableau sinon
+  // il faut aussi changer le calcul des sommes
+  constexpr int n1 = 1000;
+
+  constexpr double expected_sum1 = 999000.0;
+  IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_kind);
+
+  {
+    UniqueArray<double> t1(allocator);
+    t1.resize(n1);
+
+    UniqueArray<double> t2(allocator);
+    t2.resize(n1);
+
+    UniqueArray<double> t3(allocator);
+    t3.resize(n1);
+
+    {
+      auto command = makeCommand(queue);
+      auto out_t1 = viewOut(command, t1);
+
+      command << RUNCOMMAND_LOOP1(iter, n1)
+      {
+        auto [i] = iter();
+        if ((i%2)==0)
+          out_t1(i) = _getValue(i);
+        else
+          out_t1[i] = _getValue(i);
+      };
+      NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
+      host_t1.copy(_toMDSpan(t1));
+      double s1 = _doSum(host_t1, { n1 });
+      info() << "SUM1 = " << s1;
+      vc.areEqual(s1, expected_sum1, "SUM1");
+    }
+    {
+      auto command = makeCommand(queue);
+      auto in_t1 = t1.constSpan();
+      auto out_t2 = t2.span();
+
+      command << RUNCOMMAND_LOOP1(iter, n1)
+      {
+        auto [i] = iter();
+        auto span1 = in_t1;
+        auto span2 = out_t2;
+        span2[i] = span1[i];
+      };
+
+      NumArray<double, MDDim1> host_t2(eMemoryRessource::Host);
+      host_t2.copy(_toMDSpan(t2));
+      double s2 = _doSum(host_t2, { n1 });
+      info() << "SUM1_2 = " << s2;
+      vc.areEqual(s2, expected_sum1, "SUM1_2");
+    }
+    {
+      auto command = makeCommand(queue);
+      auto in_t1 = viewIn(command,t1);
+      auto out_t3 = viewOut(command,t3);
+
+      command << RUNCOMMAND_LOOP1(iter, n1)
+      {
+        auto [i] = iter();
+        out_t3[i] = in_t1[i];
+      };
+
+      NumArray<double, MDDim1> host_t3(eMemoryRessource::Host);
+      host_t3.copy(_toMDSpan(t3));
+      double s3 = _doSum(host_t3, { n1 });
+      info() << "SUM1_3 = " << s3;
+      vc.areEqual(s3, expected_sum1, "SUM1_3");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
