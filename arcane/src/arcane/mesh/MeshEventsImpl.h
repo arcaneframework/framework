@@ -30,7 +30,7 @@ namespace Arcane::mesh
  * \internal
  * \brief Implémentation des évènements sur le maillage.
  */
-class ARCANE_CORE_EXPORT MeshEventsImpl
+class ARCANE_MESH_EXPORT MeshEventsImpl
 {
  public:
 
