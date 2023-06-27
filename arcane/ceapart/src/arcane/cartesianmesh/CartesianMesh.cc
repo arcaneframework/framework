@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,16 +18,18 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/Event.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/Properties.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/MeshStats.h"
-#include "arcane/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/MeshStats.h"
+#include "arcane/core/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/MeshEvents.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
@@ -142,6 +144,10 @@ class CartesianMeshImpl
   UniqueArray<Ref<CartesianMeshPatch>> m_amr_patches;
   ScopedPtrT<Properties> m_properties;
 
+  EventObserverPool m_event_pool;
+  bool m_is_mesh_event_added = false;
+  Int64 m_mesh_timestamp = 0;
+
  private:
 
   void _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,
@@ -154,6 +160,8 @@ class CartesianMeshImpl
   std::tuple<CellGroup,NodeGroup>
   _buildPatchGroups(const CellGroup& cells,Integer patch_level);
   void _refinePatch(Real3 position,Real3 length,bool is_3d);
+  void _checkNeedComputeDirections();
+  void _checkAddObservableMeshChanged();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -198,6 +206,22 @@ namespace
 {
 const Int32 SERIALIZE_VERSION = 1;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+_checkNeedComputeDirections()
+{
+  Int64 new_timestamp = mesh()->timestamp();
+  if (m_mesh_timestamp!=new_timestamp){
+    info() << "Mesh timestamp has changed (old=" << m_mesh_timestamp << " new=" << new_timestamp << ")";
+    computeDirections();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
 _saveInfosInProperties()
@@ -247,8 +271,28 @@ recreateFromDump()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
+_checkAddObservableMeshChanged()
+{
+  if (m_is_mesh_event_added)
+    return;
+  m_is_mesh_event_added = true;
+  // Pour appeler automatiquement 'computeDirections()' après un appel à
+  // IMesh::prepareForDump().
+  auto f1 = [&](const MeshEventArgs&){ this->_checkNeedComputeDirections(); };
+  mesh()->eventObservable(eMeshEventType::EndPrepareDump).attach(m_event_pool,f1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
 computeDirections()
 {
+  info() << "CartesianMesh: computeDirections()";
+
+  m_mesh_timestamp = mesh()->timestamp();
+  _checkAddObservableMeshChanged();
+
   m_amr_patches.clear();
   m_amr_patches.add(m_all_items_direction_info);
 
@@ -288,10 +332,10 @@ computeDirections()
   Integer nb_node = cell0.nbNode();
   Real3 cell_center = cells_center[cell0];
 
-  info() << "sizeof(CellDirectionMng)=" << sizeof(CellDirectionMng)
+  info(4) << "sizeof(CellDirectionMng)=" << sizeof(CellDirectionMng)
          << " sizeof(FaceDirectionMng)=" << sizeof(FaceDirectionMng)
          << " sizeof(NodelDirectionMng)=" << sizeof(NodeDirectionMng);
-  info() << "sizeof(IndexedItemConnectivityViewBase)=" << sizeof(IndexedItemConnectivityViewBase)
+  info(4) << "sizeof(IndexedItemConnectivityViewBase)=" << sizeof(IndexedItemConnectivityViewBase)
          << " sizeof(CellInfoListView)=" << sizeof(CellInfoListView);
   info(4) << "Cartesian mesh compute directions is_amr=" << m_is_amr;
 
@@ -322,17 +366,17 @@ computeDirections()
     if (diff_x>diff_y && diff_x>diff_z){
       // INC X
       next_face_x = i;
-      info() << "Advance in direction X -> " << next_face_x;
+      info(4) << "Advance in direction X -> " << next_face_x;
     }
     else if (diff_y>diff_x && diff_y>diff_z){
       // INC Y
       next_face_y = i;
-      info() << "Advance in direction Y -> " << next_face_y;
+      info(4) << "Advance in direction Y -> " << next_face_y;
     }
     else if (diff_z>diff_x && diff_z>diff_y){
       // INC Z
       next_face_z = i;
-      info() << "Advance in direction Z -> " << next_face_z;
+      info(4) << "Advance in direction Z -> " << next_face_z;
     }
     else
       ARCANE_FATAL("Bad value for next cell");

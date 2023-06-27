@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -171,9 +171,9 @@ setNodesIndirection(ConstArrayView<Int8> nodes_indirection)
 
   ITraceMng* tm = m_p->m_cartesian_mesh->traceMng();
 
-  tm->info() << "Set computed indirection dir=" << (int)m_direction;
+  tm->info(4) << "Set computed indirection dir=" << (int)m_direction;
   for( Integer i=0; i<MAX_NB_NODE; ++i ){
-    tm->info() << "Indirection i=" << i << " v=" << (int)m_nodes_indirection[i];
+    tm->info(5) << "Indirection i=" << i << " v=" << (int)m_nodes_indirection[i];
   }
 }
 
