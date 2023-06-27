@@ -182,6 +182,8 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
       ConstMemoryView source(t1.to1DSpan());
       MutableMemoryView destination(destination_buffer.to1DSpan());
       destination.copyFromIndexes(source, indexes.to1DSpan().smallView(), queue_ptr);
+      // Teste copie vide
+      destination.copyFromIndexes(source, {}, queue_ptr);
     }
 
     NumArray<double, MDDim1> host_destination(eMemoryRessource::Host);
@@ -214,6 +216,8 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
       MutableMemoryView t1_view(t1.to1DSpan());
       ConstMemoryView destination_view(destination_buffer.to1DSpan());
       destination_view.copyToIndexes(t1_view, indexes.to1DSpan().smallView(), queue_ptr);
+      // Teste copie vide
+      destination_view.copyToIndexes(t1_view, {}, queue_ptr);
     }
 
     // Vérifie la validité
@@ -254,6 +258,8 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
       ConstMemoryView source(t1.to1DSpan(), n2);
       MutableMemoryView destination(destination_buffer.to1DSpan(), n2);
       destination.copyFromIndexes(source, indexes.to1DSpan().smallView(), queue_ptr);
+      // Teste copie vide
+      destination.copyFromIndexes(source, {}, queue_ptr);
     }
 
     NumArray<double, MDDim2> host_destination(eMemoryRessource::Host);
@@ -288,6 +294,8 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
       MutableMemoryView t1_view(t1.to1DSpan(), n2);
       ConstMemoryView destination_view(destination_buffer.to1DSpan(), n2);
       destination_view.copyToIndexes(t1_view, indexes.to1DSpan().smallView(), queue_ptr);
+      // Teste copie vide
+      destination_view.copyToIndexes(t1_view, {}, queue_ptr);
     }
 
     {
