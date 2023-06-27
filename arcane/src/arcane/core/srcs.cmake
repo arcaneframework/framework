@@ -471,6 +471,7 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshAreaAccessor.h
   MeshBuildInfo.cc
   MeshBuildInfo.h
+  MeshEvents.h
   MeshHandle.cc
   MeshKind.h
   MeshKind.cc

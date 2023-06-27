@@ -1365,6 +1365,11 @@ _prepareForDump()
           << " want_dump?=" << want_dump
           << " timestamp=" << m_timestamp;
 
+  {
+    eMeshEventType t = eMeshEventType::BeginPrepareDump;
+    m_mesh_events.eventObservable(t).notify(MeshEventArgs(this,t));
+  }
+
   // Si le maillage n'est pas sauvé, ne fait rien. Cela évite de compacter
   // et trier le maillage ce qui n'est pas souhaitable si les propriétés
   // 'sort' et 'compact' sont à 'false'.
@@ -1374,6 +1379,11 @@ _prepareForDump()
   // Sauve les propriétés. Il faut le faire à la fin car l'appel à
   // prepareForDumpReal() peut modifier ces propriétés
   _saveProperties();
+
+  {
+    eMeshEventType t = eMeshEventType::EndPrepareDump;
+    m_mesh_events.eventObservable(t).notify(MeshEventArgs(this,t));
+  }
 }
 
 /*---------------------------------------------------------------------------*/

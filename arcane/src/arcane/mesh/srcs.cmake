@@ -95,6 +95,8 @@ set( ARCANE_SOURCES
   MeshCompacter.h
   MeshCompactMng.cc
   MeshCompactMng.h
+  MeshEventsImpl.cc
+  MeshEventsImpl.h
   MeshExchange.cc
   MeshExchange.h
   MeshExchanger.cc
