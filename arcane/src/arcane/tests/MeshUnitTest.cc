@@ -77,6 +77,7 @@
 #include "arcane/core/UnstructuredMeshConnectivity.h"
 #include "arcane/core/MeshVisitor.h"
 #include "arcane/core/MeshKind.h"
+#include "arcane/core/MeshEvents.h"
 
 #include <set>
 
@@ -210,6 +211,7 @@ public:
   void _testGroupsAsBlocks();
   void _testCoherency();
   void _testFindOneItem();
+  void _testEvents();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -305,6 +307,7 @@ executeTest()
   _testGroupsAsBlocks();
   _testCoherency();
   _testFindOneItem();
+  _testEvents();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1621,6 +1624,28 @@ _testFindOneItem()
     if (cell1!=cell2)
       ARCANE_FATAL("Unexpected different cell cell1={0} cell2={1}",ItemPrinter(cell1),ItemPrinter(cell2));
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testEvents()
+{
+  // Vérifie que les évènements 'BeginPrepareDump' et 'EndPrepareDump' sont
+  // bien lancés.
+  EventObserverPool pool;
+  bool has_call_begin_prepare_dump = false;
+  bool has_call_end_prepare_dump = false;
+  auto f1 = [&](const MeshEventArgs&){ has_call_begin_prepare_dump = true; };
+  auto f2 = [&](const MeshEventArgs&){ has_call_end_prepare_dump = true; };
+  mesh()->eventObservable(eMeshEventType::BeginPrepareDump).attach(pool,f1);
+  mesh()->eventObservable(eMeshEventType::EndPrepareDump).attach(pool,f2);
+  mesh()->prepareForDump();
+  if (!has_call_begin_prepare_dump)
+    ARCANE_FATAL("Event BeginPrepareDump has not been called");
+  if (!has_call_end_prepare_dump)
+    ARCANE_FATAL("Event EndPrepareDump has not been called");
 }
 
 /*---------------------------------------------------------------------------*/
