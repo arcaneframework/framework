@@ -48,6 +48,8 @@ class MeshHandle;
 class IVariableMng;
 class ItemTypeMng;
 class IMeshUniqueIdMng;
+class MeshEventArgs;
+enum class eMeshEventType;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -326,6 +328,11 @@ class IMesh
 
   //! Caractéristiques du maillage
   virtual const MeshKind meshKind() const =0;
+
+ public:
+
+  //! Observable pour un évènement
+  virtual EventObservable<const MeshEventArgs&>& eventObservable(eMeshEventType type) =0;
 
  public:
 

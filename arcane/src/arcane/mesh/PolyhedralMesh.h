@@ -15,14 +15,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <memory>
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/MeshItemInternalList.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/Properties.h"
 #include "arcane/core/ArcaneTypes.h"
+
 #include "arcane/mesh/EmptyMesh.h"
+#include "arcane/mesh/MeshEventsImpl.h"
+
 #include "arcane/core/ItemAllocationInfo.h"
 #include "arcane/utils/ArcaneGlobal.h"
 #include "arcane/utils/Collection.h"
@@ -32,10 +34,11 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/MeshKind.h"
 
+#include <memory>
+
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include <vector>
 #include <array>
-#include <memory>
 
 #include "arcane/core/IVariableMng.h"
 #include "DynamicMeshChecker.h"
@@ -78,6 +81,7 @@ class PolyhedralMesh
   bool m_is_allocated = false;
   ItemTypeMng* m_item_type_mng = nullptr;
   MeshKind m_mesh_kind;
+  MeshEventsImpl m_mesh_events;
 
  public:
 
@@ -98,6 +102,11 @@ class PolyhedralMesh
   void endUpdate();
 
   const MeshKind meshKind() const override { return m_mesh_kind; }
+
+  EventObservable<const MeshEventArgs&>& eventObservable(eMeshEventType type) override
+  {
+    return m_mesh_events.eventObservable(type);
+  }
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 

@@ -33,6 +33,7 @@
 #include "arcane/mesh/SubMeshTools.h"
 #include "arcane/mesh/MeshVariables.h"
 #include "arcane/mesh/NewWithLegacyConnectivity.h"
+#include "arcane/mesh/MeshEventsImpl.h"
 
 #include <functional>
 #include <memory>
@@ -523,6 +524,13 @@ public:
 
  public:
 
+  EventObservable<const MeshEventArgs&>& eventObservable(eMeshEventType type) override
+  {
+    return m_mesh_events.eventObservable(type);
+  }
+
+ public:
+
   const MeshKind meshKind() const override { return m_mesh_kind; }
 
   IMeshInternal* _internalApi() override;
@@ -583,6 +591,8 @@ public:
   std::unique_ptr<IIndexedIncrementalItemConnectivityMng> m_indexed_connectivity_mng;
   MeshKind m_mesh_kind;
   bool m_do_not_save_need_compact = false;
+
+  MeshEventsImpl m_mesh_events;
 
  private:
 

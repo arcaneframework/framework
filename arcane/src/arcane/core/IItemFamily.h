@@ -690,6 +690,8 @@ class IItemFamily
 
   /*!
    * \brief Redimensionne les variables de cette famille.
+   *
+   * Cette méthode est interne à Arcane.
    */
   virtual void resizeVariables(bool force_resize) = 0;
 
