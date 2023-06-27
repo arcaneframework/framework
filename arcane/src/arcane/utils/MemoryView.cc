@@ -192,6 +192,10 @@ copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
     ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
                  one_data_size, v_one_data_size);
 
+  Int64 nb_index = indexes.size();
+  if (nb_index == 0)
+    return;
+
   _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, m_views, v.bytes(), queue });
 }
 
@@ -208,7 +212,11 @@ copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
     ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
                  one_data_size, v_one_data_size);
 
-  _getDefaultCopyList(queue)->copyTo(one_data_size, {indexes, m_views, v.bytes(), queue});
+  Int64 nb_index = indexes.size();
+  if (nb_index == 0)
+    return;
+
+  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, m_views, v.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/
