@@ -212,6 +212,8 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
       MultiConstMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double));
       MutableMemoryView destination(buffer.to1DSpan());
       source_memory_view.copyToIndexes(destination, m_indexes.to1DSpan().smallView(), queue_ptr);
+      // Teste copie vide
+      source_memory_view.copyToIndexes(destination, {}, queue_ptr);
     }
 
     UniqueArray<NumArray<double, MDDim1>> host_memories;
@@ -253,6 +255,8 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
       MultiMutableMemoryView source_memory_view(memories_as_bytes.view(), sizeof(double));
       ConstMemoryView source(buffer.to1DSpan());
       source_memory_view.copyFromIndexes(source, m_indexes.to1DSpan().smallView(), queue_ptr);
+      // Teste copie vide
+      source_memory_view.copyFromIndexes(source, {}, queue_ptr);
     }
 
     // Vérifie le résultat
@@ -309,6 +313,8 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
       MultiConstMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double) * n2);
       MutableMemoryView destination(buffer.to1DSpan(), n2);
       source_memory_view.copyToIndexes(destination, m_indexes.to1DSpan().smallView(), queue_ptr);
+      // Teste copie vide
+      source_memory_view.copyToIndexes(destination, {}, queue_ptr);
     }
 
     UniqueArray<NumArray<double, MDDim2>> host_memories;
@@ -352,6 +358,8 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
       MultiMutableMemoryView source_memory_view(memories_as_bytes.view(), sizeof(double) * n2);
       ConstMemoryView source(buffer.to1DSpan(), n2);
       source_memory_view.copyFromIndexes(source, m_indexes.to1DSpan().smallView(), queue_ptr);
+      // Teste copie vide
+      source_memory_view.copyFromIndexes(source, {}, queue_ptr);
     }
 
     // Vérifie le résultat
@@ -369,83 +377,6 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
     }
   }
   info() << "End of test Rank2";
-
-#if 0
-  info() << "Test Rank2 CopyFrom";
-  {
-    NumArray<double, MDDim2> t1(mem_kind);
-    t1.resize(n1, n2);
-    NumArray<double, MDDim2> destination_buffer(mem_kind);
-    destination_buffer.resize(nb_index, n2);
-
-    {
-      auto command = makeCommand(queue);
-      auto out_t1 = viewOut(command, t1);
-
-      command << RUNCOMMAND_LOOP2(iter, n1, n2)
-      {
-        auto [i, j] = iter();
-        out_t1(i, j) = _getValue(i, j);
-      };
-    }
-
-    {
-      ConstMemoryView source(t1.to1DSpan(), n2);
-      MutableMemoryView destination(destination_buffer.to1DSpan(), n2);
-      destination.copyFromIndexes(source, indexes.to1DSpan().smallView(), queue_ptr);
-    }
-
-    NumArray<double, MDDim2> host_destination(eMemoryRessource::Host);
-    host_destination.copy(destination_buffer);
-
-    {
-      NumArray<double, MDDim2> host_t1(eMemoryRessource::Host);
-      host_t1.copy(t1);
-
-      for (int i = 0; i < nb_index; ++i) {
-        for (int j = 0; j < n2; ++j) {
-          auto v1 = host_destination(i, j);
-          auto v2 = host_t1(indexes(i), j);
-          if (v1 != v2) {
-            ARCANE_FATAL("Bad copy from i={0} j={1} v1={2} v2={3}", i, j, v1, v2);
-          }
-        }
-      }
-    }
-
-    // Remet des valeurs fausses dans t1
-    {
-      auto command = makeCommand(queue);
-      auto out_t1 = viewOut(command, t1);
-      command << RUNCOMMAND_LOOP2(iter, n1, n2)
-      {
-        out_t1(iter) = -1.0;
-      };
-    }
-
-    {
-      MutableMemoryView t1_view(t1.to1DSpan(), n2);
-      ConstMemoryView destination_view(destination_buffer.to1DSpan(), n2);
-      destination_view.copyToIndexes(t1_view, indexes.to1DSpan().smallView(), queue_ptr);
-    }
-
-    {
-      NumArray<double, MDDim2> host_t1(eMemoryRessource::Host);
-      host_t1.copy(t1);
-
-      for (int i = 0; i < nb_index; ++i) {
-        for (int j = 0; j < n2; ++j) {
-          auto v1 = host_destination(i, j);
-          auto v2 = host_t1(indexes(i), j);
-          if (v1 != v2) {
-            ARCANE_FATAL("Bad copy to i={0} j={1} v1={2} v2={3}", i, j, v1, v2);
-          }
-        }
-      }
-    }
-  }
-  info() << "End of test Rank2 OK!";
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
