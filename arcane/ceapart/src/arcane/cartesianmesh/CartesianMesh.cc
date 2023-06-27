@@ -249,6 +249,8 @@ recreateFromDump()
 void CartesianMeshImpl::
 computeDirections()
 {
+  info() << "CartesianMesh: computeDirections()";
+
   m_amr_patches.clear();
   m_amr_patches.add(m_all_items_direction_info);
 
@@ -288,10 +290,10 @@ computeDirections()
   Integer nb_node = cell0.nbNode();
   Real3 cell_center = cells_center[cell0];
 
-  info() << "sizeof(CellDirectionMng)=" << sizeof(CellDirectionMng)
+  info(4) << "sizeof(CellDirectionMng)=" << sizeof(CellDirectionMng)
          << " sizeof(FaceDirectionMng)=" << sizeof(FaceDirectionMng)
          << " sizeof(NodelDirectionMng)=" << sizeof(NodeDirectionMng);
-  info() << "sizeof(IndexedItemConnectivityViewBase)=" << sizeof(IndexedItemConnectivityViewBase)
+  info(4) << "sizeof(IndexedItemConnectivityViewBase)=" << sizeof(IndexedItemConnectivityViewBase)
          << " sizeof(CellInfoListView)=" << sizeof(CellInfoListView);
   info(4) << "Cartesian mesh compute directions is_amr=" << m_is_amr;
 
@@ -322,17 +324,17 @@ computeDirections()
     if (diff_x>diff_y && diff_x>diff_z){
       // INC X
       next_face_x = i;
-      info() << "Advance in direction X -> " << next_face_x;
+      info(4) << "Advance in direction X -> " << next_face_x;
     }
     else if (diff_y>diff_x && diff_y>diff_z){
       // INC Y
       next_face_y = i;
-      info() << "Advance in direction Y -> " << next_face_y;
+      info(4) << "Advance in direction Y -> " << next_face_y;
     }
     else if (diff_z>diff_x && diff_z>diff_y){
       // INC Z
       next_face_z = i;
-      info() << "Advance in direction Z -> " << next_face_z;
+      info(4) << "Advance in direction Z -> " << next_face_z;
     }
     else
       ARCANE_FATAL("Bad value for next cell");
