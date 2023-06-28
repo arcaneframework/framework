@@ -50,9 +50,23 @@ class Mesh
 {
 
  public:
-  using UidPropertyType = Neo::PropertyT<Neo::utils::Int64>;
+  using LocalIdPropertyType = Neo::ItemLidsProperty;
+  using UniqueIdPropertyType = Neo::PropertyT<Neo::utils::Int64>;
   using CoordPropertyType = Neo::PropertyT<Neo::utils::Real3>;
   using ConnectivityPropertyType = Neo::ArrayProperty<Neo::utils::Int32>;
+
+  template <typename... DataTypes>
+  using MeshOperationT = std::variant<std::function<void(LocalIdPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(LocalIdPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
+                                      std::function<void(LocalIdPropertyType const&, Neo::ArrayProperty<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::ArrayProperty<DataTypes>&)>...,
+                                      std::function<void(CoordPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(CoordPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
+                                      std::function<void(CoordPropertyType const&, Neo::ArrayProperty<DataTypes>&)>...>;
+
+  using MeshOperation = MeshOperationT<utils::Int32, utils::Real3, utils::Int64>;
 
   struct Connectivity
   {
@@ -195,6 +209,7 @@ class Mesh
    * @param future_added_item_range Future ItemRange : after the call to applyScheduledOperations
    * this future range will give access to a range containing new items local ids
    */
+
   void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange& future_added_item_range) noexcept;
 
   /*!
@@ -432,7 +447,7 @@ class Mesh
    * A more direct usage is to call directy \fn uniqueIds(item_family,item_lids)
    * to get uids of given lids
    */
-  [[nodiscard]] UidPropertyType const& getItemUidsProperty(const Family& item_family) const noexcept;
+  [[nodiscard]] UniqueIdPropertyType const& getItemUidsProperty(const Family& item_family) const noexcept;
 
   /*!
    * @brief Get items of kind \p item_kind connected to family \p source_family
@@ -491,8 +506,27 @@ class Mesh
   void scheduleRemoveItems(Neo::Family& item_family, Neo::ItemRange const& removed_items);
 
   /*!
+   * @brief schedule a user operation on mesh.
+   * @param input_property_family item family owning the input property
+   * @param input_property_name
+   * @param output_property_family item family owning output property
+   * @param output_property_name
+   * @param mesh_operation may be given by a lambda function (will be casted in std::function, see detailed description)
+   *
+   * This operation may depend on an input property (Item local/unique ids, item coordinates, item connectivities...),
+   * and may produce an output property, that can be used as an input property on another mesh operation.
+   * The mesh operation signature is operation(ConcreteInputPropertyType const& input_prop, ConcreteOutputPropertyType & output_prop.
+   * A std::function is used to avoid template contamination from low level MeshKernel.
+   */
+  void scheduleAddMeshOperation(Family& input_property_family,
+                                std::string const& input_property_name,
+                                Family& output_property_family,
+                                std::string const& output_property_name,
+                                MeshOperation mesh_operation);
+  /*!
    * Access to internal structure, for advanced use
    * @return Reference toward internal structure
+   * Todo : remove !
    */
   Neo::MeshKernel::MeshBase& internalMeshGraph() noexcept {
     return *m_mesh_graph;

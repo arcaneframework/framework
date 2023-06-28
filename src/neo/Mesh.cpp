@@ -473,8 +473,8 @@ std::vector<Neo::utils::Int64> Neo::Mesh::uniqueIds(Neo::Family const& item_fami
 
 /*-----------------------------------------------------------------------------*/
 
-const Neo::Mesh::UidPropertyType& Neo::Mesh::getItemUidsProperty(const Neo::Family& item_family) const noexcept {
-  return item_family.getConcreteProperty<UidPropertyType>(uniqueIdPropertyName(item_family.name()));
+const Neo::Mesh::UniqueIdPropertyType& Neo::Mesh::getItemUidsProperty(const Neo::Family& item_family) const noexcept {
+  return item_family.getConcreteProperty<UniqueIdPropertyType>(uniqueIdPropertyName(item_family.name()));
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -549,15 +549,19 @@ void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, Neo::ItemRange const& r
 }
 
 /*-----------------------------------------------------------------------------*/
-// design meshOperation
-//void Neo::Mesh::addOperation(Operation::StartingPoint when, Operation::Input input, Operation::Output output, IAlgorithm1Input1OutputPtr algo_ptr, Family& item_family) {
-//  m_mesh_graph->addAlgorithm(Neo::InProperty{ item_family, item_family.lidPropName() },
-//                             Neo::OutProperty{ item_family, "node_coords" },
-//                             [algo_ptr](Neo::ItemLidsProperty const& node_lids_property,
-//                                        Neo::PropertyT<Neo::utils::Real3>& node_coords_property) {
-//                               algo_ptr();
-//                             });
-//}
+
+void Neo::Mesh::scheduleAddMeshOperation(Neo::Family& input_property_family,
+                                         std::string const& input_property_name,
+                                         Neo::Family& output_property_family,
+                                         std::string const& output_property_name,
+                                         Neo::Mesh::MeshOperation mesh_operation) {
+  std::visit([&](auto& algorithm) {
+    m_mesh_graph->addAlgorithm(Neo::InProperty{ input_property_family, input_property_name },
+                               Neo::OutProperty{ output_property_family, output_property_name },
+                               algorithm);
+  },
+             mesh_operation);
+}
 
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/

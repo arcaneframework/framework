@@ -299,30 +299,56 @@ public:
 template <typename ValueType>
 class PropertyConstView
 {
-public:
+ public:
   std::vector<int> const m_indexes;
   Neo::utils::ConstArrayView<ValueType> m_data_view;
 
-  int size() const noexcept {return m_indexes.size();}
+  int size() const noexcept { return m_indexes.size(); }
 
-  ValueType const& operator[] (int index) const{
-    assert(("Error, exceeds property view size",index < m_indexes.size()));
-    return m_data_view[m_indexes[index]];}
+  ValueType const& operator[](int index) const {
+    assert(("Error, exceeds property view size", index < m_indexes.size()));
+    return m_data_view[m_indexes[index]];
+  }
 
-  PropertyViewIterator<ValueType const> begin() { return {m_indexes,m_indexes.begin()++,m_data_view.begin()+m_indexes[0]};}
-  PropertyViewIterator<ValueType const> end()   { return {m_indexes,m_indexes.end(),m_data_view.end()};}
+  PropertyViewIterator<ValueType const> begin() { return { m_indexes, m_indexes.begin()++, m_data_view.begin() + m_indexes[0] }; }
+  PropertyViewIterator<ValueType const> end() { return { m_indexes, m_indexes.end(), m_data_view.end() }; }
 };
 
 //----------------------------------------------------------------------------/
 
-class PropertyBase{
-public:
+class PropertyBase
+{
+ public:
   std::string m_name;
 };
 
 template <typename DataType>
-class PropertyT : public PropertyBase  {
-public:
+class ScalarPropertyT : public PropertyBase
+{
+ public:
+  DataType m_data;
+
+  void set(DataType const& value) noexcept {
+    m_data = value;
+  }
+
+  DataType& get() noexcept {
+    return m_data;
+  }
+
+  DataType& operator()() noexcept {
+    return m_data;
+  }
+
+  DataType const& get() const noexcept {
+    return m_data;
+  }
+};
+
+template <typename DataType>
+class PropertyT : public PropertyBase
+{
+ public:
   std::vector<DataType> m_data;
 
   /*!
@@ -330,11 +356,11 @@ public:
    * @param item_range: range containing the items that will be set to the \a value
    * @param value
    */
-  void init(const ItemRange& item_range, const DataType& value){
+  void init(const ItemRange& item_range, const DataType& value) {
     if (isInitializableFrom(item_range))
-      init(item_range, std::vector<DataType>(item_range.size(), value));
+          init(item_range, std::vector<DataType>(item_range.size(), value));
     else
-      append(item_range,std::vector<DataType>(item_range.size(), value));
+          append(item_range, std::vector<DataType>(item_range.size(), value));
   }
 
   bool isInitializableFrom(const ItemRange& item_range) const {return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
@@ -763,36 +789,45 @@ public:
 
   utils::Int32 _getLidFromUid(utils::Int64 const uid) const {
     auto iterator = m_uid2lid.find(uid);
-    if (iterator == m_uid2lid.end()) return utils::NULL_ITEM_LID;
-    else return iterator->second;
-
+    if (iterator == m_uid2lid.end())
+      return utils::NULL_ITEM_LID;
+    else
+      return iterator->second;
   }
   void _getLidsFromUids(std::vector<utils::Int32>& lids, std::vector<utils::Int64> const& uids) const {
-    std::transform(uids.begin(),uids.end(),std::back_inserter(lids),[this](auto const& uid){return this->_getLidFromUid(uid);});
+    std::transform(uids.begin(), uids.end(), std::back_inserter(lids), [this](auto const& uid) { return this->_getLidFromUid(uid); });
   }
   std::vector<utils::Int32> operator[](std::vector<utils::Int64> const& uids) const {
     std::vector<utils::Int32> lids;
-    _getLidsFromUids(lids,uids);
+    _getLidsFromUids(lids, uids);
     return lids;
   }
 
-private:
+ private:
   std::vector<Neo::utils::Int32> m_empty_lids;
-  std::map<Neo::utils::Int64, Neo::utils::Int32 > m_uid2lid; // todo at least unordered_map
+  std::map<Neo::utils::Int64, Neo::utils::Int32> m_uid2lid; // todo at least unordered_map
   int m_last_id = -1;
-
 };
 
 //----------------------------------------------------------------------------/
 
-using Property = std::variant<
-    PropertyT<utils::Int32>,
-    //PropertyT<int>, // int and Int32 are same types
-    PropertyT<utils::Real3>,
-    PropertyT<utils::Int64>,
-    ItemLidsProperty,
-    //ArrayProperty<int>, // int and Int32 are same types
-    ArrayProperty<utils::Int32>>;
+// seems to lead to very high build time with gcc 7.3. To confirm
+//template <typename... DataTypes>
+//using PropertyTemplate = std::variant<
+//PropertyT<DataTypes>...,
+//ItemLidsProperty,
+//ArrayProperty<DataTypes>...,
+//ScalarPropertyT<DataTypes>...>;
+//using Property = PropertyTemplate<utils::Int32, utils::Real3, utils::Int64, bool>;
+using Property =
+std::variant<
+PropertyT<utils::Int32>,
+PropertyT<utils::Real3>,
+PropertyT<utils::Int64>,
+ItemLidsProperty,
+ArrayProperty<utils::Int32>,
+ScalarPropertyT<utils::Int32>,
+ScalarPropertyT<utils::Real3>>;
 
 //----------------------------------------------------------------------------/
 
@@ -822,6 +857,14 @@ class Family
   void itemUniqueIdsToLocalids(std::vector<Neo::utils::Int32>& item_lids, std::vector<Neo::utils::Int64> const& item_uids) const {
     assert(("In itemUniqueIdsToLocalIds, lids and uids sizes differ.", item_lids.size() == item_uids.size()));
     _lidProp()._getLidsFromUids(item_lids, item_uids);
+  }
+
+  template <typename T>
+  void addScalarProperty(std::string const& name) {
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ScalarPropertyT<T>{ name }));
+    if (is_inserted)
+      Neo::print() << "Add scalar property " << name << " in Family " << m_name
+                   << std::endl;
   }
 
   template <typename T>

@@ -53,6 +53,45 @@ namespace utils
   struct Real3
   {
     double x, y, z;
+    // Utilities
+    friend inline std::ostream& operator<<(std::ostream& oss, Neo::utils::Real3 const& real3) {
+      oss << "{" << real3.x << "," << real3.y << "," << real3.z << "}";
+      return oss;
+    }
+    friend inline bool operator==(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) {
+      return a.x == b.x && a.y == b.y && a.z == b.z;
+    }
+    friend inline bool operator!=(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) {
+      return !(a == b);
+    }
+    friend inline Real3 operator+(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) {
+      return Real3{ a.x + b.x, a.y + b.y, a.z + b.z };
+    }
+    friend inline Real3 operator-(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) {
+      return Real3{ a.x - b.x, a.y - b.y, a.z - b.z };
+    }
+    friend inline Real3 operator*(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) {
+      return Real3{ a.x * b.x, a.y * b.y, a.z * b.z };
+    }
+    friend inline Real3 operator/(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) {
+      return Real3{ a.x / b.x, a.y / b.y, a.z / b.z };
+    }
+    friend inline Real3& operator+=(Neo::utils::Real3& a, Neo::utils::Real3 const& b) {
+      a = a + b;
+      return a;
+    }
+    friend inline Real3& operator-=(Neo::utils::Real3& a, Neo::utils::Real3 const& b) {
+      a = a - b;
+      return a;
+    }
+    friend inline Real3& operator*=(Neo::utils::Real3& a, Neo::utils::Real3 const& b) {
+      a = a * b;
+      return a;
+    }
+    friend inline Real3& operator/=(Neo::utils::Real3& a, Neo::utils::Real3 const& b) {
+      a = a / b;
+      return a;
+    }
   };
 
   /*!
@@ -231,15 +270,6 @@ namespace utils
 } // end namespace utils
 
 } // end namespace Neo
-
-// Real3 utilities
-inline std::ostream& operator<<(std::ostream& oss, Neo::utils::Real3 const& real3) {
-  oss << "{" << real3.x << "," << real3.y << "," << real3.z << "}";
-  return oss;
-}
-inline bool operator==(Neo::utils::Real3 const& a, Neo::utils::Real3 const& b) {
-  return a.x == b.x && a.y == b.y && a.z == b.z;
-}
 
 // Array utilities
 template <typename T>
