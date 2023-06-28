@@ -550,3 +550,94 @@ TEST(NeoMeshApiTest, AddItemConnectivityWithSubsteps) {
   std::vector<Neo::utils::Int64> connected_dofs_uids_ref{ 0, 1, 2, 3, 0, 4 };
   EXPECT_TRUE(std::equal(connected_dofs_lids.begin(), connected_dofs_lids.end(), connected_dofs_uids_ref.begin()));
 }
+
+/*---------------------------------------------------------------------------*/
+
+TEST(NeoMeshApiTest, AddMeshOperationAfterAddingItem) {
+  auto mesh = Neo::Mesh{ "AddMeshOperationTestMesh" };
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  std::vector<Neo::utils::Int64> cell_uids{ 0, 1, 2, 3, 4 };
+  // Schedule items and connectivities add
+  auto future_cells = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(cell_family, cell_uids, future_cells);
+  // Schedule a user operation depending on dof lids : compute a property storing lids sum
+  cell_family.addScalarProperty<Neo::utils::Int32>("lid_sum");
+  mesh.scheduleAddMeshOperation(cell_family, cell_family.lidPropName(), cell_family, "lid_sum",
+                                [](Neo::ItemLidsProperty const& cell_lids, Neo::ScalarPropertyT<Neo::utils::Int32>& lid_sum) {
+                                  lid_sum.set(0);
+                                  for (auto const& cell_lid : cell_lids.values()) {
+                                    lid_sum() += cell_lid;
+                                  }
+                                });
+  mesh.applyScheduledOperations();
+  // get algo result
+  auto& lid_sum_property = cell_family.getConcreteProperty<Neo::ScalarPropertyT<Neo::utils::Int32>>("lid_sum");
+  std::vector<Neo::utils::Int32> cell_lids = cell_family.itemUniqueIdsToLocalids(cell_uids);
+  auto lid_sum_ref = std::accumulate(cell_lids.begin(), cell_lids.end(), 0);
+  Neo::print() << "--- lid sum = " << lid_sum_property() << " lid sum ref value " << lid_sum_ref << std::endl;
+  EXPECT_EQ(lid_sum_property(), lid_sum_ref);
+}
+
+/*---------------------------------------------------------------------------*/
+
+TEST(NeoMeshApiTest, AddMeshOperationAfterAddingConnectivity) {
+  auto mesh = Neo::Mesh{ "AddMeshOperationTestMesh" };
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  auto& dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "dof_family");
+  std::vector<Neo::utils::Int64> cell_uids{ 0, 1 };
+  std::vector<Neo::utils::Int64> dof_uids{ 0, 1, 2, 3, 4 };
+  std::vector<Neo::utils::Int64> cell_dofs{ 0, 1, 2, 3, 0, 4 };
+  // Schedule items and connectivities add
+  auto future_cells = Neo::FutureItemRange{};
+  auto future_dofs = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(cell_family, cell_uids, future_cells);
+  mesh.scheduleAddItems(dof_family, dof_uids, future_dofs);
+  mesh.scheduleAddConnectivity(cell_family, future_cells, dof_family, 3,
+                               cell_dofs, "cell_to_dofs");
+  // Schedule a user operation depending on cell dof connectivity :
+  // create a property containing the number of cells connected to a dof
+  dof_family.addProperty<Neo::utils::Int32>("nb_connected_cells");
+  mesh.scheduleAddMeshOperation(cell_family, mesh.getConnectivity(cell_family, dof_family, "cell_to_dofs").connectivity_value.m_name, dof_family, "nb_connected_cells",
+                                [&dof_family, &cell_family](Neo::Mesh::ConnectivityPropertyType const& cell_to_dofs, Neo::PropertyT<Neo::utils::Int32>& nb_connected_cells) {
+                                  nb_connected_cells.init(dof_family.all(), 0);
+                                  for (auto cell : cell_family.all()) {
+                                    for (auto dof : cell_to_dofs[cell]) {
+                                      nb_connected_cells[dof] += 1;
+                                    }
+                                  }
+                                  nb_connected_cells.debugPrint();
+                                });
+  mesh.applyScheduledOperations();
+  // get algo result
+  auto& nb_connected_cell_property = dof_family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int32>>("nb_connected_cells");
+  std::vector<Neo::utils::Int32> nb_connected_cell_ref{ 2, 1, 1, 1, 1 };
+  nb_connected_cell_property.debugPrint();
+  EXPECT_TRUE(std::equal(nb_connected_cell_property.begin(), nb_connected_cell_property.end(), nb_connected_cell_ref.begin()));
+}
+
+/*---------------------------------------------------------------------------*/
+
+TEST(NeoMeshApiTest, AddMeshOperationAfterSettingCoordinates) {
+  auto mesh = Neo::Mesh{ "SetNodeCoordsTestMesh" };
+  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
+  auto added_nodes = Neo::FutureItemRange{};
+  auto added_nodes2 = Neo::FutureItemRange{};
+  std::vector<Neo::utils::Int64> node_uids{ 1, 10, 100 };
+  mesh.scheduleAddItems(node_family, node_uids, added_nodes);
+  std::vector<Neo::utils::Real3> node_coords{ { 1, 0, 0 }, { 0, 0, 1 }, { 0, 1, 0 } };
+  mesh.scheduleSetItemCoords(node_family, added_nodes, node_coords);
+  // Schedule a user operation depending on node coordinates : sum the coordinates
+  node_family.addScalarProperty<Neo::utils::Real3>("coord_sum");
+  mesh.scheduleAddMeshOperation(node_family, mesh._itemCoordPropertyName(node_family), node_family, "coord_sum",
+                                [](Neo::Mesh::CoordPropertyType const& coords,
+                                   Neo::ScalarPropertyT<Neo::utils::Real3>& coord_sum) {
+                                  std::for_each(coords.begin(), coords.end(), [&coord_sum](auto const& coord) {
+                                    coord_sum() += coord;
+                                  });
+                                });
+  mesh.applyScheduledOperations();
+  auto& coord_sum = node_family.getConcreteProperty<Neo::ScalarPropertyT<Neo::utils::Real3>>("coord_sum");
+  auto& computed_sum = coord_sum();
+  auto ref_sum = Neo::utils::Real3{ 1, 1, 1 };
+  EXPECT_EQ(computed_sum, ref_sum);
+}

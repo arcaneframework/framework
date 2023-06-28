@@ -811,13 +811,23 @@ public:
 
 //----------------------------------------------------------------------------/
 
-using Property = std::variant<
+// seems to lead to very high build time with gcc 7.3. To confirm
+//template <typename... DataTypes>
+//using PropertyTemplate = std::variant<
+//PropertyT<DataTypes>...,
+//ItemLidsProperty,
+//ArrayProperty<DataTypes>...,
+//ScalarPropertyT<DataTypes>...>;
+//using Property = PropertyTemplate<utils::Int32, utils::Real3, utils::Int64, bool>;
+using Property =
+std::variant<
 PropertyT<utils::Int32>,
 PropertyT<utils::Real3>,
 PropertyT<utils::Int64>,
 ItemLidsProperty,
 ArrayProperty<utils::Int32>,
-ScalarPropertyT<utils::Int32>>;
+ScalarPropertyT<utils::Int32>,
+ScalarPropertyT<utils::Real3>>;
 
 //----------------------------------------------------------------------------/
 
