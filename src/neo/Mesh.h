@@ -55,6 +55,19 @@ class Mesh
   using CoordPropertyType = Neo::PropertyT<Neo::utils::Real3>;
   using ConnectivityPropertyType = Neo::ArrayProperty<Neo::utils::Int32>;
 
+  template <typename... DataTypes>
+  using MeshOperationT = std::variant<std::function<void(LocalIdPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(LocalIdPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
+                                      std::function<void(LocalIdPropertyType const&, Neo::ArrayProperty<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::ArrayProperty<DataTypes>&)>...,
+                                      std::function<void(CoordPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(CoordPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
+                                      std::function<void(CoordPropertyType const&, Neo::ArrayProperty<DataTypes>&)>...>;
+
+  using MeshOperation = MeshOperationT<utils::Int32, utils::Real3, utils::Int64>;
+
   struct Connectivity
   {
     Neo::Family const& source_family;
@@ -492,6 +505,24 @@ class Mesh
    */
   void scheduleRemoveItems(Neo::Family& item_family, Neo::ItemRange const& removed_items);
 
+  /*!
+   * @brief schedule a user operation on mesh.
+   * @param input_property_family item family owning the input property
+   * @param input_property_name
+   * @param output_property_family item family owning output property
+   * @param output_property_name
+   * @param mesh_operation may be given by a lambda function (will be casted in std::function, see detailed description)
+   *
+   * This operation may depend on an input property (Item local/unique ids, item coordinates, item connectivities...),
+   * and may produce an output property, that can be used as an input property on another mesh operation.
+   * The mesh operation signature is operation(ConcreteInputPropertyType const& input_prop, ConcreteOutputPropertyType & output_prop.
+   * A std::function is used to avoid template contamination from low level MeshKernel.
+   */
+  void scheduleAddMeshOperation(Family& input_property_family,
+                                std::string const& input_property_name,
+                                Family& output_property_family,
+                                std::string const& output_property_name,
+                                MeshOperation mesh_operation);
   /*!
    * Access to internal structure, for advanced use
    * @return Reference toward internal structure
