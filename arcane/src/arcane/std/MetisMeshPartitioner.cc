@@ -672,6 +672,8 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
   cells_new_owner.synchronize();
 
   changeOwnersFromCells();
+
+  m_nb_refine = m_parallel_mng->reduce(Parallel::ReduceMax, m_nb_refine);
 }
 
 /*---------------------------------------------------------------------------*/
