@@ -473,8 +473,8 @@ std::vector<Neo::utils::Int64> Neo::Mesh::uniqueIds(Neo::Family const& item_fami
 
 /*-----------------------------------------------------------------------------*/
 
-const Neo::Mesh::UidPropertyType& Neo::Mesh::getItemUidsProperty(const Neo::Family& item_family) const noexcept {
-  return item_family.getConcreteProperty<UidPropertyType>(uniqueIdPropertyName(item_family.name()));
+const Neo::Mesh::UniqueIdPropertyType& Neo::Mesh::getItemUidsProperty(const Neo::Family& item_family) const noexcept {
+  return item_family.getConcreteProperty<UniqueIdPropertyType>(uniqueIdPropertyName(item_family.name()));
 }
 
 /*-----------------------------------------------------------------------------*/

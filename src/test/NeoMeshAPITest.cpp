@@ -80,7 +80,7 @@ TEST(NeoMeshApiTest, AddItemTest) {
   // get uid property
   auto const& cell_uid_property = mesh.getItemUidsProperty(cell_family);
   EXPECT_EQ(&cell_uid_property,
-            &cell_family.getConcreteProperty<Neo::Mesh::UidPropertyType>(mesh.uniqueIdPropertyName(cell_family.name())));
+            &cell_family.getConcreteProperty<Neo::Mesh::UniqueIdPropertyType>(mesh.uniqueIdPropertyName(cell_family.name())));
   // or get directly uids
   auto cell_uids = mesh.uniqueIds(cell_family, new_cells.localIds());
   auto cell_uids2 = mesh.uniqueIds(cell_family, new_cells2.localIds());

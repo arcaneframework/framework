@@ -50,7 +50,8 @@ class Mesh
 {
 
  public:
-  using UidPropertyType = Neo::PropertyT<Neo::utils::Int64>;
+  using LocalIdPropertyType = Neo::ItemLidsProperty;
+  using UniqueIdPropertyType = Neo::PropertyT<Neo::utils::Int64>;
   using CoordPropertyType = Neo::PropertyT<Neo::utils::Real3>;
   using ConnectivityPropertyType = Neo::ArrayProperty<Neo::utils::Int32>;
 
@@ -195,6 +196,7 @@ class Mesh
    * @param future_added_item_range Future ItemRange : after the call to applyScheduledOperations
    * this future range will give access to a range containing new items local ids
    */
+
   void scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange& future_added_item_range) noexcept;
 
   /*!
@@ -432,7 +434,7 @@ class Mesh
    * A more direct usage is to call directy \fn uniqueIds(item_family,item_lids)
    * to get uids of given lids
    */
-  [[nodiscard]] UidPropertyType const& getItemUidsProperty(const Family& item_family) const noexcept;
+  [[nodiscard]] UniqueIdPropertyType const& getItemUidsProperty(const Family& item_family) const noexcept;
 
   /*!
    * @brief Get items of kind \p item_kind connected to family \p source_family
@@ -493,6 +495,7 @@ class Mesh
   /*!
    * Access to internal structure, for advanced use
    * @return Reference toward internal structure
+   * Todo : remove !
    */
   Neo::MeshKernel::MeshBase& internalMeshGraph() noexcept {
     return *m_mesh_graph;

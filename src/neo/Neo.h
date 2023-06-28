@@ -785,24 +785,24 @@ public:
 
   utils::Int32 _getLidFromUid(utils::Int64 const uid) const {
     auto iterator = m_uid2lid.find(uid);
-    if (iterator == m_uid2lid.end()) return utils::NULL_ITEM_LID;
-    else return iterator->second;
-
+    if (iterator == m_uid2lid.end())
+      return utils::NULL_ITEM_LID;
+    else
+      return iterator->second;
   }
   void _getLidsFromUids(std::vector<utils::Int32>& lids, std::vector<utils::Int64> const& uids) const {
-    std::transform(uids.begin(),uids.end(),std::back_inserter(lids),[this](auto const& uid){return this->_getLidFromUid(uid);});
+    std::transform(uids.begin(), uids.end(), std::back_inserter(lids), [this](auto const& uid) { return this->_getLidFromUid(uid); });
   }
   std::vector<utils::Int32> operator[](std::vector<utils::Int64> const& uids) const {
     std::vector<utils::Int32> lids;
-    _getLidsFromUids(lids,uids);
+    _getLidsFromUids(lids, uids);
     return lids;
   }
 
-private:
+ private:
   std::vector<Neo::utils::Int32> m_empty_lids;
-  std::map<Neo::utils::Int64, Neo::utils::Int32 > m_uid2lid; // todo at least unordered_map
+  std::map<Neo::utils::Int64, Neo::utils::Int32> m_uid2lid; // todo at least unordered_map
   int m_last_id = -1;
-
 };
 
 //----------------------------------------------------------------------------/
