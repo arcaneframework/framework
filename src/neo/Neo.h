@@ -336,6 +336,10 @@ class ScalarPropertyT : public PropertyBase
     return m_data;
   }
 
+  DataType& operator()() noexcept {
+    return m_data;
+  }
+
   DataType const& get() const noexcept {
     return m_data;
   }
