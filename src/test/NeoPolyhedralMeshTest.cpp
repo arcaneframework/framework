@@ -51,7 +51,7 @@ static const std::string face_cell_connectivity_name{ "face2cells" };
 static const std::string cell_node_connectivity_name{ "cell2nodes" };
 
 std::vector<Neo::utils::Int64> lid2uids(Neo::Family const& family,
-                                        Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids) {
+                                        Neo::utils::ConstSpan<Neo::utils::Int32> item_lids) {
   auto& uid_property = family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int64>>(family.m_name + "_uids");
   std::vector<Neo::utils::Int64> item_uids(item_lids.size());
   std::transform(item_lids.begin(), item_lids.end(), item_uids.begin(),
@@ -66,7 +66,7 @@ namespace utilities
   using CellTypes = std::vector<std::pair<NbNodeInCell, ItemNodesInCell>>;
   struct DefaultItemOrientation
   {
-    static bool isOrdered(Neo::utils::ConstArrayView<Neo::utils::Int64> item_nodes) {
+    static bool isOrdered(Neo::utils::ConstSpan<Neo::utils::Int64> item_nodes) {
       auto nb_nodes = item_nodes.size();
       if (nb_nodes == 2) {
         if (item_nodes[0] < item_nodes[1])
@@ -105,7 +105,7 @@ namespace utilities
     cell_item_orientations.reserve(2 * cell_nodes.size()); // rough approx
     for (int cell_nodes_index = 0; cell_nodes_index < cell_nodes.size();) {
       auto [nb_node_in_cell, item_nodes_all_items] = cell_types[cell_type_indexes[cell_index++]];
-      auto current_cell_nodes = Neo::utils::ConstArrayView<Neo::utils::Int64>{ nb_node_in_cell, &cell_nodes[cell_nodes_index] };
+      auto current_cell_nodes = Neo::utils::ConstSpan<Neo::utils::Int64>{ nb_node_in_cell, &cell_nodes[cell_nodes_index] };
       for (auto current_item_node_indexes_in_cell : item_nodes_all_items) {
         std::vector<Neo::utils::Int64> current_item_nodes;
         current_item_nodes.reserve(current_item_node_indexes_in_cell.size());
@@ -152,7 +152,7 @@ namespace utilities
     std::map<Neo::utils::Int64, std::vector<Neo::utils::Int64>> reversed_orientation_map;
     for (int original_connectivity_index = 0; original_connectivity_index < original_connectivity.size();) {
       auto current_item_nb_connected_items = nb_connected_items_per_item_original[source_item_index];
-      auto current_item_connected_items = Neo::utils::ConstArrayView<Neo::utils::Int64>{
+      auto current_item_connected_items = Neo::utils::ConstSpan<Neo::utils::Int64>{
         current_item_nb_connected_items,
         &original_connectivity[original_connectivity_index]
       };
@@ -331,10 +331,9 @@ void createMesh(Neo::Mesh& mesh) {
 #ifdef HAS_XDMF
 namespace XdmfTest {
   auto _changeNodeOrder(std::vector<Neo::utils::Int64> const& face_nodes,
-                        Neo::utils::Int32 cell_lid,
-                        Neo::utils::ConstArrayView<Neo::utils::Int32> face_cells,
-                        Neo::utils::ConstArrayView<int> face_orientation)
-  {
+                      Neo::utils::Int32 cell_lid,
+                      Neo::utils::ConstSpan<Neo::utils::Int32> face_cells,
+                      Neo::utils::ConstSpan<int> face_orientation) {
     auto count = 0;
     for (auto connected_cell_lid : face_cells){
       if (connected_cell_lid == cell_lid){
@@ -712,7 +711,7 @@ namespace XdmfTest {
       nb_face_per_cells.push_back(cell_nb_face);
       for (auto face_index = 0; face_index < cell_nb_face; ++face_index) {
         int face_nb_node = cell_data[cell_data_index++];
-        auto current_face_nodes = Neo::utils::ConstArrayView<Neo::utils::Int64>{ face_nb_node, &cell_data[cell_data_index] };
+        auto current_face_nodes = Neo::utils::ConstSpan<Neo::utils::Int64>{ face_nb_node, &cell_data[cell_data_index] };
         auto [face_info, is_new_face] = face_nodes_set.emplace(FaceNodes{ current_face_nodes.begin(),
                                                                           current_face_nodes.end() },
                                                                face_uid);
@@ -811,7 +810,7 @@ namespace XdmfTest {
     auto cell_index = 0;
     for (auto cell_data_index = 0; cell_data_index < cell_data.size();) {
       cell_uids.push_back(cell_index++);
-      auto current_cell_nodes = Neo::utils::ConstArrayView<Neo::utils::Int32>{
+      auto current_cell_nodes = Neo::utils::ConstSpan<Neo::utils::Int32>{
         cell_nb_nodes, &cell_data[cell_data_index]
       };
       cell_nodes.insert(cell_nodes.end(), current_cell_nodes.begin(),

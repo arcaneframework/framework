@@ -27,7 +27,7 @@ namespace Neo
 
 namespace MeshKernel
 {
-  class MeshBase;
+  class AlgorithmPropertyGraph;
 }
 enum class ItemKind;
 class Family;
@@ -53,18 +53,18 @@ class Mesh
   using LocalIdPropertyType = Neo::ItemLidsProperty;
   using UniqueIdPropertyType = Neo::PropertyT<Neo::utils::Int64>;
   using CoordPropertyType = Neo::PropertyT<Neo::utils::Real3>;
-  using ConnectivityPropertyType = Neo::ArrayProperty<Neo::utils::Int32>;
+  using ConnectivityPropertyType = Neo::ArrayPropertyT<Neo::utils::Int32>;
 
   template <typename... DataTypes>
   using MeshOperationT = std::variant<std::function<void(LocalIdPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
                                       std::function<void(LocalIdPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
-                                      std::function<void(LocalIdPropertyType const&, Neo::ArrayProperty<DataTypes>&)>...,
+                                      std::function<void(LocalIdPropertyType const&, Neo::ArrayPropertyT<DataTypes>&)>...,
                                       std::function<void(ConnectivityPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
                                       std::function<void(ConnectivityPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
-                                      std::function<void(ConnectivityPropertyType const&, Neo::ArrayProperty<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::ArrayPropertyT<DataTypes>&)>...,
                                       std::function<void(CoordPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
                                       std::function<void(CoordPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
-                                      std::function<void(CoordPropertyType const&, Neo::ArrayProperty<DataTypes>&)>...>;
+                                      std::function<void(CoordPropertyType const&, Neo::ArrayPropertyT<DataTypes>&)>...>;
 
   using MeshOperation = MeshOperationT<utils::Int32, utils::Real3, utils::Int64>;
 
@@ -76,7 +76,7 @@ class Mesh
     ConnectivityPropertyType const& connectivity_value;
     ConnectivityPropertyType const& connectivity_orientation;
 
-    Neo::utils::ConstArrayView<Neo::utils::Int32> operator[](Neo::utils::Int32 item_lid) const noexcept {
+    Neo::utils::ConstSpan<Neo::utils::Int32> operator[](Neo::utils::Int32 item_lid) const noexcept {
       return connectivity_value[item_lid];
     }
   };
@@ -91,7 +91,7 @@ class Mesh
   ~Mesh();
 
  private:
-  std::unique_ptr<MeshKernel::MeshBase> m_mesh_graph;
+  std::unique_ptr<MeshKernel::AlgorithmPropertyGraph> m_mesh_graph;
   FamilyMap m_families;
   using ConnectivityMapType = std::map<std::string, Connectivity, std::less<>>;
   ConnectivityMapType m_connectivities;
@@ -528,7 +528,7 @@ class Mesh
    * @return Reference toward internal structure
    * Todo : remove !
    */
-  Neo::MeshKernel::MeshBase& internalMeshGraph() noexcept {
+  Neo::MeshKernel::AlgorithmPropertyGraph& internalMeshGraph() noexcept {
     return *m_mesh_graph;
   }
 

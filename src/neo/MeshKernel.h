@@ -23,6 +23,7 @@ namespace Neo
 {
 
 //----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
 
 namespace tye
 { // type engine : tool to visit variant
@@ -83,8 +84,13 @@ namespace tye
 
 } // namespace tye
 
+//----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
+
 namespace MeshKernel
 {
+
+  //----------------------------------------------------------------------------/
 
   struct IAlgorithm
   {
@@ -92,6 +98,8 @@ namespace MeshKernel
     virtual InProperty const& inProperty(int index = 0) const = 0;
     virtual OutProperty const& outProperty(int index = 0) const = 0;
   };
+
+  //----------------------------------------------------------------------------/
 
   template <typename Algorithm>
   struct AlgoHandler : public IAlgorithm
@@ -119,6 +127,8 @@ namespace MeshKernel
         throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
     }
   };
+
+  //----------------------------------------------------------------------------/
 
   template <typename Algorithm>
   struct DualInAlgoHandler : public IAlgorithm
@@ -151,6 +161,8 @@ namespace MeshKernel
     }
   };
 
+  //----------------------------------------------------------------------------/
+
   template <typename Algorithm>
   struct DualOutAlgoHandler : public IAlgorithm
   {
@@ -182,6 +194,8 @@ namespace MeshKernel
     }
   };
 
+  //----------------------------------------------------------------------------/
+
   template <typename Algorithm>
   struct NoDepsAlgoHandler : public IAlgorithm
   {
@@ -203,6 +217,8 @@ namespace MeshKernel
         throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
     }
   };
+
+  //----------------------------------------------------------------------------/
 
   template <typename Algorithm>
   struct NoDepsDualOutAlgoHandler : public IAlgorithm
@@ -230,7 +246,9 @@ namespace MeshKernel
     }
   };
 
-  class MeshBase
+  //----------------------------------------------------------------------------/
+
+  class AlgorithmPropertyGraph
   {
    public:
     std::string m_name;
@@ -311,8 +329,9 @@ namespace MeshKernel
     }
 
     /*!
- * @brief Remove all added algorithms, only not-persistent by default
- */
+    * @brief Remove all added algorithms, only not-persistent by default
+    * @param remove_kept_algorithm : to choose if algorithms added with AlgorithmPersistence::KeepAfterExecution are removed or not
+    */
     void removeAlgorithms(bool remove_kept_algorithm = false) {
       m_algos.clear();
       m_property_algorithms.clear();
@@ -330,21 +349,21 @@ namespace MeshKernel
     }
 
     /*!
- * @brief Apply added algorithms
- * @param execution_order
- * @return object EndOfMeshUpdate to unlock FutureItemRange
- * Added algorithms are removed at the end of the method
- */
+     * @brief Apply added algorithms
+     * @param execution_order : to choose between LIFO, FIFO or DAG
+     * @return object EndOfMeshUpdate to unlock FutureItemRange
+     * Added algorithms are removed at the end of the method
+     */
     EndOfMeshUpdate applyAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::DAG) {
       return _applyAlgorithms(execution_order, false);
     }
 
     /*!
- * @brief Apply added algorithms
- * @param execution_order
- * @return object EndOfMeshUpdate to unlock FutureItemRange
- * Added algorithms are kept at the end of the method. If the method is called twice, tha algorithms are played again.
- */
+     * @brief Apply added algorithms
+     * @param execution_order
+     * @return object EndOfMeshUpdate to unlock FutureItemRange
+     * Added algorithms are kept at the end of the method. If the method is called twice, tha algorithms are played again.
+     */
     EndOfMeshUpdate applyAndKeepAlgorithms(AlgorithmExecutionOrder execution_order = AlgorithmExecutionOrder::DAG) {
       return _applyAlgorithms(execution_order, true);
     }
@@ -478,7 +497,11 @@ namespace MeshKernel
     }
   };
 
+  //----------------------------------------------------------------------------/
+
 } // namespace MeshKernel
+
+//----------------------------------------------------------------------------/
 
 } // namespace Neo
 

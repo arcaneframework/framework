@@ -281,10 +281,10 @@ template <typename ValueType>
 class PropertyView
 {
 public:
-  std::vector<int> const m_indexes;
-  Neo::utils::ArrayView<ValueType> m_data_view;
+ std::vector<int> const m_indexes;
+ Neo::utils::Span<ValueType> m_data_view;
 
-  ValueType& operator[] (int index) {
+ ValueType& operator[] (int index) {
     assert(("Error, exceeds property view size",index < m_indexes.size()));
     return m_data_view[m_indexes[index]];}
 
@@ -301,7 +301,7 @@ class PropertyConstView
 {
  public:
   std::vector<int> const m_indexes;
-  Neo::utils::ConstArrayView<ValueType> m_data_view;
+  Neo::utils::ConstSpan<ValueType> m_data_view;
 
   int size() const noexcept { return m_indexes.size(); }
 
@@ -320,6 +320,10 @@ class PropertyBase
 {
  public:
   std::string m_name;
+
+  std::string name() const noexcept {
+    return m_name;
+  }
 };
 
 template <typename DataType>
@@ -400,10 +404,10 @@ class PropertyT : public PropertyBase
   DataType const& operator[] (utils::Int32 item) const {
     assert(("Input item lid > max local id, In PropertyT[]",item < m_data.size()));
     return m_data[item]; }
-  std::vector<DataType> operator[] (std::vector<utils::Int32>const& items) const {
+  std::vector<DataType> operator[](std::vector<utils::Int32> const& items) const {
     return _arrayAccessor(items);
   }
-  std::vector<DataType> operator[] (utils::ConstArrayView<utils::Int32>const& items) const {
+  std::vector<DataType> operator[](utils::ConstSpan<utils::Int32> const& items) const {
     return _arrayAccessor(items);
   }
 
@@ -431,7 +435,7 @@ class PropertyT : public PropertyBase
     std::cout << std::endl;
   }
 
-  utils::ArrayView<DataType> values() {return Neo::utils::ArrayView<DataType>{m_data.size(), m_data.data()};}
+  utils::Span<DataType> values() { return Neo::utils::Span<DataType>{ m_data.size(), m_data.data() }; }
 
   std::size_t size() const {return m_data.size();}
 
@@ -440,22 +444,32 @@ class PropertyT : public PropertyBase
   }
 
   PropertyView<DataType> view() {
-    std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
-    return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+    std::vector<int> indexes(m_data.size());
+    std::iota(indexes.begin(), indexes.end(), 0);
+    return PropertyView<DataType>{ std::move(indexes), Neo::utils::Span<DataType>{ m_data.size(), m_data.data() } };
+  }
 
   PropertyView<DataType> view(ItemRange const& item_range) {
-    std::vector<int> indexes; indexes.reserve(item_range.size());
-    for (auto item : item_range) indexes.push_back(item);
-    return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+    std::vector<int> indexes;
+    indexes.reserve(item_range.size());
+    for (auto item : item_range)
+      indexes.push_back(item);
+    return PropertyView<DataType>{ std::move(indexes), Neo::utils::Span<DataType>{ m_data.size(), m_data.data() } };
+  }
 
   PropertyConstView<DataType> constView() const {
-    std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
-    return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
+    std::vector<int> indexes(m_data.size());
+    std::iota(indexes.begin(), indexes.end(), 0);
+    return PropertyConstView<DataType>{ std::move(indexes), Neo::utils::ConstSpan<DataType>{ m_data.size(), m_data.data() } };
+  }
 
   PropertyConstView<DataType> constView(ItemRange const& item_range) const {
-    std::vector<int> indexes; indexes.reserve(item_range.size());
-    for (auto item : item_range) indexes.push_back(item);
-    return PropertyConstView<DataType>{std::move(indexes),Neo::utils::ConstArrayView<DataType>{m_data.size(),m_data.data()}};}
+    std::vector<int> indexes;
+    indexes.reserve(item_range.size());
+    for (auto item : item_range)
+      indexes.push_back(item);
+    return PropertyConstView<DataType>{ std::move(indexes), Neo::utils::ConstSpan<DataType>{ m_data.size(), m_data.data() } };
+  }
 
   auto begin() noexcept {return m_data.begin();}
   auto begin() const noexcept {return m_data.begin();}
@@ -466,25 +480,25 @@ class PropertyT : public PropertyBase
 //----------------------------------------------------------------------------/
 
 template <typename DataType>
-class ArrayProperty : public PropertyBase {
+class ArrayPropertyT : public PropertyBase
+{
 
-public:
+ public:
   std::vector<DataType> m_data;
   std::vector<int> m_offsets;
   std::vector<int> m_indexes;
   int m_size;
 
-public:
-
- /*!
+ public:
+  /*!
   * @brief Resize an array property before a call to \a init. Resize must not be done before a call to \a append method.
   * @param sizes: an array the number of items of the property support and storing the number of values for each item.
   */
-  void resize(std::vector<int> sizes){ // only 2 moves if a rvalue is passed. One copy + one move if lvalue
+  void resize(std::vector<int> sizes) { // only 2 moves if a rvalue is passed. One copy + one move if lvalue
     m_offsets = std::move(sizes);
     _updateIndexes();
   }
-  bool isInitializableFrom(const ItemRange& item_range){return item_range.isContiguous() && (*item_range.begin() ==0) && m_data.empty() ;}
+  bool isInitializableFrom(const ItemRange& item_range) { return item_range.isContiguous() && (*item_range.begin() == 0) && m_data.empty(); }
 
   /*!
    * @brief Initialize an \b empty array property. Must call resize first.
@@ -504,21 +518,25 @@ public:
    * @param values
    * @param nb_values_per_item
    */
-  void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_values_per_item){
-    if (item_range.size()==0) return;
+  void append(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_values_per_item) {
+    if (item_range.size() == 0)
+      return;
     // todo: see how to handle new element add or remove impact on property (size/values)
-    assert(item_range.size()==nb_values_per_item.size());
+    assert(item_range.size() == nb_values_per_item.size());
     assert(("connected items array size and nb_values_per_item size are not compatible",
-    values.size()==std::accumulate(nb_values_per_item.begin(),nb_values_per_item.end(),0)));
-    if (utils::minItem(item_range) >= m_offsets.size()) _appendByBackInsertion(item_range,values,nb_values_per_item); // only new items
-    else _appendByReconstruction(item_range,values,nb_values_per_item); // includes existing items
+            values.size() == std::accumulate(nb_values_per_item.begin(), nb_values_per_item.end(), 0)));
+    if (utils::minItem(item_range) >= m_offsets.size())
+      _appendByBackInsertion(item_range, values, nb_values_per_item); // only new items
+    else
+      _appendByReconstruction(item_range, values, nb_values_per_item); // includes existing items
   }
 
-  void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
-    Neo::print() << "Append in ArrayProperty by reconstruction" << std::endl;
+  void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
+    Neo::print() << "Append in ArrayPropertyT by reconstruction" << std::endl;
     // Compute new offsets
     std::vector<int> new_offsets(m_offsets);
-    if (utils::maxItem(item_range) >= new_offsets.size()) new_offsets.resize(utils::maxItem(item_range)+1);// todo ajouter ArrayProperty::resize(maxlid)
+    if (utils::maxItem(item_range) >= new_offsets.size())
+      new_offsets.resize(utils::maxItem(item_range) + 1); // todo ajouter ArrayPropertyT::resize(maxlid)
     auto index = 0;
     for (auto item : item_range) {
       new_offsets[item] = nb_connected_item_per_item[index++];
@@ -555,7 +573,7 @@ public:
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
     if (item_range.isContiguous()) {
-      Neo::print() << "Append in ArrayProperty by back insertion, contiguous range" << std::endl;
+      Neo::print() << "Append in ArrayPropertyT by back insertion, contiguous range" << std::endl;
       auto max_existing_lid = m_offsets.size()-1;
       auto min_new_lid = utils::minItem(item_range);
       if (min_new_lid > max_existing_lid+1) {
@@ -568,7 +586,7 @@ public:
       _updateIndexes();
     }
     else {
-      Neo::print() << "Append in ArrayProperty by back insertion, non contiguous range" << std::endl;
+      Neo::print() << "Append in ArrayPropertyT by back insertion, non contiguous range" << std::endl;
       m_offsets.resize(utils::maxItem(item_range) + 1);
       auto index = 0;
       for (auto item : item_range) m_offsets[item] = nb_connected_item_per_item[index++];
@@ -584,14 +602,14 @@ public:
     }
   }
 
-  utils::ArrayView<DataType> operator[](const utils::Int32 item) {
-    assert(("item local id must be >0 in ArrayProperty::[item_lid]]",item >= 0));
-    return utils::ArrayView<DataType>{m_offsets[item],&m_data[m_indexes[item]]};
+  utils::Span<DataType> operator[](const utils::Int32 item) {
+    assert(("item local id must be >0 in ArrayPropertyT::[item_lid]]", item >= 0));
+    return utils::Span<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
   }
 
-  utils::ConstArrayView<DataType> operator[](const utils::Int32 item) const {
-    assert(("item local id must be >0 in ArrayProperty::[item_lid]]",item >= 0));
-    return utils::ConstArrayView<DataType>{m_offsets[item],&m_data[m_indexes[item]]};
+  utils::ConstSpan<DataType> operator[](const utils::Int32 item) const {
+    assert(("item local id must be >0 in ArrayPropertyT::[item_lid]]", item >= 0));
+    return utils::ConstSpan<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
   }
 
   void debugPrint() const {
@@ -623,28 +641,32 @@ public:
    * @brief returns a 1D contiguous view of the property
    * @return a 1D view of the property, the values of the array for each item are contiguous
    */
-  utils::ArrayView<DataType> view() noexcept {
-    return utils::ArrayView<DataType>{ m_data.size(), m_data.data() };
+  utils::Span<DataType> view() noexcept {
+    return utils::Span<DataType>{ m_data.size(), m_data.data() };
   }
   /*!
    * @brief returns a const 1D contiguous view of the property
    * @return a const 1D view of the property, the values of the array for each item are contiguous
    */
-  utils::ConstArrayView<DataType> constView() const noexcept {
-    return utils::ConstArrayView<DataType>{ m_data.size(), m_data.data() };
+  utils::ConstSpan<DataType> constView() const noexcept {
+    return utils::ConstSpan<DataType>{ m_data.size(), m_data.data() };
   }
 
-private:
+  auto begin() noexcept { return m_data.begin(); }
+  auto begin() const noexcept { return m_data.begin(); }
+  auto end() noexcept { return m_data.end(); }
+  auto end() const noexcept { return m_data.end(); }
 
-  void _updateIndexes(){
+ private:
+  void _updateIndexes() {
     _computeIndexesFromOffsets(m_indexes, m_offsets);
     m_size = _computeSizeFromOffsets(m_offsets);
   }
 
-  void _computeIndexesFromOffsets(std::vector<int>& new_indexes, std::vector<int> const& new_offsets){
+  void _computeIndexesFromOffsets(std::vector<int>& new_indexes, std::vector<int> const& new_offsets) {
     new_indexes.resize(new_offsets.size());
     auto i = 0, offset_sum = 0;
-    for (auto &index : new_indexes) {
+    for (auto& index : new_indexes) {
       index = offset_sum;
       offset_sum += new_offsets[i++];
     }
@@ -816,7 +838,7 @@ public:
 //using PropertyTemplate = std::variant<
 //PropertyT<DataTypes>...,
 //ItemLidsProperty,
-//ArrayProperty<DataTypes>...,
+//ArrayPropertyT<DataTypes>...,
 //ScalarPropertyT<DataTypes>...>;
 //using Property = PropertyTemplate<utils::Int32, utils::Real3, utils::Int64, bool>;
 using Property =
@@ -825,7 +847,7 @@ PropertyT<utils::Int32>,
 PropertyT<utils::Real3>,
 PropertyT<utils::Int64>,
 ItemLidsProperty,
-ArrayProperty<utils::Int32>,
+ArrayPropertyT<utils::Int32>,
 ScalarPropertyT<utils::Int32>,
 ScalarPropertyT<utils::Real3>>;
 
@@ -920,7 +942,7 @@ class Family
 
   template <typename T>
   void addArrayProperty(std::string const& name) {
-    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayProperty<T>{ name }));
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayPropertyT<T>{ name }));
     if (is_inserted)
       Neo::print() << "Add array property " << name << " in Family " << m_name
                    << std::endl;

@@ -102,41 +102,43 @@ struct VariableView {
 
 struct FamilyView;
 
-struct GroupView{
+struct GroupView
+{
   FamilyView const& family;
   std::string name;
   Neo::ItemKind item_kind = Neo::ItemKind::IK_None;
-  Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids;
-  Neo::utils::ConstArrayView<int> item_owners;
-  ItemRangeView enumerator() const {return ItemRangeView{};}
-  ItemRangeView begin() const {return ItemRangeView{};}
-  ItemRangeView end() const {return ItemRangeView{};}
-  int size() const { return item_lids.size();}
-  ItemRangeView nodeGroup() const { return ItemRangeView{};}
-  ItemRangeView edgeGroup() const {return ItemRangeView{};}
-  ItemRangeView faceGroup() const {return ItemRangeView{};}
-  ItemRangeView cellGroup() const {return ItemRangeView{};}
+  Neo::utils::ConstSpan<Neo::utils::Int32> item_lids;
+  Neo::utils::ConstSpan<int> item_owners;
+  ItemRangeView enumerator() const { return ItemRangeView{}; }
+  ItemRangeView begin() const { return ItemRangeView{}; }
+  ItemRangeView end() const { return ItemRangeView{}; }
+  int size() const { return item_lids.size(); }
+  ItemRangeView nodeGroup() const { return ItemRangeView{}; }
+  ItemRangeView edgeGroup() const { return ItemRangeView{}; }
+  ItemRangeView faceGroup() const { return ItemRangeView{}; }
+  ItemRangeView cellGroup() const { return ItemRangeView{}; }
 };
 
 struct MeshView;
 
-struct FamilyView {
+struct FamilyView
+{
   MeshView const& mesh;
   std::string name;
   Neo::ItemKind item_kind = Neo::ItemKind::IK_None;
   Neo::utils::Int32 max_local_id = Neo::utils::NULL_ITEM_LID;
-  GroupView all_items = GroupView{*this};
-  Neo::utils::ConstArrayView<Neo::utils::Int32> item_lids;
-  Neo::utils::ConstArrayView<Neo::utils::Int64> item_uids;
+  GroupView all_items = GroupView{ *this };
+  Neo::utils::ConstSpan<Neo::utils::Int32> item_lids;
+  Neo::utils::ConstSpan<Neo::utils::Int64> item_uids;
   std::map<std::string, GroupView> item_groups;
   // Connectivities
   Neo::utils::ConstArray2View<Neo::utils::Int32> nodes;
   Neo::utils::ConstArray2View<Neo::utils::Int32> edges;
   Neo::utils::ConstArray2View<Neo::utils::Int32> faces;
   Neo::utils::ConstArray2View<Neo::utils::Int32> cells;
-  std::map<std::string,Neo::utils::ConstArray2View<Neo::utils::Int32>> connectivities;
-  std::map<std::string,VariableView> variables;
-  int nbItem() const {return item_lids.size();}
+  std::map<std::string, Neo::utils::ConstArray2View<Neo::utils::Int32>> connectivities;
+  std::map<std::string, VariableView> variables;
+  int nbItem() const { return item_lids.size(); }
 };
 
 struct MeshView{

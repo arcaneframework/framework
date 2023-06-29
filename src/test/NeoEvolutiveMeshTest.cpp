@@ -114,7 +114,7 @@ TEST(EvolutiveMeshTest, RemoveCells) {
   node_to_cell[5] = 3;
   node_to_cell[11] = 3;
   node2cells.connectivity_value.debugPrint();
-  EXPECT_TRUE(std::equal(node2cells.connectivity_value.constView().begin(), node2cells.connectivity_value.constView().end(), node_to_cell.begin()));
+  EXPECT_TRUE(std::equal(node2cells.connectivity_value.begin(), node2cells.connectivity_value.end(), node_to_cell.begin()));
   // Remove last cell 3
   mesh.scheduleRemoveItems(cell_family, { 3 });
   mesh.applyScheduledOperations();
@@ -124,7 +124,7 @@ TEST(EvolutiveMeshTest, RemoveCells) {
   // compute a reference connectivity : replace removed cells by null lid
   std::fill(node_to_cell.begin(), node_to_cell.end(), Neo::utils::NULL_ITEM_LID);
   node2cells.connectivity_value.debugPrint();
-  EXPECT_TRUE(std::equal(node2cells.connectivity_value.constView().begin(), node2cells.connectivity_value.constView().end(), node_to_cell.begin()));
+  EXPECT_TRUE(std::equal(node2cells.connectivity_value.begin(), node2cells.connectivity_value.end(), node_to_cell.begin()));
 
   // test Remove with ItemRange, no real mesh, only ids to test
   Neo::Mesh mesh2{ "mesh2" };
@@ -155,5 +155,5 @@ TEST(EvolutiveMeshTest, RemoveCells) {
   std::vector<Neo::utils::Int64> fictive_node2cell_ref{ -1, -1, -1, -1, -1, -1 };
   auto fictive_node2cell = mesh2.getConnectivity(node_family2, cell_family2, "fictive_node_to_cells");
   fictive_node2cell.connectivity_value.debugPrint();
-  EXPECT_TRUE(std::equal(fictive_node2cell.connectivity_value.constView().begin(), fictive_node2cell.connectivity_value.constView().end(), fictive_node2cell_ref.begin()));
+  EXPECT_TRUE(std::equal(fictive_node2cell.connectivity_value.begin(), fictive_node2cell.connectivity_value.end(), fictive_node2cell_ref.begin()));
 }
