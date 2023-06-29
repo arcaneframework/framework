@@ -21,7 +21,7 @@
 /*-----------------------------------------------------------------------------*/
 
 Neo::Mesh::Mesh(const std::string& mesh_name)
-: m_mesh_graph(std::make_unique<Neo::MeshKernel::MeshBase>(Neo::MeshKernel::MeshBase{ mesh_name })) {
+: m_mesh_graph(std::make_unique<Neo::MeshKernel::AlgorithmPropertyGraph>(Neo::MeshKernel::AlgorithmPropertyGraph{ mesh_name })) {
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -158,7 +158,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
       }
     }
   },
-  Neo::MeshKernel::MeshBase::AlgorithmPersistence::KeepAfterExecution);
+  Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
 }
 
 /*-----------------------------------------------------------------------------*/

@@ -704,7 +704,7 @@ TEST(NeoTestPropertyView, test_property_iterator){
 
 TEST(NeoTestPropertyGraph, test_property_graph_info) {
   std::cout << "Test Property Graph" << std::endl;
-  Neo::MeshKernel::MeshBase mesh{ "test" };
+  Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test" };
 
   // Add a family : property always belong to a family
   Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cells" };
@@ -886,7 +886,7 @@ TEST(NeoTestFamily, test_family) {
 //----------------------------------------------------------------------------/
 
 TEST(NeoTestBaseMesh, base_mesh_unit_test) {
-  Neo::MeshKernel::MeshBase mesh{ "test" };
+  Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test" };
   Neo::Family family1{ Neo::ItemKind::IK_Cell, "family1" };
   Neo::Family family2{ Neo::ItemKind::IK_Cell, "family2" };
   Neo::Family family3{ Neo::ItemKind::IK_Node, "family3" };
@@ -947,8 +947,8 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   std::cout << "* Test framework Neo thoughts " << std::endl;
   std::cout << "*------------------------------------*" << std::endl;
 
-  // creating mesh
-  auto mesh = Neo::MeshKernel::MeshBase{ "my_neo_mesh" };
+  // creating mesh as a graph of algorithm and properties
+  auto mesh = Neo::MeshKernel::AlgorithmPropertyGraph{ "my_neo_mesh" };
   Neo::Family node_family{ Neo::ItemKind::IK_Node, "NodeFamily" };
   Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "CellFamily" };
 
@@ -1177,8 +1177,8 @@ TEST(NeoTestPartialMeshModification, partial_mesh_modif_test) {
   Neo::utils::Real3 r = { 0, 0, 0 };
   std::array<Neo::utils::Real3, 3> node_coords = { r, r, r }; // don't get why I can't write {{0,0,0},{0,0,0},{0,0,0}}; ...??
 
-  // creating mesh
-  auto mesh = Neo::MeshKernel::MeshBase{ "my_neo_mesh" };
+  // creating mesh as a graph of Algorithms and Properties
+  auto mesh = Neo::MeshKernel::AlgorithmPropertyGraph{ "my_neo_mesh" };
   Neo::Family node_family{ Neo::ItemKind::IK_Node, "NodeFamily" };
   Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "CellFamily" };
 

@@ -27,7 +27,7 @@ namespace Neo
 
 namespace MeshKernel
 {
-  class MeshBase;
+  class AlgorithmPropertyGraph;
 }
 enum class ItemKind;
 class Family;
@@ -91,7 +91,7 @@ class Mesh
   ~Mesh();
 
  private:
-  std::unique_ptr<MeshKernel::MeshBase> m_mesh_graph;
+  std::unique_ptr<MeshKernel::AlgorithmPropertyGraph> m_mesh_graph;
   FamilyMap m_families;
   using ConnectivityMapType = std::map<std::string, Connectivity, std::less<>>;
   ConnectivityMapType m_connectivities;
@@ -528,7 +528,7 @@ class Mesh
    * @return Reference toward internal structure
    * Todo : remove !
    */
-  Neo::MeshKernel::MeshBase& internalMeshGraph() noexcept {
+  Neo::MeshKernel::AlgorithmPropertyGraph& internalMeshGraph() noexcept {
     return *m_mesh_graph;
   }
 

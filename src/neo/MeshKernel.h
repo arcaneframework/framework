@@ -230,7 +230,7 @@ namespace MeshKernel
     }
   };
 
-  class MeshBase
+  class AlgorithmPropertyGraph
   {
    public:
     std::string m_name;
