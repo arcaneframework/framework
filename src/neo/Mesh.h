@@ -76,7 +76,7 @@ class Mesh
     ConnectivityPropertyType const& connectivity_value;
     ConnectivityPropertyType const& connectivity_orientation;
 
-    Neo::utils::ConstArrayView<Neo::utils::Int32> operator[](Neo::utils::Int32 item_lid) const noexcept {
+    Neo::utils::ConstSpan<Neo::utils::Int32> operator[](Neo::utils::Int32 item_lid) const noexcept {
       return connectivity_value[item_lid];
     }
   };

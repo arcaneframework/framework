@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Utils.h                                         (C) 2000-2022             */
+/* Utils.h                                         (C) 2000-2023             */
 /*                                                                           */
 /* Test dag plug in Neo MeshBase                                             */
 /*---------------------------------------------------------------------------*/
@@ -135,7 +135,8 @@ namespace utils
   };
 
   template <typename T>
-  struct ConstArrayView {
+  struct ConstSpan
+  {
     using value_type = T;
     using size_type = int;
     using vector_size_type = typename std::vector<T>::size_type;
@@ -143,9 +144,13 @@ namespace utils
     int m_size = 0;
     const T* m_ptr = nullptr;
 
-    ConstArrayView(size_type size, const T* data) : m_size(size), m_ptr(data){}
-    ConstArrayView(vector_size_type size, const T* data) : m_size(size), m_ptr(data){}
-    ConstArrayView() = default;
+    ConstSpan(size_type size, const T* data)
+    : m_size(size)
+    , m_ptr(data) {}
+    ConstSpan(vector_size_type size, const T* data)
+    : m_size(size)
+    , m_ptr(data) {}
+    ConstSpan() = default;
 
     const T& operator[](int i) const {assert(i<m_size); return *(m_ptr+i);}
     const T* begin() const {return m_ptr;}
@@ -204,7 +209,10 @@ namespace utils
     size_type m_dim2_size = 0;
     T* m_ptr = nullptr;
 
-    ConstArrayView<T> operator[](int i) const {assert(i<m_dim1_size); return {m_dim2_size,m_ptr+i*m_dim2_size};}
+    ConstSpan<T> operator[](int i) const {
+      assert(i < m_dim1_size);
+      return { m_dim2_size, m_ptr + i * m_dim2_size };
+    }
 
     const T* begin() {return m_ptr;}
     const T* end()   {return m_ptr+(m_dim1_size*m_dim2_size);}
@@ -263,8 +271,8 @@ namespace utils
   // Some useful using
   using Int32Span = Span<Int32>;
   using Int64Span = Span<Int64>;
-  using Int32ConstSpan = ConstArrayView<Int32>;
-  using Int64ConstSpan = ConstArrayView<Int64>;
+  using Int32ConstSpan = ConstSpan<Int32>;
+  using Int64ConstSpan = ConstSpan<Int64>;
   using Int32Span2D = Array2View<Int32>; // todo check name see stl MDSpan et Arcane ?
   using Int64Span2D = Array2View<Int64>;
   using Int32ConstSpan2D = ConstArray2View<Int32>; // todo check name see stl MDSpan et Arcane ?
@@ -286,8 +294,7 @@ std::ostream& operator<<(std::ostream& oss, Neo::utils::Span<T> const& container
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& oss, Neo::utils::ConstArrayView<T> const& container)
-{
+std::ostream& operator<<(std::ostream& oss, Neo::utils::ConstSpan<T> const& container) {
   return Neo::utils::_printContainer(container, oss);
 }
 
