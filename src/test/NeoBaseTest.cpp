@@ -339,6 +339,7 @@ TEST(NeoTestProperty, test_property) {
 
 TEST(NeoTestArrayProperty, test_array_property) {
   auto array_property = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property" };
+  EXPECT_EQ(array_property.name(), "test_array_property");
   // check assert (debug only)
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {
