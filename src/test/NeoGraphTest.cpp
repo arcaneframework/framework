@@ -491,7 +491,7 @@ TEST(NeoGraphTest, ItemAndConnectivityTest) {
                     Neo::OutProperty{ cell_family, "cell_to_nodes" },
                     [](Neo::ItemLidsProperty const& cell_lids,
                        Neo::ItemLidsProperty const& node_lids,
-                       Neo::ArrayProperty<Neo::utils::Int32>& cell_to_nodes) {
+                       Neo::ArrayPropertyT<Neo::utils::Int32>& cell_to_nodes) {
                       std::cout << "-- Add cell to nodes connectivity -- " << std::endl;
                       // only one cell, connected to all node lids
                       cell_to_nodes.resize({ 8 });
@@ -528,7 +528,7 @@ TEST(NeoGraphTest, ItemAndConnectivityTest) {
   EXPECT_EQ(cell_family.nbElements(), 1);
   EXPECT_EQ(node_family.nbElements(), 8);
   // Clear property cell_to_nodes to be able to call again its filling algorithm
-  cell_family.getConcreteProperty<Neo::ArrayProperty<Neo::utils::Int32>>("cell_to_nodes").clear();
+  cell_family.getConcreteProperty<Neo::ArrayPropertyT<Neo::utils::Int32>>("cell_to_nodes").clear();
   // Add node_to_cell property
   node_family.addProperty<Neo::utils::Int32>("node_to_cell");
   mesh.applyAndKeepAlgorithms(Neo::MeshKernel::MeshBase::AlgorithmExecutionOrder::DAG);
@@ -542,7 +542,7 @@ TEST(NeoGraphTest, ItemAndConnectivityTest) {
   EXPECT_TRUE(std::equal(created_node_ids.begin(), created_node_ids.end(), node_ids.begin()));
   EXPECT_EQ(cell_family._lidProp()._getLidFromUid(42), 0);
   // Check connectivities
-  auto& cell_to_nodes = cell_family.getConcreteProperty<Neo::ArrayProperty<Neo::utils::Int32>>("cell_to_nodes");
+  auto& cell_to_nodes = cell_family.getConcreteProperty<Neo::ArrayPropertyT<Neo::utils::Int32>>("cell_to_nodes");
   auto cell_to_nodes_view = cell_to_nodes.constView();
   EXPECT_TRUE(std::equal(cell_to_nodes_view.begin(), cell_to_nodes_view.end(), node_ids.begin()));
   auto& node_to_cell = node_family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int32>>("node_to_cell");

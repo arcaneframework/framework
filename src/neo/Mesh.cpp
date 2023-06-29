@@ -123,7 +123,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
    nb_connected_item_per_item{ std::move(nb_connected_item_per_item) },
    source_items_wrapper, &source_family, &target_family](Neo::ItemLidsProperty const& source_family_lids_property,
                                                          Neo::ItemLidsProperty const& target_family_lids_property,
-                                                         Neo::ArrayProperty<Neo::utils::Int32>& source2target) {
+                                                         Neo::ArrayPropertyT<Neo::utils::Int32>& source2target) {
     Neo::print() << "Algorithm: register connectivity between " << source_family.m_name << "  and  " << target_family.m_name << std::endl;
     ItemRange const& source_items = source_items_wrapper.get();
     auto connected_item_lids = target_family_lids_property[connected_item_uids];
@@ -146,7 +146,7 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   Neo::OutProperty{ source_family, connectivity_unique_name },
   [&source_family, &target_family](
   Neo::PropertyT<Neo::utils::Int32> const& target_family_removed_items,
-  Neo::ArrayProperty<Neo::utils::Int32>& connectivity) {
+  Neo::ArrayPropertyT<Neo::utils::Int32>& connectivity) {
     Neo::print() << "Algorithm update connectivity after remove " << connectivity.m_name << std::endl;
     for (auto item : source_family.all()) {
       auto connected_items = connectivity[item];
@@ -177,7 +177,7 @@ void Neo::Mesh::_scheduleAddConnectivityOrientation(Neo::Family& source_family, 
   [source_item_orientation_in_target_item{ std::move(source_item_orientation_in_target_item) },
    nb_connected_item_per_item{ std::move(nb_connected_item_per_item) }, source_items_wrapper,
    &source_family, &target_family](Neo::ItemLidsProperty const& source_family_lids_property,
-                                   Neo::ArrayProperty<int>& item_orientation) {
+                                   Neo::ArrayPropertyT<int>& item_orientation) {
     Neo::print() << "Algorithm: add orientation in connectivity between "
                  << source_family.m_name << "  and  " << target_family.m_name
                  << std::endl;
@@ -208,7 +208,7 @@ void Neo::Mesh::_addConnectivityOrientationCheck(Neo::Family& source_family, Neo
   Neo::InProperty{ source_family, source_family.m_name + "_uids" },
   Neo::OutProperty{ source_family, orientation_check_property_name },
   [&source_family, &target_family](
-  Neo::ArrayProperty<int> const& item_orientation,
+  Neo::ArrayPropertyT<int> const& item_orientation,
   Neo::PropertyT<Neo::utils::Int64> const& item_uids,
   Neo::PropertyT<int>& item_orientation_check) {
     Neo::print() << "Algorithm: check orientation in connectivity between "
