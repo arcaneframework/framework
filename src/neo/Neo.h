@@ -281,10 +281,10 @@ template <typename ValueType>
 class PropertyView
 {
 public:
-  std::vector<int> const m_indexes;
-  Neo::utils::ArrayView<ValueType> m_data_view;
+ std::vector<int> const m_indexes;
+ Neo::utils::Span<ValueType> m_data_view;
 
-  ValueType& operator[] (int index) {
+ ValueType& operator[] (int index) {
     assert(("Error, exceeds property view size",index < m_indexes.size()));
     return m_data_view[m_indexes[index]];}
 
@@ -435,7 +435,7 @@ class PropertyT : public PropertyBase
     std::cout << std::endl;
   }
 
-  utils::ArrayView<DataType> values() {return Neo::utils::ArrayView<DataType>{m_data.size(), m_data.data()};}
+  utils::Span<DataType> values() { return Neo::utils::Span<DataType>{ m_data.size(), m_data.data() }; }
 
   std::size_t size() const {return m_data.size();}
 
@@ -444,13 +444,18 @@ class PropertyT : public PropertyBase
   }
 
   PropertyView<DataType> view() {
-    std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
-    return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+    std::vector<int> indexes(m_data.size());
+    std::iota(indexes.begin(), indexes.end(), 0);
+    return PropertyView<DataType>{ std::move(indexes), Neo::utils::Span<DataType>{ m_data.size(), m_data.data() } };
+  }
 
   PropertyView<DataType> view(ItemRange const& item_range) {
-    std::vector<int> indexes; indexes.reserve(item_range.size());
-    for (auto item : item_range) indexes.push_back(item);
-    return PropertyView<DataType>{std::move(indexes),Neo::utils::ArrayView<DataType>{m_data.size(),m_data.data()}};}
+    std::vector<int> indexes;
+    indexes.reserve(item_range.size());
+    for (auto item : item_range)
+      indexes.push_back(item);
+    return PropertyView<DataType>{ std::move(indexes), Neo::utils::Span<DataType>{ m_data.size(), m_data.data() } };
+  }
 
   PropertyConstView<DataType> constView() const {
     std::vector<int> indexes(m_data.size()); std::iota(indexes.begin(),indexes.end(),0);
@@ -592,9 +597,9 @@ class ArrayPropertyT : public PropertyBase
     }
   }
 
-  utils::ArrayView<DataType> operator[](const utils::Int32 item) {
+  utils::Span<DataType> operator[](const utils::Int32 item) {
     assert(("item local id must be >0 in ArrayPropertyT::[item_lid]]", item >= 0));
-    return utils::ArrayView<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
+    return utils::Span<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
   }
 
   utils::ConstArrayView<DataType> operator[](const utils::Int32 item) const {
@@ -631,8 +636,8 @@ class ArrayPropertyT : public PropertyBase
    * @brief returns a 1D contiguous view of the property
    * @return a 1D view of the property, the values of the array for each item are contiguous
    */
-  utils::ArrayView<DataType> view() noexcept {
-    return utils::ArrayView<DataType>{ m_data.size(), m_data.data() };
+  utils::Span<DataType> view() noexcept {
+    return utils::Span<DataType>{ m_data.size(), m_data.data() };
   }
   /*!
    * @brief returns a const 1D contiguous view of the property

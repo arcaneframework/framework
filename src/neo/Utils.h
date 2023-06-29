@@ -101,7 +101,7 @@ namespace utils
     */
   // todo use std::span instead when moving to C++20
   template <typename T>
-  struct ArrayView
+  struct Span
   {
     using value_type = T;
     using size_type = int;
@@ -110,13 +110,13 @@ namespace utils
     size_type m_size = 0;
     T* m_ptr = nullptr;
 
-    ArrayView(size_type size, T* data)
+    Span(size_type size, T* data)
     : m_size(size)
     , m_ptr(data) {}
-    ArrayView(vector_size_type size, T* data)
+    Span(vector_size_type size, T* data)
     : m_size(size)
     , m_ptr(data) {}
-    ArrayView() = default;
+    Span() = default;
 
     T& operator[](int i) {
       assert(i < m_size);
@@ -174,7 +174,10 @@ namespace utils
     size_type m_dim2_size = 0;
     T* m_ptr = nullptr;
 
-    ArrayView<T> operator[](int i) {assert(i<m_dim1_size); return {m_dim2_size,m_ptr+i*m_dim2_size};}
+    Span<T> operator[](int i) {
+      assert(i < m_dim1_size);
+      return { m_dim2_size, m_ptr + i * m_dim2_size };
+    }
 
     T* begin() {return m_ptr;}
     T* end()   {return m_ptr+(m_dim1_size*m_dim2_size);}
@@ -258,8 +261,8 @@ namespace utils
   };
 
   // Some useful using
-  using Int32Span = ArrayView<Int32>;
-  using Int64Span = ArrayView<Int64>;
+  using Int32Span = Span<Int32>;
+  using Int64Span = Span<Int64>;
   using Int32ConstSpan = ConstArrayView<Int32>;
   using Int64ConstSpan = ConstArrayView<Int64>;
   using Int32Span2D = Array2View<Int32>; // todo check name see stl MDSpan et Arcane ?
@@ -278,8 +281,7 @@ std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container) {
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& oss, Neo::utils::ArrayView<T> const& container)
-{
+std::ostream& operator<<(std::ostream& oss, Neo::utils::Span<T> const& container) {
   return Neo::utils::_printContainer(container, oss);
 }
 
