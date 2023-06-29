@@ -1,13 +1,13 @@
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Utils.h                                         (C) 2000-2023             */
 /*                                                                           */
-/* Test dag plug in Neo MeshBase                                             */
+/* Neo utils                                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,6 +33,9 @@ static constexpr bool ndebug = false;
 static constexpr bool _debug = true;
 #endif
 
+//----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
+
 namespace Neo
 {
 struct NullOstream : public std::ostream
@@ -45,11 +48,17 @@ inline NeoOutputStream print() {
   return NeoOutputStream{};
 }
 
+//----------------------------------------------------------------------------/
+
 namespace utils
 {
   using Int64 = std::int64_t;
   using Int32 = std::int32_t;
   using Real = double;
+  static constexpr utils::Int32 NULL_ITEM_LID = -1;
+
+  //----------------------------------------------------------------------------/
+
   struct Real3
   {
     double x, y, z;
@@ -94,6 +103,8 @@ namespace utils
     }
   };
 
+  //----------------------------------------------------------------------------/
+
   /*!
      * \brief View of a data array
      * @tparam T view data type
@@ -134,6 +145,8 @@ namespace utils
     }
   };
 
+  //----------------------------------------------------------------------------/
+
   template <typename T>
   struct ConstSpan
   {
@@ -152,15 +165,21 @@ namespace utils
     , m_ptr(data) {}
     ConstSpan() = default;
 
-    const T& operator[](int i) const {assert(i<m_size); return *(m_ptr+i);}
-    const T* begin() const {return m_ptr;}
-    const T* end() const  {return m_ptr+m_size;}
-    int size() const {return m_size;}
-    std::vector<T> copy() { std::vector<T> vec(m_size);
+    const T& operator[](int i) const {
+      assert(i < m_size);
+      return *(m_ptr + i);
+    }
+    const T* begin() const { return m_ptr; }
+    const T* end() const { return m_ptr + m_size; }
+    int size() const { return m_size; }
+    std::vector<T> copy() {
+      std::vector<T> vec(m_size);
       std::copy(this->begin(), this->end(), vec.begin());
       return vec;
     }
   };
+
+  //----------------------------------------------------------------------------/
 
   /*!
    * \brief 2-Dimensional view of a contiguous data chunk
@@ -185,23 +204,27 @@ namespace utils
     }
 
     T* begin() {return m_ptr;}
-    T* end()   {return m_ptr+(m_dim1_size*m_dim2_size);}
+    T* end() { return m_ptr + (m_dim1_size * m_dim2_size); }
 
     size_type dim1Size() const { return m_dim1_size; }
     size_type dim2Size() const { return m_dim2_size; }
 
-    std::vector<T> copy() { std::vector<T> vec(m_dim1_size*m_dim2_size);
-      std::copy(this->begin(),this->end(), vec.begin());
+    std::vector<T> copy() {
+      std::vector<T> vec(m_dim1_size * m_dim2_size);
+      std::copy(this->begin(), this->end(), vec.begin());
       return vec;
     }
   };
+
+  //----------------------------------------------------------------------------/
 
   /*!
    * 2-Dimensional const view. cf. \refitem Array2View
    * @tparam T view data type
    */
   template <typename T>
-  struct ConstArray2View {
+  struct ConstArray2View
+  {
     using value_type = T;
     using size_type = int;
 
@@ -226,11 +249,11 @@ namespace utils
     }
   };
 
-  static constexpr utils::Int32 NULL_ITEM_LID = -1;
+  //----------------------------------------------------------------------------/
 
   template <typename Container>
   std::ostream&  _printContainer(Container&& container, std::ostream& oss){
-    std::copy(container.begin(),container.end(),std::ostream_iterator<typename std::remove_reference_t<Container>::value_type>(oss," "));
+    std::copy(container.begin(), container.end(), std::ostream_iterator<typename std::remove_reference_t<Container>::value_type>(oss, " "));
     return oss;
   }
 
@@ -240,6 +263,8 @@ namespace utils
     _printContainer(container, std::cout);
     std::cout << std::endl;
   }
+
+  //----------------------------------------------------------------------------/
 
   using namespace std::chrono_literals;
 
@@ -268,6 +293,8 @@ namespace utils
     }
   };
 
+  //----------------------------------------------------------------------------/
+
   // Some useful using
   using Int32Span = Span<Int32>;
   using Int64Span = Span<Int64>;
@@ -280,7 +307,11 @@ namespace utils
 
 } // end namespace utils
 
+//----------------------------------------------------------------------------/
+
 } // end namespace Neo
+
+//----------------------------------------------------------------------------/
 
 // Array utilities
 template <typename T>
@@ -299,11 +330,14 @@ std::ostream& operator<<(std::ostream& oss, Neo::utils::ConstSpan<T> const& cont
 }
 
 template <typename T>
-std::ostream& operator<<(Neo::NeoOutputStream const& oss, T const& printable)
-{
-  if constexpr (ndebug) return oss.m_null_ostream;
-  else return std::cout << printable;
+std::ostream& operator<<(Neo::NeoOutputStream const& oss, T const& printable) {
+  if constexpr (ndebug)
+    return oss.m_null_ostream;
+  else
+    return std::cout << printable;
 }
 
+//----------------------------------------------------------------------------/
+//----------------------------------------------------------------------------/
 
 #endif // NEO_UTILS_H
