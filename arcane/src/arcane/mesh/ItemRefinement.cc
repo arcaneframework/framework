@@ -51,13 +51,17 @@ const Real ItemRefinement::TOLERENCE = 10.0e-6;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Il semble que le calcul de 'cell_hmin' soit légèrement différent (au niveau
+// de l'epsilon machine) en fonction du découpage et du nombre de sous-domaines.
+// On indique donc que la variable 'AMRCellHMin' est dépendente du nombre
+// de sous-domaine pour éviter des faux positifs dans les comparaisons bit à bit.
 
 // Mesh refinement methods
 ItemRefinement::
 ItemRefinement (IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
-, m_cell_hmin(VariableBuildInfo(mesh,"AMRCellHMin"))
+, m_cell_hmin(VariableBuildInfo(mesh,"AMRCellHMin",IVariable::PSubDomainDepend))
 , m_orig_nodes_coords(mesh->nodesCoordinates())
 , m_refine_factor(2)
 , m_nb_cell_to_add(0)
