@@ -19,6 +19,9 @@ Sommaire de ce chapitre :
 3. \subpage arcanedoc_news_cleanup_v2 <br>
   Décrit les modifications à effectuer pour préparer le passage à la version 2.0.
 
+4. \subpage arcanedoc_new_optimisations_connectivity <br>
+  Modifications prévues pour l'optimisation de la gestion des connectivités.
+
 - \subpage arcanedoc_news_changelog20 <br>
   Récapitulatif de toutes les modifications apportées à %Arcane v2.X.X.
 
