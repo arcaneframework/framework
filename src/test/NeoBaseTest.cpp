@@ -191,6 +191,7 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
 
 TEST(NeoTestProperty, test_scalar_property) {
   Neo::ScalarPropertyT<Neo::utils::Int32> scalar_property{ "test_scalar_property" };
+  EXPECT_EQ(scalar_property.name(), "test_scalar_property");
   scalar_property.set(42);
   EXPECT_EQ(42, scalar_property.get());
   auto& const_scalar_property = scalar_property;
@@ -201,17 +202,20 @@ TEST(NeoTestProperty, test_scalar_property) {
 
 TEST(NeoTestProperty, test_property) {
   Neo::PropertyT<Neo::utils::Int32> property{ "test_property" };
+  EXPECT_EQ(property.name(), "test_property");
   std::vector<Neo::utils::Int32> values{ 1, 2, 3 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 3 } };
   EXPECT_TRUE(property.isInitializableFrom(item_range));
   property.init(item_range, { 1, 2, 3 });
   // Cannot init twice : test assertion
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
-  if constexpr (_debug) {EXPECT_DEATH(property.init(item_range, values),".*Property must be empty.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(property.init(item_range, values), ".*Property must be empty.*");
+  }
 #endif
   EXPECT_EQ(values.size(), property.size());
   auto prop_values = property.values();
-  EXPECT_TRUE(std::equal(prop_values.begin(),prop_values.end(),values.begin()));
+  EXPECT_TRUE(std::equal(prop_values.begin(), prop_values.end(), values.begin()));
   std::vector<Neo::utils::Int32> new_values{ 4, 5, 6 };
   Neo::ItemRange new_item_range{ Neo::ItemLocalIds{ {}, 3, 3 } };
   property.append(new_item_range, new_values);
@@ -337,14 +341,18 @@ TEST(NeoTestArrayProperty, test_array_property) {
   auto array_property = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property" };
   // check assert (debug only)
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
-  if constexpr (_debug) {EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID], ".*item local id must be >0.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID], ".*item local id must be >0.*");
+  }
 #endif
   // add elements: 5 items with one value
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 5 } };
   std::vector<Neo::utils::Int32> values{ 0, 1, 2, 3, 4 };
   // Check cannot Try to init before resize
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
-  if constexpr (_debug) {EXPECT_DEATH(array_property.init(item_range, values), ".*call resize before init.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(array_property.init(item_range, values), ".*call resize before init.*");
+  }
 #endif
   array_property.resize({ 1, 1, 1, 1, 1 });
   array_property.init(item_range, values);
@@ -354,8 +362,8 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
   auto property_1D_view = array_property.view();
   auto const property_1D_const_view = array_property.constView();
-  EXPECT_TRUE(std::equal(property_1D_view.begin(),property_1D_view.end(),values.begin()));
-  EXPECT_TRUE(std::equal(property_1D_const_view.begin(),property_1D_const_view.end(),values.begin()));
+  EXPECT_TRUE(std::equal(property_1D_view.begin(), property_1D_view.end(), values.begin()));
+  EXPECT_TRUE(std::equal(property_1D_const_view.begin(), property_1D_const_view.end(), values.begin()));
   // Add 3 items
   std::vector<int> nb_element_per_item{ 0, 3, 1 };
   item_range = { Neo::ItemLocalIds{ { 5, 6, 7 } } };
@@ -733,6 +741,7 @@ TEST(NeoTestPropertyGraph, test_property_graph_info) {
 TEST(NeoTestLidsProperty, test_lids_property) {
   std::cout << "Test lids_range Property" << std::endl;
   auto lid_prop = Neo::ItemLidsProperty{ "test_property" };
+  EXPECT_EQ(lid_prop.name(), "test_property");
   // Check empty property
   auto empty_range = lid_prop.values();
   EXPECT_EQ(empty_range.size(), 0);

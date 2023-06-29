@@ -597,7 +597,7 @@ TEST(NeoMeshApiTest, AddMeshOperationAfterAddingConnectivity) {
   // Schedule a user operation depending on cell dof connectivity :
   // create a property containing the number of cells connected to a dof
   dof_family.addProperty<Neo::utils::Int32>("nb_connected_cells");
-  mesh.scheduleAddMeshOperation(cell_family, mesh.getConnectivity(cell_family, dof_family, "cell_to_dofs").connectivity_value.m_name, dof_family, "nb_connected_cells",
+  mesh.scheduleAddMeshOperation(cell_family, mesh.getConnectivity(cell_family, dof_family, "cell_to_dofs").connectivity_value.name(), dof_family, "nb_connected_cells",
                                 [&dof_family, &cell_family](Neo::Mesh::ConnectivityPropertyType const& cell_to_dofs, Neo::PropertyT<Neo::utils::Int32>& nb_connected_cells) {
                                   nb_connected_cells.init(dof_family.all(), 0);
                                   for (auto cell : cell_family.all()) {

@@ -320,6 +320,10 @@ class PropertyBase
 {
  public:
   std::string m_name;
+
+  std::string name() const noexcept {
+    return m_name;
+  }
 };
 
 template <typename DataType>
