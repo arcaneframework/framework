@@ -642,9 +642,13 @@ class ArrayPropertyT : public PropertyBase
     return utils::ConstArrayView<DataType>{ m_data.size(), m_data.data() };
   }
 
-private:
+  auto begin() noexcept { return m_data.begin(); }
+  auto begin() const noexcept { return m_data.begin(); }
+  auto end() noexcept { return m_data.end(); }
+  auto end() const noexcept { return m_data.end(); }
 
-  void _updateIndexes(){
+ private:
+  void _updateIndexes() {
     _computeIndexesFromOffsets(m_indexes, m_offsets);
     m_size = _computeSizeFromOffsets(m_offsets);
   }

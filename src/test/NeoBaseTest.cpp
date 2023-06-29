@@ -360,6 +360,9 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_EQ(values.size(), array_property.size());
   std::vector<int> indexes{ 0, 1, 2, 3, 4 }; // to check indexes
   EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
+  // check values
+  EXPECT_TRUE(std::equal(array_property.begin(), array_property.end(), values.begin()));
+  // check view
   auto property_1D_view = array_property.view();
   auto const property_1D_const_view = array_property.constView();
   EXPECT_TRUE(std::equal(property_1D_view.begin(), property_1D_view.end(), values.begin()));
@@ -372,7 +375,7 @@ TEST(NeoTestArrayProperty, test_array_property) {
   array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" (check with test framework)
   EXPECT_EQ(values.size() + values_added.size(), array_property.size());
   std::vector<int> ref_values = { 0, 1, 2, 3, 4, 6, 6, 6, 7 };
-  EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.m_data.begin()));
+  EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.begin()));
   indexes = { 0, 1, 2, 3, 4, 5, 5, 8 };
   EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
   // Add three more items
@@ -382,7 +385,7 @@ TEST(NeoTestArrayProperty, test_array_property) {
   array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" "8" "8" "8" "9"
   EXPECT_EQ(values.size() + 2 * values_added.size(), array_property.size());
   ref_values = { 0, 1, 2, 3, 4, 6, 6, 6, 7, 8, 8, 8, 9 };
-  EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.m_data.begin()));
+  EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.begin()));
   indexes = { 0, 1, 2, 3, 4, 5, 5, 8, 9, 9, 12 };
   EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
   // Add items and modify existing item
@@ -393,7 +396,7 @@ TEST(NeoTestArrayProperty, test_array_property) {
   array_property.debugPrint();
   EXPECT_EQ(21, array_property.size());
   ref_values = { 10, 10, 10, 1, 2, 3, 4, 12, 12, 6, 6, 6, 7, 11, 11, 11, 8, 8, 8, 9, 13 };
-  EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.m_data.begin()));
+  EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.begin()));
   indexes = { 0, 3, 4, 5, 6, 7, 9, 12, 13, 16, 19, 20 };
   EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
 
