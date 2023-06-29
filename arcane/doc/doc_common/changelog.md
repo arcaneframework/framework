@@ -11,6 +11,41 @@ ___
 
 ## Arcane Version 3.10.11 (30 juin 2023) {#arcanedoc_version3100}
 
+A partir de cette version 3.10, des modifications internes de gestion
+des connectivités sont envisagées afin de diminuer la consommation
+mémoire pour la pour les maillages cartésiens ou structurés. La page
+\ref arcanedoc_new_optimisations_connectivity décrit les évolutions
+envisagées et les éventuelles modifications à effectuer dans les codes
+utilisateurs de %Arcane.
+
+### Eléments obsolètes
+
+- Supprime dans les matériaux les méthodes obsolètes depuis plusieurs
+  années (\pr{652}).
+- Rend obsolète la méthode \arcane{ItemConnectedListView::localIds()}
+  permettant d'accéder aux tableaux des localId() des entités
+  connectées à une autre (\pr{666}).
+- Rend privées ou obsolètes les méthodes internes à %Arcane de
+  \arcane{ItemInternalConnectivityList} et \arcane{ItemInternal}
+  (\pr{787}).
+- Rend obsolète \arcane{IDeflateService}. Il faut utiliser
+  \arcane{IDataCompressor} à la place (\pr{706}).
+- Rend obsolète \arcane{IPostProcessorWriter::setMesh()} qui ne fait
+  rien par défaut. Il faut spécifier le maillage souhaité lors de la
+  construction du service (via \arcane{ServiceBuilder}) (\pr{748}).
+- Rend obsolète \arcane{IHashAlgorithm::computeHash()}. Il faut
+  utiliser la version \arcane{IHashAlgorithm::computeHash64()} à la
+  place. Ajoute les méthodes \arcane{IHashAlgorithm::hashSize()} et
+  \arcane{IHashAlgorithm::name()} pour récupérer les informations sur
+  l'algorithme et pouvoir le créer dynamiquement via un service
+  (\pr{696}, \pr{707}).
+- Rend obsolète les méthodes \arccore{ArrayView::range()},
+  \arccore{Span::range()} et \arccore{AbstractArray::range()}. Ces
+  méthodes génèrent des objets temporaires ce qui peut poser un problème
+  lorsqu'on les utilise dans des boucles `for-range` (voir rubrique
+  'Temporary range expression' de [range-for](https://en.cppreference.com/w/cpp/language/range-for)).
+  On peut directement utiliser les méthodes `begin()` ou `end()` à la place (\pr{757}).
+
 ### Nouveautés/Améliorations
 
 - Création d'une classe \arcane{SmallArray} pour gérer des tableaux de
@@ -42,7 +77,7 @@ ___
   \arcane{DataSetter}) {\pr{733}).
 - Ajoute classe \arcane{Vector3} pour généraliser \arcane{Real3}
   pour d'autres types (\pr{750}).
-- Ajoute évènements pour \arcane{IMesh} pour être notifiés des appels
+- Ajoute évènements pour \arcane{IMesh} pour être notifié des appels
   à \arcane{IMesh::prepareForDump()} \pr{771}.
 
 #### API Accélérateur
@@ -100,36 +135,17 @@ ___
   mélangeait opérations atomiques et calcul sur des blocs (\pr{640}).
 - Utilise la mémoire de l'accélérateur pour les opérations de
   réduction. Auparavant, on utilisait la mémoire managée (\pr{643}, \pr{683}).
-- Supprime dans les matériaux les méthodes obsolètes depuis plusieurs
-  années (\pr{652}).
 - Change la numérotation des nœuds des mailles hexagonales pour
   `HoneyCombMeshGenerator` (\pr{657}).
-- Rend obsolète la méthode \arcane{ItemConnectedListView::localIds()}
-  permettant d'accéder aux tableaux des localId() des entités
-  connectées à une autre (\pr{666}).
-- Rend privées ou obsolètes les méthodes internes à %Arcane de
-  \arcane{ItemInternalConnectivityList} et \arcane{ItemInternal}
-  (\pr{787}).
-- Rend obsolète \arcane{IDeflateService}. Il faut utiliser
-  \arcane{IDataCompressor} à la place (\pr{706}).
 - Regroupe dans le namespace \arcane{MeshUtils} les fonctions de
   \arcane{mesh_utils} et \arcane{meshvisitor} (\pr{725}).
 - Déplace les méthodes internes à %Arcane de \arcane{IMesh} et
   \arcane{IItemFamily} dans une interface interne (\pr{726}, \pr{738},
   \pr{752}, \pr{768}).
-- Rend obsolète \arcane{IPostProcessorWriter::setMesh()} qui ne fait
-  rien par défaut. Il faut spécifier le maillage souhaité lors de la
-  construction du service (via \arcane{ServiceBuilder}) (\pr{748}).
 - Dans les comparaisons bit à bit, ne considère pas qu'il y a des
   différences si les deux valeurs à comparer sont des `NaN`.
 - Ajoute affichage du temps passé dans l'initialisation MPI et du
   runtime accélérateur (\pr{760}).
-- Rend obsolète \arcane{IHashAlgorithm::computeHash()}. Il faut
-  utiliser la version \arcane{IHashAlgorithm::computeHash64()} à la
-  place. Ajoute les méthodes \arcane{IHashAlgorithm::hashSize()} et
-  \arcane{IHashAlgorithm::name()} pour récupérer les informations sur
-  l'algorithme et pouvoir le créer dynamiquement via un service
-  (\pr{696}, \pr{707}).
 - Appelle automatiquement \arcane{ICartesianMesh::computeDirections()}
   après un appel à \arcane{IMesh::prepareForDump()}. Cela permet de
   garantir que les informations cartésiennes sont cohérentes après un
@@ -204,9 +220,13 @@ ___
 - Ajoute classe \arcane{MeshKind} pour gérer les propriétés sur la
   structure de maillage (cartésien, non-structuré, amr, ...)
   (\pr{718}).
-- Ajoute macro spécifique pour les méthodes obsolètes, mais qui
-  ne seront pas supprimées immédiatement afin de pouvoir désactiver
-  les avertissements de compilation pour ces méthodes (\pr{722}).
+- Ajoute macro spécifique pour les
+  méthodes obsolètes, mais qui ne seront pas supprimées immédiatement
+  afin de pouvoir désactiver les avertissements de compilation pour
+  ces méthodes. Cela permet au code utilisateur de supprimer les
+  avertissements de compilation pour ces méthodes si la macro
+  `ARCANE_NO_DEPRECATED_LONG_TERM` est définie lors de la compilation
+  (\pr{722}).
 - Ajoute possibilité d'afficher l'affinité CPU de tous les rangs
   (\pr{729}).
 - Ajoute pour les formats `VTK HDF` les informations sur les
