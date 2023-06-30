@@ -18,6 +18,7 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/MD5HashAlgorithm.h"
+#include "arcane/utils/JSONWriter.h"
 
 #include "arcane/core/IDataWriter.h"
 #include "arcane/core/IXmlDocumentHolder.h"
@@ -64,9 +65,9 @@ writeCheckpoint(ICheckpointWriter* service)
   if (!service)
     ARCANE_FATAL("No protection service specified");
 
-  Trace::Setter mci(traceMng(),_msgClassName());
+  Trace::Setter mci(traceMng(), _msgClassName());
 
-  Timer::Phase tp(m_variable_mng->m_time_stats,TP_InputOutput);
+  Timer::Phase tp(m_variable_mng->m_time_stats, TP_InputOutput);
 
   CheckpointSaveFilter save_filter;
 
@@ -74,7 +75,7 @@ writeCheckpoint(ICheckpointWriter* service)
   IDataWriter* data_writer = service->dataWriter();
   if (!data_writer)
     ARCANE_FATAL("no writer() nor dataWriter()");
-  writeVariables(data_writer,&save_filter,true);
+  writeVariables(data_writer, &save_filter, true);
   service->notifyEndWrite();
 }
 
@@ -84,22 +85,21 @@ writeCheckpoint(ICheckpointWriter* service)
 void VariableIOWriterMng::
 writePostProcessing(IPostProcessorWriter* post_processor)
 {
-  Trace::Setter mci(traceMng(),_msgClassName());
+  Trace::Setter mci(traceMng(), _msgClassName());
 
   if (!post_processor)
     ARCANE_FATAL("No post-processing service specified");
 
-  Timer::Phase tp(m_variable_mng->m_time_stats,TP_InputOutput);
+  Timer::Phase tp(m_variable_mng->m_time_stats, TP_InputOutput);
 
   post_processor->notifyBeginWrite();
   VariableCollection variables(post_processor->variables());
   IDataWriter* data_writer = post_processor->dataWriter();
   if (!data_writer)
     ARCANE_FATAL("no writer() nor dataWriter()");
-  writeVariables(data_writer,variables,false);
+  writeVariables(data_writer, variables, false);
   post_processor->notifyEndWrite();
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -149,41 +149,61 @@ writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_has
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+namespace
+{
+  void _writeAttribute(JSONWriter& json_writer, XmlNode var_node, const String& name, const String& value)
+  {
+    var_node.setAttrValue(name, value);
+    json_writer.write(name, value);
+  }
+  void _writeAttribute(JSONWriter& json_writer, XmlNode var_node, const String& name, Int64 value)
+  {
+    var_node.setAttrValue(name, String::fromNumber(value));
+    json_writer.write(name, value);
+  }
+
+} // namespace
 
 void VariableIOWriterMng::
-_generateVariablesMetaData(XmlNode variables_node, const VariableCollection& vars, bool use_hash)
+_generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
+                           const VariableCollection& vars, bool use_hash)
 {
   StringBuilder var_full_type_b;
   ByteUniqueArray hash_values;
   MD5HashAlgorithm hash_algo;
 
+  json_writer.writeKey("variables");
+  json_writer.beginArray();
+
   for (VariableCollection::Enumerator i(vars); ++i;) {
+    JSONWriter::Object o(json_writer);
     IVariable* var = *i;
     ScopedPtrT<VariableMetaData> vmd(var->createMetaData());
     String var_full_type = vmd->fullType();
     String var_family_name = var->itemFamilyName();
     String var_mesh_name = var->meshName();
     XmlNode var_node = XmlElement(variables_node, "variable");
-    var_node.setAttrValue("base-name", var->name());
+    _writeAttribute(json_writer, var_node, "base-name", var->name());
     if (!var_family_name.null())
-      var_node.setAttrValue("item-family-name", var_family_name);
+      _writeAttribute(json_writer, var_node, "item-family-name", var_family_name);
     if (var->isPartial())
-      var_node.setAttrValue("item-group-name", var->itemGroupName());
-    if (!var_mesh_name.null()) {
-      var_node.setAttrValue("mesh-name", var_mesh_name);
-    }
-    var_node.setAttrValue("full-type", var_full_type);
-    var_node.setAttrValue("data-type", dataTypeName(var->dataType()));
-    var_node.setAttrValue("dimension", String::fromNumber(var->dimension()));
-    var_node.setAttrValue("multi-tag", String::fromNumber(var->multiTag()));
-    var_node.setAttrValue("property", String::fromNumber(var->property()));
+      _writeAttribute(json_writer, var_node, "item-group-name", var->itemGroupName());
+    if (!var_mesh_name.null())
+      _writeAttribute(json_writer, var_node, "mesh-name", var_mesh_name);
+    _writeAttribute(json_writer, var_node, "full-type", var_full_type);
+    _writeAttribute(json_writer, var_node, "data-type", dataTypeName(var->dataType()));
+    _writeAttribute(json_writer, var_node, "dimension", var->dimension());
+    _writeAttribute(json_writer, var_node, "multi-tag", var->multiTag());
+    _writeAttribute(json_writer, var_node, "property", var->property());
     if (use_hash) {
       hash_values.clear();
       var->data()->computeHash(&hash_algo, hash_values);
       String hash_str = Convert::toHexaString(hash_values);
-      var_node.setAttrValue("hash", hash_str);
+      _writeAttribute(json_writer, var_node, "hash", hash_str);
     }
   }
+
+  json_writer.endArray();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -193,10 +213,14 @@ _generateVariablesMetaData(XmlNode variables_node, const VariableCollection& var
  * TODO Cela doit normalement être fait via le 'IMeshMng'.
  */
 void VariableIOWriterMng::
-_generateMeshesMetaData(XmlNode meshes_node)
+_generateMeshesMetaData(JSONWriter& json_writer, XmlNode meshes_node)
 {
   // Positionne un numéro de version pour compatibilité avec de futures versions
   meshes_node.setAttrValue("version", "1");
+
+  json_writer.writeKey("meshes");
+  json_writer.beginArray();
+
   ISubDomain* sd = m_variable_mng->subDomain();
   IParallelMng* pm = m_variable_mng->parallelMng();
   IMesh* default_mesh = sd->defaultMesh();
@@ -208,9 +232,10 @@ _generateMeshesMetaData(XmlNode meshes_node)
     bool do_dump = mesh->properties()->getBool("dump");
     // Sauve le maillage s'il est marqué dump ou s'il s'agit du maillage par défaut
     if (do_dump || mesh == default_mesh) {
+      JSONWriter::Object o(json_writer);
       XmlNode mesh_node = XmlElement(meshes_node, "mesh");
-      mesh_node.setAttrValue("name", mesh->name());
-      mesh_node.setAttrValue("factory-name", mesh->factoryName());
+      _writeAttribute(json_writer, mesh_node, "name", mesh->name());
+      _writeAttribute(json_writer, mesh_node, "factory-name", mesh->factoryName());
       // Indique si le maillage utilise le gestionnaire de parallélisme
       // séquentiel car dans ce cas en reprise il faut le créer avec le
       // même gestionnaire.
@@ -218,9 +243,11 @@ _generateMeshesMetaData(XmlNode meshes_node)
       // avec un IParallelMng qui n'est ni séquentiel, ni celui du
       // sous-domaine.
       if (is_parallel && mesh->parallelMng() == seq_pm)
-        mesh_node.setAttrValue("sequential", "true");
+        _writeAttribute(json_writer, mesh_node, "sequential", "true");
     }
   }
+
+  json_writer.endArray();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -229,13 +256,24 @@ _generateMeshesMetaData(XmlNode meshes_node)
 String VariableIOWriterMng::
 _generateMetaData(const VariableCollection& vars, bool use_hash)
 {
+  JSONWriter json_writer(JSONWriter::FormatFlags::None);
+
   ScopedPtrT<IXmlDocumentHolder> doc(domutils::createXmlDocument());
   XmlNode doc_node = doc->documentNode();
   XmlElement root_element(doc_node, "arcane-checkpoint-metadata");
   XmlElement variables_node(root_element, "variables");
-  _generateVariablesMetaData(variables_node, vars, use_hash);
-  XmlElement meshes_node(root_element, "meshes");
-  _generateMeshesMetaData(meshes_node);
+  {
+    JSONWriter::Object o(json_writer);
+    JSONWriter::Object o2(json_writer, "arcane-checkpoint-metadata");
+    json_writer.write("version", static_cast<Int64>(1));
+    _generateVariablesMetaData(json_writer, variables_node, vars, use_hash);
+    XmlElement meshes_node(root_element, "meshes");
+    _generateMeshesMetaData(json_writer, meshes_node);
+  }
+  {
+    // Sauve la sérialisation JSON dans un élément du fichier XML.
+    XmlElement json_node(root_element, "json", json_writer.getBuffer());
+  }
   String s = doc->save();
   info(6) << "META_DATA=" << s;
   return s;

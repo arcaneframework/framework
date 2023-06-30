@@ -272,8 +272,9 @@ class VariableIOWriterMng
 
   void _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash);
   String _generateMetaData(const VariableCollection& vars, bool use_hash);
-  void _generateVariablesMetaData(XmlNode variables_node, const VariableCollection& vars, bool use_hash);
-  void _generateMeshesMetaData(XmlNode meshes_node);
+  void _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
+                                  const VariableCollection& vars, bool use_hash);
+  void _generateMeshesMetaData(JSONWriter& json_writer, XmlNode meshes_node);
   static const char* _msgClassName() { return "Variable"; }
 };
 
