@@ -16,7 +16,7 @@
 
 #include <iterator>
 #include <numeric>
-#include <map>
+#include <unordered_map>
 
 #include "neo/Utils.h"
 #include "neo/Items.h"
@@ -695,7 +695,7 @@ class ItemLidsProperty : public PropertyBase
 
  private:
   std::vector<Neo::utils::Int32> m_empty_lids;
-  std::map<Neo::utils::Int64, Neo::utils::Int32> m_uid2lid; // todo at least unordered_map
+  std::unordered_map<Neo::utils::Int64, Neo::utils::Int32> m_uid2lid;
   int m_last_id = -1;
 };
 
