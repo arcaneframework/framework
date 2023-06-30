@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONReader.h                                                (C) 2000-2020 */
+/* JSONReader.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Lecteur au format JSON.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -74,6 +74,8 @@ class ARCANE_UTILS_EXPORT JSONValue
   Int64 valueAsInt64() const;
   //! Valeur sous forme de Int64. Retourn 0 si 'null()' est vrai.
   Int32 valueAsInt32() const;
+  //! Valeur sous forme de booléen. Retourn false si 'null()' est vrai.
+  bool valueAsBool() const;
   JSONValueList valueAsArray() const;
 
  public:
