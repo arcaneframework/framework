@@ -142,6 +142,7 @@ set( ARCANE_SOURCES
   internal/MeshMng.cc
   internal/ThreadBindingMng.h
   internal/ThreadBindingMng.cc
+  internal/VariableMng.h
   )
 
 set(AXL_FILES

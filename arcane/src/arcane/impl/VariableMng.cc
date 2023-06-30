@@ -11,11 +11,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/impl/internal/VariableMng.h"
+
 #include "arcane/utils/Iterator.h"
-#include "arcane/utils/List.h"
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/Deleter.h"
-#include "arcane/utils/String.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ITraceMng.h"
@@ -27,7 +27,6 @@
 #include "arcane/utils/Convert.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Math.h"
-#include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/Event.h"
 
@@ -56,7 +55,6 @@
 #include "arcane/core/XmlNode.h"
 #include "arcane/core/XmlNodeList.h"
 #include "arcane/core/IXmlDocumentHolder.h"
-#include "arcane/core/IVariableFilter.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IDataReader.h"
@@ -68,7 +66,6 @@
 #include "arcane/core/IModuleMng.h"
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/IEntryPoint.h"
-#include "arcane/core/VariableCollection.h"
 #include "arcane/core/IApplication.h"
 #include "arcane/core/IMainFactory.h"
 #include "arcane/core/Properties.h"
@@ -80,7 +77,6 @@
 
 #include "arcane/impl/VariableUtilities.h"
 
-#include <map>
 #include <exception>
 #include <set>
 #include <vector>
@@ -95,223 +91,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class VariableMetaDataList;
-class VariableReaderMng;
-
-namespace
-{
-class VariableNameInfo
-{
- public:
-  String m_local_name;
-  String m_family_name;
-  String m_mesh_name;
-  bool operator==(const VariableNameInfo& vni) const
-  {
-    return m_local_name==vni.m_local_name
-    && m_family_name==vni.m_family_name && m_mesh_name==vni.m_mesh_name;
-  }
- public:
-  Int32 hash() const
-  {
-    Int32 h = 0;
-    if (!m_mesh_name.null()){
-      h = hash(h,m_mesh_name.localstr());
-      h = hash(h,"_");
-    }
-    if (!m_family_name.null()){
-      h = hash(h,m_family_name.localstr());
-      h = hash(h,"_");
-    }
-    h = hash(h,m_local_name.localstr());
-    return h;
-  }
- public:
-  static Int32 hash(Int32 h,const char* p)
-  {
-    if (!p)
-      return h;
-    for(; *p != '\0'; ++p )
-      h = (h << 5) - h + *p;
-    return h;
-  }
-};
-
-class VNIComparer
-{
- public:
-  typedef const VariableNameInfo& KeyTypeConstRef;
-  typedef VariableNameInfo& KeyTypeRef;
-  typedef VariableNameInfo KeyTypeValue;
-  typedef FalseType Printable;
-  typedef Int32 HashValueType;
-  static Int32 hashFunction(const VariableNameInfo& key)
-    {
-      // garantie que la valeur est positive
-      return key.hash() & 0x7fffffff;
-    }
-};
-
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Gestionnaire de variables.
- */
-class VariableMng
-: public TraceAccessor
-, public IVariableMng
-{
- public:
-
-  class IDataReaderWrapper;
-  class OldDataReaderWrapper;
-  class DataReaderWrapper;
-
- public:
-
-  typedef HashTableMapT<VariableNameInfo,IVariable*,VNIComparer> VNIMap;
-
- public:
-
-  explicit VariableMng(ISubDomain* sd);
-  ~VariableMng() override;
-
- public:
-	
-  void build() override;
-  void initialize() override;
-  void removeAllVariables() override;
-  void detachMeshVariables(IMesh* mesh) override;
-
- public:
-  
-  ISubDomain* subDomain() override { return m_sub_domain; }
-  IParallelMng* parallelMng() const override { return m_parallel_mng; }
-  ITraceMng* traceMng() override { return TraceAccessor::traceMng(); }
-  IVariable* checkVariable(const VariableInfo& infos) override;
-  void addVariableRef(VariableRef* ref) override;
-  void addVariable(IVariable* var) override;
-  void removeVariableRef(VariableRef*) override;
-  void removeVariable(IVariable* var) override;
-  void dumpList(std::ostream&,IModule*) override;
-  void dumpList(std::ostream&) override;
-  void initializeVariables(bool) override;
-  String generateTemporaryVariableName() override;
-  void variables(VariableRefCollection,IModule*) override;
-  VariableCollection variables() override;
-  VariableCollection usedVariables() override;
-  void notifyUsedVariableChanged() override { m_used_variables_changed = true; }
-  Real exportSize(const VariableCollection& vars) override;
-  IObservable* writeObservable() override { return m_write_observable; }
-  IObservable* readObservable() override { return m_read_observable; }
-  void writeVariables(IDataWriter*,const VariableCollection& vars) override;
-  void writeVariables(IDataWriter*,IVariableFilter*) override;
-  void writeCheckpoint(ICheckpointWriter*) override;
-  void writePostProcessing(IPostProcessorWriter* writer) override;
-  void readVariables(IDataReader*,IVariableFilter*) override;
-  void readCheckpoint(ICheckpointReader*) override;
-  void readCheckpoint(const CheckpointReadInfo& infos) override;
-  IVariable* findVariable(const String& name) override;
-  IVariable* findMeshVariable(IMesh* mesh,const String& name) override;
-  IVariable* findVariableFullyQualified(const String& name) override;
-
-  void dumpStats(std::ostream& ostr,bool is_verbose) override;
-  void dumpStatsJSON(JSONWriter& writer) override;
-  IVariableUtilities* utilities() const override { return m_utilities; }
-
-  EventObservable<const VariableStatusChangedEventArgs&>&
-  onVariableAdded() override
-  {
-    return m_on_variable_added;
-  }
-
-  EventObservable<const VariableStatusChangedEventArgs&>&
-  onVariableRemoved() override
-  {
-    return m_on_variable_removed;
-  }
-  ISubDomain* _internalSubDomain() const override { return m_sub_domain; }
-
- public:
-  
-  static bool isVariableToSave(IVariable& var);
-
-  class CheckpointSaveFilter
-  : public IVariableFilter
-  {
-   public:
-    virtual bool applyFilter(IVariable& var)
-    {
-      return VariableMng::isVariableToSave(var);
-    }
-  };
-
- private:
-
-  //! Type de la liste des variables par nom complet
-  typedef std::map<String,IVariable*> FullNameVariableMap;
-  //! Paire de la liste des variables par nom complet
-  typedef FullNameVariableMap::value_type FullNameVariablePair;
-
-  //! Type de la liste des fabriques de variables par nom complet
-  typedef std::map<String,IVariableFactory*>VariableFactoryMap;
-  //! Paire de la liste des variables par nom complet
-  typedef VariableFactoryMap::value_type VariableFactoryPair;
-
-  ISubDomain* m_sub_domain = nullptr; //!< Gestionnaire de sous-domaine
-  IParallelMng* m_parallel_mng = nullptr;
-  VariableRefList m_variables_ref; //!< Liste des variables
-  VariableList m_variables;
-  VariableList m_used_variables;
-  bool m_variables_changed;
-  bool m_used_variables_changed;
-  //! Liste des variables par nom complet
-  FullNameVariableMap m_full_name_variable_map;
-  VNIMap m_vni_map;
-  IObservable* m_write_observable;
-  IObservable* m_read_observable;
-  EventObservable<const VariableStatusChangedEventArgs&> m_on_variable_added;
-  EventObservable<const VariableStatusChangedEventArgs&> m_on_variable_removed;
-  List<IVariableFactory*> m_variable_factories;
-  //! Liste des variables créées automatiquement lors d'une reprise
-  List<VariableRef*> m_auto_create_variables;
-  VariableFactoryMap m_variable_factory_map;
-
-  Integer m_generate_name_id; //!< Numéro utilisé pour générer un nom de variable
-
-  Int64 m_nb_created_variable_reference;
-  Int64 m_nb_created_variable;
-  // Indique dans quel module une variable est créée
-  std::map<IVariable*,IModule*> m_variable_creation_modules;
-
-  IVariableUtilities* m_utilities;
-
- private:
-
-  //! Ecrit la valeur de la variable \a v sur le flot \a o
-  void _dumpVariable(const VariableRef& v,std::ostream& o);
-  void _writeVariables(IDataWriter* writer,const VariableCollection& vars,bool use_hash);
-
-  const char* _msgClassName() const { return "Variable"; }
-  void _readMetaData(VariableMetaDataList& vmd_list,Span<const Byte> bytes);
-  void _readVariablesMetaData(VariableMetaDataList& vmd_list,const XmlNode& variables_node);
-  void _createVariablesFromMetaData(const VariableMetaDataList& vmd_list);
-  void _readMeshesMetaData(const XmlNode& meshes_node);
-  String _generateMetaData(const VariableCollection& vars,bool use_hash);
-  void _generateVariablesMetaData(XmlNode variables_node,const VariableCollection& vars,bool use_hash);
-  void _generateMeshesMetaData(XmlNode meshes_node);
-  void _checkHashFunction(const VariableMetaDataList& vmd_list);
-  void writeVariables2(IDataWriter*,const VariableCollection& vars,bool use_hash);
-  void writeVariables2(IDataWriter*,IVariableFilter*,bool use_hash);
-  VariableRef* _createVariableFromType(const String& full_type,
-                                       const VariableBuildInfo& vbi);
-  void _readVariablesData(VariableReaderMng& var_read_mng,IDataReaderWrapper* reader);
-  void _buildFilteredVariableList(VariableReaderMng& vars_read_mng,IVariableFilter* filter);
-  void _finalizeReadVariables(const VariableList& vars_to_read);
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -407,14 +186,9 @@ VariableMng(ISubDomain* sd)
 : TraceAccessor(sd->traceMng())
 , m_sub_domain(sd)
 , m_parallel_mng(sd->parallelMng())
-, m_variables_changed(true)
-, m_used_variables_changed(true)
 , m_vni_map(2000,true)
 , m_write_observable(IObservable::createDefault())
 , m_read_observable(IObservable::createDefault())
-, m_generate_name_id(0)
-, m_nb_created_variable_reference(0)
-, m_nb_created_variable(0)
 , m_utilities(new VariableUtilities(this))
 {
 }
