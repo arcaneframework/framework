@@ -163,6 +163,7 @@ void JSONUnitTest::
 _testJSON_Read_1()
 {
   info() << "TEST_JSON_Read_1!";
+  String str1("test1");
 
   IIOMng* io_mng = subDomain()->ioMng();
   UniqueArray<Byte> bytes;
@@ -175,9 +176,34 @@ _testJSON_Read_1()
 
   JSONValue doc_root = document.root();
   JSONKeyValue v1 = doc_root.keyValueChild("toto");
-  info() << "IS_V1?=" << v1.null() << " name=" << v1.name() << " values=" << v1.value().valueAsString();
+  info() << "IS_V1?=" << v1.null() << " name=" << v1.name() << " values=" << v1.value().valueAsStringView();
+  {
+    String strv = v1.value().value();
+    if (!strv.null())
+      ARCANE_FATAL("Value 'v1'  should be null (v={0})", strv);
+    String strview = v1.value().valueAsStringView();
+    if (!strview.empty())
+      ARCANE_FATAL("Value 'v1' should be empty (v={0})", strview);
+  }
   JSONKeyValue v2 = doc_root.keyValueChild("real_values");
-  info() << "IS_V2?=" << v2.null() << " name=" << v2.name() << " values=" << v2.value().valueAsString();
+  info() << "IS_V2?=" << v2.null() << " name=" << v2.name() << " values=" << v2.value().valueAsStringView();
+  {
+    String strv = v2.value().value();
+    if (strv.null())
+      ARCANE_FATAL("Value 'v2' should not be null (v={0})", strv);
+    String strview = v2.value().valueAsStringView();
+    if (strview.empty())
+      ARCANE_FATAL("Value 'v2' should not be empty (v={0})", strview);
+  }
+  {
+    JSONValue json_str = doc_root.expectedChild("string_value");
+    String strv = json_str.value();
+    if (strv!=str1)
+      ARCANE_FATAL("Bad value for 'strv' v='{0}' expected='{1}'", strv, str1);
+    String strview = json_str.valueAsStringView();
+    if (strview!=str1)
+      ARCANE_FATAL("Bad value for 'strview' v='{0}' expected='{1}'", strview, str1);
+  }
   {
     JSONValue v3 = doc_root.child("int64_value");
     Int64 v = v3.valueAsInt64();
