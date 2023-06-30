@@ -91,6 +91,7 @@ set( ARCANE_SOURCES
   TransferValuesParallelOperation.cc
   TransferValuesParallelOperation.h
   VariableIOMng.cc
+  VariableIOReaderMng.cc
   VariableMng.cc
   VariableUtilities.cc
   VariableUtilities.h

@@ -38,6 +38,7 @@ class VariableMetaDataList;
 class VariableReaderMng;
 class XmlNode;
 class VariableIOMng;
+class VariableIOReaderMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,6 +50,7 @@ class VariableMng
 , public IVariableMng
 {
   friend class VariableIOMng;
+  friend class VariableIOReaderMng;
 
   class VariableNameInfo
   {
@@ -106,12 +108,6 @@ class VariableMng
       return key.hash() & 0x7fffffff;
     }
   };
-
- public:
-
-  class IDataReaderWrapper;
-  class OldDataReaderWrapper;
-  class DataReaderWrapper;
 
  public:
 
@@ -224,6 +220,7 @@ class VariableMng
 
   IVariableUtilities* m_utilities = nullptr;
   VariableIOMng* m_variable_io_mng = nullptr;
+  VariableIOReaderMng* m_variable_io_reader_mng = nullptr;
 
  private:
 
@@ -231,16 +228,8 @@ class VariableMng
   void _dumpVariable(const VariableRef& v, std::ostream& o);
 
   static const char* _msgClassName() { return "Variable"; }
-  void _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes);
-  void _readVariablesMetaData(VariableMetaDataList& vmd_list, const XmlNode& variables_node);
-  void _createVariablesFromMetaData(const VariableMetaDataList& vmd_list);
-  void _readMeshesMetaData(const XmlNode& meshes_node);
-  void _checkHashFunction(const VariableMetaDataList& vmd_list);
   VariableRef* _createVariableFromType(const String& full_type,
                                        const VariableBuildInfo& vbi);
-  void _readVariablesData(VariableReaderMng& var_read_mng, IDataReaderWrapper* reader);
-  void _buildFilteredVariableList(VariableReaderMng& vars_read_mng, IVariableFilter* filter);
-  void _finalizeReadVariables(const VariableList& vars_to_read);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -281,11 +270,52 @@ class VariableIOMng
 
  private:
 
-
   void _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash);
   String _generateMetaData(const VariableCollection& vars, bool use_hash);
   void _generateVariablesMetaData(XmlNode variables_node, const VariableCollection& vars, bool use_hash);
   void _generateMeshesMetaData(XmlNode meshes_node);
+  static const char* _msgClassName() { return "Variable"; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gestion des entrées/sorties pour les variables
+ */
+class VariableIOReaderMng
+: public TraceAccessor
+{
+ public:
+
+  class IDataReaderWrapper;
+  class OldDataReaderWrapper;
+  class DataReaderWrapper;
+  class VariableDataTypeInfo;
+
+ public:
+
+  VariableIOReaderMng(VariableMng* vm);
+
+ public:
+
+  void readCheckpoint(ICheckpointReader* service);
+  void readCheckpoint(const CheckpointReadInfo& infos);
+  void readVariables(IDataReader* reader, IVariableFilter* filter);
+
+ private:
+
+  VariableMng* m_variable_mng = nullptr;
+
+ private:
+
+  void _readVariablesData(VariableReaderMng& var_read_mng, IDataReaderWrapper* reader);
+  void _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes);
+  void _checkHashFunction(const VariableMetaDataList& vmd_list);
+  void _createVariablesFromMetaData(const VariableMetaDataList& vmd_list);
+  void _readVariablesMetaData(VariableMetaDataList& vmd_list, const XmlNode& variables_node);
+  void _readMeshesMetaData(const XmlNode& meshes_node);
+  void _buildFilteredVariableList(VariableReaderMng& vars_read_mng, IVariableFilter* filter);
+  void _finalizeReadVariables(const VariableList& vars_to_read);
   static const char* _msgClassName() { return "Variable"; }
 };
 
