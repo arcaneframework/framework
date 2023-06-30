@@ -66,10 +66,18 @@ class Family
   }
 
   template <typename T>
-  void addProperty(std::string const& name) {
-    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, PropertyT<T>{ name }));
+  void addMeshScalarProperty(std::string const& name) {
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, MeshScalarPropertyT<T>{ name }));
     if (is_inserted)
       Neo::print() << "Add property " << name << " in Family " << m_name
+                   << std::endl;
+  }
+
+  template <typename T>
+  void addMeshArrayProperty(std::string const& name) {
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, MeshArrayPropertyT<T>{ name }));
+    if (is_inserted)
+      Neo::print() << "Add array property " << name << " in Family " << m_name
                    << std::endl;
   }
 
@@ -114,14 +122,6 @@ class Family
   template <typename PropertyType>
   PropertyType const& getConcreteProperty(const std::string& name) const {
     return std::get<PropertyType>(getProperty(name));
-  }
-
-  template <typename T>
-  void addArrayProperty(std::string const& name) {
-    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayPropertyT<T>{ name }));
-    if (is_inserted)
-      Neo::print() << "Add array property " << name << " in Family " << m_name
-                   << std::endl;
   }
 
   std::string const& lidPropName() { return m_prop_lid_name; }

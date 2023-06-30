@@ -52,7 +52,7 @@ static const std::string cell_node_connectivity_name{ "cell2nodes" };
 
 std::vector<Neo::utils::Int64> lid2uids(Neo::Family const& family,
                                         Neo::utils::ConstSpan<Neo::utils::Int32> item_lids) {
-  auto& uid_property = family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int64>>(family.m_name + "_uids");
+  auto& uid_property = family.getConcreteProperty<Neo::MeshScalarPropertyT<Neo::utils::Int64>>(family.m_name + "_uids");
   std::vector<Neo::utils::Int64> item_uids(item_lids.size());
   std::transform(item_lids.begin(), item_lids.end(), item_uids.begin(),
                  [&uid_property](auto lid) { return uid_property[lid]; });
@@ -217,21 +217,21 @@ namespace PolyhedralMeshTest
 auto& addCellFamily(Neo::Mesh& mesh, std::string family_name) {
   auto& cell_family =
   mesh.addFamily(Neo::ItemKind::IK_Cell, std::move(family_name));
-  cell_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
+  cell_family.addMeshScalarProperty<Neo::utils::Int64>(family_name + "_uids");
   return cell_family;
 }
 
 auto& addNodeFamily(Neo::Mesh& mesh, std::string family_name) {
   auto& node_family =
   mesh.addFamily(Neo::ItemKind::IK_Node, std::move(family_name));
-  node_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
+  node_family.addMeshScalarProperty<Neo::utils::Int64>(family_name + "_uids");
   return node_family;
 }
 
 auto& addFaceFamily(Neo::Mesh& mesh, std::string family_name) {
   auto& face_family =
   mesh.addFamily(Neo::ItemKind::IK_Face, std::move(family_name));
-  face_family.addProperty<Neo::utils::Int64>(family_name + "_uids");
+  face_family.addMeshScalarProperty<Neo::utils::Int64>(family_name + "_uids");
   return face_family;
 }
 
@@ -494,7 +494,7 @@ namespace XdmfTest {
                                          face_orientation_in_cells, Neo::Mesh::ConnectivityOperation::Add,
                                          do_check_orientation);
     auto mesh_state = mesh.applyScheduledOperations();
-    Neo::PropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::PropertyT<int>>(
+    Neo::MeshScalarPropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::MeshScalarPropertyT<int>>(
     "FaceFamilytoCellFamily_connectivity_orientation_check");
     _printContainer(orientation_check_result.m_data, "orientation check result");
     std::vector<int> orientation_check_result_ref{ 1, 1, 1, 1, 1 };
@@ -523,7 +523,7 @@ namespace XdmfTest {
                                          std::move(nb_cell_per_faces), face_cells, connectivity_name, face_orientation_in_cells,
                                          Neo::Mesh::ConnectivityOperation::Add, do_check_orientation);
     EXPECT_THROW(mesh.applyScheduledOperations(), std::runtime_error);
-    Neo::PropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::PropertyT<int>>(
+    Neo::MeshScalarPropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::MeshScalarPropertyT<int>>(
     "FaceFamilytoCellFamily_connectivity_orientation_check");
     _printContainer(orientation_check_result.m_data, "orientation check result");
     std::vector<int> orientation_check_result_ref{ 0, 1, 0, 1, 1 };

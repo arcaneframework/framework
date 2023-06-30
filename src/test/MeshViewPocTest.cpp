@@ -24,18 +24,18 @@ void fillMesh(Neo::Mesh& mesh) {
 
   // Adding node family and properties
   std::cout << "Find family " << node_family.m_name << std::endl;
-  node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
-  node_family.addProperty<Neo::utils::Int64>("node_uids");
-  node_family.addArrayProperty<Neo::utils::Int32>("node2cells");
-  node_family.addProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
+  node_family.addMeshScalarProperty<Neo::utils::Real3>(std::string("node_coords"));
+  node_family.addMeshScalarProperty<Neo::utils::Int64>("node_uids");
+  node_family.addMeshArrayProperty<Neo::utils::Int32>("node2cells");
+  node_family.addMeshScalarProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
 
   // Test adds
   auto& property = node_family.getProperty("node_uids");
 
   // Adding cell family and properties
   std::cout << "Find family " << cell_family.m_name << std::endl;
-  cell_family.addProperty<Neo::utils::Int64>("cell_uids");
-  cell_family.addArrayProperty<Neo::utils::Int32>("cell2nodes");
+  cell_family.addMeshScalarProperty<Neo::utils::Int64>("cell_uids");
+  cell_family.addMeshArrayProperty<Neo::utils::Int32>("cell2nodes");
 
   // given data to create mesh. After mesh creation data is no longer available
   std::vector<Neo::utils::Int64> node_uids{ 0, 1, 2 };

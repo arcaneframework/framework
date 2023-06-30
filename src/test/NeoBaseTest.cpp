@@ -201,7 +201,7 @@ TEST(NeoTestProperty, test_scalar_property) {
 //----------------------------------------------------------------------------/
 
 TEST(NeoTestProperty, test_property) {
-  Neo::PropertyT<Neo::utils::Int32> property{ "test_property" };
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property{ "test_property" };
   EXPECT_EQ(property.name(), "test_property");
   std::vector<Neo::utils::Int32> values{ 1, 2, 3 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 3 } };
@@ -276,7 +276,7 @@ TEST(NeoTestProperty, test_property) {
   auto extracted_null_ids = property[{ 6, 7 }];
   EXPECT_TRUE(std::equal(null_ids.begin(), null_ids.end(), extracted_null_ids.begin()));
   // Check append in empty property contiguous range not starting at 0
-  Neo::PropertyT<Neo::utils::Int32> property2{ "test_property2" };
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property2{ "test_property2" };
   item_range = { Neo::ItemLocalIds{ {}, 2, 3 } };
   values = { 2, 3, 4 };
   property2.append(item_range, values, Neo::utils::NULL_ITEM_LID);
@@ -299,7 +299,7 @@ TEST(NeoTestProperty, test_property) {
   extracted_values = property2[{ 0, 1, 4 }];
   EXPECT_TRUE(std::equal(values.begin(), values.end(), extracted_values.begin()));
   // Check append in empty property discontiguous range
-  Neo::PropertyT<Neo::utils::Int32> property3{ "test_property3" };
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property3{ "test_property3" };
   item_range = { Neo::ItemLocalIds{ { 1, 3, 5 }, 0, 0 } };
   values = { 1, 3, 5 };
   property3.append(item_range, values, Neo::utils::NULL_ITEM_LID);
@@ -314,7 +314,7 @@ TEST(NeoTestProperty, test_property) {
   extracted_values = property2[{ 4, 0, 1 }];
   EXPECT_TRUE(std::equal(values.begin(), values.end(), extracted_values.begin()));
   // Check append in empty property mixed range
-  Neo::PropertyT<Neo::utils::Int32> property4{ "test_property3" };
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property4{ "test_property3" };
   item_range = { Neo::ItemLocalIds{ { 1, 3, 5 }, 7, 3 } };
   values = { 1, 3, 5, 7, 8, 9 };
   property4.append(item_range, values, Neo::utils::NULL_ITEM_LID);
@@ -338,7 +338,7 @@ TEST(NeoTestProperty, test_property) {
 //----------------------------------------------------------------------------/
 
 TEST(NeoTestArrayProperty, test_array_property) {
-  auto array_property = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property" };
+  auto array_property = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_array_property" };
   EXPECT_EQ(array_property.name(), "test_array_property");
   // check assert (debug only)
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
@@ -402,7 +402,7 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
 
   // Check add non-0-starting contiguous range in an empty array property
-  auto array_property2 = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property2" };
+  auto array_property2 = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_array_property2" };
   item_range = { Neo::ItemLocalIds{ {}, 3, 4 } };
   values = { 3, 4, 4, 5, 6, 6 };
   array_property2.append(item_range, values, { 1, 2, 1, 2 });
@@ -454,7 +454,7 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property2.m_indexes.begin()));
 
   // Same two tests with discontiguous range
-  auto array_property3 = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property3" };
+  auto array_property3 = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_array_property3" };
   item_range = { Neo::ItemLocalIds{ { 3, 5, 6 } } };
   values = { 3, 3, 5, 6, 6 };
   array_property3.append(item_range, values, { 2, 1, 2 });
@@ -516,7 +516,7 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
 
   // Same two tests with mixed range
-  auto array_property4 = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property4" };
+  auto array_property4 = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_array_property4" };
   item_range = { Neo::ItemLocalIds{ { 4, 6, 7 }, 8, 3 } };
   values = { 4, 4, 6, 7, 7, 8, 9, 10, 10 };
   array_property4.append(item_range, values, { 2, 1, 2, 1, 1, 2 });
@@ -566,7 +566,7 @@ TEST(NeoTestArrayProperty, test_array_property) {
 //----------------------------------------------------------------------------/
 
 TEST(NeoTestPropertyView, test_property_view) {
-  Neo::PropertyT<Neo::utils::Int32> property{ "name" };
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property{ "name" };
   std::vector<Neo::utils::Int32> values{ 1, 2, 3, 10, 100, 1000 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 6 } };
   property.init(item_range, values);
@@ -617,7 +617,7 @@ TEST(NeoTestPropertyView, test_property_view) {
 //----------------------------------------------------------------------------/
 
 TEST(NeoTestPropertyView, test_property_const_view) {
-  Neo::PropertyT<Neo::utils::Int32> property{ "name" };
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property{ "name" };
   std::vector<Neo::utils::Int32> values{ 1, 2, 3, 10, 100, 1000 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 6 } };
   property.init(item_range, values);
@@ -852,13 +852,13 @@ TEST(NeoTestFamily, test_family) {
   EXPECT_EQ(3, family.nbElements());
   std::string scalar_prop_name("MyScalarProperty");
   std::string array_prop_name("MyArrayProperty");
-  family.addProperty<Neo::utils::Int32>(scalar_prop_name);
-  family.addArrayProperty<Neo::utils::Int32>(array_prop_name);
+  family.addMeshScalarProperty<Neo::utils::Int32>(scalar_prop_name);
+  family.addMeshArrayProperty<Neo::utils::Int32>(array_prop_name);
   EXPECT_NO_THROW(family.getProperty(scalar_prop_name));
   EXPECT_NO_THROW(family.getProperty(array_prop_name));
   EXPECT_THROW(family.getProperty("UnexistingProperty"), std::invalid_argument);
-  EXPECT_EQ(scalar_prop_name, family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int32>>(scalar_prop_name).m_name);
-  EXPECT_EQ(array_prop_name, family.getConcreteProperty<Neo::ArrayPropertyT<Neo::utils::Int32>>(array_prop_name).m_name);
+  EXPECT_EQ(scalar_prop_name, family.getConcreteProperty<Neo::MeshScalarPropertyT<Neo::utils::Int32>>(scalar_prop_name).m_name);
+  EXPECT_EQ(array_prop_name, family.getConcreteProperty<Neo::MeshArrayPropertyT<Neo::utils::Int32>>(array_prop_name).m_name);
   EXPECT_EQ(3, family.all().size());
   auto i = 0;
   auto local_ids = family.itemUniqueIdsToLocalids(uids);
@@ -877,8 +877,8 @@ TEST(NeoTestFamily, test_family) {
   EXPECT_FALSE(family.hasProperty());
   // try removing an unexisting property
   family.removeProperty(scalar_prop_name);
-  family.addProperty<Neo::utils::Int32>(scalar_prop_name);
-  family.addArrayProperty<Neo::utils::Int32>(array_prop_name);
+  family.addMeshScalarProperty<Neo::utils::Int32>(scalar_prop_name);
+  family.addMeshArrayProperty<Neo::utils::Int32>(array_prop_name);
   family.removeProperties();
   EXPECT_FALSE(family.hasProperty());
 }
@@ -893,14 +893,14 @@ TEST(NeoTestBaseMesh, base_mesh_unit_test) {
   Neo::Family family4{ Neo::ItemKind::IK_Edge, "family4" };
   Neo::Family family5{ Neo::ItemKind::IK_Dof, "family5" };
   bool is_called = false;
-  family1.addProperty<int>("prop1");
-  family2.addProperty<int>("prop2");
-  family3.addProperty<int>("prop3");
-  family4.addProperty<int>("prop4");
-  family5.addProperty<int>("prop5");
+  family1.addMeshScalarProperty<int>("prop1");
+  family2.addMeshScalarProperty<int>("prop2");
+  family3.addMeshScalarProperty<int>("prop3");
+  family4.addMeshScalarProperty<int>("prop4");
+  family5.addMeshScalarProperty<int>("prop5");
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ family1, "prop1", Neo::PropertyStatus::ExistingProperty }, Neo::MeshKernel::OutProperty{ family2, "prop2" },
-                    [&is_called]([[maybe_unused]] Neo::PropertyT<int> const& prop1,
-                                 [[maybe_unused]] Neo::PropertyT<int>& prop2) {
+                    [&is_called]([[maybe_unused]] Neo::MeshScalarPropertyT<int> const& prop1,
+                                 [[maybe_unused]] Neo::MeshScalarPropertyT<int>& prop2) {
                       is_called = true;
                     });
   // copy mesh
@@ -926,17 +926,17 @@ TEST(NeoTestBaseMesh, base_mesh_unit_test) {
 void add_properties(Neo::Family& cell_family, Neo::Family& node_family) {
 
   // Adding node family and properties
-  node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
-  node_family.addProperty<Neo::utils::Int64>("node_uids");
-  node_family.addArrayProperty<Neo::utils::Int32>("node2cells");
-  node_family.addProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
+  node_family.addMeshScalarProperty<Neo::utils::Real3>(std::string("node_coords"));
+  node_family.addMeshScalarProperty<Neo::utils::Int64>("node_uids");
+  node_family.addMeshArrayProperty<Neo::utils::Int32>("node2cells");
+  node_family.addMeshScalarProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
 
   // Test adds
   EXPECT_NO_THROW(node_family.getProperty("node_uids"));
 
   // Adding cell family and properties
-  cell_family.addProperty<Neo::utils::Int64>("cell_uids");
-  cell_family.addArrayProperty<Neo::utils::Int32>("cell2nodes");
+  cell_family.addMeshScalarProperty<Neo::utils::Int64>("cell_uids");
+  cell_family.addMeshArrayProperty<Neo::utils::Int32>("cell2nodes");
 }
 
 //----------------------------------------------------------------------------/
@@ -978,7 +978,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ node_family, "node_uids" },
   [&node_uids, &added_nodes]([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
-                             Neo::PropertyT<Neo::utils::Int64>& node_uids_property) {
+                             Neo::MeshScalarPropertyT<Neo::utils::Int64>& node_uids_property) {
     std::cout << "Algorithm: register node uids" << std::endl;
     if (node_uids_property.isInitializableFrom(added_nodes))
       node_uids_property.init(added_nodes, std::move(node_uids)); // init can steal the input values
@@ -992,7 +992,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ node_family, "node_coords" },
   [&node_coords, &added_nodes]([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
-                               Neo::PropertyT<Neo::utils::Real3>& node_coords_property) {
+                               Neo::MeshScalarPropertyT<Neo::utils::Real3>& node_coords_property) {
     std::cout << "Algorithm: register node coords" << std::endl;
     if (node_coords_property.isInitializableFrom(added_nodes))
       node_coords_property.init(added_nodes, std::move(node_coords)); // init can steal the input values
@@ -1020,7 +1020,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::OutProperty{ cell_family, "cell_uids" },
   [&cell_uids, &added_cells](
   [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
-  Neo::PropertyT<Neo::utils::Int64>& cell_uids_property) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int64>& cell_uids_property) {
     std::cout << "Algorithm: register cell uids" << std::endl;
     if (cell_uids_property.isInitializableFrom(added_cells))
       cell_uids_property.init(added_cells, std::move(cell_uids)); // init can steal the input values
@@ -1039,7 +1039,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::OutProperty{ node_family, "node2cells" },
   [&connected_cell_uids, &nb_cell_per_node, &added_nodes]([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
                                                           Neo::ItemLidsProperty const& cell_lids_property,
-                                                          Neo::ArrayPropertyT<Neo::utils::Int32>& node2cells) {
+                                                          Neo::MeshArrayPropertyT<Neo::utils::Int32>& node2cells) {
     std::cout << "Algorithm: register node-cell connectivity" << std::endl;
     auto connected_cell_lids = cell_lids_property[connected_cell_uids];
     if (node2cells.isInitializableFrom(added_nodes)) {
@@ -1061,7 +1061,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
                     [&connected_node_uids, &nb_node_per_cell, &added_cells](
                     Neo::ItemLidsProperty const& node_lids_property,
                     [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
-                    Neo::ArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
+                    Neo::MeshArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
                       std::cout << "Algorithm: register cell-node connectivity" << std::endl;
                       auto connected_node_lids = node_lids_property[connected_node_uids];
                       if (cells2nodes.isInitializableFrom(added_cells)) {
@@ -1091,7 +1091,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::OutProperty{ cell_family, "cell_uids" },
   [&new_cell_uids, &new_cell_added](
   [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
-  Neo::PropertyT<Neo::utils::Int64>& cell_uids_property) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int64>& cell_uids_property) {
     std::cout << "Algorithm: register new cell uids" << std::endl;
     // must append and not initialize
     if (cell_uids_property.isInitializableFrom(new_cell_added))
@@ -1110,7 +1110,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
                     [&new_cell_connected_node_uids, &nb_node_per_new_cell, &new_cell_added](
                     Neo::ItemLidsProperty const& node_lids_property,
                     [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
-                    Neo::ArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
+                    Neo::MeshArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
                       std::cout << "Algorithm: register new cell-node connectivity" << std::endl;
                       auto connected_node_lids = node_lids_property[new_cell_connected_node_uids];
                       if (cells2nodes.isInitializableFrom(new_cell_added)) {
@@ -1130,7 +1130,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::OutProperty{ node_family, "internal_end_of_remove_tag" },
   [&removed_node_uids, &removed_nodes, &node_family](
   Neo::ItemLidsProperty& node_lids_property,
-  Neo::PropertyT<Neo::utils::Int32>& internal_end_of_remove_tag) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int32>& internal_end_of_remove_tag) {
     // Store removed items in internal_end_of_remove_tag
     internal_end_of_remove_tag.init(node_family.all(), 0);
     for (auto removed_item : removed_nodes) {
@@ -1147,8 +1147,8 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::InProperty{ node_family, "internal_end_of_remove_tag" },
   Neo::MeshKernel::OutProperty{ cell_family, "cell2nodes" },
   [&cell_family](
-  Neo::PropertyT<Neo::utils::Int32> const& internal_end_of_remove_tag,
-  Neo::ArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> const& internal_end_of_remove_tag,
+  Neo::MeshArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
     //                    std::transform()
     //                    Neo::ItemRange node_range {Neo::ItemLocalIds{{},0,node_family.size()}};
     for (auto cell : cell_family.all()) {
@@ -1188,7 +1188,7 @@ TEST(NeoTestPartialMeshModification, partial_mesh_modif_test) {
                     Neo::MeshKernel::OutProperty{ node_family, "node_coords" },
                     [&node_coords, &node_uids](
                     [[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
-                    [[maybe_unused]] Neo::PropertyT<Neo::utils::Real3>& node_coords_property) {
+                    [[maybe_unused]] Neo::MeshScalarPropertyT<Neo::utils::Real3>& node_coords_property) {
                       std::cout << "Algorithm: register node coords" << std::endl;
                       //auto& lids = node_lids_property[node_uids];//todo
                       //node_coords_property.appendAt(lids, node_coords);// steal node_coords memory//todo

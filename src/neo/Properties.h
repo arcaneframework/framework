@@ -206,7 +206,7 @@ class ScalarPropertyT : public PropertyBase
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType>
-class PropertyT : public PropertyBase
+class MeshScalarPropertyT : public PropertyBase
 {
  public:
   std::vector<DataType> m_data;
@@ -257,11 +257,11 @@ class PropertyT : public PropertyBase
   }
 
   DataType& operator[](utils::Int32 item) {
-    assert(("Input item lid > max local id, In PropertyT[]", item < m_data.size()));
+    assert(("Input item lid > max local id, In MeshScalarPropertyT[]", item < m_data.size()));
     return m_data[item];
   }
   DataType const& operator[](utils::Int32 item) const {
-    assert(("Input item lid > max local id, In PropertyT[]", item < m_data.size()));
+    assert(("Input item lid > max local id, In MeshScalarPropertyT[]", item < m_data.size()));
     return m_data[item];
   }
   std::vector<DataType> operator[](std::vector<utils::Int32> const& items) const {
@@ -276,7 +276,7 @@ class PropertyT : public PropertyBase
     if (items.size() == 0)
       return std::vector<DataType>{};
     // check bounds
-    assert(("Max input item lid > max local id, In PropertyT[]",
+    assert(("Max input item lid > max local id, In MeshScalarPropertyT[]",
             *(std::max_element(items.begin(), items.end())) < (int)m_data.size()));
 
     std::vector<DataType> values;
@@ -341,7 +341,7 @@ class PropertyT : public PropertyBase
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType>
-class ArrayPropertyT : public PropertyBase
+class MeshArrayPropertyT : public PropertyBase
 {
 
  public:
@@ -393,11 +393,11 @@ class ArrayPropertyT : public PropertyBase
   }
 
   void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
-    Neo::print() << "Append in ArrayPropertyT by reconstruction" << std::endl;
+    Neo::print() << "Append in MeshArrayPropertyT by reconstruction" << std::endl;
     // Compute new offsets
     std::vector<int> new_offsets(m_offsets);
     if (utils::maxItem(item_range) >= new_offsets.size())
-      new_offsets.resize(utils::maxItem(item_range) + 1); // todo ajouter ArrayPropertyT::resize(maxlid)
+      new_offsets.resize(utils::maxItem(item_range) + 1); // todo ajouter MeshArrayPropertyT::resize(maxlid)
     auto index = 0;
     for (auto item : item_range) {
       new_offsets[item] = nb_connected_item_per_item[index++];
@@ -434,7 +434,7 @@ class ArrayPropertyT : public PropertyBase
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
     if (item_range.isContiguous()) {
-      Neo::print() << "Append in ArrayPropertyT by back insertion, contiguous range" << std::endl;
+      Neo::print() << "Append in MeshArrayPropertyT by back insertion, contiguous range" << std::endl;
       auto max_existing_lid = m_offsets.size() - 1;
       auto min_new_lid = utils::minItem(item_range);
       if (min_new_lid > max_existing_lid + 1) {
@@ -447,7 +447,7 @@ class ArrayPropertyT : public PropertyBase
       _updateIndexes();
     }
     else {
-      Neo::print() << "Append in ArrayPropertyT by back insertion, non contiguous range" << std::endl;
+      Neo::print() << "Append in MeshArrayPropertyT by back insertion, non contiguous range" << std::endl;
       m_offsets.resize(utils::maxItem(item_range) + 1);
       auto index = 0;
       for (auto item : item_range)
@@ -465,12 +465,12 @@ class ArrayPropertyT : public PropertyBase
   }
 
   utils::Span<DataType> operator[](const utils::Int32 item) {
-    assert(("item local id must be >0 in ArrayPropertyT::[item_lid]]", item >= 0));
+    assert(("item local id must be >0 in MeshArrayPropertyT::[item_lid]]", item >= 0));
     return utils::Span<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
   }
 
   utils::ConstSpan<DataType> operator[](const utils::Int32 item) const {
-    assert(("item local id must be >0 in ArrayPropertyT::[item_lid]]", item >= 0));
+    assert(("item local id must be >0 in MeshArrayPropertyT::[item_lid]]", item >= 0));
     return utils::ConstSpan<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
   }
 
@@ -592,18 +592,18 @@ class ItemLidsProperty : public PropertyBase
 // seems to lead to very high build time with gcc 7.3. To confirm
 //template <typename... DataTypes>
 //using PropertyTemplate = std::variant<
-//PropertyT<DataTypes>...,
+//MeshScalarPropertyT<DataTypes>...,
 //ItemLidsProperty,
-//ArrayPropertyT<DataTypes>...,
+//MeshArrayPropertyT<DataTypes>...,
 //ScalarPropertyT<DataTypes>...>;
 //using Property = PropertyTemplate<utils::Int32, utils::Real3, utils::Int64, bool>;
 using Property =
 std::variant<
-PropertyT<utils::Int32>,
-PropertyT<utils::Real3>,
-PropertyT<utils::Int64>,
+MeshScalarPropertyT<utils::Int32>,
+MeshScalarPropertyT<utils::Real3>,
+MeshScalarPropertyT<utils::Int64>,
 ItemLidsProperty,
-ArrayPropertyT<utils::Int32>,
+MeshArrayPropertyT<utils::Int32>,
 ScalarPropertyT<utils::Int32>,
 ScalarPropertyT<utils::Real3>>;
 
