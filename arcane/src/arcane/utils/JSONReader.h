@@ -44,10 +44,19 @@ class ARCANE_UTILS_EXPORT JSONValue
   class Impl;
   friend JSONWrapperUtils;
   friend JSONKeyValue;
+
  private:
-  explicit JSONValue(Impl* p) : m_p(p){}
+
+  explicit JSONValue(Impl* p)
+  : m_p(p)
+  {}
+
  public:
-  JSONValue() : m_p(nullptr){}
+
+  JSONValue()
+  : m_p(nullptr)
+  {}
+
  public:
 
   //! Vrai si le noeud est nul
@@ -88,10 +97,14 @@ class ARCANE_UTILS_EXPORT JSONValue
   // Liste des objects fils de cet objet. L'instance doit être un objet
   JSONValueList children() const;
   JSONKeyValueList keyValueChildren() const;
+
  public:
+
   bool isArray() const;
   bool isObject() const;
+
  private:
+
   Impl* m_p;
 };
 
@@ -110,18 +123,32 @@ class ARCANE_UTILS_EXPORT JSONKeyValue
 {
   class Impl;
   friend JSONWrapperUtils;
+
  private:
-  explicit JSONKeyValue(Impl* p) : m_p(p){}
+
+  explicit JSONKeyValue(Impl* p)
+  : m_p(p)
+  {}
+
  public:
-  JSONKeyValue() : m_p(nullptr){}
+
+  JSONKeyValue()
+  : m_p(nullptr)
+  {}
+
  public:
+
   //! Vrai si le noeud est nul
   bool null() const { return !m_p; }
   bool operator!() const { return null(); }
+
  public:
+
   StringView name() const;
   JSONValue value() const;
+
  private:
+
   Impl* m_p;
 };
 
@@ -138,17 +165,23 @@ class ARCANE_UTILS_EXPORT JSONKeyValue
 class ARCANE_UTILS_EXPORT JSONKeyValueList
 {
   typedef std::vector<JSONKeyValue> ContainerType;
+
  public:
+
   typedef ContainerType::const_iterator const_iterator;
   typedef ContainerType::iterator iterator;
+
  public:
+
   void add(JSONKeyValue v)
   {
     m_values.push_back(v);
   }
   const_iterator begin() const { return m_values.begin(); }
   const_iterator end() const { return m_values.end(); }
+
  private:
+
   std::vector<JSONKeyValue> m_values;
 };
 
@@ -165,17 +198,23 @@ class ARCANE_UTILS_EXPORT JSONKeyValueList
 class ARCANE_UTILS_EXPORT JSONValueList
 {
   typedef std::vector<JSONValue> ContainerType;
+
  public:
+
   typedef ContainerType::const_iterator const_iterator;
   typedef ContainerType::iterator iterator;
+
  public:
+
   void add(JSONValue v)
   {
     m_values.push_back(v);
   }
   const_iterator begin() const { return m_values.begin(); }
   const_iterator end() const { return m_values.end(); }
+
  private:
+
   std::vector<JSONValue> m_values;
 };
 
@@ -190,31 +229,36 @@ class ARCANE_UTILS_EXPORT JSONValueList
 class ARCANE_UTILS_EXPORT JSONDocument
 {
   class Impl;
+
  public:
+
   JSONDocument();
   ~JSONDocument();
+
  public:
+
   //! Lit le fichier au format UTF-8.
   void parse(Span<const Byte> bytes);
   //! Lit le fichier au format UTF-8.
   void parse(Span<const std::byte> bytes);
   //! Lit le fichier au format UTF-8.
-  void parse(Span<const Byte> bytes,StringView file_name);
+  void parse(Span<const Byte> bytes, StringView file_name);
   //! Lit le fichier au format UTF-8.
-  void parse(Span<const std::byte> bytes,StringView file_name);
+  void parse(Span<const std::byte> bytes, StringView file_name);
   //! Elément racine
   JSONValue root() const;
+
  private:
+
   Impl* m_p;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
-
