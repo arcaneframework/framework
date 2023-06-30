@@ -9,7 +9,7 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 3.10.11 (30 juin 2023) {#arcanedoc_version3100}
+## Arcane Version 3.10.12 (30 juin 2023) {#arcanedoc_version3100}
 
 A partir de cette version 3.10, des modifications internes de gestion
 des connectivités sont envisagées afin de diminuer la consommation
