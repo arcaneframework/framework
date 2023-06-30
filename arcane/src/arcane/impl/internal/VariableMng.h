@@ -272,8 +272,9 @@ class VariableIOWriterMng
 
   void _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash);
   String _generateMetaData(const VariableCollection& vars, bool use_hash);
-  void _generateVariablesMetaData(XmlNode variables_node, const VariableCollection& vars, bool use_hash);
-  void _generateMeshesMetaData(XmlNode meshes_node);
+  void _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
+                                  const VariableCollection& vars, bool use_hash);
+  void _generateMeshesMetaData(JSONWriter& json_writer, XmlNode meshes_node);
   static const char* _msgClassName() { return "Variable"; }
 };
 
@@ -305,6 +306,7 @@ class VariableIOReaderMng
  private:
 
   VariableMng* m_variable_mng = nullptr;
+  bool m_is_use_json_metadata = true;
 
  private:
 
@@ -312,8 +314,8 @@ class VariableIOReaderMng
   void _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes);
   void _checkHashFunction(const VariableMetaDataList& vmd_list);
   void _createVariablesFromMetaData(const VariableMetaDataList& vmd_list);
-  void _readVariablesMetaData(VariableMetaDataList& vmd_list, const XmlNode& variables_node);
-  void _readMeshesMetaData(const XmlNode& meshes_node);
+  void _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json, const XmlNode& variables_node);
+  void _readMeshesMetaData(JSONValue meshes_json, const XmlNode& meshes_node);
   void _buildFilteredVariableList(VariableReaderMng& vars_read_mng, IVariableFilter* filter);
   void _finalizeReadVariables(const VariableList& vars_to_read);
   static const char* _msgClassName() { return "Variable"; }

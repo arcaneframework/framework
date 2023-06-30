@@ -21,6 +21,8 @@
 #include "arcane/utils/MD5HashAlgorithm.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/JSONReader.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/XmlNode.h"
@@ -367,7 +369,10 @@ VariableIOReaderMng::
 VariableIOReaderMng(VariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
+, m_is_use_json_metadata(false)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_JSON_METADATA", true))
+    m_is_use_json_metadata = (v.value()!=0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -482,12 +487,33 @@ _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
   ScopedPtrT<IXmlDocumentHolder> doc(IXmlDocumentHolder::loadFromBuffer(bytes, "meta_data", traceMng()));
   if (!doc.get())
     ARCANE_FATAL("The meta-data are invalid");
+  JSONDocument json_reader;
 
   XmlNode root_node = doc->documentNode().documentElement();
+  XmlNode json_node = root_node.child("json");
+
+  // A partir de la version 3.11 de Arcane (juillet 2023), les
+  // méta-données sont aussi disponibles au format JSON. On les utilise
+  // si 'm_is_use_json_metadata' est vrai.
+  JSONValue json_variables;
+  JSONValue json_meshes;
+  if (m_is_use_json_metadata && !json_node.null()) {
+    String json_meta_data = json_node.value();
+    info(6) << "READER_JSON=" << json_meta_data;
+    json_reader.parse(json_meta_data.bytes());
+    //json_reader_ptr = &json_reader;
+    JSONValue json_meta_data_object = json_reader.root().expectedChild("arcane-checkpoint-metadata");
+    JSONValue json_version = json_meta_data_object.expectedChild("version");
+    Int32 v = json_version.valueAsInt32();
+    if (v != 1)
+      ARCANE_FATAL("Bad version for JSON Meta Data (v={0}). Only version '1' is supported", v);
+    json_variables = json_meta_data_object.expectedChild("variables");
+    json_meshes = json_meta_data_object.expectedChild("meshes");
+  }
   XmlNode variables_node = root_node.child("variables");
-  _readVariablesMetaData(vmd_list, variables_node);
+  _readVariablesMetaData(vmd_list, json_variables, variables_node);
   XmlNode meshes_node = root_node.child("meshes");
-  _readMeshesMetaData(meshes_node);
+  _readMeshesMetaData(json_meshes, meshes_node);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -584,9 +610,8 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
 /*---------------------------------------------------------------------------*/
 
 void VariableIOReaderMng::
-_readVariablesMetaData(VariableMetaDataList& vmd_list, const XmlNode& variables_node)
+_readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json, const XmlNode& variables_node)
 {
-  XmlNodeList vars = variables_node.children("variable");
   String ustr_base_name("base-name");
   String ustr_family_name("item-family-name");
   String ustr_group_name("item-group-name");
@@ -597,16 +622,63 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, const XmlNode& variables_
   String ustr_multitag("multi-tag");
   vmd_list.clear();
 
-  for (const auto& var : vars) {
-    String full_type = var.attrValue(ustr_full_type);
+  struct VariableReadInfo
+  {
+    String full_type;
+    String base_name;
+    String mesh_name;
+    String family_name;
+    String group_name;
+    String hash_value;
+    String multi_tag;
+    Int32 property;
+  };
+  UniqueArray<VariableReadInfo> variables_info;
+
+  // Lit les informations des variables à partir des données JSON
+  // si ces dernières existent.
+  if (!variables_json.null()) {
+    // Lecture via JSON
+    // Déclare la liste ici pour éviter de retourner un temporaire dans 'for-range'
+    JSONValueList vars = variables_json.valueAsArray();
+    for (const JSONValue& var : vars) {
+      VariableReadInfo r;
+      r.full_type = var.expectedChild(ustr_full_type).value();
+      r.base_name = var.expectedChild(ustr_base_name).value();
+      r.mesh_name = var.child(ustr_mesh_name).value();
+      r.family_name = var.child(ustr_family_name).value();
+      r.group_name = var.child(ustr_group_name).value();
+      r.hash_value = var.child(ustr_hash).value();
+      r.multi_tag = var.child(ustr_multitag).value();
+      r.property = var.child(ustr_property).valueAsInt32();
+      variables_info.add(r);
+    }
+  }
+  else {
+    // Lecture via les données XML
+    XmlNodeList vars = variables_node.children("variable");
+    for (const auto& var : vars) {
+      VariableReadInfo r;
+      r.full_type = var.attrValue(ustr_full_type);
+      r.base_name = var.attrValue(ustr_base_name);
+      r.mesh_name = var.attrValue(ustr_mesh_name);
+      r.group_name = var.attrValue(ustr_group_name);
+      r.family_name = var.attrValue(ustr_family_name);
+      r.hash_value = var.attrValue(ustr_hash);
+      r.multi_tag = var.attrValue(ustr_multitag);
+      r.property = var.attr(ustr_property).valueAsInteger();
+      variables_info.add(r);
+    }
+  }
+
+  for (const VariableReadInfo& r : variables_info) {
+    String full_type = r.full_type;
     VariableDataTypeInfo vdti(full_type);
 
-    String base_name = var.attrValue(ustr_base_name);
-    String mesh_name = var.attrValue(ustr_mesh_name);
-    String family_name = var.attrValue(ustr_family_name);
+    String family_name = r.family_name;
     // Actuellement, si la variable n'est pas partielle alors son groupe
     // n'est pas sauvé dans les meta-données. Il faut donc le générer.
-    String group_name = var.attrValue(ustr_group_name);
+    String group_name = r.group_name;
     bool is_partial = vdti.isPartial();
     if (!is_partial) {
       // NOTE: Cette construction doit être cohérente avec celle de
@@ -614,12 +686,12 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, const XmlNode& variables_
       // dans les meta-données.
       group_name = "All" + family_name + "s";
     }
-    auto vmd = vmd_list.add(base_name, mesh_name, family_name, group_name, is_partial);
+    auto vmd = vmd_list.add(r.base_name, r.mesh_name, r.family_name, group_name, is_partial);
 
-    vmd->setFullType(var.attrValue(ustr_full_type));
-    vmd->setHash(var.attrValue(ustr_hash));
-    vmd->setMultiTag(var.attrValue(ustr_multitag));
-    vmd->setProperty(var.attr(ustr_property).valueAsInteger());
+    vmd->setFullType(full_type);
+    vmd->setHash(r.hash_value);
+    vmd->setMultiTag(r.multi_tag);
+    vmd->setProperty(r.property);
 
     info(5) << "CHECK VAR: "
             << " base-name=" << vmd->baseName()
@@ -637,24 +709,57 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, const XmlNode& variables_
 /*---------------------------------------------------------------------------*/
 
 void VariableIOReaderMng::
-_readMeshesMetaData(const XmlNode& meshes_node)
+_readMeshesMetaData(JSONValue meshes_json, const XmlNode& meshes_node)
 {
-  XmlNodeList meshes = meshes_node.children("mesh");
   ISubDomain* sd = m_variable_mng->subDomain();
   IMeshMng* mesh_mng = sd->meshMng();
   IMeshFactoryMng* mesh_factory_mng = mesh_mng->meshFactoryMng();
-  for (XmlNode var : meshes) {
-    String mesh_name = var.attrValue("name");
-    String mesh_factory_name = var.attrValue("factory-name");
+
+  struct MeshInfo
+  {
+    String name;
+    String factory_name;
+    bool is_sequential;
+  };
+  UniqueArray<MeshInfo> meshes_info;
+
+  // Lit les informations des maillages à partir des données JSON
+  // si ces dernières existent.
+  if (!meshes_json.null()) {
+    // Déclare la liste ici pour éviter de retourner un temporaire dans 'for-range'
+    JSONValueList vars = meshes_json.valueAsArray();
+    for (const JSONValue& var : vars) {
+      String mesh_name = var.expectedChild("name").value();
+      String mesh_factory_name = var.child("factory-name").value();
+      bool is_sequential = false;
+      JSONValue v = var.child("sequential");
+      if (!v.null())
+        is_sequential = v.valueAsBool();
+      meshes_info.add({ mesh_name, mesh_factory_name, is_sequential });
+    }
+  }
+  else {
+    XmlNodeList meshes = meshes_node.children("mesh");
+    for (XmlNode var : meshes) {
+      String mesh_name = var.attrValue("name");
+      String mesh_factory_name = var.attrValue("factory-name");
+      bool is_sequential = var.attr("sequential", false).valueAsBoolean();
+      meshes_info.add({ mesh_name, mesh_factory_name, is_sequential });
+    }
+  }
+
+  for (const MeshInfo& mesh_info : meshes_info) {
+    String mesh_name = mesh_info.name;
+    String mesh_factory_name = mesh_info.factory_name;
     MeshHandle* mesh_handle = mesh_mng->findMeshHandle(mesh_name, false);
     IMesh* mesh = (mesh_handle) ? mesh_handle->mesh() : nullptr;
     if (mesh)
       continue;
-    bool is_sequential = var.attr("sequential", false).valueAsBoolean();
+    bool is_sequential = mesh_info.is_sequential;
     info() << "Creating from checkpoint mesh='" << mesh_name
            << "' sequential?=" << is_sequential
            << " factory=" << mesh_factory_name;
-    // Depuis avril 2020, l'attribut 'factory-name' est doit être présent
+    // Depuis avril 2020, l'attribut 'factory-name' doit être présent
     // et sa valeur non nulle.
     if (mesh_factory_name.null())
       ARCANE_FATAL("No attribute 'factory-name' for mesh");
