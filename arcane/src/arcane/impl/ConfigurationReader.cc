@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConfigurationReader.cc                                      (C) 2000-2020 */
+/* ConfigurationReader.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Lecteurs de fichiers de configuration.                                    */
 /*---------------------------------------------------------------------------*/
@@ -72,7 +72,7 @@ _addValuesFromJSON(const JSONValue& jv,Integer priority,const String& base_name)
       // pas supportés dans la configuration.
     }
     else{
-      String v_value = value.valueAsString();
+      String v_value = value.value();
       //info() << "B=" << base_name << " N=" << name << " V=" << v_value;
       m_configuration->addValue(base_name+name,v_value,priority);
     }

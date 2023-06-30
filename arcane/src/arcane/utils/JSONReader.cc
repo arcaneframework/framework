@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONReader.cc                                               (C) 2000-2021 */
+/* JSONReader.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Lecteur au format JSON.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -108,8 +108,22 @@ value() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+String JSONValue::
+value() const
+{
+  if (!m_p)
+    return String();
+  auto x = m_p->toValue();
+  if (x->IsString())
+    return String(Span<const Byte>((const Byte*)x->GetString(),x->GetStringLength()));
+  return String();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 StringView JSONValue::
-valueAsString() const
+valueAsStringView() const
 {
   if (!m_p)
     return StringView();
@@ -117,6 +131,15 @@ valueAsString() const
   if (x->IsString())
     return StringView(Span<const Byte>((const Byte*)x->GetString(),x->GetStringLength()));
   return StringView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StringView JSONValue::
+valueAsString() const
+{
+  return valueAsStringView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -131,6 +154,20 @@ valueAsInt64() const
   if (x->IsInt64())
     return x->GetInt64();
   return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool JSONValue::
+valueAsBool() const
+{
+  if (!m_p)
+    return false;
+  auto x = m_p->toValue();
+  if (x->IsBool())
+    return x->GetBool();
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -157,7 +194,7 @@ valueAsReal() const
     return x->GetDouble();
   if (x->GetType()==rapidjson::kStringType){
     // Convertie la chaîne de caractères en un réél
-    StringView s = this->valueAsString();
+    StringView s = this->valueAsStringView();
     Real r = 0.0;
     if (!builtInGetValue(r,s))
       return r;

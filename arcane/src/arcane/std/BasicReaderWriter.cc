@@ -1231,10 +1231,8 @@ initialize()
     JSONValue jv_arcane_db = root.expectedChild(_getArcaneDBTag());
     m_version = jv_arcane_db.expectedChild("Version").valueAsInt32();
     m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
-    data_compressor_name = jv_arcane_db.expectedChild("DataCompressor").valueAsString();
-    JSONValue hash_algo_json = jv_arcane_db.child("HashAlgorithm");
-    if (!hash_algo_json.null())
-      hash_algorithm_name = hash_algo_json.valueAsString();
+    data_compressor_name = jv_arcane_db.expectedChild("DataCompressor").value();
+    hash_algorithm_name = jv_arcane_db.child("HashAlgorithm").value();
     info() << "**--** Begin read using database version=" << m_version
            << " nb_part=" << m_nb_written_part
            << " compressor=" << data_compressor_name

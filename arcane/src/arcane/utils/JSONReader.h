@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONReader.h                                                (C) 2000-2020 */
+/* JSONReader.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Lecteur au format JSON.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -44,21 +44,51 @@ class ARCANE_UTILS_EXPORT JSONValue
   class Impl;
   friend JSONWrapperUtils;
   friend JSONKeyValue;
+
  private:
-  explicit JSONValue(Impl* p) : m_p(p){}
+
+  explicit JSONValue(Impl* p)
+  : m_p(p)
+  {}
+
  public:
-  JSONValue() : m_p(nullptr){}
+
+  JSONValue()
+  : m_p(nullptr)
+  {}
+
  public:
+
   //! Vrai si le noeud est nul
   bool null() const { return !m_p; }
   bool operator!() const { return null(); }
+
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2023: Use valueAsStringView() or value() instead")
   StringView valueAsString() const;
+
+  //! Valeur sous forme de String. La chaîne retournée est nulle si 'null()' est vrai.
+  String value() const;
+  /*!
+   * \brief Valeur sous forme de StringView.
+   * La chaîne est vide si 'null()' est vrai.
+   * \note Si on veut faire la distinction entre la valeur nulle et une chaîne
+   * de caractères vide, il faut utiliser value().
+   */
+  StringView valueAsStringView() const;
+  //! Valeur sous forme de Real. Retourn 0.0 si 'null()' est vrai.
   Real valueAsReal() const;
+  //! Valeur sous forme de Int64. Retourn 0 si 'null()' est vrai.
   Int64 valueAsInt64() const;
+  //! Valeur sous forme de Int64. Retourn 0 si 'null()' est vrai.
   Int32 valueAsInt32() const;
+  //! Valeur sous forme de booléen. Retourn false si 'null()' est vrai.
+  bool valueAsBool() const;
   JSONValueList valueAsArray() const;
+
  public:
+
   JSONKeyValue keyValueChild(StringView name) const;
   //! Valeur fille de nom \a name. Retourne une valeur nulle si non trouvé.
   JSONValue child(StringView name) const;
@@ -67,10 +97,14 @@ class ARCANE_UTILS_EXPORT JSONValue
   // Liste des objects fils de cet objet. L'instance doit être un objet
   JSONValueList children() const;
   JSONKeyValueList keyValueChildren() const;
+
  public:
+
   bool isArray() const;
   bool isObject() const;
+
  private:
+
   Impl* m_p;
 };
 
@@ -89,18 +123,32 @@ class ARCANE_UTILS_EXPORT JSONKeyValue
 {
   class Impl;
   friend JSONWrapperUtils;
+
  private:
-  explicit JSONKeyValue(Impl* p) : m_p(p){}
+
+  explicit JSONKeyValue(Impl* p)
+  : m_p(p)
+  {}
+
  public:
-  JSONKeyValue() : m_p(nullptr){}
+
+  JSONKeyValue()
+  : m_p(nullptr)
+  {}
+
  public:
+
   //! Vrai si le noeud est nul
   bool null() const { return !m_p; }
   bool operator!() const { return null(); }
+
  public:
+
   StringView name() const;
   JSONValue value() const;
+
  private:
+
   Impl* m_p;
 };
 
@@ -117,17 +165,23 @@ class ARCANE_UTILS_EXPORT JSONKeyValue
 class ARCANE_UTILS_EXPORT JSONKeyValueList
 {
   typedef std::vector<JSONKeyValue> ContainerType;
+
  public:
+
   typedef ContainerType::const_iterator const_iterator;
   typedef ContainerType::iterator iterator;
+
  public:
+
   void add(JSONKeyValue v)
   {
     m_values.push_back(v);
   }
   const_iterator begin() const { return m_values.begin(); }
   const_iterator end() const { return m_values.end(); }
+
  private:
+
   std::vector<JSONKeyValue> m_values;
 };
 
@@ -144,17 +198,23 @@ class ARCANE_UTILS_EXPORT JSONKeyValueList
 class ARCANE_UTILS_EXPORT JSONValueList
 {
   typedef std::vector<JSONValue> ContainerType;
+
  public:
+
   typedef ContainerType::const_iterator const_iterator;
   typedef ContainerType::iterator iterator;
+
  public:
+
   void add(JSONValue v)
   {
     m_values.push_back(v);
   }
   const_iterator begin() const { return m_values.begin(); }
   const_iterator end() const { return m_values.end(); }
+
  private:
+
   std::vector<JSONValue> m_values;
 };
 
@@ -169,31 +229,36 @@ class ARCANE_UTILS_EXPORT JSONValueList
 class ARCANE_UTILS_EXPORT JSONDocument
 {
   class Impl;
+
  public:
+
   JSONDocument();
   ~JSONDocument();
+
  public:
+
   //! Lit le fichier au format UTF-8.
   void parse(Span<const Byte> bytes);
   //! Lit le fichier au format UTF-8.
   void parse(Span<const std::byte> bytes);
   //! Lit le fichier au format UTF-8.
-  void parse(Span<const Byte> bytes,StringView file_name);
+  void parse(Span<const Byte> bytes, StringView file_name);
   //! Lit le fichier au format UTF-8.
-  void parse(Span<const std::byte> bytes,StringView file_name);
+  void parse(Span<const std::byte> bytes, StringView file_name);
   //! Elément racine
   JSONValue root() const;
+
  private:
+
   Impl* m_p;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
-

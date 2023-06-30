@@ -694,7 +694,7 @@ _readJSON()
     UniqueArray<Int64> extents;
     extents.reserve(12);
     for (JSONValue v : data.valueAsArray()) {
-      String name = v.child("Name").valueAsString();
+      String name = v.child("Name").value();
       Int64 file_offset = v.child("FileOffset").valueAsInt64();
       //std::cout << "Name=" << name << "\n";
       //std::cout << "FileOffset=" << file_offset << "\n";
