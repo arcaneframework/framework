@@ -90,6 +90,8 @@ set( ARCANE_SOURCES
   TimerMng.h
   TransferValuesParallelOperation.cc
   TransferValuesParallelOperation.h
+  VariableIOReaderMng.cc
+  VariableIOWriterMng.cc
   VariableMng.cc
   VariableUtilities.cc
   VariableUtilities.h
@@ -142,6 +144,7 @@ set( ARCANE_SOURCES
   internal/MeshMng.cc
   internal/ThreadBindingMng.h
   internal/ThreadBindingMng.cc
+  internal/VariableMng.h
   )
 
 set(AXL_FILES
