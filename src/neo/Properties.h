@@ -180,6 +180,8 @@ class PropertyBase
   }
 };
 
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType>
 class ScalarPropertyT : public PropertyBase
 {
@@ -201,6 +203,32 @@ class ScalarPropertyT : public PropertyBase
   DataType const& get() const noexcept {
     return m_data;
   }
+};
+
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType>
+class ArrayPropertyT : PropertyBase
+{
+ private:
+  std::vector<DataType> m_data;
+
+ public:
+  std::size_t size() const noexcept { return m_data.size(); };
+
+  void resize(int new_size) { m_data.resize(new_size); }
+
+  void reserve(int new_size) { m_data.reserve(new_size); }
+
+  void push_back(DataType const& value) { m_data.push_back(value); }
+
+  DataType& back() noexcept { m_data.back(); }
+
+  DataType& operator[](std::size_t index) { return m_data[index]; }
+  DataType const& operator[](std::size_t index) const { return m_data[index]; }
+
+  auto begin() noexcept { return m_data.begin(); }
+  auto end() noexcept { return m_data.end(); }
 };
 
 /*---------------------------------------------------------------------------*/
