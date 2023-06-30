@@ -37,7 +37,7 @@ namespace Arcane
 class VariableMetaDataList;
 class VariableReaderMng;
 class XmlNode;
-class VariableIOMng;
+class VariableIOWriterMng;
 class VariableIOReaderMng;
 
 /*---------------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ class VariableMng
 : public TraceAccessor
 , public IVariableMng
 {
-  friend class VariableIOMng;
+  friend class VariableIOWriterMng;
   friend class VariableIOReaderMng;
 
   class VariableNameInfo
@@ -219,7 +219,7 @@ class VariableMng
   std::map<IVariable*, IModule*> m_variable_creation_modules;
 
   IVariableUtilities* m_utilities = nullptr;
-  VariableIOMng* m_variable_io_mng = nullptr;
+  VariableIOWriterMng* m_variable_io_writer_mng = nullptr;
   VariableIOReaderMng* m_variable_io_reader_mng = nullptr;
 
  private:
@@ -235,9 +235,9 @@ class VariableMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestion des entrées/sorties pour les variables
+ * \brief Gestion de l'écriture pour les variables
  */
-class VariableIOMng
+class VariableIOWriterMng
 : public TraceAccessor
 {
  private:
@@ -255,7 +255,7 @@ class VariableIOMng
 
  public:
 
-  VariableIOMng(VariableMng* vm);
+  explicit VariableIOWriterMng(VariableMng* vm);
 
  public:
 
@@ -280,7 +280,7 @@ class VariableIOMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestion des entrées/sorties pour les variables
+ * \brief Gestion de la lecture pour les variables
  */
 class VariableIOReaderMng
 : public TraceAccessor
@@ -294,7 +294,7 @@ class VariableIOReaderMng
 
  public:
 
-  VariableIOReaderMng(VariableMng* vm);
+  explicit VariableIOReaderMng(VariableMng* vm);
 
  public:
 

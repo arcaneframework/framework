@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableIOMng.cc                                            (C) 2000-2023 */
+/* VariableIOWriterMng.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant les entrées/sorties pour les variables.                     */
 /*---------------------------------------------------------------------------*/
@@ -45,8 +45,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-VariableIOMng::
-VariableIOMng(VariableMng* vm)
+VariableIOWriterMng::
+VariableIOWriterMng(VariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
 {
@@ -58,7 +58,7 @@ VariableIOMng(VariableMng* vm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableIOMng::
+void VariableIOWriterMng::
 writeCheckpoint(ICheckpointWriter* service)
 {
   if (!service)
@@ -81,7 +81,7 @@ writeCheckpoint(ICheckpointWriter* service)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableIOMng::
+void VariableIOWriterMng::
 writePostProcessing(IPostProcessorWriter* post_processor)
 {
   Trace::Setter mci(traceMng(),_msgClassName());
@@ -104,7 +104,7 @@ writePostProcessing(IPostProcessorWriter* post_processor)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableIOMng::
+void VariableIOWriterMng::
 writeVariables(IDataWriter* writer, IVariableFilter* filter, bool use_hash)
 {
   Trace::Setter mci(traceMng(), _msgClassName());
@@ -130,7 +130,7 @@ writeVariables(IDataWriter* writer, IVariableFilter* filter, bool use_hash)
 /*!
  * \todo prendre en compte le NoDump
  */
-void VariableIOMng::
+void VariableIOWriterMng::
 writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash)
 {
   if (!writer)
@@ -150,7 +150,7 @@ writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_has
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableIOMng::
+void VariableIOWriterMng::
 _generateVariablesMetaData(XmlNode variables_node, const VariableCollection& vars, bool use_hash)
 {
   StringBuilder var_full_type_b;
@@ -192,7 +192,7 @@ _generateVariablesMetaData(XmlNode variables_node, const VariableCollection& var
  * TEMPORAIRE.
  * TODO Cela doit normalement être fait via le 'IMeshMng'.
  */
-void VariableIOMng::
+void VariableIOWriterMng::
 _generateMeshesMetaData(XmlNode meshes_node)
 {
   // Positionne un numéro de version pour compatibilité avec de futures versions
@@ -226,7 +226,7 @@ _generateMeshesMetaData(XmlNode meshes_node)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-String VariableIOMng::
+String VariableIOWriterMng::
 _generateMetaData(const VariableCollection& vars, bool use_hash)
 {
   ScopedPtrT<IXmlDocumentHolder> doc(domutils::createXmlDocument());
@@ -244,7 +244,7 @@ _generateMetaData(const VariableCollection& vars, bool use_hash)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableIOMng::
+void VariableIOWriterMng::
 _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash)
 {
   if (!writer)

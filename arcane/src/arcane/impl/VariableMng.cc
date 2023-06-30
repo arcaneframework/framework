@@ -80,7 +80,7 @@ VariableMng(ISubDomain* sd)
 , m_write_observable(IObservable::createDefault())
 , m_read_observable(IObservable::createDefault())
 , m_utilities(new VariableUtilities(this))
-, m_variable_io_mng(new VariableIOMng(this))
+, m_variable_io_writer_mng(new VariableIOWriterMng(this))
 , m_variable_io_reader_mng(new VariableIOReaderMng(this))
 {
 }
@@ -95,7 +95,8 @@ VariableMng(ISubDomain* sd)
 VariableMng::
 ~VariableMng()
 {
-  delete m_variable_io_mng;
+  delete m_variable_io_reader_mng;
+  delete m_variable_io_writer_mng;
   delete m_utilities;
 
   m_write_observable->detachAllObservers();
@@ -594,7 +595,7 @@ isVariableToSave(IVariable& var)
 void VariableMng::
 writeCheckpoint(ICheckpointWriter* service)
 {
-  m_variable_io_mng->writeCheckpoint(service);
+  m_variable_io_writer_mng->writeCheckpoint(service);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -603,7 +604,7 @@ writeCheckpoint(ICheckpointWriter* service)
 void VariableMng::
 writePostProcessing(IPostProcessorWriter* post_processor)
 {
-  m_variable_io_mng->writePostProcessing(post_processor);
+  m_variable_io_writer_mng->writePostProcessing(post_processor);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -612,7 +613,7 @@ writePostProcessing(IPostProcessorWriter* post_processor)
 void VariableMng::
 writeVariables(IDataWriter* writer,const VariableCollection& vars)
 {
-  m_variable_io_mng->writeVariables(writer,vars,false);
+  m_variable_io_writer_mng->writeVariables(writer,vars,false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -621,7 +622,7 @@ writeVariables(IDataWriter* writer,const VariableCollection& vars)
 void VariableMng::
 writeVariables(IDataWriter* writer,IVariableFilter* filter)
 {
-  m_variable_io_mng->writeVariables(writer,filter,false);
+  m_variable_io_writer_mng->writeVariables(writer,filter,false);
 }
 
 /*---------------------------------------------------------------------------*/

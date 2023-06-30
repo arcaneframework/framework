@@ -90,8 +90,8 @@ set( ARCANE_SOURCES
   TimerMng.h
   TransferValuesParallelOperation.cc
   TransferValuesParallelOperation.h
-  VariableIOMng.cc
   VariableIOReaderMng.cc
+  VariableIOWriterMng.cc
   VariableMng.cc
   VariableUtilities.cc
   VariableUtilities.h
