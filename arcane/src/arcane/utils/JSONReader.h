@@ -49,16 +49,35 @@ class ARCANE_UTILS_EXPORT JSONValue
  public:
   JSONValue() : m_p(nullptr){}
  public:
+
   //! Vrai si le noeud est nul
   bool null() const { return !m_p; }
   bool operator!() const { return null(); }
+
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2023: Use valueAsStringView() or value() instead")
   StringView valueAsString() const;
+
+  //! Valeur sous forme de String. La chaîne retournée est nulle si 'null()' est vrai.
+  String value() const;
+  /*!
+   * \brief Valeur sous forme de StringView.
+   * La chaîne est vide si 'null()' est vrai.
+   * \note Si on veut faire la distinction entre la valeur nulle et une chaîne
+   * de caractères vide, il faut utiliser value().
+   */
+  StringView valueAsStringView() const;
+  //! Valeur sous forme de Real. Retourn 0.0 si 'null()' est vrai.
   Real valueAsReal() const;
+  //! Valeur sous forme de Int64. Retourn 0 si 'null()' est vrai.
   Int64 valueAsInt64() const;
+  //! Valeur sous forme de Int64. Retourn 0 si 'null()' est vrai.
   Int32 valueAsInt32() const;
   JSONValueList valueAsArray() const;
+
  public:
+
   JSONKeyValue keyValueChild(StringView name) const;
   //! Valeur fille de nom \a name. Retourne une valeur nulle si non trouvé.
   JSONValue child(StringView name) const;

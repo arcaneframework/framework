@@ -108,8 +108,22 @@ value() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+String JSONValue::
+value() const
+{
+  if (!m_p)
+    return String();
+  auto x = m_p->toValue();
+  if (x->IsString())
+    return String(Span<const Byte>((const Byte*)x->GetString(),x->GetStringLength()));
+  return String();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 StringView JSONValue::
-valueAsString() const
+valueAsStringView() const
 {
   if (!m_p)
     return StringView();
@@ -117,6 +131,15 @@ valueAsString() const
   if (x->IsString())
     return StringView(Span<const Byte>((const Byte*)x->GetString(),x->GetStringLength()));
   return StringView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StringView JSONValue::
+valueAsString() const
+{
+  return valueAsStringView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -157,7 +180,7 @@ valueAsReal() const
     return x->GetDouble();
   if (x->GetType()==rapidjson::kStringType){
     // Convertie la chaîne de caractères en un réél
-    StringView s = this->valueAsString();
+    StringView s = this->valueAsStringView();
     Real r = 0.0;
     if (!builtInGetValue(r,s))
       return r;
