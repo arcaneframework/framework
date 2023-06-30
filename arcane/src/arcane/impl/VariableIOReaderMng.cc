@@ -23,7 +23,6 @@
 #include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/IXmlDocumentHolder.h"
-#include "arcane/core/DomUtils.h"
 #include "arcane/core/XmlNode.h"
 #include "arcane/core/VariableMetaData.h"
 #include "arcane/core/IData.h"
@@ -111,7 +110,7 @@ class VariableIOReaderMng::IDataReaderWrapper
 {
  public:
 
-  virtual ~IDataReaderWrapper() {}
+  virtual ~IDataReaderWrapper() = default;
 
  public:
 
@@ -130,7 +129,7 @@ class VariableIOReaderMng::OldDataReaderWrapper
 {
  public:
 
-  OldDataReaderWrapper(IDataReader* reader)
+  explicit OldDataReaderWrapper(IDataReader* reader)
   : m_reader(reader)
   {}
   void beginRead(const VariableCollection& vars) override
@@ -162,7 +161,7 @@ class VariableIOReaderMng::DataReaderWrapper
 {
  public:
 
-  DataReaderWrapper(IDataReader2* reader)
+  explicit DataReaderWrapper(IDataReader2* reader)
   : m_reader(reader)
   {}
   void beginRead(const VariableCollection& vars) override
@@ -269,7 +268,7 @@ class VariableReaderMng
 
  public:
 
-  VariableReaderMng(ITraceMng* tm)
+  explicit VariableReaderMng(ITraceMng* tm)
   : TraceAccessor(tm)
   {}
 
