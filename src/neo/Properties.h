@@ -633,7 +633,9 @@ MeshScalarPropertyT<utils::Int64>,
 ItemLidsProperty,
 MeshArrayPropertyT<utils::Int32>,
 ScalarPropertyT<utils::Int32>,
-ScalarPropertyT<utils::Real3>>;
+ScalarPropertyT<utils::Real3>,
+ArrayPropertyT<utils::Int32>,
+ArrayPropertyT<utils::Real3>>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

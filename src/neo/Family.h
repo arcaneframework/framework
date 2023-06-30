@@ -66,6 +66,14 @@ class Family
   }
 
   template <typename T>
+  void addArrayProperty(std::string const& name) {
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayPropertyT<T>{ name }));
+    if (is_inserted)
+      Neo::print() << "Add scalar property " << name << " in Family " << m_name
+                   << std::endl;
+  }
+
+  template <typename T>
   void addMeshScalarProperty(std::string const& name) {
     auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, MeshScalarPropertyT<T>{ name }));
     if (is_inserted)
