@@ -16,7 +16,7 @@
 
 #include <algorithm>
 #include <numeric>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <variant>
 
@@ -354,7 +354,7 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
                                                       std::vector<item_id> future_item_range_ids,
                                                       std::vector<item_id> ids_subset) {
   std::vector<int> filter(ids_subset.size());
-  std::map<item_id, int> uid_index_map;
+  std::unordered_map<item_id, int> uid_index_map;
   auto index = 0;
   for (auto uid : future_item_range_ids) {
     uid_index_map.insert({ uid, index++ });
