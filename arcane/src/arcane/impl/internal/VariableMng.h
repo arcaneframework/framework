@@ -306,6 +306,7 @@ class VariableIOReaderMng
  private:
 
   VariableMng* m_variable_mng = nullptr;
+  bool m_is_use_json_metadata = true;
 
  private:
 

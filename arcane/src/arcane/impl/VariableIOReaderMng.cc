@@ -22,6 +22,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/JSONReader.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/XmlNode.h"
@@ -368,7 +369,10 @@ VariableIOReaderMng::
 VariableIOReaderMng(VariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
+, m_is_use_json_metadata(false)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_JSON_METADATA", true))
+    m_is_use_json_metadata = (v.value()!=0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -488,11 +492,14 @@ _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
   XmlNode root_node = doc->documentNode().documentElement();
   XmlNode json_node = root_node.child("json");
 
+  // A partir de la version 3.11 de Arcane (juillet 2023), les
+  // méta-données sont aussi disponibles au format JSON. On les utilise
+  // si 'm_is_use_json_metadata' est vrai.
   JSONValue json_variables;
   JSONValue json_meshes;
-  if (!json_node.null()) {
+  if (m_is_use_json_metadata && !json_node.null()) {
     String json_meta_data = json_node.value();
-    info() << "READER_JSON=" << json_meta_data;
+    info(6) << "READER_JSON=" << json_meta_data;
     json_reader.parse(json_meta_data.bytes());
     //json_reader_ptr = &json_reader;
     JSONValue json_meta_data_object = json_reader.root().expectedChild("arcane-checkpoint-metadata");
@@ -615,6 +622,19 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
   String ustr_multitag("multi-tag");
   vmd_list.clear();
 
+  struct VariableReadInfo
+  {
+    String full_type;
+    String base_name;
+    String mesh_name;
+    String family_name;
+    String group_name;
+    String hash_value;
+    String multi_tag;
+    Int32 property;
+  };
+  UniqueArray<VariableReadInfo> variables_info;
+
   // Lit les informations des variables à partir des données JSON
   // si ces dernières existent.
   if (!variables_json.null()) {
@@ -622,62 +642,57 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
     // Déclare la liste ici pour éviter de retourner un temporaire dans 'for-range'
     JSONValueList vars = variables_json.valueAsArray();
     for (const JSONValue& var : vars) {
-
-      String full_type = var.expectedChild(ustr_full_type).value();
-      VariableDataTypeInfo vdti(full_type);
-
-      String base_name = var.expectedChild(ustr_base_name).value();
-      String mesh_name = var.child(ustr_mesh_name).value();
-      String family_name = var.child(ustr_family_name).value();
-      // Actuellement, si la variable n'est pas partielle alors son groupe
-      // n'est pas sauvé dans les meta-données. Il faut donc le générer.
-      String group_name = var.child(ustr_group_name).value();
-      bool is_partial = vdti.isPartial();
-      if (!is_partial) {
-        // NOTE: Cette construction doit être cohérente avec celle de
-        // DynamicMeshKindInfos. A terme il faudra toujours sauver le nom du groupe
-        // dans les meta-données.
-        group_name = "All" + family_name + "s";
-      }
-      auto vmd = vmd_list.add(base_name, mesh_name, family_name, group_name, is_partial);
-
-      vmd->setFullType(full_type);
-      vmd->setHash(var.child(ustr_hash).value());
-      vmd->setMultiTag(var.child(ustr_multitag).value());
-      vmd->setProperty(var.child(ustr_property).valueAsInt32());
+      VariableReadInfo r;
+      r.full_type = var.expectedChild(ustr_full_type).value();
+      r.base_name = var.expectedChild(ustr_base_name).value();
+      r.mesh_name = var.child(ustr_mesh_name).value();
+      r.family_name = var.child(ustr_family_name).value();
+      r.group_name = var.child(ustr_group_name).value();
+      r.hash_value = var.child(ustr_hash).value();
+      r.multi_tag = var.child(ustr_multitag).value();
+      r.property = var.child(ustr_property).valueAsInt32();
+      variables_info.add(r);
     }
   }
   else {
     // Lecture via les données XML
     XmlNodeList vars = variables_node.children("variable");
     for (const auto& var : vars) {
-      String full_type = var.attrValue(ustr_full_type);
-      VariableDataTypeInfo vdti(full_type);
-
-      String base_name = var.attrValue(ustr_base_name);
-      String mesh_name = var.attrValue(ustr_mesh_name);
-      String family_name = var.attrValue(ustr_family_name);
-      // Actuellement, si la variable n'est pas partielle alors son groupe
-      // n'est pas sauvé dans les meta-données. Il faut donc le générer.
-      String group_name = var.attrValue(ustr_group_name);
-      bool is_partial = vdti.isPartial();
-      if (!is_partial) {
-        // NOTE: Cette construction doit être cohérente avec celle de
-        // DynamicMeshKindInfos. A terme il faudra toujours sauver le nom du groupe
-        // dans les meta-données.
-        group_name = "All" + family_name + "s";
-      }
-      auto vmd = vmd_list.add(base_name, mesh_name, family_name, group_name, is_partial);
-
-      vmd->setFullType(full_type);
-      vmd->setHash(var.attrValue(ustr_hash));
-      vmd->setMultiTag(var.attrValue(ustr_multitag));
-      vmd->setProperty(var.attr(ustr_property).valueAsInteger());
+      VariableReadInfo r;
+      r.full_type = var.attrValue(ustr_full_type);
+      r.base_name = var.attrValue(ustr_base_name);
+      r.mesh_name = var.attrValue(ustr_mesh_name);
+      r.group_name = var.attrValue(ustr_group_name);
+      r.family_name = var.attrValue(ustr_family_name);
+      r.hash_value = var.attrValue(ustr_hash);
+      r.multi_tag = var.attrValue(ustr_multitag);
+      r.property = var.attr(ustr_property).valueAsInteger();
+      variables_info.add(r);
     }
   }
 
-  for (const auto& v : vmd_list) {
-    VariableMetaData* vmd = v.second;
+  for (const VariableReadInfo& r : variables_info) {
+    String full_type = r.full_type;
+    VariableDataTypeInfo vdti(full_type);
+
+    String family_name = r.family_name;
+    // Actuellement, si la variable n'est pas partielle alors son groupe
+    // n'est pas sauvé dans les meta-données. Il faut donc le générer.
+    String group_name = r.group_name;
+    bool is_partial = vdti.isPartial();
+    if (!is_partial) {
+      // NOTE: Cette construction doit être cohérente avec celle de
+      // DynamicMeshKindInfos. A terme il faudra toujours sauver le nom du groupe
+      // dans les meta-données.
+      group_name = "All" + family_name + "s";
+    }
+    auto vmd = vmd_list.add(r.base_name, r.mesh_name, r.family_name, group_name, is_partial);
+
+    vmd->setFullType(full_type);
+    vmd->setHash(r.hash_value);
+    vmd->setMultiTag(r.multi_tag);
+    vmd->setProperty(r.property);
+
     info(5) << "CHECK VAR: "
             << " base-name=" << vmd->baseName()
             << " mesh-name=" << vmd->meshName()
