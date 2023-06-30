@@ -37,6 +37,7 @@ namespace Arcane
 class VariableMetaDataList;
 class VariableReaderMng;
 class XmlNode;
+class VariableIOMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,6 +48,8 @@ class VariableMng
 : public TraceAccessor
 , public IVariableMng
 {
+  friend class VariableIOMng;
+
   class VariableNameInfo
   {
    public:
@@ -179,17 +182,6 @@ class VariableMng
 
   static bool isVariableToSave(IVariable& var);
 
-  class CheckpointSaveFilter
-  : public IVariableFilter
-  {
-   public:
-
-    bool applyFilter(IVariable& var) override
-    {
-      return VariableMng::isVariableToSave(var);
-    }
-  };
-
  private:
 
   //! Type de la liste des variables par nom complet
@@ -202,8 +194,10 @@ class VariableMng
   //! Paire de la liste des variables par nom complet
   using VariableFactoryPair = VariableFactoryMap::value_type;
 
-  ISubDomain* m_sub_domain = nullptr; //!< Gestionnaire de sous-domaine
+  //! Gestionnaire de sous-domaine
+  ISubDomain* m_sub_domain = nullptr;
   IParallelMng* m_parallel_mng = nullptr;
+  ITimeStats* m_time_stats = nullptr;
   VariableRefList m_variables_ref; //!< Liste des variables
   VariableList m_variables;
   VariableList m_used_variables;
@@ -229,24 +223,19 @@ class VariableMng
   std::map<IVariable*, IModule*> m_variable_creation_modules;
 
   IVariableUtilities* m_utilities = nullptr;
+  VariableIOMng* m_variable_io_mng = nullptr;
 
  private:
 
   //! Ecrit la valeur de la variable \a v sur le flot \a o
   void _dumpVariable(const VariableRef& v, std::ostream& o);
-  void _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash);
 
-  const char* _msgClassName() const { return "Variable"; }
+  static const char* _msgClassName() { return "Variable"; }
   void _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes);
   void _readVariablesMetaData(VariableMetaDataList& vmd_list, const XmlNode& variables_node);
   void _createVariablesFromMetaData(const VariableMetaDataList& vmd_list);
   void _readMeshesMetaData(const XmlNode& meshes_node);
-  String _generateMetaData(const VariableCollection& vars, bool use_hash);
-  void _generateVariablesMetaData(XmlNode variables_node, const VariableCollection& vars, bool use_hash);
-  void _generateMeshesMetaData(XmlNode meshes_node);
   void _checkHashFunction(const VariableMetaDataList& vmd_list);
-  void writeVariables2(IDataWriter*, const VariableCollection& vars, bool use_hash);
-  void writeVariables2(IDataWriter*, IVariableFilter*, bool use_hash);
   VariableRef* _createVariableFromType(const String& full_type,
                                        const VariableBuildInfo& vbi);
   void _readVariablesData(VariableReaderMng& var_read_mng, IDataReaderWrapper* reader);
@@ -256,6 +245,53 @@ class VariableMng
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gestion des entrées/sorties pour les variables
+ */
+class VariableIOMng
+: public TraceAccessor
+{
+ private:
+
+  class CheckpointSaveFilter
+  : public IVariableFilter
+  {
+   public:
+
+    bool applyFilter(IVariable& var) override
+    {
+      return VariableMng::isVariableToSave(var);
+    }
+  };
+
+ public:
+
+  VariableIOMng(VariableMng* vm);
+
+ public:
+
+  void writeCheckpoint(ICheckpointWriter* service);
+  void writePostProcessing(IPostProcessorWriter* post_processor);
+  void writeVariables(IDataWriter* writer,const VariableCollection& vars, bool use_hash);
+  void writeVariables(IDataWriter* writer,IVariableFilter* filter, bool use_hash);
+
+ private:
+
+  VariableMng* m_variable_mng = nullptr;
+
+ private:
+
+
+  void _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash);
+  String _generateMetaData(const VariableCollection& vars, bool use_hash);
+  void _generateVariablesMetaData(XmlNode variables_node, const VariableCollection& vars, bool use_hash);
+  void _generateMeshesMetaData(XmlNode meshes_node);
+  static const char* _msgClassName() { return "Variable"; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
