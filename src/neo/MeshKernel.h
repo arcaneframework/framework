@@ -19,18 +19,27 @@
 #include "Neo.h"
 #include "sgraph/DirectedAcyclicGraph.h"
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Neo
 {
 
-//----------------------------------------------------------------------------/
-//----------------------------------------------------------------------------/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace tye
 { // type engine : tool to visit variant
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
   template <typename... T> struct VisitorOverload : public T...
   {
     using T::operator()...;
   };
+
+  /*---------------------------------------------------------------------------*/
 
   template <typename Func, typename Variant>
   void apply(Func& func, Variant& arg) {
@@ -43,6 +52,8 @@ namespace tye
     }; // todo: prevent this behavior (statically ?)
     std::visit(VisitorOverload{ default_func, func }, arg);
   }
+
+  /*---------------------------------------------------------------------------*/
 
   template <typename Func, typename Variant>
   void apply(Func& func, Variant& arg1, Variant& arg2) {
@@ -59,6 +70,8 @@ namespace tye
     },
                arg1);
   }
+
+  /*---------------------------------------------------------------------------*/
 
   template <typename Func, typename Variant>
   void apply(Func& func, Variant& arg1, Variant& arg2, Variant& arg3) {
@@ -79,18 +92,47 @@ namespace tye
                arg1);
   }
 
+  /*---------------------------------------------------------------------------*/
+
   // template deduction guides
   template <typename... T> VisitorOverload(T...) -> VisitorOverload<T...>;
 
 } // namespace tye
 
-//----------------------------------------------------------------------------/
-//----------------------------------------------------------------------------/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace MeshKernel
 {
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-  //----------------------------------------------------------------------------/
+  struct PropertyHolder
+  {
+    Family& m_family;
+    std::string m_name;
+    PropertyStatus m_status = PropertyStatus::ComputedProperty;
+
+    auto& operator()() {
+      return m_family.getProperty(m_name);
+    }
+
+    std::string uniqueName() const noexcept {
+      return m_name + "_" + m_family.name();
+    }
+  };
+
+  /*---------------------------------------------------------------------------*/
+
+  struct InProperty : public PropertyHolder
+  {};
+
+  /*---------------------------------------------------------------------------*/
+
+  struct OutProperty : public PropertyHolder
+  {};
+
+  /*---------------------------------------------------------------------------*/
 
   struct IAlgorithm
   {
@@ -99,7 +141,7 @@ namespace MeshKernel
     virtual OutProperty const& outProperty(int index = 0) const = 0;
   };
 
-  //----------------------------------------------------------------------------/
+  /*---------------------------------------------------------------------------*/
 
   template <typename Algorithm>
   struct AlgoHandler : public IAlgorithm
@@ -128,7 +170,7 @@ namespace MeshKernel
     }
   };
 
-  //----------------------------------------------------------------------------/
+  /*---------------------------------------------------------------------------*/
 
   template <typename Algorithm>
   struct DualInAlgoHandler : public IAlgorithm
@@ -161,7 +203,7 @@ namespace MeshKernel
     }
   };
 
-  //----------------------------------------------------------------------------/
+  /*---------------------------------------------------------------------------*/
 
   template <typename Algorithm>
   struct DualOutAlgoHandler : public IAlgorithm
@@ -194,7 +236,7 @@ namespace MeshKernel
     }
   };
 
-  //----------------------------------------------------------------------------/
+  /*---------------------------------------------------------------------------*/
 
   template <typename Algorithm>
   struct NoDepsAlgoHandler : public IAlgorithm
@@ -207,7 +249,7 @@ namespace MeshKernel
     void operator()() override {
       tye::apply(m_algo, m_out_property());
     }
-    InProperty const& inProperty(int index) const override {
+    InProperty const& inProperty(int) const override {
       throw std::invalid_argument("The current algo has no inProperty. Cannot call IAlgorithm::inProperty(index)");
     }
     OutProperty const& outProperty(int index) const override {
@@ -218,7 +260,7 @@ namespace MeshKernel
     }
   };
 
-  //----------------------------------------------------------------------------/
+  /*---------------------------------------------------------------------------*/
 
   template <typename Algorithm>
   struct NoDepsDualOutAlgoHandler : public IAlgorithm
@@ -233,7 +275,7 @@ namespace MeshKernel
     void operator()() override {
       tye::apply(m_algo, m_out_property1(), m_out_property2());
     }
-    InProperty const& inProperty(int index) const override {
+    InProperty const& inProperty(int) const override {
       throw std::invalid_argument("The current algo has no inProperty. Cannot call IAlgorithm::inProperty(index)");
     }
     OutProperty const& outProperty(int index) const override {
@@ -246,7 +288,7 @@ namespace MeshKernel
     }
   };
 
-  //----------------------------------------------------------------------------/
+  /*---------------------------------------------------------------------------*/
 
   class AlgorithmPropertyGraph
   {
@@ -497,11 +539,11 @@ namespace MeshKernel
     }
   };
 
-  //----------------------------------------------------------------------------/
+  /*---------------------------------------------------------------------------*/
 
 } // namespace MeshKernel
 
-//----------------------------------------------------------------------------/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Neo
 

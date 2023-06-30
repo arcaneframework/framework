@@ -65,7 +65,7 @@ Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_na
 void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange& added_item_range) noexcept {
   ItemRange& added_items = added_item_range;
   // Add items
-  m_mesh_graph->addAlgorithm(Neo::OutProperty{ family, family.lidPropName() },
+  m_mesh_graph->addAlgorithm(Neo::MeshKernel::OutProperty{ family, family.lidPropName() },
                              [&family, uids, &added_items](Neo::ItemLidsProperty& lids_property) {
                                Neo::print() << "Algorithm: create items in family " << family.name() << std::endl;
                                added_items = lids_property.append(uids);
@@ -74,8 +74,8 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
                              });
   // register their uids
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ family, family.lidPropName() },
-  Neo::OutProperty{ family, uniqueIdPropertyName(family.name()) },
+  Neo::MeshKernel::InProperty{ family, family.lidPropName() },
+  Neo::MeshKernel::OutProperty{ family, uniqueIdPropertyName(family.name()) },
   [&family, uids{ std::move(uids) }, &added_items]([[maybe_unused]] Neo::ItemLidsProperty const& item_lids_property,
                                                    Neo::PropertyT<Neo::utils::Int64>& item_uids_property) {
     Neo::print() << "Algorithm: register item uids for family " << family.name() << std::endl;
@@ -116,9 +116,9 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
     throw std::invalid_argument("Cannot include already inserted connectivity " + connectivity_unique_name + ". Choose ConnectivityOperation::Modify");
   }
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ source_family, source_family.lidPropName(), PropertyStatus::ExistingProperty },
-  Neo::InProperty{ target_family, target_family.lidPropName(), PropertyStatus::ExistingProperty },
-  Neo::OutProperty{ source_family, connectivity_unique_name },
+  Neo::MeshKernel::InProperty{ source_family, source_family.lidPropName(), PropertyStatus::ExistingProperty },
+  Neo::MeshKernel::InProperty{ target_family, target_family.lidPropName(), PropertyStatus::ExistingProperty },
+  Neo::MeshKernel::OutProperty{ source_family, connectivity_unique_name },
   [connected_item_uids{ std::move(connected_item_uids) },
    nb_connected_item_per_item{ std::move(nb_connected_item_per_item) },
    source_items_wrapper, &source_family, &target_family](Neo::ItemLidsProperty const& source_family_lids_property,
@@ -142,8 +142,8 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   const std::string removed_item_property_name = _removeItemPropertyName(target_family);
   source_family.addProperty<Neo::utils::Int32>(removed_item_property_name);
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ target_family, removed_item_property_name },
-  Neo::OutProperty{ source_family, connectivity_unique_name },
+  Neo::MeshKernel::InProperty{ target_family, removed_item_property_name },
+  Neo::MeshKernel::OutProperty{ source_family, connectivity_unique_name },
   [&source_family, &target_family](
   Neo::PropertyT<Neo::utils::Int32> const& target_family_removed_items,
   Neo::ArrayPropertyT<Neo::utils::Int32>& connectivity) {
@@ -172,8 +172,8 @@ void Neo::Mesh::_scheduleAddConnectivityOrientation(Neo::Family& source_family, 
   std::string orientation_property_name = _connectivityOrientationPropertyName(source_family.name(), target_family.name());
   source_family.addArrayProperty<Neo::utils::Int32>(orientation_property_name);
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ source_family, source_family.lidPropName() },
-  Neo::OutProperty{ source_family, orientation_property_name },
+  Neo::MeshKernel::InProperty{ source_family, source_family.lidPropName() },
+  Neo::MeshKernel::OutProperty{ source_family, orientation_property_name },
   [source_item_orientation_in_target_item{ std::move(source_item_orientation_in_target_item) },
    nb_connected_item_per_item{ std::move(nb_connected_item_per_item) }, source_items_wrapper,
    &source_family, &target_family](Neo::ItemLidsProperty const& source_family_lids_property,
@@ -204,9 +204,9 @@ void Neo::Mesh::_addConnectivityOrientationCheck(Neo::Family& source_family, Neo
   std::string orientation_check_property_name = orientation_property_name + "_check";
   source_family.addProperty<int>(orientation_check_property_name);
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ source_family, orientation_property_name },
-  Neo::InProperty{ source_family, source_family.m_name + "_uids" },
-  Neo::OutProperty{ source_family, orientation_check_property_name },
+  Neo::MeshKernel::InProperty{ source_family, orientation_property_name },
+  Neo::MeshKernel::InProperty{ source_family, source_family.m_name + "_uids" },
+  Neo::MeshKernel::OutProperty{ source_family, orientation_check_property_name },
   [&source_family, &target_family](
   Neo::ArrayPropertyT<int> const& item_orientation,
   Neo::PropertyT<Neo::utils::Int64> const& item_uids,
@@ -364,8 +364,8 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
   item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
   ItemRange& added_items = future_added_item_range;
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty }, // TODO handle property status in Property Holder constructor
-  Neo::OutProperty{ item_family, coord_prop_name },
+  Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty }, // TODO handle property status in Property Holder constructor
+  Neo::MeshKernel::OutProperty{ item_family, coord_prop_name },
   [item_coords{ std::move(item_coords) }, &added_items](Neo::ItemLidsProperty const& item_lids_property,
                                                         Neo::PropertyT<Neo::utils::Real3>& item_coords_property) {
     Neo::print() << "Algorithm: register item coords" << std::endl;
@@ -490,8 +490,8 @@ void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::uti
   auto coord_prop_name = _itemCoordPropertyName(item_family);
   item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
-  Neo::OutProperty{ item_family, coord_prop_name },
+  Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
+  Neo::MeshKernel::OutProperty{ item_family, coord_prop_name },
   [&moved_item_uids, moved_item_new_coords](Neo::ItemLidsProperty const& item_lids_property,
                                             Neo::PropertyT<Neo::utils::Real3>& item_coords_property) {
     Neo::print() << "Algorithm: move items" << std::endl;
@@ -512,8 +512,8 @@ void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils:
   family.addProperty<Neo::utils::Int32>(ok_to_start_remove_property_name);
   family.addProperty<Neo::utils::Int32>(removed_item_property_name);
   m_mesh_graph->addAlgorithm(
-  Neo::OutProperty{ family, removed_item_property_name },
-  Neo::OutProperty{ family, ok_to_start_remove_property_name },
+  Neo::MeshKernel::OutProperty{ family, removed_item_property_name },
+  Neo::MeshKernel::OutProperty{ family, ok_to_start_remove_property_name },
   [&family](Neo::PropertyT<Neo::utils::Int32>& removed_item_property,
             Neo::PropertyT<Neo::utils::Int32>& ok_to_start_remove_property) {
     Neo::print() << "Algorithm : clear remove item property for family " << family.name() << std::endl;
@@ -522,9 +522,9 @@ void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils:
   });
   // Remove item algo
   m_mesh_graph->addAlgorithm(
-  Neo::InProperty{ family, ok_to_start_remove_property_name },
-  Neo::OutProperty{ family, family.lidPropName() },
-  Neo::OutProperty{ family, removed_item_property_name },
+  Neo::MeshKernel::InProperty{ family, ok_to_start_remove_property_name },
+  Neo::MeshKernel::OutProperty{ family, family.lidPropName() },
+  Neo::MeshKernel::OutProperty{ family, removed_item_property_name },
   [removed_item_uids, &family](
   Neo::PropertyT<Neo::utils::Int32> const&, // ok_to_start_remove_property
   Neo::ItemLidsProperty& item_lids_property,
@@ -556,8 +556,8 @@ void Neo::Mesh::scheduleAddMeshOperation(Neo::Family& input_property_family,
                                          std::string const& output_property_name,
                                          Neo::Mesh::MeshOperation mesh_operation) {
   std::visit([&](auto& algorithm) {
-    m_mesh_graph->addAlgorithm(Neo::InProperty{ input_property_family, input_property_name },
-                               Neo::OutProperty{ output_property_family, output_property_name },
+    m_mesh_graph->addAlgorithm(Neo::MeshKernel::InProperty{ input_property_family, input_property_name },
+                               Neo::MeshKernel::OutProperty{ output_property_family, output_property_name },
                                algorithm);
   },
              mesh_operation);

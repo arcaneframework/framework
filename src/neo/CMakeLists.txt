@@ -1,11 +1,11 @@
-add_library(Neo SHARED Utils.h Neo.h Mesh.h Mesh.cpp MeshKernel.h)
+add_library(Neo SHARED Utils.h Neo.h Mesh.h Mesh.cpp MeshKernel.h Items.h Family.h Properties.h Properties.cpp)
 add_library(Neo::Neo ALIAS Neo)
 
-set_target_properties(Neo PROPERTIES PUBLIC_HEADER "Utils.h;Neo.h;Mesh.h")
+set_target_properties(Neo PROPERTIES PUBLIC_HEADER "Utils.h;Neo.h;Mesh.h;Items.h;Properties.h;Family.h")
 
-target_include_directories(Neo SYSTEM INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-        $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/>)
+target_include_directories(Neo SYSTEM PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/>)
 
 target_link_libraries(Neo SGraph)
 
