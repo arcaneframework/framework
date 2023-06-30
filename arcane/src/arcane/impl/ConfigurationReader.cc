@@ -72,7 +72,7 @@ _addValuesFromJSON(const JSONValue& jv,Integer priority,const String& base_name)
       // pas supportés dans la configuration.
     }
     else{
-      String v_value = value.valueAsString();
+      String v_value = value.value();
       //info() << "B=" << base_name << " N=" << name << " V=" << v_value;
       m_configuration->addValue(base_name+name,v_value,priority);
     }

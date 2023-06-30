@@ -34,7 +34,7 @@ namespace Arcane::properties
 auto PropertySettingTraits<String>::
 fromJSON(const JSONValue& jv) -> InputType
 {
-  return jv.valueAsString();
+  return jv.value();
 }
 
 auto PropertySettingTraits<String>::
@@ -57,7 +57,7 @@ fromJSON(const JSONValue& jv) -> InputType
 {
   StringList string_list;
   for(JSONValue jv2 : jv.valueAsArray())
-    string_list.add(jv2.valueAsString());
+    string_list.add(jv2.value());
   return string_list;
 }
 
