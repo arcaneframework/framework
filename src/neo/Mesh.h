@@ -29,10 +29,6 @@ namespace MeshKernel
 {
   class AlgorithmPropertyGraph;
 }
-enum class ItemKind;
-class Family;
-struct FutureItemRange;
-class EndOfMeshUpdate;
 
 /*---------------------------------------------------------------------------*/
 /*!

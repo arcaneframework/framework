@@ -249,7 +249,7 @@ namespace MeshKernel
     void operator()() override {
       tye::apply(m_algo, m_out_property());
     }
-    InProperty const& inProperty(int index) const override {
+    InProperty const& inProperty(int) const override {
       throw std::invalid_argument("The current algo has no inProperty. Cannot call IAlgorithm::inProperty(index)");
     }
     OutProperty const& outProperty(int index) const override {
@@ -275,7 +275,7 @@ namespace MeshKernel
     void operator()() override {
       tye::apply(m_algo, m_out_property1(), m_out_property2());
     }
-    InProperty const& inProperty(int index) const override {
+    InProperty const& inProperty(int) const override {
       throw std::invalid_argument("The current algo has no inProperty. Cannot call IAlgorithm::inProperty(index)");
     }
     OutProperty const& outProperty(int index) const override {

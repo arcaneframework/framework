@@ -72,17 +72,6 @@ namespace utils
 
 /*---------------------------------------------------------------------------*/
 
-struct ItemLocalId
-{};
-struct ItemUniqueId
-{};
-
-// todo: check if used ?? See if interest for properties...
-using DataType = std::variant<utils::Int32, utils::Int64, utils::Real3>; // ajouter des types dans la def de famille si necessaire
-using DataIndex = std::variant<int, ItemUniqueId>;
-
-/*---------------------------------------------------------------------------*/
-
 struct ItemLocalIds
 {
   std::vector<utils::Int32> m_non_contiguous_lids = {};
@@ -155,6 +144,9 @@ struct ItemIterator
   int m_index;
   ItemLocalIds m_item_indexes;
 };
+
+/*---------------------------------------------------------------------------*/
+
 struct ItemRange
 {
   ItemLocalIds m_item_lids;

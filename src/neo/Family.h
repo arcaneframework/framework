@@ -15,6 +15,7 @@
 #define NEO_FAMILY_H
 
 #include <memory>
+#include <map>
 
 #include "neo/Utils.h"
 #include "neo/Properties.h"

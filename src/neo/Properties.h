@@ -15,8 +15,11 @@
 #define NEO_PROPERTY_H
 
 #include <iterator>
+#include <numeric>
+#include <map>
 
 #include "neo/Utils.h"
+#include "neo/Items.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -125,7 +128,7 @@ struct PropertyViewIterator
   }
 };
 
-//----------------------------------------------------------------------------/
+/*---------------------------------------------------------------------------*/
 
 template <typename ValueType>
 class PropertyView
@@ -165,7 +168,7 @@ class PropertyConstView
   PropertyViewIterator<ValueType const> end() { return { m_indexes, m_indexes.end(), m_data_view.end() }; }
 };
 
-//----------------------------------------------------------------------------/
+/*---------------------------------------------------------------------------*/
 
 class PropertyBase
 {
@@ -199,6 +202,8 @@ class ScalarPropertyT : public PropertyBase
     return m_data;
   }
 };
+
+/*---------------------------------------------------------------------------*/
 
 template <typename DataType>
 class PropertyT : public PropertyBase
@@ -333,7 +338,7 @@ class PropertyT : public PropertyBase
   auto end() const noexcept { return m_data.end(); }
 };
 
-//----------------------------------------------------------------------------/
+/*---------------------------------------------------------------------------*/
 
 template <typename DataType>
 class ArrayPropertyT : public PropertyBase
@@ -537,7 +542,7 @@ class ArrayPropertyT : public PropertyBase
   }
 };
 
-//----------------------------------------------------------------------------/
+/*---------------------------------------------------------------------------*/
 
 // special case of local ids property
 class ItemLidsProperty : public PropertyBase
