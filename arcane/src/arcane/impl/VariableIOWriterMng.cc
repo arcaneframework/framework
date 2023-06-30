@@ -156,7 +156,13 @@ namespace
     var_node.setAttrValue(name, value);
     json_writer.write(name, value);
   }
-  void _writeAttribute(JSONWriter& json_writer, XmlNode var_node, const String& name, Int64 value)
+  void _writeAttribute(JSONWriter& json_writer, XmlNode var_node, const String& name, Int32 value)
+  {
+    Int64 v = value;
+    var_node.setAttrValue(name, String::fromNumber(v));
+    json_writer.write(name, v);
+  }
+  void _writeAttribute(JSONWriter& json_writer, XmlNode var_node, const String& name, bool value)
   {
     var_node.setAttrValue(name, String::fromNumber(value));
     json_writer.write(name, value);
@@ -243,7 +249,7 @@ _generateMeshesMetaData(JSONWriter& json_writer, XmlNode meshes_node)
       // avec un IParallelMng qui n'est ni séquentiel, ni celui du
       // sous-domaine.
       if (is_parallel && mesh->parallelMng() == seq_pm)
-        _writeAttribute(json_writer, mesh_node, "sequential", "true");
+        _writeAttribute(json_writer, mesh_node, "sequential", true);
     }
   }
 

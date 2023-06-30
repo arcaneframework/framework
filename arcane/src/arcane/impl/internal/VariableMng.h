@@ -313,8 +313,8 @@ class VariableIOReaderMng
   void _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes);
   void _checkHashFunction(const VariableMetaDataList& vmd_list);
   void _createVariablesFromMetaData(const VariableMetaDataList& vmd_list);
-  void _readVariablesMetaData(VariableMetaDataList& vmd_list, const XmlNode& variables_node);
-  void _readMeshesMetaData(const XmlNode& meshes_node);
+  void _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json, const XmlNode& variables_node);
+  void _readMeshesMetaData(JSONValue meshes_json, const XmlNode& meshes_node);
   void _buildFilteredVariableList(VariableReaderMng& vars_read_mng, IVariableFilter* filter);
   void _finalizeReadVariables(const VariableList& vars_to_read);
   static const char* _msgClassName() { return "Variable"; }
