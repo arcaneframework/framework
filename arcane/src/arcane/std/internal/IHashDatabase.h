@@ -124,6 +124,9 @@ class IHashDatabase
 extern "C++" Ref<IHashDatabase>
 createFileHashDatabase(ITraceMng* tm, const String& directory);
 
+extern "C++" Ref<IHashDatabase>
+createRedisHashDatabase(ITraceMng* tm, const String& machine_ip, Int32 port);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
