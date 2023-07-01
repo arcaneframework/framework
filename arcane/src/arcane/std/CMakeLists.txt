@@ -1,4 +1,4 @@
-﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc hiredis)
+﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis)
 set(PUBLIC_PKGS HDF5 MPI)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 
@@ -137,7 +137,6 @@ endif()
 
 target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arccore::arccore_message_passing_mpi>)
 target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arcane::arcane_hdf5>)
-target_link_libraries(arcane_std PRIVATE $<TARGET_NAME_IF_EXISTS:hiredis::hiredis>)
 target_link_libraries(arcane_std PUBLIC ${ARCANE_BASE_LIBRARIES})
 
 # TODO: il semblerait qu'on ait besoin de rajouter stdc++fs pour que link passe avec le
