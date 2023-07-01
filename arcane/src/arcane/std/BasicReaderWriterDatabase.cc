@@ -281,9 +281,10 @@ class BasicReaderWriterDatabaseCommon
       }
       else {
         String redis_machine = platform::getEnvironmentVariable("ARCANE_HASHDATABASE_REDIS");
-        if (!redis_machine.null())
+        if (!redis_machine.null()){
           info() << "Using Redis database at location '" << redis_machine << "'";
-        m_hash_database = createRedisHashDatabase(tm, redis_machine, 6379);
+          m_hash_database = createRedisHashDatabase(tm, redis_machine, 6379);
+        }
       }
     }
   }
