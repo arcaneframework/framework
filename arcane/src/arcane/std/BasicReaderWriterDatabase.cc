@@ -375,8 +375,7 @@ _writeHeader()
   // Actuellement si on passe dans cette partie de code,
   // la version utilisée est 3 ou plus.
   header.setVersion(m_p->m_version);
-  Span<std::byte> bytes(header.bytes());
-  m_p->m_writer.stream().write((const char*)bytes.data(), bytes.size());
+  binaryWrite(m_p->m_writer.stream(), header.bytes());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -408,14 +407,13 @@ _writeEpilog()
   StringView buf = jsw.getBuffer();
   Int64 meta_data_size = buf.size();
 
-  stream.write((const char*)buf.bytes().data(), meta_data_size);
+  binaryWrite(stream, asBytes(buf.bytes()));
 
   {
     BasicReaderWriterDatabaseEpilogFormat epilog;
     epilog.setJSONDataInfoOffsetAndSize(file_offset, meta_data_size);
     // Doit toujours être la dernière écriture du fichier
-    auto epilog_bytes = epilog.bytes();
-    stream.write((const char*)epilog_bytes.data(), epilog_bytes.size());
+    binaryWrite(stream, epilog.bytes());
   }
 }
 
@@ -633,7 +631,7 @@ _readDirect(Int64 offset, Span<std::byte> bytes)
 {
   m_p->m_reader.setFileOffset(offset);
   std::ifstream& s = m_p->m_reader.stream();
-  s.read((char*)bytes.data(), bytes.size());
+  binaryRead(s, bytes);
   if (s.fail())
     ARCANE_FATAL("Can not read file part offset={0} length={1}", offset, bytes.length());
 }

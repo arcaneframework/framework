@@ -1082,6 +1082,7 @@ endWrite()
           JSONWriter::Object db_object(jsw);
           jsw.write("Version",(Int64)m_version);
           jsw.write("NbPart",nb_part);
+
           String data_compressor_name;
           Int64 data_compressor_min_size =0;
           if (m_data_compressor.get()){
@@ -1090,8 +1091,11 @@ endWrite()
           }
           jsw.write("DataCompressor",data_compressor_name);
           jsw.write("DataCompressorMinSize",String::fromNumber(data_compressor_min_size));
+
+          String hash_algorithm_name;
           if (m_hash_algorithm.get())
-            jsw.write("HashAlgorithm",m_hash_algorithm->name());
+            hash_algorithm_name = m_hash_algorithm->name();
+          jsw.write("HashAlgorithm",hash_algorithm_name);
         }
       }
       StringBuilder filename = m_path;
@@ -1232,7 +1236,7 @@ initialize()
     JSONValue jv_arcane_db = root.expectedChild(_getArcaneDBTag());
     m_version = jv_arcane_db.expectedChild("Version").valueAsInt32();
     m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
-    data_compressor_name = jv_arcane_db.expectedChild("DataCompressor").value();
+    data_compressor_name = jv_arcane_db.child("DataCompressor").value();
     hash_algorithm_name = jv_arcane_db.child("HashAlgorithm").value();
     info() << "**--** Begin read using database version=" << m_version
            << " nb_part=" << m_nb_written_part
