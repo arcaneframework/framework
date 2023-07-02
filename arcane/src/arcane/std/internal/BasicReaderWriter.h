@@ -279,6 +279,10 @@ class BasicGenericWriter
 class BasicReaderWriterCommon
 : public TraceAccessor
 {
+  // Pour accéder aux méthodes statiques
+  friend class BasicGenericReader;
+  friend class BasicGenericWriter;
+
  public:
 
   enum eOpenMode
@@ -305,6 +309,17 @@ class BasicReaderWriterCommon
  protected:
 
   String _getMetaDataFileName(Int32 rank);
+
+ protected:
+
+  static String _getArcaneDBTag();
+  static String _getOwnMetatadaFile(const String& path, Int32 rank);
+  static String _getArcaneDBFile(const String& path, Int32 rank);
+  static String _getBasicVariableFile(Int32 version, const String& path, Int32 rank);
+  static String _getBasicGroupFile(const String& path, const String& name, Int32 rank);
+  static Ref<IDataCompressor> _createDeflater(IApplication* app, const String& name);
+  static Ref<IHashAlgorithm> _createHashAlgorithm(IApplication* app, const String& name);
+  static void _fillUniqueIds(const ItemGroup& group, Array<Int64>& uids);
 };
 
 /*---------------------------------------------------------------------------*/
