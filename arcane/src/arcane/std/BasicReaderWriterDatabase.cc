@@ -103,13 +103,6 @@ class BasicReaderWriterDatabaseEpilogFormat
   BasicReaderWriterDatabaseEpilogFormat()
   {
     checkStructureSize();
-    m_version = 1;
-    m_padding0 = 0;
-    m_padding1 = 0;
-    m_padding2 = 0;
-    m_padding3 = 0;
-    m_json_data_info_file_offset = -1;
-    m_json_data_info_size = 0;
     for (int i = 0; i < 10; ++i)
       m_remaining_padding[i] = i;
   }
@@ -133,13 +126,13 @@ class BasicReaderWriterDatabaseEpilogFormat
 
   // Version de l'epilogue. A ne pas confondre avec la version du fichier
   // qui est dans l'en-tête.
-  Int32 m_version;
-  Int32 m_padding0;
-  Int64 m_padding1;
-  Int64 m_padding2;
-  Int64 m_padding3;
-  Int64 m_json_data_info_file_offset;
-  Int64 m_json_data_info_size;
+  Int32 m_version = 1;
+  Int32 m_padding0 = 0;
+  Int64 m_padding1 = 0;
+  Int64 m_padding2 = 0;
+  Int64 m_padding3 = 0;
+  Int64 m_json_data_info_file_offset = -1;
+  Int64 m_json_data_info_size = 0;
   Int64 m_remaining_padding[10];
 
  public:
@@ -170,19 +163,6 @@ class BasicReaderWriterDatabaseHeaderFormat
   BasicReaderWriterDatabaseHeaderFormat()
   {
     checkStructureSize();
-    // 4 premiers octets pour indiquer qu'il s'agit d'un fichier de protections
-    // arcane (ACR pour Arcane Checkpoint Restart)
-    m_header_begin[0] = 'A';
-    m_header_begin[1] = 'C';
-    m_header_begin[2] = 'R';
-    m_header_begin[3] = (Byte)39;
-    // 4 octets suivant pour indiquer l'indianness (pas encore utilisé)
-    m_endian_int = 0x01020304;
-    // Version du fichier (à modifier par l'appelant via setVersion())
-    m_version = 0;
-    m_padding0 = 0;
-    m_padding1 = 0;
-    m_padding2 = 0;
     for (int i = 0; i < 12; ++i)
       m_remaining_padding[i] = i;
   }
@@ -205,12 +185,16 @@ class BasicReaderWriterDatabaseHeaderFormat
 
  private:
 
-  Byte m_header_begin[4];
-  Int32 m_endian_int;
-  Int32 m_version;
-  Int32 m_padding0;
-  Int64 m_padding1;
-  Int64 m_padding2;
+  // 4 premiers octets pour indiquer qu'il s'agit d'un fichier de protections
+  // arcane (ACR pour Arcane Checkpoint Restart)
+  std::array<Byte, 4> m_header_begin = { 'A', 'C', 'R', 39 };
+  // 4 octets suivant pour indiquer l'indianness (pas encore utilisé)
+  Int32 m_endian_int = 0x01020304;
+  // Version du fichier (à modifier par l'appelant via setVersion())
+  Int32 m_version = 0;
+  Int32 m_padding0 = 0;
+  Int64 m_padding1 = 0;
+  Int64 m_padding2 = 0;
   Int64 m_remaining_padding[12];
 
  public:
@@ -310,6 +294,9 @@ class BasicReaderWriterDatabaseCommon
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class KeyValueTextWriter::Impl
 : public BasicReaderWriterDatabaseCommon
 {
@@ -319,18 +306,40 @@ class KeyValueTextWriter::Impl
   : BasicReaderWriterDatabaseCommon(tm, version)
   , m_writer(filename)
   , m_version(version)
-  {}
+  {
+    if (m_version >= 3)
+      _writeHeader();
+  }
 
   ~Impl()
   {
+    if (m_version >= 3)
+      arcaneCallFunctionAndTerminateIfThrow([&]() { _writeEpilog(); });
     m_hasher.printStats(traceMng());
   }
+
+ public:
+
+  Int64 fileOffset() { return m_writer.fileOffset(); }
+  void setExtents(const String& key_name, SmallSpan<const Int64> extents);
+  void write(const String& key, Span<const std::byte> values);
+
+ private:
+
+  void _addKey(const String& key, SmallSpan<const Int64> extents);
+  void _writeKey(const String& key);
+  void _writeHeader();
+  void _writeEpilog();
 
  public:
 
   TextWriter m_writer;
   Int32 m_version;
   Hasher m_hasher;
+
+ private:
+
+  void _write2(const String& key, Span<const std::byte> values);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -341,8 +350,6 @@ KeyValueTextWriter(ITraceMng* tm, const String& filename, Int32 version)
 : TraceAccessor(tm)
 , m_p(new Impl(tm, filename, version))
 {
-  if (m_p->m_version >= 3)
-    _writeHeader();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -351,8 +358,6 @@ KeyValueTextWriter(ITraceMng* tm, const String& filename, Int32 version)
 KeyValueTextWriter::
 ~KeyValueTextWriter()
 {
-  if (m_p->m_version >= 3)
-    arcaneCallFunctionAndTerminateIfThrow([&]() { _writeEpilog(); });
   delete m_p;
 }
 
@@ -367,21 +372,21 @@ KeyValueTextWriter::
  * Toute modification dans cette en-tête doit être reportée dans la
  * classe KeyValueTextReader.
  */
-void KeyValueTextWriter::
+void KeyValueTextWriter::Impl::
 _writeHeader()
 {
   BasicReaderWriterDatabaseHeaderFormat header;
 
   // Actuellement si on passe dans cette partie de code,
   // la version utilisée est 3 ou plus.
-  header.setVersion(m_p->m_version);
-  binaryWrite(m_p->m_writer.stream(), header.bytes());
+  header.setVersion(m_version);
+  binaryWrite(m_writer.stream(), header.bytes());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextWriter::
+void KeyValueTextWriter::Impl::
 _writeEpilog()
 {
   // Ecrit les méta-données au format JSON.
@@ -390,7 +395,7 @@ _writeEpilog()
     JSONWriter::Object main_object(jsw);
     jsw.writeKey("Data");
     jsw.beginArray();
-    for (auto& x : m_p->m_data_infos) {
+    for (auto& x : m_data_infos) {
       JSONWriter::Object o(jsw);
       jsw.write("Name", x.first);
       jsw.write("FileOffset", x.second.m_file_offset);
@@ -399,11 +404,11 @@ _writeEpilog()
     jsw.endArray();
   }
 
-  std::ostream& stream = m_p->m_writer.stream();
+  std::ostream& stream = m_writer.stream();
 
   // Conserve la position dans le fichier des méta-données
   // ainsi que leur taille.
-  Int64 file_offset = fileOffset();
+  Int64 file_offset = m_writer.fileOffset();
   StringView buf = jsw.getBuffer();
   Int64 meta_data_size = buf.size();
 
@@ -420,10 +425,10 @@ _writeEpilog()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextWriter::
+void KeyValueTextWriter::Impl::
 setExtents(const String& key_name, SmallSpan<const Int64> extents)
 {
-  if (m_p->m_version >= 3) {
+  if (m_version >= 3) {
     _addKey(key_name, extents);
   }
   else {
@@ -435,16 +440,16 @@ setExtents(const String& key_name, SmallSpan<const Int64> extents)
     if (dimension_array_size != 0) {
       String true_key_name = "Extents:" + key_name;
       String comment = String::format("Writing Dim1Size for '{0}'", key_name);
-      if (m_p->m_version == 1) {
+      if (m_version == 1) {
         // Sauve les dimensions comme un tableau de Int32
         UniqueArray<Integer> dims(dimension_array_size);
         for (Integer i = 0; i < dimension_array_size; ++i)
           dims[i] = CheckedConvert::toInteger(extents[i]);
-        m_p->m_writer.write(asBytes(dims));
+        m_writer.write(asBytes(dims));
       }
       else
         // Sauve les dimensions comme un tableau de Int64
-        m_p->m_writer.write(asBytes(extents));
+        m_writer.write(asBytes(extents));
     }
   }
 }
@@ -452,18 +457,18 @@ setExtents(const String& key_name, SmallSpan<const Int64> extents)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextWriter::
+void KeyValueTextWriter::Impl::
 write(const String& key, Span<const std::byte> values)
 {
   _writeKey(key);
 
-  IDataCompressor* d = m_p->m_data_compressor.get();
+  IDataCompressor* d = m_data_compressor.get();
   Int64 len = values.size();
   if (d && len > d->minCompressSize()) {
     UniqueArray<std::byte> compressed_values;
-    m_p->m_data_compressor->compress(values, compressed_values);
+    m_data_compressor->compress(values, compressed_values);
     Int64 compressed_size = compressed_values.largeSize();
-    m_p->m_writer.write(asBytes(Span<const Int64>(&compressed_size, 1)));
+    m_writer.write(asBytes(Span<const Int64>(&compressed_size, 1)));
     _write2(key, compressed_values);
   }
   else
@@ -473,28 +478,28 @@ write(const String& key, Span<const std::byte> values)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextWriter::
+void KeyValueTextWriter::Impl::
 _write2(const String& key, Span<const std::byte> values)
 {
-  if (m_p->m_hash_database.get()) {
-    IHashAlgorithm* hash_algo = m_p->m_hash_algorithm.get();
+  if (m_hash_database.get()) {
+    IHashAlgorithm* hash_algo = m_hash_algorithm.get();
     if (!hash_algo)
       ARCANE_FATAL("Can not use hash database without hash algorithm");
 
     SmallArray<Byte, 1024> hash_result;
-    m_p->m_hasher.computeHash(values, hash_result);
+    m_hasher.computeHash(values, hash_result);
     String hash_value = Convert::toHexaString(hash_result);
 
     HashDatabaseWriteResult result;
     HashDatabaseWriteArgs args(values, hash_value);
     args.setKey(key);
 
-    m_p->m_hash_database->writeValues(args, result);
+    m_hash_database->writeValues(args, result);
     info(5) << "WRITE_KW_HASH key=" << key << " hash=" << hash_value << " len=" << values.size();
-    m_p->m_writer.write(asBytes(hash_result));
+    m_writer.write(asBytes(hash_result));
   }
   else
-    m_p->m_writer.write(values);
+    m_writer.write(values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -555,26 +560,47 @@ fileOffset()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextWriter::
+void KeyValueTextWriter::Impl::
 _addKey(const String& key, SmallSpan<const Int64> extents)
 {
   Impl::DataInfo d{ -1, Impl::ExtentsInfo() };
   d.m_extents.fill(extents);
-  m_p->m_data_infos.insert(std::make_pair(key, d));
+  m_data_infos.insert(std::make_pair(key, d));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextWriter::Impl::
+_writeKey(const String& key)
+{
+  if (m_version >= 3) {
+    auto x = m_data_infos.find(key);
+    if (x == m_data_infos.end())
+      ARCANE_FATAL("Key '{0}' is not in map. You should call setExtents() before", key);
+    x->second.m_file_offset = fileOffset();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextWriter::
+setExtents(const String& key_name, SmallSpan<const Int64> extents)
+{
+  m_p->setExtents(key_name, extents);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextWriter::
-_writeKey(const String& key)
+write(const String& key, Span<const std::byte> values)
 {
-  if (m_p->m_version >= 3) {
-    auto x = m_p->m_data_infos.find(key);
-    if (x == m_p->m_data_infos.end())
-      ARCANE_FATAL("Key '{0}' is not in map. You should call setExtents() before", key);
-    x->second.m_file_offset = fileOffset();
-  }
+  m_p->write(key, values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -592,7 +618,25 @@ class KeyValueTextReader::Impl
   : BasicReaderWriterDatabaseCommon(tm, version)
   , m_reader(filename)
   , m_version(version)
-  {}
+  {
+    if (m_version >= 3) {
+      _readHeader();
+      _readJSON();
+    }
+  }
+
+ public:
+
+  void readIntegers(const String& key, Span<Integer> values);
+  void read(const String& key, Span<std::byte> values);
+
+ public:
+
+  void _readHeader();
+  void _readJSON();
+  void _readDirect(Int64 offset, Span<std::byte> bytes);
+  void _setFileOffset(const String& key_name);
+  void _read2(const String& key_name, Span<std::byte> values);
 
  public:
 
@@ -608,10 +652,6 @@ KeyValueTextReader(ITraceMng* tm, const String& filename, Int32 version)
 : TraceAccessor(tm)
 , m_p(new Impl(tm, filename, version))
 {
-  if (m_p->m_version >= 3) {
-    _readHeader();
-    _readJSON();
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -626,11 +666,11 @@ KeyValueTextReader::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextReader::
+void KeyValueTextReader::Impl::
 _readDirect(Int64 offset, Span<std::byte> bytes)
 {
-  m_p->m_reader.setFileOffset(offset);
-  std::ifstream& s = m_p->m_reader.stream();
+  m_reader.setFileOffset(offset);
+  std::ifstream& s = m_reader.stream();
   binaryRead(s, bytes);
   if (s.fail())
     ARCANE_FATAL("Can not read file part offset={0} length={1}", offset, bytes.length());
@@ -644,7 +684,7 @@ _readDirect(Int64 offset, Span<std::byte> bytes)
  * Toute modification dans cette en-tête doit être reportée dans la
  * classe KeyValueTextWriter.
  */
-void KeyValueTextReader::
+void KeyValueTextReader::Impl::
 _readHeader()
 {
   BasicReaderWriterDatabaseHeaderFormat header;
@@ -652,19 +692,19 @@ _readHeader()
   _readDirect(0, bytes);
   header.checkHeader();
   Int32 version = header.version();
-  if (version != m_p->m_version)
-    ARCANE_FATAL("Invalid version for ACR file version={0} expected={1}", version, m_p->m_version);
+  if (version != m_version)
+    ARCANE_FATAL("Invalid version for ACR file version={0} expected={1}", version, m_version);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextReader::
+void KeyValueTextReader::Impl::
 _readJSON()
 {
   // Les informations sur la position dans le fichier et la longueur du
   // texte JSON sont sauvgegardées dans l'épilogue.
-  Int64 file_length = m_p->m_reader.fileLength();
+  Int64 file_length = m_reader.fileLength();
   // Vérifie la longueur du fichier par précaution
   Int64 struct_size = BasicReaderWriterDatabaseEpilogFormat::STRUCT_SIZE;
   if (file_length < struct_size)
@@ -713,7 +753,7 @@ _readJSON()
       Impl::DataInfo x;
       x.m_file_offset = file_offset;
       x.m_extents.fill(extents.view());
-      m_p->m_data_infos.insert(std::make_pair(name, x));
+      m_data_infos.insert(std::make_pair(name, x));
     }
   }
 }
@@ -754,30 +794,30 @@ getExtents(const String& key_name, SmallSpan<Int64> extents)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextReader::
+void KeyValueTextReader::Impl::
 readIntegers(const String& key, Span<Integer> values)
 {
   _setFileOffset(key);
-  m_p->m_reader.readIntegers(values);
+  m_reader.readIntegers(values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextReader::
+void KeyValueTextReader::Impl::
 read(const String& key, Span<std::byte> values)
 {
   _setFileOffset(key);
 
-  IDataCompressor* d = m_p->m_data_compressor.get();
+  IDataCompressor* d = m_data_compressor.get();
   Int64 len = values.size();
   if (d && len > d->minCompressSize()) {
     UniqueArray<std::byte> compressed_values;
     Int64 compressed_size = 0;
-    m_p->m_reader.read(asWritableBytes(Span<Int64>(&compressed_size, 1)));
+    m_reader.read(asWritableBytes(Span<Int64>(&compressed_size, 1)));
     compressed_values.resize(compressed_size);
     _read2(key, compressed_values);
-    m_p->m_data_compressor->decompress(compressed_values, values);
+    m_data_compressor->decompress(compressed_values, values);
   }
   else {
     _read2(key, values);
@@ -787,25 +827,42 @@ read(const String& key, Span<std::byte> values)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void KeyValueTextReader::
+void KeyValueTextReader::Impl::
 _read2(const String& key, Span<std::byte> values)
 {
-  if (m_p->m_hash_database.get()) {
-    IHashAlgorithm* hash_algo = m_p->m_hash_algorithm.get();
+  if (m_hash_database.get()) {
+    IHashAlgorithm* hash_algo = m_hash_algorithm.get();
     if (!hash_algo)
       ARCANE_FATAL("Can not use hash database without hash algorithm");
     Int32 hash_size = hash_algo->hashSize();
     SmallArray<Byte, 1024> hash_as_bytes;
     hash_as_bytes.resize(hash_size);
-    m_p->m_reader.read(asWritableBytes(hash_as_bytes));
+    m_reader.read(asWritableBytes(hash_as_bytes));
     String hash_value = Convert::toHexaString(hash_as_bytes);
     info(5) << "READ_KW_HASH key=" << key << " hash=" << hash_value << " expected_len=" << values.size();
     HashDatabaseReadArgs args(hash_value, values);
-    m_p->m_hash_database->readValues(args);
+    m_hash_database->readValues(args);
   }
   else
-    m_p->m_reader.read(values);
+    m_reader.read(values);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextReader::Impl::
+_setFileOffset(const String& key_name)
+{
+  // Avec les versions antérieures à la version 3, c'est l'appelant qui
+  // positionne l'offset car il est le seul à le connaitre.
+  if (m_version >= 3) {
+    Impl::DataInfo& data = findData(key_name);
+    m_reader.setFileOffset(data.m_file_offset);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -865,14 +922,18 @@ hashAlgorithm() const
 /*---------------------------------------------------------------------------*/
 
 void KeyValueTextReader::
-_setFileOffset(const String& key_name)
+readIntegers(const String& key, Span<Integer> values)
 {
-  // Avec les versions antérieures à la version 3, c'est l'appelant qui
-  // positionne l'offset car il est le seul à le connaitre.
-  if (m_p->m_version >= 3) {
-    Impl::DataInfo& data = m_p->findData(key_name);
-    setFileOffset(data.m_file_offset);
-  }
+  m_p->readIntegers(key, values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void KeyValueTextReader::
+read(const String& key, Span<std::byte> values)
+{
+  m_p->read(key, values);
 }
 
 /*---------------------------------------------------------------------------*/

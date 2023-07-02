@@ -21,6 +21,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: Lorsqu'on sera certain que ce fichier n'est pas utilisé en dehors
+// de Arcane on pourra fusionner ces classes avec leur implémentation
+
 namespace Arcane
 {
 class IDataCompressor;
@@ -58,6 +61,7 @@ class KeyValueTextWriter
 
   void setExtents(const String& key_name, SmallSpan<const Int64> extents);
   void write(const String& key, Span<const std::byte> values);
+  Int64 fileOffset();
 
  public:
 
@@ -66,16 +70,10 @@ class KeyValueTextWriter
   Ref<IDataCompressor> dataCompressor() const;
   void setHashAlgorithm(Ref<IHashAlgorithm> v);
   Ref<IHashAlgorithm> hashAlgorithm() const;
-  Int64 fileOffset();
 
  private:
 
   Impl* m_p;
-  void _addKey(const String& key, SmallSpan<const Int64> extents);
-  void _writeKey(const String& key);
-  void _writeHeader();
-  void _writeEpilog();
-  void _write2(const String& key,Span<const std::byte> values);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -98,6 +96,7 @@ class KeyValueTextReader
 
  public:
 
+  void setFileOffset(Int64 v);
   void getExtents(const String& key_name, SmallSpan<Int64> extents);
   void readIntegers(const String& key, Span<Integer> values);
   void read(const String& key, Span<std::byte> values);
@@ -105,7 +104,6 @@ class KeyValueTextReader
  public:
 
   String fileName() const;
-  void setFileOffset(Int64 v);
   void setDataCompressor(Ref<IDataCompressor> ds);
   Ref<IDataCompressor> dataCompressor() const;
   void setHashAlgorithm(Ref<IHashAlgorithm> v);
@@ -114,14 +112,6 @@ class KeyValueTextReader
  private:
 
   Impl* m_p;
-
- private:
-
-  void _readHeader();
-  void _readJSON();
-  void _readDirect(Int64 offset, Span<std::byte> bytes);
-  void _setFileOffset(const String& key_name);
-  void _read2(const String& key_name,Span<std::byte> values);
 };
 
 /*---------------------------------------------------------------------------*/
