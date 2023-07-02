@@ -111,6 +111,7 @@ set(ARCANE_SOURCES
 
   internal/IHashDatabase.h
   internal/IRedisContext.h
+  internal/BasicReaderWriter.h
 )
 
 set(AXL_FILES
