@@ -31,7 +31,22 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Base de donnée de hashs sous la forme d'un système de fichier.
+ *
+ * L'implémentation est similaire à ce que peut faire 'git'.
+ *
+ * Pour chaque \a hash on écrit un fichier dont le nom sera le \a hash et
+ * dont la valeur sera le tableau d'octets correspondant à ce \a hash.
+ * Un fichier n'est donc écrit qu'une seule fois et sa valeur ne change
+ * jamais: en écriture si le fichier existe déjà il n'est donc pas nécessaire
+ * de l'écrire à nouveau.
+ *
+ * Afin d'éviter d'avoir trop de \a hash dans le même répertoire, on créé deux
+ * sous-répertoires. Le premier avec la première lettre du hash et le second avec
+ * les deux lettres suivantes. Donc par exemple si le \a hash est '0a239fb4', alors
+ * il sera dans le répertoire '0/a2/0a239fb4'.
+ */
 class FileHashDatabase
 : public TraceAccessor
 , public IHashDatabase
@@ -70,10 +85,13 @@ class FileHashDatabase
     String base_name = dirfile_info.directory;
     String full_filename = dirfile_info.full_filename;
     // TODO: sauver les répertoires créés dans une base pour ne pas le refaire à chaque fois.
+    // TODO: utiliser des verrous lors de la création des sous-répertoires pour éviter
+    // que deux processus le fassent en même temps
     platform::recursiveCreateDirectory(base_name);
     // Si le hash est déjà sauvé, ne fait rien
-    // TODO: il faudrait relire la valeur pour vérifier que tout est OK dans la base
     {
+      // TODO: il faudrait relire la valeur pour vérifier que tout est OK dans la base
+      // et aussi récupérer la taille du fichier pour garantir la cohérence.
       std::ifstream ifile(full_filename.localstr());
       if (ifile.good()) {
         ++m_nb_write_cache;

@@ -1,9 +1,11 @@
 set(ARCANE_SOURCES
   ArcaneStdRegisterer.cc
   ArcaneStdRegisterer.h
+  BasicCheckpointService.cc
+  BasicReader.cc
+  BasicWriter.cc
   BasicReaderWriter.cc
   BasicReaderWriterDatabase.cc
-  BasicReaderWriterDatabase.h
   ParallelDataReader.cc
   ParallelDataReader.h
   ParallelDataWriter.cc
@@ -111,6 +113,8 @@ set(ARCANE_SOURCES
 
   internal/IHashDatabase.h
   internal/IRedisContext.h
+  internal/BasicReaderWriter.h
+  internal/BasicReaderWriterDatabase.h
 )
 
 set(AXL_FILES
