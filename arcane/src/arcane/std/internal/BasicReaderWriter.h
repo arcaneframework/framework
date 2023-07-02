@@ -29,7 +29,7 @@
 #include "arcane/core/IDataReader.h"
 #include "arcane/core/IDataReader2.h"
 
-#include "arcane/std/BasicReaderWriterDatabase.h"
+#include "arcane/std/internal/BasicReaderWriterDatabase.h"
 
 #include <map>
 #include <set>

@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/BasicReaderWriterDatabase.h"
+#include "arcane/std/internal/BasicReaderWriterDatabase.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/PlatformUtils.h"

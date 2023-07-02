@@ -6,7 +6,6 @@ set(ARCANE_SOURCES
   BasicWriter.cc
   BasicReaderWriter.cc
   BasicReaderWriterDatabase.cc
-  BasicReaderWriterDatabase.h
   ParallelDataReader.cc
   ParallelDataReader.h
   ParallelDataWriter.cc
@@ -115,6 +114,7 @@ set(ARCANE_SOURCES
   internal/IHashDatabase.h
   internal/IRedisContext.h
   internal/BasicReaderWriter.h
+  internal/BasicReaderWriterDatabase.h
 )
 
 set(AXL_FILES
