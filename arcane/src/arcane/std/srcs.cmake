@@ -3,6 +3,7 @@ set(ARCANE_SOURCES
   ArcaneStdRegisterer.h
   BasicCheckpointService.cc
   BasicReader.cc
+  BasicWriter.cc
   BasicReaderWriter.cc
   BasicReaderWriterDatabase.cc
   BasicReaderWriterDatabase.h
