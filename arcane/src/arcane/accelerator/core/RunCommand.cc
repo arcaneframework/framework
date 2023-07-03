@@ -49,15 +49,14 @@ class ReduceMemoryImpl
  public:
 
   ReduceMemoryImpl(RunCommandImpl* p)
-  : m_command(p), m_device_memory_bytes(eMemoryRessource::Device), m_host_memory_bytes(eMemoryRessource::Host),
-    m_grid_buffer(eMemoryRessource::Device), m_grid_device_count(eMemoryRessource::Device)
+  : m_command(p)
+  , m_device_memory_bytes(eMemoryRessource::Device)
+  , m_host_memory_bytes(eMemoryRessource::HostPinned)
+  , m_grid_buffer(eMemoryRessource::Device)
+  , m_grid_device_count(eMemoryRessource::Device)
   {
     _allocateMemoryForReduceData(128);
     _allocateMemoryForGridDeviceCount();
-  }
-
-  ~ReduceMemoryImpl()
-  {
   }
 
  public:
