@@ -1,47 +1,43 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AllEnvData.h                                                (C) 2000-2015 */
+/* AllEnvData.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Informations sur les valeurs des milieux.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_ALLENVDATA_H
-#define ARCANE_MATERIALS_ALLENVDATA_H
+#ifndef ARCANE_MATERIALS_INTERNAL_ALLENVDATA_H
+#define ARCANE_MATERIALS_INTERNAL_ALLENVDATA_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/materials/MeshMaterial.h"
-#include "arcane/materials/MeshEnvironment.h"
 #include "arcane/materials/MatItemEnumerator.h"
+
+#include "arcane/materials/internal/MeshMaterial.h"
+#include "arcane/materials/internal/MeshEnvironment.h"
 
 #include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace ArcaneL
+{
 class IVariableMng;
 class Properties;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::Materials
+{
 class MeshMaterialMng;
 
 /*---------------------------------------------------------------------------*/
@@ -86,7 +82,7 @@ class AllEnvData
 
  private:
 
-  MeshMaterialMng* m_material_mng;
+  MeshMaterialMng* m_material_mng = nullptr;
 
   /*!
    * \brief Infos sur les matériaux et les milieux.
@@ -122,11 +118,7 @@ class AllEnvData
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

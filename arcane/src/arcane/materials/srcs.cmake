@@ -2,7 +2,6 @@ set(ARCANE_SOURCES
   AllCellToAllEnvCellConverter.cc
   AllCellToAllEnvCellConverter.h
   AllEnvData.cc
-  AllEnvData.h
   ComponentItemInternal.h
   ComponentItem.h
   ComponentItemListBuilder.h
@@ -25,18 +24,15 @@ set(ARCANE_SOURCES
   MeshMaterialExchangeMng.cc
   MeshMaterialExchangeMng.h
   MeshMaterialMng.cc
-  MeshMaterialMng.h
   MeshMaterialModifierImpl.cc
   MeshMaterialModifierImpl.h
   MaterialVariableBuildInfo.h
   MeshMaterial.cc
-  MeshMaterial.h
   MeshBlock.cc
   MeshBlock.h
   MeshBlockBuildInfo.cc
   MeshBlockBuildInfo.h
   MeshEnvironment.cc
-  MeshEnvironment.h
   MeshEnvironmentBuildInfo.cc
   MeshEnvironmentBuildInfo.h
   MeshMaterialBackup.cc
@@ -66,7 +62,6 @@ set(ARCANE_SOURCES
   MeshMaterialVariableSynchronizerList.h
   MeshMaterialSynchronizeBuffer.cc
   MeshMaterialVariableFactoryMng.cc
-  AllEnvData.h
   ComponentItemInternal.h
   ComponentItem.h
   ComponentItemListBuilder.h
@@ -83,13 +78,10 @@ set(ARCANE_SOURCES
   MeshComponentData.h
   MeshComponentPartData.h
   MeshMaterialExchangeMng.h
-  MeshMaterialMng.h
   MeshMaterialModifierImpl.h
   MaterialVariableBuildInfo.h
-  MeshMaterial.h
   MeshBlock.h
   MeshBlockBuildInfo.h
-  MeshEnvironment.h
   MeshEnvironmentBuildInfo.h
   MeshMaterialBackup.h
   MeshMaterialInfo.h
@@ -126,5 +118,10 @@ set(ARCANE_SOURCES
   IMeshMaterialModifierImpl.h
   IMeshMaterialSynchronizeBuffer.h
   ItemMaterialVariableBaseT.H
+
+  internal/AllEnvData.h
+  internal/MeshEnvironment.h
+  internal/MeshMaterial.h
+  internal/MeshMaterialMng.h
   internal/MeshMaterialVariablePrivate.h
   )

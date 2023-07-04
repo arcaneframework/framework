@@ -14,17 +14,18 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/NotImplementedException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
 
-#include "arcane/materials/MeshMaterial.h"
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/MeshEnvironment.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/ComponentItemVectorView.h"
 #include "arcane/materials/MeshComponentPartData.h"
 #include "arcane/materials/ComponentPartItemVectorView.h"
+
+#include "arcane/materials/internal/MeshMaterial.h"
+#include "arcane/materials/internal/MeshEnvironment.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

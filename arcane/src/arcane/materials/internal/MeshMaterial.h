@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterial.h                                              (C) 2000-2021 */
+/* MeshMaterial.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Matériau d'un maillage.                                                   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MESHMATERIAL_H
-#define ARCANE_MATERIALS_MESHMATERIAL_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIAL_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

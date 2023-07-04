@@ -16,18 +16,19 @@
 #include "arcane/utils/FunctorUtils.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/MemoryUtils.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/VariableBuildInfo.h"
 
-#include "arcane/VariableBuildInfo.h"
-
-#include "arcane/materials/AllEnvData.h"
-#include "arcane/materials/MeshMaterialMng.h"
 #include "arcane/materials/ComponentItemListBuilder.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
+
+#include "arcane/materials/internal/MeshMaterialMng.h"
+#include "arcane/materials/internal/AllEnvData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,6 +44,8 @@ AllEnvData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
 , m_material_mng(mmg)
 , m_nb_env_per_cell(VariableBuildInfo(mmg->meshHandle(),mmg->name()+"_CellNbEnvironment"))
+, m_all_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
 }
 

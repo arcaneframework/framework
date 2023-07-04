@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialExchangeMng.cc                                  (C) 2000-2016 */
+/* MeshMaterialExchangeMng.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Gestion de l'échange des matériaux entre sous-domaines.                   */
 /*---------------------------------------------------------------------------*/
@@ -20,16 +20,17 @@
 #include "arcane/ItemFamilySerializeArgs.h"
 #include "arcane/ISerializer.h"
 
-#include "arcane/materials/MeshMaterialMng.h"
 #include "arcane/materials/MeshMaterialExchangeMng.h"
 #include "arcane/materials/MeshMaterialIndirectModifier.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 
+#include "arcane/materials/internal/MeshMaterialMng.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -212,8 +213,7 @@ materialMng() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

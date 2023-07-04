@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MESHMATERIALMNG_H
-#define ARCANE_MATERIALS_MESHMATERIALMNG_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALMNG_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,11 +21,12 @@
 #include "arcane/core/MeshHandle.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/MeshMaterial.h"
-#include "arcane/materials/MeshEnvironment.h"
 #include "arcane/materials/MeshBlock.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
+
+#include "arcane/materials/internal/MeshMaterial.h"
+#include "arcane/materials/internal/MeshEnvironment.h"
 
 #include <map>
 #include <memory>

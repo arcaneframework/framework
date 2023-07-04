@@ -14,15 +14,16 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/PlatformUtils.h"
 
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IData.h"
+
 #include "arcane/materials/MeshMaterialModifierImpl.h"
-#include "arcane/materials/MeshMaterialMng.h"
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshMaterialBackup.h"
-#include "arcane/materials/AllEnvData.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/IData.h"
+#include "arcane/materials/internal/MeshMaterialMng.h"
+#include "arcane/materials/internal/AllEnvData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/MeshMaterialMng.h"
+#include "arcane/materials/internal/MeshMaterialMng.h"
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/NotImplementedException.h"
@@ -38,11 +38,12 @@
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
 #include "arcane/materials/MeshMaterialSynchronizer.h"
-#include "arcane/materials/AllEnvData.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/MeshMaterialExchangeMng.h"
 #include "arcane/materials/EnumeratorTracer.h"
 #include "arcane/materials/MeshMaterialVariableFactoryRegisterer.h"
+
+#include "arcane/materials/internal/AllEnvData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
