@@ -219,7 +219,7 @@ class ScalarPropertyT : public PropertyBase
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType>
-class ArrayPropertyT : PropertyBase
+class ArrayPropertyT : public PropertyBase
 {
  private:
   std::vector<DataType> m_data;
@@ -245,13 +245,22 @@ class ArrayPropertyT : PropertyBase
 
   auto begin() noexcept { return m_data.begin(); }
   auto end() noexcept { return m_data.end(); }
+
+  void clear() noexcept { m_data.clear(); }
+
+  void debugPrint() const {
+    if constexpr (ndebug)
+      return;
+    std::cout << "= Print array property " << m_name << " =" << std::endl;
+    std::cout << m_data;
+    std::cout << std::endl;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType>
-class
-MeshScalarPropertyT : public PropertyBase
+class MeshScalarPropertyT : public PropertyBase
 {
  private:
   std::vector<DataType> m_data;
@@ -340,7 +349,7 @@ MeshScalarPropertyT : public PropertyBase
   void debugPrint() const {
     if constexpr (ndebug)
       return;
-    std::cout << "= Print property " << m_name << " =" << std::endl;
+    std::cout << "= Print mesh scalar property " << m_name << " =" << std::endl;
     for (auto& val : m_data) {
       std::cout << "\"" << val << "\" ";
     }
@@ -533,7 +542,7 @@ class MeshArrayPropertyT : public PropertyBase
   void debugPrint() const {
     if constexpr (ndebug)
       return;
-    std::cout << "= Print array property " << m_name << " =" << std::endl;
+    std::cout << "= Print mesh array property " << m_name << " =" << std::endl;
     for (auto& val : m_data) {
       std::cout << "\"" << val << "\" ";
     }

@@ -202,12 +202,36 @@ TEST(NeoTestProperty, test_scalar_property) {
 
 TEST(NeoTestProperty, test_array_property) {
   Neo::ArrayPropertyT<Neo::utils::Int32> array_property{ "test_array_property" };
+  EXPECT_EQ(array_property.name(), "test_array_property");
+  array_property.reserve(10);
+  EXPECT_EQ(array_property.size(), 0);
+  array_property.resize(10);
+  EXPECT_EQ(array_property.size(), 10);
+  for (auto i = 0; i < 10; ++i) {
+    array_property[i] = i;
+  }
+  std::vector<int> ref_values = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  array_property.debugPrint();
+  EXPECT_TRUE(std::equal(array_property.begin(), array_property.end(), ref_values.begin()));
+  EXPECT_EQ(array_property.back(), 9);
+  auto index = 0;
+  for (auto& ref_value : ref_values) {
+    EXPECT_EQ(ref_value, array_property[index++]);
+  }
+  array_property.clear();
+  for (auto i = 0; i < 10; ++i) {
+    array_property.push_back(i);
+  }
+  EXPECT_EQ(array_property.size(), 10);
+  EXPECT_TRUE(std::equal(array_property.begin(), array_property.end(), ref_values.begin()));
+  EXPECT_EQ(array_property.back(), 9);
 }
+
 /*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestProperty, test_mesh_scalar_property) {
-  Neo::MeshScalarPropertyT<Neo::utils::Int32> property{ "test_property" };
-  EXPECT_EQ(property.name(), "test_property");
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property{ "test_mesh_scalar_property" };
+  EXPECT_EQ(property.name(), "test_mesh_scalar_property");
   std::vector<Neo::utils::Int32> values{ 1, 2, 3 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 3 } };
   EXPECT_TRUE(property.isInitializableFrom(item_range));
@@ -343,8 +367,8 @@ TEST(NeoTestProperty, test_mesh_scalar_property) {
 /*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestArrayProperty, test_mesh_array_property) {
-  auto array_property = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_array_property" };
-  EXPECT_EQ(array_property.name(), "test_array_property");
+  auto array_property = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_mesh_array_property" };
+  EXPECT_EQ(array_property.name(), "test_mesh_array_property");
   // check assert (debug only)
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {
