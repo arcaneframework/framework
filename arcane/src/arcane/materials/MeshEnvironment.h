@@ -148,9 +148,9 @@ class MeshEnvironment
  private:
 
   //! Gestionnaire de matériaux
-  IMeshMaterialMng* m_material_mng;
+  IMeshMaterialMng* m_material_mng = nullptr;
 
-  IUserMeshEnvironment* m_user_environment;
+  IUserMeshEnvironment* m_user_environment = nullptr;
 
   UniqueArray<IMeshMaterial*> m_materials;
   UniqueArray<MeshMaterial*> m_true_materials;
@@ -163,11 +163,11 @@ class MeshEnvironment
  private:
   
   //! Nombre total de mailles pour tous les matériaux
-  Integer m_total_nb_cell_mat;
+  Integer m_total_nb_cell_mat = 0;
   UniqueArray<ComponentItemInternal> m_mat_items_internal;
-  IItemGroupObserver* m_group_observer;
+  IItemGroupObserver* m_group_observer = nullptr;
   MeshComponentData m_data;
-  MeshEnvironment* m_non_const_this;
+  MeshEnvironment* m_non_const_this = nullptr;
 
  private:
   

@@ -16,6 +16,7 @@
 #include "arcane/utils/FunctorUtils.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/IItemFamily.h"
@@ -95,10 +96,8 @@ MeshEnvironment::
 MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int32 env_id)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, m_user_environment(0)
 , m_nb_mat_per_cell(VariableBuildInfo(mm->mesh(), mm->name() + "_CellNbMaterial_" + name))
-, m_total_nb_cell_mat(0)
-, m_group_observer(0)
+, m_mat_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_data(this, name, env_id, false)
 , m_non_const_this(this)
 {

@@ -16,6 +16,7 @@
 #include "arcane/utils/FunctorUtils.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/IItemFamily.h"
@@ -43,6 +44,8 @@ AllEnvData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
 , m_material_mng(mmg)
 , m_nb_env_per_cell(VariableBuildInfo(mmg->meshHandle(),mmg->name()+"_CellNbEnvironment"))
+, m_all_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
 }
 
