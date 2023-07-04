@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/MeshMaterialMng.h"
+#include "arcane/materials/internal/MeshMaterialMng.h"
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/NotImplementedException.h"
