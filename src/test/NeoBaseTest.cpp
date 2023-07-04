@@ -636,7 +636,7 @@ TEST(NeoTestPropertyView, test_property_view) {
     std::cout << "prop values at index " << i << " " << partial_property_view[i] << std::endl;
     EXPECT_EQ(partial_property_view[i],partial_values[i]);
   }
-  EXPECT_TRUE(std::equal(partial_property_view.begin(),partial_property_view.end(),partial_values.begin()));
+  EXPECT_TRUE(std::equal(partial_property_view.begin(), partial_property_view.end(), partial_values.begin()));
   // Change values
   auto new_val = 50;
   property_view[2] = new_val;
@@ -645,10 +645,13 @@ TEST(NeoTestPropertyView, test_property_view) {
   EXPECT_EQ(property[local_ids[2]], new_val);
   // Check out of bound
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
-  if constexpr (_debug) {EXPECT_DEATH(property_view[7], ".*Error, exceeds property view size.*");}
-  if constexpr (_debug) {EXPECT_DEATH(partial_property_view[3], ".*Error, exceeds property view size.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(property_view[7], ".*Assertion `i < m_size' failed.*");
+  }
+  if constexpr (_debug) {
+    EXPECT_DEATH(partial_property_view[3], ".*Error, exceeds property view size.*");
+  }
 #endif
-
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -673,8 +676,12 @@ TEST(NeoTestPropertyView, test_property_const_view) {
     EXPECT_EQ(partial_property_const_view[i],partial_values[i]);
   }
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
-  if constexpr (_debug) {EXPECT_DEATH(property_const_view[7], ".*Error, exceeds property view size.*");}
-  if constexpr (_debug) {EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(property_const_view[7], ".*Assertion `i < m_size' failed*");
+  }
+  if constexpr (_debug) {
+    EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");
+  }
 #endif
   // test const iterator
   EXPECT_TRUE(property_const_view.end() == property_const_view.end());

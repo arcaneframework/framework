@@ -364,12 +364,19 @@ class MeshScalarPropertyT : public PropertyBase
     m_data.clear();
   }
 
-  PropertyView<DataType> view() {
-    std::vector<int> indexes(m_data.size());
-    std::iota(indexes.begin(), indexes.end(), 0);
-    return PropertyView<DataType>{ std::move(indexes), Neo::utils::Span<DataType>{ m_data.size(), m_data.data() } };
+  utils::Span<DataType> view() noexcept {
+    return utils::Span<DataType>{ m_data.size(), m_data.data() };
   }
 
+  utils::ConstSpan<DataType> constView() const noexcept {
+    return utils::ConstSpan<DataType>{ m_data.size(), m_data.data() };
+  }
+
+  /*!
+   * @brief returns a view of the values for a given item range
+   * @param item_range
+   * @return a PropertyView object pointing to the values of the item range given
+   */
   PropertyView<DataType> view(ItemRange const& item_range) {
     std::vector<int> indexes;
     indexes.reserve(item_range.size());
@@ -378,12 +385,11 @@ class MeshScalarPropertyT : public PropertyBase
     return PropertyView<DataType>{ std::move(indexes), Neo::utils::Span<DataType>{ m_data.size(), m_data.data() } };
   }
 
-  PropertyConstView<DataType> constView() const {
-    std::vector<int> indexes(m_data.size());
-    std::iota(indexes.begin(), indexes.end(), 0);
-    return PropertyConstView<DataType>{ std::move(indexes), Neo::utils::ConstSpan<DataType>{ m_data.size(), m_data.data() } };
-  }
-
+  /*!
+   * @brief returns a const view of the values for a given item range
+   * @param item_range
+   * @return a PropertyConstView object pointing to the values of the item range given
+   */
   PropertyConstView<DataType> constView(ItemRange const& item_range) const {
     std::vector<int> indexes;
     indexes.reserve(item_range.size());
@@ -457,6 +463,63 @@ class MeshArrayPropertyT : public PropertyBase
       _appendByReconstruction(item_range, values, nb_values_per_item); // includes existing items
   }
 
+  utils::Span<DataType> operator[](const utils::Int32 item) {
+    assert(("item local id must be >0 in MeshArrayPropertyT::[item_lid]]", item >= 0));
+    return utils::Span<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
+  }
+
+  utils::ConstSpan<DataType> operator[](const utils::Int32 item) const {
+    assert(("item local id must be >0 in MeshArrayPropertyT::[item_lid]]", item >= 0));
+    return utils::ConstSpan<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
+  }
+
+  void debugPrint() const {
+    if constexpr (ndebug)
+      return;
+    std::cout << "= Print mesh array property " << m_name << " =" << std::endl;
+    for (auto& val : m_data) {
+      std::cout << "\"" << val << "\" ";
+    }
+    std::cout << std::endl;
+    Neo::utils::printContainer(m_offsets, "Offsets ");
+    Neo::utils::printContainer(m_indexes, "Indexes");
+  }
+
+  /*!
+   * @return number of items of property support
+   */
+  int size() const {
+    return m_size;
+  }
+
+  void clear() {
+    m_data.clear();
+    m_offsets.clear();
+    m_indexes.clear();
+    m_size = 0;
+  }
+
+  /*!
+   * @brief returns a 1D contiguous view of the property
+   * @return a 1D view of the property, the values of the array for each item are contiguous
+   */
+  utils::Span<DataType> view() noexcept {
+    return utils::Span<DataType>{ m_data.size(), m_data.data() };
+  }
+  /*!
+   * @brief returns a const 1D contiguous view of the property
+   * @return a const 1D view of the property, the values of the array for each item are contiguous
+   */
+  utils::ConstSpan<DataType> constView() const noexcept {
+    return utils::ConstSpan<DataType>{ m_data.size(), m_data.data() };
+  }
+
+  auto begin() noexcept { return m_data.begin(); }
+  auto begin() const noexcept { return m_data.begin(); }
+  auto end() noexcept { return m_data.end(); }
+  auto end() const noexcept { return m_data.end(); }
+
+ private:
   void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
     Neo::print() << "Append in MeshArrayPropertyT by reconstruction" << std::endl;
     // Compute new offsets
@@ -529,63 +592,6 @@ class MeshArrayPropertyT : public PropertyBase
     }
   }
 
-  utils::Span<DataType> operator[](const utils::Int32 item) {
-    assert(("item local id must be >0 in MeshArrayPropertyT::[item_lid]]", item >= 0));
-    return utils::Span<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
-  }
-
-  utils::ConstSpan<DataType> operator[](const utils::Int32 item) const {
-    assert(("item local id must be >0 in MeshArrayPropertyT::[item_lid]]", item >= 0));
-    return utils::ConstSpan<DataType>{ m_offsets[item], &m_data[m_indexes[item]] };
-  }
-
-  void debugPrint() const {
-    if constexpr (ndebug)
-      return;
-    std::cout << "= Print mesh array property " << m_name << " =" << std::endl;
-    for (auto& val : m_data) {
-      std::cout << "\"" << val << "\" ";
-    }
-    std::cout << std::endl;
-    Neo::utils::printContainer(m_offsets, "Offsets ");
-    Neo::utils::printContainer(m_indexes, "Indexes");
-  }
-
-  /*!
-   * @return number of items of property support
-   */
-  int size() const {
-    return m_size;
-  }
-
-  void clear() {
-    m_data.clear();
-    m_offsets.clear();
-    m_indexes.clear();
-    m_size = 0;
-  }
-
-  /*!
-   * @brief returns a 1D contiguous view of the property
-   * @return a 1D view of the property, the values of the array for each item are contiguous
-   */
-  utils::Span<DataType> view() noexcept {
-    return utils::Span<DataType>{ m_data.size(), m_data.data() };
-  }
-  /*!
-   * @brief returns a const 1D contiguous view of the property
-   * @return a const 1D view of the property, the values of the array for each item are contiguous
-   */
-  utils::ConstSpan<DataType> constView() const noexcept {
-    return utils::ConstSpan<DataType>{ m_data.size(), m_data.data() };
-  }
-
-  auto begin() noexcept { return m_data.begin(); }
-  auto begin() const noexcept { return m_data.begin(); }
-  auto end() noexcept { return m_data.end(); }
-  auto end() const noexcept { return m_data.end(); }
-
- private:
   void _updateIndexes() {
     _computeIndexesFromOffsets(m_indexes, m_offsets);
     m_size = _computeSizeFromOffsets(m_offsets);
