@@ -24,11 +24,12 @@
 
 #include "arcane/VariableBuildInfo.h"
 
-#include "arcane/materials/AllEnvData.h"
 #include "arcane/materials/MeshMaterialMng.h"
 #include "arcane/materials/ComponentItemListBuilder.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
+
+#include "arcane/materials/internal/AllEnvData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

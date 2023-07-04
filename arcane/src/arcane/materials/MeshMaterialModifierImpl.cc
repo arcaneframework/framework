@@ -19,7 +19,8 @@
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshMaterialBackup.h"
-#include "arcane/materials/AllEnvData.h"
+
+#include "arcane/materials/internal/AllEnvData.h"
 
 #include "arcane/IItemFamily.h"
 #include "arcane/IData.h"

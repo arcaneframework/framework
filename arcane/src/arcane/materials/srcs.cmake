@@ -2,7 +2,6 @@ set(ARCANE_SOURCES
   AllCellToAllEnvCellConverter.cc
   AllCellToAllEnvCellConverter.h
   AllEnvData.cc
-  AllEnvData.h
   ComponentItemInternal.h
   ComponentItem.h
   ComponentItemListBuilder.h
@@ -66,7 +65,6 @@ set(ARCANE_SOURCES
   MeshMaterialVariableSynchronizerList.h
   MeshMaterialSynchronizeBuffer.cc
   MeshMaterialVariableFactoryMng.cc
-  AllEnvData.h
   ComponentItemInternal.h
   ComponentItem.h
   ComponentItemListBuilder.h
@@ -126,5 +124,7 @@ set(ARCANE_SOURCES
   IMeshMaterialModifierImpl.h
   IMeshMaterialSynchronizeBuffer.h
   ItemMaterialVariableBaseT.H
+
+  internal/AllEnvData.h
   internal/MeshMaterialVariablePrivate.h
   )
