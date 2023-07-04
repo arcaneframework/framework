@@ -25,30 +25,31 @@
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/OStringStream.h"
 
-#include "arcane/AbstractService.h"
-#include "arcane/FactoryService.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IMeshReader.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/Item.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IVariableAccessor.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/XmlNode.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/BasicService.h"
-#include "arcane/MeshPartInfo.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/ICaseMeshReader.h"
-#include "arcane/IMeshBuilder.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IVariableAccessor.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/ICaseMeshReader.h"
+#include "arcane/core/IMeshBuilder.h"
+#include "arcane/core/ItemPrinter.h"
 
 // Element types in .msh file format, found in gmsh-2.0.4/Common/GmshDefines.h
 #include "arcane/std/internal/IosFile.h"
@@ -67,9 +68,7 @@
  * TODO:
  * - lire les tags des noeuds(uniqueId())
  * - supporter les partitions
- * - supporter les groupes de noeuds (actuellement seulement les faces et les mailles).
  * - pouvoir utiliser la bibliothèque 'gmsh' directement.
- * - supporter ce format avec le nouveau mécanisme des services de maillage.
  * - améliorer la lecture parallèle en évitant que tous les sous-domaines
  *   lisent le fichier (même si seul le sous-domaine 0 alloue les entités)
  */
@@ -409,7 +408,7 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     for (Integer i = 0; i < nb_node2; ++i) {
       // Conserve le uniqueId() du noeuds.
       nodes_uids[i] = ios_file.getInteger();
-      //info() << "I=" << i << " ID=" << id;
+      //info() << "I=" << i << " ID=" << nodes_uids[i];
     }
     for (Integer i = 0; i < nb_node2; ++i) {
       Real nx = ios_file.getReal();
@@ -417,8 +416,7 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
       Real nz = ios_file.getReal();
       Real3 xyz(nx, ny, nz);
       mesh_info.node_coords_map.add(nodes_uids[i], xyz);
-      //info() << "I=" << i << " COORD=" << xyz;
-      //info() << "id_" << id << " xyz(" << nx << "," << ny << "," << nz << ")";
+      //info() << "I=" << i << " ID=" << nodes_uids[i] << " COORD=" << xyz;
     }
     ios_file.getNextLine(); // Skip current \n\r
   }
@@ -555,12 +553,24 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     block.dimension = entity_dim;
     block.entity_tag = entity_tag;
 
-    for (Integer i = 0; i < nb_entity_in_block; ++i) {
+    if (entity_type==MSH_PNT){
+      // Si le type est un point, le traitement semble
+      // un peu particulier. Il y a dans ce cas
+      // deux entiers dans la ligne suivante:
+      // - un entier qui ne semble
+      // - le numéro unique du noeud qui nous intéresse
+      [[maybe_unused]] Int64 unused_id = ios_file.getInt64();
       Int64 item_unique_id = ios_file.getInt64();
+      info(4) << "Adding unique node uid=" << item_unique_id;
       block.uids.add(item_unique_id);
-
-      for (Integer j = 0; j < item_nb_node; ++j)
-        block.connectivity.add(ios_file.getInt64());
+    }
+    else{
+      for (Integer i = 0; i < nb_entity_in_block; ++i) {
+        Int64 item_unique_id = ios_file.getInt64();
+        block.uids.add(item_unique_id);
+        for (Integer j = 0; j < item_nb_node; ++j)
+          block.connectivity.add(ios_file.getInt64());
+      }
     }
     ios_file.getNextLine(); // Skip current \n\r
   }
@@ -854,7 +864,19 @@ _addNodeGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 
   info(4) << "Adding " << nodes_id.size() << " nodes from block index=" << block.index
           << " to group '" << node_group.name() << "'";
+
+  if (nb_entity<10){
+    info(4) << "Nodes UIDS=" << block.uids;
+    info(4) << "Nodes LIDS=" << nodes_id;
+  }
   node_group.addItems(nodes_id);
+
+  if (nb_entity<10){
+    VariableNodeReal3& coords(mesh->nodesCoordinates());
+    ENUMERATE_(Node,inode,node_group){
+      info(4) << "Node id=" << ItemPrinter(*inode) << " coord=" << coords[inode];
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
