@@ -18,20 +18,21 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/MemoryUtils.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/ItemGroupObserver.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/ItemGroupObserver.h"
 
-#include "arcane/materials/MeshEnvironment.h"
 #include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/MeshMaterial.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/ComponentItemVectorView.h"
 #include "arcane/materials/ComponentItemListBuilder.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshComponentPartData.h"
 #include "arcane/materials/ComponentPartItemVectorView.h"
+
+#include "arcane/materials/internal/MeshEnvironment.h"
+#include "arcane/materials/internal/MeshMaterial.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

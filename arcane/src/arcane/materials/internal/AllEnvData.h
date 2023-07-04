@@ -17,9 +17,10 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/materials/MeshMaterial.h"
-#include "arcane/materials/MeshEnvironment.h"
 #include "arcane/materials/MatItemEnumerator.h"
+
+#include "arcane/materials/internal/MeshMaterial.h"
+#include "arcane/materials/internal/MeshEnvironment.h"
 
 #include <map>
 

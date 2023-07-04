@@ -29,13 +29,11 @@ set(ARCANE_SOURCES
   MeshMaterialModifierImpl.h
   MaterialVariableBuildInfo.h
   MeshMaterial.cc
-  MeshMaterial.h
   MeshBlock.cc
   MeshBlock.h
   MeshBlockBuildInfo.cc
   MeshBlockBuildInfo.h
   MeshEnvironment.cc
-  MeshEnvironment.h
   MeshEnvironmentBuildInfo.cc
   MeshEnvironmentBuildInfo.h
   MeshMaterialBackup.cc
@@ -84,10 +82,8 @@ set(ARCANE_SOURCES
   MeshMaterialMng.h
   MeshMaterialModifierImpl.h
   MaterialVariableBuildInfo.h
-  MeshMaterial.h
   MeshBlock.h
   MeshBlockBuildInfo.h
-  MeshEnvironment.h
   MeshEnvironmentBuildInfo.h
   MeshMaterialBackup.h
   MeshMaterialInfo.h
@@ -126,5 +122,7 @@ set(ARCANE_SOURCES
   ItemMaterialVariableBaseT.H
 
   internal/AllEnvData.h
+  internal/MeshEnvironment.h
+  internal/MeshMaterial.h
   internal/MeshMaterialVariablePrivate.h
   )
