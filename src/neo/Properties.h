@@ -131,7 +131,7 @@ struct PropertyViewIterator
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueType>
-class PropertyView
+class MeshScalarPropertyView
 {
  public:
   std::vector<int> const m_indexes;
@@ -151,7 +151,7 @@ class PropertyView
 //----------------------------------------------------------------------------/
 
 template <typename ValueType>
-class PropertyConstView
+class MeshScalarPropertyConstView
 {
  public:
   std::vector<int> const m_indexes;
@@ -375,27 +375,27 @@ class MeshScalarPropertyT : public PropertyBase
   /*!
    * @brief returns a view of the values for a given item range
    * @param item_range
-   * @return a PropertyView object pointing to the values of the item range given
+   * @return a MeshScalarPropertyView object pointing to the values of the item range given
    */
-  PropertyView<DataType> view(ItemRange const& item_range) {
+  MeshScalarPropertyView<DataType> view(ItemRange const& item_range) {
     std::vector<int> indexes;
     indexes.reserve(item_range.size());
     for (auto item : item_range)
       indexes.push_back(item);
-    return PropertyView<DataType>{ std::move(indexes), Neo::utils::Span<DataType>{ m_data.size(), m_data.data() } };
+    return MeshScalarPropertyView<DataType>{ std::move(indexes), Neo::utils::Span<DataType>{ m_data.size(), m_data.data() } };
   }
 
   /*!
    * @brief returns a const view of the values for a given item range
    * @param item_range
-   * @return a PropertyConstView object pointing to the values of the item range given
+   * @return a MeshScalarPropertyConstView object pointing to the values of the item range given
    */
-  PropertyConstView<DataType> constView(ItemRange const& item_range) const {
+  MeshScalarPropertyConstView<DataType> constView(ItemRange const& item_range) const {
     std::vector<int> indexes;
     indexes.reserve(item_range.size());
     for (auto item : item_range)
       indexes.push_back(item);
-    return PropertyConstView<DataType>{ std::move(indexes), Neo::utils::ConstSpan<DataType>{ m_data.size(), m_data.data() } };
+    return MeshScalarPropertyConstView<DataType>{ std::move(indexes), Neo::utils::ConstSpan<DataType>{ m_data.size(), m_data.data() } };
   }
 
   auto begin() noexcept { return m_data.begin(); }
