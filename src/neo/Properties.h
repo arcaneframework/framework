@@ -175,6 +175,11 @@ class PropertyBase
  public:
   std::string m_name;
 
+  PropertyBase() = default;
+
+  explicit PropertyBase(std::string name)
+  : m_name(std::move(name)) {}
+
   std::string name() const noexcept {
     return m_name;
   }
@@ -185,8 +190,14 @@ class PropertyBase
 template <typename DataType>
 class ScalarPropertyT : public PropertyBase
 {
- public:
+ private:
   DataType m_data;
+
+ public:
+  ScalarPropertyT() = default;
+
+  explicit ScalarPropertyT(std::string name)
+  : PropertyBase(std::move(name)) {}
 
   void set(DataType const& value) noexcept {
     m_data = value;
@@ -214,6 +225,11 @@ class ArrayPropertyT : PropertyBase
   std::vector<DataType> m_data;
 
  public:
+  ArrayPropertyT() = default;
+
+  explicit ArrayPropertyT(std::string name)
+  : PropertyBase(std::move(name)) {}
+
   std::size_t size() const noexcept { return m_data.size(); };
 
   void resize(int new_size) { m_data.resize(new_size); }
@@ -234,10 +250,17 @@ class ArrayPropertyT : PropertyBase
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType>
-class MeshScalarPropertyT : public PropertyBase
+class
+MeshScalarPropertyT : public PropertyBase
 {
- public:
+ private:
   std::vector<DataType> m_data;
+
+ public:
+  MeshScalarPropertyT() = default;
+
+  explicit MeshScalarPropertyT(std::string name)
+  : PropertyBase(std::move(name)) {}
 
   /*!
    * @brief Fill a property (empty or not) with a scalar value, over an item_range.
@@ -372,13 +395,18 @@ template <typename DataType>
 class MeshArrayPropertyT : public PropertyBase
 {
 
- public:
+ private:
   std::vector<DataType> m_data;
   std::vector<int> m_offsets;
   std::vector<int> m_indexes;
   int m_size;
 
  public:
+  MeshArrayPropertyT() = default;
+
+  explicit MeshArrayPropertyT(std::string name)
+  : PropertyBase(std::move(name)) {}
+
   /*!
   * @brief Resize an array property before a call to \a init. Resize must not be done before a call to \a append method.
   * @param sizes: an array the number of items of the property support and storing the number of values for each item.

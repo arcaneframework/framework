@@ -496,10 +496,10 @@ namespace XdmfTest {
     auto mesh_state = mesh.applyScheduledOperations();
     Neo::MeshScalarPropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::MeshScalarPropertyT<int>>(
     "FaceFamilytoCellFamily_connectivity_orientation_check");
-    _printContainer(orientation_check_result.m_data, "orientation check result");
+    _printContainer(orientation_check_result, "orientation check result");
     std::vector<int> orientation_check_result_ref{ 1, 1, 1, 1, 1 };
-    EXPECT_TRUE(std::equal(orientation_check_result.m_data.begin(),
-                           orientation_check_result.m_data.end(),
+    EXPECT_TRUE(std::equal(orientation_check_result.begin(),
+                           orientation_check_result.end(),
                            orientation_check_result_ref.begin()));
   }
 
@@ -525,10 +525,10 @@ namespace XdmfTest {
     EXPECT_THROW(mesh.applyScheduledOperations(), std::runtime_error);
     Neo::MeshScalarPropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::MeshScalarPropertyT<int>>(
     "FaceFamilytoCellFamily_connectivity_orientation_check");
-    _printContainer(orientation_check_result.m_data, "orientation check result");
+    _printContainer(orientation_check_result, "orientation check result");
     std::vector<int> orientation_check_result_ref{ 0, 1, 0, 1, 1 };
-    EXPECT_TRUE(std::equal(orientation_check_result.m_data.begin(),
-                           orientation_check_result.m_data.end(),
+    EXPECT_TRUE(std::equal(orientation_check_result.begin(),
+                           orientation_check_result.end(),
                            orientation_check_result_ref.begin()));
   }
 
@@ -629,7 +629,7 @@ namespace XdmfTest {
     std::vector<int> orientation_ref{ 1, 1, 1, 1, 1, 1, -1, -1 };
     auto const& orientation = oriented_connectivity.connectivity_orientation;
     auto const& connectivity = oriented_connectivity.connectivity_value;
-    EXPECT_TRUE(std::equal(orientation.m_data.begin(), orientation.m_data.end(),
+    EXPECT_TRUE(std::equal(orientation.begin(), orientation.end(),
                            orientation_ref.begin()));
     for (auto face : face_family.all()) {
       for (auto cell : connectivity[face]) {
