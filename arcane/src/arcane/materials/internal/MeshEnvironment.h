@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Milieu d'un maillage.                                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MESHENVIRONMENT_H
-#define ARCANE_MATERIALS_MESHENVIRONMENT_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHENVIRONMENT_H
+#define ARCANE_MATERIALS_INTERNAL_MESHENVIRONMENT_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

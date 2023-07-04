@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MESHMATERIALMNG_H
-#define ARCANE_MATERIALS_MESHMATERIALMNG_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALMNG_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

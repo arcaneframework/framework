@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Informations sur les valeurs des milieux.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_ALLENVDATA_H
-#define ARCANE_MATERIALS_ALLENVDATA_H
+#ifndef ARCANE_MATERIALS_INTERNAL_ALLENVDATA_H
+#define ARCANE_MATERIALS_INTERNAL_ALLENVDATA_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
