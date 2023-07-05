@@ -232,7 +232,7 @@ class ArrayExtentsValue<X0,X1>
 
   constexpr std::array<Int32, 1> _removeFirstExtent() const
   {
-    return { m_extent1.v };
+    return std::array<Int32, 1>{m_extent1.v};
   }
 
   ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
