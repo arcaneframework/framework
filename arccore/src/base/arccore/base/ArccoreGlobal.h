@@ -113,10 +113,10 @@ typedef ARCCORE_TYPE_INT64 Int64;
 /*---------------------------------------------------------------------------*/
 /*
  * Macros pour le support de la programmation hétérogène (CPU/GPU)
- - ARCANE_DEVICE_CODE: indique une partie de code compilée uniquement sur le device
- - ARCANE_HOST_DEVICE: indique que la méthode/variable est accessible à la fois
+ - ARCCORE_DEVICE_CODE: indique une partie de code compilée uniquement sur le device
+ - ARCCORE_HOST_DEVICE: indique que la méthode/variable est accessible à la fois
    sur le device et l'hôte
- - ARCANE_DEVICE: indique que la méthode/variable est accessible uniquement sur
+ - ARCCORE_DEVICE: indique que la méthode/variable est accessible uniquement sur
    le device.
 */
 
