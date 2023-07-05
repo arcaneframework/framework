@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayExtentsValue.h                                         (C) 2000-2022 */
+/* ArrayExtentsValue.h                                         (C) 2000-2023 */
 /*                                                                           */
 /* Gestion de valeurs des dimensions des tableaux N-dimensions.              */
 /*---------------------------------------------------------------------------*/
@@ -232,7 +232,7 @@ class ArrayExtentsValue<X0,X1>
 
   constexpr std::array<Int32, 1> _removeFirstExtent() const
   {
-    return { m_extent1.v };
+    return std::array<Int32, 1>{m_extent1.v};
   }
 
   ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const

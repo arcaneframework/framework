@@ -306,7 +306,7 @@ _executeTest1(eMemoryRessource mem_kind)
     t3.resize(n1);
 
     {
-      auto span_value = t1.span();
+      [[maybe_unused]] auto span_value = t1.span();
       using ValueType1 = NumArray<double,MDDim1>::value_type;
       using ValueType2 = decltype(span_value)::value_type;
       bool is_same_type = std::is_same_v<ValueType1,ValueType2>;
@@ -792,6 +792,19 @@ _arcaneNumArraySamples()
   a4(i4) = 1.0;
   a4(1,7,2,4) = 6.0;
   //![SampleNumArrayDeclarationsIndexation]
+
+  {
+    Arcane::NumArray<Arcane::Int32, Arcane::MDDim2> aaa(5,4);
+    Arcane::MDSpan<Arcane::Int32, Arcane::MDDim1> bbb(aaa.span().slice(0));
+
+    Arcane::MDSpan<Arcane::Real, Arcane::MDDim3> a3_span(a3.span());
+    Arcane::MDSpan<Arcane::Real, Arcane::MDDim1> a2_span1(a2.span().slice(0));
+    for (Arcane::Int32 i = 0; i < a3.extent0(); ++i) {
+      Arcane::MDSpan<Arcane::Real, Arcane::MDDim2> span_array2 = a3_span.slice(i);
+      std::cout << " MDDim2 slice i=" << i << " X=" << span_array2.extent0()
+                << " Y=" << span_array2.extent1() << "\n";
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

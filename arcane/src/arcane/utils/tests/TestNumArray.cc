@@ -52,6 +52,8 @@ TEST(NumArray, Basic)
   {
     MDSpan<Real, MDDim3> span_array3(array3.span());
     ASSERT_EQ(array3.extent0(), span_array3.extent0());
+    std::cout << "Array3: extents=" << array3.extent0()
+              << "," << array3.extent1() << "," << array3.extent2() << "\n";
     for (Int32 i = 0; i < array3.extent0(); ++i) {
       MDSpan<Real, MDDim2> span_array2 = span_array3.slice(i);
       ASSERT_EQ(span_array2.extent0(), span_array3.extent1());
@@ -64,7 +66,18 @@ TEST(NumArray, Basic)
       }
     }
   }
-
+  {
+    MDSpan<Real, MDDim2> span_array2(array2.span());
+    std::cout << "Array2: extents=" << array2.extent0() << "," << array2.extent1() << "\n";
+    for (Int32 i = 0; i < array2.extent0(); ++i) {
+      MDSpan<Real, MDDim1> span_array1 = array2.span().slice(i);
+      ASSERT_EQ(span_array1.extent0(), span_array2.extent1());
+      std::cout << " MDDim1 slice i=" << i << " X=" << span_array2.extent0() << "\n";
+      for (Int32 x = 0, xn = span_array1.extent0(); x < xn; ++x) {
+        ASSERT_EQ(span_array1.ptrAt(x), span_array2.ptrAt(i, x));
+      }
+    }
+  }
   NumArray<Real, MDDim4> array4(2, 3, 4, 5);
   array4.s(1, 2, 3, 4) = 5.0;
   std::cout << " V=" << array4(1, 2, 3, 4) << "\n";
