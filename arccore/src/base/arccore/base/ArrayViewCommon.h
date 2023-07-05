@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayViewCommon.h                                           (C) 2000-2021 */
+/* ArrayViewCommon.h                                           (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations communes aux classes ArrayView, ConstArrayView et Span.      */
 /*---------------------------------------------------------------------------*/
@@ -140,6 +140,48 @@ arccoreThrowNegativeSize [[noreturn]] (Int64 size);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Teste si \a size est positif ou nul et lance une exception si ce n'est pas le cas
+inline constexpr ARCCORE_HOST_DEVICE void
+arccoreCheckIsPositive(Int64 size)
+{
+  if (size<0){
+#ifdef ARCCORE_DEVICE_CODE
+    assert("'size' is negative");
+#else
+    impl::arccoreThrowNegativeSize(size);
+#endif
+  }
+}
+
+//! Teste si \a size est plus petit que ARCCORE_INTEGER_MAX et lance une exception si ce n'est pas le cas
+inline constexpr ARCCORE_HOST_DEVICE void
+arccoreCheckIsValidInteger(Int64 size)
+{
+  if (size>=ARCCORE_INTEGER_MAX){
+#ifdef ARCCORE_DEVICE_CODE
+    assert("'size' is bigger than ARCCORE_INTEGER_MAX");
+#else
+    impl::arccoreThrowTooBigInteger(size);
+#endif
+  }
+}
+
+//! Teste si \a size est plus petit que ARCCORE_INT64_MAX et lance une exception si ce n'est pas le cas
+inline constexpr ARCCORE_HOST_DEVICE void
+arccoreCheckIsValidInt64(size_t size)
+{
+  if (size>=ARCCORE_INT64_MAX){
+#ifdef ARCCORE_DEVICE_CODE
+    assert("'size' is bigger than ARCCORE_INT64_MAX");
+#else
+    impl::arccoreThrowTooBigInt64(size);
+#endif
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arccore::impl
 
 namespace Arccore
@@ -153,11 +195,10 @@ namespace Arccore
  * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
  * une exception de type ArgumentException.
  */
-inline constexpr Integer
+inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(unsigned long long size)
 {
-  if (size>=ARCCORE_INTEGER_MAX)
-    impl::arccoreThrowTooBigInteger(size);
+  impl::arccoreCheckIsValidInteger(size);
   return static_cast<Integer>(size);
 }
 
@@ -170,10 +211,8 @@ arccoreCheckArraySize(unsigned long long size)
 inline constexpr Integer
 arccoreCheckArraySize(long long size)
 {
-  if (size>=ARCCORE_INTEGER_MAX)
-    impl::arccoreThrowTooBigInteger(size);
-  if (size<0)
-    impl::arccoreThrowNegativeSize(size);
+  impl::arccoreCheckIsValidInteger(size);
+  impl::arccoreCheckIsPositive(size);
   return static_cast<Integer>(size);
 }
 
@@ -186,8 +225,7 @@ arccoreCheckArraySize(long long size)
 inline constexpr ARCCORE_BASE_EXPORT Integer
 arccoreCheckArraySize(unsigned long size)
 {
-  if (size>=ARCCORE_INTEGER_MAX)
-    impl::arccoreThrowTooBigInteger(size);
+  impl::arccoreCheckIsValidInteger(size);
   return static_cast<Integer>(size);
 }
 
@@ -198,13 +236,11 @@ arccoreCheckArraySize(unsigned long size)
  * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
  * une exception de type ArgumentException.
  */
-inline constexpr Integer
+inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(long size)
 {
-  if (size>=ARCCORE_INTEGER_MAX)
-    impl::arccoreThrowTooBigInteger(size);
-  if (size<0)
-    impl::arccoreThrowNegativeSize(size);
+  impl::arccoreCheckIsValidInteger(size);
+  impl::arccoreCheckIsPositive(size);
   return static_cast<Integer>(size);
 }
 
@@ -214,11 +250,10 @@ arccoreCheckArraySize(long size)
  * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
  * une exception de type ArgumentException.
  */
-inline constexpr Integer
+inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(unsigned int size)
 {
-  if (size>=ARCCORE_INTEGER_MAX)
-    impl::arccoreThrowTooBigInteger(size);
+  impl::arccoreCheckIsValidInteger(size);
   return static_cast<Integer>(size);
 }
 
@@ -228,13 +263,11 @@ arccoreCheckArraySize(unsigned int size)
  * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
  * une exception de type ArgumentException.
  */
-inline constexpr Integer
+inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(int size)
 {
-  if (size>=ARCCORE_INTEGER_MAX)
-    impl::arccoreThrowTooBigInteger(size);
-  if (size<0)
-    impl::arccoreThrowNegativeSize(size);
+  impl::arccoreCheckIsValidInteger(size);
+  impl::arccoreCheckIsPositive(size);
   return static_cast<Integer>(size);
 }
 
@@ -245,11 +278,10 @@ arccoreCheckArraySize(int size)
  * Si possible, retourne \a size convertie en un 'Int64'. Sinon, lance
  * une exception de type ArgumentException.
  */
-inline constexpr Int64
+inline constexpr ARCCORE_HOST_DEVICE Int64
 arccoreCheckLargeArraySize(size_t size)
 {
-  if (size>=ARCCORE_INT64_MAX)
-    impl::arccoreThrowTooBigInt64(size);
+  impl::arccoreCheckIsValidInt64(size);
   return static_cast<Int64>(size);
 }
 
@@ -263,7 +295,7 @@ template<>
 class ArraySizeChecker<Int32>
 {
  public:
-  template<typename SizeType>
+  template<typename SizeType> ARCCORE_HOST_DEVICE
   static Int32 check(SizeType size)
   {
     return arccoreCheckArraySize(size);
@@ -275,7 +307,7 @@ template<>
 class ArraySizeChecker<Int64>
 {
  public:
-  static Int64 check(std::size_t size)
+  static ARCCORE_HOST_DEVICE Int64 check(std::size_t size)
   {
     return arccoreCheckLargeArraySize(size);
   }
