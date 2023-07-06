@@ -1,5 +1,6 @@
 set(ARCANE_SOURCES
   RayMeshIntersectionUnitTest.cc
+  MaterialHeatTestModule.cc
   MeshMaterialTesterModule.cc
   CartesianMeshTesterModule.cc
   AdiProjectionModule.cc
@@ -18,6 +19,7 @@ set(ARCANE_SOURCES
 
 set(AXL_FILES 
   RayMeshIntersectionUnitTest
+  MaterialHeatTest
   MeshMaterialTester
   CartesianMeshTester
   AdiProjection

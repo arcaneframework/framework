@@ -254,6 +254,9 @@ endif()
 #############
 ARCANE_ADD_TEST_SEQUENTIAL(geometric1 testGeometric-1.arc)
 
+# Material Heat
+arcane_add_test(material_heat testMaterialHeat-1.arc "-m 5")
+
 ###################
 # WRAPPING '.Net' #
 ###################
