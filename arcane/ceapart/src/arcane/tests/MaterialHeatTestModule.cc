@@ -22,6 +22,7 @@
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
 #include "arcane/materials/MeshMaterialModifier.h"
+#include "arcane/materials/ComponentItemVectorView.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MaterialHeatTest_axl.h"
@@ -248,6 +249,8 @@ _computeOneMaterial(const HeatObject& heat_object)
 
   CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
 
+  const bool is_verbose = false;
+
   UniqueArray<Real> mat_cells_to_add_value;
   UniqueArray<Int32> mat_cells_to_add;
   ENUMERATE_ (Cell, icell, allCells()) {
@@ -264,6 +267,8 @@ _computeOneMaterial(const HeatObject& heat_object)
         // On conserve la valeur à ajouter pour ne pas la recalculer
         mat_cells_to_add_value.add(to_add);
         mat_cells_to_add.add(cell.localId());
+        if (is_verbose)
+          info() << "Add LID=" << cell.localId() << " T=" << to_add;
       }
       else
         m_mat_temperature[mc] += to_add;
@@ -290,25 +295,40 @@ _computeOneMaterial(const HeatObject& heat_object)
     }
   }
 
-  // Refroidit chaque maille du matériau d'une quantité fixe.
-  // Si la températeur devient inférieure à zéro on supprime la maille
-  // de ce matériau.
-  UniqueArray<Int32> mat_cells_to_remove;
-  ENUMERATE_MATCELL (imatcell, current_mat) {
-    MatCell mc = *imatcell;
-    Real t = m_mat_temperature[mc];
-    t -= 300.0;
-    if (t < 0) {
-      t = 0.0;
-      mat_cells_to_remove.add(mc.globalCell().localId());
-    }
-    m_mat_temperature[mc] = t;
-  }
+  const Real cold_value = 300.0;
 
-  if (!mat_cells_to_remove.empty()) {
-    MeshMaterialModifier modifier(m_material_mng);
-    info() << "MAT_MODIF: Remove n=" << mat_cells_to_remove.size() << " cells to material=" << current_mat->name();
-    modifier.addCells(current_mat, mat_cells_to_remove);
+  // Refroidit chaque maille du matériau d'une quantité fixe.
+  // Si la températeure devient inférieure à zéro on supprime la maille
+  // de ce matériau.
+  if (is_verbose)
+    info() << "MAT_BEFORE: " << current_mat->matView()._internalLocalIds();
+  {
+    UniqueArray<Int32> mat_cells_to_remove;
+    ENUMERATE_MATCELL (imatcell, current_mat) {
+      MatCell mc = *imatcell;
+      Real t = m_mat_temperature[mc];
+      if (t < cold_value) {
+        mat_cells_to_remove.add(mc.globalCell().localId());
+        if (is_verbose)
+          info() << "Remove LID=" << mc.globalCell().localId() << " T=" << t;
+      }
+    }
+
+    if (!mat_cells_to_remove.empty()) {
+      MeshMaterialModifier modifier(m_material_mng);
+      info() << "MAT_MODIF: Remove n=" << mat_cells_to_remove.size() << " cells to material=" << current_mat->name();
+      modifier.removeCells(current_mat, mat_cells_to_remove);
+    }
+  }
+  if (is_verbose)
+    info() << "MAT_AFTER: " << current_mat->matView()._internalLocalIds();
+
+  ENUMERATE_MATCELL (imatcell, current_mat) {
+    Real t = m_mat_temperature[imatcell];
+    t -= cold_value;
+    if (t <= 0)
+      ARCANE_FATAL("Invalid negative temperature '{0}' cell_lid={1}", t, (*imatcell).globalCell().localId());
+    m_mat_temperature[imatcell] = t;
   }
 }
 
