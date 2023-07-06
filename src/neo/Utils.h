@@ -115,8 +115,9 @@ namespace utils
   struct Span
   {
     using value_type = T;
+    using non_const_value_type = typename std::remove_const<T>::type;
     using size_type = int;
-    using vector_size_type = typename std::vector<T>::size_type;
+    using vector_size_type = typename std::vector<non_const_value_type>::size_type;
 
     size_type m_size = 0;
     T* m_ptr = nullptr;
@@ -134,12 +135,17 @@ namespace utils
       return *(m_ptr + i);
     }
 
+    T const& operator[](int i) const {
+      assert(i < m_size);
+      return *(m_ptr + i);
+    }
+
     T* begin() { return m_ptr; }
     T* end() { return m_ptr + m_size; }
 
     int size() const { return m_size; }
-    std::vector<T> copy() {
-      std::vector<T> vec(m_size);
+    std::vector<non_const_value_type> copy() {
+      std::vector<non_const_value_type> vec(m_size);
       std::copy(this->begin(), this->end(), vec.begin());
       return vec;
     }
@@ -151,8 +157,9 @@ namespace utils
   struct ConstSpan
   {
     using value_type = T;
+    using non_const_value_type = typename std::remove_const<T>::type;
     using size_type = int;
-    using vector_size_type = typename std::vector<T>::size_type;
+    using vector_size_type = typename std::vector<non_const_value_type>::size_type;
 
     int m_size = 0;
     const T* m_ptr = nullptr;
@@ -169,11 +176,14 @@ namespace utils
       assert(i < m_size);
       return *(m_ptr + i);
     }
+
     const T* begin() const { return m_ptr; }
     const T* end() const { return m_ptr + m_size; }
+
     int size() const { return m_size; }
-    std::vector<T> copy() {
-      std::vector<T> vec(m_size);
+
+    std::vector<non_const_value_type> copy() {
+      std::vector<non_const_value_type> vec(m_size);
       std::copy(this->begin(), this->end(), vec.begin());
       return vec;
     }
