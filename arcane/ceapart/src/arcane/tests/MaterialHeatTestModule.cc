@@ -210,7 +210,7 @@ compute()
   }
 
   {
-    // Calcule dans 'Temperature' la moyenne des milieux et matériaux
+    // Calcule dans 'Temperature' la somme des températures des milieux et matériaux
     CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
     ENUMERATE_ (Cell, icell, allCells()) {
       Cell cell = *icell;
@@ -223,13 +223,9 @@ compute()
           MatCell mc = *imatcell;
           env_temperature += m_mat_temperature[mc];
         }
-        if (env_cell.nbMaterial() > 1)
-          env_temperature /= static_cast<Real>(env_cell.nbMaterial());
         m_mat_temperature[env_cell] = env_temperature;
         global_temperature += env_temperature;
       }
-      if (all_env_cell.nbEnvironment() > 1)
-        global_temperature /= static_cast<Real>(all_env_cell.nbEnvironment());
       m_mat_temperature[cell] = global_temperature;
     }
   }
@@ -278,7 +274,7 @@ _computeOneMaterial(const HeatObject& heat_object)
     ConstArrayView<Int32> ids(mat_cells_to_add);
     {
       MeshMaterialModifier modifier(m_material_mng);
-      info() << "Add n=" << ids.size() << " cells to material=" << current_mat->name();
+      info() << "MAT_MODIF: Add n=" << ids.size() << " cells to material=" << current_mat->name();
       modifier.addCells(current_mat, ids);
     }
     // Initialise les nouvelles valeurs partielles
@@ -293,13 +289,25 @@ _computeOneMaterial(const HeatObject& heat_object)
     }
   }
 
+  // Refroidit chaque maille du matériau d'une quantité fixe.
+  // Si la températeur devient inférieure à zéro on supprime la maille
+  // de ce matériau.
+  UniqueArray<Int32> mat_cells_to_remove;
   ENUMERATE_MATCELL (imatcell, current_mat) {
     MatCell mc = *imatcell;
     Real t = m_mat_temperature[mc];
-    t -= 200.0;
-    if (t < 0)
+    t -= 300.0;
+    if (t < 0) {
       t = 0.0;
+      mat_cells_to_remove.add(mc.globalCell().localId());
+    }
     m_mat_temperature[mc] = t;
+  }
+
+  if (!mat_cells_to_remove.empty()) {
+    MeshMaterialModifier modifier(m_material_mng);
+    info() << "MAT_MODIF: Remove n=" << mat_cells_to_remove.size() << " cells to material=" << current_mat->name();
+    modifier.addCells(current_mat, mat_cells_to_remove);
   }
 }
 
