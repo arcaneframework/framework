@@ -37,6 +37,28 @@
 namespace Arcane
 {
 
+namespace
+{
+
+inline void
+petscCheck(PetscErrorCode error_code)
+{
+  // Note GG: Je ne sais pas vraiment à partir de quelle version de PETSc
+  // la valeur 'PETSC_SUCCESS' la fonction 'PetscCallVoid' sont
+  // disponibles mais elles le sont dans la 3.18.0.
+#if PETSC_VERSION_GE(3,18,0)
+  if (error_code==PETSC_SUCCESS)
+    return;
+  PetscCallVoid(error_code);
+  ARCANE_FATAL("Error in PETSc backend errcode={0}",error_code);
+#else
+  if (error_code!=0)
+    ARCANE_FATAL("Error in PETSc backend errcode={0}",error_code);
+#endif
+}
+
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -214,7 +236,7 @@ _checkInitPETSc()
   debug() << Trace::Color::cyan() << "[AlephTopologyPETSc] Initializing PETSc. UseArg=" << has_args;
   if (has_args){
     const CommandLineArguments& args = init_args.commandLineArguments();
-    PetscInitialize(args.commandLineArgc(),args.commandLineArgv(),PETSC_NULL,PETSC_NULL);
+    PetscInitialize(args.commandLineArgc(),args.commandLineArgv(),nullptr,nullptr);
   }
   else{
     PetscInitializeNoArguments();
@@ -364,10 +386,10 @@ AlephMatrixCreate(void)
                           m_kernel->topology()->nb_row_size(), // M = number of global rows
                           m_kernel->topology()->nb_row_size(), // N = number of global columns
                           0, // ignored (number of nonzeros per row in DIAGONAL portion of local submatrix)
- // array containing the number of nonzeros in the various rows of the DIAGONAL portion of local submatrix
+                          // array containing the number of nonzeros in the various rows of the DIAGONAL portion of local submatrix
                           m_kernel->topology()->gathered_nb_row_elements().subView(ilower,size).unguardedBasePointer(),
                           0, // ignored (number of nonzeros per row in the OFF-DIAGONAL portion of local submatrix)
-     // array containing the number of nonzeros in the various rows of the OFF-DIAGONAL portion of local submatrix
+                          // array containing the number of nonzeros in the various rows of the OFF-DIAGONAL portion of local submatrix
                           m_kernel->topology()->gathered_nb_row_elements().subView(ilower,size).unguardedBasePointer(),
                           &m_petsc_matrix);
   MatSetOption(m_petsc_matrix, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE);
@@ -470,6 +492,7 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
 
   ARCANE_CHECK_POINTER(x_petsc);
   ARCANE_CHECK_POINTER(b_petsc);
+  const bool is_parallel = m_kernel->subParallelMng(m_index)->isParallel();
 
   Vec solution = x_petsc->m_petsc_vector;
   Vec RHS      = b_petsc->m_petsc_vector;
@@ -496,14 +519,27 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
   }
   
   KSPGetPC(m_ksp_solver,&prec);
+
   switch(solver_param->precond()){
   case TypesSolver::NONE     : PCSetType(prec,PCNONE); break;
     // Jacobi (i.e. diagonal scaling preconditioning) 
   case TypesSolver::DIAGONAL : PCSetType(prec,PCJACOBI); break;
     // Incomplete factorization preconditioners. 
-  case TypesSolver::ILU      : PCSetType(prec,PCILU); break;
+  case TypesSolver::ILU:
+    // ILU ne fonctionne pas en parallèle avec PETSc (sauf si compilé avec Hypre)
+    if (is_parallel)
+      PCSetType(prec,PCBJACOBI);
+    else
+      PCSetType(prec,PCILU);
+    break;
     // Incomplete Cholesky factorization preconditioners. 
-  case TypesSolver::IC       : PCSetType(prec,PCICC); break;
+  case TypesSolver::IC:
+    // IC ne fonctionne pas en parallèle avec PETSc.
+    if (is_parallel)
+      PCSetType(prec,PCBJACOBI);
+    else
+      PCSetType(prec,PCICC);
+    break;
     // Sparse Approximate Inverse method of Grote and Barnard as a preconditioner (SIAM J. Sci. Comput.; vol 18, nr 3) 
   case TypesSolver::SPAIstat : PCSetType(prec,PCSPAI); break;
     // Use multigrid preconditioning.
@@ -569,13 +605,14 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
   KSPGetType(m_ksp_solver,&kt);
   PCType pt;
   PCGetType(prec,&pt);
-  debug()<<"[AlephMatrixSolve] Will use KSP type :" << kt << " PC type : "<< pt ;
+  info(4) << "[AlephMatrixSolve] Will use KSP type :" << kt << " PC type : "<< pt
+          << " is_parallel=" << is_parallel;
 
   // solve the linear system //
   debug()<<"[AlephMatrixSolve] All set up, now solving";
-  KSPSolve(m_ksp_solver,RHS,solution);
+  petscCheck(KSPSolve(m_ksp_solver,RHS,solution));
   debug()<<"[AlephMatrixSolve] solved";
-  KSPGetConvergedReason(m_ksp_solver,&reason);
+  petscCheck(KSPGetConvergedReason(m_ksp_solver,&reason));
   
   switch(reason){
 #if !PETSC_VERSION_(3,0,0)
