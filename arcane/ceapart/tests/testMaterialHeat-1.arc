@@ -10,14 +10,6 @@
    <output-period>1</output-period>
    <output>
     <variable>Temperature</variable>
-    <!-- <variable>Temperature_ENV1_MAT1</variable>
-    <variable>Temperature_ENV1_MAT2</variable> -->
-    <!-- <variable>StdMat_CellNbEnvironment</variable>
-    <variable>StdMat_CellNbMaterial_ENV1</variable>
-    <variable>StdMat_CellNbMaterial_ENV2</variable>
-    <variable>StdMat_CellNbMaterial_ENV3</variable> -->
-    <group>StdMat_ENV1</group>
-    <group>AllCells</group>
    </output>
  </arcane-post-processing>
 

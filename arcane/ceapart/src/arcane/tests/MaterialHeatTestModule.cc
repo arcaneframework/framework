@@ -20,6 +20,8 @@
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
 #include "arcane/materials/MeshMaterialInfo.h"
+#include "arcane/materials/CellToAllEnvCellConverter.h"
+#include "arcane/materials/MeshMaterialModifier.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MaterialHeatTest_axl.h"
@@ -41,6 +43,21 @@ using namespace Arcane::Materials;
 class MaterialHeatTestModule
 : public ArcaneMaterialHeatTestObject
 {
+ private:
+
+  //! Caractéristiques de l'objet qui chauffe (disque ou sphère)
+  struct HeatObject
+  {
+    //! Centre à t=0
+    Real3 center;
+    //! Rayon
+    Real3 radius;
+    //! Vitesse
+    Real3 velocity;
+    //! Matériaux qui sera chauffé par cet objet.
+    IMeshMaterial* material = nullptr;
+  };
+
  public:
 
   explicit MaterialHeatTestModule(const ModuleBuildInfo& mbi);
@@ -59,8 +76,8 @@ class MaterialHeatTestModule
 
  private:
 
-  void _computeDensity();
-  void _fillDensity();
+  void _computeCellsCenter();
+  void _computeOneMaterial(const HeatObject& heat_object);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -129,7 +146,7 @@ buildInit()
       saved_envs.add(env);
     }
 
-    mm->endCreate(subDomain()->isContinue());
+    mm->endCreate(false);
 
     info() << "List of materials:";
     for (MeshMaterialInfo* m : materials_info) {
@@ -148,6 +165,7 @@ startInit()
 {
   m_global_deltat.assign(1.0);
   m_mat_temperature.globalVariable().fill(0.0);
+  m_material_mng->forceRecompute();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -167,9 +185,106 @@ compute()
 {
   info() << "MaterialHeatTestModule::compute()";
 
-  Real3 heat_center(0.3, 0.4, 0.0);
-  Real3 heat_radius(0.1, 0.15, 0.0);
-  Real heat_radius_norm = heat_radius.squareNormL2();
+  _computeCellsCenter();
+
+  IMeshEnvironment* env = m_material_mng->findEnvironment("ENV1");
+  const Int32 nb_env = env->nbMaterial();
+  if (nb_env == 0)
+    ARCANE_FATAL("Environment '{0}' has no materials", env->name());
+
+  {
+    HeatObject ho;
+    ho.center = Real3(0.3, 0.4, 0.0);
+    ho.velocity = Real3(0.02, 0.04, 0.0);
+    ho.radius = Real3(0.1, 0.15, 0.0);
+    ho.material = env->materials()[0];
+    _computeOneMaterial(ho);
+  }
+  {
+    HeatObject ho;
+    ho.center = Real3(0.8, 0.4, 0.0);
+    ho.velocity = Real3(-0.02, 0.04, 0.0);
+    ho.radius = Real3(0.2, 0.15, 0.0);
+    ho.material = env->materials()[1];
+    _computeOneMaterial(ho);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_computeOneMaterial(const HeatObject& heat_object)
+{
+  Real3 heat_center = heat_object.center;
+  heat_center += heat_object.velocity * m_global_time();
+  const Real heat_value = 1000.0;
+  Real3 heat_radius = heat_object.radius;
+  const Real heat_radius_norm = heat_radius.squareNormL2();
+
+  IMeshMaterial* current_mat = heat_object.material;
+
+  CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
+
+  UniqueArray<Real> mat_cells_to_add_value;
+  UniqueArray<Int32> mat_cells_to_add;
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Cell cell = *icell;
+    AllEnvCell all_env_cell = all_env_cell_converter[cell];
+    Real3 center = m_cell_center[icell];
+    Real distance2 = (center - heat_center).squareNormL2();
+    if (distance2 < heat_radius_norm) {
+      Real to_add = heat_value / (1.0 + distance2);
+      MatCell mc = current_mat->findMatCell(all_env_cell);
+      if (mc.null()) {
+        // Si 'mc' est nul cela signifie que ce matériau n'est
+        // pas présent dans la maille. Il faudra donc l'ajouter.
+        // On conserve la valeur à ajouter pour ne pas la recalculer
+        mat_cells_to_add_value.add(to_add);
+        mat_cells_to_add.add(cell.localId());
+      }
+      else
+        m_mat_temperature[mc] += to_add;
+    }
+  }
+
+  // Ajoute les mailles matériaux nécessaires
+  if (!mat_cells_to_add.empty()) {
+    ConstArrayView<Int32> ids(mat_cells_to_add);
+    {
+      MeshMaterialModifier modifier(m_material_mng);
+      info() << "Add n=" << ids.size() << " cells to material=" << current_mat->name();
+      modifier.addCells(current_mat, ids);
+    }
+    // Initialise les nouvelles valeurs partielles
+    for (Int32 i = 0, n = ids.size(); i < n; ++i) {
+      AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(ids[i])];
+      MatCell mc = current_mat->findMatCell(all_env_cell);
+      // Teste que la maille n'est pas nulle.
+      // Ne devrait pas arriver car on l'a ajouté juste avant
+      if (mc.null())
+        ARCANE_FATAL("Internal invalid null mat cell");
+      m_mat_temperature[mc] = mat_cells_to_add_value[i];
+    }
+  }
+
+  ENUMERATE_MATCELL (imatcell, current_mat) {
+    MatCell mc = *imatcell;
+    Real t = m_mat_temperature[mc];
+    t -= 100.0;
+    if (t < 0)
+      t = 0.0;
+    m_mat_temperature[mc] = t;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_computeCellsCenter()
+{
+  // Calcule le centre des mailles
   VariableNodeReal3& node_coord = defaultMesh()->nodesCoordinates();
   ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
@@ -179,13 +294,7 @@ compute()
       center += node_coord[nodeid];
     }
     center /= cell_nodes.size();
-    Real distance2 = (center - heat_center).squareNormL2();
-    if (distance2 < heat_radius_norm) {
-      Real to_add = 1000.0;
-      if (distance2 > 0.0)
-        to_add = 1000 / distance2;
-      m_mat_temperature[cell] += to_add;
-    }
+    m_cell_center[icell] = center;
   }
 }
 
