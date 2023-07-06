@@ -1,0 +1,60 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<module name="MaterialHeatTest" version="1.0" namespace-name="ArcaneTest">
+  <description>
+    Module de test d'un équation de la chaleur pour les matériaux.
+  </description>
+
+  <options>
+
+    <!-- Infos sur les materiaux -->
+    <complex name="material" type="Material" minOccurs="1" maxOccurs="unbounded">
+      <description>Materiaux</description>
+      <simple name="name" type="string">
+        <description>Nom du materiau</description>
+      </simple>
+    </complex>
+
+    <!-- Liste des milieux et composition des materiaux -->
+    <complex name="environment" type="Environment" minOccurs="1" maxOccurs="unbounded">
+      <description>Milieu</description>
+      <simple name = "name" type = "string">
+        <description>Nom du milieu</description>
+      </simple>
+      <simple name="material" type="string" minOccurs="1" maxOccurs="unbounded">
+        <description>Nom du materiau</description>
+      </simple>
+    </complex>
+
+    <!-- Liste des objects qui vont faire chauffer les matériaux -->
+    <complex name="heat-object" type="HeatObject" minOccurs="0" maxOccurs="unbounded">
+      <simple name="center" type="real3">
+        <description>Center of the disk/sphere at t=0</description>
+      </simple>
+      <simple name="radius" type="real">
+        <description>Radius of the disk/sphere</description>
+      </simple>
+      <simple name="velocity" type="real3">
+        <description>Velocity the disk/sphere</description>
+      </simple>
+      <simple name="material" type="string">
+        <description>Name of the material to heat</description>
+      </simple>
+    </complex>
+
+  </options>
+
+  <entry-points>
+    <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
+    <entry-point method-name="startInit" name="StartInit" where="start-init" property="none" />
+    <entry-point method-name="continueInit" name="ContinueInit" where="continue-init" property="none" />
+    <entry-point method-name="buildInit" name="BuildInit" where="build" property="none" />
+  </entry-points>
+
+  <variables>
+    <variable field-name="mat_temperature" name="Temperature" data-type="real" item-kind="cell" dim="0" material="true" />
+    <variable field-name="cell_center" name="CellCenter" data-type="real3" item-kind="cell" dim="0" material="true" />
+    <variable field-name="all_temperature" name="AllTemperatures" data-type="real" item-kind="cell" dim="1" material="true" />
+  </variables>
+
+</module>
