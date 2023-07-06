@@ -35,6 +35,7 @@ namespace Arcane::Materials
 
 class IMeshMaterialMng;
 class MeshMaterial;
+class ComponentItemInternalData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -132,7 +133,7 @@ class MeshEnvironment
   Integer totalNbCellMat() const { return m_total_nb_cell_mat; }
 
   void resizeItemsInternal(Integer nb_item);
-  void computeMaterialIndexes();
+  void computeMaterialIndexes(ComponentItemInternalData* item_internal_data);
   void notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids);
   MeshComponentData* componentData() { return &m_data; }
 
@@ -164,7 +165,6 @@ class MeshEnvironment
   
   //! Nombre total de mailles pour tous les matériaux
   Integer m_total_nb_cell_mat = 0;
-  UniqueArray<ComponentItemInternal> m_mat_items_internal;
   IItemGroupObserver* m_group_observer = nullptr;
   MeshComponentData m_data;
   MeshEnvironment* m_non_const_this = nullptr;

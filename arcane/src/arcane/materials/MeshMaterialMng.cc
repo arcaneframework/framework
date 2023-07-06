@@ -431,16 +431,18 @@ endCreate(bool is_continue)
 {
   if (m_is_end_create)
     return;
+
   _saveInfosInProperties();
-  info() << "This version uses MatVarIndex for Indexer";
-  info() << "NOTE: this version use one loop all enumeration and remove support for two loop";
-  info() << "END CREATE MATERIAL_MNG is_continue=" << is_continue << " this=" << this;
+
+  info() << "END CREATE MATERIAL_MNG is_continue=" << is_continue;
+
   m_modifier->initOptimizationFlags();
+
+  m_all_env_data->endCreate();
+
   auto synchronizer = mesh()->cellFamily()->allItemsSynchronizer();
-  m_all_cells_mat_env_synchronizer =
-  new MeshMaterialVariableSynchronizer(this,synchronizer,MatVarSpace::MaterialAndEnvironment);
-  m_all_cells_env_only_synchronizer =
-  new MeshMaterialVariableSynchronizer(this,synchronizer,MatVarSpace::Environment);
+  m_all_cells_mat_env_synchronizer = new MeshMaterialVariableSynchronizer(this,synchronizer,MatVarSpace::MaterialAndEnvironment);
+  m_all_cells_env_only_synchronizer = new MeshMaterialVariableSynchronizer(this,synchronizer,MatVarSpace::Environment);
 
   // Détermine la liste de tous les composants.
   {
@@ -449,11 +451,12 @@ endCreate(bool is_continue)
     m_components.addRange(m_environments_as_components);
     m_components.addRange(m_materials_as_components);
   }
+
   // Il faut construire et initialiser les variables qui ont été
   // créées avant cette allocation.
   for( const auto& i : m_full_name_variable_map ){
     IMeshMaterialVariable* mv = i.second;
-    info() << "BUILD FROM MANAGER name=" << mv->name() << " this=" << this;
+    info(4) << "BUILD FROM MANAGER name=" << mv->name() << " this=" << this;
     mv->buildFromManager(is_continue);
   }
   if (is_continue)

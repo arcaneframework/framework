@@ -21,6 +21,7 @@
 
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/MeshEnvironment.h"
+#include "arcane/materials/internal/ComponentItemInternalData.h"
 
 #include <map>
 
@@ -63,12 +64,12 @@ class AllEnvData
 
   ConstArrayView<ComponentItemInternal> allEnvItemsInternal() const
   {
-    return m_all_env_items_internal;
+    return m_item_internal_data.allEnvItemsInternal();
   }
 
   ArrayView<ComponentItemInternal> allEnvItemsInternal()
   {
-    return m_all_env_items_internal;
+    return m_item_internal_data.allEnvItemsInternal();
   }
 
   const VariableCellInt32& nbEnvPerCell() const
@@ -80,6 +81,9 @@ class AllEnvData
 
   void printAllEnvCells(Int32ConstArrayView ids);
 
+  //! Notification de la fin de création des milieux/matériaux
+  void endCreate();
+
  private:
 
   MeshMaterialMng* m_material_mng = nullptr;
@@ -89,14 +93,19 @@ class AllEnvData
    * Ce tableau est modifié chaque fois que les mailles des matériaux et
    * des milieux change.
    * Les premiers éléments de ce tableau contiennent
-   * les infos pour les mailles de type AllEnvCell et peuvent
+   * les infos pour les mailles de type AllEnvCell et peut
    * être indexés directement avec le localId() de ces mailles.
    */
   //@{
   VariableCellInt32 m_nb_env_per_cell;
-  UniqueArray<ComponentItemInternal> m_all_env_items_internal;
-  UniqueArray<ComponentItemInternal> m_env_items_internal;
+  //UniqueArray<ComponentItemInternal> m_all_env_items_internal;
+  //UniqueArray<ComponentItemInternal> m_env_items_internal;
   //@}
+
+  //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
+  //UniqueArray< UniqueArray<ComponentItemInternal> > m_mat_items_internal;
+
+  ComponentItemInternalData m_item_internal_data;
 
  private:
 
