@@ -596,9 +596,9 @@ TEST(NeoMeshApiTest, AddMeshOperationAfterAddingConnectivity) {
                                cell_dofs, "cell_to_dofs");
   // Schedule a user operation depending on cell dof connectivity :
   // create a property containing the number of cells connected to a dof
-  dof_family.addProperty<Neo::utils::Int32>("nb_connected_cells");
+  dof_family.addMeshScalarProperty<Neo::utils::Int32>("nb_connected_cells");
   mesh.scheduleAddMeshOperation(cell_family, mesh.getConnectivity(cell_family, dof_family, "cell_to_dofs").connectivity_value.name(), dof_family, "nb_connected_cells",
-                                [&dof_family, &cell_family](Neo::Mesh::ConnectivityPropertyType const& cell_to_dofs, Neo::PropertyT<Neo::utils::Int32>& nb_connected_cells) {
+                                [&dof_family, &cell_family](Neo::Mesh::ConnectivityPropertyType const& cell_to_dofs, Neo::MeshScalarPropertyT<Neo::utils::Int32>& nb_connected_cells) {
                                   nb_connected_cells.init(dof_family.all(), 0);
                                   for (auto cell : cell_family.all()) {
                                     for (auto dof : cell_to_dofs[cell]) {
@@ -609,7 +609,7 @@ TEST(NeoMeshApiTest, AddMeshOperationAfterAddingConnectivity) {
                                 });
   mesh.applyScheduledOperations();
   // get algo result
-  auto& nb_connected_cell_property = dof_family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int32>>("nb_connected_cells");
+  auto& nb_connected_cell_property = dof_family.getConcreteProperty<Neo::MeshScalarPropertyT<Neo::utils::Int32>>("nb_connected_cells");
   std::vector<Neo::utils::Int32> nb_connected_cell_ref{ 2, 1, 1, 1, 1 };
   nb_connected_cell_property.debugPrint();
   EXPECT_TRUE(std::equal(nb_connected_cell_property.begin(), nb_connected_cell_property.end(), nb_connected_cell_ref.begin()));

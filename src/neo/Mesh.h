@@ -47,20 +47,20 @@ class Mesh
 
  public:
   using LocalIdPropertyType = Neo::ItemLidsProperty;
-  using UniqueIdPropertyType = Neo::PropertyT<Neo::utils::Int64>;
-  using CoordPropertyType = Neo::PropertyT<Neo::utils::Real3>;
-  using ConnectivityPropertyType = Neo::ArrayPropertyT<Neo::utils::Int32>;
+  using UniqueIdPropertyType = Neo::MeshScalarPropertyT<Neo::utils::Int64>;
+  using CoordPropertyType = Neo::MeshScalarPropertyT<Neo::utils::Real3>;
+  using ConnectivityPropertyType = Neo::MeshArrayPropertyT<Neo::utils::Int32>;
 
   template <typename... DataTypes>
   using MeshOperationT = std::variant<std::function<void(LocalIdPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
-                                      std::function<void(LocalIdPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
-                                      std::function<void(LocalIdPropertyType const&, Neo::ArrayPropertyT<DataTypes>&)>...,
+                                      std::function<void(LocalIdPropertyType const&, Neo::MeshScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(LocalIdPropertyType const&, Neo::MeshArrayPropertyT<DataTypes>&)>...,
                                       std::function<void(ConnectivityPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
-                                      std::function<void(ConnectivityPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
-                                      std::function<void(ConnectivityPropertyType const&, Neo::ArrayPropertyT<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::MeshScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::MeshArrayPropertyT<DataTypes>&)>...,
                                       std::function<void(CoordPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
-                                      std::function<void(CoordPropertyType const&, Neo::PropertyT<DataTypes>&)>...,
-                                      std::function<void(CoordPropertyType const&, Neo::ArrayPropertyT<DataTypes>&)>...>;
+                                      std::function<void(CoordPropertyType const&, Neo::MeshScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(CoordPropertyType const&, Neo::MeshArrayPropertyT<DataTypes>&)>...>;
 
   using MeshOperation = MeshOperationT<utils::Int32, utils::Real3, utils::Int64>;
 

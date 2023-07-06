@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoBaseTest.cpp                                 (C) 2000-2022             */
+/* NeoBaseTest.cpp                                 (C) 2000-2023             */
 /*                                                                           */
 /* Base tests for Neo kernel                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 #include <vector>
+#include <algorithm>
 
 #include "gtest/gtest.h"
 #include "neo/Neo.h"
@@ -36,8 +36,8 @@ TEST(NeoUtils, test_array_view) {
   // build a dim2 view from vector
   auto dim1_size = 2;
   auto dim2_size = 3;
-  Neo::utils::Array2View<int> dim2_view{ dim1_size, dim2_size, dim2_vec.data() };
-  Neo::utils::ConstArray2View<int> dim2_const_view{ dim2_size, dim1_size, dim2_vec.data() };
+  Neo::utils::Span2<int> dim2_view{ dim2_vec.data(), dim1_size, dim2_size };
+  Neo::utils::ConstSpan2<int> dim2_const_view{ dim2_vec.data(), dim2_size, dim1_size };
   for (auto i = 0; i < dim1_size; ++i) {
     for (auto j = 0; j < dim2_size; ++j) {
       EXPECT_EQ(dim2_view[i][j], dim2_vec[i * dim2_size + j]);
@@ -77,7 +77,7 @@ void _testItemLocalIds(Neo::utils::Int32 const& first_lid,
   }
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestItemLocalIds, test_item_local_ids) {
   _testItemLocalIds(0, 10);
@@ -87,7 +87,7 @@ TEST(NeoTestItemLocalIds, test_item_local_ids) {
   _testItemLocalIds(5, 10, { 1, 3, 5, 9 });
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestItemRange, test_item_range) {
   // Test with only contiguous local ids
@@ -141,7 +141,7 @@ TEST(NeoTestItemRange, test_item_range) {
   // todo test out reverse range
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestFutureItemRange, test_future_item_range) {
   Neo::FutureItemRange future_item_range{};
@@ -187,7 +187,7 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
   }
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestProperty, test_scalar_property) {
   Neo::ScalarPropertyT<Neo::utils::Int32> scalar_property{ "test_scalar_property" };
@@ -198,11 +198,59 @@ TEST(NeoTestProperty, test_scalar_property) {
   EXPECT_EQ(42, const_scalar_property.get());
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
-TEST(NeoTestProperty, test_property) {
-  Neo::PropertyT<Neo::utils::Int32> property{ "test_property" };
-  EXPECT_EQ(property.name(), "test_property");
+TEST(NeoTestProperty, test_array_property) {
+  Neo::ArrayPropertyT<Neo::utils::Int32> array_property{ "test_array_property" };
+  EXPECT_EQ(array_property.name(), "test_array_property");
+  array_property.reserve(10);
+  EXPECT_EQ(array_property.size(), 0);
+  array_property.resize(10);
+  EXPECT_EQ(array_property.size(), 10);
+  for (auto i = 0; i < 10; ++i) {
+    array_property[i] = i;
+  }
+  std::vector<int> ref_values = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  array_property.debugPrint();
+  EXPECT_TRUE(std::equal(array_property.begin(), array_property.end(), ref_values.begin()));
+  EXPECT_EQ(array_property.back(), 9);
+  auto index = 0;
+  for (auto& ref_value : ref_values) {
+    EXPECT_EQ(ref_value, array_property[index++]);
+  }
+  array_property.clear();
+  for (auto i = 0; i < 10; ++i) {
+    array_property.push_back(i);
+  }
+  EXPECT_EQ(array_property.size(), 10);
+  EXPECT_TRUE(std::equal(array_property.begin(), array_property.end(), ref_values.begin()));
+  EXPECT_EQ(array_property.back(), 9);
+}
+
+/*-----------------------------------------------------------------------------*/
+
+TEST(NeoTestProperty, test_array_property_views) {
+  Neo::ArrayPropertyT<Neo::utils::Int32> array_property{ "test_array_property_views" };
+  array_property.init({ 0, 1, 2, 3, 4 });
+  auto array_property_view = array_property.view();
+  EXPECT_TRUE(std::equal(array_property_view.begin(), array_property_view.end(), array_property.begin()));
+  auto array_property_const_view = array_property.constView();
+  EXPECT_TRUE(std::equal(array_property_const_view.begin(), array_property_const_view.end(), array_property.begin()));
+  array_property_view = array_property.subView(2, 3);
+  std::vector<Neo::utils::Int32> subview_ref_values{ 2, 3, 4 };
+  EXPECT_TRUE(std::equal(array_property_view.begin(), array_property_view.end(), subview_ref_values.begin()));
+  // check invalid cases
+  array_property_view = array_property.subView(10, 2);
+  EXPECT_EQ(array_property_view.size(), 0);
+  array_property_view = array_property.subView(0, 10);
+  EXPECT_TRUE(std::equal(array_property_view.begin(), array_property_view.end(), array_property.begin()));
+}
+
+/*-----------------------------------------------------------------------------*/
+
+TEST(NeoTestProperty, test_mesh_scalar_property) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property{ "test_mesh_scalar_property" };
+  EXPECT_EQ(property.name(), "test_mesh_scalar_property");
   std::vector<Neo::utils::Int32> values{ 1, 2, 3 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 3 } };
   EXPECT_TRUE(property.isInitializableFrom(item_range));
@@ -260,10 +308,16 @@ TEST(NeoTestProperty, test_property) {
   EXPECT_TRUE(std::equal(extracted_values.begin(), extracted_values.end(), extracted_values_ref.begin()));
   // todo check throw if lids out of bound
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
-  if constexpr (_debug) {EXPECT_DEATH(property[1000], ".*Input item lid.*");}
-  if constexpr (_debug) {EXPECT_DEATH(const_property[1000], ".*Input item lid.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(property[1000], ".*Item local id must be < max local id.*");
+  }
+  if constexpr (_debug) {
+    EXPECT_DEATH(const_property[1000], ".*Item local id must be < max local id.*");
+  }
   extracted_lids = { 100, 1000, 1000000 };
-  if constexpr (_debug) {EXPECT_DEATH(property[extracted_lids], ".*Max input item lid.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(property[extracted_lids], ".*Max input item lid.*");
+  }
 #endif
   // Check append with holes, contiguous range
   item_range = { Neo::ItemLocalIds{ {}, 8, 2 } };
@@ -276,14 +330,14 @@ TEST(NeoTestProperty, test_property) {
   auto extracted_null_ids = property[{ 6, 7 }];
   EXPECT_TRUE(std::equal(null_ids.begin(), null_ids.end(), extracted_null_ids.begin()));
   // Check append in empty property contiguous range not starting at 0
-  Neo::PropertyT<Neo::utils::Int32> property2{ "test_property2" };
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property2{ "test_property2" };
   item_range = { Neo::ItemLocalIds{ {}, 2, 3 } };
   values = { 2, 3, 4 };
   property2.append(item_range, values, Neo::utils::NULL_ITEM_LID);
   property2.debugPrint();
   extracted_values = property2[{ 2, 3, 4 }];
   EXPECT_TRUE(std::equal(values.begin(), values.end(), extracted_values.begin()));
-  extracted_null_ids = property2[{ 0, 1 }];
+  extracted_null_ids = property2[std::vector<int>{ 0, 1 }];
   EXPECT_TRUE(std::equal(null_ids.begin(), null_ids.end(), extracted_null_ids.begin()));
   // Check append with holes, discontiguous range
   item_range = { Neo::ItemLocalIds{ {
@@ -299,7 +353,7 @@ TEST(NeoTestProperty, test_property) {
   extracted_values = property2[{ 0, 1, 4 }];
   EXPECT_TRUE(std::equal(values.begin(), values.end(), extracted_values.begin()));
   // Check append in empty property discontiguous range
-  Neo::PropertyT<Neo::utils::Int32> property3{ "test_property3" };
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property3{ "test_property3" };
   item_range = { Neo::ItemLocalIds{ { 1, 3, 5 }, 0, 0 } };
   values = { 1, 3, 5 };
   property3.append(item_range, values, Neo::utils::NULL_ITEM_LID);
@@ -314,7 +368,7 @@ TEST(NeoTestProperty, test_property) {
   extracted_values = property2[{ 4, 0, 1 }];
   EXPECT_TRUE(std::equal(values.begin(), values.end(), extracted_values.begin()));
   // Check append in empty property mixed range
-  Neo::PropertyT<Neo::utils::Int32> property4{ "test_property3" };
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property4{ "test_property3" };
   item_range = { Neo::ItemLocalIds{ { 1, 3, 5 }, 7, 3 } };
   values = { 1, 3, 5, 7, 8, 9 };
   property4.append(item_range, values, Neo::utils::NULL_ITEM_LID);
@@ -323,29 +377,34 @@ TEST(NeoTestProperty, test_property) {
   EXPECT_TRUE(std::equal(values.begin(), values.end(), extracted_values.begin()));
   // Clear properties
   property.clear();
-  EXPECT_EQ(property.size(),0);
-  EXPECT_EQ(property.values().size(),0);
+  EXPECT_EQ(property.size(), 0);
+  EXPECT_EQ(property.values().size(), 0);
   // Possible to call init again after a clear
   item_range = { Neo::ItemLocalIds{ {}, 0, 3 } };
-  values = {1,2,3};
-  property.init(item_range, { 1,2,3 });
+  values = { 1, 2, 3 };
+  property.init(item_range, { 1, 2, 3 });
   EXPECT_EQ(values.size(), property.size());
-  values = {1,2,3};
+  values = { 1, 2, 3 };
   prop_values = property.values();
-  EXPECT_TRUE(std::equal(prop_values.begin(),prop_values.end(),values.begin()));
+  EXPECT_TRUE(std::equal(prop_values.begin(), prop_values.end(), values.begin()));
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
-TEST(NeoTestArrayProperty, test_array_property) {
-  auto array_property = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property" };
-  EXPECT_EQ(array_property.name(), "test_array_property");
+TEST(NeoTestArrayProperty, test_mesh_array_property) {
+  auto array_property = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_mesh_array_property" };
+  EXPECT_EQ(array_property.name(), "test_mesh_array_property");
   // check assert (debug only)
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {
-    EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID], ".*item local id must be >0.*");
+    EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID], ".*Item local id.*");
   }
 #endif
+  // Check data allocation with resize (not to be used if init method is used)
+  array_property.resize({ 1, 2, 3 }, true); // 3 elements with respectively 1, 2 and 3 values
+  EXPECT_EQ(array_property.size(), 6);
+  array_property.clear();
+  EXPECT_EQ(array_property.size(), 0);
   // add elements: 5 items with one value
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 5 } };
   std::vector<Neo::utils::Int32> values{ 0, 1, 2, 3, 4 };
@@ -359,9 +418,15 @@ TEST(NeoTestArrayProperty, test_array_property) {
   array_property.init(item_range, values);
   array_property.debugPrint();
   EXPECT_EQ(values.size(), array_property.size());
-  std::vector<int> indexes{ 0, 1, 2, 3, 4 }; // to check indexes
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
   // check values
+  auto index = 0;
+  for (auto item : item_range) {
+    auto item_array = array_property[item];
+    for (auto item_value : item_array) {
+      EXPECT_EQ(item_value, values[index++]);
+    }
+  }
+  // check iterators
   EXPECT_TRUE(std::equal(array_property.begin(), array_property.end(), values.begin()));
   // check view
   auto property_1D_view = array_property.view();
@@ -377,8 +442,14 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_EQ(values.size() + values_added.size(), array_property.size());
   std::vector<int> ref_values = { 0, 1, 2, 3, 4, 6, 6, 6, 7 };
   EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.begin()));
-  indexes = { 0, 1, 2, 3, 4, 5, 5, 8 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
+  // check values
+  index = 0;
+  for (auto item : item_range) {
+    auto item_array = array_property[item];
+    for (auto item_value : item_array) {
+      EXPECT_EQ(item_value, values_added[index++]);
+    }
+  }
   // Add three more items
   item_range = { Neo::ItemLocalIds{ {}, 8, 3 } };
   std::for_each(values_added.begin(), values_added.end(), [](auto& elt) { return elt += 2; });
@@ -387,8 +458,14 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_EQ(values.size() + 2 * values_added.size(), array_property.size());
   ref_values = { 0, 1, 2, 3, 4, 6, 6, 6, 7, 8, 8, 8, 9 };
   EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.begin()));
-  indexes = { 0, 1, 2, 3, 4, 5, 5, 8, 9, 9, 12 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
+  // check values
+  index = 0;
+  for (auto item : item_range) {
+    auto item_array = array_property[item];
+    for (auto item_value : item_array) {
+      EXPECT_EQ(item_value, values_added[index++]);
+    }
+  }
   // Add items and modify existing item
   item_range = { Neo::ItemLocalIds{ { 0, 8, 5 }, 11, 1 } };
   nb_element_per_item = { 3, 3, 2, 1 };
@@ -398,11 +475,17 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_EQ(21, array_property.size());
   ref_values = { 10, 10, 10, 1, 2, 3, 4, 12, 12, 6, 6, 6, 7, 11, 11, 11, 8, 8, 8, 9, 13 };
   EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.begin()));
-  indexes = { 0, 3, 4, 5, 6, 7, 9, 12, 13, 16, 19, 20 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
+  // check values
+  index = 0;
+  for (auto item : item_range) {
+    auto item_array = array_property[item];
+    for (auto item_value : item_array) {
+      EXPECT_EQ(item_value, values_added[index++]);
+    }
+  }
 
   // Check add non-0-starting contiguous range in an empty array property
-  auto array_property2 = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property2" };
+  auto array_property2 = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_array_property2" };
   item_range = { Neo::ItemLocalIds{ {}, 3, 4 } };
   values = { 3, 4, 4, 5, 6, 6 };
   array_property2.append(item_range, values, { 1, 2, 1, 2 });
@@ -414,8 +497,6 @@ TEST(NeoTestArrayProperty, test_array_property) {
   }
   std::cout << values_check << std::endl;
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
-  indexes = { 0, 0, 0, 0, 1, 3, 4 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property2.m_indexes.begin()));
   item_range = { Neo::ItemLocalIds{ {}, 0, 2 } };
   values = { 0, 1, 1 };
   array_property2.append(item_range, values, { 1, 2 });
@@ -426,8 +507,6 @@ TEST(NeoTestArrayProperty, test_array_property) {
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
-  indexes = { 0, 1, 3, 3, 4, 6, 7 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property2.m_indexes.begin()));
   // Check for the whole range
   item_range = { Neo::ItemLocalIds{ {}, 0, 7 } };
   values = { 0, 1, 1, 3, 4, 4, 5, 6, 6 };
@@ -450,11 +529,9 @@ TEST(NeoTestArrayProperty, test_array_property) {
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
-  indexes = { 0, 1, 3, 3, 4, 6, 7, 9, 9, 10, 12 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property2.m_indexes.begin()));
 
   // Same two tests with discontiguous range
-  auto array_property3 = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property3" };
+  auto array_property3 = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_array_property3" };
   item_range = { Neo::ItemLocalIds{ { 3, 5, 6 } } };
   values = { 3, 3, 5, 6, 6 };
   array_property3.append(item_range, values, { 2, 1, 2 });
@@ -466,8 +543,6 @@ TEST(NeoTestArrayProperty, test_array_property) {
   }
   std::cout << values_check << std::endl;
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
-  indexes = { 0, 0, 0, 0, 2, 2, 3 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property3.m_indexes.begin()));
   // Fill the first items
   item_range = { Neo::ItemLocalIds{ { 0, 2 } } };
   values = { 0, 2, 2 };
@@ -479,8 +554,6 @@ TEST(NeoTestArrayProperty, test_array_property) {
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
-  indexes = { 0, 1, 1, 3, 5, 5, 6 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property3.m_indexes.begin()));
   // Check for the whole range
   item_range = { Neo::ItemLocalIds{ {}, 0, 7 } };
   values = { 0, 2, 2, 3, 3, 5, 6, 6 };
@@ -502,8 +575,6 @@ TEST(NeoTestArrayProperty, test_array_property) {
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
-  indexes = { 0, 1, 1, 3, 5, 5, 6, 8, 8, 9, 9, 11, 11 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property3.m_indexes.begin()));
   // Check for the whole range
   item_range = { Neo::ItemLocalIds{ {}, 0, 13 } };
   values = { 0, 2, 2, 3, 3, 5, 6, 6, 8, 10, 10, 12 };
@@ -516,7 +587,7 @@ TEST(NeoTestArrayProperty, test_array_property) {
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
 
   // Same two tests with mixed range
-  auto array_property4 = Neo::ArrayPropertyT<Neo::utils::Int32>{ "test_array_property4" };
+  auto array_property4 = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_array_property4" };
   item_range = { Neo::ItemLocalIds{ { 4, 6, 7 }, 8, 3 } };
   values = { 4, 4, 6, 7, 7, 8, 9, 10, 10 };
   array_property4.append(item_range, values, { 2, 1, 2, 1, 1, 2 });
@@ -528,8 +599,6 @@ TEST(NeoTestArrayProperty, test_array_property) {
   }
   std::cout << values_check << std::endl;
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
-  indexes = { 0, 0, 0, 0, 0, 2, 2, 3, 5, 6, 7 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property4.m_indexes.begin()));
   // Fill the first items
   item_range = { Neo::ItemLocalIds{ { 2, 3 }, 0, 2 } };
   values = { 2, 2, 3, 0, 0, 1 };
@@ -541,8 +610,6 @@ TEST(NeoTestArrayProperty, test_array_property) {
       values_check.push_back(value);
   }
   EXPECT_TRUE(std::equal(values.begin(), values.end(), values_check.begin()));
-  indexes = { 0, 2, 3, 5, 6, 8, 8, 9, 11, 12, 13 };
-  EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property4.m_indexes.begin()));
   // Check for the whole range
   item_range = { Neo::ItemLocalIds{ {}, 0, 11 } };
   values = { 0, 0, 1, 2, 2, 3, 4, 4, 6, 7, 7, 8, 9, 10, 10 };
@@ -556,50 +623,50 @@ TEST(NeoTestArrayProperty, test_array_property) {
 
   // Check clear method
   array_property.clear();
-  EXPECT_EQ(array_property.size(),0);
+  EXPECT_EQ(array_property.size(), 0);
   // Since property cleared, an init can be called after a resize
   array_property.resize({ 1, 1, 1, 1, 1 });
   array_property.init(item_range, values);
-  EXPECT_EQ(array_property.size(),5);
+  EXPECT_EQ(array_property.size(), 5);
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
-TEST(NeoTestPropertyView, test_property_view) {
-  Neo::PropertyT<Neo::utils::Int32> property{ "name" };
+TEST(NeoTestPropertyView, test_mesh_scalar_property_view) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property{ "name" };
   std::vector<Neo::utils::Int32> values{ 1, 2, 3, 10, 100, 1000 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 6 } };
   property.init(item_range, values);
   auto property_view = property.view();
-  EXPECT_EQ(property_view.size(),item_range.size());
+  EXPECT_EQ(property_view.size(), item_range.size());
   std::vector<Neo::utils::Int32> local_ids{ 1, 3, 5 };
-  std::vector<Neo::utils::Int32> partial_values{2,10,1000};
+  std::vector<Neo::utils::Int32> partial_values{ 2, 10, 1000 };
   auto partial_item_range = Neo::ItemRange{ Neo::ItemLocalIds{ local_ids } };
   auto partial_property_view = property.view(partial_item_range);
-  EXPECT_EQ(partial_property_view.size(),partial_item_range.size());
+  EXPECT_EQ(partial_property_view.size(), partial_item_range.size());
   for (auto i = 0; i < item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << property_view[i] << std::endl;
-    EXPECT_EQ(property_view[i],values[i]);
+    EXPECT_EQ(property_view[i], values[i]);
   }
   EXPECT_TRUE(property_view.end() == property_view.end());
   auto beg = property_view.begin();
   for (auto i = 0; i < property_view.size(); ++i) {
     ++beg;
   }
-  EXPECT_EQ(beg,property_view.end());
-  for (auto value_iter = property_view.begin() ; value_iter != property_view.end() ; ++value_iter) {
-    std::cout << " view value "<< *value_iter << " " << std::endl;
+  EXPECT_EQ(beg, property_view.end());
+  for (auto value_iter = property_view.begin(); value_iter != property_view.end(); ++value_iter) {
+    std::cout << " view value " << *value_iter << " " << std::endl;
   }
   auto index = 0;
   for (auto value : property_view) {
-    EXPECT_EQ(value,property_view[index++]);
+    EXPECT_EQ(value, property_view[index++]);
   }
-  EXPECT_TRUE(std::equal(property_view.begin(),property_view.end(),values.begin()));
+  EXPECT_TRUE(std::equal(property_view.begin(), property_view.end(), values.begin()));
   for (auto i = 0; i < partial_item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << partial_property_view[i] << std::endl;
-    EXPECT_EQ(partial_property_view[i],partial_values[i]);
+    EXPECT_EQ(partial_property_view[i], partial_values[i]);
   }
-  EXPECT_TRUE(std::equal(partial_property_view.begin(),partial_property_view.end(),partial_values.begin()));
+  EXPECT_TRUE(std::equal(partial_property_view.begin(), partial_property_view.end(), partial_values.begin()));
   // Change values
   auto new_val = 50;
   property_view[2] = new_val;
@@ -608,36 +675,43 @@ TEST(NeoTestPropertyView, test_property_view) {
   EXPECT_EQ(property[local_ids[2]], new_val);
   // Check out of bound
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
-  if constexpr (_debug) {EXPECT_DEATH(property_view[7], ".*Error, exceeds property view size.*");}
-  if constexpr (_debug) {EXPECT_DEATH(partial_property_view[3], ".*Error, exceeds property view size.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(property_view[7], ".*Assertion `i < m_size' failed.*");
+  }
+  if constexpr (_debug) {
+    EXPECT_DEATH(partial_property_view[3], ".*Error, exceeds property view size.*");
+  }
 #endif
-
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
-TEST(NeoTestPropertyView, test_property_const_view) {
-  Neo::PropertyT<Neo::utils::Int32> property{ "name" };
+TEST(NeoTestPropertyView, test_mesh_scalar_property_const_view) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> property{ "name" };
   std::vector<Neo::utils::Int32> values{ 1, 2, 3, 10, 100, 1000 };
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 6 } };
   property.init(item_range, values);
   auto property_const_view = property.constView();
-  EXPECT_EQ(property_const_view.size(),item_range.size());
+  EXPECT_EQ(property_const_view.size(), item_range.size());
   auto partial_item_range = Neo::ItemRange{ Neo::ItemLocalIds{ { 1, 3, 5 } } };
-  std::vector<Neo::utils::Int32> partial_values{2,10,1000};
+  std::vector<Neo::utils::Int32> partial_values{ 2, 10, 1000 };
   auto partial_property_const_view = property.constView(partial_item_range);
-  EXPECT_EQ(partial_property_const_view.size(),partial_item_range.size());
+  EXPECT_EQ(partial_property_const_view.size(), partial_item_range.size());
   for (auto i = 0; i < item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << property_const_view[i] << std::endl;
-    EXPECT_EQ(property_const_view[i],values[i]);
+    EXPECT_EQ(property_const_view[i], values[i]);
   }
   for (auto i = 0; i < partial_item_range.size(); ++i) {
     std::cout << "prop values at index " << i << " " << partial_property_const_view[i] << std::endl;
-    EXPECT_EQ(partial_property_const_view[i],partial_values[i]);
+    EXPECT_EQ(partial_property_const_view[i], partial_values[i]);
   }
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
-  if constexpr (_debug) {EXPECT_DEATH(property_const_view[7], ".*Error, exceeds property view size.*");}
-  if constexpr (_debug) {EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");}
+  if constexpr (_debug) {
+    EXPECT_DEATH(property_const_view[7], ".*Assertion `i < m_size' failed*");
+  }
+  if constexpr (_debug) {
+    EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");
+  }
 #endif
   // test const iterator
   EXPECT_TRUE(property_const_view.end() == property_const_view.end());
@@ -645,33 +719,102 @@ TEST(NeoTestPropertyView, test_property_const_view) {
   for (auto i = 0; i < property_const_view.size(); ++i) {
     ++beg;
   }
-  EXPECT_EQ(beg,property_const_view.end());
-  for (auto value_iter = property_const_view.begin() ; value_iter != property_const_view.end() ; ++value_iter) {
-    std::cout << " view value "<< *value_iter << " " << std::endl;
+  EXPECT_EQ(beg, property_const_view.end());
+  for (auto value_iter = property_const_view.begin(); value_iter != property_const_view.end(); ++value_iter) {
+    std::cout << " view value " << *value_iter << " " << std::endl;
   }
   auto index = 0;
   for (auto value : property_const_view) {
-    EXPECT_EQ(value,property_const_view[index++]);
+    EXPECT_EQ(value, property_const_view[index++]);
   }
-  EXPECT_TRUE(std::equal(property_const_view.begin(),property_const_view.end(),values.begin()));
-  EXPECT_TRUE(std::equal(partial_property_const_view.begin(),partial_property_const_view.end(),partial_values.begin()));
+  EXPECT_TRUE(std::equal(property_const_view.begin(), property_const_view.end(), values.begin()));
+  EXPECT_TRUE(std::equal(partial_property_const_view.begin(), partial_property_const_view.end(), partial_values.begin()));
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
-TEST(NeoTestPropertyView, test_property_iterator){
-  std::vector data{1,2,3,4,5,6,7};
-  std::vector indexes{0,3,6};
-  Neo::PropertyViewIterator<int> property_view_iterator{indexes,indexes.begin(),data.data()};
+TEST(NeoTestPropertyView, test_mesh_array_property_view) {
+  auto mesh_array_property = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_mesh_array_property_view" };
+  // add elements: 5 items with one value
+  Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 5 } };
+  mesh_array_property.resize({ 1, 2, 3, 4, 5 }, true);
+  auto i = 0;
+  for (auto item : item_range) {
+    auto item_values = mesh_array_property[item];
+    std::fill(item_values.begin(), item_values.end(), i);
+    i++;
+  }
+  // create a view on the 3 first elements
+  std::vector<Neo::utils::Int32> sub_range_ref_values{ 0, 1, 1 };
+  Neo::ItemRange item_sub_range{ Neo::ItemLocalIds{ {}, 0, 2 } };
+  auto mesh_array_property_view = mesh_array_property.view(item_sub_range);
+  // check values
+  auto index = 0;
+  for (auto item : item_sub_range) {
+    auto item_array = mesh_array_property_view[item];
+    for (auto item_value : item_array) {
+      EXPECT_EQ(item_value, sub_range_ref_values[index++]);
+    }
+  }
+
+  // check assert (debug only)
+#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+  if constexpr (_debug) {
+    EXPECT_DEATH(mesh_array_property_view[Neo::utils::NULL_ITEM_LID], ".*index must be >0*");
+    EXPECT_DEATH(mesh_array_property_view[mesh_array_property_view.size()], ".*Error, exceeds property view*");
+  }
+#endif
+}
+
+/*-----------------------------------------------------------------------------*/
+
+TEST(NeoTestPropertyView, test_mesh_array_property_const_view) {
+  auto mesh_array_property = Neo::MeshArrayPropertyT<Neo::utils::Int32>{ "test_mesh_array_property_view" };
+  // add elements: 5 items with one value
+  Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 5 } };
+  mesh_array_property.resize({ 1, 2, 3, 4, 5 }, true);
+  auto i = 0;
+  for (auto item : item_range) {
+    auto item_values = mesh_array_property[item];
+    std::fill(item_values.begin(), item_values.end(), i);
+    i++;
+  }
+  // create a view on the 3 first elements
+  std::vector<Neo::utils::Int32> sub_range_ref_values{ 0, 1, 1 };
+  Neo::ItemRange item_sub_range{ Neo::ItemLocalIds{ {}, 0, 2 } };
+  auto mesh_array_property_view = mesh_array_property.constView(item_sub_range);
+  // check values
+  auto index = 0;
+  for (auto item : item_sub_range) {
+    auto item_array = mesh_array_property_view[item];
+    for (auto item_value : item_array) {
+      EXPECT_EQ(item_value, sub_range_ref_values[index++]);
+    }
+  }
+
+  // check assert (debug only)
+#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+  if constexpr (_debug) {
+    EXPECT_DEATH(mesh_array_property_view[Neo::utils::NULL_ITEM_LID], ".*index must be >0*");
+    EXPECT_DEATH(mesh_array_property_view[mesh_array_property_view.size()], ".*Error, exceeds property view*");
+  }
+#endif
+}
+/*-----------------------------------------------------------------------------*/
+
+TEST(NeoTestPropertyView, test_property_iterator) {
+  std::vector data{ 1, 2, 3, 4, 5, 6, 7 };
+  std::vector indexes{ 0, 3, 6 };
+  Neo::PropertyViewIterator<int> property_view_iterator{ indexes, indexes.begin(), data.data() };
   // right operator
   for (auto index : indexes) {
     EXPECT_EQ(*property_view_iterator, data[index]);
     property_view_iterator++;
   }
   --property_view_iterator;
-  for (auto rindex_iterator = indexes.rbegin(); rindex_iterator != indexes.rend();++rindex_iterator){
-    EXPECT_EQ(*property_view_iterator,data[*rindex_iterator]);
-    std::cout << *property_view_iterator << " " ;
+  for (auto rindex_iterator = indexes.rbegin(); rindex_iterator != indexes.rend(); ++rindex_iterator) {
+    EXPECT_EQ(*property_view_iterator, data[*rindex_iterator]);
+    std::cout << *property_view_iterator << " ";
     property_view_iterator--;
   }
   // left operator
@@ -680,27 +823,27 @@ TEST(NeoTestPropertyView, test_property_iterator){
     ++property_view_iterator;
   }
   property_view_iterator--;
-  for (auto rindex_iterator = indexes.rbegin(); rindex_iterator != indexes.rend();++rindex_iterator){
-    EXPECT_EQ(*property_view_iterator,data[*rindex_iterator]);
+  for (auto rindex_iterator = indexes.rbegin(); rindex_iterator != indexes.rend(); ++rindex_iterator) {
+    EXPECT_EQ(*property_view_iterator, data[*rindex_iterator]);
     --property_view_iterator;
   }
-  EXPECT_EQ(*(property_view_iterator+2),data[indexes[2]]);
-  EXPECT_EQ(*(property_view_iterator-2),data[indexes[0]]);
-  EXPECT_EQ(*(property_view_iterator+=2),data[indexes[2]]);
-  EXPECT_EQ(*(property_view_iterator-=2),data[indexes[0]]);
+  EXPECT_EQ(*(property_view_iterator + 2), data[indexes[2]]);
+  EXPECT_EQ(*(property_view_iterator - 2), data[indexes[0]]);
+  EXPECT_EQ(*(property_view_iterator += 2), data[indexes[2]]);
+  EXPECT_EQ(*(property_view_iterator -= 2), data[indexes[0]]);
 
-  auto property_view_iterator2 {property_view_iterator};
+  auto property_view_iterator2{ property_view_iterator };
   EXPECT_TRUE(property_view_iterator == property_view_iterator2);
-  EXPECT_FALSE(property_view_iterator!=property_view_iterator2);
+  EXPECT_FALSE(property_view_iterator != property_view_iterator2);
 
   // check operator->
-  std::vector<std::string> data_string {"hello","world", "!"};
-  indexes = {0,1};
-  Neo::PropertyViewIterator<std::string> property_view_iterator3{indexes,indexes.begin(),data_string.data()};
-  EXPECT_EQ(property_view_iterator3->size(),data_string[0].size());
+  std::vector<std::string> data_string{ "hello", "world", "!" };
+  indexes = { 0, 1 };
+  Neo::PropertyViewIterator<std::string> property_view_iterator3{ indexes, indexes.begin(), data_string.data() };
+  EXPECT_EQ(property_view_iterator3->size(), data_string[0].size());
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestPropertyGraph, test_property_graph_info) {
   std::cout << "Test Property Graph" << std::endl;
@@ -740,7 +883,7 @@ TEST(NeoTestPropertyGraph, test_property_graph_info) {
   EXPECT_EQ(nb_algo_producing_out_property2, mesh.m_property_algorithms.find(Neo::MeshKernel::OutProperty{ cell_family, "out_property2" })->second.first.size());
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestLidsProperty, test_lids_property) {
   std::cout << "Test lids_range Property" << std::endl;
@@ -839,7 +982,7 @@ TEST(NeoTestLidsProperty, test_lids_property) {
   EXPECT_TRUE(std::equal(reordered_lids_ref.begin(), reordered_lids_ref.end(), reordered_lids.begin()));
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestFamily, test_family) {
   Neo::Family family(Neo::ItemKind::IK_Dof, "MyFamily");
@@ -852,13 +995,13 @@ TEST(NeoTestFamily, test_family) {
   EXPECT_EQ(3, family.nbElements());
   std::string scalar_prop_name("MyScalarProperty");
   std::string array_prop_name("MyArrayProperty");
-  family.addProperty<Neo::utils::Int32>(scalar_prop_name);
-  family.addArrayProperty<Neo::utils::Int32>(array_prop_name);
+  family.addMeshScalarProperty<Neo::utils::Int32>(scalar_prop_name);
+  family.addMeshArrayProperty<Neo::utils::Int32>(array_prop_name);
   EXPECT_NO_THROW(family.getProperty(scalar_prop_name));
   EXPECT_NO_THROW(family.getProperty(array_prop_name));
   EXPECT_THROW(family.getProperty("UnexistingProperty"), std::invalid_argument);
-  EXPECT_EQ(scalar_prop_name, family.getConcreteProperty<Neo::PropertyT<Neo::utils::Int32>>(scalar_prop_name).m_name);
-  EXPECT_EQ(array_prop_name, family.getConcreteProperty<Neo::ArrayPropertyT<Neo::utils::Int32>>(array_prop_name).m_name);
+  EXPECT_EQ(scalar_prop_name, family.getConcreteProperty<Neo::MeshScalarPropertyT<Neo::utils::Int32>>(scalar_prop_name).m_name);
+  EXPECT_EQ(array_prop_name, family.getConcreteProperty<Neo::MeshArrayPropertyT<Neo::utils::Int32>>(array_prop_name).m_name);
   EXPECT_EQ(3, family.all().size());
   auto i = 0;
   auto local_ids = family.itemUniqueIdsToLocalids(uids);
@@ -877,13 +1020,13 @@ TEST(NeoTestFamily, test_family) {
   EXPECT_FALSE(family.hasProperty());
   // try removing an unexisting property
   family.removeProperty(scalar_prop_name);
-  family.addProperty<Neo::utils::Int32>(scalar_prop_name);
-  family.addArrayProperty<Neo::utils::Int32>(array_prop_name);
+  family.addMeshScalarProperty<Neo::utils::Int32>(scalar_prop_name);
+  family.addMeshArrayProperty<Neo::utils::Int32>(array_prop_name);
   family.removeProperties();
   EXPECT_FALSE(family.hasProperty());
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestBaseMesh, base_mesh_unit_test) {
   Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test" };
@@ -893,14 +1036,14 @@ TEST(NeoTestBaseMesh, base_mesh_unit_test) {
   Neo::Family family4{ Neo::ItemKind::IK_Edge, "family4" };
   Neo::Family family5{ Neo::ItemKind::IK_Dof, "family5" };
   bool is_called = false;
-  family1.addProperty<int>("prop1");
-  family2.addProperty<int>("prop2");
-  family3.addProperty<int>("prop3");
-  family4.addProperty<int>("prop4");
-  family5.addProperty<int>("prop5");
+  family1.addMeshScalarProperty<int>("prop1");
+  family2.addMeshScalarProperty<int>("prop2");
+  family3.addMeshScalarProperty<int>("prop3");
+  family4.addMeshScalarProperty<int>("prop4");
+  family5.addMeshScalarProperty<int>("prop5");
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ family1, "prop1", Neo::PropertyStatus::ExistingProperty }, Neo::MeshKernel::OutProperty{ family2, "prop2" },
-                    [&is_called]([[maybe_unused]] Neo::PropertyT<int> const& prop1,
-                                 [[maybe_unused]] Neo::PropertyT<int>& prop2) {
+                    [&is_called]([[maybe_unused]] Neo::MeshScalarPropertyT<int> const& prop1,
+                                 [[maybe_unused]] Neo::MeshScalarPropertyT<int>& prop2) {
                       is_called = true;
                     });
   // copy mesh
@@ -921,25 +1064,25 @@ TEST(NeoTestBaseMesh, base_mesh_unit_test) {
   EXPECT_TRUE(is_called);
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 void add_properties(Neo::Family& cell_family, Neo::Family& node_family) {
 
   // Adding node family and properties
-  node_family.addProperty<Neo::utils::Real3>(std::string("node_coords"));
-  node_family.addProperty<Neo::utils::Int64>("node_uids");
-  node_family.addArrayProperty<Neo::utils::Int32>("node2cells");
-  node_family.addProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
+  node_family.addMeshScalarProperty<Neo::utils::Real3>(std::string("node_coords"));
+  node_family.addMeshScalarProperty<Neo::utils::Int64>("node_uids");
+  node_family.addMeshArrayProperty<Neo::utils::Int32>("node2cells");
+  node_family.addMeshScalarProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
 
   // Test adds
   EXPECT_NO_THROW(node_family.getProperty("node_uids"));
 
   // Adding cell family and properties
-  cell_family.addProperty<Neo::utils::Int64>("cell_uids");
-  cell_family.addArrayProperty<Neo::utils::Int32>("cell2nodes");
+  cell_family.addMeshScalarProperty<Neo::utils::Int64>("cell_uids");
+  cell_family.addMeshArrayProperty<Neo::utils::Int32>("cell2nodes");
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestBaseMesh, base_mesh_creation_test) {
 
@@ -978,7 +1121,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ node_family, "node_uids" },
   [&node_uids, &added_nodes]([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
-                             Neo::PropertyT<Neo::utils::Int64>& node_uids_property) {
+                             Neo::MeshScalarPropertyT<Neo::utils::Int64>& node_uids_property) {
     std::cout << "Algorithm: register node uids" << std::endl;
     if (node_uids_property.isInitializableFrom(added_nodes))
       node_uids_property.init(added_nodes, std::move(node_uids)); // init can steal the input values
@@ -992,7 +1135,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::InProperty{ node_family, node_family.lidPropName() },
   Neo::MeshKernel::OutProperty{ node_family, "node_coords" },
   [&node_coords, &added_nodes]([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
-                               Neo::PropertyT<Neo::utils::Real3>& node_coords_property) {
+                               Neo::MeshScalarPropertyT<Neo::utils::Real3>& node_coords_property) {
     std::cout << "Algorithm: register node coords" << std::endl;
     if (node_coords_property.isInitializableFrom(added_nodes))
       node_coords_property.init(added_nodes, std::move(node_coords)); // init can steal the input values
@@ -1020,7 +1163,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::OutProperty{ cell_family, "cell_uids" },
   [&cell_uids, &added_cells](
   [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
-  Neo::PropertyT<Neo::utils::Int64>& cell_uids_property) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int64>& cell_uids_property) {
     std::cout << "Algorithm: register cell uids" << std::endl;
     if (cell_uids_property.isInitializableFrom(added_cells))
       cell_uids_property.init(added_cells, std::move(cell_uids)); // init can steal the input values
@@ -1039,7 +1182,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::OutProperty{ node_family, "node2cells" },
   [&connected_cell_uids, &nb_cell_per_node, &added_nodes]([[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
                                                           Neo::ItemLidsProperty const& cell_lids_property,
-                                                          Neo::ArrayPropertyT<Neo::utils::Int32>& node2cells) {
+                                                          Neo::MeshArrayPropertyT<Neo::utils::Int32>& node2cells) {
     std::cout << "Algorithm: register node-cell connectivity" << std::endl;
     auto connected_cell_lids = cell_lids_property[connected_cell_uids];
     if (node2cells.isInitializableFrom(added_nodes)) {
@@ -1061,7 +1204,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
                     [&connected_node_uids, &nb_node_per_cell, &added_cells](
                     Neo::ItemLidsProperty const& node_lids_property,
                     [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
-                    Neo::ArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
+                    Neo::MeshArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
                       std::cout << "Algorithm: register cell-node connectivity" << std::endl;
                       auto connected_node_lids = node_lids_property[connected_node_uids];
                       if (cells2nodes.isInitializableFrom(added_cells)) {
@@ -1091,7 +1234,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::OutProperty{ cell_family, "cell_uids" },
   [&new_cell_uids, &new_cell_added](
   [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
-  Neo::PropertyT<Neo::utils::Int64>& cell_uids_property) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int64>& cell_uids_property) {
     std::cout << "Algorithm: register new cell uids" << std::endl;
     // must append and not initialize
     if (cell_uids_property.isInitializableFrom(new_cell_added))
@@ -1110,7 +1253,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
                     [&new_cell_connected_node_uids, &nb_node_per_new_cell, &new_cell_added](
                     Neo::ItemLidsProperty const& node_lids_property,
                     [[maybe_unused]] Neo::ItemLidsProperty const& cell_lids_property,
-                    Neo::ArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
+                    Neo::MeshArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
                       std::cout << "Algorithm: register new cell-node connectivity" << std::endl;
                       auto connected_node_lids = node_lids_property[new_cell_connected_node_uids];
                       if (cells2nodes.isInitializableFrom(new_cell_added)) {
@@ -1130,7 +1273,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::OutProperty{ node_family, "internal_end_of_remove_tag" },
   [&removed_node_uids, &removed_nodes, &node_family](
   Neo::ItemLidsProperty& node_lids_property,
-  Neo::PropertyT<Neo::utils::Int32>& internal_end_of_remove_tag) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int32>& internal_end_of_remove_tag) {
     // Store removed items in internal_end_of_remove_tag
     internal_end_of_remove_tag.init(node_family.all(), 0);
     for (auto removed_item : removed_nodes) {
@@ -1147,8 +1290,8 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   Neo::MeshKernel::InProperty{ node_family, "internal_end_of_remove_tag" },
   Neo::MeshKernel::OutProperty{ cell_family, "cell2nodes" },
   [&cell_family](
-  Neo::PropertyT<Neo::utils::Int32> const& internal_end_of_remove_tag,
-  Neo::ArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> const& internal_end_of_remove_tag,
+  Neo::MeshArrayPropertyT<Neo::utils::Int32>& cells2nodes) {
     //                    std::transform()
     //                    Neo::ItemRange node_range {Neo::ItemLocalIds{{},0,node_family.size()}};
     for (auto cell : cell_family.all()) {
@@ -1166,7 +1309,7 @@ TEST(NeoTestBaseMesh, base_mesh_creation_test) {
   mesh.applyAlgorithms();
 }
 
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestPartialMeshModification, partial_mesh_modif_test) {
 
@@ -1188,7 +1331,7 @@ TEST(NeoTestPartialMeshModification, partial_mesh_modif_test) {
                     Neo::MeshKernel::OutProperty{ node_family, "node_coords" },
                     [&node_coords, &node_uids](
                     [[maybe_unused]] Neo::ItemLidsProperty const& node_lids_property,
-                    [[maybe_unused]] Neo::PropertyT<Neo::utils::Real3>& node_coords_property) {
+                    [[maybe_unused]] Neo::MeshScalarPropertyT<Neo::utils::Real3>& node_coords_property) {
                       std::cout << "Algorithm: register node coords" << std::endl;
                       //auto& lids = node_lids_property[node_uids];//todo
                       //node_coords_property.appendAt(lids, node_coords);// steal node_coords memory//todo
@@ -1197,5 +1340,5 @@ TEST(NeoTestPartialMeshModification, partial_mesh_modif_test) {
   mesh.applyAlgorithms();
 }
 
-//----------------------------------------------------------------------------/
-//----------------------------------------------------------------------------/
+/*-----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*/
