@@ -30,6 +30,8 @@ ComponentItemInternalData::
 ComponentItemInternalData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
 , m_material_mng(mmg)
+, m_all_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
 }
 

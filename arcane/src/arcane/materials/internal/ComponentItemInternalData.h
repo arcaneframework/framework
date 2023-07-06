@@ -50,6 +50,30 @@ class ComponentItemInternalData
 
  public:
 
+  //! Liste des AllEnvCell
+  ConstArrayView<ComponentItemInternal> allEnvItemsInternal() const
+  {
+    return m_all_env_items_internal;
+  }
+
+  //! Liste des AllEnvCell
+  ArrayView<ComponentItemInternal> allEnvItemsInternal()
+  {
+    return m_all_env_items_internal;
+  }
+
+  //! Liste des mailles milieux.
+  ConstArrayView<ComponentItemInternal> envItemsInternal() const
+  {
+    return m_env_items_internal;
+  }
+
+  //! Liste des mailles milieux.
+  ArrayView<ComponentItemInternal> envItemsInternal()
+  {
+    return m_env_items_internal;
+  }
+
   //! Liste des mailles matériaux pour le \a env_index ème milieu
   ConstArrayView<ComponentItemInternal> matItemsInternal(Int32 env_index) const
   {
@@ -62,15 +86,38 @@ class ComponentItemInternalData
     return m_mat_items_internal[env_index];
   }
 
-  //! Redimensionne le nombre de mailles du \a env_index ème milieu.
-  void resizeNbCellForEnvironment(Int32 env_index,Int32 size)
+  //! Redimensionne le nombre de AllEnvCell
+  void resizeNbAllEnvCell(Int32 size)
   {
-    m_mat_items_internal[env_index].resize(size);;
+    m_all_env_items_internal.resize(size);
+  }
+
+  //! Redimensionne le nombre milieu
+  void resizeNbEnvCell(Int32 size)
+  {
+    m_env_items_internal.resize(size);
+  }
+
+  //! Redimensionne le nombre de mailles matériaux du \a env_index- ème milieu.
+  void resizeNbMatCellForEnvironment(Int32 env_index,Int32 size)
+  {
+    m_mat_items_internal[env_index].resize(size);
   }
 
  private:
 
   MeshMaterialMng* m_material_mng = nullptr;
+
+  /*!
+   * \brief Liste des ComponentItemInternal pour les AllEnvcell.
+   *
+   * Les éléments de ce tableau peuvent être indexés directement avec
+   * le localId() de la maille.
+   */
+  UniqueArray<ComponentItemInternal> m_all_env_items_internal;
+
+  //! Liste des ComponentItemInternal pour chaque milieu
+  UniqueArray<ComponentItemInternal> m_env_items_internal;
 
   //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
   UniqueArray< UniqueArray<ComponentItemInternal> > m_mat_items_internal;

@@ -44,8 +44,6 @@ AllEnvData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
 , m_material_mng(mmg)
 , m_nb_env_per_cell(VariableBuildInfo(mmg->meshHandle(),mmg->name()+"_CellNbEnvironment"))
-, m_all_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
-, m_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_item_internal_data(mmg)
 {
 }
@@ -158,10 +156,14 @@ forceRecompute(bool compute_all)
   // Redimensionne les tableaux des infos
   // ATTENTION: il ne doivent plus être redimensionnés par la suite sous peine
   // de tout invalider.
-  m_all_env_items_internal.resize(max_local_id);
-  m_env_items_internal.resize(total_env_cell);
+  m_item_internal_data.resizeNbAllEnvCell(max_local_id);
+  m_item_internal_data.resizeNbEnvCell(total_env_cell);
+
   info(4) << "RESIZE all_env_items_internal size=" << max_local_id
          << " total_env_cell=" << total_env_cell;
+
+  ArrayView<ComponentItemInternal> all_env_items_internal = m_item_internal_data.allEnvItemsInternal();
+  ArrayView<ComponentItemInternal> env_items_internal = m_item_internal_data.envItemsInternal();
 
   bool is_full_verbose = traceMng()->verbosityLevel()>=5;
 
@@ -212,19 +214,13 @@ forceRecompute(bool compute_all)
     }
   }
 
-  // Initialise à des valeurs invalides pour détecter les
-  // erreurs.
+  // Initialise à des valeurs invalides pour détecter les erreurs.
   {
-    for( Integer i=0; i<max_local_id; ++i ){
-      ComponentItemInternal& ref_ii = m_all_env_items_internal[i];
-      ref_ii.reset();
-    }
-    for( Integer i=0; i<total_env_cell; ++i ){
-      ComponentItemInternal& ref_ii = m_env_items_internal[i];
-      ref_ii.reset();
-    }
+    for( Integer i=0; i<max_local_id; ++i )
+      all_env_items_internal[i].reset();
+    for( Integer i=0; i<total_env_cell; ++i )
+      env_items_internal[i].reset();
   }
-
 
   // Calcule pour chaque maille sa position dans le tableau des milieux
   // en considérant que les milieux de chaque maille sont rangés consécutivement
@@ -258,7 +254,7 @@ forceRecompute(bool compute_all)
 
       ConstArrayView<MatVarIndex> matvar_indexes = var_indexer->matvarIndexes();
 
-      ArrayView<ComponentItemInternal*> env_items_internal = env->itemsInternalView();
+      ArrayView<ComponentItemInternal*> env_items_internal_pointer = env->itemsInternalView();
       Int32ConstArrayView local_ids = var_indexer->localIds();
 
       for( Integer z=0, nb_id = matvar_indexes.size(); z<nb_id; ++z){
@@ -268,9 +264,9 @@ forceRecompute(bool compute_all)
         Int32 pos = current_pos[lid];
         ++current_pos[lid];
         Int32 nb_mat = nb_mat_per_cell[lid];
-        ComponentItemInternal& ref_ii = m_env_items_internal[pos];
-        env_items_internal[z] = &m_env_items_internal[pos];
-        ref_ii.setSuperAndGlobalItem(&m_all_env_items_internal[lid],items_internal[lid]);
+        ComponentItemInternal& ref_ii = env_items_internal[pos];
+        env_items_internal_pointer[z] = &env_items_internal[pos];
+        ref_ii.setSuperAndGlobalItem(&all_env_items_internal[lid],items_internal[lid]);
         ref_ii.setNbSubItem(nb_mat);
         ref_ii.setVariableIndex(mvi);
         ref_ii.setLevel(LEVEL_ENVIRONMENT);
@@ -288,13 +284,13 @@ forceRecompute(bool compute_all)
       Cell c = *icell;
       Int32 lid = icell.itemLocalId();
       Int32 nb_env = m_nb_env_per_cell[icell];
-      ComponentItemInternal& ref_ii = m_all_env_items_internal[lid];
+      ComponentItemInternal& ref_ii = all_env_items_internal[lid];
       ref_ii.setSuperAndGlobalItem(0,c);
       ref_ii.setVariableIndex(MatVarIndex(0,lid));
       ref_ii.setNbSubItem(nb_env);
       ref_ii.setLevel(LEVEL_ALLENVIRONMENT);
       if (nb_env!=0)
-        ref_ii.setFirstSubItem(&m_env_items_internal[env_cell_indexes[lid]]);
+        ref_ii.setFirstSubItem(&env_items_internal[env_cell_indexes[lid]]);
     }
   }
 

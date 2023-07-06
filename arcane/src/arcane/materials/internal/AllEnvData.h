@@ -64,17 +64,12 @@ class AllEnvData
 
   ConstArrayView<ComponentItemInternal> allEnvItemsInternal() const
   {
-    return m_all_env_items_internal;
+    return m_item_internal_data.allEnvItemsInternal();
   }
 
   ArrayView<ComponentItemInternal> allEnvItemsInternal()
   {
-    return m_all_env_items_internal;
-  }
-
-  ArrayView<ComponentItemInternal> matItemsInternal(Int32 mat_index)
-  {
-    return m_mat_items_internal[mat_index];
+    return m_item_internal_data.allEnvItemsInternal();
   }
 
   const VariableCellInt32& nbEnvPerCell() const
@@ -98,17 +93,17 @@ class AllEnvData
    * Ce tableau est modifié chaque fois que les mailles des matériaux et
    * des milieux change.
    * Les premiers éléments de ce tableau contiennent
-   * les infos pour les mailles de type AllEnvCell et peuvent
+   * les infos pour les mailles de type AllEnvCell et peut
    * être indexés directement avec le localId() de ces mailles.
    */
   //@{
   VariableCellInt32 m_nb_env_per_cell;
-  UniqueArray<ComponentItemInternal> m_all_env_items_internal;
-  UniqueArray<ComponentItemInternal> m_env_items_internal;
+  //UniqueArray<ComponentItemInternal> m_all_env_items_internal;
+  //UniqueArray<ComponentItemInternal> m_env_items_internal;
   //@}
 
   //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
-  UniqueArray< UniqueArray<ComponentItemInternal> > m_mat_items_internal;
+  //UniqueArray< UniqueArray<ComponentItemInternal> > m_mat_items_internal;
 
   ComponentItemInternalData m_item_internal_data;
 

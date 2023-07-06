@@ -212,7 +212,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
   Integer total_nb_cell_mat = m_total_nb_cell_mat;
-  item_internal_data->resizeNbCellForEnvironment(id(),total_nb_cell_mat);
+  item_internal_data->resizeNbMatCellForEnvironment(id(),total_nb_cell_mat);
   ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
   for( Integer i=0; i<total_nb_cell_mat; ++i ){
     ComponentItemInternal& ref_ii = mat_items_internal[i];
