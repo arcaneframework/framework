@@ -119,10 +119,10 @@ namespace utils
     using size_type = int;
     using vector_size_type = typename std::vector<non_const_value_type>::size_type;
 
-    size_type m_size = 0;
     T* m_ptr = nullptr;
+    size_type m_size = 0;
 
-    Span(size_type size, T* data)
+    Span(T* data, size_type size)
     : m_size(size)
     , m_ptr(data) {}
     Span(vector_size_type size, T* data)
@@ -161,10 +161,10 @@ namespace utils
     using size_type = int;
     using vector_size_type = typename std::vector<non_const_value_type>::size_type;
 
-    int m_size = 0;
     const T* m_ptr = nullptr;
+    int m_size = 0;
 
-    ConstSpan(size_type size, const T* data)
+    ConstSpan(const T* data, size_type size)
     : m_size(size)
     , m_ptr(data) {}
     ConstSpan(vector_size_type size, const T* data)
@@ -200,13 +200,14 @@ namespace utils
    */
   // todo use std::mdspan instead when moving to C++23
   template <typename T>
-  struct Array2View {
+  struct Span2
+  {
     using value_type = T;
     using size_type = int;
 
+    T* m_ptr = nullptr;
     size_type m_dim1_size = 0;
     size_type m_dim2_size = 0;
-    T* m_ptr = nullptr;
 
     Span<T> operator[](int i) {
       assert(i < m_dim1_size);
@@ -233,14 +234,14 @@ namespace utils
    * @tparam T view data type
    */
   template <typename T>
-  struct ConstArray2View
+  struct ConstSpan2
   {
     using value_type = T;
     using size_type = int;
 
+    T* m_ptr = nullptr;
     size_type m_dim1_size = 0;
     size_type m_dim2_size = 0;
-    T* m_ptr = nullptr;
 
     ConstSpan<T> operator[](int i) const {
       assert(i < m_dim1_size);
@@ -310,10 +311,10 @@ namespace utils
   using Int64Span = Span<Int64>;
   using Int32ConstSpan = ConstSpan<Int32>;
   using Int64ConstSpan = ConstSpan<Int64>;
-  using Int32Span2D = Array2View<Int32>; // todo check name see stl MDSpan et Arcane ?
-  using Int64Span2D = Array2View<Int64>;
-  using Int32ConstSpan2D = ConstArray2View<Int32>; // todo check name see stl MDSpan et Arcane ?
-  using Int64SConstpan2D = ConstArray2View<Int64>;
+  using Int32Span2D = Span2<Int32>; // todo check name see stl MDSpan et Arcane ?
+  using Int64Span2D = Span2<Int64>;
+  using Int32ConstSpan2D = ConstSpan2<Int32>; // todo check name see stl MDSpan et Arcane ?
+  using Int64SConstpan2D = ConstSpan2<Int64>;
 
 } // end namespace utils
 

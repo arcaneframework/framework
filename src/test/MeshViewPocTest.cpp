@@ -132,11 +132,11 @@ struct FamilyView
   Neo::utils::ConstSpan<Neo::utils::Int64> item_uids;
   std::map<std::string, GroupView> item_groups;
   // Connectivities
-  Neo::utils::ConstArray2View<Neo::utils::Int32> nodes;
-  Neo::utils::ConstArray2View<Neo::utils::Int32> edges;
-  Neo::utils::ConstArray2View<Neo::utils::Int32> faces;
-  Neo::utils::ConstArray2View<Neo::utils::Int32> cells;
-  std::map<std::string, Neo::utils::ConstArray2View<Neo::utils::Int32>> connectivities;
+  Neo::utils::ConstSpan2<Neo::utils::Int32> nodes;
+  Neo::utils::ConstSpan2<Neo::utils::Int32> edges;
+  Neo::utils::ConstSpan2<Neo::utils::Int32> faces;
+  Neo::utils::ConstSpan2<Neo::utils::Int32> cells;
+  std::map<std::string, Neo::utils::ConstSpan2<Neo::utils::Int32>> connectivities;
   std::map<std::string, VariableView> variables;
   int nbItem() const { return item_lids.size(); }
 };

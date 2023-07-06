@@ -36,8 +36,8 @@ TEST(NeoUtils, test_array_view) {
   // build a dim2 view from vector
   auto dim1_size = 2;
   auto dim2_size = 3;
-  Neo::utils::Array2View<int> dim2_view{ dim1_size, dim2_size, dim2_vec.data() };
-  Neo::utils::ConstArray2View<int> dim2_const_view{ dim2_size, dim1_size, dim2_vec.data() };
+  Neo::utils::Span2<int> dim2_view{ dim2_vec.data(), dim1_size, dim2_size };
+  Neo::utils::ConstSpan2<int> dim2_const_view{ dim2_vec.data(), dim2_size, dim1_size };
   for (auto i = 0; i < dim1_size; ++i) {
     for (auto j = 0; j < dim2_size; ++j) {
       EXPECT_EQ(dim2_view[i][j], dim2_vec[i * dim2_size + j]);

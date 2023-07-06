@@ -105,7 +105,7 @@ namespace utilities
     cell_item_orientations.reserve(2 * cell_nodes.size()); // rough approx
     for (int cell_nodes_index = 0; cell_nodes_index < cell_nodes.size();) {
       auto [nb_node_in_cell, item_nodes_all_items] = cell_types[cell_type_indexes[cell_index++]];
-      auto current_cell_nodes = Neo::utils::ConstSpan<Neo::utils::Int64>{ nb_node_in_cell, &cell_nodes[cell_nodes_index] };
+      auto current_cell_nodes = Neo::utils::ConstSpan<Neo::utils::Int64>{ &cell_nodes[cell_nodes_index], nb_node_in_cell };
       for (auto current_item_node_indexes_in_cell : item_nodes_all_items) {
         std::vector<Neo::utils::Int64> current_item_nodes;
         current_item_nodes.reserve(current_item_node_indexes_in_cell.size());
@@ -152,10 +152,7 @@ namespace utilities
     std::map<Neo::utils::Int64, std::vector<Neo::utils::Int64>> reversed_orientation_map;
     for (int original_connectivity_index = 0; original_connectivity_index < original_connectivity.size();) {
       auto current_item_nb_connected_items = nb_connected_items_per_item_original[source_item_index];
-      auto current_item_connected_items = Neo::utils::ConstSpan<Neo::utils::Int64>{
-        current_item_nb_connected_items,
-        &original_connectivity[original_connectivity_index]
-      };
+      auto current_item_connected_items = Neo::utils::ConstSpan<Neo::utils::Int64>{ &original_connectivity[original_connectivity_index], current_item_nb_connected_items };
       auto original_orientation_index = original_connectivity_index;
       for (auto connected_item : current_item_connected_items) {
         reversed_connectivity_map[connected_item].push_back(original_source_item_uids[source_item_index]);
@@ -461,7 +458,7 @@ namespace XdmfTest {
     StaticMesh::utilities::DefaultItemOrientation item_orientation{};
     std::vector<Neo::utils::Int64> face_nodes_mock{ 1, 2, 3 };
     EXPECT_TRUE(item_orientation.isOrdered(
-    { (int)face_nodes_mock.size(), face_nodes_mock.data() }));
+    { face_nodes_mock.data(), (int)face_nodes_mock.size() }));
     face_nodes_mock = { 7, 6, 5, 9, 10, 11 };
     EXPECT_FALSE(item_orientation.isOrdered(
     { face_nodes_mock.size(), face_nodes_mock.data() }));
@@ -711,7 +708,7 @@ namespace XdmfTest {
       nb_face_per_cells.push_back(cell_nb_face);
       for (auto face_index = 0; face_index < cell_nb_face; ++face_index) {
         int face_nb_node = cell_data[cell_data_index++];
-        auto current_face_nodes = Neo::utils::ConstSpan<Neo::utils::Int64>{ face_nb_node, &cell_data[cell_data_index] };
+        auto current_face_nodes = Neo::utils::ConstSpan<Neo::utils::Int64>{ &cell_data[cell_data_index], face_nb_node };
         auto [face_info, is_new_face] = face_nodes_set.emplace(FaceNodes{ current_face_nodes.begin(),
                                                                           current_face_nodes.end() },
                                                                face_uid);
@@ -810,9 +807,7 @@ namespace XdmfTest {
     auto cell_index = 0;
     for (auto cell_data_index = 0; cell_data_index < cell_data.size();) {
       cell_uids.push_back(cell_index++);
-      auto current_cell_nodes = Neo::utils::ConstSpan<Neo::utils::Int32>{
-        cell_nb_nodes, &cell_data[cell_data_index]
-      };
+      auto current_cell_nodes = Neo::utils::ConstSpan<Neo::utils::Int32>{ &cell_data[cell_data_index], cell_nb_nodes };
       cell_nodes.insert(cell_nodes.end(), current_cell_nodes.begin(),
                         current_cell_nodes.end());
       node_uids_set.insert(current_cell_nodes.begin(), current_cell_nodes.end());
