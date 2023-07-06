@@ -41,6 +41,7 @@
  <variables>
    <variable field-name="mat_temperature" name="Temperature" data-type="real" item-kind="cell" dim="0" material="true" />
    <variable field-name="cell_center" name="CellCenter" data-type="real3" item-kind="cell" dim="0" material="true" />
+   <variable field-name="all_temperature" name="AllTemperatures" data-type="real" item-kind="cell" dim="1" material="true" />
  </variables>
 
 </module>

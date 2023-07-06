@@ -73,11 +73,14 @@ class MaterialHeatTestModule
  private:
 
   IMeshMaterialMng* m_material_mng;
+  UniqueArray<HeatObject> m_heat_objects;
 
  private:
 
   void _computeCellsCenter();
   void _computeOneMaterial(const HeatObject& heat_object);
+  void _buildHeatObjects();
+  void _copyToGlobal(IMeshMaterial* mat, Int32 var_index);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -163,6 +166,7 @@ buildInit()
 void MaterialHeatTestModule::
 startInit()
 {
+  _buildHeatObjects();
   m_global_deltat.assign(1.0);
   m_mat_temperature.globalVariable().fill(0.0);
   m_material_mng->forceRecompute();
@@ -175,6 +179,7 @@ void MaterialHeatTestModule::
 continueInit()
 {
   info() << "MaterialHeatTestModule::continueInit()";
+  _buildHeatObjects();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -187,26 +192,46 @@ compute()
 
   _computeCellsCenter();
 
-  IMeshEnvironment* env = m_material_mng->findEnvironment("ENV1");
-  const Int32 nb_env = env->nbMaterial();
-  if (nb_env == 0)
-    ARCANE_FATAL("Environment '{0}' has no materials", env->name());
-
-  {
-    HeatObject ho;
-    ho.center = Real3(0.3, 0.4, 0.0);
-    ho.velocity = Real3(0.02, 0.04, 0.0);
-    ho.radius = Real3(0.1, 0.15, 0.0);
-    ho.material = env->materials()[0];
+  for (const HeatObject& ho : m_heat_objects)
     _computeOneMaterial(ho);
+
+  // Remplit la variable composante associée de la variable 'AllTemperature'
+  // pour chaque matériau. Cela permet de voir leur valeur facilement dans
+  // les outils de dépouillement
+  ENUMERATE_ (Cell, icell, allCells()) {
+    m_all_temperature[icell].fill(0.0);
   }
   {
-    HeatObject ho;
-    ho.center = Real3(0.8, 0.4, 0.0);
-    ho.velocity = Real3(-0.02, 0.04, 0.0);
-    ho.radius = Real3(0.2, 0.15, 0.0);
-    ho.material = env->materials()[1];
-    _computeOneMaterial(ho);
+    Int32 index = 0;
+    for (const HeatObject& ho : m_heat_objects) {
+      _copyToGlobal(ho.material, index);
+      ++index;
+    }
+  }
+
+  {
+    // Calcule dans 'Temperature' la moyenne des milieux et matériaux
+    CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
+    ENUMERATE_ (Cell, icell, allCells()) {
+      Cell cell = *icell;
+      AllEnvCell all_env_cell = all_env_cell_converter[cell];
+      Real global_temperature = 0.0;
+      ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
+        EnvCell env_cell = *ienvcell;
+        Real env_temperature = 0.0;
+        ENUMERATE_CELL_MATCELL (imatcell, env_cell) {
+          MatCell mc = *imatcell;
+          env_temperature += m_mat_temperature[mc];
+        }
+        if (env_cell.nbMaterial() > 1)
+          env_temperature /= static_cast<Real>(env_cell.nbMaterial());
+        m_mat_temperature[env_cell] = env_temperature;
+        global_temperature += env_temperature;
+      }
+      if (all_env_cell.nbEnvironment() > 1)
+        global_temperature /= static_cast<Real>(all_env_cell.nbEnvironment());
+      m_mat_temperature[cell] = global_temperature;
+    }
   }
 }
 
@@ -271,10 +296,22 @@ _computeOneMaterial(const HeatObject& heat_object)
   ENUMERATE_MATCELL (imatcell, current_mat) {
     MatCell mc = *imatcell;
     Real t = m_mat_temperature[mc];
-    t -= 100.0;
+    t -= 200.0;
     if (t < 0)
       t = 0.0;
     m_mat_temperature[mc] = t;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_copyToGlobal(IMeshMaterial* mat, Int32 var_index)
+{
+  ENUMERATE_MATCELL (imatcell, mat) {
+    MatCell mc = *imatcell;
+    m_all_temperature[mc.globalCell()][var_index] = m_mat_temperature[mc];
   }
 }
 
@@ -296,6 +333,39 @@ _computeCellsCenter()
     center /= cell_nodes.size();
     m_cell_center[icell] = center;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_buildHeatObjects()
+{
+  info() << "MaterialHeatTestModule::_buildHeatObjects()";
+
+  IMeshEnvironment* env = m_material_mng->findEnvironment("ENV1");
+  const Int32 nb_env = env->nbMaterial();
+  if (nb_env == 0)
+    ARCANE_FATAL("Environment '{0}' has no materials", env->name());
+
+  {
+    HeatObject ho;
+    ho.center = Real3(0.3, 0.4, 0.0);
+    ho.velocity = Real3(0.02, 0.04, 0.0);
+    ho.radius = Real3(0.1, 0.15, 0.0);
+    ho.material = env->materials()[0];
+    m_heat_objects.add(ho);
+  }
+  {
+    HeatObject ho;
+    ho.center = Real3(0.8, 0.4, 0.0);
+    ho.velocity = Real3(-0.02, 0.04, 0.0);
+    ho.radius = Real3(0.2, 0.15, 0.0);
+    ho.material = env->materials()[1];
+    m_heat_objects.add(ho);
+  }
+
+  m_all_temperature.resize(m_heat_objects.size());
 }
 
 /*---------------------------------------------------------------------------*/

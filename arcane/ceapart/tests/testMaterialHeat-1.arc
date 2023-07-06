@@ -10,6 +10,7 @@
    <output-period>1</output-period>
    <output>
     <variable>Temperature</variable>
+    <variable>AllTemperatures</variable>
    </output>
  </arcane-post-processing>
 
