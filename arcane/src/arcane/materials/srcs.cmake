@@ -10,6 +10,7 @@ set(ARCANE_SOURCES
   ComponentItemVectorView.h
   ComponentSimd.cc
   ComponentSimd.h
+  ComponentItemInternalData.cc
   EnumeratorTracer.cc
   EnumeratorTracer.h
   MaterialsGlobal.cc
@@ -120,6 +121,7 @@ set(ARCANE_SOURCES
   ItemMaterialVariableBaseT.H
 
   internal/AllEnvData.h
+  internal/ComponentItemInternalData.h
   internal/MeshEnvironment.h
   internal/MeshMaterial.h
   internal/MeshMaterialMng.h

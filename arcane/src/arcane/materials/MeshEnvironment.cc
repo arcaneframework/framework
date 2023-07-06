@@ -33,6 +33,7 @@
 
 #include "arcane/materials/internal/MeshEnvironment.h"
 #include "arcane/materials/internal/MeshMaterial.h"
+#include "arcane/materials/internal/ComponentItemInternalData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -98,7 +99,6 @@ MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int32 env_id)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
 , m_nb_mat_per_cell(VariableBuildInfo(mm->mesh(), mm->name() + "_CellNbMaterial_" + name))
-, m_mat_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_data(this, name, env_id, false)
 , m_non_const_this(this)
 {
@@ -205,16 +205,17 @@ computeNbMatPerCell()
  * computeNbMatPerCell() et computeItemListForMaterials() ont été appelées
  */
 void MeshEnvironment::
-computeMaterialIndexes()
+computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
 {
   info(4) << "Compute (V2) indexes for environment name=" << name();
 
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
   Integer total_nb_cell_mat = m_total_nb_cell_mat;
-  m_mat_items_internal.resize(total_nb_cell_mat);
+  item_internal_data->resizeNbCellForEnvironment(id(),total_nb_cell_mat);
+  ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
   for( Integer i=0; i<total_nb_cell_mat; ++i ){
-    ComponentItemInternal& ref_ii = m_mat_items_internal[i];
+    ComponentItemInternal& ref_ii = mat_items_internal[i];
     ref_ii.reset();
   } 
 
@@ -241,7 +242,7 @@ computeMaterialIndexes()
       env_item->setNbSubItem(nb_mat);
       env_item->setComponent(this,env_id);
       if (nb_mat!=0){
-        env_item->setFirstSubItem(&m_mat_items_internal[cell_index]);
+        env_item->setFirstSubItem(&mat_items_internal[cell_index]);
         cells_env[lid] = env_item;
       }
       cell_index += nb_mat;
@@ -262,7 +263,7 @@ computeMaterialIndexes()
 
       ConstArrayView<MatVarIndex> matvar_indexes = var_indexer->matvarIndexes();
 
-      ArrayView<ComponentItemInternal*> mat_items_internal = mat->itemsInternalView();
+      ArrayView<ComponentItemInternal*> mat_items_internal_pointer = mat->itemsInternalView();
       Int32ConstArrayView local_ids = var_indexer->localIds();
 
       for( Integer z=0, nb_id = matvar_indexes.size(); z<nb_id; ++z){
@@ -271,8 +272,8 @@ computeMaterialIndexes()
         Int32 pos = cells_pos[lid];
         //info(4) << "Z=" << z << " LID=" << lid << " POS=" << pos;
         ++cells_pos[lid];
-        ComponentItemInternal& ref_ii = m_mat_items_internal[pos];
-        mat_items_internal[z] = &m_mat_items_internal[pos];
+        ComponentItemInternal& ref_ii = mat_items_internal[pos];
+        mat_items_internal_pointer[z] = &mat_items_internal[pos];
         ref_ii.setSuperAndGlobalItem(cells_env[lid],items_internal[lid]);
         ref_ii.setComponent(mat,mat_id);
         ref_ii.setVariableIndex(mvi);

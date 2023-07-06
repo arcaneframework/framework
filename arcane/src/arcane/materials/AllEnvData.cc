@@ -46,6 +46,7 @@ AllEnvData(MeshMaterialMng* mmg)
 , m_nb_env_per_cell(VariableBuildInfo(mmg->meshHandle(),mmg->name()+"_CellNbEnvironment"))
 , m_all_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_item_internal_data(mmg)
 {
 }
 
@@ -59,6 +60,15 @@ AllEnvData::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllEnvData::
+endCreate()
+{
+  m_item_internal_data.endCreate();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,8 +118,7 @@ forceRecompute(bool compute_all)
   ItemGroup all_cells = cell_family->allItems();
   ConstArrayView<MeshMaterialVariableIndexer*> vars_idx = m_material_mng->variablesIndexer();
   Integer nb_var = vars_idx.size();
-  info(4) << "ForceRecompute NB_VAR_IDX=" << nb_var
-          << " compute_all?=" << compute_all;
+  info(4) << "ForceRecompute NB_VAR_IDX=" << nb_var << " compute_all?=" << compute_all;
 
   //TODO: Utiliser celui de MeshMaterialMng
   const bool is_verbose = false;
@@ -269,7 +278,7 @@ forceRecompute(bool compute_all)
     }
     for( Integer i=0; i<nb_env; ++i ){
       MeshEnvironment* env = true_environments[i];
-      env->computeMaterialIndexes();
+      env->computeMaterialIndexes(&m_item_internal_data);
     }
   }
 

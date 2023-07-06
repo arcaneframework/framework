@@ -21,6 +21,7 @@
 
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/MeshEnvironment.h"
+#include "arcane/materials/internal/ComponentItemInternalData.h"
 
 #include <map>
 
@@ -71,6 +72,11 @@ class AllEnvData
     return m_all_env_items_internal;
   }
 
+  ArrayView<ComponentItemInternal> matItemsInternal(Int32 mat_index)
+  {
+    return m_mat_items_internal[mat_index];
+  }
+
   const VariableCellInt32& nbEnvPerCell() const
   {
     return m_nb_env_per_cell;
@@ -79,6 +85,9 @@ class AllEnvData
   void updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation operation);
 
   void printAllEnvCells(Int32ConstArrayView ids);
+
+  //! Notification de la fin de création des milieux/matériaux
+  void endCreate();
 
  private:
 
@@ -97,6 +106,11 @@ class AllEnvData
   UniqueArray<ComponentItemInternal> m_all_env_items_internal;
   UniqueArray<ComponentItemInternal> m_env_items_internal;
   //@}
+
+  //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
+  UniqueArray< UniqueArray<ComponentItemInternal> > m_mat_items_internal;
+
+  ComponentItemInternalData m_item_internal_data;
 
  private:
 
