@@ -43,10 +43,18 @@ namespace
 inline void
 petscCheck(PetscErrorCode error_code)
 {
+  // Note GG: Je ne sais pas vraiment à partir de quelle version de PETSc
+  // la valeur 'PETSC_SUCCESS' la fonction 'PetscCallVoid' sont
+  // disponibles mais elles le sont dans la 3.18.0.
+#if PETSC_VERSION_GE(3,18,0)
   if (error_code==PETSC_SUCCESS)
     return;
   PetscCallVoid(error_code);
   ARCANE_FATAL("Error in PETSc backend errcode={0}",error_code);
+#else
+  if (error_code!=0)
+    ARCANE_FATAL("Error in PETSc backend errcode={0}",error_code);
+#endif
 }
 
 }
