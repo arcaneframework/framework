@@ -191,8 +191,9 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
 /*-----------------------------------------------------------------------------*/
 
 TEST(NeoTestProperty, test_scalar_property) {
-  Neo::ScalarPropertyT<Neo::utils::Int32> scalar_property{ "test_scalar_property" };
+  Neo::ScalarPropertyT<Neo::utils::Int32> scalar_property{ "test_scalar_property", -1 };
   EXPECT_EQ(scalar_property.name(), "test_scalar_property");
+  EXPECT_EQ(scalar_property.get(), -1);
   scalar_property.set(42);
   EXPECT_EQ(42, scalar_property.get());
   auto& const_scalar_property = scalar_property;

@@ -281,8 +281,9 @@ class ScalarPropertyT : public PropertyBase
  public:
   ScalarPropertyT() = default;
 
-  explicit ScalarPropertyT(std::string name)
-  : PropertyBase(std::move(name)) {}
+  explicit ScalarPropertyT(std::string name, DataType init_value = DataType{})
+  : PropertyBase(std::move(name))
+  , m_data(init_value) {}
 
   void set(DataType const& value) noexcept {
     m_data = value;
@@ -581,8 +582,8 @@ class MeshArrayPropertyT : public PropertyBase
       std::cout << "\"" << val << "\" ";
     }
     std::cout << std::endl;
-    Neo::utils::printContainer(m_offsets, "Offsets ");
-    Neo::utils::printContainer(m_indexes, "Indexes");
+    utils::printContainer(m_offsets, "Offsets ");
+    utils::printContainer(m_indexes, "Indexes");
   }
 
   /*!
