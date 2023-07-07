@@ -58,8 +58,8 @@ class Family
   }
 
   template <typename T>
-  void addScalarProperty(std::string const& name) {
-    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ScalarPropertyT<T>{ name }));
+  void addScalarProperty(std::string const& name, T init_value = T{}) {
+    auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ScalarPropertyT<T>{ name, init_value }));
     if (is_inserted)
       Neo::print() << "Add scalar property " << name << " in Family " << m_name
                    << std::endl;

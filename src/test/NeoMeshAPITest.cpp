@@ -85,7 +85,7 @@ TEST(NeoMeshApiTest, AddItemTest) {
   auto cell_uids = mesh.uniqueIds(cell_family, new_cells.localIds());
   auto cell_uids2 = mesh.uniqueIds(cell_family, new_cells2.localIds());
   auto new_cells3_local_ids = new_cells3.localIds();
-  auto cell_uids3 = mesh.uniqueIds(cell_family, Neo::utils::Int32ConstSpan{ new_cells3_local_ids.size(), new_cells3_local_ids.data() }); // to test span API
+  auto cell_uids3 = mesh.uniqueIds(cell_family, Neo::utils::Int32ConstSpan{ new_cells3_local_ids.data(), new_cells3_local_ids.size()  }); // to test span API
   auto i = 0;
   for (auto item : new_cells) {
     std::cout << "Added unique id " << cell_uid_property[item] << std::endl;

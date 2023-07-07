@@ -281,8 +281,9 @@ class ScalarPropertyT : public PropertyBase
  public:
   ScalarPropertyT() = default;
 
-  explicit ScalarPropertyT(std::string name)
-  : PropertyBase(std::move(name)) {}
+  explicit ScalarPropertyT(std::string name, DataType init_value = DataType{})
+  : PropertyBase(std::move(name))
+  , m_data(init_value) {}
 
   void set(DataType const& value) noexcept {
     m_data = value;
@@ -328,7 +329,7 @@ class ArrayPropertyT : public PropertyBase
 
   void push_back(DataType const& value) { m_data.push_back(value); }
 
-  DataType& back() noexcept { m_data.back(); }
+  DataType& back() noexcept { return m_data.back(); }
 
   DataType& operator[](std::size_t index) { return m_data[index]; }
   DataType const& operator[](std::size_t index) const { return m_data[index]; }
@@ -409,7 +410,7 @@ class MeshScalarPropertyT : public PropertyBase
       return;
     assert(("item_range and values sizes differ", item_range.size() == values.size()));
     auto max_item = utils::maxItem(item_range);
-    if (max_item > m_data.size())
+    if (max_item >= m_data.size())
       m_data.resize(max_item + 1, default_value);
     std::size_t counter{ 0 };
     for (auto item : item_range) {
@@ -581,8 +582,8 @@ class MeshArrayPropertyT : public PropertyBase
       std::cout << "\"" << val << "\" ";
     }
     std::cout << std::endl;
-    Neo::utils::printContainer(m_offsets, "Offsets ");
-    Neo::utils::printContainer(m_indexes, "Indexes");
+    utils::printContainer(m_offsets, "Offsets ");
+    utils::printContainer(m_indexes, "Indexes");
   }
 
   /*!
@@ -590,6 +591,10 @@ class MeshArrayPropertyT : public PropertyBase
    */
   int size() const {
     return m_size;
+  }
+
+  utils::ConstSpan<int> sizes() const noexcept {
+    return { m_offsets.data(), m_offsets.size() };
   }
 
   void clear() {
@@ -615,11 +620,11 @@ class MeshArrayPropertyT : public PropertyBase
   }
 
   MeshArrayPropertyView<DataType> view(ItemRange items) {
-    return MeshArrayPropertyView<DataType>{ std::move(items.localIds()), { m_data.size(), m_data.data() }, { m_offsets.size(), m_offsets.data() }, { m_indexes.size(), m_indexes.data() } };
+    return MeshArrayPropertyView<DataType>{ std::move(items.localIds()), { m_data.data(), m_data.size()  }, { m_offsets.data(), m_offsets.size()  }, { m_indexes.data(), m_indexes.size()  } };
   }
 
   MeshArrayPropertyConstView<DataType> constView(ItemRange items) {
-    return MeshArrayPropertyConstView<DataType>{ std::move(items.localIds()), { m_data.size(), m_data.data() }, { m_offsets.size(), m_offsets.data() }, { m_indexes.size(), m_indexes.data() } };
+    return MeshArrayPropertyConstView<DataType>{ std::move(items.localIds()), { m_data.data(), m_data.size()  }, { m_offsets.data(), m_offsets.size()  }, { m_indexes.data(), m_indexes.size()  } };
   }
 
   auto begin() noexcept { return m_data.begin(); }

@@ -16,7 +16,7 @@
 
 #include <string>
 
-#include "Neo.h"
+#include "neo/Neo.h"
 #include "sgraph/DirectedAcyclicGraph.h"
 
 /*---------------------------------------------------------------------------*/

@@ -39,7 +39,11 @@ static constexpr bool _debug = true;
 namespace Neo
 {
 struct NullOstream : public std::ostream
-{};
+{
+  NullOstream()
+  : std::ostream{ nullptr } {}
+};
+
 struct NeoOutputStream
 {
   mutable NullOstream m_null_ostream;
@@ -125,9 +129,11 @@ namespace utils
     Span(T* data, size_type size)
     : m_size(size)
     , m_ptr(data) {}
-    Span(vector_size_type size, T* data)
+
+    Span(T* data, vector_size_type size)
     : m_size(size)
     , m_ptr(data) {}
+
     Span() = default;
 
     T& operator[](int i) {
@@ -144,6 +150,7 @@ namespace utils
     T* end() { return m_ptr + m_size; }
 
     int size() const { return m_size; }
+
     std::vector<non_const_value_type> copy() {
       std::vector<non_const_value_type> vec(m_size);
       std::copy(this->begin(), this->end(), vec.begin());
@@ -167,9 +174,11 @@ namespace utils
     ConstSpan(const T* data, size_type size)
     : m_size(size)
     , m_ptr(data) {}
-    ConstSpan(vector_size_type size, const T* data)
+
+    ConstSpan(const T* data, vector_size_type size)
     : m_size(size)
     , m_ptr(data) {}
+
     ConstSpan() = default;
 
     const T& operator[](int i) const {
@@ -211,7 +220,7 @@ namespace utils
 
     Span<T> operator[](int i) {
       assert(i < m_dim1_size);
-      return { m_dim2_size, m_ptr + i * m_dim2_size };
+      return { m_ptr + i * m_dim2_size, m_dim2_size };
     }
 
     T* begin() {return m_ptr;}
@@ -245,7 +254,7 @@ namespace utils
 
     ConstSpan<T> operator[](int i) const {
       assert(i < m_dim1_size);
-      return { m_dim2_size, m_ptr + i * m_dim2_size };
+      return { m_ptr + i * m_dim2_size, m_dim2_size };
     }
 
     const T* begin() {return m_ptr;}
@@ -325,6 +334,12 @@ namespace utils
 //----------------------------------------------------------------------------/
 
 // Array utilities
+
+#ifdef _MSC_VER // problem with operator<< overload with MSVC
+namespace std
+{ // is undefined behavior, but can't find another way with MSVC. MSVC cannot find an operator<< outside the arguments' namespace...
+#endif
+
 template <typename T>
 std::ostream& operator<<(std::ostream& oss, std::vector<T> const& container) {
   return Neo::utils::_printContainer(container, oss);
@@ -340,6 +355,15 @@ std::ostream& operator<<(std::ostream& oss, Neo::utils::ConstSpan<T> const& cont
   return Neo::utils::_printContainer(container, oss);
 }
 
+#ifdef _MSC_VER // problem with operator<< overload with MSVC
+} // namespace std
+#endif
+
+#ifdef _MSC_VER // problem with operator<< overload with MSVC
+namespace Neo
+{ // MSVC cannot find an operator<< outside the arguments' namespace...
+#endif
+
 template <typename T>
 std::ostream& operator<<(Neo::NeoOutputStream const& oss, T const& printable) {
   if constexpr (ndebug)
@@ -347,6 +371,10 @@ std::ostream& operator<<(Neo::NeoOutputStream const& oss, T const& printable) {
   else
     return std::cout << printable;
 }
+
+#ifdef _MSC_VER // problem with operator<< overload with MSVC
+} // namespace Neo
+#endif
 
 //----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/
