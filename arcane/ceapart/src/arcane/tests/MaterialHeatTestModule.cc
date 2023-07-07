@@ -105,7 +105,6 @@ class MaterialHeatTestModule
  private:
 
   void _computeCellsCenter();
-  void _computeOneMaterial(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _buildHeatObjects();
   void _copyToGlobal(const HeatObject& heat_object);
   IMeshMaterial* _findMaterial(const String& name);
@@ -237,7 +236,32 @@ compute()
 
   // Calcule les mailles à ajouter et supprimer
   for (const HeatObject& ho : m_heat_objects) {
-    _computeOneMaterial(ho, work_arrays[ho.index]);
+    MaterialWorkArray& wa = work_arrays[ho.index];
+    _computeCellsToRemove(ho, wa);
+    _computeCellsToAdd(ho, wa);
+  }
+
+  // Effectue les modifications des matériaux
+  {
+    MeshMaterialModifier modifier(m_material_mng);
+    for (const HeatObject& ho : m_heat_objects) {
+      MaterialWorkArray& wa = work_arrays[ho.index];
+      IMeshMaterial* mat = ho.material;
+
+      // Supprime les mailles matériaux nécessaires
+      ConstArrayView<Int32> remove_ids = wa.mat_cells_to_remove;
+      if (!remove_ids.empty()) {
+        info() << "MAT_MODIF: Remove n=" << remove_ids.size() << " cells to material=" << mat->name();
+        modifier.removeCells(mat, remove_ids);
+      }
+
+      // Ajoute les mailles matériaux nécessaires
+      ConstArrayView<Int32> add_ids(wa.mat_cells_to_add);
+      if (!add_ids.empty()) {
+        info() << "MAT_MODIF: Add n=" << add_ids.size() << " cells to material=" << mat->name();
+        modifier.addCells(mat, add_ids);
+      }
+    }
   }
 
   // Initialise les nouvelles valeurs partielles
@@ -260,36 +284,6 @@ compute()
   }
 
   _computeGlobalTemperature();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MaterialHeatTestModule::
-_computeOneMaterial(const HeatObject& heat_object, MaterialWorkArray& wa)
-{
-  IMeshMaterial* current_mat = heat_object.material;
-
-  _computeCellsToRemove(heat_object, wa);
-  _computeCellsToAdd(heat_object, wa);
-
-  {
-    MeshMaterialModifier modifier(m_material_mng);
-
-    // Supprime les mailles matériaux nécessaires
-    ConstArrayView<Int32> remove_ids = wa.mat_cells_to_remove;
-    if (!remove_ids.empty()) {
-      info() << "MAT_MODIF: Remove n=" << remove_ids.size() << " cells to material=" << current_mat->name();
-      modifier.removeCells(current_mat, remove_ids);
-    }
-
-    // Ajoute les mailles matériaux nécessaires
-    ConstArrayView<Int32> add_ids(wa.mat_cells_to_add);
-    if (!add_ids.empty()) {
-      info() << "MAT_MODIF: Add n=" << add_ids.size() << " cells to material=" << current_mat->name();
-      modifier.addCells(current_mat, add_ids);
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/

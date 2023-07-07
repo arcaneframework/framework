@@ -7,7 +7,7 @@
  </arcane>
 
  <arcane-post-processing>
-   <output-period>1</output-period>
+   <output-period>5</output-period>
    <output>
     <variable>Temperature</variable>
     <variable>AllTemperatures</variable>
