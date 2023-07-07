@@ -79,9 +79,6 @@ PapiPerformanceService(const ServiceBuildInfo& sbi)
 : AbstractService(sbi)
 , m_period(500000)
 , m_event_set(PAPI_NULL)
-, m_only_flops(false)
-, m_is_running(false)
-, m_timer_mng(0)
 , m_application(sbi.application())
 {
 }
@@ -160,8 +157,12 @@ void PapiPerformanceService::
 initialize()
 {
   CriticalSection cs(m_application->parallelSuperMng()->threadMng());
+  if (m_is_initialized)
+    return;
   if (m_is_running)
     return;
+
+  m_is_initialized = true;
 
   int major = PAPI_VERSION_MAJOR(PAPI_VERSION);
   int minor = PAPI_VERSION_MINOR(PAPI_VERSION);
@@ -280,11 +281,12 @@ startProfiling()
 {
   if (m_only_flops)
     return;
+  ARCANE_CHECK_POINTER(global_infos);
   global_infos->startProfiling();
   if (!m_is_running){
     int retval = PAPI_start(m_event_set);
     if (retval!=PAPI_OK){
-      fatal() << "** ERROR in papi_start r=" << retval << '\n';
+      ARCANE_FATAL("** ERROR in papi_start r={0}",retval);
     }
     m_is_running = true;
   }

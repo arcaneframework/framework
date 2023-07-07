@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfPerformanceService.cc                                   (C) 2000-2021 */
+/* ProfPerformanceService.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Informations de performances utilisant les signaux de profiling.          */
 /*---------------------------------------------------------------------------*/
@@ -60,6 +60,7 @@ class ProfPerformanceService
  public:
 
   void initialize() override;
+  bool isInitialized() const override { return m_is_initialized; }
   void startProfiling() override;
   void switchEvent() override;
   void stopProfiling() override;
@@ -70,6 +71,8 @@ class ProfPerformanceService
   ITimerMng* timerMng() override { return nullptr; }
 
  public:
+
+  bool m_is_initialized = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -206,6 +209,10 @@ _arcaneProfilingSigFunc(int signum)
 void ProfPerformanceService::
 initialize()
 {
+  if (m_is_initialized)
+    return;
+  m_is_initialized = true;
+
   if (!global_infos)
     global_infos = new ProfInfos(traceMng());
   global_infos->setFunctionDepth(4);

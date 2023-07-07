@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PapiPerformanceService.h                                    (C) 2000-2020 */
+/* PapiPerformanceService.h                                    (C) 2000-2023 */
 /*                                                                           */
 /* Informations de performances utilisant PAPI.                              */
 /*---------------------------------------------------------------------------*/
@@ -43,6 +43,7 @@ class PapiPerformanceService
  public:
 
   void initialize() override;
+  bool isInitialized() const override { return m_is_initialized; }
   void startProfiling() override;
   void switchEvent() override;
   void stopProfiling() override;
@@ -54,12 +55,13 @@ class PapiPerformanceService
 
  private:
 
-  int m_period;
-  int m_event_set;
-  bool m_only_flops;
-  bool m_is_running;
-  ITimerMng* m_timer_mng;
-  IApplication* m_application;
+  int m_period = 0;
+  int m_event_set = 0;
+  bool m_only_flops = false;
+  bool m_is_running = false;
+  bool m_is_initialized = false;
+  ITimerMng* m_timer_mng = nullptr;
+  IApplication* m_application = nullptr;
 
  private:
 
