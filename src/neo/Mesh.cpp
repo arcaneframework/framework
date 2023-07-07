@@ -265,7 +265,7 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
                                         std::string const& connectivity_unique_name,
                                         ConnectivityOperation add_or_modify) {
   assert(("source items and connected item uids sizes are not coherent with nb_connected_item_per_item",
-          source_items.size() * nb_connected_item_per_item == connected_item_uids.size()));
+          source_items.size() * nb_connected_item_per_item == (int)connected_item_uids.size()));
   std::vector<int> nb_connected_item_per_item_array(source_items.size(), nb_connected_item_per_item);
   scheduleAddConnectivity(source_family, source_items, target_family,
                           std::move(nb_connected_item_per_item_array),

@@ -104,7 +104,7 @@ namespace utilities
     item_nodes.reserve(4 * cell_nodes.size()); // rough approx
     cell_items.reserve(cell_nodes.size()); // rough approx
     cell_item_orientations.reserve(2 * cell_nodes.size()); // rough approx
-    for (int cell_nodes_index = 0; cell_nodes_index < cell_nodes.size();) {
+    for (int cell_nodes_index = 0; cell_nodes_index < (int)cell_nodes.size();) {
       auto [nb_node_in_cell, item_nodes_all_items] = cell_types[cell_type_indexes[cell_index++]];
       auto current_cell_nodes = Neo::utils::ConstSpan<Neo::utils::Int64>{ &cell_nodes[cell_nodes_index], nb_node_in_cell };
       for (auto current_item_node_indexes_in_cell : item_nodes_all_items) {
@@ -145,13 +145,13 @@ namespace utilities
                            std::vector<int>& new_source_item_orientation_in_connected_items) {
     assert(("Invalid argument size, utilities::reverseConnectivity", original_source_item_uids.size() == nb_connected_items_per_item_original.size()));
     assert(("Invalid argument size, utilities::reverseConnectivity",
-            original_connectivity.size() == std::accumulate(nb_connected_items_per_item_original.begin(), nb_connected_items_per_item_original.end(), 0)));
+            (int)original_connectivity.size() == std::accumulate(nb_connected_items_per_item_original.begin(), nb_connected_items_per_item_original.end(), 0)));
     assert(("Invalid argument size, utilities::reverseConnectivity", (original_source_item_connected_item_orientations.size() == 0 || original_source_item_connected_item_orientations.size() == original_connectivity.size())));
     bool reverse_orientation = original_source_item_connected_item_orientations.size() != 0;
     auto source_item_index = 0;
     std::map<Neo::utils::Int64, std::vector<Neo::utils::Int64>> reversed_connectivity_map;
     std::map<Neo::utils::Int64, std::vector<Neo::utils::Int64>> reversed_orientation_map;
-    for (int original_connectivity_index = 0; original_connectivity_index < original_connectivity.size();) {
+    for (int original_connectivity_index = 0; original_connectivity_index < (int)original_connectivity.size();) {
       auto current_item_nb_connected_items = nb_connected_items_per_item_original[source_item_index];
       auto current_item_connected_items = Neo::utils::ConstSpan<Neo::utils::Int64>{ &original_connectivity[original_connectivity_index], current_item_nb_connected_items };
       auto original_orientation_index = original_connectivity_index;
@@ -490,7 +490,7 @@ namespace XdmfTest {
                                          std::move(nb_cell_per_faces), face_cells, connectivity_name,
                                          face_orientation_in_cells, Neo::Mesh::ConnectivityOperation::Add,
                                          do_check_orientation);
-    auto mesh_state = mesh.applyScheduledOperations();
+    mesh.applyScheduledOperations();
     Neo::MeshScalarPropertyT<int> orientation_check_result = face_family.getConcreteProperty<Neo::MeshScalarPropertyT<int>>(
     "FaceFamilytoCellFamily_connectivity_orientation_check");
     _printContainer(orientation_check_result, "orientation check result");
@@ -702,7 +702,7 @@ namespace XdmfTest {
     std::vector<int> nb_node_per_faces;
     auto cell_index = 0;
     auto face_uid = 0;
-    for (auto cell_data_index = 0; cell_data_index < cell_data.size();) {
+    for (auto cell_data_index = 0; cell_data_index < (int)cell_data.size();) {
       cell_uids.push_back(cell_index++);
       auto cell_nb_face = cell_data[cell_data_index++];
       nb_face_per_cells.push_back(cell_nb_face);
@@ -805,7 +805,7 @@ namespace XdmfTest {
     std::vector<Neo::utils::Int64> cell_nodes;
     int cell_nb_nodes = 8;
     auto cell_index = 0;
-    for (auto cell_data_index = 0; cell_data_index < cell_data.size();) {
+    for (auto cell_data_index = 0; cell_data_index < (int)cell_data.size();) {
       cell_uids.push_back(cell_index++);
       auto current_cell_nodes = Neo::utils::ConstSpan<Neo::utils::Int32>{ &cell_data[cell_data_index], cell_nb_nodes };
       cell_nodes.insert(cell_nodes.end(), current_cell_nodes.begin(),

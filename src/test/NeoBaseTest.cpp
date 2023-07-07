@@ -274,7 +274,7 @@ TEST(NeoTestProperty, test_mesh_scalar_property) {
   auto all_values{ values };
   std::copy(new_values.begin(), new_values.end(), std::back_inserter(all_values));
   auto property_values = property.values();
-  for (auto i = 0; i < all_values.size(); ++i) {
+  for (std::size_t i = 0; i < all_values.size(); ++i) {
     EXPECT_EQ(property_values[i], all_values[i]);
   }
   // test for range loop

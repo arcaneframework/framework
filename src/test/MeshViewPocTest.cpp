@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshViewPocTest.h                               (C) 2000-2020             */
 /*                                                                           */
-/* A POC for a mesh view API                                                 */
+/* A POC for a mesh view API. Not used                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,7 +30,7 @@ void fillMesh(Neo::Mesh& mesh) {
   node_family.addMeshScalarProperty<Neo::utils::Int32>("internal_end_of_remove_tag"); // not a user-defined property // todo use byte ?
 
   // Test adds
-  auto& property = node_family.getProperty("node_uids");
+  [[maybe_unused]] auto& property = node_family.getProperty("node_uids");
 
   // Adding cell family and properties
   std::cout << "Find family " << cell_family.m_name << std::endl;
@@ -160,11 +160,12 @@ public:
 
 struct NeoMeshViewBuilder : public MeshViewBuilder
 {
-  Neo::Mesh const& m_neo_mesh;
+  Neo::Mesh m_neo_mesh{ "test" };
   MeshView build() override {
-    auto& cell_family = m_neo_mesh.findFamily(Neo::ItemKind::IK_Cell, "CellFamily");
-    auto& face_family = m_neo_mesh.findFamily(Neo::ItemKind::IK_Face, "FaceFamily");
+    [[maybe_unused]] auto& cell_family = m_neo_mesh.findFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+    [[maybe_unused]] auto& face_family = m_neo_mesh.findFamily(Neo::ItemKind::IK_Face, "FaceFamily");
     //    auto cell_lids = Neo::utils::ConstArrayView<Neo::utils::Int32>{cell_family._lidProp().values().};
+    return MeshView{};
   }
 };
 
@@ -212,7 +213,7 @@ TEST(MeshViewTest,MeshFamilyInfoTest) {
   std::cout << cell_family.nbItem() << " ";
   std::cout << cell_family.max_local_id << std::endl;
   // iterate all items group
-  for (auto icell : cell_family.all_items) {
+  for ([[maybe_unused]] auto icell : cell_family.all_items) {
     std::cout << " Cell in family" << std::endl;
   }
   // iterate all family groups
@@ -222,11 +223,11 @@ TEST(MeshViewTest,MeshFamilyInfoTest) {
               << std::endl;
   }
   // Print lids
-  for (auto lid : cell_family.item_lids) {
+  for ([[maybe_unused]] auto lid : cell_family.item_lids) {
     std::cout << " cell lid " << std::endl;
   }
   // Print uids
-  for (auto uid : cell_family.item_uids) {
+  for ([[maybe_unused]] auto uid : cell_family.item_uids) {
     std::cout << " cell uid " << std::endl;
   }
 }
@@ -259,7 +260,7 @@ TEST(MeshViewTest,MeshConnectivityInfoTest)
     }
   }
   // Group Connectivity
-  auto face_nodes = mesh_view.face_family.all_items.nodeGroup();
+  [[maybe_unused]] auto face_nodes = mesh_view.face_family.all_items.nodeGroup();
 }
 
 TEST(MeshViewTest,MeshVariableInfoTest)
