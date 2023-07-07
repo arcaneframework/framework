@@ -17,6 +17,7 @@
 #include <algorithm>
 
 #include "neo/Neo.h"
+#include "neo/Mesh.h"
 #include "gtest/gtest.h"
 
 #ifdef  HAS_XDMF
