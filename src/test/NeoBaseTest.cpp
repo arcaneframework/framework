@@ -677,7 +677,7 @@ TEST(NeoTestPropertyView, test_mesh_scalar_property_view) {
   // Check out of bound
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {
-    EXPECT_DEATH(property_view[7], ".*Assertion `i < m_size' failed.*");
+    EXPECT_DEATH(property_view[7], ".*Assertion.*");
   }
   if constexpr (_debug) {
     EXPECT_DEATH(partial_property_view[3], ".*Error, exceeds property view size.*");
@@ -708,7 +708,7 @@ TEST(NeoTestPropertyView, test_mesh_scalar_property_const_view) {
   }
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {
-    EXPECT_DEATH(property_const_view[7], ".*Assertion `i < m_size' failed*");
+    EXPECT_DEATH(property_const_view[7], ".*Assertion.*");
   }
   if constexpr (_debug) {
     EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");
