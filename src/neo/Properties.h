@@ -615,11 +615,11 @@ class MeshArrayPropertyT : public PropertyBase
   }
 
   MeshArrayPropertyView<DataType> view(ItemRange items) {
-    return MeshArrayPropertyView<DataType>{ std::move(items.localIds()), { m_data.size(), m_data.data() }, { m_offsets.size(), m_offsets.data() }, { m_indexes.size(), m_indexes.data() } };
+    return MeshArrayPropertyView<DataType>{ std::move(items.localIds()), { m_data.data(), m_data.size()  }, { m_offsets.data(), m_offsets.size()  }, { m_indexes.data(), m_indexes.size()  } };
   }
 
   MeshArrayPropertyConstView<DataType> constView(ItemRange items) {
-    return MeshArrayPropertyConstView<DataType>{ std::move(items.localIds()), { m_data.size(), m_data.data() }, { m_offsets.size(), m_offsets.data() }, { m_indexes.size(), m_indexes.data() } };
+    return MeshArrayPropertyConstView<DataType>{ std::move(items.localIds()), { m_data.data(), m_data.size()  }, { m_offsets.data(), m_offsets.size()  }, { m_indexes.data(), m_indexes.size()  } };
   }
 
   auto begin() noexcept { return m_data.begin(); }

@@ -123,7 +123,7 @@ namespace utilities
         if (is_new_item) {
           item_nodes.insert(item_nodes.end(), current_item_nodes.begin(), current_item_nodes.end());
         }
-        auto orientation = item_orientation.isOrdered({ current_item_nodes.size(), current_item_nodes.data() }) ? 1 : -1;
+        auto orientation = item_orientation.isOrdered({ current_item_nodes.data(), current_item_nodes.size()  }) ? 1 : -1;
         cell_item_orientations.push_back(orientation);
         cell_items.push_back(item_info->second);
         if (is_new_item) {
@@ -462,13 +462,13 @@ namespace XdmfTest {
     { face_nodes_mock.data(), (int)face_nodes_mock.size() }));
     face_nodes_mock = { 7, 6, 5, 9, 10, 11 };
     EXPECT_FALSE(item_orientation.isOrdered(
-    { face_nodes_mock.size(), face_nodes_mock.data() }));
+    {face_nodes_mock.data(), face_nodes_mock.size() }));
     std::vector<Neo::utils::Int64> edge_node_mock{ 0, 100 };
     EXPECT_TRUE(item_orientation.isOrdered(
-    { edge_node_mock.size(), edge_node_mock.data() }));
+    { edge_node_mock.data(), edge_node_mock.size()  }));
     edge_node_mock = { 6, 1 };
     EXPECT_FALSE(item_orientation.isOrdered(
-    { edge_node_mock.size(), edge_node_mock.data() }));
+    { edge_node_mock.data(), edge_node_mock.size()  }));
   }
 
   TEST(PolyhedralTest, ItemOrientationCheckTest) {

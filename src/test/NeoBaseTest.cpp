@@ -22,8 +22,8 @@
 TEST(NeoUtils, test_array_view) {
   std::vector<int> vec{ 0, 1, 2 };
   // build a view from a vector
-  Neo::utils::Span<int> view{ vec.size(), vec.data() };
-  Neo::utils::ConstSpan<int> constview{ vec.size(), vec.data() };
+  Neo::utils::Span<int> view{ vec.data(), vec.size()  };
+  Neo::utils::ConstSpan<int> constview{vec.data(), vec.size()};
   EXPECT_TRUE(std::equal(view.begin(), view.end(), vec.begin()));
   EXPECT_TRUE(std::equal(constview.begin(), constview.end(), vec.begin()));
   // build a vector from a view
