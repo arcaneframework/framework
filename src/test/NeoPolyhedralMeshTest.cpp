@@ -356,17 +356,16 @@ namespace XdmfTest {
     }
     else {
       // check if face is stored positive, otherwise reorder
-      if (StaticMesh::utilities::DefaultItemOrientation::isOrdered({face_nodes.size(),face_nodes.data()}))
-        return std::make_pair(do_change_node_order,std::vector<Neo::utils::Int64>{});
+      if (StaticMesh::utilities::DefaultItemOrientation::isOrdered({ face_nodes.data(), face_nodes.size() }))
+        return std::make_pair(do_change_node_order, std::vector<Neo::utils::Int64>{});
       else {
         // face is +1 oriented in the current cell, but was stored negatively oriented
         // return ascending sorted node order (is positive and fit with initial mesh)
         do_change_node_order = true;
         std::vector<Neo::utils::Int64> new_node_order(face_nodes);
-        std::sort(new_node_order.begin(),new_node_order.end());
-        return std::make_pair(do_change_node_order,new_node_order);
+        std::sort(new_node_order.begin(), new_node_order.end());
+        return std::make_pair(do_change_node_order, new_node_order);
       }
-
     }
   }
 
