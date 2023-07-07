@@ -69,7 +69,7 @@ resizeItemsInternal(Integer nb_item)
 {
   m_items_internal.resize(nb_item);
   if (m_part_data)
-    m_part_data->setComponentItemInternalView(m_items_internal);
+    m_part_data->_setComponentItemInternalView(m_items_internal);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -100,7 +100,7 @@ void MeshComponentData::
 buildPartData()
 {
   m_part_data = new MeshComponentPartData(m_component);
-  m_part_data->setComponentItemInternalView(m_items_internal);
+  m_part_data->_setComponentItemInternalView(m_items_internal);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -157,8 +157,8 @@ rebuildPartData()
 {
   if (!m_part_data)
     buildPartData();
-  m_part_data->setComponentItemInternalView(m_items_internal);
-  m_part_data->setFromMatVarIndexes(m_variable_indexer->matvarIndexes());
+  m_part_data->_setComponentItemInternalView(m_items_internal);
+  m_part_data->_setFromMatVarIndexes(m_variable_indexer->matvarIndexes());
 }
 
 /*---------------------------------------------------------------------------*/

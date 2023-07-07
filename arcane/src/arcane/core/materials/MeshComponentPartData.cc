@@ -74,7 +74,7 @@ _notifyValueIndexesChanged()
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentPartData::
-setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes)
+_setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes)
 {
   Int32Array& pure_indexes = m_value_indexes[(Int32)eMatPart::Pure];
   Int32Array& impure_indexes = m_value_indexes[(Int32)eMatPart::Impure];

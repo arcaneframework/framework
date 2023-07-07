@@ -56,7 +56,7 @@ class MeshComponentData
 
   MeshComponentData(IMeshComponent* component,const String& name,Int32 component_id,
                     bool create_indexer);
-  virtual ~MeshComponentData();
+  ~MeshComponentData() override;
 
  public:
 

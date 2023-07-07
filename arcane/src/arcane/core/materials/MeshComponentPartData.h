@@ -36,28 +36,20 @@ namespace Arcane::Materials
 class ARCANE_CORE_EXPORT MeshComponentPartData
 : public TraceAccessor
 {
+  friend class MeshComponentData;
+  friend class ComponentItemVector;
+
  public:
 
-  MeshComponentPartData(IMeshComponent* component);
+  explicit MeshComponentPartData(IMeshComponent* component);
   MeshComponentPartData(const MeshComponentPartData& rhs) = default;
-  virtual ~MeshComponentPartData();
+  ~MeshComponentPartData() override;
 
  public:
-
- public:
-
-  void setComponentItemInternalView(ConstArrayView<ComponentItemInternal*> v)
-  {
-    m_items_internal = v;
-  }
-
-  void setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes);
 
   Int32 impureVarIdx() const { return m_impure_var_idx; }
 
   IMeshComponent* component() const { return m_component; }
-
-  ConstArrayView<ComponentItemInternal*> itemsInternal() const { return m_items_internal; }
 
   void checkValid() const;
 
@@ -81,6 +73,15 @@ class ARCANE_CORE_EXPORT MeshComponentPartData
   {
     return m_items_internal_indexes[(Int32)k];
   }
+
+ private:
+
+  void _setComponentItemInternalView(ConstArrayView<ComponentItemInternal*> v)
+  {
+    m_items_internal = v;
+  }
+
+  void _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes);
 
   //! Il faut appeler notifyValueIndexesChanged() après modification du tableau.
   Int32Array& _mutableValueIndexes(eMatPart k)

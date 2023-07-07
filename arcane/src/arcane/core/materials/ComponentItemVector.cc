@@ -68,7 +68,7 @@ Impl(IMeshComponent* component,ConstArrayView<ComponentItemInternal*> items_inte
 {
   m_matvar_indexes.copy(matvar_indexes);
   m_items_local_id.copy(items_local_id);
-  m_part_data->setFromMatVarIndexes(matvar_indexes);
+  m_part_data->_setFromMatVarIndexes(matvar_indexes);
 }
 
 /*---------------------------------------------------------------------------*/
