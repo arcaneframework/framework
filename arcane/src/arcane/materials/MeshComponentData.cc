@@ -65,7 +65,7 @@ MeshComponentData::
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentData::
-resizeItemsInternal(Integer nb_item)
+_resizeItemsInternal(Integer nb_item)
 {
   m_items_internal.resize(nb_item);
   if (m_part_data)
@@ -76,7 +76,7 @@ resizeItemsInternal(Integer nb_item)
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentData::
-setVariableIndexer(MeshMaterialVariableIndexer* indexer)
+_setVariableIndexer(MeshMaterialVariableIndexer* indexer)
 {
   m_variable_indexer = indexer;
   m_is_indexer_owner = false;
@@ -86,7 +86,7 @@ setVariableIndexer(MeshMaterialVariableIndexer* indexer)
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentData::
-setItems(const ItemGroup& group)
+_setItems(const ItemGroup& group)
 {
   m_items = group;
   if (m_variable_indexer)
@@ -97,7 +97,7 @@ setItems(const ItemGroup& group)
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentData::
-buildPartData()
+_buildPartData()
 {
   m_part_data = new MeshComponentPartData(m_component);
   m_part_data->_setComponentItemInternalView(m_items_internal);
@@ -113,13 +113,13 @@ buildPartData()
  * m_variable_indexer car on se sert de ses local_ids.
  */
 void MeshComponentData::
-changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
+_changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 {
   ItemInfoListView global_item_list = items().itemFamily()->itemInfoListView();
 
   // TODO: regarder s'il est possible de supprimer le tableau temporaire
   // new_internals (c'est à peu près sur que c'est possible).
-  ConstArrayView<ComponentItemInternal*> current_internals(itemsInternalView());
+  ConstArrayView<ComponentItemInternal*> current_internals(_itemsInternalView());
   UniqueArray<ComponentItemInternal*> new_internals;
 
   Int32ConstArrayView local_ids = variableIndexer()->localIds();
@@ -144,8 +144,8 @@ changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 
   // TODO: regarder supprimer cette copie aussi.
   {
-    resizeItemsInternal(new_internals.size());
-    itemsInternalView().copy(new_internals);
+    _resizeItemsInternal(new_internals.size());
+    _itemsInternalView().copy(new_internals);
   }
 }
 
@@ -153,10 +153,10 @@ changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentData::
-rebuildPartData()
+_rebuildPartData()
 {
   if (!m_part_data)
-    buildPartData();
+    _buildPartData();
   m_part_data->_setComponentItemInternalView(m_items_internal);
   m_part_data->_setFromMatVarIndexes(m_variable_indexer->matvarIndexes());
 }

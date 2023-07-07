@@ -74,7 +74,7 @@ build()
   IItemFamily* cell_family = mesh->cellFamily();
   String group_name = m_material_mng->name() + "_" + name();
   CellGroup items = cell_family->findGroup(group_name, true);
-  m_data.setItems(items);
+  m_data._setItems(items);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -138,7 +138,7 @@ view() const
 void MeshMaterial::
 resizeItemsInternal(Integer nb_item)
 {
-  m_data.resizeItemsInternal(nb_item);
+  m_data._resizeItemsInternal(nb_item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -165,7 +165,7 @@ cells() const
 ComponentPurePartItemVectorView MeshMaterial::
 pureItems() const
 {
-  return m_data.partData()->pureView();
+  return m_data._partData()->pureView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ pureItems() const
 ComponentImpurePartItemVectorView MeshMaterial::
 impureItems() const
 {
-  return m_data.partData()->impureView();
+  return m_data._partData()->impureView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -183,7 +183,7 @@ impureItems() const
 ComponentPartItemVectorView MeshMaterial::
 partItems(eMatPart part) const
 {
-  return m_data.partData()->partView(part);
+  return m_data._partData()->partView(part);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -192,7 +192,7 @@ partItems(eMatPart part) const
 MatPurePartItemVectorView MeshMaterial::
 pureMatItems() const
 {
-  return { m_non_const_this, m_data.partData()->pureView() };
+  return { m_non_const_this, m_data._partData()->pureView() };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ pureMatItems() const
 MatImpurePartItemVectorView MeshMaterial::
 impureMatItems() const
 {
-  return { m_non_const_this, m_data.partData()->impureView() };
+  return { m_non_const_this, m_data._partData()->impureView() };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -210,7 +210,7 @@ impureMatItems() const
 MatPartItemVectorView MeshMaterial::
 partMatItems(eMatPart part) const
 {
-  return { m_non_const_this, m_data.partData()->partView(part) };
+  return { m_non_const_this, m_data._partData()->partView(part) };
 }
 
 /*---------------------------------------------------------------------------*/

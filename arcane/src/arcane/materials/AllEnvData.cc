@@ -313,9 +313,9 @@ forceRecompute(bool compute_all)
   }
 
   for( MeshEnvironment* env : true_environments ){
-    env->componentData()->rebuildPartData();
+    env->componentData()->_rebuildPartData();
     for( MeshMaterial* mat : env->trueMaterials() )
-      mat->componentData()->rebuildPartData();
+      mat->componentData()->_rebuildPartData();
   }
 
   m_material_mng->checkValid();

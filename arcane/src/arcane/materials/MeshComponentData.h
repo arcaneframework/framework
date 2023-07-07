@@ -52,6 +52,10 @@ class MeshComponentPartData;
 class MeshComponentData
 : public TraceAccessor
 {
+  friend class MeshEnvironment;
+  friend class MeshMaterial;
+  friend class AllEnvData;
+
  public:
 
   MeshComponentData(IMeshComponent* component,const String& name,Int32 component_id,
@@ -67,12 +71,14 @@ class MeshComponentData
     return m_variable_indexer;
   }
 
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
+ private:
+
+  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const
   {
     return m_items_internal;
   }
 
-  ArrayView<ComponentItemInternal*> itemsInternalView()
+  ArrayView<ComponentItemInternal*> _itemsInternalView()
   {
     return m_items_internal;
   }
@@ -91,15 +97,15 @@ class MeshComponentData
     return m_component_id;
   }
 
- public:
+ private:
 
-  void resizeItemsInternal(Integer nb_item);
-  void setVariableIndexer(MeshMaterialVariableIndexer* indexer);
-  void setItems(const ItemGroup& group);
-  void changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids);
-  void rebuildPartData();
-  void buildPartData();
-  MeshComponentPartData* partData() const { return m_part_data; }
+  void _resizeItemsInternal(Integer nb_item);
+  void _setVariableIndexer(MeshMaterialVariableIndexer* indexer);
+  void _setItems(const ItemGroup& group);
+  void _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids);
+  void _rebuildPartData();
+  void _buildPartData();
+  MeshComponentPartData* _partData() const { return m_part_data; }
 
  private:
 

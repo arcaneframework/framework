@@ -133,7 +133,7 @@ build()
     cells.internal()->attachObserver(this,m_group_observer);
   }
 
-  m_data.setItems(cells);
+  m_data._setItems(cells);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -152,7 +152,7 @@ addMaterial(MeshMaterial* mm)
 void MeshEnvironment::
 setVariableIndexer(MeshMaterialVariableIndexer* idx)
 {
-  m_data.setVariableIndexer(idx);
+  m_data._setVariableIndexer(idx);
   idx->setCells(m_data.items());
   idx->setIsEnvironment(true);
 
@@ -162,10 +162,10 @@ setVariableIndexer(MeshMaterialVariableIndexer* idx)
   // TODO: pour garantir la cohérence, il faudrait supprimer
   // dans m_data le groupe d'entité.
   if (m_true_materials.size()==1)
-    m_true_materials[0]->componentData()->setItems(m_data.items());
-  m_data.buildPartData();
+    m_true_materials[0]->componentData()->_setItems(m_data.items());
+  m_data._buildPartData();
   for( MeshMaterial* mat : m_true_materials )
-    mat->componentData()->buildPartData();
+    mat->componentData()->_buildPartData();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -507,7 +507,7 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
   // entre les nouveaux et les anciens localId
 
   if (nb_mat==1){
-    m_data.changeLocalIdsForInternalList(old_to_new_ids);
+    m_data._changeLocalIdsForInternalList(old_to_new_ids);
     MeshMaterial* true_mat = m_true_materials[0];
     _changeIds(true_mat->componentData(),old_to_new_ids);
   }
@@ -527,9 +527,9 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
   {
     for( Integer i=0; i<nb_mat; ++i ){
       MeshMaterial* true_mat = m_true_materials[i];
-      true_mat->componentData()->rebuildPartData();
+      true_mat->componentData()->_rebuildPartData();
     }
-    componentData()->rebuildPartData();
+    componentData()->_rebuildPartData();
   }
 
   checkValid();
@@ -544,7 +544,7 @@ _changeIds(MeshComponentData* cdata,Int32ConstArrayView old_to_new_ids)
   info(4) << "ChangeIds() (V4) for name=" << cdata->name();
   info(4) << "Use new version for ChangeIds()";
 
-  cdata->changeLocalIdsForInternalList(old_to_new_ids);
+  cdata->_changeLocalIdsForInternalList(old_to_new_ids);
   cdata->variableIndexer()->changeLocalIds(old_to_new_ids);
 }
 
@@ -599,7 +599,7 @@ view() const
 void MeshEnvironment::
 resizeItemsInternal(Integer nb_item)
 {
-  m_data.resizeItemsInternal(nb_item);
+  m_data._resizeItemsInternal(nb_item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -608,7 +608,7 @@ resizeItemsInternal(Integer nb_item)
 ComponentPurePartItemVectorView MeshEnvironment::
 pureItems() const
 {
-  return m_data.partData()->pureView();
+  return m_data._partData()->pureView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -617,7 +617,7 @@ pureItems() const
 ComponentImpurePartItemVectorView MeshEnvironment::
 impureItems() const
 {
-  return m_data.partData()->impureView();
+  return m_data._partData()->impureView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -626,7 +626,7 @@ impureItems() const
 ComponentPartItemVectorView MeshEnvironment::
 partItems(eMatPart part) const
 {
-  return m_data.partData()->partView(part);
+  return m_data._partData()->partView(part);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -635,7 +635,7 @@ partItems(eMatPart part) const
 EnvPurePartItemVectorView MeshEnvironment::
 pureEnvItems() const
 {
-  return { m_non_const_this, m_data.partData()->pureView() };
+  return { m_non_const_this, m_data._partData()->pureView() };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -644,7 +644,7 @@ pureEnvItems() const
 EnvImpurePartItemVectorView MeshEnvironment::
 impureEnvItems() const
 {
-  return { m_non_const_this, m_data.partData()->impureView() };
+  return { m_non_const_this, m_data._partData()->impureView() };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -653,7 +653,7 @@ impureEnvItems() const
 EnvPartItemVectorView MeshEnvironment::
 partEnvItems(eMatPart part) const
 {
-  return { m_non_const_this, m_data.partData()->partView(part) };
+  return { m_non_const_this, m_data._partData()->partView(part) };
 }
 
 /*---------------------------------------------------------------------------*/

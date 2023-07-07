@@ -75,7 +75,7 @@ class MeshEnvironment
   }
   ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
   {
-    return m_data.itemsInternalView();
+    return m_data._itemsInternalView();
   }
   Int32 id() const override
   {
@@ -114,7 +114,7 @@ class MeshEnvironment
 
   ArrayView<ComponentItemInternal*> itemsInternalView()
   {
-    return m_data.itemsInternalView();
+    return m_data._itemsInternalView();
   }
 
  public:

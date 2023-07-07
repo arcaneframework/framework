@@ -72,7 +72,7 @@ class MeshMaterial
 
   ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
   {
-    return m_data.itemsInternalView();
+    return m_data._itemsInternalView();
   }
 
   Int32 id() const override { return m_data.componentId(); }
@@ -106,7 +106,7 @@ class MeshMaterial
 
   ArrayView<ComponentItemInternal*> itemsInternalView()
   {
-    return m_data.itemsInternalView();
+    return m_data._itemsInternalView();
   }
 
  public:
