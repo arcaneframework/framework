@@ -593,6 +593,10 @@ class MeshArrayPropertyT : public PropertyBase
     return m_size;
   }
 
+  utils::ConstSpan<int> sizes() const noexcept {
+    return { m_offsets.data(), m_offsets.size() };
+  }
+
   void clear() {
     m_data.clear();
     m_offsets.clear();
