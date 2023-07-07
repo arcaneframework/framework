@@ -1808,13 +1808,16 @@ doComputeLoop(Integer max_loop)
     m_msg_pass_prof_srv->startProfiling();
 
   try{
-    if (ps)
-      ps->initialize();
+    if (ps){
+      if (!ps->isInitialized())
+        ps->initialize();
+      ps->reset();
+    }
     Item::resetStats();
     // Désactive le profiling si demande spécifique
     if (want_specific_profiling)
       ps = nullptr;
-    ProfilingSentry ps_sentry(ps);
+    ProfilingSentryWithInitialize ps_sentry(ps);
     if (!m_specific_entry_point_name.null()){
       _callSpecificEntryPoint();
       is_end = true;

@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CodeService.cc                                              (C) 2000-2018 */
+/* CodeService.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* Service du code.                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/core/CodeService.h"
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/ScopedPtr.h"
@@ -21,24 +21,25 @@
 #include "arcane/utils/IProfilingService.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/ValueConvert.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/ISession.h"
-#include "arcane/IServiceLoader.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/CodeService.h"
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/ICheckpointMng.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/CheckpointInfo.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/IServiceLoader.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/ICheckpointMng.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/CheckpointInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -138,12 +139,14 @@ void CodeService::
 initCase(ISubDomain* sub_domain,bool is_continue)
 {
   IProfilingService* ps = nullptr;
-  if (!platform::getEnvironmentVariable("ARCANE_PROFILE_INIT").null())
-    ps = platform::getProfilingService();
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PROFILE_INIT", true))
+    if (v.value()!=0)
+      ps = platform::getProfilingService();
   {
-    ProfilingSentry ps_sentry(ps);
+    ProfilingSentryWithInitialize ps_sentry(ps);
+    ps_sentry.setPrintAtEnd(true);
     /*
-     * Les différentes phases de l'initialisation sont:
+     * Les différentes phases de l'initialisation sont :
      * - allocation des structures gérant les maillages.
      * - relecture des protections (si on est en reprise).
      * - lecture (phase1, donc sans les éléments de maillage) du jeu de données.
@@ -219,7 +222,7 @@ _application() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
