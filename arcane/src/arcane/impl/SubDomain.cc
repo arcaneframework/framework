@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,6 +25,7 @@
 #include "arcane/utils/TraceAccessor2.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/IProcessorAffinityService.h"
+#include "arcane/utils/IProfilingService.h"
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IVariableMng.h"
@@ -673,18 +674,29 @@ readOrReloadMeshes()
   //info() << format4("Test: {1}",{A_PR2("nb_mesh_created",nb_mesh),A_PR(m_is_continue)});
   //info() << format5(A_PR2("nb_mesh_created",nb_mesh),A_PR(m_is_continue));
 
-  if (m_is_continue){
-    for( Integer z=0; z<nb_mesh; ++z ){
-      IPrimaryMesh* mesh = m_mesh_mng->getPrimaryMesh(z);
-      mesh->reloadMesh();
+  // Regarde si on active le profiling lors de l'initialisation
+  IProfilingService* ps = nullptr;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PROFILE_CREATE_MESH", true))
+    if (v.value()!=0)
+      ps = platform::getProfilingService();
+
+  {
+    ProfilingSentryWithInitialize ps_sentry(ps);
+    ps_sentry.setPrintAtEnd(true);
+
+    if (m_is_continue){
+      for( Integer z=0; z<nb_mesh; ++z ){
+        IPrimaryMesh* mesh = m_mesh_mng->getPrimaryMesh(z);
+        mesh->reloadMesh();
+      }
     }
-  }
-  else{
-    if (m_has_mesh_service){
-      m_case_mesh_master_service->allocateMeshes();
+    else{
+      if (m_has_mesh_service){
+        m_case_mesh_master_service->allocateMeshes();
+      }
+      else
+        m_legacy_mesh_builder->readMeshes();
     }
-    else
-      m_legacy_mesh_builder->readMeshes();
   }
 
   //warning() << "CODE CHANGED IN DEV-X10. NEED TEST";
