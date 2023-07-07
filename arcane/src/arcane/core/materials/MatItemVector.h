@@ -57,7 +57,7 @@ class ARCANE_CORE_EXPORT MatCellVector
   //! Vue sur ce vecteur
   MatCellVectorView view() const
   {
-    return {_component(),matvarIndexes(),itemsInternalView(),_localIds()};
+    return {_component(),_matvarIndexes(),_itemsInternalView(),_localIds()};
   }
 
   //! Matériau associé

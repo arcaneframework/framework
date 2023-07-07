@@ -54,14 +54,14 @@ class MeshMaterial
 
   MeshMaterial(MeshMaterialInfo* infos,MeshEnvironment* env,
                const String& name,Int32 mat_id);
-  virtual ~MeshMaterial();
+  ~MeshMaterial() override;
 
  public:
 
   IMeshMaterialMng* materialMng() override { return m_material_mng; }
   ITraceMng* traceMng() override { return TraceAccessor::traceMng(); }
   MeshMaterialInfo* infos() const override { return m_infos; }
-  const String& name() const override { return m_data.name(); }
+  String name() const override { return m_data.name(); }
   IMeshEnvironment* environment() const override;
   CellGroup cells() const override;
 

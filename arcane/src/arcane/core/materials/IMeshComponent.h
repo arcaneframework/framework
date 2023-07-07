@@ -33,7 +33,7 @@ class ARCANE_CORE_EXPORT IMeshComponent
 {
  public:
 
-  virtual ~IMeshComponent(){}
+  virtual ~IMeshComponent() = default;
 
  public:
 
@@ -44,7 +44,7 @@ class ARCANE_CORE_EXPORT IMeshComponent
   virtual ITraceMng* traceMng() =0;
 
   //! Nom du composant
-  virtual const String& name() const =0;
+  virtual String name() const =0;
 
   /*!
    * \brief Groupe des mailles de ce matériau.
@@ -54,18 +54,6 @@ class ARCANE_CORE_EXPORT IMeshComponent
    * par le materialMng().
    */
   virtual CellGroup cells() const =0;
-
-  /*!
-   * \internal
-   * Indexeur pour accéder aux variables partielles.
-   */
-  virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
-
-  /*!
-   * \internal
-   * Vue sur les mailles du composant.
-   */
-  virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const =0;
 
   /*!
    * \brief Identifiant du composant.
@@ -126,6 +114,21 @@ class ARCANE_CORE_EXPORT IMeshComponent
    * Si isEnvironment()==false, retourne \a nullptr
    */
   virtual IMeshEnvironment* asEnvironment() =0;
+
+ public:
+
+  /*!
+   * \internal
+   * Indexeur pour accéder aux variables partielles.
+   */
+  virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
+
+  /*!
+   * \internal
+   * Vue sur les mailles du composant.
+   */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

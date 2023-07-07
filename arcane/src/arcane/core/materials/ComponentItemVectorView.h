@@ -28,6 +28,11 @@
 namespace ArcaneTest
 {
 class MeshMaterialTesterModule;
+class MaterialHeatTestModule;
+}
+namespace Arcane::Accelerator::impl
+{
+class MatCommandContainerBase;
 }
 
 namespace Arcane::Materials
@@ -45,7 +50,9 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   friend class ComponentItemVector;
   friend class MatItemVectorView;
   friend class EnvItemVectorView;
+  friend Arcane::Accelerator::impl::MatCommandContainerBase;
   friend ArcaneTest::MeshMaterialTesterModule;
+  friend ArcaneTest::MaterialHeatTestModule;
   template<typename ViewType,typename LambdaType>
   friend class LambdaMatItemRangeFunctorT;
 
@@ -87,17 +94,26 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
   //! Interne à Arcane
   //@{
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   ConstArrayView<ComponentItemInternal*> itemsInternalView() const
   { return m_items_internal_main_view; }
 
   // Tableau des MatVarIndex de cette vue.
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   ConstArrayView<MatVarIndex> matvarIndexes() const { return m_matvar_indexes_view; }
 
-  //! Tableau des localId() des entités associées
-  ConstArrayView<Int32> _internalLocalIds() const { return m_items_local_id_view; }
   //@}
 
  private:
+
+  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const
+  { return m_items_internal_main_view; }
+
+  // Tableau des MatVarIndex de cette vue.
+  ConstArrayView<MatVarIndex> _matvarIndexes() const { return m_matvar_indexes_view; }
+
+  //! Tableau des localId() des entités associées
+  ConstArrayView<Int32> _internalLocalIds() const { return m_items_local_id_view; }
 
   /*!
    * \internal

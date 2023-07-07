@@ -53,7 +53,7 @@ class ARCANE_CORE_EXPORT EnvCellVector
   //! Vue sur ce vecteur
   EnvCellVectorView view() const
   {
-    return {_component(),matvarIndexes(),itemsInternalView(),_localIds() };
+    return {_component(),_matvarIndexes(),_itemsInternalView(),_localIds() };
   }
 
   //! Milieu associé

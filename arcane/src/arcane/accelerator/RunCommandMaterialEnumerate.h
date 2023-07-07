@@ -61,7 +61,7 @@ class MatCommandContainerBase
   void _init()
   {
     m_nb_item = m_items.nbItem();
-    m_matvar_indexes = m_items.matvarIndexes();
+    m_matvar_indexes = m_items._matvarIndexes();
     m_global_cells_local_id = m_items._internalLocalIds();
   }
 };
