@@ -22,6 +22,7 @@
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
 #include "arcane/materials/MeshMaterialModifier.h"
+#include "arcane/materials/ComponentItemVectorView.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MaterialHeatTest_axl.h"
@@ -54,8 +55,34 @@ class MaterialHeatTestModule
     Real radius = 0.0;
     //! Vitesse
     Real3 velocity;
+    //! Températeure de refroissement
+    Real cold_value = 300.0;
+    //! Températeure de chauffage
+    Real heat_value = 1000.0;
     //! Matériaux qui sera chauffé par cet objet.
     IMeshMaterial* material = nullptr;
+    //! Index de cet objet dans la liste globale
+    Int32 index = 0;
+  };
+
+  //! Tableau de travail pour la mise à jour des liste de matériaux
+  struct MaterialWorkArray
+  {
+    void clear()
+    {
+      mat_cells_to_add_value.clear();
+      mat_cells_to_add.clear();
+      mat_cells_to_remove.clear();
+    }
+
+   public:
+
+    //! Liste des valeurs de température dans les mailles à ajouter
+    UniqueArray<Real> mat_cells_to_add_value;
+    //! Liste des mailles à ajouter
+    UniqueArray<Int32> mat_cells_to_add;
+    //! Liste des mailles à supprimer
+    UniqueArray<Int32> mat_cells_to_remove;
   };
 
  public:
@@ -78,10 +105,15 @@ class MaterialHeatTestModule
  private:
 
   void _computeCellsCenter();
-  void _computeOneMaterial(const HeatObject& heat_object);
   void _buildHeatObjects();
-  void _copyToGlobal(IMeshMaterial* mat, Int32 var_index);
+  void _copyToGlobal(const HeatObject& heat_object);
   IMeshMaterial* _findMaterial(const String& name);
+  void _computeGlobalTemperature();
+  void _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa);
+  void _computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa);
+  void _addHeat(const HeatObject& heat_object);
+  void _addCold(const HeatObject& heat_object);
+  void _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -119,6 +151,9 @@ buildInit()
   Materials::IMeshMaterialMng* mm = IMeshMaterialMng::getReference(defaultMesh());
 
   int flags = (int)eModificationFlags::GenericOptimize | (int)eModificationFlags::OptimizeMultiAddRemove;
+  flags |= (int)eModificationFlags::OptimizeMultiAddRemove;
+  flags |= (int)eModificationFlags::OptimizeMultiMaterialPerEnvironment;
+
   m_material_mng->setModificationFlags(flags);
   m_material_mng->setMeshModificationNotified(true);
 
@@ -193,8 +228,49 @@ compute()
 
   _computeCellsCenter();
 
+  UniqueArray<MaterialWorkArray> work_arrays(m_heat_objects.size());
+
+  // Ajoute de la chaleur à chaque matériau
   for (const HeatObject& ho : m_heat_objects)
-    _computeOneMaterial(ho);
+    _addHeat(ho);
+
+  // Calcule les mailles à ajouter et supprimer
+  for (const HeatObject& ho : m_heat_objects) {
+    MaterialWorkArray& wa = work_arrays[ho.index];
+    _computeCellsToRemove(ho, wa);
+    _computeCellsToAdd(ho, wa);
+  }
+
+  // Effectue les modifications des matériaux
+  {
+    MeshMaterialModifier modifier(m_material_mng);
+    for (const HeatObject& ho : m_heat_objects) {
+      MaterialWorkArray& wa = work_arrays[ho.index];
+      IMeshMaterial* mat = ho.material;
+
+      // Supprime les mailles matériaux nécessaires
+      ConstArrayView<Int32> remove_ids = wa.mat_cells_to_remove;
+      if (!remove_ids.empty()) {
+        info() << "MAT_MODIF: Remove n=" << remove_ids.size() << " cells to material=" << mat->name();
+        modifier.removeCells(mat, remove_ids);
+      }
+
+      // Ajoute les mailles matériaux nécessaires
+      ConstArrayView<Int32> add_ids(wa.mat_cells_to_add);
+      if (!add_ids.empty()) {
+        info() << "MAT_MODIF: Add n=" << add_ids.size() << " cells to material=" << mat->name();
+        modifier.addCells(mat, add_ids);
+      }
+    }
+  }
+
+  // Initialise les nouvelles valeurs partielles
+  for (const HeatObject& ho : m_heat_objects)
+    _initNewCells(ho, work_arrays[ho.index]);
+
+  // Refroidit chaque matériau
+  for (const HeatObject& ho : m_heat_objects)
+    _addCold(ho);
 
   // Remplit la variable composante associée de la variable 'AllTemperature'
   // pour chaque matériau. Cela permet de voir leur valeur facilement dans
@@ -202,32 +278,76 @@ compute()
   ENUMERATE_ (Cell, icell, allCells()) {
     m_all_temperature[icell].fill(0.0);
   }
-  {
-    Int32 index = 0;
-    for (const HeatObject& ho : m_heat_objects) {
-      _copyToGlobal(ho.material, index);
-      ++index;
-    }
+
+  for (const HeatObject& ho : m_heat_objects) {
+    _copyToGlobal(ho);
   }
 
-  {
-    // Calcule dans 'Temperature' la somme des températures des milieux et matériaux
-    CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
-    ENUMERATE_ (Cell, icell, allCells()) {
-      Cell cell = *icell;
-      AllEnvCell all_env_cell = all_env_cell_converter[cell];
-      Real global_temperature = 0.0;
-      ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
-        EnvCell env_cell = *ienvcell;
-        Real env_temperature = 0.0;
-        ENUMERATE_CELL_MATCELL (imatcell, env_cell) {
-          MatCell mc = *imatcell;
-          env_temperature += m_mat_temperature[mc];
-        }
-        m_mat_temperature[env_cell] = env_temperature;
-        global_temperature += env_temperature;
-      }
-      m_mat_temperature[cell] = global_temperature;
+  _computeGlobalTemperature();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa)
+{
+  // Initialise les nouvelles valeurs partielles
+  IMeshMaterial* current_mat = heat_object.material;
+  CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
+  ConstArrayView<Int32> ids(wa.mat_cells_to_add);
+
+  for (Int32 i = 0, n = ids.size(); i < n; ++i) {
+    AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(ids[i])];
+    MatCell mc = current_mat->findMatCell(all_env_cell);
+    // Teste que la maille n'est pas nulle.
+    // Ne devrait pas arriver car on l'a ajouté juste avant
+    if (mc.null())
+      ARCANE_FATAL("Internal invalid null mat cell");
+    m_mat_temperature[mc] = wa.mat_cells_to_add_value[i];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_addCold(const HeatObject& heat_object)
+{
+  IMeshMaterial* current_mat = heat_object.material;
+  const Real cold_value = heat_object.cold_value;
+
+  ENUMERATE_MATCELL (imatcell, current_mat) {
+    Real t = m_mat_temperature[imatcell];
+    t -= cold_value;
+    if (t <= 0)
+      ARCANE_FATAL("Invalid negative temperature '{0}' cell_lid={1}", t, (*imatcell).globalCell().localId());
+    m_mat_temperature[imatcell] = t;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_addHeat(const HeatObject& heat_object)
+{
+  Real3 heat_center = heat_object.center;
+  heat_center += heat_object.velocity * m_global_time();
+  const Real heat_value = heat_object.heat_value;
+  const Real heat_radius_norm = heat_object.radius * heat_object.radius;
+
+  IMeshMaterial* current_mat = heat_object.material;
+
+  //! Chauffe les mailles déjà présentes dans le matériau
+  ENUMERATE_MATCELL (imatcell, current_mat) {
+    MatCell mc = *imatcell;
+    Cell cell = mc.globalCell();
+    Real3 center = m_cell_center[cell];
+    Real distance2 = (center - heat_center).squareNormL2();
+    if (distance2 < heat_radius_norm) {
+      Real to_add = heat_value / (1.0 + distance2);
+      m_mat_temperature[mc] += to_add;
     }
   }
 }
@@ -236,20 +356,19 @@ compute()
 /*---------------------------------------------------------------------------*/
 
 void MaterialHeatTestModule::
-_computeOneMaterial(const HeatObject& heat_object)
+_computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa)
 {
   Real3 heat_center = heat_object.center;
   heat_center += heat_object.velocity * m_global_time();
-  const Real heat_value = 1000.0;
+  const Real heat_value = heat_object.heat_value;
   Real heat_radius = heat_object.radius;
   const Real heat_radius_norm = heat_radius * heat_radius;
-
   IMeshMaterial* current_mat = heat_object.material;
-
   CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
 
-  UniqueArray<Real> mat_cells_to_add_value;
-  UniqueArray<Int32> mat_cells_to_add;
+  const bool is_verbose = false;
+
+  // Détermine les nouvelles à ajouter au matériau
   ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
     AllEnvCell all_env_cell = all_env_cell_converter[cell];
@@ -262,53 +381,12 @@ _computeOneMaterial(const HeatObject& heat_object)
         // Si 'mc' est nul cela signifie que ce matériau n'est
         // pas présent dans la maille. Il faudra donc l'ajouter.
         // On conserve la valeur à ajouter pour ne pas la recalculer
-        mat_cells_to_add_value.add(to_add);
-        mat_cells_to_add.add(cell.localId());
+        wa.mat_cells_to_add_value.add(to_add);
+        wa.mat_cells_to_add.add(cell.localId());
+        if (is_verbose)
+          info() << "Add LID=" << cell.localId() << " T=" << to_add;
       }
-      else
-        m_mat_temperature[mc] += to_add;
     }
-  }
-
-  // Ajoute les mailles matériaux nécessaires
-  if (!mat_cells_to_add.empty()) {
-    ConstArrayView<Int32> ids(mat_cells_to_add);
-    {
-      MeshMaterialModifier modifier(m_material_mng);
-      info() << "MAT_MODIF: Add n=" << ids.size() << " cells to material=" << current_mat->name();
-      modifier.addCells(current_mat, ids);
-    }
-    // Initialise les nouvelles valeurs partielles
-    for (Int32 i = 0, n = ids.size(); i < n; ++i) {
-      AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(ids[i])];
-      MatCell mc = current_mat->findMatCell(all_env_cell);
-      // Teste que la maille n'est pas nulle.
-      // Ne devrait pas arriver car on l'a ajouté juste avant
-      if (mc.null())
-        ARCANE_FATAL("Internal invalid null mat cell");
-      m_mat_temperature[mc] = mat_cells_to_add_value[i];
-    }
-  }
-
-  // Refroidit chaque maille du matériau d'une quantité fixe.
-  // Si la températeur devient inférieure à zéro on supprime la maille
-  // de ce matériau.
-  UniqueArray<Int32> mat_cells_to_remove;
-  ENUMERATE_MATCELL (imatcell, current_mat) {
-    MatCell mc = *imatcell;
-    Real t = m_mat_temperature[mc];
-    t -= 300.0;
-    if (t < 0) {
-      t = 0.0;
-      mat_cells_to_remove.add(mc.globalCell().localId());
-    }
-    m_mat_temperature[mc] = t;
-  }
-
-  if (!mat_cells_to_remove.empty()) {
-    MeshMaterialModifier modifier(m_material_mng);
-    info() << "MAT_MODIF: Remove n=" << mat_cells_to_remove.size() << " cells to material=" << current_mat->name();
-    modifier.addCells(current_mat, mat_cells_to_remove);
   }
 }
 
@@ -316,8 +394,40 @@ _computeOneMaterial(const HeatObject& heat_object)
 /*---------------------------------------------------------------------------*/
 
 void MaterialHeatTestModule::
-_copyToGlobal(IMeshMaterial* mat, Int32 var_index)
+_computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa)
 {
+  IMeshMaterial* current_mat = heat_object.material;
+  const bool is_verbose = false;
+  const Real cold_value = 300.0;
+
+  // Refroidit chaque maille du matériau d'une quantité fixe.
+  // Si la températeure devient inférieure à zéro on supprime la maille
+  // de ce matériau.
+  if (is_verbose)
+    info() << "MAT_BEFORE: " << current_mat->matView()._internalLocalIds();
+  {
+    ENUMERATE_MATCELL (imatcell, current_mat) {
+      MatCell mc = *imatcell;
+      Real t = m_mat_temperature[mc];
+      if (t < cold_value) {
+        wa.mat_cells_to_remove.add(mc.globalCell().localId());
+        if (is_verbose)
+          info() << "Remove LID=" << mc.globalCell().localId() << " T=" << t;
+      }
+    }
+  }
+  if (is_verbose)
+    info() << "MAT_AFTER: " << current_mat->matView()._internalLocalIds();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_copyToGlobal(const HeatObject& heat_object)
+{
+  IMeshMaterial* mat = heat_object.material;
+  Int32 var_index = heat_object.index;
   Real total_mat_temperature = 0.0;
   ENUMERATE_MATCELL (imatcell, mat) {
     MatCell mc = *imatcell;
@@ -356,13 +466,18 @@ _buildHeatObjects()
 {
   info() << "MaterialHeatTestModule::_buildHeatObjects()";
 
-  for (const auto& opt : options()->heatObject()) {
-    HeatObject ho;
-    ho.center = opt->center;
-    ho.velocity = opt->velocity;
-    ho.radius = opt->radius;
-    ho.material = _findMaterial(opt->material);
-    m_heat_objects.add(ho);
+  {
+    Int32 index = 0;
+    for (const auto& opt : options()->heatObject()) {
+      HeatObject ho;
+      ho.center = opt->center;
+      ho.velocity = opt->velocity;
+      ho.radius = opt->radius;
+      ho.material = _findMaterial(opt->material);
+      ho.index = index;
+      m_heat_objects.add(ho);
+      ++index;
+    }
   }
 
   m_all_temperature.resize(m_heat_objects.size());
@@ -378,6 +493,32 @@ _findMaterial(const String& name)
     if (mat->name() == name)
       return mat;
   ARCANE_FATAL("No material in environment with name '{0}'", name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_computeGlobalTemperature()
+{
+  // Calcule dans 'Temperature' la somme des températures des milieux et matériaux
+  CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Cell cell = *icell;
+    AllEnvCell all_env_cell = all_env_cell_converter[cell];
+    Real global_temperature = 0.0;
+    ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
+      EnvCell env_cell = *ienvcell;
+      Real env_temperature = 0.0;
+      ENUMERATE_CELL_MATCELL (imatcell, env_cell) {
+        MatCell mc = *imatcell;
+        env_temperature += m_mat_temperature[mc];
+      }
+      m_mat_temperature[env_cell] = env_temperature;
+      global_temperature += env_temperature;
+    }
+    m_mat_temperature[cell] = global_temperature;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
