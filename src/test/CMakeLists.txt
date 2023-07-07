@@ -35,12 +35,22 @@ else()
             )
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # using Clang
     target_compile_options(Neo.tests PRIVATE -EHsc) # need to activate exception on clang-cl from Visual...?
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # using Visual Studio C++
     target_compile_options(Neo.tests PRIVATE -Wall /bigobj)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # using GCC
+    target_compile_options(Neo PRIVATE -Wall)
+    if(EXTRA_WARNINGS)
+        if(NO_PEDANTIC_ERRORS)
+            target_compile_options(Neo PRIVATE -Wextra -Wpedantic -pedantic -Wconversion)
+        else()
+            target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
+        endif()
+    endif()
 endif()
 
 gtest_discover_tests(Neo.tests)

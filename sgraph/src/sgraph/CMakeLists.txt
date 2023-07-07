@@ -1,8 +1,8 @@
 add_library(SGraph INTERFACE)
 
-set(header_files    ${CMAKE_CURRENT_SOURCE_DIR}/DirectedAcyclicGraph.h
-                    ${CMAKE_CURRENT_SOURCE_DIR}/DirectedGraph.h
-                    ${CMAKE_CURRENT_SOURCE_DIR}/GraphBase.h)
+set(header_files ${CMAKE_CURRENT_SOURCE_DIR}/DirectedAcyclicGraph.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/DirectedGraph.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/GraphBase.h)
 
 target_sources(SGraph INTERFACE "$<BUILD_INTERFACE:${header_files}>")
 
@@ -10,15 +10,18 @@ target_include_directories(SGraph SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL
 
 target_include_directories(SGraph INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # using Clang
     target_compile_options(SGraph INTERFACE -EHsc) # need to activate exception on clang-cl from Visual...?
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # using GCC
-    if (NO_PEDANTIC_ERRORS)
-        target_compile_options(SGraph INTERFACE -Wall -Wextra -Wpedantic -pedantic -Wconversion)
-    else()
-        target_compile_options(SGraph INTERFACE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
+    target_compile_options(SGraph INTERFACE -Wall)
+    if(EXTRA_WARNINGS)
+        if(NO_PEDANTIC_ERRORS)
+            target_compile_options(SGraph INTERFACE -Wextra -Wpedantic -pedantic -Wconversion)
+        else()
+            target_compile_options(SGraph INTERFACE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
+        endif()
     endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     # using Intel C++ (not tested)
