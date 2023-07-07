@@ -328,7 +328,7 @@ class ArrayPropertyT : public PropertyBase
 
   void push_back(DataType const& value) { m_data.push_back(value); }
 
-  DataType& back() noexcept { m_data.back(); }
+  DataType& back() noexcept { return m_data.back(); }
 
   DataType& operator[](std::size_t index) { return m_data[index]; }
   DataType const& operator[](std::size_t index) const { return m_data[index]; }
