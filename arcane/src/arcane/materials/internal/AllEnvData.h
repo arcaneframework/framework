@@ -50,11 +50,10 @@ class MeshMaterialMng;
 class AllEnvData
 : public TraceAccessor
 {
-
  public:
 
-  AllEnvData(MeshMaterialMng* mmg);
-  virtual ~AllEnvData();
+  explicit AllEnvData(MeshMaterialMng* mmg);
+  ~AllEnvData() override;
 
  public:
 
@@ -88,19 +87,9 @@ class AllEnvData
 
   MeshMaterialMng* m_material_mng = nullptr;
 
-  /*!
-   * \brief Infos sur les matériaux et les milieux.
-   * Ce tableau est modifié chaque fois que les mailles des matériaux et
-   * des milieux change.
-   * Les premiers éléments de ce tableau contiennent
-   * les infos pour les mailles de type AllEnvCell et peut
-   * être indexés directement avec le localId() de ces mailles.
-   */
-  //@{
+  //! Nombre de milieux par mailles
   VariableCellInt32 m_nb_env_per_cell;
-  //UniqueArray<ComponentItemInternal> m_all_env_items_internal;
-  //UniqueArray<ComponentItemInternal> m_env_items_internal;
-  //@}
+
 
   //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
   //UniqueArray< UniqueArray<ComponentItemInternal> > m_mat_items_internal;
@@ -112,7 +101,7 @@ class AllEnvData
   void _computeNbEnvAndNbMatPerCell();
   void _switchComponentItemsForEnvironments(IMeshEnvironment* modified_env,eOperation add_or_remove);
   void _switchComponentItemsForMaterials(MeshMaterial* modified_mat,eOperation add_or_remove);
-  Integer _checkMaterialPrescence(IMeshMaterial* mat,Int32ConstArrayView ids,
+  Integer _checkMaterialPresence(IMeshMaterial* mat,Int32ConstArrayView ids,
                                   eOperation operation);
   void _filterValidIds(IMeshMaterial* mat,Int32ConstArrayView ids,
                        bool do_add,Int32Array& valid_ids);

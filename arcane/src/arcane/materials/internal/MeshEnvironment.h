@@ -22,7 +22,7 @@
 
 #include "arcane/materials/IMeshEnvironment.h"
 #include "arcane/materials/MatItemInternal.h"
-#include "arcane/materials/MeshComponentData.h"
+#include "arcane/materials/internal/MeshComponentData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,13 +53,13 @@ class MeshEnvironment
  public:
 
   MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int32 env_id);
-  virtual ~MeshEnvironment();
+  ~MeshEnvironment() override;
 
  public:
 
   IMeshMaterialMng* materialMng() override { return m_material_mng; }
   ITraceMng* traceMng() override { return TraceAccessor::traceMng(); }
-  const String& name() const override { return m_data.name(); }
+  String name() const override { return m_data.name(); }
   CellGroup cells() const override { return m_data.items(); }
   ConstArrayView<IMeshMaterial*> materials() override
   {
@@ -75,7 +75,7 @@ class MeshEnvironment
   }
   ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
   {
-    return m_data.itemsInternalView();
+    return m_data._itemsInternalView();
   }
   Int32 id() const override
   {
@@ -114,7 +114,7 @@ class MeshEnvironment
 
   ArrayView<ComponentItemInternal*> itemsInternalView()
   {
-    return m_data.itemsInternalView();
+    return m_data._itemsInternalView();
   }
 
  public:

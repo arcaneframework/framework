@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentData.h                                         (C) 2000-2017 */
+/* MeshComponentData.h                                         (C) 2000-2023 */
 /*                                                                           */
 /* Données d'un constituant (matériau ou milieu) d'un maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -16,19 +16,16 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/materials/MatItem.h"
 
-#include "arcane/materials/MatItem.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/materials/MaterialsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,11 +49,15 @@ class MeshComponentPartData;
 class MeshComponentData
 : public TraceAccessor
 {
+  friend class MeshEnvironment;
+  friend class MeshMaterial;
+  friend class AllEnvData;
+
  public:
 
   MeshComponentData(IMeshComponent* component,const String& name,Int32 component_id,
                     bool create_indexer);
-  virtual ~MeshComponentData();
+  ~MeshComponentData() override;
 
  public:
 
@@ -67,12 +68,14 @@ class MeshComponentData
     return m_variable_indexer;
   }
 
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
+ private:
+
+  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const
   {
     return m_items_internal;
   }
 
-  ArrayView<ComponentItemInternal*> itemsInternalView()
+  ArrayView<ComponentItemInternal*> _itemsInternalView()
   {
     return m_items_internal;
   }
@@ -91,15 +94,15 @@ class MeshComponentData
     return m_component_id;
   }
 
- public:
+ private:
 
-  void resizeItemsInternal(Integer nb_item);
-  void setVariableIndexer(MeshMaterialVariableIndexer* indexer);
-  void setItems(const ItemGroup& group);
-  void changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids);
-  void rebuildPartData();
-  void buildPartData();
-  MeshComponentPartData* partData() const { return m_part_data; }
+  void _resizeItemsInternal(Integer nb_item);
+  void _setVariableIndexer(MeshMaterialVariableIndexer* indexer);
+  void _setItems(const ItemGroup& group);
+  void _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids);
+  void _rebuildPartData();
+  void _buildPartData();
+  MeshComponentPartData* _partData() const { return m_part_data; }
 
  private:
 
@@ -128,19 +131,12 @@ class MeshComponentData
   UniqueArray<ComponentItemInternal*> m_items_internal;
 
   MeshComponentPartData* m_part_data;
-
- private:
-
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EnvItemVector.h                                             (C) 2000-2022 */
+/* EnvItemVector.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Vecteur sur les entités d'un milieu.                                      */
 /*---------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ class ARCANE_CORE_EXPORT EnvCellVector
   //! Vue sur ce vecteur
   EnvCellVectorView view() const
   {
-    return {_component(),matvarIndexes(),itemsInternalView(),_localIds() };
+    return {_component(),_matvarIndexes(),_itemsInternalView(),_localIds() };
   }
 
   //! Milieu associé

@@ -21,7 +21,7 @@
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/MatItem.h"
-#include "arcane/materials/MeshComponentData.h"
+#include "arcane/materials/internal/MeshComponentData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,14 +54,14 @@ class MeshMaterial
 
   MeshMaterial(MeshMaterialInfo* infos,MeshEnvironment* env,
                const String& name,Int32 mat_id);
-  virtual ~MeshMaterial();
+  ~MeshMaterial() override;
 
  public:
 
   IMeshMaterialMng* materialMng() override { return m_material_mng; }
   ITraceMng* traceMng() override { return TraceAccessor::traceMng(); }
   MeshMaterialInfo* infos() const override { return m_infos; }
-  const String& name() const override { return m_data.name(); }
+  String name() const override { return m_data.name(); }
   IMeshEnvironment* environment() const override;
   CellGroup cells() const override;
 
@@ -72,7 +72,7 @@ class MeshMaterial
 
   ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
   {
-    return m_data.itemsInternalView();
+    return m_data._itemsInternalView();
   }
 
   Int32 id() const override { return m_data.componentId(); }
@@ -106,7 +106,7 @@ class MeshMaterial
 
   ArrayView<ComponentItemInternal*> itemsInternalView()
   {
-    return m_data.itemsInternalView();
+    return m_data._itemsInternalView();
   }
 
  public:
