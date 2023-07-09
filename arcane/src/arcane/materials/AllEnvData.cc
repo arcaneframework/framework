@@ -154,7 +154,7 @@ forceRecompute(bool compute_all)
   // de la maille milieu correspondante (globale ou partielle suivant le cas)
 
   // Redimensionne les tableaux des infos
-  // ATTENTION: il ne doivent plus être redimensionnés par la suite sous peine
+  // ATTENTION : ils ne doivent plus être redimensionnés par la suite sous peine
   // de tout invalider.
   m_item_internal_data.resizeNbAllEnvCell(max_local_id);
   m_item_internal_data.resizeNbEnvCell(total_env_cell);
@@ -348,9 +348,9 @@ forceRecompute(bool compute_all)
 
   // Met à jour le AllCellToAllEnvCell s'il a été initialisé si la fonctionnalité est activé
   if (m_material_mng->isCellToAllEnvCellForRunCommand()) {
-    auto* allCell2AllEnvCell(m_material_mng->getAllCellToAllEnvCell());
-    if (allCell2AllEnvCell)
-      allCell2AllEnvCell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
+    auto* all_cell_to_all_env_cell(m_material_mng->getAllCellToAllEnvCell());
+    if (all_cell_to_all_env_cell)
+      all_cell_to_all_env_cell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
     else
       m_material_mng->createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
   }
@@ -528,7 +528,7 @@ _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
  * Retourne le nombre d'erreurs.
  */
 Integer AllEnvData::
-_checkMaterialPrescence(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation operation)
+_checkMaterialPresence(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation operation)
 {
   // TODO: faut-il vérifier la validité des \a ids
   //(ils sont compris entre 0 et max_loca_id-1) ?
@@ -599,7 +599,7 @@ void AllEnvData::
 _filterValidIds(IMeshMaterial* mat,Int32ConstArrayView ids,bool do_add,Int32Array& valid_ids)
 {
   // TODO: faut-il vérifier la validité des \a ids
-  //(ils sont compris entre 0 et max_loca_id-1) ?
+  //(ils sont compris entre 0 et max_local_id-1) ?
 
   MeshMaterialVariableIndexer* indexer = mat->variableIndexer();
   IItemFamily* item_family = mat->cells().itemFamily();
@@ -666,11 +666,11 @@ updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,
                       eOperation operation)
 {
   UniqueArray<Int32> filtered_ids;
-  bool filter_invalid = true;
+  const bool filter_invalid = true;
   // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
   // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
   if (arcaneIsCheck()){
-    Integer nb_error = _checkMaterialPrescence(mat,ids,operation);
+    Integer nb_error = _checkMaterialPresence(mat, ids, operation);
     if (nb_error!=0){
       if (filter_invalid){
         _filterValidIds(mat,ids,true,filtered_ids);
@@ -695,7 +695,7 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
     _throwBadOperation(operation);
   bool is_add = (operation==eOperation::Add);
 
-  MeshMaterial* true_mat = dynamic_cast<MeshMaterial*>(mat);
+  auto* true_mat = dynamic_cast<MeshMaterial*>(mat);
   if (!true_mat)
     throw NotImplementedException(A_FUNCINFO,"material is not an instance of MeshMaterial");
 
@@ -711,7 +711,7 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
 
     // S'il est possible d'avoir plusieurs matériaux par milieu, il faut gérer
     // pour chaque maille si le milieu évolue suite à l'ajout/suppression de matériau.
-    // les deux cas sont:
+    // Les deux cas sont :
     // - en cas d'ajout, le milieu évolue pour une maille s'il n'y avait pas
     //   de matériau avant. Dans ce cas le milieu est ajouté à la maille.
     // - en cas de suppression, le milieu évolue dans la maille s'il y avait
