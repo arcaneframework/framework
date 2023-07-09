@@ -11,13 +11,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/materials/internal/MeshComponentData.h"
+
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
 
 #include "arcane/materials/MeshComponentPartData.h"
-#include "arcane/materials/MeshComponentData.h"
 #include "arcane/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/IMeshMaterialMng.h"
 

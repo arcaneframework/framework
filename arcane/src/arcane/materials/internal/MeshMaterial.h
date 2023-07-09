@@ -21,7 +21,7 @@
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/MatItem.h"
-#include "arcane/materials/MeshComponentData.h"
+#include "arcane/materials/internal/MeshComponentData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

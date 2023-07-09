@@ -20,7 +20,6 @@ set(ARCANE_SOURCES
   MatItemEnumerator.h
   MatVarIndex.h
   MeshComponentData.cc
-  MeshComponentData.h
   MeshComponentPartData.h
   MeshMaterialExchangeMng.cc
   MeshMaterialExchangeMng.h
@@ -76,7 +75,6 @@ set(ARCANE_SOURCES
   EnvItemVector.h
   MatItemEnumerator.h
   MatVarIndex.h
-  MeshComponentData.h
   MeshComponentPartData.h
   MeshMaterialExchangeMng.h
   MeshMaterialModifierImpl.h
@@ -126,4 +124,5 @@ set(ARCANE_SOURCES
   internal/MeshMaterial.h
   internal/MeshMaterialMng.h
   internal/MeshMaterialVariablePrivate.h
+  internal/MeshComponentData.h
   )

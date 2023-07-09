@@ -22,7 +22,7 @@
 
 #include "arcane/materials/IMeshEnvironment.h"
 #include "arcane/materials/MatItemInternal.h"
-#include "arcane/materials/MeshComponentData.h"
+#include "arcane/materials/internal/MeshComponentData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
