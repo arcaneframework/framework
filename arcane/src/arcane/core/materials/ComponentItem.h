@@ -89,7 +89,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   //! Maille arcane
   Cell globalCell() const
   {
-    return Cell(m_internal->globalItem());
+    return Cell(m_internal->globalItemBase());
   }
 
   /*!

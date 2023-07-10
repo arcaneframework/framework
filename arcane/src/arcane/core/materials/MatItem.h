@@ -66,7 +66,7 @@ class MatCell
   //! Maille arcane
   Cell globalCell() const
   {
-    return Cell(m_internal->globalItem());
+    return Cell(m_internal->globalItemBase());
   }
 
   //! Materiau associé
@@ -121,7 +121,7 @@ class EnvCell
   Int32 nbMaterial() const { return m_internal->nbSubItem(); }
 
   //! Maille arcane
-  Cell globalCell() const { return Cell(m_internal->globalItem()); }
+  Cell globalCell() const { return Cell(m_internal->globalItemBase()); }
 
   //! Maille contenant les infos sur tous les milieux
   AllEnvCell allEnvCell() const;
@@ -176,7 +176,7 @@ class AllEnvCell
   Int32 nbEnvironment() { return m_internal->nbSubItem(); }
   
   //! Maille arcane standard
-  Cell globalCell() const { return Cell(m_internal->globalItem()); }
+  Cell globalCell() const { return Cell(m_internal->globalItemBase()); }
 
   //! i-ème maille milieu
   EnvCell cell(Integer i) const
