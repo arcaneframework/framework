@@ -65,7 +65,7 @@ _subView(Integer begin,Integer size)
   }
 
   ConstArrayView<ComponentItemInternal*> mn = m_items_internal_main_view.subView(begin,size);
-  ConstArrayView<MatVarIndex> mvs = matvarIndexes().subView(begin,size);
+  ConstArrayView<MatVarIndex> mvs = _matvarIndexes().subView(begin,size);
   ConstArrayView<Int32> ids = _internalLocalIds().subView(begin,size);
 
   return ComponentItemVectorView(m_component,mvs,mn,ids);
