@@ -5,25 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialsCoreGlobal.cc                                      (C) 2000-2023 */
+/* IMeshComponentInternal.h                                    (C) 2000-2023 */
 /*                                                                           */
-/* Déclarations générales des matériaux de Arcane.                           */
+/* API interne Arcane de 'IMeshComponent'.                                   */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_MATERIALS_INTERNAL_IMESHCOMPONENTINTERNAL_H
+#define ARCANE_CORE_MATERIALS_INTERNAL_IMESHCOMPONENTINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/materials/IMeshMaterialVariable.h"
-#include "arcane/core/materials/IMeshBlock.h"
-#include "arcane/core/materials/IMeshComponent.h"
-#include "arcane/core/materials/IMeshMaterial.h"
-#include "arcane/core/materials/IMeshEnvironment.h"
-#include "arcane/core/materials/MatVarIndex.h"
-#include "arcane/core/materials/MatItem.h"
-#include "arcane/core/materials/IEnumeratorTracer.h"
-#include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
-#include "arcane/core/materials/IMeshMaterialVariableFactory.h"
-
-// Pas utilisé directement mais nécessaire pour la définition des symboles.
-#include "arcane/core/materials/internal/IMeshComponentInternal.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,23 +25,27 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-IEnumeratorTracer* IEnumeratorTracer::m_singleton = nullptr;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void IEnumeratorTracer::
-_setSingleton(IEnumeratorTracer* tracer)
+/*!
+ * \brief API interne Arcane de 'IMeshComponent'.
+ */
+class ARCANE_CORE_EXPORT IMeshComponentInternal
 {
-  delete m_singleton;
-  m_singleton = tracer;
-}
+ public:
+
+  virtual ~IMeshComponentInternal() = default;
+
+ public:
+
+  //! Vue sur les mailles du composant.
+  virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Materials
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif

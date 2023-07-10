@@ -106,8 +106,8 @@ ComponentItemVector(IMeshComponent* component)
 
 ComponentItemVector::
 ComponentItemVector(ComponentItemVectorView rhs)
-: m_p(new Impl(rhs.component(),rhs.itemsInternalView(),
-               rhs.matvarIndexes(),rhs._internalLocalIds()))
+: m_p(new Impl(rhs.component(),rhs._itemsInternalView(),
+               rhs._matvarIndexes(),rhs._internalLocalIds()))
 {
 }
 

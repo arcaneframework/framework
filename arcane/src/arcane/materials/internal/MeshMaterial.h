@@ -16,11 +16,13 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/materials/IMeshMaterial.h"
+#include "arcane/core/materials/MatItem.h"
+#include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
-#include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MeshMaterialVariableIndexer.h"
-#include "arcane/materials/MatItem.h"
+
 #include "arcane/materials/internal/MeshComponentData.h"
 
 /*---------------------------------------------------------------------------*/
@@ -50,6 +52,20 @@ class MeshMaterial
 : public TraceAccessor
 , public IMeshMaterial
 {
+  class InternalApi
+  : public IMeshComponentInternal
+  {
+   public:
+    InternalApi(MeshMaterial* mat) : m_material(mat){}
+   public:
+    ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
+    {
+      return m_material->itemsInternalView();
+    }
+   private:
+    MeshMaterial* m_material;
+  };
+
  public:
 
   MeshMaterial(MeshMaterialInfo* infos,MeshEnvironment* env,
@@ -104,6 +120,10 @@ class MeshMaterial
 
  public:
 
+  IMeshComponentInternal* _internalApi() override { return &m_internal_api; }
+
+ public:
+
   ArrayView<ComponentItemInternal*> itemsInternalView()
   {
     return m_data._itemsInternalView();
@@ -127,6 +147,7 @@ class MeshMaterial
   IUserMeshMaterial* m_user_material;
   MeshComponentData m_data;
   MeshMaterial* m_non_const_this;
+  InternalApi m_internal_api;
 };
 
 /*---------------------------------------------------------------------------*/

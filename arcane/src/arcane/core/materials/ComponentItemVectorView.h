@@ -50,11 +50,16 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   friend class ComponentItemVector;
   friend class MatItemVectorView;
   friend class EnvItemVectorView;
+  friend class MatCellEnumerator;
+  friend class EnvCellEnumerator;
+  friend class ComponentCellEnumerator;
   friend Arcane::Accelerator::impl::MatCommandContainerBase;
   friend ArcaneTest::MeshMaterialTesterModule;
   friend ArcaneTest::MaterialHeatTestModule;
   template<typename ViewType,typename LambdaType>
   friend class LambdaMatItemRangeFunctorT;
+  template<typename DataType> friend class
+  MaterialVariableArrayTraits;
 
  protected:
 

@@ -53,6 +53,7 @@ set(ARCANE_MATERIALS_SOURCES
   materials/MeshMaterialVariableComputeFunction.h
   materials/IMeshMaterialVariableComputeFunction.h
   materials/internal/IMeshMaterialVariableInternal.h
+  materials/internal/IMeshComponentInternal.h
   )
 
 set(ARCANE_INTERNAL_SOURCES

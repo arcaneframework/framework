@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItem.h                                                   (C) 2000-2022 */
+/* MatItem.h                                                   (C) 2000-2023 */
 /*                                                                           */
 /* Entités matériau et milieux.                                              */
 /*---------------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ class MatCell
   //! Maille arcane
   Cell globalCell() const
   {
-    return Cell(m_internal->globalItem());
+    return Cell(m_internal->globalItemBase());
   }
 
   //! Materiau associé
@@ -121,7 +121,7 @@ class EnvCell
   Int32 nbMaterial() const { return m_internal->nbSubItem(); }
 
   //! Maille arcane
-  Cell globalCell() const { return Cell(m_internal->globalItem()); }
+  Cell globalCell() const { return Cell(m_internal->globalItemBase()); }
 
   //! Maille contenant les infos sur tous les milieux
   AllEnvCell allEnvCell() const;
@@ -176,7 +176,7 @@ class AllEnvCell
   Int32 nbEnvironment() { return m_internal->nbSubItem(); }
   
   //! Maille arcane standard
-  Cell globalCell() const { return Cell(m_internal->globalItem()); }
+  Cell globalCell() const { return Cell(m_internal->globalItemBase()); }
 
   //! i-ème maille milieu
   EnvCell cell(Integer i) const

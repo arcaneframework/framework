@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVectorView.cc                                  (C) 2000-2022 */
+/* ComponentItemVectorView.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Vue sur un vecteur sur des entités composants.                            */
 /*---------------------------------------------------------------------------*/
@@ -65,7 +65,7 @@ _subView(Integer begin,Integer size)
   }
 
   ConstArrayView<ComponentItemInternal*> mn = m_items_internal_main_view.subView(begin,size);
-  ConstArrayView<MatVarIndex> mvs = matvarIndexes().subView(begin,size);
+  ConstArrayView<MatVarIndex> mvs = _matvarIndexes().subView(begin,size);
   ConstArrayView<Int32> ids = _internalLocalIds().subView(begin,size);
 
   return ComponentItemVectorView(m_component,mvs,mn,ids);

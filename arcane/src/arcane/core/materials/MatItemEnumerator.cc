@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemEnumerator.cc                                        (C) 2000-2022 */
+/* MatItemEnumerator.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Enumérateurs sur les mailles materiaux.                                   */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/core/materials/IMeshBlock.h"
 #include "arcane/core/materials/MatItemVector.h"
 #include "arcane/core/materials/EnvItemVector.h"
+#include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,7 +35,7 @@ namespace Arcane::Materials
 MatCellEnumerator MatCellEnumerator::
 create(IMeshMaterial* mat)
 {
-  return MatCellEnumerator(mat->itemsInternalView(),
+  return MatCellEnumerator(mat->_internalApi()->itemsInternalView(),
                            mat->variableIndexer()->matvarIndexes(),mat);
 }
 
@@ -53,7 +54,7 @@ create(const MatCellVector& miv)
 MatCellEnumerator MatCellEnumerator::
 create(MatCellVectorView v)
 {
-  return MatCellEnumerator(v.itemsInternalView(),v.matvarIndexes(),v.component());
+  return MatCellEnumerator(v._itemsInternalView(),v._matvarIndexes(),v.component());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -65,7 +66,7 @@ create(MatCellVectorView v)
 EnvCellEnumerator EnvCellEnumerator::
 create(IMeshEnvironment* env)
 {
-  return EnvCellEnumerator(env->itemsInternalView(),
+  return EnvCellEnumerator(env->_internalApi()->itemsInternalView(),
                            env->variableIndexer()->matvarIndexes(),env);
 }
 
@@ -84,7 +85,7 @@ create(const EnvCellVector& miv)
 EnvCellEnumerator EnvCellEnumerator::
 create(EnvCellVectorView v)
 {
-  return EnvCellEnumerator(v.itemsInternalView(),v.matvarIndexes(),v.component());
+  return EnvCellEnumerator(v._itemsInternalView(),v._matvarIndexes(),v.component());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -173,7 +174,7 @@ create(IMeshComponent* component)
 {
   MeshMaterialVariableIndexer* vi = component->variableIndexer();
 
-  return ComponentCellEnumerator(component->itemsInternalView(),
+  return ComponentCellEnumerator(component->_internalApi()->itemsInternalView(),
                                  vi->matvarIndexes(),component);
 }
 
@@ -192,7 +193,7 @@ create(const ComponentItemVector& v)
 ComponentCellEnumerator ComponentCellEnumerator::
 create(ComponentItemVectorView v)
 {
-  return ComponentCellEnumerator(v.itemsInternalView(),v.matvarIndexes(),
+  return ComponentCellEnumerator(v._itemsInternalView(),v._matvarIndexes(),
                                  v.component());
 }
 

@@ -16,12 +16,13 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ItemGroup.h"
-#include "arcane/MeshVariableScalarRef.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/MeshVariableScalarRef.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/materials/IMeshEnvironment.h"
+#include "arcane/core/materials/ComponentItemInternal.h"
+#include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
-#include "arcane/materials/IMeshEnvironment.h"
-#include "arcane/materials/MatItemInternal.h"
 #include "arcane/materials/internal/MeshComponentData.h"
 
 /*---------------------------------------------------------------------------*/
@@ -50,6 +51,20 @@ class MeshEnvironment
 : public TraceAccessor
 , public IMeshEnvironment
 {
+  class InternalApi
+  : public IMeshComponentInternal
+  {
+   public:
+    InternalApi(MeshEnvironment* env) : m_environment(env){}
+   public:
+    ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
+    {
+      return m_environment->itemsInternalView();
+    }
+   private:
+    MeshEnvironment* m_environment;
+  };
+
  public:
 
   MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int32 env_id);
@@ -112,6 +127,10 @@ class MeshEnvironment
 
  public:
 
+  IMeshComponentInternal* _internalApi() override { return &m_internal_api; }
+
+ public:
+
   ArrayView<ComponentItemInternal*> itemsInternalView()
   {
     return m_data._itemsInternalView();
@@ -168,6 +187,7 @@ class MeshEnvironment
   IItemGroupObserver* m_group_observer = nullptr;
   MeshComponentData m_data;
   MeshEnvironment* m_non_const_this = nullptr;
+  InternalApi m_internal_api;
 
  private:
   

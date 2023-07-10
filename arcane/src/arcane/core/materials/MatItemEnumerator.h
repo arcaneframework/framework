@@ -351,16 +351,13 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 
  public:
 
-  // TODO: rendre obsolète
-  explicit CellComponentCellEnumerator(ComponentItemInternal* super_item)
-  : m_index(0), m_size(super_item->nbSubItem()), m_items_begin(super_item->firstSubItem())
-  {
-  }
   explicit CellComponentCellEnumerator(ComponentCell super_item)
   : m_index(0), m_size(super_item.internal()->nbSubItem()), m_items_begin(super_item.internal()->firstSubItem())
   {
   }
+
  public:
+
   void operator++() { ++m_index; }
   bool hasNext() const { return m_index<m_size; }
 
@@ -390,9 +387,6 @@ template <typename ComponentCellType> class CellComponentCellEnumeratorT
 : public CellComponentCellEnumerator
 {
  public:
-
-  explicit CellComponentCellEnumeratorT(ComponentItemInternal* super_item)
-  : CellComponentCellEnumerator(super_item){}
 
   explicit CellComponentCellEnumeratorT(ComponentCell super_item)
   : CellComponentCellEnumerator(super_item){}

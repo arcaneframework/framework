@@ -22,6 +22,7 @@
 
 namespace Arcane::Materials
 {
+class IMeshComponentInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -129,6 +130,11 @@ class ARCANE_CORE_EXPORT IMeshComponent
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const =0;
+
+ public:
+
+  //! API interne
+  virtual IMeshComponentInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -101,6 +101,7 @@ MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int32 env_id)
 , m_nb_mat_per_cell(VariableBuildInfo(mm->mesh(), mm->name() + "_CellNbMaterial_" + name))
 , m_data(this, name, env_id, false)
 , m_non_const_this(this)
+, m_internal_api(this)
 {
 }
 

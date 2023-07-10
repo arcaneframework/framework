@@ -51,7 +51,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 {
  private:
 
-  //static const Int64 UID_MASK = 0x00ffffff;
   static const int MAT_INDEX_OFFSET = 10;
 
   //! Entité nulle
@@ -120,11 +119,8 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Première entité sous-composant.
   ComponentItemInternal* firstSubItem() const { return m_first_sub_component_item; }
 
-  //! ItemInternal de l'entité Item correspondante.
-  ItemInternal* globalItem() { return m_global_item; }
-
   //! Entité globale correspondante.
-  Item globalItem2() { return m_global_item; }
+  impl::ItemBase globalItemBase() { return m_global_item; }
 
   //! Positionne le nombre de sous-composants.
   void setNbSubItem(Int32 nb_sub_item)

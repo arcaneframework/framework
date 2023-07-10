@@ -46,6 +46,7 @@ MeshMaterial(MeshMaterialInfo* infos, MeshEnvironment* env,
 , m_user_material(nullptr)
 , m_data(this, name, mat_id, true)
 , m_non_const_this(this)
+, m_internal_api(this)
 {
   if (!env)
     throw ArgumentException(A_FUNCINFO,

@@ -99,7 +99,7 @@ saveData(IMeshComponent* component,IData* data,
   Integer current_dim1_size = values.dim1Size();
   Integer added_dim1_size = component_view.nbItem();
   values.resizeNoInit(current_dim1_size+added_dim1_size,dim2_size);
-  ConstArrayView<MatVarIndex> mvi_indexes = component_view.matvarIndexes();
+  ConstArrayView<MatVarIndex> mvi_indexes = component_view._matvarIndexes();
 
   for( Integer i=0, n=mvi_indexes.size(); i<n; ++i ){
     MatVarIndex mvi = mvi_indexes[i];
