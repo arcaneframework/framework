@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.h                                                  (C) 2000-2022 */
+/* RunQueue.h                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -74,6 +74,19 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   void waitEvent(RunQueueEvent& event);
   //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
   void waitEvent(Ref<RunQueueEvent>& event);
+
+ public:
+
+  /*!
+  * \brief Pointeur sur la structure interne dépendante de l'implémentation.
+  *
+  * Cette méthode est réservée à un usage avancée.
+  * La file retournée ne doit pas être conservée au delà de la vie de l'instance.
+  *
+  * Avec CUDA, le pointeur retourné est un 'cudaStream_t*'. Avec HIP, il
+  * s'agit d'un 'hipStream_t*'.
+  */
+  void* platformStream();
 
  private:
 

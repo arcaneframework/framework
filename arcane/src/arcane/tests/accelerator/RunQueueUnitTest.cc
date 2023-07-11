@@ -131,6 +131,7 @@ _executeTest1(bool use_priority)
 
   auto task_func = [&](Ref<RunQueue> q, int id) {
     info() << "EXECUTE_THREAD_ID=" << id;
+    info(4) << "Queue pointer=" << q->platformStream();
     auto command1 = makeCommand(q.get());
     auto v = viewOut(command1, values[id]);
     command1 << RUNCOMMAND_LOOP1(iter, N)
