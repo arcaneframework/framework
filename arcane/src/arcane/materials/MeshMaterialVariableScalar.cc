@@ -27,10 +27,8 @@
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
-
-#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
-
 #include "arcane/materials/ItemMaterialVariableBaseT.H"
+#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IMesh.h"
@@ -38,26 +36,22 @@
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IApplication.h"
 #include "arcane/core/IDataFactoryMng.h"
-
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/ISerializeMessage.h"
-
-#include "arcane/VariableInfo.h"
-#include "arcane/VariableRefArray.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/VariableArray.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IVariableSynchronizer.h"
+#include "arcane/core/materials/internal/IMeshComponentInternal.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/VariableRefArray.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/VariableArray.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IVariableSynchronizer.h"
 #include "arcane/core/internal/IDataInternal.h"
-#include "arcane/Timer.h"
-
-#include "arcane/parallel/IStat.h"
-
-#include "arcane/datatype/DataTypeTraits.h"
-#include "arcane/datatype/DataStorageBuildInfo.h"
-
-#include "arcane/VariableDataTypeTraits.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/parallel/IStat.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataStorageBuildInfo.h"
+#include "arcane/core/VariableDataTypeTraits.h"
 
 #include <vector>
 
@@ -195,7 +189,7 @@ ItemMaterialVariableScalar<DataType>::
 fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,
               Int32ConstArrayView indexes)
 {
-  ConstArrayView<MatVarIndex> mat_indexes = mat->variableIndexer()->matvarIndexes();
+  ConstArrayView<MatVarIndex> mat_indexes = mat->_internalApi()->variableIndexer()->matvarIndexes();
   Integer nb_index = indexes.size();
   for( Integer i=0; i<nb_index; ++i ){
     MatVarIndex mvi = mat_indexes[indexes[i]];
@@ -248,7 +242,7 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView indexes)
 {
-  ConstArrayView<MatVarIndex> mat_indexes = mat->variableIndexer()->matvarIndexes();
+  ConstArrayView<MatVarIndex> mat_indexes = mat->_internalApi()->variableIndexer()->matvarIndexes();
   Integer nb_index = indexes.size();
   for( Integer i=0; i<nb_index; ++i ){
     MatVarIndex mvi = mat_indexes[indexes[i]];

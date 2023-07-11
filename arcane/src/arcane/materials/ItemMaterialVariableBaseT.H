@@ -16,19 +16,19 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/MemoryUtils.h"
 
-#include "arcane/Observer.h"
-#include "arcane/IMesh.h"
-#include "arcane/IVariable.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/VariableInfo.h"
+#include "arcane/core/Observer.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/VariableInfo.h"
 #include "arcane/core/internal/IDataInternal.h"
-
-#include "arcane/materials/MeshMaterialVariableRef.h"
-#include "arcane/materials/ComponentItemListBuilder.h"
-
 #include "arcane/core/materials/MaterialVariableBuildInfo.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
+
+#include "arcane/materials/MeshMaterialVariableRef.h"
+#include "arcane/materials/ComponentItemListBuilder.h"
+#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

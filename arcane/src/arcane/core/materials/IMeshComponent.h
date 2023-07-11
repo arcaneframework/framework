@@ -122,6 +122,7 @@ class ARCANE_CORE_EXPORT IMeshComponent
    * \internal
    * Indexeur pour accéder aux variables partielles.
    */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
 
   /*!

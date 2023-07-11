@@ -35,8 +35,9 @@ namespace Arcane::Materials
 MatCellEnumerator MatCellEnumerator::
 create(IMeshMaterial* mat)
 {
-  return MatCellEnumerator(mat->_internalApi()->itemsInternalView(),
-                           mat->variableIndexer()->matvarIndexes(),mat);
+  IMeshComponentInternal* mci = mat->_internalApi();
+  return MatCellEnumerator(mci->itemsInternalView(),
+                           mci->variableIndexer()->matvarIndexes(),mat);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -66,8 +67,8 @@ create(MatCellVectorView v)
 EnvCellEnumerator EnvCellEnumerator::
 create(IMeshEnvironment* env)
 {
-  return EnvCellEnumerator(env->_internalApi()->itemsInternalView(),
-                           env->variableIndexer()->matvarIndexes(),env);
+  IMeshComponentInternal* mci = env->_internalApi();
+  return EnvCellEnumerator(mci->itemsInternalView(),mci->variableIndexer()->matvarIndexes(),env);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -172,10 +173,10 @@ create(const CellGroup& v)
 ComponentCellEnumerator ComponentCellEnumerator::
 create(IMeshComponent* component)
 {
-  MeshMaterialVariableIndexer* vi = component->variableIndexer();
+  IMeshComponentInternal* mci = component->_internalApi();
+  MeshMaterialVariableIndexer* vi = mci->variableIndexer();
 
-  return ComponentCellEnumerator(component->_internalApi()->itemsInternalView(),
-                                 vi->matvarIndexes(),component);
+  return ComponentCellEnumerator(mci->itemsInternalView(),vi->matvarIndexes(),component);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -16,12 +16,12 @@
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IData.h"
+#include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
 #include "arcane/materials/MeshMaterialModifierImpl.h"
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshMaterialBackup.h"
-
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/AllEnvData.h"
 
@@ -239,16 +239,17 @@ endUpdate()
   for( Integer i=0; i<nb_operation; ++i ){
     Operation* op = m_operations.values()[i];
     IMeshMaterial* mat = op->m_mat;
+    IMeshComponentInternal* mci = mat->_internalApi();
     if (op->m_is_add){
       linfo() << "MODIFIER_ADD_CELLS_TO_MATERIAL: mat=" << mat->name()
-              << " mat_index=" << mat->variableIndexer()->index()
+              << " mat_index=" << mci->variableIndexer()->index()
               << " op_index=" << i
               << " nb_item=" << op->m_ids.size()
               << " ids=" << op->m_ids;
     }
     if (!op->m_is_add){
       linfo() << "MODIFIER_REMOVE_CELLS_TO_MATERIAL: mat=" << mat->name()
-              << " mat_index=" << mat->variableIndexer()->index()
+              << " mat_index=" << mci->variableIndexer()->index()
               << " op_index=" << i
               << " nb_item=" << op->m_ids.size()
               << " ids=" << op->m_ids;

@@ -36,6 +36,9 @@ class ARCANE_CORE_EXPORT IMeshComponentInternal
 
  public:
 
+  //! Indexeur pour accéder aux variables partielles.
+  virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
+
   //! Vue sur les mailles du composant.
   virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const = 0;
 };

@@ -533,7 +533,7 @@ _checkMaterialPresence(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation ope
   // TODO: faut-il vérifier la validité des \a ids
   //(ils sont compris entre 0 et max_loca_id-1) ?
 
-  MeshMaterialVariableIndexer* indexer = mat->variableIndexer();
+  MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
   IItemFamily* item_family = mat->cells().itemFamily();
   ItemInfoListView items_internal(item_family);
   Integer max_local_id = item_family->maxLocalId();
@@ -601,7 +601,7 @@ _filterValidIds(IMeshMaterial* mat,Int32ConstArrayView ids,bool do_add,Int32Arra
   // TODO: faut-il vérifier la validité des \a ids
   //(ils sont compris entre 0 et max_local_id-1) ?
 
-  MeshMaterialVariableIndexer* indexer = mat->variableIndexer();
+  MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
   IItemFamily* item_family = mat->cells().itemFamily();
   Integer max_local_id = item_family->maxLocalId();
   UniqueArray<bool> presence_flags(max_local_id,false);

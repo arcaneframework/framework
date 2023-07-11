@@ -15,14 +15,15 @@
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
 
 #include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/core/materials/IMeshComponent.h"
 #include "arcane/core/materials/MeshComponentPartData.h"
 #include "arcane/core/materials/ComponentItemInternal.h"
 #include "arcane/core/materials/ComponentPartItemVectorView.h"
+#include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,7 +38,7 @@ MeshComponentPartData::
 MeshComponentPartData(IMeshComponent* component)
 : TraceAccessor(component->traceMng())
 , m_component(component)
-, m_impure_var_idx(component->variableIndexer()->index()+1)
+, m_impure_var_idx(component->_internalApi()->variableIndexer()->index()+1)
 {
   // Utilise l'allocateur des données pour permettre d'accéder à ces valeurs
   // sur les accélérateurs
