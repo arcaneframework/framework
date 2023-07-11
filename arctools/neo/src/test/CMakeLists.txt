@@ -16,7 +16,7 @@ endif(Xdmf_FOUND)
 
 target_link_libraries(Neo.tests GTest::GTest GTest::Main Neo)
 
-file( COPY meshes DESTINATION ${CMAKE_BINARY_DIR}/src/test)
+file( COPY meshes DESTINATION ${CMAKE_BINARY_DIR}/arctools/neo/src/test)
 
 include(GNUInstallDirs)
 
