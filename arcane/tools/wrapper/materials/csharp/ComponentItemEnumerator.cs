@@ -28,7 +28,7 @@ namespace Arcane.Materials
     }
 
     internal ComponentItemEnumerator(IMeshComponent mesh_component, T true_type)
-    : this(mesh_component.ItemsInternalView(),mesh_component.VariableIndexer().MatvarIndexes(),true_type)
+      : this(mesh_component._internalApi().ItemsInternalView(),mesh_component._internalApi().VariableIndexer().MatvarIndexes(),true_type)
     {
     }
     public bool MoveNext()
@@ -51,8 +51,8 @@ namespace Arcane.Materials
   {
     public static ComponentItemEnumerator<ComponentItem> Create(IMeshComponent mesh_component)
     {
-      var indexes = mesh_component.VariableIndexer().MatvarIndexes();
-      var items = mesh_component.ItemsInternalView();
+      var indexes = mesh_component._internalApi().VariableIndexer().MatvarIndexes();
+      var items = mesh_component._internalApi().ItemsInternalView();
       return new ComponentItemEnumerator<ComponentItem>(items.m_ptr, indexes.m_ptr, items.m_size, new ComponentItem(null));
     }
 
