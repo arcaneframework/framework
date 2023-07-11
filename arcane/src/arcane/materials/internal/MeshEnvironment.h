@@ -57,6 +57,10 @@ class MeshEnvironment
    public:
     InternalApi(MeshEnvironment* env) : m_environment(env){}
    public:
+    MeshMaterialVariableIndexer* variableIndexer() const override\
+    {
+      return m_environment->variableIndexer();
+    }
     ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
     {
       return m_environment->itemsInternalView();

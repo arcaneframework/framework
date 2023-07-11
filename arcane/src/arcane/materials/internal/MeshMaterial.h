@@ -58,6 +58,10 @@ class MeshMaterial
    public:
     InternalApi(MeshMaterial* mat) : m_material(mat){}
    public:
+    MeshMaterialVariableIndexer* variableIndexer() const override\
+    {
+      return m_material->variableIndexer();
+    }
     ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
     {
       return m_material->itemsInternalView();
