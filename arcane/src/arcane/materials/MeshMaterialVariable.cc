@@ -33,7 +33,6 @@
 #include "arcane/materials/MeshMaterialVariableDependInfo.h"
 #include "arcane/materials/IMeshMaterialVariableComputeFunction.h"
 #include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
-
 #include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 
 #include "arcane/core/Variable.h"
@@ -44,6 +43,7 @@
 #include "arcane/core/IObserver.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/Parallel.h"
+#include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -237,7 +237,7 @@ name() const
 IVariable* MeshMaterialVariable::
 materialVariable(IMeshMaterial* mat)
 {
-  Int32 index = mat->variableIndexer()->index() + 1;
+  Int32 index = mat->_internalApi()->variableIndexer()->index() + 1;
   return m_p->m_refs[index]->variable();
 }
 

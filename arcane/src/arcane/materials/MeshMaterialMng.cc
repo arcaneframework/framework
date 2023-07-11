@@ -361,7 +361,7 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
     MeshMaterialVariableIndexer* var_idx = 0;
     bool duplicate_unique_env_cell = false;
     if (nb_mat==1 && !duplicate_unique_env_cell){
-      var_idx = me->materials()[0]->variableIndexer();
+      var_idx = me->materials()[0]->_internalApi()->variableIndexer();
     }
     else{
       var_idx = new MeshMaterialVariableIndexer(traceMng(),me->name());
@@ -812,7 +812,7 @@ dumpInfos(std::ostream& o)
   for( Integer i=0; i<nb_env; ++i ){
     IMeshEnvironment* me = m_environments[i];
     ConstArrayView<IMeshMaterial*> env_materials = me->materials();
-    MeshMaterialVariableIndexer* env_var_idx = me->variableIndexer();
+    MeshMaterialVariableIndexer* env_var_idx = me->_internalApi()->variableIndexer();
     Integer nb_env_mat = env_materials.size();
     o << "--   Milieu name=" << me->name()
       << " nb_mat=" << nb_env_mat
@@ -822,7 +822,7 @@ dumpInfos(std::ostream& o)
       << '\n';
     for( Integer j=0; j<nb_env_mat; ++j ){
       IMeshMaterial* mm = env_materials[j];
-      MeshMaterialVariableIndexer* idx = mm->variableIndexer();
+      MeshMaterialVariableIndexer* idx = mm->_internalApi()->variableIndexer();
       o << "--     Materiau\n";
       o << "--       name    = " << mm->name() << "\n";
       o << "--       nb_cell = " << mm->cells().size() << "\n";
@@ -884,7 +884,7 @@ dumpInfos2(std::ostream& o)
     o << '\n';
     for( Integer j=0; j<nb_env_mat; ++j ){
       IMeshMaterial* mm = env_materials[j];
-      MeshMaterialVariableIndexer* idx = mm->variableIndexer();
+      MeshMaterialVariableIndexer* idx = mm->_internalApi()->variableIndexer();
       o << "--     Mat name=" << mm->name()
         << " nb_cell=" << mm->cells().size()
         << " var_idx=" << idx->index()
