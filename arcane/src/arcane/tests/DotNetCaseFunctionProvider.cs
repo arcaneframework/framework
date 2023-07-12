@@ -12,15 +12,33 @@ using IntegerConstArrayView = Arcane.Int32ConstArrayView;
 using IntegerArrayView = Arcane.Int32ArrayView;
 #endif
 
-[Arcane.Service("DotNetCaseFunctionProvider",typeof(Arcane.ICaseFunctionProvider))]
-public class DotNetCaseFunctionProvider : Arcane.ICaseFunctionProvider_WrapperService
+namespace ArcaneTest
 {
-  public DotNetCaseFunctionProvider(ServiceBuildInfo bi) : base(bi)
+  [Arcane.Service("DotNetCaseFunctionProvider",typeof(Arcane.ICaseFunctionProvider))]
+  public class DotNetCaseFunctionProvider : Arcane.ICaseFunctionProvider_WrapperService
   {
+    public DotNetCaseFunctionProvider(ServiceBuildInfo bi) : base(bi)
+    {
+    }
+
+    public override void RegisterCaseFunctions(ICaseMng cm)
+    {
+      Console.WriteLine("REGISTER C# CASE_FUNCTION_PROVIDER");
+      Arcane.CaseFunctionLoader.LoadCaseFunction(cm,typeof(MyTestCaseFunction));
+    }
   }
 
-  public override void RegisterCaseFunctions(ICaseMng cm)
+  public class MyTestCaseFunction
   {
-    Console.WriteLine("REGISTER C# CASE_FUNCTION_PROVIDER");
+    public Real FuncTimeMultiply2(Real x)
+    {
+      Console.WriteLine("FuncTimeMultiply2 x={0}",x);
+      return x * 2.0;
+    }
+    public int FuncIterMultiply3(int x)
+    {
+      Console.WriteLine("FuncIterMultiply3 x={0}",x);
+      return x * 3;
+    }
   }
 }
