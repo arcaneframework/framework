@@ -93,6 +93,7 @@
 #include "arcane/core/IPhysicalUnitConverter.h"
 #include "arcane/core/IPhysicalUnit.h"
 #include "arcane/core/IStandardFunction.h"
+#include "arcane/core/CaseFunction2.h"
 #include "arcane/core/IServiceAndModuleFactoryMng.h"
 #include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/IMeshUniqueIdMng.h"

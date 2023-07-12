@@ -393,6 +393,7 @@ set(ARCANE_ORIGINAL_SOURCES
   CaseDatasetSource.h
   CaseFunction.cc
   CaseFunction.h
+  CaseFunction2.h
   CaseOptions.h
   CaseOptionServiceImpl.h
   CaseOptionTypes.h
