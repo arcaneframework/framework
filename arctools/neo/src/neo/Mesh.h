@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "Neo.h"
 #include "Utils.h"
@@ -74,6 +75,11 @@ class Mesh
 
     Neo::utils::ConstSpan<Neo::utils::Int32> operator[](Neo::utils::Int32 item_lid) const noexcept {
       return connectivity_value[item_lid];
+    }
+
+    int maxNbConnectedItems() const {
+      auto nb_connected_elements = connectivity_value.sizes();
+      return *std::max_element(nb_connected_elements.begin(), nb_connected_elements.end());
     }
   };
 
