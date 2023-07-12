@@ -407,7 +407,8 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
   mesh_array_property.resize(sizes, true); // 3 elements with respectively 1, 2 and 3 values
   auto array_property_sizes = mesh_array_property.sizes();
   EXPECT_TRUE(std::equal(array_property_sizes.begin(), array_property_sizes.end(), sizes.begin()));
-  EXPECT_EQ(mesh_array_property.size(), 6);
+  EXPECT_EQ(mesh_array_property.size(), 3);
+  EXPECT_EQ(mesh_array_property.cumulatedSize(), 6);
   mesh_array_property.clear();
   EXPECT_EQ(mesh_array_property.size(), 0);
   // add elements: 5 items with one value
@@ -422,7 +423,8 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
   mesh_array_property.resize({ 1, 1, 1, 1, 1 });
   mesh_array_property.init(item_range, values);
   mesh_array_property.debugPrint();
-  EXPECT_EQ(values.size(), mesh_array_property.size());
+  EXPECT_EQ(item_range.size(), mesh_array_property.size());
+  EXPECT_EQ(values.size(), mesh_array_property.cumulatedSize());
   // check values
   auto index = 0;
   for (auto item : item_range) {
@@ -440,32 +442,34 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
   EXPECT_TRUE(std::equal(property_1D_const_view.begin(), property_1D_const_view.end(), values.begin()));
   // Add 3 items
   std::vector<int> nb_element_per_item{ 0, 3, 1 };
-  item_range = { Neo::ItemLocalIds{ { 5, 6, 7 } } };
+  Neo::ItemRange item_range2 = { Neo::ItemLocalIds{ { 5, 6, 7 } } };
   std::vector<Neo::utils::Int32> values_added{ 6, 6, 6, 7 };
-  mesh_array_property.append(item_range, values_added, nb_element_per_item);
+  mesh_array_property.append(item_range2, values_added, nb_element_per_item);
   mesh_array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" (check with test framework)
-  EXPECT_EQ(values.size() + values_added.size(), mesh_array_property.size());
+  EXPECT_EQ(item_range.size()+item_range2.size(), mesh_array_property.size());
+  EXPECT_EQ(values.size() + values_added.size(), mesh_array_property.cumulatedSize());
   std::vector<int> ref_values = { 0, 1, 2, 3, 4, 6, 6, 6, 7 };
   EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), mesh_array_property.begin()));
   // check values
   index = 0;
-  for (auto item : item_range) {
+  for (auto item : item_range2) {
     auto item_array = mesh_array_property[item];
     for (auto item_value : item_array) {
       EXPECT_EQ(item_value, values_added[index++]);
     }
   }
   // Add three more items
-  item_range = { Neo::ItemLocalIds{ {}, 8, 3 } };
+  Neo::ItemRange item_range3 = { Neo::ItemLocalIds{ {}, 8, 3 } };
   std::for_each(values_added.begin(), values_added.end(), [](auto& elt) { return elt += 2; });
-  mesh_array_property.append(item_range, values_added, nb_element_per_item);
+  mesh_array_property.append(item_range3, values_added, nb_element_per_item);
   mesh_array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" "8" "8" "8" "9"
-  EXPECT_EQ(values.size() + 2 * values_added.size(), mesh_array_property.size());
+  EXPECT_EQ(item_range.size()+item_range2.size()+item_range3.size(), mesh_array_property.size());
+  EXPECT_EQ(values.size() + 2 * values_added.size(), mesh_array_property.cumulatedSize());
   ref_values = { 0, 1, 2, 3, 4, 6, 6, 6, 7, 8, 8, 8, 9 };
   EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), mesh_array_property.begin()));
   // check values
   index = 0;
-  for (auto item : item_range) {
+  for (auto item : item_range3) {
     auto item_array = mesh_array_property[item];
     for (auto item_value : item_array) {
       EXPECT_EQ(item_value, values_added[index++]);
@@ -477,7 +481,7 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
   values_added = { 10, 10, 10, 11, 11, 11, 12, 12, 13 };
   mesh_array_property.append(item_range, values_added, nb_element_per_item); // expected result: "10" "10" "10" "1" "2" "3" "4" "12" "12" "6" "6" "6" "7" "11" "11" "11" "8" "8" "8" "9" "13"
   mesh_array_property.debugPrint();
-  EXPECT_EQ(21, mesh_array_property.size());
+  EXPECT_EQ(21, mesh_array_property.cumulatedSize());
   ref_values = { 10, 10, 10, 1, 2, 3, 4, 12, 12, 6, 6, 6, 7, 11, 11, 11, 8, 8, 8, 9, 13 };
   EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), mesh_array_property.begin()));
   // check values
@@ -630,9 +634,10 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
   mesh_array_property.clear();
   EXPECT_EQ(mesh_array_property.size(), 0);
   // Since property cleared, an init can be called after a resize
-  mesh_array_property.resize({ 1, 1, 1, 1, 1 });
+  mesh_array_property.resize({ 1, 1, 1, 2, 2 });
   mesh_array_property.init(item_range, values);
   EXPECT_EQ(mesh_array_property.size(), 5);
+  EXPECT_EQ(mesh_array_property.cumulatedSize(), 7);
 }
 
 /*-----------------------------------------------------------------------------*/
