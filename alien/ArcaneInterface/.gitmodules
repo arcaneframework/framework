@@ -1,0 +1,3 @@
+[submodule "app-cmake-buildsystem"]
+	path = app-cmake-buildsystem
+	url = https://github.com/arcaneframework/app_buildsystem_tools.git

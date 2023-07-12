@@ -1,0 +1,32 @@
+{
+    "config_version": 2, 
+    "solver": {
+            "error_scaling": 2, 
+            "print_grid_stats": 1,
+            "solver": "AMG", 
+            "max_iters": 1, 
+            "monitor_residual": 1, 
+            "convergence": "RELATIVE_INI_CORE", 
+            "smoother": {
+                "relaxation_factor": 0.9, 
+                "scope": "amg_smoother", 
+                "solver": "JACOBI_L1"
+            }, 
+            "max_levels": 24,
+            "interpolator": "D2",
+            "aggressive_levels": 1,
+            "selector": "HMIS", 
+            "max_row_sum": 0.9,
+            "strength_threshold": 0.25,
+            "min_coarse_rows": 2,
+            "scope": "amg", 
+            "cycle": "W", 
+            "norm": "L1", 
+            "presweeps": 2, 
+            "postsweeps": 2,
+            "print_grid_stats": 1,
+            "print_solve_stats": 1, 
+            "obtain_timings": 1, 
+            "structure_reuse_levels":1
+        } 
+}

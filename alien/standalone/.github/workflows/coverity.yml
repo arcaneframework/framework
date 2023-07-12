@@ -1,0 +1,85 @@
+name: Coverity Scan
+
+on:
+  schedule:
+    # Run each day, from Monday to Friday at 6am
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    name: ubuntu coverity
+    runs-on: ubuntu-latest
+    container: "ghcr.io/arcaneframework/alien-ci-ubuntu22.04:main"
+    steps:
+      # Checkout v2 does not include files listed in .gitattributes
+      - uses: actions/checkout@v3
+
+      - name: Configure CMake
+        # Configure CMake in a 'build' subdirectory. `C MAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        run: |
+          ${{matrix.config.precommand}}
+          cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DALIENDEV_EMBEDDED:BOOL=ON  -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON  -DALIEN_PLUGIN_TRILINOS:BOOL=ON -DALIEN_PLUGIN_TRILINOS_SERIAL:BOOL=ON
+
+      # Setting up ccache from github cached files
+      - name: Prepare coverity
+        id: coverity-hash
+        # Disabled for `act`
+        if: ${{ !env.ACT }}
+        run: |
+          mkdir coverity-tool
+          curl https://scan.coverity.com/download/linux64 -o coverity-tool/md5-new \
+            -s --data "token=$COV_TOKEN&project=arcaneframework%2Falien&md5=1"
+          echo "::set-output name=md5::$(cat coverity-tool/md5-new)"
+        env:
+          COV_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+
+      - name: restore cached files
+        uses: actions/cache@v3
+        # Disabled for `act`
+        if: ${{ !env.ACT }}
+        with:
+          path: coverity-tool
+          key: coverity-linux-${{ steps.coverity-hash.outputs.md5 }}
+
+      - name: Set up coverity
+        run: |
+          if cmp -s coverity-tool/md5-new coverity-tool/md5 ; then
+            echo "running from cache"
+          else
+            curl --silent https://scan.coverity.com/download/linux64 \
+              --data "token=${COV_TOKEN}&project=arcaneframework%2Falien" \
+              | tar xz -C coverity-tool --strip-components=1
+          fi
+          cp coverity-tool/md5-new coverity-tool/md5
+        shell: bash
+        env:
+          COV_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+      - name: Build with coverity
+        # Build, using cov-build and cov-int directory as output (mandatory)
+        run: |
+          export PATH="${PWD}/coverity-tool/bin:${PATH}"
+          cov-build --dir cov-int make -C build -j $(nproc)
+        shell: bash
+
+      - name: Submit results to Coverity Scan
+        run: |
+          tar -czvf cov-int.tgz cov-int
+          curl \
+            --form project="${{ inputs.project }}" \
+            --form token="$COV_TOKEN" \
+            --form email="$COV_EMAIL" \
+            --form file=@cov-int.tgz \
+            --form version="${{ github.sha }}" \
+            --form description="${{ github.repository }} / ${{ github.ref }}" \
+            "https://scan.coverity.com/builds?project=arcaneframework%2Falien"
+        shell: bash
+        env:
+          COV_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+          COV_EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}

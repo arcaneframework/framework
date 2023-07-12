@@ -1,0 +1,15 @@
+export ALIEN_ROOT=/work/irlin355_1/gratienj/ALIEN/GIT/AlienOpenSource
+export Arccon_DIR=${ALIEN_ROOT}/Install/arccon
+export Arccore_DIR=${ALIEN_ROOT}/Install/arccore
+export Axlstar_DIR=${ALIEN_ROOT}/Install/axlstar
+export Arcane_DIR=${ALIEN_ROOT}/Install/arcane
+export Alien_DIR=${ALIEN_ROOT}/Install/alien
+export AlienProd_DIR=${ALIEN_ROOT}/Install/alienProd
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${AlienProd_DIR} \
+      -DBUILD_SHARED_LIBS=ON \
+      -DArccon_DIR=${Arccon_DIR}/share/cmake/Arccon \
+      -DArccore_DIR=${Arccore_DIR}/lib/cmake/Arccore \
+      -DAxlstar_DIR=${Axlstar_DIR}/share/cmake/Axlstar \
+      -DALIEN_DIR=${Alien_DIR}/lib/cmake/ALIEN \
+      -DArcane_DIR=${Arcane_DIR}/lib/cmake/Arcane ../alien-legacy
