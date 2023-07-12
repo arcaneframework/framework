@@ -61,6 +61,7 @@
 #include "arcane/CaseOptionsMulti.h"
 #include "arcane/CaseOptionService.h"
 #include "arcane/StandardCaseFunction.h"
+#include "arcane/CaseFunction2.h"
 #include "arcane/ICaseOptions.h"
 #include "arcane/ICaseMng.h"
 #include "arcane/ICaseFunctionProvider.h"

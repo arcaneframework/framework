@@ -23,6 +23,7 @@ namespace Arcane
 %feature("director") Arcane::ICaseOptionServiceContainer;
 %feature("director") Arcane::StandardCaseFunction;
 %feature("director") Arcane::CaseFunction;
+%feature("director") Arcane::CaseFunction2;
 %feature("director") Arcane::CaseOptionComplexValue;
 
 %ignore Arcane::ICaseFunction::value;
@@ -62,6 +63,7 @@ namespace Arcane
 %include arcane/core/ICaseFunction.h
 %include arcane/core/CaseFunction.h
 %include arcane/core/StandardCaseFunction.h
+%include arcane/core/CaseFunction2.h
 %include arcane/core/ICaseFunctionProvider.h
 
 /*---------------------------------------------------------------------------*/

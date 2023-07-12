@@ -47,7 +47,7 @@ class ARCANE_CORE_EXPORT CaseFunction2
   : CaseFunction(cfbi)
   {}
 
- private:
+ protected:
 
   void value(Real param, Real& v) const override
   {

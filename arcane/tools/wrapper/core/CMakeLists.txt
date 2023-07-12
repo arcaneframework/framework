@@ -31,6 +31,7 @@ set(ARCANE_SWIG_CORE_CSHARP_FILES
   ArcaneSimpleExecutor
   AssemblyLoaderHelper
   CaseOptionMultiEnumT
+  CaseFunction
   Debug
   ExternalRef
   EntryPoint
