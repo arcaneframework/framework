@@ -503,14 +503,26 @@ class MeshScalarPropertyT : public PropertyBase
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType>
+class MeshArrayPropertyProxyT;
+
+template <typename DataType>
 class MeshArrayPropertyT : public PropertyBase
 {
+    friend class MeshArrayPropertyProxyT<DataType>;
+   public:
+
+    using PropertyDataType = DataType;
+    using PropertyOffsetType = int;
+    using PropertyIndexType = int;
 
  private:
   std::vector<DataType> m_data;
-  std::vector<int> m_offsets;
-  std::vector<int> m_indexes;
-  int m_size;
+  std::vector<PropertyOffsetType> m_offsets;
+  std::vector<PropertyIndexType> m_indexes;
+  int m_data_size;
+
+ public:
+
 
  public:
   MeshArrayPropertyT() = default;
@@ -539,7 +551,7 @@ class MeshArrayPropertyT : public PropertyBase
    */
   void init(const ItemRange& item_range, std::vector<DataType> values) {
     assert(("Property must be empty and item range contiguous to call init", isInitializableFrom(item_range)));
-    assert(("call resize before init", !item_range.isEmpty() && m_size != 0));
+    assert(("call resize before init", !item_range.isEmpty() && m_data_size != 0));
     m_data = std::move(values);
   }
 
@@ -601,7 +613,7 @@ class MeshArrayPropertyT : public PropertyBase
     m_data.clear();
     m_offsets.clear();
     m_indexes.clear();
-    m_size = 0;
+    m_data_size = 0;
   }
 
   /*!
@@ -670,7 +682,7 @@ class MeshArrayPropertyT : public PropertyBase
     m_offsets = std::move(new_offsets);
     m_indexes = std::move(new_indexes);
     m_data = std::move(new_data);
-    m_size = new_data_size;
+    m_data_size = new_data_size;
   }
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
@@ -707,7 +719,7 @@ class MeshArrayPropertyT : public PropertyBase
 
   void _updateIndexes() {
     _computeIndexesFromOffsets(m_indexes, m_offsets);
-    m_size = _computeSizeFromOffsets(m_offsets);
+    m_data_size = _computeSizeFromOffsets(m_offsets);
   }
 
   void _computeIndexesFromOffsets(std::vector<int>& new_indexes, std::vector<int> const& new_offsets) {
@@ -724,6 +736,26 @@ class MeshArrayPropertyT : public PropertyBase
   int _computeSizeFromOffsets(std::vector<int> const& new_offsets) {
     return std::accumulate(new_offsets.begin(), new_offsets.end(), 0);
   }
+};
+
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType>
+struct MeshArrayPropertyProxyT {
+  MeshArrayPropertyT<DataType> & m_mesh_array_property;
+
+  using OffsetType = typename MeshArrayPropertyT<DataType>::PropertyOffsetType;
+  using IndexType = typename MeshArrayPropertyT<DataType>::PropertyIndexType;
+
+  DataType* arrayPropertyData() noexcept { return m_mesh_array_property.m_data.data(); }
+  DataType const* arrayPropertyData() const noexcept { return m_mesh_array_property.m_data.data(); }
+  auto arrayPropertyDataSize() const noexcept { return m_mesh_array_property.m_data.size(); }
+  OffsetType * arrayPropertyOffsets() noexcept {return m_mesh_array_property.m_offsets.data();};
+  OffsetType const* arrayPropertyOffsets() const noexcept {return m_mesh_array_property.m_offsets.data();};
+  auto arrayPropertyOffsetsSize() const noexcept {return m_mesh_array_property.m_offsets.size();};
+  IndexType * arrayPropertyIndex() noexcept {return m_mesh_array_property.m_indexes.data();};
+  IndexType const* arrayPropertyIndex() const noexcept {return m_mesh_array_property.m_indexes.data();};
+  auto arrayPropertyIndexSize() const noexcept {return m_mesh_array_property.m_indexes.size();};
 };
 
 /*---------------------------------------------------------------------------*/
