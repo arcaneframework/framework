@@ -287,7 +287,6 @@ ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_category testCaseOptions-5.arc -We,ARCANE
 arcane_add_test_sequential(caseoptions_multiplemesh testCaseOptions-multiple-mesh.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 arcane_add_test_sequential(caseoptions_multiplemesh_legacy testCaseOptions-multiple-mesh-legacy.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 arcane_add_test_sequential(casefunction1 testCaseFunction-1.arc)
-arcane_add_csharp_test_sequential(casefunction_cs testCaseFunctionModule-1.arc)
 # Mettre à vrai pour tester Redis mais il faut que le server tourne
 # (on peut tester cela avec la commande 'redis-cli PING')
 set(ARCANE_ENABLE_REDIS_TEST FALSE)
@@ -696,6 +695,7 @@ if (ARCANE_HAS_DOTNET_TESTS)
   if (ARCANE_HAS_TASKS)
     arcane_add_csharp_test_sequential(hydro_cs_task testSimpleHydroCS-1.arc -m 15 -K 4)
   endif()
+  arcane_add_csharp_test_sequential(casefunction_cs testCaseFunctionModule-1.arc)
 endif()
 
 arcane_add_test_parallel(loadbalance_test1 testLoadBalanceHydro-MeshPartitionerTester.arc 4 -m 30)
