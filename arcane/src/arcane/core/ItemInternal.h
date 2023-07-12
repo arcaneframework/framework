@@ -52,6 +52,7 @@ namespace Arcane::mesh
 {
 class IncrementalItemConnectivityBase;
 class PolyhedralFamily;
+class PolyhedralMeshImpl;
 }
 
 namespace Arcane
@@ -139,6 +140,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   // Pour accès à _setConnectivity*
   friend mesh::IncrementalItemConnectivityBase;
   friend mesh::PolyhedralFamily;
+  friend mesh::PolyhedralMeshImpl;
 
   // Pour accès à m_items
   friend mesh::ItemFamily;

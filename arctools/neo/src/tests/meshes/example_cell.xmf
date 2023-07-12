@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Xdmf xmlns:xi="http://www.w3.org/2001/XInclude" Version="3.0">
+    <Domain>
+        <Grid Name="Octahedron" GridType="Uniform">
+            <Topology TopologyType="Polyhedron">
+                <DataItem Dimensions="26" NumberType="Int" Precision="4" Format="XML">
+                    8
+                    3 0 1 4
+                    3 0 1 5
+                    3 1 2 4
+                    3 1 2 5
+                    3 2 3 4
+                    3 2 3 5
+                    3 0 4 3
+                    3 0 5 3
+                </DataItem>
+            </Topology>
+            <Geometry GeometryType="XYZ">
+                <DataItem Rank="2" Dimensions="6 3" NumberType="Float" Precision="8" Format="XML">
+                    -1. -1.  0.
+                    -1.  1.  0.
+                    1.  1.  0.
+                    1. -1.  0.
+                    0.  0.  1.
+                    0.  0. -1.
+                </DataItem>
+            </Geometry>
+        </Grid>
+    </Domain>
+</Xdmf>
+

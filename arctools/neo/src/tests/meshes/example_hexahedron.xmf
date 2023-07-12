@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Xdmf xmlns:xi="http://www.w3.org/2001/XInclude" Version="3.0">
+    <Domain>
+        <Grid Name="Hexahedron" GridType="Uniform">
+            <Topology TopologyType="Hexahedron">
+                <DataItem Dimensions="8" NumberType="Int" Precision="4" Format="XML">
+                    0 1 2 3 4 5 6 7
+                </DataItem>
+            </Topology>
+            <Geometry GeometryType="XYZ">
+                <DataItem Rank="2" Dimensions="8 3" NumberType="Float" Precision="8" Format="XML">
+                    0. 0. 1.
+                    1. 0. 1.
+                    1. 0. 0.
+                    0. 0. 0.
+                    0. 1. 1.
+                    1. 1. 1.
+                    1. 1 .0.
+                    0. 1. 0.
+                </DataItem>
+            </Geometry>
+        </Grid>
+    </Domain>
+</Xdmf>
+
