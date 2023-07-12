@@ -637,6 +637,38 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
 
 /*-----------------------------------------------------------------------------*/
 
+TEST(NeoTestArrayProperty, test_mesh_array_property_proxy) {
+  Neo::MeshArrayPropertyT<Neo::utils::Int32> mesh_array_property{"mesh_array_property_test"};
+  mesh_array_property.resize({1,2,3});
+  auto item_range = Neo::ItemRange{ Neo::ItemLocalIds{ {}, 0, 3 } };
+  mesh_array_property.init(item_range,{1,2,2,3,3,3});
+  Neo::MeshArrayPropertyProxyT<Neo::utils::Int32> mesh_array_property_proxy{mesh_array_property};
+  auto mesh_array_property_values = mesh_array_property.view();
+  EXPECT_EQ(mesh_array_property_proxy.arrayPropertyData(),mesh_array_property_values.m_ptr);
+  EXPECT_EQ(mesh_array_property.view().size(),mesh_array_property_proxy.arrayPropertyDataSize());
+  EXPECT_EQ(mesh_array_property.sizes().size(),mesh_array_property_proxy.arrayPropertyOffsetsSize());
+  EXPECT_EQ(mesh_array_property.size(),mesh_array_property_proxy.arrayPropertyIndexSize()); // todo must be ok !!
+  auto mesh_array_property_sizes = mesh_array_property.sizes();
+  EXPECT_TRUE(std::equal(mesh_array_property_sizes.begin(), mesh_array_property_sizes.end(), mesh_array_property_proxy.arrayPropertyOffsets()));
+  auto const mesh_array_property_const_proxy{mesh_array_property_proxy};
+  EXPECT_EQ(mesh_array_property_const_proxy.arrayPropertyOffsets(),mesh_array_property_sizes.m_ptr);
+  return;
+  auto property_values = mesh_array_property.view();
+  auto property_data = mesh_array_property_proxy.arrayPropertyData();
+  auto property_indexes = mesh_array_property_proxy.arrayPropertyIndex();
+  auto property_offsets = mesh_array_property_proxy.arrayPropertyOffsets();
+  auto property_index = 0;
+  auto value_index = 0;
+  auto item_index = 0;
+  for (auto item : item_range){
+    EXPECT_EQ(value_index,property_indexes[item_index]);
+    value_index += mesh_array_property[item].size();
+    item_index++;
+  }
+}
+
+/*-----------------------------------------------------------------------------*/
+
 TEST(NeoTestPropertyView, test_mesh_scalar_property_view) {
   Neo::MeshScalarPropertyT<Neo::utils::Int32> property{ "name" };
   std::vector<Neo::utils::Int32> values{ 1, 2, 3, 10, 100, 1000 };
