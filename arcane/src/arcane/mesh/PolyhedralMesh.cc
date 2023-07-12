@@ -282,11 +282,11 @@ namespace mesh
       m_mesh.scheduleAddItems(item_family, std::vector<Int64>{ uids.begin(), uids.end() }, added_items);
       // add arcane items
       auto& mesh_graph = m_mesh.internalMeshGraph();
-      item_family.addProperty<Neo::utils::Int32>(PolyhedralFamily::m_arcane_item_lids_property_name.localstr());
-      mesh_graph.addAlgorithm(Neo::InProperty{ item_family, item_family.lidPropName() },
-                              Neo::OutProperty{ item_family, PolyhedralFamily::m_arcane_item_lids_property_name.localstr() },
+      item_family.addMeshScalarProperty<Neo::utils::Int32>(PolyhedralFamily::m_arcane_item_lids_property_name.localstr());
+      mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName() },
+                              Neo::MeshKernel::OutProperty{ item_family, PolyhedralFamily::m_arcane_item_lids_property_name.localstr() },
                               [arcane_item_family, uids](Neo::ItemLidsProperty const& lids_property,
-                                                         Neo::PropertyT<Neo::utils::Int32>&) {
+                                                         Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
                                 Int32UniqueArray arcane_items(uids.size());
                                 arcane_item_family->addItems(uids, arcane_items);
                                 arcane_item_family->traceMng()->info() << arcane_items;
@@ -379,36 +379,39 @@ namespace mesh
       // Register Neo connectivities in Arcane
       auto& mesh_graph = m_mesh.internalMeshGraph();
       std::string connectivity_add_output_property_name = std::string{ "EndOf" } + connectivity_name.localstr() + "Add";
-      source_family.addProperty<Neo::utils::Int32>(connectivity_add_output_property_name);
-      mesh_graph.addAlgorithm(Neo::InProperty{ source_family, connectivity_name.localstr() },
-                              Neo::OutProperty{ source_family, connectivity_add_output_property_name },
-                              [arcane_source_item_family, arcane_target_item_family, &source_family, this, connectivity_name](Neo::Mesh::ConnectivityPropertyType const&,
-                                                                                                                              Neo::PropertyT<Neo::utils::Int32>&) {
+      source_family.addScalarProperty<Neo::utils::Int32>(connectivity_add_output_property_name);
+      mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, connectivity_name.localstr() },
+                              Neo::MeshKernel::OutProperty{ source_family, connectivity_add_output_property_name },
+                              [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this, connectivity_name](Neo::Mesh::ConnectivityPropertyType const&,
+                                                                                                                              Neo::ScalarPropertyT<Neo::utils::Int32>&) {
                                 this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
                                 // todo check if families are default families
+                                auto connectivity = m_mesh.getConnectivity(source_family, target_family, connectivity_name.localstr());
+                                // to access connectivity data (for initializing Arcane connectivities) create a proxy on Neo connectivity
                                 auto& connectivity_values = source_family.getConcreteProperty<Neo::Mesh::ConnectivityPropertyType>(connectivity_name.localstr());
-                                auto nb_item_data = connectivity_values.m_offsets.data();
-                                auto nb_item_size = connectivity_values.m_offsets.size();
+                                Neo::MeshArrayPropertyProxyT<Neo::Mesh::ConnectivityPropertyType::PropertyDataType> connectivity_proxy{connectivity_values};
+                                auto nb_item_data = connectivity_proxy.arrayPropertyOffsets();
+                                auto nb_item_size = connectivity_proxy.arrayPropertyOffsetsSize(); // todo check MeshArrayProperty::size
                                 item_internal_connectivity_list->_setConnectivityNbItem(arcane_target_item_family->itemKind(),
                                                                                        Int32ArrayView{ Integer(nb_item_size), nb_item_data });
-                                auto max_nb_connected_items = *std::max_element(connectivity_values.m_offsets.begin(), connectivity_values.m_offsets.end());
+                                auto max_nb_connected_items = connectivity.maxNbConnectedItems();
                                 item_internal_connectivity_list->_setMaxNbConnectedItem(arcane_target_item_family->itemKind(), max_nb_connected_items);
-                                auto connectivity_values_data = connectivity_values.m_data.data();
-                                auto connectivity_values_size = connectivity_values.m_data.size();
+                                auto connectivity_values_data = connectivity_proxy.arrayPropertyData();
+                                auto connectivity_values_size = connectivity_proxy.arrayPropertyDataSize();
                                 item_internal_connectivity_list->_setConnectivityList(arcane_target_item_family->itemKind(),
                                                                                       Int32ArrayView{ Integer(connectivity_values_size), connectivity_values_data });
-                                auto connectivity_index_data = connectivity_values.m_indexes.data();
-                                auto connectivity_index_size = connectivity_values.m_indexes.size();
+                                auto connectivity_index_data = connectivity_proxy.arrayPropertyIndex();
+                                auto connectivity_index_size = connectivity_proxy.arrayPropertyIndexSize();
                                 item_internal_connectivity_list->_setConnectivityIndex(arcane_target_item_family->itemKind(),
                                                                                        Int32ArrayView{ Integer(connectivity_index_size), connectivity_index_data });
                               });
       // If FaceToCellConnectivity Add face flags II_Boundary, II_SubdomainBoundary, II_HasFrontCell, II_HasBackCell
       if (arcane_source_item_family->itemKind() == IK_Face && arcane_target_item_family->itemKind() == IK_Cell) {
         std::string flag_definition_output_property_name{ "EndOfFlagDefinition" };
-        source_family.addProperty<Neo::utils::Int32>(flag_definition_output_property_name);
-        mesh_graph.addAlgorithm(Neo::InProperty{ source_family, connectivity_add_output_property_name }, Neo::OutProperty{ source_family, flag_definition_output_property_name },
-                                [arcane_source_item_family, this, target_item_uids, &source_items](Neo::PropertyT<Neo::utils::Int32> const&, Neo::PropertyT<Neo::utils::Int32> const&) {
+        source_family.addScalarProperty<Neo::utils::Int32>(flag_definition_output_property_name);
+        mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, connectivity_add_output_property_name }, Neo::MeshKernel::OutProperty{ source_family, flag_definition_output_property_name },
+                                [arcane_source_item_family, this, target_item_uids, &source_items](Neo::ScalarPropertyT<Neo::utils::Int32> const&, Neo::ScalarPropertyT<Neo::utils::Int32> const&) {
                                   auto current_face_index = 0;
                                   auto arcane_faces = arcane_source_item_family->itemInfoListView();
                                   for (auto face_lid : source_items.m_future_items.new_items) {
@@ -446,11 +449,11 @@ namespace mesh
       m_mesh.scheduleSetItemCoords(_item_family, local_ids.m_future_items, _node_coords);
       // Fill Arcane Variable
       auto& mesh_graph = m_mesh.internalMeshGraph();
-      _item_family.addProperty<Int32>("NoOutProperty42"); // todo remove : create noOutput algo in Neo
-      mesh_graph.addAlgorithm(Neo::InProperty{ _item_family, m_mesh._itemCoordPropertyName(_item_family) },
-                              Neo::OutProperty{ _item_family, "NoOutProperty42" },
+      _item_family.addScalarProperty<Int32>("NoOutProperty42"); // todo remove : create noOutput algo in Neo
+      mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ _item_family, m_mesh._itemCoordPropertyName(_item_family) },
+                              Neo::MeshKernel::OutProperty{ _item_family, "NoOutProperty42" },
                               [this, item_family, &_item_family, &arcane_coords](Neo::Mesh::CoordPropertyType const& item_coords_property,
-                                                                                 Neo::PropertyT<Neo::utils::Int32>&) {
+                                                                                 Neo::ScalarPropertyT<Neo::utils::Int32>&) {
                                 this->m_subdomain->traceMng()->info() << "= Update Arcane Coordinates =";
                                 // enumerate nodes : ensure again Arcane/Neo local_ids are identicals
                                 auto& all_items = _item_family.all();
