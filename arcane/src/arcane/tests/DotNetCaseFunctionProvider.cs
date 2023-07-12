@@ -40,5 +40,10 @@ namespace ArcaneTest
       Console.WriteLine("FuncIterMultiply3 x={0}",x);
       return x * 3;
     }
+    public Real FuncStandardRealReal3NormL2(Real x,Real3 position)
+    {
+      Console.WriteLine("FuncStandardNormL2 x={0} position={1}",x,position);
+      return x * System.Math.Sqrt(position.x*position.x + position.y*position.y + position.z*position.z);
+    }
   }
 }

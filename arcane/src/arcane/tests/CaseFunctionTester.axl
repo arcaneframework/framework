@@ -12,5 +12,8 @@
     <simple name="int-iter-multiply-3" type="int32">
       <description>Fonction f(x) -> x * 3.0</description>
     </simple>
+    <simple name="real-norm-l2" type="real">
+      <description>Fonction f(x,position) -> x * normL2(position)</description>
+    </simple>
   </options>
 </module>

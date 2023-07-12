@@ -15,6 +15,7 @@
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/TimeLoopEntryPointInfo.h"
 #include "arcane/core/TimeLoop.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/tests/CaseFunctionTester_axl.h"
 
@@ -155,6 +156,25 @@ loop()
     info() << "Function: int-iter-multiply-3: " << v1;
     if (v1 != expected_v1)
       ARCANE_FATAL("Bad (2) value v={0} expected={1}", v1, expected_v1);
+  }
+  {
+    ICaseFunction* opt_function = options()->realNormL2.function();
+    IStandardFunction* scf = options()->realNormL2.standardFunction();
+    if (!scf)
+      ARCANE_FATAL("No standard case function for option 'real-norml2'");
+    auto* functor = scf->getFunctorRealReal3ToReal();
+    if (!functor)
+      ARCANE_FATAL("Standard function '{0}' is not convertible to f(Real,Real3) -> Real", opt_function->name());
+
+    VariableNodeReal3& node_coord = defaultMesh()->nodesCoordinates();
+    ENUMERATE_ (Node, inode, allNodes()) {
+      Real3 coord = node_coord[inode];
+      Real v1 = functor->apply(global_time, coord);
+      Real expected_v1 = global_time * coord.normL2();
+      info() << "Function: real-norml2: " << v1;
+      if (!math::isNearlyEqual(v1, expected_v1))
+        ARCANE_FATAL("Bad (3) value v={0} expected={1}", v1, expected_v1);
+    }
   }
 }
 

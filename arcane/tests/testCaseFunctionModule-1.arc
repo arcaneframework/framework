@@ -13,6 +13,7 @@
  <case-function-tester>
   <real-time-multiply-2 function="FuncTimeMultiply2">1.5</real-time-multiply-2>
   <int-iter-multiply-3 function="FuncIterMultiply3">1</int-iter-multiply-3>
+  <real-norm-l2 function="FuncStandardRealReal3NormL2">1</real-norm-l2>
  </case-function-tester>
 
 </case>
