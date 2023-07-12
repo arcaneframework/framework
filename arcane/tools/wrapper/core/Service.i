@@ -16,7 +16,7 @@
 
 %rename BasicModule BasicModule_INTERNAL;
 
-%typemap(cscode) Arcane::IFunctor %{
+%typemap(cscode) Arccore::IFunctor %{
   public delegate void FunctorDelegate();
   private FunctorDelegate m_functor;
   public FunctorDelegate Functor { get { return m_functor; } }
@@ -138,7 +138,7 @@
 %include arcane/core/BasicModule.h
 %include arcane/core/IEntryPoint.h
 
-namespace Arcane
+namespace Arccore
 {
 class IFunctor
 {

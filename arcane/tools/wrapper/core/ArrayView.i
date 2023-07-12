@@ -11,6 +11,11 @@
 /*---------------------------------------------------------------------------*/
 // On ne peut pas inclure 'arcane/utils/UtilsTypes.h' car SWIG (3.0.12) ne
 // semble pas bien gérer 'using' des classes de Arccore.
+namespace Arccore
+{
+  template<typename ArgType> class IFunctorWithArgumentT;
+}
+
 namespace Arcane
 {
   template<class T> class ArrayView;
@@ -34,8 +39,6 @@ namespace Arcane
 
   template<typename T> class Collection;
   template<typename T> class List;
-
-  template<typename ArgType> class IFunctorWithArgumentT;
 
   template<typename... Args> class EventObservable;
   template<typename... Args> class EventObserver;

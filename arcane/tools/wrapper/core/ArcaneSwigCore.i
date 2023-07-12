@@ -35,12 +35,20 @@ using namespace Arcane::Accelerator;
 #define SWIG_DISPOSE csdispose
 #define SWIG_DISPOSE_DERIVED csdispose_derived
 
-namespace Arcane
+namespace Arccore
 {
   class IFunctor;
   namespace Internal
   {
     class ExternalRef;
+  }
+}
+namespace Arcane
+{
+  using Arccore::IFunctor;
+  namespace Internal
+  {
+    using Arccore::Internal::ExternalRef;
   }
 }
 
