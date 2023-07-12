@@ -1,0 +1,11 @@
+{
+  "solver-package" : "petsc",
+  "config" : 
+  {
+     "tol" : 1.0e-10,
+     "max-iter" : 1000,
+     "petsc-solver" : "bicgs",
+     "petsc-precond" : "bjacobi"
+  }
+}
+

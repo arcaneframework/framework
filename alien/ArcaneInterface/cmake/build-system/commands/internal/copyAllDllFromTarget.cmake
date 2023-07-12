@@ -1,0 +1,35 @@
+function(copyAllDllFromTarget target)
+
+  if(NOT TARGET ${target})
+    logFatalError("target ${target} not defined")
+  endif()
+
+  string(TOUPPER ${target} TARGET)
+  
+  foreach(lib ${${TARGET}_LIBRARIES})
+    if(${lib} STREQUAL optimized)
+      continue()
+    endif()
+    if(${lib} STREQUAL debug)
+      continue()
+    endif()
+    get_filename_component(dll ${lib} NAME_WE)
+    get_filename_component(path ${lib} PATH)
+    if("${path}" STREQUAL "") # lib locale ? lib systeme ?
+      continue()
+    endif()
+    file(GLOB dlls "${path}/*${dll}*.dll")
+    get_filename_component(path ${path} PATH)
+    if("${path}" STREQUAL "") # lib locale ? lib systeme ?
+      continue()
+    endif()
+    file(GLOB lib_dlls "${path}/lib/*${dll}*.dll")
+    file(GLOB bin_dlls "${path}/bin/*${dll}*.dll")
+    list(APPEND dlls ${bin_dlls} ${lib_dlls})
+    list(REMOVE_DUPLICATES dlls)
+    foreach(dll ${dlls})
+      copyOneDllFile(${dll})
+    endforeach()
+  endforeach()
+  
+endfunction()

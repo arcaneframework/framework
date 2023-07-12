@@ -1,0 +1,19 @@
+Ce répertoire contient les projets C# qui gèrent les fichiers axl.
+
+La compilation de ces projets est indépendante de celle de Arcane:
+il faut d'abord les compiler avant d'utiliser Arcane. Normalement,
+la dernière version est intégrée au gestionnaire de source de sorte
+qu'il n'est pas nécessaire de faire cette recompilation, sauf
+si un des fichiers du projet a été modifié.
+
+Pour lancer la recompilation, il suffit de faire:
+
+  gmake all_new
+
+ou directement:
+
+  xbuild Arcane.Axl.sln
+
+Dans les deux cas, il faut sous Linux que l'outil 'mono' soit installé et dans
+votre PATH. Sous Windows, il faut remplacer 'xbuild' pas 'msbuild'.
+
