@@ -37,8 +37,8 @@ install(TARGETS bench_hypre EXPORT Alien
 
 if (ALIEN_UNIT_TESTS)
 
-    configure_file(../../../src/movesemantic/tests/simple.mtx matrix.mtx COPYONLY)
-    configure_file(../../../src/movesemantic/tests/simple_rhs.mtx rhs.mtx COPYONLY)
+    configure_file(../../../standalone/src/movesemantic/tests/simple.mtx matrix.mtx COPYONLY)
+    configure_file(../../../standalone/src/movesemantic/tests/simple_rhs.mtx rhs.mtx COPYONLY)
 
     #-----------------------------------------------------------
     # Tests
