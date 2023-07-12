@@ -1,6 +1,6 @@
 add_subdirectory(sgraph)
 
-option(SGRAPH_BUILD_TEST "Build tests" ON)
+option(SGRAPH_BUILD_TEST "Build SGraph tests" ON)
 
 if (${SGRAPH_BUILD_TEST})
     find_package(GTest)

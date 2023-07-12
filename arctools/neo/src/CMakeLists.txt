@@ -5,6 +5,12 @@ endif()
 
 add_subdirectory(neo)
 
-enable_testing()
+option(NEO_BUILD_TEST "Build Neo tests" ON)
 
-add_subdirectory(test)
+if (${NEO_BUILD_TEST})
+    find_package(GTest)
+    if (${GTEST_FOUND})
+        enable_testing()
+        add_subdirectory(test)
+    endif()
+endif()
