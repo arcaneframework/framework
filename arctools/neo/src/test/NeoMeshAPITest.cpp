@@ -280,7 +280,7 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   std::vector<Neo::utils::Int64> cell_dofs{ 0, 3, 4, 2, 1 };
   std::vector<Neo::utils::Int64> cell_dofs_ref{ cell_dofs };
   mesh.scheduleAddConnectivity(cell_family, future_cells, dof_family,
-                               std::move(nb_dof_per_cell), std::move(cell_dofs),
+                               nb_dof_per_cell, std::move(cell_dofs),
                                cell_to_dofs_connectivity_name);
   // apply
   auto end_mesh_update = mesh.applyScheduledOperations();
@@ -301,6 +301,7 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   EXPECT_EQ(cell_to_nodes_connectivity_name, cell_to_nodes.name);
   EXPECT_EQ(&cell_family, &cell_to_nodes.source_family);
   EXPECT_EQ(&node_family, &cell_to_nodes.target_family);
+  EXPECT_EQ(cell_to_nodes.maxNbConnectedItems(),nb_node_per_cell);
   auto connected_nodes = mesh.uniqueIds(node_family, cell_to_nodes.connectivity_value.constView());
   std::vector<Neo::utils::Int64> cell_nodes_ref{ 0, 1, 2, 3, 5, 0, 3, 4 };
   EXPECT_TRUE(std::equal(connected_nodes.begin(), connected_nodes.end(), cell_nodes_ref.begin()));
@@ -320,6 +321,7 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   EXPECT_EQ(cell_to_dofs_connectivity_name, cell_to_dofs.name);
   EXPECT_EQ(&cell_family, &cell_to_dofs.source_family);
   EXPECT_EQ(&dof_family, &cell_to_dofs.target_family);
+  EXPECT_EQ(cell_to_dofs.maxNbConnectedItems(), *std::max_element(nb_dof_per_cell.begin(), nb_dof_per_cell.end()));
   auto connected_dofs = cell_to_dofs.connectivity_value.constView();
   std::vector<Neo::utils::Int32> cell_dofs_lids_ref = dof_family.itemUniqueIdsToLocalids(cell_dofs_ref);
   EXPECT_TRUE(std::equal(connected_dofs.begin(), connected_dofs.end(), cell_dofs_lids_ref.begin()));
@@ -337,6 +339,7 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   EXPECT_EQ(node_to_cells_connectivity_name, node_to_cells.name);
   EXPECT_EQ(&node_family, &node_to_cells.source_family);
   EXPECT_EQ(&cell_family, &node_to_cells.target_family);
+  EXPECT_EQ(node_to_cells.maxNbConnectedItems(), 2);
   auto connected_cells = mesh.uniqueIds(cell_family, node_to_cells.connectivity_value.constView());
   std::vector<Neo::utils::Int64> node_cells_ref{ 0, 1, 0, 0, 0, 1, 1, 1 };
   std::vector<Neo::utils::Int32> node_cells_lids_ref = node_family.itemUniqueIdsToLocalids(node_cells_ref);
@@ -355,6 +358,7 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   EXPECT_EQ(node_to_dofs_connectivity_name, node_to_dofs.name);
   EXPECT_EQ(&node_family, &node_to_cells.source_family);
   EXPECT_EQ(&dof_family, &node_to_dofs.target_family);
+  EXPECT_EQ(node_to_dofs.maxNbConnectedItems(),nb_dof_per_node);
   connected_dofs = node_to_dofs.connectivity_value.constView();
   std::vector<Neo::utils::Int64> node_dofs_ref{ 0, 1, 2, 3, 4, 0 };
   std::vector<Neo::utils::Int32> node_dofs_lids_ref = dof_family.itemUniqueIdsToLocalids(node_dofs_ref);
