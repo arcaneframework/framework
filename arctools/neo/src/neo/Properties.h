@@ -601,12 +601,24 @@ class MeshArrayPropertyT : public PropertyBase
   /*!
    * @return number of items of property support
    */
-  int size() const {
-    return m_size;
+  int size() const noexcept {
+    return m_offsets.size();
   }
 
+  /*!
+   *
+   * @return an array with the size of each item array
+   */
   utils::ConstSpan<int> sizes() const noexcept {
     return { m_offsets.data(), m_offsets.size() };
+  }
+
+  /*!
+   *
+   * @return sum of each item array size
+   */
+  int cumulatedSize() const noexcept {
+    return m_data_size;
   }
 
   void clear() {
