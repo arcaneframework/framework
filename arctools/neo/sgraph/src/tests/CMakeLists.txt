@@ -1,4 +1,4 @@
-add_executable(SGraph.tests GraphTest.cpp)
+﻿add_executable(SGraph.tests GraphTest.cpp)
 
 enable_testing()
 

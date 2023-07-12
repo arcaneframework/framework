@@ -1,4 +1,4 @@
-add_subdirectory(sgraph)
+﻿add_subdirectory(sgraph)
 
 option(SGRAPH_BUILD_TEST "Build SGraph tests" ON)
 

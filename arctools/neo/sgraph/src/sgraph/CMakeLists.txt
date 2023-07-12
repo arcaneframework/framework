@@ -1,4 +1,4 @@
-add_library(SGraph INTERFACE)
+﻿add_library(SGraph INTERFACE)
 
 set(header_files ${CMAKE_CURRENT_SOURCE_DIR}/DirectedAcyclicGraph.h
   ${CMAKE_CURRENT_SOURCE_DIR}/DirectedGraph.h

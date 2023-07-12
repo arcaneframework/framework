@@ -1,4 +1,4 @@
-if (NOT Arctools_ROOT)
+﻿if (NOT Arctools_ROOT)
     # Pour compatibilité
     set(Arctools_ROOT "${ARCTOOLS_ROOT}")
 endif()
