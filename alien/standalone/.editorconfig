@@ -1,0 +1,16 @@
+root = true
+
+[*.{c, cc, h, H, cs}]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+charset = utf-8
+insert_final_newline = true
+
+[*.md]
+charset = utf-8
+max_line_length = 80
+
+[*.rst]
+indent_style = space
+indent_size = 4
