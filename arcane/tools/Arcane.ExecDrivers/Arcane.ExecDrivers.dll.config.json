@@ -7,6 +7,8 @@
     "ValgrindBinary" : "@VALGRIND_EXEC_NAME@",
     "MonoExecPath" : "@MONO_EXEC_PATH@",
     "DotnetCoreClrPath" : "@DOTNET_EXEC@",
+    "DotnetCoreClrVersion" : "@ARCANE_CORECLR_VERSION@",
+    "DotnetCoreClrFullVersion" : "@ARCANE_CORECLR_VERSION_FULL@",
     "ExternalLibraries" : "@ARCANE_EXTERNAL_LIBRARIES@",
     "DefaultMeshWriter" : "@ARCANE_DEFAULT_MESHWRITER@",
     "Config_MPIEXEC" : "@MPIEXEC_EXECUTABLE@",
