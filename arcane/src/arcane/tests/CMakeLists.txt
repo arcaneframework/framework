@@ -695,6 +695,7 @@ if (ARCANE_HAS_DOTNET_TESTS)
   if (ARCANE_HAS_TASKS)
     arcane_add_csharp_test_sequential(hydro_cs_task testSimpleHydroCS-1.arc -m 15 -K 4)
   endif()
+  arcane_add_csharp_test_sequential(casefunction_cs testCaseFunctionModule-1.arc)
 endif()
 
 arcane_add_test_parallel(loadbalance_test1 testLoadBalanceHydro-MeshPartitionerTester.arc 4 -m 30)

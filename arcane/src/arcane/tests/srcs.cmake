@@ -6,6 +6,7 @@ set(ARCANE_SOURCES
   ParticleUnitTest.cc
   TestUnitTest.cc
   CaseFunctionUnitTest.cc
+  CaseFunctionTesterModule.cc
   CaseOptionsTesterModule.cc
   ParallelTesterModule.cc
   SubMeshTestModule.cc
@@ -83,6 +84,7 @@ set(AXL_FILES
   CheckpointTester
   SimpleHydro
   ScriptTester
+  CaseFunctionTester
   CaseOptionsTester
   ParallelTester
   SubMeshTest

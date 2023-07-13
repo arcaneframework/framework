@@ -1,0 +1,19 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<module name="CaseFunctionTester" version="1.0" namespace-name="ArcaneTest"> 
+  <description>
+    Module de test des 'ICaseFunction'.
+  </description>
+
+  <options>
+    <simple name="real-time-multiply-2" type="real">
+      <description>Fonction f(x) -> x * 2.0</description>
+    </simple>
+    <simple name="int-iter-multiply-3" type="int32">
+      <description>Fonction f(x) -> x * 3.0</description>
+    </simple>
+    <simple name="real-norm-l2" type="real">
+      <description>Fonction f(x,position) -> x * normL2(position)</description>
+    </simple>
+  </options>
+</module>

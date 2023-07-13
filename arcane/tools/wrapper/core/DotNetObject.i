@@ -1,5 +1,5 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
-%typemap(cscode) Arcane::Internal::ExternalRef
+%typemap(cscode) Arccore::Internal::ExternalRef
 %{
   internal delegate void DestroyDelegate(IntPtr handle);
 
@@ -20,9 +20,9 @@
   }
 %}
 
-%typemap(csclassmodifiers) Arcane::Internal::ExternalRef "public partial class"
+%typemap(csclassmodifiers) Arccore::Internal::ExternalRef "public partial class"
 // La classe 'ExternaRef' est dans 'arccore/base'
-namespace Arcane::Internal
+namespace Arccore::Internal
 {
   class ExternalRef
   {

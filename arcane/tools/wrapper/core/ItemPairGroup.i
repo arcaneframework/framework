@@ -79,4 +79,4 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-%template(ItemPairGroupCustomFunctor) Arcane::IFunctorWithArgumentT<ItemPairGroupBuilder&>;
+%template(ItemPairGroupCustomFunctor) Arccore::IFunctorWithArgumentT<ItemPairGroupBuilder&>;
