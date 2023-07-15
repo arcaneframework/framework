@@ -1,28 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* XmlNode.h                                                   (C) 2000-2018 */
+/* XmlNode.h                                                   (C) 2000-2023 */
 /*                                                                           */
 /* Noeud quelconque d'un arbre DOM.                                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_XMLNODE_H
-#define ARCANE_XMLNODE_H
+#ifndef ARCANE_CORE_XMLNODE_H
+#define ARCANE_CORE_XMLNODE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Dom.h"
 #include "arcane/utils/String.h"
+#include "arcane/core/Dom.h"
 
 #include <iterator>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -111,8 +112,9 @@ class ARCANE_CORE_EXPORT XmlNode
  public:
 
   XmlNode(IRessourceMng* m,const dom::Node& node) : m_rm(m), m_node(node) {}
-  XmlNode(IRessourceMng* m) : m_rm(m), m_node() {}
-  XmlNode() : m_rm(0), m_node() {}
+  //TODO: à supprimer
+  explicit XmlNode(IRessourceMng* m) : m_rm(m), m_node() {}
+  XmlNode() : m_rm(nullptr), m_node() {}
 
  public:
 
@@ -233,11 +235,21 @@ class ARCANE_CORE_EXPORT XmlNode
   //! Supprime tous les noeuds fils
   void clear();
 
-  /*! \brief Noeud fils de celui-ci de nom \a name
+  /*!
+   * \brief Noeud fils de celui-ci de nom \a name
    *
    * Si plusieurs noeuds portant ce nom existent, retourne le premier.
+   * Si le noeud n'est pas trouvé, retourne un noeud nul
    */
   XmlNode child(const String& name) const;
+
+  /*!
+   * \brief Noeud fils de celui-ci de nom \a name
+   *
+   * Si plusieurs noeuds portant ce nom existent, retourne le premier.
+   * Si le noeud n'est pas trouvé, lève une exception.
+   */
+  XmlNode expectedChild(const String& name) const;
 
   //! Ensemble des noeuds fils de ce noeud ayant pour nom \a name
   XmlNodeList children(const String& name) const;
@@ -413,7 +425,7 @@ operator!=(const XmlNode& n1,const XmlNode& n2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
