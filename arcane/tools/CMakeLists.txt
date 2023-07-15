@@ -72,6 +72,12 @@ find_package(ArcDependencies REQUIRED)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+find_package(CoreClrSDK)
+set(ARCANE_CORECLR_SDK_PATH ${CORECLR_SDK_PATH} CACHE STRING "Path of .Net SDK used by Arcane" FORCE)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 # Arguments de msbuild communs à l'utilisation avec 'coreclr' ou 'mono'.
 # La variable '${ARCANE_MSBUILD_RESTORE_ARGS}' peut être définie par l'utilisateur
 # pour spécifier des arguments pour la restauration, comme par exemple

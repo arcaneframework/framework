@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Arcane.ExecDrivers.Common;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace Arcane.ExecDrivers.DotNetCompile
 {
@@ -42,7 +43,7 @@ namespace Arcane.ExecDrivers.DotNetCompile
       string dotnet_full_version = Utils.DotnetCoreClrFullVersion;
 
       string dotnet_root = Path.GetDirectoryName(dotnet_command);
-      string dotnet_sdk_path = Path.Combine(dotnet_root, "sdk", dotnet_full_version);
+      string dotnet_sdk_path = Utils.DotnetCoreClrSdkPath;
 
       // Le compilateur est: ${dotnet_root}/sdk/${dotnet_full_version}/Roslyn/bincore/csc.dll
       helper.AddArg(Utils.DotnetCoreClrPath);
