@@ -1,0 +1,26 @@
+<?xml version='1.0' ?><!-- -*- SGML -*- -->
+<case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
+  <arcane>
+    <title>Test Arcane 1</title>
+    <description>Test Arcane 1</description>
+    <timeloop>CaseFunctionTester</timeloop>
+  </arcane>
+
+  <functions>
+    <external-assembly>
+      <assembly-name>ExternalDotNetFunction1.dll</assembly-name>
+      <class-name>ArcaneTest.TestCaseFunction1</class-name>
+    </external-assembly>
+  </functions>
+
+  <mesh>
+    <meshgenerator><sod><x>4</x><y>2</y><z>2</z></sod></meshgenerator>
+  </mesh>
+
+ <case-function-tester>
+  <real-time-multiply-2 function="DynamicExternalFuncTimeMultiply2">1.5</real-time-multiply-2>
+  <int-iter-multiply-3 function="DynamicExternalFuncIterMultiply3">1</int-iter-multiply-3>
+  <real-norm-l2 function="DynamicExternalFuncStandardRealReal3NormL2">1</real-norm-l2>
+ </case-function-tester>
+
+</case>
