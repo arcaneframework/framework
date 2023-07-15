@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using Arcane.ExecDrivers.Common;
 
-namespace Arcane.DotNetCompile
+namespace Arcane.ExecDrivers.DotNetCompile
 {
   class Compile
   {

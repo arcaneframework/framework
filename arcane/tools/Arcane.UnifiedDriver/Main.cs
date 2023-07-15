@@ -31,7 +31,7 @@ namespace Arcane.UnifiedDriver
 
       switch (args[0]) {
         case "dotnet_compile":
-          return Arcane.DotNetCompile.MainClass.MainExec(remaining_args);
+          return Arcane.ExecDrivers.DotNetCompile.MainClass.MainExec(remaining_args);
         case "template":
           return Arcane.Templates.MainClass.MainExec(remaining_args);
         case "mesh_utils":

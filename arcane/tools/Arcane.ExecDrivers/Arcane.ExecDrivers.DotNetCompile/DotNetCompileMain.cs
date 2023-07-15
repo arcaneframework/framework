@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using Arcane.ExecDrivers.Common;
 
-namespace Arcane.DotNetCompile
+namespace Arcane.ExecDrivers.DotNetCompile
 {
   public class MainClass
   {
