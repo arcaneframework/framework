@@ -20,6 +20,21 @@ namespace Arcane
   {
     static List<ICaseFunction> m_case_functions;
 
+    public static void LoadCaseFunction(ICaseMng case_mng,string assembly_name,string class_name)
+    {
+      var helper = new AssemblyLoaderHelper();
+      Assembly a = helper.LoadOneAssembly(assembly_name);
+      Type class_type;
+      try{
+        class_type = a.GetType(class_name,true);
+      }
+      catch(Exception ex){
+        throw new ApplicationException($"Can not load class {class_name} for assembly {a}");
+        return;
+      }
+      LoadCaseFunction(case_mng,class_type);
+    }
+
     /*!
      * \brief Charge les 'CaseFunction' issues de la classe \a class_type.
      *

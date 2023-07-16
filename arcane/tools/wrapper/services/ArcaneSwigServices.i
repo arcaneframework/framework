@@ -41,9 +41,14 @@ ARCANE_SWIG_DEFINE_SERVICE(Arcane,IUnitTest,
                            public abstract void FinalizeTest();
                            );
 
-
 ARCANE_SWIG_DEFINE_SERVICE(Arcane,ICaseFunctionProvider,
                            public abstract void RegisterCaseFunctions(ICaseMng cm);
+                           );
+
+ARCANE_SWIG_DEFINE_SERVICE(Arcane,ICaseFunctionDotNetProvider,
+                           public abstract void RegisterCaseFunctions(ICaseMng cm,
+                                                                      string assembly_name,
+                                                                      string class_name);
                            );
 
 ARCANE_SWIG_DEFINE_SERVICE(Arcane,ICheckpointWriter,

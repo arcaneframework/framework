@@ -30,6 +30,8 @@ namespace Arcane.UnifiedDriver
       var remaining_args = l_remaining_args.ToArray();
 
       switch (args[0]) {
+        case "dotnet_compile":
+          return Arcane.ExecDrivers.DotNetCompile.MainClass.MainExec(remaining_args);
         case "template":
           return Arcane.Templates.MainClass.MainExec(remaining_args);
         case "mesh_utils":

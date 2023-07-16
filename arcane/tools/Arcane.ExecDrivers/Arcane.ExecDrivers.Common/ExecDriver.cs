@@ -24,6 +24,7 @@ namespace Arcane.ExecDrivers.Common
     public bool UseDotNet;
     public string DotNetRuntime = "mono";
     public string DotNetAssembly;
+    public string DotNetUserCompile;
     public string[] ParallelArgs;
     public string[] AdditionalArgs;
 
@@ -57,6 +58,7 @@ namespace Arcane.ExecDrivers.Common
       opt_set.Add("Z|dotnet", "indique un cas .NET", (v) => UseDotNet = true);
       opt_set.Add("dotnet-runtime=", "nom du runtime '.Net' à utiliser (mono|coreclr)", (string v) => DotNetRuntime = v);
       opt_set.Add("dotnet-assembly=", "nom complet de l'assembly '.Net' à charger au démarrage", (string v) => DotNetAssembly = v);
+      opt_set.Add("dotnet-compile=", "liste de fichiers C# à compiler", (string v) => DotNetUserCompile = v);
       opt_set.Add("P|parallelarg=", "option passee au gestionnaire parallele", (string v) => parallel_args.Add(v));
       opt_set.Add("d|debugtool=", "outil de debug (tv,gdb,memcheck,...)", (string v) => DebugTool = v);
       opt_set.Add("R|replication=", "nombre de replication de sous-domaines", (int v) => NbReplication = v);
@@ -169,6 +171,7 @@ namespace Arcane.ExecDrivers.Common
     bool m_use_dotnet;
     string m_dotnet_runtime;
     string m_dotnet_assembly;
+    string m_dotnet_compile;
     string[] m_parallel_args;
     CommandArgs m_command_args;
     List<Assembly> m_additional_assemblies;
@@ -205,6 +208,7 @@ namespace Arcane.ExecDrivers.Common
       m_use_dotnet = command_args.UseDotNet;
       m_dotnet_runtime = command_args.DotNetRuntime;
       m_dotnet_assembly = command_args.DotNetAssembly;
+      m_dotnet_compile = command_args.DotNetUserCompile;
 
       m_remaining_args = command_args.RemainingArguments;
       if (!String.IsNullOrEmpty(command_args.ExecName))
@@ -251,6 +255,12 @@ namespace Arcane.ExecDrivers.Common
       string share_path = Utils.CodeSharePath;
       string exe_name = exe_file_name;
       Console.WriteLine("EXEC: {0}", exe_name);
+
+      // Compile les fichiers C# spécifiés
+      if (!String.IsNullOrEmpty(m_dotnet_compile)){
+        var x = new Arcane.ExecDrivers.DotNetCompile.Compile();
+        x.Execute(new string[]{m_dotnet_compile});
+      }
       if (!String.IsNullOrEmpty(m_properties.DirectExecMethod))
         _AddArcaneArg(arcane_args, "DirectExecutionMethod", m_properties.DirectExecMethod);
       if (m_properties.NbTaskPerProcess >= 0) {

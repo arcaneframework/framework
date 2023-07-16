@@ -78,6 +78,7 @@
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/IEntryPoint.h"
 #include "arcane/core/ICaseOptions.h"
+#include "arcane/core/ICaseFunctionProvider.h"
 #include "arcane/core/Configuration.h"
 #include "arcane/core/ConnectivityItemVector.h"
 #include "arcane/core/IVariableFilter.h"

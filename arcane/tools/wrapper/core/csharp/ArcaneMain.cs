@@ -302,6 +302,7 @@ namespace Arcane
      */
     static void _LoadInternalModulesAndServices()
     {
+      Debug.Write("Loading internal modules and services");
       HashSet<string> m_already_loaded = new HashSet<string>();
       foreach(Assembly a in AppDomain.CurrentDomain.GetAssemblies()){
         string full_name = a.GetName().FullName;
@@ -312,6 +313,7 @@ namespace Arcane
         m_already_loaded.Add(full_name);
         _LoadModuleAndServiceFromAssembly(a);
       }
+      Debug.Write("End Loading internal modules and services");
     }
 
     static readonly Type typeof_module = typeof(Arcane.ModuleAttribute);

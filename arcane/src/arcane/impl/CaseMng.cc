@@ -25,27 +25,27 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/CriticalSection.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/IModule.h"
-#include "arcane/CaseOptions.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/XmlNodeIterator.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/ICaseFunctionProvider.h"
-#include "arcane/CaseNodeNames.h"
-#include "arcane/ISession.h"
-#include "arcane/CaseTable.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IIOMng.h"
-#include "arcane/ServiceFinder2.h"
-#include "arcane/ObservablePool.h"
-#include "arcane/ICaseDocumentVisitor.h"
-
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/CaseOptions.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/XmlNodeIterator.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/ICaseFunctionProvider.h"
+#include "arcane/core/CaseNodeNames.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/CaseTable.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/ServiceFinder2.h"
+#include "arcane/core/ObservablePool.h"
+#include "arcane/core/ICaseDocumentVisitor.h"
+#include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/internal/ICaseMngInternal.h"
 
 #include "arcane/impl/CaseDocumentLangTranslator.h"
@@ -192,7 +192,6 @@ class CaseMng
 
   Ref<ICaseMng> toReference() { return makeRef<ICaseMng>(this); }
 
-  //void _internalReadOneOption(ICaseOptions* opt,bool is_phase1) override;
   ICaseMngInternal* _internalImpl() override { return this; }
 
   //! Implémentation via ICaseMngInternal
@@ -220,6 +219,7 @@ class CaseMng
   ObservablePool<eCaseMngEventType> m_observables;
   //! Indique si les fonctions ont déjà été lues
   bool m_is_function_read = false;
+  Ref<ICaseFunctionDotNetProvider> m_dotnet_provider;
 
  private:
 
@@ -238,6 +238,7 @@ class CaseMng
     ARCANE_CHECK_POINTER(doc);
     return doc;
   }
+  void _readOneDotNetFunction(const String& assembly_name,const String& class_name);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -494,6 +495,11 @@ _readFunctions()
                   << err_info.errorMessage();
       }
     }
+    else if (node.isNamed("external-assembly")){
+      String assembly_name = node.expectedChild("assembly-name").value();
+      String class_name = node.expectedChild("class-name").value();
+      _readOneDotNetFunction(assembly_name,class_name);
+    }
     else
       warning() << "Unknown node in functions: " << node.xpathFullName();
     has_error |= is_bad;
@@ -684,6 +690,24 @@ _readOneTable(const XmlNode& func_elem)
     ++value_index;
   }
   return ErrorInfo();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseMng::
+_readOneDotNetFunction(const String& assembly_name,const String& class_name)
+{
+  // Si ce n'est pas encore fait, charge le service '.Net' qui enregistrera
+  // les fonctions
+  if (!m_dotnet_provider.get()){
+    ServiceBuilder<ICaseFunctionDotNetProvider> sb(subDomain());
+    m_dotnet_provider = sb.createReference("ArcaneDefaultDotNetCaseFunctionProvider",SB_AllowNull);
+    if (!m_dotnet_provider.get())
+      ARCANE_FATAL("Can not create '.Net' case function provider. Check that the '.Net' is loaded.");
+  }
+
+  m_dotnet_provider->registerCaseFunctions(this,assembly_name,class_name);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -3,5 +3,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Arcane.Templates\Arcane.Templates.csproj" />
     <ProjectReference Include="..\Arcane.ExecDrivers\Arcane.ExecDrivers.csproj" />
+    <ProjectReference Include="..\Arcane.DotNetCompile\Arcane.DotNetCompile.csproj" />
   </ItemGroup>
 </Project>

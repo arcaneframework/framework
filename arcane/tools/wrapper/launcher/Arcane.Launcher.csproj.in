@@ -19,5 +19,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
+    <ProjectReference Include="../Arcane.Services/Arcane.Services.csproj" />
   </ItemGroup>
 </Project>

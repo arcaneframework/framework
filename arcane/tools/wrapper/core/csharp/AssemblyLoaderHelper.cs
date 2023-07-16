@@ -105,12 +105,35 @@ namespace Arcane
       return a;
     }
 
+    /*!
+     * \brief Charge l'assembly \a assembly_name.
+     *
+     * Si \a assembly_name n'est pas un chemin absoule, l'assembly doit
+     * se trouver dans le répertoire courant.
+     */
+    internal Assembly LoadOneAssembly(string assembly_name)
+    {
+      string full_assembly_name = assembly_name;
+      if (!Path.IsPathRooted(assembly_name))
+        full_assembly_name = Path.Combine(Directory.GetCurrentDirectory(),assembly_name);
+      Assembly a = _LoadAssembly(full_assembly_name);
+      if (a == null)
+        throw new ApplicationException($"Can not load assembly '{full_assembly_name}'");
+      return a;
+    }
+
+    /*!
+     * \brief Charge l'assembly \a assembly_name et toutes ces sous-assembly.
+     *
+     * Les sous assemblys doivent se trouver dans le même répertoire que
+     * l'assembly principale.
+     */
     internal void LoadSpecifiedAssembly(string assembly_name)
     {
       m_already_loaded.Clear();
       if (String.IsNullOrEmpty(assembly_name))
         return;
-      Assembly a = _LoadAssembly(assembly_name);
+      Assembly a = LoadOneAssembly(assembly_name);
       if (a == null)
         throw new ApplicationException(String.Format("Can not load assembly '{0}'", assembly_name));
       m_main_assembly_location = Path.GetDirectoryName(a.Location);

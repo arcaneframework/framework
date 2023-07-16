@@ -8,7 +8,8 @@ set(ARCANE_SWIG_LAUNCHER_FILES
 
 arcane_wrapper_add_swig_target(NAME launcher SOURCE ArcaneSwigLauncher.i NAMESPACE_NAME Arcane
   DLL_NAME Arcane.Launcher
-  SWIG_TARGET_DEPENDS core)
+  CSHARP_SOURCES ArcaneDefaultCaseFunctionProvider
+  SWIG_TARGET_DEPENDS core services)
 target_link_libraries(arcane_dotnet_wrapper_launcher PUBLIC arcane_launcher arcane_std)
 
 # Indique les .i dont dépend 'ArcaneSwigLauncher.i'

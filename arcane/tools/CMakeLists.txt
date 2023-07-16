@@ -34,6 +34,7 @@ if (ARCANE_DOTNET_RUNTIME STREQUAL coreclr)
   endif()
 endif()
 set(ARCANE_CORECLR_VERSION ${CORECLR_VERSION} CACHE STRING ".Net coreclr version" FORCE)
+set(ARCANE_CORECLR_VERSION_FULL ${CORECLR_VERSION_FULL} CACHE STRING ".Net coreclr full version" FORCE)
 
 # ----------------------------------------------------------------------------
 # Positionne les noms des exécutables et des arguments pour lancer le code
@@ -67,6 +68,12 @@ endif()
 # accès à Internet.
 
 find_package(ArcDependencies REQUIRED)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+find_package(CoreClrSDK)
+set(ARCANE_CORECLR_SDK_PATH ${CORECLR_SDK_PATH} CACHE STRING "Path of .Net SDK used by Arcane" FORCE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -254,6 +261,7 @@ arcane_dotnet_configure_exe_script(arcane_curves "curve_utils")
 arcane_dotnet_configure_exe_script(arcane_templates "template")
 arcane_dotnet_configure_exe_script(arcane_test_driver "test_driver")
 arcane_dotnet_configure_exe_script(arcane_run "launcher")
+arcane_dotnet_configure_exe_script(arcane_dotnet_compile "dotnet_compile")
 
 set(_SCRIPT_EXTENSION "")
 if (WIN32)
@@ -265,6 +273,7 @@ install(PROGRAMS
   ${ARCANEBUILDROOT}/bin_install/arcane_curves${_SCRIPT_EXTENSION}
   ${ARCANEBUILDROOT}/bin_install/arcane_templates${_SCRIPT_EXTENSION}
   ${ARCANEBUILDROOT}/bin_install/arcane_run${_SCRIPT_EXTENSION}
+  ${ARCANEBUILDROOT}/bin_install/arcane_dotnet_compile${_SCRIPT_EXTENSION}
   DESTINATION bin)
 
 # A revoir pour Win32

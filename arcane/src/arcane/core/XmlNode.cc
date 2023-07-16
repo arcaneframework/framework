@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* XmlNode.cc                                                  (C) 2000-2019 */
+/* XmlNode.cc                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Noeud quelconque d'un arbre DOM.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/core/XmlNode.h"
 
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/NotImplementedException.h"
@@ -19,19 +19,20 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/TraceInfo.h"
+#include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/XmlException.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/XmlNodeIterator.h"
-#include "arcane/DomUtils.h"
+#include "arcane/core/XmlException.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/XmlNodeIterator.h"
+#include "arcane/core/DomUtils.h"
 
 #include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,6 +70,20 @@ child(const String& child_name) const
   if (i!=end())
     return *i;
   return XmlNode(m_rm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+XmlNode XmlNode::
+expectedChild(const String& child_name) const
+{
+  if (m_node._null())
+    return _nullNode();
+  XmlNode c = child(child_name);
+  if (c.null())
+    ARCANE_FATAL("Can not find a child named '{0}' for node '{1}'",child_name,xpathFullName());
+  return c;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -730,7 +745,7 @@ _findNextValid(bool is_init)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
