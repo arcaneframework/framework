@@ -115,6 +115,9 @@ endif ()
 find_package(Arccon REQUIRED)
 # Only use find package with Arccon
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+message(STATUS "ARCCON_MODULE_PATH = ${ARCCON_MODULE_PATH}")
+include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not installed) Arccon
+include(LoadBuildSystem) # idem
 
 find_package(Arccore REQUIRED)
 
