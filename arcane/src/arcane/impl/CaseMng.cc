@@ -704,7 +704,7 @@ _readOneDotNetFunction(const String& assembly_name,const String& class_name)
     ServiceBuilder<ICaseFunctionDotNetProvider> sb(subDomain());
     m_dotnet_provider = sb.createReference("ArcaneDefaultDotNetCaseFunctionProvider",SB_AllowNull);
     if (!m_dotnet_provider.get())
-      ARCANE_FATAL("Can not create '.Net' case function provider. Check that the '.Net' is loaded.");
+      ARCANE_FATAL("Can not create '.Net' case function provider. Check that the '.Net' runtime is loaded.");
   }
 
   m_dotnet_provider->registerCaseFunctions(this,assembly_name,class_name);
