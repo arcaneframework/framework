@@ -215,6 +215,6 @@ ____
 \ref arcanedoc_wrapping_csharp_dotnet
 </span>
 <span class="next_section_button">
-\ref arcanedoc_wrapping_python
+\ref arcanedoc_wrapping_csharp_casefunction
 </span>
 </div>

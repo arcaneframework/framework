@@ -14,9 +14,8 @@ Sommaire de ce sous-chapitre :
 2. \subpage arcanedoc_wrapping_csharp_swig <br>
   Présente l'utilisation de Swig avec %Arcane.
 
-
-
-
+3. \subpage arcanedoc_wrapping_csharp_casefunction <br>
+  Montre comment définir en C# et utiliser des fonctions du jeu de données.
 ____
 
 <div class="section_buttons">
