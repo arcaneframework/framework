@@ -68,6 +68,15 @@ _applyPropertyVisitor(V& p)
         .addCommandLineArgument("DotNetEmbeddedRuntime")
         .addGetter([](auto a) { return a.x.embeddedRuntime(); })
         .addSetter([](auto a) { a.x.setEmbeddedRuntime(a.v); });
+
+  p << b.addBool("UsingDotNet")
+        .addDescription("Set/Unset the loading of the '.Net' runtime with 'coreclr'")
+        .addCommandLineArgument("UsingDotNet")
+        .addGetter([](auto a) { return a.x.isUsingDotNetRuntime(); })
+        .addSetter([](auto a) {
+          a.x.setIsUsingDotNetRuntime(a.v);
+          a.x.setEmbeddedRuntime("coreclr");
+        });
 }
 
 /*---------------------------------------------------------------------------*/
