@@ -50,6 +50,7 @@ namespace Arcane.ExecDrivers.DotNetCompile
       helper.AddArg("exec");
       helper.AddArg(Path.Combine(dotnet_sdk_path, "Roslyn", "bincore", "csc.dll"));
       helper.AddArg("/noconfig");
+      helper.AddArg("/debug+");
       helper.AddArg("/target:library");
       helper.AddReferenceLib(lib_dir, "Arcane.Core.dll");
       helper.AddReferenceLib(lib_dir, "Arcane.Utils.dll");
