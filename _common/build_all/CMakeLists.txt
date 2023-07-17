@@ -56,6 +56,7 @@ enable_testing()
 configure_file(nuget.config.in ${CMAKE_BINARY_DIR}/nuget.config @ONLY)
 
 add_subdirectory(${ARCFRAMEWORK_ROOT}/arcane arcane)
+add_subdirectory(${ARCFRAMEWORK_ROOT}/alien alien)
 
 # ----------------------------------------------------------------------------
 # Recopie les packages nuget de 'dependencies' dans le répertoire
