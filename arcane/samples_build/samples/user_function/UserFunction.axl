@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<module name="UserFunction" version="1.0">
+  <description>Description of the module UserFunction</description>
+  <entry-points>
+    <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
+    <entry-point method-name="startInit" name="StartInit" where="start-init" property="none" />
+  </entry-points>
+  <options>
+    <simple name="node-velocity" type="real3" />
+  </options>
+  <variables>
+    <variable name="CellCenter" field-name="cell_center" data-type="real3" dim="0" item-kind="cell" />
+    <variable name="NodeVelocity" field-name="node_velocity" data-type="real3" dim="0" item-kind="node" />
+  </variables>
+</module>
