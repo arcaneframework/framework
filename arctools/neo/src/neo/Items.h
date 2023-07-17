@@ -201,11 +201,13 @@ namespace utils
 
 /*---------------------------------------------------------------------------*/
 
-class AlgorithmPropertyGraph;
+namespace MeshKernel{
+  class AlgorithmPropertyGraph;
+}
 
 class EndOfMeshUpdate
 {
-  friend class AlgorithmPropertyGraph;
+  friend class MeshKernel::AlgorithmPropertyGraph;
 
  private:
   EndOfMeshUpdate() = default;
