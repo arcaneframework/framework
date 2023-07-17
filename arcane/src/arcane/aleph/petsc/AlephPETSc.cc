@@ -258,7 +258,7 @@ AlephVectorPETSc(ITraceMng *tm,AlephKernel *kernel,Integer index)
 , jLower(-1)
 {
   debug()<<"\t\t[AlephVectorPETSc::AlephVectorPETSc] new SolverVectorPETSc";
-}  
+}
 
 // ****************************************************************************
 // * AlephVectorCreate
@@ -365,7 +365,7 @@ AlephMatrixCreate(void)
 {
   Integer ilower=-1;
   Integer iupper=0;
-  
+
   for( int iCpu=0;iCpu<m_kernel->size();++iCpu ){
     if (m_kernel->rank()!=m_kernel->solverRanks(m_index)[iCpu]) continue;
     if (ilower==-1) ilower=m_kernel->topology()->gathered_nb_row(iCpu);
@@ -381,8 +381,8 @@ AlephMatrixCreate(void)
   #define PETSC_VERSION_MatCreate MatCreateMPIAIJ
 #endif
   PETSC_VERSION_MatCreate(MPI_COMM_SUB,
-                          iupper-ilower, // m = number of rows 
-                          jupper-jlower, // n = number of columns 
+                          iupper-ilower, // m = number of rows
+                          jupper-jlower, // n = number of columns
                           m_kernel->topology()->nb_row_size(), // M = number of global rows
                           m_kernel->topology()->nb_row_size(), // N = number of global columns
                           0, // ignored (number of nonzeros per row in DIAGONAL portion of local submatrix)
@@ -452,7 +452,7 @@ LinftyNormVectorProductAndSub(AlephVector* x,AlephVector* b)
   throw FatalErrorException("LinftyNormVectorProductAndSub", "error");
 }
 
-  
+
 // ****************************************************************************
 // * isAlreadySolved
 // ****************************************************************************
@@ -496,7 +496,7 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
 
   Vec solution = x_petsc->m_petsc_vector;
   Vec RHS      = b_petsc->m_petsc_vector;
-  
+
   debug()<<"[AlephMatrixSolve]";
   KSPCreate(MPI_COMM_SUB,&m_ksp_solver);
 #if PETSC_VERSION_GE(3,6,1)
@@ -506,57 +506,68 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
 #endif
   // Builds KSP for a particular solver
   switch(solver_param->method()){
-    // Preconditioned conjugate gradient (PCG) iterative method 
+    // Preconditioned conjugate gradient (PCG) iterative method
   case TypesSolver::PCG      : KSPSetType(m_ksp_solver,KSPCG); break;
     // BiCGStab (Stabilized version of BiConjugate Gradient Squared) method
   case TypesSolver::BiCGStab : KSPSetType(m_ksp_solver,KSPBCGS); break;
     // IBiCGStab (Improved Stabilized version of BiConjugate Gradient Squared) method
-    // in an alternative form to have only a single global reduction operation instead of the usual 3 (or 4) 
+    // in an alternative form to have only a single global reduction operation instead of the usual 3 (or 4)
   case TypesSolver::BiCGStab2: KSPSetType(m_ksp_solver,KSPIBCGS); break;
-    // Generalized Minimal Residual method. (Saad and Schultz, 1986) with restart 
+    // Generalized Minimal Residual method. (Saad and Schultz, 1986) with restart
   case TypesSolver::GMRES    : KSPSetType(m_ksp_solver,KSPGMRES); break;
   default : throw ArgumentException("AlephMatrixPETSc::AlephMatrixSolve", "Unknown solver method");
   }
-  
+
   KSPGetPC(m_ksp_solver,&prec);
 
   switch(solver_param->precond()){
   case TypesSolver::NONE     : PCSetType(prec,PCNONE); break;
-    // Jacobi (i.e. diagonal scaling preconditioning) 
+    // Jacobi (i.e. diagonal scaling preconditioning)
   case TypesSolver::DIAGONAL : PCSetType(prec,PCJACOBI); break;
-    // Incomplete factorization preconditioners. 
+    // Incomplete factorization preconditioners.
   case TypesSolver::ILU:
     // ILU ne fonctionne pas en parallèle avec PETSc (sauf si compilé avec Hypre)
+    // ILU can be set up in parallel via a sub-preconditioner to Block-Jacobi preconditioner
     if (is_parallel)
       PCSetType(prec,PCBJACOBI);
     else
       PCSetType(prec,PCILU);
     break;
-    // Incomplete Cholesky factorization preconditioners. 
+    // Incomplete Cholesky factorization preconditioners.
   case TypesSolver::IC:
-    // IC ne fonctionne pas en parallèle avec PETSc.
-    if (is_parallel)
-      PCSetType(prec,PCBJACOBI);
+    // IC can be set up in parallel via a sub-preconditioner to Block-Jacobi preconditioner
+    if (is_parallel) {
+      PCSetType(prec,PCBJACOBI);     // set PC to Block Jacobi
+      PetscInt    nlocal, first;
+      KSP        *subksp;            // KSP context for subdomain
+      PC          subpc;             // PC context for subdomain
+      KSPSetUp(m_ksp_solver);
+      PCBJacobiGetSubKSP(prec, &nlocal, &first, &subksp); // Extract the KSP context array for the local blocks
+      for (int i = 0; i < nlocal; i++) {
+        KSPGetPC(subksp[i], &subpc);
+        PCSetType(subpc, PCICC);         // set subdomain PC to IC
+        }
+      }
     else
       PCSetType(prec,PCICC);
     break;
-    // Sparse Approximate Inverse method of Grote and Barnard as a preconditioner (SIAM J. Sci. Comput.; vol 18, nr 3) 
+    // Sparse Approximate Inverse method of Grote and Barnard as a preconditioner (SIAM J. Sci. Comput.; vol 18, nr 3)
   case TypesSolver::SPAIstat : PCSetType(prec,PCSPAI); break;
     // Use multigrid preconditioning.
     // This preconditioner requires you provide additional information
-    // about the coarser grid matrices and restriction/interpolation operators. 
+    // about the coarser grid matrices and restriction/interpolation operators.
   case TypesSolver::AMG:
     // By default PCMG uses GMRES on the fine grid smoother so this should be used with KSPFGMRES
     // or the smoother changed to not use GMRES
-    // Implements the Flexible Generalized Minimal Residual method. developed by Saad with restart 
+    // Implements the Flexible Generalized Minimal Residual method. developed by Saad with restart
     KSPSetType(m_ksp_solver,KSPFGMRES);
     PCSetType(prec,PCMG);
-    //Sets the number of levels to use with MG. Must be called before any other MG routine. 
+    //Sets the number of levels to use with MG. Must be called before any other MG routine.
     PCMGSetLevels(prec,1,
                   (MPI_Comm*)(m_kernel->subParallelMng(m_index)->getMPICommunicator()));
-    // Determines the form of multigrid to use: multiplicative, additive, full, or the Kaskade algorithm. 
+    // Determines the form of multigrid to use: multiplicative, additive, full, or the Kaskade algorithm.
     PCMGSetType(prec,PC_MG_MULTIPLICATIVE); // PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE
-    // Sets the type cycles to use. Use PCMGSetCycleTypeOnLevel() for more complicated cycling. 
+    // Sets the type cycles to use. Use PCMGSetCycleTypeOnLevel() for more complicated cycling.
     PCMGSetCycleType(prec,PC_MG_CYCLE_V);   // PC_MG_CYCLE_V or PC_MG_CYCLE_W
     //Sets the number of pre-smoothing steps to use on all levels
 #if PETSC_VERSION_GE(3,10,2)
@@ -583,7 +594,7 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
 
   if (solver_param->xoUser())
     KSPSetInitialGuessNonzero(m_ksp_solver,PETSC_TRUE);
-  
+
   KSPSetTolerances(m_ksp_solver,
                    solver_param->epsilon(),
                    PETSC_DEFAULT,
@@ -613,7 +624,7 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
   petscCheck(KSPSolve(m_ksp_solver,RHS,solution));
   debug()<<"[AlephMatrixSolve] solved";
   petscCheck(KSPGetConvergedReason(m_ksp_solver,&reason));
-  
+
   switch(reason){
 #if !PETSC_VERSION_(3,0,0)
   case(KSP_CONVERGED_RTOL_NORMAL):{break;}
@@ -642,17 +653,17 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
   case(KSP_DIVERGED_NAN):{ throw Exception("AlephMatrixPETSc::Solve", "KSP_DIVERGED_NAN");}
 #endif
   case(KSP_DIVERGED_INDEFINITE_MAT):{ throw Exception("AlephMatrixPETSc::Solve", "KSP_DIVERGED_INDEFINITE_MAT");}
- 
+
   case(KSP_CONVERGED_ITERATING):{break;}
   default: throw Exception("AlephMatrixPETSc::Solve", "");
   }
 
   KSPGetIterationNumber(m_ksp_solver,&its);
   nb_iteration=its;
-  
+
   KSPGetResidualNorm(m_ksp_solver,&norm);
   *residual_norm=norm;
-  
+
   return 0;
 }
 
@@ -671,7 +682,7 @@ writeToFile(const String filename)
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_APPLICATION_FACTORY(PETScAlephFactoryImpl,IAlephFactoryImpl,PETScAlephFactory);
- 
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
