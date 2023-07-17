@@ -38,6 +38,7 @@ add_subdirectory(mini_nbody)
 add_subdirectory(honeycomb_heat)
 add_subdirectory(simple_csv_output)
 add_subdirectory(multiple_mesh)
+add_subdirectory(user_function)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
