@@ -11,8 +11,10 @@ target_include_directories(SGraph SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL
 target_include_directories(SGraph INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    # using Clang
-    target_compile_options(SGraph INTERFACE -EHsc) # need to activate exception on clang-cl from Visual...?
+    # using Clang on Windows (clang-cl)
+    if (WIN32)
+        target_compile_options(SGraph INTERFACE -EHsc) # need to activate exception on clang-cl from Visual...?
+    endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # using GCC
     target_compile_options(SGraph INTERFACE -Wall)
