@@ -125,7 +125,13 @@ endif ()
 if (ALIEN_USE_HDF5)
     find_package(HDF5 REQUIRED)
 
-    target_link_libraries(alien_semantic_ref PRIVATE arccon::HDF5)
+    if (DEFINED ARCCON_TARGET_HDF5)
+        set(HDF5_PKG ${ARCCON_TARGET_HDF5})
+    else()
+        set(HDF5_PKG arccon::HDF5)
+    endif ()
+    message(STATUS "HDF5 target ${HDF5_PKG}")
+    target_link_libraries(alien_semantic_ref PRIVATE ${HDF5_PKG})
 endif ()
 
 target_sources(alien_semantic_ref PRIVATE
