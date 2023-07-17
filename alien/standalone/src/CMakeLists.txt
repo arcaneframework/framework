@@ -20,8 +20,9 @@ include(GenerateExportHeader)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # We also need 'Arccore'.
-
-find_package(Arccore 2 REQUIRED)
+if (NOT Arccore_FOUND)
+    find_package(Arccore 2 REQUIRED)
+endif()
 
 
 # ----------------------------------------------------------------------------

@@ -28,7 +28,9 @@ cmake_policy(SET CMP0074 NEW)
 project(AlienTutorials VERSION 1.0 LANGUAGES CXX)
 
 find_package(Alien REQUIRED)
-find_package(Arccore REQUIRED)
+if (NOT Arccore_FOUND)
+    find_package(Arccore REQUIRED)
+endif ()
 
 add_executable(tuto_dist_space.exe dist_space.cpp)
 target_link_libraries(tuto_dist_space.exe
