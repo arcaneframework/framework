@@ -164,7 +164,7 @@ TEST(DirectedGraphTest, EdgeTest) {
   for (auto edge : directed_graph.edges()) {
     edges.push_back(edge);
   }
-  auto ref_edges = { "ab", "eg", "ad", "be", "ce", "ac", "ef", "gh", "fh" };
+  std::vector<std::string> ref_edges = { "ab", "eg", "ad", "be", "ce", "ac", "ef", "gh", "fh" };
   EXPECT_TRUE(std::equal(edges.begin(), edges.end(), ref_edges.begin()));
 
   edges.clear();
@@ -204,7 +204,7 @@ TEST(DirectedGraphTest, EdgeTestConst) {
   for (auto edge : const_graph.edges()) {
     edges.push_back(edge);
   }
-  auto ref_edges = { "ab", "eg" };
+  std::vector<std::string> ref_edges = { "ab", "eg" };
   EXPECT_TRUE(std::equal(edges.begin(), edges.end(), ref_edges.begin()));
 
   edges.clear();
