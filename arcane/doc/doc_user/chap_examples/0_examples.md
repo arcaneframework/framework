@@ -21,6 +21,9 @@ Sommaire de ce chapitre :
 3. \subpage arcanedoc_tutorial <br>
   Présente le didacticiel %Arcane.
 
+4. \subpage arcanedoc_samples_directory <br>
+  Liste des exemples du répertoire `samples`.
+
 ____
 
 <div class="section_buttons">

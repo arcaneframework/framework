@@ -9,8 +9,8 @@ C# des fonctions du jeu données. Il existe deux types de fonctions :
 - les fonctions avancées qui doivent être appelées explicitement par
   le développeur.
 
-L'exemple 'user_function' montre comment utiliser les fonctions
-utilisateurs en C#.
+L'exemple \ref arcanedoc_sample_userfunction montre comment utiliser
+les fonctions utilisateurs en C#.
 
 ## Fonctions simples
 
