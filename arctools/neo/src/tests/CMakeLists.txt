@@ -36,8 +36,10 @@ else()
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    # using Clang
-    target_compile_options(Neo.tests PRIVATE -EHsc) # need to activate exception on clang-cl from Visual...?
+    # using Clang on Windows (clang-cl)
+    if (WIN32)
+        target_compile_options(Neo.tests PRIVATE -EHsc) # need to activate exception on clang-cl from Visual...?
+    endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # using Visual Studio C++
     target_compile_options(Neo.tests PRIVATE -Wall /bigobj)
