@@ -42,31 +42,31 @@ jobs:
             triplet: x64-linux
             vcpkg_os: ubuntu-20.04
             cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
-            ctest_specific_args : '-I 1,60'
+            ctest_specific_args : '-I 1,150'
           - os: ubuntu-22.04
             full_name: 'ubuntu-22.04'
             triplet: x64-linux
             vcpkg_os: ubuntu-22.04
             cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
-            ctest_specific_args : '-I 1,60'
+            ctest_specific_args : '-I 1,150'
           - os: 'windows-2019'
             full_name: 'windows-2019-msmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-            ctest_specific_args : '-I 1,75'
+            ctest_specific_args : '-I 1,160'
           - os: 'windows-2019'
             full_name: 'windows-2019-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-            ctest_specific_args : '-I 1,75'
+            ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
             full_name: 'windows-2022-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-            ctest_specific_args : '-I 1,75'
+            ctest_specific_args : '-I 1,160'
 
     env:
       # Indique pour IntelMPI de ne pas faire d'attente active
