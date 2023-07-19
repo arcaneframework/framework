@@ -1,36 +1,36 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Configuration des runtimes 'mono', 'dotnet' et de l'outils 'msbuild'
+# Configuration du runtime 'dotnet' et de l'outil 'msbuild'
 
 message(STATUS "[.Net] Checking '.Net' configuration (using 'dependencies' for nuget packages")
 message(STATUS "[.Net] Wanted runtime ARCANE_DOTNET_RUNTIME=${ARCANE_DOTNET_RUNTIME}")
 
-# Indique si on souhaite utiliser 'coreclr' (.NetCore) ou 'mono'.
+# Indique si on souhaite utiliser 'coreclr' (.NetCore).
 # Par défaut, on prend 'coreclr'
 if (NOT ARCANE_DOTNET_RUNTIME)
   if(ARCCON_DOTNET_HAS_RUNTIME_coreclr)
     set(ARCANE_DOTNET_RUNTIME "coreclr")
   elseif (ARCCON_DOTNET_HAS_RUNTIME_mono)
     set(ARCANE_DOTNET_RUNTIME "mono")
+    message(FATAL_ERROR "'Mono' runtime for '.Net' is no longer supported in Arcane. Install '.Net' 6.0+ (coreclr)")
   else()
-    message(FATAL_ERROR "No '.Net' runtime available. Install '.NetCore 3.0+ (coreclr)' or 'mono 5.16+'")
+    message(FATAL_ERROR "No '.Net' runtime available. Install '.Net' 6.0+ (coreclr)")
   endif()
 endif()
 
 if (NOT ARCCON_DOTNET_HAS_RUNTIME_${ARCANE_DOTNET_RUNTIME})
   message(FATAL_ERROR
     "'.Net' runtime '${ARCANE_DOTNET_RUNTIME}' is not available."
-    "Choose another runtime ('coreclr' or 'mono')"
     )
 endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-# Vérifie qu'on a au moins la version 3.0 de 'dotnet'.
+# Vérifie qu'on a au moins la version 6.0 de 'dotnet'.
 if (ARCANE_DOTNET_RUNTIME STREQUAL coreclr)
-  if(CORECLR_VERSION VERSION_LESS "3.0")
-    message(FATAL_ERROR "Version of 'dotnet' ${CORECLR_VERSION} is too old. Version 3.0+ is required")
+  if(CORECLR_VERSION VERSION_LESS "6.0")
+    message(FATAL_ERROR "Version of 'dotnet' ${CORECLR_VERSION} is too old. Version 6.0+ is required")
   endif()
 endif()
 set(ARCANE_CORECLR_VERSION ${CORECLR_VERSION} CACHE STRING ".Net coreclr version" FORCE)
@@ -231,9 +231,7 @@ arccon_add_csharp_target(dotnet_arcane_utils
   PACK
   )
 
-# TODO: renommer la cible 'dotnet_xbuild' en 'dotnet_tools'.
-#
-arccon_add_csharp_target(dotnet_xbuild
+arccon_add_csharp_target(dotnet_tools
   DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
   BUILD_DIR ${ARCANE_DOTNET_PUBLISH_BUILD_DIR}
   ASSEMBLY_NAME Arcane.ExecDrivers.dll
@@ -242,6 +240,10 @@ arccon_add_csharp_target(dotnet_xbuild
   MSBUILD_ARGS ${ARCANE_MSBUILD_ARGS}
   DOTNET_TARGET_DEPENDS dotnet_arcane_utils
   )
+
+# Pour compatibilité avec l'existant (versions 3.11 et antérieures)
+add_custom_target(dotnet_xbuild DEPENDS dotnet_tools)
+add_custom_target(force_dotnet_xbuild DEPENDS force_dotnet_tools)
 
 # Indique qu'il faut recopier à l'installation tout le répertoire où a été
 # publié le code compilé.
