@@ -38,7 +38,9 @@ add_subdirectory(mini_nbody)
 add_subdirectory(honeycomb_heat)
 add_subdirectory(simple_csv_output)
 add_subdirectory(multiple_mesh)
-add_subdirectory(user_function)
+if (ARCANE_HAS_DOTNET_WRAPPER)
+  add_subdirectory(user_function)
+endif()
 
 # ----------------------------------------------------------------------------
 # Local Variables:
