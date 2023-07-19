@@ -74,20 +74,16 @@ void executeSample()
 
 int main(int argc, char* argv[])
 {
-  std::cout << "Sample: StandaloneSubDomain\n";
-
-  try {
+  auto func = [&]{
+    std::cout << "Sample: StandaloneSubDomain\n";
     // Initialize Arcane
     CommandLineArguments cmd_line_args(&argc, &argv);
     ArcaneLauncher::init(cmd_line_args);
 
     executeSample();
-  }
-  catch (const Exception& ex) {
-    std::cout << "Exception: " << ex.message() << "\n";
-    return 2;
-  }
-  return 0;
+  };
+
+  return arcaneCallFunctionAndCatchException(func);
 }
 
 /*---------------------------------------------------------------------------*/

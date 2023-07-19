@@ -68,16 +68,11 @@ void _testStandaloneLauncher()
 
 int main(int argc, char* argv[])
 {
-  using namespace Arcane;
-
-  try {
-    ArcaneLauncher::init(CommandLineArguments(&argc, &argv));
+  auto func = [&]
+  {
+    Arcane::ArcaneLauncher::init(Arcane::CommandLineArguments(&argc, &argv));
     _testStandaloneLauncher();
-  }
-  catch (const Exception& ex) {
-    std::cerr << "EXCEPTION: " << ex << "\n";
-    return 1;
-  }
-  return 0;
+  };
+  return Arcane::arcaneCallFunctionAndCatchException(func);
 }
 //! [StandaloneAcceleratorFull]
