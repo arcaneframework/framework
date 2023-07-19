@@ -212,23 +212,23 @@ namespace utilities
 namespace PolyhedralMeshTest
 {
 
-auto& addCellFamily(Neo::Mesh& mesh, std::string family_name) {
+auto& addCellFamily(Neo::Mesh& mesh, std::string const& family_name) {
   auto& cell_family =
-  mesh.addFamily(Neo::ItemKind::IK_Cell, std::move(family_name));
+  mesh.addFamily(Neo::ItemKind::IK_Cell, family_name);
   cell_family.addMeshScalarProperty<Neo::utils::Int64>(family_name + "_uids");
   return cell_family;
 }
 
-auto& addNodeFamily(Neo::Mesh& mesh, std::string family_name) {
+auto& addNodeFamily(Neo::Mesh& mesh, std::string const& family_name) {
   auto& node_family =
-  mesh.addFamily(Neo::ItemKind::IK_Node, std::move(family_name));
+  mesh.addFamily(Neo::ItemKind::IK_Node, family_name);
   node_family.addMeshScalarProperty<Neo::utils::Int64>(family_name + "_uids");
   return node_family;
 }
 
-auto& addFaceFamily(Neo::Mesh& mesh, std::string family_name) {
+auto& addFaceFamily(Neo::Mesh& mesh, std::string const& family_name) {
   auto& face_family =
-  mesh.addFamily(Neo::ItemKind::IK_Face, std::move(family_name));
+  mesh.addFamily(Neo::ItemKind::IK_Face, family_name);
   face_family.addMeshScalarProperty<Neo::utils::Int64>(family_name + "_uids");
   return face_family;
 }

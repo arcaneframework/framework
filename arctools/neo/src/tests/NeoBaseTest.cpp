@@ -73,7 +73,7 @@ void _testItemLocalIds(Neo::utils::Int32 const& first_lid,
   std::iota(item_array_ref.begin() + non_contiguous_lids.size(), item_array_ref.end(), first_lid);
   Neo::utils::printContainer(item_array_ref, "ItemArrayRef");
   EXPECT_TRUE(std::equal(item_array.begin(), item_array.end(), item_array_ref.begin()));
-  for (int(i) = 0; (i) < item_local_ids.size(); ++(i)) {
+  for (int i = 0; i < item_local_ids.size(); ++i) {
     EXPECT_EQ(item_local_ids(i), item_array_ref[i]);
   }
 }
@@ -108,7 +108,7 @@ TEST(NeoTestItemRange, test_item_range) {
   local_ids.clear();
   // Test with only non contiguous local ids
   std::cout << "== Testing non contiguous item range {3,5,7} ==" << std::endl;
-  auto non_contiguous_lids = { 3, 5, 7 };
+  std::vector non_contiguous_lids = { 3, 5, 7 };
   ir = Neo::ItemRange{ Neo::ItemLocalIds{ non_contiguous_lids, 0, 0 } };
   EXPECT_EQ(ir.size(), non_contiguous_lids.size());
   EXPECT_EQ(ir.maxLocalId(), *std::max_element(non_contiguous_lids.begin(), non_contiguous_lids.end()));
@@ -328,7 +328,7 @@ TEST(NeoTestProperty, test_mesh_scalar_property) {
   property.debugPrint();
   extracted_values = property[{ 8, 9 }];
   EXPECT_TRUE(std::equal(values.begin(), values.end(), extracted_values.begin()));
-  auto null_ids = { Neo::utils::NULL_ITEM_LID, Neo::utils::NULL_ITEM_LID };
+  std::array null_ids = { Neo::utils::NULL_ITEM_LID, Neo::utils::NULL_ITEM_LID };
   auto extracted_null_ids = property[{ 6, 7 }];
   EXPECT_TRUE(std::equal(null_ids.begin(), null_ids.end(), extracted_null_ids.begin()));
   // Check append in empty property contiguous range not starting at 0
