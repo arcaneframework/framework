@@ -226,6 +226,14 @@ jobs:
             echo '</testsuite>' >> $RESULT_ORI
             rm $RESULT_TMP
 
+      - run:
+          name: Configure 'samples'
+          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_configure
+
+      - run:
+          name: Build 'samples'
+          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_build
+
       - store_artifacts:
           path: <<pipeline.parameters.CT_RESULT_DIR>>
 
