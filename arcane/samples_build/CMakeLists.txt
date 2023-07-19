@@ -39,14 +39,20 @@ file(MAKE_DIRECTORY ${ARCANE_SAMPLES_BUILD_DIR})
 # (Cela est utile pour ne pas avoir à reconfigurer à chaque fois qu'on
 # fait une modifications dans les exemples)
 add_custom_target(samples_configure_insource
-  COMMAND ${CMAKE_COMMAND} -v -C${CMAKE_BINARY_DIR}/samples/ArcaneCompilerConfig.cmake -DBUILD_SHARED_LIBS=TRUE ${CMAKE_CURRENT_SOURCE_DIR}/samples
-  WORKING_DIRECTORY ${ARCANE_SAMPLES_BUILD_DIR}
+  COMMAND ${CMAKE_COMMAND}
+  -C${CMAKE_BINARY_DIR}/samples/ArcaneCompilerConfig.cmake
+  -DBUILD_SHARED_LIBS=TRUE
+  -S ${CMAKE_CURRENT_SOURCE_DIR}/samples
+  -B ${ARCANE_SAMPLES_BUILD_DIR}
+  -GNinja
   )
 
 # Cible pour configurer les exemples depuis le répertoire de compilation
 add_custom_target(samples_configure
-  COMMAND ${CMAKE_COMMAND} -v ${CMAKE_BINARY_DIR}/samples
-  WORKING_DIRECTORY ${ARCANE_SAMPLES_BUILD_DIR}
+  COMMAND ${CMAKE_COMMAND}
+  -S ${CMAKE_BINARY_DIR}/samples
+  -B ${ARCANE_SAMPLES_BUILD_DIR}
+  -GNinja
   )
 
 # Cible pour compiler les exemples.
