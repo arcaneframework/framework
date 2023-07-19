@@ -17,7 +17,7 @@ arcane_accelerator_add_source_files(SimpleHydroAcceleratorService.cc)
 arcane_accelerator_add_to_target(HydroAccelerator)
 
 # Ajout des tests
-add_test(NAME hydro_accelerarator COMMAND ./HydroAccelerator -A,MaxIteration=50 HydroAccelerator.arc)
+add_test(NAME hydro_accelerator COMMAND ./HydroAccelerator -A,MaxIteration=50 HydroAccelerator.arc)
 if (ARCANE_HAS_CUDA)
-  add_test(NAME hydro_accelerarator_cuda COMMAND ./HydroAccelerator -A,MaxIteration=50 -A,AcceleratorRuntime=cuda HydroAccelerator.arc)
+  add_test(NAME hydro_accelerator_cuda COMMAND ./HydroAccelerator -A,MaxIteration=50 -A,AcceleratorRuntime=cuda HydroAccelerator.arc)
 endif()
