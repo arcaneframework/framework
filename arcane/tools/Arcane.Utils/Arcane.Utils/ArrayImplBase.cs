@@ -6,6 +6,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 #if ARCANE_64BIT
 using Integer = System.Int64;
@@ -13,6 +14,8 @@ using Integer = System.Int64;
 using Integer = System.Int32;
 #endif
 using Real = System.Double;
+
+[assembly: InternalsVisibleTo("Arcane.Core")]
 
 namespace Arcane
 {
