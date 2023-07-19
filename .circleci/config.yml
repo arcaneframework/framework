@@ -199,6 +199,14 @@ jobs:
             - ~/workspace/ccache
 
       - run:
+          name: Configure 'samples'
+          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_configure
+
+      - run:
+          name: Build 'samples'
+          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_build
+
+      - run:
           name: Force execution of MPI in root session
           command: |
             echo 'export OMPI_ALLOW_RUN_AS_ROOT=1' >> $BASH_ENV
@@ -225,14 +233,6 @@ jobs:
             sed -n '/<testcase.*status="run">/,/<\/testcase>/p' $RESULT_TMP >> $RESULT_ORI
             echo '</testsuite>' >> $RESULT_ORI
             rm $RESULT_TMP
-
-      - run:
-          name: Configure 'samples'
-          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_configure
-
-      - run:
-          name: Build 'samples'
-          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_build
 
       - store_artifacts:
           path: <<pipeline.parameters.CT_RESULT_DIR>>
@@ -298,6 +298,14 @@ jobs:
             - ~/workspace/ccache
 
       - run:
+          name: Configure 'samples'
+          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_configure
+
+      - run:
+          name: Build 'samples'
+          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_build
+
+      - run:
           name: Force execution of MPI in root session
           command: |
             echo 'export OMPI_ALLOW_RUN_AS_ROOT=1' >> $BASH_ENV
@@ -324,14 +332,6 @@ jobs:
             sed -n '/<testcase.*status="run">/,/<\/testcase>/p' $RESULT_TMP >> $RESULT_ORI
             echo '</testsuite>' >> $RESULT_ORI
             rm $RESULT_TMP
-
-      - run:
-          name: Configure 'samples'
-          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_configure
-
-      - run:
-          name: Build 'samples'
-          command: cmake --build <<pipeline.parameters.BUILD_DIR>> --target samples_build
 
       - store_artifacts:
           path: <<pipeline.parameters.CT_RESULT_DIR>>
