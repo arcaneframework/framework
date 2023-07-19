@@ -326,7 +326,7 @@ namespace Arcane
 
     public IndexedItemEnumerator<_ItemKind> GetEnumerator()
     {
-      return new IndexedItemEnumerator<_ItemKind>(m_items.m_ptr,m_local_ids.m_local_ids._UnguardedBasePointer(),m_local_ids.Length);
+      return new IndexedItemEnumerator<_ItemKind>(m_items.m_ptr,m_local_ids.m_local_ids._InternalData(),m_local_ids.Length);
     }
 
     public ItemVectorView<_ItemKind> SubViewInterval(Integer interval,Integer nb_interval)
@@ -445,7 +445,7 @@ namespace Arcane
       ++m_current;
       if (m_current>=m_end)
         return false;
-      m_pair.m_sub_local_ids = m_sub_items_local_id._UnguardedBasePointer()+m_indexes[m_current];
+      m_pair.m_sub_local_ids = m_sub_items_local_id._InternalData()+m_indexes[m_current];
       m_pair.m_nb_sub_item = m_indexes[m_current+1]-m_indexes[m_current];
       m_pair.m_index = m_current;
       m_pair.m_item.Internal = m_items_internal.m_ptr[m_current];

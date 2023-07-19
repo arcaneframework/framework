@@ -1,5 +1,5 @@
 //WARNING: this file is generated. Do not Edit
-//Date 1/13/2020 12:20:40 PM
+//Date 7/19/2023 1:42:56 PM
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 using System;
 using System.Collections;
@@ -345,6 +345,7 @@ namespace Arcane
     { return new Enumerator(m_ptr,m_size); }
     [Obsolete]
     public Int16* _UnguardedBasePointer() { return m_ptr; }
+    internal Int16* _InternalData() { return m_ptr; }
     public Int16[] ToArray()
     {
       Int16[] a = new Int16[m_size];
@@ -552,6 +553,7 @@ namespace Arcane
     { return new Enumerator(m_ptr,m_size); }
     [Obsolete]
     public Int16* _UnguardedBasePointer() { return m_ptr; }
+    internal Int16* _InternalData() { return m_ptr; }
     public Int16[] ToArray()
     {
       Int16[] a = new Int16[m_size];
@@ -624,6 +626,7 @@ namespace Arcane
     public Integer Dim2Size { get { return m_dim2_size; } }
     [Obsolete]
     public Int16* _UnguardedBasePointer() { return m_ptr; }
+    internal Int16* _InternalData() { return m_ptr; }
     [Obsolete]
     public IntPtr _Base()
     {
@@ -666,6 +669,7 @@ namespace Arcane
     public Integer Dim2Size { get { return m_dim2_size; } }
     [Obsolete]
     public Int16* _UnguardedBasePointer() { return m_ptr; }
+    internal Int16* _InternalData() { return m_ptr; }
     [Obsolete]
     public IntPtr _Base()
     {

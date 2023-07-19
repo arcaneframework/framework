@@ -73,7 +73,7 @@ namespace Arcane
     public NodeList Nodes(Int32 local_id)
     {
       int nb_node = m_container_node.m_nb_item[local_id];
-      return new NodeList(m_items->nodes.m_ptr,m_container_node.m_list._UnguardedBasePointer()+m_container_node.m_indexes[local_id],nb_node);
+      return new NodeList(m_items->nodes.m_ptr,m_container_node.m_list._InternalData()+m_container_node.m_indexes[local_id],nb_node);
     }
     public Int32 NbNode(Int32 local_id)
     {
@@ -91,7 +91,7 @@ namespace Arcane
     public ItemList<Face> Faces(Int32 local_id)
     {
       int nb_face = m_container_face.m_nb_item[local_id];
-      return new ItemList<Face>(m_items->faces.m_ptr,m_container_face.m_list._UnguardedBasePointer()+m_container_face.m_indexes[local_id],nb_face);
+      return new ItemList<Face>(m_items->faces.m_ptr,m_container_face.m_list._InternalData()+m_container_face.m_indexes[local_id],nb_face);
     }
     public Int32 NbFace(Int32 local_id)
     {
@@ -109,7 +109,7 @@ namespace Arcane
     public ItemList<Cell> Cells(Int32 local_id)
     {
       int nb_cell = m_container_node.m_nb_item[local_id];
-      return new ItemList<Cell>(m_items->cells.m_ptr,m_container_cell.m_list._UnguardedBasePointer()+m_container_cell.m_indexes[local_id],nb_cell);
+      return new ItemList<Cell>(m_items->cells.m_ptr,m_container_cell.m_list._InternalData()+m_container_cell.m_indexes[local_id],nb_cell);
     }
     public Int32 NbCell(Int32 local_id)
     {

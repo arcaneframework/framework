@@ -343,6 +343,7 @@ namespace Arcane
     { return new Enumerator(m_ptr,m_size); }
     [Obsolete]
     public @CTYPE@* _UnguardedBasePointer() { return m_ptr; }
+    internal @CTYPE@* _InternalData() { return m_ptr; }
     public @CTYPE@[] ToArray()
     {
       @CTYPE@[] a = new @CTYPE@[m_size];
@@ -550,6 +551,7 @@ namespace Arcane
     { return new Enumerator(m_ptr,m_size); }
     [Obsolete]
     public @CTYPE@* _UnguardedBasePointer() { return m_ptr; }
+    internal @CTYPE@* _InternalData() { return m_ptr; }
     public @CTYPE@[] ToArray()
     {
       @CTYPE@[] a = new @CTYPE@[m_size];
@@ -622,6 +624,7 @@ namespace Arcane
     public Integer Dim2Size { get { return m_dim2_size; } }
     [Obsolete]
     public @CTYPE@* _UnguardedBasePointer() { return m_ptr; }
+    internal @CTYPE@* _InternalData() { return m_ptr; }
     [Obsolete]
     public IntPtr _Base()
     {
@@ -664,6 +667,7 @@ namespace Arcane
     public Integer Dim2Size { get { return m_dim2_size; } }
     [Obsolete]
     public @CTYPE@* _UnguardedBasePointer() { return m_ptr; }
+    internal @CTYPE@* _InternalData() { return m_ptr; }
     [Obsolete]
     public IntPtr _Base()
     {
