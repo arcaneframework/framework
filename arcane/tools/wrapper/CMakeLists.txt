@@ -9,6 +9,7 @@
 # ----------------------------------------------------------------------------
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/ArcaneSwigUtils.cmake)
+set(ARCANE_HAS_DOTNET_WRAPPER ${ARCANE_HAS_SWIG} CACHE BOOL "Is C# wrapping enabled?" FORCE)
 if (NOT ARCANE_HAS_SWIG)
   return()
 endif()
