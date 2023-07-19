@@ -180,7 +180,7 @@ namespace Arcane
     _InitMeshVariableBase();
     DATATYPE##ArrayView v = this._asArray();
     m_view = v;
-    m_values = v._UnguardedBasePointer();
+    m_values = v._InternalData();
     m_size = v.Size;
     //Console.WriteLine("BUILD ARRAY name={0} size={1} ptr={2}",name(),m_size,(IntPtr)m_values);
   }
@@ -213,7 +213,7 @@ namespace Arcane
    {
 		 DATATYPE##ArrayView v = _asArray();
      m_view = v;
-     m_values = v._UnguardedBasePointer();
+     m_values = v._InternalData();
      m_size = v.Size;
      //Console.WriteLine("GET ARRAY name={0} size={1} ptr={2}",Name,m_size,(IntPtr)m_values);
    }
