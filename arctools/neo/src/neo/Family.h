@@ -38,9 +38,9 @@ class Family
   std::map<std::string, Property> m_properties;
   mutable ItemRange m_all;
 
-  Family(ItemKind ik, std::string name)
+  Family(ItemKind ik, const std::string& name)
   : m_ik(ik)
-  , m_name(std::move(name))
+  , m_name(name)
   , m_prop_lid_name(name) {
     m_prop_lid_name.append("_lids");
     m_properties[lidPropName()] = ItemLidsProperty{ lidPropName() };

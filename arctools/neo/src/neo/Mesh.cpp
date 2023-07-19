@@ -334,7 +334,7 @@ void Neo::Mesh::scheduleAddOrientedConnectivity(Neo::Family& source_family, Neo:
                           nb_connected_item_per_item, // cannot move nb_connected_item_per_item, is needed for connectivityOrientation
                           std::move(connected_item_uids), connectivity_unique_name, add_or_modify);
   _scheduleAddConnectivityOrientation(source_family, Neo::ItemRangeWrapper<FutureItemRange>{ source_items },
-                                      target_family, std::move(nb_connected_item_per_item),
+                                      target_family, nb_connected_item_per_item,
                                       std::move(source_item_orientation_in_target_item),
                                       do_check_orientation);
 }
@@ -349,10 +349,10 @@ void Neo::Mesh::scheduleAddOrientedConnectivity(Neo::Family& source_family, Neo:
                                                 ConnectivityOperation add_or_modify,
                                                 bool do_check_orientation) {
   scheduleAddConnectivity(source_family, source_items, target_family,
-                          std::move(nb_connected_item_per_item),
+                          nb_connected_item_per_item,
                           std::move(connected_item_uids), connectivity_unique_name, add_or_modify);
   _scheduleAddConnectivityOrientation(source_family, Neo::ItemRangeWrapper<const ItemRange>{ source_items },
-                                      target_family, std::move(nb_connected_item_per_item),
+                                      target_family, nb_connected_item_per_item,
                                       std::move(source_item_orientation_in_target_item),
                                       do_check_orientation);
 }
