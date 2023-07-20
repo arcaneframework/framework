@@ -16,26 +16,32 @@ namespace Arcane
 {  
   public unsafe interface IItem
   {
+    [Obsolete("This method is internal to Arcane")]
     ItemInternal* Internal { get; set; }
+
     Int32 LocalId { get; }
     Int64 UniqueId { get; }
     bool IsNull { get; }
     eItemKind Kind { get; }
   }
 
-    [StructLayout(LayoutKind.Sequential)]
+  [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Item : IItem
   {
     private ItemInternal* m_internal;
+
+    [Obsolete("This method is internal to Arcane")]
     public Item(ItemInternal* ii)
     {
       m_internal = ii;
     }
+    [Obsolete("This method is internal to Arcane")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
       set { m_internal = value; }
     }
+
     public Item(Cell cell)
     {
       m_internal = cell.Internal;
@@ -103,12 +109,14 @@ namespace Arcane
   {
     private ItemInternal* m_internal;
 
+    [Obsolete("This method is internal to Arcane")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
       set { m_internal = value; }
     }
 
+    [Obsolete("This method is internal to Arcane")]
     public Cell(ItemInternal* ii)
     {
       m_internal = ii;
@@ -175,11 +183,13 @@ namespace Arcane
   {
     private ItemInternal* m_internal;
 
+    [Obsolete("This method is internal to Arcane")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
       set { m_internal = value; }
     }
+    [Obsolete("This method is internal to Arcane")]
     public Face(ItemInternal* ii)
     {
       m_internal = ii;
@@ -256,15 +266,18 @@ namespace Arcane
   {
     private ItemInternal* m_internal;
 
+    [Obsolete("This method is internal to Arcane")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
       set { m_internal = value; }
     }
+    [Obsolete("This method is internal to Arcane")]
     public Edge(ItemInternal* ii)
     {
       m_internal = ii;
     }
+
     public bool IsNull
     {
       get { return m_internal->IsNull; }
@@ -289,6 +302,7 @@ namespace Arcane
   {
     private ItemInternal* m_internal;
 
+    [Obsolete("This method is internal to Arcane")]
     public Node(ItemInternal* ii)
     {
       m_internal = ii;
@@ -297,6 +311,7 @@ namespace Arcane
     {
       m_internal = ii.Internal;
     }
+    [Obsolete("This method is internal to Arcane")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
@@ -337,11 +352,9 @@ namespace Arcane
     }
   }
 
-    [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct IndexedItem<_ItemKind>
-    where _ItemKind : IItem, new()
+  [StructLayout(LayoutKind.Sequential)]
+  public unsafe struct IndexedItem<_ItemKind> where _ItemKind : IItem, new()
   {
-    //private ItemInternal* m_internal;
     private Integer m_index;
     private _ItemKind m_item;
 
@@ -354,6 +367,7 @@ namespace Arcane
 
     public Integer Index { get { return m_index; } }
 
+    [Obsolete("This method is internal to Arcane")]
     public IndexedItem(ItemInternal* ii,Integer index)
     {
       m_item = new _ItemKind();
@@ -376,7 +390,6 @@ namespace Arcane
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct IndexedNode
   {
-    //private ItemInternal* m_internal;
     private Integer m_index;
     private Node m_item;
 
@@ -389,12 +402,14 @@ namespace Arcane
 
     public Integer Index { get { return m_index; } }
 
+    [Obsolete("This method is internal to Arcane")]
     public IndexedNode(ItemInternal* ii,Integer index)
     {
       m_item = new Node();
       m_item.Internal = ii;
       m_index = index;
     }
+
     public IndexedNode(Node item,Integer index)
     {
       m_item = item;
