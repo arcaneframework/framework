@@ -386,6 +386,9 @@ namespace Arcane
     }
   }
 
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
   public unsafe struct ItemBase
   {
     internal ItemBase(ItemInternal* v)
@@ -394,6 +397,29 @@ namespace Arcane
     }
 
     internal ItemInternal* Internal { get { return m_item_internal; } }
+
+    internal bool IsNull { get { return m_item_internal->IsNull; } }
+    internal Int32 LocalId { get { return m_item_internal->m_local_id; } }
+    internal Int64 UniqueId { get { return m_item_internal->UniqueId(); } }
+    internal eItemKind Kind { get { return m_item_internal->Kind; } }
+
+    internal Int32 NbNode { get { return m_item_internal->NbNode; } }
+    internal ItemBase Node(Int32 index) { return new ItemBase(m_item_internal->Node(index)); }
+    internal Int32 NodeLocalId(Int32 index) { return m_item_internal->NodeLocalId(index); }
+    internal NodeList Nodes{ get { return m_item_internal->Nodes; } }
+
+    internal Int32 NbFace { get { return m_item_internal->NbFace; } }
+    internal ItemBase Face(Int32 index) { return new ItemBase(m_item_internal->Face(index)); }
+    internal Int32 FaceLocalId(Int32 index) { return m_item_internal->FaceLocalId(index); }
+    internal ItemList<Face> Faces { get { return m_item_internal->Faces; } }
+
+    internal Int32 NbCell { get { return m_item_internal->NbCell; } }
+    internal ItemBase Cell(Int32 index) { return new ItemBase(m_item_internal->Cell(index)); }
+    internal Int32 CellLocalId(Int32 index) { return m_item_internal->CellLocalId(index); }
+    internal ItemList<Cell> Cells { get { return m_item_internal->Cells; } }
+
+    internal ItemBase BackCell { get { return new ItemBase(m_item_internal->BackCell()); } }
+    internal ItemBase FrontCell { get { return new ItemBase(m_item_internal->FrontCell()); } }
 
     ItemInternal* m_item_internal;
   }
