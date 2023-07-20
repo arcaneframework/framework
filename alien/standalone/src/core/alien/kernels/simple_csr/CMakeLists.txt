@@ -51,5 +51,6 @@ target_link_libraries(alien_kernel_simplecsr PUBLIC
         Arccore::arccore_message_passing_mpi)
 
 target_link_libraries(alien_kernel_simplecsr PUBLIC alien_utils alien_headers)
+target_compile_definitions(alien_kernel_simplecsr PRIVATE alien_core_EXPORTS)
 
 install(TARGETS alien_kernel_simplecsr EXPORT ${ALIEN_EXPORT_TARGET})

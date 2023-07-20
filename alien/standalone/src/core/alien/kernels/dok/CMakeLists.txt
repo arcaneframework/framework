@@ -48,5 +48,6 @@ target_link_libraries(alien_kernel_dok PUBLIC
 
 target_link_libraries(alien_kernel_dok PUBLIC alien_utils alien_headers)
 target_compile_features(alien_kernel_dok PUBLIC cxx_std_17)  # for std::optional
+target_compile_definitions(alien_kernel_dok PRIVATE alien_core_EXPORTS)
 
 install(TARGETS alien_kernel_dok EXPORT ${ALIEN_EXPORT_TARGET})
