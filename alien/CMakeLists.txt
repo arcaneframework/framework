@@ -16,7 +16,7 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-Project(AlienRepo LANGUAGES NONE VERSION 1.0)
+Project(AlienRepo LANGUAGES C CXX VERSION 1.0)
 
 # Common stuff
 set(ARCFRAMEWORK_ROOT ${CMAKE_SOURCE_DIR})
@@ -34,4 +34,9 @@ arcane_framework_set_if_unset(Arccore_ROOT ${ARCFRAMEWORK_ROOT}/arccore PATH "Ar
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/_common/build_all/cmake)
 
-add_subdirectory(standalone)
+# Add Alien only if blas and boost found
+find_package(BLAS)
+find_package(Boost COMPONENTS program_options)
+if (BLAS_FOUND AND Boost_FOUND)
+    add_subdirectory(standalone)
+endif()
