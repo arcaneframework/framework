@@ -345,12 +345,17 @@ namespace Arcane
     public Item this[Integer index]
     {
       get{
-        return new Item(m_ptr[index]);
+        return new Item(new ItemBase(m_ptr[index]));
       }
     }
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* ItemInternal(Integer index)
     {
       return m_ptr[index];
+    }
+    public ItemBase ItemBase(Integer index)
+    {
+      return new ItemBase(m_ptr[index]);
     }
     public Integer Size { get { return m_size; } }
   }
@@ -366,7 +371,7 @@ namespace Arcane
       Integer s = ilist.Size;
       m_items = new Item[s];
       for( int i=0; i<s; ++i )
-        m_items[i] = new Item(ilist.ItemInternal(i));
+        m_items[i] = new Item(ilist.ItemBase(i));
     }
     public Integer Size
     {

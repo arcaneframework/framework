@@ -14,12 +14,14 @@ using Integer = System.Int32;
 
 namespace Arcane
 {  
+  //-----------------------------------------------------------------------------
+
   public unsafe interface IItem
   {
-    [Obsolete("This method is internal to Arcane")]
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     ItemInternal* Internal { get; set; }
 
-    ItemBase ItemBase { get; set; }
+    ItemBase ItemBase { get; internal set; }
 
     Int32 LocalId { get; }
     Int64 UniqueId { get; }
@@ -27,17 +29,19 @@ namespace Arcane
     eItemKind Kind { get; }
   }
 
+  //-----------------------------------------------------------------------------
+
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Item : IItem
   {
     private ItemInternal* m_internal;
 
-    [Obsolete("This method is internal to Arcane")]
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
     public Item(ItemInternal* ii)
     {
       m_internal = ii;
     }
-    [Obsolete("This method is internal to Arcane")]
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
@@ -116,22 +120,30 @@ namespace Arcane
 
   }
 
+  //-----------------------------------------------------------------------------
+
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Cell : IItem
   {
     private ItemInternal* m_internal;
 
-    [Obsolete("This method is internal to Arcane")]
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
+    public Cell(ItemInternal* ii)
+    {
+      m_internal = ii;
+    }
+
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
       set { m_internal = value; }
     }
 
-    [Obsolete("This method is internal to Arcane")]
-    public Cell(ItemInternal* ii)
+    // TODO: a supprimer. Utiliser constructeur avec 'ItemBase' à la place
+    public Cell(Item ii)
     {
-      m_internal = ii;
+      m_internal = ii.Internal;
     }
 
     public Cell(ItemBase ii)
@@ -144,10 +156,6 @@ namespace Arcane
       set { m_internal = value.Internal; }
     }
 
-    public Cell(Item ii)
-    {
-      m_internal = ii.Internal;
-    }
     public bool IsNull
     {
       get { return m_internal->IsNull; }
@@ -201,21 +209,24 @@ namespace Arcane
     }
   }
 
+  //-----------------------------------------------------------------------------
+
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Face : IItem
   {
     private ItemInternal* m_internal;
 
-    [Obsolete("This method is internal to Arcane")]
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
+    public Face(ItemInternal* ii)
+    {
+      m_internal = ii;
+    }
+
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
       set { m_internal = value; }
-    }
-    [Obsolete("This method is internal to Arcane")]
-    public Face(ItemInternal* ii)
-    {
-      m_internal = ii;
     }
 
     public Face(ItemBase ii)
@@ -228,6 +239,7 @@ namespace Arcane
       set { m_internal = value.Internal; }
     }
 
+    // TODO: a supprimer. Utiliser constructeur avec 'ItemBase' à la place
     public Face(Item ii)
     {
       m_internal = ii.Internal;
@@ -295,21 +307,24 @@ namespace Arcane
     }
   }
 
+  //-----------------------------------------------------------------------------
+
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Edge : IItem
   {
     private ItemInternal* m_internal;
 
-    [Obsolete("This method is internal to Arcane")]
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
+    public Edge(ItemInternal* ii)
+    {
+      m_internal = ii;
+    }
+
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
       set { m_internal = value; }
-    }
-    [Obsolete("This method is internal to Arcane")]
-    public Edge(ItemInternal* ii)
-    {
-      m_internal = ii;
     }
 
     public Edge(ItemBase ii)
@@ -341,21 +356,26 @@ namespace Arcane
     }
   }
 
+  //-----------------------------------------------------------------------------
+
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Node : IItem
   {
-    private ItemInternal* m_internal;
+    ItemInternal* m_internal;
 
-    [Obsolete("This method is internal to Arcane")]
-    public Node(ItemInternal* ii)
-    {
-      m_internal = ii;
-    }
+    // TODO: a supprimer. Utiliser constructeur avec 'ItemBase' à la place
     public Node(Item ii)
     {
       m_internal = ii.Internal;
     }
-    [Obsolete("This method is internal to Arcane")]
+
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
+    public Node(ItemInternal* ii)
+    {
+      m_internal = ii;
+    }
+
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
       get { return m_internal; }
@@ -429,6 +449,14 @@ namespace Arcane
       m_item.Internal = ii;
       m_index = index;
     }
+
+    public IndexedItem(ItemBase ii,Integer index)
+    {
+      m_item = new _ItemKind();
+      m_item.ItemBase = ii;
+      m_index = index;
+    }
+
     public IndexedItem(_ItemKind item,Integer index)
     {
       m_item = item;
@@ -462,6 +490,12 @@ namespace Arcane
     {
       m_item = new Node();
       m_item.Internal = ii;
+      m_index = index;
+    }
+
+    public IndexedNode(ItemBase ii,Integer index)
+    {
+      m_item = new Node(ii);
       m_index = index;
     }
 
