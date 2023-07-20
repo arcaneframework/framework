@@ -30,6 +30,12 @@ namespace Alien
 template class ALIEN_REFSEMANTIC_EXPORT StreamVBlockMatrixBuilderT<double>;
 
 #ifdef WIN32
+
+// These exports do not work on Win32 (july 2023). A fix is needed
+// Error is:
+// StreamVBlockMatrixBuilder.cc(43): error C2628: 'Alien::ALIEN_IFPEN_EXPORT' followed by 'void' is illegal (did you forget a ';'?)
+// StreamVBlockMatrixBuilder.cc(45): error C2556: 'Alien::ALIEN_IFPEN_EXPORT 
+#ifdef FIXED_BUGGY_EXPORT
 template class ALIEN_IFPEN_EXPORT StreamVBlockMatrixBuilderT<double>::BaseInserter;
 template class ALIEN_IFPEN_EXPORT StreamVBlockMatrixBuilderT<double>::Profiler;
 template class ALIEN_IFPEN_EXPORT StreamVBlockMatrixBuilderT<double>::Filler;
@@ -43,6 +49,7 @@ template ALIEN_IFPEN_EXPORT void StreamVBlockMatrixBuilderT<double>::Filler::sta
 template ALIEN_IFPEN_EXPORT void
 StreamVBlockMatrixBuilderT<double>::Profiler::addMatrixEntry(
 Integer row_index, Integer col_index);
+#endif
 
 #endif
 
