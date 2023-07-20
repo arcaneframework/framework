@@ -31,6 +31,9 @@
 #include <alien/handlers/scalar/CSRModifierViewT.h>
 #include <alien/kernels/simple_csr/SendRecvOp.h>
 
+#include <alien/distribution/MatrixDistribution.h>
+#include <alien/distribution/VectorDistribution.h>
+
 namespace Arccore
 {
 class ITraceMng;

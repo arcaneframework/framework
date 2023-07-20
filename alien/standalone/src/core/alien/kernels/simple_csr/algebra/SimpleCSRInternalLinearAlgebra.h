@@ -22,7 +22,9 @@
 
 #include <alien/core/backend/IInternalLinearAlgebraExprT.h>
 #include <alien/core/backend/IInternalLinearAlgebraT.h>
+
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+#include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/SendRecvOp.h>
 #include <alien/kernels/simple_csr/LUSendRecvOp.h>
 
