@@ -52,7 +52,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     target_compile_options(Neo PRIVATE)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # using Visual Studio C++
-    target_compile_options(Neo PRIVATE -Wall /bigobj)
+    target_compile_options(Neo PRIVATE  /bigobj)
 endif()
 
 include(GNUInstallDirs)
