@@ -50,13 +50,15 @@ TEST(NeoUtils, test_array_view) {
   std::vector<int> dim2_const_view_vector_copy{ dim2_const_view.copy() };
   EXPECT_TRUE(std::equal(dim2_vec.begin(), dim2_vec.end(), dim2_const_view_vector_copy.begin()));
   // Try out of bound error
-#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+#ifndef _MS_REL_ // if constepxr still experiencing problems with
+#ifdef USE_GTEST_DEATH_TEST
   if constexpr (_debug) {
     EXPECT_DEATH(view[4], ".*i < m_size.*");
   }
   if constexpr (_debug) {
     EXPECT_DEATH(dim2_view[0][4], ".*i < m_size.*");
   }
+#endif
 #endif
 }
 
@@ -259,9 +261,11 @@ TEST(NeoTestProperty, test_mesh_scalar_property) {
   property.init(item_range, { 1, 2, 3 });
   // Cannot init twice : test assertion
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+#ifdef USE_GTEST_DEATH_TEST
   if constexpr (_debug) {
     EXPECT_DEATH(property.init(item_range, values), ".*Property must be empty.*");
   }
+#endif
 #endif
   EXPECT_EQ(values.size(), property.size());
   auto prop_values = property.values();
@@ -310,6 +314,7 @@ TEST(NeoTestProperty, test_mesh_scalar_property) {
   EXPECT_TRUE(std::equal(extracted_values.begin(), extracted_values.end(), extracted_values_ref.begin()));
   // todo check throw if lids out of bound
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+#ifdef USE_GTEST_DEATH_TEST
   if constexpr (_debug) {
     EXPECT_DEATH(property[1000], ".*Item local id must be < max local id.*");
   }
@@ -320,6 +325,7 @@ TEST(NeoTestProperty, test_mesh_scalar_property) {
   if constexpr (_debug) {
     EXPECT_DEATH(property[extracted_lids], ".*Max input item lid.*");
   }
+#endif
 #endif
   // Check append with holes, contiguous range
   item_range = { Neo::ItemLocalIds{ {}, 8, 2 } };
@@ -398,9 +404,11 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
   EXPECT_EQ(mesh_array_property.name(), "test_mesh_array_property");
   // check assert (debug only)
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+#ifdef USE_GTEST_DEATH_TEST
   if constexpr (_debug) {
     EXPECT_DEATH(mesh_array_property[Neo::utils::NULL_ITEM_LID], ".*Item local id.*");
   }
+#endif
 #endif
   // Check data allocation with resize (not to be used if init method is used)
   std::vector<int> sizes{ 1, 2, 3 };
@@ -416,9 +424,11 @@ TEST(NeoTestArrayProperty, test_mesh_array_property) {
   std::vector<Neo::utils::Int32> values{ 0, 1, 2, 3, 4 };
   // Check cannot Try to init before resize
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+#ifdef USE_GTEST_DEATH_TEST
   if constexpr (_debug) {
     EXPECT_DEATH(mesh_array_property.init(item_range, values), ".*call resize before init.*");
   }
+#endif
 #endif
   mesh_array_property.resize({ 1, 1, 1, 1, 1 });
   mesh_array_property.init(item_range, values);
@@ -717,12 +727,14 @@ TEST(NeoTestPropertyView, test_mesh_scalar_property_view) {
   EXPECT_EQ(property[local_ids[2]], new_val);
   // Check out of bound
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+#ifdef USE_GTEST_DEATH_TEST
   if constexpr (_debug) {
     EXPECT_DEATH(property_view[7], ".*Assertion.*");
   }
   if constexpr (_debug) {
     EXPECT_DEATH(partial_property_view[3], ".*Error, exceeds property view size.*");
   }
+#endif
 #endif
 }
 
@@ -748,12 +760,14 @@ TEST(NeoTestPropertyView, test_mesh_scalar_property_const_view) {
     EXPECT_EQ(partial_property_const_view[i], partial_values[i]);
   }
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+#ifdef USE_GTEST_DEATH_TEST
   if constexpr (_debug) {
     EXPECT_DEATH(property_const_view[7], ".*Assertion.*");
   }
   if constexpr (_debug) {
     EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");
   }
+#endif
 #endif
   // test const iterator
   EXPECT_TRUE(property_const_view.end() == property_const_view.end());
@@ -805,10 +819,12 @@ TEST(NeoTestPropertyView, test_mesh_array_property_view) {
 
   // check assert (debug only)
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+#ifdef USE_GTEST_DEATH_TEST
   if constexpr (_debug) {
     EXPECT_DEATH(mesh_array_property_view[Neo::utils::NULL_ITEM_LID], ".*index must be >0*");
     EXPECT_DEATH(mesh_array_property_view[mesh_array_property_view.size()], ".*Error, exceeds property view*");
   }
+#endif
 #endif
 }
 
@@ -840,10 +856,12 @@ TEST(NeoTestPropertyView, test_mesh_array_property_const_view) {
 
   // check assert (debug only)
 #ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
+#ifdef USE_GTEST_DEATH_TEST
   if constexpr (_debug) {
     EXPECT_DEATH(mesh_array_property_view[Neo::utils::NULL_ITEM_LID], ".*index must be >0*");
     EXPECT_DEATH(mesh_array_property_view[mesh_array_property_view.size()], ".*Error, exceeds property view*");
   }
+#endif
 #endif
 }
 /*-----------------------------------------------------------------------------*/
