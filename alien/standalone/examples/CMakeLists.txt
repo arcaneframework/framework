@@ -15,7 +15,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 find_package(MPI REQUIRED)
-find_package(GTest REQUIRED)
 find_package(Boost COMPONENTS program_options)
 
 if(ALIEN_USE_SYCL)
