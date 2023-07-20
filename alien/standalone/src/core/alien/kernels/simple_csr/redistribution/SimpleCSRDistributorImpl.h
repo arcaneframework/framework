@@ -268,7 +268,7 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
     _distribute(src.block()->sizeX() * src.block()->sizeY(), src.data(), dst.data());
   }
   else if (src.vblock()) {
-    throw Arccore::NotImplementedException(Arccore::TraceInfo(__FILE__, __PRETTY_FUNCTION__, __LINE__));
+    throw Arccore::NotImplementedException(A_FUNCINFO);
   }
   else {
     _distribute(1, src.data(), dst.data());
@@ -303,7 +303,7 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
 template <typename NumT>
 void SimpleCSRDistributor::distribute(const SimpleCSRVector<NumT>& src, SimpleCSRVector<NumT>& dst)
 {
-  throw Arccore::NotImplementedException(Arccore::TraceInfo(__FILE__, __PRETTY_FUNCTION__, __LINE__));
+  throw Arccore::NotImplementedException(A_FUNCINFO);
 }
 
 template <typename T>
