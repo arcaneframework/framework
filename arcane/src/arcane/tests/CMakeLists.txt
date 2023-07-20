@@ -136,9 +136,17 @@ if (TARGET arcane_dotnet_wrapper_services)
     PROJECT_NAME ArcaneTest.csproj
     MSBUILD_ARGS ${ARCANE_MSBUILD_ARGS}
     DEPENDS
-    ${CSOUTPATH}/SimpleHydroCS_axl.cs
-    ${CSOUTPATH}/PerfectGasEOS_axl.cs
-    ${CSOUTPATH}/MeshModification_axl.cs
+    "${CSPATH}/MeshModification.cs"
+    "${CSPATH}/DotNetTimeHistoryCurveWriter.cs"
+    "${CSPATH}/DotNetCaseFunctionProvider.cs"
+    "${CSPATH}/DotNetDataWriter.cs"
+    "${CSPATH}/DotNetTestSingleton.cs"
+    "${CSPATH}/SimpleHydro.cs"
+    "${CSPATH}/PerfectGasEOS.cs"
+    "${CSPATH}/Launcher.cs"
+    "${CSOUTPATH}/SimpleHydroCS_axl.cs"
+    "${CSOUTPATH}/PerfectGasEOS_axl.cs"
+    "${CSOUTPATH}/MeshModification_axl.cs"
     DOTNET_TARGET_DEPENDS dotnet_wrapper_services dotnet_wrapper_launcher
     )
 
