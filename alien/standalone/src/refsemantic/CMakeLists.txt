@@ -119,7 +119,7 @@ endif (ALIEN_GENERATE_DOCUMENTATION)
 if (ALIEN_USE_LIBXML2)
     find_package(LibXml2 REQUIRED)
 
-    target_link_libraries(alien_semantic_ref PRIVATE arccon::LibXml2)
+    target_link_libraries(alien_semantic_ref PRIVATE LibXml2::LibXml2)
 endif ()
 
 if (ALIEN_USE_HDF5)
