@@ -42,7 +42,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # using Visual Studio C++
-    target_compile_options(Neo.tests PRIVATE -Wall /bigobj)
+    target_compile_options(Neo.tests PRIVATE /bigobj)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # using GCC
     target_compile_options(Neo PRIVATE -Wall)
