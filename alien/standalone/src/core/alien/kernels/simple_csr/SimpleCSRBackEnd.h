@@ -53,8 +53,8 @@ struct SimpleCSRTraits
   typedef IInternalLinearAlgebraExpr<MatrixType, VectorType> AlgebraExprType;
 };
 
-extern SimpleCSRTraits<Real>::AlgebraType* SimpleCSRInternalLinearAlgebraFactory();
-extern SimpleCSRTraits<Real>::AlgebraExprType*
+extern ALIEN_EXPORT SimpleCSRTraits<Real>::AlgebraType* SimpleCSRInternalLinearAlgebraFactory();
+extern ALIEN_EXPORT SimpleCSRTraits<Real>::AlgebraExprType*
 SimpleCSRInternalLinearAlgebraExprFactory();
 
 /*---------------------------------------------------------------------------*/
