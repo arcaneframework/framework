@@ -115,8 +115,13 @@ endif ()
 find_package(Arccon REQUIRED)
 # Only use find package with Arccon
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+message(STATUS "ARCCON_MODULE_PATH = ${ARCCON_MODULE_PATH}")
+include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not installed) Arccon
+include(LoadBuildSystem) # idem
 
-find_package(Arccore REQUIRED)
+if (NOT Arccore_FOUND)
+    find_package(Arccore REQUIRED)
+endif ()
 
 find_package(LibArchive)
 
@@ -179,19 +184,19 @@ if (ALIEN_BENCHMARKS)
 endif ()
 
 if (ALIEN_PLUGIN_HYPRE)
-    add_subdirectory(${CMAKE_SOURCE_DIR}/plugins/hypre ${CMAKE_BINARY_DIR}/plugins/hypre)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/alien/plugins/hypre ${CMAKE_BINARY_DIR}/plugins/hypre)
 endif (ALIEN_PLUGIN_HYPRE)
 
 if (ALIEN_PLUGIN_PETSC)
-    add_subdirectory(${CMAKE_SOURCE_DIR}/plugins/petsc ${CMAKE_BINARY_DIR}/plugins/petsc)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/alien/plugins/petsc ${CMAKE_BINARY_DIR}/plugins/petsc)
 endif (ALIEN_PLUGIN_PETSC)
 
 if (ALIEN_PLUGIN_TRILINOS)
-    add_subdirectory(${CMAKE_SOURCE_DIR}/plugins/trilinos ${CMAKE_BINARY_DIR}/plugins/trilinos)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/alien/plugins/trilinos ${CMAKE_BINARY_DIR}/plugins/trilinos)
 endif (ALIEN_PLUGIN_TRILINOS)
 
 if (ALIEN_PLUGIN_GINKGO)
-    add_subdirectory(${CMAKE_SOURCE_DIR}/plugins/ginkgo ${CMAKE_BINARY_DIR}/plugins/ginkgo)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/alien/plugins/ginkgo ${CMAKE_BINARY_DIR}/plugins/ginkgo)
 endif (ALIEN_PLUGIN_GINKGO)
 
 if (ALIEN_EXAMPLES)

@@ -15,3 +15,4 @@ endif()
 
 add_subdirectory(${Arccore_ROOT} arccore)
 set(Arccore_FOUND YES)
+set(Arccore_FOUND YES PARENT_SCOPE)

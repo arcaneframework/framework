@@ -16,6 +16,27 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-Project(AlienRepo LANGUAGES NONE VERSION 1.0)
+Project(AlienRepo LANGUAGES C CXX VERSION 1.0)
 
-add_subdirectory(standalone)
+# Common stuff
+set(ARCFRAMEWORK_ROOT ${CMAKE_SOURCE_DIR})
+
+macro(arcane_framework_set_if_unset var_name var_value var_type description)
+    if (NOT DEFINED ${var_name})
+        set(${var_name} ${var_value})
+    endif()
+    set(${var_name} ${${var_name}} CACHE ${var_type} "${description}" FORCE)
+    option(${var_name} "${description}")
+endmacro()
+
+arcane_framework_set_if_unset(Arccon_ROOT ${ARCFRAMEWORK_ROOT}/arccon PATH "Arccon root path")
+arcane_framework_set_if_unset(Arccore_ROOT ${ARCFRAMEWORK_ROOT}/arccore PATH "Arccore root")
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/_common/build_all/cmake)
+
+# Add Alien only if blas and boost found
+find_package(BLAS)
+find_package(Boost COMPONENTS program_options)
+if (BLAS_FOUND AND Boost_FOUND)
+    add_subdirectory(standalone)
+endif()

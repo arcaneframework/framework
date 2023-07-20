@@ -28,6 +28,8 @@ cmake_policy(SET CMP0074 NEW)
 project(AlienBenchmark VERSION 1.0 LANGUAGES CXX)
 
 find_package(Alien REQUIRED)
-find_package(Arccore REQUIRED)
+if (NOT Arccore_FOUND)
+    find_package(Arccore REQUIRED)
+endif ()
 
 add_subdirectory(src)
