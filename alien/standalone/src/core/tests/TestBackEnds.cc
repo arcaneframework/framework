@@ -39,6 +39,12 @@ TEST(TestBackEnds, CompositeVector)
 {
   Alien::CompositeKernel::MultiVectorImpl impl;
   ASSERT_EQ(nullptr, impl.block());
+
+  // En C++20 et plus, on considére cette comparaison comme ambigüe.
+  // TODO : À supprimer lors du passage en C++20.
+  #if defined(ARCCORE_CXX_STANDARD) && ARCCORE_CXX_STANDARD == 17
   ASSERT_EQ(Alien::Space(), impl.space());
+  #endif
+
   ASSERT_EQ(Alien::VectorDistribution(), impl.distribution());
 }
