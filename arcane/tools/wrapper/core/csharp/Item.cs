@@ -14,79 +14,101 @@ using Integer = System.Int32;
 
 namespace Arcane
 {  
+  //-----------------------------------------------------------------------------
+
   public unsafe interface IItem
   {
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     ItemInternal* Internal { get; set; }
+
+    ItemBase ItemBase { get; internal set; }
+
     Int32 LocalId { get; }
     Int64 UniqueId { get; }
     bool IsNull { get; }
     eItemKind Kind { get; }
   }
 
-    [StructLayout(LayoutKind.Sequential)]
+  //-----------------------------------------------------------------------------
+
+  [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Item : IItem
   {
-    private ItemInternal* m_internal;
+    private ItemBase m_item_base;
+
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
     public Item(ItemInternal* ii)
     {
-      m_internal = ii;
+      m_item_base = new ItemBase(ii);
     }
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
-      get { return m_internal; }
-      set { m_internal = value; }
+      get { return m_item_base.Internal; }
+      set { m_item_base = new ItemBase(value); }
     }
+
+    public Item(ItemBase ii)
+    {
+      m_item_base = ii;
+    }
+    public ItemBase ItemBase
+    {
+      get { return m_item_base; }
+      set { m_item_base = value; }
+    }
+
     public Item(Cell cell)
     {
-      m_internal = cell.Internal;
+      m_item_base = cell.ItemBase;
     }
     public Item(Face face)
     {
-      m_internal = face.Internal;
+      m_item_base = face.ItemBase;
     }
     public Item(Node node)
     {
-      m_internal = node.Internal;
+      m_item_base = node.ItemBase;
     }
     public Int32 LocalId
     {
-      get { return m_internal->m_local_id; }
+      get { return m_item_base.LocalId; }
     }
     public Int64 UniqueId
     {
-      get { return m_internal->UniqueId(); }
+      get { return m_item_base.UniqueId; }
     }
     public eItemKind Kind
     {
-      get { return m_internal->Kind; }
+      get { return m_item_base.Kind; }
     }
     public Integer NbNode
     {
-      get { return m_internal->NbNode; }
+      get { return m_item_base.NbNode; }
     }
     public Node Node(Integer index)
     {
-      return new Node(m_internal->Node(index));
+      return new Node(m_item_base.Node(index));
     }
     public Int32 NodeLocalId(Integer index)
     {
-      return m_internal->NodeLocalId(index);
+      return m_item_base.NodeLocalId(index);
     }
     public Node ToNode()
     {
-      return new Node(m_internal);
+      return new Node(m_item_base);
     }
     public Face ToFace()
     {
-      return new Face(m_internal);
+      return new Face(m_item_base);
     }
     public Cell ToCell()
     {
-      return new Cell(m_internal);
+      return new Cell(m_item_base);
     }
     public bool IsNull
     {
-      get { return m_internal->IsNull; }
+      get { return m_item_base.IsNull; }
     }
 
     static public void CheckSameKind(eItemKind k1,eItemKind k2,string message)
@@ -98,32 +120,49 @@ namespace Arcane
 
   }
 
+  //-----------------------------------------------------------------------------
+
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Cell : IItem
   {
-    private ItemInternal* m_internal;
+    private ItemBase m_item_base;
 
-    public ItemInternal* Internal
-    {
-      get { return m_internal; }
-      set { m_internal = value; }
-    }
-
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
     public Cell(ItemInternal* ii)
     {
-      m_internal = ii;
+      m_item_base = new ItemBase(ii);
     }
+
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
+    public ItemInternal* Internal
+    {
+      get { return m_item_base.Internal; }
+      set { m_item_base = new ItemBase(value); }
+    }
+
+    // TODO: a supprimer. Utiliser constructeur avec 'ItemBase' à la place
     public Cell(Item ii)
     {
-      m_internal = ii.Internal;
+      m_item_base = ii.ItemBase;
     }
+
+    public Cell(ItemBase ii)
+    {
+      m_item_base = ii;
+    }
+    public ItemBase ItemBase
+    {
+      get { return m_item_base; }
+      set { m_item_base = value; }
+    }
+
     public bool IsNull
     {
-      get { return m_internal->IsNull; }
+      get { return m_item_base.IsNull; }
     }
     public Int32 LocalId
     {
-      get { return m_internal->m_local_id; }
+      get { return m_item_base.LocalId; }
     }
     public eItemKind Kind
     {
@@ -132,69 +171,86 @@ namespace Arcane
 
     public Integer NbNode
     {
-      get { return m_internal->NbNode; }
+      get { return m_item_base.NbNode; }
     }
     public Node Node(Integer index)
     {
-      return new Node(m_internal->Node(index));
+      return new Node(m_item_base.Node(index));
     }
     public Int32 NodeLocalId(Integer index)
     {
-      return m_internal->NodeLocalId(index);
+      return m_item_base.NodeLocalId(index);
     }
     public NodeList Nodes
     {
-      get { return m_internal->Nodes; }
+      get { return m_item_base.Nodes; }
     }
 
     public Integer NbFace
     {
-      get { return m_internal->NbFace; }
+      get { return m_item_base.NbFace; }
     }
     public Face Face(Integer index)
     {
-      return new Face(m_internal->Face(index));
+      return new Face(m_item_base.Face(index));
     }
     public Int32 FaceLocalId(Integer index)
     {
-      return m_internal->FaceLocalId(index);
+      return m_item_base.FaceLocalId(index);
     }
     public ItemList<Face> Faces
     {
-      get { return m_internal->Faces; }
+      get { return m_item_base.Faces; }
     }
 
     public Int64 UniqueId
     {
-      get { return m_internal->UniqueId(); }
+      get { return m_item_base.UniqueId; }
     }
   }
+
+  //-----------------------------------------------------------------------------
 
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Face : IItem
   {
-    private ItemInternal* m_internal;
+    private ItemBase m_item_base;
 
-    public ItemInternal* Internal
-    {
-      get { return m_internal; }
-      set { m_internal = value; }
-    }
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
     public Face(ItemInternal* ii)
     {
-      m_internal = ii;
+      m_item_base = new ItemBase(ii);
     }
+
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
+    public ItemInternal* Internal
+    {
+      get { return m_item_base.Internal; }
+      set { m_item_base = new ItemBase(value); }
+    }
+
+    public Face(ItemBase ii)
+    {
+      m_item_base = ii;
+    }
+    public ItemBase ItemBase
+    {
+      get { return m_item_base; }
+      set { m_item_base = value; }
+    }
+
+    // TODO: a supprimer. Utiliser constructeur avec 'ItemBase' à la place
     public Face(Item ii)
     {
-      m_internal = ii.Internal;
+      m_item_base = ii.ItemBase;
     }
     public bool IsNull
     {
-      get { return m_internal->IsNull; }
+      get { return m_item_base.IsNull; }
     }
     public Int32 LocalId
     {
-      get { return m_internal->m_local_id; }
+      get { return m_item_base.LocalId; }
     }
     public eItemKind Kind
     {
@@ -203,75 +259,91 @@ namespace Arcane
 
     public Integer NbNode
     {
-      get { return m_internal->NbNode; }
+      get { return m_item_base.NbNode; }
     }
     public Node Node(Integer index)
     {
-      return new Node(m_internal->Node(index));
+      return new Node(m_item_base.Node(index));
     }
     public Int32 NodeLocalId(Integer index)
     {
-      return m_internal->NodeLocalId(index);
+      return m_item_base.NodeLocalId(index);
     }
     public NodeList Nodes
     {
-      get { return m_internal->Nodes; }
+      get { return m_item_base.Nodes; }
     }
 
     public Integer NbCell
     {
-      get { return m_internal->NbCell; }
+      get { return m_item_base.NbCell; }
     }
     public Cell Cell(Integer index)
     {
-      return new Cell(m_internal->Cell(index));
+      return new Cell(m_item_base.Cell(index));
     }
     public Int32 CellLocalId(Integer index)
     {
-      return m_internal->CellLocalId(index);
+      return m_item_base.CellLocalId(index);
     }
     public ItemList<Cell> Cells
     {
-      get { return m_internal->Cells; }
+      get { return m_item_base.Cells; }
     }
 
     public Cell BackCell
     {
-      get { return new Cell(m_internal->BackCell()); }
+      get { return new Cell(m_item_base.BackCell); }
     }
 
     public Cell FrontCell
     {
-      get { return new Cell(m_internal->FrontCell()); }
+      get { return new Cell(m_item_base.FrontCell); }
     }
 
     public Int64 UniqueId
     {
-      get { return m_internal->UniqueId(); }
+      get { return m_item_base.UniqueId; }
     }
   }
+
+  //-----------------------------------------------------------------------------
 
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Edge : IItem
   {
-    private ItemInternal* m_internal;
+    private ItemBase m_item_base;
 
-    public ItemInternal* Internal
-    {
-      get { return m_internal; }
-      set { m_internal = value; }
-    }
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
     public Edge(ItemInternal* ii)
     {
-      m_internal = ii;
+      m_item_base = new ItemBase(ii);
     }
+
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
+    public ItemInternal* Internal
+    {
+      get { return m_item_base.Internal; }
+      set { m_item_base = new ItemBase(value); }
+    }
+
+    public Edge(ItemBase ii)
+    {
+      m_item_base = ii;
+    }
+    public ItemBase ItemBase
+    {
+      get { return m_item_base; }
+      set { m_item_base = value; }
+    }
+
     public bool IsNull
     {
-      get { return m_internal->IsNull; }
+      get { return m_item_base.IsNull; }
     }
     public Int32 LocalId
     {
-      get { return m_internal->m_local_id; }
+      get { return m_item_base.LocalId; }
     }
     public eItemKind Kind
     {
@@ -280,39 +352,57 @@ namespace Arcane
 
     public Int64 UniqueId
     {
-      get { return m_internal->UniqueId(); }
+      get { return m_item_base.UniqueId; }
     }
   }
+
+  //-----------------------------------------------------------------------------
 
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct Node : IItem
   {
-    private ItemInternal* m_internal;
+    ItemBase m_item_base;
 
-    public Node(ItemInternal* ii)
-    {
-      m_internal = ii;
-    }
+    // TODO: a supprimer. Utiliser constructeur avec 'ItemBase' à la place
     public Node(Item ii)
     {
-      m_internal = ii.Internal;
+      m_item_base = ii.ItemBase;
     }
+
+    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
+    public Node(ItemInternal* ii)
+    {
+      m_item_base = new ItemBase(ii);
+    }
+
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
-      get { return m_internal; }
-      set { m_internal = value; }
+      get { return m_item_base.Internal; }
+      set { m_item_base = new ItemBase(value); }
     }
+
+    public Node(ItemBase ii)
+    {
+      m_item_base = ii;
+    }
+    public ItemBase ItemBase
+    {
+      get { return m_item_base; }
+      set { m_item_base = value; }
+    }
+
     public bool IsNull
     {
-      get { return m_internal->IsNull; }
+      get { return m_item_base.IsNull; }
     }
     public Int32 LocalId
     {
-      get { return m_internal->m_local_id; }
+      get { return m_item_base.LocalId; }
     }
     public Int64 UniqueId
     {
-      get { return m_internal->UniqueId(); }
+      get { return m_item_base.UniqueId; }
     }
     public eItemKind Kind
     {
@@ -321,27 +411,25 @@ namespace Arcane
 
     public Cell Cell(Integer index)
     {
-      return new Cell(m_internal->Cell(index));
+      return new Cell(m_item_base.Cell(index));
     }
     public Int32 CellLocalId(Integer index)
     {
-      return m_internal->CellLocalId(index);
+      return m_item_base.CellLocalId(index);
     }
     public Integer NbCell
     {
-      get { return m_internal->NbCell; }
+      get { return m_item_base.NbCell; }
     }
     public ItemList<Cell> Cells
     {
-      get { return m_internal->Cells; }
+      get { return m_item_base.Cells; }
     }
   }
 
-    [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct IndexedItem<_ItemKind>
-    where _ItemKind : IItem, new()
+  [StructLayout(LayoutKind.Sequential)]
+  public unsafe struct IndexedItem<_ItemKind> where _ItemKind : IItem, new()
   {
-    //private ItemInternal* m_internal;
     private Integer m_index;
     private _ItemKind m_item;
 
@@ -354,12 +442,21 @@ namespace Arcane
 
     public Integer Index { get { return m_index; } }
 
+    [Obsolete("This method is internal to Arcane")]
     public IndexedItem(ItemInternal* ii,Integer index)
     {
       m_item = new _ItemKind();
       m_item.Internal = ii;
       m_index = index;
     }
+
+    public IndexedItem(ItemBase ii,Integer index)
+    {
+      m_item = new _ItemKind();
+      m_item.ItemBase = ii;
+      m_index = index;
+    }
+
     public IndexedItem(_ItemKind item,Integer index)
     {
       m_item = item;
@@ -376,7 +473,6 @@ namespace Arcane
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct IndexedNode
   {
-    //private ItemInternal* m_internal;
     private Integer m_index;
     private Node m_item;
 
@@ -389,12 +485,20 @@ namespace Arcane
 
     public Integer Index { get { return m_index; } }
 
+    [Obsolete("This method is internal to Arcane")]
     public IndexedNode(ItemInternal* ii,Integer index)
     {
       m_item = new Node();
       m_item.Internal = ii;
       m_index = index;
     }
+
+    public IndexedNode(ItemBase ii,Integer index)
+    {
+      m_item = new Node(ii);
+      m_index = index;
+    }
+
     public IndexedNode(Node item,Integer index)
     {
       m_item = item;

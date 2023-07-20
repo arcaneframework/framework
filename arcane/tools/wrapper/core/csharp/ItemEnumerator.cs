@@ -31,7 +31,7 @@ namespace Arcane
     internal Int32* m_local_ids;
     internal ItemInternal** m_items;
 
-    public ItemEnumerator2(ItemInternal** items,Int32* local_ids,Integer end)
+    internal ItemEnumerator2(ItemInternal** items,Int32* local_ids,Integer end)
     {
       m_items = items;
       m_local_ids = local_ids;
@@ -46,7 +46,7 @@ namespace Arcane
 
     public Item Current
     {
-      get{ return new Item(m_items[m_local_ids[m_current]]); }
+      get{ return new Item(new ItemBase(m_items[m_local_ids[m_current]])); }
     }
 
     public bool MoveNext()
@@ -60,8 +60,7 @@ namespace Arcane
   /*---------------------------------------------------------------------------*/
 
   [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct ItemEnumerator<_ItemKind>
-    where _ItemKind : IItem, new()
+  public unsafe struct ItemEnumerator<_ItemKind> where _ItemKind : IItem, new()
   {
     //NOTE: normalement il s'agit d'un 'ItemInternal**' mais cela plante
     // avec les versions 2.10.* de mono (marche avec 2.8.1)
@@ -71,7 +70,7 @@ namespace Arcane
     Integer m_end;
     _ItemKind m_true_type;
 
-    public ItemEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
+    internal ItemEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
     {
       m_items = (IntPtr*)items;
       m_local_ids = local_ids;
@@ -95,7 +94,7 @@ namespace Arcane
       ++m_current;
       if (m_current>=m_end)
         return false;
-      m_true_type.Internal = (ItemInternal*)m_items[m_local_ids[m_current]];
+      m_true_type.ItemBase = new ItemBase((ItemInternal*)m_items[m_local_ids[m_current]]);
       return true;
     }
   }
@@ -104,26 +103,22 @@ namespace Arcane
   /*---------------------------------------------------------------------------*/
 
   [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct IndexedItemEnumerator<_ItemKind>
-    where _ItemKind : IItem, new()
+  public unsafe struct IndexedItemEnumerator<_ItemKind> where _ItemKind : IItem, new()
   {
     Int32 m_current;
     Integer m_end;
     Int32* m_local_ids;
-    //NOTE: normalement il s'agit d'un ItemInternal** mais cela plante
-    // avec les versions 2.10.* de mono (marche avec 2.8.1)
-    //IntPtr* m_items;
     ItemInternal** m_items;
 
     IndexedItem<_ItemKind> m_current_item;
 
-    public IndexedItemEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
+    internal IndexedItemEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
     {
       m_items = items;
       m_local_ids = local_ids;
       m_current = -1;
       m_end = end;
-      m_current_item = new IndexedItem<_ItemKind>(null,0);
+      m_current_item = new IndexedItem<_ItemKind>(new ItemBase(),0);
     }
 
     public IndexedItemEnumerator(ItemEnumerator ie)
@@ -132,7 +127,7 @@ namespace Arcane
       m_local_ids = ie.m_local_ids;
       m_current = -1;
       m_end = ie.m_end;
-      m_current_item = new IndexedItem<_ItemKind>(null,0);
+      m_current_item = new IndexedItem<_ItemKind>(new ItemBase(),0);
     }
 
     public void Reset()
@@ -143,13 +138,11 @@ namespace Arcane
     public IndexedItem<_ItemKind> Current
     {
       get{ m_current_item._Set(m_items[m_local_ids[m_current]],m_current); return m_current_item; }
-      //get{ return m_current_item; }//new IndexedItem<_ItemKind>((ItemInternal*)m_items[m_local_ids[m_current]],m_current); }
     }
 
     public bool MoveNext()
     {
       ++m_current;
-      //m_current_item._Set((ItemInternal*)m_items[m_local_ids[m_current]],m_current);
       return m_current<m_end;
     }
   }
@@ -165,7 +158,7 @@ namespace Arcane
     Int32* m_local_ids;
     ItemInternal** m_items;
 
-    public IndexedNodeEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
+    internal IndexedNodeEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
     {
       m_items = items;
       m_local_ids = local_ids;
@@ -188,7 +181,7 @@ namespace Arcane
 
     public IndexedNode Current
     {
-      get{ return new IndexedNode(m_items[m_local_ids[m_current]],m_current); }
+      get{ return new IndexedNode(new ItemBase(m_items[m_local_ids[m_current]]),m_current); }
     }
 
     public bool MoveNext()
@@ -202,26 +195,19 @@ namespace Arcane
   /*---------------------------------------------------------------------------*/
 
   [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct ItemList<_ItemKind>
-    where _ItemKind : IItem, new()
+  public unsafe struct ItemList<_ItemKind> where _ItemKind : IItem, new()
   {
     ItemInternal** m_items;
     Int32* m_local_ids;
     Integer m_end;
 
-    public ItemList(ItemInternal** items,Int32* local_ids,Integer end)
+    internal ItemList(ItemInternal** items,Int32* local_ids,Integer end)
     {
       m_items = items;
       m_local_ids = local_ids;
       m_end = end;
     }
 
-#if false
-    public ItemEnumerator<_ItemKind> GetEnumerator()
-    {
-      return new ItemEnumerator<_ItemKind>(m_items,m_local_ids,m_end);
-    }
-#endif
     public IndexedItemEnumerator<_ItemKind> GetEnumerator()
     {
       return new IndexedItemEnumerator<_ItemKind>(m_items,m_local_ids,m_end);
@@ -304,7 +290,7 @@ namespace Arcane
       get
       {
         _ItemKind item = new _ItemKind();
-        item.Internal = m_items[m_local_ids[index]].Internal;
+        item.ItemBase = m_items[m_local_ids[index]].ItemBase;
         return item;
       }
     }
@@ -448,7 +434,7 @@ namespace Arcane
       m_pair.m_sub_local_ids = m_sub_items_local_id._InternalData()+m_indexes[m_current];
       m_pair.m_nb_sub_item = m_indexes[m_current+1]-m_indexes[m_current];
       m_pair.m_index = m_current;
-      m_pair.m_item.Internal = m_items_internal.m_ptr[m_current];
+      m_pair.m_item.ItemBase = new ItemBase(m_items_internal.m_ptr[m_current]);
       return true;
     }
     void IDisposable.Dispose(){}

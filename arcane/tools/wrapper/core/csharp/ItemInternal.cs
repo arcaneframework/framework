@@ -345,12 +345,17 @@ namespace Arcane
     public Item this[Integer index]
     {
       get{
-        return new Item(m_ptr[index]);
+        return new Item(new ItemBase(m_ptr[index]));
       }
     }
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* ItemInternal(Integer index)
     {
       return m_ptr[index];
+    }
+    public ItemBase ItemBase(Integer index)
+    {
+      return new ItemBase(m_ptr[index]);
     }
     public Integer Size { get { return m_size; } }
   }
@@ -366,7 +371,7 @@ namespace Arcane
       Integer s = ilist.Size;
       m_items = new Item[s];
       for( int i=0; i<s; ++i )
-        m_items[i] = new Item(ilist.ItemInternal(i));
+        m_items[i] = new Item(ilist.ItemBase(i));
     }
     public Integer Size
     {
@@ -379,5 +384,43 @@ namespace Arcane
         return m_items[index];
       }
     }
+  }
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
+  public unsafe struct ItemBase
+  {
+    internal ItemBase(ItemInternal* v)
+    {
+      m_item_internal = v;
+    }
+
+    internal ItemInternal* Internal { get { return m_item_internal; } }
+
+    internal bool IsNull { get { return m_item_internal->IsNull; } }
+    internal Int32 LocalId { get { return m_item_internal->m_local_id; } }
+    internal Int64 UniqueId { get { return m_item_internal->UniqueId(); } }
+    internal eItemKind Kind { get { return m_item_internal->Kind; } }
+
+    internal Int32 NbNode { get { return m_item_internal->NbNode; } }
+    internal ItemBase Node(Int32 index) { return new ItemBase(m_item_internal->Node(index)); }
+    internal Int32 NodeLocalId(Int32 index) { return m_item_internal->NodeLocalId(index); }
+    internal NodeList Nodes{ get { return m_item_internal->Nodes; } }
+
+    internal Int32 NbFace { get { return m_item_internal->NbFace; } }
+    internal ItemBase Face(Int32 index) { return new ItemBase(m_item_internal->Face(index)); }
+    internal Int32 FaceLocalId(Int32 index) { return m_item_internal->FaceLocalId(index); }
+    internal ItemList<Face> Faces { get { return m_item_internal->Faces; } }
+
+    internal Int32 NbCell { get { return m_item_internal->NbCell; } }
+    internal ItemBase Cell(Int32 index) { return new ItemBase(m_item_internal->Cell(index)); }
+    internal Int32 CellLocalId(Int32 index) { return m_item_internal->CellLocalId(index); }
+    internal ItemList<Cell> Cells { get { return m_item_internal->Cells; } }
+
+    internal ItemBase BackCell { get { return new ItemBase(m_item_internal->BackCell()); } }
+    internal ItemBase FrontCell { get { return new ItemBase(m_item_internal->FrontCell()); } }
+
+    ItemInternal* m_item_internal;
   }
 }

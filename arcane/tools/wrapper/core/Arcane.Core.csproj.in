@@ -4,6 +4,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <LangVersion>10</LangVersion>
   </PropertyGroup>
 
   <!-- Infos pour NuGet -->
