@@ -58,5 +58,6 @@ target_link_libraries(alien_data PUBLIC
         Arccore::arccore_message_passing_mpi)
 
 target_link_libraries(alien_data PUBLIC alien_utils)
+target_compile_definitions(alien_data PRIVATE alien_core_EXPORTS)
 
 install(TARGETS alien_data EXPORT ${ALIEN_EXPORT_TARGET})

@@ -40,5 +40,6 @@ target_link_libraries(alien_kernel_composite PUBLIC
         Arccore::arccore_message_passing_mpi)
 
 target_link_libraries(alien_kernel_composite PUBLIC alien_utils alien_headers)
+target_compile_definitions(alien_kernel_composite PRIVATE alien_core_EXPORTS)
 
 install(TARGETS alien_kernel_composite EXPORT ${ALIEN_EXPORT_TARGET})

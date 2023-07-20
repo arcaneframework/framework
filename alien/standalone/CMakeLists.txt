@@ -142,6 +142,12 @@ if (ALIEN_DEFAULT_OPTIONS)
     set(ALIEN_UNIT_TESTS ${GTest_FOUND})
 endif ()
 
+# GG: remove unit testing on Win32 because of link issues
+# This is temporary (July 2023)
+if (WIN32)
+  set(ALIEN_UNIT_TESTS FALSE)
+endif()
+
 enable_testing()
 
 if (ALIEN_GENERATE_DOCUMENTATION)

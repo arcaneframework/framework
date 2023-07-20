@@ -131,16 +131,16 @@ bool readMMHeaderFromReader(const std::string& mm_type, ReaderT& reader)
 
   // TODO: use methods that directly read from std::string
   if (sscanf(reader.line(), "%%%%MatrixMarket %31s %31s %31s %31s", param1, param2, param3, param4) != 4) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Matrix market wrong header");
+    throw FatalErrorException(A_FUNCINFO, "Matrix market wrong header");
   }
   if (std::string(param1) != std::string("matrix")) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Matrix market wrong header 1");
+    throw FatalErrorException(A_FUNCINFO, "Matrix market wrong header 1");
   }
   if (std::string(param2) != mm_type) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Matrix market wrong header 2");
+    throw FatalErrorException(A_FUNCINFO, "Matrix market wrong header 2");
   }
   if (std::string(param3) != std::string("real")) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Matrix market wrong header 3");
+    throw FatalErrorException(A_FUNCINFO, "Matrix market wrong header 3");
   }
 
   // skip comments
@@ -159,7 +159,7 @@ void loadMMMatrixFromReader(MatrixT& A, ReaderT& reader)
   int n, m, nnz;
   if (sscanf(reader.currentLine(), "%d %d %d", &n, &m, &nnz) != 3) {
     perror("read mtx size line");
-    throw FatalErrorException(__PRETTY_FUNCTION__, "IOError");
+    throw FatalErrorException(A_FUNCINFO, "IOError");
   }
 
   Alien::MatrixDistribution dist(n, m, n, nullptr);
@@ -178,7 +178,7 @@ void loadMMMatrixFromReader(MatrixT& A, ReaderT& reader)
 
     if (sscanf(reader.line(), "%d %d %lg\n", &li, &ci, &val) != 3) {
       perror("read mtx line");
-      throw FatalErrorException(__PRETTY_FUNCTION__, "IOError");
+      throw FatalErrorException(A_FUNCINFO, "IOError");
     }
     li--;
     ci--;
@@ -196,12 +196,12 @@ void loadMMRhsFromReader(VectorT& rhs, ReaderT& reader)
   int n, m;
   if (sscanf(reader.currentLine(), "%d %d", &n, &m) != 2) {
     perror("read mtx size line");
-    throw FatalErrorException(__PRETTY_FUNCTION__, "IOError");
+    throw FatalErrorException(A_FUNCINFO, "IOError");
   }
 
   if (m > 1) // does not allow more than one vector
   {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "More than one vector not allowed");
+    throw FatalErrorException(A_FUNCINFO, "More than one vector not allowed");
   }
 
   Alien::VectorDistribution dist(n, n, nullptr);
@@ -214,7 +214,7 @@ void loadMMRhsFromReader(VectorT& rhs, ReaderT& reader)
     double val = 0;
     if (sscanf(reader.line(), "%lg\n", &val) != 1) {
       perror("read mtx line");
-      throw FatalErrorException(__PRETTY_FUNCTION__, "IOError");
+      throw FatalErrorException(A_FUNCINFO, "IOError");
     }
 
     vector_writer[i] = val;
