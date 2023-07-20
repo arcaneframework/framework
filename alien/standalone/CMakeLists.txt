@@ -164,7 +164,7 @@ endif (ALIEN_GENERATE_DOCUMENTATION)
 #   * <prefix>/lib*/cmake/<PROJECT-NAME>
 #   * <prefix>/lib*/
 #   * <prefix>/include/
-set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+set(config_install_dir "${CMAKE_INSTALL_PREFIX}/lib/cmake/${PROJECT_NAME}")
 
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
