@@ -19,6 +19,8 @@ namespace Arcane
     [Obsolete("This method is internal to Arcane")]
     ItemInternal* Internal { get; set; }
 
+    ItemBase ItemBase { get; set; }
+
     Int32 LocalId { get; }
     Int64 UniqueId { get; }
     bool IsNull { get; }
@@ -40,6 +42,16 @@ namespace Arcane
     {
       get { return m_internal; }
       set { m_internal = value; }
+    }
+
+    public Item(ItemBase ii)
+    {
+      m_internal = ii.Internal;
+    }
+    public ItemBase ItemBase
+    {
+      get { return new ItemBase(m_internal); }
+      set { m_internal = value.Internal; }
     }
 
     public Item(Cell cell)
@@ -121,6 +133,17 @@ namespace Arcane
     {
       m_internal = ii;
     }
+
+    public Cell(ItemBase ii)
+    {
+      m_internal = ii.Internal;
+    }
+    public ItemBase ItemBase
+    {
+      get { return new ItemBase(m_internal); }
+      set { m_internal = value.Internal; }
+    }
+
     public Cell(Item ii)
     {
       m_internal = ii.Internal;
@@ -194,6 +217,17 @@ namespace Arcane
     {
       m_internal = ii;
     }
+
+    public Face(ItemBase ii)
+    {
+      m_internal = ii.Internal;
+    }
+    public ItemBase ItemBase
+    {
+      get { return new ItemBase(m_internal); }
+      set { m_internal = value.Internal; }
+    }
+
     public Face(Item ii)
     {
       m_internal = ii.Internal;
@@ -278,6 +312,16 @@ namespace Arcane
       m_internal = ii;
     }
 
+    public Edge(ItemBase ii)
+    {
+      m_internal = ii.Internal;
+    }
+    public ItemBase ItemBase
+    {
+      get { return new ItemBase(m_internal); }
+      set { m_internal = value.Internal; }
+    }
+
     public bool IsNull
     {
       get { return m_internal->IsNull; }
@@ -317,6 +361,17 @@ namespace Arcane
       get { return m_internal; }
       set { m_internal = value; }
     }
+
+    public Node(ItemBase ii)
+    {
+      m_internal = ii.Internal;
+    }
+    public ItemBase ItemBase
+    {
+      get { return new ItemBase(m_internal); }
+      set { m_internal = value.Internal; }
+    }
+
     public bool IsNull
     {
       get { return m_internal->IsNull; }

@@ -380,4 +380,16 @@ namespace Arcane
       }
     }
   }
+
+  public unsafe struct ItemBase
+  {
+    internal ItemBase(ItemInternal* v)
+    {
+      m_item_internal = v;
+    }
+
+    internal ItemInternal* Internal { get { return m_item_internal; } }
+
+    ItemInternal* m_item_internal;
+  }
 }
