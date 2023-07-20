@@ -2,3 +2,6 @@
 	path = dependencies
 	url = ../dependencies.git
         branch = .
+[submodule "app_buildsystem_tools"]
+	path = app_buildsystem_tools
+	url = ../app_buildsystem_tools
