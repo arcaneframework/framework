@@ -29,8 +29,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     # using Intel C++ (not tested)
     target_compile_options(SGraph INTERFACE)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # using Visual Studio C++
-    target_compile_options(SGraph INTERFACE -Wall)
+    # using Visual Studio C++: default warning level is enough
 endif()
 
 include(GNUInstallDirs)
