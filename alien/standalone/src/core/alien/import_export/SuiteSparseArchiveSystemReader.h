@@ -60,7 +60,7 @@ void SuiteSparseArchiveSystemReader::readMatrix(MatrixT& A)
 
   auto r = archive_read_open_filename(m_archive, m_filename.c_str(), 10240);
   if (r != ARCHIVE_OK) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Open archive " + m_filename);
+    throw FatalErrorException(A_FUNCINFO, "Open archive " + m_filename);
   }
 
   // look for matrix in archive
@@ -79,7 +79,7 @@ void SuiteSparseArchiveSystemReader::readMatrix(MatrixT& A)
   }
 
   if (!matrix_found) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Matrix not found in " + m_filename);
+    throw FatalErrorException(A_FUNCINFO, "Matrix not found in " + m_filename);
   }
 
   LibArchiveReader reader(m_archive);
@@ -87,12 +87,12 @@ void SuiteSparseArchiveSystemReader::readMatrix(MatrixT& A)
 
   r = archive_read_close(m_archive);
   if (r != ARCHIVE_OK) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Close archive " + m_filename);
+    throw FatalErrorException(A_FUNCINFO, "Close archive " + m_filename);
   }
 
   r = archive_free(m_archive);
   if (r != ARCHIVE_OK) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Free archive");
+    throw FatalErrorException(A_FUNCINFO, "Free archive");
   }
 }
 
@@ -105,7 +105,7 @@ void SuiteSparseArchiveSystemReader::readVector(VectorT& rhs)
 
   auto r = archive_read_open_filename(m_archive, m_filename.c_str(), 10240);
   if (r != ARCHIVE_OK) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Open archive " + m_filename);
+    throw FatalErrorException(A_FUNCINFO, "Open archive " + m_filename);
   }
 
   bool vector_found = false;
@@ -130,12 +130,12 @@ void SuiteSparseArchiveSystemReader::readVector(VectorT& rhs)
 
   r = archive_read_close(m_archive);
   if (r != ARCHIVE_OK) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Close archive " + m_filename);
+    throw FatalErrorException(A_FUNCINFO, "Close archive " + m_filename);
   }
 
   r = archive_free(m_archive);
   if (r != ARCHIVE_OK) {
-    throw FatalErrorException(__PRETTY_FUNCTION__, "Free archive");
+    throw FatalErrorException(A_FUNCINFO, "Free archive");
   }
 }
 

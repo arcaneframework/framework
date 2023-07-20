@@ -52,7 +52,7 @@ void MatrixMarketSystemReader::readMatrix(MatrixT& A)
   std::fstream file_stream(m_filename, std::ios::in);
 
   if (!file_stream.good()) {
-    throw FatalErrorException(__PRETTY_FUNCTION__);
+    throw FatalErrorException(A_FUNCINFO);
   }
 
   FStreamReader reader(&file_stream);
@@ -65,7 +65,7 @@ void MatrixMarketSystemReader::readVector(VectorT& rhs)
   std::fstream file_stream(m_filename, std::ios::in);
 
   if (!file_stream.good()) {
-    throw FatalErrorException(__PRETTY_FUNCTION__);
+    throw FatalErrorException(A_FUNCINFO);
   }
 
   FStreamReader reader(&file_stream);
