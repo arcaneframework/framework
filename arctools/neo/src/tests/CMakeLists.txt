@@ -14,6 +14,10 @@ if(Xdmf_FOUND)
     message("-- XDMF Found ${XDMF_INCLUDE_DIRS}" )
 endif(Xdmf_FOUND)
 
+if (USE_GTEST_DEATH_TEST)
+    target_compile_definitions(Neo.tests PRIVATE USE_GTEST_DEATH_TEST=1)
+endif ()
+
 target_link_libraries(Neo.tests GTest::GTest GTest::Main Neo)
 
 file( COPY meshes DESTINATION ${CMAKE_BINARY_DIR}/arctools/neo/src/tests)
