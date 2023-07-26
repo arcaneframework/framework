@@ -1355,6 +1355,11 @@ file(APPEND ${generated_config_dir}/ArcaneConfigCache.cmake ${_ARCANE_PACKAGES_R
 install(FILES extras/coverity/ArcaneModel.cc DESTINATION share/coverity)
 
 # ----------------------------------------------------------------------------
+# Indique que Arcane est trouvé pour les autres éléments du mono-dépôt qui en dépendent (Alien/ArcaneInterface)
+# Donne accès aux fonctions cmake d'Arcane aux autres éléments du mono-dépôt (Alien/ArcaneInterface)
+set(Arcane_FOUND YES PARENT_SCOPE)
+set(ARCANE_CMAKE_COMMANDS ${ARCANESRCROOT}/cmake/Functions.cmake PARENT_SCOPE)
+# ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
 # indent-tabs-mode: nil
