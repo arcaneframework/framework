@@ -23,7 +23,7 @@ namespace Alien {
 
 template class ALIEN_EXTERNAL_PACKAGES_EXPORT LinearAlgebra<BackEnd::tag::mtl>;
 
-IInternalLinearAlgebra<MTLMatrix, MTLVector>*
+extern ALIEN_EXTERNAL_PACKAGES_EXPORT IInternalLinearAlgebra<MTLMatrix, MTLVector>*
 MTLInternalLinearAlgebraFactory()
 {
   return new MTLInternalLinearAlgebra();

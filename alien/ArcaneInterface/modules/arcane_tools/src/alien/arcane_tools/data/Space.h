@@ -1,7 +1,7 @@
 #pragma once
 
 
-
+#include <alien/arcane_tools/ALIENArcaneToolsPrecomp.h>
 #include <alien/data/Space.h>
 #include <alien/arcane_tools/IIndexManager.h>
 
@@ -18,7 +18,7 @@ namespace ArcaneTools {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class Space final
+class ALIEN_ARCANE_TOOLS_EXPORT Space final
   : public Alien::ISpace
 {
  public:

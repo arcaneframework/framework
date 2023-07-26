@@ -17,7 +17,7 @@ namespace Alien {
 
 template class ALIEN_EXTERNAL_PACKAGES_EXPORT LinearAlgebra<BackEnd::tag::petsc>;
 
-IInternalLinearAlgebra<PETScMatrix, PETScVector>*
+extern ALIEN_EXTERNAL_PACKAGES_EXPORT IInternalLinearAlgebra<PETScMatrix, PETScVector>*
 PETScInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* pm)
 {
   return new PETScInternalLinearAlgebra(pm);
