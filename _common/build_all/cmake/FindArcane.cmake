@@ -1,0 +1,10 @@
+if (NOT Arcane_ROOT)
+   # Pour compatibilité
+   set(Arcane_ROOT "${ARCANE_ROOT}")
+endif()
+if (NOT Arcane_ROOT)
+   message(FATAL_ERROR "Variable 'Arcane_ROOT' is not set")
+endif()
+add_subdirectory(${Arcane_ROOT} arcane)
+set(Arcane_FOUND YES)
+set(Arcane_FOUND YES PARENT_SCOPE)
