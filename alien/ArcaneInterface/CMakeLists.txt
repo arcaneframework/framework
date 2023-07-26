@@ -16,9 +16,9 @@ project(ALIEN
 # ----------------------------------------------------------------------------
 
 message(STATUS "app_buildsystem_tools")
-set(INFRA_BUILDSYSTEM_PATH ${CMAKE_SOURCE_DIR}/app_buildsystem_tools)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/app_buildsystem_tools/tools)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/app_buildsystem_tools/alien)
+set(INFRA_BUILDSYSTEM_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools)
+list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools/tools)
+list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools/alien)
 
 set(USE_AXLSTAR TRUE)
 
