@@ -15,21 +15,12 @@ project(ALIEN
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-if(USE_BUILDSYSTEM_GIT_SUBMODULE)
-  message(status "USE NEW BUILDSYSTEM")
-  set(INFRA_BUILDSYSTEM_PATH ${PROJECT_SOURCE_DIR}/app-cmake-buildsystem)
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/app-cmake-buildsystem/tools)
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/app-cmake-buildsystem/alien)
-else()
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/build-system)
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-endif()
-if(DESACTIVATE_AXLSTAR)
-  set(USE_AXLSTAR FALSE)
-  set(AXL_HEADERS_PATH ${CMAKE_SOURCE_DIR}/modules/axl)
-else()
-  set(USE_AXLSTAR TRUE)
-endif()
+message(STATUS "app_buildsystem_tools")
+set(INFRA_BUILDSYSTEM_PATH ${CMAKE_SOURCE_DIR}/app_buildsystem_tools)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/app_buildsystem_tools/tools)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/app_buildsystem_tools/alien)
+
+set(USE_AXLSTAR TRUE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -39,8 +30,8 @@ set(REQUIRE_INSTALL_PROJECTTARGETS TRUE)
 set(Arccon_USE_CMAKE_CONFIG TRUE)
 set(Arccore_USE_CMAKE_CONFIG TRUE)
 set(Axlstar_USE_CMAKE_CONFIG TRUE)
-set(Alien_USE_CMAKE_CONFIG TRUE)
 set(Arcane_USE_CMAKE_CONFIG TRUE)
+#set(Alien_USE_CMAKE_CONFIG TRUE)
 #set(PETSc_USE_CMAKE_CONFIG TRUE)
 #set(PETSc_USE_PKGCONFIG TRUE)
 #set(Hypre_USE_CMAKE_CONFIG TRUE)
@@ -51,7 +42,7 @@ set(TBB_USE_CMAKE_CONFIG TRUE)
 set(MPI_USE_CMAKE_CONFIG TRUE)
 set(OpenBLAS_USE_CMAKE_CONFIG TRUE)
 set(Boost_USE_CMAKE_CONFIG TRUE)
-set(Glib_USE_CMAKE_CONFIG TRUE)
+#set(Glib_USE_CMAKE_CONFIG TRUE)
 set(HDF5_USE_CMAKE_CONFIG TRUE)
 
 include(LoadBuildSystem)
@@ -81,6 +72,9 @@ include(LoadAlienOptions)
 
 # Alien's external dependencies
 include(LoadAlienPackages)
+
+# Include Arcane cmake functions
+include(${ARCANE_CMAKE_COMMANDS})
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
