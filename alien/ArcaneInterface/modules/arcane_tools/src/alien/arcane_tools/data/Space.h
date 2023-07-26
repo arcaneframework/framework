@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 
 #include <alien/arcane_tools/ALIENArcaneToolsPrecomp.h>
