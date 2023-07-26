@@ -43,7 +43,7 @@ list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/_common/build_all/cmake)
 
 # Add Alien only if blas and boost found
 find_package(BLAS)
-find_package(Boost COMPONENTS program_options)
+find_package(Boost COMPONENTS program_options timer)
 if (BLAS_FOUND AND Boost_FOUND)
     add_subdirectory(standalone)
     set(ALIEN_FOUND YES)
