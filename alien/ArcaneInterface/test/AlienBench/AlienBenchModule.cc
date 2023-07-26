@@ -166,8 +166,8 @@ AlienBenchModule::test()
 
   ENUMERATE_CELL (icell, areaU) {
     Real3 x;
-    ENUMERATE_NODE (inode, icell->nodes()) {
-      x += m_node_coord[*inode];
+    for (Arcane::Node node : icell->nodes()) {
+      x += m_node_coord[node];
     }
     x /= icell->nbNode();
     m_cell_center[icell] = x;
