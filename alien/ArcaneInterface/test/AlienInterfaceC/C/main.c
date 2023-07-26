@@ -129,7 +129,7 @@ int main(int argc, char** argv)
   }
 
   printf("INIT SYSTEM ID %d: gsize=%d lsize=%d\n",system_id,global_nrows,local_nrows);
-  error += ALIEN_init_linear_system(system_id,global_nrows,local_nrows,row_uids,nb_ghosts,ghost_uids,ghost_owners) ;
+  error = ALIEN_init_linear_system(system_id,global_nrows,local_nrows,row_uids,nb_ghosts,ghost_uids,ghost_owners) ;
 
   printf("DEFINE MATRIX PROFILE ID %d: gsize=%d lsize=%d\n",system_id,global_nrows,local_nrows);
   error += ALIEN_define_matrix_profile(system_id,local_nrows,row_uids,row_offset,col_uids) ;
