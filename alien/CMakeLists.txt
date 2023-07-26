@@ -31,6 +31,11 @@ endmacro()
 
 arcane_framework_set_if_unset(Arccon_ROOT ${ARCFRAMEWORK_ROOT}/arccon PATH "Arccon root path")
 arcane_framework_set_if_unset(Arccore_ROOT ${ARCFRAMEWORK_ROOT}/arccore PATH "Arccore root")
+arcane_framework_set_if_unset(AXLSTAR_ROOT ${ARCFRAMEWORK_ROOT}/axlstar PATH "Axlstar root")
+arcane_framework_set_if_unset(ARCDEPENDENCIES_ROOT ${ARCFRAMEWORK_ROOT}/dependencies PATH "Arcdependencies root")
+arcane_framework_set_if_unset(Arcane_ROOT ${ARCFRAMEWORK_ROOT}/arcane PATH "Arcane root")
+arcane_framework_set_if_unset(Arctools_ROOT ${ARCFRAMEWORK_ROOT}/arctools PATH "Arctools root")
+
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/_common/build_all/cmake)
 
@@ -39,4 +44,7 @@ find_package(BLAS)
 find_package(Boost COMPONENTS program_options)
 if (BLAS_FOUND AND Boost_FOUND)
     add_subdirectory(standalone)
+    set(ALIEN_FOUND YES)
+    set(FRAMEWORK_INSTALL YES)
+    add_subdirectory(ArcaneInterface)
 endif()
