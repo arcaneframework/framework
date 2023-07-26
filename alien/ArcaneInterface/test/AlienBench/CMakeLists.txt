@@ -70,7 +70,7 @@ set(ALIEN_EXAMPLE_NAME "AlienExample.exe")
 configure_file(Makefile.in Makefile.example @ONLY)
 
 install(FILES
-        ${PROJECT_BINARY_DIR}/ALIEN/axl/AlienBench_axl.h
+        ${CMAKE_BINARY_DIR}/ALIEN/axl/AlienBench_axl.h
         AlienBenchModule.h
         AlienBenchModule.cc
         main.cc
