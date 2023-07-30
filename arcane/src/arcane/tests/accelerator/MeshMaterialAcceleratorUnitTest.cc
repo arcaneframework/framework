@@ -546,13 +546,13 @@ _executeTest4(Integer nb_z)
   MaterialVariableCellReal& b_ref(m_mat_b_ref);
   MaterialVariableCellReal& c_ref(m_mat_c_ref);
 
-  CellToAllEnvCellConverter* allenvcell_converter = new CellToAllEnvCellConverter(m_mm_mng);
+  CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
 
   // Ref CPU
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
     ENUMERATE_CELL(icell, allCells()) {
       Cell cell = * icell;
-      AllEnvCell all_env_cell = (*allenvcell_converter)[cell];
+      AllEnvCell all_env_cell = allenvcell_converter[cell];
 
       Real sum2=0.;
       ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
