@@ -55,7 +55,7 @@ std::string Neo::Mesh::_connectivityOrientationPropertyName(std::string const& s
 
 Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept {
   Neo::print() << "Add Family " << family_name << " in mesh " << name() << std::endl;
-  auto& item_family = m_families.push_back(item_kind, std::move(family_name));
+  auto& item_family = m_families.push_back(item_kind, family_name);
   item_family.addMeshScalarProperty<Neo::utils::Int64>(uniqueIdPropertyName(family_name));
   return item_family;
 }
