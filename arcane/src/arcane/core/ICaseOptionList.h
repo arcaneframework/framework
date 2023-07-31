@@ -44,29 +44,22 @@ class ARCANE_CORE_EXPORT ICaseOptionList
 
   /*!
    * \brief Retourne l'élément lié à cette liste d'option.
-   * S'il n'y en a pas, retourne 0. S'il y en a plusieurs, retourne le
+   *
+   * S'il n'y en a pas, retourne un XmlNode nul. S'il y en a plusieurs, retourne le
    * premier.
    */
   virtual XmlNode rootElement() const =0;
   //! Retourne l'élément parent.
   virtual XmlNode parentElement() const =0;
-
-  //! Ajoute l'option \a o avec le parent \a parent
-  virtual void addConfig(CaseOptionBase* o,XmlNode parent) =0;
   //! Ajoute la liste \a co à la liste des fils.
   virtual void addChild(ICaseOptions* co) =0;
   //! Supprime \a co de la liste des fils.
   virtual void removeChild(ICaseOptions* co) =0;
   //! Retourne le gestionnaire du cas
   virtual ICaseMng* caseMng() const =0;
-  //! Positionne l'élément racine de la liste, avec \a parent_element comme parent. Si déjà positionné, ne fait rien
-  virtual void setRootElementWithParent(XmlNode parent_element) =0;
-  //! Positionne l'élément racine de la liste. Si déjà positionné, lance une exception
-  virtual void setRootElement(XmlNode root_element) =0;
+
   //! Lis les valeurs des options à partir des éléments du DOM.
   virtual void readChildren(bool is_phase1) =0;
-  //! Ajoute les éléments fils ne correspondants par à de options dans \a nlist
-  virtual void addInvalidChildren(XmlNodeList& nlist) =0;
   //! Affiche la liste des options filles dans le langage \a lang et leur valeur
   virtual void printChildren(const String& lang,int indent) =0;
   //! Retourne le nom de l'élément de cette liste
@@ -98,6 +91,24 @@ class ARCANE_CORE_EXPORT ICaseOptionList
    * qui n'est pas défini.
    */
   virtual void disable() = 0;
+
+ public:
+
+  //! Ajoute l'option \a o avec le parent \a parent
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void addConfig(CaseOptionBase* o,XmlNode parent) =0;
+
+  //! Positionne l'élément racine de la liste, avec \a parent_element comme parent. Si déjà positionné, ne fait rien
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void setRootElementWithParent(XmlNode parent_element) =0;
+
+  //! Positionne l'élément racine de la liste. Si déjà positionné, lance une exception
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void setRootElement(XmlNode root_element) =0;
+
+  //! Ajoute les éléments fils ne correspondants par à de options dans \a nlist
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void addInvalidChildren(XmlNodeList& nlist) =0;
 
  public:
 

@@ -35,6 +35,17 @@ class ARCANE_CORE_EXPORT ICaseOptionListInternal
   virtual ~ICaseOptionListInternal() = default;
 
  public:
+
+  virtual void addConfig(CaseOptionBase* o, const XmlNode& parent) = 0;
+
+  //! Positionne l'élément racine de la liste, avec \a parent_element comme parent. Si déjà positionné, ne fait rien
+  virtual void setRootElementWithParent(const XmlNode& parent_element) = 0;
+
+  //! Positionne l'élément racine de la liste. Si déjà positionné, lance une exception
+  virtual void setRootElement(const XmlNode& root_element) = 0;
+
+  //! Ajoute les éléments fils ne correspondants par à de options dans \a nlist
+  virtual void addInvalidChildren(XmlNodeList& nlist) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

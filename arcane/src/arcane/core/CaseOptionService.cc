@@ -1,31 +1,33 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptions.cc                                              (C) 2000-2022 */
+/* CaseOptions.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des options du jeu de données.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/core/CaseOptionService.h"
 
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/IServiceFactory.h"
-#include "arcane/CaseOptionService.h"
-#include "arcane/CaseOptionBuildInfo.h"
-#include "arcane/CaseOptionException.h"
-#include "arcane/CaseOptionError.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/ICaseDocumentVisitor.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/ICaseMng.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IServiceFactory.h"
+#include "arcane/core/CaseOptionBuildInfo.h"
+#include "arcane/core/CaseOptionException.h"
+#include "arcane/core/CaseOptionError.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/ICaseDocumentVisitor.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/internal/ICaseOptionListInternal.h"
 
 #include <typeinfo>
 
@@ -177,11 +179,11 @@ _readPhase1()
   XmlNode child = m_element.child(rootTagName());  
 
   if (child.null()) {
-    col->setRootElementWithParent(m_element);
+    col->_internalApi()->setRootElementWithParent(m_element);
   }
   else {
     if (col->rootElement() != child) // skip when rootElement already set to child (may appear in subDomain service)
-      col->setRootElement(child);
+      col->_internalApi()->setRootElement(child);
   }
 
   XmlNode element = col->rootElement();
@@ -383,7 +385,7 @@ multiAllocate(const XmlNodeList& elem_list)
       throw CaseOptionException("get_value","@name",element);
     // TODO: regarder si on ne peut pas créer directement un CaseOptionService.
     CaseOptions* coptions = new CaseOptions(configList(),name(),parent_element,false,true);
-    coptions->configList()->setRootElement(element);
+    coptions->configList()->_internalApi()->setRootElement(element);
     bool is_found = _tryCreateService(m_container,app,str_val,index,coptions);
 
     if (!is_found){

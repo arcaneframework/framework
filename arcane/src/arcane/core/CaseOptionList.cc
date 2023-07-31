@@ -118,6 +118,25 @@ class CaseOptionList
     {
     }
 
+   public:
+
+    void addConfig(CaseOptionBase* o, const XmlNode& parent) override
+    {
+      m_opt_list->addConfig(o,parent);
+    }
+    void setRootElementWithParent(const XmlNode& parent_element) override
+    {
+      m_opt_list->setRootElementWithParent(parent_element);
+    }
+    void setRootElement(const XmlNode& root_element) override
+    {
+      m_opt_list->setRootElement(root_element);
+    }
+    void addInvalidChildren(XmlNodeList& nlist) override
+    {
+      m_opt_list->addInvalidChildren(nlist);
+    }
+
    private:
 
     CaseOptionList* m_opt_list;
@@ -599,7 +618,7 @@ readChildren(bool is_phase1)
     Integer nb_children = m_case_option_multi->nbChildren();
     for( Integer i=0; i<nb_children; ++i ){
       ICaseOptionList* co_value = m_case_option_multi->child(i);
-      co_value->setRootElement(m_root_element_list[i]);
+      co_value->_internalApi()->setRootElement(m_root_element_list[i]);
       m_case_config_list.add(co_value);
     }
   }
@@ -621,7 +640,7 @@ addInvalidChildren(XmlNodeList& nlist)
   for( ICaseOptions* co : m_case_options )
     co->addInvalidChildren(nlist);
   for( ICaseOptionList* opt : m_case_config_list ){
-    opt->addInvalidChildren(nlist);
+    opt->_internalApi()->addInvalidChildren(nlist);
   }
 }
 

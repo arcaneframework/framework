@@ -27,6 +27,7 @@
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/internal/ICaseMngInternal.h"
+#include "arcane/core/internal/ICaseOptionListInternal.h"
 
 #include "arcane/core/CaseOptionsMulti.h"
 
@@ -568,7 +569,7 @@ read(eCaseOptionReadPhase read_phase)
 void CaseOptions::
 addInvalidChildren(XmlNodeList& nlist)
 {
-  m_p->m_config_list->addInvalidChildren(nlist);
+  m_p->m_config_list->_internalApi()->addInvalidChildren(nlist);
 }
 
 /*---------------------------------------------------------------------------*/
