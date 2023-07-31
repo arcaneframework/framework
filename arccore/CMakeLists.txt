@@ -144,6 +144,19 @@ install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
 add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_flags)
 
 # ----------------------------------------------------------------------------
+# Meme si on n'est pas en mode verif, il faut toujours avoir les symboles de debug
+# pour le profiling ou pour les debuggers
+if (UNIX)
+  target_compile_options(arccore_build_compile_flags INTERFACE -g)
+endif ()
+if (MSVC)
+  # '/Zi' permet de créér des fichiers '.pdb' mais n'est pas compatible avec 'ccache'.
+  # On utilise donc '/Z7' qui place les informations de debug dans les '.obj'.
+  target_compile_options(arccore_build_compile_flags INTERFACE /Z7)
+  target_link_options(arccore_build_compile_flags INTERFACE /debug)
+endif()
+
+# ----------------------------------------------------------------------------
 # Create an interface library 'arccore_full' that groups all Arccore components.
 add_library(arccore_full INTERFACE)
 install(TARGETS arccore_full EXPORT ${ARCCORE_EXPORT_TARGET})
