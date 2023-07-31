@@ -3,13 +3,15 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- CodeInfo.cs (C) 2000-2023
-
- Informations sur les modules et service d'un code
- disponibles dans un code. Cela necessite d'avoir
- generer les infos en lancant arcane avec l'option -arcane_opt arcane_internal
-*/
+/*---------------------------------------------------------------------------*/
+/* CodeInfo.cs                                                 (C) 2000-2023 */
+/*                                                                           */
+/* Informations sur les modules et service d'un code                         */
+/* disponibles dans un code. Cela necessite d'avoir                          */
+/* generer les infos en lancant arcane avec                                  */
+/* l'option -arcane_opt arcane_internal                                      */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 using System.Xml;
 using System;

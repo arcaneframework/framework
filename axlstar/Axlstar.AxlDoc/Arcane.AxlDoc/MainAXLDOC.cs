@@ -3,11 +3,12 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- MainAXLDOC.cs (C) 2000-2023
-
- Générateur de documentation à partir de fichiers AXL.
-*/
+/*---------------------------------------------------------------------------*/
+/* MainAXLDOC.cs                                               (C) 2000-2023 */
+/*                                                                           */
+/* Générateur de documentation à partir de fichiers AXL.                     */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 using System;
 using System.Collections.Generic;
