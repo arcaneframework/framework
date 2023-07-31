@@ -11,17 +11,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/CaseOptionBase.h"
+#include "arcane/core/CaseOptionBase.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/CaseOptionBuildInfo.h"
-#include "arcane/StringDictionary.h"
-#include "arcane/CaseOptions.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/CaseOptionException.h"
+#include "arcane/core/CaseOptionBuildInfo.h"
+#include "arcane/core/StringDictionary.h"
+#include "arcane/core/CaseOptions.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/CaseOptionException.h"
+#include "arcane/core/internal/ICaseOptionListInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -91,7 +92,7 @@ CaseOptionBase::
 CaseOptionBase(const CaseOptionBuildInfo& cob)
 : m_p(new CaseOptionBasePrivate(cob))
 {
-  cob.caseOptionList()->addConfig(this,cob.element());
+  cob.caseOptionList()->_internalApi()->addConfig(this,cob.element());
 }
 
 /*---------------------------------------------------------------------------*/

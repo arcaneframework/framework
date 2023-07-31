@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionList.cc                                           (C) 2000-2022 */
+/* CaseOptionList.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Liste d'options de configuration d'un service ou module.                  */
 /*---------------------------------------------------------------------------*/
@@ -16,15 +16,16 @@
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/CaseOptions.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/XmlNodeIterator.h"
-#include "arcane/CaseOptionError.h"
-#include "arcane/ICaseDocumentVisitor.h"
-#include "arcane/CaseOptionException.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/MeshHandle.h"
+#include "arcane/core/CaseOptions.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/XmlNodeIterator.h"
+#include "arcane/core/CaseOptionError.h"
+#include "arcane/core/ICaseDocumentVisitor.h"
+#include "arcane/core/CaseOptionException.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/internal/ICaseOptionListInternal.h"
 
 // TODO: a supprimer
 #include "arcane/IServiceInfo.h"
@@ -103,8 +104,47 @@ class XmlElementContentChecker
  */
 class CaseOptionList
 : public TraceAccessor
+, public ReferenceCounterImpl
 , public ICaseOptionList
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
+ public:
+
+  class InternalApi
+  : public ICaseOptionListInternal
+  {
+   public:
+
+    InternalApi(CaseOptionList* opt_list)
+    : m_opt_list(opt_list)
+    {
+    }
+
+   public:
+
+    void addConfig(CaseOptionBase* o, const XmlNode& parent) override
+    {
+      m_opt_list->addConfig(o,parent);
+    }
+    void setRootElementWithParent(const XmlNode& parent_element) override
+    {
+      m_opt_list->setRootElementWithParent(parent_element);
+    }
+    void setRootElement(const XmlNode& root_element) override
+    {
+      m_opt_list->setRootElement(root_element);
+    }
+    void addInvalidChildren(XmlNodeList& nlist) override
+    {
+      m_opt_list->addInvalidChildren(nlist);
+    }
+
+   private:
+
+    CaseOptionList* m_opt_list;
+  };
+
  public:
 
   typedef std::pair<CaseOptionBase*,XmlNode> CaseOptionBasePair;
@@ -112,12 +152,13 @@ class CaseOptionList
 
   CaseOptionList(ICaseMng* m,ICaseOptions* ref_opt,XmlNode parent_element)
   : TraceAccessor(m->traceMng()), m_case_mng(m), m_root_element(), m_parent(nullptr), m_ref_opt(ref_opt),
-    m_parent_element(parent_element), m_is_present(false), m_is_multi(false), m_is_optional(false) {}
+    m_parent_element(parent_element), m_is_present(false), m_is_multi(false),
+    m_is_optional(false), m_internal_api(this) {}
   CaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode parent_element)
   : TraceAccessor(parent->caseMng()->traceMng()), m_case_mng(parent->caseMng()),
     m_root_element(), m_parent(parent),
     m_ref_opt(ref_opt), m_parent_element(parent_element), m_is_present(false),
-    m_is_multi(false), m_is_optional(false) {}
+    m_is_multi(false), m_is_optional(false), m_internal_api(this) {}
   ~CaseOptionList()
   {
     // Détache les options filles qui existent encore pour ne pas qu'elles le
@@ -210,17 +251,6 @@ class CaseOptionList
 
  public:
 
-  void addReference() override { ++m_nb_ref; }
-  void removeReference() override
-  {
-    // Décrémente et retourne la valeur d'avant.
-    // Si elle vaut 1, cela signifie qu'on n'a plus de références
-    // sur l'objet et qu'il faut le détruire.
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
-      delete this;
-  }
-
   ICaseDocumentFragment* caseDocumentFragment() const override
   {
     return m_ref_opt->caseDocumentFragment();
@@ -235,6 +265,10 @@ class CaseOptionList
     m_case_options.clear();
     m_is_disabled = true;
   }
+
+ public:
+
+  virtual ICaseOptionListInternal* _internalApi() override { return &m_internal_api; }
 
  protected:
 
@@ -258,7 +292,7 @@ class CaseOptionList
   bool m_is_multi;
   bool m_is_optional;
   bool m_is_disabled = false;
-  std::atomic<Int32> m_nb_ref = 0;
+  InternalApi m_internal_api;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -575,7 +609,7 @@ readChildren(bool is_phase1)
     Integer nb_children = m_case_option_multi->nbChildren();
     for( Integer i=0; i<nb_children; ++i ){
       ICaseOptionList* co_value = m_case_option_multi->child(i);
-      co_value->setRootElement(m_root_element_list[i]);
+      co_value->_internalApi()->setRootElement(m_root_element_list[i]);
       m_case_config_list.add(co_value);
     }
   }
@@ -597,7 +631,7 @@ addInvalidChildren(XmlNodeList& nlist)
   for( ICaseOptions* co : m_case_options )
     co->addInvalidChildren(nlist);
   for( ICaseOptionList* opt : m_case_config_list ){
-    opt->addInvalidChildren(nlist);
+    opt->_internalApi()->addInvalidChildren(nlist);
   }
 }
 
@@ -668,21 +702,21 @@ _checkMinMaxOccurs(Integer nb_occur)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseMng* m,ICaseOptions* ref_opt,XmlNode parent_element)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseMng* m,ICaseOptions* ref_opt,const XmlNode& parent_element)
 {
   return new CaseOptionList(m,ref_opt,parent_element);
 }
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode parent_element)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseOptionList* parent,ICaseOptions* ref_opt,const XmlNode& parent_element)
 {
   return new CaseOptionList(parent,ref_opt,parent_element);
 }
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode parent_element,
-                     bool is_optional,bool is_multi)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseOptionList* parent,ICaseOptions* ref_opt,const XmlNode& parent_element,
+       bool is_optional,bool is_multi)
 {
   auto x = new CaseOptionList(parent,ref_opt,parent_element);
   if (is_optional)
@@ -692,17 +726,17 @@ createCaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode paren
   return x;
 }
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionsMulti* com,ICaseOptions* co,ICaseMng* m,
-                     const XmlNode& element,Integer min_occurs,Integer max_occurs)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseOptionsMulti* com,ICaseOptions* co,ICaseMng* m,
+       const XmlNode& element,Integer min_occurs,Integer max_occurs)
 {
   return new CaseOptionListMulti(com,co,m,element,min_occurs,max_occurs);
 }
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionsMulti* com,ICaseOptions* co,
-                     ICaseOptionList* parent,const XmlNode& element,
-                     Integer min_occurs,Integer max_occurs)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseOptionsMulti* com,ICaseOptions* co,
+       ICaseOptionList* parent,const XmlNode& element,
+       Integer min_occurs,Integer max_occurs)
 {
   return new CaseOptionListMulti(com,co,parent,element,min_occurs,max_occurs);
 }
@@ -711,6 +745,11 @@ createCaseOptionList(ICaseOptionsMulti* com,ICaseOptions* co,
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
+
+namespace Arccore
+{
+ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(Arcane::ICaseOptionList);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
