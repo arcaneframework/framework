@@ -1,20 +1,14 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* TestCompositeSpace.cc                                       (C) 2000-2023 */
+/*                                                                           */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
 
@@ -34,12 +28,17 @@ TEST(TestCompositeSpace, SpaceEquality)
   ASSERT_TRUE(s1 == s1);
   const Alien::CompositeKernel::Space s2;
   ASSERT_TRUE(s1 == s2);
+
+  // En C++20 et plus, on considére ces comparaisons comme ambigües.
+  // TODO : À supprimer lors du passage en C++20.
+  #if defined(ARCCORE_CXX_STANDARD) && ARCCORE_CXX_STANDARD == 17
   const Alien::Space s3;
   ASSERT_TRUE(s1 == s3);
   const Alien::Space s4(1);
   ASSERT_FALSE(s1 == s4);
   const Alien::Space s5(0, "Named");
   ASSERT_FALSE(s1 == s5);
+  #endif
 }
 
 TEST(TestCompositeSpace, SubSpaceResize)
@@ -56,8 +55,12 @@ TEST(TestCompositeSpace, SubSpaceResize)
   ASSERT_EQ(7, s.size());
   s[2].reset(new Alien::Space(3));
   ASSERT_EQ(10, s.size());
+
+  // TODO : À supprimer lors du passage en C++20.
+  #if defined(ARCCORE_CXX_STANDARD) && ARCCORE_CXX_STANDARD == 17
   const Alien::Space s1(10);
   ASSERT_TRUE(s1 == s);
+  #endif
 }
 
 TEST(TestCompositeSpace, SubSpaceMultipleResize)

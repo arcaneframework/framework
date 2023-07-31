@@ -1,27 +1,14 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/*
- * MVExpr.h
- *
- *  Created on: Sep 30, 2019
- *      Author: gratienj
- */
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* MVExpr.h                                                    (C) 2000-2023 */
+/*                                                                           */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #ifndef ALIEN_EXPRESSION_MVEXPR_MVEXPR_H_
 #define ALIEN_EXPRESSION_MVEXPR_MVEXPR_H_
@@ -91,7 +78,65 @@ namespace MVExpr
     return [=](auto visitor) { return visitor(lazy::div_tag{}, a(visitor), b(visitor)); };
   }
 
-  struct distribution_evaluator;
+
+  struct distribution_evaluator
+  {
+    template <class T>
+    VectorDistribution const* operator()(lazy::cst_tag, T c)
+    {
+      return nullptr;
+    }
+
+    VectorDistribution const* operator()(lazy::ref_tag, Matrix const& r)
+    {
+      return &r.distribution().rowDistribution();
+    }
+
+    VectorDistribution const* operator()(lazy::ref_tag, Vector const& r)
+    {
+      return &r.distribution();
+    }
+
+    template <typename L>
+    VectorDistribution const* operator()(lazy::add_tag, L const& l, Vector const& r)
+    {
+      return &r.distribution();
+    }
+
+    template <typename L>
+    auto operator()(lazy::minus_tag, L const& l, Vector const& r)
+    {
+      return &r.distribution();
+    }
+
+    auto operator()(
+    lazy::mult_tag, VectorDistribution const* l, VectorDistribution const* r)
+    {
+      if (l)
+        return l;
+      else
+        return r;
+    }
+
+    template <typename R>
+    auto operator()(lazy::mult_tag, Matrix const& l, Vector const& r)
+    {
+      return &r.distribution();
+    }
+
+    template <typename R>
+    auto operator()(lazy::mult_tag, Matrix const& l, R const& r)
+    {
+      return &l.distribution().rowDistribution();
+    }
+
+    template <typename L>
+    auto operator()(lazy::mult_tag, L const& l, Vector const& r)
+    {
+      return &r.distribution();
+    }
+  };
+
   template <class A, class B>
   auto scalMul(A&& a, B&& b)
   {
@@ -696,64 +741,6 @@ namespace MVExpr
     auto operator()(lazy::mult_tag, L const& l, Vector const& r)
     {
       return allocSize(r);
-    }
-  };
-
-  struct distribution_evaluator
-  {
-    template <class T>
-    VectorDistribution const* operator()(lazy::cst_tag, T c)
-    {
-      return nullptr;
-    }
-
-    VectorDistribution const* operator()(lazy::ref_tag, Matrix const& r)
-    {
-      return &r.distribution().rowDistribution();
-    }
-
-    VectorDistribution const* operator()(lazy::ref_tag, Vector const& r)
-    {
-      return &r.distribution();
-    }
-
-    template <typename L>
-    VectorDistribution const* operator()(lazy::add_tag, L const& l, Vector const& r)
-    {
-      return &r.distribution();
-    }
-
-    template <typename L>
-    auto operator()(lazy::minus_tag, L const& l, Vector const& r)
-    {
-      return &r.distribution();
-    }
-
-    auto operator()(
-    lazy::mult_tag, VectorDistribution const* l, VectorDistribution const* r)
-    {
-      if (l)
-        return l;
-      else
-        return r;
-    }
-
-    template <typename R>
-    auto operator()(lazy::mult_tag, Matrix const& l, Vector const& r)
-    {
-      return &r.distribution();
-    }
-
-    template <typename R>
-    auto operator()(lazy::mult_tag, Matrix const& l, R const& r)
-    {
-      return &l.distribution().rowDistribution();
-    }
-
-    template <typename L>
-    auto operator()(lazy::mult_tag, L const& l, Vector const& r)
-    {
-      return &r.distribution();
     }
   };
 

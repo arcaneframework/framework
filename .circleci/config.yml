@@ -4,14 +4,14 @@ executors:
   # 4 CPU - 8Go RAM - 20c/min
   large-executor-image:
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-15_minimal_20221214
+      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-15_minimal_20230720
     resource_class: large
     working_directory: ~/workspace
 
   # 4 CPU - 8Go RAM - 20c/min
   large-executor-image-full:
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-15_full_20221214
+      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-15_full_20230720
     resource_class: large
     working_directory: ~/workspace
 
@@ -375,6 +375,8 @@ jobs:
             gfortran \
             libc6-dev \
             libglib2.0-dev \
+            libboost-program-options-dev \
+            libopenblas-dev \
             libxml2-dev \
             libhdf5-dev libhdf5-openmpi-dev \
             libparmetis-dev \
@@ -514,6 +516,8 @@ jobs:
             gfortran \
             libc6-dev \
             libglib2.0-dev \
+            libboost-program-options-dev \
+            libopenblas-dev \
             libxml2-dev \
             libhdf5-dev libhdf5-openmpi-dev \
             libparmetis-dev \
