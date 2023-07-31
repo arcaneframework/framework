@@ -711,21 +711,21 @@ _checkMinMaxOccurs(Integer nb_occur)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseMng* m,ICaseOptions* ref_opt,XmlNode parent_element)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseMng* m,ICaseOptions* ref_opt,const XmlNode& parent_element)
 {
   return new CaseOptionList(m,ref_opt,parent_element);
 }
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode parent_element)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseOptionList* parent,ICaseOptions* ref_opt,const XmlNode& parent_element)
 {
   return new CaseOptionList(parent,ref_opt,parent_element);
 }
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode parent_element,
-                     bool is_optional,bool is_multi)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseOptionList* parent,ICaseOptions* ref_opt,const XmlNode& parent_element,
+       bool is_optional,bool is_multi)
 {
   auto x = new CaseOptionList(parent,ref_opt,parent_element);
   if (is_optional)
@@ -735,17 +735,17 @@ createCaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode paren
   return x;
 }
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionsMulti* com,ICaseOptions* co,ICaseMng* m,
-                     const XmlNode& element,Integer min_occurs,Integer max_occurs)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseOptionsMulti* com,ICaseOptions* co,ICaseMng* m,
+       const XmlNode& element,Integer min_occurs,Integer max_occurs)
 {
   return new CaseOptionListMulti(com,co,m,element,min_occurs,max_occurs);
 }
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionsMulti* com,ICaseOptions* co,
-                     ICaseOptionList* parent,const XmlNode& element,
-                     Integer min_occurs,Integer max_occurs)
+ICaseOptionList* ICaseOptionListInternal::
+create(ICaseOptionsMulti* com,ICaseOptions* co,
+       ICaseOptionList* parent,const XmlNode& element,
+       Integer min_occurs,Integer max_occurs)
 {
   return new CaseOptionListMulti(com,co,parent,element,min_occurs,max_occurs);
 }

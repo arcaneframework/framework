@@ -40,25 +40,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseMng* m,ICaseOptions* ref_opt,XmlNode parent_element);
-
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode parent_element);
-
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode parent_element,
-                     bool is_optional,bool is_multi);
-
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionsMulti* com,ICaseOptions* co,ICaseMng* m,
-                     const XmlNode& element,Integer min_occurs,Integer max_occurs);
-
-extern "C++" ICaseOptionList*
-createCaseOptionList(ICaseOptionsMulti* com,ICaseOptions* co,
-                     ICaseOptionList* parent,const XmlNode& element,
-                     Integer min_occurs,Integer max_occurs);
-
 namespace AxlOptionsBuilder
 {
 extern "C++" IXmlDocumentHolder*
@@ -125,7 +106,7 @@ CaseOptions::
 CaseOptions(ICaseMng* cm,const String& name)
 : m_p(new CaseOptionsPrivate(cm,name))
 {
-  m_p->m_config_list = createCaseOptionList(cm,this,XmlNode());
+  m_p->m_config_list = ICaseOptionListInternal::create(cm,this,XmlNode());
   m_p->m_is_case_mng_registered = true;
   cm->registerOptions(this);
 }
@@ -137,7 +118,7 @@ CaseOptions::
 CaseOptions(ICaseOptionList* parent,const String& aname)
 : m_p(new CaseOptionsPrivate(parent,aname))
 {
-  m_p->m_config_list = createCaseOptionList(parent,this,XmlNode());
+  m_p->m_config_list = ICaseOptionListInternal::create(parent,this,XmlNode());
   parent->addChild(this);
   m_p->m_parent = parent;
 }
@@ -149,7 +130,7 @@ CaseOptions::
 CaseOptions(ICaseMng* cm,const String& aname,const XmlNode& parent_elem)
 : m_p(new CaseOptionsPrivate(cm,aname))
 {
-  m_p->m_config_list = createCaseOptionList(cm,this,parent_elem);
+  m_p->m_config_list = ICaseOptionListInternal::create(cm,this,parent_elem);
   m_p->m_is_case_mng_registered = true;
   cm->registerOptions(this);
 }
@@ -162,7 +143,7 @@ CaseOptions(ICaseOptionList* parent,const String& aname,
             const XmlNode& parent_elem,bool is_optional,bool is_multi)
 : m_p(new CaseOptionsPrivate(parent,aname))
 {
-  ICaseOptionList* col = createCaseOptionList(parent,this,parent_elem,is_optional,is_multi);
+  ICaseOptionList* col = ICaseOptionListInternal::create(parent,this,parent_elem,is_optional,is_multi);
   m_p->m_config_list = col;
   parent->addChild(this);
   m_p->m_parent = parent;
@@ -205,7 +186,7 @@ CaseOptions(ICaseMng* cm,const XmlContent& xml_content)
   // Ce constructeur est pour les options créées dynamiquement
   IXmlDocumentHolder* xml_doc = xml_content.m_document;
   XmlNode parent_elem = xml_doc->documentNode().documentElement();
-  m_p->m_config_list = createCaseOptionList(cm,this,parent_elem);
+  m_p->m_config_list = ICaseOptionListInternal::create(cm,this,parent_elem);
   m_p->m_own_case_document_fragment = cm->_internalImpl()->createDocumentFragment(xml_doc);
   // Conserve une référence sur le ICaseMng pour le cas où cette option
   // serait détruite après la fin du calcul et la destruction des sous-domaine.
@@ -633,8 +614,8 @@ CaseOptionsMulti::
 CaseOptionsMulti(ICaseMng* cm,const String& aname,const XmlNode& parent_element,
                  Integer min_occurs,Integer max_occurs)
 : CaseOptions(cm,aname,
-              createCaseOptionList(this,this,cm,parent_element,
-                                   min_occurs,max_occurs))
+              ICaseOptionListInternal::create(this,this,cm,parent_element,
+                                              min_occurs,max_occurs))
 {
 }
 
@@ -646,8 +627,8 @@ CaseOptionsMulti(ICaseOptionList* parent,const String& aname,
                  const XmlNode& parent_element,
                  Integer min_occurs,Integer max_occurs)
 : CaseOptions(parent,aname,
-              createCaseOptionList(this,this,parent,
-                                   parent_element,min_occurs,max_occurs))
+              ICaseOptionListInternal::create(this,this,parent,
+                                              parent_element,min_occurs,max_occurs))
 {
 }
 

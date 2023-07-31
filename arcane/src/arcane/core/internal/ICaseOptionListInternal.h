@@ -46,6 +46,22 @@ class ARCANE_CORE_EXPORT ICaseOptionListInternal
 
   //! Ajoute les éléments fils ne correspondants par à de options dans \a nlist
   virtual void addInvalidChildren(XmlNodeList& nlist) = 0;
+
+ public:
+
+  static ICaseOptionList* create(ICaseMng* m, ICaseOptions* ref_opt,
+                                 const XmlNode& parent_element);
+  static ICaseOptionList* create(ICaseOptionList* parent, ICaseOptions* ref_opt,
+                                 const XmlNode& parent_element);
+  static ICaseOptionList* create(ICaseOptionList* parent, ICaseOptions* ref_opt,
+                                 const XmlNode& parent_element,
+                                 bool is_optional, bool is_multi);
+  static ICaseOptionList* create(ICaseOptionsMulti* com, ICaseOptions* co,
+                                 ICaseMng* m, const XmlNode& element,
+                                 Integer min_occurs, Integer max_occurs);
+  static ICaseOptionList* create(ICaseOptionsMulti* com, ICaseOptions* co,
+                                 ICaseOptionList* parent, const XmlNode& element,
+                                 Integer min_occurs, Integer max_occurs);
 };
 
 /*---------------------------------------------------------------------------*/
