@@ -574,7 +574,7 @@ namespace Arcane.AxlDoc
                                  (default_value==null)?"":String.Format("={0}", default_value),
                                  (unit_type==null)?"":String.Format("; physical unit is {0}", unit_type));
       }
-      // Si demandÃ©, affiche les classes utilisateurs de cette option
+      // Si demandé, affiche les classes utilisateurs de cette option
       if (PrintUserClass) {
         string[] user_classes = o.UserClasses;
         if (user_classes != null && user_classes.Length > 0) {
@@ -594,10 +594,10 @@ namespace Arcane.AxlDoc
         //m_full_stream.Write ("<div><pre class='OptionName'>");
         m_full_stream.WriteLine ("```xml");
         if (o is ServiceInstanceOptionInfo) {
-          m_full_stream.Write ("<{0} name='{1}'>service configuration block</{0}>",
+          m_full_stream.WriteLine ("<{0} name='{1}'>service configuration block</{0}>",
                                         o.GetTranslatedName (m_code_info.Language), field_name);
         } else
-          m_full_stream.Write ("<{0}>{1}</{0}>",
+          m_full_stream.WriteLine ("<{0}>{1}</{0}>",
                                         o.GetTranslatedName (m_code_info.Language), field_name);
         m_full_stream.WriteLine ("```");
       }
