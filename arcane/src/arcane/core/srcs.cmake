@@ -67,6 +67,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IItemFamilyInternal.h
   internal/IMeshInternal.h
   internal/ItemGroupInternal.h
+  internal/ICaseOptionListInternal.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES

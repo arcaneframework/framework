@@ -7,10 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* ICaseOptionList.h                                           (C) 2000-2023 */
 /*                                                                           */
-/* Options du jeu de donnés.                                                 */
+/* Options du jeu de données.                                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ICASEOPTIONLIST_H
-#define ARCANE_ICASEOPTIONLIST_H
+#ifndef ARCANE_CORE_ICASEOPTIONLIST_H
+#define ARCANE_CORE_ICASEOPTIONLIST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,6 +26,7 @@ namespace Arcane
 class XmlNode;
 class ICaseMng;
 class XmlNodeList;
+class ICaseOptionListInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,6 +41,7 @@ class ARCANE_CORE_EXPORT ICaseOptionList
   virtual ~ICaseOptionList() = default;
 
  public:
+
   /*!
    * \brief Retourne l'élément lié à cette liste d'option.
    * S'il n'y en a pas, retourne 0. S'il y en a plusieurs, retourne le
@@ -96,6 +98,11 @@ class ARCANE_CORE_EXPORT ICaseOptionList
    * qui n'est pas défini.
    */
   virtual void disable() = 0;
+
+ public:
+
+  //! API interne à Arcane
+  virtual ICaseOptionListInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionList.cc                                           (C) 2000-2022 */
+/* CaseOptionList.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Liste d'options de configuration d'un service ou module.                  */
 /*---------------------------------------------------------------------------*/
@@ -16,15 +16,16 @@
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/CaseOptions.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/XmlNodeIterator.h"
-#include "arcane/CaseOptionError.h"
-#include "arcane/ICaseDocumentVisitor.h"
-#include "arcane/CaseOptionException.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/MeshHandle.h"
+#include "arcane/core/CaseOptions.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/XmlNodeIterator.h"
+#include "arcane/core/CaseOptionError.h"
+#include "arcane/core/ICaseDocumentVisitor.h"
+#include "arcane/core/CaseOptionException.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/internal/ICaseOptionListInternal.h"
 
 // TODO: a supprimer
 #include "arcane/IServiceInfo.h"
@@ -107,17 +108,35 @@ class CaseOptionList
 {
  public:
 
+  class InternalApi
+  : public ICaseOptionListInternal
+  {
+   public:
+
+    InternalApi(CaseOptionList* opt_list)
+    : m_opt_list(opt_list)
+    {
+    }
+
+   private:
+
+    CaseOptionList* m_opt_list;
+  };
+
+ public:
+
   typedef std::pair<CaseOptionBase*,XmlNode> CaseOptionBasePair;
   typedef std::vector<CaseOptionBasePair> CaseOptionBasePairList;
 
   CaseOptionList(ICaseMng* m,ICaseOptions* ref_opt,XmlNode parent_element)
   : TraceAccessor(m->traceMng()), m_case_mng(m), m_root_element(), m_parent(nullptr), m_ref_opt(ref_opt),
-    m_parent_element(parent_element), m_is_present(false), m_is_multi(false), m_is_optional(false) {}
+    m_parent_element(parent_element), m_is_present(false), m_is_multi(false),
+    m_is_optional(false), m_internal_api(this) {}
   CaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode parent_element)
   : TraceAccessor(parent->caseMng()->traceMng()), m_case_mng(parent->caseMng()),
     m_root_element(), m_parent(parent),
     m_ref_opt(ref_opt), m_parent_element(parent_element), m_is_present(false),
-    m_is_multi(false), m_is_optional(false) {}
+    m_is_multi(false), m_is_optional(false), m_internal_api(this) {}
   ~CaseOptionList()
   {
     // Détache les options filles qui existent encore pour ne pas qu'elles le
@@ -236,6 +255,10 @@ class CaseOptionList
     m_is_disabled = true;
   }
 
+ public:
+
+  virtual ICaseOptionListInternal* _internalApi() override { return &m_internal_api; }
+
  protected:
 
   void _addInvalidChildren(XmlNode parent,XmlNodeList& nlist);
@@ -259,6 +282,7 @@ class CaseOptionList
   bool m_is_optional;
   bool m_is_disabled = false;
   std::atomic<Int32> m_nb_ref = 0;
+  InternalApi m_internal_api;
 };
 
 /*---------------------------------------------------------------------------*/
