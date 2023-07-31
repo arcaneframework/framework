@@ -173,10 +173,15 @@ namespace Arcane.AxlDoc
         string main_type_name = "service";
         if (main_info.IsModule)
           main_type_name = "module";
-        tw.Write (" (in \\ref axldoc_{2}_{0} \"{1}\" {2}", main_info.FileBaseName, main_info.GetTranslatedName (m_code_info.Language), main_type_name);
+        if (m_code_info.Language == "fr"){
+          tw.Write (" (dans le {2} \\ref axldoc_{2}_{0} \"{1}\"", main_info.FileBaseName, main_info.GetTranslatedName (m_code_info.Language), main_type_name);
+        }
+        else{
+          tw.Write (" (in \\ref axldoc_{2}_{0} \"{1}\" {2}", main_info.FileBaseName, main_info.GetTranslatedName (m_code_info.Language), main_type_name);
+        }
         if (parent != null) {
           string parent_name = parent.GetTranslatedFullName (m_lang);
-          tw.Write (" option &lt;\\ref {1} \"{0}\"&gt;", parent_name, DoxygenDocumentationUtils.AnchorName (parent));
+          tw.Write (" (option &lt;\\ref {1} \"{0}\"&gt;)", parent_name, DoxygenDocumentationUtils.AnchorName (parent));
         }
         tw.Write (")\n</li>");
       }
