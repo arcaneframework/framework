@@ -397,6 +397,7 @@ class ICaseFunction;
 class ICaseDocument;
 class ICaseDocumentFragment;
 class ICaseMng;
+class ICaseOptionList;
 class IPhysicalUnitSystem;
 class ItemGroup;
 class ITiedInterface;
@@ -531,6 +532,7 @@ ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ISerializedData)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseFunction)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseOptions)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseMng)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseOptionList)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IIncrementalItemConnectivity)
 
 /*---------------------------------------------------------------------------*/

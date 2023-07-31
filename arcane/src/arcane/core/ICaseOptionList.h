@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICaseOptionList.h                                           (C) 2000-2023 */
 /*                                                                           */
-/* Options du jeu de données.                                                 */
+/* Options du jeu de données.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICASEOPTIONLIST_H
 #define ARCANE_CORE_ICASEOPTIONLIST_H
@@ -36,6 +36,8 @@ class ICaseOptionListInternal;
  */
 class ARCANE_CORE_EXPORT ICaseOptionList
 {
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  protected:
 
   virtual ~ICaseOptionList() = default;
@@ -76,10 +78,6 @@ class ARCANE_CORE_EXPORT ICaseOptionList
   virtual String xpathFullName() const =0;
   //! Handle du maillage associé
   virtual MeshHandle meshHandle() const =0;
-  //! Ajoute une référence
-  virtual void addReference() =0;
-  //! Supprime une référence
-  virtual void removeReference() =0;
 
   //! Document associé.
   virtual ICaseDocumentFragment* caseDocumentFragment() const =0;

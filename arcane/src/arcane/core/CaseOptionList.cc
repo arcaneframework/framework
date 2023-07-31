@@ -104,8 +104,11 @@ class XmlElementContentChecker
  */
 class CaseOptionList
 : public TraceAccessor
+, public ReferenceCounterImpl
 , public ICaseOptionList
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
 
   class InternalApi
@@ -248,17 +251,6 @@ class CaseOptionList
 
  public:
 
-  void addReference() override { ++m_nb_ref; }
-  void removeReference() override
-  {
-    // Décrémente et retourne la valeur d'avant.
-    // Si elle vaut 1, cela signifie qu'on n'a plus de références
-    // sur l'objet et qu'il faut le détruire.
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
-      delete this;
-  }
-
   ICaseDocumentFragment* caseDocumentFragment() const override
   {
     return m_ref_opt->caseDocumentFragment();
@@ -300,7 +292,6 @@ class CaseOptionList
   bool m_is_multi;
   bool m_is_optional;
   bool m_is_disabled = false;
-  std::atomic<Int32> m_nb_ref = 0;
   InternalApi m_internal_api;
 };
 
@@ -754,6 +745,11 @@ create(ICaseOptionsMulti* com,ICaseOptions* co,
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
+
+namespace Arccore
+{
+ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(Arcane::ICaseOptionList);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
