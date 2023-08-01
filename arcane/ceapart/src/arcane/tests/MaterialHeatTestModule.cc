@@ -16,6 +16,8 @@
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/Item.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IParallelMng.h"
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
@@ -63,6 +65,8 @@ class MaterialHeatTestModule
     IMeshMaterial* material = nullptr;
     //! Index de cet objet dans la liste globale
     Int32 index = 0;
+    //! Température attendue au temps final
+    Real expected_final_temperature = 0.0;
   };
 
   //! Tableau de travail pour la mise à jour des liste de matériaux
@@ -107,6 +111,7 @@ class MaterialHeatTestModule
   void _computeCellsCenter();
   void _buildHeatObjects();
   void _copyToGlobal(const HeatObject& heat_object);
+  void _computeTotalTemperature(const HeatObject& heat_object, bool do_check);
   IMeshMaterial* _findMaterial(const String& name);
   void _computeGlobalTemperature();
   void _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa);
@@ -114,6 +119,7 @@ class MaterialHeatTestModule
   void _addHeat(const HeatObject& heat_object);
   void _addCold(const HeatObject& heat_object);
   void _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa);
+  void _compute();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -225,7 +231,24 @@ void MaterialHeatTestModule::
 compute()
 {
   info() << "MaterialHeatTestModule::compute()";
+  bool is_end = (m_global_iteration() >= options()->nbIteration());
+  if (is_end)
+    subDomain()->timeLoopMng()->stopComputeLoop(true);
 
+  _compute();
+
+  bool do_check = is_end && options()->checkNumericalResult();
+  for (const HeatObject& ho : m_heat_objects) {
+    _computeTotalTemperature(ho, do_check);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_compute()
+{
   _computeCellsCenter();
 
   UniqueArray<MaterialWorkArray> work_arrays(m_heat_objects.size());
@@ -256,7 +279,7 @@ compute()
       }
 
       // Ajoute les mailles matériaux nécessaires
-      ConstArrayView<Int32> add_ids(wa.mat_cells_to_add);
+      ConstArrayView<Int32> add_ids(wa.mat_cells_to_add.constView());
       if (!add_ids.empty()) {
         info() << "MAT_MODIF: Add n=" << add_ids.size() << " cells to material=" << mat->name();
         modifier.addCells(mat, add_ids);
@@ -295,7 +318,7 @@ _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa)
   // Initialise les nouvelles valeurs partielles
   IMeshMaterial* current_mat = heat_object.material;
   CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
-  ConstArrayView<Int32> ids(wa.mat_cells_to_add);
+  ConstArrayView<Int32> ids(wa.mat_cells_to_add.constView());
 
   for (Int32 i = 0, n = ids.size(); i < n; ++i) {
     AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(ids[i])];
@@ -428,14 +451,41 @@ _copyToGlobal(const HeatObject& heat_object)
 {
   IMeshMaterial* mat = heat_object.material;
   Int32 var_index = heat_object.index;
-  Real total_mat_temperature = 0.0;
   ENUMERATE_MATCELL (imatcell, mat) {
     MatCell mc = *imatcell;
     Real t = m_mat_temperature[mc];
-    total_mat_temperature += t;
     m_all_temperature[mc.globalCell()][var_index] = t;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_computeTotalTemperature(const HeatObject& heat_object, bool do_check)
+{
+  IMeshMaterial* mat = heat_object.material;
+  Real total_mat_temperature = 0.0;
+  ENUMERATE_MATCELL (imatcell, mat) {
+    MatCell mc = *imatcell;
+    Cell cell = mc.globalCell();
+    if (cell.isOwn())
+      total_mat_temperature += m_mat_temperature[mc];
+  }
+  total_mat_temperature = parallelMng()->reduce(Parallel::ReduceSum, total_mat_temperature);
   info() << "TotalMatTemperature mat=" << mat->name() << " T=" << total_mat_temperature;
+  if (do_check) {
+    Real ref_value = heat_object.expected_final_temperature;
+    Real current_value = total_mat_temperature;
+    Real epsilon = 1.0e-12;
+    if (!math::isNearlyEqualWithEpsilon(current_value, ref_value, epsilon)) {
+      Real relative_diff = math::abs(ref_value - current_value);
+      if (ref_value != 0.0)
+        relative_diff /= ref_value;
+      ARCANE_FATAL("Bad value for mat '{0}' ref={1} v={2} diff={3}",
+                   mat->name(), ref_value, current_value, relative_diff);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -475,6 +525,7 @@ _buildHeatObjects()
       ho.radius = opt->radius;
       ho.material = _findMaterial(opt->material);
       ho.index = index;
+      ho.expected_final_temperature = opt->expectedFinalTemperature;
       m_heat_objects.add(ho);
       ++index;
     }
