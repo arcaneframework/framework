@@ -7,11 +7,18 @@
 
   <options>
 
+    <simple name="nb-iteration" type="int32" default="15">
+      <description>Number of iteration to do</description>
+    </simple>
+    <simple name="check-numerical-result" type="bool" default="true">
+      <description>True if we want to check numerical results</description>
+    </simple>
+
     <!-- Infos sur les materiaux -->
     <complex name="material" type="Material" minOccurs="1" maxOccurs="unbounded">
-      <description>Materiaux</description>
+      <description>List of materials</description>
       <simple name="name" type="string">
-        <description>Nom du materiau</description>
+        <description>Name of the material</description>
       </simple>
     </complex>
 
@@ -19,10 +26,10 @@
     <complex name="environment" type="Environment" minOccurs="1" maxOccurs="unbounded">
       <description>Milieu</description>
       <simple name = "name" type = "string">
-        <description>Nom du milieu</description>
+        <description>Name of the environment</description>
       </simple>
       <simple name="material" type="string" minOccurs="1" maxOccurs="unbounded">
-        <description>Nom du materiau</description>
+        <description>Name of the material</description>
       </simple>
     </complex>
 
@@ -39,6 +46,9 @@
       </simple>
       <simple name="material" type="string">
         <description>Name of the material to heat</description>
+      </simple>
+      <simple name="expected-final-temperature" type="real">
+        <description>ExName of the material to heat</description>
       </simple>
     </complex>
 

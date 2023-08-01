@@ -27,7 +27,7 @@
  </meshes>
 
  <material-heat-test>
-
+   <nb-iteration>15</nb-iteration>
    <material>
      <name>MAT1</name>
    </material>
@@ -46,12 +46,14 @@
      <velocity>0.02 0.04 0.0</velocity>
      <radius>0.18</radius>
      <material>ENV1_MAT1</material>
+     <expected-final-temperature>912136.555848185</expected-final-temperature>
    </heat-object>
    <heat-object>
      <center>0.8 0.4 0.0</center>
      <velocity>-0.02 0.04 0.0</velocity>
      <radius>0.25</radius>
      <material>ENV1_MAT2</material>
+     <expected-final-temperature>1958580.32652892</expected-final-temperature>
    </heat-object>
 
  </material-heat-test>
