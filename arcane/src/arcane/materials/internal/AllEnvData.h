@@ -90,23 +90,23 @@ class AllEnvData
  private:
 
   void _computeNbEnvAndNbMatPerCell();
-  void _switchComponentItemsForEnvironments(IMeshEnvironment* modified_env, eOperation add_or_remove);
-  void _switchComponentItemsForMaterials(MeshMaterial* modified_mat, eOperation add_or_remove);
+  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env, eOperation add_or_remove);
+  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, eOperation add_or_remove);
   Integer _checkMaterialPresence(IMeshMaterial* mat, Int32ConstArrayView ids,
                                  eOperation operation);
   void _filterValidIds(IMeshMaterial* mat, Int32ConstArrayView ids,
-                       bool do_add, Int32Array& valid_ids);
+                       bool do_add, Int32Array& valid_ids) const;
   void _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
                                       Int32ConstArrayView partial_indexes,
                                       Int32 indexer_index, eOperation operation);
 
   void _updateMaterialDirect(IMeshMaterial* mat, Int32ConstArrayView ids, eOperation add_or_remove);
-  void _throwBadOperation(eOperation operation);
+  [[noreturn]] static void _throwBadOperation(eOperation operation);
   void _computeAndResizeEnvItemsInternal();
   bool _isFullVerbose() const;
   void _rebuildMaterialsAndEnvironmentsFromGroups();
   void _computeInfosForEnvCells();
-  void _checkLocalIdsCoherency();
+  void _checkLocalIdsCoherency() const;
   void _printAllEnvCells(CellVectorView ids);
 };
 

@@ -101,7 +101,7 @@ _computeAndResizeEnvItemsInternal()
   // Calcul le nombre de milieux par maille, et pour chaque
   // milieu le nombre de matériaux par maille
   IMesh* mesh = m_material_mng->mesh();
-  IItemFamily* cell_family = mesh->cellFamily();
+  const IItemFamily* cell_family = mesh->cellFamily();
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
   Integer nb_env = true_environments.size();
@@ -253,7 +253,7 @@ _computeInfosForEnvCells()
       Int32 lid = icell.itemLocalId();
       Int32 n = m_nb_env_per_cell[icell];
       ComponentItemInternal& ref_ii = all_env_items_internal[lid];
-      ref_ii.setSuperAndGlobalItem(0,c);
+      ref_ii.setSuperAndGlobalItem(nullptr,c);
       ref_ii.setVariableIndex(MatVarIndex(0,lid));
       ref_ii.setNbSubItem(n);
       ref_ii.setLevel(LEVEL_ALLENVIRONMENT);
@@ -270,7 +270,7 @@ _computeInfosForEnvCells()
  * avec la maille globale associée au milieu
  */
 void AllEnvData::
-_checkLocalIdsCoherency()
+_checkLocalIdsCoherency() const
 {
   for (MeshEnvironment* env : m_material_mng->trueEnvironments()) {
     Int32 index = 0;
@@ -432,7 +432,7 @@ _printAllEnvCells(CellVectorView ids)
  * de suppression d'un matériau)
  */
 void AllEnvData::
-_switchComponentItemsForMaterials(MeshMaterial* modified_mat,eOperation operation)
+_switchComponentItemsForMaterials(const MeshMaterial* modified_mat,eOperation operation)
 {
   UniqueArray<Int32> pure_local_ids;
   UniqueArray<Int32> partial_indexes;
@@ -441,8 +441,8 @@ _switchComponentItemsForMaterials(MeshMaterial* modified_mat,eOperation operatio
 
   bool is_verbose = traceMng()->verbosityLevel()>=5;
 
-  for( MeshEnvironment* env : m_material_mng->trueEnvironments() ){
-    for( MeshMaterial* mat : env->trueMaterials() ){
+  for( MeshEnvironment* true_env : m_material_mng->trueEnvironments() ){
+    for( MeshMaterial* mat : true_env->trueMaterials() ){
       // Ne traite pas le matériau en cours de modification.
       if (mat==modified_mat)
         continue;
@@ -450,10 +450,10 @@ _switchComponentItemsForMaterials(MeshMaterial* modified_mat,eOperation operatio
       pure_local_ids.clear();
       partial_indexes.clear();
 
-      MeshEnvironment* env = mat->trueEnvironment();
+      const MeshEnvironment* env = mat->trueEnvironment();
 
       MeshMaterialVariableIndexer* indexer = mat->variableIndexer();
-      Int32ArrayView cells_nb_mat = env->m_nb_mat_per_cell.asArray();
+      ConstArrayView<Int32> cells_nb_mat = env->m_nb_mat_per_cell.asArray();
 
       info(4) << "TransformCells (V2) operation=" << operation
               << " indexer=" << indexer->name();
@@ -485,7 +485,7 @@ _switchComponentItemsForMaterials(MeshMaterial* modified_mat,eOperation operatio
  * de suppression d'un matériau)
  */
 void AllEnvData::
-_switchComponentItemsForEnvironments(IMeshEnvironment* modified_env,eOperation operation)
+_switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,eOperation operation)
 {
   UniqueArray<Int32> pure_local_ids;
   UniqueArray<Int32> partial_indexes;
@@ -494,7 +494,7 @@ _switchComponentItemsForEnvironments(IMeshEnvironment* modified_env,eOperation o
 
   bool is_verbose = traceMng()->verbosityLevel()>=5;
 
-  for( MeshEnvironment* env : m_material_mng->trueEnvironments() ){
+  for( const MeshEnvironment* env : m_material_mng->trueEnvironments() ){
     // Ne traite pas le milieu en cours de modification.
     if (env==modified_env)
       continue;
@@ -533,8 +533,7 @@ _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
                                Int32ConstArrayView partial_indexes,
                                Int32 indexer_index,eOperation operation)
 {
-  Integer nb_transform = pure_local_ids.size();
-  if (nb_transform==0)
+  if (pure_local_ids.empty())
     return;
 
   // Comme on a modifié des mailles, il faut mettre à jour les valeurs
@@ -566,7 +565,7 @@ _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
 Integer AllEnvData::
 _checkMaterialPresence(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation operation)
 {
-  MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
+  const MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
   IItemFamily* item_family = mat->cells().itemFamily();
   ItemInfoListView items_internal(item_family);
   Integer max_local_id = item_family->maxLocalId();
@@ -575,8 +574,7 @@ _checkMaterialPresence(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation ope
   Integer nb_error = 0;
   String name = mat->name();
 
-  for( Integer i=0, n=ids.size(); i<n; ++i ){
-    Int32 lid = ids[i];
+  for( Int32 lid : ids ){
     if (presence_flags[lid]){
       info() << "ERROR: item " << ItemPrinter(items_internal[lid])
              << " is present several times in add/remove list for material mat=" << name;
@@ -586,8 +584,7 @@ _checkMaterialPresence(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation ope
   }
 
   if (operation==eOperation::Add){
-    for( Integer i=0, n=mat_local_ids.size(); i<n; ++i ){
-      Int32 lid = mat_local_ids[i];
+    for( Int32 lid : mat_local_ids ){
       if (presence_flags[lid]){
         info() << "ERROR: item " << ItemPrinter(items_internal[lid])
                << " is already in material mat=" << name;
@@ -596,13 +593,11 @@ _checkMaterialPresence(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation ope
     }
   }
   else if (operation==eOperation::Remove){
-    for( Integer i=0, n=mat_local_ids.size(); i<n; ++i ){
-      Int32 lid = mat_local_ids[i];
+    for( Int32 lid : mat_local_ids ){
       presence_flags[lid]= false;
     }
 
-    for( Integer i=0, n=ids.size(); i<n; ++i ){
-      Int32 lid = ids[i];
+    for( Int32 lid : ids ){
       if (presence_flags[lid]){
         info() << "ERROR: item " << ItemPrinter(items_internal[lid])
                << " is not in material mat=" << name;
@@ -629,13 +624,10 @@ _checkMaterialPresence(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation ope
  * Les valeurs valides sont stockées dans \a valid_ids.
  */
 void AllEnvData::
-_filterValidIds(IMeshMaterial* mat,Int32ConstArrayView ids,bool do_add,Int32Array& valid_ids)
+_filterValidIds(IMeshMaterial* mat,Int32ConstArrayView ids,bool do_add,Int32Array& valid_ids) const
 {
-  // TODO: faut-il vérifier la validité des \a ids
-  //(ils sont compris entre 0 et max_local_id-1) ?
-
-  MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
-  IItemFamily* item_family = mat->cells().itemFamily();
+  const MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
+  const IItemFamily* item_family = mat->cells().itemFamily();
   Integer max_local_id = item_family->maxLocalId();
   UniqueArray<bool> presence_flags(max_local_id,false);
   Int32ConstArrayView mat_local_ids = indexer->localIds();
@@ -643,8 +635,7 @@ _filterValidIds(IMeshMaterial* mat,Int32ConstArrayView ids,bool do_add,Int32Arra
   UniqueArray<Int32> unique_occurence_lids;
   unique_occurence_lids.reserve(ids.size());
 
-  for( Integer i=0, n=ids.size(); i<n; ++i ){
-    Int32 lid = ids[i];
+  for( Int32 lid : ids ){
     if (!presence_flags[lid]){
       unique_occurence_lids.add(lid);
       presence_flags[lid] = true;
@@ -654,8 +645,7 @@ _filterValidIds(IMeshMaterial* mat,Int32ConstArrayView ids,bool do_add,Int32Arra
   valid_ids.clear();
 
   if (do_add){
-    for( Integer i=0, n=mat_local_ids.size(); i<n; ++i ){
-      Int32 lid = mat_local_ids[i];
+    for( Int32 lid : mat_local_ids ){
       if (presence_flags[lid]){
         ;
       }
@@ -664,13 +654,10 @@ _filterValidIds(IMeshMaterial* mat,Int32ConstArrayView ids,bool do_add,Int32Arra
     }
   }
   else{
-    for( Integer i=0, n=mat_local_ids.size(); i<n; ++i ){
-      Int32 lid = mat_local_ids[i];
+    for( Int32 lid : mat_local_ids )
       presence_flags[lid] = false;
-    }
 
-    for( Integer i=0, n=unique_occurence_lids.size(); i<n; ++i ){
-      Int32 lid = unique_occurence_lids[i];
+    for( Int32 lid : unique_occurence_lids ){
       if (presence_flags[lid]){
         ;
       }
@@ -728,13 +715,11 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
     _throwBadOperation(operation);
   bool is_add = (operation==eOperation::Add);
 
-  auto* true_mat = dynamic_cast<MeshMaterial*>(mat);
-  if (!true_mat)
-    throw NotImplementedException(A_FUNCINFO,"material is not an instance of MeshMaterial");
+  auto* true_mat = ARCANE_CHECK_POINTER(dynamic_cast<MeshMaterial*>(mat));
 
   info(4) << "Using optimisation updateMaterialDirect operation=" << operation;
 
-  IMeshEnvironment* env = mat->environment();
+  const IMeshEnvironment* env = mat->environment();
   MeshEnvironment* true_env = true_mat->trueEnvironment();
   Integer nb_mat = env->nbMaterial();
 
@@ -752,7 +737,7 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
 
     Int32UniqueArray cells_unchanged_in_env;
     Int32ArrayView cells_nb_mat = true_env->m_nb_mat_per_cell.asArray();
-    const Int32 ref_nb_mat = (is_add) ? 0 : 1;
+    const Int32 ref_nb_mat = is_add ? 0 : 1;
 
     info(4) << "Using optimisation updateMaterialDirect with multimat operation="
             << operation;
@@ -786,14 +771,12 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
 
   // Met à jour le nombre de milieux de chaque maille.
   if (is_add){
-    for( Integer i=0, n=ids.size(); i<n; ++i ){
-      ++cells_nb_env[ids[i]];
-    }
+    for( Int32 id : ids )
+      ++cells_nb_env[id];
   }
   else{
-    for( Integer i=0, n=ids.size(); i<n; ++i ){
-      --cells_nb_env[ids[i]];
-    }
+    for( Int32 id : ids )
+      --cells_nb_env[id];
   }
 
   // Comme on a ajouté/supprimé des mailles matériau dans le milieu,
@@ -802,7 +785,7 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
   // suppression).
   info(4) << "Transform PartialPure for material name=" << true_mat->name();
   _switchComponentItemsForMaterials(true_mat,operation);
-  info(4) << "Transform PartialPure for environemnt name=" << env->name();
+  info(4) << "Transform PartialPure for environment name=" << env->name();
   _switchComponentItemsForEnvironments(env,operation);
 
   // Si je suis mono-mat, alors mat->cells()<=>env->cells() et il ne faut
