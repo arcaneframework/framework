@@ -352,7 +352,7 @@ forceRecompute(bool compute_all)
   _computeInfosForEnvCells();
 
   if (is_verbose_debug){
-    printAllEnvCells(m_material_mng->mesh()->allCells().view().localIds());
+    _printAllEnvCells(m_material_mng->mesh()->allCells().view());
     for( IMeshMaterial* material : m_material_mng->materials() ){
       ENUMERATE_COMPONENTITEM(MatCell,imatcell,material){
         MatCell pmc = *imatcell;
@@ -396,7 +396,7 @@ forceRecompute(bool compute_all)
 /*---------------------------------------------------------------------------*/
 
 void AllEnvData::
-printAllEnvCells(Int32ConstArrayView ids)
+_printAllEnvCells(CellVectorView ids)
 {
   ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng->view(ids)){
     AllEnvCell all_env_cell = *iallenvcell;
@@ -566,9 +566,6 @@ _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
 Integer AllEnvData::
 _checkMaterialPresence(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation operation)
 {
-  // TODO: faut-il vérifier la validité des \a ids
-  //(ils sont compris entre 0 et max_loca_id-1) ?
-
   MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
   IItemFamily* item_family = mat->cells().itemFamily();
   ItemInfoListView items_internal(item_family);

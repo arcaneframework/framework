@@ -72,8 +72,6 @@ class AllEnvData
 
   void updateMaterialDirect(IMeshMaterial* mat, Int32ConstArrayView ids, eOperation operation);
 
-  void printAllEnvCells(Int32ConstArrayView ids);
-
   //! Notification de la fin de création des milieux/matériaux
   void endCreate();
 
@@ -109,6 +107,7 @@ class AllEnvData
   void _rebuildMaterialsAndEnvironmentsFromGroups();
   void _computeInfosForEnvCells();
   void _checkLocalIdsCoherency();
+  void _printAllEnvCells(CellVectorView ids);
 };
 
 /*---------------------------------------------------------------------------*/
