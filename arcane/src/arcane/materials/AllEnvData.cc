@@ -66,6 +66,15 @@ endCreate()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool AllEnvData::
+_isFullVerbose() const
+{
+  return (m_verbose_debug_level >1 || traceMng()->verbosityLevel()>=5);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void AllEnvData::
 _computeNbEnvAndNbMatPerCell()
 {
@@ -131,100 +140,57 @@ _computeAndResizeEnvItemsInternal()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Remise à jour des structures suite à une modification des mailles
- * de matériaux ou de milieux.
- *
- * Cette méthode reconstruit les informations uniquement à partir des
- * groupes d'entités associés aux matériaux et milieux. Les variables
- * matériaux ne sont pas prise en compte par cette méthode et il est donc
- * possible qu'elles soient invalidées suite à cet appel. Si on souhaite la conservation
- * des valeurs, il faut d'abord sauvegarder les valeurs partielles,
- * appliquer cette méthode puis restaurer les valeurs partielles. La classe
- * MeshMaterialBackup permet cette sauvegarde/restauration.
- *
- * A noter que cette méthode peut être utilisée en reprise en conservant
- * les valeurs des variables matériaux car la structure des groupes
- * est la même après une reprise ce qui n'invalide pas les valeurs partielles.
- */
+
 void AllEnvData::
-forceRecompute(bool compute_all)
+_rebuildMaterialsAndEnvironmentsFromGroups()
 {
-  m_material_mng->incrementTimestamp();
-
-  IMesh* mesh = m_material_mng->mesh();
-  IItemFamily* cell_family = mesh->cellFamily();
-  ItemGroup all_cells = cell_family->allItems();
-  ConstArrayView<MeshMaterialVariableIndexer*> vars_idx = m_material_mng->variablesIndexer();
-  Integer nb_var = vars_idx.size();
-  info(4) << "ForceRecompute NB_VAR_IDX=" << nb_var << " compute_all?=" << compute_all;
-
-  const bool is_verbose_debug = m_verbose_debug_level >0;
-
-  // Il faut compter le nombre total de mailles par milieu et par matériau
-
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
-
-  if (compute_all)
-    _computeNbEnvAndNbMatPerCell();
-
-  // Calcul le nombre de milieux par maille, et pour chaque
-  // milieu le nombre de matériaux par maille
-  _computeAndResizeEnvItemsInternal();
-
-  ArrayView<ComponentItemInternal> all_env_items_internal = m_item_internal_data.allEnvItemsInternal();
-  ArrayView<ComponentItemInternal> env_items_internal = m_item_internal_data.envItemsInternal();
-
-  bool is_full_verbose = m_verbose_debug_level >1 || traceMng()->verbosityLevel()>=5;
-
-  if (compute_all){
-    for( const MeshEnvironment* env : true_environments ){
-      MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
-      ComponentItemListBuilder list_builder(var_indexer,0);
-      CellGroup cells = var_indexer->cells();
-      Integer var_nb_cell = cells.size();
-      info(4) << "ENV_INDEXER (V2) i=" << var_indexer->index() << " NB_CELL=" << var_nb_cell << " name=" << cells.name()
-              << " index=" << var_indexer->index();
-      if (is_full_verbose){
-        Int32UniqueArray my_array(cells.view().localIds());
-        info(5) << "ENV_INDEXER (V2) name=" << cells.name() << " cells=" << my_array;
-      }
-      ENUMERATE_CELL(icell,var_indexer->cells()){
-        if (m_nb_env_per_cell[icell]>1)
-          list_builder.addPartialItem(icell.itemLocalId());
-        else
-          // Je suis le seul milieu de la maille donc je prends l'indice global
-          list_builder.addPureItem(icell.itemLocalId());
-      }
-      if (is_full_verbose)
-        info() << "MAT_NB_MULTIPLE_CELL (V2) mat=" << var_indexer->name()
-               << " nb_in_global=" << list_builder.pureMatVarIndexes().size()
-               << " (ids=" << list_builder.pureMatVarIndexes() << ")"
-               << " nb_in_multiple=" << list_builder.partialMatVarIndexes().size()
-               << " (ids=" << list_builder.partialLocalIds() << ")";
-      var_indexer->endUpdate(list_builder);
-    }
-
-    for( MeshEnvironment* env : true_environments )
-      env->computeItemListForMaterials(m_nb_env_per_cell);
-  }
+  const bool is_full_verbose = _isFullVerbose();
 
   for( const MeshEnvironment* env : true_environments ){
-    const MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
+    MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
+    ComponentItemListBuilder list_builder(var_indexer,0);
     CellGroup cells = var_indexer->cells();
     Integer var_nb_cell = cells.size();
-    info(4) << "FINAL_INDEXER i=" << var_indexer->index() << " NB_CELL=" << var_nb_cell << " name=" << cells.name()
+    info(4) << "ENV_INDEXER (V2) i=" << var_indexer->index() << " NB_CELL=" << var_nb_cell << " name=" << cells.name()
             << " index=" << var_indexer->index();
     if (is_full_verbose){
       Int32UniqueArray my_array(cells.view().localIds());
-      info(5) << "FINAL_INDEXER (V2) name=" << cells.name() << " cells=" << my_array;
-      info(4) << "FINAL_MAT_NB_MULTIPLE_CELL (V2) mat=" << var_indexer->name()
-             << " ids=" << var_indexer->matvarIndexes();
+      info(5) << "ENV_INDEXER (V2) name=" << cells.name() << " cells=" << my_array;
     }
+    ENUMERATE_CELL(icell,var_indexer->cells()){
+      if (m_nb_env_per_cell[icell]>1)
+        list_builder.addPartialItem(icell.itemLocalId());
+      else
+        // Je suis le seul milieu de la maille donc je prends l'indice global
+        list_builder.addPureItem(icell.itemLocalId());
+    }
+    if (is_full_verbose)
+      info() << "MAT_NB_MULTIPLE_CELL (V2) mat=" << var_indexer->name()
+             << " nb_in_global=" << list_builder.pureMatVarIndexes().size()
+             << " (ids=" << list_builder.pureMatVarIndexes() << ")"
+             << " nb_in_multiple=" << list_builder.partialMatVarIndexes().size()
+             << " (ids=" << list_builder.partialLocalIds() << ")";
+    var_indexer->endUpdate(list_builder);
   }
 
-  // Initialise à des valeurs invalides pour détecter les erreurs.
-  m_item_internal_data.resetEnvItemsInternal();
+  for( MeshEnvironment* env : true_environments )
+    env->computeItemListForMaterials(m_nb_env_per_cell);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllEnvData::
+_computeInfosForEnvCells()
+{
+  IMesh* mesh = m_material_mng->mesh();
+  IItemFamily* cell_family = mesh->cellFamily();
+  ItemGroup all_cells = cell_family->allItems();
+  ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
+
+  ArrayView<ComponentItemInternal> all_env_items_internal = m_item_internal_data.allEnvItemsInternal();
+  ArrayView<ComponentItemInternal> env_items_internal = m_item_internal_data.envItemsInternal();
 
   // Calcule pour chaque maille sa position dans le tableau des milieux
   // en considérant que les milieux de chaque maille sont rangés consécutivement
@@ -234,9 +200,9 @@ forceRecompute(bool compute_all)
     Integer env_cell_index = 0;
     ENUMERATE_CELL(icell,all_cells){
       Int32 lid = icell.itemLocalId();
-      Int32 n = m_nb_env_per_cell[icell];
+      Int32 nb_env = m_nb_env_per_cell[icell];
       env_cell_indexes[lid] = env_cell_index;
-      env_cell_index += n;
+      env_cell_index += nb_env;
     }
   }
 
@@ -295,9 +261,98 @@ forceRecompute(bool compute_all)
         ref_ii.setFirstSubItem(&env_items_internal[env_cell_indexes[lid]]);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie la cohérence des localIds() du variableIndexer().
+ * avec la maille globale associée au milieu
+ */
+void AllEnvData::
+_checkLocalIdsCoherency()
+{
+  for (MeshEnvironment* env : m_material_mng->trueEnvironments()) {
+    Int32 index = 0;
+    Int32ConstArrayView indexer_local_ids = env->variableIndexer()->localIds();
+    ENUMERATE_COMPONENTCELL (icitem, env) {
+      ComponentCell cc = *icitem;
+      Int32 matvar_lid = cc.globalCell().localId();
+      Int32 direct_lid = indexer_local_ids[index];
+      if (matvar_lid != direct_lid)
+        ARCANE_FATAL("Incoherent localId() matvar_lid={0} direct_lid={1} index={2}",
+                     matvar_lid, direct_lid, index);
+      ++index;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remise à jour des structures suite à une modification des mailles
+ * de matériaux ou de milieux.
+ *
+ * Cette méthode reconstruit les informations uniquement à partir des
+ * groupes d'entités associés aux matériaux et milieux. Les variables
+ * matériaux ne sont pas prise en compte par cette méthode et il est donc
+ * possible qu'elles soient invalidées suite à cet appel. Si on souhaite la conservation
+ * des valeurs, il faut d'abord sauvegarder les valeurs partielles,
+ * appliquer cette méthode puis restaurer les valeurs partielles. La classe
+ * MeshMaterialBackup permet cette sauvegarde/restauration.
+ *
+ * A noter que cette méthode peut être utilisée en reprise en conservant
+ * les valeurs des variables matériaux car la structure des groupes
+ * est la même après une reprise ce qui n'invalide pas les valeurs partielles.
+ */
+void AllEnvData::
+forceRecompute(bool compute_all)
+{
+  m_material_mng->incrementTimestamp();
+
+  ConstArrayView<MeshMaterialVariableIndexer*> vars_idx = m_material_mng->variablesIndexer();
+  Integer nb_var = vars_idx.size();
+  info(4) << "ForceRecompute NB_VAR_IDX=" << nb_var << " compute_all?=" << compute_all;
+
+  const bool is_verbose_debug = m_verbose_debug_level >0;
+
+  // Il faut compter le nombre total de mailles par milieu et par matériau
+
+  ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
+
+  if (compute_all)
+    _computeNbEnvAndNbMatPerCell();
+
+  // Calcul le nombre de milieux par maille, et pour chaque
+  // milieu le nombre de matériaux par maille
+  _computeAndResizeEnvItemsInternal();
+
+  bool is_full_verbose = _isFullVerbose();
+
+  if (compute_all)
+    _rebuildMaterialsAndEnvironmentsFromGroups();
+
+  for( const MeshEnvironment* env : true_environments ){
+    const MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
+    CellGroup cells = var_indexer->cells();
+    Integer var_nb_cell = cells.size();
+    info(4) << "FINAL_INDEXER i=" << var_indexer->index() << " NB_CELL=" << var_nb_cell << " name=" << cells.name()
+            << " index=" << var_indexer->index();
+    if (is_full_verbose){
+      Int32UniqueArray my_array(cells.view().localIds());
+      info(5) << "FINAL_INDEXER (V2) name=" << cells.name() << " cells=" << my_array;
+      info(4) << "FINAL_MAT_NB_MULTIPLE_CELL (V2) mat=" << var_indexer->name()
+             << " ids=" << var_indexer->matvarIndexes();
+    }
+  }
+
+  // Initialise à des valeurs invalides pour détecter les erreurs.
+  m_item_internal_data.resetEnvItemsInternal();
+
+  _computeInfosForEnvCells();
 
   if (is_verbose_debug){
-    printAllEnvCells(all_cells.view().localIds());
+    printAllEnvCells(m_material_mng->mesh()->allCells().view().localIds());
     for( IMeshMaterial* material : m_material_mng->materials() ){
       ENUMERATE_COMPONENTITEM(MatCell,imatcell,material){
         MatCell pmc = *imatcell;
@@ -324,22 +379,8 @@ forceRecompute(bool compute_all)
 
   // Vérifie la cohérence des localIds() du variableIndexer()
   // avec la maille globale associée au milieu
-  const bool check_localid_coherency = arcaneIsCheck();
-  if (check_localid_coherency){
-    for( MeshEnvironment* env : true_environments ){
-      Int32 index = 0;
-      Int32ConstArrayView indexer_local_ids = env->variableIndexer()->localIds();
-      ENUMERATE_COMPONENTCELL(icitem,env){
-        ComponentCell cc = *icitem;
-        Int32 matvar_lid = cc.globalCell().localId();
-        Int32 direct_lid = indexer_local_ids[index];
-        if (matvar_lid!=direct_lid)
-          ARCANE_FATAL("Incoherent localId() matvar_lid={0} direct_lid={1} index={2}",
-                       matvar_lid,direct_lid,index);
-        ++index;
-      }
-    }
-  }
+  if (arcaneIsCheck())
+    _checkLocalIdsCoherency();
 
   // Met à jour le AllCellToAllEnvCell s'il a été initialisé si la fonctionnalité est activé
   if (m_material_mng->isCellToAllEnvCellForRunCommand()) {
