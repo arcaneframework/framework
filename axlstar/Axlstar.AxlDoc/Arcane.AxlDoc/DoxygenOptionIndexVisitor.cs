@@ -1,10 +1,13 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
+/* DoxygenOptionIndexVisitor.cs                                (C) 2000-2023 */
+/*                                                                           */
 /* Génération de la documentation au format Doxygen.                         */
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 using System;
@@ -68,7 +71,7 @@ namespace Arcane.AxlDoc
     // Structure basée sur celle de "Class index".
     public void Generate (string file_path)
     {
-      Console.WriteLine ("GENERATING INDEX");
+      Console.WriteLine ("GENERATING NEW INDEX");
       TextWriter tw = m_stream;
       //tw.WriteLine("<h2>data file option index</h2>");
       //tw.WriteLine("<ul>");
@@ -128,13 +131,69 @@ namespace Arcane.AxlDoc
       //tw.WriteLine ("</dd></dl>");
       tw.WriteLine ("</dl>");
       tw.WriteLine ("</div>");
+
       using (TextWriter file_tw = new StreamWriter(file_path, false, Utils.WriteEncoding)) {
-        file_tw.WriteLine("# " + m_code_info.Translation.KeywordsIndex + " {#axldoc_full_index}\n");
+        file_tw.WriteLine("# " + m_code_info.Translation.KeywordsIndex + " {#axldoc_all_option_index}\n");
         file_tw.Write ("<div class=\"qindex\">");
         foreach (char c in m_first_chars) {
           file_tw.Write ("<a class=\"qindex\">\\ref axldoc_fullindex_letter_{0} \"{1}\" </a>", ((int)c).ToString (), Char.ToUpper(c));
         }
         file_tw.Write ("</div>");
+        file_tw.Write (m_stream.ToString ());
+      }
+    }
+    
+    // Génère la page dans le fichier \a file_path.
+    // Ancienne version de la page.
+    public void GenerateOldIndex (string file_path)
+    {
+      Console.WriteLine ("GENERATING LEGACY INDEX");
+      TextWriter tw = m_stream;
+      //tw.WriteLine("<h2>data file option index</h2>");
+      //tw.WriteLine("<ul>");
+      char last_char = '\0';
+      foreach (KeyValuePair<IndexName, Option> o in m_options) {
+        IndexName iname = o.Key;
+        Option opt = o.Value;
+        Option parent = opt.ParentOption;
+        string anchor_name = DoxygenDocumentationUtils.AnchorName (o.Value);
+        char first_char = Char.ToLower (iname.name [0]);
+        if (first_char != last_char) {
+          m_first_chars.Add (first_char);
+          if (last_char != '\0')
+            tw.Write ("\n</ul>\n");
+          tw.Write ("<p>" + first_char + " :</p>\n");
+          tw.Write ("\\anchor axldoc_fullindex_letter_" + ((int)first_char).ToString ());
+          tw.Write ("\n<ul>\n");
+          last_char = first_char;
+        }
+        tw.Write ("<li>");
+        tw.Write ("\\ref {0} \"{1}\"", anchor_name, iname.name);
+        ServiceOrModuleInfo main_info = opt.ServiceOrModule;
+        string main_type_name = "service";
+        if (main_info.IsModule)
+          main_type_name = "module";
+        if (m_code_info.Language == "fr"){
+          tw.Write (" (dans le {2} \\ref axldoc_{2}_{0} \"{1}\"", main_info.FileBaseName, main_info.GetTranslatedName (m_code_info.Language), main_type_name);
+        }
+        else{
+          tw.Write (" (in \\ref axldoc_{2}_{0} \"{1}\" {2}", main_info.FileBaseName, main_info.GetTranslatedName (m_code_info.Language), main_type_name);
+        }
+        if (parent != null) {
+          string parent_name = parent.GetTranslatedFullName (m_lang);
+          tw.Write (" (option &lt;\\ref {1} \"{0}\"&gt;)", parent_name, DoxygenDocumentationUtils.AnchorName (parent));
+        }
+        tw.Write (")\n</li>");
+      }
+      tw.WriteLine ("</ul>");
+
+      using (TextWriter file_tw = new StreamWriter(file_path, false, Utils.WriteEncoding)) {
+        file_tw.WriteLine("# " + m_code_info.Translation.KeywordsIndex + " {#axldoc_all_option_index}\n");
+        file_tw.Write ("<p>");
+        foreach (char c in m_first_chars) {
+          file_tw.Write ("\\ref axldoc_fullindex_letter_{0} \"{1}\" ", ((int)c).ToString (), c);
+        }
+        file_tw.Write ("</p>");
         file_tw.Write (m_stream.ToString ());
       }
     }

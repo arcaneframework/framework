@@ -1,15 +1,17 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- CodeInfo.cs (C) 2000-2011
-
- Informations sur les modules et service d'un code
- disponibles dans un code. Cela necessite d'avoir
- generer les infos en lancant arcane avec l'option -arcane_opt arcane_internal
-*/
+/*---------------------------------------------------------------------------*/
+/* CodeInfo.cs                                                 (C) 2000-2023 */
+/*                                                                           */
+/* Informations sur les modules et service d'un code                         */
+/* disponibles dans un code. Cela necessite d'avoir                          */
+/* generer les infos en lancant arcane avec                                  */
+/* l'option -arcane_opt arcane_internal                                      */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 using System.Xml;
 using System;
@@ -51,6 +53,14 @@ namespace Arcane.Axl
         m_language = value;
         Translation = new Translation(m_language);
       }
+    }
+
+    bool m_legacy;
+    //! Permet de dire si l'on veut l'ancienne version de la documentation.
+    public bool Legacy
+    {
+      get { return m_legacy; }
+      set { m_legacy = value; }
     }
 
     public Translation Translation { get; private set; }

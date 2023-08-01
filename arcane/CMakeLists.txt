@@ -988,11 +988,6 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARIES is ${ARCANE_EXTERNAL_LIBRARIES}")
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos.sh @ONLY)
-file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
-
-# ----------------------------------------------------------------------------
-
 function(GENERATE_DOC_TARGET docname)
   set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR})
   configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}.doxyfile @ONLY)
@@ -1010,21 +1005,12 @@ endfunction()
 if(ARCANEDOC_LEGACY_THEME STREQUAL ON)
   set(ARCANEDOC_HEADER_USER "header_no_theme.html")
   set(ARCANEDOC_HEADER_DEV "header_no_theme.html")
+  set(ARCANEDOC_AXLDOC_LEGACY "--legacy")
   message(STATUS "User and dev documentations with legacy theme")
 else()
-  if(ARCANEDOC_USER_LEGACY_THEME STREQUAL ON)
-    set(ARCANEDOC_HEADER_USER "header_no_theme.html")
-    message(STATUS "User documentation with legacy theme")
-  else()
-    set(ARCANEDOC_HEADER_USER "header.html")
-  endif()
-
-  if(ARCANEDOC_DEV_LEGACY_THEME STREQUAL ON)
-    set(ARCANEDOC_HEADER_DEV "header_no_theme.html")
-    message(STATUS "Dev documentation with legacy theme")
-  else()
-    set(ARCANEDOC_HEADER_DEV "header.html")
-  endif()
+  set(ARCANEDOC_HEADER_USER "header.html")
+  set(ARCANEDOC_HEADER_DEV "header.html")
+  set(ARCANEDOC_AXLDOC_LEGACY "")
 endif()
 
 # Variable pour savoir si la doc aura accès à internet ou non.
@@ -1034,6 +1020,13 @@ if(ARCANEDOC_OFFLINE STREQUAL ON)
 else()
   set(ARCANEDOC_MATHJAX "YES")
 endif()
+
+# ----------------------------------------------------------------------------
+
+configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos.sh @ONLY)
+file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
+
+# ----------------------------------------------------------------------------
 
 message(STATUS "DOXYGEN = ${DOXYGEN}")
 if(DOXYGEN)

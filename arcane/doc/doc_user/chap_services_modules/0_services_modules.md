@@ -19,7 +19,7 @@ Sommaire de ce chapitre :
 - \subpage axldoc_interfacemainpage <br>
   Présente les interfaces qu'implémentent les services.
 
-- \subpage axldoc_full_index <br>
+- \subpage axldoc_all_option_index <br>
   Présente une liste des mots-clefs utilisés dans les modules/services.
 
 

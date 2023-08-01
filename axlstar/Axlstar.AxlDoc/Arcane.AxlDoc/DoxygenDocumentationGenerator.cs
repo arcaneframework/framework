@@ -1,10 +1,10 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DoxygenDocumentationGenerator.cc                            (C) 2000-2018 */
+/* DoxygenDocumentationGenerator.cc                            (C) 2000-2023 */
 /*                                                                           */
 /* Génération de la documentation au format Doxygen.                         */
 /*---------------------------------------------------------------------------*/
@@ -106,7 +106,14 @@ namespace Arcane.AxlDoc
       if (m_config.do_examples) {
         DoxygenExampleFile.WriteAliases ();
       }
-      m_option_index_visitor.Generate (Path.Combine (m_config.output_path, "axldoc_full_index.md"));
+
+      if(m_code_info.Legacy){
+        m_option_index_visitor.GenerateOldIndex (Path.Combine (m_config.output_path, "axldoc_all_option_index.md"));
+      }
+      else{
+        m_option_index_visitor.Generate (Path.Combine (m_config.output_path, "axldoc_all_option_index.md"));
+      }
+      
       _WriteCaseMainPageMarkdown(modules.Values, services.Values);
       _WriteInterfaceMainPageMarkdown (services.Values);
 

@@ -202,10 +202,9 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-
-      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: olive;\">");
+      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: olive;\">");
       _WriteColoredTitle ("olive", o, false);
-      m_full_stream.WriteLine ("</h2>");
+      _WriteHtmlOnly(m_full_stream, "</h2>");
       XmlDocument owner_doc = o.Node.OwnerDocument;
       XmlElement desc_elem = o.DescriptionElement;
       // Construit dans \a enum_list_element
@@ -251,8 +250,8 @@ namespace Arcane.AxlDoc
         tr.AppendChild (td2);
       }
       // enum_list_element.AppendChild (owner_doc.CreateElement ("br"));
-      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: olive;\">");
-      m_full_stream.WriteLine ("<div class=\"memproto\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: olive;\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
       _AddBriefDescription (o, false);
       if (desc_elem != null) {
         XmlElement elem_description = desc_elem.SelectSingleNode ("enum-description") as XmlElement;
@@ -266,11 +265,11 @@ namespace Arcane.AxlDoc
       }
       //m_full_stream.Write(enum_list_element.OuterXml);
       _AddFullDescription (o);
-      m_full_stream.WriteLine ("</div>");
-      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
       _WriteCode(o);
-      m_full_stream.WriteLine ("</div>");
-      m_full_stream.WriteLine ("</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
     }
 
     public void VisitExtended (ExtendedOptionInfo o)
@@ -279,19 +278,21 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: teal;\">");
-      _WriteColoredTitle ("teal", o, false);
-      m_full_stream.WriteLine ("</h2>");
+      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: teal;\">");
 
-      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: teal;\">");
-      m_full_stream.WriteLine ("<div class=\"memproto\">");
+      _WriteColoredTitle ("teal", o, false);
+      _WriteHtmlOnly(m_full_stream, "</h2>");
+
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: teal;\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
-      m_full_stream.WriteLine ("</div>");
-      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteHtmlOnly(m_full_stream, "</div>");
+
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
       _WriteCode(o);
-      m_full_stream.WriteLine ("</div>");
-      m_full_stream.WriteLine ("</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
     }
 
     public void VisitScript (ScriptOptionInfo o)
@@ -300,20 +301,20 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: teal;\">");
+      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: teal;\">");
       _WriteColoredTitle ("teal", o, false);
-      m_full_stream.WriteLine ("</h2>");
+      _WriteHtmlOnly(m_full_stream, "</h2>");
 
-      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: teal;\">");
-      m_full_stream.WriteLine ("<div class=\"memproto\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: teal;\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
-      m_full_stream.WriteLine ("</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
 
-      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
       _WriteCode(o);
-      m_full_stream.WriteLine ("</div>");
-      m_full_stream.WriteLine ("</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
     }
 
     public void VisitSimple (SimpleOptionInfo o)
@@ -322,23 +323,23 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: green;\">");
+      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: green;\">");
       _WriteColoredTitle ("green", o, false);
-      m_full_stream.WriteLine ("</h2>");
+      _WriteHtmlOnly(m_full_stream, "</h2>");
 
-      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: green;\">");
-      m_full_stream.WriteLine ("<div class=\"memproto\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: green;\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
       // m_full_stream.WriteLine("<p>TYPE={0}</p>",o.Type);
       // if (o.DefaultValue!=null)
       //   m_full_stream.WriteLine("<p>DEFAULT={0}</p>",o.DefaultValue);
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
-      m_full_stream.WriteLine ("</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
 
-      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
       _WriteCode(o);
-      m_full_stream.WriteLine ("</div>");
-      m_full_stream.WriteLine ("</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
     }
 
     public void VisitServiceInstance (ServiceInstanceOptionInfo o)
@@ -347,19 +348,19 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: green;\">");
+      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: green;\">");
       _WriteColoredTitle ("green", o, false);
       //m_full_stream.WriteLine("<p>SERVICE TYPE={0}</p>",o.Type);
-      m_full_stream.WriteLine ("</h2>");
-      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: green;\">");
-      m_full_stream.WriteLine ("<div class=\"memproto\">");
+      _WriteHtmlOnly(m_full_stream, "</h2>");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: green;\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
       CodeInterfaceInfo interface_info = null;
       if (m_code_info.Interfaces.TryGetValue (o.Type, out interface_info)) {
         if (interface_info.Services.Count>0) {
           //Console.WriteLine("SERVICE TYPE FOUND={0}",o.Type);
-          m_full_stream.WriteLine ("<div class=\"ServiceTable\">");
+          _WriteHtmlOnly(m_full_stream, "<div class=\"ServiceTable\">");
           if(m_code_info.Language == "fr"){
             m_full_stream.WriteLine ("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i>:</dt>",
                                      (interface_info.Services.Count>1)?"s":"");
@@ -377,14 +378,14 @@ namespace Arcane.AxlDoc
             }
           }
           m_full_stream.WriteLine ("</dl>");
-          m_full_stream.WriteLine ("</div>");
+          _WriteHtmlOnly(m_full_stream, "</div>");
         }
       }
-      m_full_stream.WriteLine ("</div>");
-      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
       _WriteCode(o);
-      m_full_stream.WriteLine ("</div>");
-      m_full_stream.WriteLine ("</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
     }
 
     private void _WriteDescription (int i, Option option, XmlElement desc_elem, TextWriter stream)
@@ -574,7 +575,7 @@ namespace Arcane.AxlDoc
                                  (default_value==null)?"":String.Format("={0}", default_value),
                                  (unit_type==null)?"":String.Format("; physical unit is {0}", unit_type));
       }
-      // Si demandÃ©, affiche les classes utilisateurs de cette option
+      // Si demandé, affiche les classes utilisateurs de cette option
       if (PrintUserClass) {
         string[] user_classes = o.UserClasses;
         if (user_classes != null && user_classes.Length > 0) {
@@ -594,10 +595,10 @@ namespace Arcane.AxlDoc
         //m_full_stream.Write ("<div><pre class='OptionName'>");
         m_full_stream.WriteLine ("```xml");
         if (o is ServiceInstanceOptionInfo) {
-          m_full_stream.Write ("<{0} name='{1}'>service configuration block</{0}>",
+          m_full_stream.WriteLine ("<{0} name='{1}'>service configuration block</{0}>",
                                         o.GetTranslatedName (m_code_info.Language), field_name);
         } else
-          m_full_stream.Write ("<{0}>{1}</{0}>",
+          m_full_stream.WriteLine ("<{0}>{1}</{0}>",
                                         o.GetTranslatedName (m_code_info.Language), field_name);
         m_full_stream.WriteLine ("```");
       }
@@ -623,9 +624,9 @@ namespace Arcane.AxlDoc
     private void _WritePageFullDesc (Option option, XmlElement desc_elem)
     {
       TextWriter tw = m_doc_file.MainDescStream;
-      tw.Write ("<div class='OptionFullDescription'>");
+      _WriteHtmlOnly(tw, "<div class='OptionFullDescription'>");
       _WriteDescription (0, option, desc_elem, tw);
-      tw.WriteLine ("</div>");
+      _WriteHtmlOnly(tw, "</div>");
     }
 
     private void _WriteOptionSeparator (Option o)

@@ -1,13 +1,14 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- MainAXLDOC.cs (C) 2000-2012
-
- Générateur de documentation à partir de fichiers AXL.
-*/
+/*---------------------------------------------------------------------------*/
+/* MainAXLDOC.cs                                               (C) 2000-2023 */
+/*                                                                           */
+/* Générateur de documentation à partir de fichiers AXL.                     */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 using System;
 using System.Collections.Generic;
@@ -102,6 +103,7 @@ namespace Arcane.AxlDoc
       string doc_language = "fr";
       List<string> files = new List<string>();
       string wanted_encoding = null;
+      bool doc_legacy = false;
 
       // Configure options
       m_options.Add ("h|help", "Help page", v => { show_help = true; });
@@ -134,6 +136,7 @@ namespace Arcane.AxlDoc
                                    });
       m_options.Add ("f|axl-list-file=", "Axl list file", (string s) => { var axl_list = File.ReadAllLines(s); files = new List<string>(axl_list); });
       m_options.Add ("o|output-path=", "Output path for generated code\n", (string s) => { m_config.output_path = s; }); // final \n to separate plugin options
+      m_options.Add ("legacy", "Generate legacy documentation", v => { doc_legacy = true; });
 
       // For plugins
       m_config.private_app_pages.Configure (m_options);
@@ -167,6 +170,7 @@ namespace Arcane.AxlDoc
 
       CodeInfo code_info = new CodeInfo(m_config.arcane_db_file);
       code_info.Language = doc_language;
+      code_info.Legacy = doc_legacy;
 
       if (do_generate_final) {
         if (files.Count > 1) 
