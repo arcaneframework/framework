@@ -53,18 +53,12 @@ class AllEnvData
  public:
 
   explicit AllEnvData(MeshMaterialMng* mmg);
-  ~AllEnvData() override;
 
  public:
 
   void forceRecompute(bool compute_all);
 
  public:
-
-  ConstArrayView<ComponentItemInternal> allEnvItemsInternal() const
-  {
-    return m_item_internal_data.allEnvItemsInternal();
-  }
 
   ArrayView<ComponentItemInternal> allEnvItemsInternal()
   {
@@ -90,9 +84,8 @@ class AllEnvData
   //! Nombre de milieux par mailles
   VariableCellInt32 m_nb_env_per_cell;
 
-
-  //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
-  //UniqueArray< UniqueArray<ComponentItemInternal> > m_mat_items_internal;
+  //! Niveau de verbosité
+  Int32 m_verbose_debug_level = 0;
 
   ComponentItemInternalData m_item_internal_data;
 
@@ -111,6 +104,7 @@ class AllEnvData
 
   void _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation add_or_remove);
   void _throwBadOperation(eOperation operation);
+  void _computeAndResizeEnvItemsInternal();
 };
 
 /*---------------------------------------------------------------------------*/

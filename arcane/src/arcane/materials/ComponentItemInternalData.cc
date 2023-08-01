@@ -45,8 +45,20 @@ endCreate()
   m_mat_items_internal.clear();
   m_mat_items_internal.reserve(nb_env);
   auto allocator = MemoryUtils::getAllocatorForMostlyReadOnlyData();
-  for( Int32 i=0; i<nb_env; ++i )
+  for (Int32 i = 0; i < nb_env; ++i)
     m_mat_items_internal.add(UniqueArray<ComponentItemInternal>(allocator));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentItemInternalData::
+resetEnvItemsInternal()
+{
+  for (ComponentItemInternal& x : m_all_env_items_internal)
+    x.reset();
+  for (ComponentItemInternal& x : m_env_items_internal)
+    x.reset();
 }
 
 /*---------------------------------------------------------------------------*/

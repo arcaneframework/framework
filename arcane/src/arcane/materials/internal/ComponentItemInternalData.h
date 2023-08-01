@@ -38,10 +38,9 @@ class MeshMaterialMng;
 class ComponentItemInternalData
 : public TraceAccessor
 {
-
  public:
 
-  ComponentItemInternalData(MeshMaterialMng* mm);
+  explicit ComponentItemInternalData(MeshMaterialMng* mm);
 
  public:
 
@@ -63,23 +62,18 @@ class ComponentItemInternalData
   }
 
   //! Liste des mailles milieux.
-  ConstArrayView<ComponentItemInternal> envItemsInternal() const
-  {
-    return m_env_items_internal;
-  }
-
-  //! Liste des mailles milieux.
   ArrayView<ComponentItemInternal> envItemsInternal()
   {
     return m_env_items_internal;
   }
 
+#if 0
   //! Liste des mailles matériaux pour le \a env_index ème milieu
   ConstArrayView<ComponentItemInternal> matItemsInternal(Int32 env_index) const
   {
     return m_mat_items_internal[env_index];
   }
-
+#endif
   //! Liste des mailles matériaux pour le \a env_index ème milieu
   ArrayView<ComponentItemInternal> matItemsInternal(Int32 env_index)
   {
@@ -103,6 +97,8 @@ class ComponentItemInternalData
   {
     m_mat_items_internal[env_index].resize(size);
   }
+
+  void resetEnvItemsInternal();
 
  private:
 
