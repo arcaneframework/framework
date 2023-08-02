@@ -49,6 +49,7 @@ class AllEnvData
  public:
 
   void forceRecompute(bool compute_all);
+  void recomputeIncremental();
 
  public:
 

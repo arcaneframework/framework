@@ -397,6 +397,15 @@ forceRecompute(bool compute_all)
 /*---------------------------------------------------------------------------*/
 
 void AllEnvData::
+recomputeIncremental()
+{
+  forceRecompute(false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllEnvData::
 _printAllEnvCells(CellVectorView ids)
 {
   ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng->view(ids)){

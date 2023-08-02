@@ -67,7 +67,7 @@ template <typename DataType> class ItemMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableArray;
 
-typedef IMeshMaterialVariable* (*MeshMaterialVariableFactoryVariableRefCreateFunc)(const MaterialVariableBuildInfo& vb);
+using MeshMaterialVariableFactoryVariableRefCreateFunc = IMeshMaterialVariable* (*)(const MaterialVariableBuildInfo& vb);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -85,7 +85,14 @@ enum class eModificationFlags
    * \brief Active les optimisations lorsque plusieurs matériaux sont présents dans
    * un milieu.
    */
-  OptimizeMultiMaterialPerEnvironment = 4
+  OptimizeMultiMaterialPerEnvironment = 4,
+  /*!
+   * \brief Indique qu'on utilise la version incrémentale de AllEnvData::forceRecompute().
+   *
+   * Ce mode n'est actif que si GenericOptimize, OptimizeMultiAddRemove et
+   * OptimizeMultiMaterialPerEnvironment sont actifs.
+   */
+  IncrementalRecompute = 8
 };
 
 /*---------------------------------------------------------------------------*/
