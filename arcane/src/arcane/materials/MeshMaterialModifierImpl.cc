@@ -197,7 +197,6 @@ endUpdate()
 
   MeshMaterialBackup backup(m_material_mng,false);
 
-  bool need_restore = true;
   UniqueArray<Int32> keeped_lids;
   bool no_optimization_done = true;
 
@@ -235,7 +234,6 @@ endUpdate()
       m_material_mng->allEnvData()->updateMaterialDirect(op);
     }
     no_optimization_done = false;
-    need_restore = false;
   }
 
   if (no_optimization_done){
@@ -254,19 +252,11 @@ endUpdate()
     }
   }
   else{
-    if (is_keep_value && need_restore){
-      ++nb_save_restore;
-      backup.saveValues();
-    }
     AllEnvData* env_data = m_material_mng->allEnvData();
     if (m_use_incremental_recompute)
       env_data->recomputeIncremental();
     else
       env_data->forceRecompute(false);
-
-    if (is_keep_value && need_restore){
-      backup.restoreValues();
-    }
   }
 
   linfo() << "END_UPDATE_MAT End";
