@@ -51,6 +51,14 @@ class ComponentItemListBuilder;
 class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
 : public TraceAccessor
 {
+  friend class AllEnvData;
+  friend class MaterialModifierOperation;
+  friend class MeshEnvironment;
+  friend class MeshMaterial;
+  friend class MeshComponentData;
+  friend class MeshMaterialMng;
+  template<typename DataType> friend class ItemMaterialVariableScalar;
+
  public:
 
   MeshMaterialVariableIndexer(ITraceMng* tm,const String& name);
@@ -75,7 +83,7 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
   //! Vrai si cet indexeur est celui d'un milieu.
   bool isEnvironment() const { return m_is_environment; }
 
- public:
+ private:
   
   //! Fonctions publiques mais réservées aux classes de Arcane.
   //@{
