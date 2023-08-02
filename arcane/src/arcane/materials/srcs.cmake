@@ -117,6 +117,7 @@ set(ARCANE_SOURCES
   internal/AllEnvData.h
   internal/ComponentItemInternalData.h
   internal/IMeshMaterialModifierImpl.h
+  internal/MaterialModifierOperation.h
   internal/MeshEnvironment.h
   internal/MeshMaterial.h
   internal/MeshMaterialMng.h

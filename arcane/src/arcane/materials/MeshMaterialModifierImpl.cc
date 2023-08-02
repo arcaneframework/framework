@@ -24,6 +24,7 @@
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/MeshMaterialModifierImpl.h"
+#include "arcane/materials/internal/MaterialModifierOperation.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,19 +35,6 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MeshMaterialModifierImpl::Operation
-{
- public:
-  Operation() = default;
-  Operation(IMeshMaterial* mat,Int32ConstArrayView ids,bool is_add)
-  : m_mat(mat), m_is_add(is_add), m_ids(ids)
-  {
-  }
- public:
-  IMeshMaterial* m_mat = nullptr;
-  bool m_is_add = false;
-  UniqueArray<Int32> m_ids;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,13 +75,6 @@ MeshMaterialModifierImpl::
 MeshMaterialModifierImpl(MeshMaterialMng* mm)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, nb_update(0)
-, nb_save_restore(0)
-, nb_optimize_add(0)
-, nb_optimize_remove(0)
-, m_allow_optimization(false)
-, m_allow_optimize_multiple_operation(false)
-, m_allow_optimize_multiple_material(false)
 {
   _setLocalVerboseLevel(4);
   if (!platform::getEnvironmentVariable("ARCANE_DEBUG_MATERIAL_MODIFIER").null())
@@ -148,18 +129,6 @@ removeCells(IMeshMaterial* mat,Int32ConstArrayView ids)
   if (ids.empty())
     return;
   m_operations.add(new Operation(mat,ids,false));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshMaterialModifierImpl::
-_setCells(IMeshMaterial* mat,Int32ConstArrayView ids)
-{
-  CellGroup cells = mat->cells();
-  info(4) << "SET_CELLS_TO_MATERIAL: mat=" << mat->name()
-         << " nb_item=" << ids.size();
-  cells.setItems(ids);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -28,6 +28,7 @@ namespace Arcane::Materials
 {
 class MeshMaterialMng;
 class IMeshMaterialVariable;
+class MaterialModifierOperation;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,11 +39,11 @@ class MeshMaterialModifierImpl
 {
  private:
   
-  class Operation;
+  using Operation = MaterialModifierOperation;
+
   class OperationList
   {
    public:
-    OperationList(){}
     ~OperationList();
    public:
     void add(Operation* o);
@@ -62,17 +63,16 @@ class MeshMaterialModifierImpl
 
  public:
 
-  virtual void addCells(IMeshMaterial* mat,Int32ConstArrayView ids);
-  virtual void removeCells(IMeshMaterial* mat,Int32ConstArrayView ids);
+  void addCells(IMeshMaterial* mat,Int32ConstArrayView ids) override;
+  void removeCells(IMeshMaterial* mat,Int32ConstArrayView ids) override;
 
-  virtual void endUpdate();
-  virtual void beginUpdate();
-  virtual void dumpStats();
+  void endUpdate() override;
+  void beginUpdate() override;
+  void dumpStats() override;
 
  private:
 
   void _addCells(IMeshMaterial* mat,Int32ConstArrayView ids);
-  void _setCells(IMeshMaterial* mat,Int32ConstArrayView ids);
   void _removeCells(IMeshMaterial* mat,Int32ConstArrayView ids);
 
   void _applyOperations();
@@ -81,16 +81,16 @@ class MeshMaterialModifierImpl
 
  private:
 
-  MeshMaterialMng* m_material_mng;
+  MeshMaterialMng* m_material_mng = nullptr;
   OperationList m_operations;
-  Integer nb_update;
-  Integer nb_save_restore;
-  Integer nb_optimize_add;
-  Integer nb_optimize_remove;
+  Integer nb_update = 0;
+  Integer nb_save_restore = 0;
+  Integer nb_optimize_add = 0;
+  Integer nb_optimize_remove = 0;
 
-  bool m_allow_optimization;
-  bool m_allow_optimize_multiple_operation;
-  bool m_allow_optimize_multiple_material;
+  bool m_allow_optimization = false;
+  bool m_allow_optimize_multiple_operation = false;
+  bool m_allow_optimize_multiple_material = false;
 };
 
 /*---------------------------------------------------------------------------*/
