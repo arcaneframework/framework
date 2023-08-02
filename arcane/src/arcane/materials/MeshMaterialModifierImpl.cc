@@ -103,10 +103,16 @@ initOptimizationFlags()
 
   m_allow_optimize_multiple_operation = (opt_flag_value & (int)eModificationFlags::OptimizeMultiAddRemove)!=0;
   m_allow_optimize_multiple_material = (opt_flag_value & (int)eModificationFlags::OptimizeMultiMaterialPerEnvironment)!=0;
+  m_use_incremental_recompute = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute)!=0;
+  if (m_use_incremental_recompute){
+    m_allow_optimize_multiple_operation = true;
+    m_allow_optimize_multiple_material = true;
+  }
 
   info() << "MeshMaterialModifier::optimization: "
          << " allow?=" << m_allow_optimization
-         << " allow_multiple?=" << m_allow_optimize_multiple_operation;
+         << " allow_multiple?=" << m_allow_optimize_multiple_operation
+         << " use_incremental_recompute?=" << m_use_incremental_recompute;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -191,16 +197,15 @@ endUpdate()
 
   MeshMaterialBackup backup(m_material_mng,false);
 
-  bool need_restore = true;
   UniqueArray<Int32> keeped_lids;
   bool no_optimization_done = true;
 
   ++nb_update;
 
   for( Integer i=0; i<nb_operation; ++i ){
-    Operation* op = m_operations.values()[i];
+    const Operation* op = m_operations.values()[i];
     IMeshMaterial* mat = op->material();
-    IMeshComponentInternal* mci = mat->_internalApi();
+    const IMeshComponentInternal* mci = mat->_internalApi();
     linfo() << "MODIFIER_CELLS_TO_MATERIAL: mat=" << mat->name()
             << " is_add="  << op->isAdd()
             << " mat_index=" << mci->variableIndexer()->index()
@@ -214,9 +219,8 @@ endUpdate()
   linfo() << "Check optimize ? = " << is_optimization_active;
 
   if (is_optimization_active){
-    for( Integer i=0; i<nb_operation; ++i ){
-      Operation* op = m_operations.values()[i];
-      IMeshMaterial* mat = op->material();
+    for( Operation* op : m_operations.values() ){
+      const IMeshMaterial* mat = op->material();
 
       if (op->isAdd()){
         linfo() << "ONLY_ONE_ADD: using optimization mat=" << mat->name();
@@ -230,7 +234,6 @@ endUpdate()
       m_material_mng->allEnvData()->updateMaterialDirect(op);
     }
     no_optimization_done = false;
-    need_restore = false;
   }
 
   if (no_optimization_done){
@@ -249,16 +252,11 @@ endUpdate()
     }
   }
   else{
-    if (is_keep_value && need_restore){
-      ++nb_save_restore;
-      backup.saveValues();
-    }
-
-    m_material_mng->allEnvData()->forceRecompute(false);
-
-    if (is_keep_value && need_restore){
-      backup.restoreValues();
-    }
+    AllEnvData* env_data = m_material_mng->allEnvData();
+    if (m_use_incremental_recompute)
+      env_data->recomputeIncremental();
+    else
+      env_data->forceRecompute(false);
   }
 
   linfo() << "END_UPDATE_MAT End";

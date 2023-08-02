@@ -91,6 +91,7 @@ class MeshMaterialModifierImpl
   bool m_allow_optimization = false;
   bool m_allow_optimize_multiple_operation = false;
   bool m_allow_optimize_multiple_material = false;
+  bool m_use_incremental_recompute = false;
 };
 
 /*---------------------------------------------------------------------------*/

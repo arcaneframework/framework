@@ -69,13 +69,6 @@ class MaterialModifierOperation
 
  public:
 
-  void setIds(const UniqueArray<Int32>& new_ids)
-  {
-    m_ids = new_ids;
-  }
-
- public:
-
   /*!
    * \brief Filtre les ids des mailles.
    *
