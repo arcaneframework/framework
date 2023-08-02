@@ -15,6 +15,7 @@ set(ARCANE_SOURCES
   EnumeratorTracer.h
   MaterialsGlobal.cc
   MaterialsGlobal.h
+  MaterialModifierOperation.cc
   MatItemVector.h
   EnvItemVector.h
   MatItemEnumerator.h

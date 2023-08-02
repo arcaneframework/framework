@@ -550,129 +550,6 @@ _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
   functor::apply(m_material_mng,&MeshMaterialMng::visitVariables,func);
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vérifie si les mailles \a ids sont déjà dans le matériau \a mat.
- *
- * Si \a operation==eOperation::Add, vérifie que les mailles de \a ids
- * ne sont pas déjà dans le matériau et si \a operation==eOperation::Remove, vérifie
- * que les mailles de \a ids sont dans le matériau.
- *
- * Vérifie aussi qu'un élément n'est présent qu'une fois dans la liste \a ids.
- *
- * Retourne le nombre d'erreurs.
- */
-Integer AllEnvData::
-_checkMaterialPresence(MaterialModifierOperation* operation)
-{
-  IMeshMaterial* mat = operation->material();
-  Int32ConstArrayView ids = operation->ids();
-
-  const MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
-  IItemFamily* item_family = mat->cells().itemFamily();
-  ItemInfoListView items_internal(item_family);
-  Integer max_local_id = item_family->maxLocalId();
-  UniqueArray<bool> presence_flags(max_local_id,false);
-  Int32ConstArrayView mat_local_ids = indexer->localIds();
-  Integer nb_error = 0;
-  String name = mat->name();
-
-  for( Int32 lid : ids ){
-    if (presence_flags[lid]){
-      info() << "ERROR: item " << ItemPrinter(items_internal[lid])
-             << " is present several times in add/remove list for material mat=" << name;
-      ++nb_error;
-    }
-    presence_flags[lid] = true;
-  }
-
-  if (operation->isAdd()){
-    for( Int32 lid : mat_local_ids ){
-      if (presence_flags[lid]){
-        info() << "ERROR: item " << ItemPrinter(items_internal[lid])
-               << " is already in material mat=" << name;
-        ++nb_error;
-      }
-    }
-  }
-  else{
-    for( Int32 lid : mat_local_ids ){
-      presence_flags[lid]= false;
-    }
-
-    for( Int32 lid : ids ){
-      if (presence_flags[lid]){
-        info() << "ERROR: item " << ItemPrinter(items_internal[lid])
-               << " is not in material mat=" << name;
-        ++nb_error;
-      }
-    }
-  }
-
-  return nb_error;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Filtre le tableau des mailles \a ids pour qu'il soit valide.
- *
- * Cette méthode permet de filtrer les valeurs de \a ids afin
- * qu'il ne reste que les valeurs valides pour qu'on puisse les ajouter
- * (si \a do_add est vrai) ou supprimer (si \a do_add est faux) du matériau
- * \a mat.
- *
- * Les valeurs valides sont stockées dans \a valid_ids.
- */
-void AllEnvData::
-_filterValidIds(MaterialModifierOperation* operation,Int32Array& valid_ids) const
-{
-  IMeshMaterial* mat = operation->material();
-  const bool do_add = operation->isAdd();
-  Int32ConstArrayView ids = operation->ids();
-  const MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
-  const IItemFamily* item_family = mat->cells().itemFamily();
-  Integer max_local_id = item_family->maxLocalId();
-  UniqueArray<bool> presence_flags(max_local_id,false);
-  Int32ConstArrayView mat_local_ids = indexer->localIds();
-  
-  UniqueArray<Int32> unique_occurence_lids;
-  unique_occurence_lids.reserve(ids.size());
-
-  for( Int32 lid : ids ){
-    if (!presence_flags[lid]){
-      unique_occurence_lids.add(lid);
-      presence_flags[lid] = true;
-    }
-  }
-
-  valid_ids.clear();
-
-  if (do_add){
-    for( Int32 lid : mat_local_ids ){
-      if (presence_flags[lid]){
-        ;
-      }
-      else
-        valid_ids.add(lid);
-    }
-  }
-  else{
-    for( Int32 lid : mat_local_ids )
-      presence_flags[lid] = false;
-
-    for( Int32 lid : unique_occurence_lids ){
-      if (presence_flags[lid]){
-        ;
-      }
-      else
-        valid_ids.add(lid);
-    }
-  }
-  info(4) << "FILTERED_IDS n=" << valid_ids.size()
-          << " ids=" << valid_ids;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -680,23 +557,10 @@ _filterValidIds(MaterialModifierOperation* operation,Int32Array& valid_ids) cons
 void AllEnvData::
 updateMaterialDirect(MaterialModifierOperation* operation)
 {
-  UniqueArray<Int32> filtered_ids;
-  IMeshMaterial* mat = operation->material();
-  const bool filter_invalid = true;
   // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
   // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
-  if (arcaneIsCheck()){
-    Integer nb_error = _checkMaterialPresence(operation);
-    if (nb_error!=0){
-      if (filter_invalid){
-        _filterValidIds(operation,filtered_ids);
-        operation->setIds(filtered_ids);
-      }
-      else
-        ARCANE_FATAL("Invalid values for adding items in material name={0} nb_error={1}",
-                     mat->name(),nb_error);
-    }
-  }
+  if (arcaneIsCheck())
+    operation->filterIds();
 
   _updateMaterialDirect(operation);
 }

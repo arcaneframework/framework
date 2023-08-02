@@ -84,8 +84,6 @@ class AllEnvData
   void _computeNbEnvAndNbMatPerCell();
   void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env, bool is_add_operation);
   void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, bool is_add);
-  Integer _checkMaterialPresence(MaterialModifierOperation* operation);
-  void _filterValidIds(MaterialModifierOperation* operation, Int32Array& valid_ids) const;
   void _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
                                       Int32ConstArrayView partial_indexes,
                                       Int32 indexer_index, bool is_add_operation);

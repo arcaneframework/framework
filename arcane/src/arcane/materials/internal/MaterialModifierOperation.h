@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -74,6 +74,25 @@ class MaterialModifierOperation
     m_ids = new_ids;
   }
 
+ public:
+
+  /*!
+   * \brief Filtre les ids des mailles.
+   *
+   * Si isAdd() est vrai, filtre les ids pour supprimer ceux qui sont déjà dans
+   * la matériau. Si isAdd() est faux, filtre les ids pour supprimer ceux qui
+   * ne sont pas dans le matériau.
+   *
+   * Ces opérations sont couteuses car il faut parcourir toutes les entités présentes.
+   * Il ne faut donc en général utiliser cette méthode que en mode vérification.
+   */
+  void filterIds();
+
+ private:
+
+  static void _filterValidIds(MaterialModifierOperation* operation, Int32Array& valid_ids);
+  static Int32 _checkMaterialPresence(MaterialModifierOperation* operation);
+
  private:
 
   IMeshMaterial* m_mat = nullptr;
@@ -84,7 +103,7 @@ class MaterialModifierOperation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
