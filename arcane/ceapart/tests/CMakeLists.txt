@@ -257,6 +257,8 @@ ARCANE_ADD_TEST_SEQUENTIAL(geometric1 testGeometric-1.arc)
 # Material Heat
 arcane_add_test(material_heat testMaterialHeat-1.arc)
 arcane_add_test(material_heat2 testMaterialHeat-2.arc)
+arcane_add_test(material_heat_incremental testMaterialHeat-1-incremental.arc)
+arcane_add_test(material_heat2_incremental testMaterialHeat-2-incremental.arc)
 
 ###################
 # WRAPPING '.Net' #

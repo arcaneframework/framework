@@ -10,6 +10,9 @@
     <simple name="nb-iteration" type="int32" default="15">
       <description>Number of iteration to do</description>
     </simple>
+    <simple name="modification-flags" type="int32">
+      <description>Value of ModificationFlags</description>
+    </simple>
     <simple name="check-numerical-result" type="bool" default="true">
       <description>True if we want to check numerical results</description>
     </simple>

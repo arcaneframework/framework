@@ -156,9 +156,9 @@ buildInit()
 
   Materials::IMeshMaterialMng* mm = IMeshMaterialMng::getReference(defaultMesh());
 
-  int flags = (int)eModificationFlags::GenericOptimize | (int)eModificationFlags::OptimizeMultiAddRemove;
-  flags |= (int)eModificationFlags::OptimizeMultiAddRemove;
-  flags |= (int)eModificationFlags::OptimizeMultiMaterialPerEnvironment;
+  int flags = options()->modificationFlags();
+
+  info() << "MaterialHeatTestModule modification_flags=" << flags;
 
   m_material_mng->setModificationFlags(flags);
   m_material_mng->setMeshModificationNotified(true);

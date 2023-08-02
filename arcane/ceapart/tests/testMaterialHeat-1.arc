@@ -28,6 +28,7 @@
 
  <material-heat-test>
    <nb-iteration>15</nb-iteration>
+   <modification-flags>7</modification-flags>
    <material>
      <name>MAT1</name>
    </material>
