@@ -896,11 +896,11 @@ dumpInfos2(std::ostream& o)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MeshMaterialMng::
+bool MeshMaterialMng::
 synchronizeMaterialsInCells()
 {
   MeshMaterialSynchronizer mms(this);
-  mms.synchronizeMaterialsInCells();
+  return mms.synchronizeMaterialsInCells();
 }
 
 /*---------------------------------------------------------------------------*/
