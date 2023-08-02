@@ -145,7 +145,7 @@ class MeshMaterialMng
     return &m_variable_lock;
   }
 
-  void synchronizeMaterialsInCells() override;
+  bool synchronizeMaterialsInCells() override;
   void checkMaterialsInCells(Integer max_print) override;
 
   Int64 timestamp() const override { return m_timestamp; }

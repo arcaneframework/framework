@@ -410,8 +410,11 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * matériaux et milieux que cells du sous-domaine qui est propriétaire
    * de ces mailles. Il est notamment possible de synchroniser des variables
    * via MeshMaterialVariableRef::synchronize().
+   *
+   * Retourne \a true si les matériaux de ce sous-domaine ont été modifiés suite
+   * à la synchronisation, \a false sinon.
    */
-  virtual void synchronizeMaterialsInCells() =0;
+  virtual bool synchronizeMaterialsInCells() =0;
 
   /*!
    * \brief Vérifie que les mailles des matériaux sont cohérentes entre
