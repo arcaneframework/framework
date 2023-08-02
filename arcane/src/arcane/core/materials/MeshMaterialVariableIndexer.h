@@ -55,7 +55,6 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
 
   MeshMaterialVariableIndexer(ITraceMng* tm,const String& name);
   MeshMaterialVariableIndexer(const MeshMaterialVariableIndexer& rhs);
-  ~MeshMaterialVariableIndexer(){}
 
  public:
 
@@ -75,6 +74,7 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
   void checkValid();
   //! Vrai si cet indexeur est celui d'un milieu.
   bool isEnvironment() const { return m_is_environment; }
+
  public:
   
   //! Fonctions publiques mais réservées aux classes de Arcane.
@@ -92,8 +92,7 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
                       Int32ConstArrayView nb_mat_per_cell,
                       Int32Array& pure_local_ids,
                       Int32Array& partial_indexes,
-                      eOperation operation,
-                      bool is_env,bool is_verbose);
+                      bool is_add_operation, bool is_env,bool is_verbose);
   void endUpdateAdd(const ComponentItemListBuilder& builder);
   void endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove);
   //@}

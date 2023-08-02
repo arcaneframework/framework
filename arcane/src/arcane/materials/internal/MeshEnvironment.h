@@ -161,7 +161,7 @@ class MeshEnvironment
   MeshComponentData* componentData() { return &m_data; }
 
   void updateItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
-                         Int32ConstArrayView local_ids,eOperation operation,bool add_to_env_indexer=false);
+                         Int32ConstArrayView local_ids,bool is_add_operation,bool add_to_env_indexer=false);
 
   ConstArrayView<MeshMaterial*> trueMaterials()
   {

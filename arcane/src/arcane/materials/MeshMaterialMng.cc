@@ -33,7 +33,6 @@
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
 
-#include "arcane/materials/MeshMaterialModifierImpl.h"
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
@@ -44,6 +43,7 @@
 #include "arcane/materials/MeshMaterialVariableFactoryRegisterer.h"
 
 #include "arcane/materials/internal/AllEnvData.h"
+#include "arcane/materials/internal/MeshMaterialModifierImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

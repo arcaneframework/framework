@@ -18,12 +18,13 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
-#include "arcane/materials/MeshMaterialModifierImpl.h"
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshMaterialBackup.h"
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/AllEnvData.h"
+#include "arcane/materials/internal/MeshMaterialModifierImpl.h"
+#include "arcane/materials/internal/MaterialModifierOperation.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,19 +35,6 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MeshMaterialModifierImpl::Operation
-{
- public:
-  Operation() = default;
-  Operation(IMeshMaterial* mat,Int32ConstArrayView ids,bool is_add)
-  : m_mat(mat), m_is_add(is_add), m_ids(ids)
-  {
-  }
- public:
-  IMeshMaterial* m_mat = nullptr;
-  bool m_is_add = false;
-  UniqueArray<Int32> m_ids;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,13 +75,6 @@ MeshMaterialModifierImpl::
 MeshMaterialModifierImpl(MeshMaterialMng* mm)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, nb_update(0)
-, nb_save_restore(0)
-, nb_optimize_add(0)
-, nb_optimize_remove(0)
-, m_allow_optimization(false)
-, m_allow_optimize_multiple_operation(false)
-, m_allow_optimize_multiple_material(false)
 {
   _setLocalVerboseLevel(4);
   if (!platform::getEnvironmentVariable("ARCANE_DEBUG_MATERIAL_MODIFIER").null())
@@ -136,7 +117,7 @@ addCells(IMeshMaterial* mat,Int32ConstArrayView ids)
 {
   if (ids.empty())
     return;
-  m_operations.add(new Operation(mat,ids,true));
+  m_operations.add(Operation::createAdd(mat,ids));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -147,26 +128,14 @@ removeCells(IMeshMaterial* mat,Int32ConstArrayView ids)
 {
   if (ids.empty())
     return;
-  m_operations.add(new Operation(mat,ids,false));
+  m_operations.add(Operation::createRemove(mat,ids));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_setCells(IMeshMaterial* mat,Int32ConstArrayView ids)
-{
-  CellGroup cells = mat->cells();
-  info(4) << "SET_CELLS_TO_MATERIAL: mat=" << mat->name()
-         << " nb_item=" << ids.size();
-  cells.setItems(ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshMaterialModifierImpl::
-_addCells(IMeshMaterial* mat,Int32ConstArrayView ids)
+_addCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "ADD_CELLS_TO_MATERIAL: mat=" << mat->name()
@@ -178,7 +147,7 @@ _addCells(IMeshMaterial* mat,Int32ConstArrayView ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_removeCells(IMeshMaterial* mat,Int32ConstArrayView ids)
+_removeCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "REMOVE_CELLS_TO_MATERIAL: mat=" << mat->name()
@@ -197,19 +166,11 @@ _checkMayOptimize()
     return false;
   for( Integer i=0; i<nb_operation; ++i ){
     Operation* op = m_operations.values()[i];
-    IMeshMaterial* mat = op->m_mat;
+    IMeshMaterial* mat = op->material();
     if (mat->environment()->nbMaterial()!=1 && !m_allow_optimize_multiple_material){
       linfo() << "_checkMayOptimize(): not allowing optimization because environment has several material";
       return false;
     }
-#if 0
-    // Pour l'instant n'optimise pas la suppression en multi-mat
-    // car cela n'est pas implémenté.
-    if (mat->environment()->nbMaterial()!=1 && !op->m_is_add){
-      linfo() << "_checkMayOptimize(): not allowing optimization because environment has several material and action is not add";
-      return false;
-    }
-#endif
   }
   return true;
 }
@@ -238,22 +199,13 @@ endUpdate()
 
   for( Integer i=0; i<nb_operation; ++i ){
     Operation* op = m_operations.values()[i];
-    IMeshMaterial* mat = op->m_mat;
+    IMeshMaterial* mat = op->material();
     IMeshComponentInternal* mci = mat->_internalApi();
-    if (op->m_is_add){
-      linfo() << "MODIFIER_ADD_CELLS_TO_MATERIAL: mat=" << mat->name()
-              << " mat_index=" << mci->variableIndexer()->index()
-              << " op_index=" << i
-              << " nb_item=" << op->m_ids.size()
-              << " ids=" << op->m_ids;
-    }
-    if (!op->m_is_add){
-      linfo() << "MODIFIER_REMOVE_CELLS_TO_MATERIAL: mat=" << mat->name()
-              << " mat_index=" << mci->variableIndexer()->index()
-              << " op_index=" << i
-              << " nb_item=" << op->m_ids.size()
-              << " ids=" << op->m_ids;
-    }
+    linfo() << "MODIFIER_CELLS_TO_MATERIAL: mat=" << mat->name()
+            << " is_add="  << op->isAdd()
+            << " mat_index=" << mci->variableIndexer()->index()
+            << " op_index=" << i
+            << " ids=" << op->ids();
   }
 
   bool is_optimization_active = m_allow_optimization;
@@ -264,21 +216,18 @@ endUpdate()
   if (is_optimization_active){
     for( Integer i=0; i<nb_operation; ++i ){
       Operation* op = m_operations.values()[i];
-      IMeshMaterial* mat = op->m_mat;
+      IMeshMaterial* mat = op->material();
 
-      if (op->m_is_add){
+      if (op->isAdd()){
         linfo() << "ONLY_ONE_ADD: using optimization mat=" << mat->name();
-        keeped_lids = op->m_ids;
         ++nb_optimize_add;
-        m_material_mng->allEnvData()->updateMaterialDirect(mat,op->m_ids,eOperation::Add);
       }
-
-      if (!op->m_is_add){
+      else{
         linfo() << "ONLY_ONE_REMOVE: using optimization mat=" << mat->name();
-        keeped_lids = op->m_ids;
         ++nb_optimize_remove;
-        m_material_mng->allEnvData()->updateMaterialDirect(mat,op->m_ids,eOperation::Remove);
       }
+      keeped_lids = op->ids();
+      m_material_mng->allEnvData()->updateMaterialDirect(op);
     }
     no_optimization_done = false;
     need_restore = false;
@@ -290,8 +239,8 @@ endUpdate()
       backup.saveValues();
     }
 
-    _applyOperations();
-    _updateEnvironments();
+    _applyOperationsNoOptimize();
+    _updateEnvironmentsNoOptimize();
 
     m_material_mng->allEnvData()->forceRecompute(true);
 
@@ -323,14 +272,14 @@ endUpdate()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_applyOperations()
+_applyOperationsNoOptimize()
 {
   for( Operation* o : m_operations.values() ){
-    IMeshMaterial* mat = o->m_mat;
-    if (o->m_is_add)
-      _addCells(mat,o->m_ids);
+    IMeshMaterial* mat = o->material();
+    if (o->isAdd())
+      _addCellsToGroupDirect(mat,o->ids());
     else
-      _removeCells(mat,o->m_ids);
+      _removeCellsToGroupDirect(mat,o->ids());
   }
   m_operations.clear();
 }
@@ -339,7 +288,7 @@ _applyOperations()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_updateEnvironments()
+_updateEnvironmentsNoOptimize()
 {
   ConstArrayView<IMeshEnvironment*> envs = m_material_mng->environments();
   Int32UniqueArray cells_to_add;

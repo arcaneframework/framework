@@ -150,16 +150,19 @@ enum class eMatPart
 /*!
  * \brief Opération de mise à jour des milieux/matériaux.
  */
-enum class eOperation
+enum class ARCANE_DEPRECATED_REASON("Y2023: This enum is internal to Arcane") eOperation
 {
   //! Ajoute des entités
-  Add,
+  Add
+  ARCANE_DEPRECATED_REASON("Y2023: This enum is internal to Arcane"),
   //! Supprime des entités
   Remove
+  ARCANE_DEPRECATED_REASON("Y2023: This enum is internal to Arcane")
 };
 
 //! Opérateur de sortie sur un flot
-extern "C++" std::ostream&
+extern "C++" ARCANE_DEPRECATED_REASON("Y2023: This enum is internal to Arcane")
+std::ostream&
 operator<< (std::ostream& ostr,eOperation operation);
 
 /*---------------------------------------------------------------------------*/

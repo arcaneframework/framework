@@ -15,6 +15,7 @@ set(ARCANE_SOURCES
   EnumeratorTracer.h
   MaterialsGlobal.cc
   MaterialsGlobal.h
+  MaterialModifierOperation.cc
   MatItemVector.h
   EnvItemVector.h
   MatItemEnumerator.h
@@ -25,7 +26,6 @@ set(ARCANE_SOURCES
   MeshMaterialExchangeMng.h
   MeshMaterialMng.cc
   MeshMaterialModifierImpl.cc
-  MeshMaterialModifierImpl.h
   MaterialVariableBuildInfo.h
   MeshMaterial.cc
   MeshBlock.cc
@@ -77,7 +77,6 @@ set(ARCANE_SOURCES
   MatVarIndex.h
   MeshComponentPartData.h
   MeshMaterialExchangeMng.h
-  MeshMaterialModifierImpl.h
   MaterialVariableBuildInfo.h
   MeshBlock.h
   MeshBlockBuildInfo.h
@@ -112,17 +111,18 @@ set(ARCANE_SOURCES
   IMeshMaterialVariableSynchronizer.h
   IMeshMaterialMng.h
   IMeshMaterialVariable.h
-  IMeshMaterialModifierImpl.h
   IMeshMaterialVariableComputeFunction.h
-  IMeshMaterialModifierImpl.h
   IMeshMaterialSynchronizeBuffer.h
   ItemMaterialVariableBaseT.H
 
   internal/AllEnvData.h
   internal/ComponentItemInternalData.h
+  internal/IMeshMaterialModifierImpl.h
+  internal/MaterialModifierOperation.h
   internal/MeshEnvironment.h
   internal/MeshMaterial.h
   internal/MeshMaterialMng.h
+  internal/MeshMaterialModifierImpl.h
   internal/MeshMaterialVariablePrivate.h
   internal/MeshComponentData.h
   )
