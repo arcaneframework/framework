@@ -201,6 +201,7 @@ endUpdate()
   bool no_optimization_done = true;
 
   ++nb_update;
+  AllEnvData* all_env_data = m_material_mng->allEnvData();
 
   for( Integer i=0; i<nb_operation; ++i ){
     const Operation* op = m_operations.values()[i];
@@ -231,7 +232,11 @@ endUpdate()
         ++nb_optimize_remove;
       }
       keeped_lids = op->ids();
-      m_material_mng->allEnvData()->updateMaterialDirect(op);
+
+      if (m_use_incremental_recompute)
+        all_env_data->updateMaterialIncremental(op);
+      else
+        all_env_data->updateMaterialDirect(op);
     }
     no_optimization_done = false;
   }
@@ -245,18 +250,17 @@ endUpdate()
     _applyOperationsNoOptimize();
     _updateEnvironmentsNoOptimize();
 
-    m_material_mng->allEnvData()->forceRecompute(true);
+    all_env_data->forceRecompute(true);
 
     if (is_keep_value){
       backup.restoreValues();
     }
   }
   else{
-    AllEnvData* env_data = m_material_mng->allEnvData();
     if (m_use_incremental_recompute)
-      env_data->recomputeIncremental();
+      all_env_data->recomputeIncremental();
     else
-      env_data->forceRecompute(false);
+      all_env_data->forceRecompute(false);
   }
 
   linfo() << "END_UPDATE_MAT End";

@@ -42,6 +42,8 @@ class MaterialModifierOperation;
 class AllEnvData
 : public TraceAccessor
 {
+  class IncrementalOneMaterialModifier;
+
  public:
 
   explicit AllEnvData(MeshMaterialMng* mmg);
@@ -64,6 +66,8 @@ class AllEnvData
   }
 
   void updateMaterialDirect(MaterialModifierOperation* operation);
+
+  void updateMaterialIncremental(MaterialModifierOperation* operation);
 
   //! Notification de la fin de création des milieux/matériaux
   void endCreate();
