@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Interface de l'implémentation de la modification des matériaux.           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_IMESHMATERIALMODIFIERIMPL_H
-#define ARCANE_MATERIALS_IMESHMATERIALMODIFIERIMPL_H
+#ifndef ARCANE_MATERIALS_INTERNAL_IMESHMATERIALMODIFIERIMPL_H
+#define ARCANE_MATERIALS_INTERNAL_IMESHMATERIALMODIFIERIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

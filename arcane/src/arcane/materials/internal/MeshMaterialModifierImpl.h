@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MESHMATERIALMODIFIERIMPL_H
-#define ARCANE_MATERIALS_MESHMATERIALMODIFIERIMPL_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALMODIFIERIMPL_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALMODIFIERIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,8 +18,8 @@
 #include "arcane/utils/Array.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
-#include "arcane/materials/IMeshMaterialModifierImpl.h"
 #include "arcane/materials/IMeshMaterial.h"
+#include "arcane/materials/internal/IMeshMaterialModifierImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

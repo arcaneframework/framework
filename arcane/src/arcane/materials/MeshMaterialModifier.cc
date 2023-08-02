@@ -16,7 +16,7 @@
 
 #include "arcane/materials/MeshMaterialModifier.h"
 #include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshMaterialModifierImpl.h"
+#include "arcane/materials/internal/IMeshMaterialModifierImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

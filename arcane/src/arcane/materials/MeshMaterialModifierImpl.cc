@@ -18,12 +18,12 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
-#include "arcane/materials/MeshMaterialModifierImpl.h"
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshMaterialBackup.h"
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/AllEnvData.h"
+#include "arcane/materials/internal/MeshMaterialModifierImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
