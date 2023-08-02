@@ -220,16 +220,14 @@ endUpdate()
 
       if (op->isAdd()){
         linfo() << "ONLY_ONE_ADD: using optimization mat=" << mat->name();
-        keeped_lids = op->ids();
         ++nb_optimize_add;
-        m_material_mng->allEnvData()->updateMaterialDirect(mat,op->ids(),eOperation::Add);
       }
       else{
         linfo() << "ONLY_ONE_REMOVE: using optimization mat=" << mat->name();
-        keeped_lids = op->ids();
         ++nb_optimize_remove;
-        m_material_mng->allEnvData()->updateMaterialDirect(mat,op->ids(),eOperation::Remove);
       }
+      keeped_lids = op->ids();
+      m_material_mng->allEnvData()->updateMaterialDirect(op);
     }
     no_optimization_done = false;
     need_restore = false;

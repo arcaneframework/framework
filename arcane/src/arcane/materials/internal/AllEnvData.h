@@ -28,18 +28,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace ArcaneL
-{
-class IVariableMng;
-class Properties;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 namespace Arcane::Materials
 {
 class MeshMaterialMng;
+class MaterialModifierOperation;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -70,7 +62,7 @@ class AllEnvData
     return m_nb_env_per_cell;
   }
 
-  void updateMaterialDirect(IMeshMaterial* mat, Int32ConstArrayView ids, eOperation operation);
+  void updateMaterialDirect(MaterialModifierOperation* operation);
 
   //! Notification de la fin de création des milieux/matériaux
   void endCreate();
@@ -90,18 +82,15 @@ class AllEnvData
  private:
 
   void _computeNbEnvAndNbMatPerCell();
-  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env, eOperation add_or_remove);
-  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, eOperation add_or_remove);
-  Integer _checkMaterialPresence(IMeshMaterial* mat, Int32ConstArrayView ids,
-                                 eOperation operation);
-  void _filterValidIds(IMeshMaterial* mat, Int32ConstArrayView ids,
-                       bool do_add, Int32Array& valid_ids) const;
+  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env, bool is_add_operation);
+  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, bool is_add);
+  Integer _checkMaterialPresence(MaterialModifierOperation* operation);
+  void _filterValidIds(MaterialModifierOperation* operation, Int32Array& valid_ids) const;
   void _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
                                       Int32ConstArrayView partial_indexes,
-                                      Int32 indexer_index, eOperation operation);
+                                      Int32 indexer_index, bool is_add_operation);
 
-  void _updateMaterialDirect(IMeshMaterial* mat, Int32ConstArrayView ids, eOperation add_or_remove);
-  [[noreturn]] static void _throwBadOperation(eOperation operation);
+  void _updateMaterialDirect(MaterialModifierOperation* operation);
   void _computeAndResizeEnvItemsInternal();
   bool _isFullVerbose() const;
   void _rebuildMaterialsAndEnvironmentsFromGroups();

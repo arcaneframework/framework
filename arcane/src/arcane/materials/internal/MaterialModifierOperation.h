@@ -67,6 +67,13 @@ class MaterialModifierOperation
   //! Liste des localId() des mailles à ajouter/supprimer
   ConstArrayView<Int32> ids() const { return m_ids; }
 
+ public:
+
+  void setIds(const UniqueArray<Int32>& new_ids)
+  {
+    m_ids = new_ids;
+  }
+
  private:
 
   IMeshMaterial* m_mat = nullptr;

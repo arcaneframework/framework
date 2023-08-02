@@ -460,15 +460,13 @@ _removeItemsDirect(MeshMaterial* mat,Int32ConstArrayView local_ids,
 
 void MeshEnvironment::
 updateItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
-                  Int32ConstArrayView local_ids,eOperation operation,
+                  Int32ConstArrayView local_ids,bool is_add_operation,
                   bool remove_to_env_indexer)
 {
-  if (operation==eOperation::Add)
+  if (is_add_operation)
     _addItemsDirect(nb_env_per_cell,mat,local_ids,remove_to_env_indexer);
-  else if (operation==eOperation::Remove)
-    _removeItemsDirect(mat,local_ids,remove_to_env_indexer);
   else
-    ARCANE_THROW(ArgumentException,"bad value for 'operation'");
+    _removeItemsDirect(mat,local_ids,remove_to_env_indexer);
 }
 
 /*---------------------------------------------------------------------------*/

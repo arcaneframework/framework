@@ -277,18 +277,16 @@ void MeshMaterialVariableIndexer::
 transformCells(Int32ConstArrayView nb_env_per_cell,
                 Int32ConstArrayView nb_mat_per_cell,
                 Int32Array& pure_local_ids,Int32Array& partial_indexes,
-                eOperation operation,bool is_env, bool is_verbose)
+                bool is_add_operation,bool is_env, bool is_verbose)
 {
-  if (operation==eOperation::Add)
+  if (is_add_operation)
     _transformPureToPartial(nb_env_per_cell,nb_mat_per_cell,
                             pure_local_ids,partial_indexes,
                             is_env,is_verbose);
-  else if (operation==eOperation::Remove)
+  else
     _transformPartialToPure(nb_env_per_cell,nb_mat_per_cell,
                             pure_local_ids,partial_indexes,
                             is_env,is_verbose);
-  else
-    throw ArgumentException(A_FUNCINFO,"Bad value for 'operation'");
 }
 
 /*---------------------------------------------------------------------------*/
