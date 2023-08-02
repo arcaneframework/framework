@@ -35,11 +35,25 @@ class MaterialModifierOperation
  public:
 
   MaterialModifierOperation() = default;
+
+ private:
+
   MaterialModifierOperation(IMeshMaterial* mat, Int32ConstArrayView ids, bool is_add)
   : m_mat(mat)
   , m_is_add(is_add)
   , m_ids(ids)
   {
+  }
+
+ public:
+
+  static MaterialModifierOperation* createAdd(IMeshMaterial* mat, Int32ConstArrayView ids)
+  {
+    return new MaterialModifierOperation(mat, ids, true);
+  }
+  static MaterialModifierOperation* createRemove(IMeshMaterial* mat, Int32ConstArrayView ids)
+  {
+    return new MaterialModifierOperation(mat, ids, false);
   }
 
  public:
@@ -53,7 +67,7 @@ class MaterialModifierOperation
   //! Liste des localId() des mailles à ajouter/supprimer
   ConstArrayView<Int32> ids() const { return m_ids; }
 
- public:
+ private:
 
   IMeshMaterial* m_mat = nullptr;
   bool m_is_add = false;
