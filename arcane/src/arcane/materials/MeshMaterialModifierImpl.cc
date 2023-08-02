@@ -135,7 +135,7 @@ removeCells(IMeshMaterial* mat,Int32ConstArrayView ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_addCells(IMeshMaterial* mat,Int32ConstArrayView ids)
+_addCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "ADD_CELLS_TO_MATERIAL: mat=" << mat->name()
@@ -147,7 +147,7 @@ _addCells(IMeshMaterial* mat,Int32ConstArrayView ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_removeCells(IMeshMaterial* mat,Int32ConstArrayView ids)
+_removeCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "REMOVE_CELLS_TO_MATERIAL: mat=" << mat->name()
@@ -171,14 +171,6 @@ _checkMayOptimize()
       linfo() << "_checkMayOptimize(): not allowing optimization because environment has several material";
       return false;
     }
-#if 0
-    // Pour l'instant n'optimise pas la suppression en multi-mat
-    // car cela n'est pas implémenté.
-    if (mat->environment()->nbMaterial()!=1 && !op->m_is_add){
-      linfo() << "_checkMayOptimize(): not allowing optimization because environment has several material and action is not add";
-      return false;
-    }
-#endif
   }
   return true;
 }
@@ -249,8 +241,8 @@ endUpdate()
       backup.saveValues();
     }
 
-    _applyOperations();
-    _updateEnvironments();
+    _applyOperationsNoOptimize();
+    _updateEnvironmentsNoOptimize();
 
     m_material_mng->allEnvData()->forceRecompute(true);
 
@@ -282,14 +274,14 @@ endUpdate()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_applyOperations()
+_applyOperationsNoOptimize()
 {
   for( Operation* o : m_operations.values() ){
     IMeshMaterial* mat = o->material();
     if (o->isAdd())
-      _addCells(mat,o->ids());
+      _addCellsToGroupDirect(mat,o->ids());
     else
-      _removeCells(mat,o->ids());
+      _removeCellsToGroupDirect(mat,o->ids());
   }
   m_operations.clear();
 }
@@ -298,7 +290,7 @@ _applyOperations()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_updateEnvironments()
+_updateEnvironmentsNoOptimize()
 {
   ConstArrayView<IMeshEnvironment*> envs = m_material_mng->environments();
   Int32UniqueArray cells_to_add;

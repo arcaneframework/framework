@@ -72,11 +72,11 @@ class MeshMaterialModifierImpl
 
  private:
 
-  void _addCells(IMeshMaterial* mat,Int32ConstArrayView ids);
-  void _removeCells(IMeshMaterial* mat,Int32ConstArrayView ids);
+  void _addCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids);
+  void _removeCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids);
 
-  void _applyOperations();
-  void _updateEnvironments();
+  void _applyOperationsNoOptimize();
+  void _updateEnvironmentsNoOptimize();
   bool _checkMayOptimize();
 
  private:
