@@ -95,7 +95,7 @@ class MeshEnvironmentObserver
 /*---------------------------------------------------------------------------*/
 
 MeshEnvironment::
-MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int32 env_id)
+MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int16 env_id)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
 , m_nb_mat_per_cell(VariableBuildInfo(mm->mesh(), mm->name() + "_CellNbMaterial_" + name))

@@ -821,7 +821,7 @@ apply(MaterialModifierOperation* operation)
 
   // Met à jour le nombre de milieux de chaque maille.
   {
-    Int16 m_env_id = true_env->id();
+    Int16 m_env_id = true_env->componentId();
     ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
     if (is_add){
       connectivity->addCellsToEnvironment(m_env_id,ids);

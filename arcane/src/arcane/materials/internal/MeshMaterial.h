@@ -73,7 +73,7 @@ class MeshMaterial
  public:
 
   MeshMaterial(MeshMaterialInfo* infos,MeshEnvironment* env,
-               const String& name,Int32 mat_id);
+               const String& name,Int16 mat_id);
   ~MeshMaterial() override;
 
  public:

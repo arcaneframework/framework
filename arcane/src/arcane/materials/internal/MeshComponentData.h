@@ -55,7 +55,7 @@ class MeshComponentData
 
  public:
 
-  MeshComponentData(IMeshComponent* component,const String& name,Int32 component_id,
+  MeshComponentData(IMeshComponent* component,const String& name,Int16 component_id,
                     bool create_indexer);
   ~MeshComponentData() override;
 
@@ -89,7 +89,7 @@ class MeshComponentData
     return m_items;
   }
 
-  Int32 componentId() const
+  Int16 componentId() const
   {
     return m_component_id;
   }
@@ -113,7 +113,7 @@ class MeshComponentData
    * \brief Indice du constituant (dans la liste des constituants de ce type).
    * \sa IMeshMaterialMng.
    */
-  Int32 m_component_id;
+  Int16 m_component_id;
 
   //! Nom du constituant
   String m_name;

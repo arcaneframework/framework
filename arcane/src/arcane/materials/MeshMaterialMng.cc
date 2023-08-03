@@ -20,6 +20,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IItemFamily.h"
@@ -277,8 +278,7 @@ _createMaterial(MeshEnvironment* env,MeshMaterialInfo* infos,const String& name)
   if (env->materialMng()!=this)
     ARCANE_FATAL("Invalid materialMng() for environment");
   Integer var_index = m_variables_indexer.size();
-  //const String& name = infos->name();
-  Int32 mat_id = (Int32)m_materials.size();
+  Int16 mat_id = CheckedConvert::toInt16(m_materials.size());
   MeshMaterial* mat = new MeshMaterial(infos,env,name,mat_id);
   info() << "Create material name=" << name << "mat_id=" << mat_id << " var_index=" << var_index;
   mat->build();
@@ -320,7 +320,7 @@ IMeshEnvironment* MeshMaterialMng::
 createEnvironment(const MeshEnvironmentBuildInfo& infos)
 {
   _checkEndCreate();
-  Int32 env_index = (Int32)m_environments.size();
+  Int16 env_index = CheckedConvert::toInt16(m_environments.size());
   // Vérifie qu'un milieu de même nom n'existe pas.
   const String& env_name = infos.name();
   MeshEnvironment* old_me = _findEnvironment(env_name);

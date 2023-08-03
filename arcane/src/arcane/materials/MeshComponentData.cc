@@ -33,7 +33,7 @@ namespace Arcane::Materials
 
 MeshComponentData::
 MeshComponentData(IMeshComponent* component,const String& name,
-                  Int32 component_id,bool create_indexer)
+                  Int16 component_id,bool create_indexer)
 : TraceAccessor(component->traceMng())
 , m_component(component)
 , m_component_id(component_id)

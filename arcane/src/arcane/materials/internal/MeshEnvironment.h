@@ -71,7 +71,7 @@ class MeshEnvironment
 
  public:
 
-  MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int32 env_id);
+  MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int16 env_id);
   ~MeshEnvironment() override;
 
  public:
@@ -139,6 +139,7 @@ class MeshEnvironment
   {
     return m_data._itemsInternalView();
   }
+  Int16 componentId() const { return m_data.componentId(); }
 
  public:
 
