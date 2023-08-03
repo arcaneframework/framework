@@ -10,6 +10,7 @@ set(ARCANE_SOURCES
   ComponentItemVectorView.h
   ComponentSimd.cc
   ComponentSimd.h
+  ComponentConnectivityList.cc
   ComponentItemInternalData.cc
   EnumeratorTracer.cc
   EnumeratorTracer.h
@@ -116,6 +117,7 @@ set(ARCANE_SOURCES
   ItemMaterialVariableBaseT.H
 
   internal/AllEnvData.h
+  internal/ComponentConnectivityList.h
   internal/ComponentItemInternalData.h
   internal/IMeshMaterialModifierImpl.h
   internal/MaterialModifierOperation.h

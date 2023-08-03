@@ -31,6 +31,7 @@
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
+#include "arcane/materials/internal/ComponentConnectivityList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,8 +76,18 @@ AllEnvData(MeshMaterialMng* mmg)
 , m_nb_env_per_cell(VariableBuildInfo(mmg->meshHandle(),mmg->name()+"_CellNbEnvironment"))
 , m_item_internal_data(mmg)
 {
+  m_component_connectivity_list = new ComponentConnectivityList(m_material_mng);
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ALLENVDATA_DEBUG_LEVEL", true))
     m_verbose_debug_level = v.value();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AllEnvData::
+~AllEnvData()
+{
+  delete m_component_connectivity_list;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -86,9 +97,10 @@ AllEnvData(MeshMaterialMng* mmg)
 /*---------------------------------------------------------------------------*/
 
 void AllEnvData::
-endCreate()
+endCreate(bool is_continue)
 {
   m_item_internal_data.endCreate();
+  m_component_connectivity_list->endCreate(is_continue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -108,7 +120,7 @@ _computeNbEnvAndNbMatPerCell()
 {
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
-  // Calcul le nombre de milieux par maille, et pour chaque
+  // Calcule le nombre de milieux par maille, et pour chaque
   // milieu le nombre de matériaux par maille
   m_nb_env_per_cell.fill(0);
   for( MeshEnvironment* env : true_environments ){
@@ -126,7 +138,7 @@ _computeNbEnvAndNbMatPerCell()
 void AllEnvData::
 _computeAndResizeEnvItemsInternal()
 {
-  // Calcul le nombre de milieux par maille, et pour chaque
+  // Calcule le nombre de milieux par maille, et pour chaque
   // milieu le nombre de matériaux par maille
   IMesh* mesh = m_material_mng->mesh();
   const IItemFamily* cell_family = mesh->cellFamily();
@@ -182,11 +194,10 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
     Integer var_nb_cell = cells.size();
     info(4) << "ENV_INDEXER (V2) i=" << var_indexer->index() << " NB_CELL=" << var_nb_cell << " name=" << cells.name()
             << " index=" << var_indexer->index();
-    if (is_full_verbose){
-      Int32UniqueArray my_array(cells.view().localIds());
-      info(5) << "ENV_INDEXER (V2) name=" << cells.name() << " cells=" << my_array;
-    }
-    ENUMERATE_CELL(icell,var_indexer->cells()){
+    if (is_full_verbose)
+      info(5) << "ENV_INDEXER (V2) name=" << cells.name() << " cells=" << cells.view().localIds();
+
+    ENUMERATE_CELL(icell,cells){
       if (m_nb_env_per_cell[icell]>1)
         list_builder.addPartialItem(icell.itemLocalId());
       else
@@ -427,6 +438,7 @@ void AllEnvData::
 recomputeIncremental()
 {
   forceRecompute(false);
+  _checkConnectivityCoherency();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -718,6 +730,51 @@ _updateMaterialDirect(MaterialModifierOperation* operation)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void AllEnvData::
+_checkConnectivityCoherency()
+{
+  info() << "AllEnvData: checkCoherency()";
+  const VariableCellInt16& nb_env_v2 = m_component_connectivity_list->cellNbEnvironment();
+  const VariableCellInt16& nb_mat_v2 = m_component_connectivity_list->cellNbMaterial();
+
+  ItemGroup all_cells = m_material_mng->mesh()->allCells();
+
+  Int32 nb_error = 0;
+  // Vérifie le nombre de milieux
+  ENUMERATE_CELL(icell,all_cells){
+    Int32 ref_nb_env = m_nb_env_per_cell[icell];
+    Int32 current_nb_env = nb_env_v2[icell];
+    if (ref_nb_env!=current_nb_env){
+      ++nb_error;
+      if (nb_error<10)
+        error() << "Invalid values for nb_environment cell=" << icell->uniqueId()
+                << " ref=" << ref_nb_env << " current=" << current_nb_env;
+    }
+  }
+
+  // Vérifie le nombre de matériaux
+  ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
+  ENUMERATE_CELL(icell,all_cells){
+    Int32 ref_nb_mat = 0;
+    for( MeshEnvironment* env : true_environments ){
+      ref_nb_mat += env->m_nb_mat_per_cell[icell];
+    }
+    Int32 current_nb_mat = nb_mat_v2[icell];
+    if (ref_nb_mat!=current_nb_mat){
+      ++nb_error;
+      if (nb_error<10)
+        error() << "Invalid values for nb_material cell=" << icell->uniqueId()
+                << " ref=" << ref_nb_mat << " current=" << current_nb_mat;
+    }
+  }
+
+  if (nb_error!=0)
+    ARCANE_FATAL("Invalid values for component connectivity nb_error={0}",nb_error);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -735,6 +792,8 @@ apply(MaterialModifierOperation* operation)
   const IMeshEnvironment* env = mat->environment();
   MeshEnvironment* true_env = true_mat->trueEnvironment();
   Integer nb_mat = env->nbMaterial();
+
+  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
 
   Int32UniqueArray cells_changed_in_env;
 
@@ -776,19 +835,32 @@ apply(MaterialModifierOperation* operation)
     }
     true_env->updateItemsDirect(m_all_env_data->m_nb_env_per_cell,true_mat,cells_unchanged_in_env,is_add,false);
 
+    // Prend pour \a ids uniquement la liste des mailles
+    // qui n'appartenaient pas encore au milieu dans lequel on
+    // ajoute le matériaux.
     ids = cells_changed_in_env.view();
   }
 
   Int32ArrayView cells_nb_env = m_all_env_data->m_nb_env_per_cell.asArray();
 
-  // Met à jour le nombre de milieux de chaque maille.
-  if (is_add){
-    for( Int32 id : ids )
-      ++cells_nb_env[id];
-  }
-  else{
-    for( Int32 id : ids )
-      --cells_nb_env[id];
+  // Met à jour le nombre de milieux et de matériaux de chaque maille.
+  // NOTE: il faut d'abord faire l'opération sur les milieux avant
+  // les matériaux.
+  {
+    Int16 env_id = true_env->componentId();
+    Int16 mat_id = true_mat->componentId();
+    if (is_add){
+      connectivity->addCellsToEnvironment(env_id,ids);
+      connectivity->addCellsToMaterial(mat_id,operation->ids());
+      for( Int32 id : ids )
+        ++cells_nb_env[id];
+    }
+    else{
+      connectivity->removeCellsToEnvironment(env_id,ids);
+      connectivity->removeCellsToMaterial(mat_id,operation->ids());
+      for( Int32 id : ids )
+        --cells_nb_env[id];
+    }
   }
 
   // Comme on a ajouté/supprimé des mailles matériau dans le milieu,

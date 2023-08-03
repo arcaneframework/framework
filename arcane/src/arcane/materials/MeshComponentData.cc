@@ -18,9 +18,9 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemPrinter.h"
 
-#include "arcane/materials/MeshComponentPartData.h"
-#include "arcane/materials/MeshMaterialVariableIndexer.h"
-#include "arcane/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/MeshComponentPartData.h"
+#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ namespace Arcane::Materials
 
 MeshComponentData::
 MeshComponentData(IMeshComponent* component,const String& name,
-                  Int32 component_id,bool create_indexer)
+                  Int16 component_id,bool create_indexer)
 : TraceAccessor(component->traceMng())
 , m_component(component)
 , m_component_id(component_id)
@@ -131,15 +131,6 @@ _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
     if (new_lid!=NULL_ITEM_LOCAL_ID){
       new_internals.add(current_internals[i]);
       current_internals[i]->setGlobalItem(global_item_list[new_lid]);
-#if MAT_UPDATE_LOCALID
-      MatVarIndex mvi = current_internals[i]->variableIndex();
-      if (mvi.arrayIndex()==0){
-        mat_type->info() << "NEW_VALUE_INDEX i=" << i << " old=" << mvi.valueIndex()
-                         << " new=" << old_to_new_ids[mvi.valueIndex()]
-                         << " X=" << current_internals[i];
-        current_internals[i]->setVariableIndex(MatVarIndex(0,old_to_new_ids[mvi.valueIndex()]));
-      }
-#endif
     }
   }
 

@@ -38,7 +38,7 @@ namespace Arcane::Materials
 
 MeshMaterial::
 MeshMaterial(MeshMaterialInfo* infos, MeshEnvironment* env,
-             const String& name, Int32 mat_id)
+             const String& name, Int16 mat_id)
 : TraceAccessor(infos->materialMng()->traceMng())
 , m_material_mng(infos->materialMng())
 , m_infos(infos)
