@@ -26,6 +26,45 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+  // Cette méthode est la même que MeshUtils::removeItemAndKeepOrder().
+  // Il faudrait pouvoir fusionner les deux.
+  // NOTE: Avec le C++20, on devrait pouvoir supprimer cette méthode et
+  // utiliser std::erase()
+
+  template <typename DataType>
+  void _removeValueAndKeepOrder(ArrayView<DataType> values, DataType value_to_remove)
+  {
+    Integer n = values.size();
+    if (n <= 0)
+      ARCANE_FATAL("Can not remove item lid={0} because list is empty", value_to_remove);
+
+    --n;
+    if (n == 0) {
+      if (values[0] == value_to_remove)
+        return;
+    }
+    else {
+      // Si l'élément est le dernier, ne fait rien.
+      if (values[n] == value_to_remove)
+        return;
+      for (Integer i = 0; i < n; ++i) {
+        if (values[i] == value_to_remove) {
+          for (Integer z = i; z < n; ++z)
+            values[z] = values[z + 1];
+          return;
+        }
+      }
+    }
+    ARCANE_FATAL("No value to remove '{0}' found in list {1}", value_to_remove, values);
+  }
+
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ComponentConnectivityList::Container
 {
  public:
@@ -87,8 +126,32 @@ void ComponentConnectivityList::
 addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
 {
   VariableCellInt16& nb_env = m_container->m_nb_environment;
-  for (Int32 id : cell_ids)
-    ++nb_env[CellLocalId(id)];
+  VariableCellInt32& env_index = m_container->m_environment_index;
+  VariableArrayInt16::ContainerType& env_list = m_container->m_environment_list_array;
+  for (Int32 id : cell_ids) {
+    CellLocalId cell_id(id);
+    const Int16 n = nb_env[cell_id];
+    if (n == 0) {
+      // Pas encore de milieu. On ajoute juste le nouveau milieu
+      Int32 pos = env_list.size();
+      env_index[cell_id] = pos;
+      env_list.add(env_id);
+    }
+    else {
+      // Alloue de la place pour 1 milieu suppl'émentaire et recopie les
+      // anciennes valeurs.
+      // TODO: cela laisse des trous dans la liste qu'il faudra supprimer
+      // via un compactage.
+      Int32 current_pos = env_index[cell_id];
+      Int32 pos = env_list.size();
+      env_index[cell_id] = pos;
+      env_list.addRange(env_id, n + 1);
+      ArrayView<Int16> current_values(n, &env_list[current_pos]);
+      ArrayView<Int16> new_values(n, &env_list[pos]);
+      new_values.copy(current_values);
+    }
+    ++nb_env[cell_id];
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -98,8 +161,19 @@ void ComponentConnectivityList::
 removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
 {
   VariableCellInt16& nb_env = m_container->m_nb_environment;
-  for (Int32 id : cell_ids)
-    --nb_env[CellLocalId(id)];
+  VariableCellInt32& env_index = m_container->m_environment_index;
+  VariableArrayInt16::ContainerType& env_list = m_container->m_environment_list_array;
+  for (Int32 id : cell_ids) {
+    CellLocalId cell_id(id);
+    const Int32 current_pos = env_index[cell_id];
+    const Int32 n = nb_env[cell_id];
+    ArrayView<Int16> current_values(n, &env_list[current_pos]);
+    // Enlève de la liste le milieu supprimé
+    _removeValueAndKeepOrder(current_values, env_id);
+    // Met une valeur invalide pour indiquer que l'emplacement est libre
+    current_values[n - 1] = (-1);
+    --nb_env[cell_id];
+  }
 }
 
 /*---------------------------------------------------------------------------*/
