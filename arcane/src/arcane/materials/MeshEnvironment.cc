@@ -297,15 +297,15 @@ computeItemListForMaterials(const VariableCellInt32& nb_env_per_cell)
 
   // Calcul pour chaque matériau le nombre de mailles mixtes
   // TODO: a faire dans MeshMaterialVariableIndexer
-  for( Integer i=0, n=m_true_materials.size(); i<n; ++i ){
-    MeshMaterialVariableIndexer* var_indexer = m_true_materials[i]->variableIndexer();
+  for( MeshMaterial* mat : m_true_materials ){
+    MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
     CellGroup cells = var_indexer->cells();
     Integer var_nb_cell = cells.size();
 
     ComponentItemListBuilder list_builder(var_indexer,0);
 
-    info(4) << "MAT_INDEXER i=" << i << " NB_CELL=" << var_nb_cell << " name=" << cells.name();
-    ENUMERATE_CELL(icell,var_indexer->cells()){
+    info(4) << "MAT_INDEXER mat=" << mat->name() << " NB_CELL=" << var_nb_cell << " name=" << cells.name();
+    ENUMERATE_CELL(icell,cells){
       Int32 lid = icell.itemLocalId();
       // On ne prend l'indice global que si on est le seul matériau et le seul
       // milieu de la maille. Sinon, on prend un indice multiple
@@ -333,29 +333,25 @@ _addItemsToIndexer(const VariableCellInt32& nb_env_per_cell,
                    MeshMaterialVariableIndexer* var_indexer,
                    Int32ConstArrayView local_ids)
 {
-  IItemFamily* cell_family = cells().itemFamily();
-  CellInfoListView items_internal(cell_family);
-
   ComponentItemListBuilder list_builder(var_indexer,var_indexer->maxIndexInMultipleArray());
 
-  Integer nb_to_add = local_ids.size();
-  for( Integer i=0; i<nb_to_add; ++i ){
-    Int32 lid = local_ids[i];
-    Cell cell = items_internal[lid];
+  for( Int32 lid : local_ids ){
+    CellLocalId cell_id(lid);
     // On ne prend l'indice global que si on est le seul matériau et le seul
     // milieu de la maille. Sinon, on prend un indice multiple
-    if (nb_env_per_cell[cell]>1 || m_nb_mat_per_cell[cell]>1)
+    if (nb_env_per_cell[cell_id]>1 || m_nb_mat_per_cell[cell_id]>1)
       list_builder.addPartialItem(lid);
     else
       list_builder.addPureItem(lid);
   }
 
   if (traceMng()->verbosityLevel()>=5)
-    info() << "MAT_NB_MULTIPLE_CELL (V2) mat=" << var_indexer->name()
-           << " nb_in_global=" << list_builder.pureMatVarIndexes().size()
-           << " (ids=" << list_builder.pureMatVarIndexes() << ")"
-           << " nb_in_multiple=" << list_builder.partialMatVarIndexes().size()
-           << " (ids=" << list_builder.partialLocalIds() << ")";
+    info() << "ADD_MATITEM_TO_INDEXER component=" << var_indexer->name()
+           << " nb_pure=" << list_builder.pureMatVarIndexes().size()
+           << " nb_partial=" << list_builder.partialMatVarIndexes().size()
+           << "\n pure=(" << list_builder.pureMatVarIndexes() << ")"
+           << "\n partial=(" << list_builder.partialMatVarIndexes() << ")";
+
   var_indexer->endUpdateAdd(list_builder);
 
   // Maintenant que les nouveaux MatVar sont créés, il faut les
@@ -379,21 +375,15 @@ void MeshEnvironment::
 _addItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
                 Int32ConstArrayView local_ids,bool update_env_indexer)
 {
-  info(4) << "MeshEnvironment::addItemsDirect"
-          << " mat=" << mat->name();
-
-  IItemFamily* cell_family = cells().itemFamily();
-  CellInfoListView items_internal(cell_family);
+  info(4) << "MeshEnvironment::addItemsDirect" << " mat=" << mat->name();
 
   MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
-  Integer nb_to_add = local_ids.size();
+  Int32 nb_to_add = local_ids.size();
 
   // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
-  for( Integer i=0; i<nb_to_add; ++i ){
-    Int32 lid = local_ids[i];
-    Cell cell = items_internal[lid];
-    ++m_nb_mat_per_cell[cell];
-  }
+  for( Int32 lid : local_ids )
+    ++m_nb_mat_per_cell[CellLocalId{lid}];
+
   m_total_nb_cell_mat += nb_to_add;
 
   _addItemsToIndexer(nb_env_per_cell,var_indexer,local_ids);
@@ -401,7 +391,7 @@ _addItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
   if (update_env_indexer){
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
-    // est supérieur ou égal à 2 (car sinon c'est le matériau et le milieu
+    // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
     _addItemsToIndexer(nb_env_per_cell,this->variableIndexer(),local_ids);
   }

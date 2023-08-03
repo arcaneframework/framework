@@ -67,13 +67,6 @@ class ComponentItemInternalData
     return m_env_items_internal;
   }
 
-#if 0
-  //! Liste des mailles matériaux pour le \a env_index ème milieu
-  ConstArrayView<ComponentItemInternal> matItemsInternal(Int32 env_index) const
-  {
-    return m_mat_items_internal[env_index];
-  }
-#endif
   //! Liste des mailles matériaux pour le \a env_index ème milieu
   ArrayView<ComponentItemInternal> matItemsInternal(Int32 env_index)
   {

@@ -120,7 +120,7 @@ _computeNbEnvAndNbMatPerCell()
 {
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
-  // Calcul le nombre de milieux par maille, et pour chaque
+  // Calcule le nombre de milieux par maille, et pour chaque
   // milieu le nombre de matériaux par maille
   m_nb_env_per_cell.fill(0);
   for( MeshEnvironment* env : true_environments ){
@@ -138,7 +138,7 @@ _computeNbEnvAndNbMatPerCell()
 void AllEnvData::
 _computeAndResizeEnvItemsInternal()
 {
-  // Calcul le nombre de milieux par maille, et pour chaque
+  // Calcule le nombre de milieux par maille, et pour chaque
   // milieu le nombre de matériaux par maille
   IMesh* mesh = m_material_mng->mesh();
   const IItemFamily* cell_family = mesh->cellFamily();
@@ -194,11 +194,10 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
     Integer var_nb_cell = cells.size();
     info(4) << "ENV_INDEXER (V2) i=" << var_indexer->index() << " NB_CELL=" << var_nb_cell << " name=" << cells.name()
             << " index=" << var_indexer->index();
-    if (is_full_verbose){
-      Int32UniqueArray my_array(cells.view().localIds());
-      info(5) << "ENV_INDEXER (V2) name=" << cells.name() << " cells=" << my_array;
-    }
-    ENUMERATE_CELL(icell,var_indexer->cells()){
+    if (is_full_verbose)
+      info(5) << "ENV_INDEXER (V2) name=" << cells.name() << " cells=" << cells.view().localIds();
+
+    ENUMERATE_CELL(icell,cells){
       if (m_nb_env_per_cell[icell]>1)
         list_builder.addPartialItem(icell.itemLocalId());
       else
