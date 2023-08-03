@@ -835,31 +835,29 @@ apply(MaterialModifierOperation* operation)
     }
     true_env->updateItemsDirect(m_all_env_data->m_nb_env_per_cell,true_mat,cells_unchanged_in_env,is_add,false);
 
-    // Met à jour le nombre de matériaux de chaque maille.
-    {
-      Int16 mat_id = true_mat->componentId();
-      if (is_add){
-        connectivity->addCellsToMaterial(mat_id,ids);
-      }
-      else{
-        connectivity->removeCellsToMaterial(mat_id,ids);
-      }
-    }
+    // Prend pour \a ids uniquement la liste des mailles
+    // qui n'appartenaient pas encore au milieu dans lequel on
+    // ajoute le matériaux.
     ids = cells_changed_in_env.view();
   }
 
   Int32ArrayView cells_nb_env = m_all_env_data->m_nb_env_per_cell.asArray();
 
-  // Met à jour le nombre de milieux de chaque maille.
+  // Met à jour le nombre de milieux et de matériaux de chaque maille.
+  // NOTE: il faut d'abord faire l'opération sur les milieux avant
+  // les matériaux.
   {
     Int16 env_id = true_env->componentId();
+    Int16 mat_id = true_mat->componentId();
     if (is_add){
       connectivity->addCellsToEnvironment(env_id,ids);
+      connectivity->addCellsToMaterial(mat_id,operation->ids());
       for( Int32 id : ids )
         ++cells_nb_env[id];
     }
     else{
       connectivity->removeCellsToEnvironment(env_id,ids);
+      connectivity->removeCellsToMaterial(mat_id,operation->ids());
       for( Int32 id : ids )
         --cells_nb_env[id];
     }
