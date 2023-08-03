@@ -36,6 +36,7 @@ namespace Arcane::Materials
 class ComponentConnectivityList
 : public TraceAccessor
 {
+  class ComponentContainer;
   class Container;
 
  public:
@@ -57,12 +58,21 @@ class ComponentConnectivityList
   void addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids);
   void removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids);
 
+  void addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids);
+  void removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids);
+
   const VariableCellInt16& cellNbEnvironment() const;
+  const VariableCellInt16& cellNbMaterial() const;
 
  private:
 
   MeshMaterialMng* m_material_mng = nullptr;
   Container* m_container = nullptr;
+
+ private:
+
+  void _addCells(Int16 env_id, ConstArrayView<Int32> cell_ids, ComponentContainer& component);
+  void _removeCells(Int16 env_id, ConstArrayView<Int32> cell_ids, ComponentContainer& component);
 };
 
 /*---------------------------------------------------------------------------*/

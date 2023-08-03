@@ -774,6 +774,8 @@ apply(MaterialModifierOperation* operation)
   MeshEnvironment* true_env = true_mat->trueEnvironment();
   Integer nb_mat = env->nbMaterial();
 
+  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+
   Int32UniqueArray cells_changed_in_env;
 
   if (nb_mat!=1){
@@ -814,6 +816,16 @@ apply(MaterialModifierOperation* operation)
     }
     true_env->updateItemsDirect(m_all_env_data->m_nb_env_per_cell,true_mat,cells_unchanged_in_env,is_add,false);
 
+    // Met à jour le nombre de matériaux de chaque maille.
+    {
+      Int16 mat_id = true_mat->componentId();
+      if (is_add){
+        connectivity->addCellsToMaterial(mat_id,ids);
+      }
+      else{
+        connectivity->removeCellsToMaterial(mat_id,ids);
+      }
+    }
     ids = cells_changed_in_env.view();
   }
 
@@ -821,15 +833,14 @@ apply(MaterialModifierOperation* operation)
 
   // Met à jour le nombre de milieux de chaque maille.
   {
-    Int16 m_env_id = true_env->componentId();
-    ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+    Int16 env_id = true_env->componentId();
     if (is_add){
-      connectivity->addCellsToEnvironment(m_env_id,ids);
+      connectivity->addCellsToEnvironment(env_id,ids);
       for( Int32 id : ids )
         ++cells_nb_env[id];
     }
     else{
-      connectivity->removeCellsToEnvironment(m_env_id,ids);
+      connectivity->removeCellsToEnvironment(env_id,ids);
       for( Int32 id : ids )
         --cells_nb_env[id];
     }

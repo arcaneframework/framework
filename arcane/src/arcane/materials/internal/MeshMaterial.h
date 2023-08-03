@@ -132,6 +132,7 @@ class MeshMaterial
   {
     return m_data._itemsInternalView();
   }
+  Int16 componentId() const { return m_data.componentId(); }
 
  public:
 
