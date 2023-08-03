@@ -62,6 +62,8 @@ class MeshMaterialVariableSynchronizerList;
 class MeshMaterialVariable;
 class MatVarIndex;
 class IMeshMaterialSynchronizeBuffer;
+class ComponentConnectivityList;
+class MeshMaterialMng;
 
 template <typename DataType> class ItemMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableScalar;

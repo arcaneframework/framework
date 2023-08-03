@@ -47,6 +47,7 @@ class AllEnvData
  public:
 
   explicit AllEnvData(MeshMaterialMng* mmg);
+  ~AllEnvData();
 
  public:
 
@@ -70,11 +71,17 @@ class AllEnvData
   void updateMaterialIncremental(MaterialModifierOperation* operation);
 
   //! Notification de la fin de création des milieux/matériaux
-  void endCreate();
+  void endCreate(bool is_continue);
+
+  ComponentConnectivityList* componentConnectivityList()
+  {
+    return m_component_connectivity_list;
+  }
 
  private:
 
   MeshMaterialMng* m_material_mng = nullptr;
+  ComponentConnectivityList* m_component_connectivity_list = nullptr;
 
   //! Nombre de milieux par mailles
   VariableCellInt32 m_nb_env_per_cell;

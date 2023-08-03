@@ -432,7 +432,7 @@ endCreate(bool is_continue)
 
   m_modifier->initOptimizationFlags();
 
-  m_all_env_data->endCreate();
+  m_all_env_data->endCreate(is_continue);
 
   auto synchronizer = mesh()->cellFamily()->allItemsSynchronizer();
   m_all_cells_mat_env_synchronizer = new MeshMaterialVariableSynchronizer(this,synchronizer,MatVarSpace::MaterialAndEnvironment);

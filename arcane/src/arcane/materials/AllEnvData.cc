@@ -31,6 +31,7 @@
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
+#include "arcane/materials/internal/ComponentConnectivityList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,8 +76,18 @@ AllEnvData(MeshMaterialMng* mmg)
 , m_nb_env_per_cell(VariableBuildInfo(mmg->meshHandle(),mmg->name()+"_CellNbEnvironment"))
 , m_item_internal_data(mmg)
 {
+  m_component_connectivity_list = new ComponentConnectivityList(m_material_mng);
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ALLENVDATA_DEBUG_LEVEL", true))
     m_verbose_debug_level = v.value();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AllEnvData::
+~AllEnvData()
+{
+  delete m_component_connectivity_list;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -86,9 +97,10 @@ AllEnvData(MeshMaterialMng* mmg)
 /*---------------------------------------------------------------------------*/
 
 void AllEnvData::
-endCreate()
+endCreate(bool is_continue)
 {
   m_item_internal_data.endCreate();
+  m_component_connectivity_list->endCreate(is_continue);
 }
 
 /*---------------------------------------------------------------------------*/
