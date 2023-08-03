@@ -107,6 +107,7 @@ class AllEnvData
   void _computeInfosForEnvCells();
   void _checkLocalIdsCoherency() const;
   void _printAllEnvCells(CellVectorView ids);
+  void _checkConnectivityCoherency();
 };
 
 /*---------------------------------------------------------------------------*/

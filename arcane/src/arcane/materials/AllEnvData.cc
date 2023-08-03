@@ -438,6 +438,7 @@ void AllEnvData::
 recomputeIncremental()
 {
   forceRecompute(false);
+  _checkConnectivityCoherency();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -729,6 +730,32 @@ _updateMaterialDirect(MaterialModifierOperation* operation)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void AllEnvData::
+_checkConnectivityCoherency()
+{
+  info() << "AllEnvData: checkCoherency()";
+  const VariableCellInt16& nb_env_v2 = m_component_connectivity_list->cellNbEnvironment();
+
+  ItemGroup all_cells = m_material_mng->mesh()->allCells();
+
+  Int32 nb_error = 0;
+  ENUMERATE_CELL(icell,all_cells){
+    Int32 ref_value = m_nb_env_per_cell[icell];
+    Int32 current_value = nb_env_v2[icell];
+    if (ref_value!=current_value){
+      ++nb_error;
+      if (nb_error<10)
+        error() << "Invalid for nb_environment cell=" << icell->uniqueId()
+                << " ref_value=" << ref_value << " current=" << current_value;
+    }
+  }
+  if (nb_error!=0)
+    ARCANE_FATAL("Invalid values for number of environments nb_error={0}",nb_error);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -793,13 +820,19 @@ apply(MaterialModifierOperation* operation)
   Int32ArrayView cells_nb_env = m_all_env_data->m_nb_env_per_cell.asArray();
 
   // Met à jour le nombre de milieux de chaque maille.
-  if (is_add){
-    for( Int32 id : ids )
-      ++cells_nb_env[id];
-  }
-  else{
-    for( Int32 id : ids )
-      --cells_nb_env[id];
+  {
+    Int16 m_env_id = true_env->id();
+    ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+    if (is_add){
+      connectivity->addCellsToEnvironment(m_env_id,ids);
+      for( Int32 id : ids )
+        ++cells_nb_env[id];
+    }
+    else{
+      connectivity->removeCellsToEnvironment(m_env_id,ids);
+      for( Int32 id : ids )
+        --cells_nb_env[id];
+    }
   }
 
   // Comme on a ajouté/supprimé des mailles matériau dans le milieu,

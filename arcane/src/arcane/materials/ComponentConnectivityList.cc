@@ -13,6 +13,8 @@
 
 #include "arcane/materials/internal/ComponentConnectivityList.h"
 
+#include "arcane/core/internal/IDataInternal.h"
+
 #include "arcane/materials/internal/MeshMaterialMng.h"
 
 /*---------------------------------------------------------------------------*/
@@ -24,12 +26,48 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class ComponentConnectivityList::Container
+{
+ public:
+
+  Container(const MeshHandle& mesh, const String& var_name)
+  : m_var_name(var_name)
+  , m_nb_environment(VariableBuildInfo(mesh, var_name + "ComponentNbEnvironment", IVariable::PPrivate))
+  , m_environment_index(VariableBuildInfo(mesh, var_name + "ComponentEnviromentIndex", IVariable::PPrivate))
+  , m_environment_list(VariableBuildInfo(mesh, var_name + "ComponentEnvironmentList", IVariable::PPrivate))
+  , m_environment_list_array(m_environment_list._internalTrueData()->_internalDeprecatedValue())
+  {
+  }
+
+ public:
+
+  String m_var_name;
+
+  VariableCellInt16 m_nb_environment;
+  VariableCellInt32 m_environment_index;
+  VariableArrayInt16 m_environment_list;
+
+  VariableArrayInt16::ContainerType& m_environment_list_array;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ComponentConnectivityList::
 ComponentConnectivityList(MeshMaterialMng* mm)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, m_cell_nb_environment(VariableBuildInfo(mm->meshHandle(), mm->name() + "_CellNbEnvironment2"))
+, m_container(new Container(mm->meshHandle(), mm->name()))
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentConnectivityList::
+~ComponentConnectivityList()
+{
+  delete m_container;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -39,7 +77,38 @@ void ComponentConnectivityList::
 endCreate(bool is_continue)
 {
   if (!is_continue)
-    m_cell_nb_environment.fill(0);
+    m_container->m_nb_environment.fill(0);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentConnectivityList::
+addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
+{
+  VariableCellInt16& nb_env = m_container->m_nb_environment;
+  for (Int32 id : cell_ids)
+    ++nb_env[CellLocalId(id)];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentConnectivityList::
+removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
+{
+  VariableCellInt16& nb_env = m_container->m_nb_environment;
+  for (Int32 id : cell_ids)
+    --nb_env[CellLocalId(id)];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const VariableCellInt16& ComponentConnectivityList::
+cellNbEnvironment() const
+{
+  return m_container->m_nb_environment;
 }
 
 /*---------------------------------------------------------------------------*/
