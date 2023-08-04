@@ -64,10 +64,16 @@ class ComponentConnectivityList
   const VariableCellInt16& cellNbEnvironment() const;
   const VariableCellInt16& cellNbMaterial() const;
 
+  //! Nombre de matériaux pour le milieu d'indice \a env_id
+  Int16 cellNbMaterial(CellLocalId cell_id, Int16 env_id);
+
  private:
 
   MeshMaterialMng* m_material_mng = nullptr;
   Container* m_container = nullptr;
+
+  //! Indice du milieu auquel appartient un matériau
+  UniqueArray<Int16> m_environment_for_materials;
 
  private:
 

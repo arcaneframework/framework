@@ -160,6 +160,7 @@ class MeshMaterialMng
   }
 
   ConstArrayView<MeshEnvironment*> trueEnvironments() const { return m_true_environments; }
+  ConstArrayView<MeshMaterial*> trueMaterials() const { return m_true_materials; }
 
  public:
 
