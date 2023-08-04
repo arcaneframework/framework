@@ -79,6 +79,29 @@ class ComponentConnectivityList::ComponentContainer
 
  public:
 
+  void endCreate(bool is_continue)
+  {
+    if (!is_continue) {
+      m_nb_component.fill(0);
+      m_component_index.fill(0);
+      // Le premier élément de la liste est utilisé pour les constituants vides
+      m_component_list.resize(1);
+      m_component_list[0] = 0;
+    }
+  }
+
+  ArrayView<Int16> components(CellLocalId item_lid)
+  {
+    Int16 n = m_nb_component[item_lid];
+    Int32 index = m_component_index[item_lid];
+    //Int32 list_size = m_component_list.size();
+    //std::cout << "CELL=" << item_lid << " nb_mat=" << n
+    //          << " index=" << index << " list_size=" << list_size << "\n";
+    return m_component_list_as_array.subView(index, n);
+  }
+
+ public:
+
   VariableCellInt16 m_nb_component;
   VariableCellInt32 m_component_index;
   VariableArrayInt16 m_component_list;
@@ -131,9 +154,15 @@ void ComponentConnectivityList::
 endCreate(bool is_continue)
 {
   if (!is_continue) {
-    m_container->m_environment.m_nb_component.fill(0);
-    m_container->m_material.m_nb_component.fill(0);
+    m_container->m_environment.endCreate(is_continue);
+    m_container->m_material.endCreate(is_continue);
   }
+
+  ConstArrayView<MeshMaterial*> materials = m_material_mng->trueMaterials();
+  const Int32 nb_mat = materials.size();
+  m_environment_for_materials.resize(nb_mat);
+  for (Int32 i = 0; i < nb_mat; ++i)
+    m_environment_for_materials[i] = materials[i]->trueEnvironment()->componentId();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -169,6 +198,7 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ComponentContainer
     }
     ++nb_component[cell_id];
   }
+  component.m_component_list.updateFromInternal();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -245,6 +275,22 @@ const VariableCellInt16& ComponentConnectivityList::
 cellNbMaterial() const
 {
   return m_container->m_material.m_nb_component;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int16 ComponentConnectivityList::
+cellNbMaterial(CellLocalId cell_id, Int16 env_id)
+{
+  Int16 nb_mat = 0;
+  ArrayView<Int16> mats = m_container->m_material.components(cell_id);
+  for (Int16 mat_id : mats) {
+    Int16 current_id = m_environment_for_materials[mat_id];
+    if (current_id == env_id)
+      ++nb_mat;
+  }
+  return nb_mat;
 }
 
 /*---------------------------------------------------------------------------*/

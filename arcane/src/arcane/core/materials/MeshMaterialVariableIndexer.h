@@ -61,6 +61,34 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
 
  public:
 
+  //! Arguments pour transformCells()
+  struct TransformCellsArgs
+  {
+   public:
+    TransformCellsArgs(ConstArrayView<bool> cells_to_transform_,
+                       Int32Array& pure_local_ids_,
+                       Int32Array& partial_indexes_,
+                       bool is_add_operation_,
+                       bool is_verbose_)
+    : cells_to_transform(cells_to_transform_)
+    , pure_local_ids(pure_local_ids_)
+    , partial_indexes(partial_indexes_)
+    , is_add_operation(is_add_operation_)
+    , is_verbose(is_verbose_)
+    {
+    }
+
+   public:
+
+    ConstArrayView<bool> cells_to_transform;
+    Int32Array& pure_local_ids;
+    Int32Array& partial_indexes;
+    bool is_add_operation;
+    bool is_verbose;
+  };
+
+ public:
+
   MeshMaterialVariableIndexer(ITraceMng* tm,const String& name);
   MeshMaterialVariableIndexer(const MeshMaterialVariableIndexer& rhs);
 
@@ -107,6 +135,10 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
 
  private:
 
+  void transformCellsV2(const TransformCellsArgs& args);
+
+ private:
+
   //! Index de cette instance dans la liste des indexeurs.
   Integer m_index;
 
@@ -149,6 +181,9 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
                                Int32Array& pure_local_ids,
                                Int32Array& partial_indexes,
                                bool is_env,bool is_verbose);
+
+  void _transformPureToPartialV2(const TransformCellsArgs& args);
+  void _transformPartialToPureV2(const TransformCellsArgs& args);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -44,6 +44,27 @@ class AllEnvData::IncrementalOneMaterialModifier
 {
  public:
 
+  struct WorkInfo
+  {
+    using TransformCellsArgs = MeshMaterialVariableIndexer::TransformCellsArgs;
+
+    UniqueArray<Int32> pure_local_ids;
+    UniqueArray<Int32> partial_indexes;
+    UniqueArray<bool> cells_to_transform;
+    bool is_verbose = false;
+    bool is_add = false;
+
+   public:
+
+    TransformCellsArgs toTransformCellsArgs()
+    {
+      return TransformCellsArgs(cells_to_transform,pure_local_ids,
+                                partial_indexes,is_add,is_verbose);
+    }
+ };
+
+ public:
+
   IncrementalOneMaterialModifier(AllEnvData* all_env_data)
   : TraceAccessor(all_env_data->traceMng())
   , m_all_env_data(all_env_data)
@@ -62,8 +83,10 @@ class AllEnvData::IncrementalOneMaterialModifier
 
  private:
 
-  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env, bool is_add_operation);
-  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, bool is_add);
+  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env, WorkInfo& work_info);
+  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, WorkInfo& work_info);
+  void _computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat);
+  void _computeCellsToTransform(WorkInfo& work_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -736,6 +759,7 @@ _checkConnectivityCoherency()
   info() << "AllEnvData: checkCoherency()";
   const VariableCellInt16& nb_env_v2 = m_component_connectivity_list->cellNbEnvironment();
   const VariableCellInt16& nb_mat_v2 = m_component_connectivity_list->cellNbMaterial();
+  ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
   ItemGroup all_cells = m_material_mng->mesh()->allCells();
 
@@ -752,8 +776,7 @@ _checkConnectivityCoherency()
     }
   }
 
-  // Vérifie le nombre de matériaux
-  ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
+  // Vérifie le nombre de matériaux par maille
   ENUMERATE_CELL(icell,all_cells){
     Int32 ref_nb_mat = 0;
     for( MeshEnvironment* env : true_environments ){
@@ -765,6 +788,22 @@ _checkConnectivityCoherency()
       if (nb_error<10)
         error() << "Invalid values for nb_material cell=" << icell->uniqueId()
                 << " ref=" << ref_nb_mat << " current=" << current_nb_mat;
+    }
+  }
+
+  // Vérifie le nombre de matériaux par milieu
+  for( MeshEnvironment* env : true_environments ){
+    Int16 env_id = env->componentId();
+    ENUMERATE_CELL(icell,all_cells){
+      Int32 ref_nb_mat = env->m_nb_mat_per_cell[icell];
+      Int32 current_nb_mat = m_component_connectivity_list->cellNbMaterial(icell,env_id);
+      if (ref_nb_mat!=current_nb_mat){
+        ++nb_error;
+        if (nb_error<10)
+          error() << "Invalid values for nb_material environment=" << env->name()
+                  << " cell=" << icell->uniqueId()
+                  << " ref=" << ref_nb_mat << " current=" << current_nb_mat;
+      }
     }
   }
 
@@ -795,6 +834,11 @@ apply(MaterialModifierOperation* operation)
 
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
 
+  WorkInfo work_info;
+  work_info.cells_to_transform.resize(m_material_mng->mesh()->cellFamily()->maxLocalId());
+  work_info.is_verbose = traceMng()->verbosityLevel()>=5;
+  work_info.is_add = is_add;
+
   Int32UniqueArray cells_changed_in_env;
 
   if (nb_mat!=1){
@@ -810,12 +854,16 @@ apply(MaterialModifierOperation* operation)
     Int32UniqueArray cells_unchanged_in_env;
     Int32ArrayView cells_nb_mat = true_env->m_nb_mat_per_cell.asArray();
     const Int32 ref_nb_mat = is_add ? 0 : 1;
-
+    const Int16 env_id = true_env->componentId();
     info(4) << "Using optimisation updateMaterialDirect is_add?=" << is_add;
 
     for( Integer i=0, n=ids.size(); i<n; ++i ){
       Int32 lid = ids[i];
-      if (cells_nb_mat[lid]!=ref_nb_mat){
+      Int32 current_cell_nb_mat = connectivity->cellNbMaterial(CellLocalId(lid),env_id);
+      if (current_cell_nb_mat!=cells_nb_mat[lid])
+        ARCANE_FATAL("Incohrent value for nb_material for environment env={0} new={1} ref={2}",
+                     env_id,current_cell_nb_mat,cells_nb_mat[lid]);
+      if (current_cell_nb_mat!=ref_nb_mat){
         info(5)<< "CELL i=" << i << " lid="<< lid << " unchanged in environment nb_mat=" << cells_nb_mat[lid];
         cells_unchanged_in_env.add(lid);
       }
@@ -837,7 +885,7 @@ apply(MaterialModifierOperation* operation)
 
     // Prend pour \a ids uniquement la liste des mailles
     // qui n'appartenaient pas encore au milieu dans lequel on
-    // ajoute le matériaux.
+    // ajoute le matériau.
     ids = cells_changed_in_env.view();
   }
 
@@ -868,9 +916,9 @@ apply(MaterialModifierOperation* operation)
   // d'ajout) ou les mailles partielles en mailles pures (en cas de
   // suppression).
   info(4) << "Transform PartialPure for material name=" << true_mat->name();
-  _switchComponentItemsForMaterials(true_mat,is_add);
+  _switchComponentItemsForMaterials(true_mat,work_info);
   info(4) << "Transform PartialPure for environment name=" << env->name();
-  _switchComponentItemsForEnvironments(env,is_add);
+  _switchComponentItemsForEnvironments(env,work_info);
 
   // Si je suis mono-mat, alors mat->cells()<=>env->cells() et il ne faut
   // mettre à jour que l'un des deux groupes.
@@ -904,14 +952,9 @@ apply(MaterialModifierOperation* operation)
  * (suppression d'un matériau)
  */
 void AllEnvData::IncrementalOneMaterialModifier::
-_switchComponentItemsForMaterials(const MeshMaterial* modified_mat,bool is_add)
+_switchComponentItemsForMaterials(const MeshMaterial* modified_mat, WorkInfo& work_info)
 {
-  UniqueArray<Int32> pure_local_ids;
-  UniqueArray<Int32> partial_indexes;
-
-  Int32ArrayView cells_nb_env = m_all_env_data->m_nb_env_per_cell.asArray();
-
-  bool is_verbose = traceMng()->verbosityLevel()>=5;
+  const bool is_add = work_info.is_add;
 
   for( MeshEnvironment* true_env : m_material_mng->trueEnvironments() ){
     for( MeshMaterial* mat : true_env->trueMaterials() ){
@@ -919,24 +962,23 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat,bool is_add)
       if (mat==modified_mat)
         continue;
 
-      pure_local_ids.clear();
-      partial_indexes.clear();
+      work_info.pure_local_ids.clear();
+      work_info.partial_indexes.clear();
 
       const MeshEnvironment* env = mat->trueEnvironment();
-
+      if (env!=true_env)
+        ARCANE_FATAL("BAD ENV");
       MeshMaterialVariableIndexer* indexer = mat->variableIndexer();
-      ConstArrayView<Int32> cells_nb_mat = env->m_nb_mat_per_cell.asArray();
 
-      info(4) << "TransformCells (V2) is_add?=" << is_add
-              << " indexer=" << indexer->name();
+      info(4) << "TransformCells (V3) is_add?=" << is_add << " indexer=" << indexer->name();
 
-      indexer->transformCells(cells_nb_env,cells_nb_mat,pure_local_ids,
-                              partial_indexes,is_add,false,is_verbose);
+      _computeCellsToTransform(work_info,mat);
 
-      info(4) << "NB_MAT_TRANSFORM=" << pure_local_ids.size()
-              << " name=" << mat->name();
+      indexer->transformCellsV2(work_info.toTransformCellsArgs());
 
-      m_all_env_data->_copyBetweenPartialsAndGlobals(pure_local_ids,partial_indexes,
+      info(4) << "NB_MAT_TRANSFORM=" << work_info.pure_local_ids.size() << " name=" << mat->name();
+
+      m_all_env_data->_copyBetweenPartialsAndGlobals(work_info.pure_local_ids,work_info.partial_indexes,
                                                      indexer->index(),is_add);
     }
   }
@@ -952,42 +994,87 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat,bool is_add)
  * inversement. Après conversion, les valeurs correspondantes aux
  * mailles modifiées sont mises à jour pour chaque variable.
  *
- * Si \a pure_to_partial est vrai, alors on transforme de pure en partiel
- * (dans le cas d'ajout de matériau) sinon on transforme de partiel en pure (dans le cas
- * de suppression d'un matériau)
+ * Si \a is_add est vrai, alors on transforme de pure en partiel
+ * (dans le cas d'ajout de matériau) sinon on transforme de partiel
+ * en pure (dans le cas de suppression d'un matériau)
  */
 void AllEnvData::IncrementalOneMaterialModifier::
-_switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,bool is_add_operation)
+_switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,
+                                     WorkInfo& work_info)
 {
-  UniqueArray<Int32> pure_local_ids;
-  UniqueArray<Int32> partial_indexes;
-
-  Int32ArrayView cells_nb_env = m_all_env_data->m_nb_env_per_cell.asArray();
-
-  bool is_verbose = traceMng()->verbosityLevel()>=5;
+  const bool is_add = work_info.is_add;
 
   for( const MeshEnvironment* env : m_material_mng->trueEnvironments() ){
     // Ne traite pas le milieu en cours de modification.
     if (env==modified_env)
       continue;
 
-    pure_local_ids.clear();
-    partial_indexes.clear();
+    work_info.pure_local_ids.clear();
+    work_info.partial_indexes.clear();
 
     MeshMaterialVariableIndexer* indexer = env->variableIndexer();
-    Int32ArrayView cells_nb_mat; // pas utilisé pour les milieux.
 
-    info(4) << "TransformCells (V2) is_add?=" << is_add_operation
-            << " indexer=" << indexer->name();
+    info(4) << "TransformCells (V2) is_add?=" << is_add << " indexer=" << indexer->name();
 
-    indexer->transformCells(cells_nb_env,cells_nb_mat,pure_local_ids,
-                            partial_indexes,is_add_operation,true,is_verbose);
+    _computeCellsToTransform(work_info);
+    indexer->transformCellsV2(work_info.toTransformCellsArgs());
 
-    info(4) << "NB_ENV_TRANSFORM=" << pure_local_ids.size()
+    info(4) << "NB_ENV_TRANSFORM=" << work_info.pure_local_ids.size()
             << " name=" << env->name();
 
-    m_all_env_data->_copyBetweenPartialsAndGlobals(pure_local_ids,partial_indexes,
-                                                   indexer->index(),is_add_operation);
+    m_all_env_data->_copyBetweenPartialsAndGlobals(work_info.pure_local_ids,
+                                                   work_info.partial_indexes,
+                                                   indexer->index(),is_add);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllEnvData::IncrementalOneMaterialModifier::
+_computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat)
+{
+  const MeshEnvironment* env = mat->trueEnvironment();
+  const Int16 env_id = env->componentId();
+  const VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
+  CellGroup all_cells = m_material_mng->mesh()->allCells();
+  bool is_add = work_info.is_add;
+
+  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+
+  ENUMERATE_(Cell,icell,all_cells){
+    bool do_transform = false;
+    if (is_add){
+      do_transform = cells_nb_env[icell] > 1;
+      if (!do_transform)
+        do_transform = connectivity->cellNbMaterial(icell,env_id) > 1;
+    }
+    else{
+      do_transform = cells_nb_env[icell] == 1;
+      if (do_transform)
+        do_transform = connectivity->cellNbMaterial(icell,env_id) == 1;
+    }
+    work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllEnvData::IncrementalOneMaterialModifier::
+_computeCellsToTransform(WorkInfo& work_info)
+{
+  const VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
+  CellGroup all_cells = m_material_mng->mesh()->allCells();
+  bool is_add = work_info.is_add;
+
+  ENUMERATE_(Cell,icell,all_cells){
+    bool do_transform = false;
+    if (is_add)
+      do_transform = cells_nb_env[icell] > 1;
+    else
+      do_transform = cells_nb_env[icell] == 1;
+    work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
   }
 }
 

@@ -150,7 +150,7 @@ enum class eMatPart
 /*!
  * \brief Opération de mise à jour des milieux/matériaux.
  */
-enum class ARCANE_DEPRECATED_REASON("Y2023: This enum is internal to Arcane") eOperation
+enum class eOperation
 {
   //! Ajoute des entités
   Add

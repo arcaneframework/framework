@@ -45,6 +45,7 @@ using namespace Arcane::Materials;
 %ignore Arcane::Materials::MeshMaterialVariableIndexer::endUpdateRemove;
 %ignore Arcane::Materials::MeshMaterialVariableIndexer::matvarIndexesArray;
 %ignore Arcane::Materials::MeshMaterialVariableIndexer::transformCells;
+%ignore Arcane::Materials::MeshMaterialVariableIndexer::TransformCellsArgs;
 %ignore Arcane::Materials::IMeshMaterialVariable::dumpValues;
 %ignore Arcane::Materials::IMeshMaterialMng::getReference;
 
