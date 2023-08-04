@@ -46,9 +46,21 @@ class AllEnvData::IncrementalOneMaterialModifier
 
   struct WorkInfo
   {
+    using TransformCellsArgs = MeshMaterialVariableIndexer::TransformCellsArgs;
+
     UniqueArray<Int32> pure_local_ids;
     UniqueArray<Int32> partial_indexes;
     UniqueArray<bool> cells_to_transform;
+    bool is_verbose = false;
+    bool is_add = false;
+
+   public:
+
+    TransformCellsArgs toTransformCellsArgs()
+    {
+      return TransformCellsArgs(cells_to_transform,pure_local_ids,
+                                partial_indexes,is_add,is_verbose);
+    }
  };
 
  public:
@@ -71,12 +83,10 @@ class AllEnvData::IncrementalOneMaterialModifier
 
  private:
 
-  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,
-                                            bool is_add_operation, WorkInfo& work_info);
-  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat,
-                                         bool is_add_operation, WorkInfo& work_info);
-  void _computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat, bool is_add);
-  void _computeCellsToTransform(WorkInfo& work_info, bool is_add);
+  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env, WorkInfo& work_info);
+  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, WorkInfo& work_info);
+  void _computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat);
+  void _computeCellsToTransform(WorkInfo& work_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -826,6 +836,8 @@ apply(MaterialModifierOperation* operation)
 
   WorkInfo work_info;
   work_info.cells_to_transform.resize(m_material_mng->mesh()->cellFamily()->maxLocalId());
+  work_info.is_verbose = traceMng()->verbosityLevel()>=5;
+  work_info.is_add = is_add;
 
   Int32UniqueArray cells_changed_in_env;
 
@@ -904,9 +916,9 @@ apply(MaterialModifierOperation* operation)
   // d'ajout) ou les mailles partielles en mailles pures (en cas de
   // suppression).
   info(4) << "Transform PartialPure for material name=" << true_mat->name();
-  _switchComponentItemsForMaterials(true_mat,is_add,work_info);
+  _switchComponentItemsForMaterials(true_mat,work_info);
   info(4) << "Transform PartialPure for environment name=" << env->name();
-  _switchComponentItemsForEnvironments(env,is_add,work_info);
+  _switchComponentItemsForEnvironments(env,work_info);
 
   // Si je suis mono-mat, alors mat->cells()<=>env->cells() et il ne faut
   // mettre à jour que l'un des deux groupes.
@@ -940,10 +952,9 @@ apply(MaterialModifierOperation* operation)
  * (suppression d'un matériau)
  */
 void AllEnvData::IncrementalOneMaterialModifier::
-_switchComponentItemsForMaterials(const MeshMaterial* modified_mat,
-                                  bool is_add, WorkInfo& work_info)
+_switchComponentItemsForMaterials(const MeshMaterial* modified_mat, WorkInfo& work_info)
 {
-  bool is_verbose = traceMng()->verbosityLevel()>=5;
+  const bool is_add = work_info.is_add;
 
   for( MeshEnvironment* true_env : m_material_mng->trueEnvironments() ){
     for( MeshMaterial* mat : true_env->trueMaterials() ){
@@ -961,10 +972,9 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat,
 
       info(4) << "TransformCells (V3) is_add?=" << is_add << " indexer=" << indexer->name();
 
-      _computeCellsToTransform(work_info,mat,is_add);
+      _computeCellsToTransform(work_info,mat);
 
-      indexer->transformCellsV2(work_info.cells_to_transform,work_info.pure_local_ids,
-                                work_info.partial_indexes,is_add,is_verbose);
+      indexer->transformCellsV2(work_info.toTransformCellsArgs());
 
       info(4) << "NB_MAT_TRANSFORM=" << work_info.pure_local_ids.size() << " name=" << mat->name();
 
@@ -990,9 +1000,9 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat,
  */
 void AllEnvData::IncrementalOneMaterialModifier::
 _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,
-                                     bool is_add, WorkInfo& work_info)
+                                     WorkInfo& work_info)
 {
-  bool is_verbose = traceMng()->verbosityLevel()>=5;
+  const bool is_add = work_info.is_add;
 
   for( const MeshEnvironment* env : m_material_mng->trueEnvironments() ){
     // Ne traite pas le milieu en cours de modification.
@@ -1006,10 +1016,8 @@ _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,
 
     info(4) << "TransformCells (V2) is_add?=" << is_add << " indexer=" << indexer->name();
 
-    _computeCellsToTransform(work_info,is_add);
-
-    indexer->transformCellsV2(work_info.cells_to_transform,work_info.pure_local_ids,
-                            work_info.partial_indexes,is_add,is_verbose);
+    _computeCellsToTransform(work_info);
+    indexer->transformCellsV2(work_info.toTransformCellsArgs());
 
     info(4) << "NB_ENV_TRANSFORM=" << work_info.pure_local_ids.size()
             << " name=" << env->name();
@@ -1024,12 +1032,13 @@ _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,
 /*---------------------------------------------------------------------------*/
 
 void AllEnvData::IncrementalOneMaterialModifier::
-_computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat, bool is_add)
+_computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat)
 {
   const MeshEnvironment* env = mat->trueEnvironment();
   const Int16 env_id = env->componentId();
   const VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
   CellGroup all_cells = m_material_mng->mesh()->allCells();
+  bool is_add = work_info.is_add;
 
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
 
@@ -1053,10 +1062,11 @@ _computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat, bool is_a
 /*---------------------------------------------------------------------------*/
 
 void AllEnvData::IncrementalOneMaterialModifier::
-_computeCellsToTransform(WorkInfo& work_info, bool is_add)
+_computeCellsToTransform(WorkInfo& work_info)
 {
   const VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
   CellGroup all_cells = m_material_mng->mesh()->allCells();
+  bool is_add = work_info.is_add;
 
   ENUMERATE_(Cell,icell,all_cells){
     bool do_transform = false;

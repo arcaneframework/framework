@@ -359,25 +359,25 @@ _transformPartialToPure(Int32ConstArrayView nb_env_per_cell,
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-transformCellsV2(ConstArrayView<bool> is_transform,
-                 Int32Array& pure_local_ids,
-                 Int32Array& partial_indexes,
-                 bool is_add_operation,bool is_verbose)
+transformCellsV2(const TransformCellsArgs& args)
 {
-  if (is_add_operation)
-    _transformPureToPartialV2(is_transform,pure_local_ids,partial_indexes,is_verbose);
+  if (args.is_add_operation)
+    _transformPureToPartialV2(args);
   else
-    _transformPartialToPureV2(is_transform,pure_local_ids,partial_indexes,is_verbose);
+    _transformPartialToPureV2(args);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-_transformPureToPartialV2(ConstArrayView<bool> is_transform,
-                          Int32Array& pure_local_ids,Int32Array& partial_indexes,
-                          bool is_verbose)
+_transformPureToPartialV2(const TransformCellsArgs& args)
 {
+  ConstArrayView<bool> is_transform = args.cells_to_transform;
+  Int32Array& pure_local_ids = args.pure_local_ids;
+  Int32Array& partial_indexes = args.partial_indexes;
+  bool is_verbose = args.is_verbose;
+
   Integer nb = nbItem();
   for( Integer i=0; i<nb; ++i ){
     MatVarIndex mvi = m_matvar_indexes[i];
@@ -406,10 +406,13 @@ _transformPureToPartialV2(ConstArrayView<bool> is_transform,
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-_transformPartialToPureV2(ConstArrayView<bool> is_transform,
-                          Int32Array& pure_local_ids,Int32Array& partial_indexes,
-                          bool is_verbose)
+_transformPartialToPureV2(const TransformCellsArgs& args)
 {
+  ConstArrayView<bool> is_transform = args.cells_to_transform;
+  Int32Array& pure_local_ids = args.pure_local_ids;
+  Int32Array& partial_indexes = args.partial_indexes;
+  bool is_verbose = args.is_verbose;
+
   Integer nb = nbItem();
   for( Integer i=0; i<nb; ++i ){
     MatVarIndex mvi = m_matvar_indexes[i];
