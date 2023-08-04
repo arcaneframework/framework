@@ -1027,16 +1027,24 @@ void AllEnvData::IncrementalOneMaterialModifier::
 _computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat, bool is_add)
 {
   const MeshEnvironment* env = mat->trueEnvironment();
-  const VariableCellInt32& cells_nb_mat = env->m_nb_mat_per_cell;
+  const Int16 env_id = env->componentId();
   const VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
   CellGroup all_cells = m_material_mng->mesh()->allCells();
 
+  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+
   ENUMERATE_(Cell,icell,all_cells){
     bool do_transform = false;
-    if (is_add)
-      do_transform = cells_nb_env[icell]>1 || cells_nb_mat[icell]>1;
-    else
-      do_transform = cells_nb_env[icell]==1 && cells_nb_mat[icell]==1;
+    if (is_add){
+      do_transform = cells_nb_env[icell] > 1;
+      if (!do_transform)
+        do_transform = connectivity->cellNbMaterial(icell,env_id) > 1;
+    }
+    else{
+      do_transform = cells_nb_env[icell] == 1;
+      if (do_transform)
+        do_transform = connectivity->cellNbMaterial(icell,env_id) == 1;
+    }
     work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
   }
 }
@@ -1053,9 +1061,9 @@ _computeCellsToTransform(WorkInfo& work_info, bool is_add)
   ENUMERATE_(Cell,icell,all_cells){
     bool do_transform = false;
     if (is_add)
-      do_transform = cells_nb_env[icell]>1;
+      do_transform = cells_nb_env[icell] > 1;
     else
-      do_transform = cells_nb_env[icell]==1;
+      do_transform = cells_nb_env[icell] == 1;
     work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
   }
 }
