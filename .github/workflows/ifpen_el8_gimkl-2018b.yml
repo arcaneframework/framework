@@ -48,6 +48,8 @@ env:
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
   CT_OPTS: "--timeout 300 --output-on-failure"
+  # For intel MPI to fix errors appearing in July 2023
+  I_MPI_SHM_LMT: shm
 
 jobs:
   arccon-install:
