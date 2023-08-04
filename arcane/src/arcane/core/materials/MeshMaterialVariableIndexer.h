@@ -107,6 +107,13 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
 
  private:
 
+  void transformCellsV2(ConstArrayView<bool> is_transform,
+                        Int32Array& pure_local_ids,
+                        Int32Array& partial_indexes,
+                        bool is_add_operation,bool is_verbose);
+
+ private:
+
   //! Index de cette instance dans la liste des indexeurs.
   Integer m_index;
 
@@ -149,6 +156,15 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
                                Int32Array& pure_local_ids,
                                Int32Array& partial_indexes,
                                bool is_env,bool is_verbose);
+
+  void _transformPureToPartialV2(ConstArrayView<bool> is_transform,
+                                 Int32Array& pure_local_ids,
+                                 Int32Array& partial_indexes,
+                                 bool is_verbose);
+  void _transformPartialToPureV2(ConstArrayView<bool> is_transform,
+                                 Int32Array& pure_local_ids,
+                                 Int32Array& partial_indexes,
+                                 bool is_verbose);
 };
 
 /*---------------------------------------------------------------------------*/

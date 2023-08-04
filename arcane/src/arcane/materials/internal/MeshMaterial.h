@@ -142,6 +142,7 @@ class MeshMaterial
   void resizeItemsInternal(Integer nb_item);
   MeshComponentData* componentData() { return &m_data; }
   MeshEnvironment* trueEnvironment() { return m_environment; }
+  const MeshEnvironment* trueEnvironment() const { return m_environment; }
   //@}
 
  private:

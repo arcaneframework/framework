@@ -355,6 +355,91 @@ _transformPartialToPure(Int32ConstArrayView nb_env_per_cell,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableIndexer::
+transformCellsV2(ConstArrayView<bool> is_transform,
+                 Int32Array& pure_local_ids,
+                 Int32Array& partial_indexes,
+                 bool is_add_operation,bool is_verbose)
+{
+  if (is_add_operation)
+    _transformPureToPartialV2(is_transform,pure_local_ids,partial_indexes,is_verbose);
+  else
+    _transformPartialToPureV2(is_transform,pure_local_ids,partial_indexes,is_verbose);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableIndexer::
+_transformPureToPartialV2(ConstArrayView<bool> is_transform,
+                          Int32Array& pure_local_ids,Int32Array& partial_indexes,
+                          bool is_verbose)
+{
+  Integer nb = nbItem();
+  for( Integer i=0; i<nb; ++i ){
+    MatVarIndex mvi = m_matvar_indexes[i];
+    if (mvi.arrayIndex()!=0)
+      continue;
+    // Comme la maille est pure, le localId() est dans \a mvi
+    Int32 local_id = mvi.valueIndex();
+    bool do_transform = is_transform[local_id];
+    if (do_transform){
+      pure_local_ids.add(local_id);
+      Int32 current_index = m_max_index_in_multiple_array+1;
+      partial_indexes.add(current_index);
+      //TODO: regarder s'il faut faire +1 ou -1 pour m_max_index_in_multiple_array
+      //TODO: prendre le premier var_index libre une fois que la liste des index libres existera
+      m_matvar_indexes[i] = MatVarIndex(m_index+1,current_index);
+      ++m_max_index_in_multiple_array;
+      if (is_verbose)
+        info() << "Transform pure cell to partial cell i=" << i
+               << " local_id=" << mvi.valueIndex()
+               << " var_index =" << m_matvar_indexes[i].valueIndex();
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableIndexer::
+_transformPartialToPureV2(ConstArrayView<bool> is_transform,
+                          Int32Array& pure_local_ids,Int32Array& partial_indexes,
+                          bool is_verbose)
+{
+  Integer nb = nbItem();
+  for( Integer i=0; i<nb; ++i ){
+    MatVarIndex mvi = m_matvar_indexes[i];
+    if (mvi.arrayIndex()==0)
+      continue;
+    Int32 local_id = m_local_ids[i];
+    Int32 var_index = mvi.valueIndex();
+    bool do_transform = is_transform[local_id];
+    // Teste si on transforme la maille partielle en maille pure.
+    // Pour un milieu, c'est le cas s'il n'y a plus qu'un milieu.
+    // Pour un matériau, c'est le cas s'il y a plus qu'un matériau et un milieu.
+    if (do_transform){
+      pure_local_ids.add(local_id);
+      partial_indexes.add(var_index);
+
+      m_matvar_indexes[i] = MatVarIndex(0,local_id);
+
+      // TODO: ajouter le var_index à la liste des index libres.
+
+      if (is_verbose)
+        info() << "Transform partial cell to pure cell i=" << i
+               << " local_id=" << local_id
+               << " var_index =" << var_index;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MeshMaterialVariableIndexer::
 checkValid()
 {
