@@ -32,12 +32,49 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ComponentCellEnumerator::
+ComponentCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
+                        ConstArrayView<MatVarIndex> matvar_indexes,
+                        IMeshComponent* component)
+: m_index(0)
+, m_size(items.size())
+, m_items(items)
+, m_matvar_indexes(matvar_indexes)
+, m_component(component)
+{
+#ifdef ARCANE_CHECK
+  if (m_index<m_size)
+    _check();
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentCellEnumerator::
+ComponentCellEnumerator(const ComponentItemVectorView& v)
+: ComponentCellEnumerator(v._itemsInternalView(),v._matvarIndexes(),v.component())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MatCellEnumerator::
+MatCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
+                  ConstArrayView<MatVarIndex> matvar_indexes,
+                  IMeshComponent* component)
+: ComponentCellEnumerator(items,matvar_indexes,component)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MatCellEnumerator MatCellEnumerator::
 create(IMeshMaterial* mat)
 {
-  IMeshComponentInternal* mci = mat->_internalApi();
-  return MatCellEnumerator(mci->itemsInternalView(),
-                           mci->variableIndexer()->matvarIndexes(),mat);
+  return MatCellEnumerator(mat->view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -55,7 +92,7 @@ create(const MatCellVector& miv)
 MatCellEnumerator MatCellEnumerator::
 create(MatCellVectorView v)
 {
-  return MatCellEnumerator(v._itemsInternalView(),v._matvarIndexes(),v.component());
+  return MatCellEnumerator(v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -64,11 +101,21 @@ create(MatCellVectorView v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+EnvCellEnumerator::
+EnvCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
+                  ConstArrayView<MatVarIndex> matvar_indexes,
+                  IMeshComponent* component)
+: ComponentCellEnumerator(items,matvar_indexes,component)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 EnvCellEnumerator EnvCellEnumerator::
 create(IMeshEnvironment* env)
 {
-  IMeshComponentInternal* mci = env->_internalApi();
-  return EnvCellEnumerator(mci->itemsInternalView(),mci->variableIndexer()->matvarIndexes(),env);
+  return EnvCellEnumerator(env->view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -86,7 +133,7 @@ create(const EnvCellVector& miv)
 EnvCellEnumerator EnvCellEnumerator::
 create(EnvCellVectorView v)
 {
-  return EnvCellEnumerator(v._itemsInternalView(),v._matvarIndexes(),v.component());
+  return EnvCellEnumerator(v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -173,10 +220,7 @@ create(const CellGroup& v)
 ComponentCellEnumerator ComponentCellEnumerator::
 create(IMeshComponent* component)
 {
-  IMeshComponentInternal* mci = component->_internalApi();
-  MeshMaterialVariableIndexer* vi = mci->variableIndexer();
-
-  return ComponentCellEnumerator(mci->itemsInternalView(),vi->matvarIndexes(),component);
+  return ComponentCellEnumerator(component->view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -194,8 +238,7 @@ create(const ComponentItemVector& v)
 ComponentCellEnumerator ComponentCellEnumerator::
 create(ComponentItemVectorView v)
 {
-  return ComponentCellEnumerator(v._itemsInternalView(),v._matvarIndexes(),
-                                 v.component());
+  return ComponentCellEnumerator(v);
 }
 
 /*---------------------------------------------------------------------------*/

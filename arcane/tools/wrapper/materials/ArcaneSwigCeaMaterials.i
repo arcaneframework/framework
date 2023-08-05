@@ -15,6 +15,7 @@
 #include "arcane/core/materials/ComponentItemVectorView.h"
 #include "arcane/core/materials/CellToAllEnvCellConverter.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
+#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
 using namespace Arcane;

@@ -22,7 +22,6 @@
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/materials/MatItem.h"
-#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/core/materials/IEnumeratorTracer.h"
 
 #include "arcane/EnumeratorTraceWrapper.h"
@@ -114,23 +113,26 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
 class ARCANE_CORE_EXPORT ComponentCellEnumerator
 {
   friend class EnumeratorTracer;
+
  protected:
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   ComponentCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
                           ConstArrayView<MatVarIndex> matvar_indexes,
-                          IMeshComponent* component)
-  : m_index(0), m_size(items.size()), m_items(items)
-  , m_matvar_indexes(matvar_indexes), m_component(component)
-  {
-#ifdef ARCANE_CHECK
-    if (m_index<m_size)
-      _check();
-#endif
-  }
+                          IMeshComponent* component);
+
+ protected:
+
+  explicit ComponentCellEnumerator(const ComponentItemVectorView& v);
+
  public:
+
   static ComponentCellEnumerator create(IMeshComponent* component);
   static ComponentCellEnumerator create(const ComponentItemVector& v);
   static ComponentCellEnumerator create(ComponentItemVectorView v);
+
  public:
+
   void operator++()
   {
     ++m_index;
@@ -160,6 +162,7 @@ class ARCANE_CORE_EXPORT ComponentCellEnumerator
   Int32 _varValueIndex() const { return m_matvar_indexes[m_index].valueIndex(); }
 
  protected:
+
   void _check() const
   {
     ComponentItemInternal* ii = m_items[m_index];
@@ -175,9 +178,11 @@ class ARCANE_CORE_EXPORT ComponentCellEnumerator
       ARCANE_FATAL("Bad 'var_value_index' for ComponentCell matvar='{0}' registered='{1}' index={2}",
                    mvi,m_matvar_indexes[m_index],m_index);
   }
+
  protected:
-  Integer m_index;
-  Integer m_size;
+
+  Int32 m_index;
+  Int32 m_size;
   ConstArrayView<ComponentItemInternal*> m_items;
   ConstArrayView<MatVarIndex> m_matvar_indexes;
   IMeshComponent* m_component;
@@ -192,16 +197,25 @@ class ARCANE_CORE_EXPORT MatCellEnumerator
 : public ComponentCellEnumerator
 {
  protected:
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   MatCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
                     ConstArrayView<MatVarIndex> matvar_indexes,
-                    IMeshComponent* component)
-  : ComponentCellEnumerator(items,matvar_indexes,component)
+                    IMeshComponent* component);
+
+ protected:
+
+  explicit MatCellEnumerator(const ComponentItemVectorView& v)
+  : ComponentCellEnumerator(v)
   {
   }
+
  public:
+
   static MatCellEnumerator create(IMeshMaterial* mat);
   static MatCellEnumerator create(const MatCellVector& miv);
   static MatCellEnumerator create(MatItemVectorView v);
+
  public:
 
   MatCell operator*() const
@@ -224,17 +238,27 @@ class ARCANE_CORE_EXPORT EnvCellEnumerator
 : public ComponentCellEnumerator
 {
  protected:
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   EnvCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
                     ConstArrayView<MatVarIndex> matvar_indexes,
-                    IMeshComponent* component)
-  : ComponentCellEnumerator(items,matvar_indexes,component)
+                    IMeshComponent* component);
+
+ protected:
+
+  explicit EnvCellEnumerator(const ComponentItemVectorView& v)
+  : ComponentCellEnumerator(v)
   {
   }
+
  public:
+
   static EnvCellEnumerator create(IMeshEnvironment* mat);
   static EnvCellEnumerator create(const EnvCellVector& miv);
   static EnvCellEnumerator create(EnvItemVectorView v);
+
  public:
+
   EnvCell operator*() const
   {
 #ifdef ARCANE_CHECK
