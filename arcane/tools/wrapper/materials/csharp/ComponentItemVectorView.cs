@@ -7,10 +7,10 @@ namespace Arcane.Materials
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ComponentItemVectorView
   {
-    MatVarIndexConstArrayView m_matvar_indexes_view;
-    ComponentItemInternalPtrConstArrayView m_items_internal_main_view;
-    Int32ConstArrayView m_items_local_id_view;
-    IntPtr m_component; //IMeshComponent*
+    internal MatVarIndexConstArrayView m_matvar_indexes_view;
+    internal ComponentItemInternalPtrConstArrayView m_items_internal_main_view;
+    internal Int32ConstArrayView m_items_local_id_view;
+    internal IntPtr m_component; //IMeshComponent*
 
     public Int32 NbItem() { return m_matvar_indexes_view.m_size; }
   }
