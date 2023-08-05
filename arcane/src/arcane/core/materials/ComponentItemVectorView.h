@@ -61,6 +61,10 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   template<typename DataType> friend class
   MaterialVariableArrayTraits;
 
+ public:
+
+  ComponentItemVectorView() = default;
+
  protected:
 
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
@@ -130,10 +134,13 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
  private:
 
+  // NOTE: Cette classe est wrappé directement en C#.
+  // Si on modifie les champs de cette classe il faut modifier le type correspondant
+  // dans le wrappeur.
   ConstArrayView<MatVarIndex> m_matvar_indexes_view;
   ConstArrayView<ComponentItemInternal*> m_items_internal_main_view;
   ConstArrayView<Int32> m_items_local_id_view;
-  IMeshComponent* m_component;
+  IMeshComponent* m_component = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -150,6 +157,10 @@ class ARCANE_CORE_EXPORT MatItemVectorView
   friend class MeshMaterial;
   template<typename ViewType,typename LambdaType>
   friend class LambdaMatItemRangeFunctorT;
+
+ public:
+
+  MatItemVectorView() = default;
 
  private:
 
@@ -200,6 +211,10 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
   friend class MeshEnvironment;
   template<typename ViewType,typename LambdaType>
   friend class LambdaMatItemRangeFunctorT;
+
+ public:
+
+  EnvItemVectorView() = default;
 
  private:
 

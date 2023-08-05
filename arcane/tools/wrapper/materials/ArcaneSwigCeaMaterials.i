@@ -18,8 +18,36 @@
 #include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
+namespace Arcane::Materials
+{
+  // Cette classe sert de type de retour pour wrapper la classe 'ComponentItemVectorView'
+  class ComponentItemVectorViewPOD
+  {
+   public:
+    ConstArrayView<MatVarIndex> m_matvar_indexes_view;
+    ConstArrayView<ComponentItemInternal*> m_items_internal_main_view;
+    ConstArrayView<Int32> m_items_local_id_view;
+    IMeshComponent* m_component;
+  };
+}
+
 using namespace Arcane;
 using namespace Arcane::Materials;
+
+namespace
+{
+  ComponentItemVectorViewPOD _createComponentItemVectorViewPOD(const ComponentItemVectorView& view)
+  {
+    ComponentItemVectorViewPOD pod;
+    size_t size1 = sizeof(ComponentItemVectorViewPOD);
+    size_t size2 = sizeof(ComponentItemVectorView);
+    if (size1!=size2)
+      ARCANE_FATAL("Bad size for POD copy size1={0} size2={1}",size1,size2);
+    std::memcpy(&pod,&view,size1);
+    return pod;
+  }
+}
+
 %}
 
 #define ARCANE_DOTNET
