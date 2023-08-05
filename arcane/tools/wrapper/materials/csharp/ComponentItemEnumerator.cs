@@ -13,22 +13,17 @@ namespace Arcane.Materials
     internal MatVarIndex* m_matvar_indexes;
     internal IntPtr m_component; // IMeshComponent* m_component;
     internal T m_true_type;
-    internal ComponentItemEnumerator(ComponentItemInternal** items, MatVarIndex* matvar_indexes, Integer size, T true_type)
+    internal ComponentItemEnumerator(ComponentItemVectorView view, T true_type)
     {
-      m_items = items;
-      m_matvar_indexes = matvar_indexes;
+      m_items = view.m_items_internal_main_view.m_ptr;
+      m_matvar_indexes = view.m_matvar_indexes_view.m_ptr;
       m_index = -1;
-      m_size = size;
-      m_component = IntPtr.Zero; // TODO: mettre la bonne valeur
+      m_size = view.m_items_internal_main_view.m_size;
+      m_component = view.m_component;
       m_true_type = true_type;
     }
-    internal ComponentItemEnumerator(ComponentItemInternalPtrConstArrayView items, MatVarIndexConstArrayView matvar_indexes, T true_type)
-    : this(items.m_ptr,matvar_indexes.m_ptr,items.m_size,true_type)
-    {
-    }
-
     internal ComponentItemEnumerator(IMeshComponent mesh_component, T true_type)
-      : this(mesh_component._internalApi().ItemsInternalView(),mesh_component._internalApi().VariableIndexer().MatvarIndexes(),true_type)
+    : this(mesh_component.View(),true_type)
     {
     }
     public bool MoveNext()
@@ -51,9 +46,7 @@ namespace Arcane.Materials
   {
     public static ComponentItemEnumerator<ComponentItem> Create(IMeshComponent mesh_component)
     {
-      var indexes = mesh_component._internalApi().VariableIndexer().MatvarIndexes();
-      var items = mesh_component._internalApi().ItemsInternalView();
-      return new ComponentItemEnumerator<ComponentItem>(items.m_ptr, indexes.m_ptr, items.m_size, new ComponentItem(null));
+      return new ComponentItemEnumerator<ComponentItem>(mesh_component, new ComponentItem(null));
     }
 
     public static ComponentItemEnumerator<ComponentItem> Create(IMeshComponent mesh_component, ComponentItem item)

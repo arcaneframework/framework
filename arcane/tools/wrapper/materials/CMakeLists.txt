@@ -9,6 +9,15 @@ set(ARCANE_SWIG_CEA_MATERIALS_FILES
   MeshMaterialVariable.i
 )
 
+set(ARCANE_SWIG_CEA_MATERIALS_CSHARP_FILES
+  Component
+  ComponentItem
+  ComponentItemEnumerator
+  ComponentItemInternal
+  ComponentItemVectorView
+  MatVarIndex
+)
+
 # ----------------------------------------------------------------------------
 
 install(FILES
@@ -21,6 +30,7 @@ arcane_wrapper_add_swig_target(NAME cea_materials
   NAMESPACE_NAME Arcane.Materials
   DLL_NAME Arcane.Cea.Materials
   SWIG_TARGET_DEPENDS core
+  CSHARP_SOURCES ${ARCANE_SWIG_CEA_MATERIALS_CSHARP_FILES}
   )
 
 target_link_libraries(arcane_dotnet_wrapper_cea_materials PUBLIC arcane_core)
