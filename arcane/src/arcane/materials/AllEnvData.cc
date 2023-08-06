@@ -71,6 +71,10 @@ class AllEnvData::IncrementalOneMaterialModifier
   void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat);
   void _computeCellsToTransform(const MeshMaterial* mat);
   void _computeCellsToTransform();
+  void _removeItemsFromEnvironment(MeshEnvironment* env,MeshMaterial* mat,
+                                   Int32ConstArrayView local_ids,bool update_env_indexer);
+  void _addItemsToEnvironment(MeshEnvironment* env,MeshMaterial* mat,
+                              Int32ConstArrayView local_ids,bool update_env_indexer);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -605,7 +609,6 @@ _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
   functor::apply(m_material_mng,&MeshMaterialMng::visitVariables,func);
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -858,11 +861,12 @@ apply(MaterialModifierOperation* operation)
 
     if (is_add){
       mat->cells().addItems(cells_unchanged_in_env);
+      _addItemsToEnvironment(true_env,true_mat,cells_unchanged_in_env,false);
     }
     else{
       mat->cells().removeItems(cells_unchanged_in_env);
+      _removeItemsFromEnvironment(true_env,true_mat,cells_unchanged_in_env,false);
     }
-    true_env->updateItemsDirect(m_all_env_data->m_nb_env_per_cell,true_mat,cells_unchanged_in_env,is_add,false);
 
     // Prend pour \a ids uniquement la liste des mailles
     // qui n'appartenaient pas encore au milieu dans lequel on
@@ -909,13 +913,14 @@ apply(MaterialModifierOperation* operation)
     mat->cells().addItems(ids);
     if (need_update_env)
       env->cells().addItems(ids);
+    _addItemsToEnvironment(true_env,true_mat,ids,need_update_env);
   }
   else{
     mat->cells().removeItems(ids);
     if (need_update_env)
       env->cells().removeItems(ids);
+    _removeItemsFromEnvironment(true_env,true_mat,ids,need_update_env);
   }
-  true_env->updateItemsDirect(m_all_env_data->m_nb_env_per_cell,true_mat,ids,is_add,need_update_env);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1067,6 +1072,89 @@ _computeCellsToTransform()
     else
       do_transform = cells_nb_env[icell] == 1;
     m_work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Supprime les mailles d'un matériau du milieu.
+ *
+ * Supprime les mailles données par \a local_ids du matériau \a mat
+ * du milieu. L'indexeur du matériau est mis à jour et si \a update_env_indexer
+ * est vrai, celui du milieu aussi (ce qui signifie que le milieu disparait
+ * des mailles \a local_ids).
+ *
+ * TODO: optimiser cela en ne parcourant pas toutes les mailles
+ * matériaux du milieu (il faut supprimer removed_local_ids_filter).
+ * Si on connait l'indice de chaque maille dans la liste des MatVarIndex
+ * de l'indexeur, on peut directement taper dedans.
+ */
+void AllEnvData::IncrementalOneMaterialModifier::
+_removeItemsFromEnvironment(MeshEnvironment* env,MeshMaterial* mat,
+                            Int32ConstArrayView local_ids,bool update_env_indexer)
+{
+  info(4) << "MeshEnvironment::removeItemsDirect mat=" << mat->name();
+
+  IItemFamily* cell_family = env->cells().itemFamily();
+
+  Integer nb_to_remove = local_ids.size();
+
+  UniqueArray<bool> removed_local_ids_filter(cell_family->maxLocalId(),false);
+
+  // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
+  for( Integer i=0; i<nb_to_remove; ++i ){
+    Int32 lid = local_ids[i];
+    CellLocalId cell_lid(lid);
+    --env->m_nb_mat_per_cell[cell_lid];
+    removed_local_ids_filter[lid] = true;
+  }
+  env->addToTotalNbCellMat(-nb_to_remove);
+
+  mat->variableIndexer()->endUpdateRemove(removed_local_ids_filter,nb_to_remove);
+
+  if (update_env_indexer){
+    // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
+    // Cela n'est possible que si le nombre de matériaux du milieu
+    // est supérieur ou égal à 2 (car sinon le matériau et le milieu
+    // ont le même indexeur)
+    env->variableIndexer()->endUpdateRemove(removed_local_ids_filter,nb_to_remove);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ajoute les mailles d'un matériau du milieu.
+ *
+ * Ajoute les mailles données par \a local_ids au matériau \a mat
+ * du milieu. L'indexeur du matériau est mis à jour et si \a update_env_indexer
+ * est vrai, celui du milieu aussi (ce qui signifie que le milieu apparait
+ * dans les mailles \a local_ids).
+ */
+void AllEnvData::IncrementalOneMaterialModifier::
+_addItemsToEnvironment(MeshEnvironment* env,MeshMaterial* mat,
+                       Int32ConstArrayView local_ids,bool update_env_indexer)
+{
+  info(4) << "MeshEnvironment::addItemsDirect" << " mat=" << mat->name();
+
+  const VariableCellInt32& nb_env_per_cell = m_all_env_data->m_nb_env_per_cell;
+  MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
+  Int32 nb_to_add = local_ids.size();
+
+  // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
+  for( Int32 lid : local_ids )
+    ++env->m_nb_mat_per_cell[CellLocalId{lid}];
+  env->addToTotalNbCellMat(nb_to_add);
+
+  env->_addItemsToIndexer(nb_env_per_cell,var_indexer,local_ids);
+
+  if (update_env_indexer){
+    // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
+    // Cela n'est possible que si le nombre de matériaux du milieu
+    // est supérieur ou égal à 2 (car sinon le matériau et le milieu
+    // ont le même indexeur)
+    env->_addItemsToIndexer(nb_env_per_cell,env->variableIndexer(),local_ids);
   }
 }
 

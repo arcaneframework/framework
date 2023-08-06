@@ -155,6 +155,7 @@ class MeshEnvironment
 
   //! Nombre total de mailles pour tous les matériaux
   Integer totalNbCellMat() const { return m_total_nb_cell_mat; }
+  void addToTotalNbCellMat(Int32 v) { m_total_nb_cell_mat += v; }
 
   void resizeItemsInternal(Integer nb_item);
   void computeMaterialIndexes(ComponentItemInternalData* item_internal_data);
@@ -197,13 +198,17 @@ class MeshEnvironment
  private:
   
   void _changeIds(MeshComponentData* component_data,Int32ConstArrayView old_to_new_ids);
-  void _addItemsToIndexer(const VariableCellInt32& nb_env_per_cell,
-                          MeshMaterialVariableIndexer* var_indexer,
-                          Int32ConstArrayView local_ids);
   void _removeItemsDirect(MeshMaterial* mat,Int32ConstArrayView local_ids,
                           bool update_env_indexer);
   void _addItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
                        Int32ConstArrayView local_ids,bool update_env_indexer);
+
+ public:
+
+  // Temporairement publique pour IncrementalOneMaterialModifier
+  void _addItemsToIndexer(const VariableCellInt32& nb_env_per_cell,
+                          MeshMaterialVariableIndexer* var_indexer,
+                          Int32ConstArrayView local_ids);
 };
 
 /*---------------------------------------------------------------------------*/
