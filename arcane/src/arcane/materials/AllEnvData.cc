@@ -44,31 +44,14 @@ class AllEnvData::IncrementalOneMaterialModifier
 {
  public:
 
-  struct WorkInfo
-  {
-    using TransformCellsArgs = MeshMaterialVariableIndexer::TransformCellsArgs;
-
-    UniqueArray<Int32> pure_local_ids;
-    UniqueArray<Int32> partial_indexes;
-    UniqueArray<bool> cells_to_transform;
-    bool is_verbose = false;
-    bool is_add = false;
-
-   public:
-
-    TransformCellsArgs toTransformCellsArgs()
-    {
-      return TransformCellsArgs(cells_to_transform,pure_local_ids,
-                                partial_indexes,is_add,is_verbose);
-    }
- };
 
  public:
 
-  IncrementalOneMaterialModifier(AllEnvData* all_env_data)
+  IncrementalOneMaterialModifier(AllEnvData* all_env_data, IncrementalWorkInfo& work_info)
   : TraceAccessor(all_env_data->traceMng())
   , m_all_env_data(all_env_data)
   , m_material_mng(all_env_data->m_material_mng)
+  , m_work_info(work_info)
   {
   }
 
@@ -80,13 +63,18 @@ class AllEnvData::IncrementalOneMaterialModifier
 
   AllEnvData* m_all_env_data = nullptr;
   MeshMaterialMng* m_material_mng = nullptr;
+  IncrementalWorkInfo& m_work_info;
 
  private:
 
-  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env, WorkInfo& work_info);
-  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, WorkInfo& work_info);
-  void _computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat);
-  void _computeCellsToTransform(WorkInfo& work_info);
+  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env);
+  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat);
+  void _computeCellsToTransform(const MeshMaterial* mat);
+  void _computeCellsToTransform();
+  void _removeItemsFromEnvironment(MeshEnvironment* env,MeshMaterial* mat,
+                                   Int32ConstArrayView local_ids,bool update_env_indexer);
+  void _addItemsToEnvironment(MeshEnvironment* env,MeshMaterial* mat,
+                              Int32ConstArrayView local_ids,bool update_env_indexer);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -621,7 +609,6 @@ _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
   functor::apply(m_material_mng,&MeshMaterialMng::visitVariables,func);
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -640,14 +627,15 @@ updateMaterialDirect(MaterialModifierOperation* operation)
 /*---------------------------------------------------------------------------*/
 
 void AllEnvData::
-updateMaterialIncremental(MaterialModifierOperation* operation)
+updateMaterialIncremental(MaterialModifierOperation* operation,
+                          IncrementalWorkInfo& work_info)
 {
   // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
   // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
   if (arcaneIsCheck())
     operation->filterIds();
 
-  IncrementalOneMaterialModifier modifier(this);
+  IncrementalOneMaterialModifier modifier(this,work_info);
   modifier.apply(operation);
 }
 
@@ -834,10 +822,6 @@ apply(MaterialModifierOperation* operation)
 
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
 
-  WorkInfo work_info;
-  work_info.cells_to_transform.resize(m_material_mng->mesh()->cellFamily()->maxLocalId());
-  work_info.is_verbose = traceMng()->verbosityLevel()>=5;
-  work_info.is_add = is_add;
 
   Int32UniqueArray cells_changed_in_env;
 
@@ -877,11 +861,12 @@ apply(MaterialModifierOperation* operation)
 
     if (is_add){
       mat->cells().addItems(cells_unchanged_in_env);
+      _addItemsToEnvironment(true_env,true_mat,cells_unchanged_in_env,false);
     }
     else{
       mat->cells().removeItems(cells_unchanged_in_env);
+      _removeItemsFromEnvironment(true_env,true_mat,cells_unchanged_in_env,false);
     }
-    true_env->updateItemsDirect(m_all_env_data->m_nb_env_per_cell,true_mat,cells_unchanged_in_env,is_add,false);
 
     // Prend pour \a ids uniquement la liste des mailles
     // qui n'appartenaient pas encore au milieu dans lequel on
@@ -916,9 +901,9 @@ apply(MaterialModifierOperation* operation)
   // d'ajout) ou les mailles partielles en mailles pures (en cas de
   // suppression).
   info(4) << "Transform PartialPure for material name=" << true_mat->name();
-  _switchComponentItemsForMaterials(true_mat,work_info);
+  _switchComponentItemsForMaterials(true_mat);
   info(4) << "Transform PartialPure for environment name=" << env->name();
-  _switchComponentItemsForEnvironments(env,work_info);
+  _switchComponentItemsForEnvironments(env);
 
   // Si je suis mono-mat, alors mat->cells()<=>env->cells() et il ne faut
   // mettre à jour que l'un des deux groupes.
@@ -928,13 +913,14 @@ apply(MaterialModifierOperation* operation)
     mat->cells().addItems(ids);
     if (need_update_env)
       env->cells().addItems(ids);
+    _addItemsToEnvironment(true_env,true_mat,ids,need_update_env);
   }
   else{
     mat->cells().removeItems(ids);
     if (need_update_env)
       env->cells().removeItems(ids);
+    _removeItemsFromEnvironment(true_env,true_mat,ids,need_update_env);
   }
-  true_env->updateItemsDirect(m_all_env_data->m_nb_env_per_cell,true_mat,ids,is_add,need_update_env);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -952,9 +938,9 @@ apply(MaterialModifierOperation* operation)
  * (suppression d'un matériau)
  */
 void AllEnvData::IncrementalOneMaterialModifier::
-_switchComponentItemsForMaterials(const MeshMaterial* modified_mat, WorkInfo& work_info)
+_switchComponentItemsForMaterials(const MeshMaterial* modified_mat)
 {
-  const bool is_add = work_info.is_add;
+  const bool is_add = m_work_info.is_add;
 
   for( MeshEnvironment* true_env : m_material_mng->trueEnvironments() ){
     for( MeshMaterial* mat : true_env->trueMaterials() ){
@@ -962,8 +948,8 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, WorkInfo& wo
       if (mat==modified_mat)
         continue;
 
-      work_info.pure_local_ids.clear();
-      work_info.partial_indexes.clear();
+      m_work_info.pure_local_ids.clear();
+      m_work_info.partial_indexes.clear();
 
       const MeshEnvironment* env = mat->trueEnvironment();
       if (env!=true_env)
@@ -972,13 +958,14 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, WorkInfo& wo
 
       info(4) << "TransformCells (V3) is_add?=" << is_add << " indexer=" << indexer->name();
 
-      _computeCellsToTransform(work_info,mat);
+      _computeCellsToTransform(mat);
 
-      indexer->transformCellsV2(work_info.toTransformCellsArgs());
+      indexer->transformCellsV2(m_work_info.toTransformCellsArgs());
 
-      info(4) << "NB_MAT_TRANSFORM=" << work_info.pure_local_ids.size() << " name=" << mat->name();
+      info(4) << "NB_MAT_TRANSFORM=" << m_work_info.pure_local_ids.size() << " name=" << mat->name();
 
-      m_all_env_data->_copyBetweenPartialsAndGlobals(work_info.pure_local_ids,work_info.partial_indexes,
+      m_all_env_data->_copyBetweenPartialsAndGlobals(m_work_info.pure_local_ids,
+                                                     m_work_info.partial_indexes,
                                                      indexer->index(),is_add);
     }
   }
@@ -999,51 +986,56 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat, WorkInfo& wo
  * en pure (dans le cas de suppression d'un matériau)
  */
 void AllEnvData::IncrementalOneMaterialModifier::
-_switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,
-                                     WorkInfo& work_info)
+_switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env)
 {
-  const bool is_add = work_info.is_add;
+  const bool is_add = m_work_info.is_add;
 
   for( const MeshEnvironment* env : m_material_mng->trueEnvironments() ){
     // Ne traite pas le milieu en cours de modification.
     if (env==modified_env)
       continue;
 
-    work_info.pure_local_ids.clear();
-    work_info.partial_indexes.clear();
+    m_work_info.pure_local_ids.clear();
+    m_work_info.partial_indexes.clear();
 
     MeshMaterialVariableIndexer* indexer = env->variableIndexer();
 
     info(4) << "TransformCells (V2) is_add?=" << is_add << " indexer=" << indexer->name();
 
-    _computeCellsToTransform(work_info);
-    indexer->transformCellsV2(work_info.toTransformCellsArgs());
+    _computeCellsToTransform();
+    indexer->transformCellsV2(m_work_info.toTransformCellsArgs());
 
-    info(4) << "NB_ENV_TRANSFORM=" << work_info.pure_local_ids.size()
+    info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
             << " name=" << env->name();
 
-    m_all_env_data->_copyBetweenPartialsAndGlobals(work_info.pure_local_ids,
-                                                   work_info.partial_indexes,
+    m_all_env_data->_copyBetweenPartialsAndGlobals(m_work_info.pure_local_ids,
+                                                   m_work_info.partial_indexes,
                                                    indexer->index(),is_add);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Calcule les mailles à transformer pour le matériau \at mat.
+ */
 void AllEnvData::IncrementalOneMaterialModifier::
-_computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat)
+_computeCellsToTransform(const MeshMaterial* mat)
 {
   const MeshEnvironment* env = mat->trueEnvironment();
   const Int16 env_id = env->componentId();
   const VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
   CellGroup all_cells = m_material_mng->mesh()->allCells();
-  bool is_add = work_info.is_add;
+  bool is_add = m_work_info.is_add;
 
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
 
   ENUMERATE_(Cell,icell,all_cells){
     bool do_transform = false;
+    // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
+    // plusieurs matériaux dans le milieu.
+    // En cas de supression, on passe de partiel à pure si on est le seul matériau
+    // et le seul milieu.
     if (is_add){
       do_transform = cells_nb_env[icell] > 1;
       if (!do_transform)
@@ -1054,27 +1046,116 @@ _computeCellsToTransform(WorkInfo& work_info, const MeshMaterial* mat)
       if (do_transform)
         do_transform = connectivity->cellNbMaterial(icell,env_id) == 1;
     }
-    work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
+    m_work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Calcule les mailles à transformer lorsqu'on modifie les mailles
+ * d'un milieu.
+ */
 void AllEnvData::IncrementalOneMaterialModifier::
-_computeCellsToTransform(WorkInfo& work_info)
+_computeCellsToTransform()
 {
   const VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
   CellGroup all_cells = m_material_mng->mesh()->allCells();
-  bool is_add = work_info.is_add;
+  const bool is_add = m_work_info.is_add;
 
   ENUMERATE_(Cell,icell,all_cells){
     bool do_transform = false;
+    // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux.
+    // En cas de supression, on passe de partiel à pure si on est le seul milieu.
     if (is_add)
       do_transform = cells_nb_env[icell] > 1;
     else
       do_transform = cells_nb_env[icell] == 1;
-    work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
+    m_work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Supprime les mailles d'un matériau du milieu.
+ *
+ * Supprime les mailles données par \a local_ids du matériau \a mat
+ * du milieu. L'indexeur du matériau est mis à jour et si \a update_env_indexer
+ * est vrai, celui du milieu aussi (ce qui signifie que le milieu disparait
+ * des mailles \a local_ids).
+ *
+ * TODO: optimiser cela en ne parcourant pas toutes les mailles
+ * matériaux du milieu (il faut supprimer removed_local_ids_filter).
+ * Si on connait l'indice de chaque maille dans la liste des MatVarIndex
+ * de l'indexeur, on peut directement taper dedans.
+ */
+void AllEnvData::IncrementalOneMaterialModifier::
+_removeItemsFromEnvironment(MeshEnvironment* env,MeshMaterial* mat,
+                            Int32ConstArrayView local_ids,bool update_env_indexer)
+{
+  info(4) << "MeshEnvironment::removeItemsDirect mat=" << mat->name();
+
+  Int32 nb_to_remove = local_ids.size();
+
+  // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
+  for( Integer i=0; i<nb_to_remove; ++i ){
+    Int32 lid = local_ids[i];
+    CellLocalId cell_lid(lid);
+    --env->m_nb_mat_per_cell[cell_lid];
+    m_work_info.removed_local_ids_filter[lid] = true;
+  }
+  env->addToTotalNbCellMat(-nb_to_remove);
+
+  mat->variableIndexer()->endUpdateRemove(m_work_info.removed_local_ids_filter,nb_to_remove);
+
+  if (update_env_indexer){
+    // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
+    // Cela n'est possible que si le nombre de matériaux du milieu
+    // est supérieur ou égal à 2 (car sinon le matériau et le milieu
+    // ont le même indexeur)
+    env->variableIndexer()->endUpdateRemove(m_work_info.removed_local_ids_filter,nb_to_remove);
+  }
+
+  // Remet \a removed_local_ids_filter à la valeur initiale pour
+  // les prochaines opérations
+  for( Int32 lid : local_ids )
+    m_work_info.removed_local_ids_filter[lid] = false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ajoute les mailles d'un matériau du milieu.
+ *
+ * Ajoute les mailles données par \a local_ids au matériau \a mat
+ * du milieu. L'indexeur du matériau est mis à jour et si \a update_env_indexer
+ * est vrai, celui du milieu aussi (ce qui signifie que le milieu apparait
+ * dans les mailles \a local_ids).
+ */
+void AllEnvData::IncrementalOneMaterialModifier::
+_addItemsToEnvironment(MeshEnvironment* env,MeshMaterial* mat,
+                       Int32ConstArrayView local_ids,bool update_env_indexer)
+{
+  info(4) << "MeshEnvironment::addItemsDirect" << " mat=" << mat->name();
+
+  const VariableCellInt32& nb_env_per_cell = m_all_env_data->m_nb_env_per_cell;
+  MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
+  Int32 nb_to_add = local_ids.size();
+
+  // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
+  for( Int32 lid : local_ids )
+    ++env->m_nb_mat_per_cell[CellLocalId{lid}];
+  env->addToTotalNbCellMat(nb_to_add);
+
+  env->_addItemsToIndexer(nb_env_per_cell,var_indexer,local_ids);
+
+  if (update_env_indexer){
+    // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
+    // Cela n'est possible que si le nombre de matériaux du milieu
+    // est supérieur ou égal à 2 (car sinon le matériau et le milieu
+    // ont le même indexeur)
+    env->_addItemsToIndexer(nb_env_per_cell,env->variableIndexer(),local_ids);
   }
 }
 

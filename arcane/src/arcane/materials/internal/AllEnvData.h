@@ -46,6 +46,36 @@ class AllEnvData
 
  public:
 
+  /*!
+   * \brief Structure de travail utilisée lors de la modification
+   * des constituants (via MeshMaterialModifier)
+   */
+  struct IncrementalWorkInfo
+  {
+    using TransformCellsArgs = MeshMaterialVariableIndexer::TransformCellsArgs;
+
+    UniqueArray<Int32> pure_local_ids;
+    UniqueArray<Int32> partial_indexes;
+    // Filtre indiquant les mailles qui doivent changer de status (Pure<->Partial)
+    // Ce tableau est dimensionné au nombre de mailles.
+    UniqueArray<bool> cells_to_transform;
+    // Filtre indiquant les mailles qui sont supprimées du constituant
+    // Ce tableau est dimensionné au nombre de mailles.
+    UniqueArray<bool> removed_local_ids_filter;
+    bool is_verbose = false;
+    bool is_add = false;
+
+   public:
+
+    TransformCellsArgs toTransformCellsArgs()
+    {
+      return TransformCellsArgs(cells_to_transform, pure_local_ids,
+                                partial_indexes, is_add, is_verbose);
+    }
+  };
+
+ public:
+
   explicit AllEnvData(MeshMaterialMng* mmg);
   ~AllEnvData();
 
@@ -68,7 +98,8 @@ class AllEnvData
 
   void updateMaterialDirect(MaterialModifierOperation* operation);
 
-  void updateMaterialIncremental(MaterialModifierOperation* operation);
+  void updateMaterialIncremental(MaterialModifierOperation* operation,
+                                 IncrementalWorkInfo& work_info);
 
   //! Notification de la fin de création des milieux/matériaux
   void endCreate(bool is_continue);

@@ -419,7 +419,6 @@ _removeItemsDirect(MeshMaterial* mat,Int32ConstArrayView local_ids,
   info(4) << "MeshEnvironment::removeItemsDirect mat=" << mat->name();
 
   IItemFamily* cell_family = cells().itemFamily();
-  CellInfoListView items_internal(cell_family);
 
   Integer nb_to_remove = local_ids.size();
 
@@ -428,8 +427,8 @@ _removeItemsDirect(MeshMaterial* mat,Int32ConstArrayView local_ids,
   // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
   for( Integer i=0; i<nb_to_remove; ++i ){
     Int32 lid = local_ids[i];
-    Cell cell = items_internal[lid];
-    --m_nb_mat_per_cell[cell];
+    CellLocalId cell_lid(lid);
+    --m_nb_mat_per_cell[cell_lid];
     removed_local_ids_filter[lid] = true;
   }
   m_total_nb_cell_mat -= nb_to_remove;
@@ -451,12 +450,12 @@ _removeItemsDirect(MeshMaterial* mat,Int32ConstArrayView local_ids,
 void MeshEnvironment::
 updateItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
                   Int32ConstArrayView local_ids,bool is_add_operation,
-                  bool remove_to_env_indexer)
+                  bool update_env_indexer)
 {
   if (is_add_operation)
-    _addItemsDirect(nb_env_per_cell,mat,local_ids,remove_to_env_indexer);
+    _addItemsDirect(nb_env_per_cell,mat,local_ids,update_env_indexer);
   else
-    _removeItemsDirect(mat,local_ids,remove_to_env_indexer);
+    _removeItemsDirect(mat,local_ids,update_env_indexer);
 }
 
 /*---------------------------------------------------------------------------*/
