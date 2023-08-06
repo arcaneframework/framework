@@ -13,6 +13,7 @@
 
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IData.h"
@@ -183,7 +184,9 @@ _checkMayOptimize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Applique les opérations enregistrées.
+ */
 void MeshMaterialModifierImpl::
 endUpdate()
 {
@@ -219,6 +222,13 @@ endUpdate()
     is_optimization_active = _checkMayOptimize();
   linfo() << "Check optimize ? = " << is_optimization_active;
 
+  // Tableau de travail utilisé lors des modifications incrémentales
+  AllEnvData::IncrementalWorkInfo work_info;
+  if (is_optimization_active && m_use_incremental_recompute){
+    work_info.cells_to_transform.resize(m_material_mng->mesh()->cellFamily()->maxLocalId());
+    work_info.is_verbose = traceMng()->verbosityLevel()>=5;
+  }
+
   if (is_optimization_active){
     for( Operation* op : m_operations.values() ){
       const IMeshMaterial* mat = op->material();
@@ -233,8 +243,10 @@ endUpdate()
       }
       keeped_lids = op->ids();
 
-      if (m_use_incremental_recompute)
-        all_env_data->updateMaterialIncremental(op);
+      if (m_use_incremental_recompute){
+        work_info.is_add = op->isAdd();
+        all_env_data->updateMaterialIncremental(op,work_info);
+      }
       else
         all_env_data->updateMaterialDirect(op);
     }
