@@ -59,6 +59,9 @@ class AllEnvData
     // Filtre indiquant les mailles qui doivent changer de status (Pure<->Partial)
     // Ce tableau est dimensionné au nombre de mailles.
     UniqueArray<bool> cells_to_transform;
+    // Filtre indiquant les mailles qui sont supprimées du constituant
+    // Ce tableau est dimensionné au nombre de mailles.
+    UniqueArray<bool> removed_local_ids_filter;
     bool is_verbose = false;
     bool is_add = false;
 

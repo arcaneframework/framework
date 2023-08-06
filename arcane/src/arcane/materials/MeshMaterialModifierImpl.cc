@@ -225,7 +225,10 @@ endUpdate()
   // Tableau de travail utilisé lors des modifications incrémentales
   AllEnvData::IncrementalWorkInfo work_info;
   if (is_optimization_active && m_use_incremental_recompute){
-    work_info.cells_to_transform.resize(m_material_mng->mesh()->cellFamily()->maxLocalId());
+    Int32 max_local_id = m_material_mng->mesh()->cellFamily()->maxLocalId();
+    work_info.cells_to_transform.resize(max_local_id);
+    work_info.removed_local_ids_filter.resize(max_local_id);
+    work_info.removed_local_ids_filter.fill(false);
     work_info.is_verbose = traceMng()->verbosityLevel()>=5;
   }
 

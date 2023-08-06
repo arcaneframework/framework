@@ -1096,30 +1096,31 @@ _removeItemsFromEnvironment(MeshEnvironment* env,MeshMaterial* mat,
 {
   info(4) << "MeshEnvironment::removeItemsDirect mat=" << mat->name();
 
-  IItemFamily* cell_family = env->cells().itemFamily();
-
-  Integer nb_to_remove = local_ids.size();
-
-  UniqueArray<bool> removed_local_ids_filter(cell_family->maxLocalId(),false);
+  Int32 nb_to_remove = local_ids.size();
 
   // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
   for( Integer i=0; i<nb_to_remove; ++i ){
     Int32 lid = local_ids[i];
     CellLocalId cell_lid(lid);
     --env->m_nb_mat_per_cell[cell_lid];
-    removed_local_ids_filter[lid] = true;
+    m_work_info.removed_local_ids_filter[lid] = true;
   }
   env->addToTotalNbCellMat(-nb_to_remove);
 
-  mat->variableIndexer()->endUpdateRemove(removed_local_ids_filter,nb_to_remove);
+  mat->variableIndexer()->endUpdateRemove(m_work_info.removed_local_ids_filter,nb_to_remove);
 
   if (update_env_indexer){
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
     // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
-    env->variableIndexer()->endUpdateRemove(removed_local_ids_filter,nb_to_remove);
+    env->variableIndexer()->endUpdateRemove(m_work_info.removed_local_ids_filter,nb_to_remove);
   }
+
+  // Remet \a removed_local_ids_filter à la valeur initiale pour
+  // les prochaines opérations
+  for( Int32 lid : local_ids )
+    m_work_info.removed_local_ids_filter[lid] = false;
 }
 
 /*---------------------------------------------------------------------------*/
