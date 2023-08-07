@@ -24,7 +24,6 @@
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/VariableBuildInfo.h"
 
-#include "arcane/materials/ComponentItemListBuilder.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
 
@@ -32,6 +31,7 @@
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
 #include "arcane/materials/internal/ComponentConnectivityList.h"
+#include "arcane/materials/internal/ComponentItemListBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

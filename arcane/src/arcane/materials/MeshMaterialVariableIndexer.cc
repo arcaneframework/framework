@@ -18,8 +18,8 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
-#include "arcane/core/materials/ComponentItemListBuilder.h"
+#include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
+#include "arcane/materials/internal/ComponentItemListBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

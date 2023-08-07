@@ -20,7 +20,6 @@
 #include "arcane/ItemGroup.h"
 
 #include "arcane/core/materials/IMeshComponent.h"
-#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/core/materials/ComponentItemVectorView.h"
 #include "arcane/core/materials/ComponentPartItemVectorView.h"
 

@@ -20,10 +20,6 @@ set(ARCANE_MATERIALS_SOURCES
   materials/IMeshMaterial.h
   materials/IMeshMaterialVariableFactoryMng.h
   materials/IMeshMaterialVariableFactory.h
-  materials/MeshMaterialVariableIndexer.h
-  materials/MeshMaterialVariableIndexer.cc
-  materials/ComponentItemListBuilder.h
-  materials/ComponentItemListBuilder.cc
   materials/ComponentItem.cc
   materials/ComponentItem.h
   materials/ComponentItemInternal.cc

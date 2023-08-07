@@ -17,7 +17,6 @@
 #include "arcane/Concurrency.h"
 #include "arcane/core/materials/ComponentItemVectorView.h"
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
-#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/core/materials/MatItem.h"
 #include "arcane/accelerator/RunQueueInternal.h"
 #include "arcane/accelerator/RunCommand.h"

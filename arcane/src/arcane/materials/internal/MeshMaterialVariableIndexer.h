@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Indexer pour les variables materiaux.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_MATERIALS_MESHMATERIALVARIABLEINDEXER_H
-#define ARCANE_CORE_MATERIALS_MESHMATERIALVARIABLEINDEXER_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLEINDEXER_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLEINDEXER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,10 +18,9 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemGroup.h"
 
-#include "arcane/core/materials/MaterialsCoreGlobal.h"
 #include "arcane/core/materials/MatVarIndex.h"
 
 /*---------------------------------------------------------------------------*/
@@ -48,7 +47,7 @@ class ComponentItemListBuilder;
  * Cette classe contient les infos pour gérer la partie multi valeur d'une
  * variable matériau.
  */
-class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
+class MeshMaterialVariableIndexer
 : public TraceAccessor
 {
   friend class AllEnvData;
