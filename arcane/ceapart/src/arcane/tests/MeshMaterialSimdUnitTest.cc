@@ -493,7 +493,7 @@ executeTest()
     nb_z /= 100;
   Integer nb_z2 = nb_z / 5;
 
-  Int32 env_idx = m_env1->_internalApi()->variableIndexer()->index() + 1;
+  Int32 env_idx = m_env1->_internalApi()->variableIndexerIndex() + 1;
   info() << "Using vectorisation name=" << SimdInfo::name()
          << " vector_size=" << SimdReal::Length << " index_size=" << SimdInfo::Int32IndexSize;
   info() << "Compiler=\"" << getCompilerInfo() << "\""
@@ -746,7 +746,7 @@ _executeTest3(Integer nb_z)
     }
     {
       Int32ConstArrayView indexes = m_env1_partial_value_index;
-      Int32 env_idx = m_env1->_internalApi()->variableIndexer()->index() + 1;
+      Int32 env_idx = m_env1->_internalApi()->variableIndexerIndex() + 1;
       PRAGMA_IVDEP
       for( Integer i=0, n=indexes.size(); i<n; ++i ){
         Int32 xi = indexes[i];
@@ -779,7 +779,7 @@ _executeTest5(Integer nb_z)
   };
 
   for( Integer z=0, iz=nb_z; z<iz; ++z ){
-    Int32 env_idx = m_env1->_internalApi()->variableIndexer()->index() + 1;
+    Int32 env_idx = m_env1->_internalApi()->variableIndexerIndex() + 1;
     func(0,m_env1_pure_value_index);
     func(env_idx,m_env1_partial_value_index);
   }

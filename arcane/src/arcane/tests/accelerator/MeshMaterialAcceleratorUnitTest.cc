@@ -295,7 +295,7 @@ executeTest()
     nb_z /= 100;
   Integer nb_z2 = nb_z / 5;
 
-  Int32 env_idx = m_env1->_internalApi()->variableIndexer()->index() + 1;
+  Int32 env_idx = m_env1->_internalApi()->variableIndexerIndex() + 1;
   info() << "ENV_IDX=" << env_idx
          << " nb_pure=" << m_env1_pure_value_index.size()
          << " nb_partial=" << m_env1_partial_value_index.size()

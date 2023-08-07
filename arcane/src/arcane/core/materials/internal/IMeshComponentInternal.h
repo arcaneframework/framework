@@ -41,6 +41,9 @@ class ARCANE_CORE_EXPORT IMeshComponentInternal
 
   //! Vue sur les mailles du composant.
   virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const = 0;
+
+  //! Index pour accéder aux variables partielles.
+  virtual Int32 variableIndexerIndex() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

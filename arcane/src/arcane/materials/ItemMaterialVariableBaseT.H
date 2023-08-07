@@ -25,11 +25,11 @@
 #include "arcane/core/materials/MaterialVariableBuildInfo.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
-#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
-#include "arcane/materials/ComponentItemListBuilder.h"
+#include "arcane/materials/internal/ComponentItemListBuilder.h"
 #include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
+#include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

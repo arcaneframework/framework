@@ -18,7 +18,6 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemPrinter.h"
 
-#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/core/materials/IMeshComponent.h"
 #include "arcane/core/materials/MeshComponentPartData.h"
 #include "arcane/core/materials/ComponentItemInternal.h"
@@ -38,7 +37,7 @@ MeshComponentPartData::
 MeshComponentPartData(IMeshComponent* component)
 : TraceAccessor(component->traceMng())
 , m_component(component)
-, m_impure_var_idx(component->_internalApi()->variableIndexer()->index()+1)
+, m_impure_var_idx(component->_internalApi()->variableIndexerIndex()+1)
 {
   // Utilise l'allocateur des données pour permettre d'accéder à ces valeurs
   // sur les accélérateurs

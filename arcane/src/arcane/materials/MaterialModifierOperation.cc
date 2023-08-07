@@ -20,8 +20,9 @@
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/materials/IMeshMaterial.h"
-#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
+
+#include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

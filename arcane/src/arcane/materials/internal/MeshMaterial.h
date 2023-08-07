@@ -21,9 +21,8 @@
 #include "arcane/core/materials/MatItem.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
-#include "arcane/materials/MeshMaterialVariableIndexer.h"
-
 #include "arcane/materials/internal/MeshComponentData.h"
+#include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,6 +65,7 @@ class MeshMaterial
     {
       return m_material->itemsInternalView();
     }
+    Int32 variableIndexerIndex() const override;
    private:
     MeshMaterial* m_material;
   };

@@ -1,22 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemListBuilder.h                                  (C) 2000-2022 */
+/* ComponentItemListBuilder.h                                  (C) 2000-2023 */
 /*                                                                           */
 /* Classe d'aide à la construction d'une liste de ComponentItem.             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_MATERIALS_COMPONENTITEMLISTBUILDER_H
-#define ARCANE_CORE_MATERIALS_COMPONENTITEMLISTBUILDER_H
+#ifndef ARCANE_MATERIALS_INTERNAL_COMPONENTITEMLISTBUILDER_H
+#define ARCANE_MATERIALS_INTERNAL_COMPONENTITEMLISTBUILDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
 
 #include "arcane/core/materials/MatVarIndex.h"
+
+#include "arcane/materials/MaterialsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,7 +32,7 @@ namespace Arcane::Materials
  * \brief Classe d'aide à la construction d'une liste de ComponentItem
  * pour un MeshMaterialVariableIndexer.
  */
-class ARCANE_CORE_EXPORT ComponentItemListBuilder
+class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
 {
  public:
 

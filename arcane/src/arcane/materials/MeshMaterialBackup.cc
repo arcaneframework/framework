@@ -23,10 +23,10 @@
 #include "arcane/materials/MeshMaterialBackup.h"
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
-#include "arcane/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/MatItemEnumerator.h"
 
 #include "arcane/materials/internal/MeshMaterialMng.h"
+#include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

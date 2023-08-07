@@ -26,13 +26,13 @@
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/ComponentItemVectorView.h"
-#include "arcane/materials/ComponentItemListBuilder.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshComponentPartData.h"
 #include "arcane/materials/ComponentPartItemVectorView.h"
 
 #include "arcane/materials/internal/MeshEnvironment.h"
 #include "arcane/materials/internal/MeshMaterial.h"
+#include "arcane/materials/internal/ComponentItemListBuilder.h"
 #include "arcane/materials/internal/ComponentItemInternalData.h"
 
 /*---------------------------------------------------------------------------*/
@@ -658,6 +658,16 @@ checkValid()
   for( IMeshMaterial* mat : m_materials ){
     mat->checkValid();
   }
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 MeshEnvironment::InternalApi::
+variableIndexerIndex() const
+{
+  return variableIndexer()->index();
 }
 
 /*---------------------------------------------------------------------------*/

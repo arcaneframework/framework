@@ -65,6 +65,7 @@ class MeshEnvironment
     {
       return m_environment->itemsInternalView();
     }
+    Int32 variableIndexerIndex() const override;
    private:
     MeshEnvironment* m_environment;
   };
