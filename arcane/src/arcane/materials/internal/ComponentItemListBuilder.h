@@ -18,6 +18,8 @@
 
 #include "arcane/core/materials/MatVarIndex.h"
 
+#include "arcane/materials/MaterialsGlobal.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,7 +32,7 @@ namespace Arcane::Materials
  * \brief Classe d'aide à la construction d'une liste de ComponentItem
  * pour un MeshMaterialVariableIndexer.
  */
-class ARCANE_CORE_EXPORT ComponentItemListBuilder
+class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
 {
  public:
 

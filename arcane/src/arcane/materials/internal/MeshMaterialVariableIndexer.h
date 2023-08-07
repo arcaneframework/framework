@@ -20,8 +20,9 @@
 
 #include "arcane/core/ItemTypes.h"
 #include "arcane/core/ItemGroup.h"
-
 #include "arcane/core/materials/MatVarIndex.h"
+
+#include "arcane/materials/MaterialsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,7 +48,7 @@ class ComponentItemListBuilder;
  * Cette classe contient les infos pour gérer la partie multi valeur d'une
  * variable matériau.
  */
-class MeshMaterialVariableIndexer
+class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 : public TraceAccessor
 {
   friend class AllEnvData;
