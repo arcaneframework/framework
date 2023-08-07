@@ -33,8 +33,6 @@
 #include "arcane/materials/internal/ComponentConnectivityList.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 
-#include "arcane/materials/internal/IncrementalComponentModifier.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -585,22 +583,6 @@ updateMaterialDirect(MaterialModifierOperation* operation)
     operation->filterIds();
 
   _updateMaterialDirect(operation);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AllEnvData::
-updateMaterialIncremental(MaterialModifierOperation* operation,
-                          IncrementalWorkInfo& work_info)
-{
-  // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
-  // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
-  if (arcaneIsCheck())
-    operation->filterIds();
-
-  IncrementalComponentModifier modifier(this,work_info);
-  modifier.apply(operation);
 }
 
 /*---------------------------------------------------------------------------*/

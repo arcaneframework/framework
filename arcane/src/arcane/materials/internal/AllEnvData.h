@@ -72,9 +72,6 @@ class AllEnvData
 
   void updateMaterialDirect(MaterialModifierOperation* operation);
 
-  void updateMaterialIncremental(MaterialModifierOperation* operation,
-                                 IncrementalWorkInfo& work_info);
-
   //! Notification de la fin de création des milieux/matériaux
   void endCreate(bool is_continue);
 

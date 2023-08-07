@@ -224,13 +224,9 @@ endUpdate()
   linfo() << "Check optimize ? = " << is_optimization_active;
 
   // Tableau de travail utilisé lors des modifications incrémentales
-  IncrementalWorkInfo work_info;
+  IncrementalComponentModifier incremental_modifier(all_env_data);
   if (is_optimization_active && m_use_incremental_recompute){
-    Int32 max_local_id = m_material_mng->mesh()->cellFamily()->maxLocalId();
-    work_info.cells_to_transform.resize(max_local_id);
-    work_info.removed_local_ids_filter.resize(max_local_id);
-    work_info.removed_local_ids_filter.fill(false);
-    work_info.is_verbose = traceMng()->verbosityLevel()>=5;
+    incremental_modifier.initialize();
   }
 
   if (is_optimization_active){
@@ -248,8 +244,14 @@ endUpdate()
       keeped_lids = op->ids();
 
       if (m_use_incremental_recompute){
-        work_info.is_add = op->isAdd();
-        all_env_data->updateMaterialIncremental(op,work_info);
+        incremental_modifier.m_work_info.is_add = op->isAdd();
+
+        // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
+        // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
+        if (arcaneIsCheck())
+          op->filterIds();
+
+        incremental_modifier.apply(op);
       }
       else
         all_env_data->updateMaterialDirect(op);

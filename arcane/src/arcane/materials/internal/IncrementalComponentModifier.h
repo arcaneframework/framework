@@ -63,23 +63,29 @@ struct ARCANE_MATERIALS_EXPORT IncrementalWorkInfo
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Modification incrémentale des matériaux.
+ *
+ * Il faut appeler initialize() pour initialiser l'instance puis appeler
+ * apply() pour chaque opération.
  */
 class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 : public TraceAccessor
 {
- public:
-
-  IncrementalComponentModifier(AllEnvData* all_env_data, IncrementalWorkInfo& work_info);
+  friend class MeshMaterialModifierImpl;
 
  public:
 
+  explicit IncrementalComponentModifier(AllEnvData* all_env_data);
+
+ public:
+
+  void initialize();
   void apply(MaterialModifierOperation* operation);
 
  private:
 
   AllEnvData* m_all_env_data = nullptr;
   MeshMaterialMng* m_material_mng = nullptr;
-  IncrementalWorkInfo& m_work_info;
+  IncrementalWorkInfo m_work_info;
 
  private:
 
