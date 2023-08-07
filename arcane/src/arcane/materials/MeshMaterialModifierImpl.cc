@@ -26,6 +26,7 @@
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/MeshMaterialModifierImpl.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
+#include "arcane/materials/internal/IncrementalComponentModifier.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -223,7 +224,7 @@ endUpdate()
   linfo() << "Check optimize ? = " << is_optimization_active;
 
   // Tableau de travail utilisé lors des modifications incrémentales
-  AllEnvData::IncrementalWorkInfo work_info;
+  IncrementalWorkInfo work_info;
   if (is_optimization_active && m_use_incremental_recompute){
     Int32 max_local_id = m_material_mng->mesh()->cellFamily()->maxLocalId();
     work_info.cells_to_transform.resize(max_local_id);
