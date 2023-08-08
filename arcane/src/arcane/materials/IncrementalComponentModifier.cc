@@ -111,12 +111,15 @@ apply(MaterialModifierOperation* operation)
     Integer nb_unchanged_in_env = cells_unchanged_in_env.size();
     info(4) << "Cells unchanged in environment n=" << nb_unchanged_in_env;
 
+    Int16 mat_id = true_mat->componentId();
     if (is_add) {
       mat->cells().addItems(cells_unchanged_in_env);
+      connectivity->addCellsToMaterial(mat_id, cells_unchanged_in_env);
       _addItemsToEnvironment(true_env, true_mat, cells_unchanged_in_env, false);
     }
     else {
       mat->cells().removeItems(cells_unchanged_in_env);
+      connectivity->removeCellsToMaterial(mat_id, cells_unchanged_in_env);
       _removeItemsFromEnvironment(true_env, true_mat, cells_unchanged_in_env, false);
     }
 
@@ -136,13 +139,13 @@ apply(MaterialModifierOperation* operation)
     Int16 mat_id = true_mat->componentId();
     if (is_add) {
       connectivity->addCellsToEnvironment(env_id, ids);
-      connectivity->addCellsToMaterial(mat_id, operation->ids());
+      connectivity->addCellsToMaterial(mat_id, ids);
       for (Int32 id : ids)
         ++cells_nb_env[id];
     }
     else {
       connectivity->removeCellsToEnvironment(env_id, ids);
-      connectivity->removeCellsToMaterial(mat_id, operation->ids());
+      connectivity->removeCellsToMaterial(mat_id, ids);
       for (Int32 id : ids)
         --cells_nb_env[id];
     }
@@ -276,11 +279,11 @@ _computeCellsToTransform(const MeshMaterial* mat)
 {
   const MeshEnvironment* env = mat->trueEnvironment();
   const Int16 env_id = env->componentId();
-  const VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
   CellGroup all_cells = m_material_mng->mesh()->allCells();
   bool is_add = m_work_info.is_add;
 
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  const VariableCellInt16& cells_nb_env = connectivity->cellsNbEnvironment();
 
   ENUMERATE_ (Cell, icell, all_cells) {
     bool do_transform = false;
@@ -311,7 +314,8 @@ _computeCellsToTransform(const MeshMaterial* mat)
 void IncrementalComponentModifier::
 _computeCellsToTransform()
 {
-  const VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
+  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  const VariableCellInt16& cells_nb_env = connectivity->cellsNbEnvironment();
   CellGroup all_cells = m_material_mng->mesh()->allCells();
   const bool is_add = m_work_info.is_add;
 
@@ -419,13 +423,27 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
                    Int32ConstArrayView local_ids)
 {
   ComponentItemListBuilder list_builder(var_indexer, var_indexer->maxIndexInMultipleArray());
-  const VariableCellInt32& nb_env_per_cell = m_all_env_data->m_nb_env_per_cell;
+  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  const VariableCellInt16& nb_env_per_cell = connectivity->cellsNbEnvironment();
+  Int16 env_id = env->componentId();
+
+  // Vérifie la cohérence sur le nombre de matériaux entre la version historique
+  // et la version incrémentale
+  for (Int32 lid : local_ids) {
+    CellLocalId cell_id(lid);
+    Int32 nb_mat_ref = env->m_nb_mat_per_cell[cell_id];
+    Int32 nb_mat_computed = connectivity->cellNbMaterial(cell_id, env_id);
+    if (nb_mat_ref != nb_mat_computed) {
+      ARCANE_FATAL("Bad number of materials ref={0} computed={1} cell={2} env={3}",
+                   nb_mat_ref, nb_mat_computed, cell_id, env->name());
+    }
+  }
 
   for (Int32 lid : local_ids) {
     CellLocalId cell_id(lid);
     // On ne prend l'indice global que si on est le seul matériau et le seul
     // milieu de la maille. Sinon, on prend un indice multiple
-    if (nb_env_per_cell[cell_id] > 1 || env->m_nb_mat_per_cell[cell_id] > 1)
+    if (nb_env_per_cell[cell_id] > 1 || connectivity->cellNbMaterial(cell_id, env_id) > 1)
       list_builder.addPartialItem(lid);
     else
       list_builder.addPureItem(lid);

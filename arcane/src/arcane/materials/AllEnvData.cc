@@ -691,8 +691,8 @@ void AllEnvData::
 _checkConnectivityCoherency()
 {
   info() << "AllEnvData: checkCoherency()";
-  const VariableCellInt16& nb_env_v2 = m_component_connectivity_list->cellNbEnvironment();
-  const VariableCellInt16& nb_mat_v2 = m_component_connectivity_list->cellNbMaterial();
+  const VariableCellInt16& nb_env_v2 = m_component_connectivity_list->cellsNbEnvironment();
+  const VariableCellInt16& nb_mat_v2 = m_component_connectivity_list->cellsNbMaterial();
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
   ItemGroup all_cells = m_material_mng->mesh()->allCells();

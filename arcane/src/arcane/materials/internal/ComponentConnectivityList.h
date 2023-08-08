@@ -61,10 +61,10 @@ class ComponentConnectivityList
   void addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids);
   void removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids);
 
-  const VariableCellInt16& cellNbEnvironment() const;
-  const VariableCellInt16& cellNbMaterial() const;
+  const VariableCellInt16& cellsNbEnvironment() const;
+  const VariableCellInt16& cellsNbMaterial() const;
 
-  //! Nombre de matériaux pour le milieu d'indice \a env_id
+  //! Nombre de matériaux de la maille \a cell_id pour le milieu d'indice \a env_id
   Int16 cellNbMaterial(CellLocalId cell_id, Int16 env_id);
 
  private:
