@@ -57,6 +57,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   friend class MeshMaterial;
   friend class MeshComponentData;
   friend class MeshMaterialMng;
+  friend class IncrementalComponentModifier;
   template<typename DataType> friend class ItemMaterialVariableScalar;
 
  public:

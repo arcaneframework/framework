@@ -19,6 +19,7 @@ set(ARCANE_SOURCES
   MaterialModifierOperation.cc
   MatItemVector.h
   EnvItemVector.h
+  IncrementalComponentModifier.cc
   MatItemEnumerator.h
   MatVarIndex.h
   MeshComponentData.cc
@@ -118,6 +119,7 @@ set(ARCANE_SOURCES
   internal/ComponentConnectivityList.h
   internal/ComponentItemInternalData.h
   internal/ComponentItemListBuilder.h
+  internal/IncrementalComponentModifier.h
   internal/IMeshMaterialModifierImpl.h
   internal/MaterialModifierOperation.h
   internal/MeshEnvironment.h
