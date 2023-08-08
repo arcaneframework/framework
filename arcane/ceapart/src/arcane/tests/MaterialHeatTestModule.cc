@@ -120,6 +120,7 @@ class MaterialHeatTestModule
   void _addCold(const HeatObject& heat_object);
   void _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _compute();
+  void _printCellsTemperature(Int32ConstArrayView ids);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -284,6 +285,14 @@ _compute()
         info() << "MAT_MODIF: Add n=" << add_ids.size() << " cells to material=" << mat->name();
         modifier.addCells(mat, add_ids);
       }
+    }
+  }
+
+  // Affiche les valeurs pour les mailles modifiées
+  if (options()->verbosityLevel() > 0) {
+    for (const HeatObject& ho : m_heat_objects) {
+      _printCellsTemperature(work_arrays[ho.index].mat_cells_to_add.constView());
+      _printCellsTemperature(work_arrays[ho.index].mat_cells_to_remove.constView());
     }
   }
 
@@ -569,6 +578,29 @@ _computeGlobalTemperature()
       global_temperature += env_temperature;
     }
     m_mat_temperature[cell] = global_temperature;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_printCellsTemperature(Int32ConstArrayView ids)
+{
+  CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
+  for( Int32 lid : ids ){
+    CellLocalId cell_id(lid);
+    AllEnvCell all_env_cell = all_env_cell_converter[cell_id];
+    info() << "Cell=" << all_env_cell.globalCell().uniqueId();
+
+    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+      EnvCell ec = *ienvcell;
+      info() << " EnvCell " << m_mat_temperature[ec];
+      ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
+        MatCell mc = *imatcell;
+        info() << "  MatCell " << m_mat_temperature[mc];
+      }
+    }
   }
 }
 

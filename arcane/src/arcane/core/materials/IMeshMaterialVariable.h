@@ -64,24 +64,6 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
    */
   virtual void buildFromManager(bool is_continue) =0;
 
-  //! \internal
-  virtual Ref<IData> _internalCreateSaveDataRef(Integer nb_value) =0;
-
-  //! \internal
-  virtual void _saveData(IMeshComponent* component,IData* data) =0;
-
-  //! \internal
-  virtual void _restoreData(IMeshComponent* component,IData* data,Integer data_index,Int32ConstArrayView ids,bool allow_null_id) =0;
-
-  //! \internal
-  virtual void _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) =0;
-
-  //! \internal
-  virtual void _copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) =0;
-
-  //! \internal
-  virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder) =0;
-
   /*!
    * \brief Synchronise les références.
    *

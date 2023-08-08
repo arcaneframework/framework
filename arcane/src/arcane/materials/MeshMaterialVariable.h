@@ -145,6 +145,16 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   void _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes,RunQueue* queue) const;
   void _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes,RunQueue* queue);
 
+  virtual Ref<IData> _internalCreateSaveDataRef(Integer nb_value) =0;
+  virtual void _saveData(IMeshComponent* component,IData* data) =0;
+  virtual void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
+                            Int32ConstArrayView ids,bool allow_null_id) =0;
+  virtual void _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
+                                    Int32ConstArrayView indexes_in_multiple) =0;
+  virtual void _copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
+                                    Int32ConstArrayView indexes_in_multiple) =0;
+  virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder) =0;
+
  private:
 
   static SmallSpan<const Int32> _toInt32Indexes(SmallSpan<const MatVarIndex> indexes);

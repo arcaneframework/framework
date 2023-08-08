@@ -16,6 +16,9 @@
     <simple name="check-numerical-result" type="bool" default="true">
       <description>True if we want to check numerical results</description>
     </simple>
+    <simple name="verbosity-level" type="int32" default="0">
+      <description>Verbosity level</description>
+    </simple>
 
     <!-- Infos sur les materiaux -->
     <complex name="material" type="Material" minOccurs="1" maxOccurs="unbounded">

@@ -263,7 +263,7 @@ removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
 /*---------------------------------------------------------------------------*/
 
 const VariableCellInt16& ComponentConnectivityList::
-cellNbEnvironment() const
+cellsNbEnvironment() const
 {
   return m_container->m_environment.m_nb_component;
 }
@@ -272,7 +272,7 @@ cellNbEnvironment() const
 /*---------------------------------------------------------------------------*/
 
 const VariableCellInt16& ComponentConnectivityList::
-cellNbMaterial() const
+cellsNbMaterial() const
 {
   return m_container->m_material.m_nb_component;
 }
