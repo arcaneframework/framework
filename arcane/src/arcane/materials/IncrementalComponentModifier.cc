@@ -14,13 +14,16 @@
 #include "arcane/materials/internal/IncrementalComponentModifier.h"
 
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/FunctorUtils.h"
 
 #include "arcane/core/IItemFamily.h"
+#include "arcane/core/materials/IMeshMaterialVariable.h"
 
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
 #include "arcane/materials/internal/ComponentConnectivityList.h"
 #include "arcane/materials/internal/AllEnvData.h"
+#include "arcane/materials/internal/ComponentItemListBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -389,7 +392,6 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   info(4) << "MeshEnvironment::addItemsDirect"
           << " mat=" << mat->name();
 
-  const VariableCellInt32& nb_env_per_cell = m_all_env_data->m_nb_env_per_cell;
   MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
   Int32 nb_to_add = local_ids.size();
 
@@ -398,14 +400,52 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
     ++env->m_nb_mat_per_cell[CellLocalId{ lid }];
   env->addToTotalNbCellMat(nb_to_add);
 
-  env->_addItemsToIndexer(nb_env_per_cell, var_indexer, local_ids);
+  _addItemsToIndexer(env, var_indexer, local_ids);
 
   if (update_env_indexer) {
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
     // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
-    env->_addItemsToIndexer(nb_env_per_cell, env->variableIndexer(), local_ids);
+    _addItemsToIndexer(env, env->variableIndexer(), local_ids);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+_addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexer,
+                   Int32ConstArrayView local_ids)
+{
+  ComponentItemListBuilder list_builder(var_indexer, var_indexer->maxIndexInMultipleArray());
+  const VariableCellInt32& nb_env_per_cell = m_all_env_data->m_nb_env_per_cell;
+
+  for (Int32 lid : local_ids) {
+    CellLocalId cell_id(lid);
+    // On ne prend l'indice global que si on est le seul matériau et le seul
+    // milieu de la maille. Sinon, on prend un indice multiple
+    if (nb_env_per_cell[cell_id] > 1 || env->m_nb_mat_per_cell[cell_id] > 1)
+      list_builder.addPartialItem(lid);
+    else
+      list_builder.addPureItem(lid);
+  }
+
+  if (traceMng()->verbosityLevel() >= 5)
+    info() << "ADD_MATITEM_TO_INDEXER component=" << var_indexer->name()
+           << " nb_pure=" << list_builder.pureMatVarIndexes().size()
+           << " nb_partial=" << list_builder.partialMatVarIndexes().size()
+           << "\n pure=(" << list_builder.pureMatVarIndexes() << ")"
+           << "\n partial=(" << list_builder.partialMatVarIndexes() << ")";
+
+  var_indexer->endUpdateAdd(list_builder);
+
+  // Maintenant que les nouveaux MatVar sont créés, il faut les
+  // initialiser avec les bonnes valeurs.
+  {
+    IMeshMaterialMng* mm = m_material_mng;
+    functor::apply(mm, &IMeshMaterialMng::visitVariables,
+                   [&](IMeshMaterialVariable* mv) { mv->_initializeNewItems(list_builder); });
   }
 }
 
