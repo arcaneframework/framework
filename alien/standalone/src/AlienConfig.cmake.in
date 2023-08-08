@@ -1,8 +1,8 @@
 @PACKAGE_INIT@
 
 # Set and Check must go first else macro might be redefined by find_dependency ...
-set_and_check(ALIEN_TARGET_FILE "${PACKAGE_PREFIX_DIR}/@config_install_dir@/@ALIEN_EXPORT_TARGET@.cmake")
 set_and_check(ALIEN_MODULE_PATH "@PACKAGE_ALIEN_MODULE_PATH@")
+set_and_check(ALIEN_TARGET_FILE "${ALIEN_MODULE_PATH}/@ALIEN_EXPORT_TARGET@.cmake")
 
 
 include(CMakeFindDependencyMacro)
