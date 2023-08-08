@@ -115,6 +115,63 @@ copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Ref<IData> MeshMaterialVariablePrivate::
+internalCreateSaveDataRef(Integer nb_value)
+{
+  return m_variable->_internalCreateSaveDataRef(nb_value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+saveData(IMeshComponent* component,IData* data)
+{
+  m_variable->_saveData(component,data);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+restoreData(IMeshComponent* component,IData* data,Integer data_index,
+            Int32ConstArrayView ids,bool allow_null_id)
+{
+  m_variable->_restoreData(component,data,data_index,ids,allow_null_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
+                    Int32ConstArrayView indexes_in_multiple)
+{
+  m_variable->_copyGlobalToPartial(var_index,local_ids,indexes_in_multiple);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
+                    Int32ConstArrayView indexes_in_multiple)
+{
+  m_variable->_copyPartialToGlobal(var_index,local_ids,indexes_in_multiple);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+initializeNewItems(const ComponentItemListBuilder& list_builder)
+{
+  m_variable->_initializeNewItems(list_builder);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

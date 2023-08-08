@@ -23,6 +23,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
@@ -564,9 +565,9 @@ _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
   //Integer indexer_index = indexer->index();
   auto func = [=](IMeshMaterialVariable* mv){
     if (is_add_operation)
-      mv->_copyGlobalToPartial(indexer_index,pure_local_ids,partial_indexes);
+      mv->_internalApi()->copyGlobalToPartial(indexer_index,pure_local_ids,partial_indexes);
     else
-      mv->_copyPartialToGlobal(indexer_index,pure_local_ids,partial_indexes);
+      mv->_internalApi()->copyPartialToGlobal(indexer_index,pure_local_ids,partial_indexes);
   };
   functor::apply(m_material_mng,&MeshMaterialMng::visitVariables,func);
 }

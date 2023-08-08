@@ -65,6 +65,18 @@ class MeshMaterialVariablePrivate
   void copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
                       Span<const std::byte> bytes, RunQueue* queue) override;
 
+  Ref<IData> internalCreateSaveDataRef(Integer nb_value) override;
+
+  void saveData(IMeshComponent* component,IData* data) override;
+
+  void restoreData(IMeshComponent* component,IData* data,Integer data_index,Int32ConstArrayView ids,bool allow_null_id) override;
+
+  void copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) override;
+
+  void copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) override;
+
+  void initializeNewItems(const ComponentItemListBuilder& list_builder) override;
+
  public:
 
   Int32 m_nb_reference;

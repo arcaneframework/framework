@@ -18,6 +18,7 @@
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/materials/IMeshMaterialVariable.h"
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
@@ -463,7 +464,7 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
   {
     IMeshMaterialMng* mm = m_material_mng;
     functor::apply(mm, &IMeshMaterialMng::visitVariables,
-                   [&](IMeshMaterialVariable* mv) { mv->_initializeNewItems(list_builder); });
+                   [&](IMeshMaterialVariable* mv) { mv->_internalApi()->initializeNewItems(list_builder); });
   }
 }
 

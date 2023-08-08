@@ -19,6 +19,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/materials/MeshMaterialBackup.h"
 #include "arcane/materials/IMeshMaterialMng.h"
@@ -146,7 +147,7 @@ _save()
   }
   for( IMeshMaterialVariable* mv : m_vars ){
     info(4) << "SAVE MVAR=" << mv->name() << " is_used?=" << mv->globalVariable()->isUsed();
-    VarData* vd = new VarData(mv->_internalCreateSaveDataRef(nb_value));
+    VarData* vd = new VarData(mv->_internalApi()->internalCreateSaveDataRef(nb_value));
     m_saved_data.insert(std::make_pair(mv,vd));
   }
 
@@ -167,7 +168,7 @@ _saveV1()
     _saveIds(c);
     for( IMeshMaterialVariable* var : m_vars ){
       if (_isValidComponent(var,c))
-        var->_saveData(c,m_saved_data[var]->data.get());
+        var->_internalApi()->saveData(c,m_saved_data[var]->data.get());
     }
   }
 }
@@ -201,7 +202,7 @@ _saveV2()
     ENUMERATE_COMPONENT(ic,components){
       IMeshComponent* c = *ic;
       if (_isValidComponent(var,c)){
-        var->_saveData(c,saved_data);
+        var->_internalApi()->saveData(c,saved_data);
       }
     }
     if (compressor){
@@ -281,7 +282,7 @@ _restoreV1()
     for( IMeshMaterialVariable* var : m_vars ){
       VarData* vd = m_saved_data[var];
       if (_isValidComponent(var,c)){
-        var->_restoreData(c,vd->data.get(),vd->data_index,ids,allow_null_id);
+        var->_internalApi()->restoreData(c,vd->data.get(),vd->data_index,ids,allow_null_id);
         vd->data_index += ids.size();
       }
     }
@@ -314,7 +315,7 @@ _restoreV2()
       IMeshComponent* c = *ic;
       Int32ConstArrayView ids = m_ids_array[c];
       if (_isValidComponent(var,c)){
-        var->_restoreData(c,vd->data.get(),vd->data_index,ids,allow_null_id);
+        var->_internalApi()->restoreData(c,vd->data.get(),vd->data_index,ids,allow_null_id);
         vd->data_index += ids.size();
       }
     }

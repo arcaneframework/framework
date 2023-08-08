@@ -22,6 +22,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/VariableBuildInfo.h"
 #include "arcane/core/ItemGroupObserver.h"
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MatItemEnumerator.h"
@@ -357,7 +358,7 @@ _addItemsToIndexer(const VariableCellInt32& nb_env_per_cell,
   // Maintenant que les nouveaux MatVar sont créés, il faut les
   // initialiser avec les bonnes valeurs.
   functor::apply(m_material_mng,&IMeshMaterialMng::visitVariables,
-                 [&](IMeshMaterialVariable* mv) { mv->_initializeNewItems(list_builder); }
+                 [&](IMeshMaterialVariable* mv) { mv->_internalApi()->initializeNewItems(list_builder); }
                  );
 }
 

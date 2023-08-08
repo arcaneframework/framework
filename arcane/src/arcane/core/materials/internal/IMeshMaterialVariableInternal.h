@@ -22,6 +22,7 @@
 
 namespace Arcane::Materials
 {
+class ComponentItemListBuilder;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,6 +64,25 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
    */
   virtual void copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
                               Span<const std::byte> bytes, RunQueue* queue) = 0;
+
+
+  //! \internal
+  virtual Ref<IData> internalCreateSaveDataRef(Integer nb_value) =0;
+
+  //! \internal
+  virtual void saveData(IMeshComponent* component,IData* data) =0;
+
+  //! \internal
+  virtual void restoreData(IMeshComponent* component,IData* data,Integer data_index,Int32ConstArrayView ids,bool allow_null_id) =0;
+
+  //! \internal
+  virtual void copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) =0;
+
+  //! \internal
+  virtual void copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) =0;
+
+  //! \internal
+  virtual void initializeNewItems(const ComponentItemListBuilder& list_builder) =0;
 };
 
 /*---------------------------------------------------------------------------*/
