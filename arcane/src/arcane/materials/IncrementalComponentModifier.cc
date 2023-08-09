@@ -50,9 +50,7 @@ void IncrementalComponentModifier::
 initialize()
 {
   Int32 max_local_id = m_material_mng->mesh()->cellFamily()->maxLocalId();
-  m_work_info.cells_to_transform.resize(max_local_id);
-  m_work_info.removed_local_ids_filter.resize(max_local_id);
-  m_work_info.removed_local_ids_filter.fill(false);
+  m_work_info.initialize(max_local_id);
   m_work_info.is_verbose = traceMng()->verbosityLevel() >= 5;
 }
 
@@ -321,7 +319,7 @@ _computeCellsToTransform(const MeshMaterial* mat)
       if (do_transform)
         do_transform = connectivity->cellNbMaterial(icell, env_id) == 1;
     }
-    m_work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
+    m_work_info.setTransformedCell(icell, do_transform);
   }
 }
 
@@ -347,7 +345,7 @@ _computeCellsToTransform()
       do_transform = cells_nb_env[icell] > 1;
     else
       do_transform = cells_nb_env[icell] == 1;
-    m_work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
+    m_work_info.setTransformedCell(icell, do_transform);
   }
 }
 
@@ -375,26 +373,24 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   Int32 nb_to_remove = local_ids.size();
 
   // Positionne le filtre des mailles supprimées.
-  for (Int32 lid : local_ids)
-    m_work_info.removed_local_ids_filter[lid] = true;
+  m_work_info.setRemovedCells(local_ids, true);
 
   // TODO: à faire dans finialize()
   env->addToTotalNbCellMat(-nb_to_remove);
 
-  mat->variableIndexer()->endUpdateRemove(m_work_info.removed_local_ids_filter, nb_to_remove);
+  mat->variableIndexer()->endUpdateRemove(m_work_info.m_removed_local_ids_filter, nb_to_remove);
 
   if (update_env_indexer) {
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
     // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
-    env->variableIndexer()->endUpdateRemove(m_work_info.removed_local_ids_filter, nb_to_remove);
+    env->variableIndexer()->endUpdateRemove(m_work_info.m_removed_local_ids_filter, nb_to_remove);
   }
 
   // Remet \a removed_local_ids_filter à la valeur initiale pour
   // les prochaines opérations
-  for (Int32 lid : local_ids)
-    m_work_info.removed_local_ids_filter[lid] = false;
+  m_work_info.setRemovedCells(local_ids, false);
 }
 
 /*---------------------------------------------------------------------------*/
