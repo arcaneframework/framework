@@ -31,7 +31,7 @@ jobs:
           - version_short: 'F'
             version_long: 'full'
             version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
+              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
           - type_build: 'Debug'
             excluded_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'

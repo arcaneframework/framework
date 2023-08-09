@@ -49,7 +49,7 @@ jobs:
           - version_short: 'F'
             version_long: 'full'
             version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
+              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
           - type_build: 'Release'
             excluded_tests: ''
@@ -109,7 +109,7 @@ jobs:
           - version_short: 'F'
             version_long: 'full'
             version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
+              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
           - type_build: 'Release'
             excluded_tests: ''
