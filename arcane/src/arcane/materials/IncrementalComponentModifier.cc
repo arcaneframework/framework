@@ -233,7 +233,7 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat)
 
       _computeCellsToTransform(mat);
 
-      indexer->transformCellsV2(m_work_info.toTransformCellsArgs());
+      indexer->transformCellsV2(m_work_info);
 
       info(4) << "NB_MAT_TRANSFORM=" << m_work_info.pure_local_ids.size() << " name=" << mat->name();
 
@@ -276,7 +276,7 @@ _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env)
     info(4) << "TransformCells (V2) is_add?=" << is_add << " indexer=" << indexer->name();
 
     _computeCellsToTransform();
-    indexer->transformCellsV2(m_work_info.toTransformCellsArgs());
+    indexer->transformCellsV2(m_work_info);
 
     info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
             << " name=" << env->name();
@@ -378,14 +378,14 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   // TODO: à faire dans finialize()
   env->addToTotalNbCellMat(-nb_to_remove);
 
-  mat->variableIndexer()->endUpdateRemove(m_work_info.m_removed_local_ids_filter, nb_to_remove);
+  mat->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove);
 
   if (update_env_indexer) {
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
     // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
-    env->variableIndexer()->endUpdateRemove(m_work_info.m_removed_local_ids_filter, nb_to_remove);
+    env->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove);
   }
 
   // Remet \a removed_local_ids_filter à la valeur initiale pour

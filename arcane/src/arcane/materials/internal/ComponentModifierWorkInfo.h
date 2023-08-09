@@ -36,9 +36,9 @@ namespace Arcane::Materials
  * modification comprenant plusieurs operations de modification des matériaux
  * (MaterialModifierOperation).
  */
-struct ARCANE_MATERIALS_EXPORT ComponentModifierWorkInfo
+class ARCANE_MATERIALS_EXPORT ComponentModifierWorkInfo
 {
-  using TransformCellsArgs = MeshMaterialVariableIndexer::TransformCellsArgs;
+ public:
 
   UniqueArray<Int32> pure_local_ids;
   UniqueArray<Int32> partial_indexes;
@@ -63,24 +63,17 @@ struct ARCANE_MATERIALS_EXPORT ComponentModifierWorkInfo
     m_cells_to_transform[local_id.localId()] = v;
   }
 
+  //! Indique si la maille \a local_id est supprimée du matériaux pour l'opération courante.
+  bool isRemovedCell(Int32 local_id) const { return m_removed_local_ids_filter[local_id]; }
+
   //! Positionne à \a value l'état 'Removed' des mailles de \a local_ids
   void setRemovedCells(ConstArrayView<Int32> local_ids, bool value);
 
- public:
-
-  TransformCellsArgs toTransformCellsArgs()
-  {
-    return TransformCellsArgs(m_cells_to_transform, pure_local_ids,
-                              partial_indexes, is_add, is_verbose);
-  }
-
- public:
+ private:
 
   // Filtre indiquant les mailles qui sont supprimées du constituant
   // Ce tableau est dimensionné au nombre de mailles.
   UniqueArray<bool> m_removed_local_ids_filter;
-
- private:
 
   // Filtre indiquant les mailles qui doivent changer de status (Pure<->Partial)
   // Ce tableau est dimensionné au nombre de mailles.
