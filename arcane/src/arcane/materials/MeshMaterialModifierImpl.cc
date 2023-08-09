@@ -275,8 +275,10 @@ endUpdate()
     }
   }
   else{
-    if (m_use_incremental_recompute)
+    if (m_use_incremental_recompute){
+      incremental_modifier.finalize();
       all_env_data->recomputeIncremental();
+    }
     else
       all_env_data->forceRecompute(false);
   }

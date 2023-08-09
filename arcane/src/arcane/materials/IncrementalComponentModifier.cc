@@ -60,6 +60,23 @@ initialize()
 /*---------------------------------------------------------------------------*/
 
 void IncrementalComponentModifier::
+finalize()
+{
+  // Met à jour les variables contenant le nombre de milieux et de matériaux
+  // par milieu en fonction des valeurs de ComponentConnectivityList.
+  CellGroup all_cells = m_material_mng->mesh()->allCells();
+  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
+  const VariableCellInt16& incremental_cells_nb_env = connectivity->cellsNbEnvironment();
+  ENUMERATE_(Cell,icell,all_cells){
+    cells_nb_env[icell] = incremental_cells_nb_env[icell];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
 apply(MaterialModifierOperation* operation)
 {
   bool is_add = operation->isAdd();
@@ -130,8 +147,6 @@ apply(MaterialModifierOperation* operation)
     ids = cells_changed_in_env.view();
   }
 
-  Int32ArrayView cells_nb_env = m_all_env_data->m_nb_env_per_cell.asArray();
-
   // Met à jour le nombre de milieux et de matériaux de chaque maille.
   // NOTE: il faut d'abord faire l'opération sur les milieux avant
   // les matériaux.
@@ -141,14 +156,10 @@ apply(MaterialModifierOperation* operation)
     if (is_add) {
       connectivity->addCellsToEnvironment(env_id, ids);
       connectivity->addCellsToMaterial(mat_id, ids);
-      for (Int32 id : ids)
-        ++cells_nb_env[id];
     }
     else {
       connectivity->removeCellsToEnvironment(env_id, ids);
       connectivity->removeCellsToMaterial(mat_id, ids);
-      for (Int32 id : ids)
-        --cells_nb_env[id];
     }
   }
 

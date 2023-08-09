@@ -80,6 +80,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
   void initialize();
   void apply(MaterialModifierOperation* operation);
+  void finalize();
 
  private:
 
