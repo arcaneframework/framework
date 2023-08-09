@@ -62,34 +62,6 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 
  public:
 
-  //! Arguments pour transformCells()
-  struct TransformCellsArgs
-  {
-   public:
-    TransformCellsArgs(ConstArrayView<bool> cells_to_transform_,
-                       Int32Array& pure_local_ids_,
-                       Int32Array& partial_indexes_,
-                       bool is_add_operation_,
-                       bool is_verbose_)
-    : cells_to_transform(cells_to_transform_)
-    , pure_local_ids(pure_local_ids_)
-    , partial_indexes(partial_indexes_)
-    , is_add_operation(is_add_operation_)
-    , is_verbose(is_verbose_)
-    {
-    }
-
-   public:
-
-    ConstArrayView<bool> cells_to_transform;
-    Int32Array& pure_local_ids;
-    Int32Array& partial_indexes;
-    bool is_add_operation;
-    bool is_verbose;
-  };
-
- public:
-
   MeshMaterialVariableIndexer(ITraceMng* tm,const String& name);
   MeshMaterialVariableIndexer(const MeshMaterialVariableIndexer& rhs);
 
@@ -132,11 +104,12 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
                       bool is_add_operation, bool is_env,bool is_verbose);
   void endUpdateAdd(const ComponentItemListBuilder& builder);
   void endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove);
+  void endUpdateRemove(const ComponentModifierWorkInfo& args,Integer nb_remove);
   //@}
 
  private:
 
-  void transformCellsV2(const TransformCellsArgs& args);
+  void transformCellsV2(ComponentModifierWorkInfo& args);
 
  private:
 
@@ -183,8 +156,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
                                Int32Array& partial_indexes,
                                bool is_env,bool is_verbose);
 
-  void _transformPureToPartialV2(const TransformCellsArgs& args);
-  void _transformPartialToPureV2(const TransformCellsArgs& args);
+  void _transformPureToPartialV2(ComponentModifierWorkInfo& args);
+  void _transformPartialToPureV2(ComponentModifierWorkInfo& args);
 };
 
 /*---------------------------------------------------------------------------*/

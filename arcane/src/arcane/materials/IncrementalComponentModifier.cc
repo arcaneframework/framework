@@ -50,9 +50,7 @@ void IncrementalComponentModifier::
 initialize()
 {
   Int32 max_local_id = m_material_mng->mesh()->cellFamily()->maxLocalId();
-  m_work_info.cells_to_transform.resize(max_local_id);
-  m_work_info.removed_local_ids_filter.resize(max_local_id);
-  m_work_info.removed_local_ids_filter.fill(false);
+  m_work_info.initialize(max_local_id);
   m_work_info.is_verbose = traceMng()->verbosityLevel() >= 5;
 }
 
@@ -215,7 +213,7 @@ apply(MaterialModifierOperation* operation)
 void IncrementalComponentModifier::
 _switchComponentItemsForMaterials(const MeshMaterial* modified_mat)
 {
-  const bool is_add = m_work_info.is_add;
+  const bool is_add = m_work_info.isAdd();
 
   for (MeshEnvironment* true_env : m_material_mng->trueEnvironments()) {
     for (MeshMaterial* mat : true_env->trueMaterials()) {
@@ -235,7 +233,7 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat)
 
       _computeCellsToTransform(mat);
 
-      indexer->transformCellsV2(m_work_info.toTransformCellsArgs());
+      indexer->transformCellsV2(m_work_info);
 
       info(4) << "NB_MAT_TRANSFORM=" << m_work_info.pure_local_ids.size() << " name=" << mat->name();
 
@@ -263,7 +261,7 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat)
 void IncrementalComponentModifier::
 _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env)
 {
-  const bool is_add = m_work_info.is_add;
+  const bool is_add = m_work_info.isAdd();
 
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
     // Ne traite pas le milieu en cours de modification.
@@ -278,7 +276,7 @@ _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env)
     info(4) << "TransformCells (V2) is_add?=" << is_add << " indexer=" << indexer->name();
 
     _computeCellsToTransform();
-    indexer->transformCellsV2(m_work_info.toTransformCellsArgs());
+    indexer->transformCellsV2(m_work_info);
 
     info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
             << " name=" << env->name();
@@ -300,7 +298,7 @@ _computeCellsToTransform(const MeshMaterial* mat)
   const MeshEnvironment* env = mat->trueEnvironment();
   const Int16 env_id = env->componentId();
   CellGroup all_cells = m_material_mng->mesh()->allCells();
-  bool is_add = m_work_info.is_add;
+  bool is_add = m_work_info.isAdd();
 
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   const VariableCellInt16& cells_nb_env = connectivity->cellsNbEnvironment();
@@ -321,7 +319,7 @@ _computeCellsToTransform(const MeshMaterial* mat)
       if (do_transform)
         do_transform = connectivity->cellNbMaterial(icell, env_id) == 1;
     }
-    m_work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
+    m_work_info.setTransformedCell(icell, do_transform);
   }
 }
 
@@ -337,7 +335,7 @@ _computeCellsToTransform()
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   const VariableCellInt16& cells_nb_env = connectivity->cellsNbEnvironment();
   CellGroup all_cells = m_material_mng->mesh()->allCells();
-  const bool is_add = m_work_info.is_add;
+  const bool is_add = m_work_info.isAdd();
 
   ENUMERATE_ (Cell, icell, all_cells) {
     bool do_transform = false;
@@ -347,7 +345,7 @@ _computeCellsToTransform()
       do_transform = cells_nb_env[icell] > 1;
     else
       do_transform = cells_nb_env[icell] == 1;
-    m_work_info.cells_to_transform[icell.itemLocalId()] = do_transform;
+    m_work_info.setTransformedCell(icell, do_transform);
   }
 }
 
@@ -375,26 +373,24 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   Int32 nb_to_remove = local_ids.size();
 
   // Positionne le filtre des mailles supprimées.
-  for (Int32 lid : local_ids)
-    m_work_info.removed_local_ids_filter[lid] = true;
+  m_work_info.setRemovedCells(local_ids, true);
 
   // TODO: à faire dans finialize()
   env->addToTotalNbCellMat(-nb_to_remove);
 
-  mat->variableIndexer()->endUpdateRemove(m_work_info.removed_local_ids_filter, nb_to_remove);
+  mat->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove);
 
   if (update_env_indexer) {
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
     // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
-    env->variableIndexer()->endUpdateRemove(m_work_info.removed_local_ids_filter, nb_to_remove);
+    env->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove);
   }
 
   // Remet \a removed_local_ids_filter à la valeur initiale pour
   // les prochaines opérations
-  for (Int32 lid : local_ids)
-    m_work_info.removed_local_ids_filter[lid] = false;
+  m_work_info.setRemovedCells(local_ids, false);
 }
 
 /*---------------------------------------------------------------------------*/

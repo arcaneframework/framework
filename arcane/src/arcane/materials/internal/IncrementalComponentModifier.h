@@ -18,46 +18,13 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
+#include "arcane/materials/internal/ComponentModifierWorkInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Materials
 {
-class AllEnvData;
-class MaterialModifierOperation;
-class MeshMaterial;
-class MeshEnvironment;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Structure de travail utilisée lors de la modification
- * des constituants (via MeshMaterialModifier)
- */
-struct ARCANE_MATERIALS_EXPORT IncrementalWorkInfo
-{
-  using TransformCellsArgs = MeshMaterialVariableIndexer::TransformCellsArgs;
-
-  UniqueArray<Int32> pure_local_ids;
-  UniqueArray<Int32> partial_indexes;
-  // Filtre indiquant les mailles qui doivent changer de status (Pure<->Partial)
-  // Ce tableau est dimensionné au nombre de mailles.
-  UniqueArray<bool> cells_to_transform;
-  // Filtre indiquant les mailles qui sont supprimées du constituant
-  // Ce tableau est dimensionné au nombre de mailles.
-  UniqueArray<bool> removed_local_ids_filter;
-  bool is_verbose = false;
-  bool is_add = false;
-
- public:
-
-  TransformCellsArgs toTransformCellsArgs()
-  {
-    return TransformCellsArgs(cells_to_transform, pure_local_ids,
-                              partial_indexes, is_add, is_verbose);
-  }
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -86,7 +53,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
   AllEnvData* m_all_env_data = nullptr;
   MeshMaterialMng* m_material_mng = nullptr;
-  IncrementalWorkInfo m_work_info;
+  ComponentModifierWorkInfo m_work_info;
 
  private:
 

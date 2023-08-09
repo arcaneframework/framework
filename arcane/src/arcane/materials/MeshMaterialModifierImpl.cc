@@ -244,7 +244,7 @@ endUpdate()
       keeped_lids = op->ids();
 
       if (m_use_incremental_recompute){
-        incremental_modifier.m_work_info.is_add = op->isAdd();
+        incremental_modifier.m_work_info.setCurrentOperation(op);
 
         // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
         // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
