@@ -591,14 +591,18 @@ _printCellsTemperature(Int32ConstArrayView ids)
   for( Int32 lid : ids ){
     CellLocalId cell_id(lid);
     AllEnvCell all_env_cell = all_env_cell_converter[cell_id];
-    info() << "Cell=" << all_env_cell.globalCell().uniqueId();
-
+    Cell global_cell = all_env_cell.globalCell();
+    info() << "Cell=" << global_cell.uniqueId() << " v=" << m_mat_temperature[global_cell];
     ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
       EnvCell ec = *ienvcell;
-      info() << " EnvCell " << m_mat_temperature[ec];
+      info() << " EnvCell " << m_mat_temperature[ec]
+             << " mv=" << ec._varIndex()
+             << " env=" << ec.component()->name();
       ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
         MatCell mc = *imatcell;
-        info() << "  MatCell " << m_mat_temperature[mc];
+        info() << "  MatCell " << m_mat_temperature[mc]
+               << " mv=" << mc._varIndex()
+               << " mat=" << mc.component()->name();
       }
     }
   }
