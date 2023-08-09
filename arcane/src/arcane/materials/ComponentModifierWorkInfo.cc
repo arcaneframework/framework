@@ -13,6 +13,8 @@
 
 #include "arcane/materials/internal/ComponentModifierWorkInfo.h"
 
+#include "arcane/materials/internal/MaterialModifierOperation.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,7 +37,7 @@ initialize(Int32 max_local_id)
 /*---------------------------------------------------------------------------*/
 
 void ComponentModifierWorkInfo::
-setRemovedCells(ConstArrayView<Int32> local_ids,bool value)
+setRemovedCells(ConstArrayView<Int32> local_ids, bool value)
 {
   // Positionne le filtre des mailles supprimées.
   for (Int32 lid : local_ids)
@@ -45,7 +47,16 @@ setRemovedCells(ConstArrayView<Int32> local_ids,bool value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Materials
+void ComponentModifierWorkInfo::
+setCurrentOperation(MaterialModifierOperation* operation)
+{
+  m_is_add = operation->isAdd();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

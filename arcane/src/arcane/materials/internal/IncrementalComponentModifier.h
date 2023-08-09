@@ -53,7 +53,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
   AllEnvData* m_all_env_data = nullptr;
   MeshMaterialMng* m_material_mng = nullptr;
-  IncrementalWorkInfo m_work_info;
+  ComponentModifierWorkInfo m_work_info;
 
  private:
 

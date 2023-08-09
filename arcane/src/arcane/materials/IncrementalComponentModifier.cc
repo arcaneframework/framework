@@ -213,7 +213,7 @@ apply(MaterialModifierOperation* operation)
 void IncrementalComponentModifier::
 _switchComponentItemsForMaterials(const MeshMaterial* modified_mat)
 {
-  const bool is_add = m_work_info.is_add;
+  const bool is_add = m_work_info.isAdd();
 
   for (MeshEnvironment* true_env : m_material_mng->trueEnvironments()) {
     for (MeshMaterial* mat : true_env->trueMaterials()) {
@@ -261,7 +261,7 @@ _switchComponentItemsForMaterials(const MeshMaterial* modified_mat)
 void IncrementalComponentModifier::
 _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env)
 {
-  const bool is_add = m_work_info.is_add;
+  const bool is_add = m_work_info.isAdd();
 
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
     // Ne traite pas le milieu en cours de modification.
@@ -298,7 +298,7 @@ _computeCellsToTransform(const MeshMaterial* mat)
   const MeshEnvironment* env = mat->trueEnvironment();
   const Int16 env_id = env->componentId();
   CellGroup all_cells = m_material_mng->mesh()->allCells();
-  bool is_add = m_work_info.is_add;
+  bool is_add = m_work_info.isAdd();
 
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   const VariableCellInt16& cells_nb_env = connectivity->cellsNbEnvironment();
@@ -335,7 +335,7 @@ _computeCellsToTransform()
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   const VariableCellInt16& cells_nb_env = connectivity->cellsNbEnvironment();
   CellGroup all_cells = m_material_mng->mesh()->allCells();
-  const bool is_add = m_work_info.is_add;
+  const bool is_add = m_work_info.isAdd();
 
   ENUMERATE_ (Cell, icell, all_cells) {
     bool do_transform = false;

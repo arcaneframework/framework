@@ -401,7 +401,7 @@ _transformPartialToPure(Int32ConstArrayView nb_env_per_cell,
 void MeshMaterialVariableIndexer::
 transformCellsV2(ComponentModifierWorkInfo& work_info)
 {
-  if (work_info.is_add)
+  if (work_info.isAdd())
     _transformPureToPartialV2(work_info);
   else
     _transformPartialToPureV2(work_info);

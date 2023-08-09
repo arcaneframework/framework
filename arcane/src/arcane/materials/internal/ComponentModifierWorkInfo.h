@@ -35,6 +35,8 @@ namespace Arcane::Materials
  * Les instances de cette classe sont conservées durant toute une phase de
  * modification comprenant plusieurs operations de modification des matériaux
  * (MaterialModifierOperation).
+ *
+ * Il faut appeler initialize() avant d'utiliser l'instance.
  */
 class ARCANE_MATERIALS_EXPORT ComponentModifierWorkInfo
 {
@@ -43,10 +45,10 @@ class ARCANE_MATERIALS_EXPORT ComponentModifierWorkInfo
   UniqueArray<Int32> pure_local_ids;
   UniqueArray<Int32> partial_indexes;
   bool is_verbose = false;
-  bool is_add = false;
 
  public:
 
+  //! Initialise l'instance.
   void initialize(Int32 max_local_id);
 
  public:
@@ -69,6 +71,12 @@ class ARCANE_MATERIALS_EXPORT ComponentModifierWorkInfo
   //! Positionne à \a value l'état 'Removed' des mailles de \a local_ids
   void setRemovedCells(ConstArrayView<Int32> local_ids, bool value);
 
+  //! Positionne l'opération courante
+  void setCurrentOperation(MaterialModifierOperation* operation);
+
+  //! Indique si l'opération courante est un ajout (true) ou une suppression (false) de mailles
+  bool isAdd() const { return m_is_add; }
+
  private:
 
   // Filtre indiquant les mailles qui sont supprimées du constituant
@@ -78,9 +86,9 @@ class ARCANE_MATERIALS_EXPORT ComponentModifierWorkInfo
   // Filtre indiquant les mailles qui doivent changer de status (Pure<->Partial)
   // Ce tableau est dimensionné au nombre de mailles.
   UniqueArray<bool> m_cells_to_transform;
-};
 
-using IncrementalWorkInfo = ComponentModifierWorkInfo;
+  bool m_is_add = false;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
