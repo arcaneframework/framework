@@ -64,12 +64,24 @@ finalize()
 {
   // Met à jour les variables contenant le nombre de milieux et de matériaux
   // par milieu en fonction des valeurs de ComponentConnectivityList.
+
+  // TODO: ne le faire que pour les mailles dont les matériaux ont été modifiés
   CellGroup all_cells = m_material_mng->mesh()->allCells();
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
   const VariableCellInt16& incremental_cells_nb_env = connectivity->cellsNbEnvironment();
   ENUMERATE_(Cell,icell,all_cells){
     cells_nb_env[icell] = incremental_cells_nb_env[icell];
+  }
+
+  // Met à jour le nombre de matériaux par milieu
+  // TODO: Faire cela en une passe
+  for (MeshEnvironment* env : m_material_mng->trueEnvironments()) {
+    VariableCellInt32& cells_nb_mat = env->m_nb_mat_per_cell;
+    Int16 env_id = env->componentId();
+    ENUMERATE_(Cell,icell,all_cells){
+      cells_nb_mat[icell] = connectivity->cellNbMaterial(icell, env_id);
+    }
   }
 }
 
@@ -106,7 +118,6 @@ apply(MaterialModifierOperation* operation)
     //   1 seul matériau avant. Dans ce cas le milieu est supprimé de la maille.
 
     Int32UniqueArray cells_unchanged_in_env;
-    Int32ArrayView cells_nb_mat = true_env->m_nb_mat_per_cell.asArray();
     const Int32 ref_nb_mat = is_add ? 0 : 1;
     const Int16 env_id = true_env->componentId();
     info(4) << "Using optimisation updateMaterialDirect is_add?=" << is_add;
@@ -114,11 +125,8 @@ apply(MaterialModifierOperation* operation)
     for (Integer i = 0, n = ids.size(); i < n; ++i) {
       Int32 lid = ids[i];
       Int32 current_cell_nb_mat = connectivity->cellNbMaterial(CellLocalId(lid), env_id);
-      if (current_cell_nb_mat != cells_nb_mat[lid])
-        ARCANE_FATAL("Incohrent value for nb_material for environment env={0} new={1} ref={2}",
-                     env_id, current_cell_nb_mat, cells_nb_mat[lid]);
       if (current_cell_nb_mat != ref_nb_mat) {
-        info(5) << "CELL i=" << i << " lid=" << lid << " unchanged in environment nb_mat=" << cells_nb_mat[lid];
+        info(5) << "CELL i=" << i << " lid=" << lid << " unchanged in environment nb_mat=" << current_cell_nb_mat;
         cells_unchanged_in_env.add(lid);
       }
       else {
@@ -366,13 +374,11 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 
   Int32 nb_to_remove = local_ids.size();
 
-  // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
-  for (Integer i = 0; i < nb_to_remove; ++i) {
-    Int32 lid = local_ids[i];
-    CellLocalId cell_lid(lid);
-    --env->m_nb_mat_per_cell[cell_lid];
+  // Positionne le filtre des mailles supprimées.
+  for (Int32 lid : local_ids)
     m_work_info.removed_local_ids_filter[lid] = true;
-  }
+
+  // TODO: à faire dans finialize()
   env->addToTotalNbCellMat(-nb_to_remove);
 
   mat->variableIndexer()->endUpdateRemove(m_work_info.removed_local_ids_filter, nb_to_remove);
@@ -412,8 +418,6 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   Int32 nb_to_add = local_ids.size();
 
   // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
-  for (Int32 lid : local_ids)
-    ++env->m_nb_mat_per_cell[CellLocalId{ lid }];
   env->addToTotalNbCellMat(nb_to_add);
 
   _addItemsToIndexer(env, var_indexer, local_ids);
@@ -439,17 +443,6 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
   const VariableCellInt16& nb_env_per_cell = connectivity->cellsNbEnvironment();
   Int16 env_id = env->componentId();
 
-  // Vérifie la cohérence sur le nombre de matériaux entre la version historique
-  // et la version incrémentale
-  for (Int32 lid : local_ids) {
-    CellLocalId cell_id(lid);
-    Int32 nb_mat_ref = env->m_nb_mat_per_cell[cell_id];
-    Int32 nb_mat_computed = connectivity->cellNbMaterial(cell_id, env_id);
-    if (nb_mat_ref != nb_mat_computed) {
-      ARCANE_FATAL("Bad number of materials ref={0} computed={1} cell={2} env={3}",
-                   nb_mat_ref, nb_mat_computed, cell_id, env->name());
-    }
-  }
 
   for (Int32 lid : local_ids) {
     CellLocalId cell_id(lid);
