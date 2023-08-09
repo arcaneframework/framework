@@ -17,7 +17,7 @@ jobs:
     name: ubuntu coverity
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-15_full_20230720
+      image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-16_full_20230808
     steps:
       # Checkout v2 does not include files listed in .gitattributes
       - name: Checkout
@@ -40,12 +40,6 @@ jobs:
           -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
           -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
           -DCMAKE_DISABLE_FIND_PACKAGE_SWIG=ON
-
-      - name: Install missing packages
-        shell: 'bash'
-        run: |
-          apt-get update -y
-          apt-get install -y curl
 
       # Setting up ccache from github cached files
       - name: Prepare coverity

@@ -2,8 +2,7 @@ name: Codecov Scan
 
 on:
   schedule:
-    - cron: '24 0 * * *' # Tous les jours à 00:24.
-  push:
+    - cron: '24 0 * * *'
   pull_request:
     branches: [ main, dev/cea ]
     paths-ignore:
@@ -28,27 +27,10 @@ on:
   workflow_dispatch:
   
 env:
-  # On place la source à la racine pour éviter
-  # un sous-répertoire en plus dans Codecov.
-  SOURCE_DIR: '/__w/framework/framework'
-  BUILD_DIR: '/__w/framework/framework/build'
-
   # CTest
-  CT_RESULT_DIR: '/__w/framework/framework/test'
   CT_OPTS: "--timeout 300 --output-on-failure"
 
-  CT_EXCLUED_LABELS: "LARGE_HYBRID"
-
-  # ccache
-  CCACHE_COMPRESS: true
-  CCACHE_COMPRESSLEVEL: 6
-  CCACHE_DIR: '/__w/framework/framework/ccache'
-  CCACHE_MAXSIZE: 5G
-  
-  # CMake
-  CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
-
-  # MPI
+  # OpenMPI
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
 
@@ -57,83 +39,70 @@ jobs:
     name: Codecov
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-15_full_20230720
+      image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-16_full_20230808
 
     steps:
-      - name: Checkout framework
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.SOURCE_DIR }}
-          submodules: true
+      # On place la source à la racine pour éviter
+      # un sous-répertoire en plus dans Codecov.
+      - name: Define environment paths
+        shell: bash
+        run: |
+          echo "SOURCE_DIR=${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+          echo "BUILD_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
+          echo "CCACHE_DIR=${GITHUB_WORKSPACE}/ccache" >> $GITHUB_ENV
+          echo "CT_RESULT_DIR=${GITHUB_WORKSPACE}/test" >> $GITHUB_ENV
 
       - name: Get date
         id: get-date
         shell: bash
         run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
-      - name: Get cache for ccache tool
-        uses: actions/cache@v3
+      - name: Checkout framework
+        uses: actions/checkout@v3
         with:
-          path: ${{env.CCACHE_DIR}}
-          key: codecov-${{ env.m_date }}-${{ github.run_number }}
-          restore-keys: codecov-
+          path: ${{ env.SOURCE_DIR }}
+          submodules: true
 
-      - name: Configure
-        shell: 'bash'
-        run: |
-          cmake \
-          -S ${{ env.SOURCE_DIR }} \
-          -B ${{ env.BUILD_DIR }} \
-          -GNinja \
-          -DBUILD_SHARED_LIBS=TRUE \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path -ftest-coverage" \
-          -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-          -DARCANE_DEFAULT_PARTITIONER=Metis \
-          -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
-          -DARCANE_DISABLE_HYODA=TRUE \
-          -DARCCON_REGISTER_PACKAGE_VERSION=2 \
-          ${{ env.CM_CCACHE_OPTS }}
+      - name: Build framework
+        uses: arcaneframework/gh_actions/build_install_framework@v1
+        with:
+          source_dir: ${{ env.SOURCE_DIR }}
+          build_dir: ${{ env.BUILD_DIR }}
+          cmake_additionnal_args: '-DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path -ftest-coverage"
+            -DARCANE_DEFAULT_PARTITIONER=Metis
+            -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
+            -DARCANE_DISABLE_HYODA=TRUE
+            -DARCCON_REGISTER_PACKAGE_VERSION=2'
+          type_build: 'Release'
+          compilo: 'GCC'
+          with_cuda: false
+          with_samples: false
 
-      - name: Build
-        shell: bash
-        run: |
-          cmake --build ${{ env.BUILD_DIR }}
+      - name: Upload build artifact
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: codecov-build-artifact
+          path: ${{ env.BUILD_DIR }}/CMakeFiles
+          retention-days: 7
 
       - name: Test
         shell: bash
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
           ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -LE '${{ env.CT_EXCLUED_LABELS }}'
-          
-      # mkdir tests
-      # export OMPI_ALLOW_RUN_AS_ROOT=1
-      # export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-      # export ARCANE_CHECK=1
-      # ctest --test-dir ./build/ --output-junit ./tests/results.xml -LE 'LARGE_HYBRID' -j 4 --repeat until-pass:10 --timeout 60
-      # gcov-12 $(find . -name "*.gcno" -o -name "*.gcda")
-
-      # - name: Apply coverage
-      #   shell: bash
-      #   run: find . -name "*.o" -exec gcov-12 {} \;
-
-      # - name: Remove gcov headers
-      #   shell: bash
-      #   run: rm -f *.h.gcov *_wrap.*.gcov
-
-      - name: Apply coverage
-        shell: bash
-        continue-on-error: true
-        run: gcov-12 $(find . -name "*.gcno" -o -name "*.gcda")
 
       - name: Remove generated axl headers and wrap
         shell: bash
-        run: rm -f *_axl.h.gcov *_wrap.*.gcov
+        run: |
+          rm -v -f *_axl.h.gcno *_axl.h.gcda *_wrap.*.gcno *_wrap.*.gcda
 
-      - name: Upload coverage to Codecov
+      - name: Apply gcov and upload results to Codecov
         uses: codecov/codecov-action@v3
         with:
           gcov: true
+          verbose: true
+          fail_ci_if_error: true
       
       - name: Upload test artifact
         uses: actions/upload-artifact@v3
@@ -142,7 +111,3 @@ jobs:
           name: codecov-test-artifact
           path: ${{ env.CT_RESULT_DIR }}
           retention-days: 7
-
-      - name: Get ccache status
-        shell: bash
-        run: ccache -s -v
