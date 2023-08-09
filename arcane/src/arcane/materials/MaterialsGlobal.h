@@ -64,6 +64,11 @@ class MatVarIndex;
 class IMeshMaterialSynchronizeBuffer;
 class ComponentConnectivityList;
 class MeshMaterialMng;
+class AllEnvData;
+class MaterialModifierOperation;
+class MeshMaterial;
+class MeshEnvironment;
+class ComponentModifierWorkInfo;
 
 template <typename DataType> class ItemMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableScalar;

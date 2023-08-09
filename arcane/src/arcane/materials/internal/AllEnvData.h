@@ -30,9 +30,6 @@
 
 namespace Arcane::Materials
 {
-class MeshMaterialMng;
-class MaterialModifierOperation;
-class IncrementalWorkInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
