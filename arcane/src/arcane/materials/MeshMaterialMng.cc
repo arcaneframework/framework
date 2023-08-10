@@ -175,8 +175,7 @@ build()
   {
     int default_flags = 0;
 
-    //GG: Décommenter pour activer par défaut les optimisations.
-    //default_flags = (int)eModificationFlags::GenericOptimize | (int)eModificationFlags::OptimizeMultiAddRemove;
+    default_flags = (int)eModificationFlags::GenericOptimize | (int)eModificationFlags::OptimizeMultiAddRemove;
 
     int opt_flag_value = 0;
     String env_name = "ARCANE_MATERIAL_MODIFICATION_FLAGS";
