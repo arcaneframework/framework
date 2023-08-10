@@ -85,6 +85,7 @@ jobs:
       with_cuda: ${{ matrix.image_cuda }}
       type_build: ${{ matrix.type_build }}
       cmake_additionnal_args: '${{ matrix.image_args }} ${{ matrix.version_args }}'
+      verbose: true
       with_samples: true
       execute_tests: ${{ !matrix.image_cuda }}
       excluded_tests: ${{ matrix.excluded_tests }}
