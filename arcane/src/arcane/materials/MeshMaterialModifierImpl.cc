@@ -14,6 +14,7 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IData.h"
@@ -27,6 +28,7 @@
 #include "arcane/materials/internal/MeshMaterialModifierImpl.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
 #include "arcane/materials/internal/IncrementalComponentModifier.h"
+#include "arcane/materials/internal/ConstituentListPrinter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -79,8 +81,13 @@ MeshMaterialModifierImpl(MeshMaterialMng* mm)
 , m_material_mng(mm)
 {
   _setLocalVerboseLevel(4);
-  if (!platform::getEnvironmentVariable("ARCANE_DEBUG_MATERIAL_MODIFIER").null())
-    _setLocalVerboseLevel(3);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_MATERIAL_MODIFIER", true)){
+    Int32 value = v.value();
+    if (value>0)
+      _setLocalVerboseLevel(3);
+    if (value>1)
+      m_print_component_list = true;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -190,6 +197,27 @@ _checkMayOptimize()
  */
 void MeshMaterialModifierImpl::
 endUpdate()
+{
+  ConstituentListPrinter list_printer(m_material_mng);
+  if (m_print_component_list){
+    info() << "MeshMaterialModifierImpl::endUpdate(): BEGIN"
+           << " modification_id=" << m_modification_id;
+    list_printer.print();
+  }
+  _endUpdate();
+  if (m_print_component_list){
+    info() << "MeshMaterialModifierImpl::endUpdate(): END"
+           << " modification_id=" << m_modification_id;
+    list_printer.print();
+  }
+  ++m_modification_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialModifierImpl::
+_endUpdate()
 {
   bool is_keep_value = m_material_mng->isKeepValuesAfterChange();
   Integer nb_operation = m_operations.values().size();
