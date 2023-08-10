@@ -255,13 +255,15 @@ endif()
 ARCANE_ADD_TEST_SEQUENTIAL(geometric1 testGeometric-1.arc)
 
 # Material Heat
-arcane_add_test(material_heat testMaterialHeat-1.arc)
-arcane_add_test(material_heat2 testMaterialHeat-2.arc)
-arcane_add_test(material_heat3 testMaterialHeat-3.arc)
-arcane_add_test(material_heat_incremental testMaterialHeat-1-incremental.arc)
-arcane_add_test(material_heat2_incremental testMaterialHeat-2-incremental.arc)
-arcane_add_test(material_heat3_incremental testMaterialHeat-3-incremental.arc)
-arcane_add_test_sequential(material_heat2_incremental_small testMaterialHeat-2-incremental-small.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
+foreach(test_index 1 2 3)
+  foreach(opt_level 0 3 7 15)
+    set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}.arc")
+    set(TEST_MODIFICATION_FLAG ${opt_level})
+    configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
+    arcane_add_test(material_heat_opt${opt_level}_${test_index} ${_TEST_FILENAME})
+  endforeach()
+endforeach()
+arcane_add_test_sequential(material_heat_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
 
 ###################
 # WRAPPING '.Net' #

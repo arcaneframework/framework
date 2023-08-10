@@ -28,7 +28,7 @@
 
  <material-heat-test>
    <nb-iteration>15</nb-iteration>
-   <modification-flags>15</modification-flags>
+   <modification-flags>@TEST_MODIFICATION_FLAG@</modification-flags>
    <material>
      <name>MAT1</name>
    </material>
