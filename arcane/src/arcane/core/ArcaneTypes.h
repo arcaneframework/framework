@@ -122,6 +122,8 @@ class IMeshInitialAllocator;
 class UnstructuredMeshAllocateBuildInfo;
 class CartesianMeshAllocateBuildInfo;
 class IIncrementalItemConnectivity;
+class IIncrementalItemTargetConnectivity;
+class IIncrementalItemSourceConnectivity;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
 
@@ -533,7 +535,8 @@ ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseFunction)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseOptions)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseMng)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseOptionList)
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IIncrementalItemConnectivity)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IIncrementalItemSourceConnectivity)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IIncrementalItemTargetConnectivity)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

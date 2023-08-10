@@ -130,9 +130,13 @@ public:
   //! Nombre maximum d'entités connectées à une entité source.
   Int32 maxNbConnectedItem() const override { return Base::trueCustomConnectivity()->maxNbConnectedItem(); }
 
-  Ref<IIncrementalItemConnectivity> toReference() override
+  Ref<IIncrementalItemSourceConnectivity> toSourceReference() override
   {
-    return Arccore::makeRef<IIncrementalItemConnectivity>(this);
+    return Arccore::makeRef<IIncrementalItemSourceConnectivity>(this);
+  }
+  Ref<IIncrementalItemTargetConnectivity> toTargetReference() override
+  {
+    return Arccore::makeRef<IIncrementalItemTargetConnectivity>(this);
   }
 
   protected:

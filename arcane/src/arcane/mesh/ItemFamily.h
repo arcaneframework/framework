@@ -380,8 +380,8 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  private:
 
-  UniqueArray<Ref<IIncrementalItemConnectivity>> m_source_incremental_item_connectivities;
-  UniqueArray<Ref<IIncrementalItemConnectivity>> m_target_incremental_item_connectivities;
+  UniqueArray<Ref<IIncrementalItemSourceConnectivity>> m_source_incremental_item_connectivities;
+  UniqueArray<Ref<IIncrementalItemTargetConnectivity>> m_target_incremental_item_connectivities;
 
  protected:
 
@@ -537,8 +537,8 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _resizeItemVariables(Int32 new_size,bool force_resize);
   void _handleOldCheckpoint();
 
-  void _addSourceConnectivity(IIncrementalItemConnectivity* c);
-  void _addTargetConnectivity(IIncrementalItemConnectivity* c);
+  void _addSourceConnectivity(IIncrementalItemSourceConnectivity* c);
+  void _addTargetConnectivity(IIncrementalItemTargetConnectivity* c);
   void _addVariable(IVariable* var);
   void _removeVariable(IVariable* var);
   void _resizeVariables(bool force_resize);

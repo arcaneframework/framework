@@ -68,7 +68,8 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
   IItemFamily* sourceFamily() const override { return m_source_family;}
   IItemFamily* targetFamily() const override { return m_target_family;}
 
-  Ref<IIncrementalItemConnectivity> toReference() override;
+  Ref<IIncrementalItemSourceConnectivity> toSourceReference() override;
+  Ref<IIncrementalItemTargetConnectivity> toTargetReference() override;
 
  protected:
 
