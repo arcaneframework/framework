@@ -544,7 +544,7 @@ _synchronizeV2()
   if (!data)
     ARCANE_FATAL("Bad type");
 
-  ConstArrayView<MeshMaterialVariableIndexer*> indexers = material_mng->variablesIndexer();
+  ConstArrayView<MeshMaterialVariableIndexer*> indexers = material_mng->_internalApi()->variablesIndexer();
   Integer nb_indexer = indexers.size();
   data->_internal()->_internalDeprecatedValue().resize(family->maxLocalId(),nb_indexer+1);
   Array2View<DataType> values(data->view());
@@ -590,7 +590,7 @@ _synchronizeV5()
   // fait les send/receive directement sans utiliser de sérialiser.
   IMeshMaterialMng* material_mng = m_p->materialMng();
 
-  IMeshMaterialVariableSynchronizer* mmvs = material_mng->_allCellsMatEnvSynchronizer();
+  IMeshMaterialVariableSynchronizer* mmvs = material_mng->_internalApi()->allCellsMatEnvSynchronizer();
   IVariableSynchronizer* var_syncer = mmvs->variableSynchronizer();
   IParallelMng* pm = var_syncer->parallelMng();
 

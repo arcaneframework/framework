@@ -26,16 +26,6 @@
 
 #include "arcane/core/materials/IMeshMaterial.h"
 #include "arcane/core/materials/ComponentItemVectorView.h"
-
-#include "arcane/materials/MaterialVariableBuildInfo.h"
-#include "arcane/materials/MatItemEnumerator.h"
-#include "arcane/materials/MeshMaterialVariableRef.h"
-#include "arcane/materials/MeshMaterialVariableDependInfo.h"
-#include "arcane/materials/IMeshMaterialVariableComputeFunction.h"
-#include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
-#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
-#include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
-
 #include "arcane/core/Variable.h"
 #include "arcane/core/VariableDependInfo.h"
 #include "arcane/core/MeshVariable.h"
@@ -45,6 +35,16 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/Parallel.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
+
+#include "arcane/materials/MaterialVariableBuildInfo.h"
+#include "arcane/materials/MatItemEnumerator.h"
+#include "arcane/materials/MeshMaterialVariableRef.h"
+#include "arcane/materials/MeshMaterialVariableDependInfo.h"
+#include "arcane/materials/IMeshMaterialVariableComputeFunction.h"
+#include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
+#include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
+#include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -266,7 +266,7 @@ removeVariableRef(MeshMaterialVariableRef* ref)
     // pas détruit.
     delete m_p->m_global_variable_changed_observer;
     m_p->m_global_variable_changed_observer = nullptr;
-    m_p->materialMng()->removeVariable(this);
+    m_p->materialMng()->_internalApi()->removeVariable(this);
     delete this;
   }
 }

@@ -11,11 +11,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/materials/MeshMaterialModifier.h"
+
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/materials/MeshMaterialModifier.h"
-#include "arcane/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
+
 #include "arcane/materials/internal/IMeshMaterialModifierImpl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -28,7 +31,7 @@ namespace Arcane::Materials
 
 MeshMaterialModifier::
 MeshMaterialModifier(IMeshMaterialMng* mm)
-: m_impl(mm->modifier())
+: m_impl(mm->_internalApi()->modifier())
 , m_has_update(false)
 {
 }

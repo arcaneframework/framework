@@ -323,7 +323,7 @@ forceRecompute(bool compute_all)
 {
   m_material_mng->incrementTimestamp();
 
-  ConstArrayView<MeshMaterialVariableIndexer*> vars_idx = m_material_mng->variablesIndexer();
+  ConstArrayView<MeshMaterialVariableIndexer*> vars_idx = m_material_mng->_internalApi()->variablesIndexer();
   Integer nb_var = vars_idx.size();
   info(4) << "ForceRecompute NB_VAR_IDX=" << nb_var << " compute_all?=" << compute_all;
 

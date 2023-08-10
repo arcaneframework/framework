@@ -79,6 +79,30 @@ class MeshMaterialMng
     {
       return m_material_mng->createAllCellToAllEnvCell(alloc);
     }
+    ConstArrayView<MeshMaterialVariableIndexer*> variablesIndexer() override
+    {
+      return m_material_mng->_variablesIndexer();
+    }
+    void addVariable(IMeshMaterialVariable* var) override
+    {
+      return m_material_mng->_addVariable(var);
+    }
+    void removeVariable(IMeshMaterialVariable* var) override
+    {
+      return m_material_mng->_removeVariable(var);
+    }
+    IMeshMaterialModifierImpl* modifier() override
+    {
+      return m_material_mng->_modifier();
+    }
+    IMeshMaterialVariableSynchronizer* allCellsMatEnvSynchronizer() override
+    {
+      return m_material_mng->_allCellsMatEnvSynchronizer();
+    }
+    IMeshMaterialVariableSynchronizer* allCellsEnvOnlySynchronizer() override
+    {
+      return m_material_mng->_allCellsEnvOnlySynchronizer();
+    }
 
    private:
 
@@ -130,7 +154,7 @@ class MeshMaterialMng
   void setDataCompressorServiceName(const String& name) override;
   String dataCompressorServiceName() const override { return m_data_compressor_service_name; }
 
-  const String& name() const override { return m_name; }
+  String name() const override { return m_name; }
   ConstArrayView<IMeshMaterial*> materials() const override { return m_materials; }
   ConstArrayView<IMeshComponent*> materialsAsComponents() const override { return m_materials_as_components; }
   ConstArrayView<IMeshEnvironment*> environments() const override { return m_environments; }
@@ -140,15 +164,8 @@ class MeshMaterialMng
 
   IMeshEnvironment* findEnvironment(const String& name,bool throw_exception=true) override;
   IMeshBlock* findBlock(const String& name,bool throw_exception=true) override;
-  ConstArrayView<MeshMaterialVariableIndexer*> variablesIndexer() override
-  {
-    return m_variables_indexer;
-  }
-  IMeshMaterialModifierImpl* modifier() override;
 
   void fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables) override;
-  void addVariable(IMeshMaterialVariable* var) override;
-  void removeVariable(IMeshMaterialVariable* var) override;
 
   IMeshMaterialVariable* findVariable(const String& name) override;
   IMeshMaterialVariable* checkVariable(IVariable* global_var) override;
@@ -169,15 +186,6 @@ class MeshMaterialMng
   void checkMaterialsInCells(Integer max_print) override;
 
   Int64 timestamp() const override { return m_timestamp; }
-
-  IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer() override
-  {
-    return m_all_cells_mat_env_synchronizer;
-  }
-  IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer() override
-  {
-    return m_all_cells_env_only_synchronizer;
-  }
 
   ConstArrayView<MeshEnvironment*> trueEnvironments() const { return m_true_environments; }
   ConstArrayView<MeshMaterial*> trueMaterials() const { return m_true_materials; }
@@ -321,6 +329,21 @@ class MeshMaterialMng
   void _checkCreateProperties();
   void _onMeshDestroyed();
   void _unregisterAllVariables();
+  void _addVariable(IMeshMaterialVariable* var);
+  void _removeVariable(IMeshMaterialVariable* var);
+  IMeshMaterialModifierImpl* _modifier();
+  ConstArrayView<MeshMaterialVariableIndexer*> _variablesIndexer()
+  {
+    return m_variables_indexer;
+  }
+  IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer()
+  {
+    return m_all_cells_mat_env_synchronizer;
+  }
+  IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer()
+  {
+    return m_all_cells_env_only_synchronizer;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

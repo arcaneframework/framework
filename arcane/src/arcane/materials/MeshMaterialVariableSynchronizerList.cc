@@ -23,6 +23,7 @@
 #include "arcane/core/IVariableSynchronizer.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MeshMaterialVariable.h"
@@ -170,7 +171,7 @@ _beginSynchronize(bool is_blocking)
   {
     SyncInfo& sync_info = m_p->m_mat_env_sync_info;
     _fillSyncInfo(sync_info);
-    sync_info.mat_synchronizer = mm->_allCellsMatEnvSynchronizer();
+    sync_info.mat_synchronizer = mm->_internalApi()->allCellsMatEnvSynchronizer();
     sync_info.variables = m_p->m_mat_env_vars;
     sync_info.message_tag = MP::MessageTag(569);
     if (!sync_info.variables.empty()) {
@@ -182,7 +183,7 @@ _beginSynchronize(bool is_blocking)
   {
     SyncInfo& sync_info = m_p->m_env_only_sync_info;
     _fillSyncInfo(sync_info);
-    sync_info.mat_synchronizer = mm->_allCellsEnvOnlySynchronizer();
+    sync_info.mat_synchronizer = mm->_internalApi()->allCellsEnvOnlySynchronizer();
     sync_info.variables = m_p->m_env_only_vars;
     sync_info.message_tag = MP::MessageTag(585);
     if (!sync_info.variables.empty()) {

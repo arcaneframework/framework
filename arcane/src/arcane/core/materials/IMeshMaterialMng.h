@@ -247,7 +247,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   virtual bool isAllocateScalarEnvironmentVariableAsMaterial() const =0;
 
   //! Nom du gestionnaire
-  virtual const String& name() const =0;
+  virtual String name() const =0;
 
   /*!
    * \ brief Nom du service utilisé pour compresser les données lors du forceRecompute().
@@ -258,16 +258,6 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
 
   //! virtual Nom du service utilisé pour compresser les données
   virtual String dataCompressorServiceName() const =0;
-
-  /*!
-   * \brief Implémentation du modificateur.
-   *
-   * Ce modificateur permet de changer la liste des mailles composant un milieu
-   * ou un matériau. Cette méthode ne doit en principe pas être appelée directement.
-   * Pour modifier, il vaut mieux utiliser une instance de MeshMaterialModifier
-   * qui garantit que les fonctions de mise à jour sont bien appelées.
-   */
-  virtual IMeshMaterialModifierImpl* modifier() =0;
 
   //! Liste des matériaux
   virtual ConstArrayView<IMeshMaterial*> materials() const =0;
@@ -309,36 +299,11 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   virtual IMeshBlock* findBlock(const String& name,bool throw_exception=true) =0;
 
   /*!
-   * \internal
-   * \brief Liste des infos pour indexer les variables matériaux.
-   */
-  virtual ConstArrayView<MeshMaterialVariableIndexer*> variablesIndexer() =0;
-
-  /*!
    * \brief Remplit le tableau \a variables avec la liste des variables matériaux utilisés.
    *
    * La tableau \a variables est vidé avant l'appel.
    */
   virtual void fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables) =0;
-
-  /*!
-   * \internal
-   * \brief Ajoute la variable \a var.
-   * Cette méthode ne doit pas être appelée directement. Les références
-   * aux variables l'appelle si nécessaire. Cette méthode doit être
-   * appelée avec le verrou variableLock() actif. 
-   */
-  virtual void addVariable(IMeshMaterialVariable* var) =0;
-
-  /*!
-   * \internal
-   * \brief Supprime la variable \a var.
-   * Cette méthode ne doit pas être appelée directement. Les références
-   * aux variables l'appelle si nécessaire. Cette méthode doit être
-   * appelée avec le verrou variableLock() actif. A noter que cette
-   * fonction n'appelle pas l'opérateur delete sur \a var.
-   */
-  virtual void removeVariable(IMeshMaterialVariable* var) =0;
 
   //! Variable de nom \a name ou \a nullptr si aucune de ce nom existe.
   virtual IMeshMaterialVariable* findVariable(const String& name) =0;
@@ -430,18 +395,6 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * protection et vaudra donc 0 en reprise.
    */
   virtual Int64 timestamp() const =0;
-
-  /*!
-   * \internal
-   * \brief Synchronizeur pour les variables matériaux et milieux sur toutes les mailles.
-   */
-  virtual IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer() =0;
-
-  /*!
-   * \internal
-   * \brief Synchronizeur pour les variables uniquement milieux sur toutes les mailles.
-   */
-  virtual IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer() =0;
 
   /*!
    * \brief Positionne la version de l'implémentation pour la synchronisation des

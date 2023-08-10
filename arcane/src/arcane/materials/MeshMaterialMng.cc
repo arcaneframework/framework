@@ -493,7 +493,7 @@ setDataCompressorServiceName(const String& name)
 /*---------------------------------------------------------------------------*/
 
 IMeshMaterialModifierImpl* MeshMaterialMng::
-modifier()
+_modifier()
 {
   return m_modifier;
 }
@@ -746,7 +746,7 @@ fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-addVariable(IMeshMaterialVariable* var)
+_addVariable(IMeshMaterialVariable* var)
 {
   //TODO: le verrou m_variable_lock doit etre actif.
   IVariable* gvar = var->globalVariable();
@@ -759,7 +759,7 @@ addVariable(IMeshMaterialVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-removeVariable(IMeshMaterialVariable* var)
+_removeVariable(IMeshMaterialVariable* var)
 {
   //TODO: le verrou m_variable_lock doit etre actif.
   IVariable* gvar = var->globalVariable();

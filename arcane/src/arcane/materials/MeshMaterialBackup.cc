@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/materials/MeshMaterialBackup.h"
+
 #include "arcane/utils/IDataCompressor.h"
 
 #include "arcane/core/IVariable.h"
@@ -19,12 +21,11 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterialVariable.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
-
-#include "arcane/materials/MeshMaterialBackup.h"
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshMaterialVariable.h"
-#include "arcane/materials/MatItemEnumerator.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
@@ -124,7 +125,7 @@ _save()
   if (!m_compressor_service_name.null())
     m_use_v2 = true;
 
-  ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_material_mng->variablesIndexer();
+  ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_material_mng->_internalApi()->variablesIndexer();
 
   Integer nb_index = indexers.size();
   Integer nb_value = 0;
