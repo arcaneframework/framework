@@ -92,18 +92,25 @@ jobs:
           mkdir -p ${{ env.CT_RESULT_DIR }}
           ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }}
 
-      - name: Remove generated axl headers and wrap
+      - name: Apply coverage
+        shell: bash
+        continue-on-error: true
+        run: |
+          gcov -p $(find . -name "*.gcno" -o -name "*.gcda")
+
+      - name: Remove gcov files for generated axl .h and generated wrap files
         shell: bash
         run: |
-          rm -v -f *_axl.h.gcno *_axl.h.gcda *_wrap.*.gcno *_wrap.*.gcda
+          rm -v -f *_axl.h.gcov *_wrap.*.gcov
 
-      - name: Apply gcov and upload results to Codecov
+      # "gcov: false" car on applique nous-même gcov pour pouvoir supprimer les fichiers après coup.
+      - name: Upload coverage files to Codecov
         uses: codecov/codecov-action@v3
         with:
-          gcov: true
+          gcov: false
           verbose: true
           fail_ci_if_error: true
-      
+
       - name: Upload test artifact
         uses: actions/upload-artifact@v3
         if: failure()
