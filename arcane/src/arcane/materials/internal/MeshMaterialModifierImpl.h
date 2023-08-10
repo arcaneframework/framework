@@ -83,15 +83,21 @@ class MeshMaterialModifierImpl
 
   MeshMaterialMng* m_material_mng = nullptr;
   OperationList m_operations;
-  Integer nb_update = 0;
-  Integer nb_save_restore = 0;
-  Integer nb_optimize_add = 0;
-  Integer nb_optimize_remove = 0;
+  Int32 nb_update = 0;
+  Int32 nb_save_restore = 0;
+  Int32 nb_optimize_add = 0;
+  Int32 nb_optimize_remove = 0;
+  Int32 m_modification_id = 0;
 
   bool m_allow_optimization = false;
   bool m_allow_optimize_multiple_operation = false;
   bool m_allow_optimize_multiple_material = false;
   bool m_use_incremental_recompute = false;
+  bool m_print_component_list = false;
+
+ private:
+
+  void _endUpdate();
 };
 
 /*---------------------------------------------------------------------------*/
