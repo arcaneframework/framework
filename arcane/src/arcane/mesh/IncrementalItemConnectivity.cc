@@ -79,10 +79,19 @@ AbstractIncrementalItemConnectivity(IItemFamily* source_family,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<IIncrementalItemConnectivity> AbstractIncrementalItemConnectivity::
-toReference()
+Ref<IIncrementalItemSourceConnectivity> AbstractIncrementalItemConnectivity::
+toSourceReference()
 {
-  return Arccore::makeRef<IIncrementalItemConnectivity>(this);
+  return Arccore::makeRef<IIncrementalItemSourceConnectivity>(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IIncrementalItemTargetConnectivity> AbstractIncrementalItemConnectivity::
+toTargetReference()
+{
+  return Arccore::makeRef<IIncrementalItemTargetConnectivity>(this);
 }
 
 /*---------------------------------------------------------------------------*/

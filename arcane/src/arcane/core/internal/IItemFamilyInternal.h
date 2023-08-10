@@ -86,8 +86,8 @@ class ARCANE_CORE_EXPORT IItemFamilyInternal
    */
   virtual void resizeVariables(bool force_resize) = 0;
 
-  virtual void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
-  virtual void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
+  virtual void addSourceConnectivity(IIncrementalItemSourceConnectivity* connectivity) = 0;
+  virtual void addTargetConnectivity(IIncrementalItemTargetConnectivity* connectivity) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

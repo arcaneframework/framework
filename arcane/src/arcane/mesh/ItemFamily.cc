@@ -137,11 +137,11 @@ class ItemFamily::InternalApi
   {
     return m_family->commonItemSharedInfo();
   }
-  void addSourceConnectivity(IIncrementalItemConnectivity* connectivity) override
+  void addSourceConnectivity(IIncrementalItemSourceConnectivity* connectivity) override
   {
     m_family->_addSourceConnectivity(connectivity);
   }
-  void addTargetConnectivity(IIncrementalItemConnectivity* connectivity) override
+  void addTargetConnectivity(IIncrementalItemTargetConnectivity* connectivity) override
   {
     m_family->_addTargetConnectivity(connectivity);
   }
@@ -2334,18 +2334,18 @@ setConnectivityMng(IItemConnectivityMng* connectivity_mng)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_addSourceConnectivity(IIncrementalItemConnectivity* c)
+_addSourceConnectivity(IIncrementalItemSourceConnectivity* c)
 {
-  m_source_incremental_item_connectivities.add(c->toReference());
+  m_source_incremental_item_connectivities.add(c->toSourceReference());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_addTargetConnectivity(IIncrementalItemConnectivity* c)
+_addTargetConnectivity(IIncrementalItemTargetConnectivity* c)
 {
-  m_target_incremental_item_connectivities.add(c->toReference());
+  m_target_incremental_item_connectivities.add(c->toTargetReference());
 }
 
 /*---------------------------------------------------------------------------*/

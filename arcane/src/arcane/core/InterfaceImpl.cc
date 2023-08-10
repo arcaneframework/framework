@@ -207,7 +207,7 @@ findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& i
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void IIncrementalItemConnectivity::
+void IIncrementalItemSourceConnectivity::
 reserveMemoryForNbSourceItems([[maybe_unused]] Int32 n,
                               [[maybe_unused]] bool pre_alloc_connectivity)
 {
