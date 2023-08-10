@@ -22,8 +22,9 @@
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 #include "arcane/core/materials/IMeshMaterialVariableFactory.h"
 
-// Pas utilisé directement mais nécessaire pour la définition des symboles.
+// Pas utilisé directement mais nécessaire pour l'exportation des symboles.
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
