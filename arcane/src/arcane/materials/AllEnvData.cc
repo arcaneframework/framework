@@ -323,7 +323,7 @@ forceRecompute(bool compute_all)
 {
   m_material_mng->incrementTimestamp();
 
-  ConstArrayView<MeshMaterialVariableIndexer*> vars_idx = m_material_mng->variablesIndexer();
+  ConstArrayView<MeshMaterialVariableIndexer*> vars_idx = m_material_mng->_internalApi()->variablesIndexer();
   Integer nb_var = vars_idx.size();
   info(4) << "ForceRecompute NB_VAR_IDX=" << nb_var << " compute_all?=" << compute_all;
 
@@ -397,11 +397,11 @@ forceRecompute(bool compute_all)
 
   // Met à jour le AllCellToAllEnvCell s'il a été initialisé si la fonctionnalité est activé
   if (m_material_mng->isCellToAllEnvCellForRunCommand()) {
-    auto* all_cell_to_all_env_cell(m_material_mng->getAllCellToAllEnvCell());
+    auto* all_cell_to_all_env_cell(m_material_mng->_internalApi()->getAllCellToAllEnvCell());
     if (all_cell_to_all_env_cell)
       all_cell_to_all_env_cell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
     else
-      m_material_mng->createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
+      m_material_mng->_internalApi()->createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
   }
 }
 

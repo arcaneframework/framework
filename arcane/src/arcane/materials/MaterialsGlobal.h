@@ -69,6 +69,8 @@ class MaterialModifierOperation;
 class MeshMaterial;
 class MeshEnvironment;
 class ComponentModifierWorkInfo;
+class MeshMaterialExchangeMng;
+class MeshMaterialModifierImpl;
 
 template <typename DataType> class ItemMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableScalar;

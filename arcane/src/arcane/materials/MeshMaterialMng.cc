@@ -97,25 +97,9 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 // TODO: utiliser le ITraceMng du maillage. Le faire lors de l'init
 : TraceAccessor(mesh_handle.traceMng())
 , m_mesh_handle(mesh_handle)
+, m_internal_api(new InternalApi(this))
 , m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
-, m_is_end_create(false)
-, m_is_verbose(false)
-, m_keep_values_after_change(true)
-, m_is_data_initialisation_with_zero(false)
-, m_is_mesh_modification_notified(false)
-, m_is_allocate_scalar_environment_variable_as_material(false)
-, m_modification_flags(0)
-, m_modifier(nullptr)
-, m_properties(nullptr)
-, m_all_env_data(nullptr)
-, m_timestamp(0)
-, m_all_cells_mat_env_synchronizer(nullptr)
-, m_all_cells_env_only_synchronizer(nullptr)
-, m_synchronize_variable_version(1)
-, m_exchange_mng(nullptr)
-, m_allcell_2_allenvcell(nullptr)
-, m_is_allcell_2_allenvcell(false)
 {
   m_modifier = new MeshMaterialModifierImpl(this);
   m_all_env_data = new AllEnvData(this);
@@ -166,6 +150,8 @@ MeshMaterialMng::
 
   m_modifier->dumpStats();
   delete m_modifier;
+
+  delete m_internal_api;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -507,7 +493,7 @@ setDataCompressorServiceName(const String& name)
 /*---------------------------------------------------------------------------*/
 
 IMeshMaterialModifierImpl* MeshMaterialMng::
-modifier()
+_modifier()
 {
   return m_modifier;
 }
@@ -760,7 +746,7 @@ fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-addVariable(IMeshMaterialVariable* var)
+_addVariable(IMeshMaterialVariable* var)
 {
   //TODO: le verrou m_variable_lock doit etre actif.
   IVariable* gvar = var->globalVariable();
@@ -773,7 +759,7 @@ addVariable(IMeshMaterialVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-removeVariable(IMeshMaterialVariable* var)
+_removeVariable(IMeshMaterialVariable* var)
 {
   //TODO: le verrou m_variable_lock doit etre actif.
   IVariable* gvar = var->globalVariable();

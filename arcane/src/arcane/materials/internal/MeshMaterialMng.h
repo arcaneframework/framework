@@ -20,11 +20,12 @@
 
 #include "arcane/core/MeshHandle.h"
 
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/MeshBlock.h"
-#include "arcane/materials/MatItemEnumerator.h"
-#include "arcane/materials/AllCellToAllEnvCellConverter.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
+#include "arcane/materials/MeshBlock.h"
+#include "arcane/materials/AllCellToAllEnvCellConverter.h"
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/MeshEnvironment.h"
 
@@ -46,15 +47,10 @@ class ObserverPool;
 
 namespace Arcane::Materials
 {
-class MeshMaterialModifierImpl;
-class MeshMaterialBackup;
-class AllEnvData;
-class MeshMaterialExchangeMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Implémentation d'un gestion des matériaux.
  */
 class MeshMaterialMng
@@ -64,6 +60,54 @@ class MeshMaterialMng
  public:
   
   friend class MeshMaterialBackup;
+
+ private:
+  class InternalApi
+  : public IMeshMaterialMngInternal
+  {
+   public:
+
+    explicit InternalApi(MeshMaterialMng* mm) : m_material_mng(mm){}
+
+   public:
+
+    AllCellToAllEnvCell* getAllCellToAllEnvCell() const override
+    {
+      return m_material_mng->getAllCellToAllEnvCell();
+    }
+    void createAllCellToAllEnvCell(IMemoryAllocator* alloc) override
+    {
+      return m_material_mng->createAllCellToAllEnvCell(alloc);
+    }
+    ConstArrayView<MeshMaterialVariableIndexer*> variablesIndexer() override
+    {
+      return m_material_mng->_variablesIndexer();
+    }
+    void addVariable(IMeshMaterialVariable* var) override
+    {
+      return m_material_mng->_addVariable(var);
+    }
+    void removeVariable(IMeshMaterialVariable* var) override
+    {
+      return m_material_mng->_removeVariable(var);
+    }
+    IMeshMaterialModifierImpl* modifier() override
+    {
+      return m_material_mng->_modifier();
+    }
+    IMeshMaterialVariableSynchronizer* allCellsMatEnvSynchronizer() override
+    {
+      return m_material_mng->_allCellsMatEnvSynchronizer();
+    }
+    IMeshMaterialVariableSynchronizer* allCellsEnvOnlySynchronizer() override
+    {
+      return m_material_mng->_allCellsEnvOnlySynchronizer();
+    }
+
+   private:
+
+    MeshMaterialMng* m_material_mng = nullptr;
+  };
 
  public:
 
@@ -110,7 +154,7 @@ class MeshMaterialMng
   void setDataCompressorServiceName(const String& name) override;
   String dataCompressorServiceName() const override { return m_data_compressor_service_name; }
 
-  const String& name() const override { return m_name; }
+  String name() const override { return m_name; }
   ConstArrayView<IMeshMaterial*> materials() const override { return m_materials; }
   ConstArrayView<IMeshComponent*> materialsAsComponents() const override { return m_materials_as_components; }
   ConstArrayView<IMeshEnvironment*> environments() const override { return m_environments; }
@@ -120,15 +164,8 @@ class MeshMaterialMng
 
   IMeshEnvironment* findEnvironment(const String& name,bool throw_exception=true) override;
   IMeshBlock* findBlock(const String& name,bool throw_exception=true) override;
-  ConstArrayView<MeshMaterialVariableIndexer*> variablesIndexer() override
-  {
-    return m_variables_indexer;
-  }
-  IMeshMaterialModifierImpl* modifier() override;
 
   void fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables) override;
-  void addVariable(IMeshMaterialVariable* var) override;
-  void removeVariable(IMeshMaterialVariable* var) override;
 
   IMeshMaterialVariable* findVariable(const String& name) override;
   IMeshMaterialVariable* checkVariable(IVariable* global_var) override;
@@ -149,15 +186,6 @@ class MeshMaterialMng
   void checkMaterialsInCells(Integer max_print) override;
 
   Int64 timestamp() const override { return m_timestamp; }
-
-  IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer() override
-  {
-    return m_all_cells_mat_env_synchronizer;
-  }
-  IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer() override
-  {
-    return m_all_cells_env_only_synchronizer;
-  }
 
   ConstArrayView<MeshEnvironment*> trueEnvironments() const { return m_true_environments; }
   ConstArrayView<MeshMaterial*> trueMaterials() const { return m_true_materials; }
@@ -213,11 +241,16 @@ class MeshMaterialMng
   {
     m_is_allcell_2_allenvcell = is_enable;
     if (force_create)
-      createAllCellToAllEnvCell();
+      createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
   }
   bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
-  AllCellToAllEnvCell* getAllCellToAllEnvCell() const override { return m_allcell_2_allenvcell; }
-  void createAllCellToAllEnvCell(IMemoryAllocator* alloc=platform::getDefaultDataAllocator()) override
+
+  IMeshMaterialMngInternal* _internalApi() const override { return m_internal_api; }
+
+ private:
+
+  AllCellToAllEnvCell* getAllCellToAllEnvCell() const { return m_allcell_2_allenvcell; }
+  void createAllCellToAllEnvCell(IMemoryAllocator* alloc)
   {
     if (!m_allcell_2_allenvcell)
       m_allcell_2_allenvcell = AllCellToAllEnvCell::create(this, alloc);
@@ -226,24 +259,25 @@ class MeshMaterialMng
  private:
 
   //! Type de la liste des variables par nom complet
-  typedef std::map<String,IMeshMaterialVariable*> FullNameVariableMap;
+  using FullNameVariableMap= std::map<String,IMeshMaterialVariable*>;
   //! Paire de la liste des variables par nom complet
-  typedef FullNameVariableMap::value_type FullNameVariablePair;
+  using FullNameVariablePair = FullNameVariableMap::value_type;
 
-  typedef std::map<IVariable*,IMeshMaterialVariable*> VariableToMaterialVariableMap;
-  typedef VariableToMaterialVariableMap::value_type VariableToMaterialVariablePair;
+  using VariableToMaterialVariableMap = std::map<IVariable*,IMeshMaterialVariable*>;
+  using VariableToMaterialVariablePair = VariableToMaterialVariableMap::value_type;
 
  private:
 
   MeshHandle m_mesh_handle;
+  InternalApi* m_internal_api = nullptr;
   IVariableMng* m_variable_mng = nullptr;
   String m_name;
-  bool m_is_end_create;
-  bool m_is_verbose;
-  bool m_keep_values_after_change;
-  bool m_is_data_initialisation_with_zero;
-  bool m_is_mesh_modification_notified;
-  bool m_is_allocate_scalar_environment_variable_as_material;
+  bool m_is_end_create = false;
+  bool m_is_verbose = false;
+  bool m_keep_values_after_change = true;
+  bool m_is_data_initialisation_with_zero = false;
+  bool m_is_mesh_modification_notified = false;
+  bool m_is_allocate_scalar_environment_variable_as_material = false;
   int m_modification_flags = 0;
 
   Mutex m_variable_lock;
@@ -267,17 +301,18 @@ class MeshMaterialMng
 
   Properties* m_properties = nullptr;
   AllEnvData* m_all_env_data = nullptr;
-  Int64 m_timestamp; //!< Compteur du nombre de modifications des matériaux.
-  IMeshMaterialVariableSynchronizer* m_all_cells_mat_env_synchronizer;
-  IMeshMaterialVariableSynchronizer* m_all_cells_env_only_synchronizer;
-  Integer m_synchronize_variable_version;
+  Int64 m_timestamp = 0; //!< Compteur du nombre de modifications des matériaux.
+  IMeshMaterialVariableSynchronizer* m_all_cells_mat_env_synchronizer = nullptr;
+  IMeshMaterialVariableSynchronizer* m_all_cells_env_only_synchronizer = nullptr;
+  Integer m_synchronize_variable_version = 1;
   MeshMaterialExchangeMng* m_exchange_mng = nullptr;
   IMeshMaterialVariableFactoryMng* m_variable_factory_mng = nullptr;
   std::unique_ptr<ObserverPool> m_observer_pool;
   String m_data_compressor_service_name;
 
-  AllCellToAllEnvCell* m_allcell_2_allenvcell;
-  bool m_is_allcell_2_allenvcell;
+  AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
+  bool m_is_allcell_2_allenvcell = false;
+
 
  private:
 
@@ -294,6 +329,21 @@ class MeshMaterialMng
   void _checkCreateProperties();
   void _onMeshDestroyed();
   void _unregisterAllVariables();
+  void _addVariable(IMeshMaterialVariable* var);
+  void _removeVariable(IMeshMaterialVariable* var);
+  IMeshMaterialModifierImpl* _modifier();
+  ConstArrayView<MeshMaterialVariableIndexer*> _variablesIndexer()
+  {
+    return m_variables_indexer;
+  }
+  IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer()
+  {
+    return m_all_cells_mat_env_synchronizer;
+  }
+  IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer()
+  {
+    return m_all_cells_env_only_synchronizer;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

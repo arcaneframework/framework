@@ -25,6 +25,7 @@
 #include "arcane/core/materials/MaterialVariableBuildInfo.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
@@ -131,7 +132,7 @@ buildFromManager(bool is_continue)
 
   // Il faut récupérer (ou créér) les autres variables.
   //ConstArrayView<IMeshMaterial*> materials = mat_mng->materials();
-  ConstArrayView<MeshMaterialVariableIndexer*> indexers = mat_mng->variablesIndexer();
+  ConstArrayView<MeshMaterialVariableIndexer*> indexers = mat_mng->_internalApi()->variablesIndexer();
   Integer nb_indexer = indexers.size();
   UniqueArray<PrivatePartType*> all_vars(nb_indexer+1);
   all_vars[0] = m_global_variable;
@@ -213,7 +214,7 @@ template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
 syncReferences()
 {
-  ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->variablesIndexer();
+  ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
   Integer nb_indexer = indexers.size();
   for( Integer i=0; i<nb_indexer; ++i ){
     MeshMaterialVariableIndexer* indexer = indexers[i];
@@ -340,7 +341,7 @@ _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
 
   {
     // Redimensionne le tableau des valeurs multiples si besoin.
-    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->variablesIndexer();
+    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
     Traits::resizeWithReserve(partial_var,indexers[var_index]->maxIndexInMultipleArray());
     m_views[var_index+1] = partial_var->valueView();
     m_views_as_bytes[var_index+1] = TraitsType::toBytes(m_views[var_index+1]);
@@ -531,9 +532,9 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
       VariableRefType* var_ref = new VariableRefType(true_ptr);
       MaterialVariableBuildInfo mvbi(mat_mng,v);
       true_mat_var = new VariableTrueType(mvbi,true_ptr,var_ref,mvs);
-      mat_mng->addVariable(true_mat_var);
+      mat_mng->_internalApi()->addVariable(true_mat_var);
       // Le gestionnaire est déjà créé, on peut allouer toutes les infos
-      if (!mat_mng->variablesIndexer().empty())
+      if (!mat_mng->_internalApi()->variablesIndexer().empty())
         true_mat_var->buildFromManager(false);
     }
     ARCANE_CHECK_POINTER(true_mat_var);

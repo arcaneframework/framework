@@ -69,44 +69,52 @@ class MaterialVariableBuildInfo;
 class MaterialVariableTypeInfo;
 class MeshMaterialVariableRef;
 class EnvAndGlobalCell {};
+class IMeshMaterialMngInternal;
+class MeshEnvironmentBuildInfo;
+class MeshBlockBuildInfo;
+class IMeshMaterialMngInternal;
+class IMeshMaterialModifierImpl;
+class CellToAllEnvCellConverter;
+class IMeshMaterialVariableSynchronizer;
+class AllCellToAllEnvCell;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-typedef ComponentItemInternal* ComponentItemInternalPtr;
-typedef IMeshComponent* IMeshComponentPtr;
-typedef IMeshMaterial* IMeshMaterialPtr;
-typedef IMeshEnvironment* IMeshEnvironmentPtr;
+using ComponentItemInternalPtr = ComponentItemInternal*;
+using IMeshComponentPtr = IMeshComponent*;
+using IMeshMaterialPtr = IMeshMaterial*;
+using IMeshEnvironmentPtr = IMeshEnvironment*;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Liste de composants multi-matériaux du maillage.
-typedef ConstArrayView<IMeshComponent*> MeshComponentListView;
+using MeshComponentListView = ConstArrayView<IMeshComponent*>;
 
 //! Liste de milieux du maillage.
-typedef ConstArrayView<IMeshEnvironment*> MeshEnvironmentListView;
+using MeshEnvironmentListView = ConstArrayView<IMeshEnvironment*>;
 
 //! Liste de matériaux du maillage.
-typedef ConstArrayView<IMeshMaterial*> MeshMaterialListView;
+using MeshMaterialListView = ConstArrayView<IMeshMaterial*>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Liste de ComponentCell issues d'un IMeshComponent.
-typedef ComponentItemVector ComponentCellVector;
+using ComponentCellVector = ComponentItemVector;
 
 //! Type de la vue sur un EnvCellVector
-typedef EnvItemVectorView EnvCellVectorView;
+using EnvCellVectorView = EnvItemVectorView;
 
 //! Type de la vue sur un MatCellVector
-typedef MatItemVectorView MatCellVectorView;
+using MatCellVectorView = MatItemVectorView;
 
 //! Type de la vue sur un ComponentCellVector
-typedef ComponentItemVectorView ComponentCellVectorView;
+using ComponentCellVectorView = ComponentItemVectorView;
 
 //! Liste de composants multi-matériaux du maillage.
-typedef ConstArrayView<IMeshComponent*> MeshComponentList;
+using MeshComponentList = ConstArrayView<IMeshComponent*>;
 
 template<typename DataType> class CellMaterialVariableScalarRef;
 

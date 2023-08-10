@@ -11,19 +11,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/materials/MeshMaterialIndirectModifier.h"
+
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ItemGroup.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshEnvironment.h"
+#include "arcane/core/materials/IMeshMaterial.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
-#include "arcane/materials/MeshMaterialIndirectModifier.h"
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshEnvironment.h"
-#include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MeshMaterialBackup.h"
-
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
 /*---------------------------------------------------------------------------*/
@@ -66,7 +67,7 @@ _endUpdate(bool do_sort)
     return;
 
   if (do_sort){
-    for( MeshMaterialVariableIndexer* v : m_material_mng->variablesIndexer() ){
+    for( MeshMaterialVariableIndexer* v : m_material_mng->_internalApi()->variablesIndexer() ){
       CellGroup cells = v->cells();
       UniqueArray<Int32> items_lid(cells.view().localIds());
       cells.clear();

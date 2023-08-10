@@ -18,8 +18,9 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/String.h"
 
-#include "arcane/ItemUniqueId.h"
+#include "arcane/core/ItemUniqueId.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
 
