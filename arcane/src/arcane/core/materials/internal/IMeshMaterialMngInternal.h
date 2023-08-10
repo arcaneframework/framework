@@ -35,6 +35,25 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
   virtual ~IMeshMaterialMngInternal() = default;
 
  public:
+
+  /*!
+   * \internal
+   * \brief Renvoie la table de "connectivité" CellLocalId -> AllEnvCell
+   * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
+   * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
+   */
+  virtual AllCellToAllEnvCell* getAllCellToAllEnvCell() const =0;
+
+  /*!
+   * \internal
+   * \brief Construit la table de "connectivité" CellLocalId -> AllEnvCell
+   * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
+   * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
+   *
+   * Si aucun allocateur n'est spécifié alors la méthode
+   * platform::getDefaultDataAllocator() est utilisée
+   */
+  virtual void createAllCellToAllEnvCell(IMemoryAllocator* alloc=platform::getDefaultDataAllocator()) =0;
 };
 
 /*---------------------------------------------------------------------------*/

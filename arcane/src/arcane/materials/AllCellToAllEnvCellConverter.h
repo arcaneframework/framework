@@ -56,8 +56,8 @@ namespace Arcane::Materials
 class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 {
  public:
-  AllCellToAllEnvCell();
-  ~AllCellToAllEnvCell() = default;
+
+  AllCellToAllEnvCell() = default;
   
   //! Copies interdites
   AllCellToAllEnvCell(const AllCellToAllEnvCell&) = delete;
@@ -88,10 +88,10 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   void reset();
 
  private:
-  IMeshMaterialMng* m_mm;
-  IMemoryAllocator* m_alloc;
-  Integer m_size;
-  Span<ComponentItemLocalId>* m_allcell_allenvcell;
+  IMeshMaterialMng* m_material_mng = nullptr;
+  IMemoryAllocator* m_alloc = nullptr;
+  Integer m_size = 0;
+  Span<ComponentItemLocalId>* m_allcell_allenvcell = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -109,18 +109,9 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
 {
  public:
-  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor()
-  : m_cell_allenvcell(nullptr)
-  {
-  }
-  CellToAllEnvCellAccessor(const IMeshMaterialMng* mmmng)
-  : m_cell_allenvcell(mmmng->getAllCellToAllEnvCell())
-  {
-  }
-  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor(CellToAllEnvCellAccessor& acc)
-  : m_cell_allenvcell(acc.m_cell_allenvcell)
-  {
-  }
+
+  CellToAllEnvCellAccessor() = default;
+  explicit CellToAllEnvCellAccessor(const IMeshMaterialMng* mm);
   ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor(const CellToAllEnvCellAccessor& acc)
   : m_cell_allenvcell(acc.m_cell_allenvcell)
   {
@@ -135,7 +126,9 @@ class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
   {
     m_cell_allenvcell = acc.m_cell_allenvcell;
     return *this;
-  }  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor& operator=(const CellToAllEnvCellAccessor& acc)
+  }
+
+  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor& operator=(const CellToAllEnvCellAccessor& acc)
   {
     m_cell_allenvcell = acc.m_cell_allenvcell;
     return *this;
@@ -147,30 +140,32 @@ class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
   }
 
  private:
-  AllCellToAllEnvCell* m_cell_allenvcell;
+
+  AllCellToAllEnvCell* m_cell_allenvcell = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
+
+class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 {
   friend class EnumeratorTracer;
 
  public:
+
   using index_type = Span<ComponentItemLocalId>::index_type;
   using size_type = Span<ComponentItemLocalId>::size_type;
 
  public:
   // La version CPU permet de vérifier qu'on a bien fait l'init avant l'ENUMERATE
-  ARCCORE_HOST_DEVICE explicit Cell2AllComponentCellEnumerator(Integer cell_id, const CellToAllEnvCellAccessor& acc)
-  : m_cid(cell_id), m_index(0)
+  ARCCORE_HOST_DEVICE explicit CellToAllComponentCellEnumerator(Integer cell_id, const CellToAllEnvCellAccessor& acc)
+  : m_cid(cell_id)
 #if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
   , m_ptr(&(acc.getAllCellToAllEnvCell()->internal()[cell_id]))
   , m_size((*m_ptr).size())
   {
   }
 #else
-  , m_ptr(nullptr), m_size(0)
   {
     if (acc.getAllCellToAllEnvCell()) {
       m_ptr = &(acc.getAllCellToAllEnvCell()->internal()[cell_id]);
@@ -188,27 +183,34 @@ class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
   ARCCORE_HOST_DEVICE const ComponentItemLocalId& operator*() const { return (*m_ptr)[m_index]; }
 
  private:
-  Integer m_cid;
-  index_type m_index;
-  Span<ComponentItemLocalId>* m_ptr;
-  size_type m_size;
+
+  Integer m_cid = 0;
+  index_type m_index = 0;
+  Span<ComponentItemLocalId>* m_ptr = nullptr;
+  size_type m_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Macro pour itérer sur un groupe de mailles dans le but d'itérer sur les allenvcell de chaque maille
-//!\note En forçant l'utilisation du CellToAllEnvCellAccessor dans la macro, on assure la capture par copie
-// du pointeur de AllCellToAllEnvCell, permettant l'utilisation du ENUMERATE_CELL_ALLENVCELL
-// TODO: Très certainement à déplacer ailleurs si on garde ce proto
-#define RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcellaccessor,iter_name,cell_group)         \
+/*!
+ * \brief  Macro pour itérer sur un groupe de mailles dans le but d'itérer
+ * sur les allenvcell de chaque maille.
+ *
+ * \note En forçant l'utilisation du CellToAllEnvCellAccessor dans la macro,
+ * on assure la capture par copie du pointeur de AllCellToAllEnvCell, permettant
+ * l'utilisation du ENUMERATE_CELL_ALLENVCELL.
+ *
+ * TODO Très certainement à déplacer ailleurs si on garde ce proto
+ */
+#define RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell_to_allenvcellaccessor,iter_name,cell_group) \
   A_FUNCINFO << cell_group << [=] ARCCORE_HOST_DEVICE (CellLocalId iter_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 // TODO: Très certainement à déplacer ailleurs si on garde ce proto
-#define A_ENUMERATE_CELL_ALLCOMPONENTCELL(_EnumeratorClassName,iname,cid,cell2allenvcellaccessor) \
-  for( A_TRACE_COMPONENT(_EnumeratorClassName) iname(::Arcane::Materials::_EnumeratorClassName(cid,cell2allenvcellaccessor) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
+#define A_ENUMERATE_CELL_ALLCOMPONENTCELL(_EnumeratorClassName,iname,cid,cell_to_allenvcellaccessor) \
+  for( A_TRACE_COMPONENT(_EnumeratorClassName) iname(::Arcane::Materials::_EnumeratorClassName(cid,cell_to_allenvcellaccessor) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -220,11 +222,11 @@ class ARCANE_MATERIALS_EXPORT Cell2AllComponentCellEnumerator
  * \param iname nom de la variable (type MatVarIndex) permettant l'accès aux 
  *              données.
  * \param cid identifiant de la maille (type Integer).
- * \param cell2allenvcellaccessor connectivité cell->allenvcell (type CellToAllEnvCellAccessor)
+ * \param cell_to_allenvcellaccessor connectivité cell->allenvcell (type CellToAllEnvCellAccessor)
  */
 // TODO: Très certainement à déplacer ailleurs si on garde ce proto
-#define ENUMERATE_CELL_ALLENVCELL(iname,cid,cell2allenvcellaccessor) \
-  A_ENUMERATE_CELL_ALLCOMPONENTCELL(Cell2AllComponentCellEnumerator,iname,cid,cell2allenvcellaccessor)
+#define ENUMERATE_CELL_ALLENVCELL(iname,cid,cell_to_allenvcellaccessor) \
+  A_ENUMERATE_CELL_ALLCOMPONENTCELL(CellToAllComponentCellEnumerator,iname,cid,cell_to_allenvcellaccessor)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

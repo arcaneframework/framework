@@ -97,9 +97,9 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 // TODO: utiliser le ITraceMng du maillage. Le faire lors de l'init
 : TraceAccessor(mesh_handle.traceMng())
 , m_mesh_handle(mesh_handle)
+, m_internal_api(new InternalApi(this))
 , m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
-, m_internal_api(this)
 {
   m_modifier = new MeshMaterialModifierImpl(this);
   m_all_env_data = new AllEnvData(this);
@@ -150,6 +150,8 @@ MeshMaterialMng::
 
   m_modifier->dumpStats();
   delete m_modifier;
+
+  delete m_internal_api;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -66,8 +66,22 @@ class MeshMaterialMng
   : public IMeshMaterialMngInternal
   {
    public:
+
     explicit InternalApi(MeshMaterialMng* mm) : m_material_mng(mm){}
+
+   public:
+
+    AllCellToAllEnvCell* getAllCellToAllEnvCell() const override
+    {
+      return m_material_mng->getAllCellToAllEnvCell();
+    }
+    void createAllCellToAllEnvCell(IMemoryAllocator* alloc) override
+    {
+      return m_material_mng->createAllCellToAllEnvCell(alloc);
+    }
+
    private:
+
     MeshMaterialMng* m_material_mng = nullptr;
   };
 
@@ -219,17 +233,20 @@ class MeshMaterialMng
   {
     m_is_allcell_2_allenvcell = is_enable;
     if (force_create)
-      createAllCellToAllEnvCell();
+      createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
   }
   bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
-  AllCellToAllEnvCell* getAllCellToAllEnvCell() const override { return m_allcell_2_allenvcell; }
-  void createAllCellToAllEnvCell(IMemoryAllocator* alloc=platform::getDefaultDataAllocator()) override
+
+  IMeshMaterialMngInternal* _internalApi() const override { return m_internal_api; }
+
+ private:
+
+  AllCellToAllEnvCell* getAllCellToAllEnvCell() const { return m_allcell_2_allenvcell; }
+  void createAllCellToAllEnvCell(IMemoryAllocator* alloc)
   {
     if (!m_allcell_2_allenvcell)
       m_allcell_2_allenvcell = AllCellToAllEnvCell::create(this, alloc);
   }
-
-  IMeshMaterialMngInternal* _internalApi() override { return &m_internal_api; }
 
  private:
 
@@ -244,6 +261,7 @@ class MeshMaterialMng
  private:
 
   MeshHandle m_mesh_handle;
+  InternalApi* m_internal_api = nullptr;
   IVariableMng* m_variable_mng = nullptr;
   String m_name;
   bool m_is_end_create = false;
@@ -287,7 +305,6 @@ class MeshMaterialMng
   AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
   bool m_is_allcell_2_allenvcell = false;
 
-  InternalApi m_internal_api;
 
  private:
 
