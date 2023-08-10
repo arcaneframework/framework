@@ -537,8 +537,13 @@ _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,bool i
     info(4) << "NB_ENV_TRANSFORM=" << pure_local_ids.size()
             << " name=" << env->name();
 
-    _copyBetweenPartialsAndGlobals(pure_local_ids,partial_indexes,
-                                   indexer->index(),is_add_operation);
+    // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
+    // en cas de suppression de mailles car cela sera fait avec la valeur matériau
+    // correspondante. Cela permet d'avoir le même comportement que sans
+    // optimisation.
+    if (is_add_operation)
+      _copyBetweenPartialsAndGlobals(pure_local_ids,partial_indexes,
+                                     indexer->index(),is_add_operation);
   }
 }
 
