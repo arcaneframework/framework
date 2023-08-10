@@ -20,11 +20,12 @@
 
 #include "arcane/core/MeshHandle.h"
 
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/MeshBlock.h"
-#include "arcane/materials/MatItemEnumerator.h"
-#include "arcane/materials/AllCellToAllEnvCellConverter.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
+#include "arcane/materials/MeshBlock.h"
+#include "arcane/materials/AllCellToAllEnvCellConverter.h"
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/MeshEnvironment.h"
 
@@ -46,15 +47,10 @@ class ObserverPool;
 
 namespace Arcane::Materials
 {
-class MeshMaterialModifierImpl;
-class MeshMaterialBackup;
-class AllEnvData;
-class MeshMaterialExchangeMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Implémentation d'un gestion des matériaux.
  */
 class MeshMaterialMng
@@ -64,6 +60,16 @@ class MeshMaterialMng
  public:
   
   friend class MeshMaterialBackup;
+
+ private:
+  class InternalApi
+  : public IMeshMaterialMngInternal
+  {
+   public:
+    explicit InternalApi(MeshMaterialMng* mm) : m_material_mng(mm){}
+   private:
+    MeshMaterialMng* m_material_mng = nullptr;
+  };
 
  public:
 
@@ -223,27 +229,29 @@ class MeshMaterialMng
       m_allcell_2_allenvcell = AllCellToAllEnvCell::create(this, alloc);
   }
 
+  IMeshMaterialMngInternal* _internalApi() override { return &m_internal_api; }
+
  private:
 
   //! Type de la liste des variables par nom complet
-  typedef std::map<String,IMeshMaterialVariable*> FullNameVariableMap;
+  using FullNameVariableMap= std::map<String,IMeshMaterialVariable*>;
   //! Paire de la liste des variables par nom complet
-  typedef FullNameVariableMap::value_type FullNameVariablePair;
+  using FullNameVariablePair = FullNameVariableMap::value_type;
 
-  typedef std::map<IVariable*,IMeshMaterialVariable*> VariableToMaterialVariableMap;
-  typedef VariableToMaterialVariableMap::value_type VariableToMaterialVariablePair;
+  using VariableToMaterialVariableMap = std::map<IVariable*,IMeshMaterialVariable*>;
+  using VariableToMaterialVariablePair = VariableToMaterialVariableMap::value_type;
 
  private:
 
   MeshHandle m_mesh_handle;
   IVariableMng* m_variable_mng = nullptr;
   String m_name;
-  bool m_is_end_create;
-  bool m_is_verbose;
-  bool m_keep_values_after_change;
-  bool m_is_data_initialisation_with_zero;
-  bool m_is_mesh_modification_notified;
-  bool m_is_allocate_scalar_environment_variable_as_material;
+  bool m_is_end_create = false;
+  bool m_is_verbose = false;
+  bool m_keep_values_after_change = true;
+  bool m_is_data_initialisation_with_zero = false;
+  bool m_is_mesh_modification_notified = false;
+  bool m_is_allocate_scalar_environment_variable_as_material = false;
   int m_modification_flags = 0;
 
   Mutex m_variable_lock;
@@ -267,17 +275,19 @@ class MeshMaterialMng
 
   Properties* m_properties = nullptr;
   AllEnvData* m_all_env_data = nullptr;
-  Int64 m_timestamp; //!< Compteur du nombre de modifications des matériaux.
-  IMeshMaterialVariableSynchronizer* m_all_cells_mat_env_synchronizer;
-  IMeshMaterialVariableSynchronizer* m_all_cells_env_only_synchronizer;
-  Integer m_synchronize_variable_version;
+  Int64 m_timestamp = 0; //!< Compteur du nombre de modifications des matériaux.
+  IMeshMaterialVariableSynchronizer* m_all_cells_mat_env_synchronizer = nullptr;
+  IMeshMaterialVariableSynchronizer* m_all_cells_env_only_synchronizer = nullptr;
+  Integer m_synchronize_variable_version = 1;
   MeshMaterialExchangeMng* m_exchange_mng = nullptr;
   IMeshMaterialVariableFactoryMng* m_variable_factory_mng = nullptr;
   std::unique_ptr<ObserverPool> m_observer_pool;
   String m_data_compressor_service_name;
 
-  AllCellToAllEnvCell* m_allcell_2_allenvcell;
-  bool m_is_allcell_2_allenvcell;
+  AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
+  bool m_is_allcell_2_allenvcell = false;
+
+  InternalApi m_internal_api;
 
  private:
 

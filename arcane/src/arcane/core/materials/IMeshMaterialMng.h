@@ -29,22 +29,6 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class MeshMaterialInfo;
-class MeshBlockBuildInfo;
-class MeshEnvironmentBuildInfo;
-class MeshMaterialVariableIndexer;
-class AllEnvCellVectorView;
-class CellToAllEnvCellConverter;
-class AllCellToAllEnvCell;
-class IMeshMaterialModifierImpl;
-class IMeshComponent;
-class IMeshMaterialVariable;
-class IMeshMaterialVariableSynchronizer;
-class MeshMaterialMngFactory;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneMaterials
  * \brief Interface du gestionnaire des matériaux et des milieux d'un maillage.
@@ -356,10 +340,10 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    */
   virtual void removeVariable(IMeshMaterialVariable* var) =0;
 
-  //! Variable de nom \a name ou 0 si aucune de ce nom existe.
+  //! Variable de nom \a name ou \a nullptr si aucune de ce nom existe.
   virtual IMeshMaterialVariable* findVariable(const String& name) =0;
 
-  //! Variable aux matériaux associé à la variable global \a global_var (0 si aucune)
+  //! Variable aux matériaux associé à la variable global \a global_var (\a nullptr si aucune)
   virtual IMeshMaterialVariable* checkVariable(IVariable* global_var) =0;
 
   //! Ecrit les infos des matériaux et milieux sur le flot \a o
@@ -504,6 +488,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
    */
   virtual AllCellToAllEnvCell* getAllCellToAllEnvCell() const =0;
+
   /*!
    * \internal
    * \brief Construit la table de "connectivité" CellLocalId -> AllEnvCell
@@ -518,6 +503,11 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
 
   //!\internal
   static void _internalSetFactory(IFactory* f);
+
+ public:
+
+  //! API interne à %Arcane
+  virtual IMeshMaterialMngInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/
