@@ -257,10 +257,20 @@ ARCANE_ADD_TEST_SEQUENTIAL(geometric1 testGeometric-1.arc)
 # Material Heat
 foreach(test_index 1 2 3)
   foreach(opt_level 0 3 7 15)
-    set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}.arc")
     set(TEST_MODIFICATION_FLAG ${opt_level})
+
+    # Test sans équilibrage
+    set(TEST_ACTIVE_LOAD_BALANCE "false")
+    set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}.arc")
     configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
     arcane_add_test(material_heat_opt${opt_level}_${test_index} ${_TEST_FILENAME})
+
+    # Test avec équilibrage (sauf pour opt15 car cela ne fonctionne pas encore)
+    if (NOT ${opt_level} STREQUAL "15")
+      set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}-lb.arc")
+      configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
+      arcane_add_test(material_heat_lb_opt${opt_level}_${test_index} ${_TEST_FILENAME})
+    endif()
   endforeach()
 endforeach()
 arcane_add_test_sequential(material_heat_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
