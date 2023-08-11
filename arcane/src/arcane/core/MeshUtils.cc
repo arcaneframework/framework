@@ -1769,6 +1769,20 @@ findOneItem(IItemFamily* family, ItemUniqueId unique_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int64 MeshUtils::impl::
+computeCapacity(Int64 size)
+{
+  Int64 new_capacity = size * 2;
+  if (size > 5000000)
+    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.2);
+  else if (size > 500000)
+    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.5);
+  return new_capacity;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/

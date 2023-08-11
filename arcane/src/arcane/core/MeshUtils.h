@@ -328,6 +328,45 @@ visitGroups(IMesh* mesh, const LambdaType& f)
   visitGroups(mesh, sf_addr);
 }
 
+namespace impl
+{
+  //! Calcule une capacité adaptée pour une taille de \a size
+  extern "C++" ARCANE_CORE_EXPORT Int64
+  computeCapacity(Int64 size);
+} // namespace impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Redimensionne un tableau qui est indexé par des 'ItemLocalId'.
+ *
+ * Le tableau \a array est redimensionné uniquement si \a new_size est
+ * supérieure à la taille actuelle du tableau ou si \a force_resize est vrai.
+ *
+ * Si le tableau est redimensionné, on réserve une capacité supplémentaire
+ * pour éviter de réallouer à chaque fois.
+ *
+ * Cette fonction est appelée en général pour les tableaux indexés par un
+ * ItemLocalId et donc cette fonction peut être appelée à chaque fois qu'on
+ * ajoute une entité au maillage.
+ *
+ * \retval true si un redimensionnement a eu lieu
+ * \retval false sinon
+ */
+template <typename DataType> inline bool
+checkResizeArray(Array<DataType>& array, Int64 new_size, bool force_resize)
+{
+  Int64 s = array.largeSize();
+  if (new_size > s || force_resize) {
+    if (new_size > array.capacity()) {
+      array.reserve(impl::computeCapacity(new_size));
+    }
+    array.resize(new_size);
+    return true;
+  }
+  return false;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
