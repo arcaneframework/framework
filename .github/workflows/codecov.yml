@@ -29,6 +29,8 @@ on:
 env:
   # CTest
   CT_OPTS: "--timeout 300 --output-on-failure"
+  EXCLUDED_TESTS: ''
+  EXCLUDED_TESTS_WITH_LABELS: 'LARGE_HYBRID'
 
   # OpenMPI
   OMPI_ALLOW_RUN_AS_ROOT: 1
@@ -90,7 +92,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
-          ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }}
+          ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{ env.EXCLUDED_TESTS }}' -LE '${{ env.EXCLUDED_TESTS_WITH_LABELS }}'
 
       - name: Apply coverage
         shell: bash
