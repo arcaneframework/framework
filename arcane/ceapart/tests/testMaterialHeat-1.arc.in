@@ -26,6 +26,14 @@
    </mesh>
  </meshes>
 
+ <arcane-load-balance>
+   <active>@TEST_ACTIVE_LOAD_BALANCE@</active>
+   <period>5</period>
+   <max-imbalance>0.01</max-imbalance>
+   <min-cpu-time>0</min-cpu-time>
+   <partitioner name="MeshPartitionerTester" />
+ </arcane-load-balance>
+
  <material-heat-test>
    <nb-iteration>15</nb-iteration>
    <modification-flags>@TEST_MODIFICATION_FLAG@</modification-flags>
