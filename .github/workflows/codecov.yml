@@ -105,7 +105,6 @@ jobs:
         run: |
           rm -v -f *_axl.h.gcov *_wrap.*.gcov
 
-      # "gcov: false" car on applique nous-même gcov pour pouvoir supprimer les fichiers après coup.
       - name: Upload coverage files to Codecov
         uses: codecov/codecov-action@v3
         with:

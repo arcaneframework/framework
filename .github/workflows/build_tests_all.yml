@@ -49,6 +49,7 @@ jobs:
           - version_short: 'F'
             version_long: 'full'
             version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
+              -DARCANE_DEFAULT_PARTITIONER=Metis
               -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
           - type_build: 'Release'
@@ -72,7 +73,7 @@ jobs:
       mpi: ${{ matrix.mpi }}
       with_cuda: ${{ matrix.image_cuda }}
       type_build: ${{ matrix.type_build }}
-      cmake_additionnal_args: '${{ matrix.image_args }} ${{ matrix.version_args }} -DARCANE_DEFAULT_PARTITIONER=Metis'
+      cmake_additionnal_args: '${{ matrix.image_args }} ${{ matrix.version_args }}'
       verbose: true
       with_samples: true
       execute_tests: ${{ !matrix.image_cuda }}
@@ -110,6 +111,7 @@ jobs:
           - version_short: 'F'
             version_long: 'full'
             version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
+              -DARCANE_DEFAULT_PARTITIONER=Metis
               -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
           - type_build: 'Release'
