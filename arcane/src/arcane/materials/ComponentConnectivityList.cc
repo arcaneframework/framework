@@ -13,7 +13,8 @@
 
 #include "arcane/materials/internal/ComponentConnectivityList.h"
 
-#include "arcane/core//IItemFamily.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 
@@ -75,6 +76,8 @@ class ComponentConnectivityList::ComponentContainer
   : m_nb_component(VariableBuildInfo(mesh, var_base_name + "NbComponent", IVariable::PPrivate))
   , m_component_index(VariableBuildInfo(mesh, var_base_name + "Index", IVariable::PPrivate))
   , m_component_list(VariableBuildInfo(mesh, var_base_name + "List", IVariable::PPrivate))
+  , m_nb_component_as_array(m_nb_component._internalTrueData()->_internalDeprecatedValue())
+  , m_component_index_as_array(m_component_index._internalTrueData()->_internalDeprecatedValue())
   , m_component_list_as_array(m_component_list._internalTrueData()->_internalDeprecatedValue())
   {
   }
@@ -102,11 +105,44 @@ class ComponentConnectivityList::ComponentContainer
     return m_component_list_as_array.subView(index, n);
   }
 
+  void checkResize(Int64 size)
+  {
+    if (MeshUtils::checkResizeArray(m_nb_component_as_array, size, false))
+      m_nb_component.updateFromInternal();
+    if (MeshUtils::checkResizeArray(m_component_index_as_array, size, false))
+      m_component_index.updateFromInternal();
+  }
+
+  void reserve(Int64 capacity)
+  {
+    m_nb_component_as_array.reserve(capacity);
+    m_component_index_as_array.reserve(capacity);
+  }
+
+  void changeLocalIds(Int32ConstArrayView new_to_old_ids)
+  {
+    m_nb_component.variable()->compact(new_to_old_ids);
+    m_component_index.variable()->compact(new_to_old_ids);
+  }
+
+  void notifyUpdateConnectivityList()
+  {
+    m_component_list.updateFromInternal();
+  }
+
+ private:
+
+  //! Nombre de milieu par maille (dimensionné au nombre de mailles)
+  VariableArrayInt16 m_nb_component;
+  //! Indice dans \a m_componente_list (Dimensionné au nombre de mailles)
+  VariableArrayInt32 m_component_index;
+  //! Liste des constituants
+  VariableArrayInt16 m_component_list;
+
  public:
 
-  VariableCellInt16 m_nb_component;
-  VariableCellInt32 m_component_index;
-  VariableArrayInt16 m_component_list;
+  VariableArrayInt16::ContainerType& m_nb_component_as_array;
+  VariableArrayInt32::ContainerType& m_component_index_as_array;
   VariableArrayInt16::ContainerType& m_component_list_as_array;
 };
 
@@ -121,6 +157,27 @@ class ComponentConnectivityList::Container
   : m_environment(mesh, var_base_name + String("ComponentEnvironment"))
   , m_material(mesh, var_base_name + String("ComponentMaterial"))
   {
+  }
+
+ public:
+
+  void checkResize(Int32 lid)
+  {
+    Int64 wanted_size = lid + 1;
+    m_environment.checkResize(wanted_size);
+    m_material.checkResize(wanted_size);
+  }
+
+  void changeLocalIds(Int32ConstArrayView new_to_old_ids)
+  {
+    m_environment.changeLocalIds(new_to_old_ids);
+    m_material.changeLocalIds(new_to_old_ids);
+  }
+
+  void reserve(Int64 capacity)
+  {
+    m_environment.reserve(capacity);
+    m_material.reserve(capacity);
   }
 
  public:
@@ -159,14 +216,16 @@ endCreate(bool is_continue)
   // mais uniquement si on a demandé le support des modifications incrémentales
   // pour éviter de consommer inutilement de la mémoire.
   // A terme on le fera tout le temps
+  m_cell_family = m_material_mng->mesh()->cellFamily();
   {
-    m_cell_family = m_material_mng->mesh()->cellFamily();
     int opt_flag_value = m_material_mng->modificationFlags();
-    bool use_incremental = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute)!=0;
+    bool use_incremental = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute) != 0;
     if (use_incremental)
       m_cell_family->_internalApi()->addSourceConnectivity(this);
   }
   if (!is_continue) {
+    Int32 max_local_id = m_cell_family->maxLocalId();
+    m_container->checkResize(max_local_id + 1);
     m_container->m_environment.endCreate(is_continue);
     m_container->m_material.endCreate(is_continue);
   }
@@ -184,9 +243,9 @@ endCreate(bool is_continue)
 void ComponentConnectivityList::
 _addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ComponentContainer& component)
 {
-  VariableCellInt16& nb_component = component.m_nb_component;
-  VariableCellInt32& component_index = component.m_component_index;
-  VariableArrayInt16::ContainerType& component_list = component.m_component_list_as_array;
+  Array<Int16>& nb_component = component.m_nb_component_as_array;
+  Array<Int32>& component_index = component.m_component_index_as_array;
+  Array<Int16>& component_list = component.m_component_list_as_array;
   for (Int32 id : cell_ids) {
     CellLocalId cell_id(id);
     const Int16 n = nb_component[cell_id];
@@ -211,7 +270,7 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ComponentContainer
     }
     ++nb_component[cell_id];
   }
-  component.m_component_list.updateFromInternal();
+  component.notifyUpdateConnectivityList();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -220,9 +279,9 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ComponentContainer
 void ComponentConnectivityList::
 _removeCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ComponentContainer& component)
 {
-  VariableCellInt16& nb_component = component.m_nb_component;
-  VariableCellInt32& component_index = component.m_component_index;
-  VariableArrayInt16::ContainerType& component_list = component.m_component_list_as_array;
+  Array<Int16>& nb_component = component.m_nb_component_as_array;
+  Array<Int32>& component_index = component.m_component_index_as_array;
+  Array<Int16>& component_list = component.m_component_list_as_array;
   for (Int32 id : cell_ids) {
     CellLocalId cell_id(id);
     const Int32 current_pos = component_index[cell_id];
@@ -275,19 +334,19 @@ removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const VariableCellInt16& ComponentConnectivityList::
+ConstArrayView<Int16> ComponentConnectivityList::
 cellsNbEnvironment() const
 {
-  return m_container->m_environment.m_nb_component;
+  return m_container->m_environment.m_nb_component_as_array;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const VariableCellInt16& ComponentConnectivityList::
+ConstArrayView<Int16> ComponentConnectivityList::
 cellsNbMaterial() const
 {
-  return m_container->m_material.m_nb_component;
+  return m_container->m_material.m_nb_component_as_array;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -312,7 +371,7 @@ cellNbMaterial(CellLocalId cell_id, Int16 env_id)
 void ComponentConnectivityList::
 notifySourceFamilyLocalIdChanged([[maybe_unused]] Int32ConstArrayView new_to_old_ids)
 {
-  // A priori rien à faire.
+  m_container->changeLocalIds(new_to_old_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -321,16 +380,24 @@ notifySourceFamilyLocalIdChanged([[maybe_unused]] Int32ConstArrayView new_to_old
 void ComponentConnectivityList::
 notifySourceItemAdded(ItemLocalId item)
 {
-  // TODO: redimensionner si nécessaire et mettre à zéro la connectivité
+  Int32 lid = item.localId();
+  m_container->checkResize(lid + 1);
+
+  m_container->m_environment.m_nb_component_as_array[lid] = 0;
+  m_container->m_environment.m_component_index_as_array[lid] = 0;
+
+  m_container->m_material.m_nb_component_as_array[lid] = 0;
+  m_container->m_material.m_component_index_as_array[lid] = 0;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ComponentConnectivityList::
-reserveMemoryForNbSourceItems([[maybe_unused]] Int32 n,
-                              [[maybe_unused]] bool pre_alloc_connectivity)
+reserveMemoryForNbSourceItems(Int32 n, [[maybe_unused]] bool pre_alloc_connectivity)
 {
+  info() << "Constituent: reserve=" << n;
+  m_container->reserve(n);
 }
 
 /*---------------------------------------------------------------------------*/
