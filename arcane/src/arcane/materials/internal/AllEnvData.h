@@ -81,6 +81,7 @@ class AllEnvData
 
   MeshMaterialMng* m_material_mng = nullptr;
   ComponentConnectivityList* m_component_connectivity_list = nullptr;
+  Ref<IIncrementalItemSourceConnectivity> m_component_connectivity_list_ref;
 
   //! Nombre de milieux par mailles
   VariableCellInt32 m_nb_env_per_cell;

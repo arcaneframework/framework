@@ -50,7 +50,11 @@ AllEnvData(MeshMaterialMng* mmg)
 , m_nb_env_per_cell(VariableBuildInfo(mmg->meshHandle(),mmg->name()+"_CellNbEnvironment"))
 , m_item_internal_data(mmg)
 {
+  // \a m_component_connectivity_list utilse un compteur de référence
+  // et ne doit pas être détruit explicitement
   m_component_connectivity_list = new ComponentConnectivityList(m_material_mng);
+  m_component_connectivity_list_ref = m_component_connectivity_list->toSourceReference();
+
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ALLENVDATA_DEBUG_LEVEL", true))
     m_verbose_debug_level = v.value();
 }
@@ -61,7 +65,6 @@ AllEnvData(MeshMaterialMng* mmg)
 AllEnvData::
 ~AllEnvData()
 {
-  delete m_component_connectivity_list;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -697,8 +700,8 @@ void AllEnvData::
 _checkConnectivityCoherency()
 {
   info() << "AllEnvData: checkCoherency()";
-  const VariableCellInt16& nb_env_v2 = m_component_connectivity_list->cellsNbEnvironment();
-  const VariableCellInt16& nb_mat_v2 = m_component_connectivity_list->cellsNbMaterial();
+  ConstArrayView<Int16> nb_env_v2 = m_component_connectivity_list->cellsNbEnvironment();
+  ConstArrayView<Int16> nb_mat_v2 = m_component_connectivity_list->cellsNbMaterial();
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
   ItemGroup all_cells = m_material_mng->mesh()->allCells();
@@ -707,7 +710,7 @@ _checkConnectivityCoherency()
   // Vérifie le nombre de milieux
   ENUMERATE_CELL(icell,all_cells){
     Int32 ref_nb_env = m_nb_env_per_cell[icell];
-    Int32 current_nb_env = nb_env_v2[icell];
+    Int32 current_nb_env = nb_env_v2[icell.itemLocalId()];
     if (ref_nb_env!=current_nb_env){
       ++nb_error;
       if (nb_error<10)
@@ -722,7 +725,7 @@ _checkConnectivityCoherency()
     for( MeshEnvironment* env : true_environments ){
       ref_nb_mat += env->m_nb_mat_per_cell[icell];
     }
-    Int32 current_nb_mat = nb_mat_v2[icell];
+    Int32 current_nb_mat = nb_mat_v2[icell.itemLocalId()];
     if (ref_nb_mat!=current_nb_mat){
       ++nb_error;
       if (nb_error<10)

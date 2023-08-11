@@ -16,8 +16,10 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/core/VariableTypes.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
 
@@ -35,7 +37,11 @@ namespace Arcane::Materials
  */
 class ComponentConnectivityList
 : public TraceAccessor
+, public ReferenceCounterImpl
+, public IIncrementalItemSourceConnectivity
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
   class ComponentContainer;
   class Container;
 
@@ -61,15 +67,28 @@ class ComponentConnectivityList
   void addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids);
   void removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids);
 
-  const VariableCellInt16& cellsNbEnvironment() const;
-  const VariableCellInt16& cellsNbMaterial() const;
+  ConstArrayView<Int16> cellsNbEnvironment() const;
+  ConstArrayView<Int16> cellsNbMaterial() const;
 
   //! Nombre de matériaux de la maille \a cell_id pour le milieu d'indice \a env_id
   Int16 cellNbMaterial(CellLocalId cell_id, Int16 env_id);
 
+ public:
+
+  // Implémentation de IIncrementalItemSourceConnectivity
+  //@{
+  IItemFamily* sourceFamily() const override { return m_cell_family; }
+  void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) override;
+  void notifySourceItemAdded(ItemLocalId item) override;
+  void reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity) override;
+  void notifyReadFromDump() override;
+  Ref<IIncrementalItemSourceConnectivity> toSourceReference() override;
+  //@}
+
  private:
 
   MeshMaterialMng* m_material_mng = nullptr;
+  IItemFamily* m_cell_family = nullptr;
   Container* m_container = nullptr;
 
   //! Indice du milieu auquel appartient un matériau
@@ -84,7 +103,7 @@ class ComponentConnectivityList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

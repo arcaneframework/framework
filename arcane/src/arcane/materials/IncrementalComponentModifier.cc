@@ -67,9 +67,9 @@ finalize()
   CellGroup all_cells = m_material_mng->mesh()->allCells();
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
-  const VariableCellInt16& incremental_cells_nb_env = connectivity->cellsNbEnvironment();
+  ConstArrayView<Int16> incremental_cells_nb_env = connectivity->cellsNbEnvironment();
   ENUMERATE_(Cell,icell,all_cells){
-    cells_nb_env[icell] = incremental_cells_nb_env[icell];
+    cells_nb_env[icell] = incremental_cells_nb_env[icell.itemLocalId()];
   }
 
   // Met à jour le nombre de matériaux par milieu
@@ -306,7 +306,7 @@ _computeCellsToTransform(const MeshMaterial* mat)
   bool is_add = m_work_info.isAdd();
 
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  const VariableCellInt16& cells_nb_env = connectivity->cellsNbEnvironment();
+  ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
 
   ENUMERATE_ (Cell, icell, all_cells) {
     bool do_transform = false;
@@ -315,12 +315,12 @@ _computeCellsToTransform(const MeshMaterial* mat)
     // En cas de supression, on passe de partiel à pure si on est le seul matériau
     // et le seul milieu.
     if (is_add) {
-      do_transform = cells_nb_env[icell] > 1;
+      do_transform = cells_nb_env[icell.itemLocalId()] > 1;
       if (!do_transform)
         do_transform = connectivity->cellNbMaterial(icell, env_id) > 1;
     }
     else {
-      do_transform = cells_nb_env[icell] == 1;
+      do_transform = cells_nb_env[icell.itemLocalId()] == 1;
       if (do_transform)
         do_transform = connectivity->cellNbMaterial(icell, env_id) == 1;
     }
@@ -338,7 +338,7 @@ void IncrementalComponentModifier::
 _computeCellsToTransform()
 {
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  const VariableCellInt16& cells_nb_env = connectivity->cellsNbEnvironment();
+  ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
   CellGroup all_cells = m_material_mng->mesh()->allCells();
   const bool is_add = m_work_info.isAdd();
 
@@ -347,9 +347,9 @@ _computeCellsToTransform()
     // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux.
     // En cas de supression, on passe de partiel à pure si on est le seul milieu.
     if (is_add)
-      do_transform = cells_nb_env[icell] > 1;
+      do_transform = cells_nb_env[icell.itemLocalId()] > 1;
     else
-      do_transform = cells_nb_env[icell] == 1;
+      do_transform = cells_nb_env[icell.itemLocalId()] == 1;
     m_work_info.setTransformedCell(icell, do_transform);
   }
 }
@@ -441,9 +441,8 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
 {
   ComponentItemListBuilder list_builder(var_indexer, var_indexer->maxIndexInMultipleArray());
   ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  const VariableCellInt16& nb_env_per_cell = connectivity->cellsNbEnvironment();
+  ConstArrayView<Int16> nb_env_per_cell = connectivity->cellsNbEnvironment();
   Int16 env_id = env->componentId();
-
 
   for (Int32 lid : local_ids) {
     CellLocalId cell_id(lid);

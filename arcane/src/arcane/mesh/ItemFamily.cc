@@ -82,30 +82,11 @@ namespace Arcane::mesh
 namespace
 {
 
-template<typename DataType> bool
-_checkResizeArray(Array<DataType>& array,Int32 new_size,bool force_resize)
-{
-  Integer s = array.size();
-  if (new_size>s || force_resize){
-    if (new_size>array.capacity()){
-      if (new_size>5000000)
-        array.reserve((Integer)(new_size * 1.2));
-      else if (new_size>500000)
-        array.reserve((Integer)(new_size * 1.5));
-      else
-        array.reserve((Integer)(new_size * 2.0));
-    }
-    array.resize(new_size);
-    return true;
-  }
-  return false;
-}
-
 template<typename DataType> void
 _offsetArrayByOne(Array<DataType>* array)
 {
   Array<DataType>& v = *array;
-  _checkResizeArray(v,v.size()+1,false);
+  MeshUtils::checkResizeArray(v,v.size()+1,false);
   Int32 n = v.size();
   for( Int32 i=(n-1); i>=1; --i )
     v[i] = v[i-1];
@@ -1163,7 +1144,7 @@ readFromDump()
     // Avec les anciennes protections il n'y a pas la variable pour le type de l'entité.
     // Il faut donc l'allouer ici car on s'en sert lorsqu'on appelle ItemInternal::setSharedInfo().
     if (nb_item>0)
-      _checkResizeArray(*m_items_type_id,nb_item+1,false);
+      MeshUtils::checkResizeArray(*m_items_type_id,nb_item+1,false);
     // Il n'y a pas non plus le décalage de 1 pour les flags, owner et uniqueId.
     // On fait ce décalage ici.
     _handleOldCheckpoint();
@@ -1678,12 +1659,12 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 void ItemFamily::
 _resizeItemVariables(Int32 new_size,bool force_resize)
 {
-  bool is_resize = _checkResizeArray(*m_items_unique_id,new_size+1,force_resize);
-  is_resize |= _checkResizeArray(*m_items_owner,new_size+1,force_resize);
-  is_resize |= _checkResizeArray(*m_items_flags,new_size+1,force_resize);
-  is_resize |= _checkResizeArray(*m_items_type_id,new_size+1,force_resize);
+  bool is_resize = MeshUtils::checkResizeArray(*m_items_unique_id,new_size+1,force_resize);
+  is_resize |= MeshUtils::checkResizeArray(*m_items_owner,new_size+1,force_resize);
+  is_resize |= MeshUtils::checkResizeArray(*m_items_flags,new_size+1,force_resize);
+  is_resize |= MeshUtils::checkResizeArray(*m_items_type_id,new_size+1,force_resize);
   if (m_parent_family_depth>0)
-    is_resize |= _checkResizeArray(*m_items_nb_parent,new_size,force_resize);
+    is_resize |= MeshUtils::checkResizeArray(*m_items_nb_parent,new_size,force_resize);
   if (is_resize)
     _updateItemViews();
 
