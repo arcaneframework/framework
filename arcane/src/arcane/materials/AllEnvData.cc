@@ -50,7 +50,11 @@ AllEnvData(MeshMaterialMng* mmg)
 , m_nb_env_per_cell(VariableBuildInfo(mmg->meshHandle(),mmg->name()+"_CellNbEnvironment"))
 , m_item_internal_data(mmg)
 {
+  // \a m_component_connectivity_list utilse un compteur de référence
+  // et ne doit pas être détruit explicitement
   m_component_connectivity_list = new ComponentConnectivityList(m_material_mng);
+  m_component_connectivity_list_ref = m_component_connectivity_list->toSourceReference();
+
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ALLENVDATA_DEBUG_LEVEL", true))
     m_verbose_debug_level = v.value();
 }
@@ -61,7 +65,6 @@ AllEnvData(MeshMaterialMng* mmg)
 AllEnvData::
 ~AllEnvData()
 {
-  delete m_component_connectivity_list;
 }
 
 /*---------------------------------------------------------------------------*/

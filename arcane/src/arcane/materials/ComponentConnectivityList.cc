@@ -13,7 +13,9 @@
 
 #include "arcane/materials/internal/ComponentConnectivityList.h"
 
+#include "arcane/core//IItemFamily.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
 
 #include "arcane/materials/internal/MeshMaterialMng.h"
 
@@ -153,6 +155,17 @@ ComponentConnectivityList::
 void ComponentConnectivityList::
 endCreate(bool is_continue)
 {
+  // S'enregistre auprès la famille pour être notifié des évolutions
+  // mais uniquement si on a demandé le support des modifications incrémentales
+  // pour éviter de consommer inutilement de la mémoire.
+  // A terme on le fera tout le temps
+  {
+    m_cell_family = m_material_mng->mesh()->cellFamily();
+    int opt_flag_value = m_material_mng->modificationFlags();
+    bool use_incremental = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute)!=0;
+    if (use_incremental)
+      m_cell_family->_internalApi()->addSourceConnectivity(this);
+  }
   if (!is_continue) {
     m_container->m_environment.endCreate(is_continue);
     m_container->m_material.endCreate(is_continue);
@@ -291,6 +304,50 @@ cellNbMaterial(CellLocalId cell_id, Int16 env_id)
       ++nb_mat;
   }
   return nb_mat;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentConnectivityList::
+notifySourceFamilyLocalIdChanged([[maybe_unused]] Int32ConstArrayView new_to_old_ids)
+{
+  // A priori rien à faire.
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentConnectivityList::
+notifySourceItemAdded(ItemLocalId item)
+{
+  // TODO: redimensionner si nécessaire et mettre à zéro la connectivité
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentConnectivityList::
+reserveMemoryForNbSourceItems([[maybe_unused]] Int32 n,
+                              [[maybe_unused]] bool pre_alloc_connectivity)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentConnectivityList::
+notifyReadFromDump()
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IIncrementalItemSourceConnectivity> ComponentConnectivityList::
+toSourceReference()
+{
+  return Arccore::makeRef<IIncrementalItemSourceConnectivity>(this);
 }
 
 /*---------------------------------------------------------------------------*/
