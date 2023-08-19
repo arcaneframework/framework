@@ -156,6 +156,8 @@ arcane_add_test_sequential(cartesian2d_face_renumbering testCartesianMesh2D-face
 arcane_add_test_parallel_thread(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc 6 "-m 10")
 arcane_add_test_sequential(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc "-m 10")
 arcane_add_test_parallel_thread(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc 12 "-m 10")
+arcane_add_test_sequential(cartesian3d_face_renumbering_v3 testCartesianMesh3D-face-renumbering-v3.arc "-m 10")
+arcane_add_test_parallel_thread(cartesian3d_face_renumbering_v3 testCartesianMesh3D-face-renumbering-v3.arc 12 "-m 10")
 arcane_add_test_sequential(cartesian3d_face_edge_renumbering testCartesianMesh3D-face-edge-renumbering.arc "-m 10")
 arcane_add_test_parallel_thread(cartesian3d_face_edge_renumbering testCartesianMesh3D-face-edge-renumbering.arc 12 "-m 10")
 
