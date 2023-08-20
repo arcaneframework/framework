@@ -162,7 +162,7 @@ StatData::
 StatData(const OneStatMap& os_map)
 {
   for (const auto& i : os_map)
-    m_stat_col.emplace_back(*(i.second));
+    m_stat_col.m_stats.emplace_back(*(i.second));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -171,7 +171,7 @@ StatData(const OneStatMap& os_map)
 void StatData::
 resetCurrentStat()
 {
-  for (auto& i : m_stat_col)
+  for (auto& i : m_stat_col.m_stats)
     i.resetCurrentStat();
 }
 
@@ -181,10 +181,10 @@ resetCurrentStat()
 void StatData::
 mergeData(OneStat one_stat)
 {
-  auto pos(std::find_if(m_stat_col.begin(), m_stat_col.end(),
+  auto pos(std::find_if(m_stat_col.m_stats.begin(), m_stat_col.m_stats.end(),
                         [&one_stat](const OneStat& os) { return (one_stat.name() == os.name()); }));
   if (pos == m_stat_col.end())
-    m_stat_col.emplace_back(one_stat);
+    m_stat_col.m_stats.emplace_back(one_stat);
   else
     pos->addMessage(one_stat.totalSize(), one_stat.totalTime());
 }

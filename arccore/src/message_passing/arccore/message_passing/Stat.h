@@ -18,11 +18,6 @@
 
 #include "arccore/base/String.h"
 
-#include <map>
-#include <set>
-#include <list>
-#include <iosfwd>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,9 +36,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT StatData
 {
   //! DEPRECATED
   using OneStatMap = std::map<String, OneStat*>;
-
-  //! Collection de statistiques
-  using StatCollection = std::list<OneStat>;
 
  public:
 

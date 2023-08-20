@@ -20,6 +20,7 @@
 
 #include <iosfwd>
 #include <map>
+#include <list>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,6 +65,37 @@ class ARCCORE_MESSAGEPASSING_EXPORT OneStat
   Int64 m_cumulative_nb_msg = 0; //! < Nombre de message envoyés sur toute la duree d'execution du programme
   Int64 m_cumulative_total_size = 0; //!< Taille total des messages envoyés sur toute la duree d'execution du programme
   double m_cumulative_total_time = 0.0; //!< Temps total écoulé sur toute la duree d'execution du programme};
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Liste de statistiques.
+ *
+ * Il est uniquement possible d'itérer sur les éléments de la collection.
+ *
+ * L'implémentation utilisée peut évoluer et il ne faut donc pas utiliser
+ * le type explicite de l'itérateur.
+ */
+class ARCCORE_MESSAGEPASSING_EXPORT StatCollection
+{
+  friend class StatData;
+  using Impl = std::list<OneStat>;
+
+ public:
+
+  using const_iterator = Impl::const_iterator;
+
+ public:
+
+  const_iterator begin() const { return m_stats.begin(); }
+  const_iterator end() const { return m_stats.end(); }
+  const_iterator cbegin() const { return m_stats.begin(); }
+  const_iterator cend() const { return m_stats.end(); }
+
+ private:
+
+  Impl m_stats;
 };
 
 /*---------------------------------------------------------------------------*/
