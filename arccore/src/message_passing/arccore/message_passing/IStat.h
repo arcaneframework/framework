@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IStat.h                                                     (C) 2000-2019 */
+/* IStat.h                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Statistiques sur le parallélisme.                                         */
 /*---------------------------------------------------------------------------*/
@@ -24,24 +24,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arccore::MessagePassing
 {
 
-namespace MessagePassing
-{
-
-//! Une statistique
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Statistique sur un message.
+ */
 class ARCCORE_MESSAGEPASSING_EXPORT OneStat
 {
  public:
-  OneStat(const String& name, const Int64 msg_size = 0, const double elapsed_time = 0.0)
-  : m_name(name), m_nb_msg(0), m_total_size(msg_size), m_total_time(elapsed_time),
-    m_cumulative_nb_msg(0), m_cumulative_total_size(0), m_cumulative_total_time(0.0) {}
 
-  OneStat(const OneStat&) = default;
-  OneStat(OneStat&&) = default;
-  OneStat& operator=(const OneStat&) = default;
-  void print(std::ostream& o);
+  explicit OneStat(const String& name, Int64 msg_size = 0, double elapsed_time = 0.0);
 
  public:
 
@@ -53,28 +48,22 @@ class ARCCORE_MESSAGEPASSING_EXPORT OneStat
   double totalTime() const { return m_total_time; }
   double cumulativeTotalTime() const { return m_cumulative_total_time; }
 
-  void addMessage(Int64 msg_size, double elapsed_time)
-  {
-    ++m_nb_msg;
-    m_total_size += msg_size;
-    m_total_time += elapsed_time;
-    ++m_cumulative_nb_msg;
-    m_cumulative_total_size += msg_size;
-    m_cumulative_total_time += elapsed_time;
-  }
-
   const String& name() const { return m_name; }
   Int64 nbMessage() const { return m_nb_msg; }
-  void resetCurrentStat() { m_nb_msg = 0; m_total_size = 0; m_total_time = 0.0; }
-  
+
+  void print(std::ostream& o);
+  void addMessage(Int64 msg_size, double elapsed_time);
+  void resetCurrentStat();
+
  private:
+
   String m_name; //!< Nom de la statistique
-  Int64 m_nb_msg; //!< Nombre de message envoyés.
-  Int64 m_total_size; //!< Taille total des messages envoyés
-  double m_total_time; //!< Temps total écoulé
-  Int64 m_cumulative_nb_msg;  //! < Nombre de message envoyés sur toute la duree d'execution du programme
-  Int64 m_cumulative_total_size; //!< Taille total des messages envoyés sur toute la duree d'execution du programme
-  double m_cumulative_total_time; //!< Temps total écoulé sur toute la duree d'execution du programme};
+  Int64 m_nb_msg = 0; //!< Nombre de message envoyés.
+  Int64 m_total_size = 0; //!< Taille total des messages envoyés
+  double m_total_time = 0.0; //!< Temps total écoulé
+  Int64 m_cumulative_nb_msg = 0; //! < Nombre de message envoyés sur toute la duree d'execution du programme
+  Int64 m_cumulative_total_size = 0; //!< Taille total des messages envoyés sur toute la duree d'execution du programme
+  double m_cumulative_total_time = 0.0; //!< Temps total écoulé sur toute la duree d'execution du programme};
 };
 
 /*---------------------------------------------------------------------------*/
@@ -88,12 +77,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT IStat
  public:
 
   // DEPRECATED
-  using OneStatMap = std::map<String,OneStat*>;
+  using OneStatMap = std::map<String, OneStat*>;
 
  public:
 
   //! Libère les ressources.
-  virtual ~IStat() {}
+  virtual ~IStat() = default;
 
  public:
 
@@ -104,24 +93,26 @@ class ARCCORE_MESSAGEPASSING_EXPORT IStat
    * \param elapsed_time temps utilisé pour le message
    * \param msg_size taille du message envoyé.
    */
-  virtual void add(const String& name,double elapsed_time,Int64 msg_size) =0;
-  
-  //! Active ou désactive les statistiques
-  virtual void enable(bool is_enabled) =0;
+  virtual void add(const String& name, double elapsed_time, Int64 msg_size) = 0;
+
+  /*!
+   * \brief Active ou désactive les statistiques.
+   *
+   * Si les statistiques sont désactivées, l'appel à add() est sans effet.
+   */
+  virtual void enable(bool is_enabled) = 0;
 
   //! Récuperation des statistiques
-  virtual const OneStatMap& stats() const =0;
+  virtual const OneStatMap& stats() const = 0;
 
   //! Remèt à zéro les statistiques courantes
-  virtual void resetCurrentStat() =0;
+  virtual void resetCurrentStat() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace MessagePassing
-
-} // End namespace Arccore
+} // namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

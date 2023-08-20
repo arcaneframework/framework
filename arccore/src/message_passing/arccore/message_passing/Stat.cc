@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Stat.cc                                                     (C) 2000-2018 */
+/* Stat.cc                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Statistiques sur le parallélisme.                                         */
 /*---------------------------------------------------------------------------*/
@@ -18,20 +18,56 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arccore::MessagePassing
 {
 
-namespace MessagePassing
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+OneStat::
+OneStat(const String& name, Int64 msg_size, double elapsed_time)
+: m_name(name)
+, m_total_size(msg_size)
+, m_total_time(elapsed_time)
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void OneStat::
+addMessage(Int64 msg_size, double elapsed_time)
+{
+  ++m_nb_msg;
+  m_total_size += msg_size;
+  m_total_time += elapsed_time;
+  ++m_cumulative_nb_msg;
+  m_cumulative_total_size += msg_size;
+  m_cumulative_total_time += elapsed_time;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void OneStat::
+resetCurrentStat()
+{
+  m_nb_msg = 0;
+  m_total_size = 0;
+  m_total_time = 0.0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void OneStat::
 print(std::ostream& o)
 {
-  Int64 div_time = static_cast<Int64>(m_total_time*1000.0);
-  if (div_time==0)
+  Int64 div_time = static_cast<Int64>(m_total_time * 1000.0);
+  if (div_time == 0)
     div_time = 1;
-  if (m_nb_msg>0){
-    Int64 average_time = (Int64)(m_total_time/(Real)m_nb_msg);
+  if (m_nb_msg > 0) {
+    Int64 average_time = (Int64)(m_total_time / (Real)m_nb_msg);
     o << " MPIStat " << m_name << "     :" << m_nb_msg << " messages" << '\n';
     o << " MPIStat " << m_name << "     :" << m_total_size << " bytes ("
       << m_total_size / div_time << " Kb/s) (average size "
@@ -44,12 +80,6 @@ print(std::ostream& o)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Stat::
-Stat()
-: m_is_enabled(true)
-{
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -57,7 +87,7 @@ Stat::
 ~Stat()
 {
   // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
-  for( const auto& i : m_list ){
+  for (const auto& i : m_list) {
     OneStat* os = i.second;
     delete os;
   }
@@ -68,13 +98,13 @@ Stat::
 /*---------------------------------------------------------------------------*/
 
 void Stat::
-add(const String& name,double elapsed_time,Int64 msg_size)
+add(const String& name, double elapsed_time, Int64 msg_size)
 {
   if (!m_is_enabled)
     return;
   // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
   OneStat* os = _find(name);
-  os->addMessage(msg_size,elapsed_time);
+  os->addMessage(msg_size, elapsed_time);
 
   m_data.mergeData(OneStat(name, msg_size, elapsed_time));
 }
@@ -86,7 +116,7 @@ void Stat::
 print(std::ostream& o)
 {
   // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
-  for( const auto& i : m_list ){
+  for (const auto& i : m_list) {
     OneStat* os = i.second;
     os->print(o);
   }
@@ -108,11 +138,51 @@ resetCurrentStat()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+OneStat* Stat::
+_find(const String& name)
+{
+  auto i = m_list.find(name);
+  if (i != m_list.end())
+    return i->second;
+
+  OneStat* os = new OneStat(name);
+  // Important: utiliser os.m_name car m_list stocke juste un
+  // pointeur sur la chaîne de caractère.
+  m_list.insert(OneStatMap::value_type(os->name(), os));
+  return os;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StatData::
+StatData(const OneStatMap& os_map)
+{
+  for (const auto& i : os_map)
+    m_stat_col.emplace_back(*(i.second));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void StatData::
+resetCurrentStat()
+{
+  for (auto& i : m_stat_col)
+    i.resetCurrentStat();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void StatData::
 mergeData(OneStat one_stat)
 {
   auto pos(std::find_if(m_stat_col.begin(), m_stat_col.end(),
-                        [&one_stat](const OneStat& os){return (one_stat.name() == os.name());}));
+                        [&one_stat](const OneStat& os) { return (one_stat.name() == os.name()); }));
   if (pos == m_stat_col.end())
     m_stat_col.emplace_back(one_stat);
   else
@@ -143,9 +213,7 @@ mergeAllData(const OneStatMap& all_stat)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace MessagePassing
-
-} // End namespace Arccore
+} // namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

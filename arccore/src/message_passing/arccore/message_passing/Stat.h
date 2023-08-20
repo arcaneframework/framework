@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Stat.h                                                      (C) 2000-2019 */
+/* Stat.h                                                      (C) 2000-2023 */
 /*                                                                           */
 /* Statistiques sur le parallélisme.                                         */
 /*---------------------------------------------------------------------------*/
@@ -26,40 +26,33 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-
-namespace MessagePassing
+namespace Arccore::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Un ensemble de donnees statistiques pour le profiling
+/*!
+ * \internal
+ * \brief Ensemble de données statistiques pour le profiling.
+ *
+ * Cette classe est interne à Arccore.
+ */
 class ARCCORE_MESSAGEPASSING_EXPORT StatData
 {
   //! DEPRECATED
-  using OneStatMap = std::map<String,OneStat*>;
+  using OneStatMap = std::map<String, OneStat*>;
+
   //! Collection de statistiques
   using StatCollection = std::list<OneStat>;
+
  public:
+
   StatData() = default;
-  StatData(const StatData&) = default;
-  explicit StatData(StatData&&) = default;
-  explicit StatData(const OneStatMap& os_map)
-  {
-    for (const auto& i : os_map)
-      m_stat_col.emplace_back(*(i.second));
-  }
-  ~StatData() = default;
+  explicit StatData(const OneStatMap& os_map);
 
   const StatCollection& stats() const { return m_stat_col; }
 
-  void resetCurrentStat()
-  {
-    for (auto& i : m_stat_col)
-      i.resetCurrentStat();
-  }
+  void resetCurrentStat();
 
   void mergeData(OneStat one_stat);
   void mergeAllData(const StatData& all_stat);
@@ -67,13 +60,17 @@ class ARCCORE_MESSAGEPASSING_EXPORT StatData
   void mergeAllData(const OneStatMap& all_stat);
 
  private:
+
   StatCollection m_stat_col;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Statistiques sur le parallélisme.
+ * \internal
+ * \brief Gestionnaire de statistiques sur le parallélisme.
+ *
+ * Cette classe est interne à Arccore.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT Stat
 : public IStat
@@ -81,23 +78,20 @@ class ARCCORE_MESSAGEPASSING_EXPORT Stat
  public:
 
   //! DEPRECATED
-  using OneStatMap = std::map<String,OneStat*>;
+  using OneStatMap = std::map<String, OneStat*>;
 
  public:
 
-  typedef std::pair<String,OneStat*> OneStatValue;
+  typedef std::pair<String, OneStat*> OneStatValue;
 
  public:
 
-  Stat();
   //! Libère les ressources.
-  virtual ~Stat();
+  ~Stat() override;
 
  public:
 
- public:
-
-  void add(const String& name,double elapsed_time,Int64 msg_size) override;
+  void add(const String& name, double elapsed_time, Int64 msg_size) override;
   void enable(bool is_enabled) override { m_is_enabled = is_enabled; }
 
   void print(std::ostream& o);
@@ -111,35 +105,19 @@ class ARCCORE_MESSAGEPASSING_EXPORT Stat
 
  private:
 
-  bool m_is_enabled;
+  bool m_is_enabled = true;
   OneStatMap m_list;
   StatData m_data;
 
  private:
 
-  OneStat* _find(const String& name)
-  {
-    OneStatMap::const_iterator i = m_list.find(name);
-    if (i!=m_list.end()){
-      return i->second;
-    }
-    OneStat* os = new OneStat(name);
-    // Important: utiliser os.m_name car m_list stocke juste un
-    // pointeur sur la chaîne de caractère.
-    m_list.insert(OneStatMap::value_type(os->name(),os));
-    return os;
-  }
+  OneStat* _find(const String& name);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace MessagePassing
-
-} // End namespace Arccore
+} // namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
