@@ -37,34 +37,60 @@ class ARCCORE_MESSAGEPASSING_EXPORT OneStat
 {
  public:
 
-  explicit OneStat(const String& name, Int64 msg_size = 0, double elapsed_time = 0.0);
+  explicit OneStat(const String& name)
+  : m_name(name)
+  {}
+  OneStat(const String& name, Int64 msg_size, double elapsed_time);
 
  public:
 
-  Int64 cumulativeNbMessage() const { return m_cumulative_nb_msg; }
-
-  Int64 totalSize() const { return m_total_size; }
-  Int64 cumulativeTotalSize() const { return m_cumulative_total_size; }
-
-  double totalTime() const { return m_total_time; }
-  double cumulativeTotalTime() const { return m_cumulative_total_time; }
-
+  //! Nom de la statistique
   const String& name() const { return m_name; }
-  Int64 nbMessage() const { return m_nb_msg; }
 
+  //! Nombre de message envoyés.
+  Int64 nbMessage() const { return m_nb_msg; }
+  void setNbMessage(Int64 v) { m_nb_msg = v; }
+
+  //! Nombre de message envoyés sur toute la durée d'exécution
+  Int64 cumulativeNbMessage() const { return m_cumulative_nb_msg; }
+  void setCumulativeNbMessage(Int64 v) { m_cumulative_nb_msg = v; }
+
+  //! Taille totale des messages envoyés
+  Int64 totalSize() const { return m_total_size; }
+  void setTotalSize(Int64 v) { m_total_size = v; }
+
+  //! Taille totale des messages envoyés sur toute la durée d'exécution
+  Int64 cumulativeTotalSize() const { return m_cumulative_total_size; }
+  void setCumulativeTotalSize(Int64 v) { m_cumulative_total_size = v; }
+
+  //! Temps total écoulé
+  double totalTime() const { return m_total_time; }
+  void setTotalTime(double v) { m_total_time = v; }
+
+  //! Temps total écoulé sur toute la durée d'exécution du programme
+  double cumulativeTotalTime() const { return m_cumulative_total_time; }
+  void setCumulativeTotalTime(double v) { m_cumulative_total_time = v; }
+
+ public:
+
+  //! Affiche sur \a o les informations de l'instance
   void print(std::ostream& o);
+
+  //! Ajoute un message
   void addMessage(Int64 msg_size, double elapsed_time);
+
+  //! Remet à zéro les statistiques courantes (non cumulées)
   void resetCurrentStat();
 
  private:
 
-  String m_name; //!< Nom de la statistique
-  Int64 m_nb_msg = 0; //!< Nombre de message envoyés.
-  Int64 m_total_size = 0; //!< Taille total des messages envoyés
-  double m_total_time = 0.0; //!< Temps total écoulé
-  Int64 m_cumulative_nb_msg = 0; //! < Nombre de message envoyés sur toute la duree d'execution du programme
-  Int64 m_cumulative_total_size = 0; //!< Taille total des messages envoyés sur toute la duree d'execution du programme
-  double m_cumulative_total_time = 0.0; //!< Temps total écoulé sur toute la duree d'execution du programme};
+  String m_name;
+  Int64 m_nb_msg = 0;
+  Int64 m_total_size = 0;
+  double m_total_time = 0.0;
+  Int64 m_cumulative_nb_msg = 0;
+  Int64 m_cumulative_total_size = 0;
+  double m_cumulative_total_time = 0.0;
 };
 
 /*---------------------------------------------------------------------------*/
