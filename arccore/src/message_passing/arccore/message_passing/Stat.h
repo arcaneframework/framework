@@ -40,6 +40,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT StatData
  public:
 
   StatData() = default;
+
+  ARCCORE_DEPRECATED_REASON("Y2023: use mergeData() for each OneStat instead")
   explicit StatData(const OneStatMap& os_map);
 
   const StatCollection& stats() const { return m_stat_col; }
@@ -48,7 +50,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT StatData
 
   void mergeData(OneStat one_stat);
   void mergeAllData(const StatData& all_stat);
-  // Surcharge temporaire avant de gerer le DEPRECATED OneStatMap
+
+  ARCCORE_DEPRECATED_REASON("Y2023: Use mergeAllData(const StatData&) instead")
   void mergeAllData(const OneStatMap& all_stat);
 
  private:
@@ -88,10 +91,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT Stat
 
   void print(std::ostream& o);
 
-  ARCCORE_DEPRECATED_2019("Please use getData() method instead")
+  ARCCORE_DEPRECATED_2019("Use statList() instead")
   const OneStatMap& stats() const override { return m_list; }
 
+  ARCCORE_DEPRECATED_REASON("Y2023: Use statList() instead")
   const StatData& getData() const { return m_data; }
+
+  const StatCollection& statList() const override;
 
   void resetCurrentStat() override;
 

@@ -135,10 +135,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT IStat
   virtual void enable(bool is_enabled) = 0;
 
   //! Récuperation des statistiques
-  virtual const OneStatMap& stats() const = 0;
+  virtual const StatCollection& statList() const = 0;
 
   //! Remèt à zéro les statistiques courantes
   virtual void resetCurrentStat() = 0;
+
+ public:
+
+  //! Récuperation des statistiques
+  ARCCORE_DEPRECATED_REASON("Y2023: Use statList() instead")
+  virtual const OneStatMap& stats() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
