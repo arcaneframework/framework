@@ -86,6 +86,7 @@
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/ObserverPool.h"
 #include "arcane/core/ConfigurationPropertyReader.h"
+#include "arcane/core/parallel/IStat.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/ICaseMngInternal.h"
@@ -1039,8 +1040,14 @@ void SubDomain::
 _notifyWriteCheckpoint()
 {
   info(4) << "SubDomain::_notifyWriteCheckpoint()";
-  Properties time_stats_properties(propertyMng(),"TimeStats");
-  timeStats()->saveTimeValues(&time_stats_properties);
+  {
+    Properties time_stats_properties(propertyMng(),"TimeStats");
+    timeStats()->saveTimeValues(&time_stats_properties);
+  }
+  {
+    Properties p(propertyMng(),"MessagePassingStats");
+    parallelMng()->stat()->saveValues(traceMng(),&p);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1051,8 +1058,14 @@ setIsInitialized()
 {
   m_is_initialized = true;
   info(4) << "SubDomain::setIsInitialized()";
-  Properties time_stats_properties(propertyMng(),"TimeStats");
-  timeStats()->mergeTimeValues(&time_stats_properties);
+  {
+    Properties time_stats_properties(propertyMng(),"TimeStats");
+    timeStats()->mergeTimeValues(&time_stats_properties);
+  }
+  {
+    Properties p(propertyMng(),"MessagePassingStats");
+    parallelMng()->stat()->mergeValues(traceMng(),&p);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

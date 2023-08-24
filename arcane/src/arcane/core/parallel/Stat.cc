@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Stat.cc                                                     (C) 2000-2022 */
+/* Stat.cc                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Statistiques sur le parallélisme.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/parallel/IStat.h"
+#include "arcane/core/parallel/IStat.h"
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/ITraceMng.h"
@@ -20,7 +20,8 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IParallelMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Properties.h"
 
 #include "arccore/message_passing/Stat.h"
 
@@ -32,7 +33,8 @@
 namespace Arcane::Parallel
 {
 
-using Arccore::MessagePassing::OneStat;
+namespace  MP = Arccore::MessagePassing;
+using MP::OneStat;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,23 +42,73 @@ using Arccore::MessagePassing::OneStat;
  * \brief Statistiques sur le parallélisme.
  */
 class Stat
-: public Arccore::MessagePassing::Stat
+: public MP::Stat
 , public IStat
 {
  public:
 
-  typedef Arccore::MessagePassing::Stat Base;
+  using Base = MP::Stat;
 
-  Stat();
-  //! Libère les ressources.
-  virtual ~Stat();
+  class CumulativeStat
+  {
+   public:
 
-  Arccore::MessagePassing::IStat* toArccoreStat() override { return this; }
+    String m_name;
+    Int64 m_nb_message = 0;
+    Int64 m_total_size = 0;
+    Real m_total_time = 0.0;
+  };
+
+  //! Infos de sérialisation
+  class SerializedStats
+  {
+   public:
+
+    void save(const std::map<String,CumulativeStat>& previous_stat_map)
+    {
+      for (auto& i : previous_stat_map){
+        const CumulativeStat& s = i.second;
+        m_total_time_list.add(s.m_total_time);
+        m_nb_message_list.add(s.m_nb_message);
+        m_total_size_list.add(s.m_total_size);
+        m_name_list.add(s.m_name);
+      }
+    }
+
+    // Fusionne les valeurs de l'instance avec celles contenues dans \a stat
+    void merge(std::map<String,CumulativeStat>& previous_stat_map, MP::Stat& stat)
+    {
+      for( const OneStat& s : stat.statList() ){
+        CumulativeStat& cs = previous_stat_map[s.name()];
+        cs.m_name = s.name();
+        cs.m_nb_message += s.cumulativeNbMessage();
+        cs.m_total_size += s.cumulativeTotalSize();
+        cs.m_total_time += s.cumulativeTotalTime();
+      }
+    }
+
+   public:
+
+    UniqueArray<String> m_name_list;
+    UniqueArray<Int64> m_nb_message_list;
+    UniqueArray<Int64> m_total_size_list;
+    UniqueArray<Real> m_total_time_list;
+  };
+
+ public:
+
+  MP::IStat* toArccoreStat() override { return this; }
 
   void add(const String& name, double elapsed_time, Int64 msg_size) override;
   void print(ITraceMng* msg) override;
   void enable(bool is_enabled) override { Base::enable(is_enabled); }
   void dumpJSON(JSONWriter& writer) override;
+  void saveValues(ITraceMng* tm, Properties* p) override;
+  void mergeValues(ITraceMng* tm, Properties* p) override;
+
+ private:
+
+  std::map<String,CumulativeStat> m_previous_stat_map;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -83,22 +135,6 @@ dumpJSON(JSONWriter& writer, const Arccore::MessagePassing::OneStat& os, bool cu
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Stat::
-Stat()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Stat::
-~Stat()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void Stat::
 add(const String& name, double elapsed_time, Int64 msg_size)
 {
@@ -111,13 +147,12 @@ add(const String& name, double elapsed_time, Int64 msg_size)
 void Stat::
 print(ITraceMng* msg)
 {
-  for (const auto& i : stats()) {
-    OneStat* os = i.second;
-    Real total_time = os->cumulativeTotalTime();
+  for (const auto& os : statList()) {
+    Real total_time = os.cumulativeTotalTime();
     Int64 div_time = static_cast<Int64>(total_time * 1000.0);
-    Int64 nb_message = os->cumulativeNbMessage();
-    Int64 total_size = os->cumulativeTotalSize();
-    const String& name = os->name();
+    Int64 nb_message = os.cumulativeNbMessage();
+    Int64 total_size = os.cumulativeTotalSize();
+    const String& name = os.name();
     if (div_time == 0)
       div_time = 1;
     if (nb_message > 0) {
@@ -140,13 +175,60 @@ dumpJSON(JSONWriter& writer)
 {
   writer.writeKey("Stats");
   writer.beginArray();
-  for (const auto& stat : stats())
-    Parallel::dumpJSON(writer, *(stat.second)); // cumulative stats dump
+  for (const OneStat& s : statList())
+    Parallel::dumpJSON(writer, s); // cumulative stats dump
   writer.endArray();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void Stat::
+saveValues(ITraceMng* tm, Properties* p)
+{
+  tm->info(4) << "Saving IParallelMng Stat values";
+
+  SerializedStats save_info;
+
+  save_info.save(m_previous_stat_map);
+
+  p->set("Version",1);
+  p->set("NameList",save_info.m_name_list);
+  p->set("NbMessageList",save_info.m_nb_message_list);
+  p->set("TotalSizeList",save_info.m_total_size_list);
+  p->set("TotalTimeList",save_info.m_total_time_list);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Stat::
+mergeValues(ITraceMng* tm, Properties* p)
+{
+  tm->info(4) << "Merging IParallelMng Stat values";
+
+  SerializedStats save_info;
+
+  Int32 v = p->getInt32WithDefault("Version",0);
+  // Ne fait rien si aucune info dans la protection
+  if (v==0)
+    return;
+  if (v!=1){
+    tm->info() << "Warning: can not merge IParallelMng stats values because checkpoint version is not compatible";
+    return;
+  }
+
+  p->get("NameList",save_info.m_name_list);
+  p->get("NbMessageList",save_info.m_nb_message_list);
+  p->get("TotalSizeList",save_info.m_total_size_list);
+  p->get("TotalTimeList",save_info.m_total_time_list);
+
+  save_info.merge(m_previous_stat_map,*this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace
 {
   std::string _formatToString(Real v)
@@ -161,6 +243,9 @@ namespace
     return ostr.str();
   }
 } // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 extern "C++" void
 printStatsCollective(IStat* s, IParallelMng* pm)
