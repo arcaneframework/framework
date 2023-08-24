@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IStat.h                                                     (C) 2000-2022 */
+/* IStat.h                                                     (C) 2000-2023 */
 /*                                                                           */
-/* Statistiques sur le parallélisme.                                         */
+/* Statistiques sur les messages de 'IParallelMng'.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_ISTAT_H
 #define ARCANE_PARALLEL_ISTAT_H
@@ -21,6 +21,11 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+class Properties;
+}
 
 namespace Arcane::Parallel
 {
@@ -56,6 +61,14 @@ class IStat
 
   //! Sort les statistiques au format JSON
   virtual void dumpJSON(JSONWriter& writer) =0;
+
+ public:
+
+  //! Sauve les valeurs actuelles dans \a p
+  virtual void saveValues(ITraceMng* tm, Properties* p) =0;
+
+  //! Fusionne les valeurs actuelles avec celles sauvées dans \a p
+  virtual void mergeValues(ITraceMng* tm, Properties* p) =0;
 
  public:
 
