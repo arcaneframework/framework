@@ -59,14 +59,16 @@ class Stat
     Real m_total_time = 0.0;
   };
 
+  using CumulativeStatMap = std::map<String,CumulativeStat>;
+
   //! Infos de sérialisation
   class SerializedStats
   {
    public:
 
-    void save(const std::map<String,CumulativeStat>& previous_stat_map)
+    void save(const CumulativeStatMap& stat_map)
     {
-      for (auto& i : previous_stat_map){
+      for (auto& i : stat_map){
         const CumulativeStat& s = i.second;
         m_total_time_list.add(s.m_total_time);
         m_nb_message_list.add(s.m_nb_message);
@@ -75,15 +77,16 @@ class Stat
       }
     }
 
-    // Fusionne les valeurs de l'instance avec celles contenues dans \a stat
-    void merge(std::map<String,CumulativeStat>& previous_stat_map, MP::Stat& stat)
+    void read(CumulativeStatMap& stat_map)
     {
-      for( const OneStat& s : stat.statList() ){
-        CumulativeStat& cs = previous_stat_map[s.name()];
-        cs.m_name = s.name();
-        cs.m_nb_message += s.cumulativeNbMessage();
-        cs.m_total_size += s.cumulativeTotalSize();
-        cs.m_total_time += s.cumulativeTotalTime();
+      Int32 n = m_name_list.size();
+      for (Int32 i = 0; i < n; ++i) {
+        const String& name = m_name_list[i];
+        CumulativeStat& cs = stat_map[name];
+        cs.m_name = name;
+        cs.m_nb_message += m_nb_message_list[i];
+        cs.m_total_size += m_total_size_list[i];
+        cs.m_total_time += m_total_time_list[i];
       }
     }
 
@@ -108,7 +111,21 @@ class Stat
 
  private:
 
-  std::map<String,CumulativeStat> m_previous_stat_map;
+  CumulativeStatMap m_previous_stat_map;
+
+ private:
+
+  // Fusionne les valeurs de l'instance avec celles contenues dans l'instance
+  void _mergeStats(CumulativeStatMap& stat_map)
+  {
+    for (const OneStat& s : statList()) {
+      CumulativeStat& cs = stat_map[s.name()];
+      cs.m_name = s.name();
+      cs.m_nb_message += s.cumulativeNbMessage();
+      cs.m_total_size += s.cumulativeTotalSize();
+      cs.m_total_time += s.cumulativeTotalTime();
+    }
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -188,15 +205,18 @@ saveValues(ITraceMng* tm, Properties* p)
 {
   tm->info(4) << "Saving IParallelMng Stat values";
 
+  CumulativeStatMap current_stat_map(m_previous_stat_map);
+
   SerializedStats save_info;
+  _mergeStats(current_stat_map);
 
-  save_info.save(m_previous_stat_map);
+  save_info.save(current_stat_map);
 
-  p->set("Version",1);
-  p->set("NameList",save_info.m_name_list);
-  p->set("NbMessageList",save_info.m_nb_message_list);
-  p->set("TotalSizeList",save_info.m_total_size_list);
-  p->set("TotalTimeList",save_info.m_total_time_list);
+  p->set("Version", 1);
+  p->set("NameList", save_info.m_name_list);
+  p->set("NbMessageList", save_info.m_nb_message_list);
+  p->set("TotalSizeList", save_info.m_total_size_list);
+  p->set("TotalTimeList", save_info.m_total_time_list);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -209,21 +229,22 @@ mergeValues(ITraceMng* tm, Properties* p)
 
   SerializedStats save_info;
 
-  Int32 v = p->getInt32WithDefault("Version",0);
+  Int32 v = p->getInt32WithDefault("Version", 0);
   // Ne fait rien si aucune info dans la protection
-  if (v==0)
+  if (v == 0)
     return;
-  if (v!=1){
+  if (v != 1) {
     tm->info() << "Warning: can not merge IParallelMng stats values because checkpoint version is not compatible";
     return;
   }
 
-  p->get("NameList",save_info.m_name_list);
-  p->get("NbMessageList",save_info.m_nb_message_list);
-  p->get("TotalSizeList",save_info.m_total_size_list);
-  p->get("TotalTimeList",save_info.m_total_time_list);
+  p->get("NameList", save_info.m_name_list);
+  p->get("NbMessageList", save_info.m_nb_message_list);
+  p->get("TotalSizeList", save_info.m_total_size_list);
+  p->get("TotalTimeList", save_info.m_total_time_list);
 
-  save_info.merge(m_previous_stat_map,*this);
+  save_info.read(m_previous_stat_map);
+  _mergeStats(m_previous_stat_map);
 }
 
 /*---------------------------------------------------------------------------*/
