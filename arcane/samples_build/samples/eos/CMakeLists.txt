@@ -9,7 +9,7 @@ target_sources(EOS PRIVATE PerfectGasEOSService.cc)
 # Ajoute une cible sous la forme d'une bibliothèque
 # dynamique pour exécuter le code depuis un runtime
 # '.Net' (mono ou coreclr)
-add_library(EOSLib EOSModule.cc PerfectGasEOSService.cc ${CMAKE_CURRENT_BINARY_DIR}/EOS_axl.h)
+add_library(EOSLib EOSModule.cc PerfectGasEOSService.cc ${CMAKE_CURRENT_BINARY_DIR}/EOS_axl.h ${CMAKE_CURRENT_BINARY_DIR}/PerfectGasEOS_axl.h)
 target_include_directories(EOSLib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 arcane_add_arcane_libraries_to_target(EOSLib)

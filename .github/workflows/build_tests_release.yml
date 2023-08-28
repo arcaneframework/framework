@@ -1,4 +1,4 @@
-name: '[Release] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04 / GCC 11-12 / CLang 13-15 / CUDA 11.8-12.0 / Minimal-Full)'
+name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04 / GCC 11-12 / CLang 13-16 / CUDA 12.2 / Minimal-Full)'
 
 on:
   push:
@@ -26,484 +26,68 @@ on:
       - '**.yml'
   workflow_dispatch:
 
-env:
-
-  SOURCE_DIR: '/__w/framework/framework/framework'
-  BUILD_DIR: '/__w/framework/framework/build'
-  INSTALL_DIR: '/__w/framework/framework/install'
-
-  # CTest
-  CT_RESULT_DIR: '/__w/framework/framework/test'
-  CT_OPTS: "--timeout 300 --output-on-failure"
-
-  # ccache
-  CCACHE_COMPRESS: true
-  CCACHE_COMPRESSLEVEL: 6
-  CCACHE_DIR: '/__w/framework/framework/ccache'
-  CCACHE_MAXSIZE: 5G
-  
-  # CMake
-  CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
-
-  # MPI
-  OMPI_ALLOW_RUN_AS_ROOT: 1
-  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
-
 jobs:
-  aio-build:
+  build-install-test:
     strategy:
       fail-fast: false
       matrix:
-        image_short: ['U20_G11_C13', 'U22_G12_C15']
-        version_short: ['M']
-        compilo_name: ['CLang', 'GCC']
-        type: ['Release']
+        image_short: [ 'U20_G11_C13', 'U22_G12_C16', 'U22_G12_C15_CU122' ]
+        version_short: [ 'F', 'M' ]
+        compilo: [ 'CLang', 'GCC' ]
+        type_build: [ 'Check' ]
+        mpi: [ 'OpenMPI', 'MPICH' ]
 
         include:
-          - compilo_name: 'CLang'
-            cmake_compilo: '-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++'
-
-          - compilo_name: 'GCC'
-            cmake_compilo: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++'
-
           - image_short: 'U20_G11_C13'
             image_long: 'ubuntu-2004:gcc-11_clang-13'
-            image_date: '20230720'
+            image_date: '20230808'
             image_args: '-DARCCORE_CXX_STANDARD=20'
+            image_cuda: false
 
-          - image_short: 'U22_G12_C15'
-            image_long: 'ubuntu-2204:gcc-12_clang-15'
-            image_date: '20230720'
+          - image_short: 'U22_G12_C16'
+            image_long: 'ubuntu-2204:gcc-12_clang-16'
+            image_date: '20230808'
             image_args: '-DARCCORE_CXX_STANDARD=23'
+            image_cuda: false
+
+          - image_short: 'U22_G12_C15_CU122'
+            image_long: 'ubuntu-2204:gcc-12_clang-15_cuda-122'
+            image_date: '20230808'
+            image_args: '-DARCCORE_CXX_STANDARD=20'
+            image_cuda: true
 
           - version_short: 'M'
             version_long: 'minimal'
             version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON'
 
-          # - version_short: 'F'
-          #   version_long: 'full'
-          #   version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-          #     -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
-          #     -DMKL_INCLUDE_DIR="/usr/include/mkl"'
-
-          - type: 'Release'
-            type_args: '-DCMAKE_BUILD_TYPE=Release
-              -DARCCORE_BUILD_MODE=Check
-              -DARCANE_BUILD_TYPE=Check'
-            ## Désactivation des tests avec '[>=3]proc' dans leur nom.
-            ## Désactivation des tests avec '[>=5]thread' dans leur nom.
-            type_excl_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
-            ## Désactivation des tests ayant le label LARGE_HYBRID.
-            type_excl_labels_tests: 'LARGE_HYBRID'
-
-          # - type: 'Debug'
-          #   type_args: '-DCMAKE_BUILD_TYPE=Debug
-          #     -DARCCORE_BUILD_MODE=Debug
-          #     -DARCANE_BUILD_TYPE=Debug'
-          #   type_excl_tests: ''
-          ## Désactivation des tests ayant le label LARGE_HYBRID.
-          #   type_excl_labels_tests: 'LARGE_HYBRID'
-
-    name: '[${{matrix.image_short}}_${{matrix.version_short}}]_AiO_${{matrix.compilo_name}}_${{matrix.type}}'
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
-
-    steps:
-      - name: Checkout framework
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.SOURCE_DIR }}
-          submodules: true
-
-      - name: Get date
-        id: get-date
-        shell: bash
-        run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-
-      - name: Get cache for ccache tool
-        uses: actions/cache@v3
-        with:
-          path: ${{env.CCACHE_DIR}}
-          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-${{ env.m_date }}-${{ github.run_number }}
-          restore-keys: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-
-
-      - name: Configure
-        shell: bash
-        run: |
-          cmake \
-          -S ${{ env.SOURCE_DIR }} \
-          -B ${{ env.BUILD_DIR }} \
-          -GNinja \
-          -DBUILD_SHARED_LIBS=ON \
-          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} \
-          -DARCANE_DEFAULT_PARTITIONER=Metis \
-          -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
-          -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
-          ${{ env.CM_CCACHE_OPTS }} \
-          ${{ matrix.image_args }} \
-          ${{ matrix.version_args }} \
-          ${{ matrix.type_args }} \
-          ${{ matrix.cmake_compilo }}
-
-      - name: Build
-        shell: bash
-        run: |
-          cmake --build ${{ env.BUILD_DIR }}
-
-      - name: Install
-        shell: bash
-        run: cmake --install ${{ env.BUILD_DIR }}
-
-      - name: Test
-        shell: bash
-        run: |
-          mkdir -p ${{ env.CT_RESULT_DIR }}
-          ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}' -LE '${{matrix.type_excl_labels_tests}}'
-
-      - name: Upload test artifact
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-test-artifact
-          path: ${{ env.CT_RESULT_DIR }}
-          retention-days: 2
-
-      - name: Get ccache status
-        shell: bash
-        run: ccache -s
-
-  split-build:
-    strategy:
-      fail-fast: false
-      matrix:
-        image_short: ['U20_G11_C13', 'U22_G12_C15']
-        version_short: ['F']
-        compilo_name: ['CLang', 'GCC']
-        type: ['Release']
-
-        include:
-          - compilo_name: 'CLang'
-            cmake_compilo: '-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++'
-
-          - compilo_name: 'GCC'
-            cmake_compilo: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++'
-
-          - image_short: 'U20_G11_C13'
-            image_long: 'ubuntu-2004:gcc-11_clang-13'
-            image_date: '20230720'
-            image_args: '-DARCCORE_CXX_STANDARD=20'
-
-          - image_short: 'U22_G12_C15'
-            image_long: 'ubuntu-2204:gcc-12_clang-15'
-            image_date: '20230720'
-            image_args: '-DARCCORE_CXX_STANDARD=23'
-
-          # - version_short: 'M'
-          #   version_long: 'minimal'
-          #   version_args: ''
-
           - version_short: 'F'
             version_long: 'full'
             version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
-              -DMKL_INCLUDE_DIR="/usr/include/mkl"'
+              -DARCANE_DEFAULT_PARTITIONER=Metis
+              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
-          - type: 'Release'
-            type_args: '-DCMAKE_BUILD_TYPE=Release
-              -DARCCORE_BUILD_MODE=Check
-              -DARCANE_BUILD_TYPE=Check'
-            ## Désactivation des tests avec '[>=3]proc' dans leur nom.
-            ## Désactivation des tests avec '[>=5]thread' dans leur nom.
-            type_excl_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
-            ## Désactivation des tests ayant le label LARGE_HYBRID.
-            type_excl_labels_tests: 'LARGE_HYBRID'
+          - type_build: 'Check'
+            excluded_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
+            excluded_tests_with_labels: 'LARGE_HYBRID'
 
-          # - type: 'Debug'
-          #   type_args: '-DCMAKE_BUILD_TYPE=Debug
-          #     -DARCCORE_BUILD_MODE=Debug
-          #     -DARCANE_BUILD_TYPE=Debug'
-          #   type_excl_tests: ''
-          ## Désactivation des tests ayant le label LARGE_HYBRID.
-          #   type_excl_labels_tests: 'LARGE_HYBRID'
+        exclude:
+          - version_short: 'F'
+            mpi: 'MPICH'
 
 
-    name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Split_${{matrix.compilo_name}}_${{matrix.type}}'
-    runs-on: ubuntu-latest
-    container:
+    name: '[${{matrix.image_short}}_${{matrix.version_short}}]_${{matrix.compilo}}_${{matrix.mpi}}_${{matrix.type_build}}'
+    # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
+    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v1'
+    with:
       image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
-
-    steps:
-      - name: Checkout framework
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.SOURCE_DIR }}
-          submodules: true
-
-      - name: Get date
-        id: get-date
-        shell: bash
-        run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-
-      - name: Get cache for ccache tool
-        uses: actions/cache@v3
-        with:
-          path: ${{env.CCACHE_DIR}}
-          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-${{ env.m_date }}-${{ github.run_number }}
-          restore-keys: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-
-
-
-
-      - name: Configure arccon
-        shell: bash
-        run: |
-          cmake \
-          -S ${{ env.SOURCE_DIR }}/arccon \
-          -B ${{ env.BUILD_DIR }}/arccon \
-          -GNinja \
-          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }}/arccon \
-          ${{ env.CM_CCACHE_OPTS }} \
-          ${{ matrix.image_args }} \
-          ${{ matrix.version_args }} \
-          ${{ matrix.type_args }} \
-          ${{ matrix.cmake_compilo }} 
-
-      - name: Install arccon
-        shell: bash
-        run: cmake --install ${{ env.BUILD_DIR }}/arccon
-
-
-
-      - name: Configure dependencies
-        shell: bash
-        run: |
-          cmake \
-          -S ${{ env.SOURCE_DIR }}/dependencies \
-          -B ${{ env.BUILD_DIR }}/dependencies \
-          -GNinja \
-          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }}/dependencies \
-          -DArccon_DIR=${{ env.INSTALL_DIR }}/arccon/share/cmake/Arccon \
-          ${{ env.CM_CCACHE_OPTS }} \
-          ${{ matrix.image_args }} \
-          ${{ matrix.version_args }} \
-          ${{ matrix.type_args }} \
-          ${{ matrix.cmake_compilo }}
-
-      - name: Install dependencies
-        shell: bash
-        run: cmake --install ${{ env.BUILD_DIR }}/dependencies
-
-
-
-      - name: Configure axlstar
-        shell: bash
-        run: |
-          cmake \
-          -S ${{ env.SOURCE_DIR }}/axlstar \
-          -B ${{ env.BUILD_DIR }}/axlstar \
-          -GNinja \
-          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }}/axlstar \
-          -DArccon_DIR=${{ env.INSTALL_DIR }}/arccon/share/cmake/Arccon \
-          -DArcDependencies_DIR=${{ env.INSTALL_DIR }}/dependencies/share/cmake/ArcDependencies \
-          ${{ env.CM_CCACHE_OPTS }} \
-          ${{ matrix.image_args }} \
-          ${{ matrix.version_args }} \
-          ${{ matrix.type_args }} \
-          ${{ matrix.cmake_compilo }}
-
-      - name: Build axlstar
-        shell: bash
-        run: cmake --build ${{ env.BUILD_DIR }}/axlstar
-
-      - name: Install axlstar
-        shell: bash
-        run: cmake --install ${{ env.BUILD_DIR }}/axlstar
-
-
-
-      - name: Configure arccore
-        shell: bash
-        run: |
-          cmake \
-          -S ${{ env.SOURCE_DIR }}/arccore \
-          -B ${{ env.BUILD_DIR }}/arccore \
-          -GNinja \
-          -DBUILD_SHARED_LIBS=ON \
-          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }}/arccore \
-          -DArccon_DIR=${{ env.INSTALL_DIR }}/arccon/share/cmake/Arccon \
-          ${{ env.CM_CCACHE_OPTS }} \
-          ${{ matrix.image_args }} \
-          ${{ matrix.version_args }} \
-          ${{ matrix.type_args }} \
-          ${{ matrix.cmake_compilo }}
-
-      - name: Build arccore
-        shell: bash
-        run: cmake --build ${{ env.BUILD_DIR }}/arccore
-
-      - name: Install arccore
-        shell: bash
-        run: cmake --install ${{ env.BUILD_DIR }}/arccore
-
-
-
-      - name: Configure arcane
-        shell: bash
-        run: |
-          cmake \
-          -S ${{ env.SOURCE_DIR }}/arcane \
-          -B ${{ env.BUILD_DIR }}/arcane \
-          -GNinja \
-          -DBUILD_SHARED_LIBS=ON \
-          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }}/arcane \
-          -DArccon_DIR=${{ env.INSTALL_DIR }}/arccon/share/cmake/Arccon \
-          -DArccore_DIR=${{ env.INSTALL_DIR }}/arccore/lib/cmake/Arccore \
-          -DAxlstar_DIR=${{ env.INSTALL_DIR }}/axlstar/share/cmake/Axlstar \
-          -DArcDependencies_DIR=${{ env.INSTALL_DIR }}/dependencies/share/cmake/ArcDependencies \
-          -DARCANE_DEFAULT_PARTITIONER=Metis \
-          -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
-          ${{ env.CM_CCACHE_OPTS }} \
-          ${{ matrix.image_args }} \
-          ${{ matrix.version_args }} \
-          ${{ matrix.type_args }} \
-          ${{ matrix.cmake_compilo }}
-
-      - name: Build arcane
-        shell: bash
-        run: cmake --build ${{ env.BUILD_DIR }}/arcane
-
-      - name: Install arcane
-        shell: bash
-        run: cmake --install ${{ env.BUILD_DIR }}/arcane
-
-
-
-      - name: Test arccore
-        shell: bash
-        run: |
-          mkdir -p ${{ env.CT_RESULT_DIR }}
-          ctest --test-dir ${{ env.BUILD_DIR }}/arccore --output-junit ${{ env.CT_RESULT_DIR }}/results_arccore.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}' -LE '${{matrix.type_excl_labels_tests}}'
-
-      - name: Test arcane
-        shell: bash
-        run: ctest --test-dir ${{ env.BUILD_DIR }}/arcane --output-junit ${{ env.CT_RESULT_DIR }}/results_arcane.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}' -LE '${{matrix.type_excl_labels_tests}}'
-
-      - name: Upload test artifact
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-test-artifact
-          path: ${{ env.CT_RESULT_DIR }}
-          retention-days: 2
-
-      - name: Get ccache status
-        shell: bash
-        run: ccache -s
- 
-  aio-cuda-build:
-    strategy:
-      fail-fast: false
-      matrix:
-        image_short: ['U20_G11_C13_CU118', 'U22_G12_C14_CU120']
-        version_short: ['M']
-        compilo_name: ['CLang', 'GCC']
-        type: ['Release']
-
-        include:
-          - compilo_name: 'GCC'
-            cmake_compilo: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=`which nvcc`'
-
-          - compilo_name: 'CLang'
-            cmake_compilo: '-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=`which nvcc`'
-
-          - image_short: 'U20_G11_C13_CU118'
-            image_long: 'ubuntu-2004:gcc-11_clang-13_cuda-118'
-            image_date: '20230720'
-            image_args: '-DARCCORE_CXX_STANDARD=20'
-
-          - image_short: 'U22_G12_C14_CU120'
-            image_long: 'ubuntu-2204:gcc-12_clang-14_cuda-120'
-            image_date: '20230720'
-            image_args: '-DARCCORE_CXX_STANDARD=20'
-
-          - version_short: 'M'
-            version_long: 'minimal'
-            version_args: ''
-
-          # - version_short: 'F'
-          #   version_long: 'full'
-          #   version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-          #     -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
-          #     -DMKL_INCLUDE_DIR="/usr/include/mkl"'
-
-          - type: 'Release'
-            type_args: '-DCMAKE_BUILD_TYPE=Release
-              -DARCCORE_BUILD_MODE=Check
-              -DARCANE_BUILD_TYPE=Check'
-            ## Désactivation des tests avec '[>=3]proc' dans leur nom.
-            ## Désactivation des tests avec '[>=5]thread' dans leur nom.
-            type_excl_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
-            ## Désactivation des tests ayant le label LARGE_HYBRID.
-            type_excl_labels_tests: 'LARGE_HYBRID'
-
-          # - type: 'Debug'
-          #   type_args: '-DCMAKE_BUILD_TYPE=Debug
-          #     -DARCCORE_BUILD_MODE=Debug
-          #     -DARCANE_BUILD_TYPE=Debug'
-          #   type_excl_tests: ''
-          ## Désactivation des tests ayant le label LARGE_HYBRID.
-          #   type_excl_labels_tests: 'LARGE_HYBRID'
-        
-    name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Cuda_${{matrix.compilo_name}}_${{matrix.type}}'
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
-
-    steps:
-      - name: Checkout framework
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.SOURCE_DIR }}
-          submodules: true
-
-      - name: Get date
-        id: get-date
-        shell: bash
-        run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-
-      - name: Get cache for ccache tool
-        uses: actions/cache@v3
-        with:
-          path: ${{env.CCACHE_DIR}}
-          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_cuda-${{ env.m_date }}-${{ github.run_number }}
-          restore-keys: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_cuda-
-
-      - name: Configure
-        shell: bash
-        run: |
-          cmake \
-          -S ${{ env.SOURCE_DIR }} \
-          -B ${{ env.BUILD_DIR }} \
-          -GNinja \
-          -DBUILD_SHARED_LIBS=ON \
-          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} \
-          -DARCANE_DEFAULT_PARTITIONER=Metis \
-          -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
-          ${{ env.CM_CCACHE_OPTS }} \
-          ${{ matrix.image_args }} \
-          ${{ matrix.version_args }} \
-          ${{ matrix.type_args }} \
-          ${{ matrix.cmake_compilo }}
-
-      - name: Build
-        shell: bash
-        run: |
-          cmake --build ${{ env.BUILD_DIR }}
-
-      - name: Install
-        shell: bash
-        run: cmake --install ${{ env.BUILD_DIR }}
-
-      - name: Get ccache status
-        shell: bash
-        run: ccache -s
+      compilo: ${{ matrix.compilo }}
+      mpi: ${{ matrix.mpi }}
+      with_cuda: ${{ matrix.image_cuda }}
+      type_build: ${{ matrix.type_build }}
+      cmake_additionnal_args: '${{ matrix.image_args }} ${{ matrix.version_args }}'
+      verbose: true
+      with_samples: true
+      execute_tests: ${{ !matrix.image_cuda }}
+      excluded_tests: ${{ matrix.excluded_tests }}
+      excluded_tests_with_labels: ${{ matrix.excluded_tests_with_labels }}
+      cache_key_prefix: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo}}_${{matrix.mpi}}_${{matrix.type_build}}
