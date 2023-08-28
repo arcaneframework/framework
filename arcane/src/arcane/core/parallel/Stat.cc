@@ -108,6 +108,7 @@ class Stat
   void dumpJSON(JSONWriter& writer) override;
   void saveValues(ITraceMng* tm, Properties* p) override;
   void mergeValues(ITraceMng* tm, Properties* p) override;
+  void printCollective(IParallelMng* pm) override;
 
  private:
 
@@ -268,14 +269,17 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" void
-printStatsCollective(IStat* s, IParallelMng* pm)
+void Stat::
+printCollective(IParallelMng* pm)
 {
   // Les instances \a s de tous les rangs peuvent ne pas avoir les mêmes
   // statistiques. Pour éviter des blocages, on ne garde que les statistiques
   // communes à tout le monde.
+  CumulativeStatMap stat_map;
+  _mergeStats(stat_map);
+
   UniqueArray<String> input_strings;
-  const auto& stat_map = s->toArccoreStat()->stats();
+
   for (const auto& x : stat_map)
     input_strings.add(x.first);
   UniqueArray<String> common_strings;
@@ -291,11 +295,11 @@ printStatsCollective(IStat* s, IParallelMng* pm)
              << Trace::Width(10) << "rank"
              << Trace::Width(7) << "rank"
              << Trace::Width(7) << "nb";
-  for (String name : common_strings) {
+  for (const String& name : common_strings) {
     auto i = stat_map.find(name);
     if (i == stat_map.end())
       ARCANE_FATAL("Internal error: string '{0}' not in stats", name);
-    Real my_time = i->second->cumulativeTotalTime();
+    Real my_time = i->second.m_total_time;
     Real sum_time = 0.0;
     Real min_time = 0.0;
     Real max_time = 0.0;
@@ -309,9 +313,17 @@ printStatsCollective(IStat* s, IParallelMng* pm)
                << " " << _formatToString(max_time)
                << " " << Trace::Width(6) << min_time_rank
                << " " << Trace::Width(6) << max_time_rank
-               << " " << Trace::Width(6) << i->second->nbMessage();
-
+               << " " << Trace::Width(6) << i->second.m_nb_message;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void
+printStatsCollective(IStat* s, IParallelMng* pm)
+{
+  s->printCollective(pm);
 }
 
 /*---------------------------------------------------------------------------*/

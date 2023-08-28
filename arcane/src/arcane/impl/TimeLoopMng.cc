@@ -1618,7 +1618,7 @@ _dumpTimeInfos(JSONWriter& json_writer)
     IParallelMng* pm = m_sub_domain->parallelMng();
     Parallel::IStat* s = pm->stat();
     if (s){
-      Parallel::printStatsCollective(s,pm);
+      s->printCollective(pm);
       s->dumpJSON(json_writer);
     }
   }
