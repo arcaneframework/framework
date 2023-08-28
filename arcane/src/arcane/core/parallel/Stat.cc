@@ -59,14 +59,16 @@ class Stat
     Real m_total_time = 0.0;
   };
 
+  using CumulativeStatMap = std::map<String,CumulativeStat>;
+
   //! Infos de sérialisation
   class SerializedStats
   {
    public:
 
-    void save(const std::map<String,CumulativeStat>& previous_stat_map)
+    void save(const CumulativeStatMap& stat_map)
     {
-      for (auto& i : previous_stat_map){
+      for (auto& i : stat_map){
         const CumulativeStat& s = i.second;
         m_total_time_list.add(s.m_total_time);
         m_nb_message_list.add(s.m_nb_message);
@@ -75,15 +77,16 @@ class Stat
       }
     }
 
-    // Fusionne les valeurs de l'instance avec celles contenues dans \a stat
-    void merge(std::map<String,CumulativeStat>& previous_stat_map, MP::Stat& stat)
+    void read(CumulativeStatMap& stat_map)
     {
-      for( const OneStat& s : stat.statList() ){
-        CumulativeStat& cs = previous_stat_map[s.name()];
-        cs.m_name = s.name();
-        cs.m_nb_message += s.cumulativeNbMessage();
-        cs.m_total_size += s.cumulativeTotalSize();
-        cs.m_total_time += s.cumulativeTotalTime();
+      Int32 n = m_name_list.size();
+      for (Int32 i = 0; i < n; ++i) {
+        const String& name = m_name_list[i];
+        CumulativeStat& cs = stat_map[name];
+        cs.m_name = name;
+        cs.m_nb_message += m_nb_message_list[i];
+        cs.m_total_size += m_total_size_list[i];
+        cs.m_total_time += m_total_time_list[i];
       }
     }
 
@@ -105,10 +108,16 @@ class Stat
   void dumpJSON(JSONWriter& writer) override;
   void saveValues(ITraceMng* tm, Properties* p) override;
   void mergeValues(ITraceMng* tm, Properties* p) override;
+  void printCollective(IParallelMng* pm) override;
 
  private:
 
-  std::map<String,CumulativeStat> m_previous_stat_map;
+  CumulativeStatMap m_previous_stat_map;
+
+ private:
+
+  void _mergeStats(CumulativeStatMap& stat_map);
+  void _printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -186,17 +195,19 @@ dumpJSON(JSONWriter& writer)
 void Stat::
 saveValues(ITraceMng* tm, Properties* p)
 {
-  tm->info(4) << "Saving IParallelMng Stat values";
+  tm->info() << "Saving IParallelMng Stat values";
+
+  CumulativeStatMap current_stat_map(m_previous_stat_map);
+  _mergeStats(current_stat_map);
 
   SerializedStats save_info;
+  save_info.save(current_stat_map);
 
-  save_info.save(m_previous_stat_map);
-
-  p->set("Version",1);
-  p->set("NameList",save_info.m_name_list);
-  p->set("NbMessageList",save_info.m_nb_message_list);
-  p->set("TotalSizeList",save_info.m_total_size_list);
-  p->set("TotalTimeList",save_info.m_total_time_list);
+  p->set("Version", 1);
+  p->set("NameList", save_info.m_name_list);
+  p->set("NbMessageList", save_info.m_nb_message_list);
+  p->set("TotalSizeList", save_info.m_total_size_list);
+  p->set("TotalTimeList", save_info.m_total_time_list);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -209,21 +220,40 @@ mergeValues(ITraceMng* tm, Properties* p)
 
   SerializedStats save_info;
 
-  Int32 v = p->getInt32WithDefault("Version",0);
+  Int32 v = p->getInt32WithDefault("Version", 0);
   // Ne fait rien si aucune info dans la protection
-  if (v==0)
+  if (v == 0)
     return;
-  if (v!=1){
+  if (v != 1) {
     tm->info() << "Warning: can not merge IParallelMng stats values because checkpoint version is not compatible";
     return;
   }
 
-  p->get("NameList",save_info.m_name_list);
-  p->get("NbMessageList",save_info.m_nb_message_list);
-  p->get("TotalSizeList",save_info.m_total_size_list);
-  p->get("TotalTimeList",save_info.m_total_time_list);
+  p->get("NameList", save_info.m_name_list);
+  p->get("NbMessageList", save_info.m_nb_message_list);
+  p->get("TotalSizeList", save_info.m_total_size_list);
+  p->get("TotalTimeList", save_info.m_total_time_list);
 
-  save_info.merge(m_previous_stat_map,*this);
+  save_info.read(m_previous_stat_map);
+  _mergeStats(m_previous_stat_map);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Fusionne les valeurs de l'instance avec celles contenues dans l'instance.
+ */
+void Stat::
+_mergeStats(CumulativeStatMap& stat_map)
+{
+  for (const OneStat& s : statList()) {
+    CumulativeStat& cs = stat_map[s.name()];
+    cs.m_name = s.name();
+    cs.m_nb_message += s.cumulativeNbMessage();
+    cs.m_total_size += s.cumulativeTotalSize();
+    cs.m_total_time += s.cumulativeTotalTime();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -247,14 +277,38 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" void
-printStatsCollective(IStat* s, IParallelMng* pm)
+void Stat::
+printCollective(IParallelMng* pm)
+{
+  ITraceMng* tm = pm->traceMng();
+
+  // Il faut bien fusionner toutes les statistiques avant
+  // d'appeler _printCollective() car cette méthode effectue des appels
+  // collectives (allgather par exemple) qui vont modifier les statistiques.
+
+  CumulativeStatMap stat_map;
+  CumulativeStatMap cumulative_stat_map(m_previous_stat_map);
+  _mergeStats(stat_map);
+  _mergeStats(cumulative_stat_map);
+
+  tm->info() << "Message Passing Stats (Current Execution)";
+  _printCollective(stat_map, pm);
+  tm->info() << "Message Passing Stats (Cumulative Execution)";
+  _printCollective(cumulative_stat_map, pm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Stat::
+_printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm)
 {
   // Les instances \a s de tous les rangs peuvent ne pas avoir les mêmes
   // statistiques. Pour éviter des blocages, on ne garde que les statistiques
   // communes à tout le monde.
+
   UniqueArray<String> input_strings;
-  const auto& stat_map = s->toArccoreStat()->stats();
+
   for (const auto& x : stat_map)
     input_strings.add(x.first);
   UniqueArray<String> common_strings;
@@ -270,11 +324,11 @@ printStatsCollective(IStat* s, IParallelMng* pm)
              << Trace::Width(10) << "rank"
              << Trace::Width(7) << "rank"
              << Trace::Width(7) << "nb";
-  for (String name : common_strings) {
+  for (const String& name : common_strings) {
     auto i = stat_map.find(name);
     if (i == stat_map.end())
       ARCANE_FATAL("Internal error: string '{0}' not in stats", name);
-    Real my_time = i->second->cumulativeTotalTime();
+    Real my_time = i->second.m_total_time;
     Real sum_time = 0.0;
     Real min_time = 0.0;
     Real max_time = 0.0;
@@ -288,9 +342,17 @@ printStatsCollective(IStat* s, IParallelMng* pm)
                << " " << _formatToString(max_time)
                << " " << Trace::Width(6) << min_time_rank
                << " " << Trace::Width(6) << max_time_rank
-               << " " << Trace::Width(6) << i->second->nbMessage();
-
+               << " " << Trace::Width(6) << i->second.m_nb_message;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void
+printStatsCollective(IStat* s, IParallelMng* pm)
+{
+  s->printCollective(pm);
 }
 
 /*---------------------------------------------------------------------------*/

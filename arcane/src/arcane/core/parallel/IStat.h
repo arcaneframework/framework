@@ -47,14 +47,24 @@ class IStat
 
   /*!
    * \brief Ajoute une statistique.
-   * \param name nom de la statistique
-   * \param elapsed_time temps utilisé pour le message
+   *
+   * \param name nom de la statistique.
+   * \param elapsed_time temps utilisé pour le message.
    * \param msg_size taille du message envoyé.
    */
   virtual void add(const String& name,double elapsed_time,Int64 msg_size) =0;
   
   //! Imprime sur \a trace les statistiques.
   virtual void print(ITraceMng* trace) =0;
+
+  /*!
+   * \brief Affiche les statistiques de manière collective.
+   *
+   * Affiche les statistiques communes à tous les rangs associés à \a pm.
+   *
+   * Cette opération est collective.
+   */
+  virtual void printCollective(IParallelMng* pm) = 0;
 
   //! Active ou désactive les statistiques
   virtual void enable(bool is_enabled) =0;
@@ -94,8 +104,8 @@ dumpJSON(JSONWriter& writer, const Arccore::MessagePassing::OneStat& os, bool cu
 /*!
  * \brief Affiche les statistiques cumulées sur l'ensemble des rangs de \a pm.
  */
-extern "C++" ARCANE_CORE_EXPORT void
-printStatsCollective(IStat* s,IParallelMng* pm);
+extern "C++" ARCANE_DEPRECATED_REASON("Y2023: Use IStat::printCollective() instead")
+ARCANE_CORE_EXPORT void printStatsCollective(IStat* s, IParallelMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
