@@ -116,17 +116,8 @@ class Stat
 
  private:
 
-  // Fusionne les valeurs de l'instance avec celles contenues dans l'instance
-  void _mergeStats(CumulativeStatMap& stat_map)
-  {
-    for (const OneStat& s : statList()) {
-      CumulativeStat& cs = stat_map[s.name()];
-      cs.m_name = s.name();
-      cs.m_nb_message += s.cumulativeNbMessage();
-      cs.m_total_size += s.cumulativeTotalSize();
-      cs.m_total_time += s.cumulativeTotalTime();
-    }
-  }
+  void _mergeStats(CumulativeStatMap& stat_map);
+  void _printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -204,13 +195,12 @@ dumpJSON(JSONWriter& writer)
 void Stat::
 saveValues(ITraceMng* tm, Properties* p)
 {
-  tm->info(4) << "Saving IParallelMng Stat values";
+  tm->info() << "Saving IParallelMng Stat values";
 
   CumulativeStatMap current_stat_map(m_previous_stat_map);
-
-  SerializedStats save_info;
   _mergeStats(current_stat_map);
 
+  SerializedStats save_info;
   save_info.save(current_stat_map);
 
   p->set("Version", 1);
@@ -251,6 +241,24 @@ mergeValues(ITraceMng* tm, Properties* p)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Fusionne les valeurs de l'instance avec celles contenues dans l'instance.
+ */
+void Stat::
+_mergeStats(CumulativeStatMap& stat_map)
+{
+  for (const OneStat& s : statList()) {
+    CumulativeStat& cs = stat_map[s.name()];
+    cs.m_name = s.name();
+    cs.m_nb_message += s.cumulativeNbMessage();
+    cs.m_total_size += s.cumulativeTotalSize();
+    cs.m_total_time += s.cumulativeTotalTime();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace
 {
   std::string _formatToString(Real v)
@@ -272,11 +280,32 @@ namespace
 void Stat::
 printCollective(IParallelMng* pm)
 {
+  ITraceMng* tm = pm->traceMng();
+
+  // Il faut bien fusionner toutes les statistiques avant
+  // d'appeler _printCollective() car cette méthode effectue des appels
+  // collectives (allgather par exemple) qui vont modifier les statistiques.
+
+  CumulativeStatMap stat_map;
+  CumulativeStatMap cumulative_stat_map(m_previous_stat_map);
+  _mergeStats(stat_map);
+  _mergeStats(cumulative_stat_map);
+
+  tm->info() << "Message Passing Stats (Current Execution)";
+  _printCollective(stat_map, pm);
+  tm->info() << "Message Passing Stats (Cumulative Execution)";
+  _printCollective(cumulative_stat_map, pm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Stat::
+_printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm)
+{
   // Les instances \a s de tous les rangs peuvent ne pas avoir les mêmes
   // statistiques. Pour éviter des blocages, on ne garde que les statistiques
   // communes à tout le monde.
-  CumulativeStatMap stat_map;
-  _mergeStats(stat_map);
 
   UniqueArray<String> input_strings;
 
