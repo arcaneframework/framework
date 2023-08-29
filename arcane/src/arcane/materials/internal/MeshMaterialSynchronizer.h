@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSynchronizer.h                                  (C) 2000-2022 */
+/* MeshMaterialSynchronizer.h                                  (C) 2000-2023 */
 /*                                                                           */
 /* Synchronisation de la liste des matériaux/milieux des entités.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MESHMATERIALSYNCHRONIZER_H
-#define ARCANE_MATERIALS_MESHMATERIALSYNCHRONIZER_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZER_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,7 +48,7 @@ class MeshMaterialSynchronizer
 {
  public:
 
-  MeshMaterialSynchronizer(IMeshMaterialMng* material_mng);
+  explicit MeshMaterialSynchronizer(IMeshMaterialMng* material_mng);
   ~MeshMaterialSynchronizer();
 
  public:

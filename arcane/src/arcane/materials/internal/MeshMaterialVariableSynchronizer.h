@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MESHMATERIALVARIABLESYNCHRONIZER_H
-#define ARCANE_MATERIALS_MESHMATERIALVARIABLESYNCHRONIZER_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLESYNCHRONIZER_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLESYNCHRONIZER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,8 +19,8 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/MemoryRessource.h"
 
-#include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/MatVarIndex.h"
+#include "arcane/materials/internal/IMeshMaterialVariableSynchronizer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

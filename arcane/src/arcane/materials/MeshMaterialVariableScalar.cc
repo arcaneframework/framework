@@ -29,6 +29,7 @@
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 #include "arcane/materials/ItemMaterialVariableBaseT.H"
 #include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
+#include "arcane/materials/internal/IMeshMaterialVariableSynchronizer.h"
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IMesh.h"
