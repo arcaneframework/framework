@@ -123,8 +123,15 @@ class ArrayVariableDiff
   {
     // Appelle la bonne spécialisation pour être sur que le type template possède
     // la réduction.
-    typedef typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax HasReduceMinMax;
-    return _checkReplica2(pm,var,var_value,max_print,HasReduceMinMax());
+    using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
+    if constexpr(std::is_same<TrueType,ReduceType>::value)
+      return _checkReplica2(pm,var,var_value,max_print);
+
+    ARCANE_UNUSED(pm);
+    ARCANE_UNUSED(var);
+    ARCANE_UNUSED(var_value);
+    ARCANE_UNUSED(max_print);
+    throw NotSupportedException(A_FUNCINFO);
   }
 
  private:
@@ -168,18 +175,9 @@ class ArrayVariableDiff
     return nb_diff;
   }
 
-  Integer _checkReplica2(IParallelMng*,IVariable*,ConstArrayView<DataType>,
-                         Integer,FalseType has_reduce)
-  {
-    ARCANE_UNUSED(has_reduce);
-    throw NotSupportedException(A_FUNCINFO);
-  }
-
   Integer _checkReplica2(IParallelMng* pm,IVariable* var,ConstArrayView<DataType> var_values,
-                         Integer max_print,TrueType has_reduce)
+                         Integer max_print)
   {
-    ARCANE_UNUSED(has_reduce);
-
     ITraceMng* msg = pm->traceMng();
     Integer size = var_values.size();
     // Vérifie que tout les réplica ont le même nombre d'éléments pour la variable.

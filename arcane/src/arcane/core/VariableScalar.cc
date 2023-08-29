@@ -117,25 +117,20 @@ class ScalarVariableDiff
   {
     // Appelle la bonne spécialisation pour être sur que le type template possède
     // la réduction.
-    typedef typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax HasReduceMinMax;
-    return _checkReplica2(pm,var,var_value,max_print,HasReduceMinMax());
+    using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
+    if constexpr(std::is_same<TrueType,ReduceType>::value)
+      return _checkReplica2(pm,var_value);
+    ARCANE_UNUSED(pm);
+    ARCANE_UNUSED(var);
+    ARCANE_UNUSED(var_value);
+    ARCANE_UNUSED(max_print);
+    throw NotSupportedException(A_FUNCINFO);
   }
 
  private:
 
-  Integer _checkReplica2(IParallelMng*,IVariable*,const DataType&,
-                         Integer,FalseType)
+  Integer _checkReplica2(IParallelMng* pm,const DataType& var_value)
   {
-    throw NotSupportedException(A_FUNCINFO);
-  }
-
-  Integer _checkReplica2(IParallelMng* pm,IVariable* var,const DataType& var_value,
-                         Integer max_print,TrueType has_reduce)
-  {
-    ARCANE_UNUSED(var);
-    ARCANE_UNUSED(max_print);
-    ARCANE_UNUSED(has_reduce);
-
     Int32 nb_rank = pm->commSize();
     if (nb_rank==1)
       return 0;

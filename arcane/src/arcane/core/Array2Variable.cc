@@ -124,32 +124,27 @@ class Array2VariableDiff
     return nb_diff;
   }
 
-  Integer checkReplica(IParallelMng* pm,IVariable* var,ConstArray2View<DataType> var_value,
+  Integer checkReplica(IParallelMng* pm,IVariable* var,ConstArray2View<DataType> var_values,
                        Integer max_print)
   {
     // Appelle la bonne spécialisation pour être sur que le type template possède
     // la réduction.
-    typedef typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax HasReduceMinMax;
-    return _checkReplica2(pm,var,var_value,max_print,HasReduceMinMax());
+    using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
+    if constexpr(std::is_same<TrueType,ReduceType>::value)
+      return _checkReplica2(pm,var,var_values,max_print);
+
+    ARCANE_UNUSED(pm);
+    ARCANE_UNUSED(var);
+    ARCANE_UNUSED(var_values);
+    ARCANE_UNUSED(max_print);
+    throw NotSupportedException(A_FUNCINFO);
   }
 
  private:
 
   Integer _checkReplica2(IParallelMng* pm,IVariable* var,ConstArray2View<DataType> var_values,
-                         Integer max_print,FalseType has_reduce)
+                         Integer max_print)
   {
-    ARCANE_UNUSED(pm);
-    ARCANE_UNUSED(var);
-    ARCANE_UNUSED(var_values);
-    ARCANE_UNUSED(max_print);
-    ARCANE_UNUSED(has_reduce);
-    throw NotSupportedException(A_FUNCINFO);
-  }
-
-  Integer _checkReplica2(IParallelMng* pm,IVariable* var,ConstArray2View<DataType> var_values,
-                         Integer max_print,TrueType has_reduce)
-  {
-    ARCANE_UNUSED(has_reduce);
     ITraceMng* msg = pm->traceMng();
     ItemGroup group = var->itemGroup();
     //TODO: traiter les variables qui ne sont pas sur des éléments du maillage.
