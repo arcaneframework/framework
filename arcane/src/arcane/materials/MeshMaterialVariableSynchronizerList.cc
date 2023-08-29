@@ -252,28 +252,20 @@ void MeshMaterialVariableSynchronizerList::
 _beginSynchronizeMultiple(SyncInfo& sync_info)
 {
   IMeshMaterialVariableSynchronizer* mmvs = sync_info.mat_synchronizer;
+  eMemoryRessource mem = mmvs->bufferMemoryRessource();
   const Int32 sync_version = sync_info.sync_version;
+
   if (sync_version == 8) {
     // Version 8. Utilise le buffer commun pour éviter les multiples allocations
     sync_info.buf_list = mmvs->commonBuffer();
   }
   else if (sync_version == 7) {
     // Version 7. Utilise un buffer unique, mais réalloué à chaque fois.
-    // Cette version est la seule qui supporte le MPI 'GPU Aware'.
-    eMemoryRessource mem = eMemoryRessource::UnifiedMemory;
-    IParallelMng* pm = mmvs->variableSynchronizer()->parallelMng();
-    if (pm->_internalApi()->isAcceleratorAware()) {
-      // N'est supporté que pour la nouvelle version des synchronisations
-      if (sync_info.use_generic_version) {
-        mem = eMemoryRessource::Device;
-        pm->traceMng()->info(4) << "MatSync: Using device memory for buffer";
-      }
-    }
     sync_info.buf_list = impl::makeOneBufferMeshMaterialSynchronizeBufferRef(mem);
   }
   else {
     // Version 6. Version historique avec plusieurs buffers recréés à chaque fois.
-    sync_info.buf_list = impl::makeMultiBufferMeshMaterialSynchronizeBufferRef();
+    sync_info.buf_list = impl::makeMultiBufferMeshMaterialSynchronizeBufferRef(mem);
   }
   if (sync_version < 8) {
     Int32ConstArrayView ranks = mmvs->variableSynchronizer()->communicatingRanks();

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialVariableSynchronizer.h                         (C) 2000-2022 */
+/* IMeshMaterialVariableSynchronizer.h                         (C) 2000-2023 */
 /*                                                                           */
 /* Interface du synchroniseur de variables matériaux.                        */
 /*---------------------------------------------------------------------------*/
@@ -66,6 +66,9 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialVariableSynchronizer
 
   //! Buffer commun pour les messages.
   virtual Ref<IMeshMaterialSynchronizeBuffer> commonBuffer() =0;
+
+  //! Ressource mémoire à utiliser pour les buffers de communication
+  virtual eMemoryRessource bufferMemoryRessource() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

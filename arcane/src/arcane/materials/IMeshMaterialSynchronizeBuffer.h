@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialSynchronizeBuffer.h                            (C) 2000-2022 */
+/* IMeshMaterialSynchronizeBuffer.h                            (C) 2000-2023 */
 /*                                                                           */
 /* Interface des buffers pour la synchronisation de variables matériaux.     */
 /*---------------------------------------------------------------------------*/
@@ -81,6 +81,8 @@ namespace impl
 {
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
 makeMultiBufferMeshMaterialSynchronizeBufferRef();
+extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
+makeMultiBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource mem);
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
 makeOneBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource mem);
 }
