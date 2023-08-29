@@ -94,7 +94,9 @@ arcane_add_test(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHR
 arcane_add_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
 arcane_add_test_message_passing_hybrid(material_sync2_v7 CASE_FILE testMaterial-sync-2.arc NB_MPI 3 NB_SHM 4 ARGS -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
 
+arcane_add_accelerator_test_parallel(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
 arcane_add_accelerator_test_parallel(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+arcane_add_accelerator_test_parallel(material_sync2_v8 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
 arcane_add_accelerator_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
 
 ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
