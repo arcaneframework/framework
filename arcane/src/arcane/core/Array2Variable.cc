@@ -20,6 +20,7 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/ArrayShape.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"

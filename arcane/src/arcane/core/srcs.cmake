@@ -599,6 +599,7 @@ set(ARCANE_ORIGINAL_SOURCES
   VariableDependInfo.cc
   VariableDependInfo.h
   VariableDiff.h
+  VariableDiff.cc
   VariableExpressionImpl.cc
   VariableExpressionImpl.h
   VariableFactory.cc

@@ -17,6 +17,8 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
 
+#include "arcane/core/datatype/DataTypes.h"
+
 #include <cmath>
 
 /*---------------------------------------------------------------------------*/
