@@ -66,6 +66,9 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialVariableSynchronizer
 
   //! Buffer commun pour les messages.
   virtual Ref<IMeshMaterialSynchronizeBuffer> commonBuffer() =0;
+
+  //! Ressource mémoire à utiliser pour les buffers de communication
+  virtual eMemoryRessource bufferMemoryRessource() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

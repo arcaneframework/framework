@@ -11,7 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/MemoryRessource.h"
+#include "arcane/materials/MeshMaterialVariableSynchronizer.h"
+
 #include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/IMesh.h"
@@ -19,8 +20,8 @@
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IItemFamily.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 
-#include "arcane/materials/MeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MatItemEnumerator.h"
 
@@ -44,8 +45,8 @@ MeshMaterialVariableSynchronizer(IMeshMaterialMng* material_mng,
 , m_variable_synchronizer(var_syncer)
 , m_timestamp(-1)
 , m_var_space(space)
-, m_commun_buffer(impl::makeOneBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource::Host))
 {
+  _initialize();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -152,7 +153,7 @@ recompute()
   Int32ConstArrayView ranks = var_syncer->communicatingRanks();
   Integer nb_rank = ranks.size();
 
-  m_commun_buffer->setNbRank(nb_rank);
+  m_common_buffer->setNbRank(nb_rank);
 
   m_shared_items.resize(nb_rank);
   m_ghost_items.resize(nb_rank);
@@ -187,6 +188,20 @@ recompute()
       info(4) << "SIZE GHOST FOR rank=" << ranks[i] << " n=" << items.size();
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableSynchronizer::
+_initialize()
+{
+  IParallelMng* pm = m_variable_synchronizer->parallelMng();
+  if (pm->_internalApi()->isAcceleratorAware()) {
+    m_buffer_memory_ressource = eMemoryRessource::Device;
+    info() << "MeshMaterialVariableSynchronizer: Using device memory for buffer";
+  }
+  m_common_buffer = impl::makeOneBufferMeshMaterialSynchronizeBufferRef(m_buffer_memory_ressource);
 }
 
 /*---------------------------------------------------------------------------*/

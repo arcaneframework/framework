@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2022 */
+/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2023 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/MemoryRessource.h"
 
 #include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/MatVarIndex.h"
@@ -48,7 +49,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
                                    IVariableSynchronizer* var_syncer,
                                    MatVarSpace mvs);
 
-  virtual ~MeshMaterialVariableSynchronizer() override;
+  ~MeshMaterialVariableSynchronizer() override;
 
  public:
 
@@ -57,21 +58,24 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
   ConstArrayView<MatVarIndex> ghostItems(Int32 index) override;
   void recompute() override;
   void checkRecompute() override;
-  Ref<IMeshMaterialSynchronizeBuffer> commonBuffer() override { return m_commun_buffer; }
+  Ref<IMeshMaterialSynchronizeBuffer> commonBuffer() override { return m_common_buffer; }
+  eMemoryRessource bufferMemoryRessource() const override { return m_buffer_memory_ressource; }
 
  private:
 
   IMeshMaterialMng* m_material_mng;
   IVariableSynchronizer* m_variable_synchronizer;
-  UniqueArray< UniqueArray<MatVarIndex> > m_shared_items;
-  UniqueArray< UniqueArray<MatVarIndex> > m_ghost_items;
+  UniqueArray<UniqueArray<MatVarIndex>> m_shared_items;
+  UniqueArray<UniqueArray<MatVarIndex>> m_ghost_items;
   Int64 m_timestamp;
   MatVarSpace m_var_space;
-  Ref<IMeshMaterialSynchronizeBuffer> m_commun_buffer;
+  Ref<IMeshMaterialSynchronizeBuffer> m_common_buffer;
+  eMemoryRessource m_buffer_memory_ressource = eMemoryRessource::UnifiedMemory;
 
  private:
 
-  void _fillCells(Array<MatVarIndex>& items,AllEnvCellVectorView view);
+  void _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view);
+  void _initialize();
 };
 
 /*---------------------------------------------------------------------------*/
