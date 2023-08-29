@@ -33,6 +33,12 @@ class MultiBufferMeshMaterialSynchronizeBuffer
 
   struct BufferInfo
   {
+    BufferInfo(IMemoryAllocator* allocator)
+    : m_send_buffer(allocator)
+    , m_receive_buffer(allocator)
+    {
+    }
+
     void reset()
     {
       m_send_size = 0;
@@ -48,11 +54,16 @@ class MultiBufferMeshMaterialSynchronizeBuffer
 
  public:
 
+  MultiBufferMeshMaterialSynchronizeBuffer(IMemoryAllocator* allocator)
+  : m_default_buffer_info(allocator)
+  {
+  }
+
   Int32 nbRank() const override { return m_nb_rank; }
   void setNbRank(Int32 nb_rank) override
   {
     m_nb_rank = nb_rank;
-    m_buffer_infos.resize(nb_rank);
+    m_buffer_infos.resize(nb_rank,m_default_buffer_info);
     for (auto& x : m_buffer_infos)
       x.reset();
   }
@@ -87,6 +98,7 @@ class MultiBufferMeshMaterialSynchronizeBuffer
 
   Int32 m_nb_rank = 0;
   Int64 m_total_size = 0;
+  BufferInfo m_default_buffer_info;
   UniqueArray<BufferInfo> m_buffer_infos;
 };
 
@@ -186,10 +198,17 @@ class OneBufferMeshMaterialSynchronizeBuffer
 namespace impl
 {
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
+makeMultiBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource memory_ressource)
+{
+  auto* a = platform::getDataMemoryRessourceMng()->getAllocator(memory_ressource);
+  auto* v = new MultiBufferMeshMaterialSynchronizeBuffer(a);
+  return makeRef<IMeshMaterialSynchronizeBuffer>(v);
+}
+
+extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
 makeMultiBufferMeshMaterialSynchronizeBufferRef()
 {
-  auto* v = new MultiBufferMeshMaterialSynchronizeBuffer();
-  return makeRef<IMeshMaterialSynchronizeBuffer>(v);
+  return makeMultiBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource::Host);
 }
 
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
