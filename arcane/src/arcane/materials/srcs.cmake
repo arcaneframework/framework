@@ -45,7 +45,6 @@ set(ARCANE_SOURCES
   MeshMaterialInfo.cc
   MeshMaterialInfo.h
   MeshMaterialSynchronizer.cc
-  MeshMaterialSynchronizer.h
   MeshMaterialIndirectModifier.cc
   MeshMaterialIndirectModifier.h
   MeshMaterialModifier.cc
@@ -61,7 +60,6 @@ set(ARCANE_SOURCES
   MeshMaterialVariableScalar.cc
   MeshMaterialVariableArray.cc
   MeshMaterialVariableSynchronizer.cc
-  MeshMaterialVariableSynchronizer.h
   MeshMaterialVariableSynchronizerList.cc
   MeshMaterialVariableSynchronizerList.h
   MeshMaterialSynchronizeBuffer.cc
@@ -86,14 +84,12 @@ set(ARCANE_SOURCES
   MeshEnvironmentBuildInfo.h
   MeshMaterialBackup.h
   MeshMaterialInfo.h
-  MeshMaterialSynchronizer.h
   MeshMaterialIndirectModifier.h
   MeshMaterialModifier.h
   MeshMaterialVariable.h
   MeshMaterialVariableDependInfo.h
   MeshMaterialVariableRef.h
   MeshEnvironmentVariableRef.h
-  MeshMaterialVariableSynchronizer.h
   MeshMaterialVariableSynchronizerList.h
   CellToAllEnvCellConverter.h
   ComponentItem.h
@@ -110,7 +106,6 @@ set(ARCANE_SOURCES
   IMeshComponent.h
   IMeshMaterial.h
   IMeshEnvironment.h
-  IMeshMaterialVariableSynchronizer.h
   IMeshMaterialMng.h
   IMeshMaterialVariable.h
   IMeshMaterialVariableComputeFunction.h
@@ -125,12 +120,15 @@ set(ARCANE_SOURCES
   internal/ComponentModifierWorkInfo.h
   internal/IncrementalComponentModifier.h
   internal/IMeshMaterialModifierImpl.h
+  internal/IMeshMaterialVariableSynchronizer.h
   internal/MaterialModifierOperation.h
   internal/MeshEnvironment.h
   internal/MeshMaterial.h
   internal/MeshMaterialMng.h
   internal/MeshMaterialModifierImpl.h
   internal/MeshMaterialVariablePrivate.h
+  internal/MeshMaterialVariableSynchronizer.h
   internal/MeshComponentData.h
   internal/MeshMaterialVariableIndexer.h
+  internal/MeshMaterialSynchronizer.h
   )

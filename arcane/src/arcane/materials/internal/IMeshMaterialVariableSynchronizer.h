@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Interface du synchroniseur de variables matériaux.                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_IMESHMATERIALVARIABLESYNCHRONIZER_H
-#define ARCANE_MATERIALS_IMESHMATERIALVARIABLESYNCHRONIZER_H
+#ifndef ARCANE_MATERIALS_INTERNAL_IMESHMATERIALVARIABLESYNCHRONIZER_H
+#define ARCANE_MATERIALS_INTERNAL_IMESHMATERIALVARIABLESYNCHRONIZER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

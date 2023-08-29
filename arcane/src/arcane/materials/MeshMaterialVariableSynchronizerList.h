@@ -17,7 +17,6 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/MatVarIndex.h"
 
 /*---------------------------------------------------------------------------*/
@@ -29,7 +28,6 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Synchronisation d'une liste de variables matériaux.
  *
  * La méthode add() permet d'ajouter des variables à synchroniser.

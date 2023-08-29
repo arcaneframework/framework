@@ -42,7 +42,7 @@
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshMaterialVariableDependInfo.h"
 #include "arcane/materials/IMeshMaterialVariableComputeFunction.h"
-#include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
+#include "arcane/materials/internal/IMeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 

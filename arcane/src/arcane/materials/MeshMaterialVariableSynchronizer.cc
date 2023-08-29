@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/MeshMaterialVariableSynchronizer.h"
+#include "arcane/materials/internal/MeshMaterialVariableSynchronizer.h"
 
 #include "arcane/utils/PlatformUtils.h"
 

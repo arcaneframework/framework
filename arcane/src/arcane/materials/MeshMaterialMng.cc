@@ -36,13 +36,13 @@
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
-#include "arcane/materials/MeshMaterialSynchronizer.h"
-#include "arcane/materials/MeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/MeshMaterialExchangeMng.h"
 #include "arcane/materials/EnumeratorTracer.h"
 #include "arcane/materials/MeshMaterialVariableFactoryRegisterer.h"
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/MeshMaterialModifierImpl.h"
+#include "arcane/materials/internal/MeshMaterialSynchronizer.h"
+#include "arcane/materials/internal/MeshMaterialVariableSynchronizer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

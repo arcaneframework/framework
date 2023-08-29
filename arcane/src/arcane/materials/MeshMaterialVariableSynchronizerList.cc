@@ -22,12 +22,13 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IVariableSynchronizer.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
-#include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MeshMaterialVariable.h"
 #include "arcane/materials/IMeshMaterialSynchronizeBuffer.h"
+#include "arcane/materials/internal/IMeshMaterialVariableSynchronizer.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
 
