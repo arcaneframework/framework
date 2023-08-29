@@ -33,7 +33,7 @@ class MultiBufferMeshMaterialSynchronizeBuffer
 
   struct BufferInfo
   {
-    BufferInfo(IMemoryAllocator* allocator)
+    explicit BufferInfo(IMemoryAllocator* allocator)
     : m_send_buffer(allocator)
     , m_receive_buffer(allocator)
     {
@@ -54,7 +54,7 @@ class MultiBufferMeshMaterialSynchronizeBuffer
 
  public:
 
-  MultiBufferMeshMaterialSynchronizeBuffer(IMemoryAllocator* allocator)
+  explicit MultiBufferMeshMaterialSynchronizeBuffer(IMemoryAllocator* allocator)
   : m_default_buffer_info(allocator)
   {
   }
