@@ -107,6 +107,12 @@ class VariableDiff
 
  protected:
 
+  void _sortAndDump(IVariable* var, IParallelMng* pm, int max_print)
+  {
+    _sort();
+    dump(var, pm, max_print);
+  }
+
   void dump(IVariable* var, IParallelMng* pm, int max_print)
   {
     DiffPrinter::dump(m_diffs_info, var, pm, max_print);

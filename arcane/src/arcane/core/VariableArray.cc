@@ -63,8 +63,6 @@ class ArrayVariableDiff
   check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
         int max_print,bool compare_ghost)
   {
-    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
-
     if (var->itemKind()==IK_Unknown)
       return _checkAsArray(var,ref,current,max_print);
 
@@ -114,10 +112,9 @@ class ArrayVariableDiff
                    << " for the variable " << var_name << " ref_size=" << ref_size;
         
     }
-    if (nb_diff!=0){
-      this->sort(IsNumeric());
-      this->dump(var,pm,max_print);
-    }
+    if (nb_diff!=0)
+      this->_sortAndDump(var,pm,max_print);
+
     return nb_diff;
   }
 
@@ -135,7 +132,6 @@ class ArrayVariableDiff
   Integer _checkAsArray(IVariable* var,ConstArrayView<DataType> ref,
                         ConstArrayView<DataType> current,int max_print)
   {
-    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
     IParallelMng* pm = var->variableMng()->parallelMng();
     ITraceMng* msg = pm->traceMng();
 
@@ -166,10 +162,9 @@ class ArrayVariableDiff
                    << " pour la variable " << var_name << " ref_size=" << ref_size;
         
     }
-    if (nb_diff!=0){
-      this->sort(IsNumeric());
-      this->dump(var,pm,max_print);
-    }
+    if (nb_diff!=0)
+      this->_sortAndDump(var,pm,max_print);
+
     return nb_diff;
   }
 
@@ -184,7 +179,7 @@ class ArrayVariableDiff
                          Integer max_print,TrueType has_reduce)
   {
     ARCANE_UNUSED(has_reduce);
-    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
+
     ITraceMng* msg = pm->traceMng();
     Integer size = var_values.size();
     // Vérifie que tout les réplica ont le même nombre d'éléments pour la variable.
@@ -213,10 +208,9 @@ class ArrayVariableDiff
         ++nb_diff;
       }
     }
-    if (nb_diff!=0){
-      this->sort(IsNumeric());
-      this->dump(var,pm,max_print);
-    }
+    if (nb_diff!=0)
+      this->_sortAndDump(var,pm,max_print);
+
     return nb_diff;
   }
 };

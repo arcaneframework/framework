@@ -61,7 +61,6 @@ class Array2VariableDiff
   Integer check(IVariable* var,ConstArray2View<DataType> ref,ConstArray2View<DataType> current,
                 int max_print,bool compare_ghost)
   {
-    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
     ItemGroup group = var->itemGroup();
     if (group.null())
       return 0;
@@ -119,10 +118,9 @@ class Array2VariableDiff
         }
       }
     }
-    if (nb_diff!=0){
-      this->sort(IsNumeric());
-      this->dump(var,pm,max_print);
-    }
+    if (nb_diff!=0)
+      this->_sortAndDump(var,pm,max_print);
+
     return nb_diff;
   }
 
@@ -152,7 +150,6 @@ class Array2VariableDiff
                          Integer max_print,TrueType has_reduce)
   {
     ARCANE_UNUSED(has_reduce);
-    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
     ITraceMng* msg = pm->traceMng();
     ItemGroup group = var->itemGroup();
     //TODO: traiter les variables qui ne sont pas sur des éléments du maillage.
@@ -217,10 +214,9 @@ class Array2VariableDiff
       }
     }
 
-    if (nb_diff!=0){
-      this->sort(IsNumeric());
-      this->dump(var,pm,max_print);
-    }
+    if (nb_diff!=0)
+      this->_sortAndDump(var,pm,max_print);
+
     return nb_diff;
   }
 

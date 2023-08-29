@@ -59,7 +59,6 @@ class ScalarVariableDiff
   check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
         int max_print,bool compare_ghost)
   {
-    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
     ItemGroup group = var->itemGroup();
     if (group.null())
       return 0;
@@ -107,10 +106,9 @@ class ScalarVariableDiff
                    << " pour la variable " << var_name << " ref_size=" << ref_size;
         
     }
-    if (nb_diff!=0){
-      this->sort(IsNumeric());
-      this->dump(var,pm,max_print);
-    }
+    if (nb_diff!=0)
+      this->_sortAndDump(var,pm,max_print);
+
     return nb_diff;
   }
 
