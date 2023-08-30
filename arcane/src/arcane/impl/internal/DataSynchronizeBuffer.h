@@ -94,7 +94,11 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
  public:
 
+  //! Calcule les informations pour la synchronisation
   void compute(IBufferCopier* copier, DataSynchronizeInfo* sync_list, Int32 datatype_size);
+
+  //! Indique si on compare les valeurs avant/après la synchronisation
+  bool isCompareSynchronizedValues() const { return m_is_compare_sync_values; }
 
  protected:
 
@@ -107,11 +111,14 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
   BufferInfo m_ghost_buffer_info;
   //! Buffer pour toutes les données des entités partagées qui serviront en envoi
   BufferInfo m_share_buffer_info;
+  //! Buffer pour tester si la synchronisation a modifié les valeurs des mailles fantômes
+  BufferInfo m_compare_sync_buffer_info;
 
  protected:
 
   Int32 m_nb_rank = 0;
   IBufferCopier* m_buffer_copier = nullptr;
+  bool m_is_compare_sync_values = false;
 
   //! Buffer contenant les données concaténées en envoi et réception
   UniqueArray<std::byte> m_buffer;
@@ -133,7 +140,24 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
  public:
 
   void setDataView(MutableMemoryView v) { m_data_view = v; }
+  //! Zone mémoire contenant les valeurs de la donnée à synchroniser
   MutableMemoryView dataView() { return m_data_view; }
+
+  /*!
+   * \brief Prépare la synchronisation.
+   *
+   * Si \a is_compare_sync est vrai, on compare après la synchronisation les
+   * valeurs des entités fantômes avec leur valeur d'avant la synchronisation.
+   */
+  void prepareSynchronize(bool is_compare_sync);
+  /*!
+   * \brief Compare les valeurs avant/après synchronisation.
+   *
+   * La comparaison n'est active que si prepareSynchronize() a été appelé avec
+   * \a is_compare_sync à \a true.
+   * Retourne \a true s'il y a des différences.
+   */
+  bool compareCheckSynchronize();
 
  private:
 

@@ -13,6 +13,7 @@
 
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
 
+#include "arcane/utils/FatalErrorException.h"
 #include "arcane/impl/IBufferCopier.h"
 #include "arcane/impl/DataSynchronizeInfo.h"
 
@@ -120,6 +121,7 @@ barrier()
 void DataSynchronizeBufferBase::
 compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_size)
 {
+  m_is_compare_sync_values = false;
   m_buffer_copier = copier;
   m_sync_info = sync_info;
   m_nb_rank = sync_info->size();
@@ -128,6 +130,8 @@ compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_si
   m_ghost_buffer_info.m_buffer_info = &sync_info->receiveInfo();
   m_share_buffer_info.m_datatype_size = datatype_size;
   m_share_buffer_info.m_buffer_info = &sync_info->sendInfo();
+  m_compare_sync_buffer_info.m_datatype_size = datatype_size;
+  m_compare_sync_buffer_info.m_buffer_info = &sync_info->receiveInfo();
 
   IMemoryAllocator* allocator = m_buffer_copier->allocator();
   if (allocator && allocator != m_buffer.allocator())
@@ -152,14 +156,22 @@ _allocateBuffers(Int32 datatype_size)
   Int64 total_share_buffer = m_sync_info->sendInfo().totalNbItem();
 
   Int32 full_dim2_size = datatype_size;
-  m_buffer.resize((total_ghost_buffer + total_share_buffer) * full_dim2_size);
+  Int64 total_size = total_ghost_buffer + total_share_buffer;
+  if (m_is_compare_sync_values)
+    total_size += total_ghost_buffer;
+  m_buffer.resize(total_size * full_dim2_size);
 
   Int64 share_offset = total_ghost_buffer * full_dim2_size;
+  Int64 check_sync_offset = share_offset + total_share_buffer * full_dim2_size;
 
   auto s1 = m_buffer.span().subspan(0, share_offset);
   m_ghost_buffer_info.m_memory_view = makeMutableMemoryView(s1.data(), full_dim2_size, total_ghost_buffer);
   auto s2 = m_buffer.span().subspan(share_offset, total_share_buffer * full_dim2_size);
   m_share_buffer_info.m_memory_view = makeMutableMemoryView(s2.data(), full_dim2_size, total_share_buffer);
+  if (m_is_compare_sync_values) {
+    auto s3 = m_buffer.span().subspan(check_sync_offset, total_ghost_buffer * full_dim2_size);
+    m_compare_sync_buffer_info.m_memory_view = makeMutableMemoryView(s3.data(), full_dim2_size, total_ghost_buffer);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -194,6 +206,55 @@ copySendAsync(Int32 index)
   ConstArrayView<Int32> indexes = m_share_buffer_info.localIds(index);
   MutableMemoryView local_buffer = m_share_buffer_info.localBuffer(index);
   m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SingleDataSynchronizeBuffer::
+prepareSynchronize(bool is_compare_sync)
+{
+  m_is_compare_sync_values = is_compare_sync;
+  if (!is_compare_sync)
+    return;
+  // Recopie dans le buffer de vérification les valeurs actuelles des mailles
+  // fantômes.
+  MutableMemoryView var_values = dataView();
+  Int32 nb_rank = nbRank();
+  for (Int32 i = 0; i < nb_rank; ++i) {
+    ConstArrayView<Int32> indexes = m_compare_sync_buffer_info.localIds(i);
+    MutableMemoryView local_buffer = m_compare_sync_buffer_info.localBuffer(i);
+    m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
+  }
+  // Normalement pas besoin de faire une barrière car ensuite il y aura les
+  // envois sur la même \a queue et ensuite une barrière.
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Compare les valeurs avant/après synchronisation.
+ *
+ * Il suffit de comparer bit à bit le buffer de réception avec celui
+ * contenant les valeurs avant la synchronisation (m_check_sync_buffer).
+ *
+ * \retval \a vrai s'il y a des différences.
+ */
+bool SingleDataSynchronizeBuffer::
+compareCheckSynchronize()
+{
+  if (!m_is_compare_sync_values)
+    return false;
+  ConstMemoryView reference_buffer = m_compare_sync_buffer_info.globalBuffer();
+  ConstMemoryView receive_buffer = m_ghost_buffer_info.globalBuffer();
+  Span<const std::byte> reference_bytes = reference_buffer.bytes();
+  Span<const std::byte> receive_bytes = receive_buffer.bytes();
+  Int64 reference_size = reference_bytes.size();
+  Int64 receive_size = receive_bytes.size();
+  if (reference_size != receive_size)
+    ARCANE_FATAL("Incoherent buffer size ref={0} receive={1}", reference_size, receive_size);
+  // TODO: gérer le cas où la mémoire est sur le device
+  return std::memcmp(reference_bytes.data(), receive_bytes.data(), reference_size) != 0;
 }
 
 /*---------------------------------------------------------------------------*/
