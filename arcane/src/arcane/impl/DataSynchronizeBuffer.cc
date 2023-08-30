@@ -96,6 +96,15 @@ localIds(Int32 index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int32 DataSynchronizeBufferBase::
+targetRank(Int32 index) const
+{
+  return m_sync_info->targetRank(index);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void DataSynchronizeBufferBase::
 barrier()
 {
@@ -111,7 +120,6 @@ barrier()
 void DataSynchronizeBufferBase::
 compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_size)
 {
-  m_datatype_size = datatype_size;
   m_buffer_copier = copier;
   m_sync_info = sync_info;
   m_nb_rank = sync_info->size();

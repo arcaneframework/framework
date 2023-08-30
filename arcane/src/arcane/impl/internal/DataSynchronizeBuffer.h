@@ -75,6 +75,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
  public:
 
   Int32 nbRank() const final { return m_nb_rank; }
+  Int32 targetRank(Int32 index) const final;
   bool hasGlobalBuffer() const final { return true; }
 
   MutableMemoryView receiveBuffer(Int32 index) final { return m_ghost_buffer_info.localBuffer(index); }
@@ -114,8 +115,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
   //! Buffer contenant les données concaténées en envoi et réception
   UniqueArray<std::byte> m_buffer;
-
-  Int32 m_datatype_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
