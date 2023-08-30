@@ -17,12 +17,8 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/MemoryView.h"
-#include "arcane/utils/SmallArray.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/ValueConvert.h"
 
-#include "arcane/core/VariableCollection.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/ISerializeMessage.h"
@@ -35,7 +31,8 @@
 #include "arcane/accelerator/core/Runner.h"
 
 #include "arcane/impl/IBufferCopier.h"
-#include "arcane/impl/IDataSynchronizeBuffer.h"
+#include "arcane/impl/DataSynchronizeInfo.h"
+#include "arcane/impl/internal/DataSynchronizeBuffer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,203 +51,6 @@ namespace
     return { size, reinterpret_cast<Byte*>(data) };
   }
 } // namespace
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Implémentation de IDataSynchronizeBuffer pour une donnée
- */
-class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
-: public IDataSynchronizeBuffer
-{
- public:
-
-  Int32 nbRank() const final { return m_nb_rank; }
-  bool hasGlobalBuffer() const final { return true; }
-
-  MutableMemoryView receiveBuffer(Int32 index) final { return _ghostLocalBuffer(index); }
-  MutableMemoryView sendBuffer(Int32 index) final { return _shareLocalBuffer(index); }
-
-  Int64 receiveDisplacement(Int32 index) const final { return _ghostDisplacementBase(index) * m_datatype_size; }
-  Int64 sendDisplacement(Int32 index) const final { return _shareDisplacementBase(index) * m_datatype_size; }
-
-  MutableMemoryView globalReceiveBuffer() final { return m_ghost_memory_view; }
-  MutableMemoryView globalSendBuffer() final { return m_share_memory_view; }
-
-  Int64 totalReceiveSize() const final { return m_ghost_memory_view.bytes().size(); }
-  Int64 totalSendSize() const final { return m_share_memory_view.bytes().size(); }
-
-  void barrier() final { m_buffer_copier->barrier(); }
-
- public:
-
-  void compute(IBufferCopier* copier, DataSynchronizeInfo* sync_list, Int32 datatype_size);
-  IDataSynchronizeBuffer* genericBuffer() { return this; }
-
- protected:
-
-  void _allocateBuffers(Int32 datatype_size);
-
- protected:
-
-  DataSynchronizeInfo* m_sync_info = nullptr;
-  //! Buffer pour toutes les données des entités fantômes qui serviront en réception
-  MutableMemoryView m_ghost_memory_view;
-  //! Buffer pour toutes les données des entités partagées qui serviront en envoi
-  MutableMemoryView m_share_memory_view;
-
- protected:
-
-  Int32 m_nb_rank = 0;
-  IBufferCopier* m_buffer_copier = nullptr;
-
-  //! Buffer contenant les données concaténées en envoi et réception
-  UniqueArray<std::byte> m_buffer;
-
-  Int32 m_datatype_size = 0;
-
- private:
-
-  Int64 _ghostDisplacementBase(Int32 index) const
-  {
-    return m_sync_info->ghostDisplacement(index);
-  }
-  Int64 _shareDisplacementBase(Int32 index) const
-  {
-    return m_sync_info->shareDisplacement(index);
-  }
-
-  Int32 _nbGhost(Int32 index) const
-  {
-    return m_sync_info->rankInfo(index).nbGhost();
-  }
-
-  Int32 _nbShare(Int32 index) const
-  {
-    return m_sync_info->rankInfo(index).nbShare();
-  }
-
-  MutableMemoryView _shareLocalBuffer(Int32 index) const
-  {
-    Int64 displacement = _shareDisplacementBase(index);
-    Int32 local_size = _nbShare(index);
-    return m_share_memory_view.subView(displacement, local_size);
-  }
-  MutableMemoryView _ghostLocalBuffer(Int32 index) const
-  {
-    Int64 displacement = _ghostDisplacementBase(index);
-    Int32 local_size = _nbGhost(index);
-    return m_ghost_memory_view.subView(displacement, local_size);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
- * pour les synchronisations des variables 1D.
- */
-void VariableSynchronizeBufferBase::
-compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_size)
-{
-  m_datatype_size = datatype_size;
-  m_buffer_copier = copier;
-  m_sync_info = sync_info;
-  m_nb_rank = sync_info->size();
-
-  IMemoryAllocator* allocator = m_buffer_copier->allocator();
-  if (allocator && allocator != m_buffer.allocator())
-    m_buffer = UniqueArray<std::byte>(allocator);
-
-  _allocateBuffers(datatype_size);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Calcul et alloue les tampons nécessaires aux envois et réceptions
- * pour les synchronisations des variables 1D.
- *
- * \todo: ne pas converver les tampons pour chaque type de donnée des variables
- * car leur conservation est couteuse en terme de memoire.
- */
-void VariableSynchronizeBufferBase::
-_allocateBuffers(Int32 datatype_size)
-{
-  Int64 total_ghost_buffer = m_sync_info->totalNbGhost();
-  Int64 total_share_buffer = m_sync_info->totalNbShare();
-
-  Int32 full_dim2_size = datatype_size;
-  m_buffer.resize((total_ghost_buffer + total_share_buffer) * full_dim2_size);
-
-  Int64 share_offset = total_ghost_buffer * full_dim2_size;
-
-  auto s1 = m_buffer.span().subspan(0, share_offset);
-  m_ghost_memory_view = makeMutableMemoryView(s1.data(), full_dim2_size, total_ghost_buffer);
-  auto s2 = m_buffer.span().subspan(share_offset, total_share_buffer * full_dim2_size);
-  m_share_memory_view = makeMutableMemoryView(s2.data(), full_dim2_size, total_share_buffer);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Implémentation de IDataSynchronizeBuffer pour une donnée
- */
-class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
-: public VariableSynchronizeBufferBase
-{
- public:
-
-  void copyReceiveAsync(Int32 index) final;
-  void copySendAsync(Int32 index) final;
-
- public:
-
-  void setDataView(MutableMemoryView v) { m_data_view = v; }
-  MutableMemoryView dataView() { return m_data_view; }
-
- private:
-
-  //! Vue sur les données de la variable
-  MutableMemoryView m_data_view;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void SingleDataSynchronizeBuffer::
-copyReceiveAsync(Int32 index)
-{
-  ARCANE_CHECK_POINTER(m_sync_info);
-  ARCANE_CHECK_POINTER(m_buffer_copier);
-
-  MutableMemoryView var_values = dataView();
-  ConstArrayView<Int32> indexes = m_sync_info->rankInfo(index).ghostIds();
-  ConstMemoryView local_buffer = receiveBuffer(index);
-
-  m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void SingleDataSynchronizeBuffer::
-copySendAsync(Int32 index)
-{
-  ARCANE_CHECK_POINTER(m_sync_info);
-  ARCANE_CHECK_POINTER(m_buffer_copier);
-
-  ConstMemoryView var_values = dataView();
-  Int32ConstArrayView indexes = m_sync_info->rankInfo(index).shareIds();
-  MutableMemoryView local_buffer = sendBuffer(index);
-  m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -352,11 +152,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
  public:
 
-  //! Gère les buffers d'envoi et réception pour la synchronisation
-  using SyncBuffer = SingleDataSynchronizeBuffer;
-
- public:
-
   explicit VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
   : VariableSynchronizerDispatcherBase(bi)
   {
@@ -370,18 +165,19 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
  protected:
 
-  void _beginSynchronize(VariableSynchronizeBufferBase& sync_buffer)
+  void _beginSynchronize(DataSynchronizeBufferBase& sync_buffer)
   {
-    m_implementation_instance->beginSynchronize(sync_buffer.genericBuffer());
+    m_implementation_instance->beginSynchronize(&sync_buffer);
   }
-  void _endSynchronize(VariableSynchronizeBufferBase& sync_buffer)
+  void _endSynchronize(DataSynchronizeBufferBase& sync_buffer)
   {
-    m_implementation_instance->endSynchronize(sync_buffer.genericBuffer());
+    m_implementation_instance->endSynchronize(&sync_buffer);
   }
 
  private:
 
-  SyncBuffer m_sync_buffer;
+  //! Gère les buffers d'envoi et réception pour la synchronisation
+  SingleDataSynchronizeBuffer m_sync_buffer;
   bool m_is_in_sync = false;
   bool m_is_empty_sync = false;
 };
@@ -431,8 +227,8 @@ endSynchronize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcule et alloue les tampons nécessaire aux envois et réceptions
- * pour les synchronisations des variables.
+ * \brief Notifie l'implémentation que les informations de synchronisation
+ * ont changé.
  */
 void VariableSynchronizerDispatcher::
 compute()
@@ -461,93 +257,6 @@ create(const VariableSynchronizeDispatcherBuildInfo& build_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation de IDataSynchronizeBuffer pour plusieurs données.
- */
-class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
-: public TraceAccessor
-, public VariableSynchronizeBufferBase
-{
-
- public:
-
-  MultiDataSynchronizeBuffer(ITraceMng* tm)
-  : TraceAccessor(tm)
-  {}
-
- public:
-
-  void copyReceiveAsync(Int32 index) final;
-  void copySendAsync(Int32 index) final;
-
- public:
-
-  void setNbData(Int32 nb_data)
-  {
-    m_data_views.resize(nb_data);
-  }
-  void setDataView(Int32 index, MutableMemoryView v) { m_data_views[index] = v; }
-
- private:
-
-  //! Vue sur les données de la variable
-  SmallArray<MutableMemoryView> m_data_views;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MultiDataSynchronizeBuffer::
-copyReceiveAsync(Int32 index)
-{
-  ARCANE_CHECK_POINTER(m_sync_info);
-  ARCANE_CHECK_POINTER(m_buffer_copier);
-
-  Int64 data_offset = 0;
-  Span<const std::byte> local_buffer_bytes = receiveBuffer(index).bytes();
-  Int32ConstArrayView indexes = m_sync_info->rankInfo(index).ghostIds();
-  const Int64 nb_element = indexes.size();
-  for( MutableMemoryView var_values : m_data_views ){
-    Int32 datatype_size = var_values.datatypeSize();
-    Int64 current_size_in_bytes = nb_element * datatype_size;
-    Span<const std::byte> sub_local_buffer_bytes = local_buffer_bytes.subSpan(data_offset,current_size_in_bytes);
-    ConstMemoryView local_buffer = makeConstMemoryView(sub_local_buffer_bytes.data(),datatype_size,nb_element);
-    if (current_size_in_bytes!=0)
-      m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
-    data_offset += current_size_in_bytes;
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MultiDataSynchronizeBuffer::
-copySendAsync(Int32 index)
-{
-  ARCANE_CHECK_POINTER(m_sync_info);
-  ARCANE_CHECK_POINTER(m_buffer_copier);
-
-  Int64 data_offset = 0;
-  Span<std::byte> local_buffer_bytes = sendBuffer(index).bytes();
-  Int32ConstArrayView indexes = m_sync_info->rankInfo(index).shareIds();
-  const Int64 nb_element = indexes.size();
-  for( ConstMemoryView var_values : m_data_views ){
-    Int32 datatype_size = var_values.datatypeSize();
-    Int64 current_size_in_bytes = nb_element * datatype_size;
-    Span<std::byte> sub_local_buffer_bytes = local_buffer_bytes.subSpan(data_offset,current_size_in_bytes);
-    MutableMemoryView local_buffer = makeMutableMemoryView(sub_local_buffer_bytes.data(),datatype_size,nb_element);
-    if (current_size_in_bytes!=0)
-      m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
-    data_offset += current_size_in_bytes;
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
  * \brief Synchronisation d'une liste de variables.
  */
 class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
@@ -572,7 +281,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Synchronisation d'une liste de variables.
  *
  * \brief Version 2 qui utilise directement des buffers au lieu
@@ -602,7 +310,7 @@ synchronize(VariableCollection vars)
   Integer nb_rank = m_sync_info->size();
   Int32UniqueArray recv_ranks(nb_rank);
   for (Integer i = 0; i < nb_rank; ++i) {
-    Int32 rank = m_sync_info->rankInfo(i).targetRank();
+    Int32 rank = m_sync_info->targetRank(i);
     exchanger->addSender(rank);
     recv_ranks[i] = rank;
   }
@@ -610,7 +318,7 @@ synchronize(VariableCollection vars)
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToSend(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView share_ids = m_sync_info->rankInfo(i).shareIds();
+    Int32ConstArrayView share_ids = m_sync_info->sendInfo().localIds(i);
     sbuf->setMode(ISerializer::ModeReserve);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, share_ids, nullptr);
@@ -625,7 +333,7 @@ synchronize(VariableCollection vars)
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToReceive(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView ghost_ids = m_sync_info->rankInfo(i).ghostIds();
+    Int32ConstArrayView ghost_ids = m_sync_info->receiveInfo().localIds(i);
     sbuf->setMode(ISerializer::ModeGet);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, ghost_ids, nullptr);
@@ -670,12 +378,9 @@ synchronize(VariableCollection vars)
 
   m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
   m_implementation_instance->compute();
-  m_implementation_instance->beginSynchronize(buffer.genericBuffer());
-  m_implementation_instance->endSynchronize(buffer.genericBuffer());
+  m_implementation_instance->beginSynchronize(&buffer);
+  m_implementation_instance->endSynchronize(&buffer);
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -768,10 +473,10 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages de réception non bloquant
   for (Integer i = 0; i < nb_message; ++i) {
-    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
+    Int32 target_rank = sync_info->targetRank(i);
     auto buf = _toLegacySmallView(vs_buf->receiveBuffer(i));
     if (!buf.empty()) {
-      Parallel::Request rval = pm->recv(buf, vsi.targetRank(), false);
+      Parallel::Request rval = pm->recv(buf, target_rank, false);
       m_all_requests.add(rval);
     }
   }
@@ -780,7 +485,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages d'envoi en mode non bloquant.
   for (Integer i = 0; i < nb_message; ++i) {
-    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
+    Int32 target_rank = sync_info->targetRank(i);
     auto buf = _toLegacySmallView(vs_buf->sendBuffer(i));
 
     //ConstArrayView<SimpleType> const_share = share_local_buffer;
@@ -788,7 +493,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
       //for( Integer i=0, is=share_local_buffer.size(); i<is; ++i )
       //trace->info() << "TO rank=" << vsi.m_target_rank << " I=" << i << " V=" << share_local_buffer[i]
       //                << " lid=" << share_grp[i] << " v2=" << var_values[share_grp[i]];
-      Parallel::Request rval = pm->send(buf, vsi.targetRank(), use_blocking_send);
+      Parallel::Request rval = pm->send(buf, target_rank, use_blocking_send);
       if (!use_blocking_send)
         m_all_requests.add(rval);
     }
@@ -817,40 +522,6 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void IDataSynchronizeBuffer::
-copyAllSend()
-{
-  Int32 nb_rank = nbRank();
-  for (Int32 i = 0; i < nb_rank; ++i)
-    copySendAsync(i);
-  barrier();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void IDataSynchronizeBuffer::
-copyAllReceive()
-{
-  Int32 nb_rank = nbRank();
-  for (Int32 i = 0; i < nb_rank; ++i)
-    copyReceiveAsync(i);
-  barrier();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DirectBufferCopier::
-barrier()
-{
-  if (m_queue)
-    m_queue->barrier();
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

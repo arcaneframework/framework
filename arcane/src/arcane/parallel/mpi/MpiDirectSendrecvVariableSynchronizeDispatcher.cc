@@ -22,6 +22,7 @@
 
 #include "arcane/impl/IDataSynchronizeBuffer.h"
 #include "arcane/impl/VariableSynchronizerDispatcher.h"
+#include "arcane/impl/DataSynchronizeInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -125,12 +126,12 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   {
     MpiTimeInterval tit(&sync_wait_time);
     for( Integer i=0; i<nb_message; ++i ){
-      const VariableSyncInfo& vsi = sync_info->rankInfo(i);
+      Int32 target_rank = sync_info->targetRank(i);
       auto rbuf = vs_buf->receiveBuffer(i).bytes().smallView();
       auto sbuf = vs_buf->sendBuffer(i).bytes().smallView();
 
-      MPI_Sendrecv(sbuf.data(), sbuf.size(), mpi_dt, vsi.targetRank(), serialize_tag,
-                   rbuf.data(), rbuf.size(), mpi_dt, vsi.targetRank(), serialize_tag,
+      MPI_Sendrecv(sbuf.data(), sbuf.size(), mpi_dt, target_rank, serialize_tag,
+                   rbuf.data(), rbuf.size(), mpi_dt, target_rank, serialize_tag,
                    pm->communicator(), MPI_STATUS_IGNORE);
     }
   }

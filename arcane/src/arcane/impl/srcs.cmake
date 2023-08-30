@@ -31,6 +31,7 @@ set( ARCANE_SOURCES
   DataStorageFactory.h
   DataSynchronizeInfo.h
   DataSynchronizeInfo.cc
+  DataSynchronizeBuffer.cc
   EntryPointMng.cc
   ExecutionStatsDumper.h
   ExecutionStatsDumper.cc
@@ -136,6 +137,7 @@ set( ARCANE_SOURCES
   DataOperation.cc
   SequentialParallelSuperMng.h
   internal/ArcaneMainExecInfo.h
+  internal/DataSynchronizeBuffer.h
   internal/LegacyMeshBuilder.h
   internal/LegacyMeshBuilder.cc
   internal/MeshFactoryMng.h

@@ -21,6 +21,7 @@
 
 #include "arcane/impl/IDataSynchronizeBuffer.h"
 #include "arcane/impl/VariableSynchronizerDispatcher.h"
+#include "arcane/impl/DataSynchronizeInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -135,12 +136,12 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   m_recv_requests_done.resize(nb_message);
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
+    Int32 target_rank = sync_info->targetRank(i);
     auto ghost_local_buffer = vs_buf->receiveBuffer(i).bytes().smallView();
     if (!ghost_local_buffer.empty()){
       MPI_Request mpi_request;
       mpi_profiling->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                           byte_dt,vsi.targetRank(),523,comm,&mpi_request);
+                           byte_dt,target_rank,523,comm,&mpi_request);
       m_recv_requests[i] = mpi_request;
       m_recv_requests_done[i] = false;
       //trace->info() << "POST RECV " << vsi.m_target_rank;
@@ -157,12 +158,12 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages d'envoi en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
+    Int32 target_rank = sync_info->targetRank(i);
     auto share_local_buffer = vs_buf->sendBuffer(i).bytes().smallView();
     if (!share_local_buffer.empty()){
       MPI_Request mpi_request;
       mpi_profiling->iSend(share_local_buffer.data(),share_local_buffer.size(),
-                           byte_dt,vsi.targetRank(),523,comm,&mpi_request);
+                           byte_dt,target_rank,523,comm,&mpi_request);
       m_send_requests.add(mpi_request);
     }
   }
