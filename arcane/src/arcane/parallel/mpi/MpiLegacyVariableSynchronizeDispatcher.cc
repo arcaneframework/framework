@@ -21,6 +21,7 @@
 
 #include "arcane/impl/IDataSynchronizeBuffer.h"
 #include "arcane/impl/VariableSynchronizerDispatcher.h"
+#include "arcane/impl/DataSynchronizeInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

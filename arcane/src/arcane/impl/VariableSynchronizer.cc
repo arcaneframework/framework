@@ -35,6 +35,8 @@
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/internal/IDataInternal.h"
 
+#include "arcane/impl/DataSynchronizeInfo.h"
+
 #include <algorithm>
 
 /*---------------------------------------------------------------------------*/

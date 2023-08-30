@@ -24,7 +24,6 @@
 #include "arcane/core/VariableCollection.h"
 
 #include "arcane/impl/IDataSynchronizeImplementation.h"
-#include "arcane/impl/DataSynchronizeInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,8 +34,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class VariableSynchronizerDispatcher;
-class VariableSynchronizerMultiDispatcher;
 class IVariableSynchronizerDispatcher;
 class GroupIndexTable;
 class INumericDataInternal;
@@ -85,19 +82,20 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Interface pour gérer l'envoi de la synchronisation.
  *
  * Il faut utiliser create() pour créer une implémentation pour cette
  * interface.
  *
- * Il faut appeler \a setDataSynchronizeInfo() pour initialiser
- * l'instance.
+ * Il faut appeler compute() avant de pouvoir utiliser l'instance et aussi
+ * lorsque la famille d'entité associée évolue.
  */
 class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
 
- public:
+ protected:
 
   virtual ~IVariableSynchronizerDispatcher() = default;
 

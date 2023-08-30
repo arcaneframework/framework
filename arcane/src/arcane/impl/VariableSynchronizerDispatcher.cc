@@ -17,12 +17,8 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/MemoryView.h"
-#include "arcane/utils/SmallArray.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/ValueConvert.h"
 
-#include "arcane/core/VariableCollection.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/ISerializeMessage.h"
@@ -35,6 +31,7 @@
 #include "arcane/accelerator/core/Runner.h"
 
 #include "arcane/impl/IBufferCopier.h"
+#include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
 
 /*---------------------------------------------------------------------------*/
@@ -230,8 +227,8 @@ endSynchronize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcule et alloue les tampons nécessaire aux envois et réceptions
- * pour les synchronisations des variables.
+ * \brief Notifie l'implémentation que les informations de synchronisation
+ * ont changé.
  */
 void VariableSynchronizerDispatcher::
 compute()
@@ -260,7 +257,6 @@ create(const VariableSynchronizeDispatcherBuildInfo& build_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Synchronisation d'une liste de variables.
  */
 class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
@@ -285,7 +281,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Synchronisation d'une liste de variables.
  *
  * \brief Version 2 qui utilise directement des buffers au lieu
@@ -386,9 +381,6 @@ synchronize(VariableCollection vars)
   m_implementation_instance->beginSynchronize(&buffer);
   m_implementation_instance->endSynchronize(&buffer);
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
