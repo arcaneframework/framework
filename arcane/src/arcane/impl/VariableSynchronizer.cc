@@ -481,10 +481,10 @@ _createList(UniqueArray<SharedArray<Int32> >& boundary_items)
 
   // Calcul de m_communicating_ranks qui synthétisent les processeurs communiquants
   for( Integer i=0, n=m_sync_list->size(); i<n; ++i ){
-    const VariableSyncInfo & sync_info = m_sync_list->rankInfo(i);
-    const Integer target_rank = sync_info.targetRank();
+    Int32 target_rank = m_sync_list->targetRank(i);
     m_communicating_ranks.add(target_rank);
-    ARCANE_ASSERT((sync_info.nbGhost() == boundary_items[target_rank].size()),("Inconsistent ghost count"));
+    if (m_sync_list->receiveInfo().nbItem(i) != boundary_items[target_rank].size())
+      ARCANE_FATAL("Inconsistent ghost count");
   }
 }
 
@@ -597,16 +597,16 @@ _printSyncList()
   IItemFamily* item_family = m_item_group.itemFamily();
   ItemInfoListView items_internal(item_family);
   for( Integer i=0; i<nb_comm; ++i ){
-    const VariableSyncInfo& vsi = m_sync_list->rankInfo(i);
-    ostr() << " TARGET=" << vsi.targetRank() << '\n';
-    Int32ConstArrayView share_ids = vsi.shareIds();
+    Int32 target_rank = m_sync_list->targetRank(i);
+    ostr() << " TARGET=" << target_rank << '\n';
+    Int32ConstArrayView share_ids = m_sync_list->sendInfo().localIds(i);
     ostr() << "\t\tSHARE(lid,uid) n=" << share_ids.size() << " :";
     for( Integer z=0, zs=share_ids.size(); z<zs; ++z ){
       Item item = items_internal[share_ids[z]];
       ostr() << " (" << item.localId() << "," << item.uniqueId() << ")";
     }
     ostr() << "\n";
-    Int32ConstArrayView ghost_ids = vsi.ghostIds();
+    Int32ConstArrayView ghost_ids = m_sync_list->receiveInfo().localIds(i);
     ostr() << "\t\tGHOST(lid,uid) n=" << ghost_ids.size() << " :";
     for( Integer z=0, zs=ghost_ids.size(); z<zs; ++z ){
       Item item = items_internal[ghost_ids[z]];
@@ -804,7 +804,7 @@ communicatingRanks()
 Int32ConstArrayView VariableSynchronizer::
 sharedItems(Int32 index)
 {
-  return m_sync_list->rankInfo(index).shareIds();
+  return m_sync_list->sendInfo().localIds(index);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -813,7 +813,7 @@ sharedItems(Int32 index)
 Int32ConstArrayView VariableSynchronizer::
 ghostItems(Int32 index)
 {
-  return m_sync_list->rankInfo(index).ghostIds();
+  return m_sync_list->receiveInfo().localIds(index);
 }
 
 /*---------------------------------------------------------------------------*/

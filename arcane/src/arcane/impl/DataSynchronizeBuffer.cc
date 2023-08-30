@@ -64,6 +64,35 @@ barrier()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int64 DataSynchronizeBufferBase::BufferInfo::
+displacement(Int32 index) const
+{
+  return m_buffer_info->bufferDisplacement(index) * m_datatype_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MutableMemoryView DataSynchronizeBufferBase::BufferInfo::
+localBuffer(Int32 index)
+{
+  Int64 displacement = m_buffer_info->bufferDisplacement(index);
+  Int32 local_size = m_buffer_info->nbItem(index);
+  return m_memory_view.subView(displacement, local_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> DataSynchronizeBufferBase::BufferInfo::
+localIds(Int32 index) const
+{
+  return m_buffer_info->localIds(index);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -71,64 +100,6 @@ void DataSynchronizeBufferBase::
 barrier()
 {
   m_buffer_copier->barrier();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64 DataSynchronizeBufferBase::
-_ghostDisplacementBase(Int32 index) const
-{
-  return m_sync_info->ghostDisplacement(index);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64 DataSynchronizeBufferBase::
-_shareDisplacementBase(Int32 index) const
-{
-  return m_sync_info->shareDisplacement(index);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 DataSynchronizeBufferBase::
-_nbGhost(Int32 index) const
-{
-  return m_sync_info->rankInfo(index).nbGhost();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 DataSynchronizeBufferBase::
-_nbShare(Int32 index) const
-{
-  return m_sync_info->rankInfo(index).nbShare();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MutableMemoryView DataSynchronizeBufferBase::
-_shareLocalBuffer(Int32 index) const
-{
-  Int64 displacement = _shareDisplacementBase(index);
-  Int32 local_size = _nbShare(index);
-  return m_share_memory_view.subView(displacement, local_size);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MutableMemoryView DataSynchronizeBufferBase::
-_ghostLocalBuffer(Int32 index) const
-{
-  Int64 displacement = _ghostDisplacementBase(index);
-  Int32 local_size = _nbGhost(index);
-  return m_ghost_memory_view.subView(displacement, local_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -144,6 +115,11 @@ compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_si
   m_buffer_copier = copier;
   m_sync_info = sync_info;
   m_nb_rank = sync_info->size();
+
+  m_ghost_buffer_info.m_datatype_size = datatype_size;
+  m_ghost_buffer_info.m_buffer_info = &sync_info->receiveInfo();
+  m_share_buffer_info.m_datatype_size = datatype_size;
+  m_share_buffer_info.m_buffer_info = &sync_info->sendInfo();
 
   IMemoryAllocator* allocator = m_buffer_copier->allocator();
   if (allocator && allocator != m_buffer.allocator())
@@ -164,8 +140,8 @@ compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_si
 void DataSynchronizeBufferBase::
 _allocateBuffers(Int32 datatype_size)
 {
-  Int64 total_ghost_buffer = m_sync_info->totalNbGhost();
-  Int64 total_share_buffer = m_sync_info->totalNbShare();
+  Int64 total_ghost_buffer = m_sync_info->receiveInfo().totalNbItem();
+  Int64 total_share_buffer = m_sync_info->sendInfo().totalNbItem();
 
   Int32 full_dim2_size = datatype_size;
   m_buffer.resize((total_ghost_buffer + total_share_buffer) * full_dim2_size);
@@ -173,9 +149,9 @@ _allocateBuffers(Int32 datatype_size)
   Int64 share_offset = total_ghost_buffer * full_dim2_size;
 
   auto s1 = m_buffer.span().subspan(0, share_offset);
-  m_ghost_memory_view = makeMutableMemoryView(s1.data(), full_dim2_size, total_ghost_buffer);
+  m_ghost_buffer_info.m_memory_view = makeMutableMemoryView(s1.data(), full_dim2_size, total_ghost_buffer);
   auto s2 = m_buffer.span().subspan(share_offset, total_share_buffer * full_dim2_size);
-  m_share_memory_view = makeMutableMemoryView(s2.data(), full_dim2_size, total_share_buffer);
+  m_share_buffer_info.m_memory_view = makeMutableMemoryView(s2.data(), full_dim2_size, total_share_buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -187,12 +163,12 @@ _allocateBuffers(Int32 datatype_size)
 void SingleDataSynchronizeBuffer::
 copyReceiveAsync(Int32 index)
 {
-  ARCANE_CHECK_POINTER(m_sync_info);
+  m_ghost_buffer_info.checkValid();
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
   MutableMemoryView var_values = dataView();
-  ConstArrayView<Int32> indexes = m_sync_info->rankInfo(index).ghostIds();
-  ConstMemoryView local_buffer = receiveBuffer(index);
+  ConstArrayView<Int32> indexes = m_ghost_buffer_info.localIds(index);
+  ConstMemoryView local_buffer = m_ghost_buffer_info.localBuffer(index);
 
   m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
 }
@@ -203,12 +179,12 @@ copyReceiveAsync(Int32 index)
 void SingleDataSynchronizeBuffer::
 copySendAsync(Int32 index)
 {
-  ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
+  m_share_buffer_info.checkValid();
 
   ConstMemoryView var_values = dataView();
-  Int32ConstArrayView indexes = m_sync_info->rankInfo(index).shareIds();
-  MutableMemoryView local_buffer = sendBuffer(index);
+  ConstArrayView<Int32> indexes = m_share_buffer_info.localIds(index);
+  MutableMemoryView local_buffer = m_share_buffer_info.localBuffer(index);
   m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
 }
 
@@ -221,12 +197,12 @@ copySendAsync(Int32 index)
 void MultiDataSynchronizeBuffer::
 copyReceiveAsync(Int32 index)
 {
-  ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
+  m_ghost_buffer_info.checkValid();
 
   Int64 data_offset = 0;
-  Span<const std::byte> local_buffer_bytes = receiveBuffer(index).bytes();
-  Int32ConstArrayView indexes = m_sync_info->rankInfo(index).ghostIds();
+  Span<const std::byte> local_buffer_bytes = m_ghost_buffer_info.localBuffer(index).bytes();
+  Int32ConstArrayView indexes = m_ghost_buffer_info.localIds(index);
   const Int64 nb_element = indexes.size();
   for (MutableMemoryView var_values : m_data_views) {
     Int32 datatype_size = var_values.datatypeSize();
@@ -245,12 +221,12 @@ copyReceiveAsync(Int32 index)
 void MultiDataSynchronizeBuffer::
 copySendAsync(Int32 index)
 {
-  ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
+  m_ghost_buffer_info.checkValid();
 
   Int64 data_offset = 0;
-  Span<std::byte> local_buffer_bytes = sendBuffer(index).bytes();
-  Int32ConstArrayView indexes = m_sync_info->rankInfo(index).shareIds();
+  Span<std::byte> local_buffer_bytes = m_share_buffer_info.localBuffer(index).bytes();
+  Int32ConstArrayView indexes = m_share_buffer_info.localIds(index);
   const Int64 nb_element = indexes.size();
   for (ConstMemoryView var_values : m_data_views) {
     Int32 datatype_size = var_values.datatypeSize();

@@ -28,6 +28,7 @@ namespace Arcane
 {
 class IBufferCopier;
 class DataSynchronizeInfo;
+class DataSynchronizeBufferInfoList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,22 +39,55 @@ class DataSynchronizeInfo;
 class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 : public IDataSynchronizeBuffer
 {
+  class BufferInfo
+  {
+    friend DataSynchronizeBufferBase;
+
+   public:
+
+    //! Buffer global
+    MutableMemoryView globalBuffer() { return m_memory_view; }
+
+    //! Buffer pour le \a index-ème rang
+    MutableMemoryView localBuffer(Int32 index);
+
+    //! Déplacement dans \a globalBuffer() pour le \a index-ème rang
+    Int64 displacement(Int32 index) const;
+
+    //! Taille totale en octet du buffer global
+    Int64 totalSize() const { return m_memory_view.bytes().size(); }
+
+    //! Numéros locaux des entités pour le rang \a index
+    ConstArrayView<Int32> localIds(Int32 index) const;
+
+    void checkValid() const
+    {
+      ARCANE_CHECK_POINTER(m_buffer_info);
+    }
+
+   private:
+
+    MutableMemoryView m_memory_view;
+    Int32 m_datatype_size = 0;
+    const DataSynchronizeBufferInfoList* m_buffer_info = nullptr;
+  };
+
  public:
 
   Int32 nbRank() const final { return m_nb_rank; }
   bool hasGlobalBuffer() const final { return true; }
 
-  MutableMemoryView receiveBuffer(Int32 index) final { return _ghostLocalBuffer(index); }
-  MutableMemoryView sendBuffer(Int32 index) final { return _shareLocalBuffer(index); }
+  MutableMemoryView receiveBuffer(Int32 index) final { return m_ghost_buffer_info.localBuffer(index); }
+  MutableMemoryView sendBuffer(Int32 index) final { return m_share_buffer_info.localBuffer(index); }
 
-  Int64 receiveDisplacement(Int32 index) const final { return _ghostDisplacementBase(index) * m_datatype_size; }
-  Int64 sendDisplacement(Int32 index) const final { return _shareDisplacementBase(index) * m_datatype_size; }
+  Int64 receiveDisplacement(Int32 index) const final { return m_ghost_buffer_info.displacement(index); }
+  Int64 sendDisplacement(Int32 index) const final { return m_share_buffer_info.displacement(index); }
 
-  MutableMemoryView globalReceiveBuffer() final { return m_ghost_memory_view; }
-  MutableMemoryView globalSendBuffer() final { return m_share_memory_view; }
+  MutableMemoryView globalReceiveBuffer() final { return m_ghost_buffer_info.globalBuffer(); }
+  MutableMemoryView globalSendBuffer() final { return m_share_buffer_info.globalBuffer(); }
 
-  Int64 totalReceiveSize() const final { return m_ghost_memory_view.bytes().size(); }
-  Int64 totalSendSize() const final { return m_share_memory_view.bytes().size(); }
+  Int64 totalReceiveSize() const final { return m_ghost_buffer_info.totalSize(); }
+  Int64 totalSendSize() const final { return m_share_buffer_info.totalSize(); }
 
   void barrier() final;
 
@@ -69,9 +103,9 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
   DataSynchronizeInfo* m_sync_info = nullptr;
   //! Buffer pour toutes les données des entités fantômes qui serviront en réception
-  MutableMemoryView m_ghost_memory_view;
+  BufferInfo m_ghost_buffer_info;
   //! Buffer pour toutes les données des entités partagées qui serviront en envoi
-  MutableMemoryView m_share_memory_view;
+  BufferInfo m_share_buffer_info;
 
  protected:
 
@@ -82,15 +116,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
   UniqueArray<std::byte> m_buffer;
 
   Int32 m_datatype_size = 0;
-
- private:
-
-  Int64 _ghostDisplacementBase(Int32 index) const;
-  Int64 _shareDisplacementBase(Int32 index) const;
-  Int32 _nbGhost(Int32 index) const;
-  Int32 _nbShare(Int32 index) const;
-  MutableMemoryView _shareLocalBuffer(Int32 index) const;
-  MutableMemoryView _ghostLocalBuffer(Int32 index) const;
 };
 
 /*---------------------------------------------------------------------------*/

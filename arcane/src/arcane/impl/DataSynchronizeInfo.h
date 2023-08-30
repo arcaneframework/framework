@@ -25,6 +25,8 @@
 
 #include "arcane/impl/IDataSynchronizeImplementation.h"
 
+#include <array>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -84,6 +86,43 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Informations pour les message d'envoi (share) ou de réception (ghost)
+ */
+class DataSynchronizeBufferInfoList
+{
+  friend class DataSynchronizeInfo;
+
+ private:
+
+  DataSynchronizeBufferInfoList(DataSynchronizeInfo* sync_info, bool is_share)
+  : m_sync_info(sync_info)
+  , m_is_share(is_share)
+  {
+  }
+
+ public:
+
+  Int32 nbRank() const { return m_displacements_base.size(); }
+  //! Nombre total d'éléments
+  Int64 totalNbItem() const { return m_total_nb_item; }
+  //! Déplacement dans le buffer du rang \a index
+  Int64 bufferDisplacement(Int32 index) const { return m_displacements_base[index]; }
+  //! Numéros locaux des entités pour le rang \a index
+  ConstArrayView<Int32> localIds(Int32 index) const;
+  //! Nombre d'entités pour le rang \a index
+  Int32 nbItem(Int32 index) const;
+
+ private:
+
+  UniqueArray<Int64> m_displacements_base;
+  Int64 m_total_nb_item = 0;
+  DataSynchronizeInfo* m_sync_info = nullptr;
+  bool m_is_share = false;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Informations nécessaires pour synchroniser les entités sur un groupe.
  *
  * Il faut appeler recompute() après avoir ajouté ou modifier les instances
@@ -92,6 +131,13 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 class ARCANE_IMPL_EXPORT DataSynchronizeInfo
 : private ReferenceCounterImpl
 {
+  friend class DataSynchronizeBufferInfoList;
+
+ private:
+
+  static constexpr int SEND = 0;
+  static constexpr int RECEIVE = 1;
+
  private:
 
   DataSynchronizeInfo() = default;
@@ -111,20 +157,19 @@ class ARCANE_IMPL_EXPORT DataSynchronizeInfo
   }
 
  public:
-
-  VariableSyncInfo& operator[](Int32 i) { return m_ranks_info[i]; }
-  const VariableSyncInfo& operator[](Int32 i) const { return m_ranks_info[i]; }
-
-  VariableSyncInfo& rankInfo(Int32 i) { return m_ranks_info[i]; }
-  const VariableSyncInfo& rankInfo(Int32 i) const { return m_ranks_info[i]; }
+ public:
 
   void clear() { m_ranks_info.clear(); }
   Int32 size() const { return m_ranks_info.size(); }
   void add(const VariableSyncInfo& s) { m_ranks_info.add(s); }
-  Int64 shareDisplacement(Int32 index) const { return m_share_displacements_base[index]; }
-  Int64 ghostDisplacement(Int32 index) const { return m_ghost_displacements_base[index]; }
-  Int64 totalNbGhost() const { return m_total_nb_ghost; }
-  Int64 totalNbShare() const { return m_total_nb_share; }
+
+  //! Informations d'envoi (partagées)
+  const DataSynchronizeBufferInfoList& sendInfo() const { return m_buffer_infos[SEND]; }
+  //! Informations de réception (fantômes)
+  const DataSynchronizeBufferInfoList& receiveInfo() const { return m_buffer_infos[RECEIVE]; }
+
+  //! Rang de la \a index-ème cible
+  Int32 targetRank(Int32 index) const { return m_ranks_info[index].targetRank(); }
 
   //! Notifie l'instance que les indices locaux ont changé
   void changeLocalIds(Int32ConstArrayView old_to_new_ids);
@@ -139,21 +184,31 @@ class ARCANE_IMPL_EXPORT DataSynchronizeInfo
 
  public:
 
-  ARCANE_DEPRECATED_REASON("Y2023: use operator[] instead")
+  ARCANE_DEPRECATED_REASON("Y2023: do not use")
   ConstArrayView<VariableSyncInfo> infos() const { return m_ranks_info; }
 
-  ARCANE_DEPRECATED_REASON("Y2023: use operator[] instead")
+  ARCANE_DEPRECATED_REASON("Y2023: do not use")
   ArrayView<VariableSyncInfo> infos() { return m_ranks_info; }
+
+  ARCANE_DEPRECATED_REASON("Y2023: do not use")
+  VariableSyncInfo& operator[](Int32 i) { return m_ranks_info[i]; }
+  ARCANE_DEPRECATED_REASON("Y2023: do not use")
+  const VariableSyncInfo& operator[](Int32 i) const { return m_ranks_info[i]; }
+
+  ARCANE_DEPRECATED_REASON("Y2023: do not use")
+  VariableSyncInfo& rankInfo(Int32 i) { return m_ranks_info[i]; }
+  ARCANE_DEPRECATED_REASON("Y2023: do not use")
+  const VariableSyncInfo& rankInfo(Int32 i) const { return m_ranks_info[i]; }
 
  private:
 
   UniqueArray<VariableSyncInfo> m_ranks_info;
-  //! Déplacement dans le buffer fantôme de chaque rang
-  UniqueArray<Int64> m_ghost_displacements_base;
-  //! Déplacement dans le buffer partagé de chaque rang
-  UniqueArray<Int64> m_share_displacements_base;
-  Int64 m_total_nb_ghost = 0;
-  Int64 m_total_nb_share = 0;
+  std::array<DataSynchronizeBufferInfoList, 2> m_buffer_infos = { { { this, true }, { this, false } } };
+
+ private:
+
+  DataSynchronizeBufferInfoList& _sendInfo() { return m_buffer_infos[SEND]; }
+  DataSynchronizeBufferInfoList& _receiveInfo() { return m_buffer_infos[RECEIVE]; }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -310,7 +310,7 @@ synchronize(VariableCollection vars)
   Integer nb_rank = m_sync_info->size();
   Int32UniqueArray recv_ranks(nb_rank);
   for (Integer i = 0; i < nb_rank; ++i) {
-    Int32 rank = m_sync_info->rankInfo(i).targetRank();
+    Int32 rank = m_sync_info->targetRank(i);
     exchanger->addSender(rank);
     recv_ranks[i] = rank;
   }
@@ -318,7 +318,7 @@ synchronize(VariableCollection vars)
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToSend(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView share_ids = m_sync_info->rankInfo(i).shareIds();
+    Int32ConstArrayView share_ids = m_sync_info->sendInfo().localIds(i);
     sbuf->setMode(ISerializer::ModeReserve);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, share_ids, nullptr);
@@ -333,7 +333,7 @@ synchronize(VariableCollection vars)
   for (Integer i = 0; i < nb_rank; ++i) {
     ISerializeMessage* msg = exchanger->messageToReceive(i);
     ISerializer* sbuf = msg->serializer();
-    Int32ConstArrayView ghost_ids = m_sync_info->rankInfo(i).ghostIds();
+    Int32ConstArrayView ghost_ids = m_sync_info->receiveInfo().localIds(i);
     sbuf->setMode(ISerializer::ModeGet);
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->serialize(sbuf, ghost_ids, nullptr);
@@ -473,10 +473,10 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages de réception non bloquant
   for (Integer i = 0; i < nb_message; ++i) {
-    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
+    Int32 target_rank = sync_info->targetRank(i);
     auto buf = _toLegacySmallView(vs_buf->receiveBuffer(i));
     if (!buf.empty()) {
-      Parallel::Request rval = pm->recv(buf, vsi.targetRank(), false);
+      Parallel::Request rval = pm->recv(buf, target_rank, false);
       m_all_requests.add(rval);
     }
   }
@@ -485,7 +485,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages d'envoi en mode non bloquant.
   for (Integer i = 0; i < nb_message; ++i) {
-    const VariableSyncInfo& vsi = sync_info->rankInfo(i);
+    Int32 target_rank = sync_info->targetRank(i);
     auto buf = _toLegacySmallView(vs_buf->sendBuffer(i));
 
     //ConstArrayView<SimpleType> const_share = share_local_buffer;
@@ -493,7 +493,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
       //for( Integer i=0, is=share_local_buffer.size(); i<is; ++i )
       //trace->info() << "TO rank=" << vsi.m_target_rank << " I=" << i << " V=" << share_local_buffer[i]
       //                << " lid=" << share_grp[i] << " v2=" << var_values[share_grp[i]];
-      Parallel::Request rval = pm->send(buf, vsi.targetRank(), use_blocking_send);
+      Parallel::Request rval = pm->send(buf, target_rank, use_blocking_send);
       if (!use_blocking_send)
         m_all_requests.add(rval);
     }
