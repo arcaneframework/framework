@@ -60,7 +60,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
  public:
 
   void compute(IBufferCopier* copier, DataSynchronizeInfo* sync_list, Int32 datatype_size);
-  IDataSynchronizeBuffer* genericBuffer() { return this; }
 
  protected:
 

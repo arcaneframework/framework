@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/impl/DataSynchronizeBuffer.h"
+#include "arcane/impl/internal/DataSynchronizeBuffer.h"
 
 #include "arcane/impl/IBufferCopier.h"
 #include "arcane/impl/DataSynchronizeInfo.h"

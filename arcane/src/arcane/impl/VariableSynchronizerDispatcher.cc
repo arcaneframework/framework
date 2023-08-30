@@ -35,7 +35,7 @@
 #include "arcane/accelerator/core/Runner.h"
 
 #include "arcane/impl/IBufferCopier.h"
-#include "arcane/impl/DataSynchronizeBuffer.h"
+#include "arcane/impl/internal/DataSynchronizeBuffer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -170,11 +170,11 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
   void _beginSynchronize(DataSynchronizeBufferBase& sync_buffer)
   {
-    m_implementation_instance->beginSynchronize(sync_buffer.genericBuffer());
+    m_implementation_instance->beginSynchronize(&sync_buffer);
   }
   void _endSynchronize(DataSynchronizeBufferBase& sync_buffer)
   {
-    m_implementation_instance->endSynchronize(sync_buffer.genericBuffer());
+    m_implementation_instance->endSynchronize(&sync_buffer);
   }
 
  private:
@@ -383,8 +383,8 @@ synchronize(VariableCollection vars)
 
   m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
   m_implementation_instance->compute();
-  m_implementation_instance->beginSynchronize(buffer.genericBuffer());
-  m_implementation_instance->endSynchronize(buffer.genericBuffer());
+  m_implementation_instance->beginSynchronize(&buffer);
+  m_implementation_instance->endSynchronize(&buffer);
 }
 
 /*---------------------------------------------------------------------------*/
