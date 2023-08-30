@@ -63,8 +63,6 @@ class ArrayVariableDiff
   check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
         int max_print,bool compare_ghost)
   {
-    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
-
     if (var->itemKind()==IK_Unknown)
       return _checkAsArray(var,ref,current,max_print);
 
@@ -114,10 +112,9 @@ class ArrayVariableDiff
                    << " for the variable " << var_name << " ref_size=" << ref_size;
         
     }
-    if (nb_diff!=0){
-      this->sort(IsNumeric());
-      this->dump(var,pm,max_print);
-    }
+    if (nb_diff!=0)
+      this->_sortAndDump(var,pm,max_print);
+
     return nb_diff;
   }
 
@@ -126,8 +123,15 @@ class ArrayVariableDiff
   {
     // Appelle la bonne spécialisation pour être sur que le type template possède
     // la réduction.
-    typedef typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax HasReduceMinMax;
-    return _checkReplica2(pm,var,var_value,max_print,HasReduceMinMax());
+    using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
+    if constexpr(std::is_same<TrueType,ReduceType>::value)
+      return _checkReplica2(pm,var,var_value,max_print);
+
+    ARCANE_UNUSED(pm);
+    ARCANE_UNUSED(var);
+    ARCANE_UNUSED(var_value);
+    ARCANE_UNUSED(max_print);
+    throw NotSupportedException(A_FUNCINFO);
   }
 
  private:
@@ -135,7 +139,6 @@ class ArrayVariableDiff
   Integer _checkAsArray(IVariable* var,ConstArrayView<DataType> ref,
                         ConstArrayView<DataType> current,int max_print)
   {
-    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
     IParallelMng* pm = var->variableMng()->parallelMng();
     ITraceMng* msg = pm->traceMng();
 
@@ -166,25 +169,15 @@ class ArrayVariableDiff
                    << " pour la variable " << var_name << " ref_size=" << ref_size;
         
     }
-    if (nb_diff!=0){
-      this->sort(IsNumeric());
-      this->dump(var,pm,max_print);
-    }
+    if (nb_diff!=0)
+      this->_sortAndDump(var,pm,max_print);
+
     return nb_diff;
   }
 
-  Integer _checkReplica2(IParallelMng*,IVariable*,ConstArrayView<DataType>,
-                         Integer,FalseType has_reduce)
-  {
-    ARCANE_UNUSED(has_reduce);
-    throw NotSupportedException(A_FUNCINFO);
-  }
-
   Integer _checkReplica2(IParallelMng* pm,IVariable* var,ConstArrayView<DataType> var_values,
-                         Integer max_print,TrueType has_reduce)
+                         Integer max_print)
   {
-    ARCANE_UNUSED(has_reduce);
-    typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
     ITraceMng* msg = pm->traceMng();
     Integer size = var_values.size();
     // Vérifie que tout les réplica ont le même nombre d'éléments pour la variable.
@@ -213,10 +206,9 @@ class ArrayVariableDiff
         ++nb_diff;
       }
     }
-    if (nb_diff!=0){
-      this->sort(IsNumeric());
-      this->dump(var,pm,max_print);
-    }
+    if (nb_diff!=0)
+      this->_sortAndDump(var,pm,max_print);
+
     return nb_diff;
   }
 };
