@@ -35,7 +35,7 @@ class DataSynchronizeInfo;
  * \internal
  * \brief Classe de base de l'implémentation de IDataSynchronizeBuffer.
  */
-class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
+class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 : public IDataSynchronizeBuffer
 {
  public:
@@ -100,7 +100,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
  * \brief Implémentation de IDataSynchronizeBuffer pour une donnée
  */
 class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
-: public VariableSynchronizeBufferBase
+: public DataSynchronizeBufferBase
 {
  public:
 
@@ -125,7 +125,7 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
  */
 class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
 : public TraceAccessor
-, public VariableSynchronizeBufferBase
+, public DataSynchronizeBufferBase
 {
 
  public:

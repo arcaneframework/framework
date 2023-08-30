@@ -67,7 +67,7 @@ barrier()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeBufferBase::
+void DataSynchronizeBufferBase::
 barrier()
 {
   m_buffer_copier->barrier();
@@ -76,7 +76,7 @@ barrier()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64 VariableSynchronizeBufferBase::
+Int64 DataSynchronizeBufferBase::
 _ghostDisplacementBase(Int32 index) const
 {
   return m_sync_info->ghostDisplacement(index);
@@ -85,7 +85,7 @@ _ghostDisplacementBase(Int32 index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64 VariableSynchronizeBufferBase::
+Int64 DataSynchronizeBufferBase::
 _shareDisplacementBase(Int32 index) const
 {
   return m_sync_info->shareDisplacement(index);
@@ -94,7 +94,7 @@ _shareDisplacementBase(Int32 index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 VariableSynchronizeBufferBase::
+Int32 DataSynchronizeBufferBase::
 _nbGhost(Int32 index) const
 {
   return m_sync_info->rankInfo(index).nbGhost();
@@ -103,7 +103,7 @@ _nbGhost(Int32 index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 VariableSynchronizeBufferBase::
+Int32 DataSynchronizeBufferBase::
 _nbShare(Int32 index) const
 {
   return m_sync_info->rankInfo(index).nbShare();
@@ -112,7 +112,7 @@ _nbShare(Int32 index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MutableMemoryView VariableSynchronizeBufferBase::
+MutableMemoryView DataSynchronizeBufferBase::
 _shareLocalBuffer(Int32 index) const
 {
   Int64 displacement = _shareDisplacementBase(index);
@@ -123,7 +123,7 @@ _shareLocalBuffer(Int32 index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MutableMemoryView VariableSynchronizeBufferBase::
+MutableMemoryView DataSynchronizeBufferBase::
 _ghostLocalBuffer(Int32 index) const
 {
   Int64 displacement = _ghostDisplacementBase(index);
@@ -137,7 +137,7 @@ _ghostLocalBuffer(Int32 index) const
  * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
  */
-void VariableSynchronizeBufferBase::
+void DataSynchronizeBufferBase::
 compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_size)
 {
   m_datatype_size = datatype_size;
@@ -161,7 +161,7 @@ compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_si
  * \todo: ne pas converver les tampons pour chaque type de donnée des variables
  * car leur conservation est couteuse en terme de memoire.
  */
-void VariableSynchronizeBufferBase::
+void DataSynchronizeBufferBase::
 _allocateBuffers(Int32 datatype_size)
 {
   Int64 total_ghost_buffer = m_sync_info->totalNbGhost();

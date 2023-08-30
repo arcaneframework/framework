@@ -155,11 +155,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
  public:
 
-  //! Gère les buffers d'envoi et réception pour la synchronisation
-  using SyncBuffer = SingleDataSynchronizeBuffer;
-
- public:
-
   explicit VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
   : VariableSynchronizerDispatcherBase(bi)
   {
@@ -173,18 +168,19 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
  protected:
 
-  void _beginSynchronize(VariableSynchronizeBufferBase& sync_buffer)
+  void _beginSynchronize(DataSynchronizeBufferBase& sync_buffer)
   {
     m_implementation_instance->beginSynchronize(sync_buffer.genericBuffer());
   }
-  void _endSynchronize(VariableSynchronizeBufferBase& sync_buffer)
+  void _endSynchronize(DataSynchronizeBufferBase& sync_buffer)
   {
     m_implementation_instance->endSynchronize(sync_buffer.genericBuffer());
   }
 
  private:
 
-  SyncBuffer m_sync_buffer;
+  //! Gère les buffers d'envoi et réception pour la synchronisation
+  SingleDataSynchronizeBuffer m_sync_buffer;
   bool m_is_in_sync = false;
   bool m_is_empty_sync = false;
 };
