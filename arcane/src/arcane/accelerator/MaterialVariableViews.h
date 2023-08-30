@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialVariableViews.h                                     (C) 2000-2022 */
+/* MaterialVariableViews.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des vues sur les variables matériaux pour les accélérateurs.      */
 /*---------------------------------------------------------------------------*/
@@ -54,6 +54,10 @@ template<typename ItemType,typename DataType>
 class MatItemVariableScalarInViewT
 : public MatVariableViewBase
 {
+ private:
+
+  using ItemIndexType = typename ItemTraitsT<ItemType>::LocalIdType;
+
  public:
 
   MatItemVariableScalarInViewT(RunCommand& cmd, IMeshMaterialVariable* var, ArrayView<DataType>* v)
@@ -69,6 +73,12 @@ class MatItemVariableScalarInViewT
   ARCCORE_HOST_DEVICE const DataType& operator[](PureMatVarIndex pmvi) const
   {
     return this->m_value0[pmvi.valueIndex()];
+  }
+
+  //! Surcharge pour accéder à la valeure globale à partir du cell id
+  ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType item) const
+  {
+    return this->m_value0[item.localId()];
   }
 
   //! Opérateur d'accès pour l'entité \a item
@@ -115,6 +125,7 @@ class MatItemVariableScalarOutViewT
 
   using DataType = typename Accessor::ValueType;
   using DataTypeReturnType = DataType&;
+  using ItemIndexType = typename ItemTraitsT<ItemType>::LocalIdType;
 
   // TODO: faut il rajouter des ARCANE_CHECK_AT(mvi.arrayIndex(), m_value.size()); ? il manquera tjrs le check sur l'autre dimension
 
@@ -132,6 +143,13 @@ class MatItemVariableScalarOutViewT
   ARCCORE_HOST_DEVICE Accessor operator[](PureMatVarIndex pmvi) const
   {
     return Accessor(this->m_value0[pmvi.valueIndex()]);
+  }
+
+  //! Surcharge pour accéder à la valeure globale à partir du cell id
+  ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType item) const
+  {
+    ARCANE_CHECK_AT(item.localId(),this->m_value[0].size());
+    return Accessor(this->m_value0[item.localId()]);
   }
 
   //! Opérateur d'accès pour l'entité \a item
