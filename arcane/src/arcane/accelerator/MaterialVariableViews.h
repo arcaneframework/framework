@@ -71,6 +71,12 @@ class MatItemVariableScalarInViewT
     return this->m_value0[pmvi.valueIndex()];
   }
 
+  //! Surcharge pour accéder à la valeure globale à partir du cell id
+  ARCCORE_HOST_DEVICE const DataType& operator[](Integer cid) const
+  {
+    return this->m_value0[cid];
+  }
+
   //! Opérateur d'accès pour l'entité \a item
   ARCCORE_HOST_DEVICE const DataType& value(ComponentItemLocalId mvi) const
   {
@@ -132,6 +138,12 @@ class MatItemVariableScalarOutViewT
   ARCCORE_HOST_DEVICE Accessor operator[](PureMatVarIndex pmvi) const
   {
     return Accessor(this->m_value0[pmvi.valueIndex()]);
+  }
+
+  //! Surcharge pour accéder à la valeure globale à partir du cell id
+  ARCCORE_HOST_DEVICE const DataType& operator[](Integer cid) const
+  {
+    return Accessor(this->m_value0[cid]);
   }
 
   //! Opérateur d'accès pour l'entité \a item
