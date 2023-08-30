@@ -560,10 +560,12 @@ _executeTest4(Integer nb_z)
       }
 
       Real sum3=0.;
-      ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
-        Real contrib2 = (b_ref[iev] + b_ref[icell]) - (sum2+1.);
-        c_ref[iev] = contrib2 * c_ref[icell];
-        sum3 += contrib2;
+      if (all_env_cell.nbEnvironment() > 1) {
+        ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
+          Real contrib2 = (b_ref[iev] + b_ref[icell]) - (sum2+1.);
+          c_ref[iev] = contrib2 * c_ref[icell];
+          sum3 += contrib2;
+        }
       }
       a_ref[icell] = sum3;
     }
@@ -581,7 +583,6 @@ _executeTest4(Integer nb_z)
 
     auto in_b    = ax::viewIn(cmd, m_mat_b);
     auto out_c   = ax::viewOut(cmd, m_mat_c);
-    auto in_b_g  = ax::viewIn(cmd, m_mat_b.globalVariable());
     auto in_c_g  = ax::viewIn(cmd, m_mat_c.globalVariable());
     auto out_a_g = ax::viewOut(cmd, m_mat_a.globalVariable());
 
@@ -593,16 +594,17 @@ _executeTest4(Integer nb_z)
 
         Real sum2=0.;
         ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
-          sum2 += in_b[*iev] + in_b_g[cid];
+          sum2 += in_b[*iev] + in_b[cid];
         }
 
         Real sum3=0.;
-        ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
-          Real contrib2 = (in_b[*iev] + in_b_g[cid]) - (sum2+1.);
-          out_c[*iev] = contrib2 * in_c_g[cid];
-          sum3 += contrib2;
+        if (cell2allenvcell.nbEnvironment(cid) > 1) {
+          ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
+            Real contrib2 = (in_b[*iev] + in_b[cid]) - (sum2+1.);
+            out_c[*iev] = contrib2 * in_c_g[cid];
+            sum3 += contrib2;
+          }
         }
-
         out_a_g[cid] = sum3;
       };
     }

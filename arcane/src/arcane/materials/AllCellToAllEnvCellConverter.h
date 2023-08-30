@@ -143,7 +143,7 @@ class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
     return m_cell_allenvcell;
   }
 
-  ARCCORE_HOST_DEVICE const size_type& nbEnv(Integer cid) const
+  ARCCORE_HOST_DEVICE size_type nbEnvironment(Integer cid) const
   {
     return m_cell_allenvcell->internal()[cid].size();
   }
