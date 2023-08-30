@@ -31,6 +31,8 @@ set( ARCANE_SOURCES
   DataStorageFactory.h
   DataSynchronizeInfo.h
   DataSynchronizeInfo.cc
+  DataSynchronizeBuffer.h
+  DataSynchronizeBuffer.cc
   EntryPointMng.cc
   ExecutionStatsDumper.h
   ExecutionStatsDumper.cc
