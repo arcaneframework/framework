@@ -27,6 +27,7 @@
 namespace Arcane
 {
 class IBufferCopier;
+class DataSynchronizeResult;
 class DataSynchronizeInfo;
 class DataSynchronizeBufferInfoList;
 
@@ -75,6 +76,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
  public:
 
   Int32 nbRank() const final { return m_nb_rank; }
+  Int32 targetRank(Int32 index) const final;
   bool hasGlobalBuffer() const final { return true; }
 
   MutableMemoryView receiveBuffer(Int32 index) final { return m_ghost_buffer_info.localBuffer(index); }
@@ -93,11 +95,31 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
  public:
 
-  void compute(IBufferCopier* copier, DataSynchronizeInfo* sync_list, Int32 datatype_size);
+  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, IBufferCopier* copier)
+  : m_sync_info(sync_info)
+  , m_buffer_copier(copier)
+  {}
+
+ public:
+
+  //! Indique si on compare les valeurs avant/après la synchronisation
+  bool isCompareSynchronizedValues() const { return m_is_compare_sync_values; }
+
+  /*!
+   * \brief Prépare la synchronisation.
+   *
+   * Prépare la synchronisation et alloue les buffers si nécessaire.
+   * \a datatype_size est la taille (en octet) du type de la donnée.
+   * Si \a is_compare_sync est vrai, on compare après la synchronisation les
+   * valeurs des entités fantômes avec leur valeur d'avant la synchronisation.
+   */
+  virtual void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) = 0;
 
  protected:
 
   void _allocateBuffers(Int32 datatype_size);
+  //! Calcule les informations pour la synchronisation
+  void _compute(Int32 datatype_size);
 
  protected:
 
@@ -106,16 +128,17 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
   BufferInfo m_ghost_buffer_info;
   //! Buffer pour toutes les données des entités partagées qui serviront en envoi
   BufferInfo m_share_buffer_info;
+  //! Buffer pour tester si la synchronisation a modifié les valeurs des mailles fantômes
+  BufferInfo m_compare_sync_buffer_info;
 
  protected:
 
   Int32 m_nb_rank = 0;
   IBufferCopier* m_buffer_copier = nullptr;
+  bool m_is_compare_sync_values = false;
 
   //! Buffer contenant les données concaténées en envoi et réception
   UniqueArray<std::byte> m_buffer;
-
-  Int32 m_datatype_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -128,13 +151,26 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
 {
  public:
 
+  SingleDataSynchronizeBuffer(DataSynchronizeInfo* sync_info, IBufferCopier* copier)
+  : DataSynchronizeBufferBase(sync_info, copier)
+  {}
+
+ public:
+
   void copyReceiveAsync(Int32 index) final;
   void copySendAsync(Int32 index) final;
 
  public:
 
   void setDataView(MutableMemoryView v) { m_data_view = v; }
+  //! Zone mémoire contenant les valeurs de la donnée à synchroniser
   MutableMemoryView dataView() { return m_data_view; }
+  void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) override;
+
+  /*!
+   * \brief Termine la synchronisation.
+   */
+  DataSynchronizeResult finalizeSynchronize();
 
  private:
 
@@ -154,8 +190,9 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
 
  public:
 
-  MultiDataSynchronizeBuffer(ITraceMng* tm)
+  MultiDataSynchronizeBuffer(ITraceMng* tm, DataSynchronizeInfo* sync_info, IBufferCopier* copier)
   : TraceAccessor(tm)
+  , DataSynchronizeBufferBase(sync_info, copier)
   {}
 
  public:
@@ -170,6 +207,8 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
     m_data_views.resize(nb_data);
   }
   void setDataView(Int32 index, MutableMemoryView v) { m_data_views[index] = v; }
+
+  void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) override;
 
  private:
 

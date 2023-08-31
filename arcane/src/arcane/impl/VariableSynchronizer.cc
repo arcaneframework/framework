@@ -23,6 +23,7 @@
 #include "arcane/utils/Real3x3.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/Array2.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/VariableSynchronizerEventArgs.h"
 #include "arcane/core/IParallelMng.h"
@@ -70,9 +71,6 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
 : TraceAccessor(pm->traceMng())
 , m_parallel_mng(pm)
 , m_item_group(group)
-, m_is_verbose(false)
-, m_allow_multi_sync(true)
-, m_trace_sync(false)
 {
   m_sync_list = DataSynchronizeInfo::create();
   if (!implementation_factory.get())
@@ -99,6 +97,10 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
     String s = platform::getEnvironmentVariable("ARCANE_TRACE_SYNCHRONIZE");
     if (s=="1" || s=="TRUE" || s=="true")
       m_trace_sync = true;
+  }
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_AUTO_COMPARE_SYNCHRONIZE", true))
+      m_is_compare_sync = (v.value()!=0);
   }
 }
 
@@ -675,11 +677,11 @@ synchronize(VariableCollection vars)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizer::
+DataSynchronizeResult VariableSynchronizer::
 _synchronize(INumericDataInternal* data)
 {
-  m_dispatcher->beginSynchronize(data);
-  m_dispatcher->endSynchronize();
+  m_dispatcher->beginSynchronize(data, m_is_compare_sync);
+  return m_dispatcher->endSynchronize();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -692,7 +694,16 @@ _synchronize(IVariable* var)
   INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
   if (!numapi)
     ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data",var->name());
-  _synchronize(numapi);
+  DataSynchronizeResult result = _synchronize(numapi);
+  eDataSynchronizeCompareStatus s = result.compareStatus();
+  if (m_is_compare_sync){
+    if (s==eDataSynchronizeCompareStatus::Different)
+      info() << "Different values name=" << var->name();
+    else if (s==eDataSynchronizeCompareStatus::Same)
+      info() << "Same values name=" << var->name();
+    else
+      info() << "Unknown values name=" << var->name();
+  }
   var->setIsSynchronized();
 }
 

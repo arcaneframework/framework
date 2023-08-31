@@ -33,6 +33,35 @@
 namespace Arcane
 {
 
+//! Comparaison des valeurs des entités fantômes avant/après une synchronisation
+enum class eDataSynchronizeCompareStatus
+{
+  //! Pas de comparaison ou résultat inconnue
+  Unknown,
+  //! Même valeurs avant et après la synchronisation
+  Same,
+  //! Valeurs différentes avant et après la synchronisation
+  Different
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations sur le résultat d'une synchronisation.
+ */
+class DataSynchronizeResult
+{
+ public:
+ public:
+
+  eDataSynchronizeCompareStatus compareStatus() const { return m_compare_status; }
+  void setCompareStatus(eDataSynchronizeCompareStatus v) { m_compare_status = v; }
+
+ private:
+
+  eDataSynchronizeCompareStatus m_compare_status = eDataSynchronizeCompareStatus::Unknown;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -94,7 +123,7 @@ class DataSynchronizeBufferInfoList
 
  private:
 
-  DataSynchronizeBufferInfoList(DataSynchronizeInfo* sync_info, bool is_share)
+  DataSynchronizeBufferInfoList(const DataSynchronizeInfo* sync_info, bool is_share)
   : m_sync_info(sync_info)
   , m_is_share(is_share)
   {
@@ -116,7 +145,7 @@ class DataSynchronizeBufferInfoList
 
   UniqueArray<Int64> m_displacements_base;
   Int64 m_total_nb_item = 0;
-  DataSynchronizeInfo* m_sync_info = nullptr;
+  const DataSynchronizeInfo* m_sync_info = nullptr;
   bool m_is_share = false;
 };
 
@@ -127,6 +156,11 @@ class DataSynchronizeBufferInfoList
  *
  * Il faut appeler recompute() après avoir ajouté ou modifier les instances
  * de VariableSyncInfo.
+ *
+ * Les instances de cette classe sont partagées avec tous les dispatchers
+ * (IVariableSynchronizeDispatcher) créés à partir d'une instance de
+ * IVariableSynchronizer. Seule cette dernière peut donc modifier une instance
+ * cette classe.
  */
 class ARCANE_IMPL_EXPORT DataSynchronizeInfo
 : private ReferenceCounterImpl
@@ -156,7 +190,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeInfo
     return makeRef(new DataSynchronizeInfo());
   }
 
- public:
  public:
 
   void clear() { m_ranks_info.clear(); }

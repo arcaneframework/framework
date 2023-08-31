@@ -18,6 +18,7 @@
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/IParallelExchanger.h"
@@ -154,14 +155,15 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 
   explicit VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
   : VariableSynchronizerDispatcherBase(bi)
+  , m_sync_buffer(m_sync_info.get(), m_buffer_copier)
   {
   }
 
  public:
 
   void compute() final;
-  void beginSynchronize(INumericDataInternal* data) override;
-  void endSynchronize() override;
+  void beginSynchronize(INumericDataInternal* data, bool is_compare_sync) override;
+  DataSynchronizeResult endSynchronize() override;
 
  protected:
 
@@ -189,7 +191,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerDispatcher::
-beginSynchronize(INumericDataInternal* data)
+beginSynchronize(INumericDataInternal* data, bool is_compare_sync)
 {
   ARCANE_CHECK_POINTER(data);
 
@@ -204,24 +206,27 @@ beginSynchronize(INumericDataInternal* data)
   if (m_is_empty_sync)
     return;
   _setCurrentDevice();
-  m_sync_buffer.compute(m_buffer_copier, m_sync_info.get(), full_datatype_size);
   m_sync_buffer.setDataView(mem_view);
+  m_sync_buffer.prepareSynchronize(full_datatype_size, is_compare_sync);
   _beginSynchronize(m_sync_buffer);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizerDispatcher::
+DataSynchronizeResult VariableSynchronizerDispatcher::
 endSynchronize()
 {
   if (!m_is_in_sync)
     ARCANE_FATAL("No pending synchronize(). You need to call beginSynchronize() before");
+  DataSynchronizeResult result;
   if (!m_is_empty_sync) {
     _setCurrentDevice();
     _endSynchronize(m_sync_buffer);
+    result = m_sync_buffer.finalizeSynchronize();
   }
   m_is_in_sync = false;
+  return result;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -351,7 +356,7 @@ void VariableSynchronizerMultiDispatcherV2::
 synchronize(VariableCollection vars)
 {
   ITraceMng* tm = m_parallel_mng->traceMng();
-  MultiDataSynchronizeBuffer buffer(tm);
+  MultiDataSynchronizeBuffer buffer(tm, m_sync_info.get(), m_buffer_copier);
 
   const Int32 nb_var = vars.count();
   buffer.setNbData(nb_var);
@@ -374,7 +379,9 @@ synchronize(VariableCollection vars)
 
   _setCurrentDevice();
 
-  buffer.compute(m_buffer_copier, m_sync_info.get(), all_datatype_size);
+  // TODO: à passer en paramètre.
+  bool is_compare_sync = false;
+  buffer.prepareSynchronize(all_datatype_size, is_compare_sync);
 
   m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
   m_implementation_instance->compute();
