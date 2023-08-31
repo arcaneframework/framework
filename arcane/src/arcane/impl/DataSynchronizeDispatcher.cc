@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizerDispatcher.cc                           (C) 2000-2023 */
+/* DataSynchronizeDispatcher.cc                                (C) 2000-2023 */
 /*                                                                           */
-/* Service de synchronisation des variables.                                 */
+/* Gestion de la synchronisation d'une instance de 'IData'.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -59,12 +59,12 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class VariableSynchronizerDispatcherBase
+class DataSynchronizeDispatcherBase
 {
  public:
 
-  explicit VariableSynchronizerDispatcherBase(const VariableSynchronizeDispatcherBuildInfo& bi);
-  ~VariableSynchronizerDispatcherBase();
+  explicit DataSynchronizeDispatcherBase(const DataSynchronizeDispatcherBuildInfo& bi);
+  ~DataSynchronizeDispatcherBase();
 
  protected:
 
@@ -82,8 +82,8 @@ class VariableSynchronizerDispatcherBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-VariableSynchronizerDispatcherBase::
-VariableSynchronizerDispatcherBase(const VariableSynchronizeDispatcherBuildInfo& bi)
+DataSynchronizeDispatcherBase::
+DataSynchronizeDispatcherBase(const DataSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
 , m_sync_info(bi.synchronizeInfo())
 {
@@ -114,8 +114,8 @@ VariableSynchronizerDispatcherBase(const VariableSynchronizeDispatcherBuildInfo&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-VariableSynchronizerDispatcherBase::
-~VariableSynchronizerDispatcherBase()
+DataSynchronizeDispatcherBase::
+~DataSynchronizeDispatcherBase()
 {
   delete m_buffer_copier;
 }
@@ -129,7 +129,7 @@ VariableSynchronizerDispatcherBase::
  * de cette RunQueue. Cela permet de garantir que les allocations mémoires
  * effectuées lors des synchronisations seront sur le bon device.
  */
-void VariableSynchronizerDispatcherBase::
+void DataSynchronizeDispatcherBase::
 _setCurrentDevice()
 {
   if (m_runner)
@@ -144,17 +144,17 @@ _setCurrentDevice()
 /*!
  * \brief Gestion de la synchronisation pour une donnée.
  */
-class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
+class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
 : private ReferenceCounterImpl
-, public VariableSynchronizerDispatcherBase
-, public IVariableSynchronizeDispatcher
+, public DataSynchronizeDispatcherBase
+, public IDataSynchronizeDispatcher
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 
  public:
 
-  explicit VariableSynchronizerDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
-  : VariableSynchronizerDispatcherBase(bi)
+  explicit DataSynchronizeDispatcher(const DataSynchronizeDispatcherBuildInfo& bi)
+  : DataSynchronizeDispatcherBase(bi)
   , m_sync_buffer(m_sync_info.get(), m_buffer_copier)
   {
   }
@@ -190,7 +190,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizerDispatcher::
+void DataSynchronizeDispatcher::
 beginSynchronize(INumericDataInternal* data, bool is_compare_sync)
 {
   ARCANE_CHECK_POINTER(data);
@@ -214,7 +214,7 @@ beginSynchronize(INumericDataInternal* data, bool is_compare_sync)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-DataSynchronizeResult VariableSynchronizerDispatcher::
+DataSynchronizeResult DataSynchronizeDispatcher::
 endSynchronize()
 {
   if (!m_is_in_sync)
@@ -235,7 +235,7 @@ endSynchronize()
  * \brief Notifie l'implémentation que les informations de synchronisation
  * ont changé.
  */
-void VariableSynchronizerDispatcher::
+void DataSynchronizeDispatcher::
 compute()
 {
   if (!m_sync_info)
@@ -250,10 +250,10 @@ compute()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<IVariableSynchronizeDispatcher> IVariableSynchronizeDispatcher::
-create(const VariableSynchronizeDispatcherBuildInfo& build_info)
+Ref<IDataSynchronizeDispatcher> IDataSynchronizeDispatcher::
+create(const DataSynchronizeDispatcherBuildInfo& build_info)
 {
-  return makeRef<IVariableSynchronizeDispatcher>(new VariableSynchronizerDispatcher(build_info));
+  return makeRef<IDataSynchronizeDispatcher>(new DataSynchronizeDispatcher(build_info));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -264,18 +264,18 @@ create(const VariableSynchronizeDispatcherBuildInfo& build_info)
 /*!
  * \brief Synchronisation d'une liste de variables.
  */
-class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
-: public IVariableSynchronizerMultiDispatcher
+class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcher
+: public IDataSynchronizeMultiDispatcher
 {
  public:
 
-  explicit VariableSynchronizerMultiDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
+  explicit DataSynchronizeMultiDispatcher(const DataSynchronizeDispatcherBuildInfo& bi)
   : m_parallel_mng(bi.parallelMng())
   , m_sync_info(bi.synchronizeInfo())
   {
   }
 
-  void synchronize(VariableCollection vars) override;
+  void synchronize(const VariableCollection& vars) override;
 
  private:
 
@@ -291,25 +291,25 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
  * \brief Version 2 qui utilise directement des buffers au lieu
  * d'un ISerializer.
  */
-class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcherV2
-: public VariableSynchronizerDispatcherBase
-, public IVariableSynchronizerMultiDispatcher
+class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
+: public DataSynchronizeDispatcherBase
+, public IDataSynchronizeMultiDispatcher
 {
  public:
 
-  explicit VariableSynchronizerMultiDispatcherV2(const VariableSynchronizeDispatcherBuildInfo& bi)
-  : VariableSynchronizerDispatcherBase(bi)
+  explicit DataSynchronizeMultiDispatcherV2(const DataSynchronizeDispatcherBuildInfo& bi)
+  : DataSynchronizeDispatcherBase(bi)
   {
   }
 
-  void synchronize(VariableCollection vars);
+  void synchronize(const VariableCollection& vars) override;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizerMultiDispatcher::
-synchronize(VariableCollection vars)
+void DataSynchronizeMultiDispatcher::
+synchronize(const VariableCollection& vars)
 {
   Ref<IParallelExchanger> exchanger{ ParallelMngUtils::createExchangerRef(m_parallel_mng) };
   Integer nb_rank = m_sync_info->size();
@@ -352,8 +352,8 @@ synchronize(VariableCollection vars)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizerMultiDispatcherV2::
-synchronize(VariableCollection vars)
+void DataSynchronizeMultiDispatcherV2::
+synchronize(const VariableCollection& vars)
 {
   ITraceMng* tm = m_parallel_mng->traceMng();
   MultiDataSynchronizeBuffer buffer(tm, m_sync_info.get(), m_buffer_copier);
@@ -399,13 +399,13 @@ synchronize(VariableCollection vars)
  *
  * Cette implémentation est faite à partir de send/receive suivi de 'wait'.
  */
-class SimpleVariableSynchronizerDispatcher
+class SimpleDataSynchronizeDispatcher
 : public AbstractDataSynchronizeImplementation
 {
  public:
 
   class Factory;
-  explicit SimpleVariableSynchronizerDispatcher(Factory* f);
+  explicit SimpleDataSynchronizeDispatcher(Factory* f);
 
  protected:
 
@@ -422,7 +422,7 @@ class SimpleVariableSynchronizerDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SimpleVariableSynchronizerDispatcher::Factory
+class SimpleDataSynchronizeDispatcher::Factory
 : public IDataSynchronizeImplementationFactory
 {
  public:
@@ -433,7 +433,7 @@ class SimpleVariableSynchronizerDispatcher::Factory
 
   Ref<IDataSynchronizeImplementation> createInstance() override
   {
-    auto* x = new SimpleVariableSynchronizerDispatcher(this);
+    auto* x = new SimpleDataSynchronizeDispatcher(this);
     return makeRef<IDataSynchronizeImplementation>(x);
   }
 
@@ -445,8 +445,8 @@ class SimpleVariableSynchronizerDispatcher::Factory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SimpleVariableSynchronizerDispatcher::
-SimpleVariableSynchronizerDispatcher(Factory* f)
+SimpleDataSynchronizeDispatcher::
+SimpleDataSynchronizeDispatcher(Factory* f)
 : m_parallel_mng(f->m_parallel_mng)
 {
 }
@@ -457,14 +457,14 @@ SimpleVariableSynchronizerDispatcher(Factory* f)
 extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm)
 {
-  auto* x = new SimpleVariableSynchronizerDispatcher::Factory(pm);
+  auto* x = new SimpleDataSynchronizeDispatcher::Factory(pm);
   return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleVariableSynchronizerDispatcher::
+void SimpleDataSynchronizeDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
   ARCANE_CHECK_POINTER(vs_buf);
@@ -509,7 +509,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleVariableSynchronizerDispatcher::
+void SimpleDataSynchronizeDispatcher::
 endSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
   IParallelMng* pm = m_parallel_mng;
@@ -532,19 +532,22 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IVariableSynchronizerMultiDispatcher* IVariableSynchronizerMultiDispatcher::
-create(const VariableSynchronizeDispatcherBuildInfo& bi)
+IDataSynchronizeMultiDispatcher* IDataSynchronizeMultiDispatcher::
+create(const DataSynchronizeDispatcherBuildInfo& bi)
 {
+  // TODO: Une fois qu'on aura supprimer l'ancien mécanisme, il faudra
+  // modifier l'API ne pas utiliser 'VariableCollection' mais une liste
+  // de \a INumericDataInternal
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_MULTISYNCHRONIZE", true))
-    if (v.value()>=1)
-      return new VariableSynchronizerMultiDispatcher(bi);
-  return new VariableSynchronizerMultiDispatcherV2(bi);
+    if (v.value() >= 1)
+      return new DataSynchronizeMultiDispatcher(bi);
+  return new DataSynchronizeMultiDispatcherV2(bi);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

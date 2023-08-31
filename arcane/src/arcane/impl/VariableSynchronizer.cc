@@ -80,11 +80,11 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
   GroupIndexTable* table = nullptr;
   if (!group.isAllItems())
     table = group.localIdToIndex().get();
-  VariableSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory,m_sync_list);
-  m_dispatcher = IVariableSynchronizerDispatcher::create(bi);
+  DataSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory,m_sync_list);
+  m_dispatcher = IDataSynchronizeDispatcher::create(bi);
   if (!m_dispatcher)
     ARCANE_FATAL("No synchronizer created");
-  m_multi_dispatcher = IVariableSynchronizerMultiDispatcher::create(bi);
+  m_multi_dispatcher = IDataSynchronizeMultiDispatcher::create(bi);
   if (!m_multi_dispatcher)
     ARCANE_FATAL("No multi synchronizer created");
 

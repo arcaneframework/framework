@@ -10,8 +10,8 @@
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_VARIABLESYNCHRONIZER_H
-#define ARCANE_IMPL_VARIABLESYNCHRONIZER_H
+#ifndef ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZER_H
+#define ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,15 +20,14 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Event.h"
 
-#include "arcane/Parallel.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/DataTypeDispatchingDataVisitor.h"
 
 #include "arcane/impl/IBufferCopier.h"
 #include "arcane/impl/internal/IDataSynchronizeDispatcher.h"
-
-#include "arcane/DataTypeDispatchingDataVisitor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -172,8 +171,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   ItemGroup m_item_group;
   Ref<DataSynchronizeInfo> m_sync_list;
   Int32UniqueArray m_communicating_ranks;
-  Ref<IVariableSynchronizerDispatcher> m_dispatcher;
-  IVariableSynchronizerMultiDispatcher* m_multi_dispatcher = nullptr;
+  Ref<IDataSynchronizeDispatcher> m_dispatcher;
+  IDataSynchronizeMultiDispatcher* m_multi_dispatcher = nullptr;
   Timer* m_sync_timer = nullptr;
   bool m_is_verbose = false;
   bool m_allow_multi_sync = true;
