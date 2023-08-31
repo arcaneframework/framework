@@ -32,6 +32,7 @@ set( ARCANE_SOURCES
   DataSynchronizeInfo.h
   DataSynchronizeInfo.cc
   DataSynchronizeBuffer.cc
+  DataSynchronizeDispatcher.cc
   EntryPointMng.cc
   ExecutionStatsDumper.h
   ExecutionStatsDumper.cc
@@ -97,7 +98,6 @@ set( ARCANE_SOURCES
   VariableUtilities.cc
   VariableUtilities.h
   VariableSynchronizer.cc
-  VariableSynchronizerDispatcher.cc
   NullPhysicalUnitSystemService.cc
   TraceMngPolicy.cc
   GlibDynamicLibraryLoader.cc
