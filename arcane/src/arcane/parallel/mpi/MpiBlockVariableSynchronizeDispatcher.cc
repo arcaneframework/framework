@@ -20,8 +20,7 @@
 #include "arcane/parallel/IStat.h"
 
 #include "arcane/impl/IDataSynchronizeBuffer.h"
-#include "arcane/impl/VariableSynchronizerDispatcher.h"
-#include "arcane/impl/DataSynchronizeInfo.h"
+#include "arcane/impl/IDataSynchronizeImplementation.h"
 
 #include "arccore/message_passing/IRequestList.h"
 
@@ -167,8 +166,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 void MpiBlockVariableSynchronizerDispatcher::
 endSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  auto sync_info = _syncInfo();
-  const Int32 nb_message = sync_info->size();
+  const Int32 nb_message = vs_buf->nbRank();
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
   Int32 my_rank = pm->commRank();
@@ -193,7 +191,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 
         // Poste les messages de réception
         for (Integer i = 0; i < nb_message; ++i) {
-          Int32 target_rank = sync_info->targetRank(i);
+          Int32 target_rank = vs_buf->targetRank(i);
           if (_isSkipRank(target_rank, isequence))
             continue;
           auto buf0 = vs_buf->receiveBuffer(i).bytes();
@@ -207,7 +205,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 
         // Poste les messages d'envoi en mode non bloquant.
         for (Integer i = 0; i < nb_message; ++i) {
-          Int32 target_rank = sync_info->targetRank(i);
+          Int32 target_rank = vs_buf->targetRank(i);
           if (_isSkipRank(my_rank, isequence))
             continue;
           auto buf0 = vs_buf->sendBuffer(i).bytes();

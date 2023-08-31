@@ -21,8 +21,7 @@
 #include "arcane/parallel/IStat.h"
 
 #include "arcane/impl/IDataSynchronizeBuffer.h"
-#include "arcane/impl/VariableSynchronizerDispatcher.h"
-#include "arcane/impl/DataSynchronizeInfo.h"
+#include "arcane/impl/IDataSynchronizeImplementation.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,8 +104,7 @@ MpiDirectSendrecvVariableSynchronizerDispatcher(Factory* f)
 void MpiDirectSendrecvVariableSynchronizerDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  auto sync_info = _syncInfo();
-  Int32 nb_message = sync_info->size();
+  Int32 nb_message = vs_buf->nbRank();
 
   constexpr int serialize_tag = 523;
 
@@ -126,7 +124,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   {
     MpiTimeInterval tit(&sync_wait_time);
     for( Integer i=0; i<nb_message; ++i ){
-      Int32 target_rank = sync_info->targetRank(i);
+      Int32 target_rank = vs_buf->targetRank(i);
       auto rbuf = vs_buf->receiveBuffer(i).bytes().smallView();
       auto sbuf = vs_buf->sendBuffer(i).bytes().smallView();
 

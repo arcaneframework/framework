@@ -467,12 +467,11 @@ arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm)
 void SimpleVariableSynchronizerDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
+  ARCANE_CHECK_POINTER(vs_buf);
   IParallelMng* pm = m_parallel_mng;
 
   const bool use_blocking_send = false;
-  auto* sync_info = _syncInfo();
-  ARCANE_CHECK_POINTER(sync_info);
-  Int32 nb_message = sync_info->size();
+  Int32 nb_message = vs_buf->nbRank();
 
   /*pm->traceMng()->info() << " ** ** COMMON BEGIN SYNC n=" << nb_message
                          << " this=" << (IVariableSynchronizeDispatcher*)this
@@ -480,7 +479,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages de réception non bloquant
   for (Integer i = 0; i < nb_message; ++i) {
-    Int32 target_rank = sync_info->targetRank(i);
+    Int32 target_rank = vs_buf->targetRank(i);
     auto buf = _toLegacySmallView(vs_buf->receiveBuffer(i));
     if (!buf.empty()) {
       Parallel::Request rval = pm->recv(buf, target_rank, false);
@@ -492,7 +491,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   // Envoie les messages d'envoi en mode non bloquant.
   for (Integer i = 0; i < nb_message; ++i) {
-    Int32 target_rank = sync_info->targetRank(i);
+    Int32 target_rank = vs_buf->targetRank(i);
     auto buf = _toLegacySmallView(vs_buf->sendBuffer(i));
 
     //ConstArrayView<SimpleType> const_share = share_local_buffer;
