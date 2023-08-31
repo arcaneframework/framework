@@ -20,8 +20,7 @@
 #include "arcane/parallel/IStat.h"
 
 #include "arcane/impl/IDataSynchronizeBuffer.h"
-#include "arcane/impl/VariableSynchronizerDispatcher.h"
-#include "arcane/impl/DataSynchronizeInfo.h"
+#include "arcane/impl/IDataSynchronizeImplementation.h"
 
 #include "arccore/message_passing/IRequestList.h"
 
@@ -137,8 +136,7 @@ MpiVariableSynchronizeDispatcher(Factory* f)
 void MpiVariableSynchronizeDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* ds_buf)
 {
-  DataSynchronizeInfo* sync_info = _syncInfo();
-  Integer nb_message = sync_info->size();
+  Integer nb_message = ds_buf->nbRank();
 
   m_send_request_list->clear();
 
@@ -159,7 +157,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
 
     // Poste les messages de réception
     for (Integer i = 0; i < nb_message; ++i) {
-      Int32 target_rank = sync_info->targetRank(i);
+      Int32 target_rank = ds_buf->targetRank(i);
       auto buf = ds_buf->receiveBuffer(i).bytes();
       if (!buf.empty()) {
         auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(), buf.size(),
@@ -181,7 +179,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
     // Poste les messages d'envoi en mode non bloquant.
     for (Integer i = 0; i < nb_message; ++i) {
       auto buf = ds_buf->sendBuffer(i).bytes();
-      Int32 target_rank = sync_info->targetRank(i);
+      Int32 target_rank = ds_buf->targetRank(i);
       if (!buf.empty()) {
         auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(), buf.size(),
                                                           target_rank, mpi_dt, serialize_tag);

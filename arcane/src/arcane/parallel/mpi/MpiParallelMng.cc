@@ -40,10 +40,10 @@
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
 
-#include "arcane/impl/VariableSynchronizer.h"
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelMng.h"
 #include "arcane/impl/ParallelMngUtilsFactoryBase.h"
+#include "arcane/impl/internal/VariableSynchronizer.h"
 
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 #include "arccore/message_passing_mpi/MpiRequestList.h"

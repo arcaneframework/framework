@@ -10,8 +10,8 @@
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_VARIABLESYNCHRONIZER_H
-#define ARCANE_IMPL_VARIABLESYNCHRONIZER_H
+#ifndef ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZER_H
+#define ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,15 +20,14 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Event.h"
 
-#include "arcane/Parallel.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/DataTypeDispatchingDataVisitor.h"
 
 #include "arcane/impl/IBufferCopier.h"
-#include "arcane/impl/VariableSynchronizerDispatcher.h"
-
-#include "arcane/DataTypeDispatchingDataVisitor.h"
+#include "arcane/impl/internal/IDataSynchronizeDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,79 +52,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 : public TraceAccessor
 , public IVariableSynchronizer
 {
-  class RankInfo
-  {
-   public:
-    RankInfo() : m_rank(A_NULL_RANK) {}
-    RankInfo(Int32 arank)
-    : m_rank(arank) {}
-   public:
-    Int32 rank() const { return m_rank; }
-    void setRank(Int32 arank) { m_rank = arank; }
-    /*!
-     * \brief Opérateur de comparaison.
-     * Une instance est considérée comme inférieure à une autre si
-     * son sous-domaine associé est plus petit que celui de l'autre.
-     */
-    bool operator<(const RankInfo& ar) const
-    {
-      return m_rank < ar.m_rank;
-    }
-   private:
-    Int32 m_rank;
-  };
-
-  class GhostRankInfo : public RankInfo
-  {
-   public:
-    GhostRankInfo() : m_nb_item(0) {}
-    GhostRankInfo(Int32 arank)
-    : RankInfo(arank), m_nb_item(0) {}
-    GhostRankInfo(Int32 arank,Integer nb_item)
-    : RankInfo(arank), m_nb_item(nb_item) {}
-   public:
-    void setInfos(Int32 arank,SharedArray<Int32>& local_ids)
-    {
-      setRank(arank);
-      m_nb_item = local_ids.size();
-      m_local_ids = local_ids;
-    }
-    Int32ConstArrayView localIds() const { return m_local_ids; }
-    Integer nbItem() const { return m_nb_item; }
-    void resize() { m_unique_ids.resize(m_nb_item); }
-    Int64ArrayView uniqueIds() { return m_unique_ids; }
-
-   private:
-    Integer m_nb_item;
-    SharedArray<Int32> m_local_ids;
-    SharedArray<Int64> m_unique_ids;
-  };
-
-  class ShareRankInfo : public RankInfo
-  {
-   public:
-    ShareRankInfo() : m_nb_item(0) {}
-    ShareRankInfo(Int32 arank,Integer nb_item)
-    : RankInfo(arank), m_nb_item(nb_item) {}
-    ShareRankInfo(Int32 arank)
-    : RankInfo(arank), m_nb_item(0) {}
-   public:
-    void setInfos(Int32 arank,SharedArray<Int32>& local_ids)
-    {
-      setRank(arank);
-      m_nb_item = local_ids.size();
-      m_local_ids = local_ids;
-    }
-    Int32ConstArrayView localIds() const { return m_local_ids; }
-    void setLocalIds(SharedArray<Int32>& v) { m_local_ids = v; }
-    Integer nbItem() const { return m_nb_item; }
-    void resize() { m_unique_ids.resize(m_nb_item); }
-    Int64ArrayView uniqueIds() { return m_unique_ids; }
-   private:
-    Integer m_nb_item;
-    SharedArray<Int32> m_local_ids;
-    SharedArray<Int64> m_unique_ids;
-  };
+  friend class VariableSynchronizerComputeList;
 
  public:
 
@@ -170,10 +97,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
   IParallelMng* m_parallel_mng = nullptr;
   ItemGroup m_item_group;
-  Ref<DataSynchronizeInfo> m_sync_list;
-  Int32UniqueArray m_communicating_ranks;
-  Ref<IVariableSynchronizerDispatcher> m_dispatcher;
-  IVariableSynchronizerMultiDispatcher* m_multi_dispatcher = nullptr;
+  Ref<DataSynchronizeInfo> m_sync_info;
+  UniqueArray<Int32> m_communicating_ranks;
+  Ref<IDataSynchronizeDispatcher> m_dispatcher;
+  IDataSynchronizeMultiDispatcher* m_multi_dispatcher = nullptr;
   Timer* m_sync_timer = nullptr;
   bool m_is_verbose = false;
   bool m_allow_multi_sync = true;
@@ -184,10 +111,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
  private:
 
-  void _createList(UniqueArray<SharedArray<Int32> >& boundary_items);
-  void _checkValid(ArrayView<GhostRankInfo> ghost_ranks_info,
-                   ArrayView<ShareRankInfo> share_ranks_info);
-  void _printSyncList();
   void _synchronize(IVariable* var);
   void _synchronizeMulti(VariableCollection vars);
   bool _canSynchronizeMulti(const VariableCollection& vars);

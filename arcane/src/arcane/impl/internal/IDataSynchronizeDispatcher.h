@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizerDispatcher.h                            (C) 2000-2023 */
+/* DataSynchronizeDispatcher.h                                 (C) 2000-2023 */
 /*                                                                           */
-/* Service de synchronisation des variables.                                 */
+/* Gestion de la synchronisation d'une instance de 'IData'.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_VARIABLESYNCHRONIZERDISPATCHER_H
-#define ARCANE_IMPL_VARIABLESYNCHRONIZERDISPATCHER_H
+#ifndef ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZERDISPATCHER_H
+#define ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZERDISPATCHER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,20 +38,19 @@ class DataSynchronizeResult;
 class IVariableSynchronizerDispatcher;
 class GroupIndexTable;
 class INumericDataInternal;
-using IVariableSynchronizeDispatcher = IVariableSynchronizerDispatcher;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos pour construire un VariableSynchronizeDispatcher.
+ * \brief Infos pour construire un DataSynchronizeDispatcher.
  */
-class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
+class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
 {
  public:
 
-  VariableSynchronizeDispatcherBuildInfo(IParallelMng* pm, GroupIndexTable* table,
-                                         Ref<IDataSynchronizeImplementationFactory> factory,
-                                         Ref<DataSynchronizeInfo> sync_info)
+  DataSynchronizeDispatcherBuildInfo(IParallelMng* pm, GroupIndexTable* table,
+                                     Ref<IDataSynchronizeImplementationFactory> factory,
+                                     Ref<DataSynchronizeInfo> sync_info)
   : m_parallel_mng(pm)
   , m_table(table)
   , m_factory(factory)
@@ -84,7 +83,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface pour gérer la synchronisation d'une variable.
+ * \brief Interface pour gérer la synchronisation d'une donnée.
  *
  * Il faut utiliser create() pour créer une implémentation pour cette
  * interface.
@@ -92,13 +91,13 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
  * Il faut appeler compute() avant de pouvoir utiliser l'instance et aussi
  * lorsque la famille d'entité associée évolue.
  */
-class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
+class ARCANE_IMPL_EXPORT IDataSynchronizeDispatcher
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
 
  protected:
 
-  virtual ~IVariableSynchronizerDispatcher() = default;
+  virtual ~IDataSynchronizeDispatcher() = default;
 
  public:
 
@@ -111,7 +110,7 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
   /*!
    * \brief Commence l'exécution pour la synchronisation pour la donnée \a data.
    */
-  virtual void beginSynchronize(INumericDataInternal* data,bool is_compare_sync) = 0;
+  virtual void beginSynchronize(INumericDataInternal* data, bool is_compare_sync) = 0;
 
   /*!
    * \brief Termine la synchronisation.
@@ -122,8 +121,8 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
 
  public:
 
-  static Ref<IVariableSynchronizeDispatcher>
-  create(const VariableSynchronizeDispatcherBuildInfo& build_info);
+  static Ref<IDataSynchronizeDispatcher>
+  create(const DataSynchronizeDispatcherBuildInfo& build_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -132,19 +131,19 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
  * \internal
  * \brief Interface de la synchronisation d'une liste de variables.
  */
-class ARCANE_IMPL_EXPORT IVariableSynchronizerMultiDispatcher
+class ARCANE_IMPL_EXPORT IDataSynchronizeMultiDispatcher
 {
  public:
 
-  virtual ~IVariableSynchronizerMultiDispatcher() = default;
+  virtual ~IDataSynchronizeMultiDispatcher() = default;
 
  public:
 
-  virtual void synchronize(VariableCollection vars) = 0;
+  virtual void synchronize(const VariableCollection& vars) = 0;
 
  public:
 
-  static IVariableSynchronizerMultiDispatcher* create(const VariableSynchronizeDispatcherBuildInfo& bi);
+  static IDataSynchronizeMultiDispatcher* create(const DataSynchronizeDispatcherBuildInfo& bi);
 };
 
 /*---------------------------------------------------------------------------*/
