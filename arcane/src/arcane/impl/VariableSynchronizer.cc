@@ -63,7 +63,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
 , m_parallel_mng(pm)
 , m_item_group(group)
 {
-  m_sync_list = DataSynchronizeInfo::create();
+  m_sync_info = DataSynchronizeInfo::create();
   if (!implementation_factory.get())
     implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
   m_implementation_factory = implementation_factory;
@@ -71,7 +71,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
   GroupIndexTable* table = nullptr;
   if (!group.isAllItems())
     table = group.localIdToIndex().get();
-  DataSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory,m_sync_list);
+  DataSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory, m_sync_info);
   m_dispatcher = IDataSynchronizeDispatcher::create(bi);
   if (!m_dispatcher)
     ARCANE_FATAL("No synchronizer created");
@@ -229,7 +229,7 @@ void VariableSynchronizer::
 changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
   info(4) << "** VariableSynchronizer::changeLocalIds() group=" << m_item_group.name();
-  m_sync_list->changeLocalIds(old_to_new_ids);
+  m_sync_info->changeLocalIds(old_to_new_ids);
   m_dispatcher->compute();
 }
 
@@ -317,7 +317,7 @@ communicatingRanks()
 Int32ConstArrayView VariableSynchronizer::
 sharedItems(Int32 index)
 {
-  return m_sync_list->sendInfo().localIds(index);
+  return m_sync_info->sendInfo().localIds(index);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -326,7 +326,7 @@ sharedItems(Int32 index)
 Int32ConstArrayView VariableSynchronizer::
 ghostItems(Int32 index)
 {
-  return m_sync_list->receiveInfo().localIds(index);
+  return m_sync_info->receiveInfo().localIds(index);
 }
 
 /*---------------------------------------------------------------------------*/

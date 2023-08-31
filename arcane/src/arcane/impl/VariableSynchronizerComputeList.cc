@@ -136,9 +136,9 @@ compute()
 void VariableSynchronizerComputeList::
 _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
 {
-  DataSynchronizeInfo* sync_list = m_synchronizer->m_sync_list.get();
+  DataSynchronizeInfo* sync_info = m_synchronizer->m_sync_info.get();
 
-  sync_list->clear();
+  sync_info->clear();
 
   IItemFamily* item_family = m_item_group.itemFamily();
   IParallelMng* pm = m_parallel_mng;
@@ -413,13 +413,13 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
     }
   }
   _checkValid(ghost_rank_info, share_rank_info);
-  sync_list->recompute();
+  sync_info->recompute();
 
   // Calcul de m_communicating_ranks qui synthétisent les processeurs communiquants
-  for (Integer i = 0, n = sync_list->size(); i < n; ++i) {
-    Int32 target_rank = sync_list->targetRank(i);
+  for (Integer i = 0, n = sync_info->size(); i < n; ++i) {
+    Int32 target_rank = sync_info->targetRank(i);
     m_synchronizer->m_communicating_ranks.add(target_rank);
-    if (sync_list->receiveInfo().nbItem(i) != boundary_items[target_rank].size())
+    if (sync_info->receiveInfo().nbItem(i) != boundary_items[target_rank].size())
       ARCANE_FATAL("Inconsistent ghost count");
   }
 }
@@ -495,7 +495,7 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
       marked_elem[elem.localId()] = true;
     }
 
-    m_synchronizer->m_sync_list->add(VariableSyncInfo(share_grp, ghost_grp, current_proc));
+    m_synchronizer->m_sync_info->add(VariableSyncInfo(share_grp, ghost_grp, current_proc));
   }
 
   // Vérifie que tous les éléments sont marqués
@@ -527,23 +527,23 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
 void VariableSynchronizerComputeList::
 _printSyncList()
 {
-  DataSynchronizeInfo* sync_list = m_synchronizer->m_sync_list.get();
-  Integer nb_comm = sync_list->size();
+  DataSynchronizeInfo* sync_info = m_synchronizer->m_sync_info.get();
+  Integer nb_comm = sync_info->size();
   info() << "SYNC LIST FOR GROUP : " << m_item_group.fullName() << " N=" << nb_comm;
   OStringStream ostr;
   IItemFamily* item_family = m_item_group.itemFamily();
   ItemInfoListView items_internal(item_family);
   for (Integer i = 0; i < nb_comm; ++i) {
-    Int32 target_rank = sync_list->targetRank(i);
+    Int32 target_rank = sync_info->targetRank(i);
     ostr() << " TARGET=" << target_rank << '\n';
-    Int32ConstArrayView share_ids = sync_list->sendInfo().localIds(i);
+    Int32ConstArrayView share_ids = sync_info->sendInfo().localIds(i);
     ostr() << "\t\tSHARE(lid,uid) n=" << share_ids.size() << " :";
     for (Integer z = 0, zs = share_ids.size(); z < zs; ++z) {
       Item item = items_internal[share_ids[z]];
       ostr() << " (" << item.localId() << "," << item.uniqueId() << ")";
     }
     ostr() << "\n";
-    Int32ConstArrayView ghost_ids = sync_list->receiveInfo().localIds(i);
+    Int32ConstArrayView ghost_ids = sync_info->receiveInfo().localIds(i);
     ostr() << "\t\tGHOST(lid,uid) n=" << ghost_ids.size() << " :";
     for (Integer z = 0, zs = ghost_ids.size(); z < zs; ++z) {
       Item item = items_internal[ghost_ids[z]];

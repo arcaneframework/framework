@@ -475,7 +475,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   /*pm->traceMng()->info() << " ** ** COMMON BEGIN SYNC n=" << nb_message
                          << " this=" << (IVariableSynchronizeDispatcher*)this
-                         << " m_sync_list=" << &this->m_sync_list;*/
+                         << " m_sync_info=" << &this->m_sync_info;*/
 
   // Envoie les messages de réception non bloquant
   for (Integer i = 0; i < nb_message; ++i) {
@@ -516,7 +516,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   /*pm->traceMng()->info() << " ** ** COMMON END SYNC n=" << nb_message
                          << " this=" << (IVariableSynchronizeDispatcher*)this
-                         << " m_sync_list=" << &this->m_sync_list;*/
+                         << " m_sync_info=" << &this->m_sync_info;*/
 
   // Attend que les réceptions se terminent
   pm->waitAllRequests(m_all_requests);
