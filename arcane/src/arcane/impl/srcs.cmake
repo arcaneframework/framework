@@ -98,6 +98,7 @@ set( ARCANE_SOURCES
   VariableUtilities.cc
   VariableUtilities.h
   VariableSynchronizer.cc
+  VariableSynchronizerComputeList.cc
   NullPhysicalUnitSystemService.cc
   TraceMngPolicy.cc
   GlibDynamicLibraryLoader.cc
@@ -147,6 +148,7 @@ set( ARCANE_SOURCES
   internal/ThreadBindingMng.cc
   internal/VariableMng.h
   internal/VariableSynchronizer.h
+  internal/VariableSynchronizerComputeList.h
   )
 
 set(AXL_FILES
