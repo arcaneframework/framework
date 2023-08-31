@@ -46,12 +46,12 @@
 #include "arcane/impl/TimerMng.h"
 #include "arcane/impl/GetVariablesValuesParallelOperation.h"
 #include "arcane/impl/ParallelExchanger.h"
-#include "arcane/impl/VariableSynchronizer.h"
 #include "arcane/impl/ParallelTopology.h"
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelSuperMng.h"
 #include "arcane/impl/SequentialParallelMng.h"
 #include "arcane/impl/ParallelMngUtilsFactoryBase.h"
+#include "arcane/impl/internal/VariableSynchronizer.h"
 
 #include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing/SerializeMessageList.h"

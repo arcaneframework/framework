@@ -23,7 +23,7 @@
 #include "arcane/impl/TransferValuesParallelOperation.h"
 #include "arcane/impl/ParallelExchanger.h"
 #include "arcane/impl/ParallelTopology.h"
-#include "arcane/impl/VariableSynchronizer.h"
+#include "arcane/impl/internal/VariableSynchronizer.h"
 
 #include "arcane/DataTypeDispatchingDataVisitor.h"
 

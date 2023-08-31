@@ -26,7 +26,7 @@
 #include "arcane/IParallelMng.h"
 
 #include "arcane/impl/IBufferCopier.h"
-#include "arcane/impl/VariableSynchronizerDispatcher.h"
+#include "arcane/impl/internal/IDataSynchronizeDispatcher.h"
 
 #include "arcane/DataTypeDispatchingDataVisitor.h"
 

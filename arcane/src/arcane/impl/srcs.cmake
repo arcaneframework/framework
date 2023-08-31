@@ -97,9 +97,7 @@ set( ARCANE_SOURCES
   VariableUtilities.cc
   VariableUtilities.h
   VariableSynchronizer.cc
-  VariableSynchronizer.h
   VariableSynchronizerDispatcher.cc
-  VariableSynchronizerDispatcher.h
   NullPhysicalUnitSystemService.cc
   TraceMngPolicy.cc
   GlibDynamicLibraryLoader.cc
@@ -130,14 +128,15 @@ set( ARCANE_SOURCES
   TimerMng.h
   TransferValuesParallelOperation.h
   VariableUtilities.h
-  VariableSynchronizer.h
   IDataSynchronizeBuffer.h
   IDataSynchronizeImplementation.h
   DataOperation.h
   DataOperation.cc
   SequentialParallelSuperMng.h
+
   internal/ArcaneMainExecInfo.h
   internal/DataSynchronizeBuffer.h
+  internal/IDataSynchronizeDispatcher.h
   internal/LegacyMeshBuilder.h
   internal/LegacyMeshBuilder.cc
   internal/MeshFactoryMng.h
@@ -147,6 +146,7 @@ set( ARCANE_SOURCES
   internal/ThreadBindingMng.h
   internal/ThreadBindingMng.cc
   internal/VariableMng.h
+  internal/VariableSynchronizer.h
   )
 
 set(AXL_FILES

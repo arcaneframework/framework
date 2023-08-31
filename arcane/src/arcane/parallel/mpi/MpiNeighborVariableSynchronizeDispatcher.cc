@@ -23,7 +23,7 @@
 #include "arcane/parallel/IStat.h"
 
 #include "arcane/impl/IDataSynchronizeBuffer.h"
-#include "arcane/impl/VariableSynchronizerDispatcher.h"
+#include "arcane/impl/IDataSynchronizeImplementation.h"
 #include "arcane/impl/DataSynchronizeInfo.h"
 
 /*---------------------------------------------------------------------------*/
