@@ -328,7 +328,6 @@ set(ARCANE_ARCCORE_NEEDED_VERSION "2.5.1")
 if (NOT Arccore_FOUND)
   find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 endif ()
-find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 message(STATUS "Arccore_DIR = ${Arccore_DIR}")
 if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
   message(FATAL_ERROR "Arccore version '${Arccore_VERSION}' is too old."
