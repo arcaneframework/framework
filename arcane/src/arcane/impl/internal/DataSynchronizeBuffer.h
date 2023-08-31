@@ -27,6 +27,7 @@
 namespace Arcane
 {
 class IBufferCopier;
+class DataSynchronizeResult;
 class DataSynchronizeInfo;
 class DataSynchronizeBufferInfoList;
 
@@ -94,15 +95,31 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
  public:
 
-  //! Calcule les informations pour la synchronisation
-  void compute(IBufferCopier* copier, DataSynchronizeInfo* sync_list, Int32 datatype_size);
+  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, IBufferCopier* copier)
+  : m_sync_info(sync_info)
+  , m_buffer_copier(copier)
+  {}
+
+ public:
 
   //! Indique si on compare les valeurs avant/après la synchronisation
   bool isCompareSynchronizedValues() const { return m_is_compare_sync_values; }
 
+  /*!
+   * \brief Prépare la synchronisation.
+   *
+   * Prépare la synchronisation et alloue les buffers si nécessaire.
+   * \a datatype_size est la taille (en octet) du type de la donnée.
+   * Si \a is_compare_sync est vrai, on compare après la synchronisation les
+   * valeurs des entités fantômes avec leur valeur d'avant la synchronisation.
+   */
+  virtual void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) = 0;
+
  protected:
 
   void _allocateBuffers(Int32 datatype_size);
+  //! Calcule les informations pour la synchronisation
+  void _compute(Int32 datatype_size);
 
  protected:
 
@@ -134,6 +151,12 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
 {
  public:
 
+  SingleDataSynchronizeBuffer(DataSynchronizeInfo* sync_info, IBufferCopier* copier)
+  : DataSynchronizeBufferBase(sync_info, copier)
+  {}
+
+ public:
+
   void copyReceiveAsync(Int32 index) final;
   void copySendAsync(Int32 index) final;
 
@@ -142,22 +165,12 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
   void setDataView(MutableMemoryView v) { m_data_view = v; }
   //! Zone mémoire contenant les valeurs de la donnée à synchroniser
   MutableMemoryView dataView() { return m_data_view; }
+  void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) override;
 
   /*!
-   * \brief Prépare la synchronisation.
-   *
-   * Si \a is_compare_sync est vrai, on compare après la synchronisation les
-   * valeurs des entités fantômes avec leur valeur d'avant la synchronisation.
+   * \brief Termine la synchronisation.
    */
-  void prepareSynchronize(bool is_compare_sync);
-  /*!
-   * \brief Compare les valeurs avant/après synchronisation.
-   *
-   * La comparaison n'est active que si prepareSynchronize() a été appelé avec
-   * \a is_compare_sync à \a true.
-   * Retourne \a true s'il y a des différences.
-   */
-  bool compareCheckSynchronize();
+  DataSynchronizeResult finalizeSynchronize();
 
  private:
 
@@ -177,8 +190,9 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
 
  public:
 
-  MultiDataSynchronizeBuffer(ITraceMng* tm)
+  MultiDataSynchronizeBuffer(ITraceMng* tm, DataSynchronizeInfo* sync_info, IBufferCopier* copier)
   : TraceAccessor(tm)
+  , DataSynchronizeBufferBase(sync_info, copier)
   {}
 
  public:
@@ -193,6 +207,8 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
     m_data_views.resize(nb_data);
   }
   void setDataView(Int32 index, MutableMemoryView v) { m_data_views[index] = v; }
+
+  void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) override;
 
  private:
 

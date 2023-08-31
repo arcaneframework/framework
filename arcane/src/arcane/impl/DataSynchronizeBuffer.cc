@@ -119,19 +119,16 @@ barrier()
  * pour les synchronisations des variables 1D.
  */
 void DataSynchronizeBufferBase::
-compute(IBufferCopier* copier, DataSynchronizeInfo* sync_info, Int32 datatype_size)
+_compute(Int32 datatype_size)
 {
-  m_is_compare_sync_values = false;
-  m_buffer_copier = copier;
-  m_sync_info = sync_info;
-  m_nb_rank = sync_info->size();
+  m_nb_rank = m_sync_info->size();
 
   m_ghost_buffer_info.m_datatype_size = datatype_size;
-  m_ghost_buffer_info.m_buffer_info = &sync_info->receiveInfo();
+  m_ghost_buffer_info.m_buffer_info = &m_sync_info->receiveInfo();
   m_share_buffer_info.m_datatype_size = datatype_size;
-  m_share_buffer_info.m_buffer_info = &sync_info->sendInfo();
+  m_share_buffer_info.m_buffer_info = &m_sync_info->sendInfo();
   m_compare_sync_buffer_info.m_datatype_size = datatype_size;
-  m_compare_sync_buffer_info.m_buffer_info = &sync_info->receiveInfo();
+  m_compare_sync_buffer_info.m_buffer_info = &m_sync_info->receiveInfo();
 
   IMemoryAllocator* allocator = m_buffer_copier->allocator();
   if (allocator && allocator != m_buffer.allocator())
@@ -212,9 +209,10 @@ copySendAsync(Int32 index)
 /*---------------------------------------------------------------------------*/
 
 void SingleDataSynchronizeBuffer::
-prepareSynchronize(bool is_compare_sync)
+prepareSynchronize(Int32 datatype_size, bool is_compare_sync)
 {
   m_is_compare_sync_values = is_compare_sync;
+  _compute(datatype_size);
   if (!is_compare_sync)
     return;
   // Recopie dans le buffer de vérification les valeurs actuelles des mailles
@@ -240,11 +238,11 @@ prepareSynchronize(bool is_compare_sync)
  *
  * \retval \a vrai s'il y a des différences.
  */
-bool SingleDataSynchronizeBuffer::
-compareCheckSynchronize()
+DataSynchronizeResult SingleDataSynchronizeBuffer::
+finalizeSynchronize()
 {
   if (!m_is_compare_sync_values)
-    return false;
+    return {};
   ConstMemoryView reference_buffer = m_compare_sync_buffer_info.globalBuffer();
   ConstMemoryView receive_buffer = m_ghost_buffer_info.globalBuffer();
   Span<const std::byte> reference_bytes = reference_buffer.bytes();
@@ -254,11 +252,24 @@ compareCheckSynchronize()
   if (reference_size != receive_size)
     ARCANE_FATAL("Incoherent buffer size ref={0} receive={1}", reference_size, receive_size);
   // TODO: gérer le cas où la mémoire est sur le device
-  return std::memcmp(reference_bytes.data(), receive_bytes.data(), reference_size) != 0;
+
+  DataSynchronizeResult result;
+  bool is_same = std::memcmp(reference_bytes.data(), receive_bytes.data(), reference_size) == 0;
+  result.setCompareStatus(is_same ? eDataSynchronizeCompareStatus::Same : eDataSynchronizeCompareStatus::Different);
+  return result;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MultiDataSynchronizeBuffer::
+prepareSynchronize(Int32 datatype_size, [[maybe_unused]] bool is_compare_sync)
+{
+  _compute(datatype_size);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

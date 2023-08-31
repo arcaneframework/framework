@@ -34,6 +34,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class DataSynchronizeResult;
 class IVariableSynchronizerDispatcher;
 class GroupIndexTable;
 class INumericDataInternal;
@@ -83,7 +84,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface pour gérer l'envoi de la synchronisation.
+ * \brief Interface pour gérer la synchronisation d'une variable.
  *
  * Il faut utiliser create() pour créer une implémentation pour cette
  * interface.
@@ -107,11 +108,17 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerDispatcher
    */
   virtual void compute() = 0;
 
-  //! Commence l'exécution pour la synchronisation pour la donnée \a data.
-  virtual void beginSynchronize(INumericDataInternal* data) = 0;
+  /*!
+   * \brief Commence l'exécution pour la synchronisation pour la donnée \a data.
+   */
+  virtual void beginSynchronize(INumericDataInternal* data,bool is_compare_sync) = 0;
 
-  //! Termine la synchronisation.
-  virtual void endSynchronize() = 0;
+  /*!
+   * \brief Termine la synchronisation.
+   *
+   * Il faut avoir appelé beginSynchronize() avant.
+   */
+  virtual DataSynchronizeResult endSynchronize() = 0;
 
  public:
 

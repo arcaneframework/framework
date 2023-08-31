@@ -37,6 +37,7 @@ namespace Arcane
 {
 class Timer;
 class INumericDataInternal;
+class DataSynchronizeResult;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -174,9 +175,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   Ref<IVariableSynchronizerDispatcher> m_dispatcher;
   IVariableSynchronizerMultiDispatcher* m_multi_dispatcher = nullptr;
   Timer* m_sync_timer = nullptr;
-  bool m_is_verbose;
-  bool m_allow_multi_sync;
-  bool m_trace_sync;
+  bool m_is_verbose = false;
+  bool m_allow_multi_sync = true;
+  bool m_trace_sync = false;
+  bool m_is_compare_sync = false;
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
   Ref<IDataSynchronizeImplementationFactory> m_implementation_factory;
 
@@ -189,7 +191,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   void _synchronize(IVariable* var);
   void _synchronizeMulti(VariableCollection vars);
   bool _canSynchronizeMulti(const VariableCollection& vars);
-  void _synchronize(INumericDataInternal* data);
+  DataSynchronizeResult _synchronize(INumericDataInternal* data);
 };
 
 /*---------------------------------------------------------------------------*/
