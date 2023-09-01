@@ -60,7 +60,7 @@ class ALIEN_EXPORT SimpleCSRDistributor
   struct CommInfo
   {
    public:
-    std::vector<int> m_row_list;
+    std::vector<Integer> m_row_list;
     std::size_t m_n_item = 0;
     std::vector<uint64_t> m_buffer;
     Arccore::MessagePassing::PointToPointMessageInfo m_message_info;
@@ -77,7 +77,7 @@ class ALIEN_EXPORT SimpleCSRDistributor
   std::map<int, CommInfo> m_recv_comm_info;
 
   // list of rows that can directly transferred from source matrix to destination matrix
-  std::vector<std::pair<int, int>> m_src2dst_row_list;
+  std::vector<std::pair<Integer, Integer>> m_src2dst_row_list;
 };
 
 } // namespace Alien
