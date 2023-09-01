@@ -153,6 +153,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerComputeList
   IParallelMng* m_parallel_mng = nullptr;
   ItemGroup m_item_group;
   bool m_is_verbose = false;
+  bool m_is_debug = false;
 
  private:
 
