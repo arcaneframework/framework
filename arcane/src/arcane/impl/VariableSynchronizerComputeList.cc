@@ -17,6 +17,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IItemFamily.h"
@@ -33,11 +34,8 @@
 namespace Arcane
 {
 
-namespace
-{
-  // Mettre à true pour afficher des informations supplémentaires pour le débug.
-  bool global_debug_sync = false;
-} // namespace
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 VariableSynchronizerComputeList::
 VariableSynchronizerComputeList(VariableSynchronizer* var_sync)
@@ -47,6 +45,8 @@ VariableSynchronizerComputeList(VariableSynchronizer* var_sync)
 , m_item_group(var_sync->m_item_group)
 , m_is_verbose(var_sync->m_is_verbose)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_VARIABLESYNCHRONIZERCOMPUTELIST", true))
+    m_is_debug = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -74,6 +74,7 @@ VariableSynchronizerComputeList(VariableSynchronizer* var_sync)
 void VariableSynchronizerComputeList::
 compute()
 {
+  const bool is_debug = m_is_debug;
   IItemFamily* item_family = m_item_group.itemFamily();
   Int32 my_rank = m_parallel_mng->commRank();
   Int32 nb_rank = m_parallel_mng->commSize();
@@ -104,7 +105,7 @@ compute()
           bad_items_uid.add(uid);
         continue;
       }
-      if (global_debug_sync) {
+      if (is_debug) {
         info() << "Add entity uid=" << uid
                << " lid=" << item_internal.localId() << " to the subdomain " << owner;
       }
@@ -122,12 +123,11 @@ compute()
 
   _createList(boundary_items);
 
-  //_printSyncList();
+  if (is_debug)
+    _printSyncList();
 
-  if (m_is_verbose) {
+  if (m_is_verbose)
     info() << "Begin compute dispatcher Date=" << platform::getCurrentDateTime();
-  }
-  warning() << "TODO: DISPATCHER";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -136,6 +136,7 @@ compute()
 void VariableSynchronizerComputeList::
 _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
 {
+  const bool is_debug = m_is_debug;
   DataSynchronizeInfo* sync_info = m_synchronizer->m_sync_info.get();
 
   sync_info->clear();
@@ -156,7 +157,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
     if (boundary_items[i].empty())
       continue;
     communicating_ghost_ranks.add(i);
-    if (global_debug_sync) {
+    if (is_debug) {
       ItemInfoListView items_internal(item_family);
       for (Integer z = 0, zs = boundary_items[i].size(); z < zs; ++z) {
         Item item = items_internal[boundary_items[i][z]];
@@ -228,7 +229,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
           Integer proc_id = global_ghost_info[pos++];
           Integer nb_elem = global_ghost_info[pos++];
           if (proc_id == my_rank) {
-            if (global_debug_sync) {
+            if (is_debug) {
               info() << "Get for share group " << index << ' ' << nb_elem;
             }
             share_rank_info.add(ShareRankInfo(index, nb_elem));
@@ -262,7 +263,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
       Integer nb_recv = share_rank_info.size();
       Integer nb_send = ghost_rank_info.size();
 
-      if (global_debug_sync) {
+      if (is_debug) {
         info() << "Infos before auto add: send " << nb_send << " recv " << nb_recv;
         for (Integer i = 0; i < ghost_rank_info.size(); ++i) {
           const GhostRankInfo& asdi = ghost_rank_info[i];
@@ -362,7 +363,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
             const Item& elem = items_internal[asdi_local_ids[z]];
             uids[z] = elem.uniqueId().asInt64();
           }
-          if (global_debug_sync) {
+          if (is_debug) {
             info() << "Number of elements that will be sent to the subdomain " << send_proc
                    << " " << nb_local << " éléments";
             for (Integer z = 0; z < nb_local; ++z) {
@@ -393,7 +394,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
           //ItemGroup share_group = mesh->itemFamily(item_kind)->createGroup(group_name,items_local_id,true);
           //share_group.setLocalToSubDomain(true);
           asdi.setLocalIds(share_group);
-          if (global_debug_sync) {
+          if (is_debug) {
             for (Integer z = 0, zs = share_group.size(); z < zs; ++z) {
               const Item& item = items_internal[share_group[z]];
               info() << "Item uid=" << item.uniqueId() << ",lid=" << item.localId();
@@ -431,6 +432,7 @@ void VariableSynchronizerComputeList::
 _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
             ArrayView<ShareRankInfo> share_rank_info)
 {
+  const bool is_debug = m_is_debug;
   Integer nb_comm_proc = ghost_rank_info.size();
   Integer nb_error = 0;
   bool has_error = false;
@@ -451,7 +453,7 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
     Item item = *i_item;
     if (item.isOwn()) {
       marked_elem[item.localId()] = true;
-      if (global_debug_sync) {
+      if (is_debug) {
         info() << "Own Item " << ItemPrinter(item);
       }
     }
