@@ -617,6 +617,7 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
   String ustr_group_name("item-group-name");
   String ustr_mesh_name("mesh-name");
   String ustr_full_type("full-type");
+  String ustr_data_type("data-type");
   String ustr_hash("hash");
   String ustr_property("property");
   String ustr_multitag("multi-tag");
@@ -631,6 +632,7 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
     String group_name;
     String hash_value;
     String multi_tag;
+    String data_type;
     Int32 property;
   };
   UniqueArray<VariableReadInfo> variables_info;
@@ -645,6 +647,7 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
       VariableReadInfo r;
       r.full_type = var.expectedChild(ustr_full_type).value();
       r.base_name = var.expectedChild(ustr_base_name).value();
+      r.data_type = var.child(ustr_data_type).value();
       r.mesh_name = var.child(ustr_mesh_name).value();
       r.family_name = var.child(ustr_family_name).value();
       r.group_name = var.child(ustr_group_name).value();
@@ -660,6 +663,7 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
     for (const auto& var : vars) {
       VariableReadInfo r;
       r.full_type = var.attrValue(ustr_full_type);
+      r.data_type = var.attrValue(ustr_data_type);
       r.base_name = var.attrValue(ustr_base_name);
       r.mesh_name = var.attrValue(ustr_mesh_name);
       r.group_name = var.attrValue(ustr_group_name);
@@ -674,6 +678,10 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
   for (const VariableReadInfo& r : variables_info) {
     String full_type = r.full_type;
     VariableDataTypeInfo vdti(full_type);
+
+    // Vérifie que 'data-type' est cohérent avec la valeur dans 'full_type'
+    if (vdti.dataTypeName()!=r.data_type)
+      ARCANE_FATAL("Incoherent value for 'data-type' name v='{0}' expected='{1}'",r.data_type,vdti.dataTypeName());
 
     String family_name = r.family_name;
     // Actuellement, si la variable n'est pas partielle alors son groupe
