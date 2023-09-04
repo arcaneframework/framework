@@ -17,35 +17,37 @@
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/Event.h"
 
-#include "arcane/MeshVariableInfo.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/Timer.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IGetVariablesValuesParallelOperation.h"
-#include "arcane/ITransferValuesParallelOperation.h"
-#include "arcane/IMeshPartitioner.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/IParticleFamily.h"
-#include "arcane/IExtraGhostParticlesBuilder.h"
-#include "arcane/IItemFamilySerializeStep.h"
-#include "arcane/IItemFamilyPolicyMng.h"
-#include "arcane/VariableSynchronizerEventArgs.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/MeshVariableInfo.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IGetVariablesValuesParallelOperation.h"
+#include "arcane/core/ITransferValuesParallelOperation.h"
+#include "arcane/core/IMeshPartitioner.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/IParticleFamily.h"
+#include "arcane/core/IExtraGhostParticlesBuilder.h"
+#include "arcane/core/IItemFamilySerializeStep.h"
+#include "arcane/core/IItemFamilyPolicyMng.h"
+#include "arcane/core/VariableSynchronizerEventArgs.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IVariableSynchronizerMng.h"
 
 #include "arcane/SerializeBuffer.h"
 
@@ -460,10 +462,15 @@ _doInit()
   cell_family->policyMng()->addSerializeStep(this);
 
   auto on_synchronize_handler = [&](const VariableSynchronizerEventArgs& args)
-    {
-      info() << " SYNCHRONIZE !!! var=" << args.variables()[0]->fullName() << " time=" << args.elapsedTime();
-    };
+  {
+    info() << " SYNCHRONIZE !!! var=" << args.variables()[0]->fullName() << " time=" << args.elapsedTime();
+  };
   cell_family->allItemsSynchronizer()->onSynchronized().attach(m_observer_pool,on_synchronize_handler);
+  auto on_synchronize_handler2 = [&](const VariableSynchronizerEventArgs& args)
+  {
+    info() << " SYNCHRONIZE GLOBAL !!! var=" << args.variables()[0]->fullName() << " time=" << args.elapsedTime();
+  };
+  mesh->variableMng()->synchronizerMng()->onSynchronized().attach(m_observer_pool,on_synchronize_handler2);
 
   m_cells_nb_shared_array.resize(7);
 
