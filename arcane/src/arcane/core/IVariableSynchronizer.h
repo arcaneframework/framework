@@ -1,36 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariableSynchronizer.h                                     (C) 2000-2017 */
+/* IVariableSynchronizer.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'un service de synchronisation des variables.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IVARIABLESYNCHRONIZER_H
-#define ARCANE_IVARIABLESYNCHRONIZER_H
+#ifndef ARCANE_CORE_IVARIABLESYNCHRONIZER_H
+#define ARCANE_CORE_IVARIABLESYNCHRONIZER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IParallelMng;
-class ItemGroup;
-class IVariable;
-class VariableCollection;
-class IData;
-class VariableSynchronizerEventArgs;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,16 +47,16 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
  public:
 
   //! Gestionnaire parallèle associé
-  virtual IParallelMng* parallelMng() =0;
-  
+  virtual IParallelMng* parallelMng() = 0;
+
   /*!
    * \brief Groupe d'entité servant à la synchronisation.
    *
    * L'implémentation actuelle supporte uniquement le groupe
    * de toutes les entités d'une famille.
    */
-  virtual const ItemGroup& itemGroup() =0;
-  
+  virtual const ItemGroup& itemGroup() = 0;
+
   /*!
    * \brief Recalcule les infos de synchronisation.
    *
@@ -75,13 +66,13 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * de propriétaire ou si le groupe lui-même évolue.
    * TODO: appeler cette fonction automatiquement si besoin.
    */
-  virtual void compute() =0;
+  virtual void compute() = 0;
 
   //! Appelé lorsque les numéros locaux des entités sont modifiés.
-  virtual void changeLocalIds(Int32ConstArrayView old_to_new_ids) =0;
+  virtual void changeLocalIds(Int32ConstArrayView old_to_new_ids) = 0;
 
   //! Synchronise la variable \a var en mode bloquant
-  virtual void synchronize(IVariable* var) =0;
+  virtual void synchronize(IVariable* var) = 0;
 
   /*!
    * \brief Synchronise les variables \a vars en mode bloquant.
@@ -89,25 +80,25 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * Toutes les variables doivent être issues de la même famille
    * et de ce groupe d'entité.
    */
-  virtual void synchronize(VariableCollection vars) =0;
+  virtual void synchronize(VariableCollection vars) = 0;
 
   //! Rangs des sous-domaines avec lesquels on communique
   /*! Plus précisément décrit les rangs des processeurs dont on _reçoit_ de l'info */
-  virtual Int32ConstArrayView communicatingRanks() =0;
+  virtual Int32ConstArrayView communicatingRanks() = 0;
 
   /*!
    * \brief Liste des ids locaux des entités partagées avec un sous-domaine.
    *
    * Le rang du sous-domaine est celui de communicatingRanks()[index].
    */
-  virtual Int32ConstArrayView sharedItems(Int32 index) =0;
+  virtual Int32ConstArrayView sharedItems(Int32 index) = 0;
 
   /*!
    * \brief Liste des ids locaux des entités fantômes avec un sous-domaine.
    *
    * Le rang du sous-domaine est celui de communicatingRanks()[index].
    */
-  virtual Int32ConstArrayView ghostItems(Int32 index) =0;
+  virtual Int32ConstArrayView ghostItems(Int32 index) = 0;
 
   /*!
    * \brief Synchronise la donnée \a data.
@@ -116,7 +107,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * il est valide d'appeler \a synchronize(). Cette méthode est interne
    * à Arcane.
    */
-  virtual void synchronizeData(IData* data) =0;
+  virtual void synchronizeData(IData* data) = 0;
 
   /*!
    * \brief Evènement envoyé en fin de synchronisation.
@@ -125,15 +116,15 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * de synchronisation (synchronize(IVariable* var)
    * et synchronize(VariableCollection vars)).
    */
-  virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() =0;
+  virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

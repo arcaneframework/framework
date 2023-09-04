@@ -20,6 +20,8 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/CommandLineArguments.h"
 
+#include "arcane/core/ArcaneTypes.h"
+
 #include "arcane/aleph/AlephGlobal.h"
 
 /*---------------------------------------------------------------------------*/
