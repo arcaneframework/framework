@@ -5,16 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephGlobal.h                                               (C) 2000-2023 */
+/* VariableSynchronizerMng.h                                   (C) 2000-2023 */
 /*                                                                           */
-/* Déclarations générales de la composante 'arcane_aleph'.                   */
+/* Gestionnaire des synchroniseurs de variables.                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ALEPH_ALEPHGLOBAL_H
-#define ARCANE_ALEPH_ALEPHGLOBAL_H
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZERMNG_H
+#define ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZERMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ArcaneTypes.h"
+#include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Event.h"
+
+#include "arcane/core/IVariableSynchronizerMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,31 +28,36 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gestionnaire des synchroniseurs de variables.
+ */
+class ARCANE_IMPL_EXPORT VariableSynchronizerMng
+: public TraceAccessor
+, public IVariableSynchronizerMng
+{
+ public:
 
-#ifdef ARCANE_COMPONENT_arcane_aleph
-#define ARCANE_ALEPH_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ALEPH_EXPORT ARCANE_IMPORT
-#endif
+  explicit VariableSynchronizerMng(IVariableMng* vm);
+
+ public:
+
+  EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() override
+  {
+    return m_on_synchronized;
+  }
+
+ private:
+
+  IVariableMng* m_variable_mng = nullptr;
+  EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IAlephFactory;
-class IAlephTopology;
-class AlephTopology;
-class AlephMatrix;
-class AlephOrdering;
-class AlephIndexing;
-class AlephVector;
-class AlephParams;
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif
+#endif  

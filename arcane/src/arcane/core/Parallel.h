@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Parallel.h                                                  (C) 2000-2022 */
+/* Parallel.h                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Espace de nom des types gérant le parallélisme.                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_PARALLEL_H
-#define ARCANE_PARALLEL_H
+#ifndef ARCANE_CORE_PARALLEL_H
+#define ARCANE_CORE_PARALLEL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,6 +23,8 @@
 #include "arccore/message_passing/PointToPointMessageInfo.h"
 #include "arccore/message_passing/IControlDispatcher.h"
 
+#include "arcane/core/ArcaneTypes.h"
+
 #define ARCANE_BEGIN_NAMESPACE_PARALLEL namespace Parallel {
 #define ARCANE_END_NAMESPACE_PARALLEL   }
 
@@ -31,26 +33,6 @@
 
 namespace Arcane
 {
-class IParallelMng;
-class IParallelMngContainer;
-class IParallelMngContainerFactory;
-class IGetVariablesValuesParallelOperation;
-class ITransferValuesParallelOperation;
-class IParallelExchanger;
-class IVariableSynchronizer;
-class IParallelTopology;
-class IParallelMngInternal;
-}
-
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMng)
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMngContainer)
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-class IParallelMng;
 using Arccore::MessagePassing::IMessagePassingMng;
 using Arccore::MessagePassing::ITypeDispatcher;
 using Arccore::MessagePassing::IControlDispatcher;

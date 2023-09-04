@@ -5,16 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephGlobal.h                                               (C) 2000-2023 */
+/* VariableSynchronizerMng.cc                                  (C) 2000-2023 */
 /*                                                                           */
-/* Déclarations générales de la composante 'arcane_aleph'.                   */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ALEPH_ALEPHGLOBAL_H
-#define ARCANE_ALEPH_ALEPHGLOBAL_H
+/* Gestionnaire des synchroniseurs de variables.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ArcaneTypes.h"
+#include "arcane/impl/internal/VariableSynchronizerMng.h"
+
+#include "arcane/core/IVariableMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,30 +24,17 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_aleph
-#define ARCANE_ALEPH_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ALEPH_EXPORT ARCANE_IMPORT
-#endif
+VariableSynchronizerMng::
+VariableSynchronizerMng(IVariableMng* vm)
+: TraceAccessor(vm->traceMng())
+, m_variable_mng(vm)
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IAlephFactory;
-class IAlephTopology;
-class AlephTopology;
-class AlephMatrix;
-class AlephOrdering;
-class AlephIndexing;
-class AlephVector;
-class AlephParams;
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-} // namespace Arcane
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif

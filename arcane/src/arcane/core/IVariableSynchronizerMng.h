@@ -5,12 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephGlobal.h                                               (C) 2000-2023 */
+/* IVariableSynchronizerMng.h                                  (C) 2000-2023 */
 /*                                                                           */
-/* Déclarations générales de la composante 'arcane_aleph'.                   */
+/* Interface du gestionnaire de synchronisation des variables.               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ALEPH_ALEPHGLOBAL_H
-#define ARCANE_ALEPH_ALEPHGLOBAL_H
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_IVARIABLESYNCHRONIZERMNG_H
+#define ARCANE_CORE_IVARIABLESYNCHRONIZERMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,24 +25,27 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Interface du gestionnaire de synchronisation des variables.
+ */
+class ARCANE_CORE_EXPORT IVariableSynchronizerMng
+{
+ public:
 
-#ifdef ARCANE_COMPONENT_arcane_aleph
-#define ARCANE_ALEPH_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ALEPH_EXPORT ARCANE_IMPORT
-#endif
+  virtual ~IVariableSynchronizerMng() = default;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+ public:
 
-class IAlephFactory;
-class IAlephTopology;
-class AlephTopology;
-class AlephMatrix;
-class AlephOrdering;
-class AlephIndexing;
-class AlephVector;
-class AlephParams;
+  /*!
+   * \brief Evènement envoyé en début et fin de synchronisation.
+   *
+   * Cet évènement est envoyé lors des appels aux méthodes
+   * de synchronisation IVariableSynchronizer::synchronize(IVariable* var)
+   * et IVariableSynchronizer::synchronize(VariableCollection vars) pour toutes
+   * les instances de IVariableSynchronizer.
+   */
+  virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

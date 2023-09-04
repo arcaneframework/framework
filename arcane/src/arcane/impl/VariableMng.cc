@@ -39,6 +39,7 @@
 #include "arcane/core/VariableStatusChangedEventArgs.h"
 
 #include "arcane/impl/VariableUtilities.h"
+#include "arcane/impl/internal/VariableSynchronizerMng.h"
 
 #include <exception>
 #include <set>
@@ -82,6 +83,7 @@ VariableMng(ISubDomain* sd)
 , m_utilities(new VariableUtilities(this))
 , m_variable_io_writer_mng(new VariableIOWriterMng(this))
 , m_variable_io_reader_mng(new VariableIOReaderMng(this))
+, m_variable_synchronizer_mng(new VariableSynchronizerMng(this))
 {
 }
 
@@ -95,6 +97,8 @@ VariableMng(ISubDomain* sd)
 VariableMng::
 ~VariableMng()
 {
+  delete m_variable_synchronizer_mng;
+
   delete m_variable_io_reader_mng;
   delete m_variable_io_writer_mng;
   delete m_utilities;
@@ -706,6 +710,15 @@ exportSize(const VariableCollection& vars)
   total_size /= 1.0e6;
 
   return total_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IVariableSynchronizerMng* VariableMng::
+synchronizerMng() const
+{
+  return m_variable_synchronizer_mng;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelMng.h                                              (C) 2000-2022 */
+/* IParallelMng.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Interface du gestionnaire du parallélisme sur un sous-domaine.            */
 /*---------------------------------------------------------------------------*/
@@ -16,33 +16,14 @@
 
 #include "arcane/utils/UtilsTypes.h"
 
-#include "arcane/Parallel.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/VariableTypedef.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IApplication;
-class IVariable;
-class IBase;
-class IIOMng;
-class ITimerMng;
-class IThreadMng;
-class ITimeStats;
-class IGetVariablesValuesParallelOperation;
-class ITransferValuesParallelOperation;
-class IParallelExchanger;
-class IVariableSynchronizer;
-class IParallelTopology;
-class IParallelReplication;
-class IParallelNonBlockingCollective;
-class IParallelMngUtilsFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

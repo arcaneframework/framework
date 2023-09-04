@@ -257,6 +257,7 @@ set(ARCANE_ORIGINAL_SOURCES
   IVariableFilter.h
   IVariableParallelOperation.h
   IVariableSynchronizer.h
+  IVariableSynchronizerMng.h
   IVariableUtilities.h
   IVariableWriter.h
   IVerifierService.h

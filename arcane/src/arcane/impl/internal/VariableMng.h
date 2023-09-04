@@ -41,6 +41,7 @@ class VariableReaderMng;
 class XmlNode;
 class VariableIOWriterMng;
 class VariableIOReaderMng;
+class VariableSynchronizerMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -201,6 +202,7 @@ class VariableMng
   {
     return m_on_variable_removed;
   }
+  IVariableSynchronizerMng* synchronizerMng() const override;
   ISubDomain* _internalSubDomain() const override { return m_sub_domain; }
   IVariableMngInternal* _internalApi() override { return &m_internal_api; }
 
@@ -252,6 +254,7 @@ class VariableMng
   IVariableUtilities* m_utilities = nullptr;
   VariableIOWriterMng* m_variable_io_writer_mng = nullptr;
   VariableIOReaderMng* m_variable_io_reader_mng = nullptr;
+  VariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
 
  private:
 

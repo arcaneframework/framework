@@ -56,7 +56,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
  public:
 
-  VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
+  VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
                        Ref<IDataSynchronizeImplementationFactory> implementation_factory);
   ~VariableSynchronizer() override;
 
@@ -108,6 +108,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   bool m_is_compare_sync = false;
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
   Ref<IDataSynchronizeImplementationFactory> m_implementation_factory;
+  IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
 
  private:
 
