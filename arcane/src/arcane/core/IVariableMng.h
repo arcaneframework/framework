@@ -42,6 +42,7 @@ class VariableRef;
 class IMesh;
 class IVariableUtilities;
 class VariableStatusChangedEventArgs;
+class IVariableMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -360,6 +361,9 @@ class IVariableMng
    * Fonction interne temporaire pour récupérer le sous-domaine.
    */
   virtual ISubDomain* _internalSubDomain() const =0;
+
+  //! API interne à Arcane
+  virtual IVariableMngInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -23,6 +23,8 @@
 #include "arcane/core/IVariableFilter.h"
 #include "arcane/core/VariableCollection.h"
 
+#include "arcane/core/internal/IVariableMngInternal.h"
+
 #include <map>
 
 /*---------------------------------------------------------------------------*/
@@ -109,6 +111,33 @@ class VariableMng
     }
   };
 
+  class InternalApi
+  : public IVariableMngInternal
+  {
+   public:
+
+    explicit InternalApi(VariableMng* v)
+    : m_variable_mng(v)
+    {}
+
+   public:
+
+    void build() override { m_variable_mng->build(); }
+    void initialize() override { m_variable_mng->initialize(); }
+    void removeAllVariables() override { m_variable_mng->removeAllVariables(); }
+    void detachMeshVariables(IMesh* mesh) override { m_variable_mng->detachMeshVariables(mesh); }
+    void addVariableRef(VariableRef* var) override { m_variable_mng->addVariableRef(var); }
+    void removeVariableRef(VariableRef* var) override { m_variable_mng->removeVariableRef(var); }
+    void addVariable(IVariable* var) override { m_variable_mng->addVariable(var); }
+    void removeVariable(IVariable* var) override { m_variable_mng->removeVariable(var); }
+    void initializeVariables(bool is_continue) override { m_variable_mng->initializeVariables(is_continue); }
+    ISubDomain* internalSubDomain() const override { return m_variable_mng->_internalSubDomain(); }
+
+   private:
+
+    VariableMng* m_variable_mng = nullptr;
+  };
+
  public:
 
   using VNIMap = HashTableMapT<VariableNameInfo, IVariable*, VNIComparer>;
@@ -173,6 +202,7 @@ class VariableMng
     return m_on_variable_removed;
   }
   ISubDomain* _internalSubDomain() const override { return m_sub_domain; }
+  IVariableMngInternal* _internalApi() override { return &m_internal_api; }
 
  public:
 
@@ -194,6 +224,7 @@ class VariableMng
   ISubDomain* m_sub_domain = nullptr;
   IParallelMng* m_parallel_mng = nullptr;
   ITimeStats* m_time_stats = nullptr;
+  InternalApi m_internal_api{ this };
   VariableRefList m_variables_ref; //!< Liste des variables
   VariableList m_variables;
   VariableList m_used_variables;
