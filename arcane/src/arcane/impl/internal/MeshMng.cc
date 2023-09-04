@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMng.cc                                                  (C) 2000-2020 */
+/* MeshMng.cc                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant la liste des maillages.                                     */
 /*---------------------------------------------------------------------------*/
@@ -13,15 +13,15 @@
 
 #include "arcane/impl/internal/MeshMng.h"
 
-#include "arcane/impl/internal/MeshFactoryMng.h"
-
 #include "arcane/utils/String.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/IVariableMng.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
+#include "arcane/impl/internal/MeshFactoryMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ destroyMeshes()
   for( MeshHandle& handle : m_meshes_handle ){
     IMesh* x = handle.mesh();
     if (x){
-      m_variable_mng->detachMeshVariables(x);
+      m_variable_mng->_internalApi()->detachMeshVariables(x);
       handle._destroyMesh();
     }
   }
@@ -205,7 +205,7 @@ _destroyMesh(IPrimaryMesh* primary_mesh)
   IMesh* m = primary_mesh;
   String name = m->name();
   MeshHandle handle = m->handle();
-  m_variable_mng->detachMeshVariables(m);
+  m_variable_mng->_internalApi()->detachMeshVariables(m);
   handle._destroyMesh();
 
   // Supprime le maillage de la liste.
@@ -234,7 +234,7 @@ MeshHandle MeshMng::
 _addMeshHandle(const String& name)
 {
   //std::cout << "_ADD_MESH_HANDLE handle=" << name << "\n";
-  MeshHandle handle(m_variable_mng->_internalSubDomain(),name);
+  MeshHandle handle(m_variable_mng->_internalApi()->internalSubDomain(),name);
   m_meshes_handle.add(handle);
   return handle;
 }

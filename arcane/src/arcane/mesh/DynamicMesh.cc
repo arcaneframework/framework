@@ -57,6 +57,7 @@
 
 #include "arcane/core/internal/UnstructuredMeshAllocateBuildInfoInternal.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/mesh/ExtraGhostCellsBuilder.h"
 #include "arcane/mesh/ExtraGhostParticlesBuilder.h"
@@ -3330,7 +3331,7 @@ class ARCANE_MESH_EXPORT DynamicMeshFactoryBase
     if (m_is_amr && mk.meshAMRKind()==eMeshAMRKind::None)
       mk.setMeshAMRKind(eMeshAMRKind::Cell);
     mbi.addMeshKind(mk);
-    ISubDomain* sd = mm->variableMng()->_internalSubDomain();
+    ISubDomain* sd = mm->variableMng()->_internalApi()->internalSubDomain();
     bool is_submesh = !mbi.parentGroup().null();
     if (is_submesh && m_is_amr)
       ARCANE_FATAL("Submesh cannot be refined with AMR.");
