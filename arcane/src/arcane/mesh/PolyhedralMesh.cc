@@ -26,6 +26,7 @@
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/IMeshFactory.h"
 #include "arcane/core/ItemInternal.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
@@ -1233,7 +1234,7 @@ class ARCANE_MESH_EXPORT PolyhedralMeshFactory
   void build() override {}
   IPrimaryMesh* createMesh(IMeshMng* mm, const MeshBuildInfo& build_info) override
   {
-    ISubDomain* sd = mm->variableMng()->_internalSubDomain();
+    ISubDomain* sd = mm->variableMng()->_internalApi()->internalSubDomain();
     return new mesh::PolyhedralMesh(sd, build_info);
   }
 

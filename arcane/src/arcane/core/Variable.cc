@@ -56,6 +56,7 @@
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 #include <map>
 #include <set>
@@ -403,7 +404,7 @@ removeVariableRef(VariableRef* ref)
       _removeMeshReference();
       ISubDomain* sd = m_p->m_sub_domain;
       IVariableMng* vm = sd->variableMng();
-      vm->removeVariable(this);
+      vm->_internalApi()->removeVariable(this);
     }
   }
 }

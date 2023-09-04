@@ -1,27 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableBuildInfo.cc                                        (C) 2000-2022 */
+/* VariableBuildInfo.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Informations pour construire une variable.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableBuildInfo.h"
-
-#include "arcane/IModule.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IApplication.h"
-#include "arcane/IDataFactoryMng.h"
-#include "arcane/IVariableMng.h"
+#include "arcane/core/VariableBuildInfo.h"
 
 #include "arcane/utils/Iostream.h"
+
+#include "arcane/core/IModule.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IDataFactoryMng.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -70,7 +71,7 @@ VariableBuildInfo(ISubDomain* sd,const String& name,int property)
 
 VariableBuildInfo::
 VariableBuildInfo(IVariableMng* variable_mng,const String& name,int property)
-: m_sub_domain(variable_mng->_internalSubDomain())
+: m_sub_domain(variable_mng->_internalApi()->internalSubDomain())
 , m_module(nullptr)
 , m_name(name)
 , m_property(property)
@@ -165,7 +166,7 @@ VariableBuildInfo(ISubDomain* sd,const String& name,const String& mesh_name,
 VariableBuildInfo::
 VariableBuildInfo(IVariableMng* variable_mng,const String& name,const String& mesh_name,
                   const String& item_family_name,int property)
-: m_sub_domain(variable_mng->_internalSubDomain())
+: m_sub_domain(variable_mng->_internalApi()->internalSubDomain())
 , m_module(nullptr)
 , m_name(name)
 , m_item_family_name(item_family_name)
@@ -264,7 +265,7 @@ VariableBuildInfo(IVariableMng* variable_mng,const String& name,
                   const String& mesh_name,
                   const String& item_family_name,
                   const String& item_group_name,int property)
-: m_sub_domain(variable_mng->_internalSubDomain())
+: m_sub_domain(variable_mng->_internalApi()->internalSubDomain())
 , m_module(nullptr)
 , m_name(name)
 , m_item_family_name(item_family_name)
