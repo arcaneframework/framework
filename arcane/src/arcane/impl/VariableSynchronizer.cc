@@ -33,6 +33,9 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/VariableCollection.h"
 #include "arcane/core/Timer.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IVariableSynchronizerMng.h"
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/internal/IDataInternal.h"
 
@@ -93,6 +96,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_AUTO_COMPARE_SYNCHRONIZE", true))
       m_is_compare_sync = (v.value()!=0);
   }
+  m_variable_synchronizer_mng = group.itemFamily()->mesh()->variableMng()->synchronizerMng();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -136,9 +140,12 @@ synchronize(IVariable* var)
     info() << " Synchronize variable " << var->fullName()
            << " stack=" << platform::getStackTrace();
   }
+  auto& global_on_synchronized = m_variable_synchronizer_mng->onSynchronized();
+  bool has_observers = global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers();
   // Debut de la synchro
-  if (m_on_synchronized.hasObservers()){
+  if (has_observers){
     VariableSynchronizerEventArgs args(var,this);
+    global_on_synchronized.notify(args);
     m_on_synchronized.notify(args);
   }
   if (!m_sync_timer)
@@ -150,8 +157,9 @@ synchronize(IVariable* var)
   Real elapsed_time = m_sync_timer->lastActivationTime();
   pm->stat()->add("Synchronize",elapsed_time,1);
   // Fin de la synchro
-  if (m_on_synchronized.hasObservers()){
+  if (global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers()){
     VariableSynchronizerEventArgs args(var,this,elapsed_time);
+    global_on_synchronized.notify(args);
     m_on_synchronized.notify(args);
   }
 }
@@ -280,8 +288,11 @@ _synchronizeMulti(VariableCollection vars)
            << " stack=" << platform::getStackTrace();
   }
   // Debut de la synchro
-  if (m_on_synchronized.hasObservers()){
+  auto& global_on_synchronized = m_variable_synchronizer_mng->onSynchronized();
+  bool has_observers = global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers();
+  if (has_observers){
     VariableSynchronizerEventArgs args(vars,this);
+    global_on_synchronized.notify(args);
     m_on_synchronized.notify(args);
   }
   if (!m_sync_timer)
@@ -296,8 +307,9 @@ _synchronizeMulti(VariableCollection vars)
   Real elapsed_time = m_sync_timer->lastActivationTime();
   pm->stat()->add("MultiSynchronize",elapsed_time,1);
   // Fin de la synchro
-  if (m_on_synchronized.hasObservers()){
+  if (has_observers){
     VariableSynchronizerEventArgs args(vars,this,elapsed_time);
+    global_on_synchronized.notify(args);
     m_on_synchronized.notify(args);
   }
 }
