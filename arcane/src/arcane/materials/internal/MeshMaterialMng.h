@@ -336,11 +336,11 @@ class MeshMaterialMng
   {
     return m_variables_indexer;
   }
-  IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer()
+  IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer() override
   {
     return m_all_cells_mat_env_synchronizer;
   }
-  IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer()
+  IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer() override
   {
     return m_all_cells_env_only_synchronizer;
   }
