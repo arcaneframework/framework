@@ -98,6 +98,7 @@ set( ARCANE_SOURCES
   VariableUtilities.cc
   VariableUtilities.h
   VariableSynchronizer.cc
+  VariableSynchronizerMng.cc
   VariableSynchronizerComputeList.cc
   NullPhysicalUnitSystemService.cc
   TraceMngPolicy.cc
@@ -148,6 +149,7 @@ set( ARCANE_SOURCES
   internal/ThreadBindingMng.cc
   internal/VariableMng.h
   internal/VariableSynchronizer.h
+  internal/VariableSynchronizerMng.h
   internal/VariableSynchronizerComputeList.h
   )
 

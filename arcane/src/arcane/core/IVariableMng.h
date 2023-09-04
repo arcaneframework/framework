@@ -261,6 +261,9 @@ class IVariableMng
   //! Interface des fonctions utilitaires associées
   virtual IVariableUtilities* utilities() const =0;
 
+  //! Interface du gestionnaire de synchronisation des variables.
+  virtual IVariableSynchronizerMng* synchronizerMng() const =0;
+
  public:
 
   //! \name Evènements
