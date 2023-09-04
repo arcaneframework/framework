@@ -36,6 +36,14 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMng
 
  public:
 
+  /*!
+   * \brief Evènement envoyé en début et fin de synchronisation.
+   *
+   * Cet évènement est envoyé lors des appels aux méthodes
+   * de synchronisation IVariableSynchronizer::synchronize(IVariable* var)
+   * et IVariableSynchronizer::synchronize(VariableCollection vars) pour toutes
+   * les instances de IVariableSynchronizer.
+   */
   virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
 };
 

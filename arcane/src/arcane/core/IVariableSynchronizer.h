@@ -110,11 +110,13 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
   virtual void synchronizeData(IData* data) = 0;
 
   /*!
-   * \brief Evènement envoyé en fin de synchronisation.
+   * \brief Evènement envoyé en début et fin de synchronisation.
    *
-   * Cet évènement est envoyé à la fin de l'appel aux méthodes
-   * de synchronisation (synchronize(IVariable* var)
-   * et synchronize(VariableCollection vars)).
+   * Cet évènement est envoyé lors des appels aux méthodes
+   * de synchronisation synchronize(IVariable* var)
+   * et synchronize(VariableCollection vars). Si on souhaite être notifié
+   * des synchronisations pour toutes les instances de IVariableSynchronizer,
+   * il faut utiliser IVariableMng::synchronizerMng().
    */
   virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
 };
