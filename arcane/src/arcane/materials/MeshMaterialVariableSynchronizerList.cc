@@ -28,7 +28,7 @@
 
 #include "arcane/materials/MeshMaterialVariable.h"
 #include "arcane/materials/IMeshMaterialSynchronizeBuffer.h"
-#include "arcane/materials/internal/IMeshMaterialVariableSynchronizer.h"
+#include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
 

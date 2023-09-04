@@ -444,6 +444,18 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
 
   //! API interne à %Arcane
   virtual IMeshMaterialMngInternal* _internalApi() const =0;
+
+  /*!
+   * \internal
+   * \brief Synchronizeur pour les variables matériaux et milieux sur toutes les mailles.
+   */
+  virtual IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer() = 0;
+
+  /*!
+   * \internal
+   * \brief Synchronizeur pour les variables uniquement milieux sur toutes les mailles.
+   */
+  virtual IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
