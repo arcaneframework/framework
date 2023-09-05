@@ -13,6 +13,8 @@
 
 #include "arcane/impl/internal/VariableSynchronizerMng.h"
 
+#include "arcane/utils/ValueConvert.h"
+
 #include "arcane/core/IVariableMng.h"
 
 /*---------------------------------------------------------------------------*/
@@ -29,6 +31,8 @@ VariableSynchronizerMng(IVariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_AUTO_COMPARE_SYNCHRONIZE", true))
+    m_is_compare_synchronize = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/

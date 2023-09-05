@@ -46,10 +46,14 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
     return m_on_synchronized;
   }
 
+  void setCompareSynchronize(bool v) { m_is_compare_synchronize = v; }
+  bool isCompareSynchronize() const { return m_is_compare_synchronize; }
+
  private:
 
   IVariableMng* m_variable_mng = nullptr;
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
+  bool m_is_compare_synchronize = false;
 };
 
 /*---------------------------------------------------------------------------*/

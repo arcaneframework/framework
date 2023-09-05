@@ -60,7 +60,7 @@ arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
 /*---------------------------------------------------------------------------*/
 
 VariableSynchronizer::
-VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
+VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
                      Ref<IDataSynchronizeImplementationFactory> implementation_factory)
 : TraceAccessor(pm->traceMng())
 , m_parallel_mng(pm)
@@ -74,7 +74,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
   GroupIndexTable* table = nullptr;
   if (!group.isAllItems())
     table = group.localIdToIndex().get();
-  DataSynchronizeDispatcherBuildInfo bi(pm,table,implementation_factory, m_sync_info);
+  DataSynchronizeDispatcherBuildInfo bi(pm, table, implementation_factory, m_sync_info);
   m_dispatcher = IDataSynchronizeDispatcher::create(bi);
   if (!m_dispatcher)
     ARCANE_FATAL("No synchronizer created");
@@ -84,17 +84,13 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
 
   {
     String s = platform::getEnvironmentVariable("ARCANE_ALLOW_MULTISYNC");
-    if (s=="0" || s=="FALSE" || s=="false")
+    if (s == "0" || s == "FALSE" || s == "false")
       m_allow_multi_sync = false;
   }
   {
     String s = platform::getEnvironmentVariable("ARCANE_TRACE_SYNCHRONIZE");
-    if (s=="1" || s=="TRUE" || s=="true")
+    if (s == "1" || s == "TRUE" || s == "true")
       m_trace_sync = true;
-  }
-  {
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_AUTO_COMPARE_SYNCHRONIZE", true))
-      m_is_compare_sync = (v.value()!=0);
   }
   m_variable_synchronizer_mng = group.itemFamily()->mesh()->variableMng()->synchronizerMng();
 }
@@ -189,9 +185,9 @@ synchronize(VariableCollection vars)
 /*---------------------------------------------------------------------------*/
 
 DataSynchronizeResult VariableSynchronizer::
-_synchronize(INumericDataInternal* data)
+_synchronize(INumericDataInternal* data, bool is_compare_sync)
 {
-  m_dispatcher->beginSynchronize(data, m_is_compare_sync);
+  m_dispatcher->beginSynchronize(data, is_compare_sync);
   return m_dispatcher->endSynchronize();
 }
 
@@ -204,13 +200,14 @@ _synchronize(IVariable* var)
   ARCANE_CHECK_POINTER(var);
   INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
   if (!numapi)
-    ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data",var->name());
-  DataSynchronizeResult result = _synchronize(numapi);
+    ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data", var->name());
+  bool is_compare_sync = m_variable_synchronizer_mng->isCompareSynchronize();
+  DataSynchronizeResult result = _synchronize(numapi, is_compare_sync);
   eDataSynchronizeCompareStatus s = result.compareStatus();
-  if (m_is_compare_sync){
-    if (s==eDataSynchronizeCompareStatus::Different)
+  if (is_compare_sync) {
+    if (s == eDataSynchronizeCompareStatus::Different)
       info() << "Different values name=" << var->name();
-    else if (s==eDataSynchronizeCompareStatus::Same)
+    else if (s == eDataSynchronizeCompareStatus::Same)
       info() << "Same values name=" << var->name();
     else
       info() << "Unknown values name=" << var->name();
@@ -228,7 +225,7 @@ synchronizeData(IData* data)
   INumericDataInternal* numapi = data->_commonInternal()->numericData();
   if (!numapi)
     ARCANE_FATAL("Data can not be synchronized because it is not a numeric data");
-  _synchronize(numapi);
+  _synchronize(numapi, false);
 }
 
 /*---------------------------------------------------------------------------*/

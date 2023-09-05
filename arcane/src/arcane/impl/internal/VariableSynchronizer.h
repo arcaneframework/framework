@@ -105,7 +105,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   bool m_is_verbose = false;
   bool m_allow_multi_sync = true;
   bool m_trace_sync = false;
-  bool m_is_compare_sync = false;
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
   Ref<IDataSynchronizeImplementationFactory> m_implementation_factory;
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
@@ -115,7 +114,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   void _synchronize(IVariable* var);
   void _synchronizeMulti(VariableCollection vars);
   bool _canSynchronizeMulti(const VariableCollection& vars);
-  DataSynchronizeResult _synchronize(INumericDataInternal* data);
+  DataSynchronizeResult _synchronize(INumericDataInternal* data, bool is_compare_sync);
 };
 
 /*---------------------------------------------------------------------------*/

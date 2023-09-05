@@ -45,6 +45,11 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMng
    * les instances de IVariableSynchronizer.
    */
   virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
+
+  virtual void setCompareSynchronize(bool v) = 0;
+
+  //! Indique si on effecture les comparaisons des valeurs avant et après synchronisation
+  virtual bool isCompareSynchronize() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
