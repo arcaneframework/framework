@@ -139,6 +139,11 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeMultiDispatcher
 
  public:
 
+  /*!
+   * \brief Recalcule les informations nécessaires après une mise à jour des informations
+   * de \a DataSynchronizeInfo.
+   */
+  virtual void compute() = 0;
   virtual void synchronize(const VariableCollection& vars) = 0;
 
  public:

@@ -121,6 +121,7 @@ compute()
   computer.compute();
 
   m_dispatcher->compute();
+  m_multi_dispatcher->compute();
   if (m_is_verbose)
     info() << "End compute dispatcher Date=" << platform::getCurrentDateTime();
 }

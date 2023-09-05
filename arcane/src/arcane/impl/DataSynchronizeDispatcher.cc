@@ -77,6 +77,7 @@ class DataSynchronizeDispatcherBase
  protected:
 
   void _setCurrentDevice();
+  void _compute();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -91,6 +92,7 @@ DataSynchronizeDispatcherBase(const DataSynchronizeDispatcherBuildInfo& bi)
   m_implementation_instance = bi.factory()->createInstance();
   m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
 
+  ARCANE_CHECK_POINTER(m_sync_info.get());
   if (bi.table())
     m_buffer_copier = new TableBufferCopier(bi.table());
   else
@@ -138,6 +140,19 @@ _setCurrentDevice()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Notifie l'implémentation que les informations de synchronisation
+ * ont changé.
+ */
+void DataSynchronizeDispatcherBase::
+_compute()
+{
+  _setCurrentDevice();
+  m_implementation_instance->compute();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -161,7 +176,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
 
  public:
 
-  void compute() final;
+  void compute() override { _compute(); }
   void beginSynchronize(INumericDataInternal* data, bool is_compare_sync) override;
   DataSynchronizeResult endSynchronize() override;
 
@@ -231,21 +246,6 @@ endSynchronize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Notifie l'implémentation que les informations de synchronisation
- * ont changé.
- */
-void DataSynchronizeDispatcher::
-compute()
-{
-  if (!m_sync_info)
-    ARCANE_FATAL("The instance is not initialized. You need to call setDataSynchronizeInfo() before");
-  _setCurrentDevice();
-  m_implementation_instance->compute();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -275,6 +275,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcher
   {
   }
 
+  void compute() override {}
   void synchronize(const VariableCollection& vars) override;
 
  private:
@@ -302,6 +303,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
   {
   }
 
+  void compute() override { _compute(); }
   void synchronize(const VariableCollection& vars) override;
 };
 
@@ -379,12 +381,10 @@ synchronize(const VariableCollection& vars)
 
   _setCurrentDevice();
 
-  // TODO: à passer en paramètre.
+  // TODO: à passer en paramètre de la fonction
   bool is_compare_sync = false;
   buffer.prepareSynchronize(all_datatype_size, is_compare_sync);
 
-  m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
-  m_implementation_instance->compute();
   m_implementation_instance->beginSynchronize(&buffer);
   m_implementation_instance->endSynchronize(&buffer);
 }
