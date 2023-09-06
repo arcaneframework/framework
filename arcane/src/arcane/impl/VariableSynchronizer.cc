@@ -229,18 +229,17 @@ _buildMessage()
   auto* internal_pm = m_parallel_mng->_internalApi();
   Runner* runner = internal_pm->defaultRunner();
   bool is_accelerator_aware = internal_pm->isAcceleratorAware();
-
+  IMemoryAllocator* allocator = nullptr;
   // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
   // buffer sur le device. On pourrait utiliser la mémoire managée mais certaines
   // implémentations MPI (i.e: BXI) ne le supportent pas.
   if (runner && is_accelerator_aware) {
     //m_runner = runner;
     buffer_copier->setRunQueue(internal_pm->defaultQueue());
-    auto* a = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
-    buffer_copier->setAllocator(a);
+    allocator = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
   }
 
-  DataSynchronizeMemory* memory = new DataSynchronizeMemory(buffer_copier);
+  DataSynchronizeMemory* memory = new DataSynchronizeMemory(buffer_copier, allocator);
   Ref<DataSynchronizeMemory> ref_memory = makeRef<DataSynchronizeMemory>(memory);
 
   DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, m_implementation_factory, m_sync_info, ref_memory, runner);

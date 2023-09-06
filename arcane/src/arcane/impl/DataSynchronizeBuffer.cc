@@ -142,10 +142,6 @@ _compute(Int32 datatype_size)
   m_compare_sync_buffer_info.m_datatype_size = datatype_size;
   m_compare_sync_buffer_info.m_buffer_info = &m_sync_info->receiveInfo();
 
-  IMemoryAllocator* allocator = m_memory->copier()->allocator();
-  if (allocator && allocator != m_memory->allocator())
-    m_memory->changeAllocator(allocator);
-
   _allocateBuffers(datatype_size);
 }
 
