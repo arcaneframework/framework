@@ -56,6 +56,44 @@ namespace Arcane
 extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
 
+class VariableSynchronizer::SyncMessage
+{
+ public:
+
+  SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi)
+  : m_dispatcher(IDataSynchronizeDispatcher::create(bi))
+  , m_multi_dispatcher(IDataSynchronizeMultiDispatcher::create(bi))
+  {
+    if (!m_dispatcher)
+      ARCANE_FATAL("No synchronizer created");
+    if (!m_multi_dispatcher)
+      ARCANE_FATAL("No multi synchronizer created");
+  }
+  ~SyncMessage()
+  {
+    delete m_multi_dispatcher;
+  }
+
+ public:
+
+  void compute()
+  {
+    m_dispatcher->compute();
+    m_multi_dispatcher->compute();
+  }
+
+  DataSynchronizeResult synchronize(INumericDataInternal* data, bool is_compare_sync)
+  {
+    m_dispatcher->beginSynchronize(data, is_compare_sync);
+    return m_dispatcher->endSynchronize();
+  }
+
+ public:
+
+  Ref<IDataSynchronizeDispatcher> m_dispatcher;
+  IDataSynchronizeMultiDispatcher* m_multi_dispatcher = nullptr;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -71,16 +109,7 @@ VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
     implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
   m_implementation_factory = implementation_factory;
 
-  GroupIndexTable* table = nullptr;
-  if (!group.isAllItems())
-    table = group.localIdToIndex().get();
-  DataSynchronizeDispatcherBuildInfo bi(pm, table, implementation_factory, m_sync_info);
-  m_dispatcher = IDataSynchronizeDispatcher::create(bi);
-  if (!m_dispatcher)
-    ARCANE_FATAL("No synchronizer created");
-  m_multi_dispatcher = IDataSynchronizeMultiDispatcher::create(bi);
-  if (!m_multi_dispatcher)
-    ARCANE_FATAL("No multi synchronizer created");
+  m_variable_synchronizer_mng = group.itemFamily()->mesh()->variableMng()->synchronizerMng();
 
   {
     String s = platform::getEnvironmentVariable("ARCANE_ALLOW_MULTISYNC");
@@ -92,7 +121,8 @@ VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
     if (s == "1" || s == "TRUE" || s == "true")
       m_trace_sync = true;
   }
-  m_variable_synchronizer_mng = group.itemFamily()->mesh()->variableMng()->synchronizerMng();
+
+  m_default_message = _buildMessage();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -102,7 +132,20 @@ VariableSynchronizer::
 ~VariableSynchronizer()
 {
   delete m_sync_timer;
-  delete m_multi_dispatcher;
+  delete m_default_message;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableSynchronizer::SyncMessage* VariableSynchronizer::
+_buildMessage()
+{
+  GroupIndexTable* table = nullptr;
+  if (!m_item_group.isAllItems())
+    table = m_item_group.localIdToIndex().get();
+  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, table, m_implementation_factory, m_sync_info);
+  return new SyncMessage(bi);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -116,8 +159,7 @@ compute()
   VariableSynchronizerComputeList computer(this);
   computer.compute();
 
-  m_dispatcher->compute();
-  m_multi_dispatcher->compute();
+  m_default_message->compute();
   if (m_is_verbose)
     info() << "End compute dispatcher Date=" << platform::getCurrentDateTime();
 }
@@ -130,32 +172,32 @@ synchronize(IVariable* var)
 {
   IParallelMng* pm = m_parallel_mng;
   ITimeStats* ts = pm->timeStats();
-  Timer::Phase tphase(ts,TP_Communication);
+  Timer::Phase tphase(ts, TP_Communication);
 
   debug(Trace::High) << " Proc " << pm->commRank() << " Sync variable " << var->fullName();
-  if (m_trace_sync){
+  if (m_trace_sync) {
     info() << " Synchronize variable " << var->fullName()
            << " stack=" << platform::getStackTrace();
   }
   auto& global_on_synchronized = m_variable_synchronizer_mng->onSynchronized();
   bool has_observers = global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers();
   // Debut de la synchro
-  if (has_observers){
-    VariableSynchronizerEventArgs args(var,this);
+  if (has_observers) {
+    VariableSynchronizerEventArgs args(var, this);
     global_on_synchronized.notify(args);
     m_on_synchronized.notify(args);
   }
   if (!m_sync_timer)
-    m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
+    m_sync_timer = new Timer(pm->timerMng(), "SyncTimer", Timer::TimerReal);
   {
     Timer::Sentry ts2(m_sync_timer);
     _synchronize(var);
   }
   Real elapsed_time = m_sync_timer->lastActivationTime();
-  pm->stat()->add("Synchronize",elapsed_time,1);
+  pm->stat()->add("Synchronize", elapsed_time, 1);
   // Fin de la synchro
-  if (global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers()){
-    VariableSynchronizerEventArgs args(var,this,elapsed_time);
+  if (global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers()) {
+    VariableSynchronizerEventArgs args(var, this, elapsed_time);
     global_on_synchronized.notify(args);
     m_on_synchronized.notify(args);
   }
@@ -171,11 +213,11 @@ synchronize(VariableCollection vars)
     return;
 
   const bool use_multi = m_allow_multi_sync;
-  if (use_multi && _canSynchronizeMulti(vars)){
+  if (use_multi && _canSynchronizeMulti(vars)) {
     _synchronizeMulti(vars);
   }
-  else{
-    for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
+  else {
+    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       synchronize(*ivar);
     }
   }
@@ -187,8 +229,7 @@ synchronize(VariableCollection vars)
 DataSynchronizeResult VariableSynchronizer::
 _synchronize(INumericDataInternal* data, bool is_compare_sync)
 {
-  m_dispatcher->beginSynchronize(data, is_compare_sync);
-  return m_dispatcher->endSynchronize();
+  return m_default_message->synchronize(data, is_compare_sync);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -236,7 +277,7 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
   info(4) << "** VariableSynchronizer::changeLocalIds() group=" << m_item_group.name();
   m_sync_info->changeLocalIds(old_to_new_ids);
-  m_dispatcher->compute();
+  m_default_message->compute();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -251,20 +292,20 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
 bool VariableSynchronizer::
 _canSynchronizeMulti(const VariableCollection& vars)
 {
-  if (vars.count()==1)
+  if (vars.count() == 1)
     return false;
   ItemGroup group;
   bool is_set = false;
-  for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
+  for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
     IVariable* var = *ivar;
     if (var->isPartial())
       return false;
     ItemGroup var_group = var->itemGroup();
-    if (!is_set){
+    if (!is_set) {
       group = var_group;
       is_set = true;
     }
-    if (group!=var_group)
+    if (group != var_group)
       return false;
   }
   return true;
@@ -278,35 +319,35 @@ _synchronizeMulti(VariableCollection vars)
 {
   IParallelMng* pm = m_parallel_mng;
   ITimeStats* ts = pm->timeStats();
-  Timer::Phase tphase(ts,TP_Communication);
+  Timer::Phase tphase(ts, TP_Communication);
 
   debug(Trace::High) << " Proc " << pm->commRank() << " MultiSync variable";
-  if (m_trace_sync){
+  if (m_trace_sync) {
     info() << " MultiSynchronize"
            << " stack=" << platform::getStackTrace();
   }
   // Debut de la synchro
   auto& global_on_synchronized = m_variable_synchronizer_mng->onSynchronized();
   bool has_observers = global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers();
-  if (has_observers){
-    VariableSynchronizerEventArgs args(vars,this);
+  if (has_observers) {
+    VariableSynchronizerEventArgs args(vars, this);
     global_on_synchronized.notify(args);
     m_on_synchronized.notify(args);
   }
   if (!m_sync_timer)
-    m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
+    m_sync_timer = new Timer(pm->timerMng(), "SyncTimer", Timer::TimerReal);
   {
     Timer::Sentry ts2(m_sync_timer);
-    m_multi_dispatcher->synchronize(vars);
-    for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
+    m_default_message->m_multi_dispatcher->synchronize(vars);
+    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       (*ivar)->setIsSynchronized();
     }
   }
   Real elapsed_time = m_sync_timer->lastActivationTime();
-  pm->stat()->add("MultiSynchronize",elapsed_time,1);
+  pm->stat()->add("MultiSynchronize", elapsed_time, 1);
   // Fin de la synchro
-  if (has_observers){
-    VariableSynchronizerEventArgs args(vars,this,elapsed_time);
+  if (has_observers) {
+    VariableSynchronizerEventArgs args(vars, this, elapsed_time);
     global_on_synchronized.notify(args);
     m_on_synchronized.notify(args);
   }
@@ -342,7 +383,7 @@ ghostItems(Int32 index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
