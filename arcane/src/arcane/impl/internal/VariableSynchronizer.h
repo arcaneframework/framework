@@ -68,10 +68,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
     return m_parallel_mng;
   }
 
-  const ItemGroup& itemGroup() override
-  {
-    return m_item_group;
-  }
+  ItemGroup itemGroup() override { return m_item_group; }
 
   void compute() override;
 
@@ -79,7 +76,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
   void synchronize(IVariable* var) override;
 
-  void synchronize(VariableCollection vars) override;
+  void synchronize(const VariableCollection& vars) override;
 
   Int32ConstArrayView communicatingRanks() override;
 

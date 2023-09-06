@@ -200,7 +200,7 @@ synchronize(IVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizer::
-synchronize(VariableCollection vars)
+synchronize(const VariableCollection& vars)
 {
   if (vars.empty())
     return;
