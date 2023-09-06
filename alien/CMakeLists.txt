@@ -18,6 +18,21 @@ cmake_minimum_required(VERSION 3.18)
 
 Project(AlienRepo LANGUAGES C CXX VERSION 1.0)
 
+if (NOT ALIEN_BUILD_COMPONENT)
+    set (ALIEN_BUILD_COMPONENT all)
+endif()
+
+if (ALIEN_BUILD_COMPONENT STREQUAL all)
+    # Compile Arcane et ses composantes en même temps
+    set(BUILD_ARCANE_INTERFACE TRUE)
+elseif (ALIEN_BUILD_COMPONENT STREQUAL alien_standalone)
+    # Compile uniquement Alien/standalone.
+    set(BUILD_ARCANE_INTERFACE FALSE)
+else()
+    message(FATAL_ERROR "Invalid value '${ALIEN_BUILD_COMPONENT}' for ALIEN_BUILD_COMPONENT"
+            "Valid values are: { 'all', 'alien_standalone'}")
+endif()
+
 # Common stuff
 if (NOT ARCFRAMEWORK_ROOT)
     set(ARCFRAMEWORK_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
@@ -49,7 +64,7 @@ if (BLAS_FOUND AND Boost_program_options_FOUND)
     set(ALIEN_FOUND YES)
     set(FRAMEWORK_INSTALL YES)
     find_program(MONO_EXEC mono) # Mono is required for ArcaneInterface (temporary, should be replaced by dotnet...)
-    if (MONO_EXEC)
+    if (MONO_EXEC AND BUILD_ARCANE_INTERFACE)
         add_subdirectory(ArcaneInterface)
     endif ()
 endif()
