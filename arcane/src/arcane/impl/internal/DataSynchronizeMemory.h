@@ -16,6 +16,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
+#include "arcane/utils/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +33,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMemory
 {
  public:
 
-  explicit DataSynchronizeMemory(IBufferCopier* copier)
+  explicit DataSynchronizeMemory(Ref<IBufferCopier> copier)
   : m_buffer_copier(copier)
   {}
 
@@ -46,13 +47,14 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMemory
   {
     m_buffer = UniqueArray<std::byte>(allocator);
   }
+  IBufferCopier* copier() const { return m_buffer_copier.get(); }
 
  private:
 
   //! Buffer contenant les données.
   UniqueArray<std::byte> m_buffer;
 
-  IBufferCopier* m_buffer_copier = nullptr;
+  Ref<IBufferCopier> m_buffer_copier;
 };
 
 /*---------------------------------------------------------------------------*/
