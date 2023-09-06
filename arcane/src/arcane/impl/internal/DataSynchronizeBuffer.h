@@ -30,6 +30,7 @@ class IBufferCopier;
 class DataSynchronizeResult;
 class DataSynchronizeInfo;
 class DataSynchronizeBufferInfoList;
+class DataSynchronizeMemory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,10 +96,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
  public:
 
-  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, IBufferCopier* copier)
-  : m_sync_info(sync_info)
-  , m_buffer_copier(copier)
-  {}
+  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, IBufferCopier* copier);
 
  public:
 
@@ -138,7 +136,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
   bool m_is_compare_sync_values = false;
 
   //! Buffer contenant les données concaténées en envoi et réception
-  UniqueArray<std::byte> m_buffer;
+  Ref<DataSynchronizeMemory> m_buffer;
 };
 
 /*---------------------------------------------------------------------------*/

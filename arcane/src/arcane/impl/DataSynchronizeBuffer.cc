@@ -16,6 +16,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/IBufferCopier.h"
+#include "arcane/impl/internal/DataSynchronizeMemory.h"
 
 #include "arcane/accelerator/core/Runner.h"
 
@@ -97,6 +98,17 @@ localIds(Int32 index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+DataSynchronizeBufferBase::
+DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, IBufferCopier* copier)
+: m_sync_info(sync_info)
+, m_buffer_copier(copier)
+, m_buffer(makeRef<DataSynchronizeMemory>(new DataSynchronizeMemory(copier)))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Int32 DataSynchronizeBufferBase::
 targetRank(Int32 index) const
 {
@@ -131,8 +143,8 @@ _compute(Int32 datatype_size)
   m_compare_sync_buffer_info.m_buffer_info = &m_sync_info->receiveInfo();
 
   IMemoryAllocator* allocator = m_buffer_copier->allocator();
-  if (allocator && allocator != m_buffer.allocator())
-    m_buffer = UniqueArray<std::byte>(allocator);
+  if (allocator && allocator != m_buffer->allocator())
+    m_buffer->changeAllocator(allocator);
 
   _allocateBuffers(datatype_size);
 }
@@ -156,17 +168,18 @@ _allocateBuffers(Int32 datatype_size)
   Int64 total_size = total_ghost_buffer + total_share_buffer;
   if (m_is_compare_sync_values)
     total_size += total_ghost_buffer;
-  m_buffer.resize(total_size * full_dim2_size);
+  m_buffer->resize(total_size * full_dim2_size);
 
   Int64 share_offset = total_ghost_buffer * full_dim2_size;
   Int64 check_sync_offset = share_offset + total_share_buffer * full_dim2_size;
 
-  auto s1 = m_buffer.span().subspan(0, share_offset);
+  Span<std::byte> buffer_span = m_buffer->bytes();
+  auto s1 = buffer_span.subspan(0, share_offset);
   m_ghost_buffer_info.m_memory_view = makeMutableMemoryView(s1.data(), full_dim2_size, total_ghost_buffer);
-  auto s2 = m_buffer.span().subspan(share_offset, total_share_buffer * full_dim2_size);
+  auto s2 = buffer_span.subspan(share_offset, total_share_buffer * full_dim2_size);
   m_share_buffer_info.m_memory_view = makeMutableMemoryView(s2.data(), full_dim2_size, total_share_buffer);
   if (m_is_compare_sync_values) {
-    auto s3 = m_buffer.span().subspan(check_sync_offset, total_ghost_buffer * full_dim2_size);
+    auto s3 = buffer_span.subspan(check_sync_offset, total_ghost_buffer * full_dim2_size);
     m_compare_sync_buffer_info.m_memory_view = makeMutableMemoryView(s3.data(), full_dim2_size, total_ghost_buffer);
   }
 }
