@@ -42,12 +42,12 @@ commit(alien_arcane_test.exe)
 
 if (TARGET petsc)
 
-    configure_file(AlienTest.config ${CMAKE_CURRENT_BINARY_DIR}/AlienTest.config COPYONLY)
-    configure_file(AlienTest.config ${CMAKE_CURRENT_BINARY_DIR}/AlienTest.config COPYONLY)
-    configure_file(AlienTest.arc ${CMAKE_CURRENT_BINARY_DIR}/AlienTest.arc COPYONLY)
-    configure_file(AlienTest-FBS.arc ${CMAKE_CURRENT_BINARY_DIR}/AlienTest-FBS.arc COPYONLY)
-    configure_file(AlienTest-VBS.arc ${CMAKE_CURRENT_BINARY_DIR}/AlienTest-VBS.arc COPYONLY)
-    configure_file(tube5x5x100.vtk ${CMAKE_CURRENT_BINARY_DIR}/tube5x5x100.vtk COPYONLY)
+    configure_file(AlienTest.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest.config COPYONLY)
+    configure_file(AlienTest.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest.config COPYONLY)
+    configure_file(AlienTest.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest.arc COPYONLY)
+    configure_file(AlienTest-FBS.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest-FBS.arc COPYONLY)
+    configure_file(AlienTest-VBS.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest-VBS.arc COPYONLY)
+    configure_file(tube5x5x100.vtk ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/tube5x5x100.vtk COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienTest.config
@@ -78,7 +78,7 @@ install(FILES
         )
 
 install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/Makefile.example
+        ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/Makefile.example
         DESTINATION share/examples
         RENAME Makefile
         )
@@ -94,7 +94,7 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_arcane_test.exe
             OPTIONS AlienTest.arc
-            WORKING_DIRECTORY test/AlienTest)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
     alien_test(
             BENCH alien.test.arcane
@@ -102,7 +102,7 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_arcane_test.exe
             OPTIONS AlienTest-FBS.arc
-            WORKING_DIRECTORY test/AlienTest)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
     alien_test(
             BENCH alien.test.arcane
@@ -110,6 +110,6 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_arcane_test.exe
             OPTIONS AlienTest-VBS.arc
-            WORKING_DIRECTORY test/AlienTest)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
 endif ()

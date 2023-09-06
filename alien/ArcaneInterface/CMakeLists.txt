@@ -20,6 +20,8 @@ set(INFRA_BUILDSYSTEM_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools)
 list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools/tools)
 list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools/alien)
 
+set(ALIEN_ARCANE_INTERFACE_DIR alien/ArcaneInterface)
+
 set(USE_AXLSTAR TRUE)
 
 # ----------------------------------------------------------------------------

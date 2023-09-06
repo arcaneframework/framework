@@ -49,9 +49,9 @@ install(
 
 if (TARGET petsc)
 
-    configure_file(AlienBench.config ${CMAKE_CURRENT_BINARY_DIR}/AlienBench.config COPYONLY)
-    configure_file(AlienBench.arc ${CMAKE_CURRENT_BINARY_DIR}/AlienBench.arc COPYONLY)
-    configure_file(AlienBench-4P.arc ${CMAKE_CURRENT_BINARY_DIR}/AlienBench-4P.arc COPYONLY)
+    configure_file(AlienBench.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.config COPYONLY)
+    configure_file(AlienBench.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.arc COPYONLY)
+    configure_file(AlienBench-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-4P.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench.config
@@ -77,7 +77,7 @@ install(FILES
         )
 
 install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/Makefile.example
+        ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/Makefile.example
         DESTINATION share/examples
         RENAME Makefile
         )
@@ -93,7 +93,7 @@ if (TARGET petsc)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench.arc
-            WORKING_DIRECTORY test/AlienBench)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
             BENCH alien.bench
@@ -101,6 +101,6 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-4P.arc
-            WORKING_DIRECTORY test/AlienBench)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
 endif ()
