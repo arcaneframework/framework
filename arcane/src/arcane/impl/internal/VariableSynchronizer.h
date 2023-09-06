@@ -91,6 +91,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
     return m_on_synchronized;
   }
 
+ public:
+
+  IVariableSynchronizerMng* synchronizeMng() const { return m_variable_synchronizer_mng; }
+
  private:
 
   IParallelMng* m_parallel_mng = nullptr;
@@ -106,9 +110,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   SyncMessage* m_default_message = nullptr;
 
-  private:
+ private:
 
-  void _synchronize(IVariable* var);
   void _synchronizeMulti(const VariableCollection& vars);
   bool _canSynchronizeMulti(const VariableCollection& vars);
   DataSynchronizeResult _synchronize(INumericDataInternal* data, bool is_compare_sync);
@@ -117,6 +120,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   void _sendEndEvent(VariableSynchronizerEventArgs& args);
   void _sendEvent(VariableSynchronizerEventArgs& args);
   void _checkCreateTimer();
+  void _doSynchronize(SyncMessage* message);
 };
 
 /*---------------------------------------------------------------------------*/

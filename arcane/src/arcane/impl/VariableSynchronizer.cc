@@ -56,12 +56,22 @@ namespace Arcane
 extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gestion d'une synchronisation.
+ *
+ * Il est possible d'utiliser plusieurs fois cette instance. Il suffit
+ * d'appeler initialize() pour réinitialiser l'instance.
+ */
 class VariableSynchronizer::SyncMessage
 {
  public:
 
   SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi, VariableSynchronizer* var_syncer)
-  : m_dispatcher(IDataSynchronizeDispatcher::create(bi))
+  : m_variable_synchronizer(var_syncer)
+  , m_variable_synchronizer_mng(var_syncer->synchronizeMng())
+  , m_dispatcher(IDataSynchronizeDispatcher::create(bi))
   , m_multi_dispatcher(IDataSynchronizeMultiDispatcher::create(bi))
   , m_event_args(var_syncer)
   {
@@ -83,17 +93,76 @@ class VariableSynchronizer::SyncMessage
     m_multi_dispatcher->compute();
   }
 
-  DataSynchronizeResult synchronize(INumericDataInternal* data, bool is_compare_sync)
+  void initialize(IVariable* var)
+  {
+    _reset();
+    m_event_args.initialize(var);
+    _addVariable(var);
+  }
+
+  void initialize(const VariableCollection& vars)
+  {
+    _reset();
+    m_event_args.initialize(vars);
+    for (VariableCollectionEnumerator v(vars); ++v;)
+      _addVariable(*v);
+  }
+
+  Int32 nbVariable() const { return m_variables.size(); }
+  ConstArrayView<IVariable*> variables() const { return m_variables; }
+
+  //! Effectue la synchronisation
+  void synchronize()
+  {
+    Int32 nb_var = m_variables.size();
+    if (nb_var == 0)
+      return;
+    if (nb_var == 1) {
+      bool is_compare_sync = m_variable_synchronizer_mng->isCompareSynchronize();
+      m_synchronize_result = synchronizeData(m_data_list[0], is_compare_sync);
+    }
+    if (nb_var >= 2) {
+      m_multi_dispatcher->synchronize(m_variables);
+    }
+    for (IVariable* var : m_variables)
+      var->setIsSynchronized();
+  }
+
+  DataSynchronizeResult synchronizeData(INumericDataInternal* data, bool is_compare_sync)
   {
     m_dispatcher->beginSynchronize(data, is_compare_sync);
     return m_dispatcher->endSynchronize();
   }
+  const DataSynchronizeResult& result() const { return m_synchronize_result; }
+  VariableSynchronizerEventArgs& eventArgs() { return m_event_args; }
 
- public:
+ private:
 
+  IVariableSynchronizer* m_variable_synchronizer = nullptr;
+  IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   Ref<IDataSynchronizeDispatcher> m_dispatcher;
   IDataSynchronizeMultiDispatcher* m_multi_dispatcher = nullptr;
   VariableSynchronizerEventArgs m_event_args;
+  UniqueArray<IVariable*> m_variables;
+  UniqueArray<INumericDataInternal*> m_data_list;
+  DataSynchronizeResult m_synchronize_result;
+
+ private:
+
+  void _reset()
+  {
+    m_variables.clear();
+    m_data_list.clear();
+  }
+
+  void _addVariable(IVariable* var)
+  {
+    INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
+    if (!numapi)
+      ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data", var->name());
+    m_variables.add(var);
+    m_data_list.add(numapi);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -170,30 +239,54 @@ compute()
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizer::
-synchronize(IVariable* var)
+_doSynchronize(SyncMessage* message)
 {
   IParallelMng* pm = m_parallel_mng;
   ITimeStats* ts = pm->timeStats();
   Timer::Phase tphase(ts, TP_Communication);
 
+  // Envoi l'évènement de début de la synchro
+  VariableSynchronizerEventArgs& event_args = message->eventArgs();
+  _sendBeginEvent(event_args);
+
+  {
+    Timer::Sentry ts2(m_sync_timer);
+    message->synchronize();
+  }
+
+  Int32 nb_var = message->nbVariable();
+  // Si une seule variable, affiche le résutat de la comparaison de
+  // la synchronisation
+  if (nb_var == 1 && m_variable_synchronizer_mng->isCompareSynchronize()) {
+    IVariable* var = message->variables()[0];
+    eDataSynchronizeCompareStatus s = message->result().compareStatus();
+    if (s == eDataSynchronizeCompareStatus::Different)
+      info() << "Different values name=" << var->name();
+    else if (s == eDataSynchronizeCompareStatus::Same)
+      info() << "Same values name=" << var->name();
+    else
+      info() << "Unknown values name=" << var->name();
+  }
+
+  // Fin de la synchro
+  _sendEndEvent(event_args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
+synchronize(IVariable* var)
+{
+  m_default_message->initialize(var);
+
+  IParallelMng* pm = m_parallel_mng;
   debug(Trace::High) << " Proc " << pm->commRank() << " Sync variable " << var->fullName();
   if (m_trace_sync) {
     info() << " Synchronize variable " << var->fullName()
            << " stack=" << platform::getStackTrace();
   }
-
-  // Debut de la synchro
-  VariableSynchronizerEventArgs& event_args = m_default_message->m_event_args;
-  event_args.initialize(var);
-  _sendBeginEvent(event_args);
-
-  {
-    Timer::Sentry ts2(m_sync_timer);
-    _synchronize(var);
-  }
-
-  // Fin de la synchro
-  _sendEndEvent(event_args);
+  _doSynchronize(m_default_message);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -222,31 +315,7 @@ synchronize(const VariableCollection& vars)
 DataSynchronizeResult VariableSynchronizer::
 _synchronize(INumericDataInternal* data, bool is_compare_sync)
 {
-  return m_default_message->synchronize(data, is_compare_sync);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VariableSynchronizer::
-_synchronize(IVariable* var)
-{
-  ARCANE_CHECK_POINTER(var);
-  INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
-  if (!numapi)
-    ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data", var->name());
-  bool is_compare_sync = m_variable_synchronizer_mng->isCompareSynchronize();
-  DataSynchronizeResult result = _synchronize(numapi, is_compare_sync);
-  eDataSynchronizeCompareStatus s = result.compareStatus();
-  if (is_compare_sync) {
-    if (s == eDataSynchronizeCompareStatus::Different)
-      info() << "Different values name=" << var->name();
-    else if (s == eDataSynchronizeCompareStatus::Same)
-      info() << "Same values name=" << var->name();
-    else
-      info() << "Unknown values name=" << var->name();
-  }
-  var->setIsSynchronized();
+  return m_default_message->synchronizeData(data, is_compare_sync);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -310,31 +379,16 @@ _canSynchronizeMulti(const VariableCollection& vars)
 void VariableSynchronizer::
 _synchronizeMulti(const VariableCollection& vars)
 {
-  IParallelMng* pm = m_parallel_mng;
-  ITimeStats* ts = pm->timeStats();
-  Timer::Phase tphase(ts, TP_Communication);
+  m_default_message->initialize(vars);
 
+  IParallelMng* pm = m_parallel_mng;
   debug(Trace::High) << " Proc " << pm->commRank() << " MultiSync variable";
   if (m_trace_sync) {
     info() << " MultiSynchronize"
            << " stack=" << platform::getStackTrace();
   }
 
-  // Debut de la synchro
-  VariableSynchronizerEventArgs& event_args = m_default_message->m_event_args;
-  event_args.initialize(vars);
-  _sendBeginEvent(event_args);
-
-  {
-    Timer::Sentry ts2(m_sync_timer);
-    m_default_message->m_multi_dispatcher->synchronize(vars);
-    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
-      (*ivar)->setIsSynchronized();
-    }
-  }
-
-  // Fin de la synchro
-  _sendEndEvent(event_args);
+  _doSynchronize(m_default_message);
 }
 
 /*---------------------------------------------------------------------------*/

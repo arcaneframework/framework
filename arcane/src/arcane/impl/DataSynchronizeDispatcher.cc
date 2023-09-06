@@ -276,7 +276,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcher
   }
 
   void compute() override {}
-  void synchronize(const VariableCollection& vars) override;
+  void synchronize(ConstArrayView<IVariable*> vars) override;
 
  private:
 
@@ -304,14 +304,14 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
   }
 
   void compute() override { _compute(); }
-  void synchronize(const VariableCollection& vars) override;
+  void synchronize(ConstArrayView<IVariable*> vars) override;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void DataSynchronizeMultiDispatcher::
-synchronize(const VariableCollection& vars)
+synchronize(ConstArrayView<IVariable*> vars)
 {
   Ref<IParallelExchanger> exchanger{ ParallelMngUtils::createExchangerRef(m_parallel_mng) };
   Integer nb_rank = m_sync_info->size();
@@ -327,13 +327,13 @@ synchronize(const VariableCollection& vars)
     ISerializer* sbuf = msg->serializer();
     Int32ConstArrayView share_ids = m_sync_info->sendInfo().localIds(i);
     sbuf->setMode(ISerializer::ModeReserve);
-    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
-      (*ivar)->serialize(sbuf, share_ids, nullptr);
+    for ( IVariable* var : vars ) {
+      var->serialize(sbuf, share_ids, nullptr);
     }
     sbuf->allocateBuffer();
     sbuf->setMode(ISerializer::ModePut);
-    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
-      (*ivar)->serialize(sbuf, share_ids, nullptr);
+    for ( IVariable* var : vars ) {
+      var->serialize(sbuf, share_ids, nullptr);
     }
   }
   exchanger->processExchange();
@@ -342,8 +342,8 @@ synchronize(const VariableCollection& vars)
     ISerializer* sbuf = msg->serializer();
     Int32ConstArrayView ghost_ids = m_sync_info->receiveInfo().localIds(i);
     sbuf->setMode(ISerializer::ModeGet);
-    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
-      (*ivar)->serialize(sbuf, ghost_ids, nullptr);
+    for ( IVariable* var : vars ) {
+      var->serialize(sbuf, ghost_ids, nullptr);
     }
   }
 }
@@ -355,20 +355,19 @@ synchronize(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 
 void DataSynchronizeMultiDispatcherV2::
-synchronize(const VariableCollection& vars)
+synchronize(ConstArrayView<IVariable*> vars)
 {
   ITraceMng* tm = m_parallel_mng->traceMng();
   MultiDataSynchronizeBuffer buffer(tm, m_sync_info.get(), m_buffer_copier);
 
-  const Int32 nb_var = vars.count();
+  const Int32 nb_var = vars.size();
   buffer.setNbData(nb_var);
 
   // Récupère les emplacements mémoire des données des variables et leur taille
   Int32 all_datatype_size = 0;
   {
     Int32 index = 0;
-    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
-      IVariable* var = *ivar;
+    for ( IVariable* var : vars ) {
       INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
       if (!numapi)
         ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data", var->name());
