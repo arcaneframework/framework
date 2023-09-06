@@ -51,10 +51,7 @@ class NullVariableSynchronizer
     return m_parallel_mng;
   }
 
-  const ItemGroup& itemGroup() override
-  {
-    return m_item_group;
-  }
+  ItemGroup itemGroup() override { return m_item_group; }
   void compute() override {}
   void changeLocalIds(Int32ConstArrayView old_to_new_ids) override
   {
@@ -68,7 +65,7 @@ class NullVariableSynchronizer
       m_on_synchronized.notify(args);
     }
   }
-  void synchronize(VariableCollection vars) override
+  void synchronize(const VariableCollection& vars) override
   {
     ARCANE_UNUSED(vars);
     if (m_on_synchronized.hasObservers()) {

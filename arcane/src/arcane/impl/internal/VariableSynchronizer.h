@@ -53,6 +53,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 , public IVariableSynchronizer
 {
   friend class VariableSynchronizerComputeList;
+  class SyncMessage;
 
  public:
 
@@ -67,10 +68,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
     return m_parallel_mng;
   }
 
-  const ItemGroup& itemGroup() override
-  {
-    return m_item_group;
-  }
+  ItemGroup itemGroup() override { return m_item_group; }
 
   void compute() override;
 
@@ -78,7 +76,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
   void synchronize(IVariable* var) override;
 
-  void synchronize(VariableCollection vars) override;
+  void synchronize(const VariableCollection& vars) override;
 
   Int32ConstArrayView communicatingRanks() override;
 
@@ -93,14 +91,16 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
     return m_on_synchronized;
   }
 
+ public:
+
+  IVariableSynchronizerMng* synchronizeMng() const { return m_variable_synchronizer_mng; }
+
  private:
 
   IParallelMng* m_parallel_mng = nullptr;
   ItemGroup m_item_group;
   Ref<DataSynchronizeInfo> m_sync_info;
   UniqueArray<Int32> m_communicating_ranks;
-  Ref<IDataSynchronizeDispatcher> m_dispatcher;
-  IDataSynchronizeMultiDispatcher* m_multi_dispatcher = nullptr;
   Timer* m_sync_timer = nullptr;
   bool m_is_verbose = false;
   bool m_allow_multi_sync = true;
@@ -108,13 +108,19 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
   Ref<IDataSynchronizeImplementationFactory> m_implementation_factory;
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
+  SyncMessage* m_default_message = nullptr;
 
  private:
 
-  void _synchronize(IVariable* var);
-  void _synchronizeMulti(VariableCollection vars);
+  void _synchronizeMulti(const VariableCollection& vars);
   bool _canSynchronizeMulti(const VariableCollection& vars);
   DataSynchronizeResult _synchronize(INumericDataInternal* data, bool is_compare_sync);
+  SyncMessage* _buildMessage();
+  void _sendBeginEvent(VariableSynchronizerEventArgs& args);
+  void _sendEndEvent(VariableSynchronizerEventArgs& args);
+  void _sendEvent(VariableSynchronizerEventArgs& args);
+  void _checkCreateTimer();
+  void _doSynchronize(SyncMessage* message);
 };
 
 /*---------------------------------------------------------------------------*/

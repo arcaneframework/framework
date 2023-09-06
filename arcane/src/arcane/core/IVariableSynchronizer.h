@@ -55,7 +55,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * L'implémentation actuelle supporte uniquement le groupe
    * de toutes les entités d'une famille.
    */
-  virtual const ItemGroup& itemGroup() = 0;
+  virtual ItemGroup itemGroup() = 0;
 
   /*!
    * \brief Recalcule les infos de synchronisation.
@@ -80,10 +80,11 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * Toutes les variables doivent être issues de la même famille
    * et de ce groupe d'entité.
    */
-  virtual void synchronize(VariableCollection vars) = 0;
+  virtual void synchronize(const VariableCollection& vars) = 0;
 
-  //! Rangs des sous-domaines avec lesquels on communique
-  /*! Plus précisément décrit les rangs des processeurs dont on _reçoit_ de l'info */
+  /*!
+   * \brief Rangs des sous-domaines avec lesquels on communique.
+   */
   virtual Int32ConstArrayView communicatingRanks() = 0;
 
   /*!

@@ -144,7 +144,7 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeMultiDispatcher
    * de \a DataSynchronizeInfo.
    */
   virtual void compute() = 0;
-  virtual void synchronize(const VariableCollection& vars) = 0;
+  virtual void synchronize(ConstArrayView<IVariable*> vars) = 0;
 
  public:
 
