@@ -51,15 +51,12 @@ class IBufferCopier
                                  MutableMemoryView buffer,
                                  ConstMemoryView var_value) = 0;
 
-  virtual IMemoryAllocator* allocator() const = 0;
-
   //! Bloque tant que les copies ne sont pas terminées.
   virtual void barrier() = 0;
 
  public:
 
   virtual void setRunQueue(RunQueue* queue) = 0;
-  virtual void setAllocator(IMemoryAllocator* allocator) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -87,15 +84,12 @@ class DirectBufferCopier
     buffer.copyFromIndexes(var_value, indexes, m_queue);
   }
 
-  IMemoryAllocator* allocator() const override { return m_allocator; }
   void barrier() override;
   void setRunQueue(RunQueue* queue) override { m_queue = queue; }
-  void setAllocator(IMemoryAllocator* allocator) override { m_allocator = allocator; }
 
  private:
 
   RunQueue* m_queue = nullptr;
-  IMemoryAllocator* m_allocator = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -127,11 +121,9 @@ class TableBufferCopier
     _buildFinalIndexes(final_indexes, indexes);
     m_base_copier.copyToBufferAsync(final_indexes, buffer, var_value);
   }
-  IMemoryAllocator* allocator() const override { return m_base_copier.allocator(); }
   void barrier() override { m_base_copier.barrier(); }
 
   void setRunQueue(RunQueue* queue) override { m_base_copier.setRunQueue(queue); }
-  void setAllocator(IMemoryAllocator* allocator) override { m_base_copier.setAllocator(allocator); }
 
  private:
 

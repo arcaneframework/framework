@@ -30,6 +30,7 @@ class IBufferCopier;
 class DataSynchronizeResult;
 class DataSynchronizeInfo;
 class DataSynchronizeBufferInfoList;
+class DataSynchronizeMemory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,10 +96,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
  public:
 
-  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, IBufferCopier* copier)
-  : m_sync_info(sync_info)
-  , m_buffer_copier(copier)
-  {}
+  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory);
 
  public:
 
@@ -134,11 +132,10 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
  protected:
 
   Int32 m_nb_rank = 0;
-  IBufferCopier* m_buffer_copier = nullptr;
   bool m_is_compare_sync_values = false;
 
   //! Buffer contenant les données concaténées en envoi et réception
-  UniqueArray<std::byte> m_buffer;
+  Ref<DataSynchronizeMemory> m_memory;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -151,8 +148,8 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
 {
  public:
 
-  SingleDataSynchronizeBuffer(DataSynchronizeInfo* sync_info, IBufferCopier* copier)
-  : DataSynchronizeBufferBase(sync_info, copier)
+  SingleDataSynchronizeBuffer(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory)
+  : DataSynchronizeBufferBase(sync_info, memory)
   {}
 
  public:
@@ -190,9 +187,9 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
 
  public:
 
-  MultiDataSynchronizeBuffer(ITraceMng* tm, DataSynchronizeInfo* sync_info, IBufferCopier* copier)
+  MultiDataSynchronizeBuffer(ITraceMng* tm, DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory)
   : TraceAccessor(tm)
-  , DataSynchronizeBufferBase(sync_info, copier)
+  , DataSynchronizeBufferBase(sync_info, memory)
   {}
 
  public:

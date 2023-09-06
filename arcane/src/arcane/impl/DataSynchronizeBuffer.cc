@@ -14,8 +14,9 @@
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
 
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/impl/IBufferCopier.h"
 #include "arcane/impl/DataSynchronizeInfo.h"
+#include "arcane/impl/internal/IBufferCopier.h"
+#include "arcane/impl/internal/DataSynchronizeMemory.h"
 
 #include "arcane/accelerator/core/Runner.h"
 
@@ -97,6 +98,17 @@ localIds(Int32 index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+DataSynchronizeBufferBase::
+DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory)
+: m_sync_info(sync_info)
+  //, m_buffer(makeRef<DataSynchronizeMemory>(new DataSynchronizeMemory(copier)))
+  , m_memory(memory)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Int32 DataSynchronizeBufferBase::
 targetRank(Int32 index) const
 {
@@ -109,7 +121,7 @@ targetRank(Int32 index) const
 void DataSynchronizeBufferBase::
 barrier()
 {
-  m_buffer_copier->barrier();
+  m_memory->copier()->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -129,10 +141,6 @@ _compute(Int32 datatype_size)
   m_share_buffer_info.m_buffer_info = &m_sync_info->sendInfo();
   m_compare_sync_buffer_info.m_datatype_size = datatype_size;
   m_compare_sync_buffer_info.m_buffer_info = &m_sync_info->receiveInfo();
-
-  IMemoryAllocator* allocator = m_buffer_copier->allocator();
-  if (allocator && allocator != m_buffer.allocator())
-    m_buffer = UniqueArray<std::byte>(allocator);
 
   _allocateBuffers(datatype_size);
 }
@@ -156,17 +164,18 @@ _allocateBuffers(Int32 datatype_size)
   Int64 total_size = total_ghost_buffer + total_share_buffer;
   if (m_is_compare_sync_values)
     total_size += total_ghost_buffer;
-  m_buffer.resize(total_size * full_dim2_size);
+  m_memory->resize(total_size * full_dim2_size);
 
   Int64 share_offset = total_ghost_buffer * full_dim2_size;
   Int64 check_sync_offset = share_offset + total_share_buffer * full_dim2_size;
 
-  auto s1 = m_buffer.span().subspan(0, share_offset);
+  Span<std::byte> buffer_span = m_memory->bytes();
+  auto s1 = buffer_span.subspan(0, share_offset);
   m_ghost_buffer_info.m_memory_view = makeMutableMemoryView(s1.data(), full_dim2_size, total_ghost_buffer);
-  auto s2 = m_buffer.span().subspan(share_offset, total_share_buffer * full_dim2_size);
+  auto s2 = buffer_span.subspan(share_offset, total_share_buffer * full_dim2_size);
   m_share_buffer_info.m_memory_view = makeMutableMemoryView(s2.data(), full_dim2_size, total_share_buffer);
   if (m_is_compare_sync_values) {
-    auto s3 = m_buffer.span().subspan(check_sync_offset, total_ghost_buffer * full_dim2_size);
+    auto s3 = buffer_span.subspan(check_sync_offset, total_ghost_buffer * full_dim2_size);
     m_compare_sync_buffer_info.m_memory_view = makeMutableMemoryView(s3.data(), full_dim2_size, total_ghost_buffer);
   }
 }
@@ -181,13 +190,12 @@ void SingleDataSynchronizeBuffer::
 copyReceiveAsync(Int32 index)
 {
   m_ghost_buffer_info.checkValid();
-  ARCANE_CHECK_POINTER(m_buffer_copier);
 
   MutableMemoryView var_values = dataView();
   ConstArrayView<Int32> indexes = m_ghost_buffer_info.localIds(index);
   ConstMemoryView local_buffer = m_ghost_buffer_info.localBuffer(index);
 
-  m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
+  m_memory->copier()->copyFromBufferAsync(indexes, local_buffer, var_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -196,13 +204,12 @@ copyReceiveAsync(Int32 index)
 void SingleDataSynchronizeBuffer::
 copySendAsync(Int32 index)
 {
-  ARCANE_CHECK_POINTER(m_buffer_copier);
   m_share_buffer_info.checkValid();
 
   ConstMemoryView var_values = dataView();
   ConstArrayView<Int32> indexes = m_share_buffer_info.localIds(index);
   MutableMemoryView local_buffer = m_share_buffer_info.localBuffer(index);
-  m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
+  m_memory->copier()->copyToBufferAsync(indexes, local_buffer, var_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -222,7 +229,7 @@ prepareSynchronize(Int32 datatype_size, bool is_compare_sync)
   for (Int32 i = 0; i < nb_rank; ++i) {
     ConstArrayView<Int32> indexes = m_compare_sync_buffer_info.localIds(i);
     MutableMemoryView local_buffer = m_compare_sync_buffer_info.localBuffer(i);
-    m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
+    m_memory->copier()->copyToBufferAsync(indexes, local_buffer, var_values);
   }
   // Normalement pas besoin de faire une barrière car ensuite il y aura les
   // envois sur la même \a queue et ensuite une barrière.
@@ -277,7 +284,7 @@ prepareSynchronize(Int32 datatype_size, [[maybe_unused]] bool is_compare_sync)
 void MultiDataSynchronizeBuffer::
 copyReceiveAsync(Int32 index)
 {
-  ARCANE_CHECK_POINTER(m_buffer_copier);
+  IBufferCopier* copier = m_memory->copier();
   m_ghost_buffer_info.checkValid();
 
   Int64 data_offset = 0;
@@ -290,7 +297,7 @@ copyReceiveAsync(Int32 index)
     Span<const std::byte> sub_local_buffer_bytes = local_buffer_bytes.subSpan(data_offset, current_size_in_bytes);
     ConstMemoryView local_buffer = makeConstMemoryView(sub_local_buffer_bytes.data(), datatype_size, nb_element);
     if (current_size_in_bytes != 0)
-      m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
+      copier->copyFromBufferAsync(indexes, local_buffer, var_values);
     data_offset += current_size_in_bytes;
   }
 }
@@ -301,7 +308,7 @@ copyReceiveAsync(Int32 index)
 void MultiDataSynchronizeBuffer::
 copySendAsync(Int32 index)
 {
-  ARCANE_CHECK_POINTER(m_buffer_copier);
+  IBufferCopier* copier = m_memory->copier();
   m_ghost_buffer_info.checkValid();
 
   Int64 data_offset = 0;
@@ -314,7 +321,7 @@ copySendAsync(Int32 index)
     Span<std::byte> sub_local_buffer_bytes = local_buffer_bytes.subSpan(data_offset, current_size_in_bytes);
     MutableMemoryView local_buffer = makeMutableMemoryView(sub_local_buffer_bytes.data(), datatype_size, nb_element);
     if (current_size_in_bytes != 0)
-      m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
+      copier->copyToBufferAsync(indexes, local_buffer, var_values);
     data_offset += current_size_in_bytes;
   }
 }

@@ -35,8 +35,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class DataSynchronizeResult;
+class DataSynchronizeMemory;
 class IVariableSynchronizerDispatcher;
-class GroupIndexTable;
 class INumericDataInternal;
 
 /*---------------------------------------------------------------------------*/
@@ -48,35 +48,33 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
 {
  public:
 
-  DataSynchronizeDispatcherBuildInfo(IParallelMng* pm, GroupIndexTable* table,
+  DataSynchronizeDispatcherBuildInfo(IParallelMng* pm,
                                      Ref<IDataSynchronizeImplementationFactory> factory,
-                                     Ref<DataSynchronizeInfo> sync_info)
+                                     Ref<DataSynchronizeInfo> sync_info,
+                                     Ref<DataSynchronizeMemory> memory,
+                                     Runner* runner)
   : m_parallel_mng(pm)
-  , m_table(table)
   , m_factory(factory)
   , m_synchronize_info(sync_info)
+  , m_synchronize_memory(memory)
+  , m_runner(runner)
   {}
 
  public:
 
   IParallelMng* parallelMng() const { return m_parallel_mng; }
-  //! Table d'index pour le groupe. Peut-être nul.
-  GroupIndexTable* table() const { return m_table; }
-  Ref<IDataSynchronizeImplementationFactory> factory() const
-  {
-    return m_factory;
-  }
-  Ref<DataSynchronizeInfo> synchronizeInfo() const
-  {
-    return m_synchronize_info;
-  }
+  Ref<IDataSynchronizeImplementationFactory> factory() const { return m_factory; }
+  Ref<DataSynchronizeInfo> synchronizeInfo() const { return m_synchronize_info; }
+  Ref<DataSynchronizeMemory> synchronizeMemory() const { return m_synchronize_memory; }
+  Runner* runner() const { return m_runner; }
 
  private:
 
-  IParallelMng* m_parallel_mng;
-  GroupIndexTable* m_table;
+  IParallelMng* m_parallel_mng = nullptr;
   Ref<IDataSynchronizeImplementationFactory> m_factory;
   Ref<DataSynchronizeInfo> m_synchronize_info;
+  Ref<DataSynchronizeMemory> m_synchronize_memory;
+  Runner* m_runner = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -15,7 +15,6 @@
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/ITraceMng.h"
@@ -26,14 +25,14 @@
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IData.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/accelerator/core/Runner.h"
 
-#include "arcane/impl/IBufferCopier.h"
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
+#include "arcane/impl/internal/DataSynchronizeMemory.h"
+#include "arcane/impl/internal/IBufferCopier.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,7 +68,6 @@ class DataSynchronizeDispatcherBase
  protected:
 
   IParallelMng* m_parallel_mng = nullptr;
-  IBufferCopier* m_buffer_copier = nullptr;
   Runner* m_runner = nullptr;
   Ref<DataSynchronizeInfo> m_sync_info;
   Ref<IDataSynchronizeImplementation> m_implementation_instance;
@@ -92,25 +90,7 @@ DataSynchronizeDispatcherBase(const DataSynchronizeDispatcherBuildInfo& bi)
   m_implementation_instance = bi.factory()->createInstance();
   m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
 
-  ARCANE_CHECK_POINTER(m_sync_info.get());
-  if (bi.table())
-    m_buffer_copier = new TableBufferCopier(bi.table());
-  else
-    m_buffer_copier = new DirectBufferCopier();
-
-  auto* internal_pm = m_parallel_mng->_internalApi();
-  Runner* runner = internal_pm->defaultRunner();
-  bool is_accelerator_aware = internal_pm->isAcceleratorAware();
-
-  // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
-  // buffer sur le device. On pourrait utiliser le mémoire managée mais certaines
-  // implémentations MPI (i.e: BXI) ne le supportent pas.
-  if (runner && is_accelerator_aware) {
-    m_runner = runner;
-    m_buffer_copier->setRunQueue(internal_pm->defaultQueue());
-    auto* a = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
-    m_buffer_copier->setAllocator(a);
-  }
+  m_runner = bi.runner();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -119,7 +99,6 @@ DataSynchronizeDispatcherBase(const DataSynchronizeDispatcherBuildInfo& bi)
 DataSynchronizeDispatcherBase::
 ~DataSynchronizeDispatcherBase()
 {
-  delete m_buffer_copier;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,7 +149,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
 
   explicit DataSynchronizeDispatcher(const DataSynchronizeDispatcherBuildInfo& bi)
   : DataSynchronizeDispatcherBase(bi)
-  , m_sync_buffer(m_sync_info.get(), m_buffer_copier)
+  , m_sync_buffer(m_sync_info.get(), bi.synchronizeMemory())
   {
   }
 
@@ -300,11 +279,16 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
 
   explicit DataSynchronizeMultiDispatcherV2(const DataSynchronizeDispatcherBuildInfo& bi)
   : DataSynchronizeDispatcherBase(bi)
+  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.synchronizeMemory())
   {
   }
 
   void compute() override { _compute(); }
   void synchronize(ConstArrayView<IVariable*> vars) override;
+
+ private:
+
+  MultiDataSynchronizeBuffer m_sync_buffer;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -327,12 +311,12 @@ synchronize(ConstArrayView<IVariable*> vars)
     ISerializer* sbuf = msg->serializer();
     Int32ConstArrayView share_ids = m_sync_info->sendInfo().localIds(i);
     sbuf->setMode(ISerializer::ModeReserve);
-    for ( IVariable* var : vars ) {
+    for (IVariable* var : vars) {
       var->serialize(sbuf, share_ids, nullptr);
     }
     sbuf->allocateBuffer();
     sbuf->setMode(ISerializer::ModePut);
-    for ( IVariable* var : vars ) {
+    for (IVariable* var : vars) {
       var->serialize(sbuf, share_ids, nullptr);
     }
   }
@@ -342,7 +326,7 @@ synchronize(ConstArrayView<IVariable*> vars)
     ISerializer* sbuf = msg->serializer();
     Int32ConstArrayView ghost_ids = m_sync_info->receiveInfo().localIds(i);
     sbuf->setMode(ISerializer::ModeGet);
-    for ( IVariable* var : vars ) {
+    for (IVariable* var : vars) {
       var->serialize(sbuf, ghost_ids, nullptr);
     }
   }
@@ -357,23 +341,20 @@ synchronize(ConstArrayView<IVariable*> vars)
 void DataSynchronizeMultiDispatcherV2::
 synchronize(ConstArrayView<IVariable*> vars)
 {
-  ITraceMng* tm = m_parallel_mng->traceMng();
-  MultiDataSynchronizeBuffer buffer(tm, m_sync_info.get(), m_buffer_copier);
-
   const Int32 nb_var = vars.size();
-  buffer.setNbData(nb_var);
+  m_sync_buffer.setNbData(nb_var);
 
   // Récupère les emplacements mémoire des données des variables et leur taille
   Int32 all_datatype_size = 0;
   {
     Int32 index = 0;
-    for ( IVariable* var : vars ) {
+    for (IVariable* var : vars) {
       INumericDataInternal* numapi = var->data()->_commonInternal()->numericData();
       if (!numapi)
         ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data", var->name());
       MutableMemoryView mem_view = numapi->memoryView();
       all_datatype_size += mem_view.datatypeSize();
-      buffer.setDataView(index, mem_view);
+      m_sync_buffer.setDataView(index, mem_view);
       ++index;
     }
   }
@@ -382,10 +363,10 @@ synchronize(ConstArrayView<IVariable*> vars)
 
   // TODO: à passer en paramètre de la fonction
   bool is_compare_sync = false;
-  buffer.prepareSynchronize(all_datatype_size, is_compare_sync);
+  m_sync_buffer.prepareSynchronize(all_datatype_size, is_compare_sync);
 
-  m_implementation_instance->beginSynchronize(&buffer);
-  m_implementation_instance->endSynchronize(&buffer);
+  m_implementation_instance->beginSynchronize(&m_sync_buffer);
+  m_implementation_instance->endSynchronize(&m_sync_buffer);
 }
 
 /*---------------------------------------------------------------------------*/

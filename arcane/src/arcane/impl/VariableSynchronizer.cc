@@ -24,6 +24,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/Array2.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
 
 #include "arcane/core/VariableSynchronizerEventArgs.h"
 #include "arcane/core/IParallelMng.h"
@@ -38,9 +39,12 @@
 #include "arcane/core/IVariableSynchronizerMng.h"
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/VariableSynchronizerComputeList.h"
+#include "arcane/impl/internal/IBufferCopier.h"
+#include "arcane/impl/internal/DataSynchronizeMemory.h"
 
 #include <algorithm>
 
@@ -215,7 +219,30 @@ _buildMessage()
   GroupIndexTable* table = nullptr;
   if (!m_item_group.isAllItems())
     table = m_item_group.localIdToIndex().get();
-  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, table, m_implementation_factory, m_sync_info);
+
+  Ref<IBufferCopier> buffer_copier;
+  if (table)
+    buffer_copier = makeRef<IBufferCopier>(new TableBufferCopier(table));
+  else
+    buffer_copier = makeRef<IBufferCopier>(new DirectBufferCopier());
+
+  auto* internal_pm = m_parallel_mng->_internalApi();
+  Runner* runner = internal_pm->defaultRunner();
+  bool is_accelerator_aware = internal_pm->isAcceleratorAware();
+  IMemoryAllocator* allocator = nullptr;
+  // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
+  // buffer sur le device. On pourrait utiliser la mémoire managée mais certaines
+  // implémentations MPI (i.e: BXI) ne le supportent pas.
+  if (runner && is_accelerator_aware) {
+    //m_runner = runner;
+    buffer_copier->setRunQueue(internal_pm->defaultQueue());
+    allocator = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
+  }
+
+  DataSynchronizeMemory* memory = new DataSynchronizeMemory(buffer_copier, allocator);
+  Ref<DataSynchronizeMemory> ref_memory = makeRef<DataSynchronizeMemory>(memory);
+
+  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, m_implementation_factory, m_sync_info, ref_memory, runner);
   return new SyncMessage(bi, this);
 }
 
