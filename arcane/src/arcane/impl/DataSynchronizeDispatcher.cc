@@ -31,9 +31,9 @@
 
 #include "arcane/accelerator/core/Runner.h"
 
-#include "arcane/impl/IBufferCopier.h"
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
+#include "arcane/impl/internal/IBufferCopier.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

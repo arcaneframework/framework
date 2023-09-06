@@ -139,6 +139,7 @@ set( ARCANE_SOURCES
   internal/ArcaneMainExecInfo.h
   internal/DataSynchronizeBuffer.h
   internal/IDataSynchronizeDispatcher.h
+  internal/IBufferCopier.h
   internal/LegacyMeshBuilder.h
   internal/LegacyMeshBuilder.cc
   internal/MeshFactoryMng.h
