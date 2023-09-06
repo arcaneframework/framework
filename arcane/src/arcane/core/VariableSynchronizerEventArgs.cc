@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizerEventArgs.cc                            (C) 2000-2017 */
+/* VariableSynchronizerEventArgs.cc                            (C) 2000-2023 */
 /*                                                                           */
 /* Arguments des évènements générés par IVariableSynchronizer.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/VariableSynchronizerEventArgs.h"
 #include "arcane/VariableCollection.h"
@@ -19,18 +17,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VariableSynchronizerEventArgs::
 VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs,Real elapsed_time, State state)
-: m_unique_variable(var)
-, m_var_syncer(vs)
+: m_var_syncer(vs)
 , m_elapsed_time(elapsed_time)
 , m_state(state)
 {
+  setVariable(var);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -38,14 +37,11 @@ VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs,Real elap
 
 VariableSynchronizerEventArgs::
 VariableSynchronizerEventArgs(VariableCollection vars,IVariableSynchronizer* vs,Real elapsed_time, State state)
-: m_unique_variable(nullptr)
-, m_var_syncer(vs)
+: m_var_syncer(vs)
 , m_elapsed_time(elapsed_time)
 , m_state(state)
 {
-  m_variables.reserve(vars.count());
-  for( VariableCollectionEnumerator v(vars); ++v; )
-    m_variables.add(*v);
+  setVariables(vars);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -53,11 +49,9 @@ VariableSynchronizerEventArgs(VariableCollection vars,IVariableSynchronizer* vs,
 
 VariableSynchronizerEventArgs::
 VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs)
-: m_unique_variable(var)
-, m_var_syncer(vs)
-, m_elapsed_time(0.)
-, m_state(State::BeginSynchronize)
+: m_var_syncer(vs)
 {
+  setVariable(var);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -65,14 +59,9 @@ VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs)
 
 VariableSynchronizerEventArgs::
 VariableSynchronizerEventArgs(VariableCollection vars,IVariableSynchronizer* vs)
-: m_unique_variable(nullptr)
-, m_var_syncer(vs)
-, m_elapsed_time(0.)
-, m_state(State::BeginSynchronize)
+: m_var_syncer(vs)
 {
-  m_variables.reserve(vars.count());
-  for( VariableCollectionEnumerator v(vars); ++v; )
-    m_variables.add(*v);
+  setVariables(vars);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -90,15 +79,35 @@ VariableSynchronizerEventArgs::
 ConstArrayView<IVariable*> VariableSynchronizerEventArgs::
 variables() const
 {
-  if (m_unique_variable)
-    return ConstArrayView<IVariable*>(1,&m_unique_variable);
   return m_variables.view();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+void VariableSynchronizerEventArgs::
+setVariables(const VariableCollection& vars)
+{
+  m_variables.clear();
+  m_variables.reserve(vars.count());
+  for( VariableCollectionEnumerator v(vars); ++v; )
+    m_variables.add(*v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizerEventArgs::
+setVariable(IVariable* var)
+{
+  m_variables.clear();
+  m_variables.add(var);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
