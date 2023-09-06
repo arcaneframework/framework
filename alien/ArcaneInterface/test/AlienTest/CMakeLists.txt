@@ -20,7 +20,6 @@ if (TARGET intel)
 endif ()
 
 linkLibraries(alien_arcane_test.exe
-        Boost::boost
         Alien::alien_core
         Alien::alien_semantic_move
         alien_external_packages

@@ -18,7 +18,6 @@ if (TARGET intel)
 endif ()
 
 linkLibraries(alien_bench.exe
-        Boost::boost
         Alien::alien_core
         Alien::alien_semantic_ref
         alien_external_packages

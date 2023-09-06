@@ -5,14 +5,6 @@
 #include <time.h>
 #include <vector>
 #include <fstream>
-#include <boost/timer.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/cmdline.hpp>
-#include <boost/program_options/variables_map.hpp>
-#include <boost/timer.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <arcane/ArcaneVersion.h>
 #include <arcane/Timer.h>
