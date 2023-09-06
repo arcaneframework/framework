@@ -24,24 +24,26 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 VariableSynchronizerEventArgs::
-VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs,Real elapsed_time, State state)
+VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs,
+                              Real elapsed_time, State state)
 : m_var_syncer(vs)
-, m_elapsed_time(elapsed_time)
-, m_state(state)
 {
-  setVariable(var);
+  initialize(var);
+  m_state = state;
+  m_elapsed_time = elapsed_time;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VariableSynchronizerEventArgs::
-VariableSynchronizerEventArgs(VariableCollection vars,IVariableSynchronizer* vs,Real elapsed_time, State state)
+VariableSynchronizerEventArgs(VariableCollection vars,IVariableSynchronizer* vs,
+                              Real elapsed_time, State state)
 : m_var_syncer(vs)
-, m_elapsed_time(elapsed_time)
-, m_state(state)
 {
-  setVariables(vars);
+  initialize(vars);
+  m_state = state;
+  m_elapsed_time = elapsed_time;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -51,7 +53,7 @@ VariableSynchronizerEventArgs::
 VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs)
 : m_var_syncer(vs)
 {
-  setVariable(var);
+  initialize(var);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -61,15 +63,7 @@ VariableSynchronizerEventArgs::
 VariableSynchronizerEventArgs(VariableCollection vars,IVariableSynchronizer* vs)
 : m_var_syncer(vs)
 {
-  setVariables(vars);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-VariableSynchronizerEventArgs::
-~VariableSynchronizerEventArgs()
-{
+  initialize(vars);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -86,9 +80,9 @@ variables() const
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerEventArgs::
-setVariables(const VariableCollection& vars)
+initialize(const VariableCollection& vars)
 {
-  m_variables.clear();
+  _reset();
   m_variables.reserve(vars.count());
   for( VariableCollectionEnumerator v(vars); ++v; )
     m_variables.add(*v);
@@ -98,10 +92,21 @@ setVariables(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerEventArgs::
-setVariable(IVariable* var)
+initialize(IVariable* var)
 {
   m_variables.clear();
   m_variables.add(var);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizerEventArgs::
+_reset()
+{
+  m_elapsed_time = 0.0;
+  m_state = State::BeginSynchronize;
+  m_variables.clear();
 }
 
 /*---------------------------------------------------------------------------*/

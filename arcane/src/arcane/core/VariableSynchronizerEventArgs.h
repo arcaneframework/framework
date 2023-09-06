@@ -31,24 +31,33 @@ namespace Arcane
 /*!
  * \brief Arguments de l'évènement notifiant une synchronisation de
  * variables.
+ *
+ * Les instances de cette classe peuvent être utilisées plusieurs fois.
+ * Il faut appeler initialize() pour initialiser ou réinitialiser l'instance
+ * avec les valeurs par défaut.
  */
 class ARCANE_CORE_EXPORT VariableSynchronizerEventArgs
 {
  public:
 
-  //! Enum pour savoir si on est au debut ou a la fin de la synchronisation
+  //! Enum pour savoir si on est au début ou à la fin de la synchronisation
   enum class State
   {
     BeginSynchronize,
     EndSynchronize
   };
 
+  ARCANE_DEPRECATED_REASON("Y2023: Use VariableSynchronizerEventArgs(IVariableSynchronizer* vs) and call initialize() instead")
   VariableSynchronizerEventArgs(VariableCollection vars, IVariableSynchronizer* vs,
                                 Real elapsed_time, State state = State::EndSynchronize);
+  ARCANE_DEPRECATED_REASON("Y2023: Use VariableSynchronizerEventArgs(IVariableSynchronizer* vs) and call initialize() instead")
   VariableSynchronizerEventArgs(IVariable* var, IVariableSynchronizer* vs,
                                 Real elapsed_time, State state = State::EndSynchronize);
-  // Constructor sans temps => debut de synchronisation
+
+  ARCANE_DEPRECATED_REASON("Y2023: Use VariableSynchronizerEventArgs(IVariableSynchronizer* vs) and call initialize() instead")
   VariableSynchronizerEventArgs(VariableCollection vars, IVariableSynchronizer* vs);
+
+  ARCANE_DEPRECATED_REASON("Y2023: Use VariableSynchronizerEventArgs(IVariableSynchronizer* vs) and call initialize() instead")
   VariableSynchronizerEventArgs(IVariable* var, IVariableSynchronizer* vs);
 
   VariableSynchronizerEventArgs(IVariableSynchronizer* vs)
@@ -57,25 +66,20 @@ class ARCANE_CORE_EXPORT VariableSynchronizerEventArgs
 
  public:
 
-  VariableSynchronizerEventArgs(const VariableSynchronizerEventArgs& rhs) = default;
-  ~VariableSynchronizerEventArgs();
-  VariableSynchronizerEventArgs& operator=(const VariableSynchronizerEventArgs& rhs) = default;
+  void initialize(const VariableCollection& vars);
+  void initialize(IVariable* var);
 
- public:
-
-  //! Synchroniseur utilisé.
+  //! Synchroniseur associé.
   IVariableSynchronizer* synchronizer() const { return m_var_syncer; }
 
   //! Liste des variables synchronisées.
   ConstArrayView<IVariable*> variables() const;
-  void setVariables(const VariableCollection& vars);
-  void setVariable(IVariable* var);
 
   //! Temps passé dans la synchronisation.
   Real elapsedTime() const { return m_elapsed_time; }
   void setElapsedTime(Real v) { m_elapsed_time = v; }
 
-  //! Indicateur du moment de l'evenement
+  //! Indicateur du moment de l'évènement
   State state() const { return m_state; }
   void setState(State v) { m_state = v; }
 
@@ -85,6 +89,10 @@ class ARCANE_CORE_EXPORT VariableSynchronizerEventArgs
   UniqueArray<IVariable*> m_variables;
   Real m_elapsed_time = 0.0;
   State m_state = State::BeginSynchronize;
+
+ private:
+
+  void _reset();
 };
 
 /*---------------------------------------------------------------------------*/

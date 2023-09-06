@@ -184,7 +184,7 @@ synchronize(IVariable* var)
 
   // Debut de la synchro
   VariableSynchronizerEventArgs& event_args = m_default_message->m_event_args;
-  event_args.setVariable(var);
+  event_args.initialize(var);
   _sendBeginEvent(event_args);
 
   {
@@ -322,7 +322,7 @@ _synchronizeMulti(const VariableCollection& vars)
 
   // Debut de la synchro
   VariableSynchronizerEventArgs& event_args = m_default_message->m_event_args;
-  event_args.setVariables(vars);
+  event_args.initialize(vars);
   _sendBeginEvent(event_args);
 
   {
