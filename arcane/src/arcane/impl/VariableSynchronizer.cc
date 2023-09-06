@@ -60,9 +60,10 @@ class VariableSynchronizer::SyncMessage
 {
  public:
 
-  SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi)
+  SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi, VariableSynchronizer* var_syncer)
   : m_dispatcher(IDataSynchronizeDispatcher::create(bi))
   , m_multi_dispatcher(IDataSynchronizeMultiDispatcher::create(bi))
+  , m_event_args(var_syncer)
   {
     if (!m_dispatcher)
       ARCANE_FATAL("No synchronizer created");
@@ -92,6 +93,7 @@ class VariableSynchronizer::SyncMessage
 
   Ref<IDataSynchronizeDispatcher> m_dispatcher;
   IDataSynchronizeMultiDispatcher* m_multi_dispatcher = nullptr;
+  VariableSynchronizerEventArgs m_event_args;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -145,7 +147,7 @@ _buildMessage()
   if (!m_item_group.isAllItems())
     table = m_item_group.localIdToIndex().get();
   DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, table, m_implementation_factory, m_sync_info);
-  return new SyncMessage(bi);
+  return new SyncMessage(bi, this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -179,28 +181,19 @@ synchronize(IVariable* var)
     info() << " Synchronize variable " << var->fullName()
            << " stack=" << platform::getStackTrace();
   }
-  auto& global_on_synchronized = m_variable_synchronizer_mng->onSynchronized();
-  bool has_observers = global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers();
+
   // Debut de la synchro
-  if (has_observers) {
-    VariableSynchronizerEventArgs args(var, this);
-    global_on_synchronized.notify(args);
-    m_on_synchronized.notify(args);
-  }
-  if (!m_sync_timer)
-    m_sync_timer = new Timer(pm->timerMng(), "SyncTimer", Timer::TimerReal);
+  VariableSynchronizerEventArgs& event_args = m_default_message->m_event_args;
+  event_args.setVariable(var);
+  _sendBeginEvent(event_args);
+
   {
     Timer::Sentry ts2(m_sync_timer);
     _synchronize(var);
   }
-  Real elapsed_time = m_sync_timer->lastActivationTime();
-  pm->stat()->add("Synchronize", elapsed_time, 1);
+
   // Fin de la synchro
-  if (global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers()) {
-    VariableSynchronizerEventArgs args(var, this, elapsed_time);
-    global_on_synchronized.notify(args);
-    m_on_synchronized.notify(args);
-  }
+  _sendEndEvent(event_args);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -315,7 +308,7 @@ _canSynchronizeMulti(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizer::
-_synchronizeMulti(VariableCollection vars)
+_synchronizeMulti(const VariableCollection& vars)
 {
   IParallelMng* pm = m_parallel_mng;
   ITimeStats* ts = pm->timeStats();
@@ -326,16 +319,12 @@ _synchronizeMulti(VariableCollection vars)
     info() << " MultiSynchronize"
            << " stack=" << platform::getStackTrace();
   }
+
   // Debut de la synchro
-  auto& global_on_synchronized = m_variable_synchronizer_mng->onSynchronized();
-  bool has_observers = global_on_synchronized.hasObservers() || m_on_synchronized.hasObservers();
-  if (has_observers) {
-    VariableSynchronizerEventArgs args(vars, this);
-    global_on_synchronized.notify(args);
-    m_on_synchronized.notify(args);
-  }
-  if (!m_sync_timer)
-    m_sync_timer = new Timer(pm->timerMng(), "SyncTimer", Timer::TimerReal);
+  VariableSynchronizerEventArgs& event_args = m_default_message->m_event_args;
+  event_args.setVariables(vars);
+  _sendBeginEvent(event_args);
+
   {
     Timer::Sentry ts2(m_sync_timer);
     m_default_message->m_multi_dispatcher->synchronize(vars);
@@ -343,14 +332,9 @@ _synchronizeMulti(VariableCollection vars)
       (*ivar)->setIsSynchronized();
     }
   }
-  Real elapsed_time = m_sync_timer->lastActivationTime();
-  pm->stat()->add("MultiSynchronize", elapsed_time, 1);
+
   // Fin de la synchro
-  if (has_observers) {
-    VariableSynchronizerEventArgs args(vars, this, elapsed_time);
-    global_on_synchronized.notify(args);
-    m_on_synchronized.notify(args);
-  }
+  _sendEndEvent(event_args);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -378,6 +362,51 @@ Int32ConstArrayView VariableSynchronizer::
 ghostItems(Int32 index)
 {
   return m_sync_info->receiveInfo().localIds(index);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
+_sendBeginEvent(VariableSynchronizerEventArgs& args)
+{
+  _checkCreateTimer();
+  args.setState(VariableSynchronizerEventArgs::State::BeginSynchronize);
+  _sendEvent(args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
+_sendEndEvent(VariableSynchronizerEventArgs& args)
+{
+  ARCANE_CHECK_POINTER(m_sync_timer);
+  Real elapsed_time = m_sync_timer->lastActivationTime();
+  m_parallel_mng->stat()->add("Synchronize", elapsed_time, 1);
+  args.setState(VariableSynchronizerEventArgs::State::EndSynchronize);
+  args.setElapsedTime(elapsed_time);
+  _sendEvent(args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
+_sendEvent(VariableSynchronizerEventArgs& args)
+{
+  m_variable_synchronizer_mng->onSynchronized().notify(args);
+  m_on_synchronized.notify(args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
+_checkCreateTimer()
+{
+  if (!m_sync_timer)
+    m_sync_timer = new Timer(m_parallel_mng->timerMng(), "SyncTimer", Timer::TimerReal);
 }
 
 /*---------------------------------------------------------------------------*/

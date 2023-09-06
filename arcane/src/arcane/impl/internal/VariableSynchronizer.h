@@ -112,10 +112,14 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   private:
 
   void _synchronize(IVariable* var);
-  void _synchronizeMulti(VariableCollection vars);
+  void _synchronizeMulti(const VariableCollection& vars);
   bool _canSynchronizeMulti(const VariableCollection& vars);
   DataSynchronizeResult _synchronize(INumericDataInternal* data, bool is_compare_sync);
   SyncMessage* _buildMessage();
+  void _sendBeginEvent(VariableSynchronizerEventArgs& args);
+  void _sendEndEvent(VariableSynchronizerEventArgs& args);
+  void _sendEvent(VariableSynchronizerEventArgs& args);
+  void _checkCreateTimer();
 };
 
 /*---------------------------------------------------------------------------*/
