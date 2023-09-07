@@ -61,9 +61,10 @@ jobs:
         id: get-date
         shell: bash
         run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      - name: Get cache
-        id: get-cache
-        uses: actions/cache@v3
+
+      - name: Restore cache
+        id: restore-cache
+        uses: actions/cache/restore@v3
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ matrix.config.ccache_key_prefix }}-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
@@ -122,3 +123,13 @@ jobs:
           name: test-artifact
           path: ${{ env.BUILD_DIR }}/Testing
           retention-days: 1
+
+      - name: Save cache
+        id: save-cache
+        if: |
+          (success() || failure()) &&
+          steps.build.outcome == 'success'
+        uses: actions/cache/save@v3
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
