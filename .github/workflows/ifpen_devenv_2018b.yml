@@ -96,7 +96,7 @@ jobs:
         shell: bash
         run: cmake --build ${{ env.BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
 
-      - name: Install Framework
+      - name: Install
         id: install
         if: |
           (success() || failure()) &&
@@ -120,6 +120,6 @@ jobs:
           (success() || failure()) &&
           steps.test.outcome == 'failure'
         with:
-          name: framework-test-artifact
+          name: test-artifact
           path: ${{ env.BUILD_DIR }}/Testing
           retention-days: 1
