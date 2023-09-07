@@ -62,7 +62,7 @@ jobs:
             equal: [ quick, <<parameters.exec_type>> ]
           steps:
             - run:
-                name: Quick exec specific variables
+                name: (Quick) Set specific variables
                 command: |
                   echo 'export CT_REGEX="^.*(mpithread|proc|thread|hybrid4).*$"' >> $BASH_ENV
                   echo 'export CT_OPTS="-j 4 --repeat until-pass:10 --timeout 60 --output-on-failure"' >> $BASH_ENV
@@ -72,7 +72,7 @@ jobs:
             equal: [ normal, <<parameters.exec_type>> ]
           steps:
             - run:
-                name: Normal exec specific variables
+                name: (Normal) Set specific variables
                 command: |
                   echo 'export CT_REGEX="^.*(mpithread|[5-9]proc|[1-9][0-9]+proc|[9-9]thread|[1-9][0-9]+thread).*$"' >> $BASH_ENV
                   echo 'export CT_OPTS="--timeout 300 --output-on-failure"' >> $BASH_ENV
@@ -82,15 +82,29 @@ jobs:
             equal: [ arm64, <<parameters.arch>> ]
           steps:
             - run:
-                name: ARM64 specific variables
+                name: (ARM64) Set specific variables
                 command: |
                   echo 'export CT_REGEX="${CT_REGEX}|^utils1$|^hydro5_papi_backtrace$|^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"' >> $BASH_ENV
 
       - run:
-          name: Echo variables
+          name: "Compute build type"
           command: |
-            echo $CT_REGEX
-            echo $CT_OPTS
+            if [[ "<<parameters.type_build>>" == "Check" ]]; then
+              CMAKE_BUILD_TYPE="Release"
+            else
+              CMAKE_BUILD_TYPE="<<parameters.type_build>>"
+            fi
+            echo 'export ACTION_CMAKE_ADD_ARGS="${ACTION_CMAKE_ADD_ARGS} \
+            -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE \
+            -DARCCORE_BUILD_MODE=<<parameters.type_build>> \
+            -DARCANE_BUILD_TYPE=<<parameters.type_build>> \
+            "' >> $BASH_ENV
+
+      - run:
+          name: Display set variables
+          command: |
+            echo "CT_REGEX = $CT_REGEX"
+            echo "CT_OPTS = $CT_OPTS"
 
       - checkout
       - run:
@@ -121,13 +135,13 @@ jobs:
             -DCMAKE_CXX_FLAGS_RELEASE="-O2" \
             -DCMAKE_VERBOSE_MAKEFILE=TRUE \
             -DCMAKE_DISABLE_FIND_PACKAGE_Papi=TRUE \
-            -DCMAKE_BUILD_TYPE=<<parameters.type_build>> \
             -DBUILD_SHARED_LIBS=TRUE \
             -DARCANE_DEFAULT_PARTITIONER=Metis \
             -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
             -DARCCON_REGISTER_PACKAGE_VERSION=2 \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+            -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+            ${ACTION_CMAKE_ADD_ARGS}
 
       - run:
           name: Build 'framework'
