@@ -27,8 +27,6 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/internal/IDataInternal.h"
 
-#include "arcane/accelerator/core/Runner.h"
-
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
 #include "arcane/impl/internal/DataSynchronizeMemory.h"
@@ -74,7 +72,6 @@ class DataSynchronizeDispatcherBase
 
  protected:
 
-  void _setCurrentDevice();
   void _compute();
 };
 
@@ -87,7 +84,6 @@ DataSynchronizeDispatcherBase(const DataSynchronizeDispatcherBuildInfo& bi)
 , m_sync_info(bi.synchronizeInfo())
 , m_synchronize_implementation(bi.synchronizeImplementation())
 {
-  m_runner = bi.runner();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -101,29 +97,12 @@ DataSynchronizeDispatcherBase::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Positionne le device associé à notre RunQueue comme le device courant.
- *
- * Si on utilise une RunQueue, positionne le device associé à celui
- * de cette RunQueue. Cela permet de garantir que les allocations mémoires
- * effectuées lors des synchronisations seront sur le bon device.
- */
-void DataSynchronizeDispatcherBase::
-_setCurrentDevice()
-{
-  if (m_runner)
-    m_runner->setAsCurrentDevice();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Notifie l'implémentation que les informations de synchronisation
  * ont changé.
  */
 void DataSynchronizeDispatcherBase::
 _compute()
 {
-  _setCurrentDevice();
   m_synchronize_implementation->compute();
 }
 
@@ -185,7 +164,6 @@ beginSynchronize(INumericDataInternal* data, bool is_compare_sync)
   m_is_empty_sync = (mem_view.bytes().size() == 0);
   if (m_is_empty_sync)
     return;
-  _setCurrentDevice();
   m_sync_buffer.setDataView(mem_view);
   m_sync_buffer.prepareSynchronize(full_datatype_size, is_compare_sync);
   m_synchronize_implementation->beginSynchronize(&m_sync_buffer);
@@ -201,7 +179,6 @@ endSynchronize()
     ARCANE_FATAL("No pending synchronize(). You need to call beginSynchronize() before");
   DataSynchronizeResult result;
   if (!m_is_empty_sync) {
-    _setCurrentDevice();
     m_synchronize_implementation->endSynchronize(&m_sync_buffer);
     result = m_sync_buffer.finalizeSynchronize();
   }
@@ -344,8 +321,6 @@ synchronize(ConstArrayView<IVariable*> vars)
       ++index;
     }
   }
-
-  _setCurrentDevice();
 
   // TODO: à passer en paramètre de la fonction
   bool is_compare_sync = false;

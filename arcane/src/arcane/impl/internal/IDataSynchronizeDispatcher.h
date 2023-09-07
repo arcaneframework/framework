@@ -53,14 +53,12 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
                                      Ref<IDataSynchronizeImplementation> sync_impl,
                                      Ref<DataSynchronizeInfo> sync_info,
                                      Ref<DataSynchronizeMemory> memory,
-                                     Ref<IBufferCopier> copier,
-                                     Runner* runner)
+                                     Ref<IBufferCopier> copier)
   : m_parallel_mng(pm)
   , m_synchronize_implementation(sync_impl)
   , m_synchronize_info(sync_info)
   , m_synchronize_memory(memory)
   , m_buffer_copier(copier)
-  , m_runner(runner)
   {}
 
  public:
@@ -70,7 +68,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   Ref<DataSynchronizeInfo> synchronizeInfo() const { return m_synchronize_info; }
   Ref<DataSynchronizeMemory> synchronizeMemory() const { return m_synchronize_memory; }
   Ref<IBufferCopier> bufferCopier() const { return m_buffer_copier; }
-  Runner* runner() const { return m_runner; }
 
  private:
 
@@ -79,7 +76,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   Ref<DataSynchronizeInfo> m_synchronize_info;
   Ref<DataSynchronizeMemory> m_synchronize_memory;
   Ref<IBufferCopier> m_buffer_copier;
-  Runner* m_runner = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
