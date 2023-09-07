@@ -96,7 +96,8 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
  public:
 
-  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory);
+  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory,
+                            Ref<IBufferCopier> copier);
 
  public:
 
@@ -136,6 +137,8 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
   //! Buffer contenant les données concaténées en envoi et réception
   Ref<DataSynchronizeMemory> m_memory;
+
+  Ref<IBufferCopier> m_buffer_copier;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -148,8 +151,9 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
 {
  public:
 
-  SingleDataSynchronizeBuffer(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory)
-  : DataSynchronizeBufferBase(sync_info, memory)
+  SingleDataSynchronizeBuffer(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory,
+                              Ref<IBufferCopier> copier)
+  : DataSynchronizeBufferBase(sync_info, memory, copier)
   {}
 
  public:
@@ -187,9 +191,11 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
 
  public:
 
-  MultiDataSynchronizeBuffer(ITraceMng* tm, DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory)
+  MultiDataSynchronizeBuffer(ITraceMng* tm, DataSynchronizeInfo* sync_info,
+                             Ref<DataSynchronizeMemory> memory,
+                             Ref<IBufferCopier> copier)
   : TraceAccessor(tm)
-  , DataSynchronizeBufferBase(sync_info, memory)
+  , DataSynchronizeBufferBase(sync_info, memory, copier)
   {}
 
  public:

@@ -108,6 +108,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   Ref<IDataSynchronizeImplementationFactory> m_implementation_factory;
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   SyncMessage* m_default_message = nullptr;
+  Runner* m_runner = nullptr;
 
  private:
 
@@ -120,6 +121,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   void _sendEvent(VariableSynchronizerEventArgs& args);
   void _checkCreateTimer();
   void _doSynchronize(SyncMessage* message);
+  void _setCurrentDevice();
 };
 
 /*---------------------------------------------------------------------------*/
