@@ -74,6 +74,7 @@ jobs:
         id: checkout-framework
         if: |
           (success() || failure())
+        uses: actions/checkout@v3
         with:
           path: ${{ env.FRAMEWORK_SOURCE_DIR }}
 
