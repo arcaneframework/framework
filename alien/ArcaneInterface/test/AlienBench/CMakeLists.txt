@@ -77,7 +77,7 @@ install(FILES
         )
 
 install(FILES
-        ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/Makefile.example
+        ${CMAKE_CURRENT_BINARY_DIR}/Makefile.example
         DESTINATION share/examples
         RENAME Makefile
         )
