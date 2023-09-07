@@ -70,7 +70,7 @@ class DataSynchronizeDispatcherBase
   IParallelMng* m_parallel_mng = nullptr;
   Runner* m_runner = nullptr;
   Ref<DataSynchronizeInfo> m_sync_info;
-  Ref<IDataSynchronizeImplementation> m_implementation_instance;
+  Ref<IDataSynchronizeImplementation> m_synchronize_implementation;
 
  protected:
 
@@ -85,11 +85,8 @@ DataSynchronizeDispatcherBase::
 DataSynchronizeDispatcherBase(const DataSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
 , m_sync_info(bi.synchronizeInfo())
+, m_synchronize_implementation(bi.synchronizeImplementation())
 {
-  ARCANE_CHECK_POINTER(bi.factory().get());
-  m_implementation_instance = bi.factory()->createInstance();
-  m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
-
   m_runner = bi.runner();
 }
 
@@ -127,7 +124,7 @@ void DataSynchronizeDispatcherBase::
 _compute()
 {
   _setCurrentDevice();
-  m_implementation_instance->compute();
+  m_synchronize_implementation->compute();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -158,17 +155,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
   void compute() override { _compute(); }
   void beginSynchronize(INumericDataInternal* data, bool is_compare_sync) override;
   DataSynchronizeResult endSynchronize() override;
-
- protected:
-
-  void _beginSynchronize(DataSynchronizeBufferBase& sync_buffer)
-  {
-    m_implementation_instance->beginSynchronize(&sync_buffer);
-  }
-  void _endSynchronize(DataSynchronizeBufferBase& sync_buffer)
-  {
-    m_implementation_instance->endSynchronize(&sync_buffer);
-  }
 
  private:
 
@@ -202,7 +188,7 @@ beginSynchronize(INumericDataInternal* data, bool is_compare_sync)
   _setCurrentDevice();
   m_sync_buffer.setDataView(mem_view);
   m_sync_buffer.prepareSynchronize(full_datatype_size, is_compare_sync);
-  _beginSynchronize(m_sync_buffer);
+  m_synchronize_implementation->beginSynchronize(&m_sync_buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -216,7 +202,7 @@ endSynchronize()
   DataSynchronizeResult result;
   if (!m_is_empty_sync) {
     _setCurrentDevice();
-    _endSynchronize(m_sync_buffer);
+    m_synchronize_implementation->endSynchronize(&m_sync_buffer);
     result = m_sync_buffer.finalizeSynchronize();
   }
   m_is_in_sync = false;
@@ -265,34 +251,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcher
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Synchronisation d'une liste de variables.
- *
- * \brief Version 2 qui utilise directement des buffers au lieu
- * d'un ISerializer.
- */
-class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
-: public DataSynchronizeDispatcherBase
-, public IDataSynchronizeMultiDispatcher
-{
- public:
-
-  explicit DataSynchronizeMultiDispatcherV2(const DataSynchronizeDispatcherBuildInfo& bi)
-  : DataSynchronizeDispatcherBase(bi)
-  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.synchronizeMemory(), bi.bufferCopier())
-  {
-  }
-
-  void compute() override { _compute(); }
-  void synchronize(ConstArrayView<IVariable*> vars) override;
-
- private:
-
-  MultiDataSynchronizeBuffer m_sync_buffer;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 void DataSynchronizeMultiDispatcher::
 synchronize(ConstArrayView<IVariable*> vars)
@@ -337,6 +295,34 @@ synchronize(ConstArrayView<IVariable*> vars)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Synchronisation d'une liste de variables.
+ *
+ * \brief Version 2 qui utilise directement des buffers au lieu
+ * d'un ISerializer.
+ */
+class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
+: public DataSynchronizeDispatcherBase
+, public IDataSynchronizeMultiDispatcher
+{
+ public:
+
+  explicit DataSynchronizeMultiDispatcherV2(const DataSynchronizeDispatcherBuildInfo& bi)
+  : DataSynchronizeDispatcherBase(bi)
+  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.synchronizeMemory(), bi.bufferCopier())
+  {
+  }
+
+  void compute() override { _compute(); }
+  void synchronize(ConstArrayView<IVariable*> vars) override;
+
+ private:
+
+  MultiDataSynchronizeBuffer m_sync_buffer;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void DataSynchronizeMultiDispatcherV2::
 synchronize(ConstArrayView<IVariable*> vars)
@@ -365,8 +351,8 @@ synchronize(ConstArrayView<IVariable*> vars)
   bool is_compare_sync = false;
   m_sync_buffer.prepareSynchronize(all_datatype_size, is_compare_sync);
 
-  m_implementation_instance->beginSynchronize(&m_sync_buffer);
-  m_implementation_instance->endSynchronize(&m_sync_buffer);
+  m_synchronize_implementation->beginSynchronize(&m_sync_buffer);
+  m_synchronize_implementation->endSynchronize(&m_sync_buffer);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -242,7 +242,11 @@ _buildMessage()
   DataSynchronizeMemory* memory = new DataSynchronizeMemory(allocator);
   Ref<DataSynchronizeMemory> ref_memory = makeRef<DataSynchronizeMemory>(memory);
 
-  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, m_implementation_factory, m_sync_info, ref_memory, buffer_copier, runner);
+  // Créé une instance de l'implémentation
+  Ref<IDataSynchronizeImplementation> sync_impl = m_implementation_factory->createInstance();
+  sync_impl->setDataSynchronizeInfo(m_sync_info.get());
+
+  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, sync_impl, m_sync_info, ref_memory, buffer_copier, runner);
   return new SyncMessage(bi, this);
 }
 
