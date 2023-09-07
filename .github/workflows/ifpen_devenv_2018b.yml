@@ -56,6 +56,7 @@ jobs:
     steps:
 
       # ccache
+
       - name: Get date
         id: get-date
         shell: bash
@@ -68,7 +69,7 @@ jobs:
           key: ${{ matrix.config.ccache_key_prefix }}-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-
 
-      # Arcane installation
+      # Framework installation
 
       - name: Checkout Framework
         id: checkout-framework
@@ -84,8 +85,7 @@ jobs:
           (success() || failure()) &&
           steps.checkout-framework.outcome == 'success'
         shell: bash
-        ####
-        run: cmake -S ${{ env.FRAMEWOEK_SOURCE_DIR }}/arccore -B ${{ env.FRAMEWORK_BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.FRAMEWORK_INSTALL_DIR }} -DARCANE_WANT_CHECK=ON -DARCANE_BUILD_TYPE=Release -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON
+        run: cmake -S ${{ env.FRAMEWORK_SOURCE_DIR }} -B ${{ env.FRAMEWORK_BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.FRAMEWORK_INSTALL_DIR }} -DARCANE_WANT_CHECK=ON -DARCANE_BUILD_TYPE=Release -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON
 
       - name: Build Framework
         id: build-framework
@@ -107,7 +107,7 @@ jobs:
         id: test-framework
         if: |
           (success() || failure()) &&
-          steps.install-framework.outcome == 'success'
+          steps.build-framework.outcome == 'success'
         shell: bash
         run: ctest --test-dir ${{ env.FRAMEWORK_BUILD_DIR }} ${{ env.CT_OPTS }} -E '^hydro5_4proc_3sd_4proc$'
 
