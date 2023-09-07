@@ -40,7 +40,7 @@ jobs:
   build-and-test:
     parameters:
       arch:
-        type: executor
+        type: string
         default: amd64
       image_version:
         type: string
