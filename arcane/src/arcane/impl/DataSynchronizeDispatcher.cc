@@ -379,13 +379,13 @@ synchronize(ConstArrayView<IVariable*> vars)
  *
  * Cette implémentation est faite à partir de send/receive suivi de 'wait'.
  */
-class SimpleDataSynchronizeDispatcher
+class SimpleDataSynchronizeImplementation
 : public AbstractDataSynchronizeImplementation
 {
  public:
 
   class Factory;
-  explicit SimpleDataSynchronizeDispatcher(Factory* f);
+  explicit SimpleDataSynchronizeImplementation(Factory* f);
 
  protected:
 
@@ -402,7 +402,7 @@ class SimpleDataSynchronizeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SimpleDataSynchronizeDispatcher::Factory
+class SimpleDataSynchronizeImplementation::Factory
 : public IDataSynchronizeImplementationFactory
 {
  public:
@@ -413,7 +413,7 @@ class SimpleDataSynchronizeDispatcher::Factory
 
   Ref<IDataSynchronizeImplementation> createInstance() override
   {
-    auto* x = new SimpleDataSynchronizeDispatcher(this);
+    auto* x = new SimpleDataSynchronizeImplementation(this);
     return makeRef<IDataSynchronizeImplementation>(x);
   }
 
@@ -425,8 +425,8 @@ class SimpleDataSynchronizeDispatcher::Factory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SimpleDataSynchronizeDispatcher::
-SimpleDataSynchronizeDispatcher(Factory* f)
+SimpleDataSynchronizeImplementation::
+SimpleDataSynchronizeImplementation(Factory* f)
 : m_parallel_mng(f->m_parallel_mng)
 {
 }
@@ -437,14 +437,14 @@ SimpleDataSynchronizeDispatcher(Factory* f)
 extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm)
 {
-  auto* x = new SimpleDataSynchronizeDispatcher::Factory(pm);
+  auto* x = new SimpleDataSynchronizeImplementation::Factory(pm);
   return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleDataSynchronizeDispatcher::
+void SimpleDataSynchronizeImplementation::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
   ARCANE_CHECK_POINTER(vs_buf);
@@ -489,7 +489,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleDataSynchronizeDispatcher::
+void SimpleDataSynchronizeImplementation::
 endSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
   IParallelMng* pm = m_parallel_mng;
