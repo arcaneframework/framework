@@ -181,7 +181,7 @@ jobs:
           name: Test 'framework'
           command: |
             mkdir -p <<pipeline.parameters.CT_RESULT_DIR>>
-            ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml ${CT_OPTS} -E '${CT_REGEX}'
+            ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml ${CT_OPTS} -E "${CT_REGEX}"
 
       # https://www.ibm.com/docs/en/developer-for-zos/9.1.1?topic=formats-junit-xml-format
       - run:
