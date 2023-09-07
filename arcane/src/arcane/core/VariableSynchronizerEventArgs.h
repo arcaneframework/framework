@@ -47,6 +47,19 @@ class ARCANE_CORE_EXPORT VariableSynchronizerEventArgs
     EndSynchronize
   };
 
+  //! Comparaison des valeurs des entités fantômes avant/après une synchronisation
+  enum class CompareStatus
+  {
+    //! Pas de comparaison ou résultat inconnue
+    Unknown,
+    //! Même valeurs avant et après la synchronisation
+    Same,
+    //! Valeurs différentes avant et après la synchronisation
+    Different
+  };
+
+ public:
+
   ARCANE_DEPRECATED_REASON("Y2023: Use VariableSynchronizerEventArgs(IVariableSynchronizer* vs) and call initialize() instead")
   VariableSynchronizerEventArgs(VariableCollection vars, IVariableSynchronizer* vs,
                                 Real elapsed_time, State state = State::EndSynchronize);
@@ -75,6 +88,20 @@ class ARCANE_CORE_EXPORT VariableSynchronizerEventArgs
   //! Liste des variables synchronisées.
   ConstArrayView<IVariable*> variables() const;
 
+  /*!
+   * \brief Liste de l'état de comparaison.
+   *
+   * La valeur du i-ème élément de compareStatus() indique l'état
+   * de comparaison pour la i-ème variable de variables().
+   *
+   * Cette liste n'est valide que pour les évènements de fin de synchronisation
+   * (state()==State::EndSynchronize).
+   */
+  ConstArrayView<CompareStatus> compareStatusList() const { return m_compare_status_list; }
+
+  //! Positionne l'état de comparaison de la i-ème variable.
+  void setCompareStatus(Int32 i, CompareStatus v) { m_compare_status_list[i] = v; }
+
   //! Temps passé dans la synchronisation.
   Real elapsedTime() const { return m_elapsed_time; }
   void setElapsedTime(Real v) { m_elapsed_time = v; }
@@ -87,6 +114,7 @@ class ARCANE_CORE_EXPORT VariableSynchronizerEventArgs
 
   IVariableSynchronizer* m_var_syncer = nullptr;
   UniqueArray<IVariable*> m_variables;
+  UniqueArray<CompareStatus> m_compare_status_list;
   Real m_elapsed_time = 0.0;
   State m_state = State::BeginSynchronize;
 

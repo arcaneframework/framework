@@ -150,6 +150,8 @@ initialize()
             << " addr=" << vf;
     vff = vff->nextVariableFactory();
   }
+
+  m_variable_synchronizer_mng->initialize();
 }
 
 /*---------------------------------------------------------------------------*/
