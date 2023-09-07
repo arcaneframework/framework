@@ -149,7 +149,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
 
   explicit DataSynchronizeDispatcher(const DataSynchronizeDispatcherBuildInfo& bi)
   : DataSynchronizeDispatcherBase(bi)
-  , m_sync_buffer(m_sync_info.get(), bi.synchronizeMemory())
+  , m_sync_buffer(m_sync_info.get(), bi.synchronizeMemory(), bi.bufferCopier())
   {
   }
 
@@ -279,7 +279,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
 
   explicit DataSynchronizeMultiDispatcherV2(const DataSynchronizeDispatcherBuildInfo& bi)
   : DataSynchronizeDispatcherBase(bi)
-  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.synchronizeMemory())
+  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.synchronizeMemory(), bi.bufferCopier())
   {
   }
 

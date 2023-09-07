@@ -38,6 +38,7 @@ class DataSynchronizeResult;
 class DataSynchronizeMemory;
 class IVariableSynchronizerDispatcher;
 class INumericDataInternal;
+class IBufferCopier;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,11 +53,13 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
                                      Ref<IDataSynchronizeImplementationFactory> factory,
                                      Ref<DataSynchronizeInfo> sync_info,
                                      Ref<DataSynchronizeMemory> memory,
+                                     Ref<IBufferCopier> copier,
                                      Runner* runner)
   : m_parallel_mng(pm)
   , m_factory(factory)
   , m_synchronize_info(sync_info)
   , m_synchronize_memory(memory)
+  , m_buffer_copier(copier)
   , m_runner(runner)
   {}
 
@@ -66,6 +69,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   Ref<IDataSynchronizeImplementationFactory> factory() const { return m_factory; }
   Ref<DataSynchronizeInfo> synchronizeInfo() const { return m_synchronize_info; }
   Ref<DataSynchronizeMemory> synchronizeMemory() const { return m_synchronize_memory; }
+  Ref<IBufferCopier> bufferCopier() const { return m_buffer_copier; }
   Runner* runner() const { return m_runner; }
 
  private:
@@ -74,6 +78,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   Ref<IDataSynchronizeImplementationFactory> m_factory;
   Ref<DataSynchronizeInfo> m_synchronize_info;
   Ref<DataSynchronizeMemory> m_synchronize_memory;
+  Ref<IBufferCopier> m_buffer_copier;
   Runner* m_runner = nullptr;
 };
 

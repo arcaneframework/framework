@@ -239,10 +239,10 @@ _buildMessage()
     allocator = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
   }
 
-  DataSynchronizeMemory* memory = new DataSynchronizeMemory(buffer_copier, allocator);
+  DataSynchronizeMemory* memory = new DataSynchronizeMemory(allocator);
   Ref<DataSynchronizeMemory> ref_memory = makeRef<DataSynchronizeMemory>(memory);
 
-  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, m_implementation_factory, m_sync_info, ref_memory, runner);
+  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, m_implementation_factory, m_sync_info, ref_memory, buffer_copier, runner);
   return new SyncMessage(bi, this);
 }
 

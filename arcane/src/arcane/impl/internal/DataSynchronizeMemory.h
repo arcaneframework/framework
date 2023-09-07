@@ -33,9 +33,8 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMemory
 {
  public:
 
-  DataSynchronizeMemory(Ref<IBufferCopier> copier, IMemoryAllocator* allocator)
-  : m_buffer_copier(copier)
-  , m_buffer(allocator)
+  explicit DataSynchronizeMemory(IMemoryAllocator* allocator)
+  : m_buffer(allocator)
   {}
 
  public:
@@ -44,11 +43,9 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMemory
   Span<const std::byte> bytes() const { return m_buffer; }
   Span<std::byte> bytes() { return m_buffer; }
   IMemoryAllocator* allocator() const { return m_buffer.allocator(); }
-  IBufferCopier* copier() const { return m_buffer_copier.get(); }
 
  private:
 
-  Ref<IBufferCopier> m_buffer_copier;
   //! Buffer contenant les données.
   UniqueArray<std::byte> m_buffer;
 };
