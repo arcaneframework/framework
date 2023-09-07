@@ -68,7 +68,7 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ matrix.config.ccache_key_prefix }}-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-
+          restore-keys: ${{ matrix.config.ccache_key_prefix }}-${{ env.CM_BUILD_TYPE }}-
 
       # Installation
 
