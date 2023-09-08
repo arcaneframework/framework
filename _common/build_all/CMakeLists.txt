@@ -55,6 +55,7 @@ enable_testing()
 
 configure_file(nuget.config.in ${CMAKE_BINARY_DIR}/nuget.config @ONLY)
 
+set(ALIEN_BUILD_COMPONENT alien_standalone) # alien/ArcaneInterface (=Alien_legacy_plugins) temporarily deactivated. To remove.
 add_subdirectory(${ARCFRAMEWORK_ROOT}/arcane arcane)
 add_subdirectory(${ARCFRAMEWORK_ROOT}/alien alien)
 
