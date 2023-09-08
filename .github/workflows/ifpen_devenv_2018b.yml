@@ -5,9 +5,9 @@ on:
 
 env:
   # Framework directories
-  BUILD_DIR: /__w/framework/build
-  INSTALL_DIR: /__w/framework/install
-  SOURCE_DIR: /__w/framework/source
+  BUILD_DIR: /__w/framework/framework/build
+  INSTALL_DIR: /__w/framework/framework/install
+  SOURCE_DIR: /__w/framework/framework/source
   # ccache
   CC_KEY_PREFIX: ifpen-el7-gimkl-2018b
   CCACHE_COMPRESS: true
