@@ -1,4 +1,6 @@
 
 add_subdirectory(C)
 
-add_subdirectory(Fortran)
+if (TARGET mpifort)
+    add_subdirectory(Fortran)
+endif()

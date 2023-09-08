@@ -1,4 +1,4 @@
-#include "HypreInternalLinearAlgebra.h"
+﻿#include "HypreInternalLinearAlgebra.h"
 
 #include <HYPRE_parcsr_mv.h>
 #include <HYPRE_IJ_mv.h>
@@ -44,7 +44,7 @@ namespace {
 
 template class ALIEN_EXTERNAL_PACKAGES_EXPORT LinearAlgebra<BackEnd::tag::hypre>;
 
-IInternalLinearAlgebra<HypreMatrix, HypreVector>*
+extern ALIEN_EXTERNAL_PACKAGES_EXPORT IInternalLinearAlgebra<HypreMatrix, HypreVector>*
 HypreInternalLinearAlgebraFactory()
 {
   return new HypreInternalLinearAlgebra();

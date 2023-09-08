@@ -34,15 +34,16 @@ install(
         RUNTIME DESTINATION bin
 )
 
-configure_file(solver.json ${CMAKE_CURRENT_BINARY_DIR}/solver.json COPYONLY)
+configure_file(solver.json ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran/solver.json COPYONLY)
+
 alien_test( BENCH alien.interface.fortran
             NAME seq
             PROCS 1
             COMMAND alien_interface_fortran.exe
-            WORKING_DIRECTORY test/AlienInterfaceC/Fortran)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran)
 
 alien_test( BENCH alien.interface.fortran
             NAME parallel
             PROCS 4
             COMMAND alien_interface_fortran.exe
-            WORKING_DIRECTORY test/AlienInterfaceC/Fortran)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran)

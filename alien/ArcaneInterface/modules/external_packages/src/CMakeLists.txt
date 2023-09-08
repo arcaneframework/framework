@@ -56,7 +56,8 @@ endif()
 
 linkLibraries(alien_external_packages 
               Alien::alien_core 
-              Boost::program_options)
+              Boost::program_options
+              BLAS::BLAS)
 
 target_include_directories(alien_external_packages PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
