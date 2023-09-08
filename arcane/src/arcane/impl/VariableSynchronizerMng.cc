@@ -63,20 +63,21 @@ class VariableSynchronizerStats
 
   void dumpStats(std::ostream& ostr)
   {
-    ostr.precision(20);
+    std::streamsize old_precision = ostr.precision(20);
     ostr << "Synchronization Stats\n";
     ostr << Trace::Width(40) << "Variable name"
          << Trace::Width(8) << "Count"
          << Trace::Width(8) << "NbSame"
          << Trace::Width(8) << "NbDiff"
          << "\n";
-    for (auto p : m_stats) {
+    for (const auto& p : m_stats) {
       ostr << Trace::Width(40) << p.first
            << " " << Trace::Width(7) << p.second.m_count
            << " " << Trace::Width(7) << p.second.m_nb_same
            << " " << Trace::Width(7) << p.second.m_nb_different
            << "\n";
     }
+    ostr.precision(old_precision);
   }
 
  private:
