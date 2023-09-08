@@ -15,6 +15,14 @@ if(POLICY CMP0111)
 endif()
 
 # ----------------------------------------------------------------------------
+
+# Liste des composants à compiler
+if (NOT ARCANEFRAMEWORK_BUILD_COMPONENTS)
+  set (ARCANEFRAMEWORK_BUILD_COMPONENTS Arcane;Alien)
+endif()
+set(ARCANEFRAMEWORK_BUILD_COMPONENTS ${ARCANEFRAMEWORK_BUILD_COMPONENTS} CACHE STRING "List of ArcaneFramework components to build" FORCE)
+
+# ----------------------------------------------------------------------------
 # Macro pour positionner la variable 'var_name' dans le cache
 # avec sa valeur actuelle ou la valeur 'var_value' si elle n'a
 # pas de valeur.
@@ -53,21 +61,36 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 enable_testing()
 
-configure_file(nuget.config.in ${CMAKE_BINARY_DIR}/nuget.config @ONLY)
+# ----------------------------------------------------------------------------
 
 set(ALIEN_BUILD_COMPONENT alien_standalone) # alien/ArcaneInterface (=Alien_legacy_plugins) temporarily deactivated. To remove.
-add_subdirectory(${ARCFRAMEWORK_ROOT}/arcane arcane)
-add_subdirectory(${ARCFRAMEWORK_ROOT}/alien alien)
+message(STATUS "ARCANEFRAMEWORK_BUILD_COMPONENTS are: '${ARCANEFRAMEWORK_BUILD_COMPONENTS}'")
 
 # ----------------------------------------------------------------------------
-# Recopie les packages nuget de 'dependencies' dans le répertoire
-# contenant les exemples. On recopie les packages nécessaires pour
-# 'netstandard2.0'.
-#
-set(DEPENDENCIES_NUGET ${ARCDEPENDENCIES_ROOT}/nuget_fallback)
-set(SAMPLES_NUGET_DIR ${CMAKE_INSTALL_PREFIX}/samples/_nuget_fallback)
-install(FILES ${DEPENDENCIES_NUGET}/microsoft.netcore.platforms.1.1.0.nupkg DESTINATION ${SAMPLES_NUGET_DIR})
-install(FILES ${DEPENDENCIES_NUGET}/netstandard.library.2.0.3.nupkg DESTINATION ${SAMPLES_NUGET_DIR})
+
+if (Arcane IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
+  message(STATUS "Configuring Arcane")
+  configure_file(nuget.config.in ${CMAKE_BINARY_DIR}/nuget.config @ONLY)
+
+  add_subdirectory(${ARCFRAMEWORK_ROOT}/arcane arcane)
+
+  # ----------------------------------------------------------------------------
+  # Recopie les packages nuget de 'dependencies' dans le répertoire
+  # contenant les exemples. On recopie les packages nécessaires pour
+  # 'netstandard2.0'.
+  #
+  set(DEPENDENCIES_NUGET ${ARCDEPENDENCIES_ROOT}/nuget_fallback)
+  set(SAMPLES_NUGET_DIR ${CMAKE_INSTALL_PREFIX}/samples/_nuget_fallback)
+  install(FILES ${DEPENDENCIES_NUGET}/microsoft.netcore.platforms.1.1.0.nupkg DESTINATION ${SAMPLES_NUGET_DIR})
+  install(FILES ${DEPENDENCIES_NUGET}/netstandard.library.2.0.3.nupkg DESTINATION ${SAMPLES_NUGET_DIR})
+endif()
+
+# ----------------------------------------------------------------------------
+
+if (Alien IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
+  message(STATUS "Configuring Alien")
+  add_subdirectory(${ARCFRAMEWORK_ROOT}/alien alien)
+endif()
 
 # ----------------------------------------------------------------------------
 # Local Variables:
