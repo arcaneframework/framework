@@ -47,16 +47,22 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
   class InternalApi
   : public IVariableSynchronizerMngInternal
   {
+    class BufferList;
+
    public:
 
-    explicit InternalApi(VariableSynchronizerMng* vms)
-    : m_synchronizer_mng(vms)
-    {
-    }
+    explicit InternalApi(VariableSynchronizerMng* vms);
+    ~InternalApi();
+
+   public:
+
+    Ref<MemoryBuffer> createSynchronizeBuffer(IMemoryAllocator* allocator) override;
+    void releaseSynchronizeBuffer(MemoryBuffer* v) override;
 
    private:
 
     VariableSynchronizerMng* m_synchronizer_mng = nullptr;
+    BufferList* m_buffer_list = nullptr;
   };
 
  public:
