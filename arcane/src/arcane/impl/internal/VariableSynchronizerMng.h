@@ -19,6 +19,7 @@
 #include "arcane/utils/Event.h"
 
 #include "arcane/core/IVariableSynchronizerMng.h"
+#include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,6 +44,23 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
 
  public:
 
+  class InternalApi
+  : public IVariableSynchronizerMngInternal
+  {
+   public:
+
+    explicit InternalApi(VariableSynchronizerMng* vms)
+    : m_synchronizer_mng(vms)
+    {
+    }
+
+   private:
+
+    VariableSynchronizerMng* m_synchronizer_mng = nullptr;
+  };
+
+ public:
+
   void initialize();
 
  public:
@@ -56,10 +74,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
   bool isCompareSynchronize() const { return m_is_compare_synchronize; }
 
   void dumpStats(std::ostream& ostr) const override;
+  IVariableSynchronizerMngInternal* _internalApi() { return &m_internal_api; }
 
  private:
 
   IVariableMng* m_variable_mng = nullptr;
+  InternalApi m_internal_api{ this };
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
   VariableSynchronizerStats* m_stats = nullptr;
   bool m_is_compare_synchronize = false;
