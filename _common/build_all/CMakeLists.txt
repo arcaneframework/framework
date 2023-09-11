@@ -63,10 +63,14 @@ enable_testing()
 
 # ----------------------------------------------------------------------------
 
-set(ALIEN_BUILD_COMPONENT alien_standalone) # alien/ArcaneInterface (=Alien_legacy_plugins) temporarily deactivated. To remove.
-message(STATUS "ARCANEFRAMEWORK_BUILD_COMPONENTS are: '${ARCANEFRAMEWORK_BUILD_COMPONENTS}'")
+if (NOT ALIEN_BUILD_COMPONENT)
+  # Deux valeurs possibles: 'alien_standalone' ou 'all'
+  set(ALIEN_BUILD_COMPONENT alien_standalone) # alien/ArcaneInterface (=Alien_legacy_plugins) temporarily deactivated. To remove.
+endif()
 
 # ----------------------------------------------------------------------------
+
+message(STATUS "ARCANEFRAMEWORK_BUILD_COMPONENTS are: '${ARCANEFRAMEWORK_BUILD_COMPONENTS}'")
 
 if (Arcane IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
   message(STATUS "Configuring Arcane")
