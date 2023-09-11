@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariableSynchronizerMng.h                                  (C) 2000-2023 */
+/* IVariableSynchronizerMngInternal.h                          (C) 2000-2023 */
 /*                                                                           */
-/* Interface du gestionnaire de synchronisation des variables.               */
+/* API interne à Arcane de IVariableSynchronizerMng.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_IVARIABLESYNCHRONIZERMNG_H
-#define ARCANE_CORE_IVARIABLESYNCHRONIZERMNG_H
+#ifndef ARCANE_CORE_INTERNAL_IVARIABLESYNCHRONIZERMNGINTERNAL_H
+#define ARCANE_CORE_INTERNAL_IVARIABLESYNCHRONIZERMNGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,42 +22,19 @@
 
 namespace Arcane
 {
-class IVariableSynchronizerMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface du gestionnaire de synchronisation des variables.
+ * \brief API interne à Arcane de IVariableSynchronizerMng.
  */
-class ARCANE_CORE_EXPORT IVariableSynchronizerMng
+class ARCANE_CORE_EXPORT IVariableSynchronizerMngInternal
 {
  public:
 
-  virtual ~IVariableSynchronizerMng() = default;
+  virtual ~IVariableSynchronizerMngInternal() = default;
 
  public:
-
-  /*!
-   * \brief Evènement envoyé en début et fin de synchronisation.
-   *
-   * Cet évènement est envoyé lors des appels aux méthodes
-   * de synchronisation IVariableSynchronizer::synchronize(IVariable* var)
-   * et IVariableSynchronizer::synchronize(VariableCollection vars) pour toutes
-   * les instances de IVariableSynchronizer.
-   */
-  virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
-
-  virtual void setCompareSynchronize(bool v) = 0;
-
-  //! Indique si on effecture les comparaisons des valeurs avant et après synchronisation
-  virtual bool isCompareSynchronize() const = 0;
-
-  //! Affiche les statistiques sur le flot \a ostr
-  virtual void dumpStats(std::ostream& ostr) const = 0;
-
- public:
-
-  virtual IVariableSynchronizerMngInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
