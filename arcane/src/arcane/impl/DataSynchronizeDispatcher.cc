@@ -18,6 +18,7 @@
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/IParallelExchanger.h"
@@ -29,7 +30,6 @@
 
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
-#include "arcane/impl/internal/DataSynchronizeMemory.h"
 #include "arcane/impl/internal/IBufferCopier.h"
 
 /*---------------------------------------------------------------------------*/

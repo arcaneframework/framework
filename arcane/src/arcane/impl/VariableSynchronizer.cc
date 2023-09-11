@@ -18,6 +18,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/VariableSynchronizerEventArgs.h"
 #include "arcane/core/IParallelMng.h"
@@ -39,7 +40,6 @@
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/VariableSynchronizerComputeList.h"
 #include "arcane/impl/internal/IBufferCopier.h"
-#include "arcane/impl/internal/DataSynchronizeMemory.h"
 
 #include <algorithm>
 
@@ -234,8 +234,7 @@ _buildMessage()
     allocator = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
   }
 
-  DataSynchronizeMemory* memory = new DataSynchronizeMemory(allocator);
-  Ref<DataSynchronizeMemory> ref_memory = makeRef<DataSynchronizeMemory>(memory);
+  Ref<MemoryBuffer> ref_memory = MemoryBuffer::create(allocator);
 
   // Créé une instance de l'implémentation
   Ref<IDataSynchronizeImplementation> sync_impl = m_implementation_factory->createInstance();

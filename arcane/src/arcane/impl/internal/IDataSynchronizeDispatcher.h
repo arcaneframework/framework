@@ -34,8 +34,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class MemoryBuffer;
 class DataSynchronizeResult;
-class DataSynchronizeMemory;
 class IVariableSynchronizerDispatcher;
 class INumericDataInternal;
 class IBufferCopier;
@@ -52,7 +52,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   DataSynchronizeDispatcherBuildInfo(IParallelMng* pm,
                                      Ref<IDataSynchronizeImplementation> sync_impl,
                                      Ref<DataSynchronizeInfo> sync_info,
-                                     Ref<DataSynchronizeMemory> memory,
+                                     Ref<MemoryBuffer> memory,
                                      Ref<IBufferCopier> copier)
   : m_parallel_mng(pm)
   , m_synchronize_implementation(sync_impl)
@@ -66,7 +66,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   IParallelMng* parallelMng() const { return m_parallel_mng; }
   Ref<IDataSynchronizeImplementation> synchronizeImplementation() const { return m_synchronize_implementation; }
   Ref<DataSynchronizeInfo> synchronizeInfo() const { return m_synchronize_info; }
-  Ref<DataSynchronizeMemory> synchronizeMemory() const { return m_synchronize_memory; }
+  Ref<MemoryBuffer> synchronizeMemory() const { return m_synchronize_memory; }
   Ref<IBufferCopier> bufferCopier() const { return m_buffer_copier; }
 
  private:
@@ -74,7 +74,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   IParallelMng* m_parallel_mng = nullptr;
   Ref<IDataSynchronizeImplementation> m_synchronize_implementation;
   Ref<DataSynchronizeInfo> m_synchronize_info;
-  Ref<DataSynchronizeMemory> m_synchronize_memory;
+  Ref<MemoryBuffer> m_synchronize_memory;
   Ref<IBufferCopier> m_buffer_copier;
 };
 
