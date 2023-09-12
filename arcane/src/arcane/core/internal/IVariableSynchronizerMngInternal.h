@@ -22,6 +22,7 @@
 
 namespace Arcane
 {
+class MemoryBuffer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,6 +36,9 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMngInternal
   virtual ~IVariableSynchronizerMngInternal() = default;
 
  public:
+
+  virtual Ref<MemoryBuffer> createSynchronizeBuffer(IMemoryAllocator* allocator) = 0;
+  virtual void releaseSynchronizeBuffer(IMemoryAllocator* allocator,MemoryBuffer* v) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

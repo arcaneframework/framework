@@ -14,12 +14,15 @@
 #include "arcane/impl/internal/VariableSynchronizerMng.h"
 
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/IVariableMng.h"
 #include "arcane/core/VariableSynchronizerEventArgs.h"
 #include "arcane/core/IVariable.h"
 
 #include <map>
+#include <stack>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -153,6 +156,127 @@ void VariableSynchronizerMng::
 dumpStats(std::ostream& ostr) const
 {
   m_stats->dumpStats(ostr);
+  m_internal_api.dumpStats(ostr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gère un pool de buffer associé à un allocateur.
+ */
+class VariableSynchronizerMng::InternalApi::BufferList
+{
+ public:
+
+  using MemoryBufferMap = std::map<MemoryBuffer*, Ref<MemoryBuffer>>;
+  using MapList = std::map<IMemoryAllocator*, MemoryBufferMap>;
+
+  using FreeList = std::map<IMemoryAllocator*, std::stack<Ref<MemoryBuffer>>>;
+
+ public:
+
+  //! Liste par allocateur des buffers en cours d'utilisation
+  MapList m_used_map;
+
+  //! Liste par allocateur des buffers libres
+  FreeList m_free_map;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableSynchronizerMng::InternalApi::
+InternalApi(VariableSynchronizerMng* vms)
+: TraceAccessor(vms->traceMng())
+, m_synchronizer_mng(vms)
+, m_buffer_list(new BufferList())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableSynchronizerMng::InternalApi::
+~InternalApi()
+{
+  delete m_buffer_list;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*
+ * \brief Créé ou récupère un buffer.
+ *
+ * Il est possible de créer des buffers avec un allocateur nul. Dans ce
+ * cas ce sera l'allocateur par défaut qui sera utilisé et donc pour
+ * un MemoryBuffer donné, on n'aura pas forcément new_buffer.allocator()==allocator.
+ * Il ne faut donc toujours utiliser \a allocator.
+ */
+Ref<MemoryBuffer> VariableSynchronizerMng::InternalApi::
+createSynchronizeBuffer(IMemoryAllocator* allocator)
+{
+  auto& free_map = m_buffer_list->m_free_map;
+  auto x = free_map.find(allocator);
+  Ref<MemoryBuffer> new_buffer;
+  // Regarde si un buffer est disponible dans \a free_map.
+  if (x == free_map.end()) {
+    // Aucune buffer associé à cet allocator, on en créé un
+    new_buffer = MemoryBuffer::create(allocator);
+  }
+  else {
+    auto& buffer_stack = x->second;
+    // Si la pile est vide, on créé un buffer. Sinon on prend le premier
+    // de la pile.
+    if (buffer_stack.empty()) {
+      new_buffer = MemoryBuffer::create(allocator);
+    }
+    else {
+      new_buffer = buffer_stack.top();
+      buffer_stack.pop();
+    }
+  }
+
+  // Enregistre l'instance dans la liste utilisée
+  m_buffer_list->m_used_map[allocator].insert(std::make_pair(new_buffer.get(), new_buffer));
+  return new_buffer;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizerMng::InternalApi::
+releaseSynchronizeBuffer(IMemoryAllocator* allocator, MemoryBuffer* v)
+{
+  auto& main_map = m_buffer_list->m_used_map;
+  auto x = main_map.find(allocator);
+  if (x == main_map.end())
+    ARCANE_FATAL("Invalid allocator '{0}'", allocator);
+
+  auto& sub_map = x->second;
+  auto x2 = sub_map.find(v);
+  if (x2 == sub_map.end())
+    ARCANE_FATAL("Invalid buffer '{0}'", v);
+
+  Ref<MemoryBuffer> ref_memory = x2->second;
+
+  sub_map.erase(x2);
+
+  m_buffer_list->m_free_map[allocator].push(ref_memory);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizerMng::InternalApi::
+dumpStats(std::ostream& ostr) const
+{
+  //! Liste par allocateur des buffers en cours d'utilisation
+  for (const auto& x : m_buffer_list->m_used_map)
+    ostr << "SynchronizeBuffer: nb_used_map = " << x.second.size() << "\n";
+
+  //! Liste par allocateur des buffers libres
+  for (const auto& x : m_buffer_list->m_free_map)
+    ostr << "SynchronizeBuffer: nb_free_map = " << x.second.size() << "\n";
 }
 
 /*---------------------------------------------------------------------------*/

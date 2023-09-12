@@ -18,6 +18,7 @@
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/IParallelExchanger.h"
@@ -29,7 +30,6 @@
 
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
-#include "arcane/impl/internal/DataSynchronizeMemory.h"
 #include "arcane/impl/internal/IBufferCopier.h"
 
 /*---------------------------------------------------------------------------*/
@@ -125,13 +125,14 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
 
   explicit DataSynchronizeDispatcher(const DataSynchronizeDispatcherBuildInfo& bi)
   : DataSynchronizeDispatcherBase(bi)
-  , m_sync_buffer(m_sync_info.get(), bi.synchronizeMemory(), bi.bufferCopier())
+  , m_sync_buffer(m_sync_info.get(), bi.bufferCopier())
   {
   }
 
  public:
 
   void compute() override { _compute(); }
+  void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) override { m_sync_buffer.setSynchronizeBuffer(buffer); }
   void beginSynchronize(INumericDataInternal* data, bool is_compare_sync) override;
   DataSynchronizeResult endSynchronize() override;
 
@@ -218,6 +219,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcher
   }
 
   void compute() override {}
+  void setSynchronizeBuffer(Ref<MemoryBuffer>) override {}
   void synchronize(ConstArrayView<IVariable*> vars) override;
 
  private:
@@ -286,11 +288,12 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
 
   explicit DataSynchronizeMultiDispatcherV2(const DataSynchronizeDispatcherBuildInfo& bi)
   : DataSynchronizeDispatcherBase(bi)
-  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.synchronizeMemory(), bi.bufferCopier())
+  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.bufferCopier())
   {
   }
 
   void compute() override { _compute(); }
+  void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) override { m_sync_buffer.setSynchronizeBuffer(buffer); }
   void synchronize(ConstArrayView<IVariable*> vars) override;
 
  private:

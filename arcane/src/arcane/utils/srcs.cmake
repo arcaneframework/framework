@@ -79,6 +79,7 @@ set(ARCANE_SOURCES
   Math.h
   MemoryAccessInfo.cc
   MemoryAccessInfo.h
+  MemoryBuffer.cc
   MemoryInfo.cc
   MemoryInfo.h
   MemoryRessource.h
@@ -321,4 +322,5 @@ set(ARCANE_SOURCES
   internal/ProfilingInternal.h
   internal/ValueConvertInternal.h
   internal/SpecificMemoryCopyList.h
+  internal/MemoryBuffer.h
   )
