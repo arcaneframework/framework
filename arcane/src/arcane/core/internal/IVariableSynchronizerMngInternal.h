@@ -38,7 +38,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMngInternal
  public:
 
   virtual Ref<MemoryBuffer> createSynchronizeBuffer(IMemoryAllocator* allocator) = 0;
-  virtual void releaseSynchronizeBuffer(MemoryBuffer* v) = 0;
+  virtual void releaseSynchronizeBuffer(IMemoryAllocator* allocator,MemoryBuffer* v) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
