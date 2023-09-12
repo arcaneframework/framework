@@ -73,8 +73,8 @@ class VariableSynchronizer::SyncMessage
     ScopedBuffer(IVariableSynchronizerMngInternal* sync_mng, IMemoryAllocator* allocator)
     : m_synchronizer_mng(sync_mng)
     , m_allocator(allocator)
+    , m_buffer(sync_mng->createSynchronizeBuffer(allocator))
     {
-      m_buffer = sync_mng->createSynchronizeBuffer(allocator);
     }
     ~ScopedBuffer() noexcept(false)
     {
