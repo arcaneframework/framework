@@ -84,8 +84,11 @@ initialize(const VariableCollection& vars)
 {
   _reset();
   m_variables.reserve(vars.count());
-  for( VariableCollectionEnumerator v(vars); ++v; )
+  m_compare_status_list.reserve(vars.count());
+  for( VariableCollectionEnumerator v(vars); ++v; ){
     m_variables.add(*v);
+    m_compare_status_list.add(CompareStatus::Unknown);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -94,8 +97,9 @@ initialize(const VariableCollection& vars)
 void VariableSynchronizerEventArgs::
 initialize(IVariable* var)
 {
-  m_variables.clear();
+  _reset();
   m_variables.add(var);
+  m_compare_status_list.add(CompareStatus::Unknown);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -107,6 +111,7 @@ _reset()
   m_elapsed_time = 0.0;
   m_state = State::BeginSynchronize;
   m_variables.clear();
+  m_compare_status_list.clear();
 }
 
 /*---------------------------------------------------------------------------*/

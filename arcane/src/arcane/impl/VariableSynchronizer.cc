@@ -17,13 +17,6 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
-#include "arcane/utils/OStringStream.h"
-#include "arcane/utils/Array2.h"
-#include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 
 #include "arcane/core/VariableSynchronizerEventArgs.h"
@@ -40,6 +33,8 @@
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
+
+#include "arcane/accelerator/core/Runner.h"
 
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/VariableSynchronizerComputeList.h"
@@ -234,15 +229,19 @@ _buildMessage()
   // buffer sur le device. On pourrait utiliser la mémoire managée mais certaines
   // implémentations MPI (i.e: BXI) ne le supportent pas.
   if (runner && is_accelerator_aware) {
-    //m_runner = runner;
+    m_runner = runner;
     buffer_copier->setRunQueue(internal_pm->defaultQueue());
     allocator = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
   }
 
-  DataSynchronizeMemory* memory = new DataSynchronizeMemory(buffer_copier, allocator);
+  DataSynchronizeMemory* memory = new DataSynchronizeMemory(allocator);
   Ref<DataSynchronizeMemory> ref_memory = makeRef<DataSynchronizeMemory>(memory);
 
-  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, m_implementation_factory, m_sync_info, ref_memory, runner);
+  // Créé une instance de l'implémentation
+  Ref<IDataSynchronizeImplementation> sync_impl = m_implementation_factory->createInstance();
+  sync_impl->setDataSynchronizeInfo(m_sync_info.get());
+
+  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, sync_impl, m_sync_info, ref_memory, buffer_copier);
   return new SyncMessage(bi, this);
 }
 
@@ -257,6 +256,7 @@ compute()
   VariableSynchronizerComputeList computer(this);
   computer.compute();
 
+  _setCurrentDevice();
   m_default_message->compute();
   if (m_is_verbose)
     info() << "End compute dispatcher Date=" << platform::getCurrentDateTime();
@@ -271,6 +271,8 @@ _doSynchronize(SyncMessage* message)
   IParallelMng* pm = m_parallel_mng;
   ITimeStats* ts = pm->timeStats();
   Timer::Phase tphase(ts, TP_Communication);
+
+  _setCurrentDevice();
 
   // Envoi l'évènement de début de la synchro
   VariableSynchronizerEventArgs& event_args = message->eventArgs();
@@ -287,10 +289,14 @@ _doSynchronize(SyncMessage* message)
   if (nb_var == 1 && m_variable_synchronizer_mng->isCompareSynchronize()) {
     IVariable* var = message->variables()[0];
     eDataSynchronizeCompareStatus s = message->result().compareStatus();
-    if (s == eDataSynchronizeCompareStatus::Different)
+    if (s == eDataSynchronizeCompareStatus::Different) {
+      event_args.setCompareStatus(0, VariableSynchronizerEventArgs::CompareStatus::Different);
       info() << "Different values name=" << var->name();
-    else if (s == eDataSynchronizeCompareStatus::Same)
+    }
+    else if (s == eDataSynchronizeCompareStatus::Same) {
+      event_args.setCompareStatus(0, VariableSynchronizerEventArgs::CompareStatus::Same);
       info() << "Same values name=" << var->name();
+    }
     else
       info() << "Unknown values name=" << var->name();
   }
@@ -320,7 +326,7 @@ synchronize(IVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizer::
-synchronize(const VariableCollection& vars)
+synchronize(VariableCollection vars)
 {
   if (vars.empty())
     return;
@@ -488,6 +494,22 @@ _checkCreateTimer()
 {
   if (!m_sync_timer)
     m_sync_timer = new Timer(m_parallel_mng->timerMng(), "SyncTimer", Timer::TimerReal);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Positionne le device associé à notre RunQueue comme le device courant.
+ *
+ * Si on utilise une RunQueue, positionne le device associé à celui
+ * de cette RunQueue. Cela permet de garantir que les allocations mémoires
+ * effectuées lors des synchronisations seront sur le bon device.
+ */
+void VariableSynchronizer::
+_setCurrentDevice()
+{
+  if (m_runner)
+    m_runner->setAsCurrentDevice();
 }
 
 /*---------------------------------------------------------------------------*/

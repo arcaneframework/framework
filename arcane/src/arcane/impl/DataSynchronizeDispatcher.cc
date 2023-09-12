@@ -27,8 +27,6 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/internal/IDataInternal.h"
 
-#include "arcane/accelerator/core/Runner.h"
-
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
 #include "arcane/impl/internal/DataSynchronizeMemory.h"
@@ -70,11 +68,10 @@ class DataSynchronizeDispatcherBase
   IParallelMng* m_parallel_mng = nullptr;
   Runner* m_runner = nullptr;
   Ref<DataSynchronizeInfo> m_sync_info;
-  Ref<IDataSynchronizeImplementation> m_implementation_instance;
+  Ref<IDataSynchronizeImplementation> m_synchronize_implementation;
 
  protected:
 
-  void _setCurrentDevice();
   void _compute();
 };
 
@@ -85,12 +82,8 @@ DataSynchronizeDispatcherBase::
 DataSynchronizeDispatcherBase(const DataSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
 , m_sync_info(bi.synchronizeInfo())
+, m_synchronize_implementation(bi.synchronizeImplementation())
 {
-  ARCANE_CHECK_POINTER(bi.factory().get());
-  m_implementation_instance = bi.factory()->createInstance();
-  m_implementation_instance->setDataSynchronizeInfo(m_sync_info.get());
-
-  m_runner = bi.runner();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,30 +97,13 @@ DataSynchronizeDispatcherBase::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Positionne le device associé à notre RunQueue comme le device courant.
- *
- * Si on utilise une RunQueue, positionne le device associé à celui
- * de cette RunQueue. Cela permet de garantir que les allocations mémoires
- * effectuées lors des synchronisations seront sur le bon device.
- */
-void DataSynchronizeDispatcherBase::
-_setCurrentDevice()
-{
-  if (m_runner)
-    m_runner->setAsCurrentDevice();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Notifie l'implémentation que les informations de synchronisation
  * ont changé.
  */
 void DataSynchronizeDispatcherBase::
 _compute()
 {
-  _setCurrentDevice();
-  m_implementation_instance->compute();
+  m_synchronize_implementation->compute();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -149,7 +125,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
 
   explicit DataSynchronizeDispatcher(const DataSynchronizeDispatcherBuildInfo& bi)
   : DataSynchronizeDispatcherBase(bi)
-  , m_sync_buffer(m_sync_info.get(), bi.synchronizeMemory())
+  , m_sync_buffer(m_sync_info.get(), bi.synchronizeMemory(), bi.bufferCopier())
   {
   }
 
@@ -158,17 +134,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
   void compute() override { _compute(); }
   void beginSynchronize(INumericDataInternal* data, bool is_compare_sync) override;
   DataSynchronizeResult endSynchronize() override;
-
- protected:
-
-  void _beginSynchronize(DataSynchronizeBufferBase& sync_buffer)
-  {
-    m_implementation_instance->beginSynchronize(&sync_buffer);
-  }
-  void _endSynchronize(DataSynchronizeBufferBase& sync_buffer)
-  {
-    m_implementation_instance->endSynchronize(&sync_buffer);
-  }
 
  private:
 
@@ -199,10 +164,9 @@ beginSynchronize(INumericDataInternal* data, bool is_compare_sync)
   m_is_empty_sync = (mem_view.bytes().size() == 0);
   if (m_is_empty_sync)
     return;
-  _setCurrentDevice();
   m_sync_buffer.setDataView(mem_view);
   m_sync_buffer.prepareSynchronize(full_datatype_size, is_compare_sync);
-  _beginSynchronize(m_sync_buffer);
+  m_synchronize_implementation->beginSynchronize(&m_sync_buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -215,8 +179,7 @@ endSynchronize()
     ARCANE_FATAL("No pending synchronize(). You need to call beginSynchronize() before");
   DataSynchronizeResult result;
   if (!m_is_empty_sync) {
-    _setCurrentDevice();
-    _endSynchronize(m_sync_buffer);
+    m_synchronize_implementation->endSynchronize(&m_sync_buffer);
     result = m_sync_buffer.finalizeSynchronize();
   }
   m_is_in_sync = false;
@@ -265,34 +228,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcher
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Synchronisation d'une liste de variables.
- *
- * \brief Version 2 qui utilise directement des buffers au lieu
- * d'un ISerializer.
- */
-class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
-: public DataSynchronizeDispatcherBase
-, public IDataSynchronizeMultiDispatcher
-{
- public:
-
-  explicit DataSynchronizeMultiDispatcherV2(const DataSynchronizeDispatcherBuildInfo& bi)
-  : DataSynchronizeDispatcherBase(bi)
-  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.synchronizeMemory())
-  {
-  }
-
-  void compute() override { _compute(); }
-  void synchronize(ConstArrayView<IVariable*> vars) override;
-
- private:
-
-  MultiDataSynchronizeBuffer m_sync_buffer;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 void DataSynchronizeMultiDispatcher::
 synchronize(ConstArrayView<IVariable*> vars)
@@ -337,6 +272,34 @@ synchronize(ConstArrayView<IVariable*> vars)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Synchronisation d'une liste de variables.
+ *
+ * \brief Version 2 qui utilise directement des buffers au lieu
+ * d'un ISerializer.
+ */
+class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
+: public DataSynchronizeDispatcherBase
+, public IDataSynchronizeMultiDispatcher
+{
+ public:
+
+  explicit DataSynchronizeMultiDispatcherV2(const DataSynchronizeDispatcherBuildInfo& bi)
+  : DataSynchronizeDispatcherBase(bi)
+  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.synchronizeMemory(), bi.bufferCopier())
+  {
+  }
+
+  void compute() override { _compute(); }
+  void synchronize(ConstArrayView<IVariable*> vars) override;
+
+ private:
+
+  MultiDataSynchronizeBuffer m_sync_buffer;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void DataSynchronizeMultiDispatcherV2::
 synchronize(ConstArrayView<IVariable*> vars)
@@ -359,14 +322,12 @@ synchronize(ConstArrayView<IVariable*> vars)
     }
   }
 
-  _setCurrentDevice();
-
   // TODO: à passer en paramètre de la fonction
   bool is_compare_sync = false;
   m_sync_buffer.prepareSynchronize(all_datatype_size, is_compare_sync);
 
-  m_implementation_instance->beginSynchronize(&m_sync_buffer);
-  m_implementation_instance->endSynchronize(&m_sync_buffer);
+  m_synchronize_implementation->beginSynchronize(&m_sync_buffer);
+  m_synchronize_implementation->endSynchronize(&m_sync_buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -379,13 +340,13 @@ synchronize(ConstArrayView<IVariable*> vars)
  *
  * Cette implémentation est faite à partir de send/receive suivi de 'wait'.
  */
-class SimpleDataSynchronizeDispatcher
+class SimpleDataSynchronizeImplementation
 : public AbstractDataSynchronizeImplementation
 {
  public:
 
   class Factory;
-  explicit SimpleDataSynchronizeDispatcher(Factory* f);
+  explicit SimpleDataSynchronizeImplementation(Factory* f);
 
  protected:
 
@@ -402,7 +363,7 @@ class SimpleDataSynchronizeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SimpleDataSynchronizeDispatcher::Factory
+class SimpleDataSynchronizeImplementation::Factory
 : public IDataSynchronizeImplementationFactory
 {
  public:
@@ -413,7 +374,7 @@ class SimpleDataSynchronizeDispatcher::Factory
 
   Ref<IDataSynchronizeImplementation> createInstance() override
   {
-    auto* x = new SimpleDataSynchronizeDispatcher(this);
+    auto* x = new SimpleDataSynchronizeImplementation(this);
     return makeRef<IDataSynchronizeImplementation>(x);
   }
 
@@ -425,8 +386,8 @@ class SimpleDataSynchronizeDispatcher::Factory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SimpleDataSynchronizeDispatcher::
-SimpleDataSynchronizeDispatcher(Factory* f)
+SimpleDataSynchronizeImplementation::
+SimpleDataSynchronizeImplementation(Factory* f)
 : m_parallel_mng(f->m_parallel_mng)
 {
 }
@@ -437,14 +398,14 @@ SimpleDataSynchronizeDispatcher(Factory* f)
 extern "C++" Ref<IDataSynchronizeImplementationFactory>
 arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm)
 {
-  auto* x = new SimpleDataSynchronizeDispatcher::Factory(pm);
+  auto* x = new SimpleDataSynchronizeImplementation::Factory(pm);
   return makeRef<IDataSynchronizeImplementationFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleDataSynchronizeDispatcher::
+void SimpleDataSynchronizeImplementation::
 beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
   ARCANE_CHECK_POINTER(vs_buf);
@@ -489,7 +450,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleDataSynchronizeDispatcher::
+void SimpleDataSynchronizeImplementation::
 endSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
   IParallelMng* pm = m_parallel_mng;

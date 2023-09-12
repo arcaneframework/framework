@@ -1,18 +1,10 @@
-#include <mpi.h>
+﻿#include <mpi.h>
 
 #include <string>
 #include <map>
 #include <time.h>
 #include <vector>
 #include <fstream>
-#include <boost/timer.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/cmdline.hpp>
-#include <boost/program_options/variables_map.hpp>
-#include <boost/timer.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <arcane/ArcaneVersion.h>
 #include <arcane/Timer.h>
@@ -121,8 +113,8 @@ AlienStokesModule::init()
 
   ENUMERATE_CELL (icell, allCells()) {
     Real3 x;
-    ENUMERATE_NODE (inode, icell->nodes()) {
-      x += m_node_coord[*inode];
+    for (Arcane::Node node : icell->nodes()) {
+      x += m_node_coord[node];
     }
     x /= icell->nbNode();
     m_cell_center[icell] = x;
@@ -130,8 +122,8 @@ AlienStokesModule::init()
 
   ENUMERATE_FACE (iface, allFaces()) {
     Real3 x;
-    ENUMERATE_NODE (inode, iface->nodes()) {
-      x += m_node_coord[*inode];
+    for (Arcane::Node node : iface->nodes()) {
+      x += m_node_coord[node];
     }
     x /= iface->nbNode();
     m_face_center[iface] = x;
@@ -163,8 +155,8 @@ AlienStokesModule::init()
 bool
 AlienStokesModule::_isNodeOfFace(Face const& face, Integer node_lid)
 {
-  ENUMERATE_NODE (inode, face.nodes()) {
-    if (inode->localId() == node_lid)
+  for (Arcane::Node node : face.nodes()) {
+    if (node.localId() == node_lid)
       return true;
   }
   return false;
@@ -185,8 +177,7 @@ AlienStokesModule::_computeFaceConnectivity(
     Real3 xN = 0.5 * (m_node_coord[node0] + m_node_coord[node1]) - m_face_center[face];
     Integer dir = _computeDir(xN);
     Integer up = xN[dir] > 0 ? 1 : 0;
-    ENUMERATE_FACE (iface2, node0.faces()) {
-      Face const& conn_face = *iface2;
+    for (Arcane::Face conn_face : node0.faces()) {
       if (conn_face.localId() != face_lid && _isNodeOfFace(conn_face, node1_lid)
           && m_face_type[conn_face] == face_type) {
         connectivity[dir][up] = conn_face.localId();
@@ -417,19 +408,18 @@ AlienStokesModule::test()
 
       profilerA.addMatrixEntry(iIndexA, allUIndexA[face.localId()]);
 
-      ENUMERATE_CELL (icell, iface->cells()) {
-        const Cell& cell = *icell;
+      for (Arcane::Cell cell : iface->cells()) {
         info() << "            CELL[" << cell.localId() << "]";
         assert(allPIndex[cell.localId()] != -1);
         profiler.addMatrixEntry(iIndex, allPIndex[cell.localId()]);
 
         profilerB.addMatrixEntry(iIndexA, allPIndexB[cell.localId()]);
-        ENUMERATE_FACE (iface2, cell.faces()) {
-          if (!iface2->isSubDomainBoundary()) {
-            if (iface2->localId() != face_lid && m_face_type[*iface2] == face_type) {
-              profiler.addMatrixEntry(iIndex, allUIndex[iface2->localId()]);
+        for (Arcane::Face face2 : cell.faces()){
+          if (!face2.isSubDomainBoundary()) {
+            if (face2.localId() != face_lid && m_face_type[face2] == face_type) {
+              profiler.addMatrixEntry(iIndex, allUIndex[face2.localId()]);
 
-              profilerA.addMatrixEntry(iIndexA, allUIndexA[iface2->localId()]);
+              profilerA.addMatrixEntry(iIndexA, allUIndexA[face2.localId()]);
             }
           }
         }
@@ -466,8 +456,7 @@ AlienStokesModule::test()
       const Integer iIndexB = allPIndexB[cell.localId()];
       assert(iIndexB != -1);
 
-      ENUMERATE_FACE (iface, icell->faces()) {
-        const Face& face = *iface;
+      for (Arcane::Face face : icell->faces()) {
         info() << "        FACE[" << face.localId() << "]";
         if (!face.isSubDomainBoundary()) {
           assert(allUIndex[face.localId()] != -1);
@@ -538,31 +527,31 @@ AlienStokesModule::test()
         builderB(iIndexU, allPIndexB[front_cell.localId()]) =
             orientation / m_h[face_type];
 
-        ENUMERATE_FACE (iface2, front_cell.faces()) {
-          if (iface2->localId() != face_lid && m_face_type[*iface2] == face_type) {
-            if (iface2->isSubDomainBoundary()) {
-              Integer bc_type = getBCType(*iface2);
+        for (Arcane::Face face2 : front_cell.faces()) {
+          if (face2.localId() != face_lid && m_face_type[face2] == face_type) {
+            if (face2.isSubDomainBoundary()) {
+              Integer bc_type = getBCType(face2);
               switch (bc_type) {
               case Neumann:
-                rhs[iIndex] += m_fN[*iface2] / m_h[face_type];
-                rhsU[iIndexU] += m_fN[*iface2] / m_h[face_type];
+                rhs[iIndex] += m_fN[face2] / m_h[face_type];
+                rhsU[iIndexU] += m_fN[face2] / m_h[face_type];
 
                 break;
               case Dirichlet:
               default:
-                rhs[iIndex] += m_fD[*iface2] / m_h2[face_type];
+                rhs[iIndex] += m_fD[face2] / m_h2[face_type];
                 builder(iIndex, iIndex) += 1. / m_h2[face_type];
 
-                rhsU[iIndexU] += m_fD[*iface2] / m_h2[face_type];
+                rhsU[iIndexU] += m_fD[face2] / m_h2[face_type];
                 builderA(iIndexU, iIndexU) += 1. / m_h2[face_type];
 
                 break;
               }
             } else {
-              builder(iIndex, allUIndex[iface2->localId()]) += -1 / m_h2[face_type];
+              builder(iIndex, allUIndex[face2->localId()]) += -1 / m_h2[face_type];
               builder(iIndex, iIndex) += 1. / m_h2[face_type];
 
-              builderA(iIndexU, allUIndexA[iface2->localId()]) += -1 / m_h2[face_type];
+              builderA(iIndexU, allUIndexA[face2->localId()]) += -1 / m_h2[face_type];
               builderA(iIndexU, iIndexU) += 1. / m_h2[face_type];
             }
           }
@@ -575,31 +564,31 @@ AlienStokesModule::test()
         builderB(iIndexU, allPIndexB[back_cell.localId()]) =
             -1. * orientation / m_h[face_type];
 
-        ENUMERATE_FACE (iface2, back_cell.faces()) {
-          if (iface2->localId() != face_lid && m_face_type[*iface2] == face_type) {
-            if (iface2->isSubDomainBoundary()) {
-              Integer bc_type = getBCType(*iface2);
+        for (Arcane::Face face2 : back_cell.faces()) {
+          if (face2.localId() != face_lid && m_face_type[face2] == face_type) {
+            if (face2.isSubDomainBoundary()) {
+              Integer bc_type = getBCType(face2);
               switch (bc_type) {
               case Neumann:
-                rhs[iIndex] += m_fN[*iface2] / m_h[face_type];
-                rhsU[iIndexU] += m_fN[*iface2] / m_h[face_type];
+                rhs[iIndex] += m_fN[face2] / m_h[face_type];
+                rhsU[iIndexU] += m_fN[face2] / m_h[face_type];
 
                 break;
               case Dirichlet:
               default:
-                rhs[iIndex] += m_fD[*iface2] / m_h2[face_type];
+                rhs[iIndex] += m_fD[face2] / m_h2[face_type];
                 builder(iIndex, iIndex) += 1. / m_h2[face_type];
 
-                rhsU[iIndex] += m_fD[*iface2] / m_h2[face_type];
+                rhsU[iIndex] += m_fD[face2] / m_h2[face_type];
                 builderA(iIndexU, iIndexU) += 1. / m_h2[face_type];
 
                 break;
               }
             } else {
-              builder(iIndex, allUIndex[iface2->localId()]) += -1 / m_h2[face_type];
+              builder(iIndex, allUIndex[face2->localId()]) += -1 / m_h2[face_type];
               builder(iIndex, iIndex) += 1. / m_h2[face_type];
 
-              builderA(iIndexU, allUIndexA[iface2->localId()]) += -1 / m_h2[face_type];
+              builderA(iIndexU, allUIndexA[face2->localId()]) += -1 / m_h2[face_type];
               builder(iIndexU, iIndexU) += 1. / m_h2[face_type];
             }
           }
@@ -663,8 +652,7 @@ AlienStokesModule::test()
 
       rhsP[iIndexP] += m_g[cell];
 
-      ENUMERATE_FACE (iface, icell->faces()) {
-        const Face& face = *iface;
+      for (Arcane::Face face : icell->faces()) {
         Integer face_lid = face.localId();
         Integer face_type = m_face_type[face];
         Integer up = _upStreamFace(face, cell_lid);
@@ -672,14 +660,13 @@ AlienStokesModule::test()
           rhs[iIndex] -= up / m_h[face_type];
           rhsP[iIndexP] -= up / m_h[face_type];
 
-          Integer bc_type = getBCType(*iface);
+          Integer bc_type = getBCType(face);
           info() << "     Boundary F" << bc_type;
           switch (bc_type) {
           case Neumann:
-            rhs[iIndex] -= up * m_fN[*iface];
-            rhsP[iIndexP] -= up * m_fN[*iface];
-            ENUMERATE_FACE (iface2, icell->faces()) {
-              Face const& face2 = *iface2;
+            rhs[iIndex] -= up * m_fN[face];
+            rhsP[iIndexP] -= up * m_fN[face];
+            for (Arcane::Face face2 : icell->faces()) {
               Integer face2_type = m_face_type[face2];
               Integer face2_lid = face2.localId();
               if (face2_lid != face_lid && face2_type == face_type) {
@@ -690,8 +677,8 @@ AlienStokesModule::test()
             break;
           case Dirichlet:
           default:
-            rhs[iIndex] -= up * m_fD[*iface] / m_h[face_type];
-            rhsP[iIndexP] -= up * m_fD[*iface] / m_h[face_type];
+            rhs[iIndex] -= up * m_fD[face] / m_h[face_type];
+            rhsP[iIndexP] -= up * m_fD[face] / m_h[face_type];
             break;
           }
         } else {
@@ -782,8 +769,8 @@ AlienStokesModule::test()
         const Integer iIndex = allPIndexB[icell->localId()];
         m_p[icell] = p_view[iIndex];
         Real v[dim] = { 0., 0., 0. };
-        ENUMERATE_FACE (iface, icell->faces()) {
-          v[m_face_type[*iface]] += m_flux[*iface];
+        for (Arcane::Face face : icell->faces()){
+          v[m_face_type[face]] += m_flux[face];
         }
         m_v[icell][0] = v[0] / 2;
         m_v[icell][1] = v[1] / 2;

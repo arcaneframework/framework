@@ -99,10 +99,10 @@ localIds(Int32 index) const
 /*---------------------------------------------------------------------------*/
 
 DataSynchronizeBufferBase::
-DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory)
+DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory, Ref<IBufferCopier> copier)
 : m_sync_info(sync_info)
-  //, m_buffer(makeRef<DataSynchronizeMemory>(new DataSynchronizeMemory(copier)))
-  , m_memory(memory)
+, m_memory(memory)
+, m_buffer_copier(copier)
 {
 }
 
@@ -121,7 +121,7 @@ targetRank(Int32 index) const
 void DataSynchronizeBufferBase::
 barrier()
 {
-  m_memory->copier()->barrier();
+  m_buffer_copier->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -195,7 +195,7 @@ copyReceiveAsync(Int32 index)
   ConstArrayView<Int32> indexes = m_ghost_buffer_info.localIds(index);
   ConstMemoryView local_buffer = m_ghost_buffer_info.localBuffer(index);
 
-  m_memory->copier()->copyFromBufferAsync(indexes, local_buffer, var_values);
+  m_buffer_copier->copyFromBufferAsync(indexes, local_buffer, var_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -209,7 +209,7 @@ copySendAsync(Int32 index)
   ConstMemoryView var_values = dataView();
   ConstArrayView<Int32> indexes = m_share_buffer_info.localIds(index);
   MutableMemoryView local_buffer = m_share_buffer_info.localBuffer(index);
-  m_memory->copier()->copyToBufferAsync(indexes, local_buffer, var_values);
+  m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -229,7 +229,7 @@ prepareSynchronize(Int32 datatype_size, bool is_compare_sync)
   for (Int32 i = 0; i < nb_rank; ++i) {
     ConstArrayView<Int32> indexes = m_compare_sync_buffer_info.localIds(i);
     MutableMemoryView local_buffer = m_compare_sync_buffer_info.localBuffer(i);
-    m_memory->copier()->copyToBufferAsync(indexes, local_buffer, var_values);
+    m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
   }
   // Normalement pas besoin de faire une barrière car ensuite il y aura les
   // envois sur la même \a queue et ensuite une barrière.
@@ -284,7 +284,7 @@ prepareSynchronize(Int32 datatype_size, [[maybe_unused]] bool is_compare_sync)
 void MultiDataSynchronizeBuffer::
 copyReceiveAsync(Int32 index)
 {
-  IBufferCopier* copier = m_memory->copier();
+  IBufferCopier* copier = m_buffer_copier.get();
   m_ghost_buffer_info.checkValid();
 
   Int64 data_offset = 0;
@@ -308,7 +308,7 @@ copyReceiveAsync(Int32 index)
 void MultiDataSynchronizeBuffer::
 copySendAsync(Int32 index)
 {
-  IBufferCopier* copier = m_memory->copier();
+  IBufferCopier* copier = m_buffer_copier.get();
   m_ghost_buffer_info.checkValid();
 
   Int64 data_offset = 0;

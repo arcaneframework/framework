@@ -22,6 +22,7 @@
 
 namespace Arcane
 {
+class IVariableSynchronizerMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,6 +51,13 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMng
 
   //! Indique si on effecture les comparaisons des valeurs avant et après synchronisation
   virtual bool isCompareSynchronize() const = 0;
+
+  //! Affiche les statistiques sur le flot \a ostr
+  virtual void dumpStats(std::ostream& ostr) const = 0;
+
+ public:
+
+  virtual IVariableSynchronizerMngInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

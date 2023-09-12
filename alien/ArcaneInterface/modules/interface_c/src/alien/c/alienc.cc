@@ -1,4 +1,4 @@
-/*
+﻿/*
  * alienc.h
  *
  *  Created on: Nov 25, 2020
@@ -26,7 +26,7 @@
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 #include <arccore/trace/ITraceMng.h>
 
-
+#include <alien/AlienInterfaceCExport.h>
 
 #include <alien/ref/AlienRefSemantic.h>
 //#include <alien/AlienExternalPackages.h>
@@ -540,20 +540,20 @@ extern "C" {
 
   #include "alien/c/alienc.h"
 
-  int ALIEN_init(int argc, char** argv)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_init(int argc, char** argv)
   {
     AlienManager::initialize() ;
     return 0 ;
   }
 
-  int ALIEN_create_linear_system(MPI_Comm comm)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_create_linear_system(MPI_Comm comm)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
     return alien_mng->createNewLinearSystem(comm) ;
   }
 
-  int ALIEN_destroy_linear_system(int system_id)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_destroy_linear_system(int system_id)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -561,7 +561,7 @@ extern "C" {
   }
 
 
-  int ALIEN_init_linear_system(int system_id,
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_init_linear_system(int system_id,
                                int global_nrows,
                                int local_nrows,
                                uid_type* row_uids,
@@ -583,7 +583,7 @@ extern "C" {
     return 0 ;
   }
 
-  int ALIEN_define_matrix_profile(int system_id,
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_define_matrix_profile(int system_id,
                                   int local_nrows,
                                   uid_type* row_uids,
                                   int* row_offset,
@@ -600,7 +600,7 @@ extern "C" {
     return 0 ;
   }
 
-  int ALIEN_set_matrix_values(int system_id,
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_set_matrix_values(int system_id,
                               int local_nrows,
                               uid_type* row_uids,
                               int* row_offset,
@@ -620,7 +620,7 @@ extern "C" {
     return 0 ;
   }
 
-  int ALIEN_set_rhs_values(int system_id,
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_set_rhs_values(int system_id,
                            int local_nrows,
                            uid_type* row_uids,
                            double const* values)
@@ -633,7 +633,7 @@ extern "C" {
     return 0 ;
   }
 
-  int ALIEN_get_solution_values(int system_id,
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_get_solution_values(int system_id,
                                 int local_nrows,
                                 uid_type* row_uids,
                                 double* values)
@@ -646,7 +646,7 @@ extern "C" {
     return 0 ;
   }
 
-  int ALIEN_create_solver(MPI_Comm comm,const char* config_file)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_create_solver(MPI_Comm comm,const char* config_file)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -654,7 +654,7 @@ extern "C" {
   }
 
 
-  int ALIEN_init_solver(int solver_id,int argc, char** argv)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver(int solver_id,int argc, char** argv)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -664,7 +664,7 @@ extern "C" {
   }
 
 
-  int ALIEN_init_solver_with_configfile(int solver_id,const char* path)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver_with_configfile(int solver_id,const char* path)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -674,7 +674,7 @@ extern "C" {
     return 0 ;
   }
 
-  int ALIEN_destroy_solver(int solver_id)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_destroy_solver(int solver_id)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -682,7 +682,7 @@ extern "C" {
     return 0 ;
   }
 
-  int ALIEN_solve(int solver_id, int system_id)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_solve(int solver_id, int system_id)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -693,7 +693,7 @@ extern "C" {
     return solver->solve(system->getA(),system->getB(),system->getX()) ;
   }
 
-  int ALIEN_get_solver_status(int solver_id, ALIEN_Solver_Status* status)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_get_solver_status(int solver_id, ALIEN_Solver_Status* status)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -702,7 +702,7 @@ extern "C" {
     return 0 ;
   }
 
-  int ALIEN_finalize()
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_finalize()
   {
     AlienManager::finalize() ;
     return 0 ;

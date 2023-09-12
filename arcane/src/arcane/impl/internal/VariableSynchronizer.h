@@ -67,7 +67,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
     return m_parallel_mng;
   }
 
-  ItemGroup itemGroup() override { return m_item_group; }
+  const ItemGroup& itemGroup() override { return m_item_group; }
 
   void compute() override;
 
@@ -75,7 +75,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
   void synchronize(IVariable* var) override;
 
-  void synchronize(const VariableCollection& vars) override;
+  void synchronize(VariableCollection vars) override;
 
   Int32ConstArrayView communicatingRanks() override;
 
@@ -108,6 +108,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   Ref<IDataSynchronizeImplementationFactory> m_implementation_factory;
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   SyncMessage* m_default_message = nullptr;
+  Runner* m_runner = nullptr;
 
  private:
 
@@ -120,6 +121,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   void _sendEvent(VariableSynchronizerEventArgs& args);
   void _checkCreateTimer();
   void _doSynchronize(SyncMessage* message);
+  void _setCurrentDevice();
 };
 
 /*---------------------------------------------------------------------------*/
