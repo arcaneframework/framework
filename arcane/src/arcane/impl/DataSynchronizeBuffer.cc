@@ -100,9 +100,8 @@ localIds(Int32 index) const
 /*---------------------------------------------------------------------------*/
 
 DataSynchronizeBufferBase::
-DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<MemoryBuffer> memory, Ref<IBufferCopier> copier)
+DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<IBufferCopier> copier)
 : m_sync_info(sync_info)
-, m_memory(memory)
 , m_buffer_copier(copier)
 {
 }

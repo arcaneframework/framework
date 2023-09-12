@@ -67,12 +67,14 @@ class VariableSynchronizer::SyncMessage
 {
  public:
 
-  SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi, VariableSynchronizer* var_syncer)
+  SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi, VariableSynchronizer* var_syncer,
+              Ref<MemoryBuffer> memory_buffer)
   : m_variable_synchronizer(var_syncer)
   , m_variable_synchronizer_mng(var_syncer->synchronizeMng())
   , m_dispatcher(IDataSynchronizeDispatcher::create(bi))
   , m_multi_dispatcher(IDataSynchronizeMultiDispatcher::create(bi))
   , m_event_args(var_syncer)
+  , m_synchronize_buffer(memory_buffer)
   {
     if (!m_dispatcher)
       ARCANE_FATAL("No synchronizer created");
@@ -121,6 +123,7 @@ class VariableSynchronizer::SyncMessage
       m_synchronize_result = synchronizeData(m_data_list[0], is_compare_sync);
     }
     if (nb_var >= 2) {
+      m_multi_dispatcher->setSynchronizeBuffer(m_synchronize_buffer);
       m_multi_dispatcher->synchronize(m_variables);
     }
     for (IVariable* var : m_variables)
@@ -129,6 +132,7 @@ class VariableSynchronizer::SyncMessage
 
   DataSynchronizeResult synchronizeData(INumericDataInternal* data, bool is_compare_sync)
   {
+    m_dispatcher->setSynchronizeBuffer(m_synchronize_buffer);
     m_dispatcher->beginSynchronize(data, is_compare_sync);
     return m_dispatcher->endSynchronize();
   }
@@ -145,6 +149,7 @@ class VariableSynchronizer::SyncMessage
   UniqueArray<IVariable*> m_variables;
   UniqueArray<INumericDataInternal*> m_data_list;
   DataSynchronizeResult m_synchronize_result;
+  Ref<MemoryBuffer> m_synchronize_buffer;
 
  private:
 
@@ -240,8 +245,8 @@ _buildMessage()
   Ref<IDataSynchronizeImplementation> sync_impl = m_implementation_factory->createInstance();
   sync_impl->setDataSynchronizeInfo(m_sync_info.get());
 
-  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, sync_impl, m_sync_info, ref_memory, buffer_copier);
-  return new SyncMessage(bi, this);
+  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, sync_impl, m_sync_info, buffer_copier);
+  return new SyncMessage(bi, this, ref_memory);
 }
 
 /*---------------------------------------------------------------------------*/

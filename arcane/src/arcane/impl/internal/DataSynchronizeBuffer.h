@@ -96,13 +96,17 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
  public:
 
-  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<MemoryBuffer> memory,
-                            Ref<IBufferCopier> copier);
+  DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<IBufferCopier> copier);
 
  public:
 
   //! Indique si on compare les valeurs avant/après la synchronisation
   bool isCompareSynchronizedValues() const { return m_is_compare_sync_values; }
+
+  void setSynchronizeBuffer(Ref<MemoryBuffer> v)
+  {
+    m_memory = v;
+  }
 
   /*!
    * \brief Prépare la synchronisation.
@@ -111,6 +115,9 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
    * \a datatype_size est la taille (en octet) du type de la donnée.
    * Si \a is_compare_sync est vrai, on compare après la synchronisation les
    * valeurs des entités fantômes avec leur valeur d'avant la synchronisation.
+   *
+   * Il faut avoir appeler setSynchronizeBuffer() au moins une fois avant d'appeler
+   * cette méthode pour positionner la zone mémoire allouée.
    */
   virtual void prepareSynchronize(Int32 datatype_size, bool is_compare_sync) = 0;
 
@@ -151,9 +158,8 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
 {
  public:
 
-  SingleDataSynchronizeBuffer(DataSynchronizeInfo* sync_info, Ref<MemoryBuffer> memory,
-                              Ref<IBufferCopier> copier)
-  : DataSynchronizeBufferBase(sync_info, memory, copier)
+  SingleDataSynchronizeBuffer(DataSynchronizeInfo* sync_info, Ref<IBufferCopier> copier)
+  : DataSynchronizeBufferBase(sync_info, copier)
   {}
 
  public:
@@ -192,10 +198,9 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
  public:
 
   MultiDataSynchronizeBuffer(ITraceMng* tm, DataSynchronizeInfo* sync_info,
-                             Ref<MemoryBuffer> memory,
                              Ref<IBufferCopier> copier)
   : TraceAccessor(tm)
-  , DataSynchronizeBufferBase(sync_info, memory, copier)
+  , DataSynchronizeBufferBase(sync_info, copier)
   {}
 
  public:

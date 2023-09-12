@@ -52,12 +52,10 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   DataSynchronizeDispatcherBuildInfo(IParallelMng* pm,
                                      Ref<IDataSynchronizeImplementation> sync_impl,
                                      Ref<DataSynchronizeInfo> sync_info,
-                                     Ref<MemoryBuffer> memory,
                                      Ref<IBufferCopier> copier)
   : m_parallel_mng(pm)
   , m_synchronize_implementation(sync_impl)
   , m_synchronize_info(sync_info)
-  , m_synchronize_memory(memory)
   , m_buffer_copier(copier)
   {}
 
@@ -66,7 +64,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   IParallelMng* parallelMng() const { return m_parallel_mng; }
   Ref<IDataSynchronizeImplementation> synchronizeImplementation() const { return m_synchronize_implementation; }
   Ref<DataSynchronizeInfo> synchronizeInfo() const { return m_synchronize_info; }
-  Ref<MemoryBuffer> synchronizeMemory() const { return m_synchronize_memory; }
   Ref<IBufferCopier> bufferCopier() const { return m_buffer_copier; }
 
  private:
@@ -74,7 +71,6 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
   IParallelMng* m_parallel_mng = nullptr;
   Ref<IDataSynchronizeImplementation> m_synchronize_implementation;
   Ref<DataSynchronizeInfo> m_synchronize_info;
-  Ref<MemoryBuffer> m_synchronize_memory;
   Ref<IBufferCopier> m_buffer_copier;
 };
 
@@ -105,6 +101,14 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeDispatcher
    * de \a DataSynchronizeInfo.
    */
   virtual void compute() = 0;
+
+  /*!
+   * \brief Positionne le buffer de synchronisation.
+   *
+   * Il faut appeler cette méthode avant beginSynchronize(). Le buffer ne doit pas être
+   * modifié avant l'appel à endSynchronize()
+   */
+  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) =0;
 
   /*!
    * \brief Commence l'exécution pour la synchronisation pour la donnée \a data.
@@ -143,6 +147,12 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeMultiDispatcher
    * de \a DataSynchronizeInfo.
    */
   virtual void compute() = 0;
+  /*!
+   * \brief Positionne le buffer de synchronisation.
+   *
+   * Il faut appeler cette méthode avant synchronize().
+   */
+  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) =0;
   virtual void synchronize(ConstArrayView<IVariable*> vars) = 0;
 
  public:
