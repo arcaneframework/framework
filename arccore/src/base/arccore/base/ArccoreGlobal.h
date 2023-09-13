@@ -25,7 +25,7 @@
 // Determine le type de l'os.
 #if defined(__linux)
 #  define ARCCORE_OS_LINUX
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && defined(__MACH__)
 #  define ARCCORE_OS_MACOS
 #elif defined(_AIX)
 #  define ARCCORE_OS_AIX
