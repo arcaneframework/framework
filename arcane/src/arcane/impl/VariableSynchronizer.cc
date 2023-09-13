@@ -18,6 +18,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/VariableSynchronizerEventArgs.h"
 #include "arcane/core/IParallelMng.h"
@@ -33,13 +34,13 @@
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
 
 #include "arcane/accelerator/core/Runner.h"
 
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/VariableSynchronizerComputeList.h"
 #include "arcane/impl/internal/IBufferCopier.h"
-#include "arcane/impl/internal/DataSynchronizeMemory.h"
 
 #include <algorithm>
 
@@ -65,14 +66,38 @@ arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
  */
 class VariableSynchronizer::SyncMessage
 {
+  class ScopedBuffer
+  {
+   public:
+
+    ScopedBuffer(IVariableSynchronizerMngInternal* sync_mng, IMemoryAllocator* allocator)
+    : m_synchronizer_mng(sync_mng)
+    , m_allocator(allocator)
+    , m_buffer(sync_mng->createSynchronizeBuffer(allocator))
+    {
+    }
+    ~ScopedBuffer() noexcept(false)
+    {
+      m_synchronizer_mng->releaseSynchronizeBuffer(m_allocator, m_buffer.get());
+    }
+
+   public:
+
+    IVariableSynchronizerMngInternal* m_synchronizer_mng = nullptr;
+    IMemoryAllocator* m_allocator = nullptr;
+    Ref<MemoryBuffer> m_buffer;
+  };
+
  public:
 
-  SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi, VariableSynchronizer* var_syncer)
+  SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi, VariableSynchronizer* var_syncer,
+              IMemoryAllocator* allocator)
   : m_variable_synchronizer(var_syncer)
   , m_variable_synchronizer_mng(var_syncer->synchronizeMng())
   , m_dispatcher(IDataSynchronizeDispatcher::create(bi))
   , m_multi_dispatcher(IDataSynchronizeMultiDispatcher::create(bi))
   , m_event_args(var_syncer)
+  , m_allocator(allocator)
   {
     if (!m_dispatcher)
       ARCANE_FATAL("No synchronizer created");
@@ -121,6 +146,8 @@ class VariableSynchronizer::SyncMessage
       m_synchronize_result = synchronizeData(m_data_list[0], is_compare_sync);
     }
     if (nb_var >= 2) {
+      ScopedBuffer tmp_buf(m_variable_synchronizer_mng->_internalApi(), m_allocator);
+      m_multi_dispatcher->setSynchronizeBuffer(tmp_buf.m_buffer);
       m_multi_dispatcher->synchronize(m_variables);
     }
     for (IVariable* var : m_variables)
@@ -129,6 +156,8 @@ class VariableSynchronizer::SyncMessage
 
   DataSynchronizeResult synchronizeData(INumericDataInternal* data, bool is_compare_sync)
   {
+    ScopedBuffer tmp_buf(m_variable_synchronizer_mng->_internalApi(), m_allocator);
+    m_dispatcher->setSynchronizeBuffer(tmp_buf.m_buffer);
     m_dispatcher->beginSynchronize(data, is_compare_sync);
     return m_dispatcher->endSynchronize();
   }
@@ -145,6 +174,7 @@ class VariableSynchronizer::SyncMessage
   UniqueArray<IVariable*> m_variables;
   UniqueArray<INumericDataInternal*> m_data_list;
   DataSynchronizeResult m_synchronize_result;
+  IMemoryAllocator* m_allocator = nullptr;
 
  private:
 
@@ -234,15 +264,12 @@ _buildMessage()
     allocator = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
   }
 
-  DataSynchronizeMemory* memory = new DataSynchronizeMemory(allocator);
-  Ref<DataSynchronizeMemory> ref_memory = makeRef<DataSynchronizeMemory>(memory);
-
   // Créé une instance de l'implémentation
   Ref<IDataSynchronizeImplementation> sync_impl = m_implementation_factory->createInstance();
   sync_impl->setDataSynchronizeInfo(m_sync_info.get());
 
-  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, sync_impl, m_sync_info, ref_memory, buffer_copier);
-  return new SyncMessage(bi, this);
+  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, sync_impl, m_sync_info, buffer_copier);
+  return new SyncMessage(bi, this, allocator);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -32,7 +32,6 @@ set( ARCANE_SOURCES
   DataSynchronizeInfo.h
   DataSynchronizeInfo.cc
   DataSynchronizeBuffer.cc
-  DataSynchronizeMemory.cc
   DataSynchronizeDispatcher.cc
   EntryPointMng.cc
   ExecutionStatsDumper.h
@@ -139,7 +138,6 @@ set( ARCANE_SOURCES
 
   internal/ArcaneMainExecInfo.h
   internal/DataSynchronizeBuffer.h
-  internal/DataSynchronizeMemory.h
   internal/IDataSynchronizeDispatcher.h
   internal/IBufferCopier.h
   internal/LegacyMeshBuilder.h

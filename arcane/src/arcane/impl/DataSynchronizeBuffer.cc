@@ -14,9 +14,10 @@
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
 
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/internal/MemoryBuffer.h"
+
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/IBufferCopier.h"
-#include "arcane/impl/internal/DataSynchronizeMemory.h"
 
 #include "arcane/accelerator/core/Runner.h"
 
@@ -99,9 +100,8 @@ localIds(Int32 index) const
 /*---------------------------------------------------------------------------*/
 
 DataSynchronizeBufferBase::
-DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<DataSynchronizeMemory> memory, Ref<IBufferCopier> copier)
+DataSynchronizeBufferBase(DataSynchronizeInfo* sync_info, Ref<IBufferCopier> copier)
 : m_sync_info(sync_info)
-, m_memory(memory)
 , m_buffer_copier(copier)
 {
 }

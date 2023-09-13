@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataSynchronizeMemory.h                                     (C) 2000-2023 */
+/* MemoryBuffer.h                                              (C) 2000-2023 */
 /*                                                                           */
-/* Gestion des allocations mémoire pour les synchronisations.                */
+/* Buffer mémoire.                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_DATASYNCHRONIZEMEMORY_H
-#define ARCANE_IMPL_DATASYNCHRONIZEMEMORY_H
+#ifndef ARCANE_IMPL_MEMORYBUFFER_H
+#define ARCANE_IMPL_MEMORYBUFFER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,23 +22,44 @@
 /*---------------------------------------------------------------------------*/
 namespace Arcane
 {
-class IBufferCopier;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestion des allocations mémoire pour les synchronisations.
+ * \brief Gestion d'un buffer mémoire.
+ *
  */
-class ARCANE_IMPL_EXPORT DataSynchronizeMemory
+class ARCANE_UTILS_EXPORT MemoryBuffer
 {
- public:
+ private:
 
-  explicit DataSynchronizeMemory(IMemoryAllocator* allocator)
+  explicit MemoryBuffer(IMemoryAllocator* allocator)
   : m_buffer(allocator)
   {}
 
  public:
 
+  /*!
+  * \brief Créé une instance de \a MemoryBuffer.
+  *
+  * L'allocateur \a allocator doit rester valide durant toute
+  * la durée de vie de l'instance créée.
+  */
+  static Ref<MemoryBuffer> create(IMemoryAllocator* allocator)
+  {
+    auto* memory = new MemoryBuffer(allocator);
+    Ref<MemoryBuffer> ref_memory = makeRef<MemoryBuffer>(memory);
+    return ref_memory;
+  }
+
+ public:
+
+  /*!
+   * \brief Redimensionne la zone mémoire.
+   *
+   * Aucune initialisation n'est effectuée. Si la taille diminue
+   * le resize() est sans effet.
+   */
   void resize(Int64 new_size) { m_buffer.resize(new_size); }
   Span<const std::byte> bytes() const { return m_buffer; }
   Span<std::byte> bytes() { return m_buffer; }
