@@ -28,6 +28,10 @@
 
 #include <iostream>
 
+#if defined(ARCCORE_OS_LINUX) || defined(ARCCORE_OS_MACOS)
+#define ARCCORE_USE_POSIX_MEMALIGN
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -194,7 +198,7 @@ hasRealloc() const
 void* AlignedMemoryAllocator::
 allocate(size_t new_size)
 {
-#ifdef ARCCORE_OS_LINUX
+#if defined(ARCCORE_USE_POSIX_MEMALIGN)
   void* ptr = nullptr;
   int e = ::posix_memalign(&ptr, m_alignment, new_size);
   if (e == EINVAL)
@@ -215,7 +219,7 @@ allocate(size_t new_size)
 AllocatedMemoryInfo AlignedMemoryAllocator3::
 allocate([[maybe_unused]] MemoryAllocationArgs args, Int64 new_size)
 {
-#ifdef ARCCORE_OS_LINUX
+#if defined(ARCCORE_USE_POSIX_MEMALIGN)
   void* ptr = nullptr;
   int e = ::posix_memalign(&ptr, m_alignment, new_size);
   if (e == EINVAL)
@@ -236,7 +240,7 @@ allocate([[maybe_unused]] MemoryAllocationArgs args, Int64 new_size)
 void* AlignedMemoryAllocator::
 reallocate(void* current_ptr, size_t new_size)
 {
-#ifdef ARCCORE_OS_LINUX
+#if defined(ARCCORE_USE_POSIX_MEMALIGN)
   ARCCORE_UNUSED(current_ptr);
   ARCCORE_UNUSED(new_size);
   throw NotSupportedException(A_FUNCINFO);
@@ -253,7 +257,7 @@ reallocate(void* current_ptr, size_t new_size)
 AllocatedMemoryInfo AlignedMemoryAllocator3::
 reallocate([[maybe_unused]] MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size)
 {
-#ifdef ARCCORE_OS_LINUX
+#if defined(ARCCORE_USE_POSIX_MEMALIGN)
   ARCCORE_UNUSED(current_ptr);
   ARCCORE_UNUSED(new_size);
   throw NotSupportedException(A_FUNCINFO);
@@ -270,7 +274,7 @@ reallocate([[maybe_unused]] MemoryAllocationArgs args, AllocatedMemoryInfo curre
 void AlignedMemoryAllocator::
 deallocate(void* ptr)
 {
-#ifdef ARCCORE_OS_LINUX
+#if defined(ARCCORE_USE_POSIX_MEMALIGN)
   ::free(ptr);
 #elif defined(ARCCORE_OS_WIN32)
   return _aligned_free(ptr);
@@ -285,7 +289,7 @@ deallocate(void* ptr)
 void AlignedMemoryAllocator3::
 deallocate([[maybe_unused]] MemoryAllocationArgs args, AllocatedMemoryInfo ptr)
 {
-#ifdef ARCCORE_OS_LINUX
+#if defined(ARCCORE_USE_POSIX_MEMALIGN)
   ::free(ptr.baseAddress());
 #elif defined(ARCCORE_OS_WIN32)
   return _aligned_free(ptr.baseAddress());
