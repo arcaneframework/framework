@@ -145,7 +145,7 @@ jobs:
 
       - run:
           name: Build 'framework'
-          command: cmake --build <<pipeline.parameters.BUILD_DIR>>
+          command: cmake --build <<pipeline.parameters.BUILD_DIR>> -- -j4
 
       - run:
           name: Install 'framework'
