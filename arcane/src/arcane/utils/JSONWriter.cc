@@ -173,13 +173,13 @@ write(StringView key,bool v)
   m_p->m_writer.Bool(v);
 }
 void JSONWriter::
-write(StringView key,Int64 v)
+_writeInt64(StringView key,Int64 v)
 {
   m_p->writeKey(key);
   m_p->m_writer.Int64(v);
 }
 void JSONWriter::
-write(StringView key,UInt64 v)
+_writeUInt64(StringView key,UInt64 v)
 {
   m_p->writeKey(key);
   m_p->m_writer.Uint64(v);

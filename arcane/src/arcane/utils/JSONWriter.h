@@ -106,8 +106,12 @@ class ARCANE_UTILS_EXPORT JSONWriter
   void write(StringView key, const char* v);
   void write(StringView key, std::string_view v);
   void write(StringView key, bool v);
-  void write(StringView key, Int64 v);
-  void write(StringView key, UInt64 v);
+  void write(StringView key, long long v) { _writeInt64(key, static_cast<Int64>(v)); }
+  void write(StringView key, long v) { _writeInt64(key, static_cast<Int64>(v)); }
+  void write(StringView key, int v) { _writeInt64(key, static_cast<Int64>(v)); }
+  void write(StringView key, unsigned long long v) { _writeUInt64(key, static_cast<UInt64>(v)); }
+  void write(StringView key, unsigned long v) { _writeUInt64(key, static_cast<UInt64>(v)); }
+  void write(StringView key, unsigned int v) { _writeUInt64(key, static_cast<UInt64>(v)); }
   void write(StringView key, Real v);
   void write(StringView key, StringView str);
   void writeIfNotNull(StringView key, const String& str);
@@ -122,6 +126,9 @@ class ARCANE_UTILS_EXPORT JSONWriter
  private:
 
   Impl* m_p;
+
+  void _writeInt64(StringView key, Int64 v);
+  void _writeUInt64(StringView key, UInt64 v);
 };
 
 /*---------------------------------------------------------------------------*/
