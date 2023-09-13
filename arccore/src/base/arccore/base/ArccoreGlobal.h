@@ -172,17 +172,17 @@ namespace Arccore
  * Définition des types Arccore Int16, Int32 et Int64.
  */
 //! Type entier signé sur 8 bits
-typedef std::int8_t Int8;
+using Int8 = std::int8_t;
 //! Type entier signé sur 16 bits
-typedef std::int16_t Int16;
+using Int16 = std::int16_t;
 //! Type entier signé sur 32 bits
-typedef std::int32_t Int32;
+using Int32 = std::int32_t;
 //! Type entier signé sur 64 bits
-typedef std::int64_t Int64;
+using Int64 = std::int64_t;
 //! Type entier non signé sur 32 bits
-typedef std::uint32_t UInt32;
+using UInt32 = std::uint32_t;
 //! Type entier non signé sur 64 bits
-typedef std::uint64_t UInt64;
+using UInt64 = std::uint64_t;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -191,13 +191,13 @@ typedef std::uint64_t UInt64;
  *
  * Il doit être utilisé partout ou un objet de type pointeur quelconque est attendu.
  */
-typedef void* Pointer;
+using Pointer = void*;
 
 #ifdef ARCCORE_REAL_USE_APFLOAT
 #  define ARCCORE_REAL(val) (Real(#val,1000))
 #  define ARCCORE_REAL_NOT_BUILTIN
-typedef apfloat Real;
-typedef apfloat APReal;
+using Real = apfloat;
+using APReal = apfloat;
 #else
 #  ifdef ARCCORE_REAL_LONG
 #    define ARCCORE_REAL(val) val##L
@@ -206,7 +206,7 @@ typedef apfloat APReal;
  *
  * Il doit être utilisé partout ou un objet de type réel est attendu.
  */
-typedef long double Real;
+using long double Real;
 #  else
 #    define ARCCORE_REAL(val) val
 #    define ARCCORE_REAL_IS_DOUBLE
@@ -215,7 +215,7 @@ typedef long double Real;
  *
  * Il doit être utilisé partout ou un objet de type réel est attendu.
  */
-typedef double Real;
+using Real = double;
 #  endif
 //! Emulation de réel en précision arbitraire.
 class APReal
@@ -227,14 +227,12 @@ class APReal
 
 #ifdef ARCCORE_64BIT
 #  define ARCCORE_INTEGER_MAX ARCCORE_INT64_MAX
-typedef Int32 Short;
-typedef Int64 Integer;
-typedef Int64 Integer;
+using Short = Int32;
+using Integer = Int64;
 #else
 #  define ARCCORE_INTEGER_MAX ARCCORE_INT32_MAX
-typedef Int32 Short;
-typedef Int32 Integer;
-typedef Int32 Integer;
+using Short = Int32;
+using Integer = Int32;
 #endif
 
 /*!
