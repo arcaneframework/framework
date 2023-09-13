@@ -1,4 +1,4 @@
-﻿add_library(Neo SHARED Utils.h Neo.h Mesh.h Mesh.cpp MeshKernel.h Items.h Family.h Properties.h Properties.cpp)
+﻿add_library(Neo SHARED Utils.h Neo.h Mesh.h Mesh.cpp MeshSchedule.cpp MeshKernel.h Items.h Family.h Properties.h Properties.cpp)
 add_library(Neo::Neo ALIAS Neo)
 
 set_target_properties(Neo PROPERTIES PUBLIC_HEADER "Utils.h;Neo.h;Mesh.h;Items.h;Properties.h;Family.h")
