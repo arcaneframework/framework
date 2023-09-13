@@ -239,7 +239,7 @@ class ProfInfos
   // car elles sont utilisées dans la methode addEvent() qui peut être
   // appelée n'importe quand et donc dans un malloc/realloc/free
   // et cela peut donc provoquer un blocage avec les thread.
-#if defined(ARCANE_OS_WIN32)
+#if defined(ARCCORE_OS_WIN32) || defined(ARCCORE_OS_MACOS)
   typedef std::map<void*,ProfAddrInfo> AddrMap;
   typedef std::map<Int64,ProfFuncInfo*> FuncMap;
   typedef std::map<ProfStackInfo,Int64> StackMap;
