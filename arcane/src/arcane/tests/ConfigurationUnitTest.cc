@@ -60,12 +60,12 @@ class ConfigurationUnitTest
 
  private:
 
-  template <typename DataType> void
-  _checkEqual(const DataType& v1,const DataType& v2)
+  template <typename DataType1,typename DataType2> void
+  _checkEqual(const DataType1& v1,const DataType2& v2)
   {
     info() << "Check equal v1=" << v1 << " v2=" << v2;
     if (v1!=v2)
-      throw FatalErrorException(A_FUNCINFO,String::format("Bad value value={0} expected={1}",v1,v2));
+      ARCANE_FATAL("Bad value value={0} expected={1}",v1,v2);
   }
   void _checkValid(IConfiguration* configuration);
   void _executeTestJSON();
