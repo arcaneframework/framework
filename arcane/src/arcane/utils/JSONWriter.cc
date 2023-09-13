@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONWriter.cc                                               (C) 2000-2020 */
+/* JSONWriter.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Ecrivain au format JSON.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -173,13 +173,13 @@ write(StringView key,bool v)
   m_p->m_writer.Bool(v);
 }
 void JSONWriter::
-write(StringView key,Int64 v)
+_writeInt64(StringView key,Int64 v)
 {
   m_p->writeKey(key);
   m_p->m_writer.Int64(v);
 }
 void JSONWriter::
-write(StringView key,UInt64 v)
+_writeUInt64(StringView key,UInt64 v)
 {
   m_p->writeKey(key);
   m_p->m_writer.Uint64(v);

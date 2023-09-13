@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfilingInfo.h                                             (C) 2000-2021 */
+/* ProfilingInfo.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Structures d'informations pour le profiling.                              */
 /*---------------------------------------------------------------------------*/
@@ -239,7 +239,7 @@ class ProfInfos
   // car elles sont utilisées dans la methode addEvent() qui peut être
   // appelée n'importe quand et donc dans un malloc/realloc/free
   // et cela peut donc provoquer un blocage avec les thread.
-#if defined(ARCANE_OS_WIN32)
+#if defined(ARCCORE_OS_WIN32) || defined(ARCCORE_OS_MACOS)
   typedef std::map<void*,ProfAddrInfo> AddrMap;
   typedef std::map<Int64,ProfFuncInfo*> FuncMap;
   typedef std::map<ProfStackInfo,Int64> StackMap;
