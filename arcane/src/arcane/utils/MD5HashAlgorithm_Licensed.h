@@ -22,24 +22,22 @@
 /* Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.  */
 
 #if defined(_M_IX86)
-#    define WORDS_BIGENDIAN 1
-#else
-#if defined(ARCANE_OS_LINUX)
-#include <endian.h>
-#include <stdint.h>
+#  define WORDS_BIGENDIAN 1
+#elif defined(ARCCORE_OS_LINUX)
+#  include <endian.h>
+#  include <stdint.h>
 #  if __BYTE_ORDER == __BIG_ENDIAN
 #    define WORDS_BIGENDIAN 1
 #  endif
-#else
-# if defined(ARCANE_OS_WIN32)
+#elif defined(ARCCORE_OS_WIN32)
 // Windows is on Intel CPU is little endian
+#elif defined(ARCCORE_OS_MACOS)
+// MacOS is on little endian (both i386 and ARM64)
 # else
 // i386 is little endian
 #  if !defined(i386)
 #    error "Doesn't know if target is little or big endian"
 #  endif
-#endif
-#endif
 #endif
 
 #ifdef WORDS_BIGENDIAN
