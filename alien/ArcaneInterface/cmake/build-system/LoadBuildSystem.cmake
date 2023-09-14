@@ -63,7 +63,6 @@ include(${BUILD_SYSTEM_PATH}/commands/user/linkLibraries.cmake)
 include(${BUILD_SYSTEM_PATH}/commands/user/generateCMakeLists.cmake)
 include(${BUILD_SYSTEM_PATH}/commands/user/RegisterPackageLibrary.cmake)
 include(${BUILD_SYSTEM_PATH}/commands/user/generateCMakeConfig.cmake)
-
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
  

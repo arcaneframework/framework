@@ -1,6 +1,5 @@
 
-include(LoadBuildSystem)
-include(LoadAlienTest)
+include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienTest.cmake)
 
 #-----------------------------------------------------------
 # Without Arcane

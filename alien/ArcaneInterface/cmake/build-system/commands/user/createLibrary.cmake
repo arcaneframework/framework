@@ -18,11 +18,16 @@ function(createLibrary library)
 
   # création de la librarie
   add_library(${library} "")
-
+  
+  if(USE_PROJECT_CONFIG_HEADER)
   # Pour trouver le bon <Project>Config.h
   target_include_directories(${library} PUBLIC
           $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
           )
+  endif()
+  if(NOT USE_AXLSTAR)
+    target_include_directories(${library} PRIVATE ${AXL_HEADERS_PATH})
+  endif()
 
   # librarie non commitée
   set_target_properties(${library} PROPERTIES BUILDSYSTEM_COMMITTED OFF)
