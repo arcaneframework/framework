@@ -160,16 +160,16 @@ TrilinosMatrix<ValueT, TagT>::dump(std::string const& filename) const
 }
 
 #ifdef KOKKOS_ENABLE_SERIAL
-template class TrilinosMatrix<double, BackEnd::tag::tpetraserial>;
+template class ALIEN_TRILINOS_EXPORT TrilinosMatrix<double, BackEnd::tag::tpetraserial>;
 #endif
 #ifdef KOKKOS_ENABLE_OPENMP
-template class TrilinosMatrix<double, BackEnd::tag::tpetraomp>;
+template class ALIEN_TRILINOS_EXPORT TrilinosMatrix<double, BackEnd::tag::tpetraomp>;
 #endif
 #ifdef KOKKOS_ENABLE_THREADS
-template class TrilinosMatrix<double, BackEnd::tag::tpetrapth>;
+template class ALIEN_TRILINOS_EXPORT TrilinosMatrix<double, BackEnd::tag::tpetrapth>;
 #endif
 #ifdef KOKKOS_ENABLE_CUDA
-template class TrilinosMatrix<double, BackEnd::tag::tpetracuda>;
+template class ALIEN_TRILINOS_EXPORT TrilinosMatrix<double, BackEnd::tag::tpetracuda>;
 #endif
 
 } // namespace Alien

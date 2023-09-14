@@ -29,7 +29,7 @@ namespace Alien {
 template <typename ValueT, typename TagT> class TrilinosVector;
 
 /*---------------------------------------------------------------------------*/
-template <typename ValueT, typename TagT> class TrilinosMatrix : public IMatrixImpl
+template <typename ValueT, typename TagT> class ALIEN_TRILINOS_EXPORT  TrilinosMatrix : public IMatrixImpl
 {
  public:
   typedef TrilinosInternal::MatrixInternal<ValueT, TagT> MatrixInternal;
