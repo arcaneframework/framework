@@ -446,10 +446,12 @@ PETScInternalLinearSolver::convergedReasonString(const Arccore::Integer reason) 
     return "converged ATOL";
   case KSP_CONVERGED_ITS:
     return "converged ITS";
+#if !PETSC_VERSION_GE(3,19,0)
   case KSP_CONVERGED_CG_NEG_CURVE:
     return "converged CG_NEG_CURVE";
   case KSP_CONVERGED_CG_CONSTRAINED:
     return "converged CG_CONSTRAINED";
+#endif
   case KSP_CONVERGED_STEP_LENGTH:
     return "converged STEP_LENGTH";
   case KSP_CONVERGED_HAPPY_BREAKDOWN:
