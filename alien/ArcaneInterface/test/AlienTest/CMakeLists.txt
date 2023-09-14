@@ -13,6 +13,11 @@ generateAxl(alien_arcane_test.exe
             NO_COPY
            )
 
+# Les hooks pour les mallocs sont obsolètes et n'existent
+# sur certaines plateformes (par exemple ubuntu 22.04)
+if (ARCANE_HAS_MALLOC_HOOKS)
+  target_compile_definitions(alien_arcane_test.exe PRIVATE TEST_HAS_MALLOC_HOOKS)
+endif()
 
 
 if (TARGET intel)
