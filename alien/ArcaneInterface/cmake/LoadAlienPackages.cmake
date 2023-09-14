@@ -49,10 +49,13 @@ loadPackage(NAME FFTW3)
 
 # solveurs
 
+# Needed to use the find_package provided by Arccon
+set (Hypre_USE_CMAKE_CONFIG TRUE)
+
 #loadPackage(NAME Umfpack)
 loadPackage(NAME PETSc)
 loadPackage(NAME SLEPc)
-find_package(Hypre)
+loadPackage(NAME Hypre)
 loadPackage(NAME MTL4)
 loadPackage(NAME SuperLU)
 loadPackage(NAME SuperLU_DIST)
