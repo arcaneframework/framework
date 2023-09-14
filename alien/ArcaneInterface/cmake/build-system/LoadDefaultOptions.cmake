@@ -212,14 +212,14 @@ createOption(COMMANDLINE Debug
              MESSAGE     "Debug mode" 
              DEFAULT     ON)
 
-if(DEBUG)
-  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type mode (Debug or Release)" FORCE)
-else()
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type mode (Debug or Release)" FORCE)
+# Do not overwrite current value of CMAKE_BUILD_TYPE
+if (NOT CMAKE_BUILD_TYPE)
+  if(DEBUG)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type mode (Debug or Release)" FORCE)
+  else()
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type mode (Debug or Release)" FORCE)
+  endif()
 endif()
-
-# on ne veut que la configuration courante
-set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING INTERNAL FORCE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
