@@ -17,8 +17,15 @@ project(ALIEN
 
 message(STATUS "app_buildsystem_tools")
 set(INFRA_BUILDSYSTEM_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools)
-list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools/tools)
-list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools/alien)
+
+# Check if the directory 'packages' of build system is present.
+# If not, this is probably because a submodule is missing.
+if (NOT IS_DIRECTORY "${INFRA_BUILDSYSTEM_PATH}/packages")
+  message(FATAL_ERROR "The needed directory '${INFRA_BUILDSYSTEM_PATH}/packages' is missing."
+    " You may need to run the following command to get it"
+    "\n   cd ${CMAKE_CURRENT_SOURCE_DIR} && git submodule update"
+    )
+endif()
 
 set(ALIEN_ARCANE_INTERFACE_DIR alien/ArcaneInterface)
 
@@ -47,22 +54,27 @@ set(Boost_USE_CMAKE_CONFIG TRUE)
 #set(Glib_USE_CMAKE_CONFIG TRUE)
 set(HDF5_USE_CMAKE_CONFIG TRUE)
 
-include(LoadBuildSystem)
+# Path to configuration files for Alien
+set(ALIEN_CMAKE_CONFIG_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+# Path to local build-system
+set(ALIEN_BUILDSYSTEM_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/build-system")
+
+include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
 
 # Default options (verbose, cxx11)
-include(LoadDefaultOptions)
+include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultOptions.cmake)
 
 # root file for packages (if defined)
-include(LoadDefaultPackageFile)
+include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackageFile.cmake)
 
 # default metas (win32/linux)
-include(LoadDefaultMetas)
+include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultMetas.cmake)
 
 # default compilation options
-include(LoadDefaultCompilationFlags)
+include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultCompilationFlags.cmake)
 
 # default packages (mono et glib)
-include(LoadDefaultPackages)
+include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackages.cmake)
 
 # default languages  (axl)
 # NB: after packages
@@ -70,10 +82,10 @@ include(LoadDefaultPackages)
 #include(LoadDefaultLanguages)
 
 # Alien Options
-include(LoadAlienOptions)
+include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienOptions.cmake)
 
 # Alien's external dependencies
-include(LoadAlienPackages)
+include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienPackages.cmake)
 
 # Include Arcane cmake functions
 include(${ARCANE_CMAKE_COMMANDS})
@@ -104,7 +116,7 @@ message_separator()
 
 logStatus("Load alien specifics tools :")
 
-include(LoadAlienLegacyConfigFile)
+include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienLegacyConfigFile.cmake)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -155,7 +167,7 @@ GenerateCMakeConfig()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-include(FinishBuildSystem)
+include(${ALIEN_BUILDSYSTEM_PATH}/FinishBuildSystem.cmake)
 
 message_separator()
 

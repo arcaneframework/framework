@@ -31,15 +31,15 @@ function(printPackageInformations)
     
   foreach(target ${TARGETS})
     if(NOT ${target}_IMPORTED AND NOT ${target}_IS_META)
-	  __print_package(${target})
-	else()
-	  list(APPEND imported ${${target}_IMPORTED})
-	endif()
+	    __print_package(${target})
+	  else()
+	    list(APPEND imported ${${target}_IMPORTED})
+	  endif()
   endforeach()
-
+  
   if(imported)
     list(REMOVE_DUPLICATES imported)
-
+    
     foreach(import ${imported})
       logStatus("Imported from ${BoldMagenta}${import}${ColourReset}")
       foreach(target ${TARGETS})

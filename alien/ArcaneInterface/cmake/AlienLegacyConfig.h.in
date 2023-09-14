@@ -16,10 +16,8 @@
 //Tag var as a voluntary unused variable.
 //Works with any compiler but might be improved by using attribute.
 #define ALIEN_UNUSED(var) do { (void)(var) ; } while(0)
-#ifndef ALIEN_UNUSED_PARAM
 //#define ALIEN_UNUSED_PARAM  __attribute__((unused))
 #define ALIEN_UNUSED_PARAM
-#endif
 
 /* Conditional compilation */
 
@@ -66,13 +64,20 @@
   #cmakedefine PETSC_MATDESTROY_NEW
   #cmakedefine PETSC_HAVE_MATVALID
   #cmakedefine PETSC_VIEWERDESTROY_NEW
-  #cmakedefine PETSC_HAVE_KSPRICHARDSONSETSELFSCALE
   #cmakedefine PETSC_GETPCTYPE_NEW
+  #cmakedefine PETSC_OPTIONSSETVALUE_NEW
+  #cmakedefine PETSC_HAVE_KSPRICHARDSONSETSELFSCALE
   #cmakedefine PETSC_HAVE_KSPSETNULLSPACE
-  #cmakedefine PETSC_KSPMONITORTRUERESIDUALNORM_OLD
-  #cmakedefine PETSC_OPTIONSSETVALUE_OLD
+  #cmakedefine PETSC_HAVE_VIEWERANDFORMAT
 #endif // ALIEN_USE_PETSC
 
+#ifndef PETSC_OPTIONSSETVALUE_NEW
+//#define PETSC_OPTIONSSETVALUE_OLD
+#endif
+
+#ifndef PETSC_HAVE_VIEWERANDFORMAT
+//#define PETSC_KSPMONITORTRUERESIDUALNORM_OLD
+#endif
 
 // SLEPc
 #cmakedefine ALIEN_USE_SLEPC
