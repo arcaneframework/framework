@@ -18,6 +18,15 @@ project(ALIEN
 message(STATUS "app_buildsystem_tools")
 set(INFRA_BUILDSYSTEM_PATH ${ARCFRAMEWORK_ROOT}/app_buildsystem_tools)
 
+# Check if the directory 'packages' of build system is present.
+# If not, this is probably because a submodule is missing.
+if (NOT IS_DIRECTORY "${INFRA_BUILDSYSTEM_PATH}/packages")
+  message(FATAL_ERROR "The needed directory '${INFRA_BUILDSYSTEM_PATH}/packages' is missing."
+    " You may need to run the following command to get it"
+    "\n   cd ${CMAKE_CURRENT_SOURCE_DIR} && git submodule update"
+    )
+endif()
+
 set(ALIEN_ARCANE_INTERFACE_DIR alien/ArcaneInterface)
 
 set(USE_AXLSTAR TRUE)
