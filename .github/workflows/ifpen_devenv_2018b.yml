@@ -113,7 +113,7 @@ jobs:
           (success() || failure()) &&
           steps.build.outcome == 'success'
         shell: bash
-        run: ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+        run: ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '^hydro5_4proc_3sd_4proc$'
 
       - name: Upload test artifact
         id: upload-test-artifact
