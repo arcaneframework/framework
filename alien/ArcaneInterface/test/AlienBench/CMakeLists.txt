@@ -23,13 +23,7 @@ linkLibraries(alien_bench.exe
         alien_external_packages
         alien_ifpen_solvers
         alien_arcane_tools
-        arcane_core
-        arcane_std
-        arcane_mpi
-        arcane_impl
-        arcane_mesh
-        arcane_utils
-        arcane_thread
+        arcane_full
         )
 
 if (TARGET trilinos)

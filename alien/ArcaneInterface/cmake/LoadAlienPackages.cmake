@@ -49,6 +49,9 @@ loadPackage(NAME FFTW3)
 
 # solveurs
 
+# Needed to use the find_package provided by Arccon
+set (Hypre_USE_CMAKE_CONFIG TRUE)
+
 #loadPackage(NAME Umfpack)
 loadPackage(NAME PETSc)
 loadPackage(NAME SLEPc)
@@ -72,6 +75,10 @@ loadPackage(NAME HPDDM)
 # arccon fix
 if (TARGET arcconpkg_Hypre)
   add_library(hypre ALIAS arcconpkg_Hypre)
+elseif (TARGET HYPRE::HYPRE)
+  # Target 'HYPRE::HYPRE' is defined when Hypre is compiled with CMake
+  # and provide a config file
+  add_library(hypre ALIAS HYPRE::HYPRE)
 endif()
 
 if (TARGET arcconpkg_MPI)

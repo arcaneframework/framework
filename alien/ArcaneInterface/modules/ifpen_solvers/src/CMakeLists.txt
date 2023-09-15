@@ -34,6 +34,8 @@ if(TARGET ifpsolver)
 endif()
 
 if(TARGET htssolver)
+  # This target need boost::system
+  find_package(Boost REQUIRED COMPONENTS program_options system)
   addDirectory(alien/kernels/hts)
 endif()
 
@@ -51,6 +53,9 @@ linkLibraries(alien_ifpen_solvers Alien::alien_core
                                   Alien::alien_kernel_simplecsr)
 
 linkLibraries(alien_ifpen_solvers Boost::program_options)
+if(TARGET htssolver)
+  target_link_libraries(alien_ifpen_solvers PRIVATE Boost::system)
+endif()
 
 target_include_directories(alien_ifpen_solvers PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>

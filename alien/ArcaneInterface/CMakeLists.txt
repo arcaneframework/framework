@@ -59,6 +59,11 @@ set(ALIEN_CMAKE_CONFIG_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # Path to local build-system
 set(ALIEN_BUILDSYSTEM_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/build-system")
 
+find_package(Arccon REQUIRED)
+include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not installed) Arccon
+
+include(${ALIEN_CMAKE_CONFIG_PATH}/Functions.cmake)
+
 include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
 
 # Default options (verbose, cxx11)
