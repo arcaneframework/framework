@@ -9,6 +9,139 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
+## Arcane Version 3.11 (En cours...) {#arcanedoc_version3110}
+
+### Nouveautés/Améliorations
+
+- Début refonte de la gestion de la connectivité des matériaux. Cette
+  refonte a pour objectif d'optimiser cette gestion des connectivité
+  afin d'éviter en autre d'avoir à appeler
+  \arcane{Materials::IMeshMaterialMng::forceRecompute()} après une
+  modification. Ces mécanismes ne sont pas actifs par défaut
+  (\pr{783}, \pr{787}, \pr{792}, \pr{794}, \pr{795}, \pr{825},
+  \pr{826}, \pr{828}, \pr{829}, \pr{831}, \pr{832}, \pr{835},
+  \pr{836}, \pr{838}, \pr{839}, \pr{840}, \pr{841}, \pr{842},
+  \pr{843}, \pr{847}).
+- Ajoute dans la composante PETSc de Aleph le support des
+  préconditionneurs ILU et IC en parallèle (\pr{789}, \pr{799}).
+- Ajoute support en C# des fonction du jeu de données (\pr{797},
+  \pr{800}, \pr{801}, \pr{803}, \pr{804}).
+- Ajoute pour les statistiques d'échange de message les valeurs
+  cumulées sur toutes les exécutions (\pr{852}, \pr{853}).
+- Réorganisation interne des synchronisations pour utiliser un seul
+  buffer mémoire pour toutes les synchronisations d'un même maillage
+  (\pr{861}, \pr{862}, \pr{863}, \pr{866}, \pr{867}, \pr{871},
+  \pr{872}, \pr{873}, \pr{874}, \pr{878}, \pr{880})
+- Ajoute interface \arcane{IVariableSynchronizerMng} pour gérer toutes
+  les instances de \arcane{IVariableSynchronizer} pour un maillage
+  donné (\pr{869}, \pr{879}).
+- Ajoute mode automatique pour vérifier si une synchronisation a eu un
+  effet. Ce mode est activé si la variable d'environnement
+  `ARCANE_AUTO_COMPARE_SYNCHRONIZE` vaut `1`. Lorsque ce mode est actif,
+  des statistiques en fin de calcul permettent de connaitre le nombre
+  de synchronisations pour lesquelles les mailles fantômes ont été
+  modifiées.
+
+#### API Accélérateur
+
+- Dans \arcaneacc{Reducer}, utilise la mémoire `HostPinned`
+  au lieu de la mémoire hôte classique pour conserver la valeur
+  réduite. Cela permet d'accélérer la recopie mémoire entre GPU et
+  GPU (\pr{782})
+- Ajoute macro ARCCORE_HOST_DEVICE manquantes pour les méthodes de
+  vérification de tailles de tableau (\pr{785}).
+- Ajoute méthode \arcaneacc{RunQueue::platformStream()} pour
+  récupére un pointeur sur l'instance native associée (cudaStream ou
+  hipStream par exemple) (\pr{796}).
+- Ajoute support accélérateur de la version 6 et la version 8 des
+  synchronisations des matériaux (\pr{855}).
+- Support pour récupérer le nombre de milieux d'une maille (\pr{860})
+
+### Changements
+
+- Change le type de retour de
+  \arcane{IMeshMaterialMng::synchronizeMaterialsInCells()} pour
+  retourner un *bool* (au lieu d'un *void*) si les matériaux ont été
+  modifiées (\pr{827}).
+
+### Corrections
+
+- Dans le format MSH, corrige mauvaise lecture des groupes de noeuds
+  lorsqu'il n'y a qu'un seul élément dans ce groupe (\pr{784})
+- Corrige compilation de \arcane{ArrayExtentsValue} pour la dimension
+  2 avec les compilateurs Clang et NVCC (\pr{786})
+- Corrige compilation des exemples en C# si l'environnement n'est pas
+  disponible. Positionne aussi la variable d'environnement
+  `LD_LIBRARY_PATH` si nécessaire (\pr{811}).
+- Corrige le mode d'optimisation
+  \arcane{Materials::eModificationFlags::OptimizeMultiMaterialPerEnvironment}
+  pour qu'il ait le même comportement que les autres modes
+  d'optimisation de mise à jour des valeurs lors du passage d'une
+  maille partielle à une maille pure. Le comportement attendu est de
+  prendre la valeur partielle du matériau et on prenait la valeur
+  partielle du milieu. Ce mode d'optimisation n'étant normalement par
+  utilisé par les codes, il ne devrait pas y avoir de changement
+  visible lors de l'exécution (\pr{844}).
+
+### Interne
+
+- Nettoyage et réorganisations internes (\pr{781}, \pr{810}, \pr{813},
+  \pr{822}, \pr{830}, \pr{834}, \pr{846}, \pr{856}, \pr{857}, \pr{868})
+- Ajoute en test un service pour se connecter à une base Redis pour
+  le service \arcane{BasicReaderWriter} (\pr{780})
+- Ajoute sauvegarde au format JSON des meta-données pour les
+  protections/reprises. Ce format n'est pas utilisé pour l'instant
+  mais il remplacera à terme le format XML (\pr{779}, \pr{865}).
+- Créé deux classes \arcane{VariableIOReaderMng} et
+  \arcane{VariableIOWriterMng} pour gérer la partie entrées/sorties de
+  \arcane{VariableMng} (\pr{777}).
+- Ajoute méthode \arcane{JSON::value()} pour retourner une
+  \arccore{String} (\pr{778})
+- Ajoute nouveau module de test pour les matériaux
+  (MaterialHeatModule). Ce module permet de mieux tester les méthodes
+  d'ajout et de suppression de mailles matériaux (\pr{788}, \pr{790},
+  \pr{824}, \pr{848}).
+- Améliore l'usage de \arcane{IProfilingService} (\pr{791})
+- Intègre les sources de Alien dans le même dépôt que %Arcane (le
+  dépôt *framework*) (\pr{798}, \pr{812}, \pr{816}, \pr{817},
+  \pr{819}, \pr{820}, \pr{883}, \pr{890}, \pr{891}, \pr{892}).
+- Intègre le gestionnaire de maillage *Neo* dans le dépôt (\pr{802},
+  \pr{805}, \pr{807}, \pr{808}, \pr{814}, \pr{815}, \pr{854},
+  \pr{881}, \pr{882}, \pr{888}).
+- Sépare l'interface \arcane{IIncrementalItemConnectivity} en deux
+  interfaces \arcane{IIncrementalItemSourceConnectivity} et
+  \arcane{IIncrementalItemTargetConnectivity} pour permettre d'avoir
+  des connectivités qui n'ont pas de cibles (\pr{846}).
+- Ajoute tests pour la version 3 de \arcane{FaceUniqueidBuilder}
+  (\pr{850})
+- Débute portage MacOS (\pr{884}, \pr{885})
+
+### Compilation et Intégration Continue (CI)
+
+- Ajoute compilation des exemples dans le CI (\pr{809}).
+- Mise à jour des images docker dans le CI (\pr{818})
+- Pour Arccore, compile avec l'option *Z7* sous Windows et ajoute les
+  symboles de débug. L'option *Z7* permet d'utiliser l'outil *ccache*
+  (\pr{821})
+- Utilise 'GitHub actions' pour simplifier le CI. Cela permet d'avoir
+  des actions composables de haut niveau plutôt que de dupliquer le
+  code dans chaque workflow (\pr{849}).
+- Utilise une image docker pour le CI avec 'Circle-CI' et ajoute une
+  exécution pour les plateformes ARM64 (\pr{887}).
+- Ajoute variable CMake `ARCANEFRAMEWORK_BUILD_COMPONENTS` permettant
+  de spécifier les composants à compiler. Cette variable est une liste
+  pouvant contenir `Arcane` et `Alien`. Par défaut on compile les deux
+  composants (\pr{877})
+
+### Arccore
+
+- Nettoyage interne de la gestion des statistiques pour les échanges
+  de message (\pr{851})
+
+### Axlstar
+
+- Améliore le support des vieilles version de Doxygen (\pr{823}).
+
 ## Arcane Version 3.10.11 (30 juin 2023) {#arcanedoc_version3100}
 
 A partir de cette version 3.10, des modifications internes de gestion
