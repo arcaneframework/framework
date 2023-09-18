@@ -121,7 +121,7 @@ struct ItemLocalIds
 
 struct ItemIterator
 {
-  using iterator_category = std::input_iterator_tag;
+  using iterator_category = std::forward_iterator_tag;
   using value_type = int;
   using difference_type = int;
   using pointer = int*;
