@@ -37,6 +37,9 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMng
 
  public:
 
+  //! Gestionnaire de parallélisme associé
+  virtual IParallelMng* parallelMng() const = 0;
+
   /*!
    * \brief Evènement envoyé en début et fin de synchronisation.
    *
@@ -47,13 +50,32 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMng
    */
   virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
 
+  /*!
+   * \brief Indique si on compare les valeurs avant et après synchronisations.
+   *
+   * L'état d'activation doit être le même sur l'ensemble des rangs de parallelMng().
+   */
   virtual void setCompareSynchronize(bool v) = 0;
 
   //! Indique si on effecture les comparaisons des valeurs avant et après synchronisation
   virtual bool isCompareSynchronize() const = 0;
 
-  //! Affiche les statistiques sur le flot \a ostr
+  /*!
+   * \brief Affiche les statistiques sur le flot \a ostr.
+   *
+   * Il faut avoir traiter les statistiques via l'appel à flushPendingStats()
+   * avant d'appeler cette méthode
+   */
   virtual void dumpStats(std::ostream& ostr) const = 0;
+
+  /*!
+   * \brief Traite les statistiques en cours.
+   *
+   * Cette méthode ne fait rien si isCompareSynchronize() vaut \a false.
+   *
+   * Cette méthode est collective sur parallelMng().
+   */
+  virtual void flushPendingStats() = 0;
 
  public:
 
