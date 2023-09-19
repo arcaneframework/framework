@@ -76,6 +76,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
 
  public:
 
+  IParallelMng* parallelMng() const override { return m_parallel_mng; }
+
   EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() override
   {
     return m_on_synchronized;
@@ -85,11 +87,13 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
   bool isCompareSynchronize() const { return m_is_compare_synchronize; }
 
   void dumpStats(std::ostream& ostr) const override;
+  void flushPendingStats() override;
   IVariableSynchronizerMngInternal* _internalApi() { return &m_internal_api; }
 
  private:
 
   IVariableMng* m_variable_mng = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
   InternalApi m_internal_api{ this };
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
   VariableSynchronizerStats* m_stats = nullptr;

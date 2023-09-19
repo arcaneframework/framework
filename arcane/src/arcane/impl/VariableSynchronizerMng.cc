@@ -18,6 +18,7 @@
 #include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/IVariableMng.h"
+#include "arcane/core/IParallelMng.h"
 #include "arcane/core/VariableSynchronizerEventArgs.h"
 #include "arcane/core/IVariable.h"
 
@@ -32,10 +33,36 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Statistiques de synchronisation.
+ *
+ * Lorsque la comparaison avant/après synchronisation est active, chaque rang
+ * sait pour sa partie si les valeurs comparées sont les mêmes ou pas.
+ *
+ * Cependant, il faut faire une réduction sur l'ensemble des rangs pour avoir
+ * une vision globale de la comparaison (car il suffit d'un rang pour lequel
+ * la comparaison est différente pour qu'on considère que la comparaison est
+ * différente).
+ *
+ * Comme il est trop coûteux de faire la réduction pour chaque synchronisation,
+ * on maintient une liste des comparaisons et on traite cette liste lorsqu'elle
+ * atteint une certaine taille ou si c'est demandé explicitement.
+ *
+ */
 class VariableSynchronizerStats
 : public TraceAccessor
 {
+ public:
+
+  // On utilise un ReduceMin pour la valeur de comparaison.
+  // Pour qu'on considère comme identique, il faut que tout les rangs
+  // soient identiques. Il suffit d'un rang 'Unknown' pour considérer
+  // que c'est 'Unknown'. Il faut donc que 'Unknown' soit la valeur la
+  // plus faible et 'Same' la plus élevée.
+  static constexpr unsigned char LOCAL_UNKNOWN = 0;
+  static constexpr unsigned char LOCAL_DIFF = 1;
+  static constexpr unsigned char LOCAL_SAME = 2;
+
  public:
 
   class StatInfo
@@ -57,6 +84,8 @@ class VariableSynchronizerStats
 
   void init(VariableSynchronizerMng* vsm)
   {
+    if (m_is_event_registered)
+      ARCANE_FATAL("instance is already initialized.");
     auto handler = [&](const VariableSynchronizerEventArgs& args) {
       _handleEvent(args);
     };
@@ -64,17 +93,19 @@ class VariableSynchronizerStats
     m_is_event_registered = true;
   }
 
+  void flushPendingStats(IParallelMng* pm);
+
   void dumpStats(std::ostream& ostr)
   {
     std::streamsize old_precision = ostr.precision(20);
     ostr << "Synchronization Stats\n";
-    ostr << Trace::Width(40) << "Variable name"
+    ostr << Trace::Width(50) << "Variable name"
          << Trace::Width(8) << "Count"
          << Trace::Width(8) << "NbSame"
          << Trace::Width(8) << "NbDiff"
          << "\n";
     for (const auto& p : m_stats) {
-      ostr << Trace::Width(40) << p.first
+      ostr << Trace::Width(50) << p.first
            << " " << Trace::Width(7) << p.second.m_count
            << " " << Trace::Width(7) << p.second.m_nb_same
            << " " << Trace::Width(7) << p.second.m_nb_different
@@ -88,6 +119,8 @@ class VariableSynchronizerStats
   EventObserverPool m_observer_pool;
   std::map<String, StatInfo> m_stats;
   bool m_is_event_registered = false;
+  UniqueArray<String> m_pending_variable_name_list;
+  UniqueArray<unsigned char> m_pending_compare_status_list;
 
  private:
 
@@ -100,13 +133,14 @@ class VariableSynchronizerStats
     {
       Int32 index = 0;
       for (IVariable* var : args.variables()) {
-        auto& v = m_stats[var->fullName()];
-        ++v.m_count;
+        m_pending_variable_name_list.add(var->fullName());
         VariableSynchronizerEventArgs::CompareStatus s = compare_status_list[index];
+        unsigned char rs = LOCAL_UNKNOWN; // Compare == Unknown;
         if (s == VariableSynchronizerEventArgs::CompareStatus::Same)
-          ++v.m_nb_same;
+          rs = LOCAL_SAME;
         else if (s == VariableSynchronizerEventArgs::CompareStatus::Different)
-          ++v.m_nb_different;
+          rs = LOCAL_DIFF;
+        m_pending_compare_status_list.add(rs);
         ++index;
       }
     }
@@ -116,10 +150,38 @@ class VariableSynchronizerStats
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void VariableSynchronizerStats::
+flushPendingStats(IParallelMng* pm)
+{
+  Int32 nb_pending = m_pending_variable_name_list.size();
+  Int32 total_nb_pending = pm->reduce(Parallel::ReduceMax, nb_pending);
+  if (total_nb_pending != nb_pending)
+    ARCANE_FATAL("Bad number of pending stats local={0} global={1}", nb_pending, total_nb_pending);
+  pm->reduce(Parallel::ReduceMin, m_pending_compare_status_list);
+  for (Int32 i = 0; i < total_nb_pending; ++i) {
+    unsigned char rs = m_pending_compare_status_list[i];
+    auto& v = m_stats[m_pending_variable_name_list[i]];
+    if (rs == LOCAL_SAME)
+      ++v.m_nb_same;
+    else if (rs == LOCAL_DIFF)
+      ++v.m_nb_different;
+    ++v.m_count;
+  }
+  m_pending_variable_name_list.clear();
+  m_pending_compare_status_list.clear();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 VariableSynchronizerMng::
 VariableSynchronizerMng(IVariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
+, m_parallel_mng(vm->parallelMng())
 , m_stats(new VariableSynchronizerStats(vm->traceMng()))
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_AUTO_COMPARE_SYNCHRONIZE", true)) {
@@ -157,6 +219,16 @@ dumpStats(std::ostream& ostr) const
 {
   m_stats->dumpStats(ostr);
   m_internal_api.dumpStats(ostr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizerMng::
+flushPendingStats()
+{
+  if (m_is_compare_synchronize)
+    m_stats->flushPendingStats(m_parallel_mng);
 }
 
 /*---------------------------------------------------------------------------*/
