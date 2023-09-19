@@ -314,18 +314,13 @@ _doSynchronize(SyncMessage* message)
   // Si une seule variable, affiche le résutat de la comparaison de
   // la synchronisation
   if (nb_var == 1 && m_variable_synchronizer_mng->isCompareSynchronize()) {
-    IVariable* var = message->variables()[0];
     eDataSynchronizeCompareStatus s = message->result().compareStatus();
     if (s == eDataSynchronizeCompareStatus::Different) {
       event_args.setCompareStatus(0, VariableSynchronizerEventArgs::CompareStatus::Different);
-      info() << "Different values name=" << var->name();
     }
     else if (s == eDataSynchronizeCompareStatus::Same) {
       event_args.setCompareStatus(0, VariableSynchronizerEventArgs::CompareStatus::Same);
-      info() << "Same values name=" << var->name();
     }
-    else
-      info() << "Unknown values name=" << var->name();
   }
 
   // Fin de la synchro

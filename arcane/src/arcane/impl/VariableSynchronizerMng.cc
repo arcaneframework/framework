@@ -72,6 +72,7 @@ class VariableSynchronizerStats
     Int32 m_count = 0;
     Int32 m_nb_same = 0;
     Int32 m_nb_different = 0;
+    Int32 m_nb_unknown = 0;
   };
 
  public:
@@ -99,16 +100,23 @@ class VariableSynchronizerStats
   {
     std::streamsize old_precision = ostr.precision(20);
     ostr << "Synchronization Stats\n";
-    ostr << Trace::Width(50) << "Variable name"
-         << Trace::Width(8) << "Count"
-         << Trace::Width(8) << "NbSame"
-         << Trace::Width(8) << "NbDiff"
+    ostr << Trace::Width(8) << "Total"
+         << Trace::Width(8) << "  Nb "
+         << Trace::Width(8) << "  Nb "
+         << Trace::Width(8) << " Nb  "
+         << "   Variable name"
+         << "\n";
+    ostr << Trace::Width(8) << "Count"
+         << Trace::Width(8) << "Same"
+         << Trace::Width(8) << "Diff"
+         << Trace::Width(8) << "Unknown"
          << "\n";
     for (const auto& p : m_stats) {
-      ostr << Trace::Width(50) << p.first
-           << " " << Trace::Width(7) << p.second.m_count
+      ostr << " " << Trace::Width(7) << p.second.m_count
            << " " << Trace::Width(7) << p.second.m_nb_same
            << " " << Trace::Width(7) << p.second.m_nb_different
+           << " " << Trace::Width(7) << p.second.m_nb_unknown
+           << "   " << p.first
            << "\n";
     }
     ostr.precision(old_precision);
@@ -165,6 +173,8 @@ flushPendingStats(IParallelMng* pm)
       ++v.m_nb_same;
     else if (rs == LOCAL_DIFF)
       ++v.m_nb_different;
+    else
+      ++v.m_nb_unknown;
     ++v.m_count;
   }
   m_pending_variable_name_list.clear();
