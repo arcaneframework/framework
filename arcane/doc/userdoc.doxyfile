@@ -2424,7 +2424,9 @@ PREDEFINED             = DOXYGEN_DOC=1 \
                          "ARCCORE_HOST_DEVICE=__host__ __device__" \
                          ARCCORE_DEPRECATED_2019(a)=[[deprecated(a)]] \
                          ARCCORE_DEPRECATED_2020(a)=[[deprecated(a)]] \
-                         ARCCORE_DEPRECATED_2021(a)=[[deprecated(a)]]
+                         ARCCORE_DEPRECATED_2021(a)=[[deprecated(a)]] \
+                         ARCCORE_DEPRECATED_REASON(a)=[[deprecated(a)]] \
+                         ARCANE_DEPRECATED_REASON(a)=[[deprecated(a)]]
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
