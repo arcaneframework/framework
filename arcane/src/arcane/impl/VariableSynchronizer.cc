@@ -142,7 +142,7 @@ class VariableSynchronizer::SyncMessage
     if (nb_var == 0)
       return;
     if (nb_var == 1) {
-      bool is_compare_sync = m_variable_synchronizer_mng->isCompareSynchronize();
+      bool is_compare_sync = m_variable_synchronizer_mng->isSynchronizationComparisonEnabled();
       m_synchronize_result = synchronizeData(m_data_list[0], is_compare_sync);
     }
     if (nb_var >= 2) {
@@ -313,7 +313,7 @@ _doSynchronize(SyncMessage* message)
   Int32 nb_var = message->nbVariable();
   // Si une seule variable, affiche le résutat de la comparaison de
   // la synchronisation
-  if (nb_var == 1 && m_variable_synchronizer_mng->isCompareSynchronize()) {
+  if (nb_var == 1 && m_variable_synchronizer_mng->isSynchronizationComparisonEnabled()) {
     eDataSynchronizeCompareStatus s = message->result().compareStatus();
     if (s == eDataSynchronizeCompareStatus::Different) {
       event_args.setCompareStatus(0, VariableSynchronizerEventArgs::CompareStatus::Different);

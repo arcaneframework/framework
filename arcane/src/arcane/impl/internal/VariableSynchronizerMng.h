@@ -83,8 +83,9 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
     return m_on_synchronized;
   }
 
-  void setCompareSynchronize(bool v) { m_is_compare_synchronize = v; }
-  bool isCompareSynchronize() const { return m_is_compare_synchronize; }
+  void setSynchronizationCompareLevel(Int32 v) override { m_synchronize_compare_level = v; }
+  Int32 synchronizationCompareLevel() const override { return m_synchronize_compare_level; }
+  bool isSynchronizationComparisonEnabled() const override { return m_synchronize_compare_level > 0; }
 
   void dumpStats(std::ostream& ostr) const override;
   void flushPendingStats() override;
@@ -97,7 +98,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
   InternalApi m_internal_api{ this };
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
   VariableSynchronizerStats* m_stats = nullptr;
-  bool m_is_compare_synchronize = false;
+  Int32 m_synchronize_compare_level = 0;
   bool m_is_do_stats = false;
 };
 
