@@ -68,6 +68,7 @@ class Array2
   using BaseClass::_destroy;
   using BaseClass::_internalDeallocate;
   using BaseClass::_initFromAllocator;
+  using BaseClass::_checkValidSharedArray;
 
  public:
 
@@ -557,22 +558,26 @@ class SharedArray2
   SharedArray2(Int64 size1,Int64 size2)
   {
     this->resize(size1,size2);
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray2(const ConstArray2View<T>& view)
   {
     this->copy(view);
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray2(const Span2<const T>& view)
   {
     this->copy(view);
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau faisant référence à \a rhs.
   SharedArray2(const SharedArray2<T>& rhs)
   : Array2<T>()
   {
     _initReference(rhs);
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   inline SharedArray2(const UniqueArray2<T>& rhs);
@@ -580,6 +585,7 @@ class SharedArray2
   void operator=(const SharedArray2<T>& rhs)
   {
     this->_operatorEqual(rhs);
+    this->_checkValidSharedArray();
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   inline void operator=(const UniqueArray2<T>& rhs);
@@ -587,6 +593,7 @@ class SharedArray2
   void operator=(const ConstArray2View<T>& rhs)
   {
     this->copy(rhs);
+    this->_checkValidSharedArray();
   }
   //! Détruit l'instance
   ~SharedArray2() override
@@ -820,6 +827,7 @@ template<typename T> inline SharedArray2<T>::
 SharedArray2(const UniqueArray2<T>& rhs)
 {
   this->copy(rhs);
+  this->_checkValidSharedArray();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -829,6 +837,7 @@ template<typename T> inline void SharedArray2<T>::
 operator=(const UniqueArray2<T>& rhs)
 {
   this->copy(rhs);
+  this->_checkValidSharedArray();
 }
 
 /*---------------------------------------------------------------------------*/
