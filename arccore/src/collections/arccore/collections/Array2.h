@@ -595,6 +595,12 @@ class SharedArray2
     this->copy(rhs);
     this->_checkValidSharedArray();
   }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const Span2<const T>& rhs)
+  {
+    this->copy(rhs);
+    this->_checkValidSharedArray();
+  }
   //! Détruit l'instance
   ~SharedArray2() override
   {
