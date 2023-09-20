@@ -41,7 +41,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMng
   virtual IParallelMng* parallelMng() const = 0;
 
   /*!
-   * \brief Evènement envoyé en début et fin de synchronisation.
+   * \brief Évènement envoyé en début et fin de synchronisation.
    *
    * Cet évènement est envoyé lors des appels aux méthodes
    * de synchronisation IVariableSynchronizer::synchronize(IVariable* var)
@@ -51,14 +51,17 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMng
   virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
 
   /*!
-   * \brief Indique si on compare les valeurs avant et après synchronisations.
+   * \brief Positionne le niveau de comparaison entre les valeurs avant et après synchronisations.
    *
-   * L'état d'activation doit être le même sur l'ensemble des rangs de parallelMng().
+   * Le niveau doit être le même sur l'ensemble des rangs de parallelMng().
    */
-  virtual void setCompareSynchronize(bool v) = 0;
+  virtual void setSynchronizationCompareLevel(Int32 v) = 0;
 
-  //! Indique si on effecture les comparaisons des valeurs avant et après synchronisation
-  virtual bool isCompareSynchronize() const = 0;
+  //! Niveau de comparaison des valeurs avant et après synchronisation
+  virtual Int32 synchronizationCompareLevel() const = 0;
+
+  //! Indique si on effectue les comparaisons des valeurs avant et après synchronisation
+  virtual bool isSynchronizationComparisonEnabled() const = 0;
 
   /*!
    * \brief Affiche les statistiques sur le flot \a ostr.
@@ -71,7 +74,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMng
   /*!
    * \brief Traite les statistiques en cours.
    *
-   * Cette méthode ne fait rien si isCompareSynchronize() vaut \a false.
+   * Cette méthode ne fait rien si isComparisonEnabled() vaut \a false.
    *
    * Cette méthode est collective sur parallelMng().
    */

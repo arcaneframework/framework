@@ -195,9 +195,9 @@ VariableSynchronizerMng(IVariableMng* vm)
 , m_stats(new VariableSynchronizerStats(vm->traceMng()))
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_AUTO_COMPARE_SYNCHRONIZE", true)) {
-    m_is_compare_synchronize = (v.value() != 0);
+    m_synchronize_compare_level = (v.value() != 0);
     // Si on active la comparaison, on active aussi les statistiques
-    m_is_do_stats = m_is_compare_synchronize;
+    m_is_do_stats = m_synchronize_compare_level > 0;
   }
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_SYNCHRONIZE_STATS", true))
     m_is_do_stats = (v.value() != 0);
@@ -237,7 +237,7 @@ dumpStats(std::ostream& ostr) const
 void VariableSynchronizerMng::
 flushPendingStats()
 {
-  if (m_is_compare_synchronize)
+  if (isSynchronizationComparisonEnabled())
     m_stats->flushPendingStats(m_parallel_mng);
 }
 
