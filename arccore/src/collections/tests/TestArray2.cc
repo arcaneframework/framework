@@ -48,6 +48,104 @@ void _dumpArray2(std::ostream& o, const Array2<T>& a)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template <typename T>
+class SampleClass1
+{
+ public:
+
+  SharedArray2<T> m_test_array;
+};
+
+namespace
+{
+template <typename T>
+SharedArray2<T> _generateSharedArray2(Int32 dim1_size, Int32 dim2_size)
+{
+  SharedArray2<T> a;
+  a.resize(dim1_size, dim2_size);
+  for (Int32 i = 0; i < a.dim1Size(); ++i)
+    for (Int32 j = 0; j < a.dim2Size(); ++j) {
+      a[i][j] = T{ i + j };
+    }
+  return a;
+}
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename T>
+class TestSharedArray2
+{
+ public:
+
+  static void testMisc();
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename T>
+void TestSharedArray2<T>::
+testMisc()
+{
+  SharedArray2<T> sh_empty;
+  {
+    SharedArray2<T> sh_d;
+    sh_d.resize(2, 6);
+
+    SharedArray2<T> sh_b;
+    sh_b = _generateSharedArray2<T>(5, 3);
+    ASSERT_EQ(sh_b.dim1Size(), 5);
+    ASSERT_EQ(sh_b.dim2Size(), 3);
+    std::cout << "\nSH_B=";
+    _dumpArray2(std::cout, sh_b);
+    std::cout << "\n";
+
+    SharedArray2<T> sh_c = sh_b;
+    sh_d = sh_c;
+    std::cout << "\nSH_D=";
+    _dumpArray2(std::cout, sh_d);
+    std::cout << "\n";
+    _checkSameInfoArray2(sh_b, sh_c);
+    _checkSameInfoArray2(sh_b, sh_d);
+  }
+
+  {
+    SampleClass1<T> sc1;
+    for (int i = 0; i < 5; ++i) {
+      Int32 size1 = 7 - i;
+      Int32 size2 = 3 + i;
+      SharedArray2<T> x = _generateSharedArray2<T>(size1, size2);
+      sc1.m_test_array = x;
+      ASSERT_EQ(sc1.m_test_array.dim1Size(), size1);
+      ASSERT_EQ(sc1.m_test_array.dim2Size(), size2);
+      ASSERT_EQ(sc1.m_test_array.to1DSpan(), x.to1DSpan());
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(SharedArray2, Misc1)
+{
+  TestSharedArray2<Int32>::testMisc();
+}
+
+TEST(SharedArray2, Misc2)
+{
+  TestSharedArray2<IntSubClass>::testMisc();
+}
+
+TEST(SharedArray2, Misc3)
+{
+  TestSharedArray2<IntSubClassNoPod>::testMisc();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(Array2, Misc)
 {
   using namespace Arccore;
@@ -60,29 +158,6 @@ TEST(Array2, Misc)
   ASSERT_EQ(sh_a.dim1Size(), 3);
   ASSERT_EQ(sh_a.dim2Size(), 2);
 
-  SharedArray2<Int32> sh_empty;
-  {
-    SharedArray2<IntSubClass> sh_d;
-    sh_d.resize(2, 6);
-
-    SharedArray2<IntSubClass> sh_b;
-    sh_b.resize(5, 3);
-    for (Int32 i = 0; i < sh_b.dim1Size(); ++i)
-      for (Int32 j = 0; j < sh_b.dim2Size(); ++j) {
-        sh_b[i][j] = IntSubClass(i + j);
-      }
-    std::cout << "\nSH_B=";
-    _dumpArray2(std::cout, sh_b);
-    std::cout << "\n";
-
-    SharedArray2<IntSubClass> sh_c = sh_b;
-    sh_d = sh_c;
-    std::cout << "\nSH_D=";
-    _dumpArray2(std::cout, sh_d);
-    std::cout << "\n";
-    _checkSameInfoArray2(sh_b, sh_c);
-    _checkSameInfoArray2(sh_b, sh_d);
-  }
   {
     UniqueArray2<Int32> c;
     c.resize(3, 5);

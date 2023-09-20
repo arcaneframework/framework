@@ -7,7 +7,6 @@
 #include <gtest/gtest.h>
 
 #include "arccore/collections/Array.h"
-#include "arccore/collections/Array2.h"
 #include "arccore/collections/IMemoryAllocator.h"
 
 #include "arccore/base/FatalErrorException.h"
