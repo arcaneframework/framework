@@ -551,28 +551,26 @@ class SharedArray2
 
  public:
 
- public:
   //! Créé un tableau vide
-  SharedArray2() : Array2<T>(), m_next(nullptr), m_prev(nullptr) {}
+  SharedArray2() = default;
   //! Créé un tableau de \a size1 * \a size2 éléments.
   SharedArray2(Int64 size1,Int64 size2)
-  : Array2<T>(), m_next(nullptr), m_prev(nullptr)
   {
     this->resize(size1,size2);
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray2(const ConstArray2View<T>& view)
-  : Array2<T>(view), m_next(nullptr), m_prev(nullptr)
   {
+    this->copy(view);
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray2(const Span2<const T>& view)
-  : Array2<T>(view), m_next(nullptr), m_prev(nullptr)
   {
+    this->copy(view);
   }
   //! Créé un tableau faisant référence à \a rhs.
   SharedArray2(const SharedArray2<T>& rhs)
-  : Array2<T>(), m_next(nullptr), m_prev(nullptr)
+  : Array2<T>()
   {
     _initReference(rhs);
   }
@@ -604,6 +602,7 @@ class SharedArray2
   }
 
  protected:
+
   void _initReference(const ThatClassType& rhs)
   {
     this->_setMP(rhs.m_ptr);
@@ -677,9 +676,12 @@ class SharedArray2
     }
   }
  private:
-  ThatClassType* m_next; //!< Référence suivante dans la liste chaînée
-  ThatClassType* m_prev; //!< Référence précédente dans la liste chaînée
+
+  ThatClassType* m_next = nullptr; //!< Référence suivante dans la liste chaînée
+  ThatClassType* m_prev = nullptr; //!< Référence précédente dans la liste chaînée
+
  private:
+
   //! Interdit
   void operator=(const Array2<T>& rhs);
 };
@@ -816,10 +818,8 @@ swap(UniqueArray2<T>& v1,UniqueArray2<T>& v2)
 
 template<typename T> inline SharedArray2<T>::
 SharedArray2(const UniqueArray2<T>& rhs)
-: Array2<T>(rhs.constSpan())
-, m_next(nullptr)
-, m_prev(nullptr)
 {
+  this->copy(rhs);
 }
 
 /*---------------------------------------------------------------------------*/
