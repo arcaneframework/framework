@@ -54,14 +54,16 @@ class SampleClass1
  public:
 
   SharedArray2<T> m_test_array;
+  SharedArray2<T> m_test_array2;
+  SharedArray2<T> m_test_array3;
 };
 
 namespace
 {
 template <typename T>
-SharedArray2<T> _generateSharedArray2(Int32 dim1_size, Int32 dim2_size)
+UniqueArray2<T> _generateSharedArray2(Int32 dim1_size, Int32 dim2_size)
 {
-  SharedArray2<T> a;
+  UniqueArray2<T> a;
   a.resize(dim1_size, dim2_size);
   for (Int32 i = 0; i < a.dim1Size(); ++i)
     for (Int32 j = 0; j < a.dim2Size(); ++j) {
@@ -116,11 +118,25 @@ testMisc()
     for (int i = 0; i < 5; ++i) {
       Int32 size1 = 7 - i;
       Int32 size2 = 3 + i;
-      SharedArray2<T> x = _generateSharedArray2<T>(size1, size2);
-      sc1.m_test_array = x;
+      {
+        UniqueArray2<T> base_array = _generateSharedArray2<T>(size1, size2);
+        SharedArray2<T> x(base_array);
+        SharedArray2<T> x2(base_array.span());
+        SharedArray2<T> x3(base_array.constView());
+        _checkSameInfoArray2(x, base_array);
+        _checkSameInfoArray2(x2, base_array);
+        _checkSameInfoArray2(x3, base_array);
+        sc1.m_test_array = x;
+        _checkSameInfoArray2(x, sc1.m_test_array);
+        sc1.m_test_array2 = x.span();
+        _checkSameInfoArray2(x, sc1.m_test_array2);
+        sc1.m_test_array3 = x.constView();
+        _checkSameInfoArray2(x, sc1.m_test_array3);
+      }
       ASSERT_EQ(sc1.m_test_array.dim1Size(), size1);
       ASSERT_EQ(sc1.m_test_array.dim2Size(), size2);
-      ASSERT_EQ(sc1.m_test_array.to1DSpan(), x.to1DSpan());
+      if ((i % 2) == 0)
+        sc1.m_test_array = SharedArray2<T>{};
     }
   }
 }
