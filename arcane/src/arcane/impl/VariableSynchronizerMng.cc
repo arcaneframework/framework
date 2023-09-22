@@ -13,6 +13,7 @@
 
 #include "arcane/impl/internal/VariableSynchronizerMng.h"
 
+#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/internal/MemoryBuffer.h"
@@ -77,20 +78,21 @@ class VariableSynchronizerStats
 
  public:
 
-  explicit VariableSynchronizerStats(ITraceMng* tm)
-  : TraceAccessor(tm)
+  explicit VariableSynchronizerStats(VariableSynchronizerMng* vsm)
+  : TraceAccessor(vsm->traceMng())
+  , m_variable_synchronizer_mng(vsm)
   {}
 
  public:
 
-  void init(VariableSynchronizerMng* vsm)
+  void init()
   {
     if (m_is_event_registered)
       ARCANE_FATAL("instance is already initialized.");
     auto handler = [&](const VariableSynchronizerEventArgs& args) {
       _handleEvent(args);
     };
-    vsm->onSynchronized().attach(m_observer_pool, handler);
+    m_variable_synchronizer_mng->onSynchronized().attach(m_observer_pool, handler);
     m_is_event_registered = true;
   }
 
@@ -124,6 +126,7 @@ class VariableSynchronizerStats
 
  private:
 
+  VariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   EventObserverPool m_observer_pool;
   std::map<String, StatInfo> m_stats;
   bool m_is_event_registered = false;
@@ -132,28 +135,45 @@ class VariableSynchronizerStats
 
  private:
 
-  void _handleEvent(const VariableSynchronizerEventArgs& args)
+  void _handleEvent(const VariableSynchronizerEventArgs& args);
+};
+
+void VariableSynchronizerStats::
+_handleEvent(const VariableSynchronizerEventArgs& args)
+{
+  // On ne traite que les évènements de fin de synchronisation
+  if (args.state() != VariableSynchronizerEventArgs::State::EndSynchronize)
+    return;
+  Int32 level = m_variable_synchronizer_mng->synchronizationCompareLevel();
+  if (level == 0)
+    return;
+  IParallelMng* pm = m_variable_synchronizer_mng->parallelMng();
+  auto compare_status_list = args.compareStatusList();
   {
-    // On ne traite que les évènements de fin de synchronisation
-    if (args.state() != VariableSynchronizerEventArgs::State::EndSynchronize)
-      return;
-    auto compare_status_list = args.compareStatusList();
-    {
-      Int32 index = 0;
-      for (IVariable* var : args.variables()) {
-        m_pending_variable_name_list.add(var->fullName());
-        VariableSynchronizerEventArgs::CompareStatus s = compare_status_list[index];
-        unsigned char rs = LOCAL_UNKNOWN; // Compare == Unknown;
-        if (s == VariableSynchronizerEventArgs::CompareStatus::Same)
-          rs = LOCAL_SAME;
-        else if (s == VariableSynchronizerEventArgs::CompareStatus::Different)
-          rs = LOCAL_DIFF;
-        m_pending_compare_status_list.add(rs);
-        ++index;
+    Int32 index = 0;
+    for (IVariable* var : args.variables()) {
+      m_pending_variable_name_list.add(var->fullName());
+      VariableSynchronizerEventArgs::CompareStatus s = compare_status_list[index];
+      unsigned char rs = LOCAL_UNKNOWN; // Compare == Unknown;
+      if (s == VariableSynchronizerEventArgs::CompareStatus::Same)
+        rs = LOCAL_SAME;
+      else if (s == VariableSynchronizerEventArgs::CompareStatus::Different)
+        rs = LOCAL_DIFF;
+      m_pending_compare_status_list.add(rs);
+      ++index;
+      if (level >= 2) {
+        // On fait la réduction ici car on veut savoir immédiatement s'il y a une
+        // différence.
+        unsigned char global_rs = pm->reduce(Parallel::ReduceMax, rs);
+        if (global_rs == LOCAL_DIFF) {
+          info() << "Synchronize: values are different for variable name=" << var->fullName();
+          if (level >= 3)
+            info() << "Stack=" << platform::getStackTrace();
+        }
       }
     }
   }
-};
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -192,10 +212,10 @@ VariableSynchronizerMng(IVariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
 , m_parallel_mng(vm->parallelMng())
-, m_stats(new VariableSynchronizerStats(vm->traceMng()))
+, m_stats(new VariableSynchronizerStats(this))
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_AUTO_COMPARE_SYNCHRONIZE", true)) {
-    m_synchronize_compare_level = (v.value() != 0);
+    m_synchronize_compare_level = v.value();
     // Si on active la comparaison, on active aussi les statistiques
     m_is_do_stats = m_synchronize_compare_level > 0;
   }
@@ -218,7 +238,7 @@ VariableSynchronizerMng::
 void VariableSynchronizerMng::
 initialize()
 {
-  m_stats->init(this);
+  m_stats->init();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -83,9 +83,9 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
     return m_on_synchronized;
   }
 
-  void setSynchronizationCompareLevel(Int32 v) override { m_synchronize_compare_level = v; }
-  Int32 synchronizationCompareLevel() const override { return m_synchronize_compare_level; }
-  bool isSynchronizationComparisonEnabled() const override { return m_synchronize_compare_level > 0; }
+  void setSynchronizationCompareLevel(Int32 v) final { m_synchronize_compare_level = v; }
+  Int32 synchronizationCompareLevel() const final { return m_synchronize_compare_level; }
+  bool isSynchronizationComparisonEnabled() const final { return m_synchronize_compare_level > 0; }
 
   void dumpStats(std::ostream& ostr) const override;
   void flushPendingStats() override;
