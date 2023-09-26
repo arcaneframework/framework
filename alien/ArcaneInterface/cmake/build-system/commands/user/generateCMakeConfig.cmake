@@ -101,7 +101,7 @@ macro(GenerateCMakeConfig)
     endforeach()
     #MESSAGE(STATUS "PROJECT_EXTERNAL_LIBRARIES_TARGET = ${PROJECT_EXTERNAL_LIBRARIES_TARGET}")
     
-    set(PROJECT_CONFIG_PATH lib/cmake)
+    set(PROJECT_CONFIG_PATH lib/cmake/${PROJECT_NAME})
     set(PROJECT_DEPENDENCIES_FNAME ${PROJECT_CONFIG_PATH}/${PROJECT_NAME}Dependencies.cmake)
     configure_file(${BUILD_SYSTEM_PATH}/templates/ProjectDependencies.cmake.in
                    ${PROJECT_DEPENDENCIES_FNAME})
@@ -111,13 +111,13 @@ macro(GenerateCMakeConfig)
     
     configure_package_config_file(${BUILD_SYSTEM_PATH}/templates/ProjectConfig.cmake.in
       ${PROJECT_CONFIG_FNAME}
-      INSTALL_DESTINATION lib/cmake
+      INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
       #PATH_VARS 
      NO_CHECK_REQUIRED_COMPONENTS_MACRO )
 
     
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_CONFIG_FNAME}
                   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_DEPENDENCIES_FNAME}
-            DESTINATION lib/cmake)
+            DESTINATION lib/cmake/${PROJECT_NAME})
 
 endmacro(GenerateCMakeConfig)
