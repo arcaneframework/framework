@@ -134,6 +134,11 @@ class CellEnvironmentVariableScalarRef
   ArrayView<DataType>* m_value;
   ArrayView<ArrayView<DataType>> m_container_value;
 
+ public:
+
+  // TODO: Temporaire. a supprimer.
+  ArrayView<DataType>* _internalValue() const { return m_value; }
+
  private:
 
   void _init();
