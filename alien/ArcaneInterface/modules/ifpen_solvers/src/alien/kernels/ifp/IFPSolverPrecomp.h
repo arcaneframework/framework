@@ -6,6 +6,7 @@
  */
 
 #include <alien/utils/Precomp.h>
+#include <alien/AlienIFPENSolversExport.h>
 
 #define BEGIN_IFPSOLVERINTERNAL_NAMESPACE                                                \
   namespace Alien {                                                                      \
