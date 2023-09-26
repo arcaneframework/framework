@@ -7,7 +7,7 @@
 
 #include <alien/utils/Precomp.h>
 
-#define BEGIN_IFPSOLVERINTENRAL_NAMESPACE                                                \
+#define BEGIN_IFPSOLVERINTERNAL_NAMESPACE                                                \
   namespace Alien {                                                                      \
   namespace IFPSolverInternal {
 #define END_IFPSOLVERINTERNAL_NAMESPACE                                                  \
