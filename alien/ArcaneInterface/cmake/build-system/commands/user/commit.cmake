@@ -24,7 +24,7 @@ function(__commit_library target)
 
   # installation du CMake pour l'installation
   install(EXPORT ${PROJECT_NAME}Targets
-	  DESTINATION lib/cmake
+	  DESTINATION lib/cmake/${PROJECT_NAME}
 	  EXPORT_LINK_INTERFACE_LIBRARIES
 	  )
   endif()
