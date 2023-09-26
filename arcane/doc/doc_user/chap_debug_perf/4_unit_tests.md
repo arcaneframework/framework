@@ -1,4 +1,4 @@
-﻿# Le support des tests unitaires dans Arcane {#arcanedoc_debug_perf_unit_tests}
+﻿# Le support des tests unitaires dans %Arcane {#arcanedoc_debug_perf_unit_tests}
 
 [TOC]
 

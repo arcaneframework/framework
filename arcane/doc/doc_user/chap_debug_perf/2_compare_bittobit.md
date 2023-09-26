@@ -135,6 +135,6 @@ ____
 \ref arcanedoc_debug_perf_check_memory
 </span>
 <span class="next_section_button">
-\ref arcanedoc_debug_perf_unit_tests
+\ref arcanedoc_debug_perf_compare_synchronization
 </span>
 </div>

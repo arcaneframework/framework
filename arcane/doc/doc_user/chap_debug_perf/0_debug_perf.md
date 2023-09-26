@@ -13,17 +13,21 @@ ces tâches.
 <br>
 
 Sommaire de ce chapitre :
+
 1. \subpage arcanedoc_debug_perf_check_memory <br>
-  Détection des problèmes mémoire.
+  Détection des problèmes mémoire.</br>
 
 2. \subpage arcanedoc_debug_perf_compare_bittobit <br>
-  Comparaison bit à bit de deux exécutions.
+  Comparaison bit à bit de deux exécutions.</br>
 
-3. \subpage arcanedoc_debug_perf_unit_tests <br>
-  Décrit comment réaliser des tests unitaires pour les modules et services.
+3. \subpage arcanedoc_debug_perf_compare_synchronization <br>
+  Décrit la comparaison des synchronisations.</br>
 
-4. \subpage arcanedoc_debug_perf_profiling <br>
-  Décrit les mécanismes disponibles pour l'analyse de performance.
+4. \subpage arcanedoc_debug_perf_unit_tests <br>
+  Décrit comment réaliser des tests unitaires pour les modules et services.</br>
+
+5. \subpage arcanedoc_debug_perf_profiling <br>
+  Décrit les mécanismes disponibles pour l'analyse de performance.</br>
 
 ____
 
