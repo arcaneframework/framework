@@ -1,19 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DirectedAcyclicGraph                                     (C) 2000-2021    */
+/* DirectedAcyclicGraph                                        (C) 2000-2023 */
 /*                                                                           */
 /* Basic Implementation of a directed acyclic graph                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 #ifndef SGRAPH_DIRECTEDACYCLICGRAPH_H
 #define SGRAPH_DIRECTEDACYCLICGRAPH_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -183,7 +181,7 @@ class DirectedAcyclicGraph
     try {
       _computeVertexLevels();
     }
-    catch (std::runtime_error e) {
+    catch (const std::runtime_error& e) {
       has_cycle = true;
     }
     return has_cycle;

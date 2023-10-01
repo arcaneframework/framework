@@ -290,11 +290,11 @@ TEST(NeoTestArrayProperty, test_mesh_array_property_proxy) {
   auto const mesh_array_property_const_proxy{mesh_array_property_proxy};
   EXPECT_EQ(mesh_array_property_const_proxy.arrayPropertyOffsets(),mesh_array_property_sizes.m_ptr);
   return;
-  auto property_values = mesh_array_property.view();
-  auto property_data = mesh_array_property_proxy.arrayPropertyData();
+  [[maybe_unused]] auto property_values = mesh_array_property.view();
+  [[maybe_unused]] auto property_data = mesh_array_property_proxy.arrayPropertyData();
   auto property_indexes = mesh_array_property_proxy.arrayPropertyIndex();
-  auto property_offsets = mesh_array_property_proxy.arrayPropertyOffsets();
-  auto property_index = 0;
+  [[maybe_unused]] auto property_offsets = mesh_array_property_proxy.arrayPropertyOffsets();
+  [[maybe_unused]] auto property_index = 0;
   auto value_index = 0;
   auto item_index = 0;
   for (auto item : item_range){

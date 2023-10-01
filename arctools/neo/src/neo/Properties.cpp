@@ -53,7 +53,7 @@ Neo::ItemRange Neo::ItemLidsProperty::append(std::vector<Neo::utils::Int64> cons
     std::vector<Neo::utils::Int32> non_contiguous_from_contigous_lids(
     item_local_ids.m_nb_contiguous_lids);
     std::iota(non_contiguous_from_contigous_lids.begin(), non_contiguous_from_contigous_lids.end(), first_contiguous_id);
-    for (const auto [item_index, item_lid] : existing_items) {
+    for (const auto& [item_index, item_lid] : existing_items) {
       non_contiguous_from_contigous_lids[item_index] = item_lid;
       std::for_each(non_contiguous_from_contigous_lids.begin() + item_index + 1, non_contiguous_from_contigous_lids.end(), [](auto& current_lid) { return --current_lid; });
     }
