@@ -121,7 +121,7 @@ TEST(NeoTestProperty, test_mesh_scalar_property) {
     EXPECT_EQ(property[item], values[i++]);
   }
   i = 0;
-  const auto& const_property = property;
+  [[maybe_unused]] const auto& const_property = property;
   for (const auto& item : new_item_range) {
     EXPECT_EQ(property[item], new_values[i++]);
   }
