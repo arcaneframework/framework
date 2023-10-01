@@ -774,11 +774,11 @@ _removeEmptyPartsV2Helper(const Int32 nb_part,ArrayView<idxtype> metis_part,Int3
   UniqueArray<Int32> empty_part_ranks;
   int nb_hole = 0;
   Int32 max_part_id = -1;
-  Int32 max_part_nbr = -1;
+  Int64 max_part_nbr = -1;
   // Compute number of empty parts
   Int64 total_nb_cell = 0;
   for(int i = 0; i < nb_part ; i++) {
-    Int32 current_sum_part = sum_part[i];
+    Int64 current_sum_part = sum_part[i];
     total_nb_cell += current_sum_part;
     if (current_sum_part == 0) {
       empty_part_ranks.add(i);
