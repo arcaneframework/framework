@@ -29,6 +29,7 @@ namespace mesh
 {
   class DynamicMeshCartesian2DBuilder;
   class DynamicMeshCartesian3DBuilder;
+  class CartesianFaceUniqueIdBuilder;
 } // namespace mesh
 
 /*---------------------------------------------------------------------------*/
@@ -44,6 +45,7 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
 {
   friend mesh::DynamicMeshCartesian2DBuilder;
   friend mesh::DynamicMeshCartesian3DBuilder;
+  friend mesh::CartesianFaceUniqueIdBuilder;
 
  private:
 
@@ -91,6 +93,13 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
     Int64 compute(Int32 x, Int32 y)
     {
       return m_base_offset + x + y * m_all_nb_cell_x;
+    }
+    Int64x3 compute(Int64 unique_id)
+    {
+      Int64 uid = unique_id - m_base_offset;
+      const Int64 y = uid / m_all_nb_cell_x;
+      const Int64 x = uid % m_all_nb_cell_x;
+      return Int64x3(x, y, 0);
     }
 
    private:
@@ -143,9 +152,20 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
 
    public:
 
+    //! Calcul le uniqueId() en fonction des coordonnées
     Int64 compute(Int32 x, Int32 y, Int32 z)
     {
       return m_base_offset + x + y * m_all_nb_cell_x + z * m_all_nb_cell_xy;
+    }
+    //! Calcul les coordonnées en fonction du uniqueId().
+    Int64x3 compute(Int64 unique_id)
+    {
+      Int64 uid = unique_id - m_base_offset;
+      Int64 z = uid / m_all_nb_cell_xy;
+      Int64 v = uid - (z * m_all_nb_cell_xy);
+      Int64 y = v / m_all_nb_cell_x;
+      Int64 x = v % m_all_nb_cell_x;
+      return Int64x3(x, y, z);
     }
 
    private:
