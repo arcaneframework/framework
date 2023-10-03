@@ -103,10 +103,11 @@ _buildCellList()
 
   Integer cells_infos_index = 0;
   CartesianGridDimension::NodeUniqueIdComputer2D node_uid_computer(node_unique_id_offset, all_nb_node.x);
+  CartesianGridDimension::CellUniqueIdComputer2D cell_uid_computer(cell_unique_id_offset, all_nb_cell.x);
 
   for (Integer y = 0; y < own_nb_cell.y; ++y) {
     for (Integer x = 0; x < own_nb_cell.x; ++x) {
-      Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell.x;
+      Int64 cell_unique_id = cell_uid_computer.compute(x, y);
       cells_infos[cells_infos_index] = IT_Quad4;
       ++cells_infos_index;
       cells_infos[cells_infos_index] = cell_unique_id;
@@ -170,11 +171,12 @@ _buildCellList()
 
   Integer cells_infos_index = 0;
   CartesianGridDimension::NodeUniqueIdComputer3D node_uid_computer(node_unique_id_offset, all_nb_node.x, all_nb_node_xy);
+  CartesianGridDimension::CellUniqueIdComputer3D cell_uid_computer(cell_unique_id_offset, all_nb_cell.x, all_nb_cell_xy);
 
   for (Integer z = 0; z < own_nb_cell.z; ++z) {
     for (Integer y = 0; y < own_nb_cell.y; ++y) {
       for (Integer x = 0; x < own_nb_cell.x; ++x) {
-        Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell.x + z * all_nb_cell_xy;
+        Int64 cell_unique_id = cell_uid_computer.compute(x, y, z);
         cells_infos[cells_infos_index] = IT_Hexaedron8;
         ++cells_infos_index;
         cells_infos[cells_infos_index] = cell_unique_id;

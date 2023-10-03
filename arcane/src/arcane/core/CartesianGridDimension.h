@@ -74,7 +74,33 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
   };
 
   /*!
-   * \brief Classe pour calculer en 2D le uniqueId() d'un noeud en fonction
+   * \brief Classe pour calculer en 2D le uniqueId() d'une mailleen fonction
+   * de sa position dans la grille.
+   */
+  class CellUniqueIdComputer2D
+  {
+   public:
+
+    CellUniqueIdComputer2D(Int64 base_offset, Int64 all_nb_cell_x)
+    : m_base_offset(base_offset)
+    , m_all_nb_cell_x(all_nb_cell_x)
+    {}
+
+   public:
+
+    Int64 compute(Int32 x, Int32 y)
+    {
+      return m_base_offset + x + y * m_all_nb_cell_x;
+    }
+
+   private:
+
+    Int64 m_base_offset;
+    Int64 m_all_nb_cell_x;
+  };
+
+  /*!
+   * \brief Classe pour calculer en 3D le uniqueId() d'un noeud en fonction
    * de sa position dans la grille.
    */
   class NodeUniqueIdComputer3D
@@ -99,6 +125,34 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
     Int64 m_base_offset;
     Int64 m_all_nb_node_x;
     Int64 m_all_nb_node_xy;
+  };
+
+  /*!
+   * \brief Classe pour calculer en 3D le uniqueId() d'une maille en fonction
+   * de sa position dans la grille.
+   */
+  class CellUniqueIdComputer3D
+  {
+   public:
+
+    CellUniqueIdComputer3D(Int64 base_offset, Int64 all_nb_cell_x, Int64 all_nb_cell_xy)
+    : m_base_offset(base_offset)
+    , m_all_nb_cell_x(all_nb_cell_x)
+    , m_all_nb_cell_xy(all_nb_cell_xy)
+    {}
+
+   public:
+
+    Int64 compute(Int32 x, Int32 y, Int32 z)
+    {
+      return m_base_offset + x + y * m_all_nb_cell_x + z * m_all_nb_cell_xy;
+    }
+
+   private:
+
+    Int64 m_base_offset;
+    Int64 m_all_nb_cell_x;
+    Int64 m_all_nb_cell_xy;
   };
 
  public:
