@@ -18,10 +18,11 @@
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/ICartesianMeshPatch.h"
 
-#include "arcane/VariableTypes.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/CartesianGridDimension.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ICartesianMeshGenerationInfo.h"
 
 #include <array>
 
@@ -105,32 +106,30 @@ renumber()
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", nb_cell_z);
 
   if (dimension == 2) {
+    CartesianGridDimension::CellUniqueIdComputer2D cell_uid_computer(0, nb_cell_x);
     ENUMERATE_ (Cell, icell, patch0->cells()) {
       Cell cell{ *icell };
       Int64 uid = cell.uniqueId();
-      Int64 coord_i = uid % nb_cell_x;
-      Int64 coord_j = uid / nb_cell_x;
+      auto [coord_i, coord_j, coord_k] = cell_uid_computer.compute(uid);
       if (m_is_verbose)
-        info() << "Renumbering: PARENT: cell_uid=" << cell.uniqueId() << " I=" << coord_i
+        info() << "Renumbering: PARENT: cell_uid=" << uid << " I=" << coord_i
                << " J=" << coord_j << " nb_cell_x=" << nb_cell_x;
       _applyChildrenCell2D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, nb_cell_x, nb_cell_y, 1);
     }
   }
 
   else if (dimension == 3) {
+    CartesianGridDimension::CellUniqueIdComputer3D cell_uid_computer(0, nb_cell_x, nb_cell_x * nb_cell_y);
     ENUMERATE_ (Cell, icell, patch0->cells()) {
       Cell cell{ *icell };
       Int64 uid = cell.uniqueId();
-      Int64 to2d = uid % (nb_cell_x * nb_cell_y);
-      Int64 coord_i = to2d % nb_cell_x;
-      Int64 coord_j = to2d / nb_cell_x;
-      Int64 coord_k = uid / (nb_cell_x * nb_cell_y);
+      auto [coord_i, coord_j, coord_k] = cell_uid_computer.compute(uid);
       if (m_is_verbose)
-        info() << "Renumbering: PARENT: cell_uid=" << cell.uniqueId() << " I=" << coord_i
+        info() << "Renumbering: PARENT: cell_uid=" << uid << " I=" << coord_i
                << " J=" << coord_j << " K=" << coord_k
                << " nb_cell_x=" << nb_cell_x << " nb_cell_y=" << nb_cell_y;
-      _applyChildrenCell3D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, 
-                           coord_i, coord_j, coord_k, 
+      _applyChildrenCell3D(cell, nodes_new_uid, faces_new_uid, cells_new_uid,
+                           coord_i, coord_j, coord_k,
                            nb_cell_x, nb_cell_y, nb_cell_z,
                            0, 0, 0, 0);
     }
@@ -422,21 +421,15 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
 
     const Int64 nb_cell_before_j = coord_j * current_level_nb_cell_x;
 
-    new_uids[0] = (coord_k * current_level_nb_cell_x * current_level_nb_cell_y)
-                + nb_cell_before_j
-                + (coord_i);
+    new_uids[0] = (coord_k * current_level_nb_cell_x * current_level_nb_cell_y) + nb_cell_before_j + (coord_i);
 
     new_uids[3] = new_uids[0] + current_level_nb_cell_x * current_level_nb_cell_y;
 
-    new_uids[1] = (coord_k * current_level_nb_face_x * current_level_nb_cell_y)
-                + (coord_j * current_level_nb_face_x)
-                + (coord_i) + total_face_xy;
+    new_uids[1] = (coord_k * current_level_nb_face_x * current_level_nb_cell_y) + (coord_j * current_level_nb_face_x) + (coord_i) + total_face_xy;
 
     new_uids[4] = new_uids[1] + 1;
 
-    new_uids[2] = (coord_k * current_level_nb_cell_x * current_level_nb_face_y)
-                + nb_cell_before_j
-                + (coord_i) + total_face_xy_yz;
+    new_uids[2] = (coord_k * current_level_nb_cell_x * current_level_nb_face_y) + nb_cell_before_j + (coord_i) + total_face_xy_yz;
 
     new_uids[5] = new_uids[2] + current_level_nb_cell_x;
 

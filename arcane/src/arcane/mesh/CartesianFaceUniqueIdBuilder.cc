@@ -143,6 +143,7 @@ computeFacesUniqueIdAndOwner()
     if (sub_domain_offset_y > 0)
       previous_rank_y = my_rank - nb_sub_domain_x;
     info() << "PreviousRank X=" << previous_rank_x << " Y=" << previous_rank_y;
+    CartesianGridDimension::CellUniqueIdComputer2D cell_uid_computer(0, nb_cell.x);
     // Les mailles sont des quadrangles
     std::array<Int64, 4> face_uids;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid, cells_map)
@@ -150,8 +151,16 @@ computeFacesUniqueIdAndOwner()
       // Récupère l'indice (I,J) de la maille
       Cell cell{ iid->value() };
       Int64 uid = cell.uniqueId();
-      const Int64 y = uid / nb_cell.x;
-      const Int64 x = uid % nb_cell.x;
+      const Int64 y2 = uid / nb_cell.x;
+      const Int64 x2 = uid % nb_cell.x;
+      Int64x3 xyz = cell_uid_computer.compute(uid);
+      Int64 x = xyz.x;
+      Int64 y = xyz.y;
+      // Pour test. A supprimer par la suite
+      if (x != x2)
+        ARCANE_FATAL("Bad X {0} {1}", x, x2);
+      if (y != y2)
+        ARCANE_FATAL("Bad Y {0} {1}", y, y2);
       if (is_verbose)
         info() << "CELL (UID=" << uid << ",XY=" << x << "," << y << ") "
                << " N0=" << cell.node(0).uniqueId()
@@ -191,6 +200,7 @@ computeFacesUniqueIdAndOwner()
     if (sub_domain_offset_z > 0)
       previous_rank_z = my_rank - (nb_sub_domain_x * nb_sub_domain_y);
     info() << "PreviousRank X=" << previous_rank_x << " Y=" << previous_rank_y << " Z=" << previous_rank_z;
+    CartesianGridDimension::CellUniqueIdComputer3D cell_uid_computer(0, nb_cell.x, nb_cell_xy);
     // Les mailles sont des hexaèdres
     std::array<Int64, 6> face_uids;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid, cells_map)
@@ -198,10 +208,21 @@ computeFacesUniqueIdAndOwner()
       // Récupère l'indice (I,J) de la maille
       Cell cell{ iid->value() };
       Int64 uid = cell.uniqueId();
-      Int64 z = uid / nb_cell_xy;
-      Int64 v = uid - (z * nb_cell_xy);
-      Int64 y = v / nb_cell.x;
-      Int64 x = v % nb_cell.x;
+      Int64 z2 = uid / nb_cell_xy;
+      Int64 v2 = uid - (z2 * nb_cell_xy);
+      Int64 y2 = v2 / nb_cell.x;
+      Int64 x2 = v2 % nb_cell.x;
+      Int64x3 xyz = cell_uid_computer.compute(uid);
+      Int64 x = xyz.x;
+      Int64 y = xyz.y;
+      Int64 z = xyz.z;
+      // Pour test. A supprimer par la suite
+      if (x != x2)
+        ARCANE_FATAL("Bad X {0} {1}", x, x2);
+      if (y != y2)
+        ARCANE_FATAL("Bad Y {0} {1}", y, y2);
+      if (z != z2)
+        ARCANE_FATAL("Bad Z {0} {1}", z, z2);
       if (is_verbose)
         info() << "CELL (UID=" << uid << ",XYZ=" << x << "," << y << "," << z << ") "
                << " N0=" << cell.node(0).uniqueId()
