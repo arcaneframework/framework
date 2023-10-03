@@ -24,6 +24,13 @@
 namespace Arcane
 {
 
+// Temporaire pour les classes friend
+namespace mesh
+{
+  class DynamicMeshCartesian2DBuilder;
+  class DynamicMeshCartesian3DBuilder;
+} // namespace mesh
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -35,6 +42,65 @@ namespace Arcane
  */
 class ARCANE_CORE_EXPORT CartesianGridDimension
 {
+  friend mesh::DynamicMeshCartesian2DBuilder;
+  friend mesh::DynamicMeshCartesian3DBuilder;
+
+ private:
+
+  /*!
+   * \brief Classe pour calculer en 2D le uniqueId() d'un noeud en fonction
+   * de sa position dans la grille.
+   */
+  class NodeUniqueIdComputer2D
+  {
+   public:
+
+    NodeUniqueIdComputer2D(Int64 base_offset, Int64 all_nb_node_x)
+    : m_base_offset(base_offset)
+    , m_all_nb_node_x(all_nb_node_x)
+    {}
+
+   public:
+
+    Int64 compute(Int32 x, Int32 y)
+    {
+      return m_base_offset + x + y * m_all_nb_node_x;
+    }
+
+   private:
+
+    Int64 m_base_offset;
+    Int64 m_all_nb_node_x;
+  };
+
+  /*!
+   * \brief Classe pour calculer en 2D le uniqueId() d'un noeud en fonction
+   * de sa position dans la grille.
+   */
+  class NodeUniqueIdComputer3D
+  {
+   public:
+
+    NodeUniqueIdComputer3D(Int64 base_offset, Int64 all_nb_node_x, Int64 all_nb_node_xy)
+    : m_base_offset(base_offset)
+    , m_all_nb_node_x(all_nb_node_x)
+    , m_all_nb_node_xy(all_nb_node_xy)
+    {}
+
+   public:
+
+    Int64 compute(Int32 x, Int32 y, Int32 z)
+    {
+      return m_base_offset + x + y * m_all_nb_node_x + z * m_all_nb_node_xy;
+    }
+
+   private:
+
+    Int64 m_base_offset;
+    Int64 m_all_nb_node_x;
+    Int64 m_all_nb_node_xy;
+  };
+
  public:
 
   CartesianGridDimension() = default;
