@@ -46,6 +46,7 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
   friend mesh::DynamicMeshCartesian2DBuilder;
   friend mesh::DynamicMeshCartesian3DBuilder;
   friend mesh::CartesianFaceUniqueIdBuilder;
+  friend class CartesianMeshUniqueIdRenumbering;
 
  private:
 
