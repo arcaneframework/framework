@@ -70,6 +70,16 @@ class VariableSynchronizerStats
   {
    public:
 
+    void add(const StatInfo& x)
+    {
+      m_count += x.m_count;
+      m_nb_same += x.m_nb_same;
+      m_nb_different += x.m_nb_different;
+      m_nb_unknown += x.m_nb_unknown;
+    }
+
+   public:
+
     Int32 m_count = 0;
     Int32 m_nb_same = 0;
     Int32 m_nb_different = 0;
@@ -113,7 +123,9 @@ class VariableSynchronizerStats
          << Trace::Width(8) << "Diff"
          << Trace::Width(8) << "Unknown"
          << "\n";
+    StatInfo total_stat;
     for (const auto& p : m_stats) {
+      total_stat.add(p.second);
       ostr << " " << Trace::Width(7) << p.second.m_count
            << " " << Trace::Width(7) << p.second.m_nb_same
            << " " << Trace::Width(7) << p.second.m_nb_different
@@ -121,6 +133,14 @@ class VariableSynchronizerStats
            << "   " << p.first
            << "\n";
     }
+    ostr << "\n";
+    ostr << " " << Trace::Width(7) << total_stat.m_count
+         << " " << Trace::Width(7) << total_stat.m_nb_same
+         << " " << Trace::Width(7) << total_stat.m_nb_different
+         << " " << Trace::Width(7) << total_stat.m_nb_unknown
+         << "   "
+         << "TOTAL"
+         << "\n\n";
     ostr.precision(old_precision);
   }
 
@@ -165,8 +185,8 @@ _handleEvent(const VariableSynchronizerEventArgs& args)
         // On fait la réduction ici car on veut savoir immédiatement s'il y a une
         // différence.
         unsigned char global_rs = pm->reduce(Parallel::ReduceMax, rs);
-        if (global_rs == LOCAL_DIFF) {
-          info() << "Synchronize: values are different for variable name=" << var->fullName();
+        if (global_rs == LOCAL_SAME) {
+          info() << "Synchronize: same values for variable name=" << var->fullName();
           if (level >= 3)
             info() << "Stack=" << platform::getStackTrace();
         }
