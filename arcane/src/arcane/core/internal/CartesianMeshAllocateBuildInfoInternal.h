@@ -51,6 +51,7 @@ class ARCANE_CORE_EXPORT CartesianMeshAllocateBuildInfoInternal
 
   std::array<Int64, 3> globalNbCells() const;
   std::array<Int32, 3> ownNbCells() const;
+  Int64x3 firstOwnCellOffset() const;
   Int64 cellUniqueIdOffset() const;
   Int64 nodeUniqueIdOffset() const;
 

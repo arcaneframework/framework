@@ -90,6 +90,7 @@ _buildCellList()
 
   CartesianGridDimension all_grid_dimension(m_build_info->globalNbCells());
   CartesianGridDimension own_grid_dimension(m_build_info->ownNbCells());
+  Int64x3 first_own_cell_offset(m_build_info->firstOwnCellOffset());
 
   Int64x3 own_nb_cell = own_grid_dimension.nbCell();
 
@@ -104,12 +105,14 @@ _buildCellList()
 
   for (Integer y = 0; y < own_nb_cell.y; ++y) {
     for (Integer x = 0; x < own_nb_cell.x; ++x) {
-      Int64 cell_unique_id = cell_uid_computer.compute(x, y);
+      Int64 gx = x + first_own_cell_offset.x;
+      Int64 gy = y + first_own_cell_offset.y;
+      Int64 cell_unique_id = cell_uid_computer.compute(gx, gy);
       cells_infos[cells_infos_index] = IT_Quad4;
       ++cells_infos_index;
       cells_infos[cells_infos_index] = cell_unique_id;
       ++cells_infos_index;
-      std::array<Int64, 4> node_uids = node_uid_computer.computeForCell(x, y);
+      std::array<Int64, 4> node_uids = node_uid_computer.computeForCell(gx, gy);
       for (Int32 i = 0; i < 4; ++i)
         cells_infos[cells_infos_index + i] = node_uids[i];
       cells_infos_index += 4;
@@ -152,6 +155,7 @@ _buildCellList()
 
   CartesianGridDimension all_grid_dimension(m_build_info->globalNbCells());
   CartesianGridDimension own_grid_dimension(m_build_info->ownNbCells());
+  Int64x3 first_own_cell_offset(m_build_info->firstOwnCellOffset());
 
   Int64x3 own_nb_cell = own_grid_dimension.nbCell();
 
@@ -167,12 +171,15 @@ _buildCellList()
   for (Integer z = 0; z < own_nb_cell.z; ++z) {
     for (Integer y = 0; y < own_nb_cell.y; ++y) {
       for (Integer x = 0; x < own_nb_cell.x; ++x) {
-        Int64 cell_unique_id = cell_uid_computer.compute(x, y, z);
+        Int64 gx = x + first_own_cell_offset.x;
+        Int64 gy = y + first_own_cell_offset.y;
+        Int64 gz = z + first_own_cell_offset.z;
+        Int64 cell_unique_id = cell_uid_computer.compute(gx, gy, gz);
         cells_infos[cells_infos_index] = IT_Hexaedron8;
         ++cells_infos_index;
         cells_infos[cells_infos_index] = cell_unique_id;
         ++cells_infos_index;
-        std::array<Int64, 8> node_uids = node_uid_computer.computeForCell(x, y, z);
+        std::array<Int64, 8> node_uids = node_uid_computer.computeForCell(gx, gy, gz);
         for (Int32 i = 0; i < 8; ++i)
           cells_infos[cells_infos_index + i] = node_uids[i];
         cells_infos_index += 8;

@@ -18,6 +18,8 @@
 
 #include "arcane/core/ArcaneTypes.h"
 
+#include <array>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -220,7 +222,7 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
    public:
 
     //! Calcul le uniqueId() en fonction des coordonnées
-    Int64 compute(Int32 x, Int32 y, Int32 z)
+    Int64 compute(Int64 x, Int64 y, Int64 z)
     {
       return m_base_offset + x + y * m_all_nb_cell_x + z * m_all_nb_cell_xy;
     }
