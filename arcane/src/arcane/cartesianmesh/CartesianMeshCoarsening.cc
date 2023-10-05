@@ -49,7 +49,9 @@ coarseCartesianMesh()
     ARCANE_FATAL("This method is only valid for 1 patch (nb_patch={0})", nb_patch);
 
   // TODO: Supprimer les mailles fantômes puis les reconstruire
-
+  // TODO: Mettre à jour les informations dans CellDirectionMng
+  // de ownNbCell(), globalNbCell(), ...
+  
   Integer nb_dir = mesh->dimension();
   if (nb_dir != 2)
     ARCANE_FATAL("This method is only valid for 2D mesh");
