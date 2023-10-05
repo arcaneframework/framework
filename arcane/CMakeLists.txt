@@ -972,9 +972,10 @@ add_subdirectory(src/arcane/tests)
 add_subdirectory(samples_build)
 
 # ----------------------------------------------------------------------------
-# Ajoute le répertoire matériaux.
+# Ajoute les répertoires 'matériaux' et 'cartesianmesh'
 # Pour l'instant on le fait après les tests pour cohérence avec l'existant
-# car avant ce répertoire était dans ceapart.
+# car avant ces répertoires étaientt dans ceapart.
+add_subdirectory(src/arcane/cartesianmesh)
 add_subdirectory(src/arcane/materials)
 
 # ----------------------------------------------------------------------------

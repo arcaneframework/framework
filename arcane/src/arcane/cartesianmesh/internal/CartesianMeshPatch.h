@@ -1,28 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshPatch.h                                        (C) 2000-2020 */
+/* CartesianMeshPatch.h                                        (C) 2000-2023 */
 /*                                                                           */
 /* Informations sur un patch AMR d'un maillage cartésien.                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CEA_CARTESIANMESHPATCH_H
-#define ARCANE_CEA_CARTESIANMESHPATCH_H
+#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHPATCH_H
+#define ARCANE_CARTESIANMESH_CARTESIANMESHPATCH_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ItemTypes.h"
-#include "arcane/VariableTypes.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypes.h"
 
-#include "arcane/cea/ICartesianMeshPatch.h"
-#include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/FaceDirectionMng.h"
-#include "arcane/cea/NodeDirectionMng.h"
+#include "arcane/cartesianmesh/ICartesianMeshPatch.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/FaceDirectionMng.h"
+#include "arcane/cartesianmesh/NodeDirectionMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,7 +1,7 @@
 ﻿include(srcs.cmake)
 
 arcane_add_library(arcane_cartesianmesh
-  INPUT_PATH ${ARCANECEA_SRC_PATH}
+  INPUT_PATH ${Arcane_SOURCE_DIR}/src
   RELATIVE_PATH arcane/cartesianmesh
   FILES ${ARCANE_SOURCES}
   )

@@ -7,8 +7,6 @@
 
 #include <gtest/gtest.h>
 
-#include "arcane/tests/CartesianMeshV2TestUtils.h"
-
 #include "arcane/cartesianmesh/v2/CartesianTypes.h"
 #include "arcane/cartesianmesh/v2/CartesianGrid.h"
 #include "arcane/cartesianmesh/v2/CartesianNumbering.h"
