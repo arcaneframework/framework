@@ -16,6 +16,8 @@ set(ARCANE_SOURCES
   NodeDirectionMng.h
   ICartesianMesh.h
   ICartesianMeshPatch.h
+  CartesianMeshCoarsening.cc
+  CartesianMeshCoarsening.h
   CartesianMeshGlobal.h
   internal/CartesianMeshPatch.h
   internal/CartesianMeshUniqueIdRenumbering.h

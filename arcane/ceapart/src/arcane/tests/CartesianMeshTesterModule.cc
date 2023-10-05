@@ -44,10 +44,12 @@
 
 #include "arcane/Connectivity.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/NodeDirectionMng.h"
-#include "arcane/cea/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/CartesianMeshCoarsening.h"
+
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/NodeDirectionMng.h"
+#include "arcane/cartesianmesh/CartesianConnectivity.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/CartesianMeshTester_axl.h"
@@ -414,6 +416,11 @@ init()
 void CartesianMeshTesterModule::
 compute()
 {
+  if (options()->coarseCartesianMesh() && m_global_iteration()==1){
+    Ref<CartesianMeshCoarsening> coarser = m_cartesian_mesh->createCartesianMeshCoarsening();
+    coarser->coarseCartesianMesh();
+  }   
+
   _compute1();
 }
 

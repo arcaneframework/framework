@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshGlobal.h                                       (C) 2000-2022 */
+/* CartesianMeshGlobal.h                                       (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations de la composante 'arcane_cartesianmesh'.                     */
 /*---------------------------------------------------------------------------*/
@@ -38,6 +38,7 @@ class ICartesianMesh;
 class ICartesianMeshPatch;
 class CartesianMeshPatch;
 class CartesianConnectivity;
+class CartesianMeshCoarsening;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

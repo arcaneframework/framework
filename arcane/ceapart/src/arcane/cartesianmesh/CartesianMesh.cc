@@ -34,6 +34,7 @@
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
 #include "arcane/cartesianmesh/CartesianMeshRenumberingInfo.h"
+#include "arcane/cartesianmesh/CartesianMeshCoarsening.h"
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 
 #include "arcane/cartesianmesh/internal/CartesianMeshUniqueIdRenumbering.h"
@@ -128,7 +129,9 @@ class CartesianMeshImpl
 
   void checkValid() const override;
 
- private:
+  Ref<CartesianMeshCoarsening> createCartesianMeshCoarsening() override;
+
+  private:
 
   //! Indice dans la numérotation locale de la maille, de la face dans
   // la direction X, Y ou Z
@@ -695,6 +698,16 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
     m_mesh->cellFamily()->compactItems(true);
     computeDirections();
   }
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<CartesianMeshCoarsening> CartesianMeshImpl::
+createCartesianMeshCoarsening()
+{
+  return makeRef(new CartesianMeshCoarsening(this));
 }
 
 /*---------------------------------------------------------------------------*/

@@ -34,6 +34,11 @@
        Indique si on construit les arêtes
      </description>
    </simple>
+   <simple name="coarse-cartesian-mesh" type="bool" default="false" >
+     <description>
+       Indique si on raffine le maillage cartésien initial
+     </description>
+   </simple>
  </options>
 
  <entry-points>

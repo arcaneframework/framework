@@ -122,6 +122,7 @@ ARCANE_ADD_TEST_PARALLEL(cartesian2D-1_repart testCartesianMesh2D-1.arc 4 "-m 20
 if (Lima_FOUND)
   ARCANE_ADD_TEST(cartesian2D-lima testCartesianMesh2D-2.arc "-m 20")
 endif()
+arcane_add_test_sequential(cartesian2D_coarsen1 testCartesianMesh2D-coarsen-1.arc "-m 20")
 arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
