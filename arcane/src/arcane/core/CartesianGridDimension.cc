@@ -104,7 +104,9 @@ _init()
   m_nb_face_oriented.z = m_nb_cell.x * m_nb_cell.y;
 
   m_nb_cell_xy = m_nb_cell.x * m_nb_cell.y;
-  m_total_nb_cell = m_nb_cell_xy * m_nb_cell.z;
+  m_total_nb_cell = m_nb_cell_xy;
+  if (is_dim3)
+    m_total_nb_cell *= m_nb_cell.z;
 }
 
 /*---------------------------------------------------------------------------*/
