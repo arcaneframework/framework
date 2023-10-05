@@ -34,4 +34,11 @@ set(ARCANE_SOURCES
   v2/CartesianTypes.h
   v2/CartesianMeshUniqueIdRenumberingV2.h
   v2/CartesianMeshUniqueIdRenumberingV2.cc
+
+  ICartesianMeshAMRMng.h
+  CartesianMeshAMRPatchMng.cc
+  CartesianMeshAMRPatchMng.h
+
+  CartesianMeshNumberingMng.cc
+  CartesianMeshNumberingMng.h
 )

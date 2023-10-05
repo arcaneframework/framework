@@ -42,6 +42,8 @@
 #include "arcane/cartesianmesh/internal/CartesianMeshUniqueIdRenumbering.h"
 #include "arcane/cartesianmesh/v2/CartesianMeshUniqueIdRenumberingV2.h"
 
+#include "arcane/cartesianmesh/CartesianMeshAMRPatchMng.h"
+
 #include <set>
 
 /*---------------------------------------------------------------------------*/
@@ -188,6 +190,7 @@ class CartesianMeshImpl
   EventObserverPool m_event_pool;
   bool m_is_mesh_event_added = false;
   Int64 m_mesh_timestamp = 0;
+  CartesianMeshAMRPatchMng m_amr_mng;
 
  private:
 
@@ -227,6 +230,7 @@ CartesianMeshImpl(IMesh* mesh)
 , m_mesh(mesh)
 , m_nodes_to_cell_storage(platform::getDefaultDataAllocator())
 , m_cells_to_node_storage(platform::getDefaultDataAllocator())
+, m_amr_mng(mesh)
 {
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));
   m_amr_patches.add(m_all_items_direction_info);
@@ -702,6 +706,7 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
   if (total_nb_cell==0)
     return;
   m_mesh->modifier()->flagCellToRefine(cells_local_id);
+  m_amr_mng.refine();
   m_mesh->modifier()->adapt();
   {
     MeshStats ms(traceMng(),m_mesh,m_mesh->parallelMng());
