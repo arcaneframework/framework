@@ -35,6 +35,7 @@ class CartesianMeshRenumberingInfo;
 class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
 {
  public:
+
   virtual ~ICartesianMesh() {} //<! Libère les ressources
 
   /*!
@@ -49,9 +50,11 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
   static ICartesianMesh* getReference(const MeshHandleOrMesh& mesh, bool create = true);
 
  public:
+
   virtual void build() = 0;
 
  public:
+
   //! Maillage associé à ce maillage cartésien
   virtual IMesh* mesh() const = 0;
 
@@ -153,6 +156,11 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
 
   //! Effectue des vérifications sur la validité de l'instance.
   virtual void checkValid() const = 0;
+
+  /*!
+   * \brief Créé une instance pour gérer le déraffinement du maillage.
+   */
+  virtual Ref<CartesianMeshCoarsening> createCartesianMeshCoarsening() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
