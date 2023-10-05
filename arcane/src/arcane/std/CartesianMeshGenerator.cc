@@ -20,6 +20,7 @@
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/Vector3.h"
 
 #include "arcane/core/IMeshReader.h"
 #include "arcane/core/ISubDomain.h"
@@ -696,6 +697,7 @@ generateMesh()
         all_nb_node_xy, all_nb_cell_xy);
 
   // Calcule pour les mailles l'offset global du début de la grille pour chaque direction.
+  Int64x3 first_own_cell_offset;
   {
     Int64 cell_offset_x = sd_x_cell_offset[sdXOffset()];
     Int64 cell_offset_y = sd_y_cell_offset[sdYOffset()] / all_nb_cell_x;
@@ -703,6 +705,7 @@ generateMesh()
     if (m_mesh_dimension == 3) {
       cell_offset_z = sd_z_cell_offset[sdZOffset()] / all_nb_cell_xy;
     }
+    first_own_cell_offset = Int64x3(cell_offset_x,cell_offset_y,cell_offset_z);
     info() << "OwnCellOffset info X=" << cell_offset_x << " Y=" << cell_offset_y << " Z=" << cell_offset_z;
     m_generation_info->setOwnCellOffsets(cell_offset_x,cell_offset_y,cell_offset_z);
   }
@@ -917,11 +920,13 @@ generateMesh()
     if (m_mesh_dimension==3)
       cartesian_mesh_build_info.setInfos3D({all_nb_cell_x,all_nb_cell_y,all_nb_cell_z},
                                            {own_nb_cell_x,own_nb_cell_y,own_nb_cell_z},
-                                           cell_unique_id_offset, node_unique_id_offset );
+                                           {first_own_cell_offset.x,first_own_cell_offset.y,first_own_cell_offset.z},
+                                           0 );
     else if (m_mesh_dimension==2){
       cartesian_mesh_build_info.setInfos2D({all_nb_cell_x,all_nb_cell_y},
                                            {own_nb_cell_x,own_nb_cell_y},
-                                           cell_unique_id_offset, node_unique_id_offset );
+                                           {first_own_cell_offset.x,first_own_cell_offset.y},
+                                           0 );
     }
     else
       ARCANE_FATAL("Invalid dimensionn '{0}' (valid values are 2 or 3)",m_mesh_dimension);

@@ -144,8 +144,11 @@ computeFacesUniqueIdAndOwner()
       previous_rank_y = my_rank - nb_sub_domain_x;
     info() << "PreviousRank X=" << previous_rank_x << " Y=" << previous_rank_y;
     CartesianGridDimension::CellUniqueIdComputer2D cell_uid_computer(0, nb_cell.x);
+    CartesianGridDimension::FaceUniqueIdComputer2D face_uid_computer(grid_dimension.getFaceComputer2D(0));
+
     // Les mailles sont des quadrangles
     std::array<Int64, 4> face_uids;
+    std::array<Int64, 4> face_uids2;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid, cells_map)
     {
       // Récupère l'indice (I,J) de la maille
@@ -167,6 +170,7 @@ computeFacesUniqueIdAndOwner()
                << " N1=" << cell.node(1).uniqueId()
                << " N2=" << cell.node(2).uniqueId()
                << " N3=" << cell.node(3).uniqueId();
+      //  Pour test. A supprimer par la suite et garder celui de face_uid_computer.
       // Faces selon Y
       face_uids[0] = (x + 0) + ((y + 0) * nb_cell.x) + nb_face_dir.x;
       face_uids[2] = (x + 0) + ((y + 1) * nb_cell.x) + nb_face_dir.x;
@@ -174,7 +178,11 @@ computeFacesUniqueIdAndOwner()
       // Faces selon X
       face_uids[1] = (x + 1) + (y + 0) * nb_face.x;
       face_uids[3] = (x + 0) + (y + 0) * nb_face.x;
-
+      face_uids2 = face_uid_computer.computeForCell(x, y);
+      for (int i = 0; i < 4; ++i) {
+        if (face_uids[i] != face_uids2[i])
+          ARCANE_FATAL("Bad face uid i={0} ref={1} new={2}", i, face_uids[i], face_uids2[i]);
+      }
       for (int i = 0; i < 4; ++i) {
         Face face = cell.face(i);
         if (is_verbose)
@@ -201,8 +209,10 @@ computeFacesUniqueIdAndOwner()
       previous_rank_z = my_rank - (nb_sub_domain_x * nb_sub_domain_y);
     info() << "PreviousRank X=" << previous_rank_x << " Y=" << previous_rank_y << " Z=" << previous_rank_z;
     CartesianGridDimension::CellUniqueIdComputer3D cell_uid_computer(0, nb_cell.x, nb_cell_xy);
+    CartesianGridDimension::FaceUniqueIdComputer3D face_uid_computer(grid_dimension.getFaceComputer3D(0));
     // Les mailles sont des hexaèdres
     std::array<Int64, 6> face_uids;
+    std::array<Int64, 6> face_uids2;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid, cells_map)
     {
       // Récupère l'indice (I,J) de la maille
@@ -234,6 +244,7 @@ computeFacesUniqueIdAndOwner()
                << " N6=" << cell.node(6).uniqueId()
                << " N7=" << cell.node(7).uniqueId();
 
+      //  Pour test. A supprimer par la suite et garder celui de face_uid_computer.
       // Faces selon Z
       face_uids[0] = (x + 0) + ((y + 0) * nb_cell.x) + ((z + 0) * nb_face_dir.z) + total_nb_face_xy;
       face_uids[3] = (x + 0) + ((y + 0) * nb_cell.x) + ((z + 1) * nb_face_dir.z) + total_nb_face_xy;
@@ -245,6 +256,12 @@ computeFacesUniqueIdAndOwner()
       // Faces selon Y
       face_uids[2] = (x + 0) + ((y + 0) * nb_cell.x) + ((z + 0) * nb_face_dir.y) + total_nb_face_x;
       face_uids[5] = (x + 0) + ((y + 1) * nb_cell.x) + ((z + 0) * nb_face_dir.y) + total_nb_face_x;
+
+      face_uids2 = face_uid_computer.computeForCell(x, y, z);
+      for (int i = 0; i < 6; ++i) {
+        if (face_uids[i] != face_uids2[i])
+          ARCANE_FATAL("Bad face uid i={0} ref={1} new={2}", i, face_uids[i], face_uids2[i]);
+      }
 
       for (int i = 0; i < 6; ++i) {
         Face face = cell.face(i);
@@ -272,18 +289,18 @@ computeFacesUniqueIdAndOwner()
     ARCANE_FATAL("Invalid dimension");
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-extern "C++" void
-arcaneComputeCartesianFaceUniqueId(DynamicMesh* mesh)
-{
-  CartesianFaceUniqueIdBuilder f(mesh);
-  f.computeFacesUniqueIdAndOwner();
-}
+  extern "C++" void
+  arcaneComputeCartesianFaceUniqueId(DynamicMesh * mesh)
+  {
+    CartesianFaceUniqueIdBuilder f(mesh);
+    f.computeFacesUniqueIdAndOwner();
+  }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::mesh
 
