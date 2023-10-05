@@ -15,8 +15,8 @@
 
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/ICartesianMeshPatch.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/ICartesianMeshPatch.h"
 
 #include "arcane/core/CartesianGridDimension.h"
 #include "arcane/core/VariableTypes.h"

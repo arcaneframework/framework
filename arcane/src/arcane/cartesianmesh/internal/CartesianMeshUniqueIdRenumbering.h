@@ -1,25 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshUniqueIdRenumbering.h                          (C) 2000-2021 */
+/* CartesianMeshUniqueIdRenumbering.h                          (C) 2000-2023 */
 /*                                                                           */
 /* Renumérotation des uniqueId() pour les maillages cartésiens.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERING_H
-#define ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERING_H
+#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHUNIQUEIDRENUMBERING_H
+#define ARCANE_CARTESIANMESH_CARTESIANMESHUNIQUEIDRENUMBERING_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ItemTypes.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypedef.h"
 
-#include "arcane/cea/CeaGlobal.h"
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

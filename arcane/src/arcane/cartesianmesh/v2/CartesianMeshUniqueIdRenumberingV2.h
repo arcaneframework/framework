@@ -9,17 +9,17 @@
 /*                                                                           */
 /* Renumérotation des uniqueId() pour les maillages cartésiens.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERINGV2_H
-#define ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERINGV2_H
+#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHUNIQUEIDRENUMBERINGV2_H
+#define ARCANE_CARTESIANMESH_CARTESIANMESHUNIQUEIDRENUMBERINGV2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ItemTypes.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypedef.h"
 
-#include "arcane/cea/CeaGlobal.h"
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

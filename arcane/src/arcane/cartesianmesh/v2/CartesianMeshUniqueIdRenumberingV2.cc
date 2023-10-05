@@ -15,13 +15,13 @@
 
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/ICartesianMeshPatch.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/ICartesianMeshPatch.h"
 
-#include "arcane/VariableTypes.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ICartesianMeshGenerationInfo.h"
 
 #include <array>
 
