@@ -57,6 +57,13 @@ refine()
     }
   }
 
+  Int64UniqueArray m_cells_infos;
+  m_cells_infos.reserve(cell_to_refine_internals.size() * (2 + num_mng.getNbNode()));
+//
+//  Int64UniqueArray m_faces_infos;
+//  m_faces_infos.reserve();
+
+
   UniqueArray<Int64> ua_node_uid(num_mng.getNbNode());
   UniqueArray<Int64> ua_face_uid(num_mng.getNbFace());
 
@@ -87,6 +94,20 @@ refine()
           for(Integer l = 0; l < num_mng.getNbFace(); ++l){
             info() << "Test 12 -- x : " << i << " -- y : " << j << " -- level : " << level+1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l];
           }
+
+          Integer type_cell = IT_Quad4;
+
+          m_cells_infos.add(type_cell);
+          m_cells_infos.add(uid_child);
+          for (Integer nc = 0; nc < num_mng.getNbNode(); nc++) {
+            m_cells_infos.add(ua_node_uid[nc]);
+          }
+
+//          m_faces_infos.add(c_type->localFace(f).typeId());
+//          m_faces_infos.add(new_face_uid);
+//          for (Integer nc = 0; nc < nb_node_face; nc++) {
+//            m_faces_infos.add(m_face[nc]);
+//          }
         }
       }
     }
@@ -121,6 +142,14 @@ refine()
 
             for(Integer l = 0; l < num_mng.getNbFace(); ++l){
               info() << "Test 22 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l];
+            }
+
+            Integer type_cell = IT_Hexaedron8;
+
+            m_cells_infos.add(type_cell);
+            m_cells_infos.add(uid_child);
+            for (Integer nc = 0; nc < num_mng.getNbNode(); nc++) {
+              m_cells_infos.add(ua_node_uid[nc]);
             }
 
           }
