@@ -26,7 +26,7 @@
  </arcane-post-traitement>
  
  
- <maillage>
+ <maillage amr="true">
    <meshgenerator>
      <cartesian>
        <nsd>2 2</nsd>
