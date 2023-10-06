@@ -59,15 +59,16 @@ refine()
 
   Int64UniqueArray m_cells_infos;
   m_cells_infos.reserve(cell_to_refine_internals.size() * (2 + num_mng.getNbNode()));
-//
-//  Int64UniqueArray m_faces_infos;
-//  m_faces_infos.reserve();
+
+  Int64UniqueArray m_faces_infos;
 
 
   UniqueArray<Int64> ua_node_uid(num_mng.getNbNode());
   UniqueArray<Int64> ua_face_uid(num_mng.getNbFace());
 
   if(m_mesh->dimension() == 2) {
+    m_faces_infos.reserve(cell_to_refine_internals.size() * 12 * (2 + 2));
+
     for (Cell cell : cell_to_refine_internals) {
       Int64 uid = cell.uniqueId();
       Int32 level = cell.level();
@@ -96,6 +97,7 @@ refine()
           }
 
           Integer type_cell = IT_Quad4;
+          Integer type_face = IT_Line2;
 
           m_cells_infos.add(type_cell);
           m_cells_infos.add(uid_child);
@@ -103,17 +105,26 @@ refine()
             m_cells_infos.add(ua_node_uid[nc]);
           }
 
-//          m_faces_infos.add(c_type->localFace(f).typeId());
-//          m_faces_infos.add(new_face_uid);
-//          for (Integer nc = 0; nc < nb_node_face; nc++) {
-//            m_faces_infos.add(m_face[nc]);
-//          }
+          // Partie Face.
+          // TODO : Face doublon entre les parents.
+          Integer begin = (j == ori_y ? 0 : 1);
+          Integer end = (i == ori_x ? num_mng.getNbFace() : num_mng.getNbFace()-1);
+
+          for(Integer l = begin; l < end; ++l){
+            m_faces_infos.add(type_face);
+            m_faces_infos.add(ua_face_uid[l]);
+            for (Integer nc = l; nc < l+2; nc++) {
+              m_faces_infos.add(ua_node_uid[nc%num_mng.getNbNode()]);
+            }
+          }
+
         }
       }
     }
   }
 
   else if(m_mesh->dimension() == 3) {
+    m_faces_infos.reserve(cell_to_refine_internals.size() * 36 * (2 + 4));
     for (Cell cell : cell_to_refine_internals) {
       Int64 uid = cell.uniqueId();
       Int32 level = cell.level();
@@ -145,6 +156,7 @@ refine()
             }
 
             Integer type_cell = IT_Hexaedron8;
+            Integer type_face = IT_Quad4;
 
             m_cells_infos.add(type_cell);
             m_cells_infos.add(uid_child);
@@ -152,6 +164,18 @@ refine()
               m_cells_infos.add(ua_node_uid[nc]);
             }
 
+//            // Partie Face.
+//            // TODO : Face doublon entre les parents.
+//            Integer begin = (j == ori_y ? 0 : 1);
+//            Integer end = (i == ori_x ? num_mng.getNbFace() : num_mng.getNbFace()-1);
+//
+//            for(Integer l = begin; l < end; ++l){
+//              m_faces_infos.add(type_face);
+//              m_faces_infos.add(ua_face_uid[l]);
+//              for (Integer nc = l; nc < l+2; nc++) {
+//                m_faces_infos.add(ua_node_uid[nc]);
+//              }
+//            }
           }
         }
       }
