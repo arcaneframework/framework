@@ -1,4 +1,4 @@
-name: IFPEN devenv 2021b
+name: IFPEN gimkl/2021b
 
 on:
   workflow_dispatch:
@@ -9,7 +9,6 @@ env:
   INSTALL_DIR: /__w/framework/framework/install
   SOURCE_DIR: /__w/framework/framework/source
   # ccache
-  CC_KEY_PREFIX: ifpen-el7-gimkl-2021b
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
   CCACHE_DIR: '/__w/framework/framework/ccache'
@@ -35,25 +34,25 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {
-            name: "foss/2021b el7",
-            image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el7",
-            ccache_key_prefix: "arcane-ifpen-devenv-foss-2021b_el7",
-          }
-          - {
-            name: "foss/2021b el8",
-            image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el8",
-            ccache_key_prefix: "arcane-ifpen-devenv-foss-2021b_el8",
-          }
+          #- {
+          #  name: "foss/2021b el7",
+          #  image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el7",
+          #  ccache_key_prefix: "arcane-ifpen-foss-2021b_el7",
+          #}
+          #- {
+          #  name: "foss/2021b el8",
+          #  image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el8",
+          #  ccache_key_prefix: "arcane-ifpen-foss-2021b_el8",
+          #}
           - {
             name: "gimkl/2021b el7",
             image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el7",
-            ccache_key_prefix: "arcane-ifpen-devenv-gimkl-2021b_el7",
+            ccache_key_prefix: "arcane-ifpen-gimkl-2021b_el7",
           }
           - {
             name: "gimkl/2021b el8",
             image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el8",
-            ccache_key_prefix: "arcane-ifpen-devenv-gimkl-2021b_el8",
+            ccache_key_prefix: "arcane-ifpen-gimkl-2021b_el8",
           }
     steps:
 
