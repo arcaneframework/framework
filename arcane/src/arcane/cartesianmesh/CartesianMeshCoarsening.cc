@@ -21,6 +21,9 @@
 #include "arcane/core/CartesianGridDimension.h"
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/SimpleSVGMeshExporter.h"
+#include "arcane/core/ItemPrinter.h"
+
+#include "arcane/mesh/CellFamily.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
@@ -99,6 +102,8 @@ coarseCartesianMesh()
   UniqueArray<Int64> cells_infos;
   Int32 nb_coarse_face = 0;
   Int32 nb_coarse_cell = 0;
+  //! Liste de la première fille de chaque maille grossière
+  UniqueArray<Cell> first_child_cells;
   ENUMERATE_ (Cell, icell, mesh->ownCells()) {
     Cell cell = *icell;
     Int64 cell_uid = cell.uniqueId();
@@ -137,12 +142,51 @@ coarseCartesianMesh()
       for (Int32 z = 0; z < 4; ++z)
         cells_infos.add(node_uids[z]);
       ++nb_coarse_cell;
+      first_child_cells.add(cell);
     }
   }
 
-  mesh->modifier()->addFaces(nb_coarse_face, faces_infos);
-  mesh->modifier()->addCells(nb_coarse_cell, cells_infos);
+  UniqueArray<Int32> faces_local_ids;
+  UniqueArray<Int32> cells_local_ids;
+  faces_local_ids.resize(nb_coarse_face);
+  cells_local_ids.resize(nb_coarse_cell);
+  mesh->modifier()->addFaces(nb_coarse_face, faces_infos, faces_local_ids);
+  mesh->modifier()->addCells(nb_coarse_cell, cells_infos, cells_local_ids);
+
+  // Maintenant que les mailles grossières sont créées, il faut indiquer
+  // qu'elles sont parentes.
+  const Int32 mesh_rank = pm->commRank();
+  IItemFamily* cell_family = mesh->cellFamily();
+  using mesh::CellFamily;
+  CellInfoListView cells(mesh->cellFamily());
+  CellFamily* true_cell_family = ARCANE_CHECK_POINTER(dynamic_cast<CellFamily*>(cell_family));
+  std::array<Int32, 4> sub_cell_lids;
+  for (Int32 i = 0; i < nb_coarse_cell; ++i) {
+    Int32 coarse_cell_lid = cells_local_ids[i];
+    Cell coarse_cell = cells[coarse_cell_lid];
+    Cell first_child_cell = first_child_cells[i];
+    // A partir de la première sous-maille, on peut connaitre les 3 autres
+    // car elles sont respectivement à droite, en haut à droite et en haut.
+    sub_cell_lids[0] = first_child_cell.localId();
+    sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
+    sub_cell_lids[2] = cdm_y[CellLocalId(sub_cell_lids[1])].next().localId();
+    sub_cell_lids[3] = cdm_y[first_child_cell].next().localId();
+    for (Int32 z = 0; z < 4; ++z) {
+      info() << "ADD Z=" << z << " coarse=" << ItemPrinter(coarse_cell) << " child_lid=" << sub_cell_lids[z];
+      Cell child_cell = cells[sub_cell_lids[z]];
+      info() << "ADD Z=" << z << " child=" << ItemPrinter(child_cell) << " coarse=" << ItemPrinter(coarse_cell);
+      true_cell_family->_addParentCellToCell(child_cell, coarse_cell);
+      true_cell_family->_addChildCellToCell(coarse_cell, mesh_rank, child_cell);
+      //cell_family._addChildrenCellsToCell(hParent_cell, cells);
+    }
+  }
+
   mesh->modifier()->endUpdate();
+
+  ENUMERATE_ (Cell, icell, mesh->ownCells()) {
+    Cell cell = *icell;
+    info() << "Final cell=" << ItemPrinter(cell) << " level=" << cell.level();
+  }
 
   std::ofstream ofile("mesh_coarse.svg");
   SimpleSVGMeshExporter writer(ofile);
