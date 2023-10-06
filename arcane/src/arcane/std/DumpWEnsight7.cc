@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DumpWEnsight7.cc                                            (C) 2000-2022 */
+/* DumpWEnsight7.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Exportations des fichiers au format Ensight7 gold.                        */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,7 @@
 
 #include <string.h>
 #include <memory>
+#include <unordered_map>
 
 // TODO: Ajouter test avec des variables partielles
 
@@ -193,6 +194,13 @@ class DumpWEnsight7
       ARCANE_ASSERT(m_general_item_types, ("Cannot question an empty GroupPartInfo"));
       return (*(m_general_item_types))[item];
     }
+    EnsightPart* getTypeInfo(int type) {
+      auto ensight_part_element = m_parts_map.find(type);
+      if (ensight_part_element != m_parts_map.end())
+        return ensight_part_element->second;
+      else
+        return nullptr;
+    }
 
    private:
 
@@ -203,8 +211,16 @@ class DumpWEnsight7
     bool m_is_polyhedral_type_registration_done = false;
     //! Variable pour stocker les types des items généraux (non typés)
     std::unique_ptr<VariableItemInt32> m_general_item_types = nullptr;
+    using TypeId = int;
+    std::unordered_map<TypeId, EnsightPart*> m_parts_map;// used to handle large number of extra types
 
    private:
+    void _initPartMap()
+    {
+      for (auto& ensight_part : m_parts) {
+        m_parts_map[ensight_part.type()] = &ensight_part;
+      }
+    }
 
     void _init(bool use_degenerated_hexa)
     {
@@ -313,6 +329,10 @@ class DumpWEnsight7
           }
           m_is_polyhedral_type_registration_done = true;
         }
+      }
+      // if extra types are used, init a EnsightPart map to optimize GroupPartInfo fill
+      if (ItemTypeMng::nbBuiltInItemType() < ItemTypeMng::nbBasicItemType()){
+        _initPartMap();
       }
     }
   };
@@ -887,7 +907,11 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
     GroupPartInfo& current_grp = *gpi;
     // Il faut maintenant déterminer combien d'éléments de chaque type
     // ensight (tria3,hexa8,...) on a dans le groupe.
+    // two versions : if extra item types are added switch to an optimized version
+    // (a large amount of type may be added, equal to number of elements)
+    if (ItemTypeMng::nbBuiltInItemType() == ItemTypeMng::nbBasicItemType()) // no extra type
     {
+      debug(Trace::High) << "Using standard group part building algo";
       auto nb_basic_item_types = grp.mesh()->itemTypeMng()->nbBasicItemType();
       for (Integer z = 0; z < current_grp.nbType(); ++z) {
         EnsightPart& type_info = current_grp.typeInfo(z);
@@ -931,6 +955,23 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
               ++index;
             }
           }
+        }
+      }
+    }
+    else // extra types are added (may have as many types as items...)
+    // Propose an optimized version when many types exist (use of .format file)
+    {
+      debug(Trace::High) << "Using extra type group part building algo";
+      // work only on face and cell groups
+      auto item_kind = grp.itemKind();
+      if (item_kind == IK_Cell || item_kind == IK_Face) {
+        ENUMERATE_ITEM (item, grp) {
+          auto item_type = item->type();
+          EnsightPart* ensight_part = current_grp.getTypeInfo(item_type);
+          if (!ensight_part)
+            continue ;
+          ItemWithNodes item_wn = item->toItemWithNodes();
+          ensight_part->items().add(item_wn); // few elements are added
         }
       }
     }
