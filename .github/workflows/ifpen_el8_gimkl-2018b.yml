@@ -106,6 +106,9 @@ jobs:
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
+      - name: Remove arccon install artifact tar
+        shell: bash
+        run: rm arccon-install-artifact.tar
       - name: Get date
         id: get-date
         shell: bash
@@ -168,6 +171,9 @@ jobs:
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
+      - name: Remove arccon install artifact tar
+        shell: bash
+        run: rm arccon-install-artifact.tar
       - name: Configure
         shell: bash
         run: cmake -S ${{ env.DEPENDENCIES_SOURCE_DIR }} -B ${{ env.DEPENDENCIES_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.DEPENDENCIES_INSTALL_DIR }} -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }}
@@ -210,6 +216,9 @@ jobs:
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
+      - name: Remove arccon install artifact
+        shell: bash
+        run: rm arccon-install-artifact.tar
       - name: Download dependencies install artifact
         uses: actions/download-artifact@v3
         with:
@@ -217,6 +226,9 @@ jobs:
       - name: Untar dependencies install artifact
         shell: bash
         run: tar xf dependencies-install-artifact.tar -C /
+      - name: Remove dependencies install artifact tar
+        shell: bash
+        run: rm dependencies-install-artifact.tar
       - name: Configure
         shell: bash
         run: cmake -S ${{ env.AXLSTAR_SOURCE_DIR }}/axlstar -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }} -DArcDependencies_ROOT=${{ env.DEPENDENCIES_INSTALL_DIR }}
@@ -261,6 +273,9 @@ jobs:
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
+      - name: Remove arccon install artifact tar
+        shell: bash
+        run: rm arccon-install-artifact.tar
       - name: Download arccore install artifact
         uses: actions/download-artifact@v3
         with:
@@ -268,6 +283,9 @@ jobs:
       - name: Untar arccore install artifact
         shell: bash
         run: tar xf arccore-install-artifact.tar -C /
+      - name: Remove arccore install artifact tar
+        shell: bash
+        run: rm arccore-install-artifact.tar
       - name: Download dependencies install artifact
         uses: actions/download-artifact@v3
         with:
@@ -275,6 +293,9 @@ jobs:
       - name: Untar dependencies install artifact
         shell: bash
         run: tar xf dependencies-install-artifact.tar -C /
+      - name: Remove dependencies install artifact tar
+        shell: bash
+        run: rm dependencies-install-artifact.tar
       - name: Download axlstar install artifact
         uses: actions/download-artifact@v3
         with:
@@ -282,6 +303,9 @@ jobs:
       - name: Untar axlstar install artifact
         shell: bash
         run: tar xf axlstar-install-artifact.tar -C /
+      - name: Remove axlstar install artifact tar
+        shell: bash
+        run: rm axlstar-install-artifact.tar
       - name: Get date
         id: get-date
         shell: bash
@@ -345,6 +369,9 @@ jobs:
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
+      - name: Remove arccon install artifact tar
+        shell: bash
+        run: rm arccon-install-artifact.tar
       - name: Download arccore install artifact
         uses: actions/download-artifact@v3
         with:
@@ -352,6 +379,9 @@ jobs:
       - name: Untar arccore install artifact
         shell: bash
         run: tar xf arccore-install-artifact.tar -C /
+      - name: Remove arccore install artifact tar
+        shell: bash
+        run: rm arccore-install-artifact.tar
       - name: Get date
         id: get-date
         shell: bash
@@ -419,6 +449,9 @@ jobs:
       - name: Untar arcane install artifact
         shell: bash
         run: tar xf arcane-install-artifact.tar -C /
+      - name: Remove arcane install artifact tar
+        shell: bash
+        run: rm arcane-install-artifact.tar
       - name: Download arccon install artifact
         uses: actions/download-artifact@v3
         with:
@@ -426,6 +459,9 @@ jobs:
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
+      - name: Remove arccon install artifact tar
+        shell: bash
+        run: rm arccon-install-artifact.tar
       - name: Download arccore install artifact
         uses: actions/download-artifact@v3
         with:
@@ -433,6 +469,9 @@ jobs:
       - name: Untar arccore install artifact
         shell: bash
         run: tar xf arccore-install-artifact.tar -C /
+      - name: Remove arccore install artifact tar
+        shell: bash
+        run: rm arccore-install-artifact.tar
       - name: Download alien install artifact
         uses: actions/download-artifact@v3
         with:
@@ -440,6 +479,9 @@ jobs:
       - name: Untar alien install artifact
         shell: bash
         run: tar xf alien-install-artifact.tar -C /
+      - name: Remove alien install artifact tar
+        shell: bash
+        run: rm alien-install-artifact.tar
       - name: Download axlstar install artifact
         uses: actions/download-artifact@v3
         with:
@@ -447,6 +489,9 @@ jobs:
       - name: Untar axlstar install artifact
         shell: bash
         run: tar xf axlstar-install-artifact.tar -C /
+      - name: Remove axlstar install artifact tar
+        shell: bash
+        run: rm axlstar-install-artifact.tar
       - name: Get date
         id: get-date
         shell: bash
@@ -494,6 +539,9 @@ jobs:
       - name: Untar arccore build artifact
         shell: bash
         run: tar xf arccore-build-artifact.tar -C /
+      - name: Remove arccore build artifact tar
+        shell: bash
+        run: rm arccore-build-artifact.tar
       - name: Test
         shell: bash
         run: ctest --test-dir ${{ env.ARCCORE_BUILD_DIR }} ${{ env.CT_OPTS }}
@@ -530,6 +578,9 @@ jobs:
       - name: Untar arcane build artifact
         shell: bash
         run: tar xf arcane-build-artifact.tar -C /
+      - name: Remove arcane build artifact tar
+        shell: bash
+        run: rm arcane-build-artifact.tar
       - name: Download arccore install artifact
         uses: actions/download-artifact@v3
         with:
@@ -537,6 +588,9 @@ jobs:
       - name: Untar arccore install artifact
         shell: bash
         run: tar xf arccore-install-artifact.tar -C /
+      - name: Remove arccore install artifact tar
+        shell: bash
+        run: rm arccore-install-artifact.tar
       - name: Download axlstar install artifact
         uses: actions/download-artifact@v3
         with:
@@ -544,6 +598,9 @@ jobs:
       - name: Untar axlstar install artifact
         shell: bash
         run: tar xf axlstar-install-artifact.tar -C /
+      - name: Remove axlstar install artifact tar
+        shell: bash
+        run: rm axlstar-install-artifact.tar
       - name: Test
         shell: bash
         run: ctest --test-dir ${{ env.ARCANE_BUILD_DIR }} ${{ env.CT_OPTS }} -E '^hydro5_4proc_3sd_4proc$'
@@ -578,6 +635,9 @@ jobs:
       - name: Untar alien build artifact
         shell: bash
         run: tar xf alien-build-artifact.tar -C /
+      - name: Remove alien build artifact tar
+        shell: bash
+        run: rm alien-build-artifact.tar
       - name: Download arccore install artifact
         uses: actions/download-artifact@v3
         with:
@@ -585,6 +645,9 @@ jobs:
       - name: Untar arccore install artifact
         shell: bash
         run: tar xf arccore-install-artifact.tar -C /
+      - name: Remove arccore install artifact tar
+        shell: bash
+        run: rm arccore-install-artifact.tar
       - name: Test
         shell: bash
         run: ctest --test-dir ${{ env.ALIEN_BUILD_DIR }} ${{ env.CT_OPTS }}
@@ -624,6 +687,9 @@ jobs:
       - name: Untar alienlegacy build artifact
         shell: bash
         run: tar xf alienlegacy-build-artifact.tar -C /
+      - name: Remove alienlegacy build artifact tar
+        shell: bash
+        run: rm alienlegacy-build-artifact.tar
       - name: Download alien install artifact
         uses: actions/download-artifact@v3
         with:
@@ -631,6 +697,9 @@ jobs:
       - name: Untar alien install artifact
         shell: bash
         run: tar xf alien-install-artifact.tar -C /
+      - name: Remove alien install artifact tar
+        shell: bash
+        run: rm alien-install-artifact.tar
       - name: Download arcane install artifact
         uses: actions/download-artifact@v3
         with:
@@ -638,6 +707,9 @@ jobs:
       - name: Untar arcane install artifact
         shell: bash
         run: tar xf arcane-install-artifact.tar -C /
+      - name: Remove arcane install artifact tar
+        shell: bash
+        run: rm arcane-install-artifact.tar
       - name: Download arccore install artifact
         uses: actions/download-artifact@v3
         with:
@@ -645,6 +717,9 @@ jobs:
       - name: Untar arccore install artifact
         shell: bash
         run: tar xf arccore-install-artifact.tar -C /
+      - name: Remove arccore install artifact tar
+        shell: bash
+        run: rm arccore-install-artifact.tar
       - name: Test
         shell: bash
         run: ctest --test-dir ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CT_OPTS }} -E '^(alien.interface.c.seq.mpi-1|alien.interface.fortran.seq.mpi-1)$'
