@@ -48,7 +48,7 @@ namespace Arcane
  *
  * Le dé-raffinement se fait en deux phases:
  *
- * - coarseCartesianMesh() qui créé les mailles grossières. Après appel à
+ * - createCoarseCells() qui créé les mailles grossières. Après appel à
  *   cette méthode il est possible d'utiliser coarseCells() pour avoir
  *   la liste des mailles grossières et refinedCells() pour avoir pour
  *   chaque maille grossière la liste des mailles raffinées correspondantes.
@@ -59,6 +59,21 @@ namespace Arcane
  *   supplémentaires.
  *
  * \code
+ * ICartesianMesh* cartesian_mesh = ...;
+ * Ref<CartesianMeshCoarsening> coarser = m_cartesian_mesh->createCartesianMeshCoarsening();
+ * IMesh* mesh = cartesian_mesh->mesh();
+ * CellInfoListView cells(mesh->cellFamily());
+ * coarser->createCoarseCells();
+ * Int32 index = 0;
+ * for( Int32 cell_lid : coarser->coarseCells()){
+ *   Cell cell = cells[cell_lid];
+ *   info() << "Test: CoarseCell= " << ItemPrinter(cell);
+ *   ConstArrayView<Int32> sub_cells(coarser->refinedCells(index));
+ *   ++index;
+ *   for( Int32 sub_lid : sub_cells )
+ *     info() << "SubCell=" << ItemPrinter(cells[sub_lid]);
+ * }
+ * coarser->removeRefinedCells();
  * \endcode
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening
@@ -77,12 +92,12 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening
    *
    * Cette méthode est collective.
    */
-  void coarseCartesianMesh();
+  void createCoarseCells();
 
   /*!
    * \brief Liste des localIds() des mailles raffinées pour la maille parente \a d'indice \a index.
    *
-   * Cette méthode n'est valide qu'après appel à coarseCartesianMesh().
+   * Cette méthode n'est valide qu'après appel à createCoarseCells().
    *
    * En 2D, il y a 4 mailles raffinées par maille grossière. En 3D il y en a 8.
    */
@@ -93,14 +108,14 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening
   /*!
    * \brief Liste des localIds() des mailles grossières.
    *
-   * Cette méthode n'est valide qu'après appel à coarseCartesianMesh().
+   * Cette méthode n'est valide qu'après appel à createCoarseCells().
    */
   ConstArrayView<Int32> coarseCells() const { return m_coarse_cells; }
 
   /*!
    * \brief Supprime les mailles raffinées.
    *
-   * Il faut avoir appeler coarseCartesianMesh() avant.
+   * Il faut avoir appeler createCoarseCells() avant.
    */
   void removeRefinedCells();
 

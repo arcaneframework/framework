@@ -418,7 +418,20 @@ compute()
 {
   if (options()->coarseCartesianMesh() && m_global_iteration()==1){
     Ref<CartesianMeshCoarsening> coarser = m_cartesian_mesh->createCartesianMeshCoarsening();
-    coarser->coarseCartesianMesh();
+    IMesh* mesh = m_cartesian_mesh->mesh();
+    IItemFamily* cell_family = mesh->cellFamily();
+    CellInfoListView cells(cell_family);
+    coarser->createCoarseCells();
+    Int32 index = 0;
+    for( Int32 cell_lid : coarser->coarseCells()){
+      Cell cell = cells[cell_lid];
+      info() << "Test: CoarseCell= " << ItemPrinter(cell);
+      ConstArrayView<Int32> sub_cells(coarser->refinedCells(index));
+      ++index;
+      for( Int32 sub_lid : sub_cells )
+        info() << "SubCell=" << ItemPrinter(cells[sub_lid]);
+    }
+    coarser->removeRefinedCells();
   }   
 
   _compute1();

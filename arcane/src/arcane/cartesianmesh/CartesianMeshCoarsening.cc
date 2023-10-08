@@ -68,7 +68,7 @@ _getMaxUniqueId(const ItemGroup& group)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshCoarsening::
-coarseCartesianMesh()
+createCoarseCells()
 {
   const bool is_verbose = m_verbosity_level > 0;
   IMesh* mesh = m_cartesian_mesh->mesh();
