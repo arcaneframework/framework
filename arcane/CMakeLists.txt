@@ -130,7 +130,7 @@ endif()
 # dynamiques. Ce mode existe historiquement pour contourner des problèmes avec
 # d'anciennes versions de CMake (pré 3.10) mais ne devrait plus être nécessaire.
 # Il faudrait donc le supprimer.
-option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_link_libraries" ON)
+option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_link_libraries" OFF)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
