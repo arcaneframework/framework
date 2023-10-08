@@ -67,8 +67,6 @@ coarseCartesianMesh()
     ARCANE_FATAL("This method is only valid for 2D mesh");
 
   IParallelMng* pm = mesh->parallelMng();
-  if (pm->isParallel())
-    ARCANE_FATAL("This method does not work in parallel");
 
   for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
@@ -117,13 +115,13 @@ coarseCartesianMesh()
     info() << "CELLCoarse uid=" << cell_uid << " x=" << cell_x << " y=" << cell_y;
     const Int64 coarse_cell_x = cell_x / 2;
     const Int64 coarse_cell_y = cell_y / 2;
-    std::array<Int64, 4> node_uids;
+    std::array<Int64, 4> node_uids_container;
+    ArrayView<Int64> node_uids(node_uids_container);
     node_uids[0] = refined_node_uid_computer.compute(cell_x + 0, cell_y + 0);
     node_uids[1] = refined_node_uid_computer.compute(cell_x + 2, cell_y + 0);
     node_uids[2] = refined_node_uid_computer.compute(cell_x + 2, cell_y + 2);
     node_uids[3] = refined_node_uid_computer.compute(cell_x + 0, cell_y + 2);
-    info() << "CELLNodes uid=" << node_uids[0] << ' ' << node_uids[1]
-           << ' ' << node_uids[2] << ' ' << node_uids[3];
+    info() << "CELLNodes uid=" << node_uids;
     std::array<Int64, 4> coarse_face_uids = coarse_face_uid_computer.computeForCell(coarse_cell_x, coarse_cell_y);
     const ItemTypeInfo* cell_type = cell.typeInfo();
     // Ajoute les 4 faces
@@ -146,21 +144,19 @@ coarseCartesianMesh()
     }
   }
 
-  UniqueArray<Int32> faces_local_ids;
   UniqueArray<Int32> cells_local_ids;
-  faces_local_ids.resize(nb_coarse_face);
   cells_local_ids.resize(nb_coarse_cell);
-  mesh->modifier()->addFaces(nb_coarse_face, faces_infos, faces_local_ids);
+  mesh->modifier()->addFaces(nb_coarse_face, faces_infos);
   mesh->modifier()->addCells(nb_coarse_cell, cells_infos, cells_local_ids);
 
   // Maintenant que les mailles grossières sont créées, il faut indiquer
   // qu'elles sont parentes.
-  const Int32 mesh_rank = pm->commRank();
   IItemFamily* cell_family = mesh->cellFamily();
   using mesh::CellFamily;
   CellInfoListView cells(mesh->cellFamily());
   CellFamily* true_cell_family = ARCANE_CHECK_POINTER(dynamic_cast<CellFamily*>(cell_family));
-  std::array<Int32, 4> sub_cell_lids;
+  std::array<Int32, 4> sub_cell_lids_container;
+  ArrayView<Int32> sub_cell_lids(sub_cell_lids_container);
   for (Int32 i = 0; i < nb_coarse_cell; ++i) {
     Int32 coarse_cell_lid = cells_local_ids[i];
     Cell coarse_cell = cells[coarse_cell_lid];
@@ -171,14 +167,14 @@ coarseCartesianMesh()
     sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
     sub_cell_lids[2] = cdm_y[CellLocalId(sub_cell_lids[1])].next().localId();
     sub_cell_lids[3] = cdm_y[first_child_cell].next().localId();
+    info() << "AddChildForCoarseCell i=" << i << " coarse=" << ItemPrinter(coarse_cell)
+           << " children_lid=" << sub_cell_lids;
     for (Int32 z = 0; z < 4; ++z) {
-      info() << "ADD Z=" << z << " coarse=" << ItemPrinter(coarse_cell) << " child_lid=" << sub_cell_lids[z];
       Cell child_cell = cells[sub_cell_lids[z]];
-      info() << "ADD Z=" << z << " child=" << ItemPrinter(child_cell) << " coarse=" << ItemPrinter(coarse_cell);
+      info() << " AddParentCellToCell: z=" << z << " child=" << ItemPrinter(child_cell);
       true_cell_family->_addParentCellToCell(child_cell, coarse_cell);
-      true_cell_family->_addChildCellToCell(coarse_cell, mesh_rank, child_cell);
-      //cell_family._addChildrenCellsToCell(hParent_cell, cells);
     }
+    true_cell_family->_addChildrenCellsToCell(coarse_cell, sub_cell_lids);
   }
 
   mesh->modifier()->endUpdate();
@@ -188,9 +184,13 @@ coarseCartesianMesh()
     info() << "Final cell=" << ItemPrinter(cell) << " level=" << cell.level();
   }
 
-  std::ofstream ofile("mesh_coarse.svg");
-  SimpleSVGMeshExporter writer(ofile);
-  writer.write(mesh->allCells());
+  {
+    const Int32 mesh_rank = pm->commRank();
+    String filename = String::format("mesh_coarse_{0}.svg", mesh_rank);
+    std::ofstream ofile(filename.localstr());
+    SimpleSVGMeshExporter writer(ofile);
+    writer.write(mesh->allCells());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
