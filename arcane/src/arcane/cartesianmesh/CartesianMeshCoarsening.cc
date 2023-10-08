@@ -70,6 +70,10 @@ _getMaxUniqueId(const ItemGroup& group)
 void CartesianMeshCoarsening::
 createCoarseCells()
 {
+  if (m_is_create_coarse_called)
+    ARCANE_FATAL("This method has already been called");
+  m_is_create_coarse_called = true;
+
   const bool is_verbose = m_verbosity_level > 0;
   IMesh* mesh = m_cartesian_mesh->mesh();
   Integer nb_patch = m_cartesian_mesh->nbPatch();
@@ -107,6 +111,7 @@ createCoarseCells()
   Int64 max_cell_uid = _getMaxUniqueId(mesh->allCells());
   Int64 max_face_uid = _getMaxUniqueId(mesh->allFaces());
   const Int64 coarse_grid_cell_offset = 1 + pm->reduce(Parallel::ReduceMax, math::max(max_cell_uid, max_face_uid));
+  m_first_own_cell_unique_id_offset = coarse_grid_cell_offset;
 
   CellDirectionMng cdm_x(m_cartesian_mesh->cellDirection(0));
   CellDirectionMng cdm_y(m_cartesian_mesh->cellDirection(1));
@@ -278,6 +283,12 @@ createCoarseCells()
 void CartesianMeshCoarsening::
 removeRefinedCells()
 {
+  if (!m_is_create_coarse_called)
+    ARCANE_FATAL("You need to call createCoarseCells() before");
+  if (m_is_remove_refined_called)
+    ARCANE_FATAL("This method has already been called");
+  m_is_remove_refined_called = true;
+
   IMesh* mesh = m_cartesian_mesh->mesh();
   IMeshModifier* mesh_modifier = mesh->modifier();
 
@@ -298,7 +309,7 @@ removeRefinedCells()
     mesh_modifier->endUpdate();
   }
 
-  // Reconstruit la couche de mailles fantômes
+  // Reconstruit les mailles fantômes
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
 
@@ -308,10 +319,41 @@ removeRefinedCells()
     ms.dumpStats();
   }
 
+  _recomputeMeshGenerationInfo();
+
   // Il faut recalculer les nouvelles directions
   m_cartesian_mesh->computeDirections();
+}
 
-  // TODO: Recalculer les informations sur le nombre de mailles par direction
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Recalcule les informations sur le nombre de mailles par direction.
+ */
+void CartesianMeshCoarsening::
+_recomputeMeshGenerationInfo()
+{
+  IMesh* mesh = m_cartesian_mesh->mesh();
+  auto* cmgi = ICartesianMeshGenerationInfo::getReference(mesh, false);
+  if (!cmgi)
+    return;
+
+  // Coefficient de dé-raffinement
+  const Int32 cf = 2;
+
+  {
+    ConstArrayView<Int64> v = cmgi->ownCellOffsets();
+    cmgi->setOwnCellOffsets(v[0] / cf, v[1] / cf, v[2] / cf);
+  }
+  {
+    ConstArrayView<Int64> v = cmgi->globalNbCells();
+    cmgi->setGlobalNbCells(v[0] / cf, v[1] / cf, v[2] / cf);
+  }
+  {
+    ConstArrayView<Int32> v = cmgi->ownNbCells();
+    cmgi->setOwnNbCells(v[0] / cf, v[1] / cf, v[2] / cf);
+  }
+  cmgi->setFirstOwnCellUniqueId(m_first_own_cell_unique_id_offset);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -18,6 +18,7 @@
 #include "arcane/utils/Array2.h"
 
 #include "arcane/core/ItemTypes.h"
+#include "arcane/core/ICartesianMeshGenerationInfo.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
@@ -125,10 +126,14 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening
   Int32 m_verbosity_level = false;
   UniqueArray2<Int32> m_refined_cells;
   UniqueArray<Int32> m_coarse_cells;
+  bool m_is_create_coarse_called = false;
+  bool m_is_remove_refined_called = false;
+  Int64 m_first_own_cell_unique_id_offset = NULL_ITEM_UNIQUE_ID;
 
  private:
 
   Int64 _getMaxUniqueId(const ItemGroup& group);
+  void _recomputeMeshGenerationInfo();
 };
 
 /*---------------------------------------------------------------------------*/
