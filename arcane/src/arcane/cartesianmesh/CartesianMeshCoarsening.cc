@@ -14,6 +14,7 @@
 #include "arcane/cartesianmesh/CartesianMeshCoarsening.h"
 
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ItemGroup.h"
@@ -42,6 +43,8 @@ CartesianMeshCoarsening(ICartesianMesh* m)
 : TraceAccessor(m->traceMng())
 , m_cartesian_mesh(m)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL", true))
+    m_verbosity_level = v.value();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -66,6 +69,7 @@ _getMaxUniqueId(const ItemGroup& group)
 void CartesianMeshCoarsening::
 coarseCartesianMesh()
 {
+  const bool is_verbose = m_verbosity_level > 0;
   IMesh* mesh = m_cartesian_mesh->mesh();
   Integer nb_patch = m_cartesian_mesh->nbPatch();
   if (nb_patch != 1)
@@ -83,6 +87,7 @@ coarseCartesianMesh()
     ARCANE_FATAL("This method is only valid for 2D mesh");
 
   IParallelMng* pm = mesh->parallelMng();
+  info() << "CoarseCartesianMesh nb_direction=" << nb_dir;
 
   for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
@@ -135,7 +140,8 @@ coarseCartesianMesh()
     // topologiques sont paires
     if ((cell_x % 2) != 0 || (cell_y % 2) != 0)
       continue;
-    info() << "CELLCoarse uid=" << cell_uid << " x=" << cell_x << " y=" << cell_y;
+    if (is_verbose)
+      info() << "CELLCoarse uid=" << cell_uid << " x=" << cell_x << " y=" << cell_y;
     const Int64 coarse_cell_x = cell_x / 2;
     const Int64 coarse_cell_y = cell_y / 2;
     std::array<Int64, 4> node_uids_container;
@@ -144,7 +150,8 @@ coarseCartesianMesh()
     node_uids[1] = refined_node_uid_computer.compute(cell_x + 2, cell_y + 0);
     node_uids[2] = refined_node_uid_computer.compute(cell_x + 2, cell_y + 2);
     node_uids[3] = refined_node_uid_computer.compute(cell_x + 0, cell_y + 2);
-    info() << "CELLNodes uid=" << node_uids;
+    if (is_verbose)
+      info() << "CELLNodes uid=" << node_uids;
     std::array<Int64, 4> coarse_face_uids = coarse_face_uid_computer.computeForCell(coarse_cell_x, coarse_cell_y);
     const ItemTypeInfo* cell_type = cell.typeInfo();
     // Ajoute les 4 faces
@@ -190,11 +197,13 @@ coarseCartesianMesh()
     sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
     sub_cell_lids[2] = cdm_y[CellLocalId(sub_cell_lids[1])].next().localId();
     sub_cell_lids[3] = cdm_y[first_child_cell].next().localId();
-    info() << "AddChildForCoarseCell i=" << i << " coarse=" << ItemPrinter(coarse_cell)
-           << " children_lid=" << sub_cell_lids;
+    if (is_verbose)
+      info() << "AddChildForCoarseCell i=" << i << " coarse=" << ItemPrinter(coarse_cell)
+             << " children_lid=" << sub_cell_lids;
     for (Int32 z = 0; z < 4; ++z) {
       Cell child_cell = cells[sub_cell_lids[z]];
-      info() << " AddParentCellToCell: z=" << z << " child=" << ItemPrinter(child_cell);
+      if (is_verbose)
+        info() << " AddParentCellToCell: z=" << z << " child=" << ItemPrinter(child_cell);
       true_cell_family->_addParentCellToCell(child_cell, coarse_cell);
     }
     true_cell_family->_addChildrenCellsToCell(coarse_cell, sub_cell_lids);
@@ -202,9 +211,11 @@ coarseCartesianMesh()
 
   mesh->modifier()->endUpdate();
 
-  ENUMERATE_ (Cell, icell, mesh->ownCells()) {
-    Cell cell = *icell;
-    info() << "Final cell=" << ItemPrinter(cell) << " level=" << cell.level();
+  if (is_verbose) {
+    ENUMERATE_ (Cell, icell, mesh->ownCells()) {
+      Cell cell = *icell;
+      info() << "Final cell=" << ItemPrinter(cell) << " level=" << cell.level();
+    }
   }
 
   {

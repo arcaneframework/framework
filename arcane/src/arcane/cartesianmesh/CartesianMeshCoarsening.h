@@ -71,6 +71,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening
  private:
 
   ICartesianMesh* m_cartesian_mesh = nullptr;
+  Int32 m_verbosity_level = false;
 
  private:
 
