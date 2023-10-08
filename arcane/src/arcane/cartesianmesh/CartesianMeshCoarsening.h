@@ -16,6 +16,8 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
+#include "arcane/core/ItemTypes.h"
+
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -69,6 +71,10 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening
  private:
 
   ICartesianMesh* m_cartesian_mesh = nullptr;
+
+ private:
+
+  Int64 _getMaxUniqueId(const ItemGroup& group);
 };
 
 /*---------------------------------------------------------------------------*/

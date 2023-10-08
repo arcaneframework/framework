@@ -47,6 +47,22 @@ CartesianMeshCoarsening(ICartesianMesh* m)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Retourne le max des uniqueId() des entités de \a group
+Int64 CartesianMeshCoarsening::
+_getMaxUniqueId(const ItemGroup& group)
+{
+  Int64 max_offset = 0;
+  ENUMERATE_ (Item, iitem, group) {
+    Item item = *iitem;
+    if (max_offset < item.uniqueId())
+      max_offset = item.uniqueId();
+  }
+  return max_offset;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void CartesianMeshCoarsening::
 coarseCartesianMesh()
 {
@@ -77,6 +93,14 @@ coarseCartesianMesh()
                    nb_own_cell, idir);
   }
 
+  // Calcul l'offset pour la création des uniqueId().
+  // On prend comme offset le max des uniqueId() des faces et des mailles.
+  // A terme avec la numérotation cartésienne partout, on pourra déterminer
+  // directement cette valeur
+  Int64 max_cell_uid = _getMaxUniqueId(mesh->allCells());
+  Int64 max_face_uid = _getMaxUniqueId(mesh->allFaces());
+  const Int64 coarse_grid_cell_offset = 1 + math::max(max_cell_uid, max_face_uid);
+
   CellDirectionMng cdm_x(m_cartesian_mesh->cellDirection(0));
   CellDirectionMng cdm_y(m_cartesian_mesh->cellDirection(1));
 
@@ -84,7 +108,6 @@ coarseCartesianMesh()
   const Int64 global_nb_cell_y = cdm_y.globalNbCell();
   CartesianGridDimension refined_grid_dim(global_nb_cell_x, global_nb_cell_y);
   CartesianGridDimension coarse_grid_dim(global_nb_cell_x / 2, global_nb_cell_y / 2);
-  const Int64 coarse_grid_cell_offset = 10000; // TODO: à calculer automatiquement
   CartesianGridDimension::CellUniqueIdComputer2D refined_cell_uid_computer(refined_grid_dim.getCellComputer2D(0));
   CartesianGridDimension::NodeUniqueIdComputer2D refined_node_uid_computer(refined_grid_dim.getNodeComputer2D(0));
   CartesianGridDimension::CellUniqueIdComputer2D coarse_cell_uid_computer(coarse_grid_dim.getCellComputer2D(coarse_grid_cell_offset));
