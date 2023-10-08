@@ -23,11 +23,12 @@
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/SimpleSVGMeshExporter.h"
 #include "arcane/core/ItemPrinter.h"
-
-#include "arcane/mesh/CellFamily.h"
+#include "arcane/core/MeshStats.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
+
+#include <unordered_set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,6 +88,7 @@ coarseCartesianMesh()
     ARCANE_FATAL("This method is only valid for 2D mesh");
 
   IParallelMng* pm = mesh->parallelMng();
+  const Int32 my_rank = pm->commRank();
   info() << "CoarseCartesianMesh nb_direction=" << nb_dir;
 
   for (Integer idir = 0; idir < nb_dir; ++idir) {
@@ -98,13 +100,13 @@ coarseCartesianMesh()
                    nb_own_cell, idir);
   }
 
-  // Calcul l'offset pour la création des uniqueId().
+  // Calcule l'offset pour la création des uniqueId().
   // On prend comme offset le max des uniqueId() des faces et des mailles.
   // A terme avec la numérotation cartésienne partout, on pourra déterminer
   // directement cette valeur
   Int64 max_cell_uid = _getMaxUniqueId(mesh->allCells());
   Int64 max_face_uid = _getMaxUniqueId(mesh->allFaces());
-  const Int64 coarse_grid_cell_offset = 1 + math::max(max_cell_uid, max_face_uid);
+  const Int64 coarse_grid_cell_offset = 1 + pm->reduce(Parallel::ReduceMax, math::max(max_cell_uid, max_face_uid));
 
   CellDirectionMng cdm_x(m_cartesian_mesh->cellDirection(0));
   CellDirectionMng cdm_y(m_cartesian_mesh->cellDirection(1));
@@ -129,7 +131,7 @@ coarseCartesianMesh()
   Int32 nb_coarse_face = 0;
   Int32 nb_coarse_cell = 0;
   //! Liste de la première fille de chaque maille grossière
-  UniqueArray<Cell> first_child_cells;
+  UniqueArray<Int64> first_child_cell_unique_ids;
   ENUMERATE_ (Cell, icell, mesh->ownCells()) {
     Cell cell = *icell;
     Int64 cell_uid = cell.uniqueId();
@@ -170,61 +172,146 @@ coarseCartesianMesh()
       for (Int32 z = 0; z < 4; ++z)
         cells_infos.add(node_uids[z]);
       ++nb_coarse_cell;
-      first_child_cells.add(cell);
+      first_child_cell_unique_ids.add(cell.uniqueId());
     }
   }
 
   UniqueArray<Int32> cells_local_ids;
+  UniqueArray<Int32> faces_local_ids;
   cells_local_ids.resize(nb_coarse_cell);
-  mesh->modifier()->addFaces(nb_coarse_face, faces_infos);
+  faces_local_ids.resize(nb_coarse_face);
+  mesh->modifier()->addFaces(nb_coarse_face, faces_infos, faces_local_ids);
   mesh->modifier()->addCells(nb_coarse_cell, cells_infos, cells_local_ids);
 
   // Maintenant que les mailles grossières sont créées, il faut indiquer
   // qu'elles sont parentes.
   IItemFamily* cell_family = mesh->cellFamily();
-  using mesh::CellFamily;
-  CellInfoListView cells(mesh->cellFamily());
-  CellFamily* true_cell_family = ARCANE_CHECK_POINTER(dynamic_cast<CellFamily*>(cell_family));
-  std::array<Int32, 4> sub_cell_lids_container;
-  ArrayView<Int32> sub_cell_lids(sub_cell_lids_container);
-  for (Int32 i = 0; i < nb_coarse_cell; ++i) {
-    Int32 coarse_cell_lid = cells_local_ids[i];
-    Cell coarse_cell = cells[coarse_cell_lid];
-    Cell first_child_cell = first_child_cells[i];
-    // A partir de la première sous-maille, on peut connaitre les 3 autres
-    // car elles sont respectivement à droite, en haut à droite et en haut.
-    sub_cell_lids[0] = first_child_cell.localId();
-    sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
-    sub_cell_lids[2] = cdm_y[CellLocalId(sub_cell_lids[1])].next().localId();
-    sub_cell_lids[3] = cdm_y[first_child_cell].next().localId();
-    if (is_verbose)
-      info() << "AddChildForCoarseCell i=" << i << " coarse=" << ItemPrinter(coarse_cell)
-             << " children_lid=" << sub_cell_lids;
-    for (Int32 z = 0; z < 4; ++z) {
-      Cell child_cell = cells[sub_cell_lids[z]];
-      if (is_verbose)
-        info() << " AddParentCellToCell: z=" << z << " child=" << ItemPrinter(child_cell);
-      true_cell_family->_addParentCellToCell(child_cell, coarse_cell);
+
+  // Positionne les propriétaires des nouvelles mailles
+  // et ajoute un flag (ItemFlags::II_UserMark1) pour les marquer.
+  // Cela sera utilisé pour détruire les mailles raffinées par la suite.
+  {
+    ENUMERATE_ (Cell, icell, cell_family->view(cells_local_ids)) {
+      Cell cell = *icell;
+      cell.mutableItemBase().setOwner(my_rank, my_rank);
+      cell.mutableItemBase().addFlags(ItemFlags::II_UserMark1);
     }
-    true_cell_family->_addChildrenCellsToCell(coarse_cell, sub_cell_lids);
+    cell_family->notifyItemsOwnerChanged();
   }
 
+  // Il faut donner un propriétaire aux faces.
+  // Comme les nouvelles faces utilisent un noeud déjà existant, on prend comme propriétaire
+  // celui du premier noeud de la face
+  {
+    IItemFamily* face_family = mesh->faceFamily();
+    ENUMERATE_ (Face, iface, face_family->view(faces_local_ids)) {
+      Face face = *iface;
+      Int32 owner = face.node(0).owner();
+      face.mutableItemBase().setOwner(owner, my_rank);
+    }
+    face_family->notifyItemsOwnerChanged();
+  }
+
+  // Met à jour le maillage
   mesh->modifier()->endUpdate();
 
-  if (is_verbose) {
+  // Après l'appel à endUpdate() les numéros locaux ne changent plus.
+  // On peut s'en servir pour conserver pour chaque maille grossière la liste des mailles
+  // raffinées
+  m_coarse_cells.resize(nb_coarse_cell);
+  m_refined_cells.resize(nb_coarse_cell, 4);
+
+  {
+    CellInfoListView cells(mesh->cellFamily());
+    UniqueArray<Int32> first_child_cell_local_ids(nb_coarse_cell);
+    cell_family->itemsUniqueIdToLocalId(first_child_cell_local_ids, first_child_cell_unique_ids);
+    Int32 coarse_index = 0;
+    std::array<Int32, 4> sub_cell_lids_container;
+    ArrayView<Int32> sub_cell_lids(sub_cell_lids_container);
+
     ENUMERATE_ (Cell, icell, mesh->ownCells()) {
+      Cell coarse_cell = *icell;
+      if (!(coarse_cell.itemBase().flags() & ItemFlags::II_UserMark1))
+        continue;
+      // Supprime le flag
+      coarse_cell.mutableItemBase().removeFlags(ItemFlags::II_UserMark1);
+      m_coarse_cells[coarse_index] = coarse_cell.itemLocalId();
+      Cell first_child_cell = cells[first_child_cell_local_ids[coarse_index]];
+      // A partir de la première sous-maille, on peut connaître les 3 autres
+      // car elles sont respectivement à droite, en haut à droite et en haut.
+      sub_cell_lids[0] = first_child_cell.localId();
+      sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
+      sub_cell_lids[2] = cdm_y[CellLocalId(sub_cell_lids[1])].next().localId();
+      sub_cell_lids[3] = cdm_y[first_child_cell].next().localId();
+      if (is_verbose)
+        info() << "AddChildForCoarseCell i=" << coarse_index << " coarse=" << ItemPrinter(coarse_cell)
+               << " children_lid=" << sub_cell_lids;
+      for (Int32 z = 0; z < 4; ++z) {
+        CellLocalId sub_local_id = CellLocalId(sub_cell_lids[z]);
+        m_refined_cells[coarse_index][z] = sub_local_id;
+        if (is_verbose)
+          info() << " AddParentCellToCell: z=" << z << " child=" << ItemPrinter(cells[sub_local_id]);
+      }
+      ++coarse_index;
+    }
+  }
+
+  if (is_verbose) {
+    ENUMERATE_ (Cell, icell, mesh->allCells()) {
       Cell cell = *icell;
       info() << "Final cell=" << ItemPrinter(cell) << " level=" << cell.level();
     }
   }
 
-  {
-    const Int32 mesh_rank = pm->commRank();
-    String filename = String::format("mesh_coarse_{0}.svg", mesh_rank);
+  const bool dump_coarse_mesh = false;
+  if (dump_coarse_mesh) {
+    String filename = String::format("mesh_coarse_{0}.svg", my_rank);
     std::ofstream ofile(filename.localstr());
     SimpleSVGMeshExporter writer(ofile);
     writer.write(mesh->allCells());
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshCoarsening::
+removeRefinedCells()
+{
+  IMesh* mesh = m_cartesian_mesh->mesh();
+  IMeshModifier* mesh_modifier = mesh->modifier();
+
+  // Supprime toutes les mailles raffinées ainsi que toutes les mailles fantômes
+  {
+    std::unordered_set<Int32> coarse_cells_set;
+    for (Int32 cell_lid : m_coarse_cells)
+      coarse_cells_set.insert(cell_lid);
+
+    UniqueArray<Int32> cells_to_remove;
+    ENUMERATE_ (Cell, icell, mesh->ownCells()) {
+      Int32 local_id = icell.itemLocalId();
+      Cell cell = *icell;
+      if (!cell.isOwn() || (coarse_cells_set.find(local_id) != coarse_cells_set.end()))
+        cells_to_remove.add(local_id);
+    }
+    mesh_modifier->removeCells(cells_to_remove);
+    mesh_modifier->endUpdate();
+  }
+
+  // Reconstruit la couche de mailles fantômes
+  mesh_modifier->setDynamic(true);
+  mesh_modifier->updateGhostLayers();
+
+  // Affiche les statistiques du nouveau maillage
+  {
+    MeshStats ms(traceMng(), mesh, mesh->parallelMng());
+    ms.dumpStats();
+  }
+
+  // Il faut recalculer les nouvelles directions
+  m_cartesian_mesh->computeDirections();
+
+  // TODO: Recalculer les informations sur le nombre de mailles par direction
 }
 
 /*---------------------------------------------------------------------------*/
