@@ -935,6 +935,7 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @ARCANE_SRC_PATH@/arcane/core/materials \
                          @ARCANE_SRC_PATH@/arcane/materials \
                          @ARCANE_SRC_PATH@/arcane/hdf5 \
+                         @ARCANE_SRC_PATH@/arcane/cartesianmesh \
                          @ARCANESRCROOT@/doc/doc_common \
                          @ARCANESRCROOT@/doc/doc_common/chap_news \
                          @ARCANESRCROOT@/doc/doc_user \
@@ -972,7 +973,6 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @Arccore_ROOT@/src/message_passing_mpi/arccore/message_passing_mpi \
                          @Arccore_ROOT@/src/serialize/arccore/serialize \
                          @ARCANE_CEA_SOURCE_PATH@/src/arcane/cea \
-                         @ARCANE_CEA_SOURCE_PATH@/src/arcane/cartesianmesh \
                          @ARCANE_CEA_SOURCE_PATH@/src/arcane/geometric \
                          @ARCANE_CEA_SOURCE_PATH@/doc
 
