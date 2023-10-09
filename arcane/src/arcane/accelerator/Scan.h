@@ -20,8 +20,9 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
 
-#if defined(__HIP__)
-#include <hip/hip_runtime.h>
+#if defined(ARCANE_COMPILING_HIP)
+#include "arcane/accelerator/hip/HipAccelerator.h"
+#include <rocprim/rocprim.hpp>
 #endif
 #if defined(ARCANE_COMPILING_CUDA)
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
@@ -52,7 +53,7 @@ class ScannerSum
 
   void exclusiveSum(SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    Int32 nb_item = input.size();
+    const Int32 nb_item = input.size();
     if (output.size() != nb_item)
       ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
     const DataType* input_data = input.data();
@@ -64,20 +65,38 @@ class ScannerSum
     case eExecutionPolicy::CUDA:
 #if defined(ARCANE_COMPILING_CUDA)
     {
-      void* d_temp_storage = nullptr;
-      size_t temp_storage_bytes = 0;
-      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveSum(d_temp_storage, temp_storage_bytes, input_data, output_data, nb_item));
-      // Allocate temporary storage for inclusive prefix sum
-      ARCANE_CHECK_CUDA(cudaMalloc(&d_temp_storage, temp_storage_bytes));
-      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveSum(d_temp_storage, temp_storage_bytes, input_data, output_data, nb_item));
-      ARCANE_CHECK_CUDA(::cudaFree(d_temp_storage));
+      size_t temp_storage_size = 0;
+      void* temp_storage = nullptr;
+      // Premier appel pour connaitre la taille pour l'allocation
+      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveSum(temp_storage, temp_storage_size, input_data, output_data, nb_item));
+      ARCANE_CHECK_CUDA(cudaMalloc(&temp_storage, temp_storage_size));
+      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveSum(temp_storage, temp_storage_size, input_data, output_data, nb_item));
+      ARCANE_CHECK_CUDA(::cudaFree(temp_storage));
     } break;
 #else
       ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA."
                    " You need to compile the file containing this kernel with CUDA compiler.");
 #endif
     case eExecutionPolicy::HIP:
-      ARCANE_FATAL("Not yet implemented");
+#if defined(ARCANE_COMPILING_HIP)
+    {
+      size_t temp_storage_size = 0;
+      void* temp_storage = nullptr;
+      // Premier appel pour connaitre la taille pour l'allocation
+      ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
+                                               DataType{}, nb_item, rocprim::plus<int>()));
+
+      ARCANE_CHECK_HIP(hipMalloc(&temp_storage, temp_storage_size));
+
+      ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
+                                               DataType{}, nb_item, rocprim::plus<int>()));
+
+      ARCANE_CHECK_HIP(hipFree(temp_storage));
+    }
+#else
+      ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP."
+                   " You need to compile the file containing this kernel with HIP compiler.");
+#endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
     case eExecutionPolicy::Sequential: {
