@@ -117,6 +117,7 @@ set(AXL_FILES
   HydroAdditionalTest
   accelerator/SimpleHydroAccelerator
   accelerator/AcceleratorReduceUnitTest
+  accelerator/AcceleratorScanUnitTest
   PDESRandomNumberGeneratorUnitTest
   RandomNumberGeneratorUnitTest
   ServiceInterface1ImplTest

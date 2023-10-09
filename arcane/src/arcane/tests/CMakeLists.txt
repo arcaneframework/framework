@@ -39,6 +39,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/NumArrayUnitTest.cc
   accelerator/AcceleratorItemInfoUnitTest.cc
   accelerator/AcceleratorReduceUnitTest.cc
+  accelerator/AcceleratorScanUnitTest.cc
   accelerator/RunQueueUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
@@ -651,6 +652,10 @@ arcane_add_test_sequential(accelerator_reduce1 testAcceleratorReduce-1.arc)
 arcane_add_test_sequential_task(accelerator_reduce1 testAcceleratorReduce-1.arc 4)
 arcane_add_accelerator_test_sequential(accelelerator_reduce1 testAcceleratorReduce-1.arc)
 arcane_add_accelerator_test_sequential(accelelerator_reduce1_atomic testAcceleratorReduce-1-atomic.arc)
+
+arcane_add_test_sequential(accelerator_scan1 testAcceleratorScan-1.arc)
+arcane_add_test_sequential_task(accelerator_scan1 testAcceleratorScan-1.arc 4)
+arcane_add_accelerator_test_sequential(accelelerator_scan1 testAcceleratorScan-1.arc)
 
 arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
 arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)

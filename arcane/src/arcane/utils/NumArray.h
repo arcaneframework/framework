@@ -505,6 +505,9 @@ class NumArrayIntermediate<DataType, 1, ExtentType, LayoutPolicy>
 
   constexpr operator SpanType() { return this->span(); }
   constexpr operator ConstSpanType() const { return this->constSpan(); }
+
+  constexpr operator SmallSpan<DataType>() { return this->to1DSpan().smallView(); }
+  constexpr operator SmallSpan<const DataType>() const { return this->to1DSpan().constSmallView(); }
 };
 
 /*---------------------------------------------------------------------------*/
