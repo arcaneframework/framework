@@ -33,7 +33,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Accelerator::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ class ScannerMaxOperator
  *
  * \a DataType est le type de donnée.
  */
-template <typename DataType, typename Operator>
+template <typename DataType, typename Operator, bool IsExclusive>
 class GenericScanner
 {
   // TODO: Utiliser une classe pour gérer le malloc pour gérer les exceptions
@@ -120,9 +120,20 @@ class GenericScanner
       void* temp_storage = nullptr;
       cudaStream_t stream = impl::CudaUtils::toNativeStream(m_queue);
       // Premier appel pour connaitre la taille pour l'allocation
-      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(temp_storage, temp_storage_size, input_data, output_data, op, init_value, nb_item, stream));
+      if constexpr (IsExclusive)
+        ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(temp_storage, temp_storage_size,
+                                                           input_data, output_data, op, init_value, nb_item, stream));
+      else
+        ARCANE_CHECK_CUDA(::cub::DeviceScan::InclusiveScan(temp_storage, temp_storage_size,
+                                                           input_data, output_data, op, nb_item, stream));
+
       ARCANE_CHECK_CUDA(cudaMalloc(&temp_storage, temp_storage_size));
-      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(temp_storage, temp_storage_size, input_data, output_data, op, init_value, nb_item, stream));
+      if constexpr (IsExclusive)
+        ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(temp_storage, temp_storage_size,
+                                                           input_data, output_data, op, init_value, nb_item, stream));
+      else
+        ARCANE_CHECK_CUDA(::cub::DeviceScan::InclusiveScan(temp_storage, temp_storage_size,
+                                                           input_data, output_data, op, nb_item, stream));
       ARCANE_CHECK_CUDA(::cudaFree(temp_storage));
     } break;
 #else
@@ -135,13 +146,21 @@ class GenericScanner
       void* temp_storage = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
       hipStream_t stream = impl::HipUtils::toNativeStream(m_queue);
-      ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
-                                               init_value, nb_item, op, stream));
+      if constexpr (IsExclusive)
+        ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
+                                                 init_value, nb_item, op, stream));
+      else
+        ARCANE_CHECK_HIP(rocprim::inclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
+                                                 nb_item, op, stream));
 
       ARCANE_CHECK_HIP(hipMalloc(&temp_storage, temp_storage_size));
 
-      ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
-                                               init_value, nb_item, op, stream));
+      if constexpr (IsExclusive)
+        ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
+                                                 init_value, nb_item, op, stream));
+      else
+        ARCANE_CHECK_HIP(rocprim::inclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
+                                                 nb_item, op, stream));
 
       ARCANE_CHECK_HIP(hipFree(temp_storage));
     }
@@ -153,8 +172,14 @@ class GenericScanner
     case eExecutionPolicy::Sequential: {
       DataType sum = init_value;
       for (Int32 i = 0; i < nb_item; ++i) {
-        output[i] = sum;
-        sum = op(input[i], sum);
+        if constexpr (IsExclusive) {
+          output[i] = sum;
+          sum = op(input[i], sum);
+        }
+        else {
+          sum = op(input[i], sum);
+          output[i] = sum;
+        }
       }
     } break;
     default:
@@ -170,6 +195,14 @@ class GenericScanner
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+}
+
+namespace Arcane::Accelerator
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType>
 class Scanner
 {
@@ -177,19 +210,37 @@ class Scanner
 
   void exclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    using ScannerType = GenericScanner<DataType, ScannerSumOperator<DataType>>;
+    using ScannerType = impl::GenericScanner<DataType, impl::ScannerSumOperator<DataType>, true>;
     ScannerType scanner(queue);
     scanner.apply(input, output);
   }
   void exclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    using ScannerType = GenericScanner<DataType, ScannerMinOperator<DataType>>;
+    using ScannerType = impl::GenericScanner<DataType, impl::ScannerMinOperator<DataType>, true>;
     ScannerType scanner(queue);
     scanner.apply(input, output);
   }
   void exclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    using ScannerType = GenericScanner<DataType, ScannerMaxOperator<DataType>>;
+    using ScannerType = impl::GenericScanner<DataType, impl::ScannerMaxOperator<DataType>, true>;
+    ScannerType scanner(queue);
+    scanner.apply(input, output);
+  }
+  void inclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  {
+    using ScannerType = impl::GenericScanner<DataType, impl::ScannerSumOperator<DataType>, false>;
+    ScannerType scanner(queue);
+    scanner.apply(input, output);
+  }
+  void inclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  {
+    using ScannerType = impl::GenericScanner<DataType, impl::ScannerMinOperator<DataType>, false>;
+    ScannerType scanner(queue);
+    scanner.apply(input, output);
+  }
+  void inclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  {
+    using ScannerType = impl::GenericScanner<DataType, impl::ScannerMaxOperator<DataType>, false>;
     ScannerType scanner(queue);
     scanner.apply(input, output);
   }

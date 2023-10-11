@@ -149,31 +149,38 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
   if (n1 < min_size_display) {
     info() << "T1=" << t1.to1DSpan();
   }
-  NumArray<DataType, MDDim1> expected_sum(n1);
-  NumArray<DataType, MDDim1> expected_min(n1);
-  NumArray<DataType, MDDim1> expected_max(n1);
+  NumArray<DataType, MDDim1> expected_exclusive_sum(n1);
+  NumArray<DataType, MDDim1> expected_exclusive_min(n1);
+  NumArray<DataType, MDDim1> expected_exclusive_max(n1);
+  NumArray<DataType, MDDim1> expected_inclusive_sum(n1);
+  NumArray<DataType, MDDim1> expected_inclusive_min(n1);
+  NumArray<DataType, MDDim1> expected_inclusive_max(n1);
   // Effectue la version séquentielle pour test
   {
     DataType sum_value = 0;
     DataType min_value = std::numeric_limits<DataType>::max();
     DataType max_value = std::numeric_limits<DataType>::lowest();
     for (Int32 i = 0; i < n1; ++i) {
-      expected_sum[i] = sum_value;
-      expected_min[i] = min_value;
-      expected_max[i] = max_value;
+      expected_exclusive_sum[i] = sum_value;
+      expected_exclusive_min[i] = min_value;
+      expected_exclusive_max[i] = max_value;
 
       sum_value = sum_value + t1[i];
       min_value = math::min(min_value, t1[i]);
       max_value = math::max(max_value, t1[i]);
+
+      expected_inclusive_sum[i] = sum_value;
+      expected_inclusive_min[i] = min_value;
+      expected_inclusive_max[i] = max_value;
     }
   }
 
   if (n1 < min_size_display) {
-    info() << "Expected_Sum=" << expected_sum.to1DSpan();
-    info() << "Expected_Min=" << expected_min.to1DSpan();
+    info() << "Expected_ExclusiveSum=" << expected_exclusive_sum.to1DSpan();
+    info() << "Expected_ExclusiveMin=" << expected_exclusive_min.to1DSpan();
   }
 
-  // Teste la somme
+  // Teste la somme exclusive
   {
     info() << "Check exclusive sum";
     for (int z = 0; z < nb_iteration; ++z) {
@@ -183,10 +190,10 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     if (n1 < min_size_display) {
       info() << "T2=" << t2.to1DSpan();
     }
-    vc.areEqualArray(t2.to1DSpan(), expected_sum.to1DSpan(), "ExclusiveScan Sum");
+    vc.areEqualArray(t2.to1DSpan(), expected_exclusive_sum.to1DSpan(), "ExclusiveScan Sum");
   }
 
-  // Teste le minimum
+  // Teste le minimum exclusif
   {
     info() << "Check exclusive min";
     for (int z = 0; z < nb_iteration; ++z) {
@@ -196,10 +203,10 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     if (n1 < min_size_display) {
       info() << "T2=" << t2.to1DSpan();
     }
-    vc.areEqualArray(t2.to1DSpan(), expected_min.to1DSpan(), "ExclusiveScan Min");
+    vc.areEqualArray(t2.to1DSpan(), expected_exclusive_min.to1DSpan(), "ExclusiveScan Min");
   }
 
-  // Teste le maximum
+  // Teste le maximum exclusif
   {
     info() << "Check exclusive min";
     for (int z = 0; z < nb_iteration; ++z) {
@@ -209,7 +216,46 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     if (n1 < min_size_display) {
       info() << "T2=" << t2.to1DSpan();
     }
-    vc.areEqualArray(t2.to1DSpan(), expected_max.to1DSpan(), "ExclusiveScan Max");
+    vc.areEqualArray(t2.to1DSpan(), expected_exclusive_max.to1DSpan(), "ExclusiveScan Max");
+  }
+
+  // Teste la somme inclusive
+  {
+    info() << "Check inclusive sum";
+    for (int z = 0; z < nb_iteration; ++z) {
+      ax::Scanner<DataType> scanner;
+      scanner.inclusiveSum(m_queue, t1, t2);
+    }
+    if (n1 < min_size_display) {
+      info() << "T2=" << t2.to1DSpan();
+    }
+    vc.areEqualArray(t2.to1DSpan(), expected_inclusive_sum.to1DSpan(), "InclusiveScan Sum");
+  }
+
+  // Teste le minimum inclusif
+  {
+    info() << "Check inclusive min";
+    for (int z = 0; z < nb_iteration; ++z) {
+      ax::Scanner<DataType> scanner;
+      scanner.inclusiveMin(m_queue, t1, t2);
+    }
+    if (n1 < min_size_display) {
+      info() << "T2=" << t2.to1DSpan();
+    }
+    vc.areEqualArray(t2.to1DSpan(), expected_inclusive_min.to1DSpan(), "InclusiveScan Min");
+  }
+
+  // Teste le maximum inclusif
+  {
+    info() << "Check inclusive min";
+    for (int z = 0; z < nb_iteration; ++z) {
+      ax::Scanner<DataType> scanner;
+      scanner.inclusiveMax(m_queue, t1, t2);
+    }
+    if (n1 < min_size_display) {
+      info() << "T2=" << t2.to1DSpan();
+    }
+    vc.areEqualArray(t2.to1DSpan(), expected_inclusive_max.to1DSpan(), "InclusiveScan Max");
   }
 }
 
