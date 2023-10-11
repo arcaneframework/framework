@@ -23,6 +23,7 @@
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/VariableView.h"
 #include "arcane/core/IItemFamily.h"
+#include "arcane/materials/AllCellToAllEnvCellConverter.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
 #include "arcane/materials/ComponentSimd.h"
@@ -422,6 +423,7 @@ _executeTest2(Integer nb_z)
   MaterialVariableCellReal& e_ref(m_mat_e_ref);
 
   // Ref CPU
+  CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
     ENUMERATE_ENV(ienv, m_mm_mng) {
       IMeshEnvironment* env = *ienv;
@@ -430,6 +432,12 @@ _executeTest2(Integer nb_z)
       {
         Cell cell = (*iev).globalCell();
         a_ref[iev] = b_ref[iev] * e_ref[cell];
+        AllEnvCell all_env_cell = allenvcell_converter[cell];
+        ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+          EnvCell env_cell = *ienvcell;
+          Int32 env_id = env_cell.environmentId();
+          a_ref[iev] += env_id;
+        }
       }
       ENUMERATE_ENVCELL(iev,envcellsv)
       {
@@ -463,6 +471,13 @@ _executeTest2(Integer nb_z)
             auto [mvi, cid] = evi();
             inout_a[mvi] = in_b[mvi] * in_e[cid];
             inout_env_a[mvi] = in_env_b[mvi] * in_e[cid];
+            AllEnvCell all_env_cell = allenvcell_converter[cid];
+            ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+              EnvCell env_cell = *ienvcell;
+              Int32 env_id = env_cell.environmentId();
+              inout_a[mvi] += env_id;
+              inout_env_a[mvi] += env_id;
+            }
           };
         }
         {
@@ -607,7 +622,7 @@ _executeTest4(Integer nb_z)
 
     m_mm_mng->enableCellToAllEnvCellForRunCommand(true,true);
     CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
-    
+
     for (Integer z=0, iz=nb_z; z<iz; ++z) {
       cmd << RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcell, cid, allCells()) {
 
