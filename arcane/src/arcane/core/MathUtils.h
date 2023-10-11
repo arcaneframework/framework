@@ -760,7 +760,10 @@ inline Real3 normalizedCrossProduct3(Real3 v1, Real3 v2)
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup GroupMathUtils
- * \brief Transposition d'une matrice 3x3.
+ *
+ * \warning Cette méthode n'utilise pas la convention habituelle des Real3x3.
+ * Elle suppose qu'ils sont rangés en colonne. En général, il faut utiliser
+ * matrixTanspose() à la place.
  */
 inline Real3x3
 matrix3x3Transp(Real3x3 m)
@@ -774,8 +777,11 @@ matrix3x3Transp(Real3x3 m)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \ingroup GroupMathUtils 
  * \brief Multiplication de 2 matrices 3x3.
+ *
+ * \warning Cette méthode n'utilise pas la convention habituelle des Real3x3.
+ * Elle suppose qu'ils sont rangés en colonne. En général, il faut utiliser
+ * matrixProduct() à la place.
  */
 inline Real3x3 
 matrix3x3Prod(Real3x3 m1, Real3x3 m2)
