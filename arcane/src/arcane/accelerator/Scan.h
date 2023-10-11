@@ -19,6 +19,7 @@
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/CommonUtils.h"
 
 #if defined(ARCANE_COMPILING_HIP)
 #include "arcane/accelerator/hip/HipAccelerator.h"
@@ -38,11 +39,17 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe pour effectuer une réduction 'min'.
+ * \brief Classe pour effectuer un scan exlusif ou inclusif.
+ *
+ * \a DataType est le type de donnée.
  */
 template <typename DataType>
 class ScannerSum
 {
+  // TODO: Utiliser une classe pour gérer le malloc pour gérer les exceptions
+  // TODO: Faire le malloc sur le device associé à la queue.
+  //       et aussi regarder si on peut utiliser mallocAsync().
+
  public:
 
   explicit ScannerSum(RunQueue* queue)
@@ -67,10 +74,11 @@ class ScannerSum
     {
       size_t temp_storage_size = 0;
       void* temp_storage = nullptr;
+      cudaStream_t stream = impl::CudaUtils::toNativeStream(m_queue);
       // Premier appel pour connaitre la taille pour l'allocation
-      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveSum(temp_storage, temp_storage_size, input_data, output_data, nb_item));
+      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveSum(temp_storage, temp_storage_size, input_data, output_data, nb_item, stream));
       ARCANE_CHECK_CUDA(cudaMalloc(&temp_storage, temp_storage_size));
-      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveSum(temp_storage, temp_storage_size, input_data, output_data, nb_item));
+      ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveSum(temp_storage, temp_storage_size, input_data, output_data, nb_item, stream));
       ARCANE_CHECK_CUDA(::cudaFree(temp_storage));
     } break;
 #else
@@ -83,13 +91,14 @@ class ScannerSum
       size_t temp_storage_size = 0;
       void* temp_storage = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
+      hipStream_t stream = impl::HipUtils::toNativeStream(m_queue);
       ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
-                                               DataType{}, nb_item, rocprim::plus<int>()));
+                                               DataType{}, nb_item, rocprim::plus<DataType>(), stream));
 
       ARCANE_CHECK_HIP(hipMalloc(&temp_storage, temp_storage_size));
 
       ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
-                                               DataType{}, nb_item, rocprim::plus<int>()));
+                                               DataType{}, nb_item, rocprim::plus<DataType>(), stream));
 
       ARCANE_CHECK_HIP(hipFree(temp_storage));
     }
