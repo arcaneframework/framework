@@ -31,6 +31,8 @@
 #include "arcane/tests/accelerator/AcceleratorScanUnitTest_axl.h"
 #include "arcane/accelerator/Scan.h"
 
+#include <random>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -137,8 +139,11 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
   NumArray<DataType, MDDim1> t2(n1);
   ConstMemoryView t1_mem_view(makeMemoryView(t1.to1DSpan()));
 
+  std::seed_seq rng_seed{ 13, 49, 23 };
+  std::mt19937 randomizer(rng_seed);
+  std::uniform_int_distribution<> rng_distrib(0, 32);
   for (Int32 i = 0; i < n1; ++i) {
-    int to_add = 2 + (rand() % 32);
+    int to_add = 2 + (rng_distrib(randomizer));
     DataType v = static_cast<DataType>(to_add + ((i * 2) % 2348));
     if ((i % 3) == 0)
       // Pour avoir des nombres négatifs
@@ -208,7 +213,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
 
   // Teste le maximum exclusif
   {
-    info() << "Check exclusive min";
+    info() << "Check exclusive max";
     for (int z = 0; z < nb_iteration; ++z) {
       ax::Scanner<DataType> scanner;
       scanner.exclusiveMax(m_queue, t1, t2);
@@ -247,7 +252,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
 
   // Teste le maximum inclusif
   {
-    info() << "Check inclusive min";
+    info() << "Check inclusive max";
     for (int z = 0; z < nb_iteration; ++z) {
       ax::Scanner<DataType> scanner;
       scanner.inclusiveMax(m_queue, t1, t2);
