@@ -64,11 +64,11 @@ class AcceleratorScanUnitTest
  public:
 
   void _executeTest1();
-  template<typename DataType> void _executeTestDataType(Int32 nb_iteration);
+  template <typename DataType> void _executeTestDataType(Int32 size, Int32 nb_iteration);
 
  private:
 
-  void executeTest2(Int32 nb_iteration);
+  void executeTest2(Int32 size, Int32 nb_iteration);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -111,25 +111,27 @@ initializeTest()
 void AcceleratorScanUnitTest::
 executeTest()
 {
-  executeTest2(2);
+  executeTest2(15, 10);
+  executeTest2(1000000, 1);
 }
 
 void AcceleratorScanUnitTest::
-executeTest2(Int32 nb_iteration)
+executeTest2(Int32 size, Int32 nb_iteration)
 {
-  _executeTestDataType<Int64>(nb_iteration);
-  _executeTestDataType<Int32>(nb_iteration);
-  _executeTestDataType<double>(nb_iteration);
+  _executeTestDataType<Int64>(size, nb_iteration);
+  _executeTestDataType<Int32>(size, nb_iteration);
+  _executeTestDataType<double>(size, nb_iteration);
 }
 
 template <typename DataType> void AcceleratorScanUnitTest::
-_executeTestDataType(Int32 nb_iteration)
+_executeTestDataType(Int32 size, Int32 nb_iteration)
 {
   ValueChecker vc(A_FUNCINFO);
 
   info() << "Execute Scan Test1";
 
-  constexpr Int32 n1 = 15; //3000000;
+  constexpr Int32 min_size_display = 100;
+  const Int32 n1 = size;
 
   NumArray<DataType, MDDim1> t1(n1);
   NumArray<DataType, MDDim1> t2(n1);
@@ -137,28 +139,58 @@ _executeTestDataType(Int32 nb_iteration)
 
   for (Int32 i = 0; i < n1; ++i) {
     int to_add = 2 + (rand() % 32);
-    DataType v = static_cast<DataType>(to_add + ((i * 2) % 257));
+    DataType v = static_cast<DataType>(to_add + ((i * 2) % 2348));
     t1[i] = v;
     t2[i] = 0;
   }
-  info() << "T1=" << t1.to1DSpan();
-  NumArray<DataType, MDDim1> expected_t2(n1);
+  if (n1 < min_size_display) {
+    info() << "T1=" << t1.to1DSpan();
+  }
+  NumArray<DataType, MDDim1> expected_sum(n1);
+  NumArray<DataType, MDDim1> expected_min(n1);
   // Effectue la version séquentielle pour test
   {
-    DataType sum = 0;
+    DataType sum_value = 0;
+    DataType min_value = std::numeric_limits<DataType>::max();
     for (Int32 i = 0; i < n1; ++i) {
-      expected_t2[i] = sum;
-      sum += t1[i];
+      expected_sum[i] = sum_value;
+      expected_min[i] = min_value;
+
+      sum_value = sum_value + t1[i];
+      min_value = math::min(min_value, t1[i]);
     }
   }
 
-  for (int z = 0; z < nb_iteration; ++z) {
-    ax::ScannerSum<DataType> scanner_sum(m_queue);
-    scanner_sum.exclusiveSum(t1, t2);
+  if (n1 < min_size_display) {
+    info() << "Expected_Sum=" << expected_sum.to1DSpan();
+    info() << "Expected_Min=" << expected_min.to1DSpan();
   }
-  info() << "T2=" << t2.to1DSpan();
-  info() << "Expected_T2=" << expected_t2.to1DSpan();
-  vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "ExclusiveScan Sum");
+
+  // Teste la somme
+  {
+    info() << "Check exclusive sum";
+    for (int z = 0; z < nb_iteration; ++z) {
+      ax::Scanner<DataType> scanner;
+      scanner.exclusiveSum(m_queue, t1, t2);
+    }
+    if (n1 < min_size_display) {
+      info() << "T2=" << t2.to1DSpan();
+    }
+    vc.areEqualArray(t2.to1DSpan(), expected_sum.to1DSpan(), "ExclusiveScan Sum");
+  }
+
+  // Teste le minimum
+  {
+    info() << "Check exclusive min";
+    for (int z = 0; z < nb_iteration; ++z) {
+      ax::Scanner<DataType> scanner;
+      scanner.exclusiveMin(m_queue, t1, t2);
+    }
+    if (n1 < min_size_display) {
+      info() << "T2=" << t2.to1DSpan();
+    }
+    vc.areEqualArray(t2.to1DSpan(), expected_min.to1DSpan(), "ExclusiveScan Min");
+  }
 }
 
 /*---------------------------------------------------------------------------*/
