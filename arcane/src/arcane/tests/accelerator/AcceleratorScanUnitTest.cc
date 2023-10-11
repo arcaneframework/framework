@@ -140,6 +140,9 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
   for (Int32 i = 0; i < n1; ++i) {
     int to_add = 2 + (rand() % 32);
     DataType v = static_cast<DataType>(to_add + ((i * 2) % 2348));
+    if ((i % 3) == 0)
+      // Pour avoir des nombres négatifs
+      v = -v;
     t1[i] = v;
     t2[i] = 0;
   }
@@ -148,16 +151,20 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
   }
   NumArray<DataType, MDDim1> expected_sum(n1);
   NumArray<DataType, MDDim1> expected_min(n1);
+  NumArray<DataType, MDDim1> expected_max(n1);
   // Effectue la version séquentielle pour test
   {
     DataType sum_value = 0;
     DataType min_value = std::numeric_limits<DataType>::max();
+    DataType max_value = std::numeric_limits<DataType>::lowest();
     for (Int32 i = 0; i < n1; ++i) {
       expected_sum[i] = sum_value;
       expected_min[i] = min_value;
+      expected_max[i] = max_value;
 
       sum_value = sum_value + t1[i];
       min_value = math::min(min_value, t1[i]);
+      max_value = math::max(max_value, t1[i]);
     }
   }
 
@@ -190,6 +197,19 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
       info() << "T2=" << t2.to1DSpan();
     }
     vc.areEqualArray(t2.to1DSpan(), expected_min.to1DSpan(), "ExclusiveScan Min");
+  }
+
+  // Teste le maximum
+  {
+    info() << "Check exclusive min";
+    for (int z = 0; z < nb_iteration; ++z) {
+      ax::Scanner<DataType> scanner;
+      scanner.exclusiveMax(m_queue, t1, t2);
+    }
+    if (n1 < min_size_display) {
+      info() << "T2=" << t2.to1DSpan();
+    }
+    vc.areEqualArray(t2.to1DSpan(), expected_max.to1DSpan(), "ExclusiveScan Max");
   }
 }
 

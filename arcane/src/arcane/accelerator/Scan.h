@@ -65,6 +65,19 @@ class ScannerMinOperator
   static DataType initialValue() { return std::numeric_limits<DataType>::max(); }
 };
 
+// Opérateur de Scan pour le maximum
+template <typename DataType>
+class ScannerMaxOperator
+{
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
+  {
+    return (a < b) ? b : a;
+  }
+  static DataType initialValue() { return std::numeric_limits<DataType>::lowest(); }
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -171,6 +184,12 @@ class Scanner
   void exclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     using ScannerType = GenericScanner<DataType, ScannerMinOperator<DataType>>;
+    ScannerType scanner(queue);
+    scanner.apply(input, output);
+  }
+  void exclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  {
+    using ScannerType = GenericScanner<DataType, ScannerMaxOperator<DataType>>;
     ScannerType scanner(queue);
     scanner.apply(input, output);
   }
