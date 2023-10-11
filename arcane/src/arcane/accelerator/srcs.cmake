@@ -4,6 +4,8 @@ set( ARCANE_SOURCES
   AcceleratorGlobal.h
   AsyncRunQueuePool.h
   CommonCudaHipReduceImpl.h
+  CommonUtils.h
+  CommonUtils.cc
   IReduceMemoryImpl.h
   IRunQueueStream.h
   MaterialVariableViews.h

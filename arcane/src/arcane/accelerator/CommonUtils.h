@@ -5,65 +5,58 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2023 */
+/* CommonUtils.h                                               (C) 2000-2023 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* Fonctions/Classes utilitaires communes à tout les runtimes.               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
-#define ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/UtilsTypes.h"
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-
-#include <iosfwd>
-
+#ifndef ARCANE_ACCELERATOR_COMMONUTILS_H
+#define ARCANE_ACCELERATOR_COMMONUTILS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_accelerator
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_EXPORT
-#else
-#define ARCANE_ACCELERATOR_EXPORT ARCANE_IMPORT
+#include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arcane/accelerator/core/RunQueue.h"
+
+#if defined(ARCANE_COMPILING_HIP)
+#include <hip/hip_runtime.h>
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Accelerator::impl
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#if defined(ARCANE_COMPILING_CUDA)
+class ARCANE_ACCELERATOR_EXPORT CudaUtils
+{
+ public:
 
-/*!
- * \brief Initialise \a runner en fonction de
- * la valeur de \a acc_info.
- */
-extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner, ITraceMng* tm,
-                 const AcceleratorRuntimeInitialisationInfo& acc_info);
+  static cudaStream_t toNativeStream(RunQueue* queue);
+};
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Macro pour indiquer qu'un noyau n'a pas été compilé avec HIP
-#define ARCANE_FATAL_NO_HIP_COMPILATION() \
-  ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP." \
-               " You need to compile the file containing this kernel with HIP compiler.")
+#if defined(ARCANE_COMPILING_HIP)
+class ARCANE_ACCELERATOR_EXPORT HipUtils
+{
+ public:
 
-//! Macro pour indiquer qu'un noyau n'a pas été compilé avec CUDA
-#define ARCANE_FATAL_NO_CUDA_COMPILATION() \
-  ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA." \
-               " You need to compile the file containing this kernel with CUDA compiler.")
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator
+  static hipStream_t toNativeStream(RunQueue* queue);
+};
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+} // namespace Arcane::Accelerator::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
