@@ -375,29 +375,31 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 
  public:
 
-  explicit CellComponentCellEnumerator(ComponentCell super_item)
+  ARCCORE_HOST_DEVICE explicit CellComponentCellEnumerator(ComponentCell super_item)
   : m_index(0), m_size(super_item.internal()->nbSubItem()), m_items_begin(super_item.internal()->firstSubItem())
   {
   }
 
  public:
 
-  void operator++() { ++m_index; }
-  bool hasNext() const { return m_index<m_size; }
+  ARCCORE_HOST_DEVICE void operator++() { ++m_index; }
+  ARCCORE_HOST_DEVICE bool hasNext() const { return m_index<m_size; }
 
-  ComponentCell operator*() const
+  ARCCORE_HOST_DEVICE ComponentCell operator*() const
   {
     ARCANE_CHECK_AT(m_index,m_size);
     return ComponentCell(m_items_begin+m_index);
   }
-  MatVarIndex _varIndex() const { return m_items_begin[m_index].variableIndex(); }
-  Integer index() const { return m_index; }
-  operator ComponentItemLocalId() const
+  ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_items_begin[m_index].variableIndex(); }
+  ARCCORE_HOST_DEVICE Integer index() const { return m_index; }
+  ARCCORE_HOST_DEVICE operator ComponentItemLocalId() const
   {
     return ComponentItemLocalId(m_items_begin[m_index].variableIndex());
   }
+
  protected:
-  Integer m_index;
+
+ Integer m_index;
   Integer m_size;
   ComponentItemInternal* m_items_begin;
 };
@@ -412,12 +414,12 @@ template <typename ComponentCellType> class CellComponentCellEnumeratorT
 {
  public:
 
-  explicit CellComponentCellEnumeratorT(ComponentCell super_item)
+  explicit ARCCORE_HOST_DEVICE CellComponentCellEnumeratorT(ComponentCell super_item)
   : CellComponentCellEnumerator(super_item){}
 
  public:
 
-  ComponentCellType operator*() const
+  ARCCORE_HOST_DEVICE ComponentCellType operator*() const
   {
     ARCANE_CHECK_AT(m_index,m_size);
     return ComponentCellType(m_items_begin+m_index);

@@ -87,9 +87,10 @@ class CellToAllEnvCellConverter
     return AllEnvCell(&m_all_env_items_internal[c.localId()]);
   }
   //! Converti une maille \a CellLocalId en maille \a AllEnvCell
-  AllEnvCell operator[](CellLocalId c)
+  ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
   {
-    return AllEnvCell(&m_all_env_items_internal[c.localId()]);
+    const ComponentItemInternal* p = &m_all_env_items_internal[c.localId()];
+    return AllEnvCell(const_cast<ComponentItemInternal*>(p));
   }
 
  private:
