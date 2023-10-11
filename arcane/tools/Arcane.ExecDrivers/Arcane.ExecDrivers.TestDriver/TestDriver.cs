@@ -39,6 +39,8 @@ namespace Arcane.ExecDrivers.TestDriver
           var test_driver = new Arcane.ExecDrivers.Common.ExecDriver();
           test_driver.ParseArgs(remaining_args, null);
           r = test_driver.Execute();
+          if (r==0)
+            test_driver.Cleanup();
           break;
         case "compare":
           var compare_driver = new VariableComparerDriver();
@@ -53,7 +55,6 @@ namespace Arcane.ExecDrivers.TestDriver
         default:
           throw new ApplicationException($"Bad option '{args[0]}' for driver. Valid values are 'launch', 'compare' or 'script'");
       }
-
       return r;
     }
   }
