@@ -552,6 +552,29 @@ namespace Arcane.ExecDrivers.Common
       return 0;
     }
 
+    // Supprime le répertoire de sortie si demandé
+    // Cela permet d'économise de la place sur le disque pour le CI
+    public void Cleanup()
+    {
+      bool do_cleanup = (Utils.GetEnvironmentVariable("ARCANE_TEST_CLEANUP_AFTER_RUN")=="1");
+      if (!do_cleanup)
+        return;
+      string test_name = Utils.GetEnvironmentVariable("ARCANE_TEST_NAME");
+      if (String.IsNullOrEmpty(test_name))
+        return;
+      string test_output_path = Path.Combine(Directory.GetCurrentDirectory(),$"test_output_{test_name}");
+      Console.WriteLine($"TEST_NAME={test_name} path={test_output_path}");
+      DirectoryInfo output_dir = new DirectoryInfo(test_output_path);
+      // On pourrait directement faire output_dir.Delete() mais pour éviter
+      // des erreurs de manipulation, on ne le fait que sur les sous-répertoires.
+      if (output_dir.Exists){
+        foreach (DirectoryInfo dir in output_dir.GetDirectories()){
+          Console.WriteLine($"Removing directory {dir.FullName}");
+          dir.Delete(true);
+        }
+      }
+    }
+
     void _HandleMpiLauncher()
     {
       // Comme cette méthode peut être appelée plusieurs fois,
