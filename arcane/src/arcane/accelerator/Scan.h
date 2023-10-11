@@ -82,8 +82,7 @@ class ScannerSum
       ARCANE_CHECK_CUDA(::cudaFree(temp_storage));
     } break;
 #else
-      ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA."
-                   " You need to compile the file containing this kernel with CUDA compiler.");
+      ARCANE_FATAL_NO_CUDA_COMPILATION();
 #endif
     case eExecutionPolicy::HIP:
 #if defined(ARCANE_COMPILING_HIP)
@@ -103,8 +102,7 @@ class ScannerSum
       ARCANE_CHECK_HIP(hipFree(temp_storage));
     }
 #else
-      ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP."
-                   " You need to compile the file containing this kernel with HIP compiler.");
+      ARCANE_FATAL_NO_HIP_COMPILATION();
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread

@@ -42,8 +42,21 @@ namespace Arcane::Accelerator
  * la valeur de \a acc_info.
  */
 extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner,ITraceMng* tm,
+initializeRunner(Runner& runner, ITraceMng* tm,
                  const AcceleratorRuntimeInitialisationInfo& acc_info);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Macro pour indiquer qu'un noyau n'a pas été compilé avec HIP
+#define ARCANE_FATAL_NO_HIP_COMPILATION() \
+  ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP." \
+               " You need to compile the file containing this kernel with HIP compiler.")
+
+//! Macro pour indiquer qu'un noyau n'a pas été compilé avec CUDA
+#define ARCANE_FATAL_NO_CUDA_COMPILATION() \
+  ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA." \
+               " You need to compile the file containing this kernel with CUDA compiler.")
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
