@@ -90,6 +90,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
   void dumpStats(std::ostream& ostr) const override;
   void flushPendingStats() override;
   IVariableSynchronizerMngInternal* _internalApi() { return &m_internal_api; }
+  bool isDoingStats() const { return m_is_doing_stats || m_synchronize_compare_level > 0; }
 
  private:
 
@@ -99,7 +100,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
   EventObservable<const VariableSynchronizerEventArgs&> m_on_synchronized;
   VariableSynchronizerStats* m_stats = nullptr;
   Int32 m_synchronize_compare_level = 0;
-  bool m_is_do_stats = false;
+  bool m_is_doing_stats = false;
 };
 
 /*---------------------------------------------------------------------------*/

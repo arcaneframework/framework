@@ -1611,16 +1611,18 @@ _dumpTimeInfos(JSONWriter& json_writer)
     o << '\n';
   }
   o.flags(f);
-  //o << '\0';
+
   info() << o.str();
 
   {
-    JSONWriter::Object jo(json_writer,"MessagePassingStats");
     IParallelMng* pm = m_sub_domain->parallelMng();
-    Parallel::IStat* s = pm->stat();
-    if (s){
-      s->printCollective(pm);
-      s->dumpJSON(json_writer);
+    if (pm->isParallel()){
+      JSONWriter::Object jo(json_writer,"MessagePassingStats");
+      Parallel::IStat* s = pm->stat();
+      if (s){
+        s->printCollective(pm);
+        s->dumpJSON(json_writer);
+      }
     }
   }
   {
