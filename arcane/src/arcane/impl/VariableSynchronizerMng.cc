@@ -16,6 +16,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/OStringStream.h"
 #include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/IVariableMng.h"
@@ -108,7 +109,7 @@ class VariableSynchronizerStats
 
   void flushPendingStats(IParallelMng* pm);
 
-  void dumpStats(std::ostream& ostr)
+  Int32 dumpStats(std::ostream& ostr)
   {
     std::streamsize old_precision = ostr.precision(20);
     ostr << "Synchronization Stats\n";
@@ -142,6 +143,7 @@ class VariableSynchronizerStats
          << "TOTAL"
          << "\n\n";
     ostr.precision(old_precision);
+    return total_stat.m_count;
   }
 
  private:
@@ -164,9 +166,9 @@ _handleEvent(const VariableSynchronizerEventArgs& args)
   // On ne traite que les évènements de fin de synchronisation
   if (args.state() != VariableSynchronizerEventArgs::State::EndSynchronize)
     return;
-  Int32 level = m_variable_synchronizer_mng->synchronizationCompareLevel();
-  if (level == 0)
+  if (!m_variable_synchronizer_mng->isDoingStats())
     return;
+  Int32 level = m_variable_synchronizer_mng->synchronizationCompareLevel();
   IParallelMng* pm = m_variable_synchronizer_mng->parallelMng();
   auto compare_status_list = args.compareStatusList();
   {
@@ -237,10 +239,10 @@ VariableSynchronizerMng(IVariableMng* vm)
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_AUTO_COMPARE_SYNCHRONIZE", true)) {
     m_synchronize_compare_level = v.value();
     // Si on active la comparaison, on active aussi les statistiques
-    m_is_do_stats = m_synchronize_compare_level > 0;
+    m_is_doing_stats = m_synchronize_compare_level > 0;
   }
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_SYNCHRONIZE_STATS", true))
-    m_is_do_stats = (v.value() != 0);
+    m_is_doing_stats = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -269,7 +271,12 @@ dumpStats(std::ostream& ostr) const
 {
   if (!m_parallel_mng->isParallel())
     return;
-  m_stats->dumpStats(ostr);
+  {
+    OStringStream ostr2;
+    Int32 count = m_stats->dumpStats(ostr2());
+    if (count > 0)
+      ostr << ostr2.str();
+  }
   m_internal_api.dumpStats(ostr);
 }
 
@@ -279,7 +286,7 @@ dumpStats(std::ostream& ostr) const
 void VariableSynchronizerMng::
 flushPendingStats()
 {
-  if (isSynchronizationComparisonEnabled())
+  if (isDoingStats())
     m_stats->flushPendingStats(m_parallel_mng);
 }
 
