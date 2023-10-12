@@ -267,6 +267,8 @@ initialize()
 void VariableSynchronizerMng::
 dumpStats(std::ostream& ostr) const
 {
+  if (!m_parallel_mng->isParallel())
+    return;
   m_stats->dumpStats(ostr);
   m_internal_api.dumpStats(ostr);
 }
