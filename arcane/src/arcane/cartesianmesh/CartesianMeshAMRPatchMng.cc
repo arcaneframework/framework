@@ -71,6 +71,8 @@ refine()
   UniqueArray<Int64> ua_node_uid(num_mng.getNbNode());
   UniqueArray<Int64> ua_face_uid(num_mng.getNbFace());
 
+  UniqueArray<Cell> parent_cells;
+
   if(m_mesh->dimension() == 2) {
     m_cells_infos.reserve(cell_to_refine_internals.size() * 4 * (2 + num_mng.getNbNode()));
     m_faces_infos.reserve(cell_to_refine_internals.size() * 12 * (2 + 2));
@@ -88,12 +90,12 @@ refine()
       Integer pattern = num_mng.getPattern();
       for (Integer j = ori_y; j < ori_y+pattern; ++j) {
         for (Integer i = ori_x; i < ori_x+pattern; ++i) {
+          parent_cells.add(cell);
           total_nb_cells++;
           Int64 uid_child = num_mng.getCellUid(level+1, i, j);
           info() << "Test 1 -- x : " << i << " -- y : " << j << " -- level : " << level+1 << " -- uid : " << uid_child;
 
           num_mng.getNodeUids(ua_node_uid, level+1, i, j);
-
           num_mng.getFaceUids(ua_face_uid, level+1, i, j);
 
           Integer type_cell = IT_Quad4;
@@ -138,6 +140,20 @@ refine()
   }
 
   else if(m_mesh->dimension() == 3) {
+
+    // TODO : Demander ça à num_mng !
+    const bool node001[] = {false, true, true, false, false, true, true, false};
+    const bool node010[] = {false, false, false, false, true, true, true, true};
+    const bool node100[] = {false, false, true, true, false, false, true, true};
+
+    const Integer nodes_in_face_0[] = {0, 1, 2, 3};
+    const Integer nodes_in_face_1[] = {0, 3, 7, 4};
+    const Integer nodes_in_face_2[] = {0, 1, 5, 4};
+    const Integer nodes_in_face_3[] = {4, 5, 6, 7};
+    const Integer nodes_in_face_4[] = {1, 2, 6, 5};
+    const Integer nodes_in_face_5[] = {3, 2, 6, 7};
+    Integer nb_nodes_in_face = 4;
+
     m_cells_infos.reserve(cell_to_refine_internals.size() * 8 * (2 + num_mng.getNbNode()));
     m_faces_infos.reserve(cell_to_refine_internals.size() * 36 * (2 + 4));
     m_nodes_infos.reserve(cell_to_refine_internals.size() * 27);
@@ -156,12 +172,12 @@ refine()
       for (Integer k = ori_z; k < ori_z+pattern; ++k) {
         for (Integer j = ori_y; j < ori_y+pattern; ++j) {
           for (Integer i = ori_x; i < ori_x+pattern; ++i) {
+            parent_cells.add(cell);
             total_nb_cells++;
             Int64 uid_child = num_mng.getCellUid(level+1, i, j, k);
             info() << "Test 2 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- uid : " << uid_child;
 
             num_mng.getNodeUids(ua_node_uid, level+1, i, j, k);
-
             num_mng.getFaceUids(ua_face_uid, level+1, i, j, k);
 
             Integer type_cell = IT_Hexaedron8;
@@ -174,32 +190,58 @@ refine()
             }
 
             // Partie Face.
-            // TODO : Face doublon.
+            // TODO : Face doublon entre les parents.
 
             for(Integer l = 0; l < num_mng.getNbFace(); ++l){
-              if(i != ori_x && l == 0) continue;
-              if(j != ori_y && l == 1) continue;
-              if(k != ori_z && l == 2) continue;
+              // On évite des faces doublons au niveau de la maille raffinée.
+              if(i != ori_x && l == 1) continue;
+              if(j != ori_y && l == 2) continue;
+              if(k != ori_z && l == 0) continue;
+
               m_faces_infos.add(type_face);
               m_faces_infos.add(ua_face_uid[l]);
-//              for (Integer nc = l; nc < l+2; nc++) {
-//                m_faces_infos.add(ua_node_uid[nc]);
-//              }
+
+              ConstArrayView<Integer> nodes_in_face_l;
+              switch (l) {
+              case 0:
+                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_0, nb_nodes_in_face);
+                break;
+              case 1:
+                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_1, nb_nodes_in_face);
+                break;
+              case 2:
+                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_2, nb_nodes_in_face);
+                break;
+              case 3:
+                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_3, nb_nodes_in_face);
+                break;
+              case 4:
+                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_4, nb_nodes_in_face);
+                break;
+              case 5:
+                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_5, nb_nodes_in_face);
+                break;
+              default:
+                ARCANE_FATAL("Bizarre...");
+              }
               info() << "Test 22 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l];
+              for(Integer nc : nodes_in_face_l){
+                m_faces_infos.add(ua_node_uid[nc]);
+                //info() << "Test 221 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- node : " << nc << " -- uid_node : " << ua_node_uid[nc];
+              }
               total_nb_faces++;
             }
 
-//            // Partie Node.
-//            // TODO : Node doublon.
-//
-//            Integer begin = 0;//(j != ori_y ? 2 : (i != ori_x ? 1 : 0));
-//            Integer end = num_mng.getNbNode();//(i == ori_x ? num_mng.getNbNode() : num_mng.getNbNode()-1);
-//
-//            for(Integer l = begin; l < end; ++l){
-//              m_nodes_infos.add(ua_node_uid[l]);
-//              info() << "Test 21 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l];
-//              total_nb_nodes++;
-//            }
+            // Partie Node.
+            // TODO : Node doublon entre les parents.
+
+            for(Integer l = 0; l < num_mng.getNbNode(); ++l){
+              if( ((i == ori_x || node001[l]) && (j == ori_y || node010[l]) && (k == ori_z || node100[l])) ){
+                m_nodes_infos.add(ua_node_uid[l]);
+                info() << "Test 21 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l];
+                total_nb_nodes++;
+              }
+            }
           }
         }
       }
@@ -238,14 +280,12 @@ refine()
     m_cells_lid.resize(total_nb_cells);
     m_mesh->modifier()->addCells(total_nb_cells, m_cells_infos, m_cells_lid);
 
-    // TODO : ajouter connectivités !!!
-    //m_mesh->modifier()->addHChildrenCells(item, m_nb_cell_to_add, m_cells_infos, m_cells_lid);
-
-    //! \todo vérfier l'ordre des enfants après leurs création
-    ItemInfoListView cells(m_mesh->cellFamily());
+    CellInfoListView cells(m_mesh->cellFamily());
     for (Integer i = 0; i < total_nb_cells; ++i){
-      Item child = cells[m_cells_lid[i]];
+      Cell child = cells[m_cells_lid[i]];
       child.mutableItemBase().addFlags(ItemFlags::II_JustAdded);
+      m_mesh->modifier()->addParentCellToCell(child, parent_cells[i]);
+      info() << "ParentCellToCell -- Child : " << child.uniqueId() << " -- Parent : " << parent_cells[i].uniqueId();
     }
   }
   m_mesh->modifier()->endUpdate();

@@ -707,7 +707,7 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
     return;
   m_mesh->modifier()->flagCellToRefine(cells_local_id);
   m_amr_mng.refine();
-  m_mesh->modifier()->adapt();
+  //m_mesh->modifier()->adapt();
   {
     MeshStats ms(traceMng(),m_mesh,m_mesh->parallelMng());
     ms.dumpStats();
