@@ -179,6 +179,9 @@ target_link_libraries(alien_core PUBLIC
                       Arccore::arccore_base
                       Arccore::arccore_message_passing_mpi)
 
+# Compile avec les mêmes avertissements de compilation que 'Arccore'
+target_link_libraries(alien_core PUBLIC $<BUILD_INTERFACE:Arccore::arccore_build_compile_flags>)
+
 find_package(Boost COMPONENTS program_options REQUIRED)
 
 find_package(MPI REQUIRED)
