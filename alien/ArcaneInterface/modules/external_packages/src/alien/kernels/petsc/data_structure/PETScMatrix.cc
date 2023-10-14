@@ -73,7 +73,7 @@ PETScMatrix::initMatrix(const int local_size, const int local_offset,
   // Offsets are implicit with PETSc, we can to check that
   // they are compatible with the expected behaviour
   PetscInt low;
-  ierr += MatGetOwnershipRange(m_internal->m_internal, &low, PETSC_NULL);
+  ierr += MatGetOwnershipRange(m_internal->m_internal, &low, nullptr);
   if (low != local_offset)
     return false;
 

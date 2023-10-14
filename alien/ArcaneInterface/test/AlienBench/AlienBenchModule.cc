@@ -800,7 +800,7 @@ AlienBenchModule::funck(Real3 p) const
 }
 
 Real
-AlienBenchModule::dii(const Cell& ci) const
+AlienBenchModule::dii([[maybe_unused]] const Cell& ci) const
 {
   return m_diag_coeff;
 }

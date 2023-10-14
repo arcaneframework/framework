@@ -231,7 +231,7 @@ class LUFactorisationAlgo
   }
 
   template <typename AlgebraT>
-  void solve(AlgebraT& algebra, VectorType const& y, VectorType& x) const
+  void solve([[maybe_unused]] AlgebraT& algebra, VectorType const& y, VectorType& x) const
   {
 
     //////////////////////////////////////////////////////////////////////////

@@ -91,7 +91,7 @@ class ALIEN_EXPORT IVectorImpl : public Timestamp
    *
    * \todo Fix this method : could be removed during the process of solver refactoring
    */
-  virtual void init(ALIEN_UNUSED_PARAM const VectorDistribution& dist, ALIEN_UNUSED_PARAM bool do_alloc) {}
+  virtual void init([[maybe_unused]] const VectorDistribution& dist, [[maybe_unused]] bool do_alloc) {}
 
   /*!
    * \brief Get the vector space

@@ -7,7 +7,8 @@ extern Arccore::ITraceMng* traceMng();
 }
 
 void
-buildMatrix(Alien::BlockMatrix& A, std::string const& filename, std::string const& format)
+buildMatrix(Alien::BlockMatrix& A, [[maybe_unused]] std::string const& filename,
+            [[maybe_unused]] std::string const& format)
 {
   auto* tm = Environment::traceMng();
 

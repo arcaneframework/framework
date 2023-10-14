@@ -254,7 +254,7 @@ AlienManager::AlienManager()
 }
 
 void AlienManager::LinearSystem::
-init(int global_nrows,
+init([[maybe_unused]] int global_nrows,
      int local_nrows,
      uid_type* row_uids,
      int nb_ghosts,
@@ -540,7 +540,7 @@ extern "C" {
 
   #include "alien/c/alienc.h"
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_init(int argc, char** argv)
+  ALIEN_INTERFACE_C_EXPORT int ALIEN_init([[maybe_unused]] int argc,[[maybe_unused]] char** argv)
   {
     AlienManager::initialize() ;
     return 0 ;

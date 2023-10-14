@@ -154,7 +154,7 @@ class BiCGStab
   {
     if (iter.nullRhs())
       return 0;
-    ValueType rho(0), rho1(0), alpha(0), beta(0), gamma(0), omega(0);
+    ValueType rho(0), rho1(0), alpha(0), beta(0), omega(0);
     VectorType p, phat, s, shat, t, v, r, r0;
 
     m_algebra.allocate(AlgebraType::resource(A), p, phat, s, shat, t, v, r, r0);

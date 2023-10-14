@@ -89,7 +89,7 @@ class IMatrixConverter : public Alien::ObjectWithTrace
    * \todo Check backend using T
    */
   template <typename T>
-  static T& cast(IMatrixImpl* impl, BackEndId backend)
+  static T& cast(IMatrixImpl* impl,[[maybe_unused]] BackEndId backend)
   {
     ALIEN_ASSERT((impl != NULL), ("Null implementation"));
     ALIEN_ASSERT((impl->backend() == backend), ("Bad backend"));
@@ -107,7 +107,7 @@ class IMatrixConverter : public Alien::ObjectWithTrace
    * \todo Check backend using T
    */
   template <typename T>
-  static const T& cast(const IMatrixImpl* impl, BackEndId backend)
+  static const T& cast(const IMatrixImpl* impl,[[maybe_unused]] BackEndId backend)
   {
     ALIEN_ASSERT((impl != NULL), ("Null implementation"));
     ALIEN_ASSERT((impl->backend() == backend), ("Bad backend"));

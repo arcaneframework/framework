@@ -79,13 +79,11 @@ struct AlgebraTraits<BackEnd::tag::simplecsr>
   typedef SimpleCSRTraits<Real>::AlgebraExprType algebra_expr_type;
   // clang-format off
   
-  static algebra_type* algebra_factory(
-  IMessagePassingMng* p_mng ALIEN_UNUSED_PARAM = nullptr)
+  static algebra_type* algebra_factory([[maybe_unused]] IMessagePassingMng* p_mng = nullptr)
   {
     return SimpleCSRInternalLinearAlgebraFactory();
   }
-  static algebra_expr_type* algebra_expr_factory(
-  IMessagePassingMng* p_mng ALIEN_UNUSED_PARAM = nullptr)
+  static algebra_expr_type* algebra_expr_factory([[maybe_unused]] IMessagePassingMng* p_mng = nullptr)
   {
     return SimpleCSRInternalLinearAlgebraExprFactory();
   }

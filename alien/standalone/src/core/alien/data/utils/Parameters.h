@@ -67,8 +67,7 @@ struct LocalIndexer
    * \param[in] offset The offset
    * \returns The local id
    */
-  static Arccore::Integer index(
-  Arccore::Integer id, Arccore::Integer offset ALIEN_UNUSED_PARAM)
+  static Arccore::Integer index(Arccore::Integer id, [[maybe_unused]] Arccore::Integer offset)
   {
     return id;
   }
