@@ -28,8 +28,8 @@ PETScVector::~PETScVector()
 /*---------------------------------------------------------------------------*/
 
 void
-PETScVector::init(const VectorDistribution& dist,
-    const bool need_allocate, Arccore::Integer block_size ALIEN_UNUSED_PARAM)
+PETScVector::init([[maybe_unused]] const VectorDistribution& dist,
+                  const bool need_allocate, Arccore::Integer block_size ALIEN_UNUSED_PARAM)
 {
   if (need_allocate)
     allocate();

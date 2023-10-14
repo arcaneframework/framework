@@ -23,7 +23,7 @@ VectorInternal::VectorInternal(const int local_size, const int local_offset,
     ierr += VecCreateSeq(PETSC_COMM_SELF, local_size, &m_internal);
   }
   int low;
-  ierr += VecGetOwnershipRange(m_internal, &low, PETSC_NULL);
+  ierr += VecGetOwnershipRange(m_internal, &low, nullptr);
 
   if (low != local_offset)
     throw Arccore::FatalErrorException(A_FUNCINFO, "Ill placed parallel vector");

@@ -90,7 +90,7 @@ class IVectorConverter : public ObjectWithTrace
    * \todo Check backend using T
    */
   template <typename T>
-  static T& cast(IVectorImpl* impl, BackEndId backend)
+  static T& cast(IVectorImpl* impl, [[maybe_unused]] BackEndId backend)
   {
     ALIEN_ASSERT((impl != NULL), ("Null implementation"));
     ALIEN_ASSERT((impl->backend() == backend), ("Bad backend"));
@@ -108,7 +108,7 @@ class IVectorConverter : public ObjectWithTrace
    * \todo Check backend using T
    */
   template <typename T>
-  static const T& cast(const IVectorImpl* impl, BackEndId backend)
+  static const T& cast(const IVectorImpl* impl, [[maybe_unused]] BackEndId backend)
   {
     ALIEN_ASSERT((impl != NULL), ("Null implementation"));
     ALIEN_ASSERT((impl->backend() == backend), ("Bad backend"));

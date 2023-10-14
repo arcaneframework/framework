@@ -137,7 +137,7 @@ AlienStokesModule::init()
 
     if (m_h[dir] == 0 && iface->nbCell() == 2) {
       Real3 d = m_cell_center[iface->frontCell()] - m_cell_center[iface->backCell()];
-      m_h[dir] = d.abs();
+      m_h[dir] = d.normL2();
       m_h2[dir] = m_h[dir] * m_h[dir];
     }
   }
@@ -449,7 +449,7 @@ AlienStokesModule::test()
       const Integer iIndex = allPIndex[cell.localId()];
       assert(iIndex != -1);
       info() << "CELL[" << cell.localId() << "]";
-      if (m_cell_center[icell].abs() < m_h[0]) {
+      if (m_cell_center[icell].normL2() < m_h[0]) {
         profiler.addMatrixEntry(iIndex, iIndex);
       }
 
@@ -548,10 +548,10 @@ AlienStokesModule::test()
                 break;
               }
             } else {
-              builder(iIndex, allUIndex[face2->localId()]) += -1 / m_h2[face_type];
+              builder(iIndex, allUIndex[face2.localId()]) += -1 / m_h2[face_type];
               builder(iIndex, iIndex) += 1. / m_h2[face_type];
 
-              builderA(iIndexU, allUIndexA[face2->localId()]) += -1 / m_h2[face_type];
+              builderA(iIndexU, allUIndexA[face2.localId()]) += -1 / m_h2[face_type];
               builderA(iIndexU, iIndexU) += 1. / m_h2[face_type];
             }
           }
@@ -585,10 +585,10 @@ AlienStokesModule::test()
                 break;
               }
             } else {
-              builder(iIndex, allUIndex[face2->localId()]) += -1 / m_h2[face_type];
+              builder(iIndex, allUIndex[face2.localId()]) += -1 / m_h2[face_type];
               builder(iIndex, iIndex) += 1. / m_h2[face_type];
 
-              builderA(iIndexU, allUIndexA[face2->localId()]) += -1 / m_h2[face_type];
+              builderA(iIndexU, allUIndexA[face2.localId()]) += -1 / m_h2[face_type];
               builder(iIndexU, iIndexU) += 1. / m_h2[face_type];
             }
           }
@@ -645,7 +645,7 @@ AlienStokesModule::test()
       const Integer iIndexP = allPIndexB[cell.localId()];
       assert(iIndexP != -1);
 
-      if (m_cell_center[icell].abs() < m_h[0])
+      if (m_cell_center[icell].normL2() < m_h[0])
         builder(iIndex, iIndex) = 1000000;
 
       rhs[iIndex] += m_g[cell];
@@ -798,7 +798,7 @@ AlienStokesModule::ux(Real3 const& x) const
 }
 
 Real
-AlienStokesModule::duxdn(Real3 const& x, Integer dir) const
+AlienStokesModule::duxdn([[maybe_unused]] Real3 const& x, Integer dir) const
 {
   switch (dir) {
   case 0:
@@ -815,7 +815,7 @@ AlienStokesModule::uy(Real3 const& x) const
 }
 
 Real
-AlienStokesModule::duydn(Real3 const& x, Integer dir) const
+AlienStokesModule::duydn([[maybe_unused]] Real3 const& x, Integer dir) const
 {
   switch (dir) {
   case 1:
@@ -832,7 +832,7 @@ AlienStokesModule::uz(Real3 const& x) const
 }
 
 Real
-AlienStokesModule::duzdn(Real3 const& x, Integer dir) const
+AlienStokesModule::duzdn([[maybe_unused]] Real3 const& x, Integer dir) const
 {
   switch (dir) {
   case 2:
@@ -843,13 +843,13 @@ AlienStokesModule::duzdn(Real3 const& x, Integer dir) const
 }
 
 Real
-AlienStokesModule::div(Real3 const& xC) const
+AlienStokesModule::div([[maybe_unused]] Real3 const& xC) const
 {
   return 3;
 }
 
 Real
-AlienStokesModule::func(Real3 const& xC, Integer dir) const
+AlienStokesModule::func([[maybe_unused]] Real3 const& xC, Integer dir) const
 {
   switch (dir) {
   case 0:

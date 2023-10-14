@@ -153,7 +153,7 @@ class NeumannPolyPreconditioner
       {
         x[i] =dis(gen);
       }*/
-    m_algebra.assign(x, [&](auto i) {
+    m_algebra.assign(x, [&]([[maybe_unused]] auto i) {
       return dis(gen);
     });
 

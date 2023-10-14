@@ -51,8 +51,8 @@ namespace ArcaneTools {
   template <typename ValueT>
   typename ItemVectorAccessorT<ValueT>::VectorElement ItemVectorAccessorT<ValueT>::
   operator()(const IIndexManager::Entry& entry,
-      typename ItemVectorAccessorT<ValueT>::eSubBlockExtractingPolicyType policy
-          ALIEN_UNUSED_PARAM)
+      [[maybe_unused]] typename ItemVectorAccessorT<ValueT>::eSubBlockExtractingPolicyType policy
+          )
   {
     if (m_vblock)
       // XT (27/07/2016) : This is just to allow compilation

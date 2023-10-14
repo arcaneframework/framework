@@ -37,8 +37,8 @@ PETScPrecConfigHypreService::PETScPrecConfigHypreService(
 }
 
 void
-PETScPrecConfigHypreService::configure(
-    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
+PETScPrecConfigHypreService::configure(PC& pc, [[maybe_unused]] const ISpace& space,
+                                       [[maybe_unused]] const MatrixDistribution& distribution)
 {
   alien_debug([&] { cout() << "configure PETSc hypre preconditioner"; });
   // if(options()->fieldSplitMode())

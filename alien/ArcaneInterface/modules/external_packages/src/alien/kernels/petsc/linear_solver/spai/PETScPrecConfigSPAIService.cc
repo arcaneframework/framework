@@ -35,8 +35,9 @@ PETScPrecConfigSPAIService::PETScPrecConfigSPAIService(
 }
 
 void
-PETScPrecConfigSPAIService::configure(
-    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
+PETScPrecConfigSPAIService::configure([[maybe_unused]] PC& pc,
+                                      [[maybe_unused]] const ISpace& space,
+                                      [[maybe_unused]] const MatrixDistribution& distribution)
 {
   alien_fatal([&] { cout() << "configure SPAI not available need to be checked"; });
 }
