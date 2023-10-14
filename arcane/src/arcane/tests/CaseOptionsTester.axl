@@ -440,6 +440,16 @@
    <description>Un service de test pour IServiceInterface1</description>
   </service-instance>
 
+  <!-- - - - - - service-instance-test2 - - - - -->
+  <service-instance
+    name = "service-instance-test2"
+    type = "ArcaneTest::IServiceInterface1"
+    default = "ServiceInterface5Impl"
+    mesh-name="Mesh1"
+  >
+   <description>Un service de test pour IServiceInterface1</description>
+  </service-instance>
+
   <!-- - - - - - complex1 - - - - -->
   <complex
    name = "complex1"
