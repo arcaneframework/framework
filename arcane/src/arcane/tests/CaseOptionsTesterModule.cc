@@ -79,6 +79,7 @@ class ICaseOptionTestInterface { public: virtual ~ICaseOptionTestInterface(){} }
 #include "arcane/tests/IServiceInterface.h"
 #include "arcane/tests/CaseOptionsTester_axl.h"
 #include "arcane/tests/ServiceInterface1ImplTest_axl.h"
+#include "arcane/tests/ServiceInterface5ImplTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -717,6 +718,25 @@ class ServiceInterface1ImplTestService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class ServiceInterface5ImplTestService
+: public ArcaneServiceInterface5ImplTestObject
+{
+ public:
+
+  explicit ServiceInterface5ImplTestService(const ServiceBuildInfo& sbi)
+  : ArcaneServiceInterface5ImplTestObject(sbi){}
+
+ public:
+
+  Integer value() override { return 7; }
+  void* getPointer1() override { return this; }
+  String implementationName() const override { return serviceInfo()->localName(); }
+  String meshName() const { return mesh()->name(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void CaseOptionsTesterModule::
 _testDynamicService()
 {
@@ -775,6 +795,9 @@ ARCANE_REGISTER_SERVICE(ServiceTestImplInterface4,
 
 ARCANE_REGISTER_SERVICE_SERVICEINTERFACE1IMPLTEST(ServiceInterface1ImplTest,
                                                   ServiceInterface1ImplTestService);
+
+ARCANE_REGISTER_SERVICE_SERVICEINTERFACE5IMPLTEST(ServiceInterface5Impl,
+                                                  ServiceInterface5ImplTestService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -121,6 +121,7 @@ set(AXL_FILES
   PDESRandomNumberGeneratorUnitTest
   RandomNumberGeneratorUnitTest
   ServiceInterface1ImplTest
+  ServiceInterface5ImplTest
   SimpleTableOutputUnitTest
   SimpleTableComparatorUnitTest
   SimpleTableOutputUnitTest
