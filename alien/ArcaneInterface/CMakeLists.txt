@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.13)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+option(ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS "Whether or not we change default compiler flags (deprecated)" OFF)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
 file(READ "version" ALIEN_VERSION_STR_FULL)
 string(REPLACE "_dev" "" ALIEN_VERSION ${ALIEN_VERSION_STR_FULL})
@@ -67,7 +71,9 @@ include(${ALIEN_CMAKE_CONFIG_PATH}/Functions.cmake)
 include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
 
 # Default options (verbose, cxx11)
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultOptions.cmake)
+if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
+  include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultOptions.cmake)
+endif()
 
 # root file for packages (if defined)
 include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackageFile.cmake)
@@ -75,8 +81,10 @@ include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackageFile.cmake)
 # default metas (win32/linux)
 include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultMetas.cmake)
 
-# default compilation options
-include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultCompilationFlags.cmake)
+if (ALIEN_LOAD_DEFAULT_COMPILER_OPTIONS)
+  # default compilation options
+  include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultCompilationFlags.cmake)
+endif()
 
 # default packages (mono et glib)
 include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackages.cmake)
