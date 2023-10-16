@@ -81,42 +81,6 @@ cmake -S /path/to/sources -B /path/to/build -DFRAMEWORK_BUILD_COMPONENT=arcane -
 cmake --build /path/to/build
 ~~~
 
-## Gestion des packages externes utilisés par Arcane
-
-Arcane utilise certains packages externes comme MPI ou la Glib qu'il
-est nécessaire de trouver lors de la configuration d'un code
-utilisateur. La manière de gérer ces packages est différente suivant
-qu'on utilise une version de Arcane avant ou après la 3.7.4.
-
-Avant la version 3.7.4, dans le cas où on compile toute la plateformce
-à la fois le fichier `ArcaneTargets.cmake` définira des cibles pour
-les packages trouvés par Arccon (par exemple la Glib ou MPI). Cela
-peut poser problème si on mélange cette installation avec une autre
-qui exporte les même cibles. Pour éviter cela, il est possible de
-mettre à `TRUE` la variable CMake `FRAMEWORK_NO_EXPORT_PACKAGES`.
-
-A partir de la verison 3.7.4, le comportement par défaut est de ne pas
-exporter les packages et d'essayer de les trouver automatiquement lors
-du `find_package(Arcane)` ce qui est le comportement préconisé par
-CMake. Pour cela, on sauvegarde les informations de l'emplacement des
-ces packages lors de la configuration de Arcane et on les utilise pour
-retrouver les packages si l'utilisateur n'a pas spécifier de chemin
-explicitement. La variable de configuration
-`ARCANE_USE_FIND_DEPENDENCIES` qui vaut `TRUE` par défaut permet de
-modifier ce comportement: si elle `TRUE` (le défaut), alors Arcane
-recherche les packages dépendant lors de l'appel à
-`find_package(Arcane)` en utilisant la commande CMake
-`find_dependency`. En mettant cette valeur à `FALSE` on retrouve le
-comportement d'avant la version 3.7.4. Le code utilisateur peut aussi
-explicitement désactiver le chargement des chemins par défaut en
-positionnant la variable `ARCANE_USE_CONFIGURATION_PATH` avant de
-faire le `find_package(Arcane)`. Cela permet de retrouver le
-comportement d'avant la 3.7.4.
-
-Les variables `FRAMEWORK_NO_EXPORT_PACKAGES` et
-`ARCANE_USE_FIND_DEPENDENCIES` sont utilisées temporairement pour
-garantir la compatibilité avec le code existant.
-
 ## Linux
 
 Cette section indique comment installer sous Linux x64 les dépendances
