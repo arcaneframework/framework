@@ -1877,8 +1877,11 @@ doComputeLoop(Integer max_loop)
     info() << "Doing verification at exit";
     doVerification("AtExit");
   }
-  if (ps)
-    ps->printInfos(true);
+  {
+    IProfilingService* ps2 = platform::getProfilingService();
+    if (ps2)
+      ps2->printInfos(true);
+  }
   if (m_msg_pass_prof_srv.get())
     m_msg_pass_prof_srv->stopProfiling();
   if (IItemEnumeratorTracer::singleton())
