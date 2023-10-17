@@ -35,6 +35,7 @@
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
 #include "arcane/cartesianmesh/CartesianMeshRenumberingInfo.h"
 #include "arcane/cartesianmesh/CartesianMeshCoarsening.h"
+#include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 
 #include "arcane/cartesianmesh/internal/CartesianMeshUniqueIdRenumbering.h"
@@ -130,6 +131,7 @@ class CartesianMeshImpl
   void checkValid() const override;
 
   Ref<CartesianMeshCoarsening> createCartesianMeshCoarsening() override;
+  Ref<CartesianMeshCoarsening2> createCartesianMeshCoarsening2() override;
 
   private:
 
@@ -700,7 +702,6 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
   }
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -708,6 +709,15 @@ Ref<CartesianMeshCoarsening> CartesianMeshImpl::
 createCartesianMeshCoarsening()
 {
   return makeRef(new CartesianMeshCoarsening(this));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<CartesianMeshCoarsening2> CartesianMeshImpl::
+createCartesianMeshCoarsening2()
+{
+  return makeRef(new CartesianMeshCoarsening2(this));
 }
 
 /*---------------------------------------------------------------------------*/
