@@ -50,6 +50,7 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
   friend mesh::CartesianFaceUniqueIdBuilder;
   friend class CartesianMeshUniqueIdRenumbering;
   friend class CartesianMeshCoarsening;
+  friend class CartesianMeshCoarsening2;
 
  private:
 

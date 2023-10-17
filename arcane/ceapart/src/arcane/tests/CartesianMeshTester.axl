@@ -34,9 +34,10 @@
        Indique si on construit les arêtes
      </description>
    </simple>
-   <simple name="coarse-cartesian-mesh" type="bool" default="false" >
+   <simple name="coarse-cartesian-mesh" type="int32" default="0" >
      <description>
-       Indique si on raffine le maillage cartésien initial
+       Indique la version utilisée pour le dé-raffinement du maillage cartésien initial.
+       Si '0', on ne fait rien
      </description>
    </simple>
  </options>

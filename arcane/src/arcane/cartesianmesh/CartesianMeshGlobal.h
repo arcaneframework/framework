@@ -39,6 +39,7 @@ class ICartesianMeshPatch;
 class CartesianMeshPatch;
 class CartesianConnectivity;
 class CartesianMeshCoarsening;
+class CartesianMeshCoarsening2;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
