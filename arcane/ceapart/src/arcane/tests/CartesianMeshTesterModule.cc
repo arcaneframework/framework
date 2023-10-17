@@ -45,6 +45,7 @@
 #include "arcane/Connectivity.h"
 
 #include "arcane/cartesianmesh/CartesianMeshCoarsening.h"
+#include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
@@ -109,6 +110,7 @@ class CartesianMeshTesterModule
   void _printCartesianMeshInfos();
   void _checkFaceUniqueIdsAreContiguous();
   void _checkNearlyEqual(Real3 a,Real3 b,const String& message);
+  void _testCoarsening();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -414,9 +416,12 @@ init()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTesterModule::
-compute()
+_testCoarsening()
 {
-  if (options()->coarseCartesianMesh() && m_global_iteration()==1){
+  Int32 coarse_version = options()->coarseCartesianMesh();
+
+  if (coarse_version==1){
+    info() << "Test CartesianCoarsening V1";
     Ref<CartesianMeshCoarsening> coarser = m_cartesian_mesh->createCartesianMeshCoarsening();
     IMesh* mesh = m_cartesian_mesh->mesh();
     IItemFamily* cell_family = mesh->cellFamily();
@@ -425,14 +430,43 @@ compute()
     Int32 index = 0;
     for( Int32 cell_lid : coarser->coarseCells()){
       Cell cell = cells[cell_lid];
-      info() << "Test: CoarseCell= " << ItemPrinter(cell);
+      info() << "Test1: CoarseCell= " << ItemPrinter(cell);
       ConstArrayView<Int32> sub_cells(coarser->refinedCells(index));
       ++index;
       for( Int32 sub_lid : sub_cells )
         info() << "SubCell=" << ItemPrinter(cells[sub_lid]);
     }
     coarser->removeRefinedCells();
-  }   
+  }
+
+  if (coarse_version==2){
+    info() << "Test CartesianCoarsening V2";
+    Ref<CartesianMeshCoarsening2> coarser = m_cartesian_mesh->createCartesianMeshCoarsening2();
+    IMesh* mesh = m_cartesian_mesh->mesh();
+    IItemFamily* cell_family = mesh->cellFamily();
+    CellInfoListView cells(cell_family);
+    coarser->createCoarseCells();
+    Int32 index = 0;
+    for( Int32 cell_lid : coarser->coarseCells()){
+      Cell cell = cells[cell_lid];
+      info() << "Test2: CoarseCell= " << ItemPrinter(cell);
+      ConstArrayView<Int32> sub_cells(coarser->refinedCells(index));
+      ++index;
+      for( Int32 sub_lid : sub_cells )
+        info() << "SubCell=" << ItemPrinter(cells[sub_lid]);
+    }
+    coarser->removeRefinedCells();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTesterModule::
+compute()
+{
+  if (m_global_iteration()==1)
+    _testCoarsening();
 
   _compute1();
 }
