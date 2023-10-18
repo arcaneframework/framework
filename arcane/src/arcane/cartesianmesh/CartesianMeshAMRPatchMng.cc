@@ -285,10 +285,36 @@ refine()
       Cell child = cells[m_cells_lid[i]];
       child.mutableItemBase().addFlags(ItemFlags::II_JustAdded);
       m_mesh->modifier()->addParentCellToCell(child, parent_cells[i]);
-      info() << "ParentCellToCell -- Child : " << child.uniqueId() << " -- Parent : " << parent_cells[i].uniqueId();
+      m_mesh->modifier()->addChildCellToCell(parent_cells[i], child);
+      info() << "addParent/ChildCellToCell -- Child : " << child.uniqueId() << " -- Parent : " << parent_cells[i].uniqueId();
+    }
+    for(Cell cell : cell_to_refine_internals){
+      cell.mutableItemBase().removeFlags(ItemFlags::II_Refine);
+      cell.mutableItemBase().addFlags(ItemFlags::II_JustRefined);
     }
   }
   m_mesh->modifier()->endUpdate();
+  {
+    VariableNodeReal3& nodes_coords = m_mesh->nodesCoordinates();
+    for(Cell parent_cell : cell_to_refine_internals){
+      for(Integer i = 0; i < parent_cell.nbHChildren(); ++i){
+        Cell child = parent_cell.hChild(i);
+        num_mng.getNodeCoordinates(child);
+        info() << "getNodeCoordinates -- Child : " << child.uniqueId() << " -- Parent : " << parent_cells[i].uniqueId();
+        for(Node node : child.nodes()){
+          info() << "\tChild Node : " << node.uniqueId() << " -- Coord : " << nodes_coords[node];
+        }
+      }
+    }
+  }
+
+  info() << "Résumé :";
+  ENUMERATE_ (Cell, icell, m_mesh->allCells()){
+    info() << "\tCell uniqueId : " << icell->uniqueId() << " -- level : " << icell->level() << " -- nbChildren : " << icell->nbHChildren();
+    for(Integer i = 0; i < icell->nbHChildren(); ++i){
+      info() << "\t\tChild uniqueId : " << icell->hChild(i).uniqueId() << " -- level : " << icell->hChild(i).level() << " -- nbChildren : " << icell->hChild(i).nbHChildren();
+    }
+  }
 }
 
 

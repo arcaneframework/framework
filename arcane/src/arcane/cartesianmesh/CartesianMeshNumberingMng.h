@@ -48,23 +48,36 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
   Int64 getGlobalNbCellsY(Integer level);
   Int64 getGlobalNbCellsZ(Integer level);
 
+
+
   Integer getPattern();
   Int64 getOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to);
 
-  Int64 uidToCoordX(Int64 uid, Integer level);
-  Int64 uidToCoordY(Int64 uid, Integer level);
-  Int64 uidToCoordZ(Int64 uid, Integer level);
 
-  Int64 getCellUid(Integer level, Int64 coord_i, Int64 coord_j, Int64 coord_k);
-  Int64 getCellUid(Integer level, Int64 coord_i, Int64 coord_j);
+
+  Int64 uidToCoordX(Int64 uid, Integer level);
+  Int64 uidToCoordX(Cell cell);
+
+  Int64 uidToCoordY(Int64 uid, Integer level);
+  Int64 uidToCoordY(Cell cell);
+
+  Int64 uidToCoordZ(Int64 uid, Integer level);
+  Int64 uidToCoordZ(Cell cell);
+
+
+
+  Int64 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k);
+  Int64 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j);
 
   Integer getNbNode();
-  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 coord_i, Int64 coord_j, Int64 coord_k);
-  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 coord_i, Int64 coord_j);
+  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k);
+  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j);
 
   Integer getNbFace();
-  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 coord_i, Int64 coord_j, Int64 coord_k);
-  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 coord_i, Int64 coord_j);
+  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k);
+  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_cell_coord_i, Int64 cell_coord_j);
+
+  void getNodeCoordinates(Cell child_cell);
 
  private:
   IMesh* m_mesh;

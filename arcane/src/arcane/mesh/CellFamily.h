@@ -124,6 +124,7 @@ class ARCANE_MESH_EXPORT CellFamily
   //! AMR
   void _addParentCellToCell(Cell cell,Cell parent_cell);
   void _addChildCellToCell(Cell parent_cell,Integer rank,Cell child_cell);
+  void _addChildCellToCell2(Cell parent_cell,Cell child_cell);
   void _addChildrenCellsToCell(Cell parent_cell,Int32ConstArrayView children_cells_lid);
   void _removeParentCellToCell(Cell cell);
   void _removeChildCellToCell(Cell parent_cell,Cell cell);

@@ -1020,6 +1020,19 @@ addParentCellToCell(Cell child, Cell parent)
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
+addChildCellToCell(Cell parent, Cell child)
+{
+  Trace::Setter mci(traceMng(),_className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_cell_family->_addChildCellToCell2(parent, child);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
 addFaces(Integer nb_face,Int64ConstArrayView face_infos,Int32ArrayView faces)
 {
   _checkDimension();

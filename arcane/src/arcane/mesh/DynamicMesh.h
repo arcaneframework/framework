@@ -266,6 +266,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
                          Int64ConstArrayView cells_infos,Int32ArrayView cells) override;
 
   void addParentCellToCell(Cell child, Cell parent) override;
+  void addChildCellToCell(Cell parent, Cell child) override;
 
 
   void endUpdate() override;
