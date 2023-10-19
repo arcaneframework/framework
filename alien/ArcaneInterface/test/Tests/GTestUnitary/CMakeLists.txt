@@ -1,4 +1,7 @@
 # test avec GTEST
+if (NOT TARGET GTest::GTest)
+  return()
+endif()
 
 set(SEQ_TEST_LIST
         Space

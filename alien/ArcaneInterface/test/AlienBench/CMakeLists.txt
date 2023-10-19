@@ -1,3 +1,13 @@
+if (NOT TARGET alien_interface_c)
+  return()
+endif()
+if (NOT TARGET alien_external_packages)
+  return()
+endif()
+if (NOT TARGET alien_ifpen_solvers)
+  return()
+endif()
+
 createExecutable(alien_bench.exe)
 
 addSources(alien_bench.exe

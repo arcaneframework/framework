@@ -1,3 +1,13 @@
+if (NOT TARGET alien_interface_c)
+  return()
+endif()
+if (NOT TARGET alien_external_packages)
+  return()
+endif()
+if (NOT TARGET alien_ifpen_solvers)
+  return()
+endif()
+
 createExecutable(alien_interface_c.exe)
 
 set_target_properties(alien_interface_c.exe PROPERTIES LINKER_LANGUAGE CXX)
