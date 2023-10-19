@@ -50,7 +50,7 @@ refine()
   CartesianMeshNumberingMng num_mng(m_mesh);
 
   UniqueArray<Cell> cell_to_refine_internals;
-  ENUMERATE_CELL(icell,m_mesh->ownCells()) {
+  ENUMERATE_CELL(icell,m_mesh->ownActiveCells()) {
     Cell cell = *icell;
     if (cell.itemBase().flags() & ItemFlags::II_Refine) {
       cell_to_refine_internals.add(cell);
@@ -291,6 +291,7 @@ refine()
     for(Cell cell : cell_to_refine_internals){
       cell.mutableItemBase().removeFlags(ItemFlags::II_Refine);
       cell.mutableItemBase().addFlags(ItemFlags::II_JustRefined);
+      cell.mutableItemBase().addFlags(ItemFlags::II_Inactive);
     }
   }
   m_mesh->modifier()->endUpdate();
@@ -300,7 +301,7 @@ refine()
       for(Integer i = 0; i < parent_cell.nbHChildren(); ++i){
         Cell child = parent_cell.hChild(i);
         num_mng.getNodeCoordinates(child);
-        info() << "getNodeCoordinates -- Child : " << child.uniqueId() << " -- Parent : " << parent_cells[i].uniqueId();
+        info() << "getNodeCoordinates -- Child : " << child.uniqueId() << " -- Parent : " << parent_cell.uniqueId();
         for(Node node : child.nodes()){
           info() << "\tChild Node : " << node.uniqueId() << " -- Coord : " << nodes_coords[node];
         }
