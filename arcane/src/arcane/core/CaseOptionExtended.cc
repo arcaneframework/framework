@@ -19,6 +19,8 @@
 #include "arcane/core/CaseOptionError.h"
 #include "arcane/core/ICaseDocumentVisitor.h"
 #include "arcane/core/XmlNodeList.h"
+#include "arcane/core/ICaseOptionList.h"
+#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,6 +42,7 @@ void CaseOptionMultiExtended::
 _search(bool is_phase1)
 {
   XmlNodeList elem_list = rootElement().children(name());
+  ITraceMng* tm = traceMng();
 
   Integer size = elem_list.size();
   _checkMinMaxOccurs(size);
@@ -62,12 +65,15 @@ _search(bool is_phase1)
                                                 name(),rootElement());
         continue;
       }
+      tm->info(5) << "TryConvert opt=" << _xpathFullName() << " i=" << i
+                  << " mesh_name=" << parentOptionList()->meshHandle().meshName()
+                  << " value=" << str_val;
       bool is_bad = _tryToConvert(str_val,i);
       if (is_bad){
         m_values[i] = String();
         CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
                                              name(),rootElement(),str_val,_typeName());
-	continue;
+        continue;
       }
       m_values[i] = str_val;
       //ptr_value[i] = val;
@@ -138,6 +144,7 @@ _search(bool is_phase1)
   CaseOptionSimple::_search(is_phase1);
   if (is_phase1)
     return;
+  ITraceMng* tm = traceMng();
   // Si l'option n'est pas présente dans le jeu de donnée, on prend
   // l'option par défaut.
   String str_val = (_element().null()) ? _defaultValue() : _element().value();
@@ -154,6 +161,9 @@ _search(bool is_phase1)
   }
   _setHasValidValue(has_valid_value);
   if (has_valid_value){
+    tm->info(5) << "TryConvert opt=" << xpathFullName()
+                << " mesh_name=" << parentOptionList()->meshHandle().meshName()
+                << " value=" << str_val;
     bool is_bad = _tryToConvert(str_val);
     if (is_bad){
       m_value = String();
