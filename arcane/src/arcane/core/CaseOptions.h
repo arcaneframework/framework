@@ -196,6 +196,7 @@ class ARCANE_CORE_EXPORT CaseOptions
  private:
 
   void _setMeshHandle(const MeshHandle& handle);
+  void _setParent(ICaseOptionList* parent);
 };
 
 /*---------------------------------------------------------------------------*/

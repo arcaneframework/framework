@@ -151,6 +151,7 @@ class ARCANE_CORE_EXPORT CaseOptionBase
   bool _isInitialized() const;
   void _checkIsInitialized() const;
   void _checkMinMaxOccurs(Integer nb_occur);
+  String _xpathFullName() const;
 
  private:
 

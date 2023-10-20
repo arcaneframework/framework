@@ -158,7 +158,9 @@ class CaseOptionList
   : TraceAccessor(parent->caseMng()->traceMng()), m_case_mng(parent->caseMng()),
     m_root_element(), m_parent(parent),
     m_ref_opt(ref_opt), m_parent_element(parent_element), m_is_present(false),
-    m_is_multi(false), m_is_optional(false), m_internal_api(this) {}
+    m_is_multi(false), m_is_optional(false), m_internal_api(this)
+  {
+  }
   ~CaseOptionList()
   {
     // Détache les options filles qui existent encore pour ne pas qu'elles le
@@ -596,6 +598,12 @@ readChildren(bool is_phase1)
   if (is_phase1){
     _setRootElement(false,XmlNode());
 
+    info(5) << "ListMulti: readChildren root=" << m_root_element.xpathFullName()
+          << " parent=" << m_parent_element.xpathFullName()
+          << " id=" << typeid(*this).name()
+          << " phase1?=" << is_phase1
+          << " this=" << this;
+
     //debug() << "ReadConfig " << rootTagName();
 
     m_root_element_list = m_parent_element.children(rootTagName());
@@ -604,7 +612,7 @@ readChildren(bool is_phase1)
     _checkMinMaxOccurs(s);
     if (s!=0)
       m_case_option_multi->multiAllocate(m_root_element_list);
-    // Récupère les options créés lors de l'appel à 'multiAllocate' et
+    // Récupère les options créées lors de l'appel à 'multiAllocate' et
     // les ajoute à la liste.
     Integer nb_children = m_case_option_multi->nbChildren();
     for( Integer i=0; i<nb_children; ++i ){

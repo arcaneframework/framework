@@ -138,6 +138,12 @@
         <simple-real-2>4.6</simple-real-2>
         <cell-group>Planchere</cell-group>
       </complex5>
+      <multi-complex5>
+        <true-cell-group>Planchere</true-cell-group>
+      </multi-complex5>
+      <multi-complex5>
+        <true-cell-group>Planchere</true-cell-group>
+      </multi-complex5>
       <sub-service-instance name="ServiceInterface1ImplTest">
         <complex1>
           <simple-real-2>1.2</simple-real-2>

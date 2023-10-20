@@ -22,6 +22,15 @@
       </extended>
     </complex>
 
+    <!-- - - - - - multi-complex5 - - - - -->
+    <complex name = "multi-complex5" type = "MultiComplex5" minOccurs="0" maxOccurs="unbounded">
+      <description>Complex5</description>
+
+      <extended name = "true-cell-group" type = "Arcane::CellGroup" >
+        <description>a cell group</description>
+      </extended>
+    </complex>
+
     <!-- - - - - - sub-service-instance - - - - -->
     <service-instance
       name = "sub-service-instance"
