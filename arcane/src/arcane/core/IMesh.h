@@ -206,6 +206,9 @@ class IMesh
   //!
   virtual bool isAmrActivated() const =0;
 
+  //! TODO
+  virtual eMeshAMRKind amrType() const =0;
+
  public:
 
   //! \name Gestions des interfaces semi-conformes

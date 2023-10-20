@@ -45,6 +45,7 @@
 #include "arcane/MeshHandle.h"
 #include "arcane/IParticleExchanger.h"
 #include "arcane/IExtraGhostCellsBuilder.h"
+#include "arcane/core/MeshKind.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -389,6 +390,12 @@ class EmptyMesh
   {
     _error();
     return false;
+  }
+
+  eMeshAMRKind amrType() const override
+  {
+    _error();
+    return eMeshAMRKind::None;
   }
 
  public:

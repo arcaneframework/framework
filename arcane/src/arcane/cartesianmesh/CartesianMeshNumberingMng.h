@@ -24,7 +24,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/NumVector.h"
 
-#include "arcane/cartesianmesh/ICartesianMeshAMRMng.h"
+#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/

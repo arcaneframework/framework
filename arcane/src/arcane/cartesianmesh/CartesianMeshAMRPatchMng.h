@@ -23,7 +23,7 @@
 #include "arcane/ItemEnumerator.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/cartesianmesh/ICartesianMeshAMRMng.h"
+#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -37,12 +37,13 @@ namespace Arcane
 
 class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRPatchMng
 : public TraceAccessor
-, public ICartesianMeshAMRMng
+, public ICartesianMeshAMRPatchMng
 {
  public:
 
   CartesianMeshAMRPatchMng(IMesh* mesh);
-  void refine();
+  void flagCellToRefine(Int32ConstArrayView cells_lids) override;
+  void refine() override;
 
  private:
 

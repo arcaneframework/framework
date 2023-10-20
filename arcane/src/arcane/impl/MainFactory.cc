@@ -313,9 +313,18 @@ createCaseDocument(IApplication* sm,IXmlDocumentHolder* doc)
 /*---------------------------------------------------------------------------*/
 
 IPrimaryMesh* MainFactory::
+createMesh(ISubDomain* sd,const String& name, eMeshAMRKind amr_type)
+{
+  return createMesh(sd,sd->parallelMng(),name, amr_type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IPrimaryMesh* MainFactory::
 createMesh(ISubDomain* sd,const String& name, bool is_amr)
 {
-  return createMesh(sd,sd->parallelMng(),name, is_amr);
+  return createMesh(sd,sd->parallelMng(),name, (is_amr ? eMeshAMRKind::Cell : eMeshAMRKind::None));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -324,9 +333,21 @@ createMesh(ISubDomain* sd,const String& name, bool is_amr)
 IPrimaryMesh* MainFactory::
 createMesh(ISubDomain* sd,IParallelMng* pm,const String& name, bool is_amr)
 {
-  String factory_name = _getMeshFactoryName(is_amr);
+  return createMesh(sd, pm, name, (is_amr ? eMeshAMRKind::Cell : eMeshAMRKind::None));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IPrimaryMesh* MainFactory::
+createMesh(ISubDomain* sd,IParallelMng* pm,const String& name, eMeshAMRKind amr_type)
+{
+  String factory_name = _getMeshFactoryName(amr_type != eMeshAMRKind::None);
   IMeshFactoryMng* mfm = sd->meshMng()->meshFactoryMng();
   MeshBuildInfo build_info(name);
+  MeshKind mk(build_info.meshKind());
+  mk.setMeshAMRKind(amr_type);
+  build_info.addMeshKind(mk);
   build_info.addFactoryName(factory_name);
   build_info.addParallelMng(makeRef(pm));
   return mfm->createMesh(build_info);
@@ -338,7 +359,7 @@ createMesh(ISubDomain* sd,IParallelMng* pm,const String& name, bool is_amr)
 IPrimaryMesh* MainFactory::
 createMesh(ISubDomain* sd,const String& name)
 {
-  return createMesh(sd,sd->parallelMng(),name,false);
+  return createMesh(sd,sd->parallelMng(),name,eMeshAMRKind::None);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -347,7 +368,7 @@ createMesh(ISubDomain* sd,const String& name)
 IPrimaryMesh* MainFactory::
 createMesh(ISubDomain* sd,IParallelMng* pm,const String& name)
 {
-  return createMesh(sd,pm,name,false);
+  return createMesh(sd,pm,name,eMeshAMRKind::None);
 }
 
 /*---------------------------------------------------------------------------*/

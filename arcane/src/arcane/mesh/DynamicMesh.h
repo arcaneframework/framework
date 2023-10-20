@@ -431,6 +431,11 @@ public:
   {
 	  return m_is_amr_activated;
   }
+
+  eMeshAMRKind amrType() const override
+  {
+    return m_amr_type;
+  }
   
  public:
 
@@ -558,7 +563,8 @@ public:
   
   //! AMR
   bool m_is_amr_activated;
-  
+  eMeshAMRKind m_amr_type;
+
   bool m_is_dynamic;
 
   //! Liste des groupes d'entités

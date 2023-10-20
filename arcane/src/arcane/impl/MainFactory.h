@@ -88,7 +88,9 @@ class ARCANE_IMPL_EXPORT MainFactory
   IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name) override;
   IPrimaryMesh* createMesh(ISubDomain* sub_domain,IParallelMng* pm,const String& name) override;
   IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name, bool is_amr) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name, eMeshAMRKind amr_type) override;
   IPrimaryMesh* createMesh(ISubDomain* sub_domain,IParallelMng* pm,const String& name, bool is_amr) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain,IParallelMng* pm,const String& name, eMeshAMRKind amr_type) override;
   IMesh* createSubMesh(IMesh* mesh, const ItemGroup& group, const String& name) override;
   IDataFactory* createDataFactory(IApplication*) override;
   Ref<IDataFactoryMng> createDataFactoryMngRef(IApplication*) override;

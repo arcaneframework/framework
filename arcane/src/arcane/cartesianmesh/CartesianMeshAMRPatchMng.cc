@@ -45,6 +45,17 @@ CartesianMeshAMRPatchMng(IMesh* mesh)
 }
 
 void CartesianMeshAMRPatchMng::
+flagCellToRefine(Int32ConstArrayView cells_lids)
+{
+  ItemInfoListView cells(m_mesh->cellFamily());
+  for (int lid : cells_lids) {
+    Item item = cells[lid];
+    item.mutableItemBase().addFlags(ItemFlags::II_Refine);
+  }
+}
+
+
+void CartesianMeshAMRPatchMng::
 refine()
 {
   CartesianMeshNumberingMng num_mng(m_mesh);
@@ -261,10 +272,6 @@ refine()
     m_nodes_lid.resize(total_nb_nodes);
     m_mesh->modifier()->addNodes(m_nodes_infos, m_nodes_lid);
     m_mesh->nodeFamily()->endUpdate();
-    NodeInfoListView nodes(m_mesh->nodeFamily());
-//    for (Integer i = 0; i < num_mng.getNbNode(); ++i) {
-//      m_orig_nodes_coords[nodes[m_nodes_lid[i]]] = m_nodes_to_create_coords[i];
-//    }
   }
 
   // Faces

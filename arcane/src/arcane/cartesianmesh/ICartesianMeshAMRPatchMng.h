@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshAMRMng.h                                      (C) 2000-2023 */
+/* ICartesianMeshAMRPatchMng.h                                      (C) 2000-2023 */
 /*                                                                           */
 /* Inteface de gestionnaire de l'AMR d'un maillage cartésien.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CARTESIANMESH_ICARTESIANMESHAMRMNG_H
-#define ARCANE_CARTESIANMESH_ICARTESIANMESHAMRMNG_H
+#ifndef ARCANE_CARTESIANMESH_ICARTESIANMESHAMRPATCHMNG_H
+#define ARCANE_CARTESIANMESH_ICARTESIANMESHAMRPATCHMNG_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,11 +34,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRMng
+class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
 {
  public:
 
-  ~ICartesianMeshAMRMng() = default;
+  ~ICartesianMeshAMRPatchMng() = default;
+  virtual void flagCellToRefine(Int32ConstArrayView cells_lids) =0;
+  virtual void refine() =0;
 
 };
 
@@ -50,4 +52,4 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_CARTESIANMESH_ICARTESIANMESHAMRMNG_H
+#endif //ARCANE_CARTESIANMESH_ICARTESIANMESHAMRPATCHMNG_H

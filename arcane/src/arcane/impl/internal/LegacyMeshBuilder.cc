@@ -25,6 +25,7 @@
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/IGhostLayerMng.h"
 #include "arcane/IMeshReader.h"
+#include "arcane/core/MeshKind.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -191,7 +192,12 @@ createDefaultMesh()
   // default_mesh is the mesh described by mesh_elems[0]
   // Now that amr flag has to be known at mesh creation, check-it for default mesh
   bool is_amr = mesh_elems[0].attr("amr").valueAsBoolean();
-  m_default_mesh_handle._setMesh(sd->mainFactory()->createMesh(sd,mesh_name, is_amr));
+  eMeshAMRKind amr_type = static_cast<eMeshAMRKind>(mesh_elems[0].attr("amr-type").valueAsInteger());
+  if(is_amr && amr_type == eMeshAMRKind::None) {
+    amr_type = eMeshAMRKind::Cell;
+  }
+
+  m_default_mesh_handle._setMesh(sd->mainFactory()->createMesh(sd,mesh_name, amr_type));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -219,7 +225,12 @@ allocateMeshes()
     // Depuis la 1.8.0 (modif IFP), cette methode
     // appelle this->addMesh()
     bool is_amr = m_meshes_build_info[z].m_xml_node.attr("amr").valueAsBoolean();
-    IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,name,is_amr);
+    eMeshAMRKind amr_type = static_cast<eMeshAMRKind>(m_meshes_build_info[z].m_xml_node.attr("amr-type").valueAsInteger());
+    if(is_amr && amr_type == eMeshAMRKind::None) {
+      amr_type = eMeshAMRKind::Cell;
+    }
+
+    IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,name,amr_type);
     m_meshes_build_info[z].m_mesh = mesh;
   }
 }
