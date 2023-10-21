@@ -25,6 +25,7 @@
 #include "arcane/core/MeshEvents.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,9 +38,11 @@ namespace Arcane
 
 
 CartesianMeshAMRPatchMng::
-CartesianMeshAMRPatchMng(IMesh* mesh)
-: TraceAccessor(mesh->traceMng())
-, m_mesh(mesh)
+CartesianMeshAMRPatchMng(ICartesianMesh* cmesh)
+: TraceAccessor(cmesh->mesh()->traceMng())
+, m_cmesh(cmesh)
+, m_mesh(cmesh->mesh())
+, m_flag_cells_consistent(Arccore::makeRef(new VariableCellInteger(VariableBuildInfo(cmesh->mesh(), "FlagCellsConsistent"))))
 {
 
 }
@@ -51,6 +54,22 @@ flagCellToRefine(Int32ConstArrayView cells_lids)
   for (int lid : cells_lids) {
     Item item = cells[lid];
     item.mutableItemBase().addFlags(ItemFlags::II_Refine);
+  }
+  _syncFlagCell();
+}
+
+void CartesianMeshAMRPatchMng::
+_syncFlagCell()
+{
+  VariableCellInteger& flag_cells_consistent = (*m_flag_cells_consistent.get());
+  ENUMERATE_(Cell, icell, m_mesh->ownCells()){
+    flag_cells_consistent[icell] = icell->mutableItemBase().flags();
+  }
+
+  flag_cells_consistent.synchronize();
+
+  ENUMERATE_(Cell, icell, m_mesh->allCells().ghost()){
+    icell->mutableItemBase().setFlags(flag_cells_consistent[icell]);
   }
 }
 
@@ -85,6 +104,15 @@ refine()
   UniqueArray<Cell> parent_cells;
 
   if(m_mesh->dimension() == 2) {
+
+    // Masques pour les cas "voisins enfants" et "voisins parents du même patch".
+    const bool node_left[] = {false, true, true, false};
+    const bool node_bottom[] = {false, false, true, true};
+
+    const bool node_right[] = {true, false, false, true};
+    const bool node_top[] = {true, true, false, false};
+
+
     m_cells_infos.reserve(cell_to_refine_internals.size() * 4 * (2 + num_mng.getNbNode()));
     m_faces_infos.reserve(cell_to_refine_internals.size() * 12 * (2 + 2));
     m_nodes_infos.reserve(cell_to_refine_internals.size() * 9);
@@ -112,6 +140,7 @@ refine()
           Integer type_cell = IT_Quad4;
           Integer type_face = IT_Line2;
 
+          // Partie Cell.
           m_cells_infos.add(type_cell);
           m_cells_infos.add(uid_child);
           for (Integer nc = 0; nc < num_mng.getNbNode(); nc++) {
@@ -134,17 +163,55 @@ refine()
           }
 
           // Partie Node.
-          // TODO : Node doublon entre les parents.
 
-          begin = (j != ori_y ? 2 : (i != ori_x ? 1 : 0));
-          end = (i == ori_x ? num_mng.getNbNode() : num_mng.getNbNode()-1);
+          CellDirectionMng cdmx(m_cmesh->cellDirection(MD_DirX));
+          CellDirectionMng cdmy(m_cmesh->cellDirection(MD_DirY));
 
-          for(Integer l = begin; l < end; ++l){
-            m_nodes_infos.add(ua_node_uid[l]);
-            info() << "Test 11 -- x : " << i << " -- y : " << j << " -- level : " << level+1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l];
-            total_nb_nodes++;
+          DirCell ccx(cdmx.cell(cell));
+          DirCell ccy(cdmy.cell(cell));
+
+          Cell left_cell = ccx.previous();
+          Cell right_cell = ccx.next();
+          Cell bottom_cell = ccy.previous();
+          Cell top_cell = ccy.next();
+
+          bool is_own_cell_left = (!left_cell.null() && left_cell.isOwn() && ((left_cell.itemBase().flags() & ItemFlags::II_Refine) || (left_cell.itemBase().flags() & ItemFlags::II_Inactive)));
+          bool is_own_cell_right = (!right_cell.null() && right_cell.isOwn() && (right_cell.itemBase().flags() & ItemFlags::II_Inactive));
+
+          bool is_own_cell_bottom = (!bottom_cell.null() && bottom_cell.isOwn() && ((bottom_cell.itemBase().flags() & ItemFlags::II_Refine) || (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive)));
+          bool is_own_cell_top = (!top_cell.null() && top_cell.isOwn() && (top_cell.itemBase().flags() & ItemFlags::II_Inactive));
+
+
+          info() << "is_own_cell_left : " << is_own_cell_left << " -- is_own_cell_right : " << is_own_cell_right << " -- is_own_cell_bottom : " << is_own_cell_bottom << " -- is_own_cell_top : " << is_own_cell_top;
+
+          for(Integer l = 0; l < num_mng.getNbNode(); ++l) {
+            /*
+             if (
+              ( (i == ori_x && !is_own_cell_left) || ((i != ori_x || is_own_cell_left) && node_left[l]) )
+              &&
+              ( (i != (ori_x+pattern-1) || !is_own_cell_right) || ((i == (ori_x+pattern-1) && is_own_cell_right) && node_right[l]) )
+              &&
+              ( (j == ori_y && !is_own_cell_bottom) || ((j != ori_y || is_own_cell_bottom) && node_bottom[l]))
+              &&
+              ( (j != (ori_y+pattern-1) || !is_own_cell_top) || ((j == (ori_y+pattern-1) && is_own_cell_top) && node_top[l]) )
+              )
+              {
+            */
+            if (
+              ( (i == ori_x && !is_own_cell_left) || (node_left[l]) )
+                &&
+                ( (i != (ori_x+pattern-1) || !is_own_cell_right) || node_right[l] )
+                &&
+                ( (j == ori_y && !is_own_cell_bottom) || (node_bottom[l]))
+                &&
+                ( (j != (ori_y+pattern-1) || !is_own_cell_top) || node_top[l] )
+               )
+            {
+              m_nodes_infos.add(ua_node_uid[l]);
+              info() << "Test 11 -- x : " << i << " -- y : " << j << " -- level : " << level + 1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l];
+              total_nb_nodes++;
+            }
           }
-
         }
       }
     }
@@ -152,10 +219,13 @@ refine()
 
   else if(m_mesh->dimension() == 3) {
 
-    // TODO : Demander ça à num_mng !
-    const bool node001[] = {false, true, true, false, false, true, true, false};
-    const bool node010[] = {false, false, false, false, true, true, true, true};
-    const bool node100[] = {false, false, true, true, false, false, true, true};
+    const bool node_left[] = {false, true, true, false, false, true, true, false};
+    const bool node_bottom[] = {false, false, false, false, true, true, true, true};
+    const bool node_rear[] = {false, false, true, true, false, false, true, true};
+
+    const bool node_right[] = {true, false, false, true, true, false, false, true};
+    const bool node_top[] = {true, true, true, true, false, false, false, false};
+    const bool node_front[] = {true, true, false, false, true, true, false, false};
 
     const Integer nodes_in_face_0[] = {0, 1, 2, 3};
     const Integer nodes_in_face_1[] = {0, 3, 7, 4};
@@ -244,10 +314,72 @@ refine()
             }
 
             // Partie Node.
-            // TODO : Node doublon entre les parents.
+            CellDirectionMng cdmx(m_cmesh->cellDirection(MD_DirX));
+            CellDirectionMng cdmy(m_cmesh->cellDirection(MD_DirY));
+            CellDirectionMng cdmz(m_cmesh->cellDirection(MD_DirZ));
+
+            DirCell ccx(cdmx.cell(cell));
+            DirCell ccy(cdmy.cell(cell));
+            DirCell ccz(cdmz.cell(cell));
+
+            Cell left_cell = ccx.previous();
+            Cell right_cell = ccx.next();
+
+            Cell bottom_cell = ccy.previous();
+            Cell top_cell = ccy.next();
+
+            Cell rear_cell = ccz.previous();
+            Cell front_cell = ccz.next();
+
+
+            bool is_own_cell_left = (!left_cell.null() && left_cell.isOwn() && ((left_cell.itemBase().flags() & ItemFlags::II_Refine) || (left_cell.itemBase().flags() & ItemFlags::II_Inactive)));
+            bool is_own_cell_right = (!right_cell.null() && right_cell.isOwn() && (right_cell.itemBase().flags() & ItemFlags::II_Inactive));
+
+            bool is_own_cell_bottom = (!bottom_cell.null() && bottom_cell.isOwn() && ((bottom_cell.itemBase().flags() & ItemFlags::II_Refine) || (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive)));
+            bool is_own_cell_top = (!top_cell.null() && top_cell.isOwn() && (top_cell.itemBase().flags() & ItemFlags::II_Inactive));
+
+            bool is_own_cell_rear = (!rear_cell.null() && rear_cell.isOwn() && ((rear_cell.itemBase().flags() & ItemFlags::II_Refine) || (rear_cell.itemBase().flags() & ItemFlags::II_Inactive)));
+            bool is_own_cell_front = (!front_cell.null() && front_cell.isOwn() && (front_cell.itemBase().flags() & ItemFlags::II_Inactive));
+
+
+            info() << "is_own_cell_left : " << is_own_cell_left
+                   << " -- is_own_cell_right : " << is_own_cell_right
+                   << " -- is_own_cell_bottom : " << is_own_cell_bottom
+                   << " -- is_own_cell_top : " << is_own_cell_top
+                   << " -- is_own_cell_rear : " << is_own_cell_rear
+                   << " -- is_own_cell_front : " << is_own_cell_front;
 
             for(Integer l = 0; l < num_mng.getNbNode(); ++l){
-              if( ((i == ori_x || node001[l]) && (j == ori_y || node010[l]) && (k == ori_z || node100[l])) ){
+              /*
+             if (
+              ( (i == ori_x && !is_own_cell_left) || ((i != ori_x || is_own_cell_left) && node_left[l]) )
+              &&
+              ( (i != (ori_x+pattern-1) || !is_own_cell_right) || ((i == (ori_x+pattern-1) && is_own_cell_right) && node_right[l]) )
+              &&
+              ( (j == ori_y && !is_own_cell_bottom) || ((j != ori_y || is_own_cell_bottom) && node_bottom[l]))
+              &&
+              ( (j != (ori_y+pattern-1) || !is_own_cell_top) || ((j == (ori_y+pattern-1) && is_own_cell_top) && node_top[l]) )
+               &&
+              ( (k == ori_z && !is_own_cell_rear) || ((k != ori_z || is_own_cell_rear) && node_rear[l]))
+              &&
+              ( (k != (ori_z+pattern-1) || !is_own_cell_front) || ((k == (ori_z+pattern-1) && is_own_cell_front) && node_front[l]) )
+              )
+              {
+            */
+              if (
+                ( (i == ori_x && !is_own_cell_left) || (node_left[l]) )
+                &&
+                ( (i != (ori_x+pattern-1) || !is_own_cell_right) || node_right[l] )
+                &&
+                ( (j == ori_y && !is_own_cell_bottom) || (node_bottom[l]))
+                &&
+                ( (j != (ori_y+pattern-1) || !is_own_cell_top) || node_top[l] )
+                &&
+                ( (k == ori_z && !is_own_cell_rear) || (node_rear[l]))
+                &&
+                ( (k != (ori_z+pattern-1) || !is_own_cell_front) || node_front[l] )
+              )
+              {
                 m_nodes_infos.add(ua_node_uid[l]);
                 info() << "Test 21 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l];
                 total_nb_nodes++;

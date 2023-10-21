@@ -233,7 +233,7 @@ CartesianMeshImpl(IMesh* mesh)
 , m_nodes_to_cell_storage(platform::getDefaultDataAllocator())
 , m_cells_to_node_storage(platform::getDefaultDataAllocator())
 , m_amr_type(mesh->amrType())
-, m_amr_mng(makeRef(new CartesianMeshAMRPatchMng(mesh)))
+, m_amr_mng(makeRef(new CartesianMeshAMRPatchMng(this)))
 {
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));
   m_amr_patches.add(m_all_items_direction_info);
@@ -639,6 +639,7 @@ refinePatch2D(Real2 position,Real2 length)
   info() << "REFINEMENT 2D position=" << position << " length=" << length;
   Real3 position_3d(position.x,position.y,0.0);
   Real3 length_3d(length.x,length.y,0.0);
+  computeDirections();
   _refinePatch(position_3d,length_3d,false);
 }
 
@@ -649,6 +650,7 @@ void CartesianMeshImpl::
 refinePatch3D(Real3 position,Real3 length)
 {
   info() << "REFINEMENT 3D position=" << position << " length=" << length;
+  computeDirections();
   _refinePatch(position,length,true);
 }
 

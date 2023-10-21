@@ -25,6 +25,7 @@
 
 #include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,14 +41,15 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRPatchMng
 , public ICartesianMeshAMRPatchMng
 {
  public:
-
-  CartesianMeshAMRPatchMng(IMesh* mesh);
+  CartesianMeshAMRPatchMng(ICartesianMesh* mesh);
   void flagCellToRefine(Int32ConstArrayView cells_lids) override;
+  void _syncFlagCell();
   void refine() override;
 
  private:
-
+  ICartesianMesh* m_cmesh;
   IMesh* m_mesh;
+  Ref<VariableCellInteger> m_flag_cells_consistent;
 };
 
 /*---------------------------------------------------------------------------*/
