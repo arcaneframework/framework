@@ -12,6 +12,7 @@ target_include_directories(arcane_cartesianmesh PUBLIC $<BUILD_INTERFACE:${ARCAN
 target_include_directories(arcane_cartesianmesh PUBLIC $<BUILD_INTERFACE:${ARCANECEA_SRC_PATH}> $<INSTALL_INTERFACE:include>)
 
 target_link_libraries(arcane_cartesianmesh PUBLIC arcane_core)
+target_link_libraries(arcane_cartesianmesh PRIVATE arcane_mesh)
 
 arcane_register_library(arcane_cartesianmesh)
 
