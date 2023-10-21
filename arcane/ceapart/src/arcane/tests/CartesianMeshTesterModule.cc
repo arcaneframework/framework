@@ -442,20 +442,16 @@ _testCoarsening()
   if (coarse_version==2){
     info() << "Test CartesianCoarsening V2";
     Ref<CartesianMeshCoarsening2> coarser = m_cartesian_mesh->createCartesianMeshCoarsening2();
-    IMesh* mesh = m_cartesian_mesh->mesh();
-    IItemFamily* cell_family = mesh->cellFamily();
-    CellInfoListView cells(cell_family);
     coarser->createCoarseCells();
-    Int32 index = 0;
-    for( Int32 cell_lid : coarser->coarseCells()){
-      Cell cell = cells[cell_lid];
+    ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
+      if (cell.level()!=0)
+        continue;
       info() << "Test2: CoarseCell= " << ItemPrinter(cell);
-      ConstArrayView<Int32> sub_cells(coarser->refinedCells(index));
-      ++index;
-      for( Int32 sub_lid : sub_cells )
-        info() << "SubCell=" << ItemPrinter(cells[sub_lid]);
+      for( Int32 i=0, n=cell.nbHChildren(); i<n; ++i ){
+        info() << "SubCell=" << ItemPrinter(cell.hChild(i));
+      }
     }
-    coarser->removeRefinedCells();
   }
 }
 
