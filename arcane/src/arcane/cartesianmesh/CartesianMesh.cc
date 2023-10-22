@@ -78,6 +78,13 @@ class CartesianMeshImpl
     {
     }
 
+   public:
+
+    Ref<CartesianMeshCoarsening2> createCartesianMeshCoarsening2() override
+    {
+      return m_cartesian_mesh->_createCartesianMeshCoarsening2();
+    }
+
    private:
 
     CartesianMeshImpl* m_cartesian_mesh = nullptr;
@@ -147,10 +154,14 @@ class CartesianMeshImpl
   void checkValid() const override;
 
   Ref<CartesianMeshCoarsening> createCartesianMeshCoarsening() override;
-  Ref<CartesianMeshCoarsening2> createCartesianMeshCoarsening2() override;
 
   //! API interne à Arcane
   ICartesianMeshInternal* _internalApi() override { return &m_internal_api; }
+
+ private:
+
+  // Implémentation de 'ICartesianMeshInternal'
+  Ref<CartesianMeshCoarsening2> _createCartesianMeshCoarsening2();
 
  private:
 
@@ -736,7 +747,7 @@ createCartesianMeshCoarsening()
 /*---------------------------------------------------------------------------*/
 
 Ref<CartesianMeshCoarsening2> CartesianMeshImpl::
-createCartesianMeshCoarsening2()
+_createCartesianMeshCoarsening2()
 {
   return makeRef(new CartesianMeshCoarsening2(this));
 }

@@ -14,6 +14,7 @@
 #include "arcane/cartesianmesh/CartesianMeshUtils.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,7 +32,7 @@ namespace Arcane
 Ref<CartesianMeshCoarsening2> CartesianMeshUtils::
 createCartesianMeshCoarsening2(ICartesianMesh* cm)
 {
-  return cm->createCartesianMeshCoarsening2();
+  return cm->_internalApi()->createCartesianMeshCoarsening2();
 }
 
 /*---------------------------------------------------------------------------*/

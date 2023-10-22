@@ -33,6 +33,14 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
  public:
 
   virtual ~ICartesianMeshInternal() = default;
+
+ public:
+
+  /*!
+   * \brief Créé une instance pour gérer le déraffinement du maillage (V2).
+   * \warning Experimental method !
+   */
+  virtual Ref<CartesianMeshCoarsening2> createCartesianMeshCoarsening2() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
