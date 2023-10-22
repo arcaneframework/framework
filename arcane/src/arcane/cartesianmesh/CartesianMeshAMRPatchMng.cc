@@ -27,6 +27,8 @@
 #include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 
+#include <map>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,15 +63,34 @@ flagCellToRefine(Int32ConstArrayView cells_lids)
 void CartesianMeshAMRPatchMng::
 _syncFlagCell()
 {
+  if (!m_mesh->parallelMng()->isParallel())
+    return ;
+
   VariableCellInteger& flag_cells_consistent = (*m_flag_cells_consistent.get());
   ENUMERATE_(Cell, icell, m_mesh->ownCells()){
-    flag_cells_consistent[icell] = icell->mutableItemBase().flags();
+    Cell cell = *icell;
+    flag_cells_consistent[cell] = cell.mutableItemBase().flags();
+    debug() << "Send " << cell << " flag : " << cell.mutableItemBase().flags() << " II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine) << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive);
   }
 
   flag_cells_consistent.synchronize();
 
   ENUMERATE_(Cell, icell, m_mesh->allCells().ghost()){
-    icell->mutableItemBase().setFlags(flag_cells_consistent[icell]);
+    Cell cell = *icell;
+
+    debug() << "Cell : " << cell
+               << " -- Node 0 : " << cell.node(0).uniqueId()
+               << " -- Node 1 : " << cell.node(1).uniqueId()
+               << " -- Node 2 : " << cell.node(2).uniqueId()
+               << " -- Node 3 : " << cell.node(3).uniqueId();
+
+    if(flag_cells_consistent[cell] & ItemFlags::II_Refine) {
+      cell.mutableItemBase().setFlags(ItemFlags::II_Refine);
+    }
+    if(flag_cells_consistent[cell] & ItemFlags::II_Inactive) {
+      cell.mutableItemBase().setFlags(ItemFlags::II_Inactive);
+    }
+    debug() << "After Compute " << cell << " flag : " << cell.mutableItemBase().flags() << " II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine) << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive);
   }
 }
 
@@ -82,6 +103,7 @@ refine()
   UniqueArray<Cell> cell_to_refine_internals;
   ENUMERATE_CELL(icell,m_mesh->ownActiveCells()) {
     Cell cell = *icell;
+    if(cell.owner() != m_mesh->parallelMng()->commRank()) continue;
     if (cell.itemBase().flags() & ItemFlags::II_Refine) {
       cell_to_refine_internals.add(cell);
     }
@@ -92,11 +114,11 @@ refine()
   Int64UniqueArray m_faces_infos;
   Int64UniqueArray m_nodes_infos;
 
-  // TODO : TRÈS Moche !
   Integer total_nb_cells = 0;
   Integer total_nb_nodes = 0;
   Integer total_nb_faces = 0;
 
+  std::map<Int64, Int32> uid_to_owner;
 
   UniqueArray<Int64> ua_node_uid(num_mng.getNbNode());
   UniqueArray<Int64> ua_face_uid(num_mng.getNbFace());
@@ -132,7 +154,7 @@ refine()
           parent_cells.add(cell);
           total_nb_cells++;
           Int64 uid_child = num_mng.getCellUid(level+1, i, j);
-          info() << "Test 1 -- x : " << i << " -- y : " << j << " -- level : " << level+1 << " -- uid : " << uid_child;
+          debug() << "Test 1 -- x : " << i << " -- y : " << j << " -- level : " << level+1 << " -- uid : " << uid_child;
 
           num_mng.getNodeUids(ua_node_uid, level+1, i, j);
           num_mng.getFaceUids(ua_face_uid, level+1, i, j);
@@ -158,7 +180,7 @@ refine()
             for (Integer nc = l; nc < l+2; nc++) {
               m_faces_infos.add(ua_node_uid[nc%num_mng.getNbNode()]);
             }
-            info() << "Test 12 -- x : " << i << " -- y : " << j << " -- level : " << level+1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l];
+            debug() << "Test 12 -- x : " << i << " -- y : " << j << " -- level : " << level+1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l];
             total_nb_faces++;
           }
 
@@ -175,41 +197,158 @@ refine()
           Cell bottom_cell = ccy.previous();
           Cell top_cell = ccy.next();
 
-          bool is_own_cell_left = (!left_cell.null() && left_cell.isOwn() && ((left_cell.itemBase().flags() & ItemFlags::II_Refine) || (left_cell.itemBase().flags() & ItemFlags::II_Inactive)));
-          bool is_own_cell_right = (!right_cell.null() && right_cell.isOwn() && (right_cell.itemBase().flags() & ItemFlags::II_Inactive));
+          Cell left_bottom_cell;
+          if(!left_cell.null() && !bottom_cell.null()){
+            DirCell ccx2(cdmx.cell(bottom_cell));
+            left_bottom_cell = ccx2.previous();
+          }
 
-          bool is_own_cell_bottom = (!bottom_cell.null() && bottom_cell.isOwn() && ((bottom_cell.itemBase().flags() & ItemFlags::II_Refine) || (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive)));
-          bool is_own_cell_top = (!top_cell.null() && top_cell.isOwn() && (top_cell.itemBase().flags() & ItemFlags::II_Inactive));
+          debug() << "cell : " << cell
+                  << " -- left_cell : " << left_cell
+                  << " -- right_cell : " << right_cell
+                  << " -- bottom_cell : " << bottom_cell
+                  << " -- top_cell : " << top_cell
+                  << " -- left_bottom_cell : " << left_bottom_cell;
+
+          bool is_cell_left = (
+            !left_cell.null()
+            &&
+            (
+              (
+                left_cell.isOwn()
+                &&
+                ((left_cell.itemBase().flags() & ItemFlags::II_Refine) || (left_cell.itemBase().flags() & ItemFlags::II_Inactive))
+              )
+              ||
+              (
+                !left_cell.isOwn()
+                &&
+                (left_cell.itemBase().flags() & ItemFlags::II_Inactive)
+              )
+            )
+          );
+
+          bool is_cell_right = (
+            !right_cell.null()
+            &&
+            (
+              (
+                right_cell.isOwn()
+                &&
+                ( (right_cell.itemBase().flags() & ItemFlags::II_Inactive))
+              )
+              ||
+              (
+                !right_cell.isOwn()
+                &&
+                (right_cell.itemBase().flags() & ItemFlags::II_Inactive)
+              )
+            )
+          );
+
+          bool is_cell_bottom = (
+            !bottom_cell.null()
+            &&
+            (
+              (
+                bottom_cell.isOwn()
+                &&
+                ((bottom_cell.itemBase().flags() & ItemFlags::II_Refine) || (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive))
+              )
+              ||
+              (
+                !bottom_cell.isOwn()
+                &&
+                (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive)
+              )
+            )
+          );
+
+          bool is_cell_top = (
+            !top_cell.null()
+            &&
+            (
+              (
+                top_cell.isOwn()
+                &&
+                ( (top_cell.itemBase().flags() & ItemFlags::II_Inactive))
+              )
+              ||
+              (
+                !top_cell.isOwn()
+                &&
+                (top_cell.itemBase().flags() & ItemFlags::II_Inactive)
+              )
+            )
+          );
 
 
-          info() << "is_own_cell_left : " << is_own_cell_left << " -- is_own_cell_right : " << is_own_cell_right << " -- is_own_cell_bottom : " << is_own_cell_bottom << " -- is_own_cell_top : " << is_own_cell_top;
+          bool is_cell_left2 = (
+            !left_cell.null()
+            &&
+            (
+              !left_cell.isOwn()
+              &&
+              (left_cell.itemBase().flags() & ItemFlags::II_Refine)
+            )
+          );
+
+          bool is_cell_bottom2 = (
+            !bottom_cell.null()
+            &&
+            (
+              !bottom_cell.isOwn()
+              &&
+              (bottom_cell.itemBase().flags() & ItemFlags::II_Refine)
+            )
+          );
+
+          debug() << "is_cell_left : " << is_cell_left
+                  << " -- is_cell_right : " << is_cell_right
+                  << " -- is_cell_bottom : " << is_cell_bottom
+                  << " -- is_cell_top : " << is_cell_top
+                  << " -- is_cell_left2 : " << is_cell_left2
+                  << " -- is_cell_bottom2 : " << is_cell_bottom2 ;
 
           for(Integer l = 0; l < num_mng.getNbNode(); ++l) {
-            /*
-             if (
-              ( (i == ori_x && !is_own_cell_left) || ((i != ori_x || is_own_cell_left) && node_left[l]) )
-              &&
-              ( (i != (ori_x+pattern-1) || !is_own_cell_right) || ((i == (ori_x+pattern-1) && is_own_cell_right) && node_right[l]) )
-              &&
-              ( (j == ori_y && !is_own_cell_bottom) || ((j != ori_y || is_own_cell_bottom) && node_bottom[l]))
-              &&
-              ( (j != (ori_y+pattern-1) || !is_own_cell_top) || ((j == (ori_y+pattern-1) && is_own_cell_top) && node_top[l]) )
-              )
-              {
-            */
             if (
-              ( (i == ori_x && !is_own_cell_left) || (node_left[l]) )
+                ( (i == ori_x && !is_cell_left) || (node_left[l]) )
                 &&
-                ( (i != (ori_x+pattern-1) || !is_own_cell_right) || node_right[l] )
+                ( (i != (ori_x+pattern-1) || !is_cell_right) || node_right[l] )
                 &&
-                ( (j == ori_y && !is_own_cell_bottom) || (node_bottom[l]))
+                ( (j == ori_y && !is_cell_bottom) || (node_bottom[l]) )
                 &&
-                ( (j != (ori_y+pattern-1) || !is_own_cell_top) || node_top[l] )
+                ( (j != (ori_y+pattern-1) || !is_cell_top) || node_top[l] )
                )
             {
               m_nodes_infos.add(ua_node_uid[l]);
-              info() << "Test 11 -- x : " << i << " -- y : " << j << " -- level : " << level + 1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l];
               total_nb_nodes++;
+
+              Integer new_owner = -1;
+
+              if(
+                i == ori_x && is_cell_left2 && (!node_left[l])
+                &&
+                j == ori_y && is_cell_bottom2 && (!node_bottom[l])
+              ){
+                new_owner = left_bottom_cell.owner();
+              }
+
+              else if(i == ori_x && is_cell_left2 && (!node_left[l])){
+                new_owner = left_cell.owner();
+              }
+
+              else if(j == ori_y && is_cell_bottom2 && (!node_bottom[l])){
+                new_owner = bottom_cell.owner();
+              }
+
+              else{
+                new_owner = cell.owner();
+              }
+
+              uid_to_owner[ua_node_uid[l]] = new_owner;
+
+              debug() << "Test 11 -- x : " << i << " -- y : " << j << " -- level : " << level + 1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l] << " -- owner : " << new_owner;
             }
           }
         }
@@ -256,7 +395,7 @@ refine()
             parent_cells.add(cell);
             total_nb_cells++;
             Int64 uid_child = num_mng.getCellUid(level+1, i, j, k);
-            info() << "Test 2 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- uid : " << uid_child;
+            debug() << "Test 2 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- uid : " << uid_child;
 
             num_mng.getNodeUids(ua_node_uid, level+1, i, j, k);
             num_mng.getFaceUids(ua_face_uid, level+1, i, j, k);
@@ -305,7 +444,7 @@ refine()
               default:
                 ARCANE_FATAL("Bizarre...");
               }
-              info() << "Test 22 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l];
+              debug() << "Test 22 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l];
               for(Integer nc : nodes_in_face_l){
                 m_faces_infos.add(ua_node_uid[nc]);
                 //info() << "Test 221 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- node : " << nc << " -- uid_node : " << ua_node_uid[nc];
@@ -331,58 +470,266 @@ refine()
             Cell rear_cell = ccz.previous();
             Cell front_cell = ccz.next();
 
+            Cell left_bottom_rear_cell;
+            if(!left_cell.null() && !bottom_cell.null() && !rear_cell.null()){
+              DirCell ccz2(cdmz.cell(left_cell));
+              Cell tmp = ccz2.previous();
+              DirCell ccy2(cdmy.cell(tmp));
+              left_bottom_rear_cell = ccy2.previous();
+            }
 
-            bool is_own_cell_left = (!left_cell.null() && left_cell.isOwn() && ((left_cell.itemBase().flags() & ItemFlags::II_Refine) || (left_cell.itemBase().flags() & ItemFlags::II_Inactive)));
-            bool is_own_cell_right = (!right_cell.null() && right_cell.isOwn() && (right_cell.itemBase().flags() & ItemFlags::II_Inactive));
+            Cell left_bottom_cell;
+            if(!left_cell.null() && !bottom_cell.null()){
+              DirCell ccx2(cdmx.cell(bottom_cell));
+              left_bottom_cell = ccx2.previous();
+            }
 
-            bool is_own_cell_bottom = (!bottom_cell.null() && bottom_cell.isOwn() && ((bottom_cell.itemBase().flags() & ItemFlags::II_Refine) || (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive)));
-            bool is_own_cell_top = (!top_cell.null() && top_cell.isOwn() && (top_cell.itemBase().flags() & ItemFlags::II_Inactive));
+            Cell bottom_rear_cell;
+            if(!bottom_cell.null() && !rear_cell.null()){
+              DirCell ccy2(cdmy.cell(rear_cell));
+              bottom_rear_cell = ccy2.previous();
+            }
 
-            bool is_own_cell_rear = (!rear_cell.null() && rear_cell.isOwn() && ((rear_cell.itemBase().flags() & ItemFlags::II_Refine) || (rear_cell.itemBase().flags() & ItemFlags::II_Inactive)));
-            bool is_own_cell_front = (!front_cell.null() && front_cell.isOwn() && (front_cell.itemBase().flags() & ItemFlags::II_Inactive));
+            Cell rear_left_cell;
+            if(!rear_cell.null() && !left_cell.null()){
+              DirCell ccz2(cdmz.cell(left_cell));
+              rear_left_cell = ccz2.previous();
+            }
 
+            debug() << "cell : " << cell
+                    << " -- left_cell : " << left_cell
+                    << " -- right_cell : " << right_cell
+                    << " -- bottom_cell : " << bottom_cell
+                    << " -- top_cell : " << top_cell
+                    << " -- rear_cell : " << rear_cell
+                    << " -- front_cell : " << front_cell
+                    << " -- left_bottom_rear_cell : " << left_bottom_rear_cell
+                    << " -- left_bottom_cell : " << left_bottom_cell
+                    << " -- bottom_rear_cell : " << bottom_rear_cell
+                    << " -- rear_left_cell : " << rear_left_cell;
 
-            info() << "is_own_cell_left : " << is_own_cell_left
-                   << " -- is_own_cell_right : " << is_own_cell_right
-                   << " -- is_own_cell_bottom : " << is_own_cell_bottom
-                   << " -- is_own_cell_top : " << is_own_cell_top
-                   << " -- is_own_cell_rear : " << is_own_cell_rear
-                   << " -- is_own_cell_front : " << is_own_cell_front;
+            bool is_cell_left = (
+              !left_cell.null()
+              &&
+              (
+                (
+                  left_cell.isOwn()
+                  &&
+                  ((left_cell.itemBase().flags() & ItemFlags::II_Refine) || (left_cell.itemBase().flags() & ItemFlags::II_Inactive))
+                )
+                ||
+                (
+                  !left_cell.isOwn()
+                  &&
+                  (left_cell.itemBase().flags() & ItemFlags::II_Inactive)
+                )
+              )
+            );
+
+            bool is_cell_right = (
+              !right_cell.null()
+              &&
+              (
+                (
+                  right_cell.isOwn()
+                  &&
+                  ( (right_cell.itemBase().flags() & ItemFlags::II_Inactive))
+                )
+                ||
+                (
+                  !right_cell.isOwn()
+                  &&
+                  (right_cell.itemBase().flags() & ItemFlags::II_Inactive)
+                )
+              )
+            );
+
+            bool is_cell_bottom = (
+              !bottom_cell.null()
+              &&
+              (
+                (
+                  bottom_cell.isOwn()
+                  &&
+                  ((bottom_cell.itemBase().flags() & ItemFlags::II_Refine) || (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive))
+                )
+                ||
+                (
+                  !bottom_cell.isOwn()
+                  &&
+                  (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive)
+                )
+              )
+            );
+
+            bool is_cell_top = (
+              !top_cell.null()
+              &&
+              (
+                (
+                  top_cell.isOwn()
+                  &&
+                  ( (top_cell.itemBase().flags() & ItemFlags::II_Inactive))
+                )
+                ||
+                (
+                  !top_cell.isOwn()
+                  &&
+                  (top_cell.itemBase().flags() & ItemFlags::II_Inactive)
+                )
+              )
+            );
+
+            bool is_cell_rear = (
+              !rear_cell.null()
+              &&
+              (
+                (
+                  rear_cell.isOwn()
+                  &&
+                  ((rear_cell.itemBase().flags() & ItemFlags::II_Refine) || (rear_cell.itemBase().flags() & ItemFlags::II_Inactive))
+                )
+                ||
+                (
+                  !rear_cell.isOwn()
+                  &&
+                  (rear_cell.itemBase().flags() & ItemFlags::II_Inactive)
+                )
+              )
+            );
+
+            bool is_cell_front = (
+              !front_cell.null()
+              &&
+              (
+                (
+                  front_cell.isOwn()
+                  &&
+                  ( (front_cell.itemBase().flags() & ItemFlags::II_Inactive))
+                )
+                ||
+                (
+                  !front_cell.isOwn()
+                  &&
+                  (front_cell.itemBase().flags() & ItemFlags::II_Inactive)
+                )
+              )
+            );
+
+            bool is_cell_left2 = (
+              !left_cell.null()
+              &&
+              (
+                !left_cell.isOwn()
+                &&
+                (left_cell.itemBase().flags() & ItemFlags::II_Refine)
+              )
+            );
+
+            bool is_cell_bottom2 = (
+              !bottom_cell.null()
+              &&
+              (
+                !bottom_cell.isOwn()
+                &&
+                (bottom_cell.itemBase().flags() & ItemFlags::II_Refine)
+              )
+            );
+
+            bool is_cell_rear2 = (
+              !rear_cell.null()
+              &&
+              (
+                !rear_cell.isOwn()
+                &&
+                (rear_cell.itemBase().flags() & ItemFlags::II_Refine)
+              )
+            );
+
+            debug() << "is_cell_left : " << is_cell_left
+                    << " -- is_cell_right : " << is_cell_right
+                    << " -- is_cell_bottom : " << is_cell_bottom
+                    << " -- is_cell_top : " << is_cell_top
+                    << " -- is_cell_rear : " << is_cell_rear
+                    << " -- is_cell_front : " << is_cell_front
+                    << " -- is_cell_left2 : " << is_cell_left2
+                    << " -- is_cell_bottom2 : " << is_cell_bottom2
+                    << " -- is_cell_rear2 : " << is_cell_rear2;
+
 
             for(Integer l = 0; l < num_mng.getNbNode(); ++l){
-              /*
-             if (
-              ( (i == ori_x && !is_own_cell_left) || ((i != ori_x || is_own_cell_left) && node_left[l]) )
-              &&
-              ( (i != (ori_x+pattern-1) || !is_own_cell_right) || ((i == (ori_x+pattern-1) && is_own_cell_right) && node_right[l]) )
-              &&
-              ( (j == ori_y && !is_own_cell_bottom) || ((j != ori_y || is_own_cell_bottom) && node_bottom[l]))
-              &&
-              ( (j != (ori_y+pattern-1) || !is_own_cell_top) || ((j == (ori_y+pattern-1) && is_own_cell_top) && node_top[l]) )
-               &&
-              ( (k == ori_z && !is_own_cell_rear) || ((k != ori_z || is_own_cell_rear) && node_rear[l]))
-              &&
-              ( (k != (ori_z+pattern-1) || !is_own_cell_front) || ((k == (ori_z+pattern-1) && is_own_cell_front) && node_front[l]) )
-              )
-              {
-            */
               if (
-                ( (i == ori_x && !is_own_cell_left) || (node_left[l]) )
+                ( (i == ori_x && !is_cell_left) || (node_left[l]) )
                 &&
-                ( (i != (ori_x+pattern-1) || !is_own_cell_right) || node_right[l] )
+                ( (i != (ori_x+pattern-1) || !is_cell_right) || node_right[l] )
                 &&
-                ( (j == ori_y && !is_own_cell_bottom) || (node_bottom[l]))
+                ( (j == ori_y && !is_cell_bottom) || (node_bottom[l]) )
                 &&
-                ( (j != (ori_y+pattern-1) || !is_own_cell_top) || node_top[l] )
+                ( (j != (ori_y+pattern-1) || !is_cell_top) || node_top[l] )
                 &&
-                ( (k == ori_z && !is_own_cell_rear) || (node_rear[l]))
+                ( (k == ori_z && !is_cell_rear) || (node_rear[l]) )
                 &&
-                ( (k != (ori_z+pattern-1) || !is_own_cell_front) || node_front[l] )
+                ( (k != (ori_z+pattern-1) || !is_cell_front) || node_front[l] )
               )
               {
                 m_nodes_infos.add(ua_node_uid[l]);
-                info() << "Test 21 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l];
                 total_nb_nodes++;
+
+                Integer new_owner = -1;
+
+                if(
+                  i == ori_x && is_cell_left2 && (!node_left[l])
+                  &&
+                  j == ori_y && is_cell_bottom2 && (!node_bottom[l])
+                  &&
+                  k == ori_z && is_cell_rear2 && (!node_rear[l])
+                ){
+                  new_owner = left_bottom_rear_cell.owner();
+                }
+
+                else if(
+                  i == ori_x && is_cell_left2 && (!node_left[l])
+                  &&
+                  j == ori_y && is_cell_bottom2 && (!node_bottom[l])
+                ){
+                  new_owner = left_bottom_cell.owner();
+                }
+
+                else if(
+                  j == ori_y && is_cell_bottom2 && (!node_bottom[l])
+                  &&
+                  k == ori_z && is_cell_rear2 && (!node_rear[l])
+                ){
+                  new_owner = bottom_rear_cell.owner();
+                }
+
+                else if(
+                  k == ori_z && is_cell_rear2 && (!node_rear[l])
+                  &&
+                  i == ori_x && is_cell_left2 && (!node_left[l])
+                ){
+                  new_owner = rear_left_cell.owner();
+                }
+
+                else if(i == ori_x && is_cell_left2 && (!node_left[l])){
+                  new_owner = left_cell.owner();
+                }
+
+                else if(j == ori_y && is_cell_bottom2 && (!node_bottom[l])){
+                  new_owner = bottom_cell.owner();
+                }
+
+                else if(k == ori_z && is_cell_rear2 && (!node_rear[l])){
+                  new_owner = rear_cell.owner();
+                }
+
+                else{
+                  new_owner = cell.owner();
+                }
+
+                uid_to_owner[ua_node_uid[l]] = new_owner;
+
+                debug() << "Test 21 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l] << " -- owner : " << new_owner;
               }
             }
           }
@@ -404,6 +751,12 @@ refine()
     m_nodes_lid.resize(total_nb_nodes);
     m_mesh->modifier()->addNodes(m_nodes_infos, m_nodes_lid);
     m_mesh->nodeFamily()->endUpdate();
+
+    ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(m_nodes_lid)) {
+      Node node = *inode;
+      node.mutableItemBase().setOwner(uid_to_owner[node.uniqueId()], m_mesh->parallelMng()->commRank());
+    }
+    m_mesh->nodeFamily()->notifyItemsOwnerChanged();
   }
 
   // Faces
