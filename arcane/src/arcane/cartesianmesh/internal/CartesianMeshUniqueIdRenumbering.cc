@@ -52,11 +52,12 @@ void CartesianMeshUniqueIdRenumbering::
 renumber()
 {
   IMesh* mesh = m_cartesian_mesh->mesh();
-  Int32 dimension = mesh->dimension();
+  const Int32 dimension = mesh->dimension();
   Int64 cartesian_global_nb_cell = m_generation_info->globalNbCell();
   info() << "Apply UniqueId renumbering to mesh '" << mesh->name() << "'"
          << " global_nb_cell=" << cartesian_global_nb_cell
-         << " global_nb_cell_by_dim=" << m_generation_info->globalNbCells();
+         << " global_nb_cell_by_dim=" << m_generation_info->globalNbCells()
+         << " mesh_dimension=" << dimension;
 
   VariableCellInt64 cells_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberCellsNewUid"));
   VariableNodeInt64 nodes_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberNodesNewUid"));
@@ -94,15 +95,14 @@ renumber()
 
   Int64ConstArrayView global_nb_cells_by_direction = m_generation_info->globalNbCells();
   Int64 nb_cell_x = global_nb_cells_by_direction[MD_DirX];
+  Int64 nb_cell_y = global_nb_cells_by_direction[MD_DirY];
+  Int64 nb_cell_z = global_nb_cells_by_direction[MD_DirZ];
+
   if (nb_cell_x <= 0)
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirX] (should be >0)", nb_cell_x);
-
-  Int64 nb_cell_y = global_nb_cells_by_direction[MD_DirY];
-  if (nb_cell_y <= 0)
+  if (dimension >= 2 && nb_cell_y <= 0)
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirY] (should be >0)", nb_cell_y);
-
-  Int64 nb_cell_z = global_nb_cells_by_direction[MD_DirZ];
-  if (nb_cell_z <= 0)
+  if (dimension >= 3 && nb_cell_z <= 0)
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", nb_cell_z);
 
   if (dimension == 2) {
