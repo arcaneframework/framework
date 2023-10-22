@@ -53,6 +53,8 @@
 #include "arcane/cartesianmesh/NodeDirectionMng.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
 
+#include "arcane/cartesianmesh/ICartesianMeshPatch.h"
+
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/CartesianMeshTester_axl.h"
 #include "arcane/tests/CartesianMeshTestUtils.h"
@@ -452,6 +454,12 @@ _testCoarsening()
       for( Int32 i=0, n=cell.nbHChildren(); i<n; ++i ){
         info() << "SubCell=" << ItemPrinter(cell.hChild(i));
       }
+    }
+    Int32 nb_patch = m_cartesian_mesh->nbPatch();
+    info() << "NB_PATCH=" << nb_patch;
+    for( Int32 i=0; i<nb_patch; ++i ){
+      ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
+      info() << "Patch i=" << i << " nb_cell=" << p->cells().size();
     }
   }
 }

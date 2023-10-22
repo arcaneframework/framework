@@ -143,6 +143,7 @@ arcane_add_test(amr-cartesian2D-V2-2 testAMRCartesianMesh2D-V2-2.arc "-m 20")
 arcane_add_test(amr-cartesian3D-V2-1 testAMRCartesianMesh3D-V2-1.arc "-m 20")
 arcane_add_test_sequential(amr-cartesian3D-V2-2 testAMRCartesianMesh3D-V2-2.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-V2-2 testAMRCartesianMesh3D-V2-2.arc 8 "-m 20")
+arcane_add_test(amr-cartesian2D-V1-coarse-1 testAMRCartesianMesh2D-V1-coarse-1.arc "-m 20")
 
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-V2-1 testAMRCartesianMesh2D-V2-1.arc 3 5)
 arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-V2-2 testAMRCartesianMesh2D-V2-2.arc 3 5)
