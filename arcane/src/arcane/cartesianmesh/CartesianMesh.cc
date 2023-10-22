@@ -84,6 +84,10 @@ class CartesianMeshImpl
     {
       return m_cartesian_mesh->_createCartesianMeshCoarsening2();
     }
+    void addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id) override
+    {
+      m_cartesian_mesh->_addPatchFromExistingChildren(parent_cells_local_id);
+    }
 
    private:
 
@@ -162,6 +166,7 @@ class CartesianMeshImpl
 
   // Implémentation de 'ICartesianMeshInternal'
   Ref<CartesianMeshCoarsening2> _createCartesianMeshCoarsening2();
+  void _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id);
 
  private:
 
@@ -191,6 +196,7 @@ class CartesianMeshImpl
                              VariableFaceReal3& faces_center,CellGroup all_cells,
                              NodeGroup all_nodes);
   void _applyRefine(ConstArrayView<Int32> cells_local_id);
+  void _addPatch(const CellGroup& parent_group);
   void _saveInfosInProperties();
 
   std::tuple<CellGroup,NodeGroup>
@@ -643,6 +649,44 @@ refinePatch3D(Real3 position,Real3 length)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
+_addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
+{
+  IItemFamily* cell_family = m_mesh->cellFamily();
+  Integer index = m_amr_patch_cell_groups.size();
+  String parent_group_name = String("CartesianMeshPatchParentCells")+index;
+  CellGroup parent_cells = cell_family->createGroup(parent_group_name,parent_cells_local_id,true);
+  _addPatch(parent_cells);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé un patch avec tous les enfants du groupe \a parent_cells.
+ */
+void CartesianMeshImpl::
+_addPatch(const CellGroup& parent_cells)
+{
+  Integer index = m_amr_patch_cell_groups.size();
+  // Créé le groupe contenant les mailles AMR
+  // Il s'agit des mailles filles de \a parent_cells
+  String children_group_name = String("CartesianMeshPatchCells")+index;
+  UniqueArray<Int32> children_local_id;
+  ENUMERATE_(Cell,icell,parent_cells){
+    Cell c = *icell;
+    for(Integer k=0; k<c.nbHChildren(); ++k ){
+      Cell child = c.hChild(k);
+      children_local_id.add(child.localId());
+    }
+  }
+  IItemFamily* cell_family = m_mesh->cellFamily();
+  CellGroup children_cells = cell_family->createGroup(children_group_name,children_local_id,true);
+  m_amr_patch_cell_groups.add(children_cells);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
 _applyRefine(ConstArrayView<Int32> cells_local_id)
 {
   IItemFamily* cell_family = m_mesh->cellFamily();
@@ -663,21 +707,7 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
     MeshStats ms(traceMng(),m_mesh,m_mesh->parallelMng());
     ms.dumpStats();
   }
-  {
-    // Créé le groupe contenant les mailles AMR
-    // Il s'agit des mailles filles de \a parent_cells
-    String children_group_name = String("CartesianMeshPatchCells")+index;
-    UniqueArray<Int32> children_local_id;
-    ENUMERATE_CELL(icell,parent_cells){
-      Cell c = *icell;
-      for(Integer k=0; k<c.nbHChildren(); ++k ){
-        Cell child = c.hChild(k);
-        children_local_id.add(child.localId());
-      }
-    }
-    CellGroup children_cells = cell_family->createGroup(children_group_name,children_local_id,true);
-    m_amr_patch_cell_groups.add(children_cells);
-  }
+  _addPatch(parent_cells);
 }
 
 /*---------------------------------------------------------------------------*/

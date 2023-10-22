@@ -30,6 +30,7 @@
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 #include <unordered_set>
 
@@ -367,7 +368,14 @@ createCoarseCells()
     ms.dumpStats();
   }
 
-  // Il faut recalculer les nouvelles directions
+  //! Créé le patch avec les mailles filles
+  {
+    CellGroup parent_cells = mesh->allLevelCells(0);
+    m_cartesian_mesh->_internalApi()->addPatchFromExistingChildren(parent_cells.view().localIds());
+  }
+
+  // Il faut recalculer les nouvelles directions après les modifications
+  // et l'ajout de patch.
   m_cartesian_mesh->computeDirections();
 
   _writeMeshSVG("coarse");
