@@ -40,6 +40,8 @@ class CartesianMeshPatch;
 class CartesianConnectivity;
 class CartesianMeshCoarsening;
 class CartesianMeshCoarsening2;
+class CartesianMeshRenumberingInfo;
+class ICartesianMeshInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

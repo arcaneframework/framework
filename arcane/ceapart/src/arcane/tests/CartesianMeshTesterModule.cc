@@ -15,38 +15,39 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/MeshUtils.h"
-#include "arcane/MathUtils.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/MathUtils.h"
 
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeLoopService.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IMeshWriter.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeLoopService.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMeshWriter.h"
 
-#include "arcane/ICaseDocument.h"
-#include "arcane/IInitialPartitioner.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/IMeshPartitionerBase.h"
-#include "arcane/BasicService.h"
-#include "arcane/MeshReaderMng.h"
-#include "arcane/IGridMeshPartitioner.h"
-#include "arcane/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/IInitialPartitioner.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/IMeshPartitionerBase.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/MeshReaderMng.h"
+#include "arcane/core/IGridMeshPartitioner.h"
+#include "arcane/core/ICartesianMeshGenerationInfo.h"
 
-#include "arcane/Connectivity.h"
+#include "arcane/core/Connectivity.h"
 
 #include "arcane/cartesianmesh/CartesianMeshCoarsening.h"
 #include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
 
+#include "arcane/cartesianmesh/CartesianMeshUtils.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/NodeDirectionMng.h"
@@ -441,7 +442,7 @@ _testCoarsening()
 
   if (coarse_version==2){
     info() << "Test CartesianCoarsening V2";
-    Ref<CartesianMeshCoarsening2> coarser = m_cartesian_mesh->createCartesianMeshCoarsening2();
+    Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
     coarser->createCoarseCells();
     ENUMERATE_(Cell,icell,allCells()){
       Cell cell = *icell;
