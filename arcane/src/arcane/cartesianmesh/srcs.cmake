@@ -24,6 +24,7 @@ set(ARCANE_SOURCES
   internal/CartesianMeshPatch.h
   internal/CartesianMeshUniqueIdRenumbering.h
   internal/CartesianMeshUniqueIdRenumbering.cc
+  internal/ICartesianMeshInternal.h
   CartesianMeshPatch.cc
 
   v2/CartesianGrid.h

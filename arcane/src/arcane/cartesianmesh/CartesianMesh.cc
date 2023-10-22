@@ -37,6 +37,7 @@
 #include "arcane/cartesianmesh/CartesianMeshCoarsening.h"
 #include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 #include "arcane/cartesianmesh/internal/CartesianMeshUniqueIdRenumbering.h"
 #include "arcane/cartesianmesh/v2/CartesianMeshUniqueIdRenumberingV2.h"
@@ -67,6 +68,21 @@ class CartesianMeshImpl
 : public TraceAccessor
 , public ICartesianMesh
 {
+  class InternalApi
+  : public ICartesianMeshInternal
+  {
+   public:
+
+    explicit InternalApi(CartesianMeshImpl* cartesian_mesh)
+    : m_cartesian_mesh(cartesian_mesh)
+    {
+    }
+
+   private:
+
+    CartesianMeshImpl* m_cartesian_mesh = nullptr;
+  };
+
  public:
 
   explicit CartesianMeshImpl(IMesh* mesh);
@@ -133,8 +149,12 @@ class CartesianMeshImpl
   Ref<CartesianMeshCoarsening> createCartesianMeshCoarsening() override;
   Ref<CartesianMeshCoarsening2> createCartesianMeshCoarsening2() override;
 
-  private:
+  //! API interne à Arcane
+  ICartesianMeshInternal* _internalApi() override { return &m_internal_api; }
 
+ private:
+
+  InternalApi m_internal_api;
   //! Indice dans la numérotation locale de la maille, de la face dans
   // la direction X, Y ou Z
   Int32 m_local_face_direction[3];
@@ -186,6 +206,7 @@ arcaneCreateCartesianMesh(IMesh* mesh)
 CartesianMeshImpl::
 CartesianMeshImpl(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
+, m_internal_api(this)
 , m_mesh(mesh)
 , m_nodes_to_cell_storage(platform::getDefaultDataAllocator())
 , m_cells_to_node_storage(platform::getDefaultDataAllocator())

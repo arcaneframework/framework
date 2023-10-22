@@ -24,7 +24,6 @@
 
 namespace Arcane
 {
-class CartesianMeshRenumberingInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -168,6 +167,11 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * \warning Experimental method !
    */
   virtual Ref<CartesianMeshCoarsening2> createCartesianMeshCoarsening2() = 0;
+
+ public:
+
+  //! API interne à Arcane
+  virtual ICartesianMeshInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
