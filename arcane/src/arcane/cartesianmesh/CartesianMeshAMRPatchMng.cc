@@ -359,12 +359,12 @@ refine()
   else if(m_mesh->dimension() == 3) {
 
     const bool node_left[] = {false, true, true, false, false, true, true, false};
-    const bool node_bottom[] = {false, false, false, false, true, true, true, true};
-    const bool node_rear[] = {false, false, true, true, false, false, true, true};
+    const bool node_bottom[] = {false, false, true, true, false, false, true, true};
+    const bool node_rear[] = {false, false, false, false, true, true, true, true};
 
     const bool node_right[] = {true, false, false, true, true, false, false, true};
-    const bool node_top[] = {true, true, true, true, false, false, false, false};
-    const bool node_front[] = {true, true, false, false, true, true, false, false};
+    const bool node_top[] = {true, true, false, false, true, true, false, false};
+    const bool node_front[] = {true, true, true, true, false, false, false, false};
 
     const Integer nodes_in_face_0[] = {0, 1, 2, 3};
     const Integer nodes_in_face_1[] = {0, 3, 7, 4};
