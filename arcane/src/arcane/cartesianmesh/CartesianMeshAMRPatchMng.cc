@@ -24,8 +24,8 @@
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
 #include "arcane/core/MeshEvents.h"
 #include "arcane/utils/Real3.h"
-#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/mesh/FaceFamily.h"
 
 #include <map>
 
@@ -44,6 +44,7 @@ CartesianMeshAMRPatchMng(ICartesianMesh* cmesh)
 : TraceAccessor(cmesh->mesh()->traceMng())
 , m_cmesh(cmesh)
 , m_mesh(cmesh->mesh())
+, m_num_mng(cmesh->mesh())
 , m_flag_cells_consistent(Arccore::makeRef(new VariableCellInteger(VariableBuildInfo(cmesh->mesh(), "FlagCellsConsistent"))))
 {
 
@@ -98,7 +99,6 @@ _syncFlagCell()
 void CartesianMeshAMRPatchMng::
 refine()
 {
-  CartesianMeshNumberingMng num_mng(m_mesh);
 
   UniqueArray<Cell> cell_to_refine_internals;
   ENUMERATE_CELL(icell,m_mesh->ownActiveCells()) {
@@ -121,8 +121,8 @@ refine()
   std::map<Int64, Int32> node_uid_to_owner;
   std::map<Int64, Int32> face_uid_to_owner;
 
-  UniqueArray<Int64> ua_node_uid(num_mng.getNbNode());
-  UniqueArray<Int64> ua_face_uid(num_mng.getNbFace());
+  UniqueArray<Int64> ua_node_uid(m_num_mng.getNbNode());
+  UniqueArray<Int64> ua_face_uid(m_num_mng.getNbFace());
 
   UniqueArray<Cell> parent_cells;
 
@@ -143,29 +143,29 @@ refine()
     const bool face_top[] = {true, true, false, true};
 
 
-    m_cells_infos.reserve(cell_to_refine_internals.size() * 4 * (2 + num_mng.getNbNode()));
+    m_cells_infos.reserve(cell_to_refine_internals.size() * 4 * (2 + m_num_mng.getNbNode()));
     m_faces_infos.reserve(cell_to_refine_internals.size() * 12 * (2 + 2));
     m_nodes_infos.reserve(cell_to_refine_internals.size() * 9);
 
     for (Cell cell : cell_to_refine_internals) {
       Int64 uid = cell.uniqueId();
       Int32 level = cell.level();
-      Int64 coord_x = num_mng.uidToCoordX(uid, level);
-      Int64 coord_y = num_mng.uidToCoordY(uid, level);
+      Int64 coord_x = m_num_mng.uidToCoordX(uid, level);
+      Int64 coord_y = m_num_mng.uidToCoordY(uid, level);
 
-      Int64 ori_x = num_mng.getOffsetLevelToLevel(coord_x, level, level + 1);
-      Int64 ori_y = num_mng.getOffsetLevelToLevel(coord_y, level, level + 1);
+      Int64 ori_x = m_num_mng.getOffsetLevelToLevel(coord_x, level, level + 1);
+      Int64 ori_y = m_num_mng.getOffsetLevelToLevel(coord_y, level, level + 1);
 
-      Integer pattern = num_mng.getPattern();
+      Integer pattern = m_num_mng.getPattern();
       for (Integer j = ori_y; j < ori_y+pattern; ++j) {
         for (Integer i = ori_x; i < ori_x+pattern; ++i) {
           parent_cells.add(cell);
           total_nb_cells++;
-          Int64 uid_child = num_mng.getCellUid(level+1, i, j);
+          Int64 uid_child = m_num_mng.getCellUid(level+1, i, j);
           debug() << "Test 1 -- x : " << i << " -- y : " << j << " -- level : " << level+1 << " -- uid : " << uid_child;
 
-          num_mng.getNodeUids(ua_node_uid, level+1, i, j);
-          num_mng.getFaceUids(ua_face_uid, level+1, i, j);
+          m_num_mng.getNodeUids(ua_node_uid, level+1, i, j);
+          m_num_mng.getFaceUids(ua_face_uid, level+1, i, j);
 
           Integer type_cell = IT_Quad4;
           Integer type_face = IT_Line2;
@@ -173,7 +173,7 @@ refine()
           // Partie Cell.
           m_cells_infos.add(type_cell);
           m_cells_infos.add(uid_child);
-          for (Integer nc = 0; nc < num_mng.getNbNode(); nc++) {
+          for (Integer nc = 0; nc < m_num_mng.getNbNode(); nc++) {
             m_cells_infos.add(ua_node_uid[nc]);
           }
 
@@ -204,98 +204,13 @@ refine()
                   << " -- top_cell : " << top_cell
                   << " -- left_bottom_cell : " << left_bottom_cell;
 
-          bool is_cell_left = (
-            !left_cell.null()
-            &&
-            (
-              (
-                left_cell.isOwn()
-                &&
-                ((left_cell.itemBase().flags() & ItemFlags::II_Refine) || (left_cell.itemBase().flags() & ItemFlags::II_Inactive))
-              )
-              ||
-              (
-                !left_cell.isOwn()
-                &&
-                (left_cell.itemBase().flags() & ItemFlags::II_Inactive)
-              )
-            )
-          );
+          bool is_cell_left = (!left_cell.null() && ((left_cell.isOwn() && ((left_cell.itemBase().flags() & ItemFlags::II_Refine) || (left_cell.itemBase().flags() & ItemFlags::II_Inactive))) || (!left_cell.isOwn() && (left_cell.itemBase().flags() & ItemFlags::II_Inactive))));
+          bool is_cell_right = (!right_cell.null() && ((right_cell.isOwn() && ((right_cell.itemBase().flags() & ItemFlags::II_Inactive))) || (!right_cell.isOwn() && (right_cell.itemBase().flags() & ItemFlags::II_Inactive))));
+          bool is_cell_bottom = (!bottom_cell.null() && ((bottom_cell.isOwn() && ((bottom_cell.itemBase().flags() & ItemFlags::II_Refine) || (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive))) || (!bottom_cell.isOwn() && (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive))));
+          bool is_cell_top = (!top_cell.null() && ((top_cell.isOwn() && ( (top_cell.itemBase().flags() & ItemFlags::II_Inactive))) || (!top_cell.isOwn() && (top_cell.itemBase().flags() & ItemFlags::II_Inactive))));
 
-          bool is_cell_right = (
-            !right_cell.null()
-            &&
-            (
-              (
-                right_cell.isOwn()
-                &&
-                ( (right_cell.itemBase().flags() & ItemFlags::II_Inactive))
-              )
-              ||
-              (
-                !right_cell.isOwn()
-                &&
-                (right_cell.itemBase().flags() & ItemFlags::II_Inactive)
-              )
-            )
-          );
-
-          bool is_cell_bottom = (
-            !bottom_cell.null()
-            &&
-            (
-              (
-                bottom_cell.isOwn()
-                &&
-                ((bottom_cell.itemBase().flags() & ItemFlags::II_Refine) || (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive))
-              )
-              ||
-              (
-                !bottom_cell.isOwn()
-                &&
-                (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive)
-              )
-            )
-          );
-
-          bool is_cell_top = (
-            !top_cell.null()
-            &&
-            (
-              (
-                top_cell.isOwn()
-                &&
-                ( (top_cell.itemBase().flags() & ItemFlags::II_Inactive))
-              )
-              ||
-              (
-                !top_cell.isOwn()
-                &&
-                (top_cell.itemBase().flags() & ItemFlags::II_Inactive)
-              )
-            )
-          );
-
-
-          bool is_cell_left2 = (
-            !left_cell.null()
-            &&
-            (
-              !left_cell.isOwn()
-              &&
-              (left_cell.itemBase().flags() & ItemFlags::II_Refine)
-            )
-          );
-
-          bool is_cell_bottom2 = (
-            !bottom_cell.null()
-            &&
-            (
-              !bottom_cell.isOwn()
-              &&
-              (bottom_cell.itemBase().flags() & ItemFlags::II_Refine)
-            )
-          );
+          bool is_cell_left2 = (!left_cell.null() && (!left_cell.isOwn() && (left_cell.itemBase().flags() & ItemFlags::II_Refine)));
+          bool is_cell_bottom2 = (!bottom_cell.null() && (!bottom_cell.isOwn() && (bottom_cell.itemBase().flags() & ItemFlags::II_Refine)));
 
           debug() << "is_cell_left : " << is_cell_left
                   << " -- is_cell_right : " << is_cell_right
@@ -306,7 +221,7 @@ refine()
 
 
           // Partie Face.
-          for(Integer l = 0; l < num_mng.getNbFace(); ++l){
+          for(Integer l = 0; l < m_num_mng.getNbFace(); ++l){
             if (
                 ( (i == ori_x && !is_cell_left) || (face_left[l]) )
                 &&
@@ -320,7 +235,7 @@ refine()
               m_faces_infos.add(type_face);
               m_faces_infos.add(ua_face_uid[l]);
               for (Integer nc = l; nc < l + 2; nc++) {
-                m_faces_infos.add(ua_node_uid[nc % num_mng.getNbNode()]);
+                m_faces_infos.add(ua_node_uid[nc % m_num_mng.getNbNode()]);
               }
               total_nb_faces++;
 
@@ -345,7 +260,7 @@ refine()
           }
 
           // Partie Node.
-          for(Integer l = 0; l < num_mng.getNbNode(); ++l) {
+          for(Integer l = 0; l < m_num_mng.getNbNode(); ++l) {
             if (
                 ( (i == ori_x && !is_cell_left) || (node_left[l]) )
                 &&
@@ -419,38 +334,38 @@ refine()
     const Integer nodes_in_face_5[] = {3, 2, 6, 7};
     Integer nb_nodes_in_face = 4;
 
-    m_cells_infos.reserve(cell_to_refine_internals.size() * 8 * (2 + num_mng.getNbNode()));
+    m_cells_infos.reserve(cell_to_refine_internals.size() * 8 * (2 + m_num_mng.getNbNode()));
     m_faces_infos.reserve(cell_to_refine_internals.size() * 36 * (2 + 4));
     m_nodes_infos.reserve(cell_to_refine_internals.size() * 27);
     for (Cell cell : cell_to_refine_internals) {
       Int64 uid = cell.uniqueId();
       Int32 level = cell.level();
-      Int64 coord_x = num_mng.uidToCoordX(uid, level);
-      Int64 coord_y = num_mng.uidToCoordY(uid, level);
-      Int64 coord_z = num_mng.uidToCoordZ(uid, level);
+      Int64 coord_x = m_num_mng.uidToCoordX(uid, level);
+      Int64 coord_y = m_num_mng.uidToCoordY(uid, level);
+      Int64 coord_z = m_num_mng.uidToCoordZ(uid, level);
 
-      Int64 ori_x = num_mng.getOffsetLevelToLevel(coord_x, level, level + 1);
-      Int64 ori_y = num_mng.getOffsetLevelToLevel(coord_y, level, level + 1);
-      Int64 ori_z = num_mng.getOffsetLevelToLevel(coord_z, level, level + 1);
+      Int64 ori_x = m_num_mng.getOffsetLevelToLevel(coord_x, level, level + 1);
+      Int64 ori_y = m_num_mng.getOffsetLevelToLevel(coord_y, level, level + 1);
+      Int64 ori_z = m_num_mng.getOffsetLevelToLevel(coord_z, level, level + 1);
 
-      Integer pattern = num_mng.getPattern();
+      Integer pattern = m_num_mng.getPattern();
       for (Integer k = ori_z; k < ori_z+pattern; ++k) {
         for (Integer j = ori_y; j < ori_y+pattern; ++j) {
           for (Integer i = ori_x; i < ori_x+pattern; ++i) {
             parent_cells.add(cell);
             total_nb_cells++;
-            Int64 uid_child = num_mng.getCellUid(level+1, i, j, k);
+            Int64 uid_child = m_num_mng.getCellUid(level+1, i, j, k);
             debug() << "Test 2 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- uid : " << uid_child;
 
-            num_mng.getNodeUids(ua_node_uid, level+1, i, j, k);
-            num_mng.getFaceUids(ua_face_uid, level+1, i, j, k);
+            m_num_mng.getNodeUids(ua_node_uid, level+1, i, j, k);
+            m_num_mng.getFaceUids(ua_face_uid, level+1, i, j, k);
 
             Integer type_cell = IT_Hexaedron8;
             Integer type_face = IT_Quad4;
 
             m_cells_infos.add(type_cell);
             m_cells_infos.add(uid_child);
-            for (Integer nc = 0; nc < num_mng.getNbNode(); nc++) {
+            for (Integer nc = 0; nc < m_num_mng.getNbNode(); nc++) {
               m_cells_infos.add(ua_node_uid[nc]);
             }
 
@@ -661,7 +576,7 @@ refine()
 
 
             // Partie Face.
-            for(Integer l = 0; l < num_mng.getNbFace(); ++l){
+            for(Integer l = 0; l < m_num_mng.getNbFace(); ++l){
               if (
                 ( (i == ori_x && !is_cell_left) || (face_left[l]) )
                 &&
@@ -733,7 +648,7 @@ refine()
 
 
             // Partie Node.
-            for(Integer l = 0; l < num_mng.getNbNode(); ++l){
+            for(Integer l = 0; l < m_num_mng.getNbNode(); ++l){
               if (
                 ( (i == ori_x && !is_cell_left) || (node_left[l]) )
                 &&
@@ -830,6 +745,11 @@ refine()
     ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(m_nodes_lid)) {
       Node node = *inode;
       node.mutableItemBase().setOwner(node_uid_to_owner[node.uniqueId()], m_mesh->parallelMng()->commRank());
+
+      if(node_uid_to_owner[node.uniqueId()] == m_mesh->parallelMng()->commRank()){
+        node.mutableItemBase().addFlags(ItemFlags::II_Own);
+      }
+
     }
     m_mesh->nodeFamily()->notifyItemsOwnerChanged();
   }
@@ -843,6 +763,11 @@ refine()
     ENUMERATE_ (Face, iface, m_mesh->faceFamily()->view(m_faces_lid)) {
       Face face = *iface;
       face.mutableItemBase().setOwner(face_uid_to_owner[face.uniqueId()], m_mesh->parallelMng()->commRank());
+
+      if(face_uid_to_owner[face.uniqueId()] == m_mesh->parallelMng()->commRank()){
+        face.mutableItemBase().addFlags(ItemFlags::II_Own);
+      }
+
     }
     m_mesh->faceFamily()->notifyItemsOwnerChanged();
   }
@@ -856,7 +781,13 @@ refine()
     CellInfoListView cells(m_mesh->cellFamily());
     for (Integer i = 0; i < total_nb_cells; ++i){
       Cell child = cells[m_cells_lid[i]];
+
+      child.mutableItemBase().addFlags(ItemFlags::II_Own);
       child.mutableItemBase().addFlags(ItemFlags::II_JustAdded);
+      if(parent_cells[i].itemBase().flags() & ItemFlags::II_Shared){
+        child.mutableItemBase().addFlags(ItemFlags::II_Shared);
+      }
+
       m_mesh->modifier()->addParentCellToCell(child, parent_cells[i]);
       m_mesh->modifier()->addChildCellToCell(parent_cells[i], child);
       info() << "addParent/ChildCellToCell -- Child : " << child.uniqueId() << " -- Parent : " << parent_cells[i].uniqueId();
@@ -868,12 +799,13 @@ refine()
     }
   }
   m_mesh->modifier()->endUpdate();
+
   {
     VariableNodeReal3& nodes_coords = m_mesh->nodesCoordinates();
     for(Cell parent_cell : cell_to_refine_internals){
       for(Integer i = 0; i < parent_cell.nbHChildren(); ++i){
         Cell child = parent_cell.hChild(i);
-        num_mng.getNodeCoordinates(child);
+        m_num_mng.getNodeCoordinates(child);
         info() << "getNodeCoordinates -- Child : " << child.uniqueId() << " -- Parent : " << parent_cell.uniqueId();
         for(Node node : child.nodes()){
           info() << "\tChild Node : " << node.uniqueId() << " -- Coord : " << nodes_coords[node];
@@ -882,11 +814,100 @@ refine()
     }
   }
 
+  //updateBackFrontCellFace();
+
+
+
+  ENUMERATE_(Cell, icell, m_mesh->allCells()){
+    info() << "\t" << *icell;
+    for(Node node : icell->nodes()){
+      info() << "\t\t" << node;
+    }
+    for(Face face : icell->faces()){
+      info() << "\t\t\t" << face;
+    }
+  }
+
   info() << "Résumé :";
   ENUMERATE_ (Cell, icell, m_mesh->allCells()){
     info() << "\tCell uniqueId : " << icell->uniqueId() << " -- level : " << icell->level() << " -- nbChildren : " << icell->nbHChildren();
     for(Integer i = 0; i < icell->nbHChildren(); ++i){
       info() << "\t\tChild uniqueId : " << icell->hChild(i).uniqueId() << " -- level : " << icell->hChild(i).level() << " -- nbChildren : " << icell->hChild(i).nbHChildren();
+    }
+  }
+
+
+
+
+  m_mesh->modifier()->setDynamic(true);
+  m_mesh->modifier()->updateGhostLayers();
+}
+
+void CartesianMeshAMRPatchMng::
+updateBackFrontCellFace()
+{
+  const bool back_or_front[] = {true, false, false, true};
+
+  mesh::FaceFamily* face_family = ARCANE_CHECK_POINTER(dynamic_cast<mesh::FaceFamily*>(m_mesh->faceFamily()));
+
+  ENUMERATE_ (Cell, icell, m_mesh->ownCells()){
+    if(icell->itemBase().flags() & ItemFlags::II_JustRefined){
+
+      CellDirectionMng cdmx(m_cmesh->cellDirection(MD_DirX));
+      CellDirectionMng cdmy(m_cmesh->cellDirection(MD_DirY));
+
+      DirCell ccx(cdmx.cell(icell));
+      DirCell ccy(cdmy.cell(icell));
+
+      Cell left_cell = ccx.previous();
+      Cell right_cell = ccx.next();
+      Cell bottom_cell = ccy.previous();
+      Cell top_cell = ccy.next();
+
+      bool is_cell_left = (!left_cell.null() && ((left_cell.isOwn() && ((left_cell.itemBase().flags() & ItemFlags::II_Refine) || (left_cell.itemBase().flags() & ItemFlags::II_Inactive))) || (!left_cell.isOwn() && (left_cell.itemBase().flags() & ItemFlags::II_Inactive))));
+      bool is_cell_right = (!right_cell.null() && ((right_cell.isOwn() && ((right_cell.itemBase().flags() & ItemFlags::II_Inactive))) || (!right_cell.isOwn() && (right_cell.itemBase().flags() & ItemFlags::II_Inactive))));
+      bool is_cell_bottom = (!bottom_cell.null() && ((bottom_cell.isOwn() && ((bottom_cell.itemBase().flags() & ItemFlags::II_Refine) || (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive))) || (!bottom_cell.isOwn() && (bottom_cell.itemBase().flags() & ItemFlags::II_Inactive))));
+      bool is_cell_top = (!top_cell.null() && ((top_cell.isOwn() && ( (top_cell.itemBase().flags() & ItemFlags::II_Inactive))) || (!top_cell.isOwn() && (top_cell.itemBase().flags() & ItemFlags::II_Inactive))));
+
+      Integer pattern = m_num_mng.getPattern();
+      for (Integer j = 0; j < pattern; ++j) {
+        for (Integer i = 0; i < pattern; ++i) {
+          Integer ichild = (j * pattern) + i;
+
+          Cell child = icell->hChild(ichild);
+          ARCANE_ASSERT((child.itemBase().flags() & ItemFlags::II_JustAdded), ("Bizarre..."));
+
+          for(Integer l = 0; l < m_num_mng.getNbFace(); ++l) {
+            Face face = child.face(l);
+
+            if(back_or_front[l]){
+              face_family->addFrontCellToFace(face, child);
+            }
+            else{
+              face_family->addBackCellToFace(face, child);
+            }
+
+            if(l%2==0){
+              if(i == 0){
+                // back en bas
+              }
+              else if(i == pattern-1){
+                // front en haut
+              }
+            }
+            else{
+              if(j == 0){
+                // back en gauche
+              }
+              else if(j == pattern-1){
+                // front en droite
+              }
+            }
+
+
+          }
+        }
+      }
     }
   }
 }

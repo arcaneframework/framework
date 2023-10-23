@@ -70,9 +70,9 @@ getFirstCellUidLevel(Integer level)
 
   const Int32 dimension = m_mesh->dimension();
 
-  Int64 level_i_nb_cell_x = getGlobalNbCellsX(m_nb_face_level.size());
-  Int64 level_i_nb_cell_y = getGlobalNbCellsY(m_nb_face_level.size());
-  Int64 level_i_nb_cell_z = getGlobalNbCellsZ(m_nb_face_level.size());
+  Int64 level_i_nb_cell_x = getGlobalNbCellsX(m_nb_cell_level.size());
+  Int64 level_i_nb_cell_y = getGlobalNbCellsY(m_nb_cell_level.size());
+  Int64 level_i_nb_cell_z = getGlobalNbCellsZ(m_nb_cell_level.size());
 
   for(Integer i = m_nb_cell_level.size(); i < level+1; ++i){
     if(dimension == 2){
@@ -101,9 +101,9 @@ getFirstNodeUidLevel(Integer level)
 
   const Int32 dimension = m_mesh->dimension();
 
-  Int64 level_i_nb_cell_x = getGlobalNbCellsX(m_nb_face_level.size());
-  Int64 level_i_nb_cell_y = getGlobalNbCellsY(m_nb_face_level.size());
-  Int64 level_i_nb_cell_z = getGlobalNbCellsZ(m_nb_face_level.size());
+  Int64 level_i_nb_cell_x = getGlobalNbCellsX(m_nb_node_level.size());
+  Int64 level_i_nb_cell_y = getGlobalNbCellsY(m_nb_node_level.size());
+  Int64 level_i_nb_cell_z = getGlobalNbCellsZ(m_nb_node_level.size());
 
   for(Integer i = m_nb_node_level.size(); i < level+1; ++i){
     if(dimension == 2){
