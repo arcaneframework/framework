@@ -118,7 +118,8 @@ refine()
   Integer total_nb_nodes = 0;
   Integer total_nb_faces = 0;
 
-  std::map<Int64, Int32> uid_to_owner;
+  std::map<Int64, Int32> node_uid_to_owner;
+  std::map<Int64, Int32> face_uid_to_owner;
 
   UniqueArray<Int64> ua_node_uid(num_mng.getNbNode());
   UniqueArray<Int64> ua_face_uid(num_mng.getNbFace());
@@ -133,6 +134,13 @@ refine()
 
     const bool node_right[] = {true, false, false, true};
     const bool node_top[] = {true, true, false, false};
+
+
+    const bool face_left[] = {true, true, true, false};
+    const bool face_bottom[] = {false, true, true, true};
+
+    const bool face_right[] = {true, false, true, true};
+    const bool face_top[] = {true, true, false, true};
 
 
     m_cells_infos.reserve(cell_to_refine_internals.size() * 4 * (2 + num_mng.getNbNode()));
@@ -169,22 +177,8 @@ refine()
             m_cells_infos.add(ua_node_uid[nc]);
           }
 
-          // Partie Face.
-          // TODO : Face doublon entre les parents.
-          Integer begin = (j == ori_y ? 0 : 1);
-          Integer end = (i == ori_x ? num_mng.getNbFace() : num_mng.getNbFace()-1);
 
-          for(Integer l = begin; l < end; ++l){
-            m_faces_infos.add(type_face);
-            m_faces_infos.add(ua_face_uid[l]);
-            for (Integer nc = l; nc < l+2; nc++) {
-              m_faces_infos.add(ua_node_uid[nc%num_mng.getNbNode()]);
-            }
-            debug() << "Test 12 -- x : " << i << " -- y : " << j << " -- level : " << level+1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l];
-            total_nb_faces++;
-          }
 
-          // Partie Node.
 
           CellDirectionMng cdmx(m_cmesh->cellDirection(MD_DirX));
           CellDirectionMng cdmy(m_cmesh->cellDirection(MD_DirY));
@@ -310,6 +304,47 @@ refine()
                   << " -- is_cell_left2 : " << is_cell_left2
                   << " -- is_cell_bottom2 : " << is_cell_bottom2 ;
 
+
+          // Partie Face.
+          for(Integer l = 0; l < num_mng.getNbFace(); ++l){
+            if (
+                ( (i == ori_x && !is_cell_left) || (face_left[l]) )
+                &&
+                ( (i != (ori_x+pattern-1) || !is_cell_right) || face_right[l] )
+                &&
+                ( (j == ori_y && !is_cell_bottom) || (face_bottom[l]) )
+                &&
+                ( (j != (ori_y+pattern-1) || !is_cell_top) || face_top[l] )
+                )
+            {
+              m_faces_infos.add(type_face);
+              m_faces_infos.add(ua_face_uid[l]);
+              for (Integer nc = l; nc < l + 2; nc++) {
+                m_faces_infos.add(ua_node_uid[nc % num_mng.getNbNode()]);
+              }
+              total_nb_faces++;
+
+              Integer new_owner = -1;
+
+              if(i == ori_x && is_cell_left2 && (!face_left[l])){
+                new_owner = left_cell.owner();
+              }
+
+              else if(j == ori_y && is_cell_bottom2 && (!face_bottom[l])){
+                new_owner = bottom_cell.owner();
+              }
+
+              else{
+                new_owner = cell.owner();
+              }
+
+              face_uid_to_owner[ua_face_uid[l]] = new_owner;
+
+              debug() << "Test 12 -- x : " << i << " -- y : " << j << " -- level : " << level + 1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l] << " -- owner : " << new_owner;
+            }
+          }
+
+          // Partie Node.
           for(Integer l = 0; l < num_mng.getNbNode(); ++l) {
             if (
                 ( (i == ori_x && !is_cell_left) || (node_left[l]) )
@@ -346,7 +381,7 @@ refine()
                 new_owner = cell.owner();
               }
 
-              uid_to_owner[ua_node_uid[l]] = new_owner;
+              node_uid_to_owner[ua_node_uid[l]] = new_owner;
 
               debug() << "Test 11 -- x : " << i << " -- y : " << j << " -- level : " << level + 1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l] << " -- owner : " << new_owner;
             }
@@ -365,6 +400,16 @@ refine()
     const bool node_right[] = {true, false, false, true, true, false, false, true};
     const bool node_top[] = {true, true, false, false, true, true, false, false};
     const bool node_front[] = {true, true, true, true, false, false, false, false};
+
+
+    const bool face_left[] = {true, false, true, true, true, true};
+    const bool face_bottom[] = {true, true, false, true, true, true};
+    const bool face_rear[] = {false, true, true, true, true, true};
+
+    const bool face_right[] = {true, true, true, true, false, true};
+    const bool face_top[] = {true, true, true, true, true, false};
+    const bool face_front[] = {true, true, true, false, true, true};
+
 
     const Integer nodes_in_face_0[] = {0, 1, 2, 3};
     const Integer nodes_in_face_1[] = {0, 3, 7, 4};
@@ -409,50 +454,8 @@ refine()
               m_cells_infos.add(ua_node_uid[nc]);
             }
 
-            // Partie Face.
-            // TODO : Face doublon entre les parents.
 
-            for(Integer l = 0; l < num_mng.getNbFace(); ++l){
-              // On évite des faces doublons au niveau de la maille raffinée.
-              if(i != ori_x && l == 1) continue;
-              if(j != ori_y && l == 2) continue;
-              if(k != ori_z && l == 0) continue;
 
-              m_faces_infos.add(type_face);
-              m_faces_infos.add(ua_face_uid[l]);
-
-              ConstArrayView<Integer> nodes_in_face_l;
-              switch (l) {
-              case 0:
-                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_0, nb_nodes_in_face);
-                break;
-              case 1:
-                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_1, nb_nodes_in_face);
-                break;
-              case 2:
-                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_2, nb_nodes_in_face);
-                break;
-              case 3:
-                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_3, nb_nodes_in_face);
-                break;
-              case 4:
-                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_4, nb_nodes_in_face);
-                break;
-              case 5:
-                nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_5, nb_nodes_in_face);
-                break;
-              default:
-                ARCANE_FATAL("Bizarre...");
-              }
-              debug() << "Test 22 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l];
-              for(Integer nc : nodes_in_face_l){
-                m_faces_infos.add(ua_node_uid[nc]);
-                //info() << "Test 221 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- node : " << nc << " -- uid_node : " << ua_node_uid[nc];
-              }
-              total_nb_faces++;
-            }
-
-            // Partie Node.
             CellDirectionMng cdmx(m_cmesh->cellDirection(MD_DirX));
             CellDirectionMng cdmy(m_cmesh->cellDirection(MD_DirY));
             CellDirectionMng cdmz(m_cmesh->cellDirection(MD_DirZ));
@@ -657,6 +660,79 @@ refine()
                     << " -- is_cell_rear2 : " << is_cell_rear2;
 
 
+            // Partie Face.
+            for(Integer l = 0; l < num_mng.getNbFace(); ++l){
+              if (
+                ( (i == ori_x && !is_cell_left) || (face_left[l]) )
+                &&
+                ( (i != (ori_x+pattern-1) || !is_cell_right) || face_right[l] )
+                &&
+                ( (j == ori_y && !is_cell_bottom) || (face_bottom[l]) )
+                &&
+                ( (j != (ori_y+pattern-1) || !is_cell_top) || face_top[l] )
+                &&
+                ( (k == ori_z && !is_cell_rear) || (face_rear[l]) )
+                &&
+                ( (k != (ori_z+pattern-1) || !is_cell_front) || face_front[l] )
+              ){
+                m_faces_infos.add(type_face);
+                m_faces_infos.add(ua_face_uid[l]);
+
+                ConstArrayView<Integer> nodes_in_face_l;
+                switch (l) {
+                case 0:
+                  nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_0, nb_nodes_in_face);
+                  break;
+                case 1:
+                  nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_1, nb_nodes_in_face);
+                  break;
+                case 2:
+                  nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_2, nb_nodes_in_face);
+                  break;
+                case 3:
+                  nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_3, nb_nodes_in_face);
+                  break;
+                case 4:
+                  nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_4, nb_nodes_in_face);
+                  break;
+                case 5:
+                  nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_5, nb_nodes_in_face);
+                  break;
+                default:
+                  ARCANE_FATAL("Bizarre...");
+                }
+                for (Integer nc : nodes_in_face_l) {
+                  m_faces_infos.add(ua_node_uid[nc]);
+                }
+                total_nb_faces++;
+
+
+                Integer new_owner = -1;
+
+                if(i == ori_x && is_cell_left2 && (!face_left[l])){
+                  new_owner = left_cell.owner();
+                }
+
+                else if(j == ori_y && is_cell_bottom2 && (!face_bottom[l])){
+                  new_owner = bottom_cell.owner();
+                }
+
+                else if(k == ori_z && is_cell_rear2 && (!face_rear[l])){
+                  new_owner = rear_cell.owner();
+                }
+
+                else{
+                  new_owner = cell.owner();
+                }
+
+                face_uid_to_owner[ua_face_uid[l]] = new_owner;
+
+                debug() << "Test 22 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level + 1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l] << " -- owner : " << new_owner;
+              }
+            }
+
+
+            // Partie Node.
             for(Integer l = 0; l < num_mng.getNbNode(); ++l){
               if (
                 ( (i == ori_x && !is_cell_left) || (node_left[l]) )
@@ -727,7 +803,7 @@ refine()
                   new_owner = cell.owner();
                 }
 
-                uid_to_owner[ua_node_uid[l]] = new_owner;
+                node_uid_to_owner[ua_node_uid[l]] = new_owner;
 
                 debug() << "Test 21 -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << level+1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l] << " -- owner : " << new_owner;
               }
@@ -750,11 +826,10 @@ refine()
     info() << "total_nb_nodes : " << total_nb_nodes;
     m_nodes_lid.resize(total_nb_nodes);
     m_mesh->modifier()->addNodes(m_nodes_infos, m_nodes_lid);
-    m_mesh->nodeFamily()->endUpdate();
 
     ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(m_nodes_lid)) {
       Node node = *inode;
-      node.mutableItemBase().setOwner(uid_to_owner[node.uniqueId()], m_mesh->parallelMng()->commRank());
+      node.mutableItemBase().setOwner(node_uid_to_owner[node.uniqueId()], m_mesh->parallelMng()->commRank());
     }
     m_mesh->nodeFamily()->notifyItemsOwnerChanged();
   }
@@ -764,6 +839,12 @@ refine()
     info() << "total_nb_faces : " << total_nb_faces;
     m_faces_lid.resize(total_nb_faces);
     m_mesh->modifier()->addFaces(total_nb_faces, m_faces_infos, m_faces_lid);
+
+    ENUMERATE_ (Face, iface, m_mesh->faceFamily()->view(m_faces_lid)) {
+      Face face = *iface;
+      face.mutableItemBase().setOwner(face_uid_to_owner[face.uniqueId()], m_mesh->parallelMng()->commRank());
+    }
+    m_mesh->faceFamily()->notifyItemsOwnerChanged();
   }
 
   // Cells
