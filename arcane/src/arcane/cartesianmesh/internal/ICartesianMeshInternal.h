@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,6 +41,14 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
    * \warning Experimental method !
    */
   virtual Ref<CartesianMeshCoarsening2> createCartesianMeshCoarsening2() = 0;
+
+  /*!
+   * \brief Créé un patch avec tous les enfants des mailles \a parent_cells_local_id
+   *
+   * \a parent_cells_local_id est la liste des localId() des mailles parentes.
+   * Les mailles filles de \a parent_cells doivent déjà avoir été créées.
+   */
+  virtual void addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

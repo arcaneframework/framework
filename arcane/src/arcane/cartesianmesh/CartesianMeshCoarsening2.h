@@ -55,12 +55,15 @@ namespace Arcane
  *   initiale est de niveau 1.
  * - on peut accéder à ces mailles filles via les méthodes Cell::nbHChildren() et
  *   Cell::hChild().
+ * - il y aura deux patchs dans le maillage. Le premier contiendra les mailles
+ *   de niveau zéro et le second contiendra les mailles de niveau 1 qui sont les
+ *   anciennes mailles avant dé-raffinement.
  *
  * Voici un exemple de code utilisateur:
  *
  * \code
  * ICartesianMesh* cartesian_mesh = ...;
- * Ref<CartesianMeshCoarsening> coarser = m_cartesian_mesh->createCartesianMeshCoarsening();
+ * Ref<CartesianMeshCoarsening> coarser = CartesianMeshUtils::createCartesianMeshCoarsening(cartesian_mesh);
  * coarser->createCoarseCells();
  * \endcode
  */

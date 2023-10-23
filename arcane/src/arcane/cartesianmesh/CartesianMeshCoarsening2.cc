@@ -30,6 +30,7 @@
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 #include <unordered_set>
 
@@ -202,6 +203,7 @@ createCoarseCells()
 
   UniqueArray<Int64> refined_cells_lids;
   UniqueArray<Int64> coarse_cells_uids;
+  UniqueArray<Int32> coarse_cells_owner;
   UniqueArray<Int32> coarse_faces_owner;
 
   ENUMERATE_ (Cell, icell, mesh->allCells()) {
@@ -219,6 +221,7 @@ createCoarseCells()
       continue;
     if (is_verbose)
       info() << "CellToCoarse refined_uid=" << cell_uid << " x=" << cell_x << " y=" << cell_y;
+    coarse_cells_owner.add(cell.owner());
     const Int64 coarse_cell_x = cell_x / 2;
     const Int64 coarse_cell_y = cell_y / 2;
     std::array<Int64, 4> node_uids_container;
@@ -336,14 +339,16 @@ createCoarseCells()
   // Positionne les propriétaires des nouvelles mailles et faces
   {
     IItemFamily* face_family = mesh->faceFamily();
-    Int64 sub_cell_index = 0;
+    Int32 index = 0;
     ENUMERATE_ (Cell, icell, cell_family->view(cells_local_ids)) {
       Cell cell = *icell;
-      cell.mutableItemBase().setOwner(my_rank, my_rank);
+      Int32 owner = coarse_cells_owner[index];
+      cell.mutableItemBase().setOwner(owner, my_rank);
+      const Int64 sub_cell_index = index*4;
       for (Int32 z = 0; z < 4; ++z) {
         cell.face(z).mutableItemBase().setOwner(coarse_faces_owner[sub_cell_index + z], my_rank);
       }
-      sub_cell_index += 4;
+      ++index;
     }
     cell_family->notifyItemsOwnerChanged();
     face_family->notifyItemsOwnerChanged();
@@ -367,7 +372,14 @@ createCoarseCells()
     ms.dumpStats();
   }
 
-  // Il faut recalculer les nouvelles directions
+  //! Créé le patch avec les mailles filles
+  {
+    CellGroup parent_cells = mesh->allLevelCells(0);
+    m_cartesian_mesh->_internalApi()->addPatchFromExistingChildren(parent_cells.view().localIds());
+  }
+
+  // Il faut recalculer les nouvelles directions après les modifications
+  // et l'ajout de patch.
   m_cartesian_mesh->computeDirections();
 
   _writeMeshSVG("coarse");

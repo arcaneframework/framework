@@ -46,6 +46,11 @@
        Méthode de renumérotation des patchs (0 ou 1 ou 2).
      </description>
    </simple>
+   <simple name="coarse-at-init" type="bool" default="false">
+     <description>
+       Indique si on dé-raffine à l'initialisation
+     </description>
+   </simple>
 
 </options>
 
