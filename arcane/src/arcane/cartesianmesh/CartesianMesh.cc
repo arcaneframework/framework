@@ -639,7 +639,6 @@ refinePatch2D(Real2 position,Real2 length)
   info() << "REFINEMENT 2D position=" << position << " length=" << length;
   Real3 position_3d(position.x,position.y,0.0);
   Real3 length_3d(length.x,length.y,0.0);
-  computeDirections();
   _refinePatch(position_3d,length_3d,false);
 }
 
@@ -650,7 +649,6 @@ void CartesianMeshImpl::
 refinePatch3D(Real3 position,Real3 length)
 {
   info() << "REFINEMENT 3D position=" << position << " length=" << length;
-  computeDirections();
   _refinePatch(position,length,true);
 }
 
@@ -716,13 +714,14 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
     m_mesh->modifier()->flagCellToRefine(cells_local_id);
     m_mesh->modifier()->adapt();
   }
-  else if(m_amr_type == eMeshAMRKind::CartesianOnly) {
+  else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Refine with specific refiner (for cartesian mesh only)";
+    computeDirections();
     m_amr_mng->flagCellToRefine(cells_local_id);
     m_amr_mng->refine();
   }
   else if(m_amr_type == eMeshAMRKind::Patch) {
-    ARCANE_FATAL("Patch AMR is not implemented");
+    ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
   }
   else{
     ARCANE_FATAL("AMR is not enabled");

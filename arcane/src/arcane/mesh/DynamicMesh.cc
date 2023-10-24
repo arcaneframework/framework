@@ -397,8 +397,9 @@ build()
      else if(m_amr_type == eMeshAMRKind::Patch){
        ARCANE_FATAL("Patch AMR type is not implemented.");
      }
-     else if(m_amr_type == eMeshAMRKind::CartesianOnly){
-       //TODO
+     else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly){
+       // L'AMR PatchCartesianMeshOnly n'est pas géré par MeshRefinement().
+       // Voir dans CartesianMesh.cc.
      }
     }
   }

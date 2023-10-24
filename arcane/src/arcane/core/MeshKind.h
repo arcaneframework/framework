@@ -40,7 +40,7 @@ enum class eMeshAMRKind
   None,
   Cell,
   Patch,
-  CartesianOnly
+  PatchCartesianMeshOnly
 };
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<<(std::ostream& o, eMeshAMRKind r);
