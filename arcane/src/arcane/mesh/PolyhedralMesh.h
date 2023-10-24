@@ -203,8 +203,6 @@ class PolyhedralMesh
 
   bool isAmrActivated() const override { return false; }
 
-  eMeshAMRKind amrType() const override { return eMeshAMRKind::None; }
-
   IItemFamily* itemFamily(eItemKind ik) override;
 
   ItemTypeMng* itemTypeMng() const override;

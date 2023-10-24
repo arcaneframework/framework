@@ -432,11 +432,6 @@ public:
 	  return m_is_amr_activated;
   }
 
-  eMeshAMRKind amrType() const override
-  {
-    return m_amr_type;
-  }
-  
  public:
 
   IItemFamily* createItemFamily(eItemKind ik,const String& name) override;

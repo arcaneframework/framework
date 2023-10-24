@@ -232,7 +232,7 @@ CartesianMeshImpl(IMesh* mesh)
 , m_mesh(mesh)
 , m_nodes_to_cell_storage(platform::getDefaultDataAllocator())
 , m_cells_to_node_storage(platform::getDefaultDataAllocator())
-, m_amr_type(mesh->amrType())
+, m_amr_type(mesh->meshKind().meshAMRKind())
 , m_amr_mng(makeRef(new CartesianMeshAMRPatchMng(this)))
 {
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));

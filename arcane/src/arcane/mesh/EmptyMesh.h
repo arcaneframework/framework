@@ -392,12 +392,6 @@ class EmptyMesh
     return false;
   }
 
-  eMeshAMRKind amrType() const override
-  {
-    _error();
-    return eMeshAMRKind::None;
-  }
-
  public:
 
   void computeTiedInterfaces(const XmlNode&) override { _error(); }
