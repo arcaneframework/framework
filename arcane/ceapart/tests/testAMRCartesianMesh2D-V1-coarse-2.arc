@@ -27,7 +27,7 @@
  </arcane-post-traitement>
  
  
- <maillage amr="true">
+ <maillage amr="true" nb-ghostlayer="3" ghostlayer-builder-version="3">
    <meshgenerator>
      <cartesian>
        <nsd>2 2</nsd>
@@ -64,7 +64,7 @@
      <length>2.0 2.0</length>
    </refinement-2d>
    <expected-number-of-cells-in-patchs>48 192 12 8 64 72</expected-number-of-cells-in-patchs>
-   <expected-number-of-ghost-cells-in-patchs>32 128 4 8 76 72</expected-number-of-ghost-cells-in-patchs>
+   <expected-number-of-ghost-cells-in-patchs>120 480 12 8 192 216</expected-number-of-ghost-cells-in-patchs>
    <nodes-uid-hash></nodes-uid-hash>
    <faces-uid-hash></faces-uid-hash>
    <cells-uid-hash></cells-uid-hash>
