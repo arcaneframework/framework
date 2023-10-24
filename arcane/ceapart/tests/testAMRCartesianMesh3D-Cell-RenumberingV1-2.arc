@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
-  <titre>Test CartesianMesh</titre>
+  <titre>Test CartesianMesh 3D Cell Renumbering V1 (Variant 2)</titre>
 
-  <description>Test des maillages cartesiens AMR 3D</description>
+  <description>Test du raffinement d'un maillage cartesian 3D avec le type d'AMR Cell et la renumérotation V1</description>
 
   <boucle-en-temps>AMRCartesianMeshTestLoop</boucle-en-temps>
 
@@ -40,7 +40,7 @@
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
-   <renumber-patch-method>2</renumber-patch-method>
+   <renumber-patch-method>1</renumber-patch-method>
    <refinement-3d>
      <position>0.0 0.0 0.0</position>
      <length>2.0 2.0 2.0</length>

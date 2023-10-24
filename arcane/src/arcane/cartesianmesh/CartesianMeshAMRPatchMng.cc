@@ -847,8 +847,8 @@ refine()
     }
   }
 
-  m_mesh->modifier()->setDynamic(true);
-  m_mesh->modifier()->updateGhostLayers();
+  //m_mesh->modifier()->setDynamic(true);
+  //m_mesh->modifier()->updateGhostLayers();
 }
 
 /*---------------------------------------------------------------------------*/
