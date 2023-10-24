@@ -39,6 +39,7 @@ set(ARCANE_SOURCES
   CartesianMeshAMRPatchMng.cc
   CartesianMeshAMRPatchMng.h
 
+  ICartesianMeshNumberingMng.h
   CartesianMeshNumberingMng.cc
   CartesianMeshNumberingMng.h
 )

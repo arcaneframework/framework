@@ -5,9 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* .cc                                 (C) 2000-2023 */
+/* CartesianMeshNumberingMng.cc                                (C) 2000-2023 */
 /*                                                                           */
-/* .                  */
+/* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
+/* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -156,47 +157,47 @@ getFirstFaceUidLevel(Integer level)
 }
 
 Int64 CartesianMeshNumberingMng::
-getGlobalNbCellsX(Integer level)
+getGlobalNbCellsX(Integer level) const
 {
-  return m_nb_cell_x * std::pow(m_pattern, level);
+  return m_nb_cell_x * static_cast<Int64>(std::pow(m_pattern, level));
 }
 
 Int64 CartesianMeshNumberingMng::
-getGlobalNbCellsY(Integer level)
+getGlobalNbCellsY(Integer level) const
 {
-  return m_nb_cell_y * std::pow(m_pattern, level);
+  return m_nb_cell_y * static_cast<Int64>(std::pow(m_pattern, level));
 }
 
 Int64 CartesianMeshNumberingMng::
-getGlobalNbCellsZ(Integer level)
+getGlobalNbCellsZ(Integer level) const
 {
-  return m_nb_cell_z * std::pow(m_pattern, level);
+  return m_nb_cell_z * static_cast<Int64>(std::pow(m_pattern, level));
 }
 
 Integer CartesianMeshNumberingMng::
-getPattern()
+getPattern() const
 {
   return m_pattern;
 }
 
 // Tant que l'on a un unique "pattern" pour x, y, z, pas besoin de trois méthodes.
 Int64 CartesianMeshNumberingMng::
-getOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to)
+getOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const
 {
   ARCANE_ASSERT((level_from < level_to), ("Pb level_from level_to"));
   return coord * m_pattern * (level_to - level_from);
 }
 
-// TODO : Spécialiser pour 2D ?
 Int64 CartesianMeshNumberingMng::
 uidToCoordX(Int64 uid, Integer level)
 {
-  Int64 nb_cell_x = getGlobalNbCellsX(level);
-  Int64 nb_cell_y = getGlobalNbCellsY(level);
+  const Int64 nb_cell_x = getGlobalNbCellsX(level);
+  const Int64 nb_cell_y = getGlobalNbCellsY(level);
+  const Int64 first_cell_uid = getFirstCellUidLevel(level);
 
-  uid -= getFirstCellUidLevel(level);
+  uid -= first_cell_uid;
 
-  Int64 to2d = uid % (nb_cell_x * nb_cell_y);
+  const Int64 to2d = uid % (nb_cell_x * nb_cell_y);
   return to2d % nb_cell_x;
 }
 
@@ -206,16 +207,16 @@ uidToCoordX(Cell cell)
   return uidToCoordX(cell.uniqueId(), cell.level());
 }
 
-// TODO : Spécialiser pour 2D ?
 Int64 CartesianMeshNumberingMng::
 uidToCoordY(Int64 uid, Integer level)
 {
-  Int64 nb_cell_x = getGlobalNbCellsX(level);
-  Int64 nb_cell_y = getGlobalNbCellsY(level);
+  const Int64 nb_cell_x = getGlobalNbCellsX(level);
+  const Int64 nb_cell_y = getGlobalNbCellsY(level);
+  const Int64 first_cell_uid = getFirstCellUidLevel(level);
 
-  uid -= getFirstCellUidLevel(level);
+  uid -= first_cell_uid;
 
-  Int64 to2d = uid % (nb_cell_x * nb_cell_y);
+  const Int64 to2d = uid % (nb_cell_x * nb_cell_y);
   return to2d / nb_cell_x;
 }
 
@@ -228,10 +229,11 @@ uidToCoordY(Cell cell)
 Int64 CartesianMeshNumberingMng::
 uidToCoordZ(Int64 uid, Integer level)
 {
-  Int64 nb_cell_x = getGlobalNbCellsX(level);
-  Int64 nb_cell_y = getGlobalNbCellsY(level);
+  const Int64 nb_cell_x = getGlobalNbCellsX(level);
+  const Int64 nb_cell_y = getGlobalNbCellsY(level);
+  const Int64 first_cell_uid = getFirstCellUidLevel(level);
 
-  uid -= getFirstCellUidLevel(level);
+  uid -= first_cell_uid;
 
   return uid / (nb_cell_x * nb_cell_y);
 }
@@ -246,14 +248,20 @@ uidToCoordZ(Cell cell)
 Int64 CartesianMeshNumberingMng::
 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k)
 {
-  // TODO repet
-  return (cell_coord_i + cell_coord_j * getGlobalNbCellsX(level) + cell_coord_k * getGlobalNbCellsX(level) * getGlobalNbCellsY(level)) + getFirstCellUidLevel(level);
+  const Int64 nb_cell_x = getGlobalNbCellsX(level);
+  const Int64 nb_cell_y = getGlobalNbCellsY(level);
+  const Int64 first_cell_uid = getFirstCellUidLevel(level);
+
+  return (cell_coord_i + cell_coord_j * nb_cell_x + cell_coord_k * nb_cell_x * nb_cell_y) + first_cell_uid;
 }
 
 Int64 CartesianMeshNumberingMng::
 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j)
 {
-  return (cell_coord_i + cell_coord_j * getGlobalNbCellsX(level)) + getFirstCellUidLevel(level);
+  const Int64 nb_cell_x = getGlobalNbCellsX(level);
+  const Int64 first_cell_uid = getFirstCellUidLevel(level);
+
+  return (cell_coord_i + cell_coord_j * nb_cell_x) + first_cell_uid;
 }
 
 
@@ -261,50 +269,43 @@ getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j)
 Integer CartesianMeshNumberingMng::
 getNbNode()
 {
-  return std::pow(m_pattern, m_mesh->dimension());
+  return static_cast<Integer>(std::pow(m_pattern, m_mesh->dimension()));
 }
 
 void CartesianMeshNumberingMng::
 getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k)
 {
-  Int64 nb_node_x = getGlobalNbCellsX(level) + 1;
-  Int64 nb_node_y = getGlobalNbCellsY(level) + 1;
+  if(uid.size() != getNbNode())
+    ARCANE_FATAL("Bad size of arrayview");
 
-  uid[0] = (cell_coord_i + 0) + ((cell_coord_j + 0) * nb_node_x) + ((cell_coord_k + 0) * nb_node_x * nb_node_y);
-  uid[1] = (cell_coord_i + 1) + ((cell_coord_j + 0) * nb_node_x) + ((cell_coord_k + 0) * nb_node_x * nb_node_y);
-  uid[2] = (cell_coord_i + 1) + ((cell_coord_j + 1) * nb_node_x) + ((cell_coord_k + 0) * nb_node_x * nb_node_y);
-  uid[3] = (cell_coord_i + 0) + ((cell_coord_j + 1) * nb_node_x) + ((cell_coord_k + 0) * nb_node_x * nb_node_y);
+  const Int64 nb_node_x = getGlobalNbCellsX(level) + 1;
+  const Int64 nb_node_y = getGlobalNbCellsY(level) + 1;
+  const Int64 first_node_uid = getFirstNodeUidLevel(level);
 
-  uid[4] = (cell_coord_i + 0) + ((cell_coord_j + 0) * nb_node_x) + ((cell_coord_k + 1) * nb_node_x * nb_node_y);
-  uid[5] = (cell_coord_i + 1) + ((cell_coord_j + 0) * nb_node_x) + ((cell_coord_k + 1) * nb_node_x * nb_node_y);
-  uid[6] = (cell_coord_i + 1) + ((cell_coord_j + 1) * nb_node_x) + ((cell_coord_k + 1) * nb_node_x * nb_node_y);
-  uid[7] = (cell_coord_i + 0) + ((cell_coord_j + 1) * nb_node_x) + ((cell_coord_k + 1) * nb_node_x * nb_node_y);
+  uid[0] = (cell_coord_i + 0) + ((cell_coord_j + 0) * nb_node_x) + ((cell_coord_k + 0) * nb_node_x * nb_node_y) + first_node_uid;
+  uid[1] = (cell_coord_i + 1) + ((cell_coord_j + 0) * nb_node_x) + ((cell_coord_k + 0) * nb_node_x * nb_node_y) + first_node_uid;
+  uid[2] = (cell_coord_i + 1) + ((cell_coord_j + 1) * nb_node_x) + ((cell_coord_k + 0) * nb_node_x * nb_node_y) + first_node_uid;
+  uid[3] = (cell_coord_i + 0) + ((cell_coord_j + 1) * nb_node_x) + ((cell_coord_k + 0) * nb_node_x * nb_node_y) + first_node_uid;
 
-  uid[0] += getFirstNodeUidLevel(level);
-  uid[1] += getFirstNodeUidLevel(level);
-  uid[2] += getFirstNodeUidLevel(level);
-  uid[3] += getFirstNodeUidLevel(level);
-
-  uid[4] += getFirstNodeUidLevel(level);
-  uid[5] += getFirstNodeUidLevel(level);
-  uid[6] += getFirstNodeUidLevel(level);
-  uid[7] += getFirstNodeUidLevel(level);
+  uid[4] = (cell_coord_i + 0) + ((cell_coord_j + 0) * nb_node_x) + ((cell_coord_k + 1) * nb_node_x * nb_node_y) + first_node_uid;
+  uid[5] = (cell_coord_i + 1) + ((cell_coord_j + 0) * nb_node_x) + ((cell_coord_k + 1) * nb_node_x * nb_node_y) + first_node_uid;
+  uid[6] = (cell_coord_i + 1) + ((cell_coord_j + 1) * nb_node_x) + ((cell_coord_k + 1) * nb_node_x * nb_node_y) + first_node_uid;
+  uid[7] = (cell_coord_i + 0) + ((cell_coord_j + 1) * nb_node_x) + ((cell_coord_k + 1) * nb_node_x * nb_node_y) + first_node_uid;
 }
 
 void CartesianMeshNumberingMng::
 getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j)
 {
-  Int64 nb_node_x = getGlobalNbCellsX(level) + 1;
+  if(uid.size() != getNbNode())
+    ARCANE_FATAL("Bad size of arrayview");
 
-  uid[0] = (cell_coord_i + 0) + ((cell_coord_j + 0) * nb_node_x);
-  uid[1] = (cell_coord_i + 1) + ((cell_coord_j + 0) * nb_node_x);
-  uid[2] = (cell_coord_i + 1) + ((cell_coord_j + 1) * nb_node_x);
-  uid[3] = (cell_coord_i + 0) + ((cell_coord_j + 1) * nb_node_x);
+  const Int64 nb_node_x = getGlobalNbCellsX(level) + 1;
+  const Int64 first_node_uid = getFirstNodeUidLevel(level);
 
-  uid[0] += getFirstNodeUidLevel(level);
-  uid[1] += getFirstNodeUidLevel(level);
-  uid[2] += getFirstNodeUidLevel(level);
-  uid[3] += getFirstNodeUidLevel(level);
+  uid[0] = (cell_coord_i + 0) + ((cell_coord_j + 0) * nb_node_x) + first_node_uid;
+  uid[1] = (cell_coord_i + 1) + ((cell_coord_j + 0) * nb_node_x) + first_node_uid;
+  uid[2] = (cell_coord_i + 1) + ((cell_coord_j + 1) * nb_node_x) + first_node_uid;
+  uid[3] = (cell_coord_i + 0) + ((cell_coord_j + 1) * nb_node_x) + first_node_uid;
 }
 
 Integer CartesianMeshNumberingMng::
@@ -316,13 +317,18 @@ getNbFace()
 void CartesianMeshNumberingMng::
 getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k)
 {
-  Int64 nb_cell_x = getGlobalNbCellsX(level);
-  Int64 nb_cell_y = getGlobalNbCellsY(level);
-  Int64 nb_cell_z = getGlobalNbCellsZ(level);
+  if(uid.size() != getNbFace())
+    ARCANE_FATAL("Bad size of arrayview");
 
-  Int64 nb_face_x = nb_cell_x + 1;
-  Int64 nb_face_y = nb_cell_y + 1;
-  Int64 nb_face_z = nb_cell_z + 1;
+  const Int64 nb_cell_x = getGlobalNbCellsX(level);
+  const Int64 nb_cell_y = getGlobalNbCellsY(level);
+  const Int64 nb_cell_z = getGlobalNbCellsZ(level);
+
+  const Int64 nb_face_x = nb_cell_x + 1;
+  const Int64 nb_face_y = nb_cell_y + 1;
+  const Int64 nb_face_z = nb_cell_z + 1;
+
+  const Int64 first_face_uid = getFirstFaceUidLevel(level);
 
   // Numérote les faces
   // Cet algo n'est pas basé sur l'algo 2D.
@@ -367,9 +373,10 @@ getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_
 
   const Int64 total_face_xy = nb_face_z * nb_cell_x * nb_cell_y;
   const Int64 total_face_xy_yz = total_face_xy + nb_face_x * nb_cell_y * nb_cell_z;
-  const Int64 total_face_xy_yz_zx = total_face_xy_yz + nb_face_y * nb_cell_z * nb_cell_x;
 
   const Int64 nb_cell_before_j = cell_coord_j * nb_cell_x;
+
+
 
   uid[0] = (cell_coord_k * nb_cell_x * nb_cell_y)
          + nb_cell_before_j
@@ -389,20 +396,25 @@ getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_
 
   uid[5] = uid[2] + nb_cell_x;
 
-  uid[0] += getFirstFaceUidLevel(level);
-  uid[1] += getFirstFaceUidLevel(level);
-  uid[2] += getFirstFaceUidLevel(level);
-  uid[3] += getFirstFaceUidLevel(level);
-  uid[4] += getFirstFaceUidLevel(level);
-  uid[5] += getFirstFaceUidLevel(level);
+
+  uid[0] += first_face_uid;
+  uid[1] += first_face_uid;
+  uid[2] += first_face_uid;
+  uid[3] += first_face_uid;
+  uid[4] += first_face_uid;
+  uid[5] += first_face_uid;
 }
 
 
 void CartesianMeshNumberingMng::
 getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j)
 {
-  Int64 nb_cell_x = getGlobalNbCellsX(level);
-  Int64 nb_face_x = nb_cell_x + 1;
+  if(uid.size() != getNbFace())
+    ARCANE_FATAL("Bad size of arrayview");
+
+  const Int64 nb_cell_x = getGlobalNbCellsX(level);
+  const Int64 nb_face_x = nb_cell_x + 1;
+  const Int64 first_face_uid = getFirstFaceUidLevel(level);
 
   // Numérote les faces
   //  |-0--|--2-|
@@ -434,14 +446,14 @@ getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_
   // Pour DROITE, c'est l'UID de BAS +1.
   uid[1] = uid[2] + 1;
 
-  uid[0] += getFirstFaceUidLevel(level);
-  uid[1] += getFirstFaceUidLevel(level);
-  uid[2] += getFirstFaceUidLevel(level);
-  uid[3] += getFirstFaceUidLevel(level);
+  uid[0] += first_face_uid;
+  uid[1] += first_face_uid;
+  uid[2] += first_face_uid;
+  uid[3] += first_face_uid;
 }
 
 void CartesianMeshNumberingMng::
-getNodeCoordinates(Cell child_cell)
+setNodeCoordinates(Cell child_cell)
 {
   if (!(child_cell.itemBase().flags() & ItemFlags::II_JustAdded)) {
     ARCANE_FATAL("Cell not II_JustAdded");

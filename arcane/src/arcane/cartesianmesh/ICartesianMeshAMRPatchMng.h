@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshAMRPatchMng.h                                      (C) 2000-2023 */
+/* ICartesianMeshAMRPatchMng.h                                 (C) 2000-2023 */
 /*                                                                           */
-/* Inteface de gestionnaire de l'AMR d'un maillage cartésien.                */
+/* Interface de gestionnaire de l'AMR par patch d'un maillage cartésien.     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,7 +39,17 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
  public:
 
   ~ICartesianMeshAMRPatchMng() = default;
+
+  /*!
+   * @brief Méthode permettant de définir les mailles à raffiner.
+   * @param cells_lids Les localIds des mailles.
+   */
   virtual void flagCellToRefine(Int32ConstArrayView cells_lids) =0;
+
+  /*!
+   * @brief Méthode permettant de raffiner les mailles avec le
+   * flag "II_Refine".
+   */
   virtual void refine() =0;
 
 };

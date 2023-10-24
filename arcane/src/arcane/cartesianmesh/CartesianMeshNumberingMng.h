@@ -5,9 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* .h                                  (C) 2000-2023 */
+/* CartesianMeshNumberingMng.h                                 (C) 2000-2023 */
 /*                                                                           */
-/* .                  */
+/* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
+/* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,7 +25,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/NumVector.h"
 
-#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
+#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -36,48 +37,49 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
+class CartesianMeshNumberingMng
 : public TraceAccessor
+, public ICartesianMeshNumberingMng
 {
  public:
   CartesianMeshNumberingMng(IMesh* mesh);
-  Int64 getFirstCellUidLevel(Integer level);
-  Int64 getFirstNodeUidLevel(Integer level);
-  Int64 getFirstFaceUidLevel(Integer level);
-  Int64 getGlobalNbCellsX(Integer level);
-  Int64 getGlobalNbCellsY(Integer level);
-  Int64 getGlobalNbCellsZ(Integer level);
+  Int64 getFirstCellUidLevel(Integer level) override;
+  Int64 getFirstNodeUidLevel(Integer level) override;
+  Int64 getFirstFaceUidLevel(Integer level) override;
+  Int64 getGlobalNbCellsX(Integer level) const override;
+  Int64 getGlobalNbCellsY(Integer level) const override;
+  Int64 getGlobalNbCellsZ(Integer level) const override;
 
 
 
-  Integer getPattern();
-  Int64 getOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to);
+  Integer getPattern() const override;
+  Int64 getOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
 
 
 
-  Int64 uidToCoordX(Int64 uid, Integer level);
-  Int64 uidToCoordX(Cell cell);
+  Int64 uidToCoordX(Int64 uid, Integer level) override;
+  Int64 uidToCoordX(Cell cell) override;
 
-  Int64 uidToCoordY(Int64 uid, Integer level);
-  Int64 uidToCoordY(Cell cell);
+  Int64 uidToCoordY(Int64 uid, Integer level) override;
+  Int64 uidToCoordY(Cell cell) override;
 
-  Int64 uidToCoordZ(Int64 uid, Integer level);
-  Int64 uidToCoordZ(Cell cell);
+  Int64 uidToCoordZ(Int64 uid, Integer level) override;
+  Int64 uidToCoordZ(Cell cell) override;
 
 
 
-  Int64 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k);
-  Int64 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j);
+  Int64 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k) override;
+  Int64 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j) override;
 
-  Integer getNbNode();
-  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k);
-  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j);
+  Integer getNbNode() override;
+  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k) override;
+  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) override;
 
-  Integer getNbFace();
-  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k);
-  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_cell_coord_i, Int64 cell_coord_j);
+  Integer getNbFace() override;
+  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k) override;
+  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_cell_coord_i, Int64 cell_coord_j) override;
 
-  void getNodeCoordinates(Cell child_cell);
+  void setNodeCoordinates(Cell child_cell) override;
 
  private:
   IMesh* m_mesh;

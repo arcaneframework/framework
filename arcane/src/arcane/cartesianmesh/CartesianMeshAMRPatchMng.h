@@ -26,7 +26,7 @@
 #include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
-#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
+#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,7 +37,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRPatchMng
+class CartesianMeshAMRPatchMng
 : public TraceAccessor
 , public ICartesianMeshAMRPatchMng
 {
@@ -46,12 +46,11 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRPatchMng
   void flagCellToRefine(Int32ConstArrayView cells_lids) override;
   void _syncFlagCell();
   void refine() override;
-  void updateBackFrontCellFace();
 
  private:
   ICartesianMesh* m_cmesh;
   IMesh* m_mesh;
-  CartesianMeshNumberingMng m_num_mng;
+  Ref<ICartesianMeshNumberingMng> m_num_mng;
   Ref<VariableCellInteger> m_flag_cells_consistent;
 };
 
