@@ -386,6 +386,14 @@ _processPatches()
   if (nb_cells_expected.size()!=nb_patch)
     ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfCellsInPatchs.name());
 
+  // Nombre de mailles fantômes attendu. Utilisé uniquement en parallèle
+  bool has_expected_ghost_cells = options()->expectedNumberOfGhostCellsInPatchs.isPresent();
+  if (!pm->isParallel())
+    has_expected_ghost_cells = false;
+
+  UniqueArray<Int32> nb_ghost_cells_expected(options()->expectedNumberOfGhostCellsInPatchs);
+  if (has_expected_ghost_cells && (nb_ghost_cells_expected.size()!=nb_patch))
+    ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfGhostCellsInPatchs.name());
   // Affiche les informations sur les patchs
   for( Integer i=0; i<nb_patch; ++i ){
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
@@ -405,7 +413,6 @@ _processPatches()
       info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
       own_cells_uid.add(cell.uniqueId());
     }
-
     // Affiche la liste globales des uniqueId() des mailles.
     {
       UniqueArray<Int64> global_cells_uid;
@@ -421,6 +428,15 @@ _processPatches()
       for( Integer c=0; c<nb_global_uid; ++c )
         info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
     }
+    // Teste le nombre de mailles fantômes
+    if (has_expected_ghost_cells){
+      Int32 local_nb_ghost_cell = patch_cells.size() - patch_own_cell.size();
+      Int32 total = pm->reduce(Parallel::ReduceSum,local_nb_ghost_cell);
+      pinfo() << "NbGhostCells my_rank=" << comm_rank << " local=" << local_nb_ghost_cell << " total=" << total;
+      if (total!=nb_ghost_cells_expected[i])
+        ARCANE_FATAL("Bad number of ghost cells for patch I={0} N={1} expected={2}",
+                     i,total,nb_ghost_cells_expected[i]);
+    }
 
     // Exporte le patch au format SVG
     if (dimension==2){
@@ -429,7 +445,7 @@ _processPatches()
       String full_filename = directory.file(filename);
       std::ofstream ofile(full_filename.localstr());
       SimpleSVGMeshExporter exporter(ofile);
-      exporter.write(patch_own_cell);
+      exporter.write(patch_cells);
     }
   }
 }

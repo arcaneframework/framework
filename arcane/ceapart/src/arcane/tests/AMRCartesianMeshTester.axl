@@ -27,9 +27,16 @@
 
    <simple
      name = "expected-number-of-cells-in-patchs"
-     type     = "int32[]"
+     type = "int32[]"
      >
      <description>Si non vide, nombre de mailles que doit avoir chaque patch</description>
+   </simple>
+   <simple
+     name = "expected-number-of-ghost-cells-in-patchs"
+     type = "int32[]"
+     optional = "true"
+     >
+     <description>Si présent, total sur tous les sous-domaines du nombre de mailles fantôme que doit avoir chaque patch</description>
    </simple>
 
    <simple name = "nodes-uid-hash" type = "string" >
