@@ -16,6 +16,8 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringBuilder.h"
 
+#include "arcane/core/MeshKind.h"
+
 #include "arcane/ISubDomain.h"
 #include "arcane/CaseNodeNames.h"
 #include "arcane/ICaseDocument.h"
@@ -25,7 +27,6 @@
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/IGhostLayerMng.h"
 #include "arcane/IMeshReader.h"
-#include "arcane/core/MeshKind.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

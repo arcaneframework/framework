@@ -197,7 +197,6 @@ class IMainFactory
    *
    * Si le sous-domaine possède déjà un maillage avec le nom \a name,
    * c'est ce dernier qui est retourné.
-   * TODO amr
    */
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name,eMeshAMRKind amr_type) =0;
 

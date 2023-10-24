@@ -17,13 +17,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Item.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/ItemEnumerator.h"
-
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
-#include "arcane/cartesianmesh/CartesianItemDirectionInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,9 +31,9 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
 {
  public:
-
   ~ICartesianMeshAMRPatchMng() = default;
 
+ public:
   /*!
    * @brief Méthode permettant de définir les mailles à raffiner.
    * @param cells_lids Les localIds des mailles.
@@ -51,7 +45,6 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
    * flag "II_Refine".
    */
   virtual void refine() =0;
-
 };
 
 /*---------------------------------------------------------------------------*/

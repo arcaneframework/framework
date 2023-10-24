@@ -45,7 +45,6 @@
 #include "arcane/MeshHandle.h"
 #include "arcane/IParticleExchanger.h"
 #include "arcane/IExtraGhostCellsBuilder.h"
-#include "arcane/core/MeshKind.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

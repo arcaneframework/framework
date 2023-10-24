@@ -17,10 +17,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Item.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/ItemEnumerator.h"
+#include "arcane/core/VariableTypedef.h"
+
 #include "arcane/utils/TraceAccessor.h"
 
 #include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
@@ -43,6 +41,8 @@ class CartesianMeshAMRPatchMng
 {
  public:
   CartesianMeshAMRPatchMng(ICartesianMesh* mesh);
+
+ public:
   void flagCellToRefine(Int32ConstArrayView cells_lids) override;
   void _syncFlagCell();
   void refine() override;

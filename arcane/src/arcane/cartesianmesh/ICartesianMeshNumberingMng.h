@@ -19,14 +19,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Item.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/utils/TraceAccessor.h"
-#include "arcane/utils/NumVector.h"
-
-#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -43,6 +35,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
  public:
   ~ICartesianMeshNumberingMng() = default;
 
+ public:
   /*!
    * @brief Méthode permettant de récupérer le premier unique id utilisé par les mailles d'un niveau.
    * L'appel de cette méthode avec level et level+1 permet de récupérer l'intervalle des uniqueids

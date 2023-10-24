@@ -15,16 +15,9 @@
 #include "CartesianMeshNumberingMng.h"
 
 #include "arcane/core/IMesh.h"
-#include "arcane/core/ItemPrinter.h"
-#include "arcane/core/IItemFamily.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/VariableTypes.h"
-#include "arcane/core/Properties.h"
-#include "arcane/core/IMeshModifier.h"
-#include "arcane/core/MeshStats.h"
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
-#include "arcane/core/MeshEvents.h"
-#include "arcane/utils/Real3.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -18,15 +18,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Item.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/ItemEnumerator.h"
+#include "arcane/core/Item.h"
+
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/utils/NumVector.h"
 
 #include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,18 +39,19 @@ class CartesianMeshNumberingMng
 {
  public:
   CartesianMeshNumberingMng(IMesh* mesh);
+
+ public:
   Int64 getFirstCellUidLevel(Integer level) override;
   Int64 getFirstNodeUidLevel(Integer level) override;
   Int64 getFirstFaceUidLevel(Integer level) override;
+
   Int64 getGlobalNbCellsX(Integer level) const override;
   Int64 getGlobalNbCellsY(Integer level) const override;
   Int64 getGlobalNbCellsZ(Integer level) const override;
 
 
-
   Integer getPattern() const override;
   Int64 getOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
-
 
 
   Int64 uidToCoordX(Int64 uid, Integer level) override;
@@ -65,7 +62,6 @@ class CartesianMeshNumberingMng
 
   Int64 uidToCoordZ(Int64 uid, Integer level) override;
   Int64 uidToCoordZ(Cell cell) override;
-
 
 
   Int64 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k) override;
