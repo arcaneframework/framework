@@ -471,6 +471,15 @@ _addParentCellToCell(Cell cell,Cell parent_cell)
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
+_addChildCellToCell2(Cell iparent_cell,Cell child_cell)
+{
+  m_hchild_connectivity->addConnectedItem(ItemLocalId(iparent_cell),ItemLocalId(child_cell));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CellFamily::
 _addChildCellToCell(Cell iparent_cell,Integer rank,Cell child_cell)
 {
   Cell parent_cell(iparent_cell);

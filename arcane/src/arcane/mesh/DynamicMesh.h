@@ -265,6 +265,10 @@ class ARCANE_MESH_EXPORT DynamicMesh
   void addHChildrenCells(Cell parent_cell,Integer nb_cell,
                          Int64ConstArrayView cells_infos,Int32ArrayView cells) override;
 
+  void addParentCellToCell(Cell child, Cell parent) override;
+  void addChildCellToCell(Cell parent, Cell child) override;
+
+
   void endUpdate() override;
   Int64 timestamp() override { return m_timestamp; }
 
@@ -427,7 +431,7 @@ public:
   {
 	  return m_is_amr_activated;
   }
-  
+
  public:
 
   IItemFamily* createItemFamily(eItemKind ik,const String& name) override;
@@ -554,7 +558,8 @@ public:
   
   //! AMR
   bool m_is_amr_activated;
-  
+  eMeshAMRKind m_amr_type;
+
   bool m_is_dynamic;
 
   //! Liste des groupes d'entités

@@ -184,6 +184,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 , m_extra_ghost_particles_builder(nullptr)
 , m_initial_allocator(this)
 , m_is_amr_activated(mbi.meshKind().meshAMRKind()!=eMeshAMRKind::None)
+, m_amr_type(mbi.meshKind().meshAMRKind())
 , m_is_dynamic(false)
 , m_tied_interface_mng(nullptr)
 , m_is_sub_connectivity_set(false)
@@ -222,6 +223,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   m_item_internal_list._internalSetCellSharedInfo(m_cell_family->commonItemSharedInfo());
 
   info() << "Is AMR Activated? = " << m_is_amr_activated;
+  info() << "AMR type = " << m_amr_type;
 
   _printConnectivityPolicy();
 
@@ -388,8 +390,18 @@ build()
     // SDC : OK. Remis car maintenant l'info AMR (in)actif est connue a
     // la construction. Suppression de readAmrActivator.
 
-    if (m_is_amr_activated)
-     m_mesh_refinement = new MeshRefinement(this);
+    if (m_is_amr_activated) {
+     if(m_amr_type == eMeshAMRKind::None || m_amr_type == eMeshAMRKind::Cell){
+       m_mesh_refinement = new MeshRefinement(this);
+     }
+     else if(m_amr_type == eMeshAMRKind::Patch){
+       ARCANE_FATAL("Patch AMR type is not implemented.");
+     }
+     else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly){
+       // L'AMR PatchCartesianMeshOnly n'est pas géré par MeshRefinement().
+       // Voir dans CartesianMesh.cc.
+     }
+    }
   }
 }
 
@@ -1001,6 +1013,32 @@ addHChildrenCells(Cell parent_cell,Integer nb_cell,Int64ConstArrayView cells_inf
   _checkConnectivity();
   bool allow_build_face = false /*(m_parallel_mng->commSize() == 1)*/;
   m_mesh_builder->addHChildrenCells(parent_cell,nb_cell,cells_infos,meshRank(),cells,allow_build_face);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addParentCellToCell(Cell child, Cell parent)
+{
+  Trace::Setter mci(traceMng(),_className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_cell_family->_addParentCellToCell(child,parent);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addChildCellToCell(Cell parent, Cell child)
+{
+  Trace::Setter mci(traceMng(),_className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_cell_family->_addChildCellToCell2(parent, child);
 }
 
 /*---------------------------------------------------------------------------*/

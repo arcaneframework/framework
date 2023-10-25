@@ -30,6 +30,7 @@
 #include "arcane/core/MeshStats.h"
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
 #include "arcane/core/MeshEvents.h"
+#include "arcane/core/MeshKind.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
@@ -41,6 +42,8 @@
 
 #include "arcane/cartesianmesh/internal/CartesianMeshUniqueIdRenumbering.h"
 #include "arcane/cartesianmesh/v2/CartesianMeshUniqueIdRenumberingV2.h"
+
+#include "arcane/cartesianmesh/CartesianMeshAMRPatchMng.h"
 
 #include <set>
 
@@ -188,6 +191,8 @@ class CartesianMeshImpl
   EventObserverPool m_event_pool;
   bool m_is_mesh_event_added = false;
   Int64 m_mesh_timestamp = 0;
+  eMeshAMRKind m_amr_type;
+  Ref<ICartesianMeshAMRPatchMng> m_amr_mng;
 
  private:
 
@@ -227,6 +232,8 @@ CartesianMeshImpl(IMesh* mesh)
 , m_mesh(mesh)
 , m_nodes_to_cell_storage(platform::getDefaultDataAllocator())
 , m_cells_to_node_storage(platform::getDefaultDataAllocator())
+, m_amr_type(mesh->meshKind().meshAMRKind())
+, m_amr_mng(makeRef(new CartesianMeshAMRPatchMng(this)))
 {
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));
   m_amr_patches.add(m_all_items_direction_info);
@@ -701,8 +708,25 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
   info(4) << "Global_NbCellToRefine = " << total_nb_cell;
   if (total_nb_cell==0)
     return;
-  m_mesh->modifier()->flagCellToRefine(cells_local_id);
-  m_mesh->modifier()->adapt();
+
+  if(m_amr_type == eMeshAMRKind::Cell) {
+    debug() << "Refine with modifier() (for all mesh types)";
+    m_mesh->modifier()->flagCellToRefine(cells_local_id);
+    m_mesh->modifier()->adapt();
+  }
+  else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    debug() << "Refine with specific refiner (for cartesian mesh only)";
+    computeDirections();
+    m_amr_mng->flagCellToRefine(cells_local_id);
+    m_amr_mng->refine();
+  }
+  else if(m_amr_type == eMeshAMRKind::Patch) {
+    ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
+  }
+  else{
+    ARCANE_FATAL("AMR is not enabled");
+  }
+
   {
     MeshStats ms(traceMng(),m_mesh,m_mesh->parallelMng());
     ms.dumpStats();

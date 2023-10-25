@@ -5,16 +5,26 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshKind.h                                                  (C) 2000-2023 */
+/* CartesianMeshAMRPatchMng.h                                  (C) 2000-2023 */
 /*                                                                           */
-/* Caractéristiques d'un maillage.                                           */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHKIND_H
-#define ARCANE_MESHKIND_H
+/* Gestionnaire de l'AMR par patch d'un maillage cartésien.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ArcaneTypes.h"
+#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHAMRPATCHMNG_H
+#define ARCANE_CARTESIANMESH_CARTESIANMESHAMRPATCHMNG_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/core/VariableTypedef.h"
+
+#include "arcane/utils/TraceAccessor.h"
+
+#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,57 +34,32 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Structure du maillage
-enum class eMeshStructure
-{
-  Unknown,
-  Unstructured,
-  Cartesian
-};
-extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<<(std::ostream& o, eMeshStructure r);
 
-//! Type de maillage AMR
-enum class eMeshAMRKind
-{
-  None,
-  Cell,
-  Patch,
-  PatchCartesianMeshOnly
-};
-extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<<(std::ostream& o, eMeshAMRKind r);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Caractéristiques d'un maillage.
- *
- * Pour l'instant les caractéristiques sont:
- * - la structure du maillage (eMeshStructure)
- * - le type d'AMR
- */
-class ARCANE_CORE_EXPORT MeshKind
+class CartesianMeshAMRPatchMng
+: public TraceAccessor
+, public ICartesianMeshAMRPatchMng
 {
  public:
+  CartesianMeshAMRPatchMng(ICartesianMesh* mesh);
 
-  eMeshStructure meshStructure() const { return m_structure; }
-  eMeshAMRKind meshAMRKind() const { return m_amr_kind; }
-  void setMeshStructure(eMeshStructure v) { m_structure = v; }
-  void setMeshAMRKind(eMeshAMRKind v) { m_amr_kind = v; }
+ public:
+  void flagCellToRefine(Int32ConstArrayView cells_lids) override;
+  void _syncFlagCell();
+  void refine() override;
 
  private:
-
-  eMeshStructure m_structure = eMeshStructure::Unknown;
-  eMeshAMRKind m_amr_kind = eMeshAMRKind::None;
+  ICartesianMesh* m_cmesh;
+  IMesh* m_mesh;
+  Ref<ICartesianMeshNumberingMng> m_num_mng;
+  Ref<VariableCellInteger> m_flag_cells_consistent;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+#endif //ARCANE_CARTESIANMESH_CARTESIANMESHAMRPATCHMNG_H

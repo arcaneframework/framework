@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
-  <titre>Test CartesianMesh</titre>
+  <titre>Test CartesianMesh 2D Cell Renumbering V2 (Variant 2)</titre>
 
-  <description>Test des maillages cartesiens AMR 2D</description>
+  <description>Test du raffinement d'un maillage cartesian 2D avec le type d'AMR Cell et la renumérotation V2</description>
 
   <boucle-en-temps>AMRCartesianMeshTestLoop</boucle-en-temps>
 
@@ -32,40 +32,26 @@
      <cartesian>
        <nsd>2 2</nsd>
        <origine>0.0 0.0</origine>
-       <lx nx='2' prx='1.0'>2.0</lx>
-       <lx nx='4' prx='1.2'>3.0</lx>
-       <lx nx='5' prx='1.3'>3.0</lx>
-       <lx nx='6' prx='1.4'>4.0</lx>
-
-       <ly ny='2' pry='1.0'>2.0</ly>
-       <ly ny='3' pry='1.1'>4.0</ly>
-       <ly ny='4' pry='1.3'>5.0</ly>
+       <lx nx='2'>4.0</lx>
+       <ly ny='2'>4.0</ly>
      </cartesian>
    </meshgenerator>
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
-   <renumber-patch-method>1</renumber-patch-method>
+   <renumber-patch-method>2</renumber-patch-method>
    <refinement-2d>
-     <position>1.0 2.0</position>
-     <length>1.0 2.0</length>
-   </refinement-2d>
-   <refinement-2d>
-     <position>1.4 3.0</position>
-     <length>0.5 1.0</length>
-   </refinement-2d>
-   <refinement-2d>
-     <position>4.0 5.0</position>
-     <length>3.0 4.0</length>
-   </refinement-2d>
-   <refinement-2d>
-     <position>5.0 7.0</position>
+     <position>2.0 0.0</position>
      <length>2.0 2.0</length>
    </refinement-2d>
-   <expected-number-of-cells-in-patchs>153 8 4 80 128</expected-number-of-cells-in-patchs>
-   <nodes-uid-hash>eef03075d1b1d32b63c9014bc567704e</nodes-uid-hash>
-   <faces-uid-hash>6d1b4ec0963f467f704c08f3f50dbd73</faces-uid-hash>
-   <cells-uid-hash>a577cb5e34dcbac51cec397ff7cb684e</cells-uid-hash>
+    <refinement-2d>
+     <position>0.0 0.0</position>
+     <length>2.0 2.0</length>
+   </refinement-2d>
+   <expected-number-of-cells-in-patchs>4 4 4</expected-number-of-cells-in-patchs>
+   <nodes-uid-hash>3a7a75dd3d510a4d523c182a3b76c448</nodes-uid-hash>
+   <faces-uid-hash>7cb9c4b04f06f119bd1f0390e275d396</faces-uid-hash>
+   <cells-uid-hash>fab8abc5aa12ff95bc06b4e3553f967a</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>

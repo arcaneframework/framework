@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshModifier.h                                             (C) 2000-2022 */
+/* IMeshModifier.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Interface de modification du maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -192,6 +192,8 @@ class IMeshModifier
   virtual void unRegisterCallBack(IAMRTransportFunctor* f) =0;
   virtual void addHChildrenCells(Cell parent_cell,Integer nb_cell,
                                  Int64ConstArrayView cells_infos,Int32ArrayView cells_lid = Int32ArrayView()) =0;
+  virtual void addParentCellToCell(Cell child, Cell parent) = 0;
+  virtual void addChildCellToCell(Cell parent, Cell child) = 0;
 
   //! Supprime toutes les entitées de toutes les familles de ce maillage.
   virtual void clearItems() =0;

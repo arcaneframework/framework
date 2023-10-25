@@ -45,6 +45,8 @@ namespace
       return "Cell";
     case eMeshAMRKind::Patch:
       return "Patch";
+    case eMeshAMRKind::PatchCartesianMeshOnly:
+      return "PatchCartesianMeshOnly";
     default:
       return "Invalid";
     }

@@ -225,6 +225,20 @@ _printFlags(std::ostream& o, Integer flags)
     o << ((position++) ? "|" : "") << "Detached";
   if (flags & ItemFlags::II_HasTrace)
     o << ((position++) ? "|" : "") << "HasTrace";
+  if (flags & ItemFlags::II_Coarsen)
+    o << ((position++) ? "|" : "") << "Coarsen";
+  if (flags & ItemFlags::II_DoNothing)
+    o << ((position++) ? "|" : "") << "DoNothing";
+  if (flags & ItemFlags::II_Refine)
+    o << ((position++) ? "|" : "") << "Refine";
+  if (flags & ItemFlags::II_JustRefined)
+    o << ((position++) ? "|" : "") << "JustRefined";
+  if (flags & ItemFlags::II_JustCoarsened)
+    o << ((position++) ? "|" : "") << "JustCoarsened";
+  if (flags & ItemFlags::II_Inactive)
+    o << ((position++) ? "|" : "") << "Inactive";
+  if (flags & ItemFlags::II_CoarsenInactive)
+    o << ((position++) ? "|" : "") << "CoarsenInactive";
   if (flags & ItemFlags::II_UserMark1)
     o << ((position++) ? "|" : "") << "UserMark1";
   if (flags & ItemFlags::II_UserMark2)

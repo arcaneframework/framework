@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellFamily.h                                                (C) 2000-2022 */
+/* CellFamily.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Famille de mailles.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -124,6 +124,7 @@ class ARCANE_MESH_EXPORT CellFamily
   //! AMR
   void _addParentCellToCell(Cell cell,Cell parent_cell);
   void _addChildCellToCell(Cell parent_cell,Integer rank,Cell child_cell);
+  void _addChildCellToCell2(Cell parent_cell,Cell child_cell);
   void _addChildrenCellsToCell(Cell parent_cell,Int32ConstArrayView children_cells_lid);
   void _removeParentCellToCell(Cell cell);
   void _removeChildCellToCell(Cell parent_cell,Cell cell);
