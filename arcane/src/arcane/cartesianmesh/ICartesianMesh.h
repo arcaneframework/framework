@@ -117,6 +117,11 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
   virtual ICartesianMeshPatch* patch(Integer index) const = 0;
 
   /*!
+   * \brief Vue sur la liste des patchs.
+   */
+  virtual CartesianMeshPatchListView patches() const = 0;
+
+  /*!
    * \brief Raffine en 2D un bloc du maillage cartésien.
    *
    * Cette méthode ne peut être appelée que si le maillage est un maillage

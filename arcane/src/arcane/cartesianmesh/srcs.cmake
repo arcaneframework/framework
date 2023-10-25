@@ -23,6 +23,7 @@ set(ARCANE_SOURCES
   CartesianMeshGlobal.h
   CartesianMeshUtils.h
   CartesianMeshUtils.cc
+  CartesianMeshPatchListView.h
   internal/CartesianMeshPatch.h
   internal/CartesianMeshUniqueIdRenumbering.h
   internal/CartesianMeshUniqueIdRenumbering.cc
