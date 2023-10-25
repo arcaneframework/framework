@@ -48,6 +48,7 @@
 #include "arcane/cartesianmesh/ICartesianMeshPatch.h"
 #include "arcane/cartesianmesh/CartesianMeshUtils.h"
 #include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
+#include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/AMRCartesianMeshTester_axl.h"
@@ -499,11 +500,15 @@ _initAMR()
     info() << "Doint initial coarsening";
     Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
     coarser->createCoarseCells();
-    Int32 nb_patch = m_cartesian_mesh->nbPatch();
-    info() << "NB_PATCH=" << nb_patch;
-    for( Int32 i=0; i<nb_patch; ++i ){
-      ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
-      info() << "Patch i=" << i << " nb_cell=" << p->cells().size();
+    CartesianMeshPatchListView patches = m_cartesian_mesh->patches();
+    Int32 nb_patch = patches.size();
+    {
+      Int32 index = 0;
+      info() << "NB_PATCH=" << nb_patch;
+      for( ICartesianMeshPatch* p : patches){
+        info() << "Patch i=" << index << " nb_cell=" << p->cells().size();
+        ++index;
+      }
     }
   }
   // Parcours les mailles actives et ajoute dans la liste des mailles
@@ -683,13 +688,8 @@ _writePostProcessing()
   post_processor->setVariables(variables);
   ItemGroupList groups;
   groups.add(allCells());
-  {
-    Integer nb_patch = m_cartesian_mesh->nbPatch();
-    for( Integer i=0; i<nb_patch; ++i ){
-      ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
-      groups.add(p->cells());
-    }
-  }
+  for( ICartesianMeshPatch* p : m_cartesian_mesh->patches() )
+    groups.add(p->cells());
   post_processor->setGroups(groups);
   IVariableMng* vm = subDomain()->variableMng();
   vm->writePostProcessing(post_processor);
