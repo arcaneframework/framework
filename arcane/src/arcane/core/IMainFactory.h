@@ -187,7 +187,7 @@ class IMainFactory
    * Si le sous-domaine possède déjà un maillage avec le nom \a name,
    * c'est ce dernier qui est retourné.
    */
-  ARCCORE_DEPRECATED_2020("Use createMesh(..., eMeshAMRKind amr_type) instead")
+  ARCANE_DEPRECATED_REASON("Y2023: Use createMesh(..., eMeshAMRKind amr_type) instead")
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name,bool is_amr) =0;
 
   /*!
@@ -223,7 +223,7 @@ class IMainFactory
    * Le gestionnaire de parallélisme doit être le même que celui du sous-domaine
    * ou issu de celui-ci.
    */
-  ARCCORE_DEPRECATED_2020("Use createMesh(..., eMeshAMRKind amr_type) instead")
+  ARCANE_DEPRECATED_REASON("Y2023: Use createMesh(..., eMeshAMRKind amr_type) instead")
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain, IParallelMng* pm,
                                    const String& name, bool is_amr) =0;
 
