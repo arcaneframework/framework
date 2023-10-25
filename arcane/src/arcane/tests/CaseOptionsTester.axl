@@ -18,6 +18,11 @@
    <description>Numéro du test (sert pour les vérifications)</description>
   </simple>
 
+  <!-- - - - - - has-multiple-mesh - - - - -->
+  <simple name = "has-multiple-mesh" type = "bool" default = "false">
+    <description>Indique s'il y a plusieurs maillages dans le jeu de données (sert pour les vérifications)</description>
+  </simple>
+
   <!-- - - - - - max-iteration - - - - -->
   <simple
    name = "max-iteration"

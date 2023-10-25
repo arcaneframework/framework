@@ -56,6 +56,7 @@
 
   <case-options-tester>
     <test-id>6</test-id>
+    <has-multiple-mesh>true</has-multiple-mesh>
     <max-iteration>20</max-iteration>
 
     <simple-real>3.0</simple-real>

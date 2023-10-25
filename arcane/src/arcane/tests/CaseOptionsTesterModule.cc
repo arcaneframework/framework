@@ -18,30 +18,31 @@
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/EntryPoint.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/CaseOptionsMain.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/MathUtils.h"
-#include "arcane/ObserverPool.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/CaseOptionsMain.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/MathUtils.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
 
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/ITimeLoopService.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/IPostProcessorWriter.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/StandardCaseFunction.h"
-#include "arcane/AbstractCaseDocumentVisitor.h"
-#include "arcane/AbstractService.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/ICaseMeshService.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/ITimeLoopService.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/StandardCaseFunction.h"
+#include "arcane/core/AbstractCaseDocumentVisitor.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/ICaseMeshService.h"
+#include "arcane/core/IMeshMng.h"
 
-#include "arcane/IXmlDocumentHolder.h"
+#include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/AxlOptionsBuilder.h"
 
@@ -437,6 +438,8 @@ build()
   // Vérifie que le module implémente bien l'interface ICaseOptionTestInterface
   ICaseOptionTestInterface* o = this;
   info() << "ICaseOptionTestInterface=" << o;
+  if (options()->hasMultipleMesh())
+    info() << "Mesh1=" << subDomain()->meshMng()->findMeshHandle("Mesh1").meshName();
 
   if (options()->testId()==4){
     options()->simpleRealWithDefault.setDefaultValue(3.0);
