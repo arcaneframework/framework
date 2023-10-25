@@ -51,6 +51,7 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
     String m_orig_file_name;
     String m_file_name;
     String m_dir_name;
+    MeshHandle m_mesh_handle;
     IPrimaryMesh* m_mesh;
   };
 
@@ -80,6 +81,7 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
  private:
 
   void _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi);
+  void _createMeshesHandle();
 };
 
 /*---------------------------------------------------------------------------*/
