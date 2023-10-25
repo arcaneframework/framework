@@ -37,6 +37,7 @@
 #include "arcane/cartesianmesh/CartesianMeshRenumberingInfo.h"
 #include "arcane/cartesianmesh/CartesianMeshCoarsening.h"
 #include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
+#include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
@@ -152,6 +153,7 @@ class CartesianMeshImpl
 
   Integer nbPatch() const override { return m_amr_patches.size(); }
   ICartesianMeshPatch* patch(Integer index) const override { return m_amr_patches[index].get(); }
+  CartesianMeshPatchListView patches() const override { return CartesianMeshPatchListView(m_amr_patches_pointer); }
 
   void refinePatch2D(Real2 position,Real2 length) override;
   void refinePatch3D(Real3 position,Real3 length) override;
@@ -186,6 +188,7 @@ class CartesianMeshImpl
   //! Groupe de mailles parentes pour chaque patch AMR.
   UniqueArray<CellGroup> m_amr_patch_cell_groups;
   UniqueArray<Ref<CartesianMeshPatch>> m_amr_patches;
+  UniqueArray<ICartesianMeshPatch*> m_amr_patches_pointer;
   ScopedPtrT<Properties> m_properties;
 
   EventObserverPool m_event_pool;
@@ -209,6 +212,11 @@ class CartesianMeshImpl
   void _refinePatch(Real3 position,Real3 length,bool is_3d);
   void _checkNeedComputeDirections();
   void _checkAddObservableMeshChanged();
+  void _addPatchInstance(const Ref<CartesianMeshPatch>& v)
+  {
+    m_amr_patches.add(v);
+    m_amr_patches_pointer.add(v.get());
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -236,7 +244,7 @@ CartesianMeshImpl(IMesh* mesh)
 , m_amr_mng(makeRef(new CartesianMeshAMRPatchMng(this)))
 {
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));
-  m_amr_patches.add(m_all_items_direction_info);
+  _addPatchInstance(m_all_items_direction_info);
   Integer nb_dir = mesh->dimension();
   for( Integer i=0; i<nb_dir; ++i ){
     m_local_face_direction[i] = -1;
@@ -344,7 +352,8 @@ computeDirections()
   _checkAddObservableMeshChanged();
 
   m_amr_patches.clear();
-  m_amr_patches.add(m_all_items_direction_info);
+  m_amr_patches_pointer.clear();
+  _addPatchInstance(m_all_items_direction_info);
 
   m_is_amr = m_mesh->isAmrActivated();
 
@@ -485,7 +494,7 @@ computeDirections()
     Integer patch_index = m_amr_patches.size();
     info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index;
     auto* cdi = new CartesianMeshPatch(this,patch_index);
-    m_amr_patches.add(makeRef(cdi));
+    _addPatchInstance(makeRef(cdi));
     cdi->_internalComputeNodeCellInformations(cell0,cells_center[cell0],nodes_coord);
     auto [ patch_cells, patch_nodes ] = _buildPatchGroups(cells,patch_index);
     _computeMeshDirection(*cdi,MD_DirX,cells_center,faces_center,patch_cells,patch_nodes);
