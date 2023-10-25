@@ -127,6 +127,7 @@ arcane_add_test(cartesian2D_coarsen2 testCartesianMesh2D-coarsen-2.arc "-m 20" "
 arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 
+
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-1 testAMRCartesianMesh2D-Cell-RenumberingV1-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-2 testAMRCartesianMesh2D-Cell-RenumberingV1-2.arc "-m 20")
 arcane_add_test(amr-cartesian3D-cell-renumbering-v1-1 testAMRCartesianMesh3D-Cell-RenumberingV1-1.arc "-m 20")
@@ -165,7 +166,10 @@ arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-2 testAMRCa
 arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCartesianMesh3D-PatchCartesianMeshOnly-3.arc "-m 20")
 #arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCartesianMesh3D-PatchCartesianMeshOnly-3.arc 8 "-m 20")
 
-arcane_add_test(amr-cartesian2D-V1-coarse-1 testAMRCartesianMesh2D-V1-coarse-1.arc "-m 20")
+
+arcane_add_test(amr-cartesian2D-V1-coarse-1 testAMRCartesianMesh2D-V1-coarse-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
+arcane_add_test(amr-cartesian2D-V1-coarse-2 testAMRCartesianMesh2D-V1-coarse-2.arc "-m 20")
+
 
 # Tests sur le renumérotation des faces en cartésien
 # L'idéal est d'avoir pas mal de sous-domaines pour être sur que le
