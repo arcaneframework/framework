@@ -39,7 +39,7 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Opérateur de Scan pour les sommes
+//! Opérateur de Scan pour les sommes
 template <typename DataType>
 class ScannerSumOperator
 {
@@ -52,7 +52,7 @@ class ScannerSumOperator
   static DataType initialValue() { return {}; }
 };
 
-// Opérateur de Scan pour le minimum
+//! Opérateur de Scan pour le minimum
 template <typename DataType>
 class ScannerMinOperator
 {
@@ -65,7 +65,7 @@ class ScannerMinOperator
   static DataType initialValue() { return std::numeric_limits<DataType>::max(); }
 };
 
-// Opérateur de Scan pour le maximum
+//! Opérateur de Scan pour le maximum
 template <typename DataType>
 class ScannerMaxOperator
 {
@@ -81,7 +81,7 @@ class ScannerMaxOperator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe pour effectuer un scan exlusif ou inclusif.
+ * \brief Classe pour effectuer un scan exlusif ou inclusif avec un opérateur spécifique.
  *
  * \a DataType est le type de donnée.
  */
@@ -202,42 +202,55 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Algorithmes de scan exclusif ou inclusif sur accélérateurs.
+ *
+ * Voir https://en.wikipedia.org/wiki/Prefix_sum.
+ *
+ * Dans les méthodes suivantes, l'argument \a queue peut être nul auquel cas
+ * l'algorithme s'applique sur l'hôte en séquentiel.
+ */
 template <typename DataType>
 class Scanner
 {
  public:
 
+  //! Somme exclusive
   void exclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     using ScannerType = impl::GenericScanner<DataType, impl::ScannerSumOperator<DataType>, true>;
     ScannerType scanner(queue);
     scanner.apply(input, output);
   }
+  //! Minimum exclusif
   void exclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     using ScannerType = impl::GenericScanner<DataType, impl::ScannerMinOperator<DataType>, true>;
     ScannerType scanner(queue);
     scanner.apply(input, output);
   }
+  //! Maximum exclusif
   void exclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     using ScannerType = impl::GenericScanner<DataType, impl::ScannerMaxOperator<DataType>, true>;
     ScannerType scanner(queue);
     scanner.apply(input, output);
   }
+  //! Somme inclusive
   void inclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     using ScannerType = impl::GenericScanner<DataType, impl::ScannerSumOperator<DataType>, false>;
     ScannerType scanner(queue);
     scanner.apply(input, output);
   }
+  //! Minimum inclusif
   void inclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     using ScannerType = impl::GenericScanner<DataType, impl::ScannerMinOperator<DataType>, false>;
     ScannerType scanner(queue);
     scanner.apply(input, output);
   }
+  //! Maximum inclusif
   void inclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     using ScannerType = impl::GenericScanner<DataType, impl::ScannerMaxOperator<DataType>, false>;
