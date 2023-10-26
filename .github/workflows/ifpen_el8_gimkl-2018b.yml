@@ -1,4 +1,4 @@
-name: IFPEN el7 gimkl/2018b
+name: IFPEN el8 gimkl/2018b
 
 on:
   workflow_dispatch:
