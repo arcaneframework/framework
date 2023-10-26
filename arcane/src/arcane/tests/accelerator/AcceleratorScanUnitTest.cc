@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorReduceUnitTest.cc                                (C) 2000-2023 */
+/* AcceleratorScanUnitTest.cc                                  (C) 2000-2023 */
 /*                                                                           */
-/* Service de test des réductions sur accélérateur.                          */
+/* Service de test des algorithmes de 'Scan' sur accélérateur.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -76,7 +76,7 @@ class AcceleratorScanUnitTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(AcceleratorScanUnitTest, IUnitTest, AcceleratorScanUnitTest);
+ARCANE_REGISTER_SERVICE_ACCELERATORSCANUNITTEST(AcceleratorScanUnitTest, AcceleratorScanUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
