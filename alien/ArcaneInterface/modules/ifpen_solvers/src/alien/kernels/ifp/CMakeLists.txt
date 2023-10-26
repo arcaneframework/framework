@@ -22,3 +22,9 @@ generateAxl(alien_ifpen_solvers
 addSources(alien_ifpen_solvers
     linear_solver/arcane/IFPLinearSolverService.cc
     )
+
+if(WIN32)
+    target_compile_definitions(alien_ifpen_solvers PUBLIC WIN32)
+else()
+    target_compile_definitions(alien_ifpen_solvers PUBLIC arch_Linux)
+endif()

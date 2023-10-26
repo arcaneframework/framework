@@ -23,10 +23,10 @@ endif ()
 
 
 if(USE_AXLSTAR)
-include(${AXLSTAR_CMAKE_COMMANDS})
+    include(${AXLSTAR_CMAKE_COMMANDS})
 endif()
 if(TARGET mcgsolver)
-  addDirectory(alien/kernels/mcg)
+    addDirectory(alien/kernels/mcg)
 endif()
 
 if(TARGET ifpsolver)
@@ -34,19 +34,19 @@ if(TARGET ifpsolver)
 endif()
 
 if(TARGET htssolver)
-  # This target need boost::system
-  find_package(Boost REQUIRED COMPONENTS program_options system)
-  addDirectory(alien/kernels/hts)
+    # This target need boost::system
+    find_package(Boost REQUIRED COMPONENTS program_options system)
+    addDirectory(alien/kernels/hts)
 endif()
 
 if(TARGET arcane_core)
-  linkLibraries(alien_ifpen_solvers arcane_core arcane_std)
+    linkLibraries(alien_ifpen_solvers arcane_core arcane_std)
 else ()
     linkLibraries(alien_ifpen_solvers alien_strong_options)
 endif()
 
 if(TARGET umfpack)
-  linkLibraries(alien_ifpen_solvers umfpack)
+    linkLibraries(alien_ifpen_solvers umfpack)
 endif()
 
 linkLibraries(alien_ifpen_solvers Alien::alien_core
@@ -54,7 +54,7 @@ linkLibraries(alien_ifpen_solvers Alien::alien_core
 
 linkLibraries(alien_ifpen_solvers Boost::program_options)
 if(TARGET htssolver)
-  target_link_libraries(alien_ifpen_solvers PRIVATE Boost::system)
+    target_link_libraries(alien_ifpen_solvers PRIVATE Boost::system)
 endif()
 
 target_include_directories(alien_ifpen_solvers PUBLIC
