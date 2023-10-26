@@ -580,7 +580,9 @@ des hexaèdres.
 
 \snippet accelerator/SimpleHydroAcceleratorService.cc AcceleratorConnectivity
 
-## Réductions et Scan
+## Réductions, Scan et Filtrage
+
+La classe \arcaneacc{Filterer} permet de filtrer les éléments d'un tableau.
 
 La classe \arcaneacc{Scanner} permet d'effectuer des algorithmes de
 scan inclusifs ou exclusifs (voir
