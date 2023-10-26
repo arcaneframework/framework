@@ -21,15 +21,6 @@
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/CommonUtils.h"
 
-#if defined(ARCANE_COMPILING_HIP)
-#include "arcane/accelerator/hip/HipAccelerator.h"
-#include <rocprim/rocprim.hpp>
-#endif
-#if defined(ARCANE_COMPILING_CUDA)
-#include "arcane/accelerator/cuda/CudaAccelerator.h"
-#include <cub/cub.cuh>
-#endif
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -81,6 +72,7 @@ class ScannerMaxOperator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Classe pour effectuer un scan exlusif ou inclusif avec un opérateur spécifique.
  *
  * \a DataType est le type de donnée.
@@ -88,7 +80,6 @@ class ScannerMaxOperator
 template <typename DataType, typename Operator, bool IsExclusive>
 class GenericScanner
 {
-  // TODO: Utiliser une classe pour gérer le malloc pour gérer les exceptions
   // TODO: Faire le malloc sur le device associé à la queue.
   //       et aussi regarder si on peut utiliser mallocAsync().
 
@@ -127,14 +118,14 @@ class GenericScanner
         ARCANE_CHECK_CUDA(::cub::DeviceScan::InclusiveScan(temp_storage, temp_storage_size,
                                                            input_data, output_data, op, nb_item, stream));
 
-      ARCANE_CHECK_CUDA(cudaMalloc(&temp_storage, temp_storage_size));
+      m_storage.allocate(temp_storage_size);
+      temp_storage = m_storage.address();
       if constexpr (IsExclusive)
         ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(temp_storage, temp_storage_size,
                                                            input_data, output_data, op, init_value, nb_item, stream));
       else
         ARCANE_CHECK_CUDA(::cub::DeviceScan::InclusiveScan(temp_storage, temp_storage_size,
                                                            input_data, output_data, op, nb_item, stream));
-      ARCANE_CHECK_CUDA(::cudaFree(temp_storage));
     } break;
 #else
       ARCANE_FATAL_NO_CUDA_COMPILATION();
@@ -153,7 +144,8 @@ class GenericScanner
         ARCANE_CHECK_HIP(rocprim::inclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
                                                  nb_item, op, stream));
 
-      ARCANE_CHECK_HIP(hipMalloc(&temp_storage, temp_storage_size));
+      m_storage.allocate(temp_storage_size);
+      temp_storage = m_storage.address();
 
       if constexpr (IsExclusive)
         ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
@@ -161,14 +153,13 @@ class GenericScanner
       else
         ARCANE_CHECK_HIP(rocprim::inclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
                                                  nb_item, op, stream));
-
-      ARCANE_CHECK_HIP(hipFree(temp_storage));
     }
 #else
       ARCANE_FATAL_NO_HIP_COMPILATION();
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
+      [[fallthrough]];
     case eExecutionPolicy::Sequential: {
       DataType sum = init_value;
       for (Int32 i = 0; i < nb_item; ++i) {
@@ -190,12 +181,13 @@ class GenericScanner
  private:
 
   RunQueue* m_queue = nullptr;
+  DeviceStorage m_storage;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Accelerator::impl
 
 namespace Arcane::Accelerator
 {
