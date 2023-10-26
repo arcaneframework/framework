@@ -40,6 +40,11 @@
  * milieux sur les accélérateurs
  */
 
+/*!
+ * \file Reduce.h
+ *
+ * \brief Types et fonctions pour gérer les synchronisations sur les accélérateurs
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
