@@ -176,7 +176,11 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
   /*!
    * \brief Créé une implémentation autonome pour gérer les accélérateurs.
    *
-   * Il faut appeler init() avant d'appeler cette méthode.
+   * Il faut appeler init() avant d'appeler cette méthode. Le choix du
+   * runtime (Arcane::Accelerator::eExecutionPolicy) est déterminé
+   * par les arguments utilisés lors de l'appel à init() ou spécifiés via
+   * acceleratorRuntimeInitialisationInfo() (voir
+   * \ref arcanedoc_parallel_accelerator_exec pour plus d'informations)
    */
   static StandaloneAcceleratorMng createStandaloneAcceleratorMng();
 

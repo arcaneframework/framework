@@ -551,15 +551,29 @@ la méthode \arcaneacc{Runner::setAsCurrentDevice()}.
 
 ## Gestion des connectivités
 
-TODO: expliquer l'utilisation des connectivités et pourquoi on ne peut
-pas accéder aux entités classiques (\arcane{Cell},\arcane{Node}, ...)
-sur accélérateur.
+L'accès aux connectivités du maillage se fait différemment sur
+accélérateur que sur le CPU pour des raisons de performance. Il n'est
+notamment pas possible d'utiliser les entités classiques
+(\arcane{Cell},\arcane{Node}, ...). A la place il faut utiliser les
+indentifiants locaux tels que \arcane{CellLocalId} ou
+\arcane{NodeLocalId}.
 
-## Réductions
+La classe \arcane{UnstructuredMeshConnectivityView} permet d'accéder
+aux informations de connectivité. Il est possible de définir une
+instance de cette classe et de la conserver au cours du calcul. Pour
+initialiser l'instance, il faut appeler la méthode
+\arcane{UnstructuredMeshConnectivityView::setMesh()}.
 
-TODO
+\warning Comme toutes les vues, l'instance est invalidé lorsque le
+maillage évolue. Il faut donc à nouveau appeler
+\arcane{UnstructuredMeshConnectivityView::setMesh()} après une
+modification du maillage.
 
-## Utilisation de CUPTI
+L'exemple suivant montre comment accéder aux noeuds des mailles.
+
+\snippet accelerator/SimpleHydroAcceleratorService.cc AcceleratorConnectivity
+
+## Réductions et Scan
 
 TODO
 
