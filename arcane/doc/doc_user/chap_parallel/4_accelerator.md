@@ -549,7 +549,7 @@ Si l'accélérateur "courant" a été modifié par exemple lors de l'appel
 à une bibliothèque externe il est possible de le changer en appelant
 la méthode \arcaneacc{Runner::setAsCurrentDevice()}.
 
-## Gestion des connectivités
+## Gestion des connectivités et des informations sur les entités
 
 L'accès aux connectivités du maillage se fait différemment sur
 accélérateur que sur le CPU pour des raisons de performance. Il n'est
@@ -569,7 +569,14 @@ maillage évolue. Il faut donc à nouveau appeler
 \arcane{UnstructuredMeshConnectivityView::setMesh()} après une
 modification du maillage.
 
-L'exemple suivant montre comment accéder aux noeuds des mailles.
+Pour accéder aux informations génériques des entités, comme le type ou
+le propriétaire, il faut utiliser la vue
+\arcane{ItemGenericInfoListView}.
+
+L'exemple suivant montre comment accéder aux noeuds des mailles et aux
+informations des mailles. Il parcourt l'ensemble des mailles et calcule
+le barycentre pour celles qui sont dans notre sous-domaine et qui sont
+des hexaèdres.
 
 \snippet accelerator/SimpleHydroAcceleratorService.cc AcceleratorConnectivity
 

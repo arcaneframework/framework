@@ -39,6 +39,7 @@
 #include "arcane/core/IMainFactory.h"
 #include "arcane/core/SimdItem.h"
 #include "arcane/core/UnstructuredMeshConnectivity.h"
+#include "arcane/core/ItemGenericInfoListView.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
@@ -1013,7 +1014,7 @@ class TestConnectivity
 
  public:
 
-  void computeCenter()
+  void computeCenterForOwnHexa()
   {
     VariableNodeReal3& nodes_coord_var(m_mesh->nodesCoordinates());
 
@@ -1023,14 +1024,22 @@ class TestConnectivity
     auto out_cells_center = viewOut(command,m_cells_center);
 
     // Cell->Node connectivity
-    auto cnc = m_connectivity_view.cellNode();
+    Arcane::IndexedCellNodeConnectivityView cnc = m_connectivity_view.cellNode();
+
+    // Generic information for cells
+    Arcane::ItemGenericInfoListView cells_infos(m_mesh->cellFamily());
+
     command << RUNCOMMAND_ENUMERATE(Cell,cid,m_mesh->allCells()){
+      if (!cells_infos.isOwn(cid))
+        return;
+      if (cells_infos.typeId(cid)!=IT_Hexaedron8)
+        return;
       Real3 center;
       // Iterate on nodes of Cell 'cid'
       for( NodeLocalId node : cnc.nodes(cid) )
         center += in_node_coord[node];
-      center /= static_cast<Real>(cnc.nbNode(cid));
-      out_cells_center[cid] = center;
+
+      out_cells_center[cid] = center / 8.0;
     };
   }
 
@@ -1051,7 +1060,7 @@ _doTestInit()
 {
   info() << "DoTestInit";
   TestConnectivity tester(mesh(),m_default_queue);
-  tester.computeCenter();
+  tester.computeCenterForOwnHexa();
 }
 
 /*---------------------------------------------------------------------------*/
