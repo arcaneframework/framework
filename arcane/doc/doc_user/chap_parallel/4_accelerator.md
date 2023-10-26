@@ -332,6 +332,11 @@ sont dépendants du type de l'accélérateur et peuvent ne pas être
 disponible partout. Ils sont accessibles via la méthode
 \arcaneacc{Runner::setMemoryAdvice()}.
 
+A partir de la version 3.10 de %Arcane et avec les accélérateurs NVIDIA, %Arcame
+propose des fonctionnalités pour détecter les transferts mémoire entre
+le CPU et l'accélérateur. La page \ref arcanedoc_debug_perf_cupti
+décrit ce fonctionnement.
+
 ### Exemple d'utilisation d'une boucle complexe {#arcanedoc_parallel_accelerator_complexloop}
 
 L'exemple suivant montre comment modifier l'intervalle d'itération

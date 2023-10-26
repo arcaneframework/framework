@@ -26,7 +26,10 @@ Sommaire de ce chapitre :
 4. \subpage arcanedoc_debug_perf_unit_tests <br>
   Décrit comment réaliser des tests unitaires pour les modules et services.</br>
 
-5. \subpage arcanedoc_debug_perf_profiling <br>
+5. \subpage arcanedoc_debug_perf_cupti <br>
+  Décrit l'intégration avec CUPTI (Cuda Profiling Tools Interface).</br>
+
+6. \subpage arcanedoc_debug_perf_profiling <br>
   Décrit les mécanismes disponibles pour l'analyse de performance.</br>
 
 ____
