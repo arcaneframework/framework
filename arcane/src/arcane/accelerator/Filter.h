@@ -66,17 +66,15 @@ class GenericFiltering
 #if defined(ARCANE_COMPILING_CUDA)
     {
       size_t temp_storage_size = 0;
-      void* temp_storage = nullptr;
       cudaStream_t stream = impl::CudaUtils::toNativeStream(m_queue);
       // Premier appel pour connaitre la taille pour l'allocation
       int* nb_out_ptr = nullptr;
-      ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(temp_storage, temp_storage_size,
+      ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(nullptr, temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
 
       m_algo_storage.allocate(temp_storage_size);
-      m_device_nb_out_storage.allocate(sizeof(int));
-      nb_out_ptr = reinterpret_cast<int*>(m_device_nb_out_storage.address());
-      ARCANE_CHECK_CUDA(::cudaMalloc(&temp_storage, temp_storage_size));
+      m_device_nb_out_storage.allocate();
+      nb_out_ptr = m_device_nb_out_storage.address();
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(m_algo_storage.address(), temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
       ARCANE_CHECK_CUDA(::cudaMemcpyAsync(&m_host_nb_out, nb_out_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
@@ -88,16 +86,15 @@ class GenericFiltering
 #if defined(ARCANE_COMPILING_HIP)
     {
       size_t temp_storage_size = 0;
-      void* temp_storage = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
       hipStream_t stream = impl::HipUtils::toNativeStream(m_queue);
       int* nb_out_ptr = nullptr;
-      ARCANE_CHECK_HIP(rocprim::select(temp_storage, temp_storage_size, input_data, flag_data, output_data,
+      ARCANE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
 
       m_algo_storage.allocate(temp_storage_size);
-      m_device_nb_out_storage.allocate(sizeof(int));
-      nb_out_ptr = reinterpret_cast<int*>(m_device_nb_out_storage.address());
+      m_device_nb_out_storage.allocate();
+      nb_out_ptr = m_device_nb_out_storage.address();
 
       ARCANE_CHECK_HIP(rocprim::select(m_algo_storage.address(), temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
@@ -135,8 +132,8 @@ class GenericFiltering
  private:
 
   RunQueue* m_queue = nullptr;
-  DeviceStorage m_algo_storage;
-  DeviceStorage m_device_nb_out_storage;
+  GenericDeviceStorage m_algo_storage;
+  DeviceStorage<int> m_device_nb_out_storage;
   int m_host_nb_out = 0;
 };
 

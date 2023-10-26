@@ -108,18 +108,17 @@ class GenericScanner
 #if defined(ARCANE_COMPILING_CUDA)
     {
       size_t temp_storage_size = 0;
-      void* temp_storage = nullptr;
       cudaStream_t stream = impl::CudaUtils::toNativeStream(m_queue);
       // Premier appel pour connaitre la taille pour l'allocation
       if constexpr (IsExclusive)
-        ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(temp_storage, temp_storage_size,
+        ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(nullptr, temp_storage_size,
                                                            input_data, output_data, op, init_value, nb_item, stream));
       else
-        ARCANE_CHECK_CUDA(::cub::DeviceScan::InclusiveScan(temp_storage, temp_storage_size,
+        ARCANE_CHECK_CUDA(::cub::DeviceScan::InclusiveScan(nullptr, temp_storage_size,
                                                            input_data, output_data, op, nb_item, stream));
 
       m_storage.allocate(temp_storage_size);
-      temp_storage = m_storage.address();
+      void* temp_storage = m_storage.address();
       if constexpr (IsExclusive)
         ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(temp_storage, temp_storage_size,
                                                            input_data, output_data, op, init_value, nb_item, stream));
@@ -134,18 +133,17 @@ class GenericScanner
 #if defined(ARCANE_COMPILING_HIP)
     {
       size_t temp_storage_size = 0;
-      void* temp_storage = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
       hipStream_t stream = impl::HipUtils::toNativeStream(m_queue);
       if constexpr (IsExclusive)
-        ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
+        ARCANE_CHECK_HIP(rocprim::exclusive_scan(nullptr, temp_storage_size, input_data, output_data,
                                                  init_value, nb_item, op, stream));
       else
-        ARCANE_CHECK_HIP(rocprim::inclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
+        ARCANE_CHECK_HIP(rocprim::inclusive_scan(nullptr, temp_storage_size, input_data, output_data,
                                                  nb_item, op, stream));
 
       m_storage.allocate(temp_storage_size);
-      temp_storage = m_storage.address();
+      void* temp_storage = m_storage.address();
 
       if constexpr (IsExclusive)
         ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
@@ -181,7 +179,7 @@ class GenericScanner
  private:
 
   RunQueue* m_queue = nullptr;
-  DeviceStorage m_storage;
+  GenericDeviceStorage m_storage;
 };
 
 /*---------------------------------------------------------------------------*/
