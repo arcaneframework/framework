@@ -62,8 +62,8 @@ class GenericFiltering
     if (m_queue)
       exec_policy = m_queue->executionPolicy();
     switch (exec_policy) {
-    case eExecutionPolicy::CUDA:
 #if defined(ARCANE_COMPILING_CUDA)
+    case eExecutionPolicy::CUDA:
     {
       size_t temp_storage_size = 0;
       cudaStream_t stream = impl::CudaUtils::toNativeStream(m_queue);
@@ -79,11 +79,9 @@ class GenericFiltering
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
       ARCANE_CHECK_CUDA(::cudaMemcpyAsync(&m_host_nb_out, nb_out_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
     } break;
-#else
-      ARCANE_FATAL_NO_CUDA_COMPILATION();
 #endif
-    case eExecutionPolicy::HIP:
 #if defined(ARCANE_COMPILING_HIP)
+    case eExecutionPolicy::HIP:
     {
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
@@ -100,8 +98,6 @@ class GenericFiltering
                                        nb_out_ptr, nb_item, stream));
       ARCANE_CHECK_HIP(::hipMemcpyAsync(&m_host_nb_out, nb_out_ptr, sizeof(int), hipMemcpyDeviceToHost, stream));
     }
-#else
-      ARCANE_FATAL_NO_HIP_COMPILATION();
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
@@ -117,7 +113,7 @@ class GenericFiltering
       m_host_nb_out = index;
     } break;
     default:
-      ARCANE_FATAL("Invalid execution policy '{0}'", exec_policy);
+      ARCANE_FATAL(getBadPolicyMessage(exec_policy));
     }
   }
 
