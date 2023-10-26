@@ -69,7 +69,7 @@ class DeviceStorage
  public:
 
   void* address() { return m_ptr; }
-
+  size_t size() const { return m_size; }
   void allocate(size_t new_size)
   {
     if (new_size<m_size)
