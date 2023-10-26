@@ -606,14 +606,14 @@ class ARCANE_CORE_EXPORT ItemBase
   //! Vrai si l'entité est l'entité nulle
   bool isNull() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
   //! Vrai si l'entité appartient au sous-domaine
-  bool isOwn() const { return (flags() & II_Own)!=0; }
+  bool isOwn() const { return ItemFlags::isOwn(flags()); }
   /*!
    * \brief Vrai si l'entité est partagé d'autres sous-domaines.
    *
    * Cette méthode n'est pertinente que si les informations de connectivités
    * ont été calculées.
    */
-  bool isShared() const { return (flags() & II_Shared)!=0; }
+  bool isShared() const { return ItemFlags::isShared(flags()); }
 
   //! Vrai si l'entité est supprimée
   bool isSuppressed() const { return (flags() & II_Suppressed)!=0; }
@@ -621,7 +621,7 @@ class ARCANE_CORE_EXPORT ItemBase
   bool isDetached() const { return (flags() & II_Detached)!=0; }
 
   //! \a true si l'entité est sur la frontière
-  bool isBoundary() const { return (flags() & II_Boundary)!=0; }
+  bool isBoundary() const { return ItemFlags::isBoundary(flags()); }
   //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
   ItemBase boundaryCell() const { return (flags() & II_Boundary) ? cellBase(0) : ItemBase(); }
   //! Maille derrière l'entité (nullItem() si aucune)
