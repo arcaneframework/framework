@@ -27,7 +27,7 @@ class PETScSolverConfigMUMPSService : public ArcanePETScSolverConfigMUMPSObject,
   /** Constructeur de la classe */
   PETScSolverConfigMUMPSService(const Arcane::ServiceBuildInfo& sbi);
 
-  PETScSolverConfigMUMPSService(IParallelMng* parallel_mng,
+  PETScSolverConfigMUMPSService(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
       std::shared_ptr<IOptionsPETScSolverConfigMUMPS> options);
 
   /** Destructeur de la classe */

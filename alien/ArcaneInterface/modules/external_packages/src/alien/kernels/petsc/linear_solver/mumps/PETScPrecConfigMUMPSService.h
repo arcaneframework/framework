@@ -41,7 +41,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScPrecConfigMUMPSService
 #endif
 
   PETScPrecConfigMUMPSService(
-      IParallelMng* parallel_mng, std::shared_ptr<IOptionsPETScPrecConfigMUMPS> options);
+          Arccore::MessagePassing::IMessagePassingMng* parallel_mng, std::shared_ptr<IOptionsPETScPrecConfigMUMPS> options);
 
   /** Destructeur de la classe */
   virtual ~PETScPrecConfigMUMPSService() {}

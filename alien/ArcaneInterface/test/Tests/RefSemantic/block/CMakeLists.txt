@@ -120,6 +120,20 @@ foreach (REFMVTESTS
                 --solver-package=petsc
                 --solver=lu
         )
+
+        if (TARGET mumps)
+            alien_test(
+                    BENCH refmvhandlers.block
+                    NAME ${REFMVTESTS}.petsc.mumps
+                    PROCS 4
+                    COMMAND refmvhandlers.Block${REFMVTESTS}
+                    OPTIONS
+                    --size=100
+                    --solver-package=petsc
+                    --solver=mumps
+            )
+        endif ()
+
     endif ()
 
     if (TARGET hypre)
