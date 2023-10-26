@@ -18,7 +18,13 @@
 #include "arcane/accelerator/core/RunQueue.h"
 
 #if defined(ARCANE_COMPILING_HIP)
+#include "arcane/accelerator/hip/HipAccelerator.h"
 #include <hip/hip_runtime.h>
+#include <rocprim/rocprim.hpp>
+#endif
+#if defined(ARCANE_COMPILING_CUDA)
+#include "arcane/accelerator/cuda/CudaAccelerator.h"
+#include <cub/cub.cuh>
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -47,6 +53,56 @@ class ARCANE_ACCELERATOR_EXPORT HipUtils
   static hipStream_t toNativeStream(RunQueue* queue);
 };
 #endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DeviceStorage
+{
+ public:
+
+  ~DeviceStorage() ARCANE_NOEXCEPT
+  {
+    deallocate();
+  }
+
+ public:
+
+  void* address() { return m_ptr; }
+
+  void allocate(size_t new_size)
+  {
+    if (new_size<m_size)
+      return;
+    deallocate();
+#if defined(ARCANE_COMPILING_CUDA)
+    ARCANE_CHECK_CUDA(::cudaMalloc(&m_ptr, new_size));
+#endif
+#if defined(ARCANE_COMPILING_HIP)
+    ARCANE_CHECK_HIP(::hipMalloc(&m_ptr, new_size));
+#endif
+    m_size = new_size;
+  }
+
+  void deallocate()
+  {
+    if (!m_ptr)
+      return;
+#if defined(ARCANE_COMPILING_CUDA)
+    ARCANE_CHECK_CUDA(::cudaFree(m_ptr));
+#endif
+#if defined(ARCANE_COMPILING_HIP)
+    ARCANE_CHECK_HIP(::hipFree(m_ptr));
+#endif
+    m_ptr = nullptr;
+    m_size = 0;
+  }
+
+ private:
+
+  void* m_ptr = nullptr;
+  size_t m_size = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
