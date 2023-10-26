@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleHydroAcceleratorService.cc                            (C) 2000-2021 */
+/* SimpleHydroAcceleratorService.cc                            (C) 2000-2023 */
 /*                                                                           */
 /* Hydrodynamique simplifiée utilisant les accélerateurs.                    */
 /*---------------------------------------------------------------------------*/
@@ -16,36 +16,29 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ITimeLoop.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IApplication.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/MathUtils.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/Concurrency.h"
-#include "arcane/BasicService.h"
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/FactoryService.h"
-#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
-#include "arcane/BasicUnitTest.h"
-
-#include "arcane/IMainFactory.h"
-
-#include "arcane/mesh/ItemFamily.h"
-
-#include "arcane/tests/TypesSimpleHydro.h"
-
-#include "arcane/SimdItem.h"
-
-#include "arcane/UnstructuredMeshConnectivity.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/MathUtils.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Concurrency.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/SimdItem.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
@@ -53,6 +46,7 @@
 #include "arcane/accelerator/Accelerator.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
 
+#include "arcane/tests/TypesSimpleHydro.h"
 #include "arcane/tests/accelerator/SimpleHydroAccelerator_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -208,6 +202,7 @@ class SimpleHydroAcceleratorService
 
   void _specialInit();
   void _computeNodeIndexInCells();
+  void _doTestInit();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -280,6 +275,9 @@ hydroExit()
 void SimpleHydroAcceleratorService::
 hydroStartInit()
 {
+  // Juste pour tester l'exemple de calcul du centre des mailles
+  _doTestInit(); 
+
   info() << "START_INIT sizeof(ItemLocalId)=" << sizeof(ItemLocalId);
   m_connectivity_view.setMesh(this->mesh());
 
@@ -995,6 +993,65 @@ _computeNodeIndexInCells()
       ++index;
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! [AcceleratorConnectivity]
+class TestConnectivity
+{
+ public:
+
+  TestConnectivity(IMesh* mesh,RunQueue* queue)
+  : m_mesh(mesh)
+  , m_queue(queue)
+  , m_cells_center(VariableBuildInfo(mesh,"CellsCenterTest"))
+  {
+    m_connectivity_view.setMesh(mesh);
+  }
+
+ public:
+
+  void computeCenter()
+  {
+    VariableNodeReal3& nodes_coord_var(m_mesh->nodesCoordinates());
+
+    auto command = makeCommand(m_queue);
+
+    auto in_node_coord = viewIn(command,nodes_coord_var);
+    auto out_cells_center = viewOut(command,m_cells_center);
+
+    // Cell->Node connectivity
+    auto cnc = m_connectivity_view.cellNode();
+    command << RUNCOMMAND_ENUMERATE(Cell,cid,m_mesh->allCells()){
+      Real3 center;
+      // Iterate on nodes of Cell 'cid'
+      for( NodeLocalId node : cnc.nodes(cid) )
+        center += in_node_coord[node];
+      center /= static_cast<Real>(cnc.nbNode(cid));
+      out_cells_center[cid] = center;
+    };
+  }
+
+ private:
+
+  Arcane::IMesh* m_mesh = nullptr;
+  Arcane::Accelerator::RunQueue* m_queue;
+  Arcane::UnstructuredMeshConnectivityView m_connectivity_view;
+  Arcane::VariableCellReal3 m_cells_center;
+};
+//! [AcceleratorConnectivity]
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimpleHydroAcceleratorService::
+_doTestInit()
+{
+  info() << "DoTestInit";
+  TestConnectivity tester(mesh(),m_default_queue);
+  tester.computeCenter();
 }
 
 /*---------------------------------------------------------------------------*/
