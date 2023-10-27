@@ -22,7 +22,6 @@ env:
   CM_BUILD_OPTS: "-j2"
   CM_BUILD_TYPE: Release
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
-  CCACHE_KEY_PREFIX: "arcane-ifpen-foss-2018b_el8"
   # CTest
   CT_OPTS: "--timeout 300 --output-on-failure"
   # For intel MPI to fix errors appearing in July 2023
@@ -54,8 +53,8 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ matrix.config.CCACHE_KEY_PREFIX }}-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ${{ matrix.config.CCACHE_KEY_PREFIX }}-${{ env.CM_BUILD_TYPE }}-
+          key: ifpen-el8-foss-2018b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
+          restore-keys: ifpen-el8-foss-2018b-${{ env.CM_BUILD_TYPE }}-
 
       # Installation
 
