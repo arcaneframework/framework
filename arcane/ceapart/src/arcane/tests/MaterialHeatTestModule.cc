@@ -170,7 +170,7 @@ buildInit()
 
   m_material_mng->setModificationFlags(flags);
   m_material_mng->setMeshModificationNotified(true);
-
+  m_material_mng->setUseMaterialValueWhenRemovingPartialValue(true);
   if (subDomain()->isContinue()) {
     mm->recreateFromDump();
   }
