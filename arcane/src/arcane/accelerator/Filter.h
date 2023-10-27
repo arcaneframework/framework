@@ -31,6 +31,33 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Classe de base pour effectuer un filtrage.
+ *
+ * Contient les arguments nécessaires pour effectuer le filtrage.
+ */
+class GenericFilteringBase
+{
+ protected:
+
+  Int32 _nbOutputElement() const
+  {
+    if (m_queue)
+      m_queue->barrier();
+    return m_host_nb_out;
+  }
+
+ public:
+
+  RunQueue* m_queue = nullptr;
+  GenericDeviceStorage m_algo_storage;
+  DeviceStorage<int> m_device_nb_out_storage;
+  int m_host_nb_out = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
  * \brief Classe pour effectuer un filtrage
  *
  * \a DataType est le type de donnée.
@@ -44,13 +71,7 @@ class GenericFiltering
 
  public:
 
-  explicit GenericFiltering(RunQueue* queue)
-  : m_queue(queue)
-  {}
-
- public:
-
-  void apply(SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<FlagType> flag)
+  void apply(GenericFilteringBase& s, SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
   {
     const Int32 nb_item = input.size();
     if (output.size() != nb_item)
@@ -59,52 +80,44 @@ class GenericFiltering
     [[maybe_unused]] DataType* output_data = output.data();
     [[maybe_unused]] const FlagType* flag_data = flag.data();
     eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
-    if (m_queue)
-      exec_policy = m_queue->executionPolicy();
+    RunQueue* queue = s.m_queue;
+    if (queue)
+      exec_policy = queue->executionPolicy();
     switch (exec_policy) {
-    case eExecutionPolicy::CUDA:
 #if defined(ARCANE_COMPILING_CUDA)
-    {
+    case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      void* temp_storage = nullptr;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(m_queue);
+      cudaStream_t stream = impl::CudaUtils::toNativeStream(queue);
       // Premier appel pour connaitre la taille pour l'allocation
       int* nb_out_ptr = nullptr;
-      ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(temp_storage, temp_storage_size,
+      ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(nullptr, temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
 
-      m_algo_storage.allocate(temp_storage_size);
-      m_device_nb_out_storage.allocate(sizeof(int));
-      nb_out_ptr = reinterpret_cast<int*>(m_device_nb_out_storage.address());
-      ARCANE_CHECK_CUDA(::cudaMalloc(&temp_storage, temp_storage_size));
-      ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(m_algo_storage.address(), temp_storage_size,
+      s.m_algo_storage.allocate(temp_storage_size);
+      s.m_device_nb_out_storage.allocate();
+      nb_out_ptr = s.m_device_nb_out_storage.address();
+      ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(s.m_algo_storage.address(), temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
-      ARCANE_CHECK_CUDA(::cudaMemcpyAsync(&m_host_nb_out, nb_out_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
+      ARCANE_CHECK_CUDA(::cudaMemcpyAsync(&s.m_host_nb_out, nb_out_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
     } break;
-#else
-      ARCANE_FATAL_NO_CUDA_COMPILATION();
 #endif
-    case eExecutionPolicy::HIP:
 #if defined(ARCANE_COMPILING_HIP)
-    {
+    case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
-      void* temp_storage = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
-      hipStream_t stream = impl::HipUtils::toNativeStream(m_queue);
+      hipStream_t stream = impl::HipUtils::toNativeStream(queue);
       int* nb_out_ptr = nullptr;
-      ARCANE_CHECK_HIP(rocprim::select(temp_storage, temp_storage_size, input_data, flag_data, output_data,
+      ARCANE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
 
-      m_algo_storage.allocate(temp_storage_size);
-      m_device_nb_out_storage.allocate(sizeof(int));
-      nb_out_ptr = reinterpret_cast<int*>(m_device_nb_out_storage.address());
+      s.m_algo_storage.allocate(temp_storage_size);
+      s.m_device_nb_out_storage.allocate();
+      nb_out_ptr = s.m_device_nb_out_storage.address();
 
-      ARCANE_CHECK_HIP(rocprim::select(m_algo_storage.address(), temp_storage_size, input_data, flag_data, output_data,
+      ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
-      ARCANE_CHECK_HIP(::hipMemcpyAsync(&m_host_nb_out, nb_out_ptr, sizeof(int), hipMemcpyDeviceToHost, stream));
+      ARCANE_CHECK_HIP(::hipMemcpyAsync(&s.m_host_nb_out, nb_out_ptr, sizeof(int), hipMemcpyDeviceToHost, stream));
     }
-#else
-      ARCANE_FATAL_NO_HIP_COMPILATION();
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
@@ -117,27 +130,14 @@ class GenericFiltering
           ++index;
         }
       }
-      m_host_nb_out = index;
+      s.m_host_nb_out = index;
     } break;
     default:
-      ARCANE_FATAL("Invalid execution policy '{0}'", exec_policy);
+      ARCANE_FATAL(getBadPolicyMessage(exec_policy));
     }
   }
 
  public:
-
-  //! Nombre d'éléments en sortie. Il faut être certain d'avoir synchronisé la RunQueue
-  Int32 nbOutputElement() const
-  {
-    return m_host_nb_out;
-  }
-
- private:
-
-  RunQueue* m_queue = nullptr;
-  DeviceStorage m_algo_storage;
-  DeviceStorage m_device_nb_out_storage;
-  int m_host_nb_out = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -147,6 +147,68 @@ class GenericFiltering
 
 namespace Arcane::Accelerator
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Algorithme de filtrage sur accélérateur.
+ *
+ * Dans les méthodes suivantes, l'argument \a queue peut être nul auquel cas
+ * l'algorithme s'applique sur l'hôte en séquentiel.
+ *
+ * Les instances de cette classe ne peuvent servir qu'une seule fois.
+ */
+template <typename DataType>
+class Filterer
+: private impl::GenericFilteringBase
+{
+ public:
+
+  /*!
+   * \brief Applique le filtre.
+   *
+   * Filtre tous les éléments de \a input pour lesquels \a flag vaut 1 et
+   * remplit \a output avec les valeurs filtrées. \a output doit avoir une taille assez
+   * grande pour contenir tous les éléments filtrés.
+   *
+   * L'algorithme séquentiel est le suivant:
+   *
+   * \code
+   * Int32 index = 0;
+   * for (Int32 i = 0; i < nb_item; ++i) {
+   *   if (flag[i] != 0) {
+   *     output[index] = input[i];
+   *     ++index;
+   *   }
+   * }
+   * return index;
+   * \endcode
+   *
+   * Il faut appeler la méthode nbOutputElement() pour obtenir le nombre d'éléments
+   * après filtrage.
+   */
+  template <typename FlagType>
+  void apply(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
+  {
+    if (m_is_already_called)
+      ARCANE_FATAL("apply() has already been called for this instance");
+    m_queue = queue;
+    m_is_already_called = true;
+    impl::GenericFilteringBase* base_ptr = this;
+    impl::GenericFiltering<DataType, FlagType> gf;
+    gf.apply(*base_ptr, input, output, flag);
+  }
+
+  //! Nombre d'éléments en sortie.
+  Int32 nbOutputElement() const
+  {
+    return _nbOutputElement();
+  }
+
+ private:
+
+  bool m_is_already_called = false;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

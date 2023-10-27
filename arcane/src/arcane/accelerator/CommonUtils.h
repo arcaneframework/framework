@@ -56,12 +56,15 @@ class ARCANE_ACCELERATOR_EXPORT HipUtils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class DeviceStorage
+/*!
+ * \internal
+ * \brief Gère l'allocation interne sur le device.
+ */
+class GenericDeviceStorage
 {
  public:
 
-  ~DeviceStorage() ARCANE_NOEXCEPT
+  ~GenericDeviceStorage() ARCANE_NOEXCEPT_FALSE
   {
     deallocate();
   }
@@ -102,6 +105,31 @@ class DeviceStorage
 
   void* m_ptr = nullptr;
   size_t m_size = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Gère l'allocation interne sur le device pour un type donné.
+ */
+template <typename DataType>
+class DeviceStorage
+{
+ public:
+
+  ~DeviceStorage() ARCANE_NOEXCEPT_FALSE
+  {
+  }
+
+  DataType* address() { return reinterpret_cast<DataType*>(m_storage.address()); }
+  size_t size() const { return m_storage.size(); }
+  void allocate() { m_storage.allocate(sizeof(DataType)); }
+  void deallocate() { m_storage.deallocate(); }
+
+ private:
+
+  GenericDeviceStorage m_storage;
 };
 
 /*---------------------------------------------------------------------------*/

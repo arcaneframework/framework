@@ -130,6 +130,9 @@ _executeTestDataType(Int32 size)
 {
   ValueChecker vc(A_FUNCINFO);
 
+  RunQueue queue(makeQueue(subDomain()->acceleratorMng()->defaultRunner()));
+  queue.setAsync(true);
+
   info() << "Execute Filter Test1";
 
   constexpr Int32 min_size_display = 100;
@@ -139,9 +142,8 @@ _executeTestDataType(Int32 size)
   NumArray<DataType, MDDim1> t2(n1);
   NumArray<DataType, MDDim1> expected_t2(n1);
   NumArray<Int16, MDDim1> filter_flags(n1);
-  ConstMemoryView t1_mem_view(makeMemoryView(t1.to1DSpan()));
 
-  std::seed_seq rng_seed{ 13, 49, 23 };
+  std::seed_seq rng_seed{ 37, 49, 23 };
   std::mt19937 randomizer(rng_seed);
   std::uniform_int_distribution<> rng_distrib(0, 32);
   Int32 nb_filter = 0;
@@ -163,16 +165,10 @@ _executeTestDataType(Int32 size)
   }
   expected_t2.resize(nb_filter);
   info() << "Expected NbFilter=" << nb_filter;
-  NumArray<DataType, MDDim1> expected_exclusive_sum(n1);
-  NumArray<DataType, MDDim1> expected_exclusive_min(n1);
-  NumArray<DataType, MDDim1> expected_exclusive_max(n1);
-  NumArray<DataType, MDDim1> expected_inclusive_sum(n1);
-  NumArray<DataType, MDDim1> expected_inclusive_min(n1);
-  NumArray<DataType, MDDim1> expected_inclusive_max(n1);
 
-  Arcane::Accelerator::impl::GenericFiltering<DataType, Int16> filterer(m_queue);
-  filterer.apply(t1, t2, filter_flags);
-  m_queue->barrier();
+  Arcane::Accelerator::Filterer<DataType> filterer;
+  SmallSpan<const Int16> filter_flags_view = filter_flags;
+  filterer.apply(m_queue, t1, t2, filter_flags_view);
   Int32 nb_out = filterer.nbOutputElement();
   info() << "NB_OUT_accelerator=" << nb_out;
 
