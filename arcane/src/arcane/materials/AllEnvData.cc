@@ -520,6 +520,12 @@ _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,bool i
 
   bool is_verbose = traceMng()->verbosityLevel()>=5;
 
+  // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
+  // en cas de suppression de mailles car cela sera fait avec la valeur matériau
+  // correspondante. Cela permet d'avoir le même comportement que sans
+  // optimisation. Ce n'est pas actif par défaut pour compatibilité avec l'existant.
+  bool is_copy = is_add_operation || !(m_material_mng->isUseMaterialValueWhenRemovingPartialValue());
+
   for( const MeshEnvironment* env : m_material_mng->trueEnvironments() ){
     // Ne traite pas le milieu en cours de modification.
     if (env==modified_env)
@@ -540,11 +546,7 @@ _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env,bool i
     info(4) << "NB_ENV_TRANSFORM=" << pure_local_ids.size()
             << " name=" << env->name();
 
-    // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
-    // en cas de suppression de mailles car cela sera fait avec la valeur matériau
-    // correspondante. Cela permet d'avoir le même comportement que sans
-    // optimisation.
-    if (is_add_operation)
+    if (is_copy)
       _copyBetweenPartialsAndGlobals(pure_local_ids,partial_indexes,
                                      indexer->index(),is_add_operation);
   }

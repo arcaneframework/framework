@@ -227,6 +227,15 @@ class MeshMaterialMng
     return m_variable_factory_mng;
   }
 
+  void setUseMaterialValueWhenRemovingPartialValue(bool v) override
+  {
+    m_is_use_material_value_when_removing_partial_value = v;
+  }
+  bool isUseMaterialValueWhenRemovingPartialValue() const override
+  {
+    return m_is_use_material_value_when_removing_partial_value;
+  }
+
  public:
 
   AllEnvData* allEnvData() { return m_all_env_data; }
@@ -278,6 +287,7 @@ class MeshMaterialMng
   bool m_is_data_initialisation_with_zero = false;
   bool m_is_mesh_modification_notified = false;
   bool m_is_allocate_scalar_environment_variable_as_material = false;
+  bool m_is_use_material_value_when_removing_partial_value = false;
   int m_modification_flags = 0;
 
   Mutex m_variable_lock;
