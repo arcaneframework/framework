@@ -84,13 +84,13 @@ jobs:
         shell: bash
         run: cmake --build ${{ env.BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
 
-      #- name: Clean
-      #  id: clean
-      #  if: |
-      #    (success() || failure()) &&
-      #    steps.build.outcome == 'success'
-      #  shell: bash
-      #  run: find ${{ env.BUILD_DIR }} -type f -name '*.o' -exec rm -f '{}' \;
+      - name: Clean
+        id: clean
+        if: |
+          (success() || failure()) &&
+          steps.build.outcome == 'success'
+        shell: bash
+        run: find ${{ env.BUILD_DIR }} -type f -name '*.o' -exec rm -f '{}' \;
 
       - name: Install
         id: install
