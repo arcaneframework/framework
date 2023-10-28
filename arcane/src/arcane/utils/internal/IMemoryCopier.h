@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryRessourceMngInternal.h                               (C) 2000-2023 */
+/* IMemoryCopier.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Partie interne à Arcane de 'IMemoryRessourceMng'.                         */
+/* Interface pour les copies mémoire.                                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_IMEMORYRESSOURCEMNGINTERNAL_H
-#define ARCANE_UTILS_INTERNAL_IMEMORYRESSOURCEMNGINTERNAL_H
+#ifndef ARCANE_UTILS_INTERNAL_IMEMORYCOPIER_H
+#define ARCANE_UTILS_INTERNAL_IMEMORYCOPIER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/internal/IMemoryCopier.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,23 +24,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Partie interne à Arcane de 'IMemoryRessourceMng'.
- */
-class ARCANE_UTILS_EXPORT IMemoryRessourceMngInternal
+
+class ARCANE_UTILS_EXPORT IMemoryCopier
 {
  public:
 
-  virtual ~IMemoryRessourceMngInternal() = default;
-
+  //! Copie les données de \a from vers \a to
   virtual void copy(ConstMemoryView from, eMemoryRessource from_mem,
                     MutableMemoryView to, eMemoryRessource to_mem) = 0;
-
- public:
-
-  virtual void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) = 0;
-
-  virtual void setCopier(IMemoryCopier* copier) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
