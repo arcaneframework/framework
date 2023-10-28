@@ -35,6 +35,7 @@
 #include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
+#include "arcane/accelerator/core/RunQueue.h"
 
 #include <iostream>
 
@@ -468,8 +469,12 @@ class CudaMemoryCopier
 : public IMemoryCopier
 {
   void copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
-            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem) override
+            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem, RunQueue* queue) override
   {
+    if (queue){
+      queue->copyMemory(MemoryCopyArgs(to.bytes(),from.bytes()).addAsync(queue->isAsync()));
+      return;
+    }
     // 'cudaMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
     // uniquement compte de la valeur des pointeurs. Il faudrait voir si
     // utiliser \a from_mem et \a to_mem peut améliorer les performances.

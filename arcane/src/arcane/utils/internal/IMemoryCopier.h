@@ -24,14 +24,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Interface pour les copies mémoire avec support des accélérateurs.
+ */
 class ARCANE_UTILS_EXPORT IMemoryCopier
 {
  public:
 
-  //! Copie les données de \a from vers \a to
+  /*!
+   * \brief Copie les données de \a from vers \a to avec la queue \a queue.
+   *
+   * \a queue peut-être nul.
+   */
   virtual void copy(ConstMemoryView from, eMemoryRessource from_mem,
-                    MutableMemoryView to, eMemoryRessource to_mem) = 0;
+                    MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

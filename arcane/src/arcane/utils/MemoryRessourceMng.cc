@@ -135,7 +135,7 @@ namespace
 
 void MemoryRessourceMng::
 copy(ConstMemoryView from, eMemoryRessource from_mem,
-     MutableMemoryView to, eMemoryRessource to_mem)
+     MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue)
 {
   Int64 from_size = from.bytes().size();
   Int64 to_size = to.bytes().size();
@@ -144,7 +144,7 @@ copy(ConstMemoryView from, eMemoryRessource from_mem,
 
   // Utilise l'instance spécifique si elle disponible
   if (m_copier) {
-    m_copier->copy(from, from_mem, to, to_mem);
+    m_copier->copy(from, from_mem, to, to_mem, queue);
     return;
   }
 
@@ -170,7 +170,7 @@ genericCopy(ConstMemoryView from, MutableMemoryView to)
 {
   IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
   eMemoryRessource mem_type = eMemoryRessource::Unknown;
-  mrm->_internal()->copy(from, mem_type, to, mem_type);
+  mrm->_internal()->copy(from, mem_type, to, mem_type, nullptr);
 }
 
 /*---------------------------------------------------------------------------*/

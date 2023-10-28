@@ -33,8 +33,10 @@ class ARCANE_UTILS_EXPORT IMemoryRessourceMngInternal
 
   virtual ~IMemoryRessourceMngInternal() = default;
 
+ public:
+
   virtual void copy(ConstMemoryView from, eMemoryRessource from_mem,
-                    MutableMemoryView to, eMemoryRessource to_mem) = 0;
+                    MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue) = 0;
 
  public:
 
