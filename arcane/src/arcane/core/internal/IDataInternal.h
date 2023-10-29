@@ -193,4 +193,19 @@ class IArray2DataInternalT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::impl
+{
+/*!
+ * \brief Copie de \a source vers \a destination.
+ *
+ * Les données doivent être de type \a INumericData et la zone mémoire
+ * de destination doit déjà avoir été alloué à la bonne taille.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+copyContigousData(IData* destination,IData* source,RunQueue& queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #endif
