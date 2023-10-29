@@ -66,7 +66,6 @@ jobs:
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
-          ref: 21cca2658a249cde012a8ea8dfc33bf4fc5240f1
 
       - name: Configure
         id: configure
@@ -162,7 +161,6 @@ jobs:
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
-          ref: 21cca2658a249cde012a8ea8dfc33bf4fc5240f1
 
       - name: Download build artifact
         uses: actions/download-artifact@v3
