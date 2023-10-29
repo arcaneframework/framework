@@ -14,6 +14,7 @@
 #include "arcane/core/MeshVariableArrayRef.h"
 
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/VariableDataTypeTraits.h"
