@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ValueChecker.h                                              (C) 2000-2021 */
+/* ValueChecker.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Vérification de la validité de certaines valeurs.                         */
 /*---------------------------------------------------------------------------*/
@@ -123,12 +123,32 @@ class ARCANE_UTILS_EXPORT ValueChecker
    * ont les mêmes valeurs.
    */
   template<typename T>
+  void areEqualArray(SmallSpan<T> values,SmallSpan<T> expected_values,const String& message)
+  {
+    return areEqualArray(Span<const T>(values),Span<const T>(expected_values),message);
+  }
+
+  /*!
+   * \brief Vérifie que les deux tableaux \a values et \a expected_values
+   * ont les mêmes valeurs.
+   */
+  template<typename T>
   void areEqualArray(ConstArrayView<T> values,ConstArrayView<T> expected_values,
                      const String& message)
   {
     return areEqualArray(Span<const T>(values),Span<const T>(expected_values),message);
   }
 
+  /*!
+   * \brief Vérifie que les deux tableaux \a values et \a expected_values
+   * ont les mêmes valeurs.
+   */
+  template<typename T>
+  void areEqualArray(SmallSpan2<T> values,SmallSpan2<T> expected_values,
+                     const String& message)
+  {
+    return areEqualArray(Span2<const T>(values),Span2<const T>(expected_values),message);
+  }
 
   /*!
    * \brief Vérifie que les deux tableaux \a values et \a expected_values

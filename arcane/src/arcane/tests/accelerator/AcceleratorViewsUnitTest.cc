@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorViewsUnitTest.cc                                 (C) 2000-2022 */
+/* AcceleratorViewsUnitTest.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des vues pour les accelerateurs.                          */
 /*---------------------------------------------------------------------------*/
@@ -13,11 +13,12 @@
 
 #include "arcane/utils/ValueChecker.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ServiceFactory.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceFactory.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/VariableViews.h"
@@ -52,7 +53,7 @@ class AcceleratorViewsUnitTest
 
  private:
 
-  ax::Runner m_runner;
+  ax::Runner* m_runner = nullptr;
   VariableCellArrayReal m_cell_array1;
   VariableCellArrayReal m_cell_array2;
   VariableCellReal2 m_cell1_real2;
@@ -73,6 +74,7 @@ class AcceleratorViewsUnitTest
   void _executeTestReal3x3();
   void _executeTest2Real3x3();
   void _executeTestMemoryCopy();
+  void _executeTestVariableCopy();
   void _checkResultReal2(Real to_add);
   void _checkResultReal3(Real to_add);
   void _checkResultReal2x2(Real to_add);
@@ -117,9 +119,7 @@ AcceleratorViewsUnitTest::
 void AcceleratorViewsUnitTest::
 initializeTest()
 {
-  IApplication* app = subDomain()->application();
-  const auto& acc_info = app->acceleratorRuntimeInitialisationInfo();
-  initializeRunner(m_runner,traceMng(),acc_info);
+  m_runner = subDomain()->acceleratorMng()->defaultRunner();
 
   m_cell_array1.resize(12);
   m_cell_array2.resize(12);
@@ -166,6 +166,7 @@ executeTest()
   _executeTestReal3x3();
   _executeTest2Real3x3();
   _executeTestMemoryCopy();
+  _executeTestVariableCopy();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -563,7 +564,7 @@ _executeTestMemoryCopy()
   info() << "Execute Test MemoryCopy";
   eMemoryRessource source_mem = eMemoryRessource::Host;
   eMemoryRessource dest_mem = eMemoryRessource::Host;
-  if (ax::impl::isAcceleratorPolicy(m_runner.executionPolicy()))
+  if (ax::impl::isAcceleratorPolicy(m_runner->executionPolicy()))
     dest_mem = eMemoryRessource::Device;
 
   const int nb_value = 100000;
@@ -608,6 +609,53 @@ _executeTestMemoryCopy()
     Int32 expected_value = (i+3) + (i+5);
     if (c(i)!=expected_value)
       ARCANE_FATAL("Bad value index={0} value={1} expected={2}",i,c(i),expected_value);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorViewsUnitTest::
+_executeTestVariableCopy()
+{
+  info() << "Execute Test VariableCopy";
+
+  ValueChecker vc(A_FUNCINFO);
+
+  auto queue = makeQueue(m_runner);
+  queue.setAsync(true);
+
+  VariableCellReal2 test_cell1_real2(VariableBuildInfo(mesh(),"TestCell1Real2"));
+  VariableCellReal3 test_cell1_real3(VariableBuildInfo(mesh(),"TestCell1Real3"));
+  VariableCellReal2x2 test_cell1_real2x2(VariableBuildInfo(mesh(),"TestCell1Real2x2"));
+  VariableCellReal3x3 test_cell1_real3x3(VariableBuildInfo(mesh(),"TestCell1Real3x3"));
+  VariableCellArrayReal test_cell1_array(VariableBuildInfo(mesh(),"TestCellArrayReal2"));
+  VariableCellArrayReal test_cell2_array(VariableBuildInfo(mesh(),"TestCellArrayReal3"));
+  VariableCellReal2 test2_cell1_real2(VariableBuildInfo(mesh(),"Test2Cell1Real2"));
+
+  test_cell1_array.resize(m_cell_array1.arraySize());
+  test_cell2_array.resize(m_cell_array2.arraySize());
+
+  test_cell1_real2.copy(m_cell1_real2,&queue);
+  test_cell1_real3.copy(m_cell1_real3,&queue);
+  test_cell1_real2x2.copy(m_cell1_real2x2,&queue);
+  test_cell1_real3x3.copy(m_cell1_real3x3,&queue);
+  test2_cell1_real2.copy(m_cell1_real2,nullptr);
+  test_cell1_array.copy(m_cell_array1,&queue);
+  test_cell2_array.copy(m_cell_array2,nullptr);
+  queue.barrier();
+
+  vc.areEqualArray(test_cell1_real2._internalSpan(),m_cell1_real2._internalSpan(),"CompareReal2");
+  vc.areEqualArray(test_cell1_real3._internalSpan(),m_cell1_real3._internalSpan(),"CompareReal3");
+  vc.areEqualArray(test_cell1_real2x2._internalSpan(),m_cell1_real2x2._internalSpan(),"CompareReal2x2");
+  vc.areEqualArray(test_cell1_real3x3._internalSpan(),m_cell1_real3x3._internalSpan(),"CompareReal3x3");
+  vc.areEqualArray(test2_cell1_real2._internalSpan(),m_cell1_real2._internalSpan(),"CompareReal2 Test2");
+
+  vc.areEqualArray(test_cell1_array._internalSpan(),m_cell_array1._internalSpan(),"CompareRealArray1");
+  {
+    Span2<const double> v1(test_cell2_array.asArray());
+    Span2<const double> v2(m_cell_array2.asArray());
+    vc.areEqualArray(v1,v2,"CompareRealArray2");
   }
 }
 
