@@ -263,6 +263,12 @@ _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env)
 {
   const bool is_add = m_work_info.isAdd();
 
+  // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
+  // en cas de suppression de mailles car cela sera fait avec la valeur matériau
+  // correspondante. Cela permet d'avoir le même comportement que sans
+  // optimisation. Ce n'est pas actif par défaut pour compatibilité avec l'existant.
+  const bool is_copy = is_add || !(m_material_mng->isUseMaterialValueWhenRemovingPartialValue());
+
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
     // Ne traite pas le milieu en cours de modification.
     if (env == modified_env)
@@ -281,11 +287,7 @@ _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env)
     info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
             << " name=" << env->name();
 
-    // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
-    // en cas de suppression de mailles car cela sera fait avec la valeur matériau
-    // correspondante. Cela permet d'avoir le même comportement que sans
-    // optimisation.
-    if (is_add)
+    if (is_copy)
       m_all_env_data->_copyBetweenPartialsAndGlobals(m_work_info.pure_local_ids,
                                                      m_work_info.partial_indexes,
                                                      indexer->index(), is_add);

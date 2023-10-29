@@ -5,20 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryRessourceMng.h                                       (C) 2000-2023 */
+/* IMemoryCopier.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
+/* Interface pour les copies mémoire.                                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_MEMORYRESSOURCEMNG_H
-#define ARCANE_UTILS_INTERNAL_MEMORYRESSOURCEMNG_H
+#ifndef ARCANE_UTILS_INTERNAL_IMEMORYCOPIER_H
+#define ARCANE_UTILS_INTERNAL_IMEMORYCOPIER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IMemoryRessourceMng.h"
-#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
-
-#include <memory>
-#include <array>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,49 +25,19 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestion des ressources mémoire pour les CPU et accélérateurs.
+ * \brief Interface pour les copies mémoire avec support des accélérateurs.
  */
-class ARCANE_UTILS_EXPORT MemoryRessourceMng
-: public IMemoryRessourceMng
-, public IMemoryRessourceMngInternal
+class ARCANE_UTILS_EXPORT IMemoryCopier
 {
  public:
 
-  MemoryRessourceMng();
-
- public:
-
-  IMemoryAllocator* getAllocator(eMemoryRessource r) override;
-
- public:
-
-  void copy(ConstMemoryView from, eMemoryRessource from_mem,
-            MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue) override;
-
- public:
-
-  void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) override;
-  void setCopier(IMemoryCopier* copier) override { m_copier = copier; }
-
- public:
-
-  //! Interface interne
-  IMemoryRessourceMngInternal* _internal() override { return this; }
-
- public:
-
-  //! Copie générique utilisant platform::getDataMemoryRessourceMng()
-  static void genericCopy(ConstMemoryView from, MutableMemoryView to);
-
- private:
-
-  std::array<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
-  std::unique_ptr<IMemoryCopier> m_default_memory_copier;
-  IMemoryCopier* m_copier = nullptr;
-
- private:
-
-  inline int _checkValidRessource(eMemoryRessource r);
+  /*!
+   * \brief Copie les données de \a from vers \a to avec la queue \a queue.
+   *
+   * \a queue peut-être nul.
+   */
+  virtual void copy(ConstMemoryView from, eMemoryRessource from_mem,
+                    MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

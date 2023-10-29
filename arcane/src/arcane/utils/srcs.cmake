@@ -319,6 +319,7 @@ set(ARCANE_SOURCES
   DirectedAcyclicGraphT.h
   internal/MemoryRessourceMng.h
   internal/IMemoryRessourceMngInternal.h
+  internal/IMemoryCopier.h
   internal/ProfilingInternal.h
   internal/ValueConvertInternal.h
   internal/SpecificMemoryCopyList.h

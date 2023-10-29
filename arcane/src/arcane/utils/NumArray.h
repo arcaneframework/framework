@@ -45,6 +45,7 @@ namespace Arcane::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Implémentation commune à pour NumArray.
  */
 class ARCANE_UTILS_EXPORT NumArrayBaseCommon
@@ -55,10 +56,13 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
   static IMemoryAllocator* _getDefaultAllocator(eMemoryRessource r);
   static void _checkHost(eMemoryRessource r);
   static void _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
-                               Span<std::byte> to, eMemoryRessource to_mem);
+                               Span<std::byte> to, eMemoryRessource to_mem, RunQueue* queue);
 };
 
-// Wrapper de Arccore::Array pour la classe NumArray
+/*!
+ * \internal
+ * \brief Wrapper de Arccore::Array pour la classe NumArray.
+ */
 template <typename DataType>
 class NumArrayContainer
 : private Arccore::Array<DataType>
@@ -148,32 +152,27 @@ class NumArrayContainer
     }
   }
 
-  void copyOnly(const ThatClass& v)
+  /*!
+   * \brief Copie les valeurs de \a v dans l'instance.
+   *
+   * \a input_ressource indique l'origine de la zone mémoire (ou eMemoryRessource::Unknown si inconnu)
+   */
+  void copyOnly(const Span<const DataType>& v, eMemoryRessource input_ressource, RunQueue* queue = nullptr)
   {
-    _memoryAwareCopy(v);
-  }
-
-  void copyOnly(const Span<const DataType>& v)
-  {
-    _memoryAwareCopy(v);
+    _memoryAwareCopy(v, input_ressource, queue);
   }
 
  private:
 
-  void _memoryAwareCopy(const ThatClass& v)
+  void _memoryAwareCopy(const Span<const DataType>& v, eMemoryRessource input_ressource, RunQueue* queue)
   {
-    NumArrayBaseCommon::_memoryAwareCopy(asBytes(v.to1DSpan()), v.m_memory_ressource,
-                                         asWritableBytes(to1DSpan()), m_memory_ressource);
-  }
-  void _memoryAwareCopy(const Span<const DataType>& v)
-  {
-    NumArrayBaseCommon::_memoryAwareCopy(asBytes(v), eMemoryRessource::Unknown,
-                                         asWritableBytes(to1DSpan()), m_memory_ressource);
+    NumArrayBaseCommon::_memoryAwareCopy(asBytes(v), input_ressource,
+                                         asWritableBytes(to1DSpan()), m_memory_ressource, queue);
   }
   void _resizeAndCopy(const ThatClass& v)
   {
     this->_resizeNoInit(v.to1DSpan().size());
-    _memoryAwareCopy(v);
+    _memoryAwareCopy(v, v.memoryRessource(), nullptr);
   }
 
  private:
@@ -360,12 +359,7 @@ class NumArrayBase
    * Cette opération est valide quelle que soit la mêmoire associée
    * associée à l'instance.
    */
-  void copy(ConstSpanType rhs)
-  {
-    this->resize(rhs.extents().dynamicExtents());
-    m_data.copyOnly(rhs.to1DSpan());
-    _updateSpanPointerFromData();
-  }
+  void copy(ConstSpanType rhs) { copy(rhs, nullptr); }
 
   /*!
    * \brief Copie dans l'instance les valeurs de \a rhs.
@@ -373,11 +367,32 @@ class NumArrayBase
    * Cette opération est valide quelle que soit la mêmoire associée
    * associée à l'instance.
    */
-  void copy(const ThatClass& rhs)
+  void copy(const ThatClass& rhs) { copy(rhs, nullptr); }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   * \a queue peut être nul. Si la file est asynchrone, il faudra la
+   * synchroniser avant de pouvoir utiliser l'instance.
+   */
+  void copy(ConstSpanType rhs, RunQueue* queue)
   {
-    this->resize(rhs.extents().dynamicExtents());
-    m_data.copyOnly(rhs.m_data);
-    _updateSpanPointerFromData();
+    _resizeAndCopy(rhs, eMemoryRessource::Unknown, queue);
+  }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   * \a queue peut être nul. Si la file est asynchrone, il faudra la
+   * synchroniser avant de pouvoir utiliser l'instance.
+   */
+  void copy(const ThatClass& rhs, RunQueue* queue)
+  {
+    _resizeAndCopy(rhs.constSpan(), rhs.memoryRessource(), queue);
   }
 
   //! Référence constante pour l'élément \a idx
@@ -433,6 +448,13 @@ class NumArrayBase
   void _updateSpanPointerFromData()
   {
     m_span.m_ptr = m_data.to1DSpan().data();
+  }
+
+  void _resizeAndCopy(ConstSpanType rhs, eMemoryRessource input_ressource, RunQueue* queue)
+  {
+    this->resize(rhs.extents().dynamicExtents());
+    m_data.copyOnly(rhs.to1DSpan(), input_ressource, queue);
+    _updateSpanPointerFromData();
   }
 };
 
