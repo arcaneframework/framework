@@ -17,6 +17,7 @@
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
+#include <memory>
 #include <array>
 
 /*---------------------------------------------------------------------------*/
@@ -65,6 +66,7 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
  private:
 
   std::array<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
+  std::unique_ptr<IMemoryCopier> m_default_memory_copier;
   IMemoryCopier* m_copier = nullptr;
 
  private:

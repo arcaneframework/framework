@@ -27,6 +27,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace
 {
   const char* _toName(eMemoryRessource r)
@@ -46,6 +47,16 @@ namespace
     return "Invalid";
   }
 
+  inline bool _isHost(eMemoryRessource r)
+  {
+    // Si on sait pas, considère qu'on est accessible de puis l'hôte.
+    if (r == eMemoryRessource::Unknown)
+      return true;
+    if (r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned)
+      return true;
+    return false;
+  }
+
 } // namespace
 
 extern "C++" ARCANE_UTILS_EXPORT std::ostream&
@@ -58,8 +69,36 @@ operator<<(std::ostream& o, eMemoryRessource r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class DefaultHostMemoryCopier
+: public IMemoryCopier
+{
+ public:
+
+  void copy(ConstMemoryView from, eMemoryRessource from_mem,
+            MutableMemoryView to, eMemoryRessource to_mem, [[maybe_unused]] RunQueue* queue) override
+  {
+    // Sans support accélérateur, on peut juste faire un 'memcpy' si la mémoire
+    // est accessible depuis le CPU
+
+    if (!_isHost(from_mem))
+      ARCANE_FATAL("Source buffer is not accessible from host and no copier provided (location={0})",
+                   from_mem);
+
+    if (!_isHost(to_mem))
+      ARCANE_FATAL("Destination buffer is not accessible from host and no copier provided (location={0})",
+                   to_mem);
+
+    to.copyHost(from);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MemoryRessourceMng::
 MemoryRessourceMng()
+: m_default_memory_copier(new DefaultHostMemoryCopier())
+, m_copier(m_default_memory_copier.get())
 {
   std::fill(m_allocators.begin(), m_allocators.end(), nullptr);
   // Par défaut on utilise l'allocateur CPU. Les allocateurs spécifiques pour
@@ -117,22 +156,6 @@ setAllocator(eMemoryRessource r, IMemoryAllocator* allocator)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-  inline bool _isHost(eMemoryRessource r)
-  {
-    // Si on sait pas, considère qu'on est accessible de puis l'hôte.
-    if (r == eMemoryRessource::Unknown)
-      return true;
-    if (r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned)
-      return true;
-    return false;
-  }
-} // namespace
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void MemoryRessourceMng::
 copy(ConstMemoryView from, eMemoryRessource from_mem,
      MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue)
@@ -142,24 +165,7 @@ copy(ConstMemoryView from, eMemoryRessource from_mem,
   if (from_size > to_size)
     ARCANE_FATAL("Destination copy is too small (to_size={0} from_size={1})", to_size, from_size);
 
-  // Utilise l'instance spécifique si elle disponible
-  if (m_copier) {
-    m_copier->copy(from, from_mem, to, to_mem, queue);
-    return;
-  }
-
-  // Sinon, on peut juste faire un 'memcpy' si la mémoire est accessible
-  // depuis le CPU
-
-  if (!_isHost(from_mem))
-    ARCANE_FATAL("Source buffer is not accessible from host and no copier provided (location={0})",
-                 from_mem);
-
-  if (!_isHost(to_mem))
-    ARCANE_FATAL("Destination buffer is not accessible from host and no copier provided (location={0})",
-                 to_mem);
-
-  to.copyHost(from);
+  m_copier->copy(from, from_mem, to, to_mem, queue);
 }
 
 /*---------------------------------------------------------------------------*/
