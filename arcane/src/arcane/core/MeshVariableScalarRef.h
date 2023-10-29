@@ -1,26 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableScalarRef.h                                     (C) 2000-2022 */
+/* MeshVariableScalarRef.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant une variable scalaire sur une entité du maillage.           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHVARIABLESCALARREF_H
-#define ARCANE_MESHVARIABLESCALARREF_H
+#ifndef ARCANE_CORE_MESHVARIABLESCALARREF_H
+#define ARCANE_CORE_MESHVARIABLESCALARREF_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/MeshVariableRef.h"
-#include "arcane/PrivateVariableScalar.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ItemGroupRangeIterator.h"
-#include "arcane/ItemPairEnumerator.h"
 
 #include "arcane/utils/FatalErrorException.h"
+
+#include "arcane/core/MeshVariableRef.h"
+#include "arcane/core/PrivateVariableScalar.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemGroupRangeIterator.h"
+#include "arcane/core/ItemPairEnumerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -159,6 +159,13 @@ class ItemVariableScalarRefT
   ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group);
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value);
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value,const ItemGroup& group);
+
+  /*!
+   * \brief Copie les valeurs de \a v dans cette variable via la file \a queue.
+   *
+   * \a queue peut être nul.
+   */
+  ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v,RunQueue* queue);
 
  public:
 
