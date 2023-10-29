@@ -123,12 +123,32 @@ class ARCANE_UTILS_EXPORT ValueChecker
    * ont les mêmes valeurs.
    */
   template<typename T>
+  void areEqualArray(SmallSpan<T> values,SmallSpan<T> expected_values,const String& message)
+  {
+    return areEqualArray(Span<const T>(values),Span<const T>(expected_values),message);
+  }
+
+  /*!
+   * \brief Vérifie que les deux tableaux \a values et \a expected_values
+   * ont les mêmes valeurs.
+   */
+  template<typename T>
   void areEqualArray(ConstArrayView<T> values,ConstArrayView<T> expected_values,
                      const String& message)
   {
     return areEqualArray(Span<const T>(values),Span<const T>(expected_values),message);
   }
 
+  /*!
+   * \brief Vérifie que les deux tableaux \a values et \a expected_values
+   * ont les mêmes valeurs.
+   */
+  template<typename T>
+  void areEqualArray(SmallSpan2<T> values,SmallSpan2<T> expected_values,
+                     const String& message)
+  {
+    return areEqualArray(Span2<const T>(values),Span2<const T>(expected_values),message);
+  }
 
   /*!
    * \brief Vérifie que les deux tableaux \a values et \a expected_values
