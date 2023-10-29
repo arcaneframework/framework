@@ -60,6 +60,12 @@ class PrivateVariableScalarT
 
   ARCANE_CORE_EXPORT ItemGroup itemGroup() const;
   
+ public:
+
+  SmallSpan<DataType> _internalSpan() { return m_view; }
+  SmallSpan<const DataType> _internalSpan() const { return m_view; }
+  SmallSpan<const DataType> _internalConstSpan() const { return m_view; }
+
  protected:
   
   void _internalInit() { MeshVariableRef::_internalInit(m_private_part); }
