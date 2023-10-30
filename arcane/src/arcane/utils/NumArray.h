@@ -57,6 +57,8 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
   static void _checkHost(eMemoryRessource r);
   static void _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
                                Span<std::byte> to, eMemoryRessource to_mem, RunQueue* queue);
+  static void _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
+                               Int32 datatype_size, SmallSpan<const Int32> indexes, RunQueue* queue);
 };
 
 /*!
@@ -72,6 +74,7 @@ class NumArrayContainer
 
   using BaseClass = Arccore::Array<DataType>;
   using ThatClass = NumArrayContainer<DataType>;
+  static constexpr Int32 _typeSize() { return static_cast<Int32>(sizeof(DataType)); }
 
  public:
 
@@ -160,6 +163,14 @@ class NumArrayContainer
   void copyOnly(const Span<const DataType>& v, eMemoryRessource input_ressource, RunQueue* queue = nullptr)
   {
     _memoryAwareCopy(v, input_ressource, queue);
+  }
+  /*!
+   * \brief Remplit les indices données par \a indexes avec la valeur \a v.
+   */
+  void fill(const DataType& v, SmallSpan<const Int32> indexes, RunQueue* queue)
+  {
+    Span<DataType> destination = to1DSpan();
+    NumArrayBaseCommon::_memoryAwareFill(asWritableBytes(destination), destination.size(), &v, _typeSize(), indexes, queue);
   }
 
  private:
@@ -333,6 +344,17 @@ class NumArrayBase
     _checkHost(memoryRessource());
     m_data.fill(v);
   }
+  /*!
+   * \brief Remplit via la file \a queue, les valeurs du tableau d'indices
+   * données par \a indexes par la valeur \a v .
+   *
+   * La mémoire associée à l'instance doit être accessible depuis la file \a queue.
+   */
+  void fill(const DataType& v, SmallSpan<const Int32> indexes, RunQueue* queue)
+  {
+    m_data.fill(v, indexes, queue);
+  }
+
   //! Nombre de dimensions
   static constexpr Int32 nbDimension() { return Extents::rank(); }
   //! Valeurs des dimensions
