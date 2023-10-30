@@ -66,6 +66,9 @@ class MemoryCopyUnitTest
  public:
 
   void _executeTest1(eMemoryRessource mem_kind, bool use_queue = true);
+  void _executeCopy(eMemoryRessource mem_kind, bool use_queue);
+  void _executeFill(eMemoryRessource mem_kind, bool use_queue);
+  void _fillIndexes(Int32 n1, NumArray<Int32, MDDim1>& indexes);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -127,19 +130,16 @@ executeTest()
 void MemoryCopyUnitTest::
 _executeTest1(eMemoryRessource mem_kind, bool use_queue)
 {
-  ValueChecker vc(A_FUNCINFO);
+  _executeCopy(mem_kind, use_queue);
+  _executeFill(mem_kind, use_queue);
+}
 
-  info() << "Execute Test1 memory_ressource=" << mem_kind << " use_queue=" << use_queue;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  auto queue = makeQueue(m_runner);
-  RunQueue* queue_ptr = &queue;
-  if (!use_queue)
-    queue_ptr = nullptr;
-
-  constexpr int n1 = 2500;
-  constexpr int n2 = 4;
-
-  NumArray<Int32, MDDim1> indexes;
+void MemoryCopyUnitTest::
+_fillIndexes(Int32 n1, NumArray<Int32, MDDim1>& indexes)
+{
   Int32 nb_index = 0;
   {
     UniqueArray<Int32> indexes_buf;
@@ -158,6 +158,29 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
     for (int i = 0; i < nb_index; ++i)
       indexes[i] = indexes_buf[i];
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryCopyUnitTest::
+_executeCopy(eMemoryRessource mem_kind, bool use_queue)
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  info() << "Execute Copy memory_ressource=" << mem_kind << " use_queue=" << use_queue;
+
+  auto queue = makeQueue(m_runner);
+  RunQueue* queue_ptr = &queue;
+  if (!use_queue)
+    queue_ptr = nullptr;
+
+  constexpr int n1 = 2500;
+  constexpr int n2 = 4;
+
+  NumArray<Int32, MDDim1> indexes;
+  _fillIndexes(n1, indexes);
+  Int32 nb_index = indexes.dim1Size();
 
   info() << "Test Rank1";
   {
@@ -314,6 +337,85 @@ _executeTest1(eMemoryRessource mem_kind, bool use_queue)
     }
   }
   info() << "End of test Rank2 OK!";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryCopyUnitTest::
+_executeFill(eMemoryRessource mem_kind, bool use_queue)
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  info() << "Execute Fill memory_ressource=" << mem_kind << " use_queue=" << use_queue;
+
+  auto queue = makeQueue(m_runner);
+  RunQueue* queue_ptr = &queue;
+  if (!use_queue)
+    queue_ptr = nullptr;
+
+  constexpr int n1 = 2500;
+
+  NumArray<Int32, MDDim1> indexes;
+  _fillIndexes(n1, indexes);
+  Int32 nb_index = indexes.dim1Size();
+
+  info() << "Test Rank1";
+  {
+    NumArray<double, MDDim1> t1(mem_kind);
+    t1.resize(n1);
+    NumArray<double, MDDim1> destination_buffer(mem_kind);
+    destination_buffer.resize(nb_index);
+
+    {
+      auto command = makeCommand(queue);
+      auto out_t1 = viewOut(command, t1);
+
+      // Remplit t1 avec les bonnes valeurs
+      command << RUNCOMMAND_LOOP1(iter, n1)
+      {
+        auto [i] = iter();
+        out_t1(iter) = _getValue(i);
+      };
+    }
+
+    // TODO: Ajoute test avec d'autres types (par exemple Real3)
+    // TODO: Faire des tests asynchrones
+
+    const double fill_value = 3.4;
+    t1.fill(fill_value, indexes, queue_ptr);
+
+    {
+      NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
+      host_t1.copy(t1);
+
+      // Regarde si les valeurs correspondantes aux index sont correctes
+      for (int i = 0; i < nb_index; ++i) {
+        auto v1 = fill_value;
+        auto v2 = host_t1(indexes(i));
+        if (v1 != v2) {
+          ARCANE_FATAL("Bad fill from i={0} v1={1} v2={2}", i, v1, v2);
+        }
+      }
+      NumArray<Int16, MDDim1> filter(eMemoryRessource::Host);
+      filter.resize(n1);
+      filter.fill(0);
+      for (Int32 i = 0; i < nb_index; ++i)
+        filter[indexes[i]] = 1;
+
+      // Regarde si les valeurs qui ne correspondent pas aux index sont correctes
+      for (int i = 0; i < n1; ++i) {
+        if (filter[i] == 0) {
+          auto v1 = _getValue(i);
+          auto v2 = host_t1(i);
+          if (v1 != v2) {
+            ARCANE_FATAL("Bad no fill from i={0} v1={1} v2={2}", i, v1, v2);
+          }
+        }
+      }
+    }
+  }
+  info() << "End of test Rank1";
 }
 
 /*---------------------------------------------------------------------------*/
