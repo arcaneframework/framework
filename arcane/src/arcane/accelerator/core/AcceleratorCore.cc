@@ -209,8 +209,11 @@ getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribu
   if (attr.isValid()) {
     if (isAcceleratorPolicy(policy))
       return attr.devicePointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
-    else
+    else{
+      if (attr.memoryType()==ePointerMemoryType::Unregistered)
+        return ePointerAccessibility::Yes;
       return attr.hostPointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
+    }
   }
   return ePointerAccessibility::Unknown;
 }
@@ -234,6 +237,22 @@ checkPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
 
     throw FatalErrorException(ti, s);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ePointerAccessibility
+getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribute* ptr_attr)
+{
+  return impl::RuntimeStaticInfo::getPointerAccessibility(policy, ptr, ptr_attr);
+}
+
+extern "C++" void impl::
+arcaneCheckPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
+                                const char* name, const TraceInfo& ti)
+{
+  return impl::RuntimeStaticInfo::checkPointerIsAcccessible(policy, ptr, name, ti);
 }
 
 /*---------------------------------------------------------------------------*/
