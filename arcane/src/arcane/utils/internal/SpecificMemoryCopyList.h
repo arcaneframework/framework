@@ -112,6 +112,7 @@ class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
 
   virtual void copyFrom(const IndexedMemoryCopyArgs& args) = 0;
   virtual void copyTo(const IndexedMemoryCopyArgs& args) = 0;
+  virtual void fill(const IndexedMemoryCopyArgs& args) = 0;
   virtual void copyFrom(const IndexedMultiMemoryCopyArgs&) = 0;
   virtual void copyTo(const IndexedMultiMemoryCopyArgs&) = 0;
   virtual Int32 datatypeSize() const = 0;
@@ -138,6 +139,7 @@ class ARCANE_UTILS_EXPORT ISpecificMemoryCopyList
 
   virtual void copyTo(Int32 datatype_size, const IndexedMemoryCopyArgs& args) = 0;
   virtual void copyFrom(Int32 datatype_size, const IndexedMemoryCopyArgs& args) = 0;
+  virtual void fill(Int32 datatype_size, const IndexedMemoryCopyArgs& args) = 0;
   virtual void copyTo(Int32 datatype_size, const IndexedMultiMemoryCopyArgs& args) = 0;
   virtual void copyFrom(Int32 datatype_size, const IndexedMultiMemoryCopyArgs& args) = 0;
 };
@@ -254,6 +256,11 @@ class SpecificMemoryCopyList
     auto c = _copier(datatype_size);
     c.copyFrom(args);
   }
+  void fill(Int32 datatype_size, const IndexedMemoryCopyArgs& args) override
+  {
+    auto c = _copier(datatype_size);
+    c.fill(args);
+  }
 
  private:
 
@@ -332,10 +339,13 @@ class SpecificMemoryCopy
   {
     _copyFrom(args.m_indexes, _toTrueType(args.m_source), _toTrueType(args.m_destination));
   }
-
   void copyTo(const IndexedMemoryCopyArgs& args) override
   {
     _copyTo(args.m_indexes, _toTrueType(args.m_source), _toTrueType(args.m_destination));
+  }
+  void fill(const IndexedMemoryCopyArgs& args) override
+  {
+    _fill(args.m_indexes, _toTrueType(args.m_source), _toTrueType(args.m_destination));
   }
   void copyFrom(const IndexedMultiMemoryCopyArgs& args) override
   {
@@ -383,6 +393,21 @@ class SpecificMemoryCopy
       Int64 z_index = (Int64)i * m_extent.v;
       for (Int32 z = 0, n = m_extent.v; z < n; ++z)
         orig_view[zci + z] = source[z_index + z];
+    }
+  }
+
+  void _fill(SmallSpan<const Int32> indexes, Span<const DataType> source,
+             Span<DataType> destination)
+  {
+    ARCANE_CHECK_POINTER(indexes.data());
+    ARCANE_CHECK_POINTER(source.data());
+    ARCANE_CHECK_POINTER(destination.data());
+
+    Int32 nb_index = indexes.size();
+    for (Int32 i = 0; i < nb_index; ++i) {
+      Int64 zci = (Int64)(indexes[i]) * m_extent.v;
+      for (Int32 z = 0, n = m_extent.v; z < n; ++z)
+        destination[zci + z] = source[z];
     }
   }
 
@@ -454,6 +479,11 @@ class SpecificMemoryCopyRef
   void copyTo(const IndexedMemoryCopyArgs& args)
   {
     m_used_copier->copyTo(args);
+  }
+
+  void fill(const IndexedMemoryCopyArgs& args)
+  {
+    m_used_copier->fill(args);
   }
 
   void copyFrom(const IndexedMultiMemoryCopyArgs& args)
