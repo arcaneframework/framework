@@ -59,6 +59,8 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
                                Span<std::byte> to, eMemoryRessource to_mem, RunQueue* queue);
   static void _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
                                Int32 datatype_size, SmallSpan<const Int32> indexes, RunQueue* queue);
+  static void _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
+                               Int32 datatype_size, RunQueue* queue);
 };
 
 /*!
@@ -171,6 +173,14 @@ class NumArrayContainer
   {
     Span<DataType> destination = to1DSpan();
     NumArrayBaseCommon::_memoryAwareFill(asWritableBytes(destination), destination.size(), &v, _typeSize(), indexes, queue);
+  }
+  /*!
+   * \brief Remplit les éléments de l'instance la valeur \a v.
+   */
+  void fill(const DataType& v, RunQueue* queue)
+  {
+    Span<DataType> destination = to1DSpan();
+    NumArrayBaseCommon::_memoryAwareFill(asWritableBytes(destination), destination.size(), &v, _typeSize(), queue);
   }
 
  private:
@@ -353,6 +363,14 @@ class NumArrayBase
   void fill(const DataType& v, SmallSpan<const Int32> indexes, RunQueue* queue)
   {
     m_data.fill(v, indexes, queue);
+  }
+
+  /*!
+   * \brief Remplit les éléments de l'instance la valeur \a v.
+   */
+  void fill(const DataType& v, RunQueue* queue)
+  {
+    m_data.fill(v, queue);
   }
 
   //! Nombre de dimensions
