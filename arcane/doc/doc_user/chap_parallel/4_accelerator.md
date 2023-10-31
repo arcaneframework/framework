@@ -332,6 +332,11 @@ sont dépendants du type de l'accélérateur et peuvent ne pas être
 disponible partout. Ils sont accessibles via la méthode
 \arcaneacc{Runner::setMemoryAdvice()}.
 
+A partir de la version 3.10 de %Arcane et avec les accélérateurs NVIDIA, %Arcame
+propose des fonctionnalités pour détecter les transferts mémoire entre
+le CPU et l'accélérateur. La page \ref arcanedoc_debug_perf_cupti
+décrit ce fonctionnement.
+
 ### Exemple d'utilisation d'une boucle complexe {#arcanedoc_parallel_accelerator_complexloop}
 
 L'exemple suivant montre comment modifier l'intervalle d'itération
@@ -544,19 +549,66 @@ Si l'accélérateur "courant" a été modifié par exemple lors de l'appel
 à une bibliothèque externe il est possible de le changer en appelant
 la méthode \arcaneacc{Runner::setAsCurrentDevice()}.
 
-## Gestion des connectivités
+## Gestion des connectivités et des informations sur les entités
 
-TODO: expliquer l'utilisation des connectivités et pourquoi on ne peut
-pas accéder aux entités classiques (\arcane{Cell},\arcane{Node}, ...)
-sur accélérateur.
+L'accès aux connectivités du maillage se fait différemment sur
+accélérateur que sur le CPU pour des raisons de performance. Il n'est
+notamment pas possible d'utiliser les entités classiques
+(\arcane{Cell},\arcane{Node}, ...). A la place il faut utiliser les
+indentifiants locaux tels que \arcane{CellLocalId} ou
+\arcane{NodeLocalId}.
 
-## Réductions
+La classe \arcane{UnstructuredMeshConnectivityView} permet d'accéder
+aux informations de connectivité. Il est possible de définir une
+instance de cette classe et de la conserver au cours du calcul. Pour
+initialiser l'instance, il faut appeler la méthode
+\arcane{UnstructuredMeshConnectivityView::setMesh()}.
 
-TODO
+\warning Comme toutes les vues, l'instance est invalidé lorsque le
+maillage évolue. Il faut donc à nouveau appeler
+\arcane{UnstructuredMeshConnectivityView::setMesh()} après une
+modification du maillage.
 
-## Utilisation de CUPTI
+Pour accéder aux informations génériques des entités, comme le type ou
+le propriétaire, il faut utiliser la vue
+\arcane{ItemGenericInfoListView}.
 
-TODO
+L'exemple suivant montre comment accéder aux noeuds des mailles et aux
+informations des mailles. Il parcourt l'ensemble des mailles et calcule
+le barycentre pour celles qui sont dans notre sous-domaine et qui sont
+des hexaèdres.
+
+\snippet accelerator/SimpleHydroAcceleratorService.cc AcceleratorConnectivity
+
+## Réductions, Scan et Filtrage
+
+La classe \arcaneacc{Filterer} permet de filtrer les éléments d'un tableau.
+
+La classe \arcaneacc{Scanner} permet d'effectuer des algorithmes de
+scan inclusifs ou exclusifs (voir
+[Algorithmes de Scan](https://en.wikipedia.org/wiki/Prefix_sum) sur wikipedia)
+
+Les classes \arcaneacc{ReducerMax}, \arcaneacc{ReducerMin} et
+\arcaneacc{ReducerSum} permettent d'effectuer des réductions sur
+accélérateurs. Elles s'utilisent à l'intérieur des boucles
+RUNCOMMAND_LOOP() ou RUNCOMMAND_ENUMERATE(). Par exemple:
+
+```cpp
+#include "arcane/accelerator/RunCommandEnumerate.h"
+#include "arcane/accelerator/Reduce.h"
+{
+  Arcane::Accelerator::RunQueue queue = ...;
+  auto command = makeCommand(queue);
+  Arcane::Accelerator::ReducerMin<double> minimum_reducer(command);
+  Arcane::VariableCellReal my_variable = ...;
+  auto in_my_variable = viewIn(command,my_variable);
+  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
+  {
+    minimum_reducer.min(in_my_variable[cid]);
+  };
+  info() << "MinValue=" << minimum_reducer.reduce();
+}
+```
 
 ## Mode Autonome {#arcanedoc_parallel_accelerator_standalone}
 

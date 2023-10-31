@@ -59,10 +59,22 @@ _checkHost(eMemoryRessource r)
 
 void NumArrayBaseCommon::
 _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
-                 Span<std::byte> to, eMemoryRessource to_mem)
+                 Span<std::byte> to, eMemoryRessource to_mem, RunQueue* queue)
 {
   IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
-  mrm->_internal()->copy(ConstMemoryView(from), from_mem, MutableMemoryView(to), to_mem);
+  mrm->_internal()->copy(ConstMemoryView(from), from_mem, MutableMemoryView(to), to_mem, queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NumArrayBaseCommon::
+_memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
+                 Int32 datatype_size, SmallSpan<const Int32> indexes, RunQueue* queue)
+{
+  ConstMemoryView fill_value_view(makeConstMemoryView(fill_address, datatype_size, 1));
+  MutableMemoryView destination(makeMutableMemoryView(to.data(), datatype_size, nb_element));
+  destination.fillIndexes(fill_value_view, indexes, queue);
 }
 
 /*---------------------------------------------------------------------------*/

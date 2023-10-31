@@ -301,6 +301,29 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   void copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
                        RunQueue* run_queue = nullptr) const;
 
+  /*!
+   * \brief Remplit dans l'instance les données de \a v.
+   *
+   * \a v doit avoir une seule valeur. Cette valeur sera utilisée
+   * pour remplir les valeur de l'instance aux indices spécifiés par
+   * \a indexes. Elle doit être accessible depuis l'hôte.
+   *
+   * L'opération est équivalente au pseudo-code suivant:
+   *
+   * \code
+   * Int32 n = indexes.size();
+   * for( Int32 i=0; i<n; ++i )
+   *   this[indexes[i]] = v[0];
+   * \endcode
+   *
+   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+   *
+   * \pre this.datatypeSize() == v.datatypeSize();
+   * \pre this.nbElement() >= indexes.size();
+   */
+  void fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
+                   RunQueue* run_queue = nullptr) const;
+
  public:
 
   ARCANE_DEPRECATED_REASON("Use bytes() instead")

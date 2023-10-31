@@ -1,22 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PrivateVariableArray.h                                      (C) 2000-2022 */
+/* PrivateVariableArray.h                                      (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant une variable array sur une entité du maillage.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_PRIVATEVARIABLEARRAY_H
-#define ARCANE_PRIVATEVARIABLEARRAY_H
+#ifndef ARCANE_CORE_PRIVATEVARIABLEARRAY_H
+#define ARCANE_CORE_PRIVATEVARIABLEARRAY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/MeshVariableRef.h"
+#include "arcane/core/MeshVariableRef.h"
 
-#include "arcane/Array2Variable.h"
+#include "arcane/core/Array2Variable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,6 +77,12 @@ class PrivateVariableArrayT
    * \sa resize(Int32)
    */
   ARCANE_CORE_EXPORT void resizeAndReshape(const ArrayShape& shape);
+
+ public:
+
+  SmallSpan2<DataType> _internalSpan() { return m_view; }
+  SmallSpan2<const DataType> _internalSpan() const { return m_view; }
+  SmallSpan2<const DataType> _internalConstSpan() const { return m_view; }
 
  protected:
   

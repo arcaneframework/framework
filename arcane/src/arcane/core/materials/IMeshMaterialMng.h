@@ -425,6 +425,22 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   virtual void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) =0;
   virtual bool isCellToAllEnvCellForRunCommand() const =0;
 
+  /*!
+   * \brief Indique si on utilise la valeur matériau ou milieu lorsqu'on transforme une maille
+   * partielle en maille pure.
+   *
+   * Lors du passage d'une maille partielle en maille pure, il faut recopier la valeur
+   * partielle dans la valeur globale. Par défaut, le comportement n'est pas le même
+   * suivant que les optimisations sont actives ou non (\sa modificationFlags()).
+   * Sans optimisation, c'est la valeur matériau qui est utilisée. Si l'optimisation
+   * eModificationFlags::GenericOptimize est active, c'est la valeur milieu.
+   *
+   * Cette propriété, si elle vrai, permet d'utiliser la valeur matériau
+   * dans tous les cas.
+   */
+  virtual void setUseMaterialValueWhenRemovingPartialValue(bool v) =0;
+  virtual bool isUseMaterialValueWhenRemovingPartialValue() const =0;
+
  public:
 
   //!\internal

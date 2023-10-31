@@ -16,10 +16,11 @@
 
 #include "arcane/utils/ArrayView.h"
 
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemSharedInfo.h"
-#include "arcane/ItemUniqueId.h"
-#include "arcane/ItemLocalId.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemSharedInfo.h"
+#include "arcane/core/ItemUniqueId.h"
+#include "arcane/core/ItemLocalId.h"
+#include "arcane/core/ItemFlags.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -79,7 +80,17 @@ class ARCANE_CORE_EXPORT ItemGenericInfoListView
     return ItemUniqueId{ m_unique_ids[local_id.localId()] };
   }
 
-  // TODO: Ajouter flags
+  //! Indique si l'entité de numéro local \a local_id appartient au sous-domaine
+  constexpr ARCCORE_HOST_DEVICE bool isOwn(Int32 local_id) const
+  {
+    return ItemFlags::isOwn(m_flags[local_id]);
+  }
+
+  //! Indique si l'entité de numéro local \a local_id appartient au sous-domaine
+  constexpr ARCCORE_HOST_DEVICE bool isOwn(ItemLocalId local_id) const
+  {
+    return ItemFlags::isOwn(m_flags[local_id]);
+  }
 
  private:
 

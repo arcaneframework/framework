@@ -26,6 +26,7 @@ set( ARCANE_SOURCES
   RunQueueInternal.cc
   RunQueueInternal.h
   Scan.h
+  Filter.h
   Scan.cc
   SpanViews.h
   VariableViews.h

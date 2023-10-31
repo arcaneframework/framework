@@ -130,6 +130,29 @@ copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MutableMemoryView::
+fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
+            RunQueue* queue) const
+{
+  Int32 one_data_size = m_datatype_size;
+  Int64 v_one_data_size = v.datatypeSize();
+  if (one_data_size != v_one_data_size)
+    ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
+                 one_data_size, v_one_data_size);
+
+  Int64 nb_index = indexes.size();
+  if (nb_index == 0)
+    return;
+
+  auto source = v.bytes();
+  auto destination = bytes();
+
+  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, source, destination, queue });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ConstMemoryView::
 copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes) const
 {

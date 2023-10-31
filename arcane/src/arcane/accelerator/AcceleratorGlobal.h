@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
 #include <iosfwd>
@@ -48,20 +49,27 @@ initializeRunner(Runner& runner, ITraceMng* tm,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+} // End namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
+extern "C++" ARCANE_ACCELERATOR_EXPORT String
+getBadPolicyMessage(eExecutionPolicy policy);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Macro pour indiquer qu'un noyau n'a pas été compilé avec HIP
 #define ARCANE_FATAL_NO_HIP_COMPILATION() \
-  ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP." \
-               " You need to compile the file containing this kernel with HIP compiler.")
+  ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::HIP));
 
 //! Macro pour indiquer qu'un noyau n'a pas été compilé avec CUDA
 #define ARCANE_FATAL_NO_CUDA_COMPILATION() \
-  ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA." \
-               " You need to compile the file containing this kernel with CUDA compiler.")
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator
+  ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::CUDA));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

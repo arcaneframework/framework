@@ -11,7 +11,7 @@ Project(ArcaneRepo LANGUAGES NONE)
 enable_testing()
 
 # Obsolète: permet de choisir quel composant on compile
-# Il faut maintenant utiliser ARCANEFRAMEWORK_COMPONENTS
+# Il faut maintenant utiliser ARCANEFRAMEWORK_BUILD_COMPONENTS
 # qui est utilisé dans _common/build_all/CMakeLists.txt
 if (NOT FRAMEWORK_BUILD_COMPONENT)
   set (FRAMEWORK_BUILD_COMPONENT all)
