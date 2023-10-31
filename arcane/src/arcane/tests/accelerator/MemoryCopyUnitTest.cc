@@ -67,7 +67,7 @@ class MemoryCopyUnitTest
 
   void _executeTest1(eMemoryRessource mem_kind, bool use_queue = true);
   void _executeCopy(eMemoryRessource mem_kind, bool use_queue);
-  void _executeFill(eMemoryRessource mem_kind, bool use_queue);
+  void _executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index);
   void _fillIndexes(Int32 n1, NumArray<Int32, MDDim1>& indexes);
 };
 
@@ -131,7 +131,8 @@ void MemoryCopyUnitTest::
 _executeTest1(eMemoryRessource mem_kind, bool use_queue)
 {
   _executeCopy(mem_kind, use_queue);
-  _executeFill(mem_kind, use_queue);
+  _executeFill(mem_kind, use_queue, false);
+  _executeFill(mem_kind, use_queue, true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -343,11 +344,12 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
 /*---------------------------------------------------------------------------*/
 
 void MemoryCopyUnitTest::
-_executeFill(eMemoryRessource mem_kind, bool use_queue)
+_executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index)
 {
   ValueChecker vc(A_FUNCINFO);
 
-  info() << "Execute Fill memory_ressource=" << mem_kind << " use_queue=" << use_queue;
+  info() << "Execute Fill memory_ressource=" << mem_kind
+         << " use_queue=" << use_queue << " use_index=" << use_index;
 
   auto queue = makeQueue(m_runner);
   RunQueue* queue_ptr = &queue;
@@ -357,7 +359,8 @@ _executeFill(eMemoryRessource mem_kind, bool use_queue)
   constexpr int n1 = 2500;
 
   NumArray<Int32, MDDim1> indexes;
-  _fillIndexes(n1, indexes);
+  if (use_index)
+    _fillIndexes(n1, indexes);
   Int32 nb_index = indexes.dim1Size();
 
   info() << "Test Rank1";
@@ -383,20 +386,27 @@ _executeFill(eMemoryRessource mem_kind, bool use_queue)
     // TODO: Faire des tests asynchrones
 
     const double fill_value = 3.4;
-    t1.fill(fill_value, indexes, queue_ptr);
+    if (use_index)
+      t1.fill(fill_value, indexes, queue_ptr);
+    else
+      t1.fill(fill_value, queue_ptr);
+
+    NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
+    host_t1.copy(t1);
 
     {
-      NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
-      host_t1.copy(t1);
-
       // Regarde si les valeurs correspondantes aux index sont correctes
-      for (int i = 0; i < nb_index; ++i) {
+      Int32 nb_to_test = (use_index) ? nb_index : n1;
+      for (Int32 i = 0; i < nb_to_test; ++i) {
         auto v1 = fill_value;
-        auto v2 = host_t1(indexes(i));
+        Int32 index = (use_index) ? indexes(i) : i;
+        auto v2 = host_t1(index);
         if (v1 != v2) {
-          ARCANE_FATAL("Bad fill from i={0} v1={1} v2={2}", i, v1, v2);
+          ARCANE_FATAL("Bad fill from i={0} index={1} v1={2} v2={3}", i, index, v1, v2);
         }
       }
+    }
+    if (use_index) {
       NumArray<Int16, MDDim1> filter(eMemoryRessource::Host);
       filter.resize(n1);
       filter.fill(0);
