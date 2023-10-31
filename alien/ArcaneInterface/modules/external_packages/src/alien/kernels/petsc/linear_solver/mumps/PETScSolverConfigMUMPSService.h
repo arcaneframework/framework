@@ -20,8 +20,9 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class PETScSolverConfigMUMPSService : public ArcanePETScSolverConfigMUMPSObject,
-                                      public PETScConfig
+class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScSolverConfigMUMPSService :
+        public ArcanePETScSolverConfigMUMPSObject,
+        public PETScConfig
 {
  public:
   /** Constructeur de la classe */
