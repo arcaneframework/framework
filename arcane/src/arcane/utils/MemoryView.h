@@ -231,7 +231,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
 
  public:
 
-  constexpr operator ConstMemoryView() const { return {m_bytes, m_datatype_size, m_nb_element}; }
+  constexpr operator ConstMemoryView() const { return { m_bytes, m_datatype_size, m_nb_element }; }
 
  public:
 
@@ -252,7 +252,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   {
     Int64 byte_offset = begin_index * m_datatype_size;
     auto sub_bytes = m_bytes.subspan(byte_offset, nb_element * m_datatype_size);
-    return {sub_bytes, m_datatype_size, nb_element};
+    return { sub_bytes, m_datatype_size, nb_element };
   }
 
  public:
@@ -323,6 +323,28 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    */
   void fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
                    RunQueue* run_queue = nullptr) const;
+
+  /*!
+   * \brief Remplit dans l'instance les données de \a v.
+   *
+   * \a v doit avoir une seule valeur. Cette valeur sera utilisée
+   * pour remplir les valeur de l'instance aux indices spécifiés par
+   * \a indexes. Elle doit être accessible depuis l'hôte.
+   *
+   * L'opération est équivalente au pseudo-code suivant:
+   *
+   * \code
+   * Int32 n = indexes.size();
+   * for( Int32 i=0; i<n; ++i )
+   *   this[i] = v[0];
+   * \endcode
+   *
+   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+   *
+   * \pre this.datatypeSize() == v.datatypeSize();
+   * \pre this.nbElement() >= indexes.size();
+   */
+  void fill(ConstMemoryView v, RunQueue* run_queue = nullptr) const;
 
  public:
 

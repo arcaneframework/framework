@@ -396,18 +396,34 @@ class SpecificMemoryCopy
     }
   }
 
+  /*!
+   * \brief Remplit les valeurs d'indices spécifiés par \a indexes.
+   *
+   * Si \a indexes est vide, remplit toutes les valeurs.
+   */
   void _fill(SmallSpan<const Int32> indexes, Span<const DataType> source,
              Span<DataType> destination)
   {
-    ARCANE_CHECK_POINTER(indexes.data());
     ARCANE_CHECK_POINTER(source.data());
     ARCANE_CHECK_POINTER(destination.data());
 
+    // Si \a indexes est vide, cela signifie qu'on copie toutes les valeurs
     Int32 nb_index = indexes.size();
-    for (Int32 i = 0; i < nb_index; ++i) {
-      Int64 zci = (Int64)(indexes[i]) * m_extent.v;
-      for (Int32 z = 0, n = m_extent.v; z < n; ++z)
-        destination[zci + z] = source[z];
+    if (nb_index == 0) {
+      Int64 nb_value = destination.size();
+      for (Int64 i = 0; i < nb_value; ++i) {
+        Int64 zci = i * m_extent.v;
+        for (Int32 z = 0, n = m_extent.v; z < n; ++z)
+          destination[zci + z] = source[z];
+      }
+    }
+    else {
+      ARCANE_CHECK_POINTER(indexes.data());
+      for (Int32 i = 0; i < nb_index; ++i) {
+        Int64 zci = (Int64)(indexes[i]) * m_extent.v;
+        for (Int32 z = 0, n = m_extent.v; z < n; ++z)
+          destination[zci + z] = source[z];
+      }
     }
   }
 

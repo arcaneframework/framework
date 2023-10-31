@@ -130,6 +130,11 @@ class AcceleratorSpecificMemoryCopy
     };
   }
 
+  /*!
+   * \brief Remplit les valeurs d'indices spécifiés par \a indexes.
+   *
+   * Si \a indexes est vide, remplit toutes les valeurs.
+   */
   void _fill(RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
              Span<DataType> destination)
   {
@@ -155,13 +160,26 @@ class AcceleratorSpecificMemoryCopy
       local_source[z] = {};
 
     auto command = makeCommand(queue);
-    command << RUNCOMMAND_LOOP1(iter, nb_index)
-    {
-      auto [i] = iter();
-      Int64 zci = indexes[i] * sub_size;
-      for (Int32 z = 0; z < sub_size; ++z)
-        destination[zci + z] = local_source[z];
-    };
+    // Si \a nb_index vaut 0, on remplit tous les éléments
+    if (nb_index == 0) {
+      Int32 nb_value = CheckedConvert::toInt32(destination.size());
+      command << RUNCOMMAND_LOOP1(iter, nb_value)
+      {
+        auto [i] = iter();
+        Int64 zci = i * sub_size;
+        for (Int32 z = 0; z < sub_size; ++z)
+          destination[zci + z] = local_source[z];
+      };
+    }
+    else {
+      command << RUNCOMMAND_LOOP1(iter, nb_index)
+      {
+        auto [i] = iter();
+        Int64 zci = indexes[i] * sub_size;
+        for (Int32 z = 0; z < sub_size; ++z)
+          destination[zci + z] = local_source[z];
+      };
+    }
   }
 
   void _copyTo(RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,

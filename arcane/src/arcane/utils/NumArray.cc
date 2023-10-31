@@ -80,6 +80,18 @@ _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void NumArrayBaseCommon::
+_memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
+                 Int32 datatype_size, RunQueue* queue)
+{
+  ConstMemoryView fill_value_view(makeConstMemoryView(fill_address, datatype_size, 1));
+  MutableMemoryView destination(makeMutableMemoryView(to.data(), datatype_size, nb_element));
+  destination.fill(fill_value_view, queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::impl
 
 namespace Arcane
