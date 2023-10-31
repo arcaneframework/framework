@@ -230,6 +230,32 @@ copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MultiMutableMemoryView::
+fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes, RunQueue* queue)
+{
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+
+  Int64 nb_index = indexes.size();
+  if (nb_index == 0)
+    return;
+
+  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, m_views, v.bytes(), queue });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MultiMutableMemoryView::
+fill(ConstMemoryView v, RunQueue* queue)
+{
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+
+  _getDefaultCopyList(queue)->fill(one_data_size, { {}, m_views, v.bytes(), queue });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MultiConstMemoryView::
 copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
               RunQueue* queue)

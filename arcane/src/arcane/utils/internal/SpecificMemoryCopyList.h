@@ -115,6 +115,7 @@ class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
   virtual void fill(const IndexedMemoryCopyArgs& args) = 0;
   virtual void copyFrom(const IndexedMultiMemoryCopyArgs&) = 0;
   virtual void copyTo(const IndexedMultiMemoryCopyArgs&) = 0;
+  virtual void fill(const IndexedMultiMemoryCopyArgs& args) = 0;
   virtual Int32 datatypeSize() const = 0;
 };
 
@@ -142,6 +143,7 @@ class ARCANE_UTILS_EXPORT ISpecificMemoryCopyList
   virtual void fill(Int32 datatype_size, const IndexedMemoryCopyArgs& args) = 0;
   virtual void copyTo(Int32 datatype_size, const IndexedMultiMemoryCopyArgs& args) = 0;
   virtual void copyFrom(Int32 datatype_size, const IndexedMultiMemoryCopyArgs& args) = 0;
+  virtual void fill(Int32 datatype_size, const IndexedMultiMemoryCopyArgs& args) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -261,6 +263,11 @@ class SpecificMemoryCopyList
     auto c = _copier(datatype_size);
     c.fill(args);
   }
+  void fill(Int32 datatype_size, const IndexedMultiMemoryCopyArgs& args) override
+  {
+    auto c = _copier(datatype_size);
+    c.fill(args);
+  }
 
  private:
 
@@ -355,6 +362,10 @@ class SpecificMemoryCopy
   {
     _copyTo(args.m_indexes, args.m_const_multi_memory, _toTrueType(args.m_destination_buffer));
   }
+  void fill(const IndexedMultiMemoryCopyArgs& args) override
+  {
+    _fill(args.m_indexes, args.m_multi_memory, _toTrueType(args.m_source_buffer));
+  }
 
  public:
 
@@ -423,6 +434,46 @@ class SpecificMemoryCopy
         Int64 zci = (Int64)(indexes[i]) * m_extent.v;
         for (Int32 z = 0, n = m_extent.v; z < n; ++z)
           destination[zci + z] = source[z];
+      }
+    }
+  }
+
+  void _fill(SmallSpan<const Int32> indexes, SmallSpan<Span<std::byte>> multi_views,
+             Span<const DataType> source)
+  {
+    ARCANE_CHECK_POINTER(source.data());
+    ARCANE_CHECK_POINTER(multi_views.data());
+
+    const Int32 nb_index = indexes.size() / 2;
+    if (nb_index == 0) {
+      // Remplit toutes les valeurs du tableau avec la source.
+      const Int32 nb_dim1 = multi_views.size();
+      for (Int32 zz = 0; zz < nb_dim1; ++zz) {
+        Span<std::byte> orig_view_bytes = multi_views[zz];
+        Int64 nb_value = orig_view_bytes.size() / (Int64)sizeof(DataType);
+        auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
+        Span<DataType> orig_view = { orig_view_data, nb_value };
+        for (Int64 i = 0; i < nb_value; i += m_extent.v) {
+          // Utilise un span pour tester les débordements de tableau mais on
+          // pourrait directement utiliser 'orig_view_data' pour plus de performances
+          for (Int32 z = 0, n = m_extent.v; z < n; ++z)
+            orig_view[i + z] = source[z];
+        }
+      }
+    }
+    else {
+      ARCANE_CHECK_POINTER(indexes.data());
+      for (Int32 i = 0; i < nb_index; ++i) {
+        Int32 index0 = indexes[i * 2];
+        Int32 index1 = indexes[(i * 2) + 1];
+        Span<std::byte> orig_view_bytes = multi_views[index0];
+        auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
+        // Utilise un span pour tester les débordements de tableau mais on
+        // pourrait directement utiliser 'orig_view_data' pour plus de performances
+        Span<DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
+        Int64 zci = ((Int64)(index1)) * m_extent.v;
+        for (Int32 z = 0, n = m_extent.v; z < n; ++z)
+          orig_view[zci + z] = source[z];
       }
     }
   }
@@ -510,6 +561,11 @@ class SpecificMemoryCopyRef
   void copyTo(const IndexedMultiMemoryCopyArgs& args)
   {
     m_used_copier->copyTo(args);
+  }
+
+  void fill(const IndexedMultiMemoryCopyArgs& args)
+  {
+    m_used_copier->fill(args);
   }
 
  private:
