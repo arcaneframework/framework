@@ -236,7 +236,7 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
 
   // Effectue la copie dans le buffer
   {
-    MultiConstMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double));
+    ConstMultiMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double));
     MutableMemoryView destination(buffer.to1DSpan());
     source_memory_view.copyToIndexes(destination, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
@@ -279,7 +279,7 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
 
   // Effectue la copie depuis le buffer
   {
-    MultiMutableMemoryView source_memory_view(memories_as_bytes.view(), sizeof(double));
+    MutableMultiMemoryView source_memory_view(memories_as_bytes.view(), sizeof(double));
     ConstMemoryView source(buffer.to1DSpan());
     source_memory_view.copyFromIndexes(source, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
@@ -356,7 +356,7 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
 
   // Effectue la copie dans le buffer
   {
-    MultiConstMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double) * n2);
+    ConstMultiMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double) * n2);
     MutableMemoryView destination(buffer.to1DSpan(), n2);
     source_memory_view.copyToIndexes(destination, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
@@ -401,7 +401,7 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
 
   // Effectue la copie depuis le buffer
   {
-    MultiMutableMemoryView source_memory_view(memories_as_bytes.view(), sizeof(double) * n2);
+    MutableMultiMemoryView source_memory_view(memories_as_bytes.view(), sizeof(double) * n2);
     ConstMemoryView source(buffer.to1DSpan(), n2);
     source_memory_view.copyFromIndexes(source, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
@@ -478,7 +478,7 @@ _executeFill1Rank1(eMemoryRessource mem_kind, bool use_queue, bool use_index)
   {
     UniqueArray<double> fill_buffer(1);
     fill_buffer[0] = fill_value;
-    MultiMutableMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double));
+    MutableMultiMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double));
     ConstMemoryView source_memory_view(fill_buffer.constSpan());
     if (use_index)
       destination_memory_view.fillIndexes(source_memory_view, indexes, queue_ptr);
