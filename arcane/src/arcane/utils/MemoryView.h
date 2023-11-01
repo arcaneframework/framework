@@ -374,15 +374,15 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
  */
-class ARCANE_UTILS_EXPORT MultiConstMemoryView
+class ARCANE_UTILS_EXPORT ConstMultiMemoryView
 {
  public:
 
-  MultiConstMemoryView(SmallSpan<const Span<const std::byte>> views, Int32 datatype_size)
+  ConstMultiMemoryView(SmallSpan<const Span<const std::byte>> views, Int32 datatype_size)
   : m_views(views)
   , m_datatype_size(datatype_size)
   {}
-  MultiConstMemoryView(SmallSpan<const Span<std::byte>> views, Int32 datatype_size)
+  ConstMultiMemoryView(SmallSpan<const Span<std::byte>> views, Int32 datatype_size)
   : m_datatype_size(datatype_size)
   {
     auto* ptr = reinterpret_cast<const Span<const std::byte>*>(views.data());
@@ -431,11 +431,11 @@ class ARCANE_UTILS_EXPORT MultiConstMemoryView
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
  */
-class ARCANE_UTILS_EXPORT MultiMutableMemoryView
+class ARCANE_UTILS_EXPORT MutableMultiMemoryView
 {
  public:
 
-  MultiMutableMemoryView(SmallSpan<Span<std::byte>> views, Int32 datatype_size)
+  MutableMultiMemoryView(SmallSpan<Span<std::byte>> views, Int32 datatype_size)
   : m_views(views)
   , m_datatype_size(datatype_size)
   {}

@@ -214,7 +214,7 @@ makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MultiMutableMemoryView::
+void MutableMultiMemoryView::
 copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
                 RunQueue* queue)
 {
@@ -230,7 +230,7 @@ copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MultiMutableMemoryView::
+void MutableMultiMemoryView::
 fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes, RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
@@ -245,7 +245,7 @@ fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes, RunQueue* queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MultiMutableMemoryView::
+void MutableMultiMemoryView::
 fill(ConstMemoryView v, RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
@@ -256,7 +256,7 @@ fill(ConstMemoryView v, RunQueue* queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MultiConstMemoryView::
+void ConstMultiMemoryView::
 copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
               RunQueue* queue)
 {
