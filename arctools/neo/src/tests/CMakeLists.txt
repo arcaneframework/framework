@@ -1,4 +1,6 @@
-add_executable(Neo.tests NeoBaseTest.cpp NeoEvolutiveMeshTest.cpp NeoPolyhedralMeshTest.cpp MeshViewPocTest.cpp NeoMeshAPITest.cpp NeoGraphTest.cpp NeoPerformanceTest.cpp)
+add_executable(Neo.tests NeoBaseTest.cpp NeoBaseMeshTest.cpp NeoBaseArrayPropertyTest.cpp NeoBasePropertyTest.cpp NeoBasePropertyViewTest.cpp
+  NeoEvolutiveMeshTest.cpp NeoPolyhedralMeshTest.cpp
+  MeshViewPocTest.cpp NeoMeshAPITest.cpp NeoGraphTest.cpp NeoPerformanceTest.cpp)
 
 target_include_directories(Neo.tests PUBLIC ../.)
 

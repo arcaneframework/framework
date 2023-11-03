@@ -34,6 +34,7 @@
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/IVariableMng.h"
 #include "arcane/core/CheckpointInfo.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -170,7 +171,7 @@ initCase(ISubDomain* sub_domain,bool is_continue)
     sub_domain->readOrReloadMeshes();
 
     IVariableMng* vm = sub_domain->variableMng();
-    vm->initializeVariables(is_continue);
+    vm->_internalApi()->initializeVariables(is_continue);
     if (!is_continue)
       sub_domain->initializeMeshVariablesFromCaseFile();
     // Lecture du jeu de donnée (phase2)

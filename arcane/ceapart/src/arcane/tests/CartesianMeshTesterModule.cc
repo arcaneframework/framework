@@ -15,39 +15,45 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/MeshUtils.h"
-#include "arcane/MathUtils.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/MathUtils.h"
 
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeLoopService.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IMeshWriter.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeLoopService.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMeshWriter.h"
 
-#include "arcane/ICaseDocument.h"
-#include "arcane/IInitialPartitioner.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/IMeshPartitionerBase.h"
-#include "arcane/BasicService.h"
-#include "arcane/MeshReaderMng.h"
-#include "arcane/IGridMeshPartitioner.h"
-#include "arcane/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/IInitialPartitioner.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/IMeshPartitionerBase.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/MeshReaderMng.h"
+#include "arcane/core/IGridMeshPartitioner.h"
+#include "arcane/core/ICartesianMeshGenerationInfo.h"
 
-#include "arcane/Connectivity.h"
+#include "arcane/core/Connectivity.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/NodeDirectionMng.h"
-#include "arcane/cea/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/CartesianMeshCoarsening.h"
+#include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
+
+#include "arcane/cartesianmesh/CartesianMeshUtils.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/NodeDirectionMng.h"
+#include "arcane/cartesianmesh/CartesianConnectivity.h"
+
+#include "arcane/cartesianmesh/ICartesianMeshPatch.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/CartesianMeshTester_axl.h"
@@ -107,6 +113,7 @@ class CartesianMeshTesterModule
   void _printCartesianMeshInfos();
   void _checkFaceUniqueIdsAreContiguous();
   void _checkNearlyEqual(Real3 a,Real3 b,const String& message);
+  void _testCoarsening();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -412,8 +419,60 @@ init()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTesterModule::
+_testCoarsening()
+{
+  Int32 coarse_version = options()->coarseCartesianMesh();
+
+  if (coarse_version==1){
+    info() << "Test CartesianCoarsening V1";
+    Ref<CartesianMeshCoarsening> coarser = m_cartesian_mesh->createCartesianMeshCoarsening();
+    IMesh* mesh = m_cartesian_mesh->mesh();
+    IItemFamily* cell_family = mesh->cellFamily();
+    CellInfoListView cells(cell_family);
+    coarser->createCoarseCells();
+    Int32 index = 0;
+    for( Int32 cell_lid : coarser->coarseCells()){
+      Cell cell = cells[cell_lid];
+      info() << "Test1: CoarseCell= " << ItemPrinter(cell);
+      ConstArrayView<Int32> sub_cells(coarser->refinedCells(index));
+      ++index;
+      for( Int32 sub_lid : sub_cells )
+        info() << "SubCell=" << ItemPrinter(cells[sub_lid]);
+    }
+    coarser->removeRefinedCells();
+  }
+
+  if (coarse_version==2){
+    info() << "Test CartesianCoarsening V2";
+    Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
+    coarser->createCoarseCells();
+    ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
+      if (cell.level()!=0)
+        continue;
+      info() << "Test2: CoarseCell= " << ItemPrinter(cell);
+      for( Int32 i=0, n=cell.nbHChildren(); i<n; ++i ){
+        info() << "SubCell=" << ItemPrinter(cell.hChild(i));
+      }
+    }
+    Int32 nb_patch = m_cartesian_mesh->nbPatch();
+    info() << "NB_PATCH=" << nb_patch;
+    for( Int32 i=0; i<nb_patch; ++i ){
+      ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
+      info() << "Patch i=" << i << " nb_cell=" << p->cells().size();
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTesterModule::
 compute()
 {
+  if (m_global_iteration()==1)
+    _testCoarsening();
+
   _compute1();
 }
 

@@ -7,55 +7,19 @@
 #include <gtest/gtest.h>
 
 #include "arccore/collections/Array.h"
-#include "arccore/collections/Array2.h"
 #include "arccore/collections/IMemoryAllocator.h"
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/Iterator.h"
 
+#include "TestArrayCommon.h"
+
 using namespace Arccore;
+using namespace TestArccore;
 
 namespace
 {
-class IntSubClass
-{
- public:
-  IntSubClass(Integer v) : m_v(v) {}
-  IntSubClass() : m_v(0) {}
-  Integer m_v;
-  friend bool operator==(const IntSubClass& v,Integer iv) { return v.m_v==iv; }
-  friend bool operator==(const IntSubClass& v1,const IntSubClass& v2) { return v1.m_v==v2.m_v; }
-  friend bool operator!=(const IntSubClass& v1,const IntSubClass& v2) { return v1.m_v!=v2.m_v; }
-  friend std::ostream& operator<<(std::ostream& o,const IntSubClass& c)
-  {
-    o << c.m_v;
-    return o;
-  }
-};
-class IntSubClassNoPod
-{
- public:
-  explicit IntSubClassNoPod(Integer v) : m_v(v) {}
-  //IntSubClassNoPod() : m_v(0) {}
-  Integer m_v;
-  friend bool operator==(const IntSubClassNoPod& v,Integer iv) { return v.m_v == iv; }
-  //friend bool operator==(const IntSubClassNoPod& v1,const IntSubClassNoPod& v2) { return v1.m_v==v2.m_v; }
-  friend bool operator!=(const IntSubClassNoPod& v1,const IntSubClassNoPod& v2) { return v1.m_v!=v2.m_v; }
-  friend std::ostream& operator<<(std::ostream& o,IntSubClassNoPod c)
-  {
-    o << c.m_v;
-    return o;
-  }
-};
-}
-namespace Arccore
-{
-ARCCORE_DEFINE_ARRAY_PODTYPE(IntSubClass);
-}
-namespace
-{
-void
-_testArraySwap(bool use_own_swap)
+void _testArraySwap(bool use_own_swap)
 {
   std::cout << "** TestArraySwap is_own=" << use_own_swap << "\n";
 
@@ -68,21 +32,21 @@ _testArraySwap(bool use_own_swap)
   std::cout << "** C2_this = " << &c2 << "\n";
   std::cout << "** C2_BASE = " << x2 << "\n";
 
-  if (use_own_swap){
-    swap(c1,c2);
+  if (use_own_swap) {
+    swap(c1, c2);
   }
   else
-    std::swap(c1,c2);
+    std::swap(c1, c2);
 
   IntSubClass* after_x1 = c1.data();
   IntSubClass* after_x2 = c2.data();
   std::cout << "** C1_BASE_AFTER = " << after_x1 << " size=" << c1.size() << "\n";
   std::cout << "** C2_BASE_AFTER = " << after_x2 << " size=" << c2.size() << "\n";
 
-  ASSERT_TRUE(x1==after_x2) << "Bad value after swap [1]";
-  ASSERT_TRUE(x2==after_x1) << "Bad value after swap [2]";
+  ASSERT_TRUE(x1 == after_x2) << "Bad value after swap [1]";
+  ASSERT_TRUE(x2 == after_x1) << "Bad value after swap [2]";
 }
-}
+} // namespace
 
 TEST(Array, Swap1)
 {
@@ -94,41 +58,19 @@ TEST(Array, Swap2)
   _testArraySwap(false);
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCCORE_UT_CHECK(expr,message) \
-if ( ! (expr) )\
-  throw Arccore::FatalErrorException((message))
-
-class IntPtrSubClass
-{
-public:
-  static Integer count;
-  IntPtrSubClass(Integer v) : m_v(new Integer(v)) { ++count; }
-  IntPtrSubClass() : m_v(new Integer(0)) { ++count; }
-  ~IntPtrSubClass() { --count; delete m_v; }
-  Integer* m_v;
-  IntPtrSubClass(const IntPtrSubClass& v) : m_v(new Integer(*v.m_v)) { ++count; }
-  void operator=(const IntPtrSubClass& v)
-    {
-      Integer* n = new Integer(*v.m_v);
-      delete m_v;
-      m_v = n;
-    }
-  bool operator==(Integer iv) const
-  {
-    //cout << "** COMPARE: " << *m_v << " v=" << iv << '\n';
-    return *m_v==iv;
-  }
-};
 Integer IntPtrSubClass::count = 0;
 
-template<typename Container,typename SubClass>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename Container, typename SubClass>
 class IntegerArrayTester
 {
-public:
+ public:
+
   void test()
   {
     {
@@ -136,60 +78,60 @@ public:
       c.add(SubClass(1));
       c.add(SubClass(2));
       c.add(SubClass(3));
-      ARCCORE_UT_CHECK((c.size()==3),"Bad size (3)");
-      ARCCORE_UT_CHECK((c[0]==1),"Bad value [0]");
-      ARCCORE_UT_CHECK((c[1]==2),"Bad value [1]");
-      ARCCORE_UT_CHECK((c[2]==3),"Bad value [2]");
+      ARCCORE_UT_CHECK((c.size() == 3), "Bad size (3)");
+      ARCCORE_UT_CHECK((c[0] == 1), "Bad value [0]");
+      ARCCORE_UT_CHECK((c[1] == 2), "Bad value [1]");
+      ARCCORE_UT_CHECK((c[2] == 3), "Bad value [2]");
       c.resize(0);
-      ARCCORE_UT_CHECK((c.size()==0),"Bad size (0)");
+      ARCCORE_UT_CHECK((c.size() == 0), "Bad size (0)");
       c.resize(5);
-      ARCCORE_UT_CHECK((c.size()==5),"Bad size");
+      ARCCORE_UT_CHECK((c.size() == 5), "Bad size");
       c.add(SubClass(6));
-      ARCCORE_UT_CHECK((c.size()==6),"Bad size");
-      ARCCORE_UT_CHECK((c[5]==6),"Bad value [5]");
+      ARCCORE_UT_CHECK((c.size() == 6), "Bad size");
+      ARCCORE_UT_CHECK((c[5] == 6), "Bad value [5]");
       c.shrink();
-      ASSERT_EQ(c.size(),c.capacity()) << "Bad capacity (test 1)";
+      ASSERT_EQ(c.size(), c.capacity()) << "Bad capacity (test 1)";
       c.resize(12);
       c.shrink();
-      ASSERT_EQ(c.size(),c.capacity()) << "Bad capacity (test 2)";
+      ASSERT_EQ(c.size(), c.capacity()) << "Bad capacity (test 2)";
     }
     {
       Container c;
       c.shrink();
-      ASSERT_EQ(c.capacity(),0) << "Bad capacity (test 3)";
+      ASSERT_EQ(c.capacity(), 0) << "Bad capacity (test 3)";
     }
     {
       Container c;
       Integer nb = 20;
-      for( Integer i=0; i<nb; ++i )
+      for (Integer i = 0; i < nb; ++i)
         c.add(SubClass(i));
-      c.reserve(nb*2);
+      c.reserve(nb * 2);
       Int64 current_capacity = c.capacity();
-      ASSERT_EQ(current_capacity,(nb*2)) << "Bad capacity (test 4)";
-      c.shrink(c.capacity()+5);
-      ASSERT_EQ(c.capacity(),current_capacity) << "Bad capacity (test 5)";
+      ASSERT_EQ(current_capacity, (nb * 2)) << "Bad capacity (test 4)";
+      c.shrink(c.capacity() + 5);
+      ASSERT_EQ(c.capacity(), current_capacity) << "Bad capacity (test 5)";
       c.shrink(32);
-      ASSERT_EQ(c.capacity(),32) << "Bad capacity (test 6)";
+      ASSERT_EQ(c.capacity(), 32) << "Bad capacity (test 6)";
       c.shrink();
-      ASSERT_EQ(c.capacity(),c.size()) << "Bad capacity (test 7)";
+      ASSERT_EQ(c.capacity(), c.size()) << "Bad capacity (test 7)";
     }
     {
       UniqueArray<Container> uc;
       Integer nb = 1000000;
       uc.resize(1000);
-      for( Container& c : uc ){
+      for (Container& c : uc) {
         c.reserve(nb);
         c.shrink_to_fit();
       }
     }
     {
       Container c;
-      for( Integer i=0; i<50; ++i )
-        c.add(SubClass(i+2));
+      for (Integer i = 0; i < 50; ++i)
+        c.add(SubClass(i + 2));
       {
         Container c2 = c;
-        for( Integer i=50; i<100; ++i ){
-          c2.add(SubClass(i+2));
+        for (Integer i = 50; i < 100; ++i) {
+          c2.add(SubClass(i + 2));
         }
         Container c4 = c2;
         Container c3;
@@ -197,24 +139,24 @@ public:
         c3.add(6);
         c3.add(7);
         c3 = c2;
-        for( Integer i=100; i<150; ++i ){
-          c4.add(SubClass(i+2));
+        for (Integer i = 100; i < 150; ++i) {
+          c4.add(SubClass(i + 2));
         }
       }
-      ARCCORE_UT_CHECK((c.size()==150),"Bad size (150)");
+      ARCCORE_UT_CHECK((c.size() == 150), "Bad size (150)");
       c.reserve(300);
-      ARCCORE_UT_CHECK((c.capacity()==300),"Bad capacity (300)");
-      for( Integer i=0; i<50; ++i ){
+      ARCCORE_UT_CHECK((c.capacity() == 300), "Bad capacity (300)");
+      for (Integer i = 0; i < 50; ++i) {
         c.remove(i);
       }
-      ARCCORE_UT_CHECK((c.size()==100),"Bad size (100)");
-      for( Integer i=0; i<50; ++i ){
+      ARCCORE_UT_CHECK((c.size() == 100), "Bad size (100)");
+      for (Integer i = 0; i < 50; ++i) {
         //cout << "** VAL: " << i << " c=" << c[i] << " expected=" << ((i*2)+3) << '\n';
-        ARCCORE_UT_CHECK((c[i]==((i*2)+3)),"Bad value");
+        ARCCORE_UT_CHECK((c[i] == ((i * 2) + 3)), "Bad value");
       }
-      for( Integer i=50; i<100; ++i ){
+      for (Integer i = 50; i < 100; ++i) {
         //cout << "** VAL: " << i << " c=" << c[i] << " expected=" << (i+52) << '\n';
-        ARCCORE_UT_CHECK((c[i]==(i+52)),"Bad value");
+        ARCCORE_UT_CHECK((c[i] == (i + 52)), "Bad value");
       }
     }
   }
@@ -501,7 +443,7 @@ TEST(Array, Misc2)
     v[1] = -1.3;
     v[2] = 7.6;
     v.add(4.3);
-    for ( Real x : v) {
+    for (Real x : v) {
       std::cout << " Value: " << x << '\n';
     }
     v.printInfos(std::cout);
@@ -564,158 +506,6 @@ TEST(Array, Misc2)
     _Add(v, 230000);
     std::cout << " Size: " << v.size() << '\n';
     ASSERT_EQ(v.size(), 230000);
-  }
-}
-
-namespace
-{
-template <typename T>
-void _checkSameInfoArray2(const Array2<T>& a, const Array2<T>& b)
-{
-  ASSERT_EQ(a.allocator(), b.allocator());
-  ASSERT_EQ(a.totalNbElement(), b.totalNbElement());
-  ASSERT_EQ(a.dim1Size(), b.dim1Size());
-  ASSERT_EQ(a.dim2Size(), b.dim2Size());
-}
-
-} // namespace
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-TEST(Array2, Misc)
-{
-  using namespace Arccore;
-  PrintableMemoryAllocator printable_allocator2;
-  IMemoryAllocator* allocator2 = &printable_allocator2;
-
-  SharedArray2<Int32> sh_a;
-  sh_a.resize(3, 2);
-  ASSERT_EQ(sh_a.totalNbElement(), 6);
-  ASSERT_EQ(sh_a.dim1Size(), 3);
-  ASSERT_EQ(sh_a.dim2Size(), 2);
-
-  SharedArray2<Int32> sh_empty;
-
-  {
-    UniqueArray2<Int32> c;
-    c.resize(3, 5);
-    Integer nb = 15;
-    c.reserve(nb * 2);
-    Int64 current_capacity = c.capacity();
-    ASSERT_EQ(current_capacity, (nb * 2)) << "Bad capacity (test 1)";
-    c.shrink(32);
-    ASSERT_EQ(c.capacity(), current_capacity) << "Bad capacity (test 2)";
-    c.shrink();
-    c.shrink_to_fit();
-    ASSERT_EQ(c.capacity(), c.totalNbElement()) << "Bad capacity (test 3)";
-    ASSERT_EQ(c[1][2], c(1, 2));
-#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
-    bool is_ok = c[2, 1] == c(2, 1);
-    ASSERT_TRUE(is_ok);
-#endif
-  }
-  {
-    UniqueArray2<Int32> c;
-    c.resize(2, 1);
-    std::cout << "V1=" << c.to1DSpan() << "\n";
-    c[0][0] = 2;
-    c[1][0] = 3;
-    c.resize(2, 2);
-    std::cout << "V2=" << c.to1DSpan() << "\n";
-    ASSERT_EQ(c[0][0], 2);
-    ASSERT_EQ(c[1][0], 3);
-    ASSERT_EQ(c[0][1], 0);
-    ASSERT_EQ(c[1][1], 0);
-    UniqueArray2<Int32> d;
-    d.resize(4, 5);
-    ASSERT_EQ(d.totalNbElement(), 20);
-    ASSERT_EQ(d.dim1Size(), 4);
-    ASSERT_EQ(d.dim2Size(), 5);
-
-    d = c;
-    ASSERT_EQ(d.totalNbElement(), c.totalNbElement());
-    ASSERT_EQ(d.dim1Size(), c.dim1Size());
-    ASSERT_EQ(d.dim2Size(), c.dim2Size());
-
-    UniqueArray2<Int32> e(allocator2);
-    ASSERT_EQ(e.allocator(), allocator2);
-    e.resize(7, 6);
-    ASSERT_EQ(e.totalNbElement(), 42);
-    ASSERT_EQ(e.dim1Size(), 7);
-    ASSERT_EQ(e.dim2Size(), 6);
-
-    {
-      e = d;
-      ASSERT_EQ(e.allocator(), d.allocator());
-      ASSERT_EQ(d.totalNbElement(), e.totalNbElement());
-      Int32 dim1_size = e.dim1Size();
-      Int32 dim2_size = e.dim2Size();
-      ASSERT_EQ(d.dim1Size(), dim1_size);
-      ASSERT_EQ(d.dim2Size(), dim2_size);
-      e.add(23);
-      ASSERT_EQ(e.dim1Size(), dim1_size + 1);
-      ASSERT_EQ(e.dim2Size(), dim2_size);
-      ASSERT_EQ(e[dim1_size][0], 23);
-    }
-    {
-      UniqueArray2<Int32> f(allocator2);
-      UniqueArray2<Int32> g;
-      g.resize(4, 3);
-      g = f;
-      _checkSameInfoArray2(g, f);
-
-      UniqueArray2<Int32> h(f);
-      _checkSameInfoArray2(h, f);
-
-      UniqueArray2<Int32> h2(sh_a);
-      _checkSameInfoArray2(h2, sh_a);
-
-      g = sh_a;
-      _checkSameInfoArray2(g, sh_a);
-    }
-  }
-  {
-    UniqueArray2<Int32> c;
-    c.resizeNoInit(2, 1);
-    c[0][0] = 1;
-    c[1][0] = 2;
-    c.resizeNoInit(2, 2);
-    c[0][1] = 4;
-    c[1][1] = 5;
-    std::cout << "X1=" << c.to1DSpan() << "\n";
-    ASSERT_EQ(c[0][0], 1);
-    ASSERT_EQ(c[1][0], 2);
-    ASSERT_EQ(c[0][1], 4);
-    ASSERT_EQ(c[1][1], 5);
-    c.resize(3, 2);
-    std::cout << "X2=" << c.to1DSpan() << "\n";
-    ASSERT_EQ(c[0][0], 1);
-    ASSERT_EQ(c[1][0], 2);
-    ASSERT_EQ(c[0][1], 4);
-    ASSERT_EQ(c[1][1], 5);
-    ASSERT_EQ(c[2][0], 0);
-    ASSERT_EQ(c[2][1], 0);
-    c[2][0] = 8;
-    c[2][1] = 10;
-    c.resize(6, 5);
-    std::cout << "X3=" << c.to1DSpan() << "\n";
-    ASSERT_EQ(c[0][0], 1);
-    ASSERT_EQ(c[1][0], 2);
-    ASSERT_EQ(c[0][1], 4);
-    ASSERT_EQ(c[1][1], 5);
-    ASSERT_EQ(c[2][0], 8);
-    ASSERT_EQ(c[2][1], 10);
-    for (int i = 0; i < 4; ++i) {
-      ASSERT_EQ(c[i][2], 0);
-      ASSERT_EQ(c[i][3], 0);
-      ASSERT_EQ(c[i][4], 0);
-    }
-    for (int j = 0; j < 5; ++j) {
-      ASSERT_EQ(c[3][j], 0);
-      ASSERT_EQ(c[4][j], 0);
-      ASSERT_EQ(c[5][j], 0);
-    }
   }
 }
 
@@ -1127,7 +917,4 @@ template class UniqueArray<IntSubClass>;
 template class SharedArray<IntSubClass>;
 template class Array<IntSubClass>;
 template class AbstractArray<IntSubClass>;
-template class UniqueArray2<IntSubClass>;
-template class SharedArray2<IntSubClass>;
-template class Array2<IntSubClass>;
-}
+} // namespace Arccore

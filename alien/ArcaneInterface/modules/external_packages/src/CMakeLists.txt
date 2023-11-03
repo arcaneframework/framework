@@ -56,7 +56,8 @@ endif()
 
 linkLibraries(alien_external_packages 
               Alien::alien_core 
-              Boost::program_options)
+              Boost::program_options
+              BLAS::BLAS)
 
 target_include_directories(alien_external_packages PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
@@ -70,3 +71,11 @@ install(DIRECTORY alien
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
         )
+
+# Explicitly force linking of dependent libraries.
+# This is needed on some platforms (ubuntu) to prevent linker from removing
+# library if its symbols are not explicitly used.
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  message(STATUS "Adding 'no-as-needed' to link option for 'alien_external_packages'")
+  target_link_options(alien_external_packages INTERFACE "-Wl,--no-as-needed")
+endif()

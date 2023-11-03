@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivityMng.h                                       (C) 2000-2022 */
+/* ItemConnectivityMng.h                                       (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire des connectivités                                            */
 /*---------------------------------------------------------------------------*/
@@ -52,6 +52,8 @@ class FamilyState
   Int32SharedArray m_added_items;
   //! idem
   Int32SharedArray m_removed_items;
+  //! Current added items (no history)
+  Int32UniqueArray m_current_added_items;
   /*! incremented at each change. Used to know if the connectivity is up
     to date with the family */
   Integer m_state;

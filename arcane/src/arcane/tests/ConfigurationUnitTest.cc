@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConfigurationUnitTest.cc                                    (C) 2000-2020 */
+/* ConfigurationUnitTest.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Service de test de la configuration.                                      */
 /*---------------------------------------------------------------------------*/
@@ -60,12 +60,12 @@ class ConfigurationUnitTest
 
  private:
 
-  template <typename DataType> void
-  _checkEqual(const DataType& v1,const DataType& v2)
+  template <typename DataType1,typename DataType2> void
+  _checkEqual(const DataType1& v1,const DataType2& v2)
   {
     info() << "Check equal v1=" << v1 << " v2=" << v2;
     if (v1!=v2)
-      throw FatalErrorException(A_FUNCINFO,String::format("Bad value value={0} expected={1}",v1,v2));
+      ARCANE_FATAL("Bad value value={0} expected={1}",v1,v2);
   }
   void _checkValid(IConfiguration* configuration);
   void _executeTestJSON();

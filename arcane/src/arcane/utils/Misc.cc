@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Misc.cc                                                     (C) 2000-2022 */
+/* Misc.cc                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Diverses fonctions                                                        */
 /*---------------------------------------------------------------------------*/
@@ -172,17 +172,11 @@ bool arcaneIsDebug()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_OS_LINUX
-#if defined(_REENTRANT)
-static bool global_arcane_has_thread = true;
-#else
-static bool global_arcane_has_thread = false;
-#endif
-#endif
-
-#ifdef ARCANE_OS_WIN32
-static bool global_arcane_has_thread = true;
-#endif
+// Par défaut on a toujours le support des threads
+namespace
+{
+  bool global_arcane_has_thread = true;
+}
 
 extern "C++" ARCANE_UTILS_EXPORT
 bool arcaneHasThread()
@@ -197,12 +191,6 @@ void arcaneSetHasThread(bool v)
     global_arcane_has_thread = v;
     return;
   }
-  // Si non compile avec '-pthread', on ne pourra jamais utiliser
-  // les threads.
-  //TODO: regarder le cas Win32 voir la macro est la meme
-#if defined(_REENTRANT) || defined(ARCANE_OS_WIN32)
-  global_arcane_has_thread = v;
-#endif
 }
 
 /*---------------------------------------------------------------------------*/

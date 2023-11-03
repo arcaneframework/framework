@@ -1,7 +1,0 @@
-<configuration>
- <appSettings>
-  <add key="CodeBinPath" value="@ARCANE_INSTALL_BIN@" />
-  <add key="CodeLibPath" value="@ARCANE_INSTALL_LIB@" />
-  <add key="CodeSharePath" value="@ARCANE_INSTALL_SHR@" />
- </appSettings>
-</configuration>

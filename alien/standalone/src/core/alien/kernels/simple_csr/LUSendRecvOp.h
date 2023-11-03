@@ -72,12 +72,12 @@ class LUSendRecvOp
     // clang-format off
     auto nrows  = view.nrows() ;
     auto kcol   = view.kcol() ;
-    auto dcol   = view.dcol() ;
+    //auto dcol   = view.dcol() ;
     auto cols   = view.cols() ;
     // clang-format on
     auto& local_row_size = m_matrix.getDistStructInfo().m_local_row_size;
 
-    int my_rank = m_parallel_mng->commRank();
+    //int my_rank = m_parallel_mng->commRank();
 
     m_mpi_ext_inv_ids.resize(m_recv_info.m_first_upper_neighb);
     for (int ineighb = 0; ineighb < m_recv_info.m_first_upper_neighb; ++ineighb) {
@@ -118,7 +118,7 @@ class LUSendRecvOp
     CSRModifierViewT<MatrixType> modifier(m_matrix);
     // clang-format off
     auto nrows  = modifier.nrows() ;
-    auto nnz    = modifier.nnz() ;
+    //auto nnz    = modifier.nnz() ;
     auto kcol   = modifier.kcol() ;
     auto dcol   = modifier.dcol() ;
     auto cols   = modifier.cols() ;

@@ -32,6 +32,7 @@
 #include "arcane/core/IDataFactoryMng.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
@@ -181,7 +182,7 @@ getReference(const VariableBuildInfo& vb,const VariableInfo& vi) -> ThatClass*
     true_ptr = dynamic_cast<ThatClass*>(var);
   else{
     true_ptr = new ThatClass(vb,vi);
-    vm->addVariable(true_ptr);
+    vm->_internalApi()->addVariable(true_ptr);
   }
   ARCANE_CHECK_PTR(true_ptr);
   return true_ptr;

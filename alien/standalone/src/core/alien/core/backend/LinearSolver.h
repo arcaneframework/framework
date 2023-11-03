@@ -157,7 +157,7 @@ class LinearSolver : public ILinearSolver
    *
    * \todo Implement this method
    */
-  virtual void setNullSpaceConstantOption(bool flag ALIEN_UNUSED_PARAM)
+  virtual void setNullSpaceConstantOption([[maybe_unused]] bool flag)
   {
     throw NotImplementedException(A_FUNCINFO);
   }

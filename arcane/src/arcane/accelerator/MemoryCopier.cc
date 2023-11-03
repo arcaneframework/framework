@@ -14,6 +14,7 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/internal/SpecificMemoryCopyList.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
@@ -53,6 +54,11 @@ class AcceleratorSpecificMemoryCopy
     _copyTo(args.m_queue, args.m_indexes, _toTrueType(args.m_source), _toTrueType(args.m_destination));
   }
 
+  void fill(const IndexedMemoryCopyArgs& args) override
+  {
+    _fill(args.m_queue, args.m_indexes, _toTrueType(args.m_source), _toTrueType(args.m_destination));
+  }
+
   void copyFrom(const IndexedMultiMemoryCopyArgs& args) override
   {
     _copyFrom(args.m_queue, args.m_indexes, args.m_multi_memory, _toTrueType(args.m_source_buffer));
@@ -61,6 +67,11 @@ class AcceleratorSpecificMemoryCopy
   void copyTo(const IndexedMultiMemoryCopyArgs& args) override
   {
     _copyTo(args.m_queue, args.m_indexes, args.m_const_multi_memory, _toTrueType(args.m_destination_buffer));
+  }
+
+  void fill(const IndexedMultiMemoryCopyArgs& args) override
+  {
+    _fill(args.m_queue, args.m_indexes, args.m_multi_memory, _toTrueType(args.m_source_buffer));
   }
 
  public:
@@ -124,6 +135,126 @@ class AcceleratorSpecificMemoryCopy
     };
   }
 
+  /*!
+   * \brief Remplit les valeurs d'indices spécifiés par \a indexes.
+   *
+   * Si \a indexes est vide, remplit toutes les valeurs.
+   */
+  void _fill(RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
+             Span<DataType> destination)
+  {
+    ARCANE_CHECK_POINTER(queue);
+
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, indexes.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, destination.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(eExecutionPolicy::Sequential, source.data());
+
+    Int32 nb_index = indexes.size();
+    const Int64 sub_size = m_extent.v;
+    constexpr Int32 max_size = 24;
+
+    // Pour l'instant on limite la taille de DataType en dur.
+    // A terme, il faudrait allouer sur le device et désallouer en fin
+    // d'exécution (via cudaMallocAsync/cudaFreeAsync pour gérer l'asynchronisme)
+    if (sub_size > max_size)
+      ARCANE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
+                   sizeof(DataType) * sub_size, sizeof(DataType) * max_size);
+    DataType local_source[max_size];
+    for (Int64 z = 0; z < sub_size; ++z)
+      local_source[z] = source[z];
+    for (Int64 z = sub_size; z < max_size; ++z)
+      local_source[z] = {};
+
+    auto command = makeCommand(queue);
+    // Si \a nb_index vaut 0, on remplit tous les éléments
+    if (nb_index == 0) {
+      Int32 nb_value = CheckedConvert::toInt32(destination.size());
+      command << RUNCOMMAND_LOOP1(iter, nb_value)
+      {
+        auto [i] = iter();
+        Int64 zci = i * sub_size;
+        for (Int32 z = 0; z < sub_size; ++z)
+          destination[zci + z] = local_source[z];
+      };
+    }
+    else {
+      command << RUNCOMMAND_LOOP1(iter, nb_index)
+      {
+        auto [i] = iter();
+        Int64 zci = indexes[i] * sub_size;
+        for (Int32 z = 0; z < sub_size; ++z)
+          destination[zci + z] = local_source[z];
+      };
+    }
+  }
+
+  void _fill(RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<Span<std::byte>> multi_views,
+             Span<const DataType> source)
+  {
+    ARCANE_CHECK_POINTER(queue);
+
+    if (arcaneIsCheck()) {
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(eExecutionPolicy::Sequential, source.data());
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
+      // Idéalement il faudrait tester les valeurs des éléments de multi_views
+      // mais si on fait cela on peut potentiellement faire des transferts
+      // entre l'accélérateur et le CPU.
+    }
+    const Int32 nb_index = indexes.size() / 2;
+    // On devrait pouvoir utiliser 'm_extent.v' mais avec CUDA 12.1 cela génère
+    // une erreur lors de l'exécution: error 98 : invalid device function
+    const Int32 sub_size = m_extent.v;
+    constexpr Int32 max_size = 24;
+
+    // Pour l'instant on limite la taille de DataType en dur.
+    // A terme, il faudrait allouer sur le device et désallouer en fin
+    // d'exécution (via cudaMallocAsync/cudaFreeAsync pour gérer l'asynchronisme)
+    if (sub_size > max_size)
+      ARCANE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
+                   sizeof(DataType) * sub_size, sizeof(DataType) * max_size);
+    DataType local_source[max_size];
+    for (Int64 z = 0; z < sub_size; ++z)
+      local_source[z] = source[z];
+    for (Int64 z = sub_size; z < max_size; ++z)
+      local_source[z] = {};
+
+    if (nb_index == 0) {
+      // Remplit toutes les valeurs du tableau avec la source.
+      // Comme le nombre d'éléments de la deuxième dimension dépend de la première,
+      // on utilise un noyau par dimension.
+      // TODO: Utiliser des commandes asynchrones.
+      const Int32 nb_dim1 = multi_views.size();
+      for (Int32 zz = 0; zz < nb_dim1; ++zz) {
+        Span<DataType> orig_view = Arccore::asSpan<DataType>(multi_views[zz]);
+        Int32 nb_value = CheckedConvert::toInt32(orig_view.size());
+        auto command = makeCommand(queue);
+        command << RUNCOMMAND_LOOP1(iter, nb_value)
+        {
+          auto [i] = iter();
+          orig_view[i] = local_source[i % sub_size];
+        };
+      }
+    }
+    else {
+      auto command = makeCommand(queue);
+      command << RUNCOMMAND_LOOP1(iter, nb_index)
+      {
+        auto [i] = iter();
+        Int32 index0 = indexes[i * 2];
+        Int32 index1 = indexes[(i * 2) + 1];
+        Span<std::byte> orig_view_bytes = multi_views[index0];
+        auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
+        // Utilise un span pour tester les débordements de tableau mais on
+        // pourrait directement utiliser 'orig_view_data' pour plus de performances
+        Span<DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
+        Int64 zci = ((Int64)(index1)) * sub_size;
+        for (Int32 z = 0, n = sub_size; z < n; ++z)
+          orig_view[zci + z] = local_source[z];
+      };
+    }
+  }
+
   void _copyTo(RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
                Span<DataType> destination)
   {
@@ -152,10 +283,10 @@ class AcceleratorSpecificMemoryCopy
   {
     ARCANE_CHECK_POINTER(queue);
 
-    if (arcaneIsCheck()){
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue,indexes.data());
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue,destination.data());
-      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue,multi_views.data());
+    if (arcaneIsCheck()) {
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, destination.data());
+      ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
       // Idéalement il faudrait tester les valeurs des éléments de multi_views
       // mais si on fait cela on peut potentiellement faire des transferts
       // entre l'accélérateur et le CPU.
@@ -203,6 +334,7 @@ class AcceleratorIndexedCopyTraits
 class AcceleratorSpecificMemoryCopyList
 {
  public:
+
   AcceleratorSpecificMemoryCopyList()
   {
     Arcane::impl::ISpecificMemoryCopyList::setDefaultCopyListIfNotSet(&m_copy_list);

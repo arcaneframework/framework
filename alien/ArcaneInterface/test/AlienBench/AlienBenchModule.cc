@@ -1,18 +1,10 @@
-#include <mpi.h>
+﻿#include <mpi.h>
 
 #include <string>
 #include <map>
 #include <time.h>
 #include <vector>
 #include <fstream>
-#include <boost/timer.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/cmdline.hpp>
-#include <boost/program_options/variables_map.hpp>
-#include <boost/timer.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <arcane/ArcaneVersion.h>
 #include <arcane/Timer.h>
@@ -166,8 +158,8 @@ AlienBenchModule::test()
 
   ENUMERATE_CELL (icell, areaU) {
     Real3 x;
-    ENUMERATE_NODE (inode, icell->nodes()) {
-      x += m_node_coord[*inode];
+    for (Arcane::Node node : icell->nodes()) {
+      x += m_node_coord[node];
     }
     x /= icell->nbNode();
     m_cell_center[icell] = x;
@@ -370,7 +362,7 @@ AlienBenchModule::test()
     auto run = [&](auto& alg)
               {
                 typedef typename
-                    boost::remove_reference<decltype(alg)>::type AlgebraType ;
+                    std::remove_reference<decltype(alg)>::type AlgebraType ;
                 typedef typename AlgebraType::BackEndType        BackEndType ;
                 typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
 
@@ -808,7 +800,7 @@ AlienBenchModule::funck(Real3 p) const
 }
 
 Real
-AlienBenchModule::dii(const Cell& ci) const
+AlienBenchModule::dii([[maybe_unused]] const Cell& ci) const
 {
   return m_diag_coeff;
 }

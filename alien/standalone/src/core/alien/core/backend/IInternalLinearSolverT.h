@@ -70,7 +70,7 @@ class IInternalLinearSolver
    *
    * \param[in] pm The new parallel manager
    */
-  virtual void updateParallelMng(ALIEN_UNUSED_PARAM Arccore::MessagePassing::IMessagePassingMng* pm) {}
+  virtual void updateParallelMng([[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* pm) {}
 
   //! Initialize the linear solver
   virtual void init() {}

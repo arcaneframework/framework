@@ -179,8 +179,7 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kerne
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
   // ARCANE_UNUSED(args...);  FIXME: ne fonctionne pas, d'où le [[maybe_unused]] dans le prototype
-  ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA."
-               " You need to compile the file containing this kernel with CUDA compiler.");
+  ARCANE_FATAL_NO_CUDA_COMPILATION();
 #endif
 }
 
@@ -206,8 +205,7 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info,const HipKernel& kernel,
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
   // ARCANE_UNUSED(args...);  FIXME: ne fonctionne pas, d'où le [[maybe_unused]] dans le prototype
-  ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP."
-               " You need to compile the file containing this kernel with HIP compiler.");
+  ARCANE_FATAL_NO_HIP_COMPILATION();
 #endif
 }
 

@@ -13,6 +13,11 @@ generateAxl(alien_arcane_test.exe
             NO_COPY
            )
 
+# Les hooks pour les mallocs sont obsolètes et n'existent
+# sur certaines plateformes (par exemple ubuntu 22.04)
+if (ARCANE_HAS_MALLOC_HOOKS)
+  target_compile_definitions(alien_arcane_test.exe PRIVATE TEST_HAS_MALLOC_HOOKS)
+endif()
 
 
 if (TARGET intel)
@@ -20,19 +25,12 @@ if (TARGET intel)
 endif ()
 
 linkLibraries(alien_arcane_test.exe
-        Boost::boost
         Alien::alien_core
         Alien::alien_semantic_move
         alien_external_packages
         alien_ifpen_solvers
         alien_arcane_tools
-        arcane_core
-        arcane_std
-        arcane_mpi
-        arcane_impl
-        arcane_mesh
-        arcane_utils
-        arcane_thread
+        arcane_full
         )
 
 if (TARGET trilinos)
@@ -43,12 +41,12 @@ commit(alien_arcane_test.exe)
 
 if (TARGET petsc)
 
-    configure_file(AlienTest.config ${CMAKE_CURRENT_BINARY_DIR}/AlienTest.config COPYONLY)
-    configure_file(AlienTest.config ${CMAKE_CURRENT_BINARY_DIR}/AlienTest.config COPYONLY)
-    configure_file(AlienTest.arc ${CMAKE_CURRENT_BINARY_DIR}/AlienTest.arc COPYONLY)
-    configure_file(AlienTest-FBS.arc ${CMAKE_CURRENT_BINARY_DIR}/AlienTest-FBS.arc COPYONLY)
-    configure_file(AlienTest-VBS.arc ${CMAKE_CURRENT_BINARY_DIR}/AlienTest-VBS.arc COPYONLY)
-    configure_file(tube5x5x100.vtk ${CMAKE_CURRENT_BINARY_DIR}/tube5x5x100.vtk COPYONLY)
+    configure_file(AlienTest.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest.config COPYONLY)
+    configure_file(AlienTest.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest.config COPYONLY)
+    configure_file(AlienTest.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest.arc COPYONLY)
+    configure_file(AlienTest-FBS.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest-FBS.arc COPYONLY)
+    configure_file(AlienTest-VBS.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/AlienTest-VBS.arc COPYONLY)
+    configure_file(tube5x5x100.vtk ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest/tube5x5x100.vtk COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienTest.config
@@ -68,7 +66,7 @@ set(ALIEN_EXAMPLE_NAME "AlienExample.exe")
 configure_file(Makefile.in Makefile.example @ONLY)
 
 install(FILES
-        ${PROJECT_BINARY_DIR}/ALIEN/axl/AlienTest_axl.h
+        ${CMAKE_BINARY_DIR}/ALIEN/axl/AlienTest_axl.h
         AlienTestModule.h
         AlienTestModule.cc
         AlienTestOptionTypes.h
@@ -95,7 +93,7 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_arcane_test.exe
             OPTIONS AlienTest.arc
-            WORKING_DIRECTORY test/AlienTest)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
     alien_test(
             BENCH alien.test.arcane
@@ -103,7 +101,7 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_arcane_test.exe
             OPTIONS AlienTest-FBS.arc
-            WORKING_DIRECTORY test/AlienTest)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
     alien_test(
             BENCH alien.test.arcane
@@ -111,6 +109,6 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_arcane_test.exe
             OPTIONS AlienTest-VBS.arc
-            WORKING_DIRECTORY test/AlienTest)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
 endif ()

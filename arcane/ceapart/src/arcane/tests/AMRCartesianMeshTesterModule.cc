@@ -16,36 +16,39 @@
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/MD5HashAlgorithm.h"
 
-#include "arcane/MeshUtils.h"
-#include "arcane/Directory.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/Directory.h"
 
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeLoopService.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeLoopService.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IParallelMng.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/MeshStats.h"
-#include "arcane/IPostProcessorWriter.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/SimpleSVGMeshExporter.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/MeshStats.h"
+#include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/SimpleSVGMeshExporter.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/FaceDirectionMng.h"
-#include "arcane/cea/NodeDirectionMng.h"
-#include "arcane/cea/CartesianConnectivity.h"
-#include "arcane/cea/CartesianMeshRenumberingInfo.h"
-#include "arcane/cea/ICartesianMeshPatch.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/FaceDirectionMng.h"
+#include "arcane/cartesianmesh/NodeDirectionMng.h"
+#include "arcane/cartesianmesh/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/CartesianMeshRenumberingInfo.h"
+#include "arcane/cartesianmesh/ICartesianMeshPatch.h"
+#include "arcane/cartesianmesh/CartesianMeshUtils.h"
+#include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
+#include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/AMRCartesianMeshTester_axl.h"
@@ -249,11 +252,17 @@ init()
 
   _computeCenters();
 
+  const bool do_coarse_at_init = options()->coarseAtInit();
+
   const Integer dimension = defaultMesh()->dimension();
   if (dimension==2)
     m_nb_expected_patch = 1 + options()->refinement2d().size();
   else if (dimension==3)
     m_nb_expected_patch = 1 + options()->refinement3d().size();
+
+  // Si on dé-raffine à l'init, on aura un patch de plus
+  if (do_coarse_at_init)
+    ++m_nb_expected_patch;
 
   if (subDomain()->isContinue())
     m_cartesian_mesh->recreateFromDump();
@@ -332,8 +341,9 @@ _checkUniqueIds(IItemFamily* family,const String& expected_hash)
   String hash_str = Convert::toHexaString(hash_result);
   info() << "HASH_RESULT family=" << family->name()
          << " v=" << hash_str << " expected=" << expected_hash;
-  if (hash_str!=expected_hash)
-    ARCANE_FATAL("Bad hash for uniqueId() for family '{0}'",family->fullName());
+  if (!expected_hash.empty() && hash_str!=expected_hash)
+    ARCANE_FATAL("Bad hash for uniqueId() for family '{0}' v={1} expected='{2}'",
+                 family->fullName(),hash_str,expected_hash);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -354,9 +364,13 @@ _checkUniqueIds()
 void AMRCartesianMeshTesterModule::
 _processPatches()
 {
+  bool do_check = true;
+  //if (options()->coarseAtInit())
+  //do_check = false;
+
   const Int32 dimension = defaultMesh()->dimension();
   // Vérifie qu'il y a autant de patchs que d'options raffinement dans
-  // le jeu de données (en comptant le patch 0 qui es le maillage cartésien).
+  // le jeu de données (en comptant le patch 0 qui est le maillage cartésien).
   // Cela permet de vérifier que les appels successifs
   // à computeDirections() n'ajoutent pas de patchs.
   Integer nb_expected_patch = m_nb_expected_patch;
@@ -373,9 +387,14 @@ _processPatches()
   if (nb_cells_expected.size()!=nb_patch)
     ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfCellsInPatchs.name());
 
-  //if (dimension!=2)
-  //return;
+  // Nombre de mailles fantômes attendu. Utilisé uniquement en parallèle
+  bool has_expected_ghost_cells = options()->expectedNumberOfGhostCellsInPatchs.isPresent();
+  if (!pm->isParallel())
+    has_expected_ghost_cells = false;
 
+  UniqueArray<Int32> nb_ghost_cells_expected(options()->expectedNumberOfGhostCellsInPatchs);
+  if (has_expected_ghost_cells && (nb_ghost_cells_expected.size()!=nb_patch))
+    ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfGhostCellsInPatchs.name());
   // Affiche les informations sur les patchs
   for( Integer i=0; i<nb_patch; ++i ){
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
@@ -395,7 +414,6 @@ _processPatches()
       info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
       own_cells_uid.add(cell.uniqueId());
     }
-
     // Affiche la liste globales des uniqueId() des mailles.
     {
       UniqueArray<Int64> global_cells_uid;
@@ -405,11 +423,20 @@ _processPatches()
       info() << "GlobalUids Patch=" << i << " NB=" << nb_global_uid
              << " expected=" << nb_cells_expected[i];
       // Vérifie que le nombre de mailles par patch est le bon.
-      if (nb_cells_expected[i]!=nb_global_uid)
+      if (do_check && nb_cells_expected[i]!=nb_global_uid)
         ARCANE_FATAL("Bad number of cells for patch I={0} N={1} expected={2}",
-                     i,nb_cells_expected[i],nb_global_uid);
+                     i,nb_global_uid,nb_cells_expected[i]);
       for( Integer c=0; c<nb_global_uid; ++c )
         info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
+    }
+    // Teste le nombre de mailles fantômes
+    if (has_expected_ghost_cells){
+      Int32 local_nb_ghost_cell = patch_cells.size() - patch_own_cell.size();
+      Int32 total = pm->reduce(Parallel::ReduceSum,local_nb_ghost_cell);
+      pinfo() << "NbGhostCells my_rank=" << comm_rank << " local=" << local_nb_ghost_cell << " total=" << total;
+      if (total!=nb_ghost_cells_expected[i])
+        ARCANE_FATAL("Bad number of ghost cells for patch I={0} N={1} expected={2}",
+                     i,total,nb_ghost_cells_expected[i]);
     }
 
     // Exporte le patch au format SVG
@@ -419,7 +446,7 @@ _processPatches()
       String full_filename = directory.file(filename);
       std::ofstream ofile(full_filename.localstr());
       SimpleSVGMeshExporter exporter(ofile);
-      exporter.write(patch_own_cell);
+      exporter.write(patch_cells);
     }
   }
 }
@@ -465,6 +492,25 @@ _computeCenters()
 void AMRCartesianMeshTesterModule::
 _initAMR()
 {
+  // Regarde si on dé-raffine le maillage initial
+  if (options()->coarseAtInit()){
+    // Il faut que les directions aient été calculées avant d'appeler le dé-raffinement
+    m_cartesian_mesh->computeDirections();
+
+    info() << "Doint initial coarsening";
+    Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
+    coarser->createCoarseCells();
+    CartesianMeshPatchListView patches = m_cartesian_mesh->patches();
+    Int32 nb_patch = patches.size();
+    {
+      Int32 index = 0;
+      info() << "NB_PATCH=" << nb_patch;
+      for( ICartesianMeshPatch* p : patches){
+        info() << "Patch i=" << index << " nb_cell=" << p->cells().size();
+        ++index;
+      }
+    }
+  }
   // Parcours les mailles actives et ajoute dans la liste des mailles
   // à raffiner celles qui sont contenues dans le boîte englobante
   // spécifiée dans le jeu de données.
@@ -642,13 +688,8 @@ _writePostProcessing()
   post_processor->setVariables(variables);
   ItemGroupList groups;
   groups.add(allCells());
-  {
-    Integer nb_patch = m_cartesian_mesh->nbPatch();
-    for( Integer i=0; i<nb_patch; ++i ){
-      ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
-      groups.add(p->cells());
-    }
-  }
+  for( ICartesianMeshPatch* p : m_cartesian_mesh->patches() )
+    groups.add(p->cells());
   post_processor->setGroups(groups);
   IVariableMng* vm = subDomain()->variableMng();
   vm->writePostProcessing(post_processor);

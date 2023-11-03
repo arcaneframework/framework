@@ -948,7 +948,7 @@ namespace ArcaneTools {
           (fastReturnMap[nameString][origDomainId] != NULL), ("Inconsistency detected"));
       EntrySendRequest& request = *fastReturnMap[nameString][origDomainId];
       request.m_comm = *i; // Reconnection pour accès rapide depuis l'EntrySendRequest
-      const Integer idCount = sbuf->getInteger();
+      [[maybe_unused]] const Integer idCount = sbuf->getInteger();
       ALIEN_ASSERT((request.m_count == idCount), ("Inconsistency detected"));
     }
 

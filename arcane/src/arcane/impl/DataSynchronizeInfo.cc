@@ -34,7 +34,6 @@
 
 #include "arcane/accelerator/core/Runner.h"
 
-#include "arcane/impl/IBufferCopier.h"
 #include "arcane/impl/IDataSynchronizeBuffer.h"
 
 /*---------------------------------------------------------------------------*/
@@ -123,11 +122,14 @@ recompute()
 {
   Integer nb_message = this->size();
 
-  m_ghost_displacements_base.resize(nb_message);
-  m_share_displacements_base.resize(nb_message);
+  DataSynchronizeBufferInfoList& receive_info = _receiveInfo();
+  DataSynchronizeBufferInfoList& send_info = _sendInfo();
 
-  m_total_nb_ghost = 0;
-  m_total_nb_share = 0;
+  receive_info.m_displacements_base.resize(nb_message);
+  send_info.m_displacements_base.resize(nb_message);
+
+  receive_info.m_total_nb_item = 0;
+  send_info.m_total_nb_item = 0;
 
   {
     Integer ghost_displacement = 0;
@@ -135,15 +137,15 @@ recompute()
     Int32 index = 0;
     for (const VariableSyncInfo& vsi : m_ranks_info) {
       Int32 ghost_size = vsi.nbGhost();
-      m_ghost_displacements_base[index] = ghost_displacement;
+      receive_info.m_displacements_base[index] = ghost_displacement;
       ghost_displacement += ghost_size;
       Int32 share_size = vsi.nbShare();
-      m_share_displacements_base[index] = share_displacement;
+      send_info.m_displacements_base[index] = share_displacement;
       share_displacement += share_size;
       ++index;
     }
-    m_total_nb_ghost = ghost_displacement;
-    m_total_nb_share = share_displacement;
+    receive_info.m_total_nb_item = ghost_displacement;
+    send_info.m_total_nb_item = share_displacement;
   }
 }
 
@@ -157,6 +159,29 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
     vsi.changeLocalIds(old_to_new_ids);
   }
   recompute();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> DataSynchronizeBufferInfoList::
+localIds(Int32 index) const
+{
+  const VariableSyncInfo& s = m_sync_info->m_ranks_info[index];
+  return (m_is_share) ? s.shareIds() : s.ghostIds();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 DataSynchronizeBufferInfoList::
+nbItem(Int32 index) const
+{
+  const VariableSyncInfo& s = m_sync_info->m_ranks_info[index];
+  return (m_is_share) ? s.nbShare() : s.nbGhost();
 }
 
 /*---------------------------------------------------------------------------*/

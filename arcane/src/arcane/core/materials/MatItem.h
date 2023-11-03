@@ -49,7 +49,7 @@ class MatCell
 {
  public:
 
-  MatCell(ComponentItemInternal* internal)
+  ARCCORE_HOST_DEVICE MatCell(ComponentItemInternal* internal)
   : ComponentCell(internal)
   {
 #ifdef ARCANE_CHECK
@@ -106,7 +106,7 @@ class EnvCell
 {
  public:
 
-  explicit EnvCell(ComponentItemInternal* internal)
+  explicit ARCCORE_HOST_DEVICE EnvCell(ComponentItemInternal* internal)
   : ComponentCell(internal)
   {
 #ifdef ARCANE_CHECK
@@ -136,7 +136,7 @@ class EnvCell
   IMeshEnvironment* environment() const { return _environment(); }
 
   //! Identifiant du milieu
-  Int32 environmentId() const { return m_internal->componentId(); }
+  ARCCORE_HOST_DEVICE Int32 environmentId() const { return m_internal->componentId(); }
 
  private:
   
@@ -162,10 +162,10 @@ class AllEnvCell
 {
  public:
 
-  explicit AllEnvCell(ComponentItemInternal* internal)
+  explicit ARCCORE_HOST_DEVICE AllEnvCell(ComponentItemInternal* internal)
   : ComponentCell(internal)
   {
-#ifdef ARCANE_CHECK
+#if defined(ARCANE_CHECK)
     _checkLevel(internal,LEVEL_ALLENVIRONMENT);
 #endif
   }

@@ -40,7 +40,7 @@ SymmetricMultiplicativeFieldSplitTypeService::
 
 Arccore::Integer
 SymmetricMultiplicativeFieldSplitTypeService::configure(
-    PC& pc, const Arccore::Integer nbField)
+    PC& pc, [[maybe_unused]] const Arccore::Integer nbField)
 {
   alien_debug([&] {
     cout() << "configure PETSc symmetric multiplicative FlieldSplit preconditioner";

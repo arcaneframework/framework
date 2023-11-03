@@ -23,6 +23,7 @@
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/VariableView.h"
 #include "arcane/core/IItemFamily.h"
+#include "arcane/materials/AllCellToAllEnvCellConverter.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
 #include "arcane/materials/ComponentSimd.h"
@@ -35,6 +36,7 @@
 #include "arcane/materials/EnvCellVector.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableRef.h"
+#include "arcane/materials/MeshEnvironmentVariableRef.h"
 #include "arcane/materials/MeshEnvironmentVariableRef.h"
 #include "arcane/materials/EnvItemVector.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
@@ -100,6 +102,10 @@ class MeshMaterialAcceleratorUnitTest
   MaterialVariableCellReal m_mat_d;
   MaterialVariableCellReal m_mat_e;
 
+  EnvironmentVariableCellReal m_env_a;
+  EnvironmentVariableCellReal m_env_b;
+  EnvironmentVariableCellReal m_env_c;
+
   UniqueArray<Int32> m_env1_pure_value_index;
   UniqueArray<Int32> m_env1_partial_value_index;
   CellGroup m_sub_env_group1;
@@ -116,6 +122,7 @@ class MeshMaterialAcceleratorUnitTest
   void _executeTest3(Integer nb_z);
   void _executeTest4(Integer nb_z);
   void _checkValues();
+  void _checkEnvironmentValues();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -142,6 +149,9 @@ MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& sb)
 , m_mat_c(VariableBuildInfo(mesh(),"MatC"))
 , m_mat_d(VariableBuildInfo(mesh(),"MatD"))
 , m_mat_e(VariableBuildInfo(mesh(),"MatE"))
+, m_env_a(VariableBuildInfo(mesh(),"EnvA"))
+, m_env_b(VariableBuildInfo(mesh(),"EnvB"))
+, m_env_c(VariableBuildInfo(mesh(),"EnvC"))
 {
 }
 
@@ -349,6 +359,9 @@ _initializeVariables()
     c[i] = c_ref[i];
     d[i] = d_ref[i];
     e[i] = e_ref[i];
+    m_env_a[i] = a_ref[i];
+    m_env_b[i] = b_ref[i];
+    m_env_c[i] = c_ref[i];
   }
 }
 
@@ -410,6 +423,7 @@ _executeTest2(Integer nb_z)
   MaterialVariableCellReal& e_ref(m_mat_e_ref);
 
   // Ref CPU
+  CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
     ENUMERATE_ENV(ienv, m_mm_mng) {
       IMeshEnvironment* env = *ienv;
@@ -418,6 +432,12 @@ _executeTest2(Integer nb_z)
       {
         Cell cell = (*iev).globalCell();
         a_ref[iev] = b_ref[iev] * e_ref[cell];
+        AllEnvCell all_env_cell = allenvcell_converter[cell];
+        ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+          EnvCell env_cell = *ienvcell;
+          Int32 env_id = env_cell.environmentId();
+          a_ref[iev] += env_id;
+        }
       }
       ENUMERATE_ENVCELL(iev,envcellsv)
       {
@@ -438,6 +458,10 @@ _executeTest2(Integer nb_z)
     auto in_d = ax::viewIn(cmd, m_mat_d.globalVariable());
     auto in_e = ax::viewIn(cmd, m_mat_e.globalVariable());
 
+    auto inout_env_a = ax::viewInOut(cmd, m_env_a);
+    auto in_env_b = ax::viewIn(cmd, m_env_b);
+    auto out_env_c = ax::viewOut(cmd, m_env_c);
+
     for (Integer z=0, iz=nb_z; z<iz; ++z) {
       ENUMERATE_ENV(ienv, m_mm_mng) {
         IMeshEnvironment* env = *ienv;
@@ -446,12 +470,21 @@ _executeTest2(Integer nb_z)
           cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
             inout_a[mvi] = in_b[mvi] * in_e[cid];
+            inout_env_a[mvi] = in_env_b[mvi] * in_e[cid];
+            AllEnvCell all_env_cell = allenvcell_converter[cid];
+            ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+              EnvCell env_cell = *ienvcell;
+              Int32 env_id = env_cell.environmentId();
+              inout_a[mvi] += env_id;
+              inout_env_a[mvi] += env_id;
+            }
           };
         }
         {
           cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
             out_c[mvi] += inout_a[mvi] * in_d[cid];
+            out_env_c[mvi] += inout_env_a[mvi] * in_d[cid];
           };
         }
       }
@@ -459,6 +492,7 @@ _executeTest2(Integer nb_z)
   }
 
   _checkValues();
+  _checkEnvironmentValues();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -560,10 +594,12 @@ _executeTest4(Integer nb_z)
       }
 
       Real sum3=0.;
-      ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
-        Real contrib2 = (b_ref[iev] + b_ref[icell]) - (sum2+1.);
-        c_ref[iev] = contrib2 * c_ref[icell];
-        sum3 += contrib2;
+      if (all_env_cell.nbEnvironment() > 1) {
+        ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
+          Real contrib2 = (b_ref[iev] + b_ref[icell]) - (sum2+1.);
+          c_ref[iev] = contrib2 * c_ref[icell];
+          sum3 += contrib2;
+        }
       }
       a_ref[icell] = sum3;
     }
@@ -581,28 +617,28 @@ _executeTest4(Integer nb_z)
 
     auto in_b    = ax::viewIn(cmd, m_mat_b);
     auto out_c   = ax::viewOut(cmd, m_mat_c);
-    auto in_b_g  = ax::viewIn(cmd, m_mat_b.globalVariable());
     auto in_c_g  = ax::viewIn(cmd, m_mat_c.globalVariable());
     auto out_a_g = ax::viewOut(cmd, m_mat_a.globalVariable());
 
     m_mm_mng->enableCellToAllEnvCellForRunCommand(true,true);
     CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
-    
+
     for (Integer z=0, iz=nb_z; z<iz; ++z) {
       cmd << RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcell, cid, allCells()) {
 
         Real sum2=0.;
         ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
-          sum2 += in_b[*iev] + in_b_g[cid];
+          sum2 += in_b[*iev] + in_b[cid];
         }
 
         Real sum3=0.;
-        ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
-          Real contrib2 = (in_b[*iev] + in_b_g[cid]) - (sum2+1.);
-          out_c[*iev] = contrib2 * in_c_g[cid];
-          sum3 += contrib2;
+        if (cell2allenvcell.nbEnvironment(cid) > 1) {
+          ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
+            Real contrib2 = (in_b[*iev] + in_b[cid]) - (sum2+1.);
+            out_c[*iev] = contrib2 * in_c_g[cid];
+            sum3 += contrib2;
+          }
         }
-
         out_a_g[cid] = sum3;
       };
     }
@@ -645,6 +681,23 @@ _checkValues()
       _checkOneValue(m_mat_c[iev], m_mat_c_ref[iev],"Test1_mat_c");
       _checkOneValue(m_mat_d[iev], m_mat_d_ref[iev],"Test1_mat_d");
       _checkOneValue(m_mat_e[iev], m_mat_e_ref[iev],"Test1_mat_e");
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialAcceleratorUnitTest::
+_checkEnvironmentValues()
+{
+  ValueChecker vc(A_FUNCINFO);
+  ENUMERATE_ENV(ienv, m_mm_mng) {
+    IMeshEnvironment* env = *ienv;
+    ENUMERATE_ENVCELL(iev,env) {
+      _checkOneValue(m_env_a[iev], m_mat_a_ref[iev],"Test1_env_a");
+      _checkOneValue(m_env_b[iev], m_mat_b_ref[iev],"Test1_env_b");
+      _checkOneValue(m_env_c[iev], m_mat_c_ref[iev],"Test1_env_c");
     }
   }
 }

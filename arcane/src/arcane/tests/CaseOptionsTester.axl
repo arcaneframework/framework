@@ -18,6 +18,11 @@
    <description>Numéro du test (sert pour les vérifications)</description>
   </simple>
 
+  <!-- - - - - - has-multiple-mesh - - - - -->
+  <simple name = "has-multiple-mesh" type = "bool" default = "false">
+    <description>Indique s'il y a plusieurs maillages dans le jeu de données (sert pour les vérifications)</description>
+  </simple>
+
   <!-- - - - - - max-iteration - - - - -->
   <simple
    name = "max-iteration"
@@ -437,6 +442,16 @@
   >
     <defaultvalue category="X1">ServiceTestImpl2</defaultvalue>
     <defaultvalue category="X2">ServiceTestImpl3</defaultvalue>
+   <description>Un service de test pour IServiceInterface1</description>
+  </service-instance>
+
+  <!-- - - - - - service-instance-test2 - - - - -->
+  <service-instance
+    name = "service-instance-test2"
+    type = "ArcaneTest::IServiceInterface1"
+    default = "ServiceInterface5Impl"
+    mesh-name="Mesh1"
+  >
    <description>Un service de test pour IServiceInterface1</description>
   </service-instance>
 

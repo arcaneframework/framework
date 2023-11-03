@@ -1,0 +1,44 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<service name="ServiceInterface5ImplTest" version="1.0" namespace-name="ArcaneTest"> 
+  <description>
+    Service de test implémentant Module de test des options du jeu de données
+    Test des entités spéciales: 
+  </description>
+
+  <interface name="ArcaneTest::IServiceInterface1" />
+
+  <options>
+
+    <!-- - - - - - complex5 - - - - -->
+    <complex name = "complex5" type = "Complex5">
+      <description>Complex1</description>
+
+      <simple name = "simple-real-2" type = "real" optional = "true">
+        <description>SimpleReal-2</description>
+      </simple>
+      <extended name = "cell-group" type = "Arcane::CellGroup" >
+        <description>a cell group</description>
+      </extended>
+    </complex>
+
+    <!-- - - - - - multi-complex5 - - - - -->
+    <complex name = "multi-complex5" type = "MultiComplex5" minOccurs="0" maxOccurs="unbounded">
+      <description>Complex5</description>
+
+      <extended name = "true-cell-group" type = "Arcane::CellGroup" >
+        <description>a cell group</description>
+      </extended>
+    </complex>
+
+    <!-- - - - - - sub-service-instance - - - - -->
+    <service-instance
+      name = "sub-service-instance"
+      type = "ArcaneTest::IServiceInterface1"
+      default = "ServiceTestImpl1"
+      >
+      <description>Un service de test pour IServiceInterface1</description>
+    </service-instance>
+
+  </options>
+</service>

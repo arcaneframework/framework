@@ -90,54 +90,31 @@ _buildCellList()
 
   CartesianGridDimension all_grid_dimension(m_build_info->globalNbCells());
   CartesianGridDimension own_grid_dimension(m_build_info->ownNbCells());
+  Int64x3 first_own_cell_offset(m_build_info->firstOwnCellOffset());
 
-  Int64x3 all_nb_cell = all_grid_dimension.nbCell();
   Int64x3 own_nb_cell = own_grid_dimension.nbCell();
-  Int64x3 all_nb_node = all_grid_dimension.nbNode();
 
-  const Int64 own_nb_cell_xy = own_nb_cell.x * own_nb_cell.y;
-
+  const Int64 own_nb_cell_xy = own_grid_dimension.totalNbCell();
   m_nb_cell = CheckedConvert::toInt32(own_nb_cell_xy);
 
   cells_infos.resize(own_nb_cell_xy * (1 + 1 + 4));
 
-  //! Classe pour calculer le uniqueId() d'un noeud en fonction de sa position dans la grille.
-  class NodeUniqueIdComputer
-  {
-   public:
-
-    NodeUniqueIdComputer(Int64 base_offset, Int64 all_nb_node_x)
-    : m_base_offset(base_offset)
-    , m_all_nb_node_x(all_nb_node_x)
-    {}
-
-   public:
-
-    Int64 compute(Int32 x, Int32 y)
-    {
-      return m_base_offset + x + y * m_all_nb_node_x;
-    }
-
-   private:
-
-    Int64 m_base_offset;
-    Int64 m_all_nb_node_x;
-  };
-
   Integer cells_infos_index = 0;
-  NodeUniqueIdComputer node_uid_computer(node_unique_id_offset, all_nb_node.x);
+  CartesianGridDimension::NodeUniqueIdComputer2D node_uid_computer(all_grid_dimension.getNodeComputer2D(node_unique_id_offset));
+  CartesianGridDimension::CellUniqueIdComputer2D cell_uid_computer(all_grid_dimension.getCellComputer2D(cell_unique_id_offset));
 
   for (Integer y = 0; y < own_nb_cell.y; ++y) {
     for (Integer x = 0; x < own_nb_cell.x; ++x) {
-      Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell.x;
+      Int64 gx = x + first_own_cell_offset.x;
+      Int64 gy = y + first_own_cell_offset.y;
+      Int64 cell_unique_id = cell_uid_computer.compute(gx, gy);
       cells_infos[cells_infos_index] = IT_Quad4;
       ++cells_infos_index;
       cells_infos[cells_infos_index] = cell_unique_id;
       ++cells_infos_index;
-      cells_infos[cells_infos_index + 0] = node_uid_computer.compute(x + 0, y + 0);
-      cells_infos[cells_infos_index + 1] = node_uid_computer.compute(x + 1, y + 0);
-      cells_infos[cells_infos_index + 2] = node_uid_computer.compute(x + 1, y + 1);
-      cells_infos[cells_infos_index + 3] = node_uid_computer.compute(x + 0, y + 1);
+      std::array<Int64, 4> node_uids = node_uid_computer.computeForCell(gx, gy);
+      for (Int32 i = 0; i < 4; ++i)
+        cells_infos[cells_infos_index + i] = node_uids[i];
       cells_infos_index += 4;
     }
   }
@@ -178,63 +155,33 @@ _buildCellList()
 
   CartesianGridDimension all_grid_dimension(m_build_info->globalNbCells());
   CartesianGridDimension own_grid_dimension(m_build_info->ownNbCells());
+  Int64x3 first_own_cell_offset(m_build_info->firstOwnCellOffset());
 
-  Int64x3 all_nb_cell = all_grid_dimension.nbCell();
   Int64x3 own_nb_cell = own_grid_dimension.nbCell();
-  Int64x3 all_nb_node = all_grid_dimension.nbNode();
-
-  const Int64 all_nb_cell_xy = all_nb_cell.x * all_nb_cell.y;
-  const Int64 all_nb_node_xy = all_nb_node.x * all_nb_node.y;
 
   const Int64 own_nb_cell_xyz = own_grid_dimension.totalNbCell();
   m_nb_cell = CheckedConvert::toInt32(own_nb_cell_xyz);
 
   cells_infos.resize(own_nb_cell_xyz * (1 + 1 + 8));
 
-  //! Classe pour calculer le uniqueId() d'un noeud en fonction de sa position dans la grille.
-  class NodeUniqueIdComputer
-  {
-   public:
-
-    NodeUniqueIdComputer(Int64 base_offset, Int64 all_nb_node_x, Int64 all_nb_node_xy)
-    : m_base_offset(base_offset)
-    , m_all_nb_node_x(all_nb_node_x)
-    , m_all_nb_node_xy(all_nb_node_xy)
-    {}
-
-   public:
-
-    Int64 compute(Int32 x, Int32 y, Int32 z)
-    {
-      return m_base_offset + x + y * m_all_nb_node_x + z * m_all_nb_node_xy;
-    }
-
-   private:
-
-    Int64 m_base_offset;
-    Int64 m_all_nb_node_x;
-    Int64 m_all_nb_node_xy;
-  };
-
   Integer cells_infos_index = 0;
-  NodeUniqueIdComputer node_uid_computer(node_unique_id_offset, all_nb_node.x, all_nb_node_xy);
+  CartesianGridDimension::NodeUniqueIdComputer3D node_uid_computer(all_grid_dimension.getNodeComputer3D(node_unique_id_offset));
+  CartesianGridDimension::CellUniqueIdComputer3D cell_uid_computer(all_grid_dimension.getCellComputer3D(cell_unique_id_offset));
 
   for (Integer z = 0; z < own_nb_cell.z; ++z) {
     for (Integer y = 0; y < own_nb_cell.y; ++y) {
       for (Integer x = 0; x < own_nb_cell.x; ++x) {
-        Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell.x + z * all_nb_cell_xy;
+        Int64 gx = x + first_own_cell_offset.x;
+        Int64 gy = y + first_own_cell_offset.y;
+        Int64 gz = z + first_own_cell_offset.z;
+        Int64 cell_unique_id = cell_uid_computer.compute(gx, gy, gz);
         cells_infos[cells_infos_index] = IT_Hexaedron8;
         ++cells_infos_index;
         cells_infos[cells_infos_index] = cell_unique_id;
         ++cells_infos_index;
-        cells_infos[cells_infos_index + 0] = node_uid_computer.compute(x + 0, y + 0, z + 0);
-        cells_infos[cells_infos_index + 1] = node_uid_computer.compute(x + 1, y + 0, z + 0);
-        cells_infos[cells_infos_index + 2] = node_uid_computer.compute(x + 1, y + 1, z + 0);
-        cells_infos[cells_infos_index + 3] = node_uid_computer.compute(x + 0, y + 1, z + 0);
-        cells_infos[cells_infos_index + 4] = node_uid_computer.compute(x + 0, y + 0, z + 1);
-        cells_infos[cells_infos_index + 5] = node_uid_computer.compute(x + 1, y + 0, z + 1);
-        cells_infos[cells_infos_index + 6] = node_uid_computer.compute(x + 1, y + 1, z + 1);
-        cells_infos[cells_infos_index + 7] = node_uid_computer.compute(x + 0, y + 1, z + 1);
+        std::array<Int64, 8> node_uids = node_uid_computer.computeForCell(gx, gy, gz);
+        for (Int32 i = 0; i < 8; ++i)
+          cells_infos[cells_infos_index + i] = node_uids[i];
         cells_infos_index += 8;
       }
     }

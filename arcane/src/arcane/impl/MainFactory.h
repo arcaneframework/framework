@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MainFactory.h                                               (C) 2000-2020 */
+/* MainFactory.h                                               (C) 2000-2023 */
 /*                                                                           */
 /* AbstractFactory de l'implémentation par défaut d'Arcane.                  */
 /*---------------------------------------------------------------------------*/
@@ -88,7 +88,9 @@ class ARCANE_IMPL_EXPORT MainFactory
   IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name) override;
   IPrimaryMesh* createMesh(ISubDomain* sub_domain,IParallelMng* pm,const String& name) override;
   IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name, bool is_amr) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name, eMeshAMRKind amr_type) override;
   IPrimaryMesh* createMesh(ISubDomain* sub_domain,IParallelMng* pm,const String& name, bool is_amr) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain,IParallelMng* pm,const String& name, eMeshAMRKind amr_type) override;
   IMesh* createSubMesh(IMesh* mesh, const ItemGroup& group, const String& name) override;
   IDataFactory* createDataFactory(IApplication*) override;
   Ref<IDataFactoryMng> createDataFactoryMngRef(IApplication*) override;

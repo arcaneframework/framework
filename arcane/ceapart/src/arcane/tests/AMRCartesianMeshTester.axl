@@ -27,9 +27,16 @@
 
    <simple
      name = "expected-number-of-cells-in-patchs"
-     type     = "int32[]"
+     type = "int32[]"
      >
      <description>Si non vide, nombre de mailles que doit avoir chaque patch</description>
+   </simple>
+   <simple
+     name = "expected-number-of-ghost-cells-in-patchs"
+     type = "int32[]"
+     optional = "true"
+     >
+     <description>Si présent, total sur tous les sous-domaines du nombre de mailles fantôme que doit avoir chaque patch</description>
    </simple>
 
    <simple name = "nodes-uid-hash" type = "string" >
@@ -44,6 +51,11 @@
    <simple name="renumber-patch-method" type="integer" default="1">
      <description>
        Méthode de renumérotation des patchs (0 ou 1 ou 2).
+     </description>
+   </simple>
+   <simple name="coarse-at-init" type="bool" default="false">
+     <description>
+       Indique si on dé-raffine à l'initialisation
      </description>
    </simple>
 

@@ -42,7 +42,7 @@
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshMaterialVariableDependInfo.h"
 #include "arcane/materials/IMeshMaterialVariableComputeFunction.h"
-#include "arcane/materials/internal/IMeshMaterialVariableSynchronizer.h"
+#include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
@@ -485,7 +485,7 @@ _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
   SmallSpan<const Int32> indexes(_toInt32Indexes(matvar_indexes));
   const Int32 nb_item = matvar_indexes.size();
   MutableMemoryView destination_buffer(makeMutableMemoryView(bytes.data(),one_data_size,nb_item));
-  MultiConstMemoryView source_view(m_views_as_bytes.view(),one_data_size);
+  ConstMultiMemoryView source_view(m_views_as_bytes.view(),one_data_size);
   source_view.copyToIndexes(destination_buffer,indexes,queue);
 }
 
@@ -499,7 +499,7 @@ _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
   const Int32 one_data_size = dataTypeSize();
   SmallSpan<const Int32> indexes(_toInt32Indexes(matvar_indexes));
   const Int32 nb_item = matvar_indexes.size();
-  MultiMutableMemoryView destination_view(m_views_as_bytes.view(),one_data_size);
+  MutableMultiMemoryView destination_view(m_views_as_bytes.view(),one_data_size);
   ConstMemoryView source_buffer(makeConstMemoryView(bytes.data(),one_data_size,nb_item));
   destination_view.copyFromIndexes(source_buffer,indexes,queue);
 }

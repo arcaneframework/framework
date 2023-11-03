@@ -13,6 +13,9 @@
 
 #define ARCANE_TRACE_ENUMERATOR
 
+#include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/IProfilingService.h"
+
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/Item.h"
@@ -103,8 +106,9 @@ class MaterialHeatTestModule
 
  private:
 
-  IMeshMaterialMng* m_material_mng;
+  IMeshMaterialMng* m_material_mng = nullptr;
   UniqueArray<HeatObject> m_heat_objects;
+  IProfilingService* m_profiling_service = nullptr;
 
  private:
 
@@ -134,6 +138,9 @@ MaterialHeatTestModule(const ModuleBuildInfo& mbi)
 : ArcaneMaterialHeatTestObject(mbi)
 , m_material_mng(IMeshMaterialMng::getReference(mbi.meshHandle()))
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PROFILE_HEATTEST", true))
+    if (v.value() != 0)
+      m_profiling_service = platform::getProfilingService();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,7 +170,7 @@ buildInit()
 
   m_material_mng->setModificationFlags(flags);
   m_material_mng->setMeshModificationNotified(true);
-
+  m_material_mng->setUseMaterialValueWhenRemovingPartialValue(true);
   if (subDomain()->isContinue()) {
     mm->recreateFromDump();
   }
@@ -267,6 +274,7 @@ _compute()
 
   // Effectue les modifications des matériaux
   {
+    ProfilingSentryWithInitialize ps_sentry(m_profiling_service);
     MeshMaterialModifier modifier(m_material_mng);
     for (const HeatObject& ho : m_heat_objects) {
       MaterialWorkArray& wa = work_arrays[ho.index];

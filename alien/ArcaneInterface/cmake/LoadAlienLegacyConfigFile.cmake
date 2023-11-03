@@ -13,9 +13,9 @@ foreach(target ${TARGETS})
 endforeach()
 
 configure_file(
-  ${PROJECT_SOURCE_DIR}/cmake/AlienLegacyConfig.h.in 
+  ${CMAKE_CURRENT_LIST_DIR}/AlienLegacyConfig.h.in
   ${PROJECT_BINARY_DIR}/alien/AlienLegacyConfig.h
-  )
+)
 
 install(
   FILES ${PROJECT_BINARY_DIR}/alien/AlienLegacyConfig.h

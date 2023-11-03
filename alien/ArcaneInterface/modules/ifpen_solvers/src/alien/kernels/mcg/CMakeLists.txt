@@ -23,7 +23,7 @@ addSources(alien_ifpen_solvers
 
 add_definitions(-DUSE_HWLOC)
 
-linkLibraries(alien_ifpen_solvers mcgsolver nvamg hwloc metis cuda)
+linkLibraries(alien_ifpen_solvers mcgsolver nvamg arcconpkg_HWLoc metis cuda)
 
 if(TARGET HDF5)
   linkLibraries(alien_ifpen_solvers HDF5)

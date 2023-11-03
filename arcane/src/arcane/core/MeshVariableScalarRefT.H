@@ -1,24 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableScalarRefT.H                                    (C) 2000-2020 */
+/* MeshVariableScalarRefT.H                                    (C) 2000-2023 */
 /*                                                                           */
 /* Variable scalaire du maillage.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/MeshVariableScalarRef.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/VariableScalar.h"
-#include "arcane/VariableDataTypeTraits.h"
-#include "arcane/VariableTypeInfo.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableInfo.h"
-#include "arcane/VariableFactoryRegisterer.h"
+#include "arcane/core/MeshVariableScalarRef.h"
+
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/VariableScalar.h"
+#include "arcane/core/VariableDataTypeTraits.h"
+#include "arcane/core/VariableTypeInfo.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/VariableFactoryRegisterer.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -160,6 +162,20 @@ copy(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group)
   ENUMERATE_ITEM(iitem,group){
     operator[](iitem) = v[iitem];
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataTypeT> void
+ItemVariableScalarRefT<DataTypeT>::
+copy(const ItemVariableScalarRefT<DataTypeT>& v,RunQueue* queue)
+{
+  if (!queue){
+    copy(v);
+    return;
+  }
+  impl::copyContigousData(this->m_private_part->data(),v.m_private_part->data(),*queue);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -12,7 +12,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-BEGIN_IFPSOLVERINTENRAL_NAMESPACE
+BEGIN_IFPSOLVERINTERNAL_NAMESPACE
 
 class MatrixInternal;
 

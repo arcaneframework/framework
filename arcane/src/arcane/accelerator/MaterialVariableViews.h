@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialVariableViews.h                                     (C) 2000-2022 */
+/* MaterialVariableViews.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des vues sur les variables matériaux pour les accélérateurs.      */
 /*---------------------------------------------------------------------------*/
@@ -14,8 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <arcane/core/materials/IMeshMaterialVariable.h>
-#include <arcane/core/materials/MatItem.h>
+#include "arcane/core/materials/IMeshMaterialVariable.h"
+#include "arcane/core/materials/MeshMaterialVariableRef.h"
+#include "arcane/core/materials/MeshEnvironmentVariableRef.h"
+#include "arcane/core/materials/MatItem.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,6 +56,10 @@ template<typename ItemType,typename DataType>
 class MatItemVariableScalarInViewT
 : public MatVariableViewBase
 {
+ private:
+
+  using ItemIndexType = typename ItemTraitsT<ItemType>::LocalIdType;
+
  public:
 
   MatItemVariableScalarInViewT(RunCommand& cmd, IMeshMaterialVariable* var, ArrayView<DataType>* v)
@@ -69,6 +75,12 @@ class MatItemVariableScalarInViewT
   ARCCORE_HOST_DEVICE const DataType& operator[](PureMatVarIndex pmvi) const
   {
     return this->m_value0[pmvi.valueIndex()];
+  }
+
+  //! Surcharge pour accéder à la valeure globale à partir du cell id
+  ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType item) const
+  {
+    return this->m_value0[item.localId()];
   }
 
   //! Opérateur d'accès pour l'entité \a item
@@ -115,6 +127,7 @@ class MatItemVariableScalarOutViewT
 
   using DataType = typename Accessor::ValueType;
   using DataTypeReturnType = DataType&;
+  using ItemIndexType = typename ItemTraitsT<ItemType>::LocalIdType;
 
   // TODO: faut il rajouter des ARCANE_CHECK_AT(mvi.arrayIndex(), m_value.size()); ? il manquera tjrs le check sur l'autre dimension
 
@@ -132,6 +145,13 @@ class MatItemVariableScalarOutViewT
   ARCCORE_HOST_DEVICE Accessor operator[](PureMatVarIndex pmvi) const
   {
     return Accessor(this->m_value0[pmvi.valueIndex()]);
+  }
+
+  //! Surcharge pour accéder à la valeure globale à partir du cell id
+  ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType item) const
+  {
+    ARCANE_CHECK_AT(item.localId(),this->m_value[0].size());
+    return Accessor(this->m_value0[item.localId()]);
   }
 
   //! Opérateur d'accès pour l'entité \a item
@@ -159,7 +179,6 @@ class MatItemVariableScalarOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Vue en écriture pour les variables materiaux scalaire
  */
@@ -170,49 +189,20 @@ viewOut(RunCommand& cmd, CellMaterialVariableScalarRef<DataType>& var)
   return MatItemVariableScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue en écriture pour les variables materiaux scalaire.
- * Spécialisation pour le Real2 pour éviter les mauvais usages
- *
- * TODO: A faire plus tard ?  => faire MatItemVariableRealNScalarOutViewT
- * 
-template<> auto
-viewOut(RunCommand& cmd, CellMaterialVariableScalarRef<Real2>& var)
-{
-  using Accessor = DataViewSetter<Real2>;
-  return MatItemVariableRealNScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
-
-}
-*/
-
-/*!
- * \brief Vue en écriture pour les variables materiaux scalaire.
- * Spécialisation pour le Real3 pour éviter les mauvais usages
- *
- * TODO: A faire plus tard ? => faire MatItemVariableRealNScalarOutViewT
- * 
-template<> auto
-viewOut(RunCommand& cmd, CellMaterialVariableScalarRef<Real3>& var)
-{
-  using Accessor = DataViewSetter<Real3>;
-  return MatItemVariableRealNScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
-}
+ * \brief Vue en écriture pour les variables materiaux scalaire
  */
-
-/*!
- * \brief Vue en écriture pour les variables materiaux tableau
- *
- * TODO: A faire plus tard ?
- *
 template<typename DataType> auto
-viewOut(RunCommand& cmd, CellMaterialVariableArrayRef<DataType>& var)
+viewOut(RunCommand& cmd, CellEnvironmentVariableScalarRef<DataType>& var)
 {
+  using Accessor = DataViewSetter<DataType>;
+  return MatItemVariableScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
 }
-*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Vue en lecture/écriture pour les variables materiaux scalaire
  */
@@ -223,40 +213,17 @@ viewInOut(RunCommand& cmd, CellMaterialVariableScalarRef<DataType>& var)
   return MatItemVariableScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue en lecture/écriture pour les variables materiaux scalaire.
- * Spécialisation pour le Real2 pour éviter les mauvais usages
- *
- * TODO: A faire plus tard ? => faire MatItemVariableRealNScalarOutViewT
- * 
-template<> auto
-viewInOut(RunCommand& cmd, CellMaterialVariableScalarRef<Real2>& var)
-{
-}
-*/
-
-/*!
- * \brief Vue en lecture/écriture pour les variables materiaux scalaire.
- * Spécialisation pour le Real3 pour éviter les mauvais usages
- * 
- * TODO: A faire plus tard ? => faire MatItemVariableRealNScalarOutViewT
- *
-template<> auto
-viewInOut(RunCommand& cmd, CellMaterialVariableScalarRef<Real3>& var)
-{
-}
-*/
-
-/*!
- * \brief Vue en lecture/écriture pour les variables materiaux tableau
- *
- * TODO: A faire plus tard ?
- * 
+ * \brief Vue en lecture/écriture pour les variables materiaux scalaire
+ */
 template<typename DataType> auto
-viewInOut(RunCommand& cmd, CellMaterialVariableArrayRef<DataType>& var)
+viewInOut(RunCommand& cmd, CellEnvironmentVariableScalarRef<DataType>& var)
 {
+  using Accessor = DataViewGetterSetter<DataType>;
+  return MatItemVariableScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
 }
-*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -266,6 +233,18 @@ viewInOut(RunCommand& cmd, CellMaterialVariableArrayRef<DataType>& var)
  */
 template<typename DataType> auto
 viewIn(RunCommand& cmd,const CellMaterialVariableScalarRef<DataType>& var)
+{
+  return MatItemVariableScalarInViewT<Cell,DataType>(cmd, var.materialVariable(),var._internalValue());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Vue en lecture pour les variables materiaux scalaire
+ */
+template<typename DataType> auto
+viewIn(RunCommand& cmd,const CellEnvironmentVariableScalarRef<DataType>& var)
 {
   return MatItemVariableScalarInViewT<Cell,DataType>(cmd, var.materialVariable(),var._internalValue());
 }

@@ -69,7 +69,7 @@ class Mesh
   {
     Neo::Family const& source_family;
     Neo::Family const& target_family;
-    std::string const& name;
+    std::string name;
     ConnectivityPropertyType const& connectivity_value;
     ConnectivityPropertyType const& connectivity_orientation;
 

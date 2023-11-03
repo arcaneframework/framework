@@ -6,16 +6,20 @@
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-loadPackage(NAME Alien ESSENTIAL)
+if (NOT ALIEN_FOUND)
+    loadPackage(NAME Alien ESSENTIAL)
+endif ()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-loadPackage(NAME Mpi   ESSENTIAL)
+loadPackage(NAME MPI   ESSENTIAL)
 loadPackage(NAME Boost ESSENTIAL)
 loadPackage(NAME GTest ESSENTIAL)
 
 set(MPI_ROOT ${MPI_ROOT_PATH})
+
+loadPackage(NAME MPIFort)
 
 ## En fait pour cette dependance, en reecrivant a minima, on veut juste les blas
 loadPackage(NAME MKL)
@@ -39,12 +43,14 @@ loadPackage(NAME HARTS)
 loadPackage(NAME Cuda)
 loadPackage(NAME NvAMG)
 loadPackage(NAME FFTW3)
-loadPackage(NAME MPIFort)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 # solveurs
+
+# Needed to use the find_package provided by Arccon
+set (Hypre_USE_CMAKE_CONFIG TRUE)
 
 #loadPackage(NAME Umfpack)
 loadPackage(NAME PETSc)
@@ -69,6 +75,10 @@ loadPackage(NAME HPDDM)
 # arccon fix
 if (TARGET arcconpkg_Hypre)
   add_library(hypre ALIAS arcconpkg_Hypre)
+elseif (TARGET HYPRE::HYPRE)
+  # Target 'HYPRE::HYPRE' is defined when Hypre is compiled with CMake
+  # and provide a config file
+  add_library(hypre ALIAS HYPRE::HYPRE)
 endif()
 
 if (TARGET arcconpkg_MPI)
@@ -91,8 +101,12 @@ if (TARGET arcconpkg_TBB)
   add_library(tbb ALIAS arcconpkg_TBB)
 endif()
 
+if (TARGET arcconpkg_HDF5)
+  add_library(hdf5 ALIAS arcconpkg_HDF5)
+endif()
+
 # load package can't deal with this...
-find_package(Boost COMPONENTS program_options system REQUIRED)
+find_package(Boost COMPONENTS program_options REQUIRED)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -101,7 +115,13 @@ find_package(Boost COMPONENTS program_options system REQUIRED)
 
 # NB: en dernier car arcane charge éventuellement d'autres packages
 #     si le package existe déjà, on ne fait rien
-loadPackage(NAME Arcane)
+if (NOT Arcane_FOUND)
+    message(STATUS "Load Arcane, since not found")
+    loadPackage(NAME Arcane)
+endif()
+if (Arcane_FOUND)
+    set(ALIEN_USE_ARCANE YES)
+endif()
 
 if(NOT TARGET arcane_core)
     logStatus("arcane is not found")

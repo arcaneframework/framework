@@ -110,6 +110,10 @@ class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
 {
  public:
 
+  using size_type = Span<ComponentItemLocalId>::size_type;
+
+ public:
+
   CellToAllEnvCellAccessor() = default;
   explicit CellToAllEnvCellAccessor(const IMeshMaterialMng* mm);
   ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor(const CellToAllEnvCellAccessor& acc)
@@ -137,6 +141,11 @@ class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
   ARCCORE_HOST_DEVICE const AllCellToAllEnvCell* getAllCellToAllEnvCell() const
   {
     return m_cell_allenvcell;
+  }
+
+  ARCCORE_HOST_DEVICE size_type nbEnvironment(Integer cid) const
+  {
+    return m_cell_allenvcell->internal()[cid].size();
   }
 
  private:

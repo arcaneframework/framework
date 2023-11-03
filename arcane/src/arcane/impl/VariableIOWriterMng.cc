@@ -197,7 +197,7 @@ _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
     if (!var_mesh_name.null())
       _writeAttribute(json_writer, var_node, "mesh-name", var_mesh_name);
     _writeAttribute(json_writer, var_node, "full-type", var_full_type);
-    _writeAttribute(json_writer, var_node, "data-type", dataTypeName(var->dataType()));
+    _writeAttribute(json_writer, var_node, "data-type", String(dataTypeName(var->dataType())));
     _writeAttribute(json_writer, var_node, "dimension", var->dimension());
     _writeAttribute(json_writer, var_node, "multi-tag", var->multiTag());
     _writeAttribute(json_writer, var_node, "property", var->property());

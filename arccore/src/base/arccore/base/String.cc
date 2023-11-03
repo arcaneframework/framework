@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* String.cc                                                   (C) 2000-2022 */
+/* String.cc                                                   (C) 2000-2023 */
 /*                                                                           */
 /* Chaîne de caractères unicode.                                             */
 /*---------------------------------------------------------------------------*/
@@ -347,7 +347,7 @@ std::string_view String::
 toStdStringView() const
 {
   if (m_const_ptr){
-#ifdef ARCANE_CHECK
+#ifdef ARCCORE_CHECK
     Int64 xlen = std::strlen(m_const_ptr);
     if (xlen!=m_const_ptr_size)
       ARCCORE_FATAL("Bad length (computed={0} stored={1})",xlen,m_const_ptr_size);

@@ -79,6 +79,7 @@ set(ARCANE_SOURCES
   Math.h
   MemoryAccessInfo.cc
   MemoryAccessInfo.h
+  MemoryBuffer.cc
   MemoryInfo.cc
   MemoryInfo.h
   MemoryRessource.h
@@ -318,7 +319,9 @@ set(ARCANE_SOURCES
   DirectedAcyclicGraphT.h
   internal/MemoryRessourceMng.h
   internal/IMemoryRessourceMngInternal.h
+  internal/IMemoryCopier.h
   internal/ProfilingInternal.h
   internal/ValueConvertInternal.h
   internal/SpecificMemoryCopyList.h
+  internal/MemoryBuffer.h
   )

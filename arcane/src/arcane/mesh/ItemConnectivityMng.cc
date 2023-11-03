@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivityMng.cc                                      (C) 2000-2015 */
+/* ItemConnectivityMng.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire des connectivités des entités.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include <algorithm>
 
 #include "arcane/mesh/ItemConnectivityMng.h"
 #include "arcane/mesh/ItemConnectivitySynchronizer.h"
@@ -134,7 +136,20 @@ _getModifiedItems(ConnectivityStateData& connectivity_state, FamilyState& family
 
   Integer first_added_item_index = connectivity_state.m_last_added_item_index +1;
   Integer nb_added_items = family_state.m_added_items.size()-first_added_item_index;
-  added_items = family_state.m_added_items.subView(first_added_item_index,nb_added_items);
+  auto unfiltered_added_items = family_state.m_added_items.subView(first_added_item_index,nb_added_items);
+  // Filter null lid (may occur if both add and remove actions occur before calling this method)
+  family_state.m_current_added_items.clear();
+  family_state.m_current_added_items.resize(nb_added_items);
+  auto true_size = 0;
+  std::copy_if(unfiltered_added_items.begin(),unfiltered_added_items.end(),
+               family_state.m_current_added_items.begin(),
+               [&true_size](Int32 const& item_lid){
+                   auto do_copy = (item_lid != NULL_ITEM_LOCAL_ID);
+                   if (do_copy) ++true_size;
+                   return do_copy;
+               });
+  family_state.m_current_added_items.resize(true_size);
+  added_items = family_state.m_current_added_items.view();
 
   Integer first_removed_item_index = connectivity_state.m_last_removed_item_index +1;
   Integer nb_removed_items = family_state.m_removed_items.size()-first_removed_item_index;

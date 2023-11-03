@@ -51,15 +51,15 @@ testAlgebra(algebraName algebra, const Alien::ILinearAlgebra& alg,
     for (int i = 0; i < lsize; ++i)
       assert(readerX[i] == readerB[i]);
   }
-  const double dot = alg.dot(basVector, xasVector);
+  [[maybe_unused]] const double dot = alg.dot(basVector, xasVector);
   assert(dot == gsize);
   if (algebra == algebraName::petsc) {
-    const double norm0 = alg.norm0(xasVector);
+    [[maybe_unused]] const double norm0 = alg.norm0(xasVector);
     assert(norm0 == 1.);
-    const double norm1 = alg.norm1(xasVector);
+    [[maybe_unused]] const double norm1 = alg.norm1(xasVector);
     assert(norm1 == gsize);
   }
-  const double norm2 = alg.norm2(x);
+  [[maybe_unused]] const double norm2 = alg.norm2(x);
   assert(norm2 == sqrt(dot));
   if (algebra != algebraName::hypre) {
     const double scal = 2.;

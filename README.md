@@ -23,17 +23,17 @@ La documentation en ligne est accessible depuis internet :
 
 ### Changelog
 
-Les dernières modifications sont dans le fichier suivant: [Changelog](arcane/doc/doc_common/changelog.md)
+Les dernières modifications de Arcane sont dans le fichier suivant: [Changelog](arcane/doc/doc_common/changelog.md)
 
 ## Compilation
 
-Ce dépôt permet de compiler directement Arcane et ses dépendances
+Ce dépôt permet de compiler directement Arcane et/ou Alien et ses dépendances
 (Arrcon, Axlstar et Arccore)
 
 La compilation doit se faire dans un répertoire différent de celui
 contenant les sources.
 
-Pour les prérequis, voir les répertoires [Arcane](arcane/README.md) et [Arccore](arccore/README.md):
+Pour les prérequis, voir les répertoires [Arcane](arcane/README.md) et [Alien](alien/standalone/README.md):
 
 - [Linux](#linux)
 
@@ -50,21 +50,17 @@ git clone /path/to/git
 cd framework && git submodule update --init --recursive
 ~~~
 
-Il existe deux modes de compilations:
-1. soit on compile Arcane et les projets associées (Arccon, Axlstar et
-   Arccore) en même temps
-2. soit on ne compile qu'un seul composant.
+Par défaut, on compile Arcane et Alien si les pré-requis sont disponibles
+La variable CMake `ARCANEFRAMEWORK_BUILD_COMPONENTS` contient la liste
+des composants du dépôt à compiler. Cette liste peut contenir les
+valeurs suivantes:
 
-Le défaut est de tout compiler. La variable cmake
-`FRAMEWORK_BUILD_COMPONENT` permet de choisir le mode de
-compilation. Par défaut, la valeur est `all` et cela signifie qu'on
-compile tout. Si la valeur est `arcane`, `arccon`, `arccore` ou
-`axlstar` alors on ne compile que ces derniers. Il faut donc dans ce
-cas que les dépendences éventuelles soient déjà installées (par
-exemple pour Arcane il faut que Arccore soit déjà installé et
-spécifier son chemin via CMAKE_PREFIX_PATH par exemple).
+- `Arcane`
+- `Alien`
 
-Pour compiler Arcane et les composantes dont il dépend (arccore, axlstar, arccon)::
+Par défaut la valeur est `Arcane;Alien` et donc on compile les deux composants.
+
+Pour compiler Arcane et Alien , il faut procéder comme suit:
 
 ~~~{sh}
 mkdir /path/to/build
@@ -72,50 +68,17 @@ cmake -S /path/to/sources -B /path/to/build
 cmake --build /path/to/build
 ~~~
 
-Pour compiler uniquement Arcane en considérant que les dépendances
-Arccore, Arccon, Axlstar et ArcDependencies sont déjà installées:
+Si on ne souhaite compiler que Arcane :
 
 ~~~{sh}
-mkdir /path/to/build
-cmake -S /path/to/sources -B /path/to/build -DFRAMEWORK_BUILD_COMPONENT=arcane -DArccon_ROOT=... -DArccore_ROOT=... -DAxlstar_ROOT=... -DArcDependencies_ROOT=...
-cmake --build /path/to/build
+cmake -S /path/to/sources -B /path/to/build -DARCANEFRAMEWORK_BUILD_COMPONENTS=Arcane
 ~~~
 
-## Gestion des packages externes utilisés par Arcane
+Si on ne souhaite compiler que Alien :
 
-Arcane utilise certains packages externes comme MPI ou la Glib qu'il
-est nécessaire de trouver lors de la configuration d'un code
-utilisateur. La manière de gérer ces packages est différente suivant
-qu'on utilise une version de Arcane avant ou après la 3.7.4.
-
-Avant la version 3.7.4, dans le cas où on compile toute la plateformce
-à la fois le fichier `ArcaneTargets.cmake` définira des cibles pour
-les packages trouvés par Arccon (par exemple la Glib ou MPI). Cela
-peut poser problème si on mélange cette installation avec une autre
-qui exporte les même cibles. Pour éviter cela, il est possible de
-mettre à `TRUE` la variable CMake `FRAMEWORK_NO_EXPORT_PACKAGES`.
-
-A partir de la verison 3.7.4, le comportement par défaut est de ne pas
-exporter les packages et d'essayer de les trouver automatiquement lors
-du `find_package(Arcane)` ce qui est le comportement préconisé par
-CMake. Pour cela, on sauvegarde les informations de l'emplacement des
-ces packages lors de la configuration de Arcane et on les utilise pour
-retrouver les packages si l'utilisateur n'a pas spécifier de chemin
-explicitement. La variable de configuration
-`ARCANE_USE_FIND_DEPENDENCIES` qui vaut `TRUE` par défaut permet de
-modifier ce comportement: si elle `TRUE` (le défaut), alors Arcane
-recherche les packages dépendant lors de l'appel à
-`find_package(Arcane)` en utilisant la commande CMake
-`find_dependency`. En mettant cette valeur à `FALSE` on retrouve le
-comportement d'avant la version 3.7.4. Le code utilisateur peut aussi
-explicitement désactiver le chargement des chemins par défaut en
-positionnant la variable `ARCANE_USE_CONFIGURATION_PATH` avant de
-faire le `find_package(Arcane)`. Cela permet de retrouver le
-comportement d'avant la 3.7.4.
-
-Les variables `FRAMEWORK_NO_EXPORT_PACKAGES` et
-`ARCANE_USE_FIND_DEPENDENCIES` sont utilisées temporairement pour
-garantir la compatibilité avec le code existant.
+~~~{sh}
+cmake -S /path/to/sources -B /path/to/build -DARCANEFRAMEWORK_BUILD_COMPONENTS=Alien
+~~~
 
 ## Linux
 
@@ -146,10 +109,11 @@ sudo snap install --classic cmake
 
 ### Environnement `.Net`
 
-L'environnement `.Net` est accessible via `apt` mais vous pouvez aussi
-directement télécharger un fichier `tar` contenant le binaire et les
-fichiers nécessaires. Pour l'architecture `x64`, les commandes
-suivantes installent l'environnement dans le répertoire `$HOME/dotnet`.
+L'environnement [.Net](https://dotnet.microsoft.com) est nécessaire pour compiler Arcane. Il est
+accessible via `apt` mais vous pouvez aussi directement télécharger un
+fichier `tar` contenant le binaire et les fichiers nécessaires. Pour
+l'architecture `x64`, les commandes suivantes installent
+l'environnement dans le répertoire `$HOME/dotnet`.
 
 ~~~{sh}
 wget https://download.visualstudio.microsoft.com/download/pr/372b11de-1321-44f3-aad7-040842babe62/c5925f9f856c3a299e97c80283317275/dotnet-sdk-6.0.304-linux-x64.tar.gz

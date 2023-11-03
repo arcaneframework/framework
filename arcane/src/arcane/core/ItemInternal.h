@@ -22,6 +22,7 @@
 #include "arcane/core/ItemUniqueId.h"
 #include "arcane/core/ItemLocalIdListView.h"
 #include "arcane/core/ItemTypeId.h"
+#include "arcane/core/ItemFlags.h"
 #include "arcane/core/ItemConnectivityContainerView.h"
 #include "arcane/core/ItemInternalVectorView.h"
 
@@ -74,50 +75,6 @@ class ARCANE_CORE_EXPORT ItemBaseBuildInfo
  public:
   Int32 m_local_id = NULL_ITEM_LOCAL_ID;
   ItemSharedInfo* m_shared_info = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Flags pour les caractéristiques des entités.
- */
-class ARCANE_CORE_EXPORT ItemFlags
-{
- public:
-  enum
-  { // L'affichage 'lisible' des flags est implémenté dans ItemPrinter
-    // Il doit être updaté si des flags sont ici changés
-    II_Boundary = 1 << 1, //!< L'entité est sur la frontière
-    II_HasFrontCell = 1 << 2, //!< L'entité a une maille devant
-    II_HasBackCell  = 1 << 3, //!< L'entité a une maille derrière
-    II_FrontCellIsFirst = 1 << 4, //!< La première maille de l'entité est la maille devant
-    II_BackCellIsFirst  = 1 << 5, //!< La première maille de l'entité est la maille derrière
-    II_Own = 1 << 6, //!< L'entité est une entité propre au sous-domaine
-    II_Added = 1 << 7, //!< L'entité vient d'être ajoutée
-    II_Suppressed = 1 << 8, //!< L'entité vient d'être supprimée
-    II_Shared = 1 << 9, //!< L'entité est partagée par un autre sous-domaine
-    II_SubDomainBoundary = 1 << 10, //!< L'entité est à la frontière de deux sous-domaines
-    //II_JustRemoved = 1 << 11, //!< L'entité vient d'être supprimé
-    II_JustAdded = 1 << 12, //!< L'entité vient d'être ajoutée
-    II_NeedRemove = 1 << 13, //!< L'entité doit être supprimé
-    II_SlaveFace = 1 << 14, //!< L'entité est une face esclave d'une interface
-    II_MasterFace = 1 << 15, //!< L'entité est une face maître d'une interface
-    II_Detached = 1 << 16, //!< L'entité est détachée du maillage
-    II_HasTrace = 1 << 17, //!< L'entité est marquée pour trace (pour débug)
-
-    II_Coarsen = 1 << 18, //!<  L'entité est marquée pour déraffinement
-    II_DoNothing = 1 << 19, //!<  L'entité est bloquée
-    II_Refine = 1 << 20, //!<  L'entité est marquée pour raffinement
-    II_JustRefined = 1 << 21, //!<  L'entité vient d'être raffinée
-    II_JustCoarsened = 1 << 22,//!<  L'entité vient d'être déraffiné
-    II_Inactive = 1 << 23, //!<  L'entité est inactive //COARSEN_INACTIVE,
-    II_CoarsenInactive = 1 << 24, //!<  L'entité est inactive et a des enfants tagués pour déraffinement
-
-    II_UserMark1 = 1 << 25, //!< Marque utilisateur old_value 1<<24
-    II_UserMark2 = 1 << 26 //!< Marque utilisateur  old_value 1<<25
-  };
-  static const int II_InterfaceFlags = II_Boundary + II_HasFrontCell + II_HasBackCell +
-  II_FrontCellIsFirst + II_BackCellIsFirst;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -649,14 +606,14 @@ class ARCANE_CORE_EXPORT ItemBase
   //! Vrai si l'entité est l'entité nulle
   bool isNull() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
   //! Vrai si l'entité appartient au sous-domaine
-  bool isOwn() const { return (flags() & II_Own)!=0; }
+  bool isOwn() const { return ItemFlags::isOwn(flags()); }
   /*!
    * \brief Vrai si l'entité est partagé d'autres sous-domaines.
    *
    * Cette méthode n'est pertinente que si les informations de connectivités
    * ont été calculées.
    */
-  bool isShared() const { return (flags() & II_Shared)!=0; }
+  bool isShared() const { return ItemFlags::isShared(flags()); }
 
   //! Vrai si l'entité est supprimée
   bool isSuppressed() const { return (flags() & II_Suppressed)!=0; }
@@ -664,7 +621,7 @@ class ARCANE_CORE_EXPORT ItemBase
   bool isDetached() const { return (flags() & II_Detached)!=0; }
 
   //! \a true si l'entité est sur la frontière
-  bool isBoundary() const { return (flags() & II_Boundary)!=0; }
+  bool isBoundary() const { return ItemFlags::isBoundary(flags()); }
   //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
   ItemBase boundaryCell() const { return (flags() & II_Boundary) ? cellBase(0) : ItemBase(); }
   //! Maille derrière l'entité (nullItem() si aucune)

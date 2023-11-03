@@ -9,6 +9,181 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
+## Arcane Version 3.11 (En cours...) {#arcanedoc_version3110}
+
+### Nouveautés/Améliorations
+
+- Réorganisation interne des synchronisations pour utiliser un seul
+  buffer mémoire pour toutes les synchronisations d'un même maillage
+  (\pr{861}, \pr{862}, \pr{863}, \pr{866}, \pr{867}, \pr{871},
+  \pr{872}, \pr{873}, \pr{874}, \pr{878}, \pr{880})
+- Ajoute interface \arcane{IVariableSynchronizerMng} pour gérer toutes
+  les instances de \arcane{IVariableSynchronizer} pour un maillage
+  donné (\pr{869}, \pr{879}).
+- Ajoute mode automatique pour vérifier si une synchronisation a eu un
+  effet. Ce mode est activé si la variable d'environnement
+  `ARCANE_AUTO_COMPARE_SYNCHRONIZE` est positionnée. Lorsque ce
+  mode est actif, des statistiques en fin de calcul permettent de
+  connaitre le nombre de synchronisations pour lesquelles les mailles
+  fantômes ont été modifiées. La page
+  \ref arcanedoc_debug_perf_compare_synchronization indique comment
+  utiliser ce mécanisme (\pr{897}, \pr{898}, \pr{900}, \pr{902},
+  \pr{910}, \pr{926}).
+- Ajoute deux classes expérimentales \arcane{CartesianMeshCoarsening} et
+  \arcane{CartesianMeshCoarsening2} pour dé-raffiner le maillage
+  cartésien initial. Cela fonctionne pour l'instant uniquement en 2D
+  (\pr{912}, \pr{913}, \pr{917}, \pr{918}, \pr{937}, \pr{942},
+  \pr{944}, \pr{945}).
+- Ajoute itérateur (\arcane{ICartesianMesh::patches()}) sur les patchs
+  des maillages cartésiens (\pr{948}).
+- Ajoute pour les statistiques d'échange de messages les valeurs
+  cumulées sur toutes les exécutions (\pr{852}, \pr{853}).
+- Ajoute support en C# des fonctions du jeu de données (\pr{797},
+  \pr{800}, \pr{801}, \pr{803}, \pr{804}).
+- Ajoute dans la composante PETSc de Aleph le support des
+  préconditionneurs ILU et IC en parallèle (\pr{789}, \pr{799}).
+
+#### API Accélérateur
+
+- Dans \arcaneacc{Reducer}, utilise la mémoire `HostPinned`
+  au lieu de la mémoire hôte classique pour conserver la valeur
+  réduite. Cela permet d'accélérer la recopie mémoire entre GPU et
+  GPU (\pr{782})
+- Ajoute macro ARCCORE_HOST_DEVICE manquantes pour les méthodes de
+  vérification de tailles de tableau (\pr{785}).
+- Ajoute méthode \arcaneacc{RunQueue::platformStream()} pour
+  récupérer un pointeur sur l'instance native associée (cudaStream ou
+  hipStream par exemple) (\pr{796}).
+- Ajoute support accélérateur de la version 6 et la version 8 des
+  synchronisations des matériaux (\pr{855}).
+- Ajoute support pour récupérer le nombre de milieux d'une maille (\pr{860})
+- Ajoute vues sur la variable environnement (\pr{904}).
+- Ajoute support pour les alogithmes de Scan inclusifs et exclusifs
+  via la classe \arcaneacc{Scanner} (\pr{921}, \pr{923}).
+- Ajoute accès accélérateur à certaines méthodes de
+  \arcanemat{AllEnvCell} et \arcanemat{EnvCell} (\pr{925}).
+- Ajoute support pour le filtrage de tableaux (\pr{954}, \pr{955}).
+
+### Changements
+
+- Change le type de retour de
+  \arcanemat{IMeshMaterialMng::synchronizeMaterialsInCells()} pour
+  retourner un `bool` (au lieu d'un `void`) si les matériaux ont été
+  modifiées (\pr{827}).
+
+### Corrections
+
+- Dans le format MSH, corrige mauvaise lecture des groupes de noeuds
+  lorsqu'il n'y a qu'un seul élément dans ce groupe (\pr{784}).
+- Corrige compilation de \arcane{ArrayExtentsValue} pour la dimension
+  2 avec les compilateurs Clang et NVCC (\pr{786}).
+- Corrige compilation des exemples en C# si l'environnement n'est pas
+  disponible. Positionne aussi la variable d'environnement
+  `LD_LIBRARY_PATH` si nécessaire (\pr{811}).
+- Corrige le mode d'optimisation
+  \arcanemat{eModificationFlags::OptimizeMultiMaterialPerEnvironment}
+  pour qu'il ait le même comportement que les autres modes
+  d'optimisation de mise à jour des valeurs lors du passage d'une
+  maille partielle à une maille pure. Le comportement attendu est de
+  prendre la valeur partielle du matériau et on prenait la valeur
+  partielle du milieu. Pour garder la compatibilité avec l'existant ce
+  mode n'est pas actif par défaut. La méthode
+  \arcanemat{IMeshMaterialMng::setUseMaterialValueWhenRemovingPartialValue()}
+  permet de l'activer (\pr{844}, \pr{957}).
+- Corrige bug dans la synchronisation des \arcane{DoF} dans certaines
+  conditions (\pr{920}).
+- Corrige fuite mémoire dans la gestion accélérateur de
+  \arcanemat{AllEnvCell} (\pr{931}).
+- Corrige mauvaise prise en compte des maillages additionnels pour les
+  options complexes avec occurences multiples (\pr{941}).
+
+
+### Interne
+
+- Début support des maillages cartésian avec patchs bloc structuré
+  (\pr{946}).
+- Début refonte de la gestion de la connectivité des matériaux. Cette
+  refonte a pour objectif d'optimiser cette gestion des connectivité
+  afin d'éviter d'avoir à appeler
+  \arcanemat{IMeshMaterialMng::forceRecompute()}
+  après une modification. Ces mécanismes ne sont pas actifs par défaut
+  (\pr{783}, \pr{787}, \pr{792}, \pr{794}, \pr{795}, \pr{825},
+  \pr{826}, \pr{828}, \pr{829}, \pr{831}, \pr{832}, \pr{835},
+  \pr{836}, \pr{838}, \pr{839}, \pr{840}, \pr{841}, \pr{842},
+  \pr{843}, \pr{847}).
+- Nettoyage et réorganisations internes (\pr{781}, \pr{810}, \pr{813},
+  \pr{822}, \pr{830}, \pr{834}, \pr{846}, \pr{856}, \pr{857},
+  \pr{868}, \pr{908}, \pr{914}, \pr{952})
+- Ajoute en test un service pour se connecter à une base Redis pour
+  le service \arcane{BasicReaderWriter} (\pr{780})
+- Ajoute sauvegarde au format JSON des meta-données pour les
+  protections/reprises. Ce format n'est pas utilisé pour l'instant
+  mais il remplacera à terme le format XML (\pr{779}, \pr{865}).
+- Créé deux classes \arcane{VariableIOReaderMng} et
+  \arcane{VariableIOWriterMng} pour gérer la partie entrées/sorties de
+  \arcane{VariableMng} (\pr{777}).
+- Ajoute méthode \arcane{JSON::value()} pour retourner une
+  \arccore{String} (\pr{778})
+- Ajoute nouveau module de test pour les matériaux
+  (MaterialHeatModule). Ce module permet de mieux tester les méthodes
+  d'ajout et de suppression de mailles matériaux (\pr{788}, \pr{790},
+  \pr{824}, \pr{848}).
+- Améliore l'usage de \arcane{IProfilingService} (\pr{791})
+- Intègre les sources de Alien dans le même dépôt que %Arcane (le
+  dépôt *framework*) (\pr{798}, \pr{812}, \pr{816}, \pr{817},
+  \pr{819}, \pr{820}, \pr{883}, \pr{890}, \pr{891}, \pr{892}).
+- Intègre le gestionnaire de maillage *Neo* dans le dépôt (\pr{802},
+  \pr{805}, \pr{807}, \pr{808}, \pr{814}, \pr{815}, \pr{854},
+  \pr{881}, \pr{882}, \pr{888}).
+- Sépare l'interface \arcane{IIncrementalItemConnectivity} en deux
+  interfaces \arcane{IIncrementalItemSourceConnectivity} et
+  \arcane{IIncrementalItemTargetConnectivity} pour permettre d'avoir
+  des connectivités qui n'ont pas de cibles (\pr{846}).
+- Ajoute tests pour la version 3 de \arcane{FaceUniqueidBuilder}
+  (\pr{850})
+- Débute portage MacOS (\pr{884}, \pr{885})
+- Optimise les sorties au format EnsightGold lorsque le nombre de
+  types de maille est très grand (maillages polyédriques) (\pr{911}).
+- Ajoute API interne à %Arcane pour \arcane{ICartesianMesh}
+  (\pr{943}).
+- Créé les \arcane{MeshHandle} des maillages additionnels avant
+  l'appel aux points d'entrée `Build` (\pr{947}).
+
+### Compilation et Intégration Continue (CI)
+
+- Ajoute compilation des exemples dans le CI (\pr{809}).
+- Mise à jour des images docker dans le CI (\pr{818})
+- Pour Arccore, compile avec l'option *Z7* sous Windows et ajoute les
+  symboles de débug. L'option *Z7* permet d'utiliser l'outil *ccache*
+  (\pr{821})
+- Utilise 'GitHub actions' pour simplifier le CI. Cela permet d'avoir
+  des actions composables de haut niveau plutôt que de dupliquer le
+  code dans chaque workflow (\pr{849}).
+- Utilise une image docker pour le CI avec 'Circle-CI' et ajoute une
+  exécution pour les plateformes ARM64 (\pr{887}).
+- Ajoute variable CMake `ARCANEFRAMEWORK_BUILD_COMPONENTS` permettant
+  de spécifier les composants à compiler. Cette variable est une liste
+  pouvant contenir `%Arcane` et `Alien`. Par défaut on compile les deux
+  composants (\pr{877})
+- Supprime les artefacts après leur récupération pour gagner de la
+  place disque (\pr{915}).
+- Supprime activation par défaut de la variable CMake
+  `ARCANE_ADD_RPATH_TO_LIBS`. Cette variable est obsolète et sera
+  supprimée ultérieurement (\pr{919}).
+- Supprime le répertoire de sortie des tests dans le CI pour gagner de
+  la place sur le disque (\pr{924}).
+
+### Arccore
+
+- Nettoyage interne de la gestion des statistiques pour les échanges
+  de message (\pr{851})
+- Corrige bug dans les constructeurs de \arccore{SharedArray2} à
+  partir de \arccore{UniqueArray2} ou \arccore{Span} (\pr{899}).
+
+### Axlstar
+
+- Améliore le support des vieilles versions de Doxygen (\pr{823}).
+
 ## Arcane Version 3.10.11 (30 juin 2023) {#arcanedoc_version3100}
 
 A partir de cette version 3.10, des modifications internes de gestion

@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NullVariableSynchronizer.cc                                 (C) 2000-2017 */
+/* NullVariableSynchronizer.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Synchronisation des variables en séquentiel.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Event.h"
 
@@ -23,7 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,12 +38,11 @@ class NullVariableSynchronizer
 {
  public:
 
-  NullVariableSynchronizer(IParallelMng* pm,const ItemGroup& group)
-  : m_parallel_mng(pm), m_item_group(group)
+  NullVariableSynchronizer(IParallelMng* pm, const ItemGroup& group)
+  : m_parallel_mng(pm)
+  , m_item_group(group)
   {
   }
-
-  virtual ~NullVariableSynchronizer() {}
 
  public:
 
@@ -52,12 +50,9 @@ class NullVariableSynchronizer
   {
     return m_parallel_mng;
   }
-  
-  const ItemGroup& itemGroup() override
-  {
-    return m_item_group;
-  }
-  void compute() override{}
+
+  const ItemGroup& itemGroup() override { return m_item_group; }
+  void compute() override {}
   void changeLocalIds(Int32ConstArrayView old_to_new_ids) override
   {
     ARCANE_UNUSED(old_to_new_ids);
@@ -65,16 +60,16 @@ class NullVariableSynchronizer
   void synchronize(IVariable* var) override
   {
     ARCANE_UNUSED(var);
-    if (m_on_synchronized.hasObservers()){
-      VariableSynchronizerEventArgs args(var,this,0.0);
+    if (m_on_synchronized.hasObservers()) {
+      VariableSynchronizerEventArgs args(var, this, 0.0);
       m_on_synchronized.notify(args);
     }
   }
   void synchronize(VariableCollection vars) override
   {
     ARCANE_UNUSED(vars);
-    if (m_on_synchronized.hasObservers()){
-      VariableSynchronizerEventArgs args(vars,this,0.0);
+    if (m_on_synchronized.hasObservers()) {
+      VariableSynchronizerEventArgs args(vars, this, 0.0);
       m_on_synchronized.notify(args);
     }
   }
@@ -115,15 +110,15 @@ class NullVariableSynchronizer
 /*---------------------------------------------------------------------------*/
 
 extern "C++" IVariableSynchronizer*
-createNullVariableSynchronizer(IParallelMng* pm,const ItemGroup& group)
+createNullVariableSynchronizer(IParallelMng* pm, const ItemGroup& group)
 {
-  return new NullVariableSynchronizer(pm,group);
+  return new NullVariableSynchronizer(pm, group);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

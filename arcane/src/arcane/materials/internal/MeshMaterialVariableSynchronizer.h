@@ -20,7 +20,7 @@
 #include "arcane/utils/MemoryRessource.h"
 
 #include "arcane/materials/MatVarIndex.h"
-#include "arcane/materials/internal/IMeshMaterialVariableSynchronizer.h"
+#include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

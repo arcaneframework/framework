@@ -52,21 +52,21 @@ class ARCANE_CORE_EXPORT ComponentCell
 {
  public:
 
-  ComponentCell(ComponentItemInternal* mii) : m_internal(mii){}
+  ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii) : m_internal(mii){}
   ComponentCell() : m_internal(ComponentItemInternal::nullItem()){}
 
  public:
 
   //! Opérateur de conversion vers un ComponentItemLocalId
-  operator ComponentItemLocalId() const { return ComponentItemLocalId{ _varIndex() }; }
+  ARCCORE_HOST_DEVICE operator ComponentItemLocalId() const { return ComponentItemLocalId{ _varIndex() }; }
 
  public:
 
   //! \internal
-  MatVarIndex _varIndex() const { return m_internal->variableIndex(); }
+  ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_internal->variableIndex(); }
 
   //! \internal
-  ComponentItemInternal* internal() const { return m_internal; }
+  ARCCORE_HOST_DEVICE ComponentItemInternal* internal() const { return m_internal; }
 
   //! Composant associé
   IMeshComponent* component() const { return m_internal->component(); }
@@ -104,13 +104,16 @@ class ARCANE_CORE_EXPORT ComponentCell
 
  protected:
 
-  static void _checkLevel(ComponentItemInternal* internal,Int32 expected_level)
+  static ARCCORE_HOST_DEVICE
+  void _checkLevel([[maybe_unused]] ComponentItemInternal* internal, [[maybe_unused]] Int32 expected_level)
   {
+#if !defined(ARCCORE_DEVICE_CODE)
     if (internal->null())
       return;
     Int32 lvl = internal->level();
     if (!internal->null() && lvl!=expected_level)
       _badConversion(lvl,expected_level);
+#endif
   }
   static void _badConversion(Int32 level,Int32 expected_level);
 

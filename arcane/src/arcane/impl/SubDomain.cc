@@ -91,6 +91,7 @@
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/ICaseMngInternal.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/impl/ConfigurationReader.h"
 #include "arcane/impl/internal/MeshMng.h"
@@ -604,7 +605,7 @@ destroy()
 
   // Comme tous les objets peuvent contenir des variables, il faut être
   // certain de détruire le gestionnaire de variables en dernier.
-  m_variable_mng->removeAllVariables();
+  m_variable_mng->_internalApi()->removeAllVariables();
   m_variable_mng = nullptr;
 
   delete this;

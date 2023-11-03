@@ -37,7 +37,7 @@ MultiplicativeFieldSplitTypeService::MultiplicativeFieldSplitTypeService(
 //! Configure FieldSplit type
 
 Arccore::Integer
-MultiplicativeFieldSplitTypeService::configure(PC& pc, const Arccore::Integer nbField)
+MultiplicativeFieldSplitTypeService::configure(PC& pc,[[maybe_unused]] const Arccore::Integer nbField)
 {
   alien_debug(
       [&] { cout() << "configure PETSc multiplicative FlieldSplit preconditioner"; });

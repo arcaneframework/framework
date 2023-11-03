@@ -130,7 +130,7 @@ endif()
 # dynamiques. Ce mode existe historiquement pour contourner des problèmes avec
 # d'anciennes versions de CMake (pré 3.10) mais ne devrait plus être nécessaire.
 # Il faudrait donc le supprimer.
-option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_link_libraries" ON)
+option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_link_libraries" OFF)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -177,7 +177,9 @@ set(ARCANE_CMAKE_CONFIG_DIR ${config_install_dir})
 # ----------------------------------------------------------------------------
 
 set(ARCANE_AXLSTAR_NEEDED_VERSION "2.2.0")
-find_package(Axlstar REQUIRED)
+if (NOT Axlstar_FOUND)
+  find_package(Axlstar REQUIRED)
+endif()
 message(STATUS "Axlstar_DIR = ${Axlstar_DIR}")
 message(STATUS "Axlstar_VERSION = ${Axlstar_VERSION}")
 if (Axlstar_VERSION VERSION_LESS ARCANE_AXLSTAR_NEEDED_VERSION)
@@ -322,8 +324,10 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.5.1")
-find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.5.2")
+if (NOT Arccore_FOUND)
+  find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
+endif ()
 message(STATUS "Arccore_DIR = ${Arccore_DIR}")
 if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
   message(FATAL_ERROR "Arccore version '${Arccore_VERSION}' is too old."
@@ -968,9 +972,10 @@ add_subdirectory(src/arcane/tests)
 add_subdirectory(samples_build)
 
 # ----------------------------------------------------------------------------
-# Ajoute le répertoire matériaux.
+# Ajoute les répertoires 'matériaux' et 'cartesianmesh'
 # Pour l'instant on le fait après les tests pour cohérence avec l'existant
-# car avant ce répertoire était dans ceapart.
+# car avant ces répertoires étaientt dans ceapart.
+add_subdirectory(src/arcane/cartesianmesh)
 add_subdirectory(src/arcane/materials)
 
 # ----------------------------------------------------------------------------
@@ -1349,6 +1354,11 @@ file(APPEND ${generated_config_dir}/ArcaneConfigCache.cmake ${_ARCANE_PACKAGES_R
 
 install(FILES extras/coverity/ArcaneModel.cc DESTINATION share/coverity)
 
+# ----------------------------------------------------------------------------
+# Indique que Arcane est trouvé pour les autres éléments du mono-dépôt qui en dépendent (Alien/ArcaneInterface)
+# Donne accès aux fonctions cmake d'Arcane aux autres éléments du mono-dépôt (Alien/ArcaneInterface)
+set(Arcane_FOUND YES PARENT_SCOPE)
+set(ARCANE_CMAKE_COMMANDS ${ARCANESRCROOT}/cmake/Functions.cmake PARENT_SCOPE)
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2

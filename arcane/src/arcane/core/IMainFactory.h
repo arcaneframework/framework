@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMainFactory.h                                              (C) 2000-2020 */
+/* IMainFactory.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Interface des AbstractFactory d'Arcane.                                   */
 /*---------------------------------------------------------------------------*/
@@ -187,7 +187,18 @@ class IMainFactory
    * Si le sous-domaine possède déjà un maillage avec le nom \a name,
    * c'est ce dernier qui est retourné.
    */
+  ARCANE_DEPRECATED_REASON("Y2023: Use createMesh(..., eMeshAMRKind amr_type) instead")
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name,bool is_amr) =0;
+
+  /*!
+   * \brief Créé ou récupère un maillage.
+   *
+   * Créé ou récupère un maillage de nom \a name pour le sous-domaine \a sub_domain.
+   *
+   * Si le sous-domaine possède déjà un maillage avec le nom \a name,
+   * c'est ce dernier qui est retourné.
+   */
+  virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name,eMeshAMRKind amr_type) =0;
 
   /*!
    * \brief Créé ou récupère un maillage.
@@ -212,8 +223,22 @@ class IMainFactory
    * Le gestionnaire de parallélisme doit être le même que celui du sous-domaine
    * ou issu de celui-ci.
    */
+  ARCANE_DEPRECATED_REASON("Y2023: Use createMesh(..., eMeshAMRKind amr_type) instead")
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain, IParallelMng* pm,
                                    const String& name, bool is_amr) =0;
+
+  /*!
+   * \brief Créé ou récupère un maillage.
+   *
+   * Créé ou récupère un maillage de nom \a name pour le sous-domaine \a sub_domain
+   * associé au gestionnaire de parallélisme \a pm. Si le sous-domaine possède
+   * déjà un maillage avec le nom \a name, c'est ce dernier qui est retourné.
+   *
+   * Le gestionnaire de parallélisme doit être le même que celui du sous-domaine
+   * ou issu de celui-ci.
+   */
+  virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain, IParallelMng* pm,
+                                   const String& name, eMeshAMRKind amr_type) =0;
 
   /*!
    * \brief Créé un sous-maillage pour le maillage \a mesh, de nom \a name.

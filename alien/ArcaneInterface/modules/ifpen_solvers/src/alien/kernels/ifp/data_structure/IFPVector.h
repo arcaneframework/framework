@@ -12,7 +12,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-BEGIN_IFPSOLVERINTENRAL_NAMESPACE
+BEGIN_IFPSOLVERINTERNAL_NAMESPACE
 
 class VectorInternal;
 
@@ -30,7 +30,7 @@ class MultiVectorImpl;
 
 /*---------------------------------------------------------------------------*/
 
-class IFPVector : public IVectorImpl
+class ALIEN_IFPEN_SOLVERS_EXPORT IFPVector : public IVectorImpl
 {
  public:
   friend class ::SimpleCSR_to_IFP_VectorConverter;

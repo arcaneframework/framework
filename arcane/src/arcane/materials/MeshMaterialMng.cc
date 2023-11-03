@@ -175,7 +175,9 @@ build()
   {
     int default_flags = 0;
 
-    default_flags = (int)eModificationFlags::GenericOptimize | (int)eModificationFlags::OptimizeMultiAddRemove;
+    // Ne met pas encore par défaut ces flags car cela ne fonctionne pas
+    // pour tous les codes
+    // default_flags = (int)eModificationFlags::GenericOptimize | (int)eModificationFlags::OptimizeMultiAddRemove;
 
     int opt_flag_value = 0;
     String env_name = "ARCANE_MATERIAL_MODIFICATION_FLAGS";

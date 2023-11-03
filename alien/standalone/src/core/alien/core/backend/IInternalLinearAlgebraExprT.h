@@ -199,7 +199,7 @@ class IInternalLinearAlgebraExpr
    * \param[in] filename The name of the file
    * \todo Implement this method
    */
-  virtual void dump(Matrix const& a, std::string const& filename) const
+  virtual void dump([[maybe_unused]] Matrix const& a, [[maybe_unused]] std::string const& filename) const
   {
     throw NotImplementedException(
     A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");
@@ -211,7 +211,7 @@ class IInternalLinearAlgebraExpr
    * \param[in] filename The name of the file
    * \todo Implement this method
    */
-  virtual void dump(Vector const& x, std::string const& filename) const
+  virtual void dump([[maybe_unused]] Vector const& x, [[maybe_unused]] std::string const& filename) const
   {
     throw NotImplementedException(
     A_FUNCINFO, "IInternalLinearAlgebra::dump not implemented");

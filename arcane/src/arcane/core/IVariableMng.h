@@ -42,6 +42,7 @@ class VariableRef;
 class IMesh;
 class IVariableUtilities;
 class VariableStatusChangedEventArgs;
+class IVariableMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,31 +61,6 @@ class IVariableMng
 
  public:
 
-  /*!
-   * \brief Construit les membres de l'instance.
-   *
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée. Cette méthode doit être appelée avant initialize().
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
-   */
-  virtual void build() =0;
-
-  /*!
-   * \brief Initialise l'instance.
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée.
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
-   */
-  virtual void initialize() =0;
-
-  //! Supprime et détruit les variables gérées par ce gestionnaire
-  virtual void removeAllVariables() =0;
-
-  //! Détache les variables associées au maillage \a mesh.
-  virtual void detachMeshVariables(IMesh* mesh) =0;
-
- public:
-
   //! Gestionnaire du sous-domaine
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get 'ISubDomain' from another way")
   virtual ISubDomain* subDomain() =0;
@@ -94,52 +70,6 @@ class IVariableMng
 
   //! Gestionnaire de messages
   virtual ITraceMng* traceMng() =0;
-
-  /*!
-   * \brief Ajoute une référence à une variable.
-   *
-   * Ajoute la référence \a var au gestionnaire.
-   *
-   * \pre var != 0
-   * \pre var ne doit pas déjà être référencée.
-   * \return l'implémentation associée à \a var.
-   */
-  virtual void addVariableRef(VariableRef* var) =0;
-
-  /*!
-   * \brief Supprime une référence à une variable.
-   *
-   * Supprime la référence \a var du gestionnaire.
-   *
-   * Si \a var n'est pas référencée par le gestionnaire, rien n'est effectué.
-   * \pre var != 0
-   */
-  virtual void removeVariableRef(VariableRef* var) =0;
-
-  /*!
-   * \brief Ajoute une variable.
-   *
-   * Ajoute la variable \a var.
-   *
-   * La validité de la variable n'est pas effectuée (void checkVariable()).
-   *
-   * \pre var != 0
-   * \pre var ne doit pas déjà être référencée.
-   * \return l'implémentation associée à \a var.
-   */
-  virtual void addVariable(IVariable* var) =0;
-
-  /*!
-   * \brief Supprime une variable.
-   *
-   * Supprime la variable \a var.
-   *
-   * Après appel à cette méthode, la variable ne doit plus être utilisée.
-   *
-   * \pre var != 0
-   * \pre var doit avoir une seule référence.
-   */
-  virtual void removeVariable(IVariable* var) =0;
 
   /*!
    * \brief Vérifie une variable.
@@ -162,17 +92,6 @@ class IVariableMng
    * \return la variable de \a infos.name() si elle existe, 0 sinon
    */
   virtual IVariable* checkVariable(const VariableInfo& infos) =0;
-	
-  /*!
-   * \brief Initialise les variables.
-   *
-   * Parcours la liste des variables et les initialisent.
-   * Seules les variables d'un module utilisé sont initialisées.
-   *
-   * \param is_continue \a true vrai si on est en reprise.
-   */
-  virtual void initializeVariables(bool is_continue) =0;
-
   /*! \brief Génère un nom pour une variable temporaire.
    *
    * Pour assurer la cohérence de ce nom, il faut que tous les sous-domaines
@@ -342,6 +261,9 @@ class IVariableMng
   //! Interface des fonctions utilitaires associées
   virtual IVariableUtilities* utilities() const =0;
 
+  //! Interface du gestionnaire de synchronisation des variables.
+  virtual IVariableSynchronizerMng* synchronizerMng() const =0;
+
  public:
 
   //! \name Evènements
@@ -356,10 +278,107 @@ class IVariableMng
  public:
 
   /*!
+   * \brief Construit les membres de l'instance.
+   *
+   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
+   * appelée. Cette méthode doit être appelée avant initialize().
+   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void build() =0;
+
+  /*!
+   * \brief Initialise l'instance.
+   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
+   * appelée.
+   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void initialize() =0;
+
+  //! Supprime et détruit les variables gérées par ce gestionnaire
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void removeAllVariables() =0;
+
+  //! Détache les variables associées au maillage \a mesh.
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void detachMeshVariables(IMesh* mesh) =0;
+
+
+  /*!
+   * \brief Ajoute une référence à une variable.
+   *
+   * Ajoute la référence \a var au gestionnaire.
+   *
+   * \pre var != 0
+   * \pre var ne doit pas déjà être référencée.
+   * \return l'implémentation associée à \a var.
+   */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void addVariableRef(VariableRef* var) =0;
+
+  /*!
+   * \brief Supprime une référence à une variable.
+   *
+   * Supprime la référence \a var du gestionnaire.
+   *
+   * Si \a var n'est pas référencée par le gestionnaire, rien n'est effectué.
+   * \pre var != 0
+   */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void removeVariableRef(VariableRef* var) =0;
+
+  /*!
+   * \brief Ajoute une variable.
+   *
+   * Ajoute la variable \a var.
+   *
+   * La validité de la variable n'est pas effectuée (void checkVariable()).
+   *
+   * \pre var != 0
+   * \pre var ne doit pas déjà être référencée.
+   * \return l'implémentation associée à \a var.
+   */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void addVariable(IVariable* var) =0;
+
+  /*!
+   * \brief Supprime une variable.
+   *
+   * Supprime la variable \a var.
+   *
+   * Après appel à cette méthode, la variable ne doit plus être utilisée.
+   *
+   * \pre var != 0
+   * \pre var doit avoir une seule référence.
+   */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void removeVariable(IVariable* var) =0;
+
+  /*!
+   * \brief Initialise les variables.
+   *
+   * Parcours la liste des variables et les initialisent.
+   * Seules les variables d'un module utilisé sont initialisées.
+   *
+   * \param is_continue \a true vrai si on est en reprise.
+   */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  virtual void initializeVariables(bool is_continue) =0;
+
+ public:
+
+  /*!
    * \internal
    * Fonction interne temporaire pour récupérer le sous-domaine.
    */
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   virtual ISubDomain* _internalSubDomain() const =0;
+
+ public:
+
+  //! API interne à Arcane
+  virtual IVariableMngInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/

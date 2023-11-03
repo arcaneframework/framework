@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+
 #ifndef TESTS_REFSEMANTICMVHANDLERS_SOLVERCONFIGURATION_H
 #define TESTS_REFSEMANTICMVHANDLERS_SOLVERCONFIGURATION_H
 
@@ -34,12 +40,14 @@
 // solver
 #include <alien/kernels/petsc/linear_solver/arcane/PETScSolverConfigBiCGStabService.h>
 #include <alien/kernels/petsc/linear_solver/arcane/PETScSolverConfigLUService.h>
+#include <alien/kernels/petsc/linear_solver/mumps/PETScSolverConfigMUMPSService.h>
 #include <alien/kernels/petsc/linear_solver/IPETScKSP.h>
 #include <alien/kernels/petsc/linear_solver/IPETScPC.h>
 #include <ALIEN/axl/PETScSolverConfigBiCGStab_IOptions.h>
 #include <ALIEN/axl/PETScSolverConfigBiCGStab_StrongOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_IOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_StrongOptions.h>
+#include <ALIEN/axl/PETScSolverConfigMUMPS_IOptions.h>
 // root linear solver instance
 #include <ALIEN/axl/PETScLinearSolver_IOptions.h>
 #include <ALIEN/axl/PETScLinearSolver_StrongOptions.h>
@@ -119,6 +127,16 @@ createSolver(boost::program_options::variables_map& vm)
               std::make_shared<Alien::PETScSolverConfigLUService>(pm, options_solver));
       // root petsc service
       return std::make_shared<Alien::PETScLinearSolverService>(pm, root_options);
+    }
+    if (solver.compare("mumps") == 0) {
+        // solver service mumps
+        auto options_solver = std::make_shared<IOptionsPETScSolverConfigMUMPS>();
+        // root petsc option
+        auto root_options = std::make_shared<StrongOptionsPETScLinearSolver>(
+                PETScLinearSolverOptionsNames::_solver =
+                        std::make_shared<Alien::PETScSolverConfigMUMPSService>(pm, options_solver));
+        // root petsc service
+        return std::make_shared<Alien::PETScLinearSolverService>(pm, root_options);
     }
     tm->fatal() << "*** solver " << solver << " not available in test!";
 #else

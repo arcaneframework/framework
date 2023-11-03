@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LegacyMeshBuilder.cc                                        (C) 2000-2020 */
+/* LegacyMeshBuilder.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Construction du maillage via la méthode "historique".                     */
 /*---------------------------------------------------------------------------*/
@@ -16,15 +16,17 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/CaseNodeNames.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IGhostLayerMng.h"
-#include "arcane/IMeshReader.h"
+#include "arcane/core/MeshKind.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/CaseNodeNames.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/IMeshMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -142,6 +144,10 @@ readCaseMeshes()
     // dont le générateur de maillage a besoin.
     //m_case_config->read();
   }
+
+  // Créé les MeshHandle pour les maillages.
+  // Cela permettra de les récupérer dans les points d'entrée 'Build'
+  _createMeshesHandle();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -191,7 +197,39 @@ createDefaultMesh()
   // default_mesh is the mesh described by mesh_elems[0]
   // Now that amr flag has to be known at mesh creation, check-it for default mesh
   bool is_amr = mesh_elems[0].attr("amr").valueAsBoolean();
-  m_default_mesh_handle._setMesh(sd->mainFactory()->createMesh(sd,mesh_name, is_amr));
+  eMeshAMRKind amr_type = static_cast<eMeshAMRKind>(mesh_elems[0].attr("amr-type").valueAsInteger());
+  if(is_amr && amr_type == eMeshAMRKind::None) {
+    amr_type = eMeshAMRKind::Cell;
+  }
+
+  m_default_mesh_handle._setMesh(sd->mainFactory()->createMesh(sd,mesh_name, amr_type));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void LegacyMeshBuilder::
+_createMeshesHandle()
+{
+  IMeshMng* mesh_mng = m_sub_domain->meshMng();
+
+  // Le premier maillage est toujours celui par défaut
+  Integer nb_build_mesh = m_meshes_build_info.size();
+  if (nb_build_mesh>0){
+    m_meshes_build_info[0].m_mesh_handle = m_default_mesh_handle;
+  }
+
+  // Créé les autres maillages spécifiés dans le jeu de données
+  for( Integer z=1; z<nb_build_mesh; ++z ){
+    String name;
+    if(m_meshes_build_info[z].m_xml_node.attr("dual").valueAsBoolean())
+      name = "DualMesh";
+    else
+      name = "Mesh";
+    name = name + z;
+    MeshHandle handle = mesh_mng->createMeshHandle(name);
+    m_meshes_build_info[z].m_mesh_handle = handle;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -210,16 +248,18 @@ allocateMeshes()
 
   // Créé les autres maillages spécifiés dans le jeu de données
   for( Integer z=1; z<nb_build_mesh; ++z ){
-    String name;
-    if(m_meshes_build_info[z].m_xml_node.attr("dual").valueAsBoolean())
-      name = "DualMesh";
-    else
-      name = "Mesh";
-    name = name + z;
+    MeshHandle handle = m_meshes_build_info[z].m_mesh_handle;
+    if (handle.isNull())
+      ARCANE_FATAL("Invalid null MeshHandle for mesh index={0}",z);
     // Depuis la 1.8.0 (modif IFP), cette methode
     // appelle this->addMesh()
     bool is_amr = m_meshes_build_info[z].m_xml_node.attr("amr").valueAsBoolean();
-    IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,name,is_amr);
+    eMeshAMRKind amr_type = static_cast<eMeshAMRKind>(m_meshes_build_info[z].m_xml_node.attr("amr-type").valueAsInteger());
+    if(is_amr && amr_type == eMeshAMRKind::None) {
+      amr_type = eMeshAMRKind::Cell;
+    }
+
+    IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,handle.meshName(),amr_type);
     m_meshes_build_info[z].m_mesh = mesh;
   }
 }

@@ -84,6 +84,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
  public:
 
+  static void throwInvalidMetaDataForSharedArray ARCCORE_NORETURN ();
   static void throwNullExpected ARCCORE_NORETURN ();
   static void throwNotNullExpected ARCCORE_NORETURN ();
   static void throwUnsupportedSpecificAllocator ARCCORE_NORETURN ();
@@ -276,7 +277,7 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
 
   void _allocateMetaData()
   {
-#ifdef ARCANE_CHECK
+#ifdef ARCCORE_CHECK
     if (m_md->is_not_null)
       ArrayMetaData::throwNullExpected();
 #endif
@@ -297,6 +298,14 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
       delete md;
     else
       *md = ArrayMetaData();
+  }
+
+  void _checkValidSharedArray()
+  {
+#ifdef ARCCORE_CHECK
+    if (m_md->is_not_null && !m_md->is_allocated_by_new)
+      ArrayMetaData::throwInvalidMetaDataForSharedArray();
+#endif
   }
 
  private:
@@ -630,7 +639,7 @@ class AbstractArray
 
   void _directFirstAllocateWithAllocator(Int64 new_capacity,MemoryAllocationOptions options)
   {
-#ifdef ARCANE_CHECK
+#ifdef ARCCORE_CHECK
     if (!_isUseOwnMetaData())
       ArrayMetaData::throwUnsupportedSpecificAllocator();
 #endif
@@ -1490,65 +1499,79 @@ class SharedArray
  public:
 
   //! Créé un tableau vide
-  SharedArray() : Array<T>(), m_next(nullptr), m_prev(nullptr) {}
+  SharedArray() = default;
   //! Créé un tableau de \a size éléments contenant la valeur \a value.
-  SharedArray(Int64 asize,ConstReferenceType value)
-  : m_next(nullptr), m_prev(nullptr)
+  SharedArray(Int64 asize, ConstReferenceType value)
   {
-    this->_resize(asize,value);
+    this->_resize(asize, value);
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
-  explicit SharedArray(Int64 asize)
-  : m_next(nullptr), m_prev(nullptr)
+  explicit SharedArray(long long asize)
   {
     this->_resize(asize);
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
-  explicit SharedArray(Int32 asize)
-  : m_next(nullptr), m_prev(nullptr)
-  {
-    this->_resize(asize);
-  }
+  explicit SharedArray(long asize)
+  : SharedArray(static_cast<long long>(asize))
+  {}
   //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
-  explicit SharedArray(size_t asize)
-  : m_next(nullptr), m_prev(nullptr)
-  {
-    this->_resize((Int64)asize);
-  }
+  explicit SharedArray(int asize)
+  : SharedArray(static_cast<long long>(asize))
+  {}
+  //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
+  explicit SharedArray(unsigned long long asize)
+  : SharedArray(static_cast<long long>(asize))
+  {}
+  //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
+  explicit SharedArray(unsigned long asize)
+  : SharedArray(static_cast<long long>(asize))
+  {}
+  //! Créé un tableau de \a size éléments contenant la valeur par défaut du type T()
+  explicit SharedArray(unsigned int asize)
+  : SharedArray(static_cast<long long>(asize))
+  {}
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ConstArrayView<T>& aview)
-  : Array<T>(), m_next(nullptr), m_prev(nullptr)
+  : Array<T>()
   {
     this->_initFromSpan(Span<const T>(aview));
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const Span<const T>& aview)
-  : Array<T>(), m_next(nullptr), m_prev(nullptr)
+  : Array<T>()
   {
     this->_initFromSpan(Span<const T>(aview));
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const ArrayView<T>& aview)
-  : Array<T>(), m_next(nullptr), m_prev(nullptr)
+  : Array<T>()
   {
     this->_initFromSpan(Span<const T>(aview));
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau en recopiant les valeurs de la value \a view.
   SharedArray(const Span<T>& aview)
-  : Array<T>(), m_next(nullptr), m_prev(nullptr)
+  : Array<T>()
   {
     this->_initFromSpan(aview);
+    this->_checkValidSharedArray();
   }
   SharedArray(std::initializer_list<T> alist)
-  : Array<T>(), m_next(nullptr), m_prev(nullptr)
+  : Array<T>()
   {
     this->_initFromInitializerList(alist);
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau faisant référence à \a rhs.
   SharedArray(const SharedArray<T>& rhs)
-  : Array<T>(), m_next(nullptr), m_prev(nullptr)
+  : Array<T>()
   {
     _initReference(rhs);
+    this->_checkValidSharedArray();
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   inline SharedArray(const UniqueArray<T>& rhs);
@@ -1556,6 +1579,7 @@ class SharedArray
   void operator=(const SharedArray<T>& rhs)
   {
     this->_operatorEqual(rhs);
+    this->_checkValidSharedArray();
   }
   //! Copie les valeurs de \a rhs dans cette instance.
   inline void operator=(const UniqueArray<T>& rhs);
@@ -1563,21 +1587,25 @@ class SharedArray
   void operator=(const Span<const T>& rhs)
   {
     this->copy(rhs);
+    this->_checkValidSharedArray();
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
   void operator=(const Span<T>& rhs)
   {
     this->copy(rhs);
+    this->_checkValidSharedArray();
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
   void operator=(const ConstArrayView<T>& rhs)
   {
     this->copy(rhs);
+    this->_checkValidSharedArray();
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
   void operator=(const ArrayView<T>& rhs)
   {
     this->copy(rhs);
+    this->_checkValidSharedArray();
   }
   //! Détruit le tableau
   ~SharedArray() override
@@ -1674,8 +1702,8 @@ class SharedArray
   }
  private:
 
-  ThatClassType* m_next; //!< Référence suivante dans la liste chaînée
-  ThatClassType* m_prev; //!< Référence précédente dans la liste chaînée
+  ThatClassType* m_next = nullptr; //!< Référence suivante dans la liste chaînée
+  ThatClassType* m_prev = nullptr; //!< Référence précédente dans la liste chaînée
 
  private:
 
@@ -1742,20 +1770,31 @@ class UniqueArray
     this->_resize(req_size,value);
   }
   //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
-  explicit UniqueArray(Int64 asize)
+  explicit UniqueArray(long long asize)
   {
     this->_resize(asize);
   }
   //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
-  explicit UniqueArray(Int32 asize)
-  {
-    this->_resize(asize);
-  }
+  explicit UniqueArray(long asize)
+  : UniqueArray(static_cast<long long>(asize))
+  {}
   //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
-  explicit UniqueArray(size_t asize)
-  {
-    this->_resize((Int64)asize);
-  }
+  explicit UniqueArray(int asize)
+  : UniqueArray(static_cast<long long>(asize))
+  {}
+  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  explicit UniqueArray(unsigned long long asize)
+  : UniqueArray(static_cast<long long>(asize))
+  {}
+  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  explicit UniqueArray(unsigned long asize)
+  : UniqueArray(static_cast<long long>(asize))
+  {}
+  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  explicit UniqueArray(unsigned int asize)
+  : UniqueArray(static_cast<long long>(asize))
+  {}
+
   //! Créé un tableau en recopiant les valeurs de la value \a aview.
   UniqueArray(const ConstArrayView<T>& aview)
   : UniqueArray(Span<const T>(aview))
@@ -1937,6 +1976,7 @@ SharedArray(const UniqueArray<T>& rhs)
 , m_prev(nullptr)
 {
   this->_initFromSpan(rhs.constSpan());
+  this->_checkValidSharedArray();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1946,6 +1986,7 @@ template<typename T> inline void SharedArray<T>::
 operator=(const UniqueArray<T>& rhs)
 {
   this->copy(rhs);
+  this->_checkValidSharedArray();
 }
 
 /*---------------------------------------------------------------------------*/

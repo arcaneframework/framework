@@ -46,8 +46,9 @@ logStatus("Generate xml package file")
 generatePackageXmlFile()
 
 logStatus("Generate axl database")
-
+if(USE_AXLSTAR)
 generateAxlDataBase()
+endif()
 
 logStatus("Generate eclipse CDT settings")
 

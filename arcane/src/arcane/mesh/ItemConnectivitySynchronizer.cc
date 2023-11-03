@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivitySynchronizer.cc                             (C) 2000-2021 */
+/* ItemConnectivitySynchronizer.cc                             (C) 2000-2023 */
 /*                                                                           */
 /* Synchronization des connectivités.                                        */
 /*---------------------------------------------------------------------------*/
@@ -151,6 +151,20 @@ addExtraGhostItems (ISerializer* buffer)
 void ItemConnectivitySynchronizer::
 _getItemToSend(Int32SharedArray& shared_items, Int32SharedArray& shared_items_connected_items, const Integer rank)
 {
+  // remove null items.
+  Int32UniqueArray non_null_shared_items, non_null_shared_items_connected_items;
+  non_null_shared_items.reserve(shared_items.size());
+  non_null_shared_items_connected_items.reserve(shared_items_connected_items.size());
+  auto i = 0;
+  for (auto item : shared_items) {
+    if (item != NULL_ITEM_LOCAL_ID) {
+      non_null_shared_items.add(shared_items[i]);
+      non_null_shared_items_connected_items.add(shared_items_connected_items[i]);
+    }
+    ++i;
+  }
+  shared_items.copy(non_null_shared_items);
+  shared_items_connected_items.copy(non_null_shared_items_connected_items);
   // Filter: don't add ghost twice. The synchronizer remember the ghost added and don't add them twice.
   Int64SharedArray shared_items_uids(shared_items.size());
   ItemVectorView shared_items_view = m_connectivity->targetFamily()->view(shared_items);

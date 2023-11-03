@@ -119,8 +119,7 @@ CaseOptions(ICaseOptionList* parent,const String& aname)
 : m_p(new CaseOptionsPrivate(parent,aname))
 {
   m_p->m_config_list = ICaseOptionListInternal::create(parent,this,XmlNode());
-  parent->addChild(this);
-  m_p->m_parent = parent;
+  _setParent(parent);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -145,8 +144,7 @@ CaseOptions(ICaseOptionList* parent,const String& aname,
 {
   ICaseOptionList* col = ICaseOptionListInternal::create(parent,this,parent_elem,is_optional,is_multi);
   m_p->m_config_list = col;
-  parent->addChild(this);
-  m_p->m_parent = parent;
+  _setParent(parent);
   if (is_multi)
     _setTranslatedName();
 }
@@ -172,8 +170,7 @@ CaseOptions(ICaseOptionList* parent,const String& aname,
 : m_p(new CaseOptionsPrivate(parent->caseMng(),aname))
 {
   m_p->m_config_list = config_list;
-  parent->addChild(this);
-  m_p->m_parent = parent;
+  _setParent(parent);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -400,6 +397,17 @@ _setMeshHandle(const MeshHandle& handle)
 {
   traceMng()->info(5) << "SetMeshHandle for " << m_p->m_name << " mesh_name=" << handle.meshName();
   m_p->m_mesh_handle = handle;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseOptions::
+_setParent(ICaseOptionList* parent)
+{
+  parent->addChild(this);
+  m_p->m_parent = parent;
+  _setMeshHandle(parent->meshHandle());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -39,7 +39,6 @@ if(NOT WIN32 AND MATHLINK_FOUND)
   add_subdirectory(src/arcane/mathlink)
 endif()
 
-add_subdirectory(src/arcane/cartesianmesh)
 add_subdirectory(src/arcane/cea)
 add_subdirectory(src/arcane/geometric)
 add_subdirectory(src/arcane/meshutils)

@@ -82,13 +82,13 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   }
 
   //! Indexeur dans les variables matériaux
-  MatVarIndex variableIndex() const
+  ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const
   {
     return m_var_index;
   }
 
   //! Identifiant du composant
-  Int32 componentId() const { return m_component_id; }
+  ARCCORE_HOST_DEVICE Int32 componentId() const { return m_component_id; }
 
   //! Indique s'il s'agit de la maille nulle.
   bool null() const { return m_var_index.null(); }
@@ -111,13 +111,13 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   }
 
   //! Nombre de sous-composants.
-  Int32 nbSubItem() const
+  ARCCORE_HOST_DEVICE Int32 nbSubItem() const
   {
     return m_nb_sub_component_item;
   }
 
   //! Première entité sous-composant.
-  ComponentItemInternal* firstSubItem() const { return m_first_sub_component_item; }
+  ARCCORE_HOST_DEVICE ComponentItemInternal* firstSubItem() const { return m_first_sub_component_item; }
 
   //! Entité globale correspondante.
   impl::ItemBase globalItemBase() { return m_global_item; }

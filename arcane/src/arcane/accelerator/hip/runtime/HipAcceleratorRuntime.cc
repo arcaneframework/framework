@@ -30,6 +30,7 @@
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
+#include "arcane/accelerator/core/RunQueue.h"
 
 #include <iostream>
 
@@ -293,14 +294,19 @@ class HipRunnerRuntime
   void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
   {
     hipPointerAttribute_t pa;
-    ARCANE_CHECK_HIP(hipPointerGetAttributes(&pa, ptr));
+    hipError_t ret_value = hipPointerGetAttributes(&pa, ptr);
     auto mem_type = ePointerMemoryType::Unregistered;
-    if (pa.isManaged)
-      mem_type = ePointerMemoryType::Managed;
-    else if (pa.memoryType == hipMemoryTypeHost)
-      mem_type = ePointerMemoryType::Host;
-    else if (pa.memoryType == hipMemoryTypeDevice)
-      mem_type = ePointerMemoryType::Device;
+    // Si \a ptr n'a pas été alloué dynamiquement (i.e: il est sur la pile),
+    // hipPointerGetAttribute() retourne une erreur. Dans ce cas on considère
+    // la mémoire comme non enregistrée.
+    if (ret_value==hipSuccess){
+      if (pa.isManaged)
+        mem_type = ePointerMemoryType::Managed;
+      else if (pa.memoryType == hipMemoryTypeHost)
+        mem_type = ePointerMemoryType::Host;
+      else if (pa.memoryType == hipMemoryTypeDevice)
+        mem_type = ePointerMemoryType::Device;
+    }
 
     std::cout << "HIP Info: hip_memory_type=" << (int)pa.memoryType << " is_managed?=" << pa.isManaged
               << " flags=" << pa.allocationFlags
@@ -379,8 +385,12 @@ class HipMemoryCopier
 : public IMemoryCopier
 {
   void copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
-            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem) override
+            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem, RunQueue* queue) override
   {
+    if (queue){
+      queue->copyMemory(MemoryCopyArgs(to.bytes(),from.bytes()).addAsync(queue->isAsync()));
+      return;
+    }
     // 'hipMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
     // uniquement compte de la valeur des pointeurs. Il faudrait voir si
     // utiliser \a from_mem et \a to_mem peut améliorer les performances.

@@ -133,6 +133,29 @@ macro(arcane_add_axl_files target)
 endmacro()
 
 # ----------------------------------------------------------------------------
+# Ajout SdC : marcros définies dans le config mais on en a besoin pour Alien dans le mono dépôt.
+# ----------------------------------------------------------------------------
+# Macro pour ajouter le fichier 'axlfilename' à la cible 'target'.
+macro(arcane_target_add_axl target axlfilename)
+  arcane_generate_axl(${axlfilename})
+  target_sources(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/${axlfilename}_axl.h)
+  target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+endmacro()
+# ----------------------------------------------------------------------------
+# Macro pour générer les _axl.h à partir des fichier axl
+macro(arcane_generate_axl filename)
+  get_filename_component(_base_filename ${filename} NAME)
+  get_filename_component(_base_dirname ${filename} DIRECTORY)
+  set(dirname ${CMAKE_CURRENT_BINARY_DIR}/${_base_dirname})
+  file(MAKE_DIRECTORY ${dirname})
+  message(STATUS "Adding AXL generation '${filename}.axl' in '${dirname}'")
+  set_source_files_properties(${dirname}/${_base_filename}_axl.h PROPERTIES GENERATED TRUE)
+  add_custom_command(OUTPUT ${dirname}/${_base_filename}_axl.h
+          DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.axl
+          COMMAND ${ARCANE_AXL2CC} ARGS -o ${dirname} ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.axl)
+endmacro()
+
+# ----------------------------------------------------------------------------
 # Fonction pour positionner le chemin d'installation d'une cible
 # dans le même répertoire quel que soit son type (library/executable)
 # et la configuration (debug, release, ...).

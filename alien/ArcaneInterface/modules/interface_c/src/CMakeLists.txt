@@ -5,11 +5,17 @@ createLibrary(alien_interface_c
   )
 
 
-addSources(alien_interface_c
-           alien/c/alienc.cc
-           alien/fortran/alienf.c
-           alien/fortran/M_AlienModule.f90
-           )
+if (TARGET mpifort)
+    addSources(alien_interface_c
+               alien/c/alienc.cc
+               alien/fortran/alienf.c
+               alien/fortran/M_AlienModule.f90
+              )
+else ()
+    addSources(alien_interface_c
+               alien/c/alienc.cc
+            )
+endif ()
 
 linkLibraries(alien_interface_c Alien::alien_core alien_external_packages)
 

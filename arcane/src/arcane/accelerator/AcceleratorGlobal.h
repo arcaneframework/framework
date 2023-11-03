@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2021 */
+/* AcceleratorGlobal.h                                         (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
 #include <iosfwd>
@@ -42,13 +43,33 @@ namespace Arcane::Accelerator
  * la valeur de \a acc_info.
  */
 extern "C++" ARCANE_ACCELERATOR_EXPORT void
-initializeRunner(Runner& runner,ITraceMng* tm,
+initializeRunner(Runner& runner, ITraceMng* tm,
                  const AcceleratorRuntimeInitialisationInfo& acc_info);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
+extern "C++" ARCANE_ACCELERATOR_EXPORT String
+getBadPolicyMessage(eExecutionPolicy policy);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Macro pour indiquer qu'un noyau n'a pas été compilé avec HIP
+#define ARCANE_FATAL_NO_HIP_COMPILATION() \
+  ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::HIP));
+
+//! Macro pour indiquer qu'un noyau n'a pas été compilé avec CUDA
+#define ARCANE_FATAL_NO_CUDA_COMPILATION() \
+  ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::CUDA));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

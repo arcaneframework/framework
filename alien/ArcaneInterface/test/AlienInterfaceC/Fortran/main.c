@@ -14,11 +14,15 @@
 
 //typedef long int uid_type ;
 
+#define UNUSED(x) (void)(x)
+
 extern void F2C(test)() ;
 
 int main(int argc, char** argv)
 {
-  F2C(test)() ;
+  UNUSED(argc);
+  UNUSED(argv);
+  F2C(test)();
 
-  return 0 ;
+  return 0;
 }

@@ -65,6 +65,8 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IMeshInternal.h
   internal/ItemGroupInternal.h
   internal/ICaseOptionListInternal.h
+  internal/IVariableMngInternal.h
+  internal/IVariableSynchronizerMngInternal.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -256,6 +258,7 @@ set(ARCANE_ORIGINAL_SOURCES
   IVariableFilter.h
   IVariableParallelOperation.h
   IVariableSynchronizer.h
+  IVariableSynchronizerMng.h
   IVariableUtilities.h
   IVariableWriter.h
   IVerifierService.h
@@ -275,6 +278,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ItemEnumeratorBase.h
   ItemFamilyCompactInfos.h
   ItemFamilySerializeArgs.h
+  ItemFlags.h
   ItemFunctor.cc
   ItemFunctor.h
   ItemGenericInfoListView.cc

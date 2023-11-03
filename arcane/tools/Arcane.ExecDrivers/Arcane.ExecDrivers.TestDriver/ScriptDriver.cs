@@ -36,6 +36,11 @@ namespace Arcane.ExecDrivers.TestDriver
 
     public int Execute()
     {
+      // Supprime l'éventuelle variable d'environnement qui nettoie
+      // le répertoire de sortie car en général les exécutions successives
+      // ont besoin des résultats de celles d'avant (par exemple les protections)
+      Environment.SetEnvironmentVariable("ARCANE_TEST_CLEANUP_AFTER_RUN",null);
+
       XDocument doc = XDocument.Load(m_script_path);
       string test_driver_path = Path.Combine(Utils.CodeBinPath, "arcane_test_driver");
       foreach (XElement command_elem in doc.Document.Root.Elements()) {

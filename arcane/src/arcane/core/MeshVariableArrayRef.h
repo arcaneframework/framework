@@ -1,25 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableArrayRef.h                                      (C) 2000-2020 */
+/* MeshVariableArrayRef.h                                      (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant une variable vectorielle sur une entité du maillage.        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHVARIABLEARRAYREF_H
-#define ARCANE_MESHVARIABLEARRAYREF_H
+#ifndef ARCANE_CORE_MESHVARIABLEARRAYREF_H
+#define ARCANE_CORE_MESHVARIABLEARRAYREF_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/PrivateVariableArray.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ItemGroupRangeIterator.h"
-#include "arcane/ItemPairEnumerator.h"
-
-#include "arcane/utils/FatalErrorException.h"
+#include "arcane/core/PrivateVariableArray.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemGroupRangeIterator.h"
+#include "arcane/core/ItemPairEnumerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,6 +85,12 @@ class ItemVariableArrayRefT
   ARCANE_CORE_EXPORT void copy(const ItemVariableArrayRefT<DataType>& v);
   //! Copie les valeurs de \a v pour le groupe \a group dans cette variable
   ARCANE_CORE_EXPORT void copy(const ItemVariableArrayRefT<DataType>& v,const ItemGroup& group);
+  /*!
+   * \brief Copie les valeurs de \a v dans cette variable via la file \a queue.
+   *
+   * \a queue peut être nul.
+   */
+  ARCANE_CORE_EXPORT void copy(const ItemVariableArrayRefT<DataType>& v,RunQueue* queue);
   //! Remplit la variable avec la valeur \a value
   ARCANE_CORE_EXPORT void fill(const DataType& value);
   //! Remplit la variable avec la valeur \a value pour les entités du groupe \a group 

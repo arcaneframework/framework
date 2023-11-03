@@ -58,6 +58,7 @@
 
   <case-options-tester>
     <test-id>6</test-id>
+    <has-multiple-mesh>true</has-multiple-mesh>
     <max-iteration>20</max-iteration>
 
     <simple-real>3.0</simple-real>
@@ -136,6 +137,19 @@
         <fichier-binaire>false</fichier-binaire>
       </multi-post-processor>
     </service-instance-test1>
+    <service-instance-test2>
+      <complex5>
+        <simple-real-2>4.6</simple-real-2>
+        <cell-group>Planchere</cell-group>
+      </complex5>
+      <sub-service-instance name="ServiceInterface1ImplTest">
+        <complex1>
+          <simple-real-2>1.2</simple-real-2>
+          <cell-group>Planchere</cell-group>
+        </complex1>
+        <post-processor1 name="Ensight7PostProcessor" />
+      </sub-service-instance>
+    </service-instance-test2>
     <complex1>
       <simple-real-2>3</simple-real-2>
       <simple-real-2-multi>5.2</simple-real-2-multi>

@@ -199,8 +199,8 @@ namespace ArcaneTools {
       return oss.str();
     }
 
-    const PetscInt* cols = PETSC_NULL;
-    const PetscScalar* vals = PETSC_NULL;
+    const PetscInt* cols = nullptr;
+    const PetscScalar* vals = nullptr;
     PetscInt ncols = 0;
     checkError("Extract row", MatGetRow(m_petsc_matrix.internal()->m_internal,
                                   global_line_index, &ncols, &cols, &vals));
@@ -231,8 +231,8 @@ namespace ArcaneTools {
       return std::map<Arccore::Integer, Arccore::Real>();
     }
 
-    const PetscInt* cols = PETSC_NULL;
-    const PetscScalar* vals = PETSC_NULL;
+    const PetscInt* cols = nullptr;
+    const PetscScalar* vals = nullptr;
     PetscInt ncols = 0;
     checkError("Extract row", MatGetRow(m_petsc_matrix.internal()->m_internal,
                                   global_line_index, &ncols, &cols, &vals));

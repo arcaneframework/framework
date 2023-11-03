@@ -34,8 +34,9 @@ PETScSolverConfigLUService::PETScSolverConfigLUService(
 
 //! Initialisation
 void
-PETScSolverConfigLUService::configure(
-    KSP& ksp, const ISpace& space, const MatrixDistribution& distribution)
+PETScSolverConfigLUService::configure(KSP& ksp,
+                                      [[maybe_unused]] const ISpace& space,
+                                      [[maybe_unused]] const MatrixDistribution& distribution)
 {
   alien_debug([&] { cout() << "configure PETSc lu solver"; });
 

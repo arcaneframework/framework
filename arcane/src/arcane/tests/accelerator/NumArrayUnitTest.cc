@@ -91,8 +91,10 @@ class NumArrayUnitTest
   }
 
   template <typename NumArrayType> double
-  _doSum(const NumArrayType& values, std::array<Int32,NumArrayType::rank()> bounds)
+  _doSum(const NumArrayType& values, std::array<Int32,NumArrayType::rank()> bounds, RunQueue* queue = nullptr)
   {
+    if (queue)
+      queue->barrier();
     constexpr int Rank = NumArrayType::rank();
     double total = 0.0;
     SimpleForLoopRanges<Rank> lb(bounds);
@@ -595,6 +597,7 @@ _executeTest4(eMemoryRessource mem_kind)
   info() << "Execute Test4 memory_ressource=" << mem_kind;
 
   auto queue = makeQueue(m_runner);
+  queue.setAsync(true);
 
   // Ne pas changer les dimensions du tableau sinon
   // il faut aussi changer le calcul des sommes
@@ -620,14 +623,14 @@ _executeTest4(eMemoryRessource mem_kind)
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
         auto [i] = iter();
-        if ((i%2)==0)
+        if ((i % 2) == 0)
           out_t1(i) = _getValue(i);
         else
           out_t1[i] = _getValue(i);
       };
       NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
-      host_t1.copy(_toMDSpan(t1));
-      double s1 = _doSum(host_t1, { n1 });
+      host_t1.copy(_toMDSpan(t1), &queue);
+      double s1 = _doSum(host_t1, { n1 }, &queue);
       info() << "SUM1 = " << s1;
       vc.areEqual(s1, expected_sum1, "SUM1");
     }
@@ -645,15 +648,15 @@ _executeTest4(eMemoryRessource mem_kind)
       };
 
       NumArray<double, MDDim1> host_t2(eMemoryRessource::Host);
-      host_t2.copy(_toMDSpan(t2));
-      double s2 = _doSum(host_t2, { n1 });
+      host_t2.copy(_toMDSpan(t2), &queue);
+      double s2 = _doSum(host_t2, { n1 }, &queue);
       info() << "SUM1_2 = " << s2;
       vc.areEqual(s2, expected_sum1, "SUM1_2");
     }
     {
       auto command = makeCommand(queue);
-      auto in_t1 = viewIn(command,t1);
-      auto out_t3 = viewOut(command,t3);
+      auto in_t1 = viewIn(command, t1);
+      auto out_t3 = viewOut(command, t3);
 
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
@@ -662,8 +665,8 @@ _executeTest4(eMemoryRessource mem_kind)
       };
 
       NumArray<double, MDDim1> host_t3(eMemoryRessource::Host);
-      host_t3.copy(_toMDSpan(t3));
-      double s3 = _doSum(host_t3, { n1 });
+      host_t3.copy(_toMDSpan(t3), &queue);
+      double s3 = _doSum(host_t3, { n1 }, &queue);
       info() << "SUM1_3 = " << s3;
       vc.areEqual(s3, expected_sum1, "SUM1_3");
     }

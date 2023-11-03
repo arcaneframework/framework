@@ -1,4 +1,4 @@
-// -*- C++ -*-
+﻿// -*- C++ -*-
 #pragma once
 
 #include <alien/utils/Precomp.h>
@@ -19,7 +19,7 @@ class IIndexManager;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class BlockBuilder
+class ALIEN_EXPORT BlockBuilder
 {
 public:
   

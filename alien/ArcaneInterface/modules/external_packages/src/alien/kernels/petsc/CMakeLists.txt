@@ -120,12 +120,34 @@
               )
   endif (TARGET superlu)
 
+  if (TARGET mumps)
+      if(USE_AXLSTAR)
+          generateAxl(alien_external_packages
+                  linear_solver/mumps/PETScSolverConfigMUMPS.axl
+                  linear_solver/mumps/PETScPrecConfigMUMPS.axl
+                  AXL_OPTION_GENERATION_MODE ${AXL_OPTION_GENERATION_TYPE}
+                  NAMESPACE ${NAMESPACE_TYPE}
+                  ${IS_WITH_ARCANE}
+                  ${IS_WITH_MESH}
+                  INSTALL_GENERATED_FILES
+          )
+      endif()
+      addSources(alien_external_packages
+              linear_solver/mumps/PETScSolverConfigMUMPSService.cc
+              linear_solver/mumps/PETScPrecConfigMUMPSService.cc
+      )
+  endif (TARGET mumps)
+
   if (TARGET superlu)
       linkLibraries(alien_external_packages superlu)
   endif ()
 
   if (TARGET superludist)
       linkLibraries(alien_external_packages superludist)
+  endif ()
+
+  if (TARGET mumps)
+      linkLibraries(alien_external_packages mumps)
   endif ()
 
   if (TARGET metis)

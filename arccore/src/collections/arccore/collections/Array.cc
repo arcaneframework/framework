@@ -252,6 +252,15 @@ throwUnsupportedSpecificAllocator()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void ArrayMetaData::
+throwInvalidMetaDataForSharedArray()
+{
+  throw BadAllocException("MetaData for SharedArray are not allocated");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void AbstractArrayBase::
 setDebugName(const String& name)
 {

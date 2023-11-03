@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Définition des types généraux de Arcane.                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ARCANETYPES_H
-#define ARCANE_ARCANETYPES_H
+#ifndef ARCANE_CORE_ARCANETYPES_H
+#define ARCANE_CORE_ARCANETYPES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -124,6 +124,23 @@ class CartesianMeshAllocateBuildInfo;
 class IIncrementalItemConnectivity;
 class IIncrementalItemTargetConnectivity;
 class IIncrementalItemSourceConnectivity;
+class VariableSynchronizerEventArgs;
+class IVariableSynchronizerMng;
+class IParallelMng;
+class IParallelMngContainer;
+class IParallelMngContainerFactory;
+class IParallelReplication;
+class IParallelNonBlockingCollective;
+class IParallelMngUtilsFactory;
+class IGetVariablesValuesParallelOperation;
+class ITransferValuesParallelOperation;
+class IParallelExchanger;
+class IVariableSynchronizer;
+class IParallelTopology;
+class IParallelMngInternal;
+class IIOMng;
+class ITimerMng;
+class IThreadMng;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
 
@@ -537,6 +554,8 @@ ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseMng)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseOptionList)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IIncrementalItemSourceConnectivity)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IIncrementalItemTargetConnectivity)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMng)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMngContainer)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

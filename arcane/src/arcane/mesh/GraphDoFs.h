@@ -17,6 +17,7 @@
 #include "arcane/IGraphModifier2.h"
 
 #include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/mesh/ItemFamily.h"
 
@@ -150,7 +151,7 @@ class ARCANE_MESH_EXPORT GraphDoFs
 
   Integer registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer) override
   {
-    Integer id = m_connectivity_observer.size() ;
+    Integer id = CheckedConvert::toInteger(m_connectivity_observer.size());
     m_connectivity_observer.push_back(std::unique_ptr<IGraphConnectivityObserver>(observer)) ;
     return id ;
   }

@@ -1,8 +1,6 @@
 #include <mpi.h>
 #include "MemoryAllocationTracker.h"
 
-#include <boost/lexical_cast.hpp>
-#include <boost/timer.hpp>
 #include <time.h>
 #include <vector>
 
@@ -678,7 +676,7 @@ AlienTestModule::buildAndFillInBlockVector(Alien::Move::VectorData& vectorB,
 void
 AlienTestModule::buildAndFillInBlockVector(Alien::Move::VectorData& vectorB,
     ConstArrayView<Integer> allUIndex, ConstArray2View<Integer> allPIndex,
-    ConstArrayView<Integer> allXIndex ALIEN_UNUSED_PARAM, ConstArrayView<Real> value)
+    [[maybe_unused]] ConstArrayView<Integer> allXIndex, ConstArrayView<Real> value)
 {
   Alien::Move::LocalBlockVectorWriter b(std::move(vectorB));
   ENUMERATE_CELL (icell, m_areaT.own()) {
@@ -1226,7 +1224,7 @@ AlienTestModule::vectorVariableUpdate(Alien::Move::VectorData& vectorB,
 
 void
 AlienTestModule::checkDotProductWithManyAlgebra(Alien::IVector& vectorB,
-    Alien::IVector& vectorX, Alien::Space& space ALIEN_UNUSED_PARAM)
+    Alien::IVector& vectorX, [[maybe_unused]] Alien::Space& space)
 {
   info() << "Checking dot product using two linear algebra implementations";
 

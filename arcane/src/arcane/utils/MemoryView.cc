@@ -63,6 +63,12 @@ namespace
       return default_global_copy_list;
     return &global_copy_list;
   }
+  Int32 _checkDataTypeSize(const TraceInfo& trace, Int32 data_size1, Int32 data_size2)
+  {
+    if (data_size1 != data_size2)
+      throw FatalErrorException(trace, String::format("Datatype size are not equal this={0} v={1}", data_size1, data_size2));
+    return data_size1;
+  }
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -111,11 +117,8 @@ void MutableMemoryView::
 copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
                 RunQueue* queue) const
 {
-  Int32 one_data_size = m_datatype_size;
-  Int64 v_one_data_size = v.datatypeSize();
-  if (one_data_size != v_one_data_size)
-    ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
-                 one_data_size, v_one_data_size);
+
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
@@ -125,6 +128,39 @@ copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
   auto destination = bytes();
 
   _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, source, destination, queue });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MutableMemoryView::
+fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
+            RunQueue* queue) const
+{
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+
+  Int64 nb_index = indexes.size();
+  if (nb_index == 0)
+    return;
+
+  auto source = v.bytes();
+  auto destination = bytes();
+
+  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, source, destination, queue });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MutableMemoryView::
+fill(ConstMemoryView v, RunQueue* queue) const
+{
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+
+  auto source = v.bytes();
+  auto destination = bytes();
+
+  _getDefaultCopyList(queue)->fill(one_data_size, { {}, source, destination, queue });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -140,11 +176,7 @@ void ConstMemoryView::
 copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
               RunQueue* queue) const
 {
-  Int32 one_data_size = m_datatype_size;
-  Int64 v_one_data_size = v.datatypeSize();
-  if (one_data_size != v_one_data_size)
-    ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
-                 one_data_size, v_one_data_size);
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
@@ -182,15 +214,11 @@ makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MultiMutableMemoryView::
+void MutableMultiMemoryView::
 copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
                 RunQueue* queue)
 {
-  const Int32 one_data_size = m_datatype_size;
-  const Int64 v_one_data_size = v.datatypeSize();
-  if (one_data_size != v_one_data_size)
-    ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
-                 one_data_size, v_one_data_size);
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
@@ -202,15 +230,37 @@ copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MultiConstMemoryView::
+void MutableMultiMemoryView::
+fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes, RunQueue* queue)
+{
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+
+  Int64 nb_index = indexes.size();
+  if (nb_index == 0)
+    return;
+
+  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, m_views, v.bytes(), queue });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MutableMultiMemoryView::
+fill(ConstMemoryView v, RunQueue* queue)
+{
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+
+  _getDefaultCopyList(queue)->fill(one_data_size, { {}, m_views, v.bytes(), queue });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ConstMultiMemoryView::
 copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
               RunQueue* queue)
 {
-  const Int32 one_data_size = m_datatype_size;
-  const Int64 v_one_data_size = v.datatypeSize();
-  if (one_data_size != v_one_data_size)
-    ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
-                 one_data_size, v_one_data_size);
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LegacyMeshBuilder.h                                         (C) 2000-2020 */
+/* LegacyMeshBuilder.h                                         (C) 2000-2023 */
 /*                                                                           */
 /* Construction du maillage via la méthode "historique".                     */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,7 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
     String m_orig_file_name;
     String m_file_name;
     String m_dir_name;
+    MeshHandle m_mesh_handle;
     IPrimaryMesh* m_mesh;
   };
 
@@ -80,6 +81,7 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
  private:
 
   void _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi);
+  void _createMeshesHandle();
 };
 
 /*---------------------------------------------------------------------------*/

@@ -61,6 +61,22 @@ if(USE_CXX14)
   # on définit le meta
   loadMeta(NAME c++14)
 endif()
+
+# mode C++14
+createOption(COMMANDLINE Cxx17
+             NAME        USE_CXX17 
+             MESSAGE     "C++17 standard" 
+             DEFAULT     ON)
+
+if(USE_CXX17) 
+
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF) # c++14 ou lieu de gnu++14
+ 
+  # on définit le meta
+  loadMeta(NAME c++17)
+endif()
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
@@ -122,7 +138,7 @@ if(NOT WIN32)
       appendCompileOption(FLAG mavx2 mfma CONFIGURATION RELEASE)
     endif()
   endif()
-  
+ 
    # KNL optimization
   createOption(COMMANDLINE EnableKNL
                NAME        ENABLE_KNL
@@ -179,7 +195,7 @@ if(NOT WIN32)
     
   endif()
 
-  # OpenMP
+  # CUDA
   createOption(COMMANDLINE EnableCuda
                NAME        ENABLE_CUDA
                MESSAGE     "ENABLE CUDA " 
@@ -189,21 +205,21 @@ endif()
 
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
-#
+
 # debug
 createOption(COMMANDLINE Debug
              NAME        DEBUG 
              MESSAGE     "Debug mode" 
              DEFAULT     ON)
 
-if(DEBUG)
-  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type mode (Debug or Release)" FORCE)
-else()
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type mode (Debug or Release)" FORCE)
+# Do not overwrite current value of CMAKE_BUILD_TYPE
+if (NOT CMAKE_BUILD_TYPE)
+  if(DEBUG)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type mode (Debug or Release)" FORCE)
+  else()
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type mode (Debug or Release)" FORCE)
+  endif()
 endif()
-
-# on ne veut que la configuration courante
-set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING INTERNAL FORCE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

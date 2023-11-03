@@ -83,7 +83,7 @@ HypreVector::setValues(const int nrow, const int* rows, const double* values)
 /*---------------------------------------------------------------------------*/
 
 bool
-HypreVector::setValues(const int nrow, const double* values)
+HypreVector::setValues([[maybe_unused]] const int nrow, const double* values)
 {
   if (m_internal == NULL)
     return false;
@@ -104,7 +104,7 @@ HypreVector::getValues(const int nrow, const int* rows, double* values) const
 /*---------------------------------------------------------------------------*/
 
 bool
-HypreVector::getValues(const int nrow, double* values) const
+HypreVector::getValues([[maybe_unused]] const int nrow, double* values) const
 {
   if (m_internal == NULL)
     return false;
@@ -125,7 +125,7 @@ HypreVector::assemble()
 /*---------------------------------------------------------------------------*/
 
 void
-HypreVector::update(const HypreVector& v)
+HypreVector::update([[maybe_unused]] const HypreVector& v)
 {
   ALIEN_ASSERT((this == &v), ("Unexpected error"));
 }

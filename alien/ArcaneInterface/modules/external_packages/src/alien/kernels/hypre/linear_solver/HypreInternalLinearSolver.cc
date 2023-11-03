@@ -206,8 +206,8 @@ HypreInternalLinearSolver::solve(
       int coarsening_opt = 8;
       int interpolation_type = 7;
       double StrongThreshold = 0.15;
-      int amg_debug_flag = 0;
-      int bicgs_debug_flag =0;
+      [[maybe_unused]] int amg_debug_flag = 0;
+      [[maybe_unused]] int bicgs_debug_flag =0;
       int ierr = 0;
       ierr = HYPRE_BoomerAMGSetMaxIter(preconditioner,2) ;//Sophie::
       if( ierr == HYPRE_ERROR_CONV){

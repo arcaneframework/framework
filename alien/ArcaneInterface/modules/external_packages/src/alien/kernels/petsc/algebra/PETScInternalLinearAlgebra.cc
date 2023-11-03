@@ -1,4 +1,4 @@
-#include "PETScInternalLinearAlgebra.h"
+﻿#include "PETScInternalLinearAlgebra.h"
 
 #include <alien/kernels/petsc/PETScBackEnd.h>
 
@@ -17,7 +17,7 @@ namespace Alien {
 
 template class ALIEN_EXTERNAL_PACKAGES_EXPORT LinearAlgebra<BackEnd::tag::petsc>;
 
-IInternalLinearAlgebra<PETScMatrix, PETScVector>*
+extern ALIEN_EXTERNAL_PACKAGES_EXPORT IInternalLinearAlgebra<PETScMatrix, PETScVector>*
 PETScInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* pm)
 {
   return new PETScInternalLinearAlgebra(pm);
@@ -160,37 +160,32 @@ PETScInternalLinearAlgebra::pointwiseMult(
 /*---------------------------------------------------------------------------*/
 
 void
-PETScInternalLinearAlgebra::mult(
-    const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+PETScInternalLinearAlgebra::mult(const Matrix&, const UniqueArray<Real>&, UniqueArray<Real>&) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::mult not implemented");
 }
 void
-PETScInternalLinearAlgebra::axpy(
-    Real alpha, const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+PETScInternalLinearAlgebra::axpy(Real, const UniqueArray<Real>&, UniqueArray<Real>&) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::axpy not implemented");
 }
 void
-PETScInternalLinearAlgebra::aypx(
-    Real alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+PETScInternalLinearAlgebra::aypx(Real, UniqueArray<Real>&, const UniqueArray<Real>&) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::aypx not implemented");
 }
 void
-PETScInternalLinearAlgebra::copy(const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+PETScInternalLinearAlgebra::copy(const UniqueArray<Real>&, UniqueArray<Real>&) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::copy not implemented");
 }
 Real
-PETScInternalLinearAlgebra::dot(
-    Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const
+PETScInternalLinearAlgebra::dot(Integer, const UniqueArray<Real>&, const UniqueArray<Real>&) const
 {
   throw NotImplementedException(A_FUNCINFO, "LinearAlgebra::dot not implemented");
-  return Real();
 }
 void
-PETScInternalLinearAlgebra::scal(Real alpha, UniqueArray<Real>& x) const
+PETScInternalLinearAlgebra::scal(Real, UniqueArray<Real>&) const
 {
   throw NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::scal not implemented");
 }

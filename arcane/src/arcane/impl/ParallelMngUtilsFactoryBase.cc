@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngUtilsFactoryBase.cc                              (C) 2000-2021 */
+/* ParallelMngUtilsFactoryBase.cc                              (C) 2000-2023 */
 /*                                                                           */
 /* Classe de base d'une fabrique pour les fonctions utilitaires de           */
 /* IParallelMng.                                                             */
@@ -23,7 +23,7 @@
 #include "arcane/impl/TransferValuesParallelOperation.h"
 #include "arcane/impl/ParallelExchanger.h"
 #include "arcane/impl/ParallelTopology.h"
-#include "arcane/impl/VariableSynchronizer.h"
+#include "arcane/impl/internal/VariableSynchronizer.h"
 
 #include "arcane/DataTypeDispatchingDataVisitor.h"
 

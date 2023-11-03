@@ -535,7 +535,7 @@ namespace MVExpr
       return vectorMinus(csr_a.getArrayValues(), b);
     }
 
-    auto operator()(lazy::dot_tag, const VectorDistribution* distribution,
+    auto operator()(lazy::dot_tag, [[maybe_unused]] const VectorDistribution* distribution,
                     Vector const& a, Vector const& b)
     {
 #ifdef DEBUG

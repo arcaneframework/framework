@@ -68,7 +68,7 @@ PETScPrecConfigAdditiveSchwarzService::configure(
     });
   } else if (local_blocks > 1) {
     checkError("Set AdditiveSchwarz blocks",
-        PCASMSetLocalSubdomains(pc, local_blocks, PETSC_NULL, PETSC_NULL));
+        PCASMSetLocalSubdomains(pc, local_blocks, nullptr, nullptr));
   }
   // else 1 : default
   switch (options()->type()) {

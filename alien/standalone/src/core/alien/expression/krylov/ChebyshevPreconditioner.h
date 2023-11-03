@@ -124,7 +124,7 @@ class ChebyshevPreconditioner
     std::mt19937 gen;
     std::uniform_real_distribution<> dis(-1., 1.);
 
-    m_algebra.assign(x, [&](std::size_t i) {
+    m_algebra.assign(x, [&]([[maybe_unused]] std::size_t i) {
       return dis(gen);
     });
     /*
@@ -171,7 +171,7 @@ class ChebyshevPreconditioner
         x[i] =dis(gen);
       }*/
 
-    m_algebra.assign(x, [&](std::size_t i) {
+    m_algebra.assign(x, [&]([[maybe_unused]] std::size_t i) {
       return dis(gen);
     });
     //m_algebra.assign(x,1.) ;
@@ -315,7 +315,7 @@ class ChebyshevPreconditioner
       solve2(x, y);
   }
 
-  void _algo1(AlgebraType& algebra,
+  void _algo1([[maybe_unused]] AlgebraType& algebra,
               VectorType const& x,
               VectorType& y) const
   {
@@ -389,7 +389,7 @@ class ChebyshevPreconditioner
     }
   }
 
-  void _algo2(AlgebraType& algebra,
+  void _algo2([[maybe_unused]] AlgebraType& algebra,
               VectorType const& x,
               VectorType& y) const
   {

@@ -38,8 +38,9 @@ PETScSolverConfigCustomService::PETScSolverConfigCustomService(
 
 //! Initialisation
 void
-PETScSolverConfigCustomService::configure(
-    KSP& ksp, const ISpace& space, const MatrixDistribution& distribution)
+PETScSolverConfigCustomService::configure(KSP& ksp,
+                                          [[maybe_unused]] const ISpace& space,
+                                          [[maybe_unused]] const MatrixDistribution& distribution)
 {
   alien_debug([&] { cout() << "configure PETSc custom solver"; });
   Arccore::String prefix = Arccore::String::format("{0}_", this);

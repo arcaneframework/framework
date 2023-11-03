@@ -39,6 +39,8 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/NumArrayUnitTest.cc
   accelerator/AcceleratorItemInfoUnitTest.cc
   accelerator/AcceleratorReduceUnitTest.cc
+  accelerator/AcceleratorScanUnitTest.cc
+  accelerator/AcceleratorFilterUnitTest.cc
   accelerator/RunQueueUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
@@ -382,6 +384,7 @@ ARCANE_ADD_TEST_PARALLEL(parallel testParallel-1.arc 4)
 ARCANE_ADD_TEST_PARALLEL(parallel2 testParallel-2.arc 4)
 arcane_add_test_parallel(parallel2_synchronize testParallel-synchronize1.arc 4)
 arcane_add_test_parallel_thread(parallel2_synchronize testParallel-synchronize1.arc 4)
+arcane_add_test_parallel(parallel2_synchronize_compare testParallel-synchronize1.arc 4 -We,ARCANE_AUTO_COMPARE_SYNCHRONIZE,3)
 arcane_add_test_parallel(parallel2_synchronize_legacymulti testParallel-synchronize1.arc 4 -We,ARCANE_USE_LEGACY_MULTISYNCHRONIZE,1)
 arcane_add_test_parallel(parallel2_synchronize_v1 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,1)
 arcane_add_test_parallel(parallel2_synchronize_v2 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,2)
@@ -421,7 +424,7 @@ arcane_add_test_sequential(particle_async testParticleAsync.arc)
 arcane_add_test_parallel(particle_async testParticleAsync.arc 4)
 ARCANE_ADD_TEST_SEQUENTIAL(voronoi testVoronoi.arc -We,ARCANE_ITEM_TYPE_FILE,voronoi.format)
 ARCANE_ADD_TEST_PARALLEL(voronoi testVoronoi.arc 4 -We,ARCANE_ITEM_TYPE_FILE,voronoi.format)
-arcane_add_test(mesh testMesh-1.arc)
+arcane_add_test(mesh testMesh-1.arc -We,ARCANE_DEBUG_VARIABLESYNCHRONIZERCOMPUTELIST,1)
 arcane_add_test_parallel_all(mesh_service testMeshService-1.arc 3 4)
 ARCANE_ADD_TEST(mesh_2d testMesh-3.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(mesh_1d testMesh-4.arc)
@@ -650,6 +653,14 @@ arcane_add_test_sequential(accelerator_reduce1 testAcceleratorReduce-1.arc)
 arcane_add_test_sequential_task(accelerator_reduce1 testAcceleratorReduce-1.arc 4)
 arcane_add_accelerator_test_sequential(accelelerator_reduce1 testAcceleratorReduce-1.arc)
 arcane_add_accelerator_test_sequential(accelelerator_reduce1_atomic testAcceleratorReduce-1-atomic.arc)
+
+arcane_add_test_sequential(accelerator_scan1 testAcceleratorScan-1.arc)
+arcane_add_test_sequential_task(accelerator_scan1 testAcceleratorScan-1.arc 4)
+arcane_add_accelerator_test_sequential(accelelerator_scan1 testAcceleratorScan-1.arc)
+
+arcane_add_test_sequential(accelerator_filter1 testAcceleratorFilter-1.arc)
+arcane_add_test_sequential_task(accelerator_filter1 testAcceleratorFilter-1.arc 4)
+arcane_add_accelerator_test_sequential(accelelerator_filter1 testAcceleratorFilter-1.arc)
 
 arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
 arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)

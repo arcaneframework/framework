@@ -83,6 +83,8 @@ namespace Arcane
 #define ARCANE_IMPL_EXPORT
 #define ARCANE_ACCELERATOR_CORE_EXPORT
 
+#define ARCCORE_HOST_DEVICE
+
 %ignore operator();
 %ignore operator[];
 

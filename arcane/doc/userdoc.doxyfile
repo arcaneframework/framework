@@ -298,6 +298,7 @@ TAB_SIZE               = 2
 ALIASES                = "arcane{1}=\ref Arcane::\1 \"\1\"" \
                          "arccore{1}=\ref Arccore::\1 \"\1\"" \
                          "arcaneacc{1}=\ref Arcane::Accelerator::\1 \"\1\"" \
+                         "arcanemat{1}=\ref Arcane::Materials::\1 \"\1\"" \
                          "pr{1}=[PR #\1](https://github.com/arcaneframework/framework/pull/\1)"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
@@ -935,6 +936,7 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @ARCANE_SRC_PATH@/arcane/core/materials \
                          @ARCANE_SRC_PATH@/arcane/materials \
                          @ARCANE_SRC_PATH@/arcane/hdf5 \
+                         @ARCANE_SRC_PATH@/arcane/cartesianmesh \
                          @ARCANESRCROOT@/doc/doc_common \
                          @ARCANESRCROOT@/doc/doc_common/chap_news \
                          @ARCANESRCROOT@/doc/doc_user \
@@ -972,7 +974,6 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @Arccore_ROOT@/src/message_passing_mpi/arccore/message_passing_mpi \
                          @Arccore_ROOT@/src/serialize/arccore/serialize \
                          @ARCANE_CEA_SOURCE_PATH@/src/arcane/cea \
-                         @ARCANE_CEA_SOURCE_PATH@/src/arcane/cartesianmesh \
                          @ARCANE_CEA_SOURCE_PATH@/src/arcane/geometric \
                          @ARCANE_CEA_SOURCE_PATH@/doc
 
@@ -2424,7 +2425,9 @@ PREDEFINED             = DOXYGEN_DOC=1 \
                          "ARCCORE_HOST_DEVICE=__host__ __device__" \
                          ARCCORE_DEPRECATED_2019(a)=[[deprecated(a)]] \
                          ARCCORE_DEPRECATED_2020(a)=[[deprecated(a)]] \
-                         ARCCORE_DEPRECATED_2021(a)=[[deprecated(a)]]
+                         ARCCORE_DEPRECATED_2021(a)=[[deprecated(a)]] \
+                         ARCCORE_DEPRECATED_REASON(a)=[[deprecated(a)]] \
+                         ARCANE_DEPRECATED_REASON(a)=[[deprecated(a)]]
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

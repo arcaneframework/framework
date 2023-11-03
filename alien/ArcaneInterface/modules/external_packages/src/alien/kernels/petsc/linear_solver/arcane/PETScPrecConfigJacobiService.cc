@@ -38,8 +38,8 @@ PETScPrecConfigJacobiService::PETScPrecConfigJacobiService(
 
 //! Initialisation
 void
-PETScPrecConfigJacobiService::configure(
-    PC& pc, const ISpace& space, const MatrixDistribution& distribution)
+PETScPrecConfigJacobiService::configure(PC& pc, [[maybe_unused]] const ISpace& space,
+                                        [[maybe_unused]] const MatrixDistribution& distribution)
 {
   alien_debug([&] { cout() << "configure PETSc block jacobi preconditioner"; });
   checkError("Set preconditioner", PCSetType(pc, PCBJACOBI));

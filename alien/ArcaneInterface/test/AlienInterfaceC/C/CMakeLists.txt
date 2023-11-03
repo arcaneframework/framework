@@ -31,15 +31,17 @@ install(
         RUNTIME DESTINATION bin
 )
 
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/C)
+
 alien_test( BENCH alien.interface.c
             NAME seq
             PROCS 1
             COMMAND alien_interface_c.exe
-            WORKING_DIRECTORY test/AlienInterfaceC/C)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/C)
 
 alien_test( BENCH alien.interface.c
             NAME parallel
             PROCS 4
             COMMAND alien_interface_c.exe
-            WORKING_DIRECTORY test/AlienInterfaceC/C)
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/C)
 
