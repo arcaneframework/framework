@@ -1,11 +1,9 @@
-/*
- * MCGInternalLinearSolver.h
- *
- *  Created on: 22 dec. 2014
- *      Author: gratienj
- */
-#ifndef ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H
-#define ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+#pragma once
 
 #include <memory>
 #include <chrono>
@@ -20,6 +18,7 @@
 #include <MCGSolver/Status.h>
 #include <MCGSolver/SolverOptionsEnum.h>
 #include <MCGSolver/ILinearSolver.h>
+#include <Common/Utils/LogMng.h>
 
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
@@ -166,7 +165,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   void _registerKey(const MCGMatrixType& A, const MCGVectorType& b,
       const MCGVectorType& x0, const MCGVectorType& x);
 
-  typedef MCGSolver::ILinearSystem<double, MCGSolver::LinearSystem<double>>
+  typedef MCGSolver::ILinearSystem<double, MCGSolver::LinearSystem<double,int,int>,int,int>
       MCGSolverLinearSystem;
 
   MCGSolverLinearSystem* _createSystem(const MCGMatrixType& A, const MCGVectorType& b,
@@ -248,10 +247,13 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   bool m_x0_update = true;
 
   std::vector<int> m_edge_weight;
+
+  MCGSolver::ILogMng* m_mcg_log = nullptr;
+  MCGSolver::ILogMng* m_mcg_mpi_log = nullptr;
+
 #if 0  
   std::unique_ptr<ILogger> m_logger;
 #endif
 };
 
 } // namespace Alien
-#endif /* ALIEN_KERNELS_MCG_LINEARSOLVER_MCGINTERNALLINEARSOLVER_H */
