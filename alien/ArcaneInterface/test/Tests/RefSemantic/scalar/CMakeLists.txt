@@ -172,7 +172,7 @@ SET(REFMV_SCALAR_REDISTRIBUTION_METHOD_LIST
 foreach (STRATEGY IN LISTS REFMV_SCALAR_REDISTRIBUTION_TEST_LIST)
     foreach (METHOD IN LISTS REFMV_SCALAR_REDISTRIBUTION_METHOD_LIST)
         alien_test(
-                BENCH refmvhandlers.scalar
+                BENCH alien.refmvhandlers.scalar
                 NAME RedistributorAlgebra.${STRATEGY}.${METHOD}
                 PROCS 4
                 COMMAND refmvhandlers.ScalarRedistributorAlgebra
@@ -184,7 +184,7 @@ foreach (STRATEGY IN LISTS REFMV_SCALAR_REDISTRIBUTION_TEST_LIST)
 
         if (TARGET petsc)
             alien_test(
-                    BENCH refmvhandlers.scalar
+                    BENCH alien.refmvhandlers.scalar
                     NAME Redistributor.petsc.${STRATEGY}.${METHOD}
                     PROCS 4
                     COMMAND refmvhandlers.ScalarRedistributor
@@ -202,7 +202,7 @@ foreach (STRATEGY IN LISTS REFMV_SCALAR_REDISTRIBUTION_TEST_LIST)
 
         if (TARGET hypre)
             alien_test(
-                    BENCH refmvhandlers.scalar
+                    BENCH alien.refmvhandlers.scalar
                     NAME Redistributor.hypre.${STRATEGY}.${METHOD}
                     PROCS 4
                     COMMAND refmvhandlers.ScalarRedistributor
@@ -220,7 +220,7 @@ foreach (STRATEGY IN LISTS REFMV_SCALAR_REDISTRIBUTION_TEST_LIST)
 
         if (TARGET ifpsolver)
             alien_test(
-                    BENCH refmvhandlers.scalar
+                    BENCH alien.refmvhandlers.scalar
                     NAME Redistributor.ifpsolver.${STRATEGY}.${METHOD}
                     PROCS 4
                     COMMAND refmvhandlers.ScalarRedistributor
@@ -242,7 +242,7 @@ endforeach ()
 compile_test(ReaderWriter)
 commit(refmvhandlers.ScalarReaderWriter)
 alien_test(
-        BENCH refmvhandlers.scalar
+        BENCH alien.refmvhandlers.scalar
         NAME ReaderWriter
         PROCS 4
         COMMAND refmvhandlers.ScalarReaderWriter
@@ -252,7 +252,7 @@ if (TARGET hdf5 AND TARGET mpi AND TARGET petsc)
     compile_test(ExportImport)
     commit(refmvhandlers.ScalarExportImport)
     alien_test(
-            BENCH refmvhandlers.scalar
+            BENCH alien.refmvhandlers.scalar
             NAME ExportImport
             COMMAND refmvhandlers.ScalarExportImport
     )
@@ -266,7 +266,7 @@ foreach (REFMVTESTS
 
     if (TARGET petsc)
         alien_test(
-                BENCH refmvhandlers.scalar
+                BENCH alien.refmvhandlers.scalar
                 NAME ${REFMVTESTS}.petsc
                 PROCS 4
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
@@ -279,7 +279,7 @@ foreach (REFMVTESTS
                 --max-iter=100
         )
         alien_test(
-                BENCH refmvhandlers.scalar
+                BENCH alien.refmvhandlers.scalar
                 NAME ${REFMVTESTS}.petsc.lu
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
                 OPTIONS
@@ -290,7 +290,7 @@ foreach (REFMVTESTS
 
         if (TARGET mumps)
             alien_test(
-                    BENCH refmvhandlers.scalar
+                    BENCH alien.refmvhandlers.scalar
                     NAME ${REFMVTESTS}.petsc.mumps
                     PROCS 4
                     COMMAND refmvhandlers.Scalar${REFMVTESTS}
@@ -305,7 +305,7 @@ foreach (REFMVTESTS
 
     if (TARGET hypre)
         alien_test(
-                BENCH refmvhandlers.scalar
+                BENCH alien.refmvhandlers.scalar
                 NAME ${REFMVTESTS}.hypre
                 PROCS 4
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
@@ -318,7 +318,7 @@ foreach (REFMVTESTS
                 --max-iter=100
         )
         alien_test(
-                BENCH refmvhandlers.scalar
+                BENCH alien.refmvhandlers.scalar
                 NAME ${REFMVTESTS}.hypre.diag
                 PROCS 4
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
@@ -334,7 +334,7 @@ foreach (REFMVTESTS
 
     if (TARGET ifpsolver)
         alien_test(
-                BENCH refmvhandlers.scalar
+                BENCH alien.refmvhandlers.scalar
                 NAME ${REFMVTESTS}.ifpsolver
                 PROCS 4
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
@@ -351,7 +351,7 @@ foreach (REFMVTESTS
 
     if (TARGET mcgsolver)
         alien_test(
-                BENCH refmvhandlers.scalar
+                BENCH alien.refmvhandlers.scalar
                 NAME ${REFMVTESTS}.mcgsolver
                 PROCS 4
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
@@ -370,7 +370,7 @@ foreach (REFMVTESTS
 
     if (TARGET mtl)
         alien_test(
-                BENCH refmvhandlers.scalar
+                BENCH alien.refmvhandlers.scalar
                 NAME ${REFMVTESTS}.mtl
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
                 OPTIONS
@@ -387,7 +387,7 @@ endforeach ()
 
 if (TARGET arcane)
     alien_test(
-            BENCH refmvhandlers.scalar
+            BENCH alien.refmvhandlers.scalar
             NAME DirectByIndexManager.petsc
             PROCS 4
             COMMAND refmvhandlers.ScalarDirectByIndexManager

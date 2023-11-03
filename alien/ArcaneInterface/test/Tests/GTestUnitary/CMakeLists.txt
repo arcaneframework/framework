@@ -66,7 +66,7 @@ install(
 
 foreach (test_name ${SEQ_TEST_LIST})
     alien_test(
-            BENCH gtest
+            BENCH alien.gtest
             NAME ${test_name}
             COMMAND gtest.unitary
             OPTIONS --gtest_filter=Test${test_name}*
@@ -75,7 +75,7 @@ endforeach ()
 
 foreach (test_name ${PARALLEL_TEST_LIST})
     alien_test(
-            BENCH gtest
+            BENCH alien.gtest
             NAME ${test_name}
             PROCS 2
             COMMAND gtest.unitary

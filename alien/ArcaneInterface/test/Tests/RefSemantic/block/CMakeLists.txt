@@ -98,7 +98,7 @@ foreach (REFMVTESTS
 
     if (TARGET petsc)
         alien_test(
-                BENCH refmvhandlers.block
+                BENCH alien.refmvhandlers.block
                 NAME ${REFMVTESTS}.petsc
                 PROCS 4
                 COMMAND refmvhandlers.Block${REFMVTESTS}
@@ -112,7 +112,7 @@ foreach (REFMVTESTS
                 --block-size=5
         )
         alien_test(
-                BENCH refmvhandlers.block
+                BENCH alien.refmvhandlers.block
                 NAME ${REFMVTESTS}.petsc.lu
                 COMMAND refmvhandlers.Block${REFMVTESTS}
                 OPTIONS
@@ -123,7 +123,7 @@ foreach (REFMVTESTS
 
         if (TARGET mumps)
             alien_test(
-                    BENCH refmvhandlers.block
+                    BENCH alien.refmvhandlers.block
                     NAME ${REFMVTESTS}.petsc.mumps
                     PROCS 4
                     COMMAND refmvhandlers.Block${REFMVTESTS}
@@ -138,7 +138,7 @@ foreach (REFMVTESTS
 
     if (TARGET hypre)
         alien_test(
-                BENCH refmvhandlers.block
+                BENCH alien.refmvhandlers.block
                 NAME ${REFMVTESTS}.hypre
                 PROCS 4
                 COMMAND refmvhandlers.Block${REFMVTESTS}
@@ -155,7 +155,7 @@ foreach (REFMVTESTS
 
     if (TARGET ifpsolver)
         alien_test(
-                BENCH refmvhandlers.block
+                BENCH alien.refmvhandlers.block
                 NAME ${REFMVTESTS}.ifpsolver
                 PROCS 4
                 COMMAND refmvhandlers.Block${REFMVTESTS}
@@ -173,7 +173,7 @@ foreach (REFMVTESTS
 
     if (TARGET mcgsolver)
         alien_test(
-                BENCH refmvhandlers.block
+                BENCH alien.refmvhandlers.block
                 NAME ${REFMVTESTS}.mcgsolver
                 PROCS 4
                 COMMAND refmvhandlers.Block${REFMVTESTS}
@@ -192,7 +192,7 @@ foreach (REFMVTESTS
 
     if (TARGET mtl)
         alien_test(
-                BENCH refmvhandlers.block
+                BENCH alien.refmvhandlers.block
                 NAME ${REFMVTESTS}.mtl
                 COMMAND refmvhandlers.Block${REFMVTESTS}
                 OPTIONS

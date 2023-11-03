@@ -65,7 +65,7 @@ if (TARGET GTest::GTest)
 
     foreach (test_name ${TEST_LIST})
         alien_test(
-                BENCH refmvhandlers.gtest
+                BENCH alien.refmvhandlers.gtest
                 NAME ${test_name}
                 COMMAND gtest.refmvhandlers
                 OPTIONS --gtest_filter=Test${test_name}*
