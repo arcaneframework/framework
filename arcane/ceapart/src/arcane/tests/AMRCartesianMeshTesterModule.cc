@@ -505,8 +505,8 @@ _initAMR()
     {
       Int32 index = 0;
       info() << "NB_PATCH=" << nb_patch;
-      for( ICartesianMeshPatch* p : patches){
-        info() << "Patch i=" << index << " nb_cell=" << p->cells().size();
+      for( CartesianPatch p : patches){
+        info() << "Patch i=" << index << " nb_cell=" << p.cells().size();
         ++index;
       }
     }
@@ -688,8 +688,8 @@ _writePostProcessing()
   post_processor->setVariables(variables);
   ItemGroupList groups;
   groups.add(allCells());
-  for( ICartesianMeshPatch* p : m_cartesian_mesh->patches() )
-    groups.add(p->cells());
+  for( CartesianPatch p : m_cartesian_mesh->patches() )
+    groups.add(p.cells());
   post_processor->setGroups(groups);
   IVariableMng* vm = subDomain()->variableMng();
   vm->writePostProcessing(post_processor);
