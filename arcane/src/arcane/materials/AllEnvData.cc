@@ -31,7 +31,7 @@
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
-#include "arcane/materials/internal/ComponentConnectivityList.h"
+#include "arcane/materials/internal/ConstituentConnectivityList.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 
 /*---------------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ AllEnvData(MeshMaterialMng* mmg)
 {
   // \a m_component_connectivity_list utilse un compteur de référence
   // et ne doit pas être détruit explicitement
-  m_component_connectivity_list = new ComponentConnectivityList(m_material_mng);
+  m_component_connectivity_list = new ConstituentConnectivityList(m_material_mng);
   m_component_connectivity_list_ref = m_component_connectivity_list->toSourceReference();
 
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ALLENVDATA_DEBUG_LEVEL", true))

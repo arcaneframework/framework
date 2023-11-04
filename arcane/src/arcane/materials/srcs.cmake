@@ -10,7 +10,7 @@ set(ARCANE_SOURCES
   ComponentItemVectorView.h
   ComponentSimd.cc
   ComponentSimd.h
-  ComponentConnectivityList.cc
+  ConstituentConnectivityList.cc
   ComponentItemInternalData.cc
   ConstituentListPrinter.cc
   ComponentModifierWorkInfo.cc
@@ -114,7 +114,7 @@ set(ARCANE_SOURCES
   ItemMaterialVariableBaseT.H
 
   internal/AllEnvData.h
-  internal/ComponentConnectivityList.h
+  internal/ConstituentConnectivityList.h
   internal/ComponentItemInternalData.h
   internal/ComponentItemListBuilder.h
   internal/ConstituentListPrinter.h

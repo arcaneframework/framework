@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentConnectivityList.cc                                (C) 2000-2023 */
+/* ConstituentConnectivityList.cc                              (C) 2000-2023 */
 /*                                                                           */
-/* Gestion des listes de connectivité des milieux et matériaux.              */
+/* Gestion des listes de connectivité des constituants.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/internal/ComponentConnectivityList.h"
+#include "arcane/materials/internal/ConstituentConnectivityList.h"
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/MeshUtils.h"
@@ -68,11 +68,11 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ComponentConnectivityList::ComponentContainer
+class ConstituentConnectivityList::ConstituentContainer
 {
  public:
 
-  ComponentContainer(const MeshHandle& mesh, const String& var_base_name)
+  ConstituentContainer(const MeshHandle& mesh, const String& var_base_name)
   : m_nb_component(VariableBuildInfo(mesh, var_base_name + "NbComponent", IVariable::PPrivate))
   , m_component_index(VariableBuildInfo(mesh, var_base_name + "Index", IVariable::PPrivate))
   , m_component_list(VariableBuildInfo(mesh, var_base_name + "List", IVariable::PPrivate))
@@ -149,7 +149,7 @@ class ComponentConnectivityList::ComponentContainer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ComponentConnectivityList::Container
+class ConstituentConnectivityList::Container
 {
  public:
 
@@ -182,15 +182,15 @@ class ComponentConnectivityList::Container
 
  public:
 
-  ComponentContainer m_environment;
-  ComponentContainer m_material;
+  ConstituentContainer m_environment;
+  ConstituentContainer m_material;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentConnectivityList::
-ComponentConnectivityList(MeshMaterialMng* mm)
+ConstituentConnectivityList::
+ConstituentConnectivityList(MeshMaterialMng* mm)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
 , m_container(new Container(mm->meshHandle(), String("ComponentEnviroment") + mm->name()))
@@ -200,8 +200,8 @@ ComponentConnectivityList(MeshMaterialMng* mm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentConnectivityList::
-~ComponentConnectivityList()
+ConstituentConnectivityList::
+~ConstituentConnectivityList()
 {
   delete m_container;
 }
@@ -209,7 +209,7 @@ ComponentConnectivityList::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
+void ConstituentConnectivityList::
 endCreate(bool is_continue)
 {
   // S'enregistre auprès la famille pour être notifié des évolutions
@@ -240,8 +240,8 @@ endCreate(bool is_continue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
-_addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ComponentContainer& component)
+void ConstituentConnectivityList::
+_addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component)
 {
   Array<Int16>& nb_component = component.m_nb_component_as_array;
   Array<Int32>& component_index = component.m_component_index_as_array;
@@ -276,8 +276,8 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ComponentContainer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
-_removeCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ComponentContainer& component)
+void ConstituentConnectivityList::
+_removeCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component)
 {
   Array<Int16>& nb_component = component.m_nb_component_as_array;
   Array<Int32>& component_index = component.m_component_index_as_array;
@@ -298,7 +298,7 @@ _removeCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ComponentContai
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
+void ConstituentConnectivityList::
 addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
 {
   _addCells(env_id, cell_ids, m_container->m_environment);
@@ -307,7 +307,7 @@ addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
+void ConstituentConnectivityList::
 removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
 {
   _removeCells(env_id, cell_ids, m_container->m_environment);
@@ -316,7 +316,7 @@ removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
+void ConstituentConnectivityList::
 addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
 {
   _addCells(mat_id, cell_ids, m_container->m_material);
@@ -325,7 +325,7 @@ addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
+void ConstituentConnectivityList::
 removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
 {
   _removeCells(mat_id, cell_ids, m_container->m_material);
@@ -334,7 +334,7 @@ removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int16> ComponentConnectivityList::
+ConstArrayView<Int16> ConstituentConnectivityList::
 cellsNbEnvironment() const
 {
   return m_container->m_environment.m_nb_component_as_array;
@@ -343,7 +343,7 @@ cellsNbEnvironment() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int16> ComponentConnectivityList::
+ConstArrayView<Int16> ConstituentConnectivityList::
 cellsNbMaterial() const
 {
   return m_container->m_material.m_nb_component_as_array;
@@ -352,7 +352,7 @@ cellsNbMaterial() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int16 ComponentConnectivityList::
+Int16 ConstituentConnectivityList::
 cellNbMaterial(CellLocalId cell_id, Int16 env_id)
 {
   Int16 nb_mat = 0;
@@ -368,7 +368,7 @@ cellNbMaterial(CellLocalId cell_id, Int16 env_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
+void ConstituentConnectivityList::
 notifySourceFamilyLocalIdChanged([[maybe_unused]] Int32ConstArrayView new_to_old_ids)
 {
   m_container->changeLocalIds(new_to_old_ids);
@@ -377,7 +377,7 @@ notifySourceFamilyLocalIdChanged([[maybe_unused]] Int32ConstArrayView new_to_old
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
+void ConstituentConnectivityList::
 notifySourceItemAdded(ItemLocalId item)
 {
   Int32 lid = item.localId();
@@ -393,7 +393,7 @@ notifySourceItemAdded(ItemLocalId item)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
+void ConstituentConnectivityList::
 reserveMemoryForNbSourceItems(Int32 n, [[maybe_unused]] bool pre_alloc_connectivity)
 {
   info() << "Constituent: reserve=" << n;
@@ -403,7 +403,7 @@ reserveMemoryForNbSourceItems(Int32 n, [[maybe_unused]] bool pre_alloc_connectiv
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentConnectivityList::
+void ConstituentConnectivityList::
 notifyReadFromDump()
 {
 }
@@ -411,7 +411,7 @@ notifyReadFromDump()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<IIncrementalItemSourceConnectivity> ComponentConnectivityList::
+Ref<IIncrementalItemSourceConnectivity> ConstituentConnectivityList::
 toSourceReference()
 {
   return Arccore::makeRef<IIncrementalItemSourceConnectivity>(this);

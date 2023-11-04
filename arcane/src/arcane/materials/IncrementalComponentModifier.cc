@@ -22,7 +22,7 @@
 
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
-#include "arcane/materials/internal/ComponentConnectivityList.h"
+#include "arcane/materials/internal/ConstituentConnectivityList.h"
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 
@@ -61,11 +61,11 @@ void IncrementalComponentModifier::
 finalize()
 {
   // Met à jour les variables contenant le nombre de milieux et de matériaux
-  // par milieu en fonction des valeurs de ComponentConnectivityList.
+  // par milieu en fonction des valeurs de ConstituentConnectivityList.
 
   // TODO: ne le faire que pour les mailles dont les matériaux ont été modifiés
   CellGroup all_cells = m_material_mng->mesh()->allCells();
-  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
   ConstArrayView<Int16> incremental_cells_nb_env = connectivity->cellsNbEnvironment();
   ENUMERATE_(Cell,icell,all_cells){
@@ -101,7 +101,7 @@ apply(MaterialModifierOperation* operation)
   MeshEnvironment* true_env = true_mat->trueEnvironment();
   Integer nb_mat = env->nbMaterial();
 
-  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
 
   Int32UniqueArray cells_changed_in_env;
 
@@ -307,7 +307,7 @@ _computeCellsToTransform(const MeshMaterial* mat)
   CellGroup all_cells = m_material_mng->mesh()->allCells();
   bool is_add = m_work_info.isAdd();
 
-  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
 
   ENUMERATE_ (Cell, icell, all_cells) {
@@ -339,7 +339,7 @@ _computeCellsToTransform(const MeshMaterial* mat)
 void IncrementalComponentModifier::
 _computeCellsToTransform()
 {
-  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
   CellGroup all_cells = m_material_mng->mesh()->allCells();
   const bool is_add = m_work_info.isAdd();
@@ -442,7 +442,7 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
                    Int32ConstArrayView local_ids)
 {
   ComponentItemListBuilder list_builder(var_indexer, var_indexer->maxIndexInMultipleArray());
-  ComponentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   ConstArrayView<Int16> nb_env_per_cell = connectivity->cellsNbEnvironment();
   Int16 env_id = env->componentId();
 
