@@ -62,13 +62,13 @@ class MeshMaterialVariableSynchronizerList;
 class MeshMaterialVariable;
 class MatVarIndex;
 class IMeshMaterialSynchronizeBuffer;
-class ComponentConnectivityList;
+class ConstituentConnectivityList;
 class MeshMaterialMng;
 class AllEnvData;
 class MaterialModifierOperation;
 class MeshMaterial;
 class MeshEnvironment;
-class ComponentModifierWorkInfo;
+class ConstituentModifierWorkInfo;
 class MeshMaterialExchangeMng;
 class MeshMaterialModifierImpl;
 

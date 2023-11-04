@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Gestion des listes de connectivité des constituants.                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_INTERNAL_CONSTITUENTCONNECTIVITYLIST_H
-#define ARCANE_MATERIALS_INTERNAL_CONSTITUENTCONNECTIVITYLIST_H
+#ifndef ARCANE_MATERIALS_INTERNAL_COMPONENTCONNECTIVITYLIST_H
+#define ARCANE_MATERIALS_INTERNAL_COMPONENTCONNECTIVITYLIST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,7 +42,7 @@ class ConstituentConnectivityList
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 
-  class ConstituantContainer;
+  class ConstituentContainer;
   class Container;
 
  public:
@@ -96,8 +96,8 @@ class ConstituentConnectivityList
 
  private:
 
-  void _addCells(Int16 env_id, ConstArrayView<Int32> cell_ids, ComponentContainer& component);
-  void _removeCells(Int16 env_id, ConstArrayView<Int32> cell_ids, ComponentContainer& component);
+  void _addCells(Int16 env_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component);
+  void _removeCells(Int16 env_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component);
 };
 
 /*---------------------------------------------------------------------------*/

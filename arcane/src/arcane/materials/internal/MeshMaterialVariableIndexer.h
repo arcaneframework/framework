@@ -104,12 +104,12 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
                       bool is_add_operation, bool is_env,bool is_verbose);
   void endUpdateAdd(const ComponentItemListBuilder& builder);
   void endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove);
-  void endUpdateRemove(const ComponentModifierWorkInfo& args,Integer nb_remove);
+  void endUpdateRemove(const ConstituentModifierWorkInfo& args,Integer nb_remove);
   //@}
 
  private:
 
-  void transformCellsV2(ComponentModifierWorkInfo& args);
+  void transformCellsV2(ConstituentModifierWorkInfo& args);
 
  private:
 
@@ -156,8 +156,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
                                Int32Array& partial_indexes,
                                bool is_env,bool is_verbose);
 
-  void _transformPureToPartialV2(ComponentModifierWorkInfo& args);
-  void _transformPartialToPureV2(ComponentModifierWorkInfo& args);
+  void _transformPureToPartialV2(ConstituentModifierWorkInfo& args);
+  void _transformPartialToPureV2(ConstituentModifierWorkInfo& args);
 };
 
 /*---------------------------------------------------------------------------*/
