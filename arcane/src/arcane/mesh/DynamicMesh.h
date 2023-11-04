@@ -29,6 +29,8 @@
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/MeshKind.h"
+#include "arcane/core/internal/IMeshInternal.h"
+#include "arcane/core/internal/IMeshModifierInternal.h"
 
 #include "arcane/mesh/SubMeshTools.h"
 #include "arcane/mesh/MeshVariables.h"
@@ -104,6 +106,22 @@ class ARCANE_MESH_EXPORT DynamicMesh
   typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
 
   typedef List<IItemFamily*> ItemFamilyList;
+
+  class InternalApi
+  : public IMeshInternal
+  , public IMeshModifierInternal
+  {
+   public:
+
+    InternalApi(DynamicMesh* mesh)
+    : m_mesh(mesh)
+    {
+    }
+
+   private:
+
+    DynamicMesh* m_mesh;
+  };
 
   class InitialAllocator
   : public IMeshInitialAllocator
@@ -537,30 +555,36 @@ public:
 
   const MeshKind meshKind() const override { return m_mesh_kind; }
 
-  IMeshInternal* _internalApi() override;
+  IMeshInternal* _internalApi() override { return &m_internal_api; }
+  IMeshModifierInternal* _modifierInternalApi() override { return &m_internal_api; }
 
  private:
 
-  IMeshUtilities* m_mesh_utilities;
+  IMeshUtilities* m_mesh_utilities = nullptr;
+
  public:
-  DynamicMeshIncrementalBuilder* m_mesh_builder;
+
+  DynamicMeshIncrementalBuilder* m_mesh_builder = nullptr;
+
  private:
-  DynamicMeshChecker* m_mesh_checker;
-  SubMeshTools * m_submesh_tools;
+
+  DynamicMeshChecker* m_mesh_checker = nullptr;
+  SubMeshTools* m_submesh_tools = nullptr;
   //! AMR
-  MeshRefinement* m_mesh_refinement;
-  NewItemOwnerBuilder * m_new_item_owner_builder;
-  ExtraGhostCellsBuilder* m_extra_ghost_cells_builder;
-  ExtraGhostParticlesBuilder* m_extra_ghost_particles_builder;
+  MeshRefinement* m_mesh_refinement = nullptr;
+  NewItemOwnerBuilder * m_new_item_owner_builder = nullptr;
+  ExtraGhostCellsBuilder* m_extra_ghost_cells_builder = nullptr;
+  ExtraGhostParticlesBuilder* m_extra_ghost_particles_builder = nullptr;
   InitialAllocator m_initial_allocator;
+  InternalApi m_internal_api;
 
  private:
   
   //! AMR
-  bool m_is_amr_activated;
+  bool m_is_amr_activated = false;
   eMeshAMRKind m_amr_type;
 
-  bool m_is_dynamic;
+  bool m_is_dynamic = false;
 
   //! Liste des groupes d'entités
   ItemGroupList m_all_groups;
@@ -573,15 +597,15 @@ public:
   UniqueArray<IItemFamilyModifier*> m_family_modifiers; // used for item family network
 
   ObserverPool m_observer_pool;
-  TiedInterfaceMng* m_tied_interface_mng;
-  bool m_is_sub_connectivity_set;
-  bool m_tied_interface_need_prepare_dump;
+  TiedInterfaceMng* m_tied_interface_mng = nullptr;
+  bool m_is_sub_connectivity_set = false;
+  bool m_tied_interface_need_prepare_dump = false;
   
-  MeshPartitionConstraintMng* m_partition_constraint_mng;
-  IGhostLayerMng* m_ghost_layer_mng;
-  IMeshUniqueIdMng* m_mesh_unique_id_mng;
-  IMeshExchangeMng* m_mesh_exchange_mng;
-  IMeshCompactMng* m_mesh_compact_mng;
+  MeshPartitionConstraintMng* m_partition_constraint_mng = nullptr;
+  IGhostLayerMng* m_ghost_layer_mng = nullptr;
+  IMeshUniqueIdMng* m_mesh_unique_id_mng = nullptr;
+  IMeshExchangeMng* m_mesh_exchange_mng = nullptr;
+  IMeshCompactMng* m_mesh_compact_mng = nullptr;
 
 #ifdef ACTIVATE_PERF_COUNTER
   PerfCounterMng<PerfCounter> m_perf_counter;

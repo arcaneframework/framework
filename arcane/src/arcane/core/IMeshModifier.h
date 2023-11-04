@@ -30,6 +30,7 @@ class IMesh;
 class IExtraGhostCellsBuilder;
 class IExtraGhostParticlesBuilder;
 class IAMRTransportFunctor;
+class IMeshModifierInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -259,7 +260,12 @@ class IMeshModifier
  public:
 
   //! Fusionne les maillages de \a meshes avec le maillage actuel.
-  virtual void mergeMeshes(ConstArrayView<IMesh*> meshes) =0;
+  virtual void mergeMeshes(ConstArrayView<IMesh*> meshes) = 0;
+
+ public:
+
+  //! API interne à Arcane
+  virtual IMeshModifierInternal* _modifierInternalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

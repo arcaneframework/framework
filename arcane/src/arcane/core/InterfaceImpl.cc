@@ -118,6 +118,7 @@
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 #include "arcane/core/internal/IMeshInternal.h"
+#include "arcane/core/internal/IMeshModifierInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
 
