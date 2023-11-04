@@ -15,7 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+
+#include "arcane/cartesianmesh/CartesianPatch.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,7 +51,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
 
    public:
 
-    ICartesianMeshPatch* operator*() const { return m_patches[m_index]; }
+    CartesianPatch operator*() const { return CartesianPatch(m_patches[m_index]); }
     Iterator& operator++()
     {
       ++m_index;

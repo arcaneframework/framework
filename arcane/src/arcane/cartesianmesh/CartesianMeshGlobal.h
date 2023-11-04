@@ -43,6 +43,7 @@ class CartesianMeshCoarsening2;
 class CartesianMeshRenumberingInfo;
 class ICartesianMeshInternal;
 class CartesianMeshPatchListView;
+class CartesianPatch;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
