@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentModifierWorkInfo.h                                 (C) 2000-2023 */
+/* ConstituentModifierWorkInfo.h                               (C) 2000-2023 */
 /*                                                                           */
 /* Structure de travail utilisée lors de la modification des constituants.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/internal/ComponentModifierWorkInfo.h"
+#include "arcane/materials/internal/ConstituentModifierWorkInfo.h"
 
 #include "arcane/materials/internal/MaterialModifierOperation.h"
 
@@ -24,7 +24,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentModifierWorkInfo::
+void ConstituentModifierWorkInfo::
 initialize(Int32 max_local_id)
 {
   m_cells_to_transform.resize(max_local_id);
@@ -36,7 +36,7 @@ initialize(Int32 max_local_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentModifierWorkInfo::
+void ConstituentModifierWorkInfo::
 setRemovedCells(ConstArrayView<Int32> local_ids, bool value)
 {
   // Positionne le filtre des mailles supprimées.
@@ -47,7 +47,7 @@ setRemovedCells(ConstArrayView<Int32> local_ids, bool value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentModifierWorkInfo::
+void ConstituentModifierWorkInfo::
 setCurrentOperation(MaterialModifierOperation* operation)
 {
   m_is_add = operation->isAdd();

@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentModifierWorkInfo.h                                 (C) 2000-2023 */
+/* ConstituentModifierWorkInfo.h                               (C) 2000-2023 */
 /*                                                                           */
 /* Structure de travail utilisée lors de la modification des constituants.   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_INTERNAL_COMPONENTMODIFIERWORKINFO_H
-#define ARCANE_MATERIALS_INTERNAL_COMPONENTMODIFIERWORKINFO_H
+#ifndef ARCANE_MATERIALS_INTERNAL_CONSTITUENTMODIFIERWORKINFO_H
+#define ARCANE_MATERIALS_INTERNAL_CONSTITUENTMODIFIERWORKINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +38,7 @@ namespace Arcane::Materials
  *
  * Il faut appeler initialize() avant d'utiliser l'instance.
  */
-class ARCANE_MATERIALS_EXPORT ComponentModifierWorkInfo
+class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 {
  public:
 

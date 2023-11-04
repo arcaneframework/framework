@@ -68,7 +68,7 @@ class AllEnvData;
 class MaterialModifierOperation;
 class MeshMaterial;
 class MeshEnvironment;
-class ComponentModifierWorkInfo;
+class ConstituentModifierWorkInfo;
 class MeshMaterialExchangeMng;
 class MeshMaterialModifierImpl;
 

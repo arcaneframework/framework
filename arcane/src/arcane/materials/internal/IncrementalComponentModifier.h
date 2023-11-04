@@ -18,7 +18,7 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
-#include "arcane/materials/internal/ComponentModifierWorkInfo.h"
+#include "arcane/materials/internal/ConstituentModifierWorkInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
   AllEnvData* m_all_env_data = nullptr;
   MeshMaterialMng* m_material_mng = nullptr;
-  ComponentModifierWorkInfo m_work_info;
+  ConstituentModifierWorkInfo m_work_info;
 
  private:
 

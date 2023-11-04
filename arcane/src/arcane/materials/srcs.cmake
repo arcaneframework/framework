@@ -13,7 +13,7 @@ set(ARCANE_SOURCES
   ConstituentConnectivityList.cc
   ComponentItemInternalData.cc
   ConstituentListPrinter.cc
-  ComponentModifierWorkInfo.cc
+  ConstituentModifierWorkInfo.cc
   EnumeratorTracer.cc
   EnumeratorTracer.h
   MaterialsGlobal.cc
@@ -118,7 +118,7 @@ set(ARCANE_SOURCES
   internal/ComponentItemInternalData.h
   internal/ComponentItemListBuilder.h
   internal/ConstituentListPrinter.h
-  internal/ComponentModifierWorkInfo.h
+  internal/ConstituentModifierWorkInfo.h
   internal/IncrementalComponentModifier.h
   internal/IMeshMaterialModifierImpl.h
   internal/MaterialModifierOperation.h
