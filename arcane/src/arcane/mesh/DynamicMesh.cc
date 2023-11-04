@@ -183,6 +183,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 , m_extra_ghost_cells_builder(nullptr)
 , m_extra_ghost_particles_builder(nullptr)
 , m_initial_allocator(this)
+, m_internal_api(this)
 , m_is_amr_activated(mbi.meshKind().meshAMRKind()!=eMeshAMRKind::None)
 , m_amr_type(mbi.meshKind().meshAMRKind())
 , m_is_dynamic(false)
@@ -3334,15 +3335,6 @@ _updateItemFamilyDependencies(VariableScalarInteger connectivity)
       m_item_family_network->setIsStored(con);
     }
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMeshInternal* DynamicMesh::
-_internalApi()
-{
-  ARCANE_FATAL("NotImplemented");
 }
 
 /*---------------------------------------------------------------------------*/
