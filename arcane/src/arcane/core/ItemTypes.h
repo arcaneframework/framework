@@ -90,7 +90,9 @@ class ItemInternalConnectivityList;
 class ItemInternalVectorView;
 class ItemIndexArrayView;
 class ItemLocalIdListView;
-template<typename T> class ItemLocalIdViewT;
+
+template<typename T> class ItemLocalIdListViewT;
+template<typename ItemType> using ItemLocalIdViewT ARCANE_DEPRECATED_REASON("Use 'ItemLocalIdListView' type instead") = ItemLocalIdListViewT<ItemType>;
 
 class ItemGroup;
 class ItemGroupImpl;
@@ -110,13 +112,10 @@ class ItemConnectedListViewConstIterator;
 template<typename ItemType>
 class ItemConnectedListViewConstIteratorT;
 
-template <typename ItemType>
-class ItemLocalIdViewT;
-
 // (Avril 2022) Fait un typedef de 'ItemLocalIdViewT' vers 'ItemLocalIdView'
 // pour compatibilité avec l'existant. A supprimer dès que possible.
 template <typename ItemType>
-using ItemLocalIdView ARCANE_DEPRECATED_REASON("Use 'ItemLocalIdViewT' instead") = ItemLocalIdViewT<ItemType>;
+using ItemLocalIdView ARCANE_DEPRECATED_REASON("Use 'ItemLocalIdViewT' instead") = ItemLocalIdListViewT<ItemType>;
 
 template<typename ItemType1,typename ItemType2>
 class IndexedItemConnectivityViewT;
@@ -403,33 +402,59 @@ typedef List<DoFGroup> DoFGroupList;
  * \ingroup Mesh
  * \brief Vue sur les localId() d'une liste de noeuds.
  */
-typedef ItemLocalIdViewT<Node> NodeLocalIdView;
+typedef ItemLocalIdListViewT<Node> NodeLocalIdView;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste de noeuds.
+ */
+using NodeLocalIdListView = ItemLocalIdListViewT<Node>;
 /*!
  * \ingroup Mesh
  * \brief Vue sur les localId() d'une liste d'arêtes.
  */
-typedef ItemLocalIdViewT<Edge> EdgeLocalIdView;
+typedef ItemLocalIdListViewT<Edge> EdgeLocalIdView;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste d'arêtes.
+ */
+using EdgeLocalIdListView = ItemLocalIdListViewT<Edge>;
 /*!
  * \ingroup Mesh
  * \brief Vue sur les localId() d'une liste de faces.
  */
-typedef ItemLocalIdViewT<Face> FaceLocalIdView;
+typedef ItemLocalIdListViewT<Face> FaceLocalIdView;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste de faces.
+ */
+using FaceLocalIdListView = ItemLocalIdListViewT<Face>;
 /*!
  * \ingroup Mesh
  * \brief Vue sur les localId() d'une liste de mailles.
  */
-typedef ItemLocalIdViewT<Cell> CellLocalIdView;
+typedef ItemLocalIdListViewT<Cell> CellLocalIdView;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste de mailles.
+ */
+using CellLocalIdListView = ItemLocalIdListViewT<Cell>;
 /*!
  * \ingroup Mesh
  * \brief Vue sur les localId() d'une liste de particules.
  */
-typedef ItemLocalIdViewT<Particle> ParticleLocalIdView;
+typedef ItemLocalIdListViewT<Particle> ParticleLocalIdView;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste de particules.
+ */
+using ParticleLocalIdListView = ItemLocalIdListViewT<Particle>;
 
 /*!
  * \ingroup Mesh
  * \brief Vue sur les localId() d'une liste de DoF.
  */
-typedef ItemLocalIdViewT<DoF> DoFLocalIdView;
+typedef ItemLocalIdListViewT<DoF> DoFLocalIdView;
+using DoFLocalIdListView = ItemLocalIdListViewT<DoF>;
 
 /*! \brief Type de la liste interne des entités
   

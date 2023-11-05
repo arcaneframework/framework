@@ -79,7 +79,7 @@ fillLocalIds(Array<Int32>& ids) const
 /*---------------------------------------------------------------------------*/
 
 // Pour tester l'instantiation de ces classes
-template class ItemLocalIdViewT<Node>;
+template class ItemLocalIdListViewT<Node>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

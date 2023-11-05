@@ -116,7 +116,7 @@ template <typename ItemType>
 class ItemLocalIdListViewConstIteratorT
 : public ItemLocalIdListViewConstIterator
 {
-  friend class ItemLocalIdViewT<ItemType>;
+  friend class ItemLocalIdListViewT<ItemType>;
 
  private:
 
@@ -171,7 +171,7 @@ class ItemLocalIdListViewConstIteratorT
 class ARCANE_CORE_EXPORT ItemLocalIdListView
 : private impl::ItemLocalIdListContainerView
 {
-  template <typename ItemType> friend class ItemLocalIdViewT;
+  template <typename ItemType> friend class ItemLocalIdListViewT;
   friend class ItemVectorView;
   using impl::ItemLocalIdListContainerView::m_size;
   using impl::ItemLocalIdListContainerView::localId;
@@ -224,7 +224,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
  * \brief Vue typée sur une liste d'entités d'une connectivité.
  */
 template <typename ItemType>
-class ItemLocalIdViewT
+class ItemLocalIdListViewT
 : public ItemLocalIdListView
 {
   friend class ItemConnectivityContainerView;
@@ -240,14 +240,14 @@ class ItemLocalIdViewT
 
  public:
 
-  ItemLocalIdViewT() = default;
+  ItemLocalIdListViewT() = default;
 
  private:
 
-  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdListViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
   : ItemLocalIdListView(ids, s, local_id_offset)
   {}
-  explicit constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const impl::ItemLocalIdListContainerView& view)
+  explicit constexpr ARCCORE_HOST_DEVICE ItemLocalIdListViewT(const impl::ItemLocalIdListContainerView& view)
   : ItemLocalIdListView(view)
   {}
 
