@@ -53,7 +53,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
   //! Nombre d'entités connectées à l'entité \a lid
   ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
   //! Liste des entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewT<Item> items(ItemLocalId lid) const
+  ARCCORE_HOST_DEVICE ItemLocalIdListViewT<Item> items(ItemLocalId lid) const
   {
     return m_container_view.itemsIds<Item>(lid);
   }
@@ -126,7 +126,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase2
   //! Nombre d'entités connectées à l'entité \a lid
   ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
   //! Liste des entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewT<Item> items(ItemLocalId lid) const
+  ARCCORE_HOST_DEVICE ItemLocalIdListViewT<Item> items(ItemLocalId lid) const
   {
     return m_container_view.itemsIds<Item>(lid);
   }
@@ -151,7 +151,7 @@ class IndexedItemConnectivityGenericViewT
   using ItemType2Type = ItemType2;
   using ItemLocalId1 = typename ItemType1::LocalIdType;
   using ItemLocalId2 = typename ItemType2::LocalIdType;
-  using ItemLocalIdViewType = ItemLocalIdViewT<ItemType2>;
+  using ItemLocalIdViewType = ItemLocalIdListViewT<ItemType2>;
 
  public:
 

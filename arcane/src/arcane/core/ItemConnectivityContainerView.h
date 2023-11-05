@@ -81,7 +81,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
 
   //! Liste des entités connectées à l'entité de localId() \a lid
   template <typename ItemType> constexpr ARCCORE_HOST_DEVICE
-  ItemLocalIdViewT<ItemType>
+  ItemLocalIdListViewT<ItemType>
   itemsIds(ItemLocalId lid) const
   {
     ARCANE_CHECK_AT(lid.localId(), m_nb_item);
