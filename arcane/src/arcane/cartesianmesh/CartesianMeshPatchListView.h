@@ -34,6 +34,10 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
 
  public:
 
+  //! Sentinelle pour l'itération pour une liste de patchs.
+  class Sentinel
+  {};
+
   //! Itérateur pour une liste de patchs.
   class Iterator
   {
@@ -41,7 +45,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
 
    public:
 
-    typedef std::random_access_iterator_tag iterator_category;
+    typedef std::forward_iterator_tag iterator_category;
     typedef ICartesianMeshPatch value_type;
     typedef Int32 size_type;
 
@@ -62,6 +66,14 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
       return (a.m_patches.data() + a.m_index) == (b.m_patches.data() + b.m_index);
     }
     friend bool operator!=(const Iterator& a, const Iterator& b)
+    {
+      return !(operator==(a, b));
+    }
+    friend bool operator==(const Iterator& a, const Sentinel&)
+    {
+      return a.m_patches.size() != a.m_index;
+    }
+    friend bool operator!=(const Iterator& a, const Sentinel& b)
     {
       return !(operator==(a, b));
     }
@@ -93,7 +105,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
  public:
 
   Iterator begin() const { return Iterator(m_patches, 0); }
-  Iterator end() const { return Iterator(m_patches, m_patches.size()); }
+  Sentinel end() const { return {}; }
+  Iterator endIterator() const { return Iterator(m_patches, m_patches.size()); }
   Int32 size() const { return m_patches.size(); }
 
  private:
