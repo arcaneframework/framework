@@ -234,6 +234,8 @@ class ARCANE_CORE_EXPORT ItemVectorView
   using value_type = Item;
   using reference_type = Item&;
   using const_reference_type = const Item&;
+  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  using SentinelType = const_iterator;
 
  public:
 
@@ -349,7 +351,11 @@ class ARCANE_CORE_EXPORT ItemVectorView
   {
     return const_iterator(m_shared_info, m_index_view._data(), _localIdOffset());
   }
-  const_iterator end() const
+  SentinelType end() const
+  {
+    return endIterator();
+  }
+  const_iterator endIterator() const
   {
     return const_iterator(m_shared_info, (m_index_view._data() + this->size()), _localIdOffset());
   }
@@ -400,6 +406,8 @@ class ItemVectorViewT
   using reference_type = ItemType&;
   //TODO a supprimer avec le C++20
   using const_reference_type = const ItemType&;
+  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  using SentinelType = const_iterator;
 
  public:
 
@@ -456,7 +464,11 @@ class ItemVectorViewT
   {
     return const_iterator(m_shared_info, _localIdsData(), _localIdOffset());
   }
-  inline const_iterator end() const
+  inline SentinelType end() const
+  {
+    return const_iterator(m_shared_info, _localIdsData() + this->size(), _localIdOffset());
+  }
+  inline const_iterator endIterator() const
   {
     return const_iterator(m_shared_info, _localIdsData() + this->size(), _localIdOffset());
   }
