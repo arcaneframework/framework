@@ -180,7 +180,7 @@ install(TARGETS axlstar_options EXPORT AxlstarTargets
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Installation du fichier de configuration
-set(config_install_dir "${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}")
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(project_config "${CMAKE_CURRENT_BINARY_DIR}/AxlstarConfig.cmake")
 
 configure_file(CMake/AxlstarUtilities.cmake ${CMAKE_CURRENT_BINARY_DIR})

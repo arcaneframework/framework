@@ -13,7 +13,7 @@ project(Arccon
 include(${CMAKE_CURRENT_LIST_DIR}/build-system/ArcconSetInstallDirs.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/build-system/commands/user/installDirectory.cmake)
 
-set(config_install_dir "${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}")
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(arccon_install_lib "${CMAKE_INSTALL_LIBDIR}/arccon")
 
