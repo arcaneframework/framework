@@ -10,6 +10,11 @@ les accélérateurs. Dans ce mode, on mesure le temps pris pour exécuter
 chacune des boucles et on affiche en fin d'exécution les informations
 cumulées sur ces boucles.
 
+\note Pour des raisons de performance, le profilage des boucles telles
+que ENUMERATE_() n'est pas actif par défaut. Pour l'activer, il faut
+compiler le code utilisant ces boucles avec la macro
+`ARCANE_TRACE_ENUMERATOR`.
+
 Pour avoir les informations de profiling, il suffit de positionner la
 variable d'environnement `ARCANE_LOOP_PROFILING_LEVEL`. Les deux
 valeurs possibles sont :
