@@ -58,6 +58,8 @@
 #include "arcane/core/internal/UnstructuredMeshAllocateBuildInfoInternal.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
+#include "arcane/core/internal/IMeshInternal.h"
+#include "arcane/core/internal/IMeshModifierInternal.h"
 
 #include "arcane/mesh/ExtraGhostCellsBuilder.h"
 #include "arcane/mesh/ExtraGhostParticlesBuilder.h"
@@ -148,6 +150,26 @@ const std::string DynamicMesh::PerfCounter::m_names[] = {
     "UPGHOSTLAYER7"
 } ;
 #endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DynamicMesh::InternalApi
+: public IMeshInternal
+, public IMeshModifierInternal
+{
+ public:
+
+  InternalApi(DynamicMesh* mesh)
+  : m_mesh(mesh)
+  {
+  }
+
+ private:
+
+  DynamicMesh* m_mesh = nullptr;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -183,7 +205,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 , m_extra_ghost_cells_builder(nullptr)
 , m_extra_ghost_particles_builder(nullptr)
 , m_initial_allocator(this)
-, m_internal_api(this)
+, m_internal_api(std::make_unique<InternalApi>(this))
 , m_is_amr_activated(mbi.meshKind().meshAMRKind()!=eMeshAMRKind::None)
 , m_amr_type(mbi.meshKind().meshAMRKind())
 , m_is_dynamic(false)
@@ -3335,6 +3357,24 @@ _updateItemFamilyDependencies(VariableScalarInteger connectivity)
       m_item_family_network->setIsStored(con);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshInternal* DynamicMesh::
+_internalApi()
+{
+  return m_internal_api.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshModifierInternal* DynamicMesh::
+_modifierInternalApi()
+{
+  return m_internal_api.get();
 }
 
 /*---------------------------------------------------------------------------*/

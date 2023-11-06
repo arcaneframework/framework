@@ -29,8 +29,6 @@
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/MeshKind.h"
-#include "arcane/core/internal/IMeshInternal.h"
-#include "arcane/core/internal/IMeshModifierInternal.h"
 
 #include "arcane/mesh/SubMeshTools.h"
 #include "arcane/mesh/MeshVariables.h"
@@ -97,6 +95,8 @@ class ARCANE_MESH_EXPORT DynamicMesh
 , public IUnstructuredMeshInitialAllocator
 , public ICartesianMeshInitialAllocator
 {
+  class InternalApi;
+
  private:
   // TEMPORAIRE
   friend DynamicMeshMergerHelper;
@@ -106,22 +106,6 @@ class ARCANE_MESH_EXPORT DynamicMesh
   typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
 
   typedef List<IItemFamily*> ItemFamilyList;
-
-  class InternalApi
-  : public IMeshInternal
-  , public IMeshModifierInternal
-  {
-   public:
-
-    InternalApi(DynamicMesh* mesh)
-    : m_mesh(mesh)
-    {
-    }
-
-   private:
-
-    DynamicMesh* m_mesh;
-  };
 
   class InitialAllocator
   : public IMeshInitialAllocator
@@ -555,8 +539,8 @@ public:
 
   const MeshKind meshKind() const override { return m_mesh_kind; }
 
-  IMeshInternal* _internalApi() override { return &m_internal_api; }
-  IMeshModifierInternal* _modifierInternalApi() override { return &m_internal_api; }
+  IMeshInternal* _internalApi() override;
+  IMeshModifierInternal* _modifierInternalApi() override;
 
  private:
 
@@ -576,7 +560,7 @@ public:
   ExtraGhostCellsBuilder* m_extra_ghost_cells_builder = nullptr;
   ExtraGhostParticlesBuilder* m_extra_ghost_particles_builder = nullptr;
   InitialAllocator m_initial_allocator;
-  InternalApi m_internal_api;
+  std::unique_ptr<InternalApi> m_internal_api;
 
  private:
   
