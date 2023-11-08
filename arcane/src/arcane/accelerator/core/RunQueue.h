@@ -25,8 +25,10 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief File d'exécution  pour accélérateur.
- * \warning API en cours de définition.
+ * \brief File d'exécution pour un accélérateur.
+ *
+ * Une file est attachée à une politique d'exécution et permet d'exécuter
+ * des commandes (RunCommand) sur un accélérateur ou sur le CPU.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
@@ -35,7 +37,38 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  public:
 
+  //! Permet de modifier l'asynchronisme de la file pendant la durée de vie de l'instance
+  class ScopedAsync
+  {
+   public:
+
+    explicit ScopedAsync(RunQueue* queue)
+    : m_queue(queue)
+    {
+      // Rend la file asynchrone
+      if (m_queue) {
+        m_is_async = m_queue->isAsync();
+        m_queue->setAsync(true);
+      }
+    }
+    ~ScopedAsync() noexcept(false)
+    {
+      // Remet la file dans l'état d'origine lors de l'appel au constructeur
+      if (m_queue)
+        m_queue->setAsync(m_is_async);
+    }
+
+   private:
+
+    RunQueue* m_queue = nullptr;
+    bool m_is_async = false;
+  };
+
+ public:
+
+  //! Créé une file associée à \a runner avec les paramètres par défaut
   explicit RunQueue(Runner& runner);
+  //! Créé une file associée à \a runner avec les paramètres \a bi
   RunQueue(Runner& runner, const RunQueueBuildInfo& bi);
   ~RunQueue();
 
@@ -48,6 +81,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  public:
 
+  //! Politique d'exécution de la file.
   eExecutionPolicy executionPolicy() const;
   /*!
    * \brief Positionne l'asynchronisme de l'instance.
