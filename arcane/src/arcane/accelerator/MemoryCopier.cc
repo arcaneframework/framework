@@ -223,7 +223,7 @@ class AcceleratorSpecificMemoryCopy
       // Remplit toutes les valeurs du tableau avec la source.
       // Comme le nombre d'éléments de la deuxième dimension dépend de la première,
       // on utilise un noyau par dimension.
-      // TODO: Utiliser des commandes asynchrones.
+      RunQueue::ScopedAsync sc(queue);
       const Int32 nb_dim1 = multi_views.size();
       for (Int32 zz = 0; zz < nb_dim1; ++zz) {
         Span<DataType> orig_view = Arccore::asSpan<DataType>(multi_views[zz]);
