@@ -72,7 +72,11 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   _instance->m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
 
   _instance->m_allcell_allenvcell = reinterpret_cast<Span<ComponentItemLocalId>*>(
-  alloc->allocate(sizeof(Span<ComponentItemLocalId>) * _instance->m_size));
+    alloc->allocate(sizeof(Span<ComponentItemLocalId>) * _instance->m_size));
+  // We force initial value on every elmts  because the ENUMERATE_CELL below
+  // can miss some (maxLocalId()+1 can be different from allCells())
+  for (size_t i(0); i < _instance->m_size; ++i)
+    _instance->m_allcell_allenvcell[i] = Span<ComponentItemLocalId>();
 
   CellToAllEnvCellConverter all_env_cell_converter(mm);
   ENUMERATE_CELL (icell, mm->mesh()->allCells()) {
@@ -88,8 +92,8 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
         env_cells[i] = *(new (env_cells + i) ComponentItemLocalId(ev._varIndex()));
         ++i;
       }
+      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(env_cells, nb_env);
     }
-    _instance->m_allcell_allenvcell[cid] = (nb_env ? Span<ComponentItemLocalId>(env_cells, nb_env) : Span<ComponentItemLocalId>());
   }
   return _instance;
 }
