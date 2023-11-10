@@ -295,6 +295,8 @@ set(ARCANE_SOURCES
   StringDictionary.h
   StringDictionary.cc
   StringList.h
+  SHA1HashAlgorithm.h
+  SHA1HashAlgorithm.cc
   SHA3HashAlgorithm.h
   SHA3HashAlgorithm.cc
   ValueConvert.h

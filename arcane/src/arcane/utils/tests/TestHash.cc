@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -12,6 +12,7 @@
 #include "arcane/utils/Convert.h"
 #include "arcane/utils/MD5HashAlgorithm.h"
 #include "arcane/utils/SHA3HashAlgorithm.h"
+#include "arcane/utils/SHA1HashAlgorithm.h"
 
 #include <gtest/gtest.h>
 
@@ -202,6 +203,23 @@ TEST(Hash, SHA3_512)
 
   SHA3_512HashAlgorithm sha3;
   _testHash(sha3, SmallSpan<TestInfo>(values_to_test));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Hash, SHA1)
+{
+  std::cout << "TEST_SHA1\n";
+
+  std::array<TestInfo, 3> values_to_test = {
+    { { "", "da39a3ee5e6b4b0d3255bfef95601890afd80709" },
+      { "The quick brown fox jumps over the lazy cog", "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3" },
+      { "The quick brown fox jumps over the lazy dog", "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12" } }
+  };
+
+  SHA1HashAlgorithm sha1;
+  _testHash(sha1, SmallSpan<TestInfo>(values_to_test));
 }
 
 /*---------------------------------------------------------------------------*/
