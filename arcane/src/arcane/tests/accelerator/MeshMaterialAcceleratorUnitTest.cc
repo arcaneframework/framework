@@ -618,7 +618,7 @@ _executeTest4(Integer nb_z)
     auto in_b    = ax::viewIn(cmd, m_mat_b);
     auto out_c   = ax::viewOut(cmd, m_mat_c);
     auto in_c_g  = ax::viewIn(cmd, m_mat_c.globalVariable());
-    auto out_a_g = ax::viewOut(cmd, m_mat_a.globalVariable());
+    auto out_a_g = ax::viewOut(cmd, m_mat_a);
 
     m_mm_mng->enableCellToAllEnvCellForRunCommand(true,true);
     CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
