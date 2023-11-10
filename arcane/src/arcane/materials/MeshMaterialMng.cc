@@ -152,6 +152,9 @@ MeshMaterialMng::
   delete m_modifier;
 
   delete m_internal_api;
+
+  if (m_allcell_2_allenvcell)
+    AllCellToAllEnvCell::destroy(m_allcell_2_allenvcell);
 }
 
 /*---------------------------------------------------------------------------*/
