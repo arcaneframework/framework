@@ -610,7 +610,7 @@ RUNCOMMAND_LOOP() ou RUNCOMMAND_ENUMERATE(). Par exemple:
 }
 ```
 
-## Mode Autonome {#arcanedoc_parallel_accelerator_standalone}
+## Mode Autonome accélérateur {#arcanedoc_parallel_accelerator_standalone}
 
 Il est possible d'utiliser le mode accélérateur de %Arcane sans le
 support des objets de haut niveau tel que les maillages ou les

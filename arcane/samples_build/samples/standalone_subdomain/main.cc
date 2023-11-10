@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! [StandaloneSubDomainFull]
+
 #include "arcane/launcher/ArcaneLauncher.h"
 
 #include "arcane/utils/ITraceMng.h"
@@ -39,27 +41,27 @@ void executeSample()
   // Create a standalone subdomain
   // Arcane will automatically call finalization when the variable
   // goes out of scope.
-  StandaloneSubDomain launcher{ ArcaneLauncher::createStandaloneSubDomain(String{}) };
-  ISubDomain* sd = launcher.subDomain();
+  Arcane::StandaloneSubDomain launcher{ ArcaneLauncher::createStandaloneSubDomain(String{}) };
+  Arcane::ISubDomain* sd = launcher.subDomain();
 
   // Get the trace class to display messages
-  ITraceMng* tm = launcher.traceMng();
+  Arcane::ITraceMng* tm = launcher.traceMng();
 
   // Create an instance of the Mesh Reader.
-  MeshReaderMng mrm(sd);
+  Arcane::MeshReaderMng mrm(sd);
 
   // Create a mesh named 'Mesh1' from the file 'plancher.msh'.
   // The format is automatically choosen from the extension
-  IMesh* mesh = mrm.readMesh("Mesh1", "plancher.msh");
+  Arcane::IMesh* mesh = mrm.readMesh("Mesh1", "plancher.msh");
 
   Int32 nb_cell = mesh->nbCell();
   tm->info() << "NB_CELL=" << nb_cell;
 
   // Loop over the cells and compute the center of each cell
-  VariableNodeReal3& nodes_coordinates = mesh->nodesCoordinates();
+  Arcane::VariableNodeReal3& nodes_coordinates = mesh->nodesCoordinates();
   ENUMERATE_ (Cell, icell, mesh->allCells()) {
-    Cell cell = *icell;
-    Real3 cell_center = Real3::zero();
+    Arcane::Cell cell = *icell;
+    Arcane::Real3 cell_center;
     // Iteration over nodes of the cell
     for (Node node : cell.nodes()) {
       cell_center += nodes_coordinates[node];
@@ -77,14 +79,19 @@ int main(int argc, char* argv[])
   auto func = [&]{
     std::cout << "Sample: StandaloneSubDomain\n";
     // Initialize Arcane
-    CommandLineArguments cmd_line_args(&argc, &argv);
-    ArcaneLauncher::init(cmd_line_args);
+    Arcane::CommandLineArguments cmd_line_args(&argc, &argv);
+    Arcane::ArcaneLauncher::init(cmd_line_args);
 
     executeSample();
   };
 
   return arcaneCallFunctionAndCatchException(func);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! [StandaloneSubDomainFull]
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
