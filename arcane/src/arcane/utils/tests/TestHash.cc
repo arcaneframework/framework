@@ -44,6 +44,7 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
   ByteUniqueArray output1;
   ByteUniqueArray output2;
   ByteUniqueArray output3;
+  UniqueArray<std::byte> output4;
   UniqueArray<std::byte> output1_incremental;
 
   Ref<IHashAlgorithmContext> context;
@@ -72,6 +73,11 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
         context->computeHashValue(value);
         output1_incremental = value.bytes();
       }
+      {
+        HashAlgorithmValue value;
+        algo.computeHash(input1, value);
+        output4 = value.bytes();
+      }
     }
     {
       Span<const Byte> input2(str_bytes);
@@ -86,12 +92,14 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
     String hash1 = Convert::toHexaString(output1);
     String hash2 = Convert::toHexaString(output2);
     String hash3 = Convert::toHexaString(output3);
+    String hash4 = Convert::toHexaString(output4);
     String hash1_incremental = Convert::toHexaString(output1_incremental);
     String expected_hash = ti.expected_hash.lower();
     std::cout << "REF=" << expected_hash << "\n";
     std::cout << "HASH1=" << hash1 << "\n";
     std::cout << "HASH2=" << hash2 << "\n";
     std::cout << "HASH3=" << hash3 << "\n";
+    std::cout << "HASH4=" << hash4 << "\n";
     std::cout << "HASH1_INCREMENTAL=" << hash1_incremental << "\n";
     ASSERT_EQ(hash1, expected_hash);
     if (has_context){
@@ -99,6 +107,7 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
     }
     ASSERT_EQ(hash2, expected_hash);
     ASSERT_EQ(hash3, expected_hash);
+    ASSERT_EQ(hash4, expected_hash);
   }
 
   {
