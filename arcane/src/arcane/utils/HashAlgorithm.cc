@@ -14,7 +14,7 @@
 #include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotImplementedException.h"
-
+#include "arcane/utils/Array.h"
 #include "arcane/utils/Ref.h"
 
 /*---------------------------------------------------------------------------*/
@@ -71,6 +71,21 @@ computeHash64(Span<const std::byte> input, ByteArray& output)
 {
   const Byte* x = reinterpret_cast<const Byte*>(input.data());
   computeHash64(Span<const Byte>(x, input.size()), output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IHashAlgorithm::
+computeHash(Span<const std::byte> input, HashAlgorithmValue& value)
+{
+  UniqueArray<Byte> legacy_bytes;
+  computeHash64(input, legacy_bytes);
+  Int32 n = legacy_bytes.size();
+  value.setSize(n);
+  SmallSpan<std::byte> value_as_bytes(value.bytes());
+  for (Int32 i = 0; i < n; ++i)
+    value_as_bytes[i] = static_cast<std::byte>(legacy_bytes[i]);
 }
 
 /*---------------------------------------------------------------------------*/
