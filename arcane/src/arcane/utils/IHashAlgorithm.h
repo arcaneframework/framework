@@ -139,6 +139,15 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
   //NOTE: pour l'instant (version 3.11) par encore virtuel pure pour rester
   // compatible avec l'existant
   /*!
+   * \brief Calcule la valeur du hash pour le tableau \a input.
+   *
+   * La valeur de hashage est positionnée dans \a value
+   */
+  virtual void computeHash(Span<const std::byte> input, HashAlgorithmValue& value);
+
+  //NOTE: pour l'instant (version 3.11) par encore virtuel pure pour rester
+  // compatible avec l'existant
+  /*!
    * \brief Créé un contexte pour calculer la valeur du hash
    * de manière incrémentale.
    *

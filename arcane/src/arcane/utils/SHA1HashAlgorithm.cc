@@ -501,13 +501,31 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void SHA1HashAlgorithm::
-_computeHash64(Span<const std::byte> input, ByteArray& output)
+_computeHash(Span<const std::byte> input, HashAlgorithmValue& value)
 {
   SHA1Algorithm::SHA1 sha1;
-  HashAlgorithmValue value;
   sha1.updateHash(input);
   sha1.computeHashValue(value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SHA1HashAlgorithm::
+_computeHash64(Span<const std::byte> input, ByteArray& output)
+{
+  HashAlgorithmValue value;
+  _computeHash(input, value);
   output.addRange(value.asLegacyBytes());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SHA1HashAlgorithm::
+computeHash(Span<const std::byte> input, HashAlgorithmValue& value)
+{
+  _computeHash(input, value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -517,7 +535,7 @@ void SHA1HashAlgorithm::
 computeHash(ByteConstArrayView input, ByteArray& output)
 {
   Span<const Byte> input64(input);
-  return _computeHash64(asBytes(input64), output);
+  _computeHash64(asBytes(input64), output);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -527,7 +545,7 @@ void SHA1HashAlgorithm::
 computeHash64(Span<const Byte> input, ByteArray& output)
 {
   Span<const std::byte> bytes(asBytes(input));
-  return _computeHash64(bytes, output);
+  _computeHash64(bytes, output);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -536,7 +554,7 @@ computeHash64(Span<const Byte> input, ByteArray& output)
 void SHA1HashAlgorithm::
 computeHash64(Span<const std::byte> input, ByteArray& output)
 {
-  return _computeHash64(input, output);
+  _computeHash64(input, output);
 }
 
 /*---------------------------------------------------------------------------*/

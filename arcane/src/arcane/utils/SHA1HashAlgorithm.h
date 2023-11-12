@@ -38,6 +38,7 @@ class ARCANE_UTILS_EXPORT SHA1HashAlgorithm
 {
  public:
 
+  void computeHash(Span<const std::byte> input, HashAlgorithmValue& value) override;
   void computeHash(ByteConstArrayView input, ByteArray& output) override;
   void computeHash64(Span<const Byte> input, ByteArray& output) override;
   void computeHash64(Span<const std::byte> input, ByteArray& output) override;
@@ -49,6 +50,7 @@ class ARCANE_UTILS_EXPORT SHA1HashAlgorithm
  private:
 
   void _computeHash64(Span<const std::byte> input, ByteArray& output);
+  void _computeHash(Span<const std::byte> input, HashAlgorithmValue& value);
 };
 
 /*---------------------------------------------------------------------------*/
