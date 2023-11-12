@@ -43,10 +43,8 @@ class ARCANE_UTILS_EXPORT SHA1HashAlgorithm
   void computeHash64(Span<const std::byte> input, ByteArray& output) override;
   String name() const override { return "SHA1"; }
   Int32 hashSize() const override { return 20; }
-
- protected:
-
-  void _initialize(SHA1Algorithm::SHA1&);
+  Ref<IHashAlgorithmContext> createContext() override;
+  bool hasCreateContext() const { return true; }
 
  private:
 

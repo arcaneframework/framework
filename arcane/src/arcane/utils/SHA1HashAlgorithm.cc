@@ -11,11 +11,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
-#include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/SHA1HashAlgorithm.h"
 
+#include "arcane/utils/Array.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/Ref.h"
+
 #include <cstring>
+#include <array>
 
 // L'algorithme est decrit ici;
 // https://en.wikipedia.org/wiki/SHA-3
@@ -103,25 +106,45 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 class SHA1
+: public IHashAlgorithmContext
 {
+ private:
 
   //! Algorithm context.
   struct sha1_ctx
   {
     /* 512-bit buffer for leftovers */
-    unsigned char message[sha1_block_size];
+    unsigned char message[sha1_block_size] = {};
     /* number of processed bytes */
-    uint64_t length;
+    uint64_t length = 0;
     /* 160-bit algorithm internal hashing state */
-    unsigned hash[5];
+    unsigned hash[5] = {};
   };
   sha1_ctx m_context;
 
  public:
 
+  SHA1() { reset(); }
+
+ public:
+
+  void reset() override { sha1_init(); }
+
+  void updateHash(Span<const std::byte> input) override
+  {
+    sha1_update(input);
+  }
+
+  void computeHashValue(HashAlgorithmValue& value) override
+  {
+    sha1_final(value);
+  }
+
+ private:
+
   void sha1_init();
   void sha1_update(Span<const std::byte> bytes);
-  void sha1_final(ByteArray& output_hash);
+  void sha1_final(HashAlgorithmValue& value);
 
   static void sha1_process_block(unsigned* hash, const unsigned* block);
 };
@@ -427,11 +450,11 @@ sha1_update(Span<const std::byte> bytes)
 /*---------------------------------------------------------------------------*/
 
 void SHA1::
-sha1_final(ByteArray& output_hash)
+sha1_final(HashAlgorithmValue& value)
 {
-  output_hash.resize(sha1_hash_size);
+  value.setSize(sha1_hash_size);
 
-  unsigned char* result = output_hash.data();
+  unsigned char* result = reinterpret_cast<unsigned char*>(value.bytes().data());
   sha1_ctx* ctx = &m_context;
   unsigned index = (unsigned)ctx->length & 63;
   unsigned* msg32 = (unsigned*)ctx->message;
@@ -480,12 +503,11 @@ namespace Arcane
 void SHA1HashAlgorithm::
 _computeHash64(Span<const std::byte> input, ByteArray& output)
 {
-  using namespace SHA1Algorithm;
-
-  SHA1 sha1;
-  this->_initialize(sha1);
-  sha1.sha1_update(input);
-  sha1.sha1_final(output);
+  SHA1Algorithm::SHA1 sha1;
+  HashAlgorithmValue value;
+  sha1.updateHash(input);
+  sha1.computeHashValue(value);
+  output.addRange(value.asLegacyBytes());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -520,10 +542,10 @@ computeHash64(Span<const std::byte> input, ByteArray& output)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SHA1HashAlgorithm::
-_initialize(SHA1Algorithm::SHA1& sha1)
+Ref<IHashAlgorithmContext> SHA1HashAlgorithm::
+createContext()
 {
-  sha1.sha1_init();
+  return makeRef<IHashAlgorithmContext>(new SHA1Algorithm::SHA1());
 }
 
 /*---------------------------------------------------------------------------*/
