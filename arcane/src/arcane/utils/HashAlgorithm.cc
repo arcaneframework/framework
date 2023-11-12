@@ -1,0 +1,91 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* HashAlgorithm.cc                                            (C) 2000-2023 */
+/*                                                                           */
+/* Interface d'un algorithme de hashage.                                     */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/IHashAlgorithm.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
+
+#include "arcane/utils/Ref.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HashAlgorithmValue::
+setSize(Int32 size)
+{
+  if (size < 0)
+    ARCANE_FATAL("Invalid negative size '{0}'", size);
+  if (size > MAX_SIZE)
+    ARCANE_FATAL("Invalid size '{0}' max value is '{1}'", size, MAX_SIZE);
+  m_size = size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String IHashAlgorithm::
+name() const
+{
+  ARCANE_THROW(NotImplementedException, "name() method");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 IHashAlgorithm::
+hashSize() const
+{
+  ARCANE_THROW(NotImplementedException, "hashSize() method");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IHashAlgorithm::
+computeHash64(Span<const Byte> input, ByteArray& output)
+{
+  computeHash(input.smallView(), output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IHashAlgorithm::
+computeHash64(Span<const std::byte> input, ByteArray& output)
+{
+  const Byte* x = reinterpret_cast<const Byte*>(input.data());
+  computeHash64(Span<const Byte>(x, input.size()), output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IHashAlgorithmContext> IHashAlgorithm::
+createContext()
+{
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

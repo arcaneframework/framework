@@ -57,6 +57,7 @@ set(ARCANE_SOURCES
   JSONReader.h
   JSONWriter.cc
   JSONWriter.h
+  HashAlgorithm.cc
   HashTable.cc
   HashTable.h
   HPReal.cc
