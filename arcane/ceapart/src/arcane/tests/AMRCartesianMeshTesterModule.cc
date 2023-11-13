@@ -271,6 +271,8 @@ init()
     CartesianMeshRenumberingInfo renumbering_info;
     renumbering_info.setRenumberPatchMethod(options()->renumberPatchMethod());
     renumbering_info.setSortAfterRenumbering(true);
+    if (options()->coarseAtInit())
+      renumbering_info.setParentPatch(m_cartesian_mesh->amrPatch(1));
     m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
     _checkUniqueIds();
     _processPatches();
