@@ -109,6 +109,8 @@ class ALIEN_EXPORT DistStructInfo
     return m_upper_diag_offset.data();
   }
 
+  void computeBlock2DSizesAndOffsets(Integer const* kcol, Integer const* dcol, Integer const* bcol) const;
+
   // clang-format off
   Arccore::UniqueArray<Arccore::Integer> m_local_row_size;
   Arccore::Integer                       m_ghost_nrow = 0;
@@ -119,10 +121,16 @@ class ALIEN_EXPORT DistStructInfo
   Arccore::UniqueArray<Arccore::Integer> m_cols;
   mutable
   Arccore::UniqueArray<Arccore::Integer> m_upper_diag_offset;
+  mutable
   CommInfo                               m_recv_info;
+  mutable
   CommInfo                               m_send_info;
   Arccore::UniqueArray<Arccore::Integer> m_block_sizes;
   Arccore::UniqueArray<Arccore::Integer> m_block_offsets;
+  mutable
+  Arccore::UniqueArray<Arccore::Integer> m_block2d_sizes;
+  mutable
+  Arccore::UniqueArray<Arccore::Integer> m_block2d_offsets;
   // clang-format on
 };
 

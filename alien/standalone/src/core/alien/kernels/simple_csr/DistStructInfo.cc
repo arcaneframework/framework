@@ -378,9 +378,10 @@ void DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Inte
 
     const Integer size = local_sizes.size();
     const Integer ghost_size = ghost_sizes.size();
+    const Integer total_size = size + ghost_size;
 
-    m_block_sizes.resize(size + ghost_size);
-    m_block_offsets.resize(size + ghost_size);
+    m_block_sizes.resize(total_size);
+    m_block_offsets.resize(total_size + 1);
 
     for (Integer i = 0; i < size; ++i) {
       m_block_sizes[i] = local_sizes[i];
@@ -393,6 +394,7 @@ void DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Inte
       m_block_sizes[lid] = it->second;
       m_block_offsets[lid] = m_block_offsets[lid - 1] + m_block_sizes[lid - 1];
     }
+    m_block_offsets[total_size] = m_block_offsets[total_size - 1] + m_block_sizes[total_size - 1];
   }
 
   //   for(Integer i = 0; i < m_block_sizes.size(); ++i) {
@@ -523,6 +525,55 @@ void DistStructInfo::compute(Integer nproc, ConstArrayView<Integer> offset, Inte
   m_send_info.m_block_ids_offset[nb_neighbour] = block_icount;
 
   // m_send_info.printInfo(send_fout);
+}
+
+void DistStructInfo::computeBlock2DSizesAndOffsets(Integer const* kcol,
+                                                   Integer const* dcol,
+                                                   Integer const* bcol) const
+{
+  auto nrows = m_local_row_size.size();
+  m_block2d_sizes.resize(nrows + m_ghost_nrow);
+  m_block2d_offsets.resize(nrows + m_ghost_nrow + 1);
+  for (int irow = 0; irow < nrows; ++irow) {
+    auto blk_size = m_block_sizes[irow];
+    m_block2d_sizes[irow] = blk_size * blk_size;
+    m_block2d_offsets[irow] = bcol[dcol[irow]];
+  }
+  {
+    Integer offset = bcol[kcol[nrows]];
+    for (int irow = nrows; irow < nrows + m_ghost_nrow; ++irow) {
+      auto blk_size = m_block_sizes[irow];
+      m_block2d_sizes[irow] = blk_size * blk_size;
+      m_block2d_offsets[irow] = offset;
+      offset += blk_size * blk_size;
+    }
+    m_block2d_offsets[nrows + m_ghost_nrow] = offset;
+  }
+  {
+    m_send_info.m_block2d_ids_offset.resize(m_send_info.m_num_neighbours + 1);
+    Integer offset = 0;
+    for (Integer ineighb = 0; ineighb < m_send_info.m_num_neighbours; ++ineighb) {
+      m_send_info.m_block2d_ids_offset[ineighb] = offset;
+      for (Integer k = m_send_info.m_ids_offset[ineighb]; k < m_send_info.m_ids_offset[ineighb + 1]; ++k) {
+        auto blk_size = m_block_sizes[m_send_info.m_ids[k]];
+        offset += blk_size * blk_size;
+      }
+    }
+    m_send_info.m_block2d_ids_offset[m_send_info.m_num_neighbours] = offset;
+  }
+
+  {
+    m_recv_info.m_block2d_ids_offset.resize(m_recv_info.m_num_neighbours + 1);
+    Integer offset = 0;
+    for (Integer ineighb = 0; ineighb < m_recv_info.m_num_neighbours; ++ineighb) {
+      m_recv_info.m_block2d_ids_offset[ineighb] = offset;
+      for (Integer k = m_recv_info.m_ids_offset[ineighb]; k < m_recv_info.m_ids_offset[ineighb + 1]; ++k) {
+        auto blk_size = m_block_sizes[k];
+        offset += blk_size * blk_size;
+      }
+    }
+    m_recv_info.m_block2d_ids_offset[m_recv_info.m_num_neighbours] = offset;
+  }
 }
 
 void DistStructInfo::copy(const DistStructInfo& src)

@@ -21,6 +21,7 @@ add_executable(ref.gtest.mpi
         main.cpp
         TestIndexManager.cc
         TestVBlockMatrixBuilder.cc
+        TestSchur.cc
         )
 
 if (ALIEN_USE_LIBXML2)

@@ -78,65 +78,7 @@ namespace MVExpr
     return [=](auto visitor) { return visitor(lazy::div_tag{}, a(visitor), b(visitor)); };
   }
 
-
-  struct distribution_evaluator
-  {
-    template <class T>
-    VectorDistribution const* operator()(lazy::cst_tag, T c)
-    {
-      return nullptr;
-    }
-
-    VectorDistribution const* operator()(lazy::ref_tag, Matrix const& r)
-    {
-      return &r.distribution().rowDistribution();
-    }
-
-    VectorDistribution const* operator()(lazy::ref_tag, Vector const& r)
-    {
-      return &r.distribution();
-    }
-
-    template <typename L>
-    VectorDistribution const* operator()(lazy::add_tag, L const& l, Vector const& r)
-    {
-      return &r.distribution();
-    }
-
-    template <typename L>
-    auto operator()(lazy::minus_tag, L const& l, Vector const& r)
-    {
-      return &r.distribution();
-    }
-
-    auto operator()(
-    lazy::mult_tag, VectorDistribution const* l, VectorDistribution const* r)
-    {
-      if (l)
-        return l;
-      else
-        return r;
-    }
-
-    template <typename R>
-    auto operator()(lazy::mult_tag, Matrix const& l, Vector const& r)
-    {
-      return &r.distribution();
-    }
-
-    template <typename R>
-    auto operator()(lazy::mult_tag, Matrix const& l, R const& r)
-    {
-      return &l.distribution().rowDistribution();
-    }
-
-    template <typename L>
-    auto operator()(lazy::mult_tag, L const& l, Vector const& r)
-    {
-      return &r.distribution();
-    }
-  };
-
+  struct distribution_evaluator;
   template <class A, class B>
   auto scalMul(A&& a, B&& b)
   {
@@ -741,6 +683,64 @@ namespace MVExpr
     auto operator()(lazy::mult_tag, L const& l, Vector const& r)
     {
       return allocSize(r);
+    }
+  };
+
+  struct distribution_evaluator
+  {
+    template <class T>
+    VectorDistribution const* operator()(lazy::cst_tag, T c)
+    {
+      return nullptr;
+    }
+
+    VectorDistribution const* operator()(lazy::ref_tag, Matrix const& r)
+    {
+      return &r.distribution().rowDistribution();
+    }
+
+    VectorDistribution const* operator()(lazy::ref_tag, Vector const& r)
+    {
+      return &r.distribution();
+    }
+
+    template <typename L>
+    VectorDistribution const* operator()(lazy::add_tag, L const& l, Vector const& r)
+    {
+      return &r.distribution();
+    }
+
+    template <typename L>
+    auto operator()(lazy::minus_tag, L const& l, Vector const& r)
+    {
+      return &r.distribution();
+    }
+
+    auto operator()(
+    lazy::mult_tag, VectorDistribution const* l, VectorDistribution const* r)
+    {
+      if (l)
+        return l;
+      else
+        return r;
+    }
+
+    template <typename R>
+    auto operator()(lazy::mult_tag, Matrix const& l, Vector const& r)
+    {
+      return &r.distribution();
+    }
+
+    template <typename R>
+    auto operator()(lazy::mult_tag, Matrix const& l, R const& r)
+    {
+      return &l.distribution().rowDistribution();
+    }
+
+    template <typename L>
+    auto operator()(lazy::mult_tag, L const& l, Vector const& r)
+    {
+      return &r.distribution();
     }
   };
 

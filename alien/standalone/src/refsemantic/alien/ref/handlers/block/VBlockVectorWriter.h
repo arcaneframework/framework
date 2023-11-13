@@ -39,6 +39,8 @@ class VBlockVectorWriter : public Common::BlockVectorWriterT<Real>
   {}
 
   virtual ~VBlockVectorWriter() {}
+
+  using Common::BlockVectorWriterT<Real>::operator=;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -51,6 +53,8 @@ class LocalVBlockVectorWriter : public Common::LocalBlockVectorWriterT<Real>
   {}
 
   virtual ~LocalVBlockVectorWriter() {}
+
+  using Common::LocalBlockVectorWriterT<Real>::operator=;
 };
 
 /*---------------------------------------------------------------------------*/

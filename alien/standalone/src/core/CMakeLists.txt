@@ -80,6 +80,8 @@ set(alien_core_list
         alien/distribution/VectorDistribution.h
         alien/expression/normalization/NormalizeOpt.cc
         alien/expression/normalization/NormalizeOpt.h
+        alien/expression/schur/SchurOp.cc
+        alien/expression/schur/SchurOp.h
         alien/expression/solver/IEigenSolver.h
         alien/expression/solver/ILinearAlgebra.h
         alien/expression/solver/ILinearSolver.h

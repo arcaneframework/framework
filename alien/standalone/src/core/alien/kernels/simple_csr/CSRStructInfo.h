@@ -372,16 +372,19 @@ class CSRStructInfo
 
   void copy(const CSRStructInfo& profile)
   {
-    const Integer thisNrow = profile.getNRows();
-    init(thisNrow);
+    auto nrows = profile.getNRows();
+    init(nrows);
 
     m_row_offset.copy(profile.getRowOffset());
-    m_block_row_offset.copy(profile.getBlockRowOffset());
 
     allocate();
 
     m_cols.copy(profile.getCols());
-    m_block_cols.copy(profile.getBlockCols());
+
+    if (m_is_variable_block) {
+      m_block_row_offset.copy(profile.getBlockRowOffset());
+      m_block_cols.copy(profile.getBlockCols());
+    }
 
     m_col_ordering = profile.getColOrdering();
 

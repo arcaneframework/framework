@@ -23,6 +23,7 @@
 
 #include <alien/core/block/Block.h>
 #include <alien/core/block/VBlock.h>
+#include <alien/core/block/VBlockOffsets.h>
 #include <alien/data/ISpace.h>
 #include <alien/kernels/simple_csr/CSRStructInfo.h>
 #include <alien/kernels/simple_csr/DistStructInfo.h>
@@ -151,7 +152,17 @@ class SimpleCSRMatrix : public IMatrixImpl
 
   Integer getGhostSize() const { return m_ghost_size; }
 
-  Integer getAllocSize() const { return m_local_size + m_ghost_size; }
+  Integer getAllocSize() const
+  {
+    auto total_size = m_local_size + m_ghost_size;
+    if (block())
+      return total_size * block()->size();
+    else if (vblock()) {
+      return m_matrix_dist_info.m_block_offsets[total_size];
+    }
+    else
+      return total_size;
+  }
 
   IMessagePassingMng* getParallelMng()
   {
@@ -298,6 +309,64 @@ class SimpleCSRMatrix : public IMatrixImpl
     m_trace = matrix.m_trace;
     m_matrix.copy(matrix.m_matrix);
     m_matrix_dist_info.copy(matrix.m_matrix_dist_info);
+  }
+
+  void copyProfile(SimpleCSRMatrix const& matrix)
+  {
+    m_is_parallel = matrix.m_is_parallel;
+    m_local_size = matrix.m_local_size;
+    m_local_offset = matrix.m_local_offset;
+    m_global_size = matrix.m_global_size;
+    m_ghost_size = matrix.m_ghost_size;
+    m_send_policy = matrix.m_send_policy;
+    m_recv_policy = matrix.m_recv_policy;
+    m_nproc = matrix.m_nproc;
+    m_myrank = matrix.m_myrank;
+    m_parallel_mng = matrix.m_parallel_mng;
+    m_trace = matrix.m_trace;
+    m_matrix.getCSRProfile().copy(matrix.m_matrix.getCSRProfile());
+    m_matrix_dist_info.copy(matrix.m_matrix_dist_info);
+    if (vblock()) {
+      auto& profile = m_matrix.getCSRProfile();
+      const VBlock* block_sizes = vblock();
+      auto& block_row_offset = profile.getBlockRowOffset();
+      auto& block_cols = profile.getBlockCols();
+      auto kcol = profile.kcol();
+      auto cols = profile.cols();
+      Integer offset = 0;
+      for (Integer irow = 0; irow < m_local_size; ++irow) {
+        block_row_offset[irow] = offset;
+        auto row_blk_size = block_sizes->size(m_local_offset + irow);
+        for (auto k = kcol[irow]; k < kcol[irow + 1]; ++k) {
+          block_cols[k] = offset;
+          auto jcol = cols[k];
+          auto col_blk_size = block_sizes->size(jcol);
+          offset += row_blk_size * col_blk_size;
+        }
+      }
+      block_row_offset[m_local_size] = offset;
+      block_cols[kcol[m_local_size]] = offset;
+
+      const Integer total_size = m_local_size + m_ghost_size;
+
+      m_matrix_dist_info.m_block_sizes.resize(total_size);
+      m_matrix_dist_info.m_block_offsets.resize(total_size + 1);
+
+      offset = 0;
+      for (Integer i = 0; i < m_local_size; ++i) {
+        auto blk_size = block_sizes->size(m_local_offset + i);
+        m_matrix_dist_info.m_block_sizes[i] = blk_size;
+        m_matrix_dist_info.m_block_offsets[i] = offset;
+        offset += blk_size;
+      }
+      for (Integer i = m_local_size; i < total_size; ++i) {
+        auto blk_size = block_sizes->size(m_matrix_dist_info.m_recv_info.m_uids[i - m_local_size]);
+        m_matrix_dist_info.m_block_sizes[i] = blk_size;
+        m_matrix_dist_info.m_block_offsets[i] = offset;
+        offset += blk_size;
+      }
+      m_matrix_dist_info.m_block_offsets[total_size] = offset;
+    }
   }
 
   void notifyChanges()

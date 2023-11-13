@@ -144,29 +144,23 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
     for (Integer i = 0; i < cell1_local_size; ++i) {
       Integer row1 = allU1Index[i];
       profiler.addMatrixEntry(row1, row1);
-      trace_mng->info() << "ADD MATRIX ENTRY D1: " << row1 << " " << row1;
 
       Integer row2 = allU2Index[i];
       profiler.addMatrixEntry(row2, row2);
-      trace_mng->info() << "ADD MATRIX ENTRY D2: " << row2 << " " << row2;
 
       profiler.addMatrixEntry(row1, row2);
-      trace_mng->info() << "ADD MATRIX ENTRY D12: " << row1 << " " << row2;
 
       profiler.addMatrixEntry(row2, row1);
-      trace_mng->info() << "ADD MATRIX ENTRY D21: " << row2 << " " << row1;
 
       if (i == 0) {
         if (comm_rank > 0) {
           Integer jcol = allU1Index[ghost_cell1_lid[0]];
           profiler.addMatrixEntry(row1, jcol);
-          trace_mng->info() << "ADD MATRIX ENTRY OD1-1: " << row1 << " " << jcol;
         }
       }
       else {
         Integer jcol = allU1Index[i - 1];
         profiler.addMatrixEntry(row1, jcol);
-        trace_mng->info() << "ADD MATRIX ENTRY OD1-1: " << row1 << " " << jcol;
       }
 
       if (i == cell1_local_size - 1) {
@@ -174,39 +168,33 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
           Integer lid = comm_rank == 0 ? ghost_cell1_lid[0] : ghost_cell1_lid[1];
           Integer jcol = allU1Index[lid];
           profiler.addMatrixEntry(row1, jcol);
-          trace_mng->info() << "ADD MATRIX ENTRY OD1+1: " << row1 << " " << jcol << " " << comm_rank;
         }
       }
       else {
         Integer jcol = allU1Index[i + 1];
         profiler.addMatrixEntry(row1, jcol);
-        trace_mng->info() << "ADD MATRIX ENTRY OD1+1: " << row1 << " " << jcol << " " << comm_rank;
       }
 
       if (i == 0) {
         if (comm_rank > 0) {
           Integer jcol = allU2Index[ghost_cell2_lid[0]];
           profiler.addMatrixEntry(row2, jcol);
-          trace_mng->info() << "ADD MATRIX ENTRY OD1-1: " << row2 << " " << jcol;
         }
       }
       else {
         Integer jcol = allU2Index[i - 1];
         profiler.addMatrixEntry(row2, jcol);
-        trace_mng->info() << "ADD MATRIX ENTRYOD2-1 : " << row2 << " " << jcol;
       }
       if (i == cell2_local_size - 1) {
         if (comm_rank < comm_size - 1) {
           Integer lid = comm_rank == 0 ? ghost_cell2_lid[0] : ghost_cell2_lid[1];
           Integer jcol = allU2Index[lid];
           profiler.addMatrixEntry(row2, jcol);
-          trace_mng->info() << "ADD MATRIX ENTRY OD1+1: " << row2 << " " << jcol << " " << comm_rank;
         }
       }
       else {
         Integer jcol = allU2Index[i + 1];
         profiler.addMatrixEntry(row2, jcol);
-        trace_mng->info() << "ADD MATRIX ENTRY OD2+1: " << row2 << " " << jcol << " " << comm_rank;
       }
     }
   }
@@ -216,7 +204,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
     for (Integer i = 0; i < cell1_local_size; ++i) {
       Integer row1 = allU1Index[i];
       auto row1_blk_size = vblock.size(row1);
-      trace_mng->info() << "ROW1 index : " << row1 << " size : " << row1_blk_size;
       UniqueArray2<Real> diag1(row1_blk_size, row1_blk_size);
       diag1.fill(0);
       for (int k = 0; k < row1_blk_size; ++k)
@@ -225,7 +212,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
 
       Integer row2 = allU2Index[i];
       auto row2_blk_size = vblock.size(row2);
-      trace_mng->info() << "ROW2 index : " << row2 << " size : " << row2_blk_size;
 
       UniqueArray2<Real> diag2(row2_blk_size, row2_blk_size);
       diag2.fill(0);
@@ -245,7 +231,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
         if (comm_rank > 0) {
           Integer jcol = allU1Index[ghost_cell1_lid[0]];
           auto col_blk_size = vblock.size(jcol);
-          trace_mng->info() << "COL1-1 index : " << jcol << " size : " << col_blk_size;
           UniqueArray2<Real> off_diag1(row1_blk_size, col_blk_size);
           off_diag1.fill(-0.01);
           builder(row1, jcol) += off_diag1;
@@ -254,7 +239,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
       else {
         Integer jcol = allU1Index[i - 1];
         auto col_blk_size = vblock.size(jcol);
-        trace_mng->info() << "COL1-1 index : " << jcol << " size : " << col_blk_size;
         UniqueArray2<Real> off_diag1(row1_blk_size, col_blk_size);
         off_diag1.fill(-0.01);
         builder(row1, jcol) += off_diag1;
@@ -265,7 +249,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
           Integer lid = comm_rank == 0 ? ghost_cell1_lid[0] : ghost_cell1_lid[1];
           Integer jcol = allU1Index[lid];
           auto col_blk_size = vblock.size(jcol);
-          trace_mng->info() << "COL1+1 index : " << jcol << " size : " << col_blk_size;
           UniqueArray2<Real> off_diag1(row1_blk_size, col_blk_size);
           off_diag1.fill(-0.01);
           builder(row1, jcol) += off_diag1;
@@ -274,7 +257,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
       else {
         Integer jcol = allU1Index[i + 1];
         auto col_blk_size = vblock.size(jcol);
-        trace_mng->info() << "COL1+1 index : " << jcol << " size : " << col_blk_size;
         UniqueArray2<Real> off_diag1(row1_blk_size, col_blk_size);
         off_diag1.fill(-0.01);
         builder(row1, jcol) += off_diag1;
@@ -284,7 +266,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
         if (comm_rank > 0) {
           Integer jcol = allU2Index[ghost_cell2_lid[0]];
           auto col_blk_size = vblock.size(jcol);
-          trace_mng->info() << "COL2-1 index : " << jcol << " size : " << col_blk_size;
           UniqueArray2<Real> off_diag2(row2_blk_size, col_blk_size);
           off_diag12.fill(-0.02);
           builder(row2, jcol) += off_diag2;
@@ -293,7 +274,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
       else {
         Integer jcol = allU2Index[i - 1];
         auto col_blk_size = vblock.size(jcol);
-        trace_mng->info() << "COL2-1 index : " << jcol << " size : " << col_blk_size;
         UniqueArray2<Real> off_diag2(row2_blk_size, col_blk_size);
         off_diag12.fill(-0.02);
         builder(row2, jcol) += off_diag2;
@@ -303,7 +283,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
           Integer lid = comm_rank == 0 ? ghost_cell2_lid[0] : ghost_cell2_lid[1];
           Integer jcol = allU2Index[lid];
           auto col_blk_size = vblock.size(jcol);
-          trace_mng->info() << "COL2+1 index : " << jcol << " size : " << col_blk_size;
           UniqueArray2<Real> off_diag2(row2_blk_size, col_blk_size);
           off_diag12.fill(-0.02);
           builder(row2, jcol) += off_diag2;
@@ -312,7 +291,6 @@ TEST(TestVBlockMatrixBuilder, VBlockProfiledBuilder)
       else {
         Integer jcol = allU2Index[i + 1];
         auto col_blk_size = vblock.size(jcol);
-        trace_mng->info() << "COL2+1 index : " << jcol << " size : " << col_blk_size;
         UniqueArray2<Real> off_diag2(row2_blk_size, col_blk_size);
         off_diag12.fill(-0.02);
         builder(row2, jcol) += off_diag2;
