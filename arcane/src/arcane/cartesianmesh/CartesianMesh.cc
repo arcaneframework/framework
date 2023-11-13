@@ -151,8 +151,9 @@ class CartesianMeshImpl
     return m_connectivity;
   }
 
-  Integer nbPatch() const override { return m_amr_patches.size(); }
-  ICartesianMeshPatch* patch(Integer index) const override { return m_amr_patches[index].get(); }
+  Int32 nbPatch() const override { return m_amr_patches.size(); }
+  ICartesianMeshPatch* patch(Int32 index) const override { return m_amr_patches[index].get(); }
+  CartesianPatch amrPatch(Int32 index) const override { return CartesianPatch(m_amr_patches[index].get()); }
   CartesianMeshPatchListView patches() const override { return CartesianMeshPatchListView(m_amr_patches_pointer); }
 
   void refinePatch2D(Real2 position,Real2 length) override;
@@ -779,7 +780,7 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
     ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0 or 1 or 2");
     
   else if (patch_method == 1){
-    CartesianMeshUniqueIdRenumbering renumberer(this,cmgi);
+    CartesianMeshUniqueIdRenumbering renumberer(this,cmgi,v.parentPatch());
     renumberer.renumber();
   }
   else if (patch_method == 2){

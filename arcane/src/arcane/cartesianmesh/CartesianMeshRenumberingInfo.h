@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshRenumberingInfo.h                              (C) 2000-2021 */
+/* CartesianMeshRenumberingInfo.h                              (C) 2000-2023 */
 /*                                                                           */
 /* Informations pour la renumérotation.                                      */
 /*---------------------------------------------------------------------------*/
@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/cartesianmesh/CartesianPatch.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,7 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT CartesianMeshRenumberingInfo
 {
  public:
+
   /*!
    * \brief Méthode pour renuméroter les patchs.
    *
@@ -63,9 +64,27 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshRenumberingInfo
   void setSortAfterRenumbering(bool v) { m_is_sort = v; }
   bool isSortAfterRenumbering() const { return m_is_sort; }
 
+  /*!
+   * \brief Numéro du patch parent pour la renumérotation.
+   *
+   * Patch parent pour la renumérotation. Pour la renumérotation, on parcourt
+   * récursivement les mailles filles de ce patch et on les renumérote ainsi
+   * que les entités liées à ces mailles (noeuds et faces).
+   *
+   * Les entités de ce patch (mailles, noeuds et faces) ne sont pas renumérotées.
+   *
+   * Si non spécifié, l'implémentation utilisera le patch 0 comme patch parent.
+   *
+   * \note Cette propriété n'est prise en compte que si renumberPatchMethod()==1.
+   */
+  void setParentPatch(CartesianPatch patch) { m_parent_patch = patch; }
+  CartesianPatch parentPatch() const { return m_parent_patch; }
+
  private:
+
   Int32 m_renumber_patch_method = 0;
   Int32 m_renumber_faces_method = 0;
+  CartesianPatch m_parent_patch;
   bool m_is_sort = false;
 };
 
