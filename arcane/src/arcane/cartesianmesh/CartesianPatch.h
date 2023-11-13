@@ -38,9 +38,15 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
   CartesianPatch() = default;
 
   //! Patch nul.
-  explicit CartesianPatch(ICartesianMeshPatch* patch_impl)
-  : m_patch(patch_impl)
+  explicit CartesianPatch(ICartesianMeshPatch* patch_interface)
+  : m_patch(patch_interface)
   {
+  }
+  CartesianPatch& operator=(const CartesianPatch&) = default;
+  CartesianPatch& operator=(ICartesianMeshPatch* patch_interface)
+  {
+    m_patch = patch_interface;
+    return (*this);
   }
 
  public:
@@ -99,6 +105,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
 
   //! Indique si le patch est nul.
   bool isNull() const { return !m_patch; }
+
+  //! Interface associée au patch (pour compatibilité avec l'existant)
+  ICartesianMeshPatch* patchInterface() const { return m_patch; }
 
  private:
 

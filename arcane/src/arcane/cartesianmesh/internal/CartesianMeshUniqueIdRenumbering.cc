@@ -36,10 +36,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 CartesianMeshUniqueIdRenumbering::
-CartesianMeshUniqueIdRenumbering(ICartesianMesh* cmesh, ICartesianMeshGenerationInfo* gen_info)
+CartesianMeshUniqueIdRenumbering(ICartesianMesh* cmesh, ICartesianMeshGenerationInfo* gen_info,
+                                 CartesianPatch parent_patch)
 : TraceAccessor(cmesh->traceMng())
 , m_cartesian_mesh(cmesh)
 , m_generation_info(gen_info)
+, m_parent_patch(parent_patch)
 {
   if (platform::getEnvironmentVariable("ARCANE_DEBUG_AMR_RENUMBERING") == "1")
     m_is_verbose = true;
@@ -67,10 +69,13 @@ renumber()
   nodes_new_uid.fill(-1);
   faces_new_uid.fill(-1);
 
-  // Marque les entités issues du maillage cartésien comme étant de niveau 0
-  // Elles ne seront pas renumérotées
-  ICartesianMeshPatch* patch0 = m_cartesian_mesh->patch(0);
-  ENUMERATE_ (Cell, icell, patch0->cells()) {
+  // Marque les entités issues de 'm_parent_patch' comme n'étant pas renumérotées.
+  // Si 'm_parent_patch' n'est pas spécifié, on prend les mailles du patch initial.
+  CartesianPatch patch0 = m_parent_patch;
+  if (patch0.isNull())
+    patch0 = m_cartesian_mesh->patch(0);
+
+  ENUMERATE_ (Cell, icell, patch0.cells()) {
     Cell c{ *icell };
     cells_new_uid[icell] = c.uniqueId().asInt64();
     for (Node n : c.nodes())
@@ -107,20 +112,20 @@ renumber()
 
   if (dimension == 2) {
     CartesianGridDimension::CellUniqueIdComputer2D cell_uid_computer(0, nb_cell_x);
-    ENUMERATE_ (Cell, icell, patch0->cells()) {
+    ENUMERATE_ (Cell, icell, patch0.cells()) {
       Cell cell{ *icell };
       Int64 uid = cell.uniqueId();
       auto [coord_i, coord_j, coord_k] = cell_uid_computer.compute(uid);
       if (m_is_verbose)
         info() << "Renumbering: PARENT: cell_uid=" << uid << " I=" << coord_i
                << " J=" << coord_j << " nb_cell_x=" << nb_cell_x;
-      _applyChildrenCell2D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, nb_cell_x, nb_cell_y, 1);
+      _applyChildrenCell2D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, nb_cell_x, nb_cell_y, cell.level() + 1);
     }
   }
 
   else if (dimension == 3) {
     CartesianGridDimension::CellUniqueIdComputer3D cell_uid_computer(0, nb_cell_x, nb_cell_x * nb_cell_y);
-    ENUMERATE_ (Cell, icell, patch0->cells()) {
+    ENUMERATE_ (Cell, icell, patch0.cells()) {
       Cell cell{ *icell };
       Int64 uid = cell.uniqueId();
       auto [coord_i, coord_j, coord_k] = cell_uid_computer.compute(uid);
