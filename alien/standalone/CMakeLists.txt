@@ -129,6 +129,8 @@ if (LibArchive_FOUND)
     add_definitions(-DALIEN_USE_LIBARCHIVE)
 endif ()
 
+find_package(Boost COMPONENTS program_options)
+
 include(GNUInstallDirs)
 
 if (ALIEN_DEFAULT_OPTIONS)

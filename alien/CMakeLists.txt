@@ -56,18 +56,25 @@ arcane_framework_set_if_unset(Arctools_ROOT ${ARCFRAMEWORK_ROOT}/arctools PATH "
 
 list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/_common/build_all/cmake)
 
-# Add Alien only if blas and boost found
+#first try to look for MKL
+set(BLA_VENDOR Intel10_64lp_seq)
 find_package(BLAS)
-find_package(Boost OPTIONAL_COMPONENTS program_options)
-if (BLAS_FOUND AND Boost_program_options_FOUND)
-    add_subdirectory(standalone)
-    set(ALIEN_FOUND YES)
-    set(FRAMEWORK_INSTALL YES)
-    if (WIN32) # Not yet ready...
-#        if (BUILD_ARCANE_INTERFACE)
-#            add_subdirectory(ArcaneInterface)
-#        endif ()
-    elseif (BUILD_ARCANE_INTERFACE)
-            add_subdirectory(ArcaneInterface)
-    endif ()
+if(BLAS_FOUND)
+    add_definitions(-DALIEN_USE_MKL)
+else()
+    set(BLA_VENDOR All)
+    find_package(BLAS REQUIRED)
 endif()
+
+add_subdirectory(standalone)
+
+set(ALIEN_FOUND YES)
+set(FRAMEWORK_INSTALL YES)
+
+if (WIN32) # Not yet ready...
+endif()
+
+if(BUILD_ARCANE_INTERFACE)
+    add_subdirectory(ArcaneInterface)
+endif ()
+
