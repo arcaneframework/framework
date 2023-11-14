@@ -48,8 +48,10 @@ add_subdirectory(src/arcane/aleph/sloop)
 # ----------------------------------------------------------------------------
 # Ajoute des tests.
 # Ils doivent être après les autres cibles car ils peuvent en dépendre.
-add_subdirectory(src/arcane/tests)
-add_subdirectory(tests)
+if (ARCANE_ENABLE_TESTS)
+  add_subdirectory(src/arcane/tests)
+  add_subdirectory(tests)
+endif()
 
 # ----------------------------------------------------------------------------
 # Ce fichier contient les informations de configuration de l'installation 'cea'.
