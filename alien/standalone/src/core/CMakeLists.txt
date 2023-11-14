@@ -150,6 +150,10 @@ if(LibArchive_FOUND)
   target_link_libraries(alien_core PUBLIC archive)
 endif ()
 
+#if(Eigen3_FOUND)
+  target_link_libraries(alien_core PUBLIC eigen3)
+#endif ()
+
 set_property(TARGET alien_core PROPERTY CXX_STANDARD 17)
 
 message(STATUS "Using AVX Simd instructions ? -> ${ALIEN_WANT_AVX}")

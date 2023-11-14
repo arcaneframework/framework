@@ -20,17 +20,23 @@ endif ()
 linkLibraries(alien_bench.exe
         Alien::alien_core
         Alien::alien_semantic_ref
-        alien_external_packages
-        alien_ifpen_solvers
         alien_arcane_tools
         arcane_full
         )
 
-if (TARGET trilinos)
+if (TARGET  alien_external_packages)
+    linkLibraries(alien_bench.exe alien_external_packages)
+endif ()
+
+if (TARGET  alien_ifpen_solvers)
+    linkLibraries(alien_bench.exe alien_ifpen_solvers)
+endif ()
+
+if (TARGET  alien_trilinos)
     linkLibraries(alien_bench.exe alien_trilinos)
 endif ()
 
-if (TARGET hpddm)
+if (TARGET alien_hpddm)
     linkLibraries(alien_bench.exe alien_hpddm)
 endif ()
 

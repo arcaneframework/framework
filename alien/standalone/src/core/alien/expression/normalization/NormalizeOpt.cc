@@ -21,19 +21,19 @@
  * \brief NormalizeOpt.cc
  */
 
-#include "NormalizeOpt.h"
 
 #include <alien/core/impl/MultiVectorImpl.h>
 #include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
 #include <alien/kernels/simple_csr/SimpleCSRVector.h>
 
-#ifdef ALIEN_USE_EIGEN2
+#ifdef ALIEN_USE_EIGEN3
 #include <Eigen/Core>
 #include <Eigen/LU>
-#include <iostream>
-
 #endif
 
+#include <iostream>
+
+#include "NormalizeOpt.h"
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
