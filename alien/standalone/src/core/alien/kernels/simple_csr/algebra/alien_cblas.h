@@ -6,9 +6,9 @@
 #pragma once
 
 #ifdef ALIEN_USE_MKL
-#include <mkl_cblas.h>
+#include "mkl_cblas.h"
 #else
-#include <clas.h>
+#include "cblas.h"
 #endif
 
 namespace cblas
