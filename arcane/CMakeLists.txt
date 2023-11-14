@@ -134,6 +134,11 @@ option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_li
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
+
+option(ARCANE_ENABLE_TESTS "Enable compilation of tests" ON)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Cherche 'Arccon'
 
 find_package(Arccon REQUIRED)
@@ -964,7 +969,9 @@ endif()
 # Les tests ont besoin d'infos comme le partitionneur utilisé  donc il
 # faut ajouter le répertoire de test en dernier.
 
-add_subdirectory(src/arcane/tests)
+if (ARCANE_ENABLE_TESTS)
+  add_subdirectory(src/arcane/tests)
+endif()
 
 # ----------------------------------------------------------------------------
 
@@ -1251,11 +1258,13 @@ endif()
 # TODO: pour 'libfabric.dll', plutôt modifier le package 'intel-mpi' de 'vcpkg' pour
 # indiquer explicitement où se trouve cette DLL.
 #
-file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:arcane_tests_exec>\")\n")
-set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
-file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
-add_custom_target(copy_dlls
-  COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
+if (ARCANE_ENABLE_TESTS)
+  file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:arcane_tests_exec>\")\n")
+  set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
+  file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
+  add_custom_target(copy_dlls
+    COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
+endif()
 
 find_path(INTEL_LIBFABRIC NAMES "libfabric.dll" PATH_SUFFIXES bin)
 if (INTEL_LIBFABRIC)
