@@ -155,6 +155,7 @@ SchurOp::_apply_schur(VBlock const* vblock,
                       MatrixImpl& pA,
                       VectorImpl& pB) const
 {
+#ifdef ALIEN_USE_EIGEN3
   pA.copyProfile(A);
   pA.allocate();
   auto p_block2d_size = p_block_size * p_block_size;
@@ -356,6 +357,7 @@ SchurOp::_apply_schur(VBlock const* vblock,
       }
     }
   }
+#endif
   return NoError;
 }
 
@@ -367,6 +369,7 @@ SchurOp::_apply_schur(VBlock const* vblock,
                       MatrixImpl& pA,
                       VectorImpl& pB) const
 {
+#ifdef ALIEN_USE_EIGEN3
   pA.copyProfile(A);
   pA.allocate();
   bool is_parallel = A.isParallel();
@@ -607,7 +610,7 @@ SchurOp::_apply_schur(VBlock const* vblock,
       }
     }
   }
-
+#endif
   return NoError;
 }
 
@@ -639,6 +642,7 @@ SchurOp::_compute_solution(VBlock const* vblock,
                            VectorImpl& X) const
 {
 
+#ifdef ALIEN_USE_EIGEN3
   auto local_offset = A.getLocalOffset();
 
   // clang-format off
@@ -671,6 +675,7 @@ SchurOp::_compute_solution(VBlock const* vblock,
       x1d.block_2() = x1d.block_2() - diag2d.block_21() * x1d.block_1();
     }
   }
+#endif
   return NoError;
 }
 
@@ -682,6 +687,7 @@ SchurOp::_compute_solution(VBlock const* vblock,
                            VectorImpl const& pX,
                            VectorImpl& X) const
 {
+#ifdef ALIEN_USE_EIGEN3
   auto local_offset = A.getLocalOffset();
 
   // clang-format off
@@ -715,6 +721,7 @@ SchurOp::_compute_solution(VBlock const* vblock,
       x1d.block_2() = x1d.block_2() - diag2d.block_21() * x1d.block_1();
     }
   }
+#endif
   return NoError;
 }
 /*---------------------------------------------------------------------------*/

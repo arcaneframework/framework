@@ -40,15 +40,18 @@ namespace Alien
 class SchurBlock1D
 {
  public:
+#ifdef ALIEN_USE_EIGEN3
   typedef Eigen::Matrix<Real, Eigen::Dynamic, 1> vector;
   typedef Eigen::Map<vector> eigen_vector;
-
+#endif
   SchurBlock1D(ArrayView<Real> block, Integer size)
   : m_block(block)
   , m_size_1(std::min(size, m_block.size()))
   , m_size_2(m_block.size() - m_size_1)
+#ifdef ALIEN_USE_EIGEN3
   , m_block_1(m_block.data(), m_size_1)
   , m_block_2(m_block.data() + m_size_1, m_size_2)
+#endif
   {
   }
 
@@ -56,20 +59,23 @@ class SchurBlock1D
 
   ConstArrayView<Real> block() const { return m_block; }
 
+#ifdef ALIEN_USE_EIGEN3
   eigen_vector& block_1() { return m_block_1; }
   const eigen_vector& block_1() const { return m_block_1; }
 
   eigen_vector& block_2() { return m_block_2; }
   const eigen_vector& block_2() const { return m_block_2; }
-
+#endif
  private:
   ArrayView<Real> m_block;
 
   Integer m_size_1;
   Integer m_size_2;
 
+#ifdef ALIEN_USE_EIGEN3
   eigen_vector m_block_1;
   eigen_vector m_block_2;
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -78,16 +84,18 @@ class SchurBlock1D
 class SchurBlock2D
 {
  public:
+#ifdef ALIEN_USE_EIGEN3
   typedef Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrix;
   typedef Eigen::OuterStride<> outer_stride;
   typedef Eigen::Map<matrix, 0, outer_stride> eigen_matrix;
-
+#endif
   SchurBlock2D(Array2View<Real> block, Integer size)
   : m_block(block)
   , m_sizex_1(std::min(size, m_block.dim1Size()))
   , m_sizex_2(m_block.dim1Size() - m_sizex_1)
   , m_sizey_1(std::min(size, m_block.dim2Size()))
   , m_sizey_2(m_block.dim2Size() - m_sizey_1)
+#ifdef ALIEN_USE_EIGEN3
   , m_block_11(m_block.unguardedBasePointer(),
                m_sizex_1, m_sizey_1,
                outer_stride(m_block.dim2Size()))
@@ -100,6 +108,7 @@ class SchurBlock2D
   , m_block_22(m_block.unguardedBasePointer() + (m_sizex_1 * (m_block.dim2Size() + 1)),
                m_sizex_2, m_sizey_2,
                outer_stride(m_block.dim2Size()))
+#endif
   {
   }
 
@@ -107,6 +116,7 @@ class SchurBlock2D
 
   ConstArray2View<Real> block() const { return m_block; }
 
+#ifdef ALIEN_USE_EIGEN3
   eigen_matrix& block_11() { return m_block_11; }
   const eigen_matrix& block_11() const { return m_block_11; }
 
@@ -118,7 +128,7 @@ class SchurBlock2D
 
   eigen_matrix& block_22() { return m_block_22; }
   const eigen_matrix& block_22() const { return m_block_22; }
-
+#endif
  private:
   Array2View<Real> m_block;
 
@@ -127,10 +137,12 @@ class SchurBlock2D
   Integer m_sizey_1;
   Integer m_sizey_2;
 
+#ifdef ALIEN_USE_EIGEN3
   eigen_matrix m_block_11;
   eigen_matrix m_block_12;
   eigen_matrix m_block_21;
   eigen_matrix m_block_22;
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
