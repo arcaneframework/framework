@@ -57,13 +57,21 @@ arcane_framework_set_if_unset(Arctools_ROOT ${ARCFRAMEWORK_ROOT}/arctools PATH "
 list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/_common/build_all/cmake)
 
 #first try to look for MKL
+message(STATUS "Looking for mkl BLAS")
 set(BLA_VENDOR Intel10_64lp_seq)
 find_package(BLAS)
 if(BLAS_FOUND)
     add_definitions(-DALIEN_USE_MKL)
-else()
-    set(BLA_VENDOR All)
+endif()
+
+if(NOT BLAS_FOUND)
+    message(STATUS "Looking for OpenBLAS BLAS")
+    set(BLA_VENDOR OpenBLAS)
     find_package(BLAS REQUIRED)
+    set(CBLAS_INCLUDE_DIR CBLAS_INCLUDE_DIR-NOTFOUND)
+    find_path(CBLAS_INCLUDE_DIR cblas.h HINTS ENV OPENBLAS_ROOT PATH_SUFFIXES openblas include REQUIRED)
+    message(STATUS "cblas.h found in ${CBLAS_INCLUDE_DIR}")
+    include_directories(${CBLAS_INCLUDE_DIR})
 endif()
 
 add_subdirectory(standalone)
