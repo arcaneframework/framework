@@ -37,7 +37,7 @@ namespace Alien
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SchurBlock1D
+class ALIEN_EXPORT SchurBlock1D
 {
  public:
 #ifdef ALIEN_USE_EIGEN3
@@ -55,7 +55,7 @@ class SchurBlock1D
   {
   }
 
-  ~SchurBlock1D() {}
+  virtual ~SchurBlock1D() {}
 
   ConstArrayView<Real> block() const { return m_block; }
 
@@ -81,7 +81,7 @@ class SchurBlock1D
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SchurBlock2D
+class ALIEN_EXPORT SchurBlock2D
 {
  public:
 #ifdef ALIEN_USE_EIGEN3
@@ -112,7 +112,7 @@ class SchurBlock2D
   {
   }
 
-  ~SchurBlock2D() {}
+  virtual ~SchurBlock2D() {}
 
   ConstArray2View<Real> block() const { return m_block; }
 
@@ -148,7 +148,7 @@ class SchurBlock2D
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SchurAlgo
+class ALIEN_EXPORT SchurAlgo
 {
  public:
   SchurAlgo() {}
