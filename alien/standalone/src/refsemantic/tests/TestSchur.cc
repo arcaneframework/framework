@@ -313,6 +313,7 @@ TEST(TestSchur, SchurEngine)
     }
   }
 
+#ifdef ALIEN_USE_EIGEN3
   Alien::SchurOp op(A, b);
   // REDUCE LINEAR SYSTEM DECLARATION
   {
@@ -355,4 +356,5 @@ TEST(TestSchur, SchurEngine)
     trace_mng->info() << "COMPUTE SECONDARY SOLUTION FROM PRIMARY";
     //auto error2 = op.computeSolutionFromPrimaryUnknowns(px, x);
   }
+#endif
 }
