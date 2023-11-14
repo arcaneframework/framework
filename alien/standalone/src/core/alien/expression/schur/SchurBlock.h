@@ -159,6 +159,7 @@ class SchurAlgo
     ALIEN_ASSERT((A.block().dim1Size() == b.block().size()), ("Blocks size are not equals"));
     ;
 
+#ifdef ALIEN_USE_EIGEN3
     typedef SchurBlock2D::eigen_matrix matrix;
     typedef SchurBlock1D::eigen_vector vector;
 
@@ -185,6 +186,7 @@ class SchurAlgo
 
     vector_2 = matrix_22 * vector_2;
     vector_1 -= matrix_12 * vector_2;
+#endif
   }
 };
 
