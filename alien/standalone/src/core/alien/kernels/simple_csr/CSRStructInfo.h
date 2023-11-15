@@ -7,7 +7,6 @@
 #pragma once
 
 #include <vector>
-
 #include <algorithm>
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 #include <alien/utils/StdTimer.h>
