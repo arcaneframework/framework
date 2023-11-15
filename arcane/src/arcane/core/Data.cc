@@ -16,6 +16,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/core/IDataFactory.h"
 #include "arcane/core/IDataStorageFactory.h"
@@ -79,6 +80,32 @@ copyContigousData(IData* destination, IData* source, RunQueue& queue)
     ARCANE_FATAL("Source and destination do not have the same datatype s={0} d={1}",
                  source_buf.datatypeSize(), destination_buf.datatypeSize());
   queue.copyMemory(Accelerator::MemoryCopyArgs(destination_buf, source_buf));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void impl::
+fillContigousDataGeneric(IData* data, const void* fill_address,
+                         Int32 datatype_size, RunQueue& queue)
+{
+  INumericDataInternal* num_data = data->_commonInternal()->numericData();
+  if (!num_data)
+    ARCANE_FATAL("Destination is not a numerical data");
+
+  ConstMemoryView fill_value_view(makeConstMemoryView(fill_address, datatype_size, 1));
+  MutableMemoryView destination_buf = num_data->memoryView();
+
+  // Si \a data est un tableau 2D ou plus il faut le transformer en un tableau 1D
+  // du nombre total d'éléments sinon 'destination_buf.datatypeSize() n'est pas
+  // cohérent avec 'datatype_size'
+  if (data->dimension() > 1) {
+    Int64 total_dim = data->shape().totalNbElement();
+    Int64 nb_element = destination_buf.nbElement();
+    destination_buf = makeMutableMemoryView(destination_buf.data(), datatype_size, nb_element * total_dim);
+  }
+
+  destination_buf.fill(fill_value_view, &queue);
 }
 
 /*---------------------------------------------------------------------------*/

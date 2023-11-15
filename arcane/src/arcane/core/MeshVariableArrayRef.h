@@ -95,6 +95,8 @@ class ItemVariableArrayRefT
   ARCANE_CORE_EXPORT void fill(const DataType& value);
   //! Remplit la variable avec la valeur \a value pour les entités du groupe \a group 
   ARCANE_CORE_EXPORT void fill(const DataType& value,const ItemGroup& group);
+  //! Remplit la variable avec la valeur \a value via la file \a queue
+  ARCANE_CORE_EXPORT void fill(const DataType& value,RunQueue* queue);
 
  public:
 
