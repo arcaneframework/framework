@@ -578,3 +578,4 @@ void DistStructInfo::copy(const DistStructInfo& src)
 }
 
 } // namespace Alien::SimpleCSRInternal
+

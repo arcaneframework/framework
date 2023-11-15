@@ -4,11 +4,6 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*!
- * \file NormalizeOpt.cc
- * \brief NormalizeOpt.cc
- */
-
 
 #include <alien/core/impl/MultiVectorImpl.h>
 #include <alien/kernels/simple_csr/SimpleCSRMatrix.h>

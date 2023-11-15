@@ -4,11 +4,6 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*!
- * \file SchurOp.cc
- * \brief SchurOp.cc
- */
-
 
 #include <alien/utils/Precomp.h>
 #include <alien/core/impl/MultiVectorImpl.h>

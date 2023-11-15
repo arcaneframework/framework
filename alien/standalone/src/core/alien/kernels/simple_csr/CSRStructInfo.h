@@ -12,8 +12,6 @@
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 #include <alien/utils/StdTimer.h>
 
-/*---------------------------------------------------------------------------*/
-
 namespace Alien::SimpleCSRInternal
 {
 

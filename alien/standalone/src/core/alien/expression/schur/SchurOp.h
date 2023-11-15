@@ -4,10 +4,6 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*!
- * \file ShurOpt.h
- * \brief ShurOpt.h
- */
 
 #pragma once
 

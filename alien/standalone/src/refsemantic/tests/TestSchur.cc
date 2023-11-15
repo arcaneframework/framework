@@ -4,7 +4,6 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-
 #include <alien/utils/Precomp.h>
 #include <cmath>
 #include <gtest/gtest.h>
