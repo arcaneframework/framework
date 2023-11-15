@@ -456,6 +456,7 @@ if(PARTITIONER_FOUND)
 endif()
 
 ARCANE_ADD_TEST(mesh2 testMesh-2.arc)
+arcane_add_test_sequential(mesh2_sort_faces testMesh-2-sorted-faces.arc)
 ARCANE_ADD_TEST_PARALLEL(mesh2_5ghost testMesh-2-5ghost.arc 4)
 ARCANE_ADD_TEST_SEQUENTIAL(matvec testMatVec-1.arc)
 #ARCANE_ADD_TEST_SEQUENTIAL(amr2 testAMR-2.arc)

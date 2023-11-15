@@ -106,7 +106,7 @@ using namespace Arcane;
 class MeshUnitTest
 : public ArcaneMeshUnitTestObject
 {
-public:
+ public:
 
   class CountOperationByBasicType
   : public TraceAccessor, public AbstractItemOperationByBasicType
@@ -162,9 +162,9 @@ public:
     { info() << "NB Link = " << group.size(); }
   };
 
-public:
+ public:
 
-  MeshUnitTest(const ServiceBuildInfo& cb);
+  explicit MeshUnitTest(const ServiceBuildInfo& cb);
   ~MeshUnitTest();
 
  public:
@@ -204,6 +204,7 @@ public:
   void _testShrinkGroups();
   void _testDeallocateMesh();
   void _testUnstructuredConnectivities();
+  void _testSortedNodeFaces();
   void _testFaces();
   void _testItemVectorView();
   void _logMeshInfos();
@@ -242,6 +243,12 @@ MeshUnitTest::
 void MeshUnitTest::
 executeTest()
 {
+  bool do_sort_faces_and_edges = options()->testSortNodeFacesAndEdges();
+  if (do_sort_faces_and_edges){
+    mesh()->nodeFamily()->properties()->setBool("sort-connected-faces-edges",true);
+    mesh()->modifier()->endUpdate();
+  }
+
   CountOperationByBasicType op(traceMng());
   info() << "ItemTypeMng::singleton() = " << ItemTypeMng::singleton();
   info() << "Infos sur AllCells:";
@@ -257,6 +264,8 @@ executeTest()
   _dumpTiedInterfaces();
   _dumpComputeFaceGroupNormal();
   _dumpComputeNodeGroupDirection();
+  if (do_sort_faces_and_edges)
+    _testSortedNodeFaces();
   _testGroups();
   if (options()->testAdjency()){
     _testItemAdjency();
@@ -1448,6 +1457,33 @@ _testUnstructuredConnectivities()
       vc.areEqual(n,icv.cellIds(inode).size(),"SameCellSize");
       for( Int32 i=0; i<n; ++i )
         vc.areEqual(icv.cellId(inode,i),icv.cells(inode)[i],"SameCellItem");
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie si les faces connectées aux noeuds sont triées.
+ */
+void MeshUnitTest::
+_testSortedNodeFaces()
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  UnstructuredMeshConnectivityView connectivity_view;
+  connectivity_view.setMesh(this->mesh());
+
+  ENUMERATE_(Node,inode,allNodes()){
+    Node node = *inode;
+    Face previous_face;
+    for( Face face : node.faces() ){
+      if (!previous_face.null()){
+        if (previous_face.uniqueId()>face.uniqueId())
+          ARCANE_FATAL("Connected faces are not sorted node={0} previous_face={1} current_face={2}",
+                       ItemPrinter(node), ItemPrinter(previous_face), ItemPrinter(face));
+      }
+      previous_face = face;
     }
   }
 }

@@ -116,5 +116,15 @@ Teste la désallocation du maillage
    </description>
   </simple>
 
+  <simple
+   name = "test-sort-node-faces-and-edges"
+   type = "bool"
+   default = "false"
+  >
+   <description>
+     Indique si on tri les faces et les arêtes connectées aux noeuds
+   </description>
+  </simple>
+
  </options>
 </service>
