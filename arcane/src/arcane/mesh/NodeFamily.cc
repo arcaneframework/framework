@@ -316,7 +316,7 @@ class NodeFamily::ItemCompare2
 {
  public:
 
-  ItemCompare2(const ItemInfoListView& items)
+  explicit ItemCompare2(const ItemInfoListView& items)
   : m_items(items)
   {
   }
@@ -339,7 +339,7 @@ class NodeFamily::ItemCompare2
 class NodeFamily::ItemCompare3
 {
  public:
-  ItemCompare3(ITraceMng* msg) : m_msg(msg) {}
+  explicit ItemCompare3(ITraceMng* msg) : m_msg(msg) {}
  public:
   ITraceMng* m_msg;
   ItemInternalArrayView m_items;
