@@ -667,7 +667,7 @@ class ServiceTestImplInterface4
   void* getPointer4() override { return this; }
   Integer value() override { return 3; }
   String implementationName() const override { return "ServiceTestImplInterface4"; }
-  String meshName() const { return String(); }
+  String meshName() const override { return String(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -683,7 +683,7 @@ class ServiceInterface1ImplTestService
   Integer value() override { return 2; }
   void* getPointer1() override { return this; }
   String implementationName() const override { return serviceInfo()->localName(); }
-  String meshName() const { return mesh()->name(); }
+  String meshName() const override { return mesh()->name(); }
   void checkSubMesh(const String& mesh_name) override
   {
     // Vérifie que les sous-services sont bien associés au maillage \a mesh_name
@@ -734,7 +734,7 @@ class ServiceInterface5ImplTestService
   Integer value() override { return 7; }
   void* getPointer1() override { return this; }
   String implementationName() const override { return serviceInfo()->localName(); }
-  String meshName() const { return mesh()->name(); }
+  String meshName() const override { return mesh()->name(); }
 };
 
 /*---------------------------------------------------------------------------*/
