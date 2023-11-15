@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IThreadImplementation.h                                     (C) 2000-2019 */
+/* IThreadImplementation.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'un service implémentant le support des threads.               */
 /*---------------------------------------------------------------------------*/
@@ -34,32 +34,57 @@ namespace Arccore
  */
 class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
 {
+  friend class SpinLock;
+  friend class ScopedLock;
+  friend class ManualLock;
+
  public:
+
   typedef ReferenceCounterTag ReferenceCounterTagType;
+
  protected:
+
   virtual ~IThreadImplementation() = default;
+
  public:
-  virtual void addReference() =0;
-  virtual void removeReference() =0;
+
+  virtual void addReference() = 0;
+  virtual void removeReference() = 0;
+
  public:
-  virtual void initialize() =0;
+
+  virtual void initialize() = 0;
+
  public:
-  virtual ThreadImpl* createThread(IFunctor* f) =0;
-  virtual void joinThread(ThreadImpl* t) =0;
-  virtual void destroyThread(ThreadImpl* t) =0;
 
-  virtual void createSpinLock(Int64* spin_lock_addr) =0;
-  virtual void lockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) =0;
-  virtual void unlockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) =0;
+  virtual ThreadImpl* createThread(IFunctor* f) = 0;
+  virtual void joinThread(ThreadImpl* t) = 0;
+  virtual void destroyThread(ThreadImpl* t) = 0;
 
-  virtual MutexImpl* createMutex() =0;
-  virtual void destroyMutex(MutexImpl*) =0;
-  virtual void lockMutex(MutexImpl* mutex) =0;
-  virtual void unlockMutex(MutexImpl* mutex) =0;
+  ARCCORE_DEPRECATED_REASON("Y2023: SpinLock are deprecated. Use std::atomic_flag instead")
+  virtual void createSpinLock(Int64* spin_lock_addr) = 0;
+  ARCCORE_DEPRECATED_REASON("Y2023: SpinLock are deprecated. Use std::atomic_flag instead")
+  virtual void lockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr) = 0;
+  ARCCORE_DEPRECATED_REASON("Y2023: SpinLock are deprecated. Use std::atomic_flag instead")
+  virtual void unlockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr) = 0;
 
-  virtual Int64 currentThread() =0;
+  virtual MutexImpl* createMutex() = 0;
+  virtual void destroyMutex(MutexImpl*) = 0;
+  virtual void lockMutex(MutexImpl* mutex) = 0;
+  virtual void unlockMutex(MutexImpl* mutex) = 0;
 
-  virtual IThreadBarrier* createBarrier() =0;
+  virtual Int64 currentThread() = 0;
+
+  virtual IThreadBarrier* createBarrier() = 0;
+
+ private:
+
+  // Définitions pour éviter d'affichier les messages d'avertissement
+  // à cause des méthodes obsolètes.
+
+  void _deprecatedCreateSpinLock(Int64* spin_lock_addr);
+  void _deprecatedLockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr);
+  void _deprecatedUnlockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr);
 };
 
 /*---------------------------------------------------------------------------*/
