@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeFamily.h                                                (C) 2000-2022 */
+/* NodeFamily.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Famille de noeuds.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -14,8 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/core/IItemFamilyModifier.h"
+
 #include "arcane/mesh/ItemFamily.h"
-#include "arcane/IItemFamilyModifier.h"
 #include "arcane/mesh/MeshInfos.h"
 #include "arcane/mesh/ItemInternalConnectivityIndex.h"
 
@@ -140,17 +141,23 @@ class ARCANE_MESH_EXPORT NodeFamily
  private:
   
   ItemTypeInfo* m_node_type = nullptr; //!< Instance contenant le type des noeuds
-  Integer m_edge_prealloc;
-  Integer m_face_prealloc;
-  Integer m_cell_prealloc;
-  Integer m_mesh_connectivity;
-  bool m_no_face_connectivity;
+  Integer m_edge_prealloc = 0;
+  Integer m_face_prealloc = 0;
+  Integer m_cell_prealloc = 0;
+  Integer m_mesh_connectivity = 0;
+  bool m_no_face_connectivity = false;
   VariableNodeReal3* m_nodes_coords = nullptr;
   EdgeConnectivity* m_edge_connectivity = nullptr;
   FaceConnectivity* m_face_connectivity = nullptr;
   CellConnectivity* m_cell_connectivity = nullptr;
   FaceFamily* m_face_family = nullptr;
+  //! Indique si on trie les faces et arêtes connectées aux noeuds
+  bool m_is_sort_connected_faces_and_edges = false;
+
+ private:
+
   inline void _removeNode(Node node);
+  void _sortConnectedItems(IItemFamily* family, IncrementalItemConnectivity* connectivity);
 };
 
 /*---------------------------------------------------------------------------*/
