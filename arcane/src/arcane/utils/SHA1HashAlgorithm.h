@@ -45,7 +45,7 @@ class ARCANE_UTILS_EXPORT SHA1HashAlgorithm
   String name() const override { return "SHA1"; }
   Int32 hashSize() const override { return 20; }
   Ref<IHashAlgorithmContext> createContext() override;
-  bool hasCreateContext() const { return true; }
+  bool hasCreateContext() const override { return true; }
 
  private:
 
