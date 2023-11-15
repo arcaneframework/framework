@@ -75,6 +75,7 @@ class AcceleratorViewsUnitTest
   void _executeTest2Real3x3();
   void _executeTestMemoryCopy();
   void _executeTestVariableCopy();
+  void _executeTestVariableFill();
   void _checkResultReal2(Real to_add);
   void _checkResultReal3(Real to_add);
   void _checkResultReal2x2(Real to_add);
@@ -167,6 +168,7 @@ executeTest()
   _executeTest2Real3x3();
   _executeTestMemoryCopy();
   _executeTestVariableCopy();
+  _executeTestVariableFill();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -656,6 +658,43 @@ _executeTestVariableCopy()
     Span2<const double> v1(test_cell2_array.asArray());
     Span2<const double> v2(m_cell_array2.asArray());
     vc.areEqualArray(v1,v2,"CompareRealArray2");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorViewsUnitTest::
+_executeTestVariableFill()
+{
+  info() << "Execute Test VariableFill";
+
+  ValueChecker vc(A_FUNCINFO);
+
+  RunQueue queue = makeQueue(m_runner);
+  RunQueue::ScopedAsync sca(&queue);
+
+  const Real real_ref(1.9e-2);
+  const Real3 real3_ref(2.3, 4.9e-2, -1.2);
+  const Int32 nb_dim2 = 5;
+  VariableCellReal test_cell1_real(VariableBuildInfo(mesh(), "TestCell1Real"));
+  VariableCellArrayReal3 test_cell2_array_real3(VariableBuildInfo(mesh(), "TestCell2ArrayReal3"));
+  test_cell2_array_real3.resize(nb_dim2);
+  test_cell1_real.fill(real_ref, &queue);
+  test_cell2_array_real3.fill(real3_ref, &queue);
+
+  queue.barrier();
+
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Cell cell = *icell;
+    Real r = test_cell1_real[cell];
+    if (r != real_ref)
+      ARCANE_FATAL("Bad value 1 cell={0} v={1} expected={2}", cell.uniqueId(), r, real_ref);
+    for (Int32 z = 0; z < nb_dim2; ++z) {
+      Real3 r3 = test_cell2_array_real3(cell, z);
+      if (test_cell1_real[cell] != real_ref)
+        ARCANE_FATAL("Bad value 2 cell={0} v={1} expected={2}", cell.uniqueId(), r3, real3_ref);
+    }
   }
 }
 
