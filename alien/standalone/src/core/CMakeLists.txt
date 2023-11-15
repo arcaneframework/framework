@@ -80,8 +80,6 @@ set(alien_core_list
         alien/distribution/VectorDistribution.h
         alien/expression/normalization/NormalizeOpt.cc
         alien/expression/normalization/NormalizeOpt.h
-        alien/expression/schur/SchurOp.cc
-        alien/expression/schur/SchurOp.h
         alien/expression/solver/IEigenSolver.h
         alien/expression/solver/ILinearAlgebra.h
         alien/expression/solver/ILinearSolver.h
@@ -134,6 +132,13 @@ if (LibArchive_FOUND)
            alien/import_export/SuiteSparseArchiveSystemReader.h)
 endif ()
 
+if (Eigen3_FOUND)
+   list(APPEND alien_core_list
+        alien/expression/schur/SchurOp.cc
+        alien/expression/schur/SchurOp.h
+        alien/expression/schur/SchurBlock.h)
+endif()
+
 add_library(alien_core ${alien_core_list})
 
 target_link_libraries(alien_core PUBLIC alien_utils alien_data)
@@ -150,9 +155,9 @@ if(LibArchive_FOUND)
   target_link_libraries(alien_core PUBLIC archive)
 endif ()
 
-#if(Eigen3_FOUND)
+if(Eigen3_FOUND)
   target_link_libraries(alien_core PUBLIC eigen3)
-#endif ()
+endif ()
 
 set_property(TARGET alien_core PROPERTY CXX_STANDARD 17)
 
