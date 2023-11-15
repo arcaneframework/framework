@@ -53,7 +53,7 @@ class RedisHashDatabase
     xresult.setHashValueAsString(args.hashValue());
   }
 
-  void readValues(const HashDatabaseReadArgs& args)
+  void readValues(const HashDatabaseReadArgs& args) override
   {
     UniqueArray<std::byte> bytes;
     m_context->getBuffer(args.hashValueAsString(), bytes);
