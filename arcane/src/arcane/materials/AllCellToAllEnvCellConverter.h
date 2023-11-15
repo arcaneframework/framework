@@ -67,14 +67,14 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
    * La fonction de création. Il faut attendre que les données
    * relatives aux matériaux soient finalisées
    */
-  static AllCellToAllEnvCell* create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
+  static AllCellToAllEnvCell* old_create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
   ///! Fonction de destruction
   static void destroy(AllCellToAllEnvCell* instance);
 
   // Rien d'intelligent ici, on refait tout. Il faut voir dans un 2nd temps 
   // pour faire qqch de plus malin et donc certainement plus rapide...
   // SI on garde cette classe et ce concept... ça m'étonnerait...
-  void bruteForceUpdate(Int32ConstArrayView ids);
+  void old_bruteForceUpdate();
 
   /*!
    * Méthode d'accès à la table de "connectivité" cell -> all env cells
@@ -84,7 +84,36 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
     return m_allcell_allenvcell;
   }
 
+  /*! Méthode pour donner le nombre maximal d'environnements 
+   * présents sur une maille à l'instant t.
+   * Le fait d'effectuer cette opération à un instant donné, permet
+   * d'avoir une valeur max <= au nombre total d'environnement présents
+   * dans le jdd (et donc d'économiser un peu de mémoire)
+   */
+  Int32 maxNbEnvPerCell() const;
+
+    /*!
+   * Fonction de création alternative. Il faut attendre que les données
+   * relatives aux matériaux soient finalisées.
+   * La différence réside dans la gestion de la mémoire.
+   * Ici, on applique un compromis sur la taille de la table cid -> envcells
+   * où la taille du tableau pour ranger les envcells d'une cell est égale à la taille
+   * max du nb d'environnement présent à un instant t dans un maille.
+   * Celà permet de ne pas faire les allocations mémoire dans la boucle interne et de
+   * façon systématique.
+   * => Gain de perf à évaluer.
+   */
+  static AllCellToAllEnvCell* create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
+
+  /* On essaye d'être un peu plus malin que sur le bruteForceUpdate :
+   * cette fois on regarde si le nb max d'env par cell à l'instant t à changer,
+   * et si c'est le cas, on force la reconstruction de la table.
+   */
+  void bruteForceUpdate();
+
+
  private:
+  void old_reset();
   void reset();
 
  private:
@@ -92,6 +121,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   IMemoryAllocator* m_alloc = nullptr;
   Integer m_size = 0;
   Span<ComponentItemLocalId>* m_allcell_allenvcell = nullptr;
+  Int32 m_current_max_nb_env = 0;
 };
 
 /*---------------------------------------------------------------------------*/
