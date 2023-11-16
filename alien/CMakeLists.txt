@@ -56,22 +56,27 @@ arcane_framework_set_if_unset(Arctools_ROOT ${ARCFRAMEWORK_ROOT}/arctools PATH "
 
 list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/_common/build_all/cmake)
 
-#first try to look for MKL
-message(STATUS "Looking for mkl BLAS")
-set(BLA_VENDOR Intel10_64lp_seq)
-find_package(BLAS)
-if(BLAS_FOUND)
+find_package(BLAS REQUIRED)
+message(STATUS "[ Alien ] BLAS LIBRARIES: ${BLAS_LIBRARIES}")
+set(CBLAS_INCLUDE_DIR CBLAS_INCLUDE_DIR-NOTFOUND)
+if(BLAS_LIBRARIES MATCHES mkl OR BLA_VENDOR MATCHES Intel)
     add_definitions(-DALIEN_USE_MKL)
-endif()
-
-if(NOT BLAS_FOUND)
-    message(STATUS "Looking for OpenBLAS BLAS")
-    set(BLA_VENDOR OpenBLAS)
-    find_package(BLAS REQUIRED)
-    set(CBLAS_INCLUDE_DIR CBLAS_INCLUDE_DIR-NOTFOUND)
-    find_path(CBLAS_INCLUDE_DIR cblas.h HINTS ENV OPENBLAS_ROOT PATH_SUFFIXES openblas include REQUIRED)
-    message(STATUS "cblas.h found in ${CBLAS_INCLUDE_DIR}")
-    include_directories(${CBLAS_INCLUDE_DIR})
+    # relative path for mkl_cblas.h change with mkl versions
+    find_path(CBLAS_INCLUDE_DIR mkl_cblas.h HINTS ENV MKLROOT ENV MKL_ROOT PATH_SUFFIXES include mkl/include REQUIRED)
+    message(STATUS "[ Alien ] MKL BLAS detected")
+    message(STATUS "[ Alien ] mkl_cblas.h found in ${CBLAS_INCLUDE_DIR}")
+elseif(BLAS_LIBRARIES MATCHES FlexiBLAS OR BLAS_LIBRARIES MATCHES flexiblas OR BLA_VENDOR MATCHES FlexiBLAS)
+    # If there is somme specific use of FlexiBLAS uncomment the following line
+    # add_definitions(-DALIEN_USE_FLEXIBLAS)
+    # Flexiblas include may be installed in include/flexiblas dir from root install
+    find_path(CBLAS_INCLUDE_DIR cblas.h HINTS ENV FLEXIBLAS_ROOT PATH_SUFFIXES include include/flexiblas REQUIRED)
+    message(STATUS "[ Alien ] FlexiBLAS BLAS detected")
+    message(STATUS "[ Alien ] cblas.h found in ${CBLAS_INCLUDE_DIR}")
+else()
+    # supposes that other BLAS packages provide a cblas.h file
+    # we must be sure that the cblas found
+    find_path(CBLAS_INCLUDE_DIR cblas.h REQUIRED)
+    message(STATUS "[ Alien ] cblas.h found in ${CBLAS_INCLUDE_DIR}")
 endif()
 
 add_subdirectory(standalone)
