@@ -61,7 +61,7 @@ RunQueueImpl::
 /*---------------------------------------------------------------------------*/
 
 void RunQueueImpl::
-release()
+_release()
 {
   // S'il reste des commandes en cours d'exécution au moment de libérer
   // la file d'exécution il faut attendre pour éviter des fuites mémoire car
@@ -82,7 +82,7 @@ release()
 RunQueueImpl* RunQueueImpl::
 create(Runner* r)
 {
-  return r->_internalCreateOrGetRunQueueImpl();
+  return _reset(r->_internalCreateOrGetRunQueueImpl());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -91,7 +91,7 @@ create(Runner* r)
 RunQueueImpl* RunQueueImpl::
 create(Runner* r, const RunQueueBuildInfo& bi)
 {
-  return r->_internalCreateOrGetRunQueueImpl(bi);
+  return _reset(r->_internalCreateOrGetRunQueueImpl(bi));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -143,6 +143,23 @@ _internalBarrier()
 {
   _internalStream()->barrier();
   _internalFreeRunningCommands();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Réinitialise l'implémentation
+ *
+ * Cette méthode est appelée lorsqu'on va initialiser une RunQueue avec
+ * cette instance. Il faut dans ce car réinitialiser les valeurs de l'instance
+ * qui dépendent de l'état actuel.
+ */
+RunQueueImpl* RunQueueImpl::
+_reset(RunQueueImpl* p)
+{
+  p->m_nb_ref = 1;
+  p->m_is_async = false;
+  return p;
 }
 
 /*---------------------------------------------------------------------------*/
