@@ -89,10 +89,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
    * Si l'instance est asynchrone, il faut appeler explicitement barrier()
    * pour attendre la fin de l'exécution des commandes.
    */
-  void setAsync(bool v) { m_is_async = v; }
+  void setAsync(bool v);
   //! Indique si la file d'exécution est asynchrone.
-  bool isAsync() const { return m_is_async; }
-  //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
+  bool isAsync() const;
+   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
   void barrier();
 
   //! Copie des informations entre deux zones mémoires
@@ -131,7 +131,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
  private:
 
   impl::RunQueueImpl* m_p;
-  bool m_is_async = false;
 };
 
 /*---------------------------------------------------------------------------*/
