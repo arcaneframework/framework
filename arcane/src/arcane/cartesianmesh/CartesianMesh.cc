@@ -487,8 +487,8 @@ computeDirections()
 
   m_nodes_to_cell_storage.resize(mesh()->nodeFamily()->maxLocalId());
   m_cells_to_node_storage.resize(mesh()->cellFamily()->maxLocalId());
-  m_connectivity.setStorage(m_nodes_to_cell_storage,m_cells_to_node_storage);
-  m_connectivity.computeInfos(mesh(),nodes_coord,cells_center);
+  m_connectivity._setStorage(m_nodes_to_cell_storage,m_cells_to_node_storage);
+  m_connectivity._computeInfos(mesh(),nodes_coord,cells_center);
 
   // Ajoute informations de connectivités pour les patchs AMR
   // TODO: supporter plusieurs appels à cette méthode
