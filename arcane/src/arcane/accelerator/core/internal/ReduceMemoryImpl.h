@@ -10,18 +10,19 @@
 /* Gestion de la mémoire pour les réductions.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_CORE_INTERNAL_REDUCEMEMORYIMPL_H
-#define ARCANE_ACCELERATOR_CORE_INTERNAL_REDUCEMEMROYIMPL_H
+#define ARCANE_ACCELERATOR_CORE_INTERNAL_REDUCEMEMORYIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/core/IReduceMemoryImpl.h"
+
+#include "arcane/utils/NumArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator::impl
 {
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

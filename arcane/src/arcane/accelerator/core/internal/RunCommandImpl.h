@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Implémentation de la gestion d'une commande sur accélérateur.             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_CORE_RUNCOMMANDIMPL_H
-#define ARCANE_ACCELERATOR_CORE_RUNCOMMANDIMPL_H
+#ifndef ARCANE_ACCELERATOR_CORE_INTERNAL_RUNCOMMANDIMPL_H
+#define ARCANE_ACCELERATOR_CORE_INTERNAL_RUNCOMMANDIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
