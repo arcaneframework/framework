@@ -64,17 +64,19 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   AllCellToAllEnvCell& operator=(const AllCellToAllEnvCell&) = delete;
 
   /*!
-   * La fonction de création. Il faut attendre que les données
-   * relatives aux matériaux soient finalisées
+   * Fonction de création alternative. Il faut attendre que les données
+   * relatives aux matériaux soient finalisées.
+   * La différence réside dans la gestion de la mémoire.
+   * Ici, on applique un compromis sur la taille de la table cid -> envcells
+   * où la taille du tableau pour ranger les envcells d'une cell est égale à la taille
+   * max du nb d'environnement présent à un instant t dans un maille.
+   * Celà permet de ne pas faire les allocations mémoire dans la boucle interne et de
+   * façon systématique.
+   * => Gain de perf à évaluer.
    */
-  static AllCellToAllEnvCell* old_create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
+  static AllCellToAllEnvCell* create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
   ///! Fonction de destruction
   static void destroy(AllCellToAllEnvCell* instance);
-
-  // Rien d'intelligent ici, on refait tout. Il faut voir dans un 2nd temps 
-  // pour faire qqch de plus malin et donc certainement plus rapide...
-  // SI on garde cette classe et ce concept... ça m'étonnerait...
-  void old_bruteForceUpdate();
 
   /*!
    * Méthode d'accès à la table de "connectivité" cell -> all env cells
@@ -92,28 +94,14 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
    */
   Int32 maxNbEnvPerCell() const;
 
-    /*!
-   * Fonction de création alternative. Il faut attendre que les données
-   * relatives aux matériaux soient finalisées.
-   * La différence réside dans la gestion de la mémoire.
-   * Ici, on applique un compromis sur la taille de la table cid -> envcells
-   * où la taille du tableau pour ranger les envcells d'une cell est égale à la taille
-   * max du nb d'environnement présent à un instant t dans un maille.
-   * Celà permet de ne pas faire les allocations mémoire dans la boucle interne et de
-   * façon systématique.
-   * => Gain de perf à évaluer.
-   */
-  static AllCellToAllEnvCell* create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
-
-  /* On essaye d'être un peu plus malin que sur le bruteForceUpdate :
-   * cette fois on regarde si le nb max d'env par cell à l'instant t à changer,
+  /* On regarde si le nb max d'env par cell à l'instant t à changer,
    * et si c'est le cas, on force la reconstruction de la table.
+   * Est appelé par le forceRecompute du ImeshMaterialMng
    */
   void bruteForceUpdate();
 
 
  private:
-  void old_reset();
   void reset();
 
  private:

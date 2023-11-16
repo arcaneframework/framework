@@ -605,11 +605,6 @@ _executeTest4(Integer nb_z)
     }
   }
 
-  // Some further functions testing, not really usefull here, but it improves cover
-  AllCellToAllEnvCell *useless(nullptr);
-  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
-  AllCellToAllEnvCell::destroy(useless);
-
   // GPU
   {
     auto queue = makeQueue(m_runner);
@@ -645,6 +640,12 @@ _executeTest4(Integer nb_z)
   }
 
   _checkValues();
+
+  // Some further functions testing, not really usefull here, but it improves cover
+  AllCellToAllEnvCell *useless(nullptr);
+  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
+  AllCellToAllEnvCell::destroy(useless);
+  m_mm_mng->forceRecompute();
 }
 
 /*---------------------------------------------------------------------------*/
