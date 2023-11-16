@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.h                                              (C) 2000-2022 */
+/* RunQueueImpl.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation d'une 'RunQueue'.                                          */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/utils/Array.h"
 
 #include <stack>
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -62,8 +63,16 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
  public:
 
-  void release();
-  void reset();
+  void addReference()
+  {
+    ++m_nb_ref;
+  }
+  void removeReference()
+  {
+    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
+    if (v==1)
+      _release();
+  }
 
  private:
 
@@ -73,6 +82,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   void _internalFreeRunningCommands();
   void _internalBarrier();
   bool _isInPool() const { return m_is_in_pool; }
+  void _release();
+  static RunQueueImpl* _reset(RunQueueImpl* p);
 
  private:
 
@@ -88,6 +99,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   Int32 m_id = 0;
   //! Indique si l'instance est dans un pool d'instance.
   bool m_is_in_pool = false;
+  //! Nombre de références sur l'instance.
+  std::atomic<Int32> m_nb_ref = 0;
+  //! Indique si la file est asynchrone
+  bool m_is_async = false;
 };
 
 /*---------------------------------------------------------------------------*/
