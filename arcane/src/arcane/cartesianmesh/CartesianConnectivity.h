@@ -80,7 +80,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
     P_TopZLowerLeft = 7
   };
 
- public:
+ private:
 
   struct Index
   {
