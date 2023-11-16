@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/RunQueueImpl.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
 #include "arcane/utils/FatalErrorException.h"
 
