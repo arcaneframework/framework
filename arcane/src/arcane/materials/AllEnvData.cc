@@ -402,7 +402,7 @@ forceRecompute(bool compute_all)
   if (m_material_mng->isCellToAllEnvCellForRunCommand()) {
     auto* all_cell_to_all_env_cell(m_material_mng->_internalApi()->getAllCellToAllEnvCell());
     if (all_cell_to_all_env_cell)
-      all_cell_to_all_env_cell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
+      all_cell_to_all_env_cell->bruteForceUpdate();
     else
       m_material_mng->_internalApi()->createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
   }
