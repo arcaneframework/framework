@@ -28,9 +28,9 @@
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/internal/RunCommandImpl.h"
 
 #include <iostream>
 
