@@ -136,6 +136,7 @@ option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_li
 # ----------------------------------------------------------------------------
 
 option(ARCANE_ENABLE_TESTS "Enable compilation of tests" ON)
+option(ARCANE_ENABLE_DOTNET_WRAPPER "Enable compilation of '.Net' wrapper" ON)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
