@@ -64,4 +64,3 @@ CMakeUserPresets.json
 cmake-build-debug
 cmake-build-release
 .idea
-compile_commands.json
