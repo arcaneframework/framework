@@ -7,6 +7,8 @@
 
 #ifdef ALIEN_USE_MKL
 #include "mkl_cblas.h"
+#elif ALIEN_USE_FLEXIBLAS
+#include "flexiblas/cblas.h"
 #else
 #include "cblas.h"
 #endif
