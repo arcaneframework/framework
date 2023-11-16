@@ -32,4 +32,6 @@ set( ARCANE_SOURCES
   internal/IRunnerRuntime.h
   internal/AcceleratorCoreGlobalInternal.h
   internal/MemoryTracer.h
+  internal/RunQueueImpl.h
+
 )

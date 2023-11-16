@@ -23,7 +23,6 @@
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/MemoryAllocator.h"
 
-#include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/IReduceMemoryImpl.h"
 #include "arcane/accelerator/core/Runner.h"
@@ -33,6 +32,7 @@
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
