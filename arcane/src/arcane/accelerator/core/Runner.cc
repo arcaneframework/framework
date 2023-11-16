@@ -320,13 +320,12 @@ _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 
 void Runner::
-_internalFreeRunQueueImpl(impl::RunQueueImpl* p)
+_internalPutRunQueueImplInPool(impl::RunQueueImpl* p)
 {
   _checkIsInit();
   {
     Impl::Lock my_lock(m_p.get());
-    if (p->_isInPool())
-      m_p->getPool()->push(p);
+    m_p->getPool()->push(p);
   }
 }
 

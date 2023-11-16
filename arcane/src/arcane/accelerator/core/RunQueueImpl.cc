@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.cc                                             (C) 2000-2022 */
+/* RunQueueImpl.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -63,7 +63,17 @@ RunQueueImpl::
 void RunQueueImpl::
 release()
 {
-  m_runner->_internalFreeRunQueueImpl(this);
+  // S'il reste des commandes en cours d'exécution au moment de libérer
+  // la file d'exécution il faut attendre pour éviter des fuites mémoire car
+  // les commandes ne seront pas désallouées.
+  // TODO: Regarder s'il ne faudrait pas plutôt indiquer cela à l'utilisateur
+  // ou faire une erreur fatale.
+  if (!m_active_run_command_list.empty())
+    _internalBarrier();
+  if (_isInPool())
+    m_runner->_internalPutRunQueueImplInPool(this);
+  else
+    delete this;
 }
 
 /*---------------------------------------------------------------------------*/
