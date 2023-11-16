@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianConnectivity.h                                     (C) 2000-2022 */
+/* CartesianConnectivity.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Informations de connectivité d'un maillage cartésien.                     */
 /*---------------------------------------------------------------------------*/
@@ -15,8 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/Item.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/VariableTypedef.h"
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -55,7 +55,13 @@ namespace Arcane
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 {
+  // NOTE: Pour l'instant, on doit conserver par entité les entités connectées par
+  // direction, car la numérotation ne permet pas de les retrouver simplement.
+  // À terme, on pourra le déduire directement.
+
   friend class CartesianConnectivityLocalId;
+  friend class CartesianMeshImpl;
+
   /*!
    * \brief Type énuméré indiquant la position.
    * \warning Les valeurs exactes ne doivent pas être utilisées car elles sont
@@ -163,17 +169,12 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   //! En 3D, noeud au dessus en bas à gauche de la maille \a c
   NodeLocalId topZLowerLeftId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_TopZLowerLeft]); }
 
- public:
+ private:
 
-  /*!
-  ** \name Fonctions internes réservées à Arcane.
-  */
-  //@{
   //! Calcule les infos de connectivité.
-  void computeInfos(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
+  void _computeInfos(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
   //! Positionne les tableaux contenant les infos de connectivité
-  void setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node);
-  //@}
+  void _setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node);
 
  private:
 
