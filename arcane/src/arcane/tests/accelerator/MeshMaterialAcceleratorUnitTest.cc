@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/IMeshModifier.h"
+
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
@@ -74,7 +76,7 @@ class MeshMaterialAcceleratorUnitTest
 : public BasicUnitTest
 {
  public:
-
+ 
   explicit MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& cb);
   ~MeshMaterialAcceleratorUnitTest() override;
 
@@ -645,6 +647,13 @@ _executeTest4(Integer nb_z)
   AllCellToAllEnvCell *useless(nullptr);
   useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
   AllCellToAllEnvCell::destroy(useless);
+  // Call to forceRecompute to test bruteForceUpdate
+  m_mm_mng->forceRecompute();
+  // Remove one cell to test other branch of bruteForceUpdate
+  Int32UniqueArray lid(1);
+  lid[0] = 1;
+  mesh()->modifier()->removeCells(lid);
+  mesh()->modifier()->endUpdate();
   m_mm_mng->forceRecompute();
 }
 
