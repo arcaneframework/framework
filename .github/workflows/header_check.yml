@@ -62,21 +62,25 @@ jobs:
           echo "Common commit : $COMMON_COMMIT"
         
           export CC_H_FILES=$(git diff --name-only "$MY_COMMIT..$COMMON_COMMIT" -- '*.cc' '*.h')
-          echo "Checking files : $CC_H_FILES"
+          echo "::group::Files to check :"
+          echo "$CC_H_FILES"
+          echo "::endgroup::"
+          
+          echo "::notice::In case of error, see the section 'Error details' or the artifact 'Header Check Logs'."
           
           chmod u+x ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh
           ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh > ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
-      - name: Display logs
+      - name: Error details
         if: failure()
         shell: bash
         run: |
           cat ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
-      - name: Upload log artifact
+      - name: Upload the logs artifact
         uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: Header Check Log
+          name: Header Check Logs
           path: ${{ env.ARCANE_SOURCE_DIR }}/output.log
           retention-days: 7
