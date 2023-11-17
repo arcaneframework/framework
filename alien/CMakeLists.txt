@@ -74,7 +74,7 @@ elseif(BLAS_LIBRARIES MATCHES FlexiBLAS OR BLAS_LIBRARIES MATCHES flexiblas OR B
     message(STATUS "[ Alien ] FlexiBLAS BLAS detected")
     message(STATUS "[ Alien ] flexiblas/cblas.h found in ${CBLAS_INCLUDE_DIR}")
 elseif(BLAS_LIBRARIES MATCHES OpenBLAS OR BLAS_LIBRARIES MATCHES openblas OR BLA_VENDOR MATCHES OpenBLAS)
-    find_path(CBLAS_INCLUDE_DIR cblas.h HINTS ENV OPENBLAS_ROOT PATH_SUFFIXES include REQUIRED)
+    find_path(CBLAS_INCLUDE_DIR cblas.h HINTS ENV OPENBLAS_ROOT PATH_SUFFIXES openblas include REQUIRED)
     # TODO: check if cblas.h is from  OpenBLAS
     add_definitions(-DALIEN_USE_OPENBLAS)
     message(STATUS "[ Alien ] OpenBLAS BLAS detected")
