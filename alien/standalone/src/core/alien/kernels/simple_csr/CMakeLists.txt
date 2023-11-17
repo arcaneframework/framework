@@ -40,14 +40,15 @@ add_library(alien_kernel_simplecsr OBJECT
         SimpleCSRPrecomp.h
         )
 
+target_include_directories(alien_kernel_simplecsr PRIVATE ${CBLAS_INCLUDE_DIR})
 
-find_package(BLAS REQUIRED)
 target_link_libraries(alien_kernel_simplecsr PUBLIC BLAS::BLAS)
 
 target_link_libraries(alien_kernel_simplecsr PUBLIC
         Arccore::arccore_trace
         Arccore::arccore_collections
         Arccore::arccore_base
+
         Arccore::arccore_message_passing_mpi)
 
 target_link_libraries(alien_kernel_simplecsr PUBLIC alien_utils alien_headers)

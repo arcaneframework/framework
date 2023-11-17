@@ -56,18 +56,45 @@ arcane_framework_set_if_unset(Arctools_ROOT ${ARCFRAMEWORK_ROOT}/arctools PATH "
 
 list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/_common/build_all/cmake)
 
-# Add Alien only if blas and boost found
-find_package(BLAS)
-find_package(Boost OPTIONAL_COMPONENTS program_options)
-if (BLAS_FOUND AND Boost_program_options_FOUND)
-    add_subdirectory(standalone)
-    set(ALIEN_FOUND YES)
-    set(FRAMEWORK_INSTALL YES)
-    if (WIN32) # Not yet ready...
-#        if (BUILD_ARCANE_INTERFACE)
-#            add_subdirectory(ArcaneInterface)
-#        endif ()
-    elseif (BUILD_ARCANE_INTERFACE)
-            add_subdirectory(ArcaneInterface)
-    endif ()
+find_package(BLAS REQUIRED)
+message(STATUS "[ Alien ] BLAS LIBRARIES: ${BLAS_LIBRARIES}")
+
+# TODO: use some AlienConfig.h to replace add_definitions(-DALIEN_USE_XXX)
+set(CBLAS_INCLUDE_DIR CBLAS_INCLUDE_DIR-NOTFOUND)
+if(BLAS_LIBRARIES MATCHES mkl OR BLA_VENDOR MATCHES Intel)
+    # relative path for mkl_cblas.h change with mkl versions
+    find_path(CBLAS_INCLUDE_DIR mkl_cblas.h HINTS ENV MKLROOT PATH_SUFFIXES include mkl/include REQUIRED)
+    add_definitions(-DALIEN_USE_MKL)
+    message(STATUS "[ Alien ] MKL BLAS detected")
+    message(STATUS "[ Alien ] mkl_cblas.h found in ${CBLAS_INCLUDE_DIR}")
+elseif(BLAS_LIBRARIES MATCHES FlexiBLAS OR BLAS_LIBRARIES MATCHES flexiblas OR BLA_VENDOR MATCHES FlexiBLAS)
+    # Flexiblas includes files are installed in include/flexiblas dir from root install
+    find_path(CBLAS_INCLUDE_DIR flexiblas/cblas.h HINTS ENV FLEXIBLAS_ROOT PATH_SUFFIXES include REQUIRED)
+    add_definitions(-DALIEN_USE_FLEXIBLAS)
+    message(STATUS "[ Alien ] FlexiBLAS BLAS detected")
+    message(STATUS "[ Alien ] flexiblas/cblas.h found in ${CBLAS_INCLUDE_DIR}")
+elseif(BLAS_LIBRARIES MATCHES OpenBLAS OR BLAS_LIBRARIES MATCHES openblas OR BLA_VENDOR MATCHES OpenBLAS)
+    find_path(CBLAS_INCLUDE_DIR cblas.h HINTS ENV OPENBLAS_ROOT PATH_SUFFIXES openblas include REQUIRED)
+    # TODO: check if cblas.h is from  OpenBLAS
+    add_definitions(-DALIEN_USE_OPENBLAS)
+    message(STATUS "[ Alien ] OpenBLAS BLAS detected")
+    message(STATUS "[ Alien ] cblas.h found in ${CBLAS_INCLUDE_DIR}")
+else()
+    # supposes that other BLAS packages provide a cblas.h file
+    # we must be sure that the cblas found
+    find_path(CBLAS_INCLUDE_DIR cblas.h REQUIRED)
+    message(STATUS "[ Alien ] cblas.h found in ${CBLAS_INCLUDE_DIR}")
 endif()
+
+add_subdirectory(standalone)
+
+set(ALIEN_FOUND YES)
+set(FRAMEWORK_INSTALL YES)
+
+if (WIN32) # Not yet ready...
+endif()
+
+if(BUILD_ARCANE_INTERFACE)
+    add_subdirectory(ArcaneInterface)
+endif ()
+
