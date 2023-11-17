@@ -2,12 +2,12 @@ name: Header/Encoding checker
 
 on:
   push:
-    branches: [ main, dev/cea ]
+    branches: [ main ]
     paths:
       - '**.cc'
       - '**.h'
   pull_request:
-    branches: [ main, dev/cea ]
+    branches: [ main ]
     paths:
       - '**.cc'
       - '**.h'
@@ -34,20 +34,53 @@ jobs:
         shell: bash
         run: |
           cd ${{ env.ARCANE_SOURCE_DIR }}
-          export CC_H_FILES=$(git diff --name-only origin/main -- '*.cc' '*.h')
+          
+          MY_COMMIT=$(git rev-parse HEAD)
+          echo "My commit : $MY_COMMIT"
+          
+          PARENT_BRANCH="$(git rev-parse origin/main)"
+          echo "Parent branch : $PARENT_BRANCH"
+          
+          if [[ $MY_COMMIT == $PARENT_BRANCH ]]; then
+            echo "Already on the parent branch, exit"
+            exit 0
+          fi
+          
+          COMMON_COMMIT=$(git merge-base $PARENT_BRANCH $MY_COMMIT)
+          
+          if [[ $MY_COMMIT == $COMMON_COMMIT ]]; then
+            echo "Already merged branch"
+          
+            FIRST_MERGE_AFTER_MY_BRANCH=$(git rev-list --merges "$MY_COMMIT..$PARENT_BRANCH" | tail -1)
+            echo "First merge after my branch : $FIRST_MERGE_AFTER_MY_BRANCH"
+          
+            COMMON_COMMIT=$(git rev-parse "$FIRST_MERGE_AFTER_MY_BRANCH^")
+          else
+            echo "Not merged branch"
+          fi
+          
+          echo "Common commit : $COMMON_COMMIT"
+        
+          export CC_H_FILES=$(git diff --name-only "$MY_COMMIT..$COMMON_COMMIT" -- '*.cc' '*.h')
+          echo "::group::Files to check :"
+          echo "$CC_H_FILES"
+          echo "::endgroup::"
+          
+          echo "::notice::In case of error, see the section 'Error details' or the artifact 'Header Check Logs'."
+          
           chmod u+x ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh
           ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh > ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
-      - name: Display logs
+      - name: Error details
         if: failure()
         shell: bash
         run: |
           cat ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
-      - name: Upload log artifact
+      - name: Upload the logs artifact
         uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: Header Check Log
+          name: Header Check Logs
           path: ${{ env.ARCANE_SOURCE_DIR }}/output.log
           retention-days: 7
