@@ -103,7 +103,7 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   // via un ENUMERATE_CELL(...allCells)
   auto pool_size(_instance->m_current_max_nb_env * mm->mesh()->allCells().size());
   env_cells = reinterpret_cast<ComponentItemLocalId*>(alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
-  std::fill(env_cells, env_cells+pool_size, *(new ComponentItemLocalId()));
+  std::fill(env_cells, env_cells+pool_size, ComponentItemLocalId());
 
   CellToAllEnvCellConverter all_env_cell_converter(mm);
   ENUMERATE_CELL (icell, mm->mesh()->allCells()) {
@@ -155,7 +155,7 @@ bruteForceUpdate()
       // on recree le pool
       auto pool_size(m_current_max_nb_env * m_material_mng->mesh()->allCells().size());
       env_cells = reinterpret_cast<ComponentItemLocalId*>(m_alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
-      std::fill(env_cells, env_cells+pool_size, *(new ComponentItemLocalId()));
+      std::fill(env_cells, env_cells+pool_size, ComponentItemLocalId());
       mem_pool_has_changed = true;
     }
     // Si on a pas touché au pool mémoire on repositionne le ptr sur l'existant
