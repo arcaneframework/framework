@@ -59,6 +59,7 @@ list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/_common/build_all/cmake)
 find_package(BLAS REQUIRED)
 message(STATUS "[ Alien ] BLAS LIBRARIES: ${BLAS_LIBRARIES}")
 
+# TODO: use some AlienConfig.h to replace add_definitions(-DALIEN_USE_XXX)
 set(CBLAS_INCLUDE_DIR CBLAS_INCLUDE_DIR-NOTFOUND)
 if(BLAS_LIBRARIES MATCHES mkl OR BLA_VENDOR MATCHES Intel)
     # relative path for mkl_cblas.h change with mkl versions
@@ -68,12 +69,13 @@ if(BLAS_LIBRARIES MATCHES mkl OR BLA_VENDOR MATCHES Intel)
     message(STATUS "[ Alien ] mkl_cblas.h found in ${CBLAS_INCLUDE_DIR}")
 elseif(BLAS_LIBRARIES MATCHES FlexiBLAS OR BLAS_LIBRARIES MATCHES flexiblas OR BLA_VENDOR MATCHES FlexiBLAS)
     # Flexiblas includes files are installed in include/flexiblas dir from root install
-    find_path(CBLAS_INCLUDE_DIR flexiblas/cblas.h REQUIRED)
+    find_path(CBLAS_INCLUDE_DIR flexiblas/cblas.h HINTS ENV FLEXIBLAS_ROOT PATH_SUFFIXES include REQUIRED)
     add_definitions(-DALIEN_USE_FLEXIBLAS)
     message(STATUS "[ Alien ] FlexiBLAS BLAS detected")
     message(STATUS "[ Alien ] flexiblas/cblas.h found in ${CBLAS_INCLUDE_DIR}")
 elseif(BLAS_LIBRARIES MATCHES OpenBLAS OR BLAS_LIBRARIES MATCHES openblas OR BLA_VENDOR MATCHES OpenBLAS)
-    find_path(CBLAS_INCLUDE_DIR cblas.h REQUIRED)
+    find_path(CBLAS_INCLUDE_DIR cblas.h HINTS ENV OPENBLAS_ROOT PATH_SUFFIXES include REQUIRED)
+    # TODO: check if cblas.h is from  OpenBLAS
     add_definitions(-DALIEN_USE_OPENBLAS)
     message(STATUS "[ Alien ] OpenBLAS BLAS detected")
     message(STATUS "[ Alien ] cblas.h found in ${CBLAS_INCLUDE_DIR}")
