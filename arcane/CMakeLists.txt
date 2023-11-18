@@ -367,6 +367,7 @@ set(ARCANE_INT64_MAX ${ARCCORE_INT64_MAX})
 
 # ----------------------------------------------------------------------------
 
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/ArcanePackageInfo.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Functions.cmake)
 
 # ----------------------------------------------------------------------------
