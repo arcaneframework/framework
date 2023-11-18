@@ -35,6 +35,24 @@ macro(arcane_find_package package_name)
     set(CMAKE_DISABLE_FIND_PACKAGE_${package_name} TRUE)
   endif()
   find_package(${package_name} ${ARGN})
+  # Si cette variable est définie, elle contient une liste de noms de
+  # cibles pour le package. Il faut qu'au moins une de ces cibles
+  # existe pour qu'on considère le package comme trouvé.
+  if (ARCANE_PACKAGE_SEARCH_TARGETS_${package_name})
+    set(__arcane_sub_target_found FALSE)
+    message(STATUS "Found package search targets for'${package_name}'")
+    foreach(sub_target_name ${ARCANE_PACKAGE_SEARCH_TARGETS_${package_name}})
+      message(STATUS "Search target '${sub_target_name}' for package '${package_name}'")
+      if (TARGET ${sub_target_name})
+        arccon_register_cmake_config_target(${package_name} CONFIG_TARGET_NAME ${sub_target_name})
+        set(__arcane_sub_target_found TRUE)
+        break()
+      endif()
+    endforeach()
+    if (NOT __arcane_sub_target_found)
+      set(${package_name}_FOUND FALSE)
+    endif()
+  endif()
   if(__arcane_required_package)
     if(NOT ${package_name}_FOUND)
       message(FATAL_ERROR "Required package '${package_name}' is not available")
@@ -272,6 +290,16 @@ endfunction()
 #
 # La liste des packages est sans le préfix 'arccon::'.
 #
+# Afin de supporter le fait que les noms des cibles puissent
+# évoluer en fonction des versions des produits, de CMake ou
+# de la configuration, on supporte plusieurs mécanismes pour
+# associer une cible à un package. Pour chaque package '<pkg>, la
+# recherche de la cible associé se fait comme suit:
+#
+# 1. Si la variable 'ARCCON_TARGET_${pkg}' on considère qu'il
+#    s'agit du nom de la cible
+# 2. Sinon, on la cible recherchée sera 'arccon::${pkg}'
+
 # En plus d'ajouter la liste des packages, cette fonction
 # ajoute aussi en public un argument '-rpath' pour chaque
 # répertoire contenant une bibliothèque des packages.
@@ -316,6 +344,10 @@ function(arcane_add_arccon_packages target visibility)
       # Récupère les bibliothèques définies dans le package.
       # TODO: ne traiter que les répertoires correspondants aux bibliothèques
       # dynamiques.
+      # NOTE: Ce mécanisme est obsolète (2023) et n'est actif que
+      # si ARCANE_ADD_RPATH_TO_LIBS est défini. Ce n'est normalement
+      # plus le cas. On le laisse temporairement pour des raisons
+      # de compatibilité
       get_target_property(_LIB ${_PKG} INTERFACE_LINK_LIBRARIES)
       foreach(lib ${_LIB})
         #message(STATUS "LIB::${lib}")
