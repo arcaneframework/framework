@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/IMeshModifier.h"
+
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
@@ -25,6 +27,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/materials/ComponentSimd.h"
 #include "arcane/materials/IMeshMaterialMng.h"
@@ -74,7 +77,7 @@ class MeshMaterialAcceleratorUnitTest
 : public BasicUnitTest
 {
  public:
-
+ 
   explicit MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& cb);
   ~MeshMaterialAcceleratorUnitTest() override;
 
@@ -174,7 +177,7 @@ initializeTest()
   m_mm_mng = IMeshMaterialMng::getReference(mesh());
 
   // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
-  UniqueArray<String> mat_names = { "MAT1", "MAT2", "MAT3" };
+  UniqueArray<String> mat_names = { "MAT1", "MAT2", "MAT3", "MAT4" };
   for( String v : mat_names ){
     m_mm_mng->registerMaterialInfo(v);
   }
@@ -189,6 +192,11 @@ initializeTest()
     Materials::MeshEnvironmentBuildInfo env_build("ENV2");
     env_build.addMaterial("MAT2");
     env_build.addMaterial("MAT3");
+    m_mm_mng->createEnvironment(env_build);
+  }
+  {
+    Materials::MeshEnvironmentBuildInfo env_build("ENV3");
+    env_build.addMaterial("MAT4");
     m_mm_mng->createEnvironment(env_build);
   }
 
@@ -605,11 +613,6 @@ _executeTest4(Integer nb_z)
     }
   }
 
-  // Some further functions testing, not really usefull here, but it improves cover
-  AllCellToAllEnvCell *useless(nullptr);
-  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
-  AllCellToAllEnvCell::destroy(useless);
-
   // GPU
   {
     auto queue = makeQueue(m_runner);
@@ -645,6 +648,30 @@ _executeTest4(Integer nb_z)
   }
 
   _checkValues();
+
+  // Some further functions testing, not really usefull here, but it improves cover
+  AllCellToAllEnvCell *useless(nullptr);
+  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
+  AllCellToAllEnvCell::destroy(useless);
+
+  // Call to forceRecompute to test bruteForceUpdate
+  m_mm_mng->forceRecompute();
+
+  // Remove one cell to test other branch of bruteForceUpdate
+  Int32UniqueArray lid(1);
+  lid[0] = 1;
+  mesh()->modifier()->removeCells(lid);
+  mesh()->modifier()->endUpdate();
+  m_mm_mng->forceRecompute();
+
+  // Force last path of bruteForceUpdate testing
+  Int32UniqueArray env1_indexes;
+  ENUMERATE_CELL(icell,allCells()){
+    env1_indexes.add(icell.itemLocalId());
+  }
+  Materials::MeshMaterialModifier modifier(m_mm_mng);
+  modifier.addCells(m_mm_mng->environments()[2]->materials()[0],env1_indexes);
+  m_mm_mng->forceRecompute();
 }
 
 /*---------------------------------------------------------------------------*/
