@@ -1,9 +1,13 @@
-message(STATUS "ALEPH_TRILINOS subdirectory")
-set(PKGS Trilinos MPI)
-arcane_find_package(Trilinos)
-if (NOT TARGET arcconpkg_Trilinos)
-  return()
-endif()
+message(STATUS "'arcane_aleph_trilinos' subdirectory")
+
+set(PKGS TrilinosAleph MPI)
+foreach(package ${PKGS})
+  arcane_find_package(${package})
+  if (NOT ${package}_FOUND)
+    message(STATUS "Disabling 'arcane_aleph_trilinos' because package '${package}' is not found")
+    return()
+  endif()
+endforeach()
 
 include(srcs.cmake)
 
