@@ -109,8 +109,9 @@ sudo snap install --classic cmake
 
 ### Environnement `.Net`
 
-L'environnement [.Net](https://dotnet.microsoft.com) est nécessaire pour compiler Arcane. Il est
-accessible via `apt` mais vous pouvez aussi directement télécharger un
+L'environnement [.Net 6.0](https://dotnet.microsoft.com) est nécessaire
+pour compiler Arcane. Il est accessible via les packages systèmes
+(`apt` ou `yum`) mais vous pouvez aussi directement télécharger un
 fichier `tar` contenant le binaire et les fichiers nécessaires. Pour
 l'architecture `x64`, les commandes suivantes installent
 l'environnement dans le répertoire `$HOME/dotnet`.
@@ -202,3 +203,16 @@ sudo pacman -Syu
 sudo pacman -S gcc cmake python git gcc-fortran glib2 libxml2 hdf5-openmpi wget tbb dotnet-sdk aspnet-runtime aspnet-targeting-pack
 yay -S aur/parmetis
 ~~~
+
+### AlmaLinux 9 (or RedHat 9)
+
+Pour compiler Arcane, il est nécessaire d'installer les packages
+suivants:
+
+~~~{sh}
+# Packages nécessaires
+yum -y install dotnet-sdk-6.0 glib2-devel libxml2-devel gcc-c++
+~~~
+
+La version par défaut de CMake sur AlmaLinux 9 est trop ancienne
+(3.20). Il faut donc télécharger une version plus récente
