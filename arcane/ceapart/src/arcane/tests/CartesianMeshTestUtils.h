@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTestUtils.cc                                   (C) 2000-2022 */
+/* CartesianMeshTestUtils.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
 /*---------------------------------------------------------------------------*/
@@ -100,6 +100,9 @@ class CartesianMeshTestUtils
   void _testDirCellFaceAccelerator();
   void _testNodeToCellConnectivity3DAccelerator();
   void _testCellToNodeConnectivity3DAccelerator();
+  void _testConnectivityByDirection();
+  template<typename ItemType> void
+  _testConnectivityByDirectionHelper(const ItemGroup& group);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -185,6 +185,7 @@ class CartesianMeshImpl
   CartesianConnectivity m_connectivity;
   UniqueArray<CartesianConnectivity::Index> m_nodes_to_cell_storage;
   UniqueArray<CartesianConnectivity::Index> m_cells_to_node_storage;
+  UniqueArray<CartesianConnectivity::Permutation> m_permutation_storage;
   bool m_is_amr = false;
   //! Groupe de mailles parentes pour chaque patch AMR.
   UniqueArray<CellGroup> m_amr_patch_cell_groups;
@@ -241,6 +242,7 @@ CartesianMeshImpl(IMesh* mesh)
 , m_mesh(mesh)
 , m_nodes_to_cell_storage(platform::getDefaultDataAllocator())
 , m_cells_to_node_storage(platform::getDefaultDataAllocator())
+, m_permutation_storage(platform::getDefaultDataAllocator())
 , m_amr_type(mesh->meshKind().meshAMRKind())
 {
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly)
@@ -485,9 +487,11 @@ computeDirections()
 
   info() << "Compute cartesian connectivity";
 
+  m_permutation_storage.resize(1);
+  m_permutation_storage[0].compute();
   m_nodes_to_cell_storage.resize(mesh()->nodeFamily()->maxLocalId());
   m_cells_to_node_storage.resize(mesh()->cellFamily()->maxLocalId());
-  m_connectivity._setStorage(m_nodes_to_cell_storage,m_cells_to_node_storage);
+  m_connectivity._setStorage(m_nodes_to_cell_storage,m_cells_to_node_storage,&m_permutation_storage[0]);
   m_connectivity._computeInfos(mesh(),nodes_coord,cells_center);
 
   // Ajoute informations de connectivités pour les patchs AMR

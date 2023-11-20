@@ -29,10 +29,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void CartesianConnectivity::
-_setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node)
+_setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node,
+            const Permutation* permutation)
 {
   m_nodes_to_cell = nodes_to_cell;
   m_cells_to_node = cells_to_node;
+  m_permutation = permutation;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -214,6 +216,27 @@ _computeInfos3D(IMesh* mesh, VariableNodeReal3& nodes_coord,
       }
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Calcule les permutations des 8 ePosition pour chaque direction.
+ *
+ * La direction de référence est X.
+ */
+void CartesianConnectivity::Permutation::
+compute()
+{
+  Int32 p[3][8] = {
+    { 0, 1, 2, 3, 4, 5, 6, 7 },
+    { 3, 0, 1, 2, 7, 4, 5, 6 },
+    { 1, 5, 6, 2, 0, 4, 7, 3 }
+  };
+
+  for (Int32 i = 0; i < 3; ++i)
+    for (Int32 j = 0; j < 8; ++j)
+      permutation[i][j] = static_cast<ePosition>(p[i][j]);
 }
 
 /*---------------------------------------------------------------------------*/
