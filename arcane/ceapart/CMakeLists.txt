@@ -12,27 +12,12 @@ message(STATUS "ARCANEBUILDROOT for CEA = ${ARCANEBUILDROOT}")
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share)
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 
-# A supprimer mais en attendant permet de compiler avec IntelMPI
-if (ARCANE_WANT_MPI_DISTRIB MATCHES "intelmpi")
-  set(DISABLE_SLOOP_AND_TRILINOS YES)
-  include(cmake/FindItac.cmake)
-endif ()
-if(ARCANE_USE_MPC)
-  set(DISABLE_SLOOP_AND_TRILINOS YES)
-endif()
-
 # ----------------------------------------------------------------------------
 
 include(cmake/VT100.cmake)
 if(NOT WIN32)
-  # Lima a besoin de LM et F90 donc il faut qu'ils soient
-  # recherchés avan lui
   include(cmake/FindItac.cmake)
   include(cmake/FindMathlink.cmake)
-
-  if(NOT DISABLE_SLOOP_AND_TRILINOS)
-    include(cmake/FindSuperLU.cmake)
-  endif()
 endif()
 
 if(NOT WIN32 AND MATHLINK_FOUND)
@@ -43,7 +28,6 @@ add_subdirectory(src/arcane/cea)
 add_subdirectory(src/arcane/geometric)
 add_subdirectory(src/arcane/meshutils)
 add_subdirectory(src/arcane/hyoda)
-add_subdirectory(src/arcane/aleph/sloop)
 
 # ----------------------------------------------------------------------------
 # Ajoute des tests.
