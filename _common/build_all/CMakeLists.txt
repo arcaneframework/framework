@@ -63,9 +63,14 @@ enable_testing()
 # ----------------------------------------------------------------------------
 
 if (NOT ALIEN_BUILD_COMPONENT)
-  # Deux valeurs possibles: 'alien_standalone' ou 'all'
-  set(ALIEN_BUILD_COMPONENT alien_standalone) # alien/ArcaneInterface (=Alien_legacy_plugins) temporarily deactivated. To remove.
-endif()
+  if (Arcane IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
+    # if Arcane is specified in command line build all Alien components
+    set (ALIEN_BUILD_COMPONENT all)
+  else ()
+    # else build only alien_standalone (does not depend on Arcane)
+    set(ALIEN_BUILD_COMPONENT alien_standalone) # alien/ArcaneInterface (=Alien_legacy_plugins) temporarily deactivated. To remove.
+  endif()
+endif ()
 
 # ----------------------------------------------------------------------------
 
