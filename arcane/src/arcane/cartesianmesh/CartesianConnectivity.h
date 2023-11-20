@@ -107,13 +107,13 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   Cell lowerLeft(Node n) const { return _nodeToCell(n, P_LowerLeft); }
 
   //! Maille en haut à gauche du noeud \a n
-  CellLocalId upperLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_UpperLeft); }
+  ARCCORE_HOST_DEVICE CellLocalId upperLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_UpperLeft); }
   //! Maille en haut à droite du noeud \a n
-  CellLocalId upperRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_UpperRight); }
+  ARCCORE_HOST_DEVICE CellLocalId upperRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_UpperRight); }
   //! Maille en bas à droite du noeud \a n
-  CellLocalId lowerRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_LowerRight); }
+  ARCCORE_HOST_DEVICE CellLocalId lowerRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_LowerRight); }
   //! Maille en bas à gauche du noeud \a n
-  CellLocalId lowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_LowerLeft); }
+  ARCCORE_HOST_DEVICE CellLocalId lowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_LowerLeft); }
 
   //! En 3D, maille en haut à gauche du noeud \a n
   Cell topZUpperLeft(Node n) const { return _nodeToCell(n, P_TopZUpperLeft); }
@@ -125,13 +125,13 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   Cell topZLowerLeft(Node n) const { return _nodeToCell(n, P_TopZLowerLeft); }
 
   //! En 3D, maille en haut à gauche du noeud \a n
-  CellLocalId topZUpperLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZUpperLeft); }
+  ARCCORE_HOST_DEVICE CellLocalId topZUpperLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZUpperLeft); }
   //! En 3D, maille en haut à droite du noeud \a n
-  CellLocalId topZUpperRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZUpperRight); }
+  ARCCORE_HOST_DEVICE CellLocalId topZUpperRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZUpperRight); }
   //! En 3D, maille en bas à droite du noeud \a n
-  CellLocalId topZLowerRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerRight); }
+  ARCCORE_HOST_DEVICE CellLocalId topZLowerRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerRight); }
   //! En 3D, maille en bas à gauche du noeud \a n
-  CellLocalId topZLowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerLeft); }
+  ARCCORE_HOST_DEVICE CellLocalId topZLowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerLeft); }
 
   //! Noeud en haut à gauche de la maille \a c
   Node upperLeft(Cell c) const { return _cellToNode(c, P_UpperLeft); }
@@ -143,13 +143,13 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   Node lowerLeft(Cell c) const { return _cellToNode(c, P_LowerLeft); }
 
   //! Noeud en haut à gauche de la maille \a c
-  NodeLocalId upperLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_UpperLeft); }
+  ARCCORE_HOST_DEVICE NodeLocalId upperLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_UpperLeft); }
   //! Noeud en haut à droite de la maille \a c
-  NodeLocalId upperRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_UpperRight); }
+  ARCCORE_HOST_DEVICE NodeLocalId upperRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_UpperRight); }
   //! Noeud en bas à droite de la maille \a c
-  NodeLocalId lowerRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_LowerRight); }
+  ARCCORE_HOST_DEVICE NodeLocalId lowerRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_LowerRight); }
   //! Noeud en bad à gauche de la maille \a c
-  NodeLocalId lowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_LowerLeft); }
+  ARCCORE_HOST_DEVICE NodeLocalId lowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_LowerLeft); }
 
   //! En 3D, noeud au dessus en haut à gauche de la maille \a c
   Node topZUpperLeft(Cell c) const { return _cellToNode(c, P_TopZUpperLeft); }
@@ -161,13 +161,13 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   Node topZLowerLeft(Cell c) const { return _cellToNode(c, P_TopZLowerLeft); }
 
   //! En 3D, noeud au dessus en haut à gauche de la maille \a c
-  NodeLocalId topZUpperLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZUpperLeft); }
+  ARCCORE_HOST_DEVICE NodeLocalId topZUpperLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZUpperLeft); }
   //! En 3D, noeud au dessus en haut à droite de la maille \a c
-  NodeLocalId topZUpperRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZUpperRight); }
+  ARCCORE_HOST_DEVICE NodeLocalId topZUpperRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZUpperRight); }
   //! En 3D, noeud au dessus en bas à droite de la maille \a c
-  NodeLocalId topZLowerRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZLowerRight); }
+  ARCCORE_HOST_DEVICE NodeLocalId topZLowerRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZLowerRight); }
   //! En 3D, noeud au dessus en bas à gauche de la maille \a c
-  NodeLocalId topZLowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZLowerLeft); }
+  ARCCORE_HOST_DEVICE NodeLocalId topZLowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZLowerLeft); }
 
  private:
 
@@ -178,8 +178,14 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 
  private:
 
-  CellLocalId _nodeToCellLocalId(NodeLocalId n, ePosition p) const { return CellLocalId(m_nodes_to_cell[n].v[p]); }
-  NodeLocalId _cellToNodeLocalId(CellLocalId c, ePosition p) const { return NodeLocalId(m_cells_to_node[c].v[p]); }
+  ARCCORE_HOST_DEVICE CellLocalId _nodeToCellLocalId(NodeLocalId n, ePosition p) const
+  {
+    return CellLocalId(m_nodes_to_cell[n].v[p]);
+  }
+  ARCCORE_HOST_DEVICE NodeLocalId _cellToNodeLocalId(CellLocalId c, ePosition p) const
+  {
+    return NodeLocalId(m_cells_to_node[c].v[p]);
+  }
   Cell _nodeToCell(Node n, ePosition p) const { return m_cells[m_nodes_to_cell[n.localId()].v[p]]; }
   Node _cellToNode(Cell c, ePosition p) const { return m_nodes[m_cells_to_node[c.localId()].v[p]]; }
 
@@ -208,89 +214,18 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
  * \sa CartesianConnectivity.
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivityLocalId
+: public CartesianConnectivity
 {
  private:
 
   using Index = CartesianConnectivity::Index;
 
-  enum ePosition
-  {
-    P_UpperLeft = 0,
-    P_UpperRight = 1,
-    P_LowerRight = 2,
-    P_LowerLeft = 3,
-
-    P_TopZUpperLeft = 4,
-    P_TopZUpperRight = 5,
-    P_TopZLowerRight = 6,
-    P_TopZLowerLeft = 7
-  };
-
  public:
 
   CartesianConnectivityLocalId(const CartesianConnectivity& c)
-  : m_nodes_to_cell(c.m_nodes_to_cell)
-  , m_cells_to_node(c.m_cells_to_node)
-  , m_cells(c.m_cells)
-  , m_nodes(c.m_nodes)
+  : CartesianConnectivity(c)
   {
   }
-
- public:
-
-  //! Maille en haut à gauche du noeud \a n
-  ARCCORE_HOST_DEVICE CellLocalId upperLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_UpperLeft); }
-  //! Maille en haut à droite du noeud \a n
-  ARCCORE_HOST_DEVICE CellLocalId upperRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_UpperRight); }
-  //! Maille en bas à droite du noeud \a n
-  ARCCORE_HOST_DEVICE CellLocalId lowerRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_LowerRight); }
-  //! Maille en bas à gauche du noeud \a n
-  ARCCORE_HOST_DEVICE CellLocalId lowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_LowerLeft); }
-
-  //! En 3D, maille en haut à gauche du noeud \a n
-  ARCCORE_HOST_DEVICE CellLocalId topZUpperLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZUpperLeft); }
-  //! En 3D, maille en haut à droite du noeud \a n
-  ARCCORE_HOST_DEVICE CellLocalId topZUpperRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZUpperRight); }
-  //! En 3D, maille en bas à droite du noeud \a n
-  ARCCORE_HOST_DEVICE CellLocalId topZLowerRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerRight); }
-  //! En 3D, maille en bas à gauche du noeud \a n
-  ARCCORE_HOST_DEVICE CellLocalId topZLowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerLeft); }
-
-  //! Noeud en haut à gauche de la maille \a c
-  ARCCORE_HOST_DEVICE NodeLocalId upperLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_UpperLeft); }
-  //! Noeud en haut à droite de la maille \a c
-  ARCCORE_HOST_DEVICE NodeLocalId upperRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_UpperRight); }
-  //! Noeud en bas à droite de la maille \a c
-  ARCCORE_HOST_DEVICE NodeLocalId lowerRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_LowerRight); }
-  //! Noeud en bad à gauche de la maille \a c
-  ARCCORE_HOST_DEVICE NodeLocalId lowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_LowerLeft); }
-
-  //! En 3D, noeud au dessus en haut à gauche de la maille \a c
-  ARCCORE_HOST_DEVICE NodeLocalId topZUpperLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZUpperLeft); }
-  //! En 3D, noeud au dessus en haut à droite de la maille \a c
-  ARCCORE_HOST_DEVICE NodeLocalId topZUpperRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZUpperRight); }
-  //! En 3D, noeud au dessus en bas à droite de la maille \a c
-  ARCCORE_HOST_DEVICE NodeLocalId topZLowerRightId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZLowerRight); }
-  //! En 3D, noeud au dessus en bas à gauche de la maille \a c
-  ARCCORE_HOST_DEVICE NodeLocalId topZLowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZLowerLeft); }
-
- private:
-
-  ARCCORE_HOST_DEVICE CellLocalId _nodeToCellLocalId(NodeLocalId n, ePosition p) const
-  {
-    return CellLocalId(m_nodes_to_cell[n].v[p]);
-  }
-  ARCCORE_HOST_DEVICE NodeLocalId _cellToNodeLocalId(CellLocalId c, ePosition p) const
-  {
-    return NodeLocalId(m_cells_to_node[c].v[p]);
-  }
-
- private:
-
-  ArrayView<Index> m_nodes_to_cell;
-  ArrayView<Index> m_cells_to_node;
-  CellInfoListView m_cells;
-  NodeInfoListView m_nodes;
 };
 
 /*---------------------------------------------------------------------------*/
