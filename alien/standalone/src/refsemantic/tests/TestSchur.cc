@@ -21,7 +21,7 @@
 #include <alien/core/block/VBlock.h>
 #include <alien/handlers/block/BlockBuilder.h>
 
-#ifdef ALIN_USE_EIGEN3
+#ifdef ALIEN_USE_EIGEN3
 #include <alien/expression/schur/SchurOp.h>
 #endif
 
