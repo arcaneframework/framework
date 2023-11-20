@@ -280,7 +280,10 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 
   {
     String s = platform::getEnvironmentVariable("ARCANE_GRAPH_CONNECTIVITY_POLICY");
-    if (s=="1"){
+#ifdef USE_GRAPH_CONNECTIVITY_POLICY
+    s = "1";
+#endif
+    if (s == "1") {
       m_item_family_network = new ItemFamilyNetwork(traceMng());
       info()<<"Graph connectivity is activated";
       m_family_modifiers.add(m_cell_family);
