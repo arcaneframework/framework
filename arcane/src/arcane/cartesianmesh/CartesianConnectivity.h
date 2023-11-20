@@ -82,17 +82,29 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 
  private:
 
+  //! Liste des 8 entités autout d'une autre entité
   struct Index
   {
-   public:
-
     friend class CartesianConnectivity;
-    friend class CartesianConnectivityLocalId;
 
    private:
 
     void fill(Int32 i) { v[0] = v[1] = v[2] = v[3] = v[4] = v[5] = v[6] = v[7] = i; }
     Int32 v[8];
+  };
+
+  //! Permutation dans Index pour chaque direction
+  struct Permutation
+  {
+    friend class CartesianConnectivity;
+
+   public:
+
+    void compute();
+
+   private:
+
+    ePosition permutation[3][8];
   };
 
  public:
@@ -115,6 +127,15 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   //! Maille en bas à gauche du noeud \a n
   ARCCORE_HOST_DEVICE CellLocalId lowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_LowerLeft); }
 
+  //! Maille en haut à gauche du noeud \a n pour la direction \a dir
+  ARCCORE_HOST_DEVICE CellLocalId upperLeftId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_UpperLeft); }
+  //! Maille en haut à droite du noeud \a n pour la direction \a dir
+  ARCCORE_HOST_DEVICE CellLocalId upperRightId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_UpperRight); }
+  //! Maille en bas à droite du noeud \a n pour la direction \a dir
+  ARCCORE_HOST_DEVICE CellLocalId lowerRightId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_LowerRight); }
+  //! Maille en bas à gauche du noeud \a n pour la direction \a dir
+  ARCCORE_HOST_DEVICE CellLocalId lowerLeftId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_LowerLeft); }
+
   //! En 3D, maille en haut à gauche du noeud \a n
   Cell topZUpperLeft(Node n) const { return _nodeToCell(n, P_TopZUpperLeft); }
   //! En 3D, maille en haut à droite du noeud \a n
@@ -132,6 +153,15 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   ARCCORE_HOST_DEVICE CellLocalId topZLowerRightId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerRight); }
   //! En 3D, maille en bas à gauche du noeud \a n
   ARCCORE_HOST_DEVICE CellLocalId topZLowerLeftId(NodeLocalId n) const { return _nodeToCellLocalId(n, P_TopZLowerLeft); }
+
+  //! En 3D, maille en haut à gauche du noeud \a n pour la direction \a dir
+  ARCCORE_HOST_DEVICE CellLocalId topZUpperLeftId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_TopZUpperLeft); }
+  //! En 3D, maille en haut à droite du noeud \a n pour la direction \a dir
+  ARCCORE_HOST_DEVICE CellLocalId topZUpperRightId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_TopZUpperRight); }
+  //! En 3D, maille en bas à droite du noeud \a n pour la direction \a dir
+  ARCCORE_HOST_DEVICE CellLocalId topZLowerRightId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_TopZLowerRight); }
+  //! En 3D, maille en bas à gauche du noeud \a n pour la direction \a dir
+  ARCCORE_HOST_DEVICE CellLocalId topZLowerLeftId(NodeLocalId n, Int32 dir) const { return _nodeToCellLocalId(n, dir, P_TopZLowerLeft); }
 
   //! Noeud en haut à gauche de la maille \a c
   Node upperLeft(Cell c) const { return _cellToNode(c, P_UpperLeft); }
@@ -151,6 +181,15 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   //! Noeud en bad à gauche de la maille \a c
   ARCCORE_HOST_DEVICE NodeLocalId lowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_LowerLeft); }
 
+  //! Noeud en haut à gauche de la maille \a c pour la direction \a dir
+  ARCCORE_HOST_DEVICE NodeLocalId upperLeftId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_UpperLeft); }
+  //! Noeud en haut à droite de la maille \a c pour la direction \a dir
+  ARCCORE_HOST_DEVICE NodeLocalId upperRightId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_UpperRight); }
+  //! Noeud en bas à droite de la maille \a c pour la direction \a dir
+  ARCCORE_HOST_DEVICE NodeLocalId lowerRightId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_LowerRight); }
+  //! Noeud en bad à gauche de la maille \a c pour la direction \a dir
+  ARCCORE_HOST_DEVICE NodeLocalId lowerLeftId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_LowerLeft); }
+
   //! En 3D, noeud au dessus en haut à gauche de la maille \a c
   Node topZUpperLeft(Cell c) const { return _cellToNode(c, P_TopZUpperLeft); }
   //! En 3D, noeud au dessus en haut à droite de la maille \a c
@@ -169,12 +208,22 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   //! En 3D, noeud au dessus en bas à gauche de la maille \a c
   ARCCORE_HOST_DEVICE NodeLocalId topZLowerLeftId(CellLocalId c) const { return _cellToNodeLocalId(c, P_TopZLowerLeft); }
 
+  //! En 3D, noeud au dessus en haut à gauche de la maille \a c pour la direction \a dir
+  ARCCORE_HOST_DEVICE NodeLocalId topZUpperLeftId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_TopZUpperLeft); }
+  //! En 3D, noeud au dessus en haut à droite de la maille \a c pour la direction \a dir
+  ARCCORE_HOST_DEVICE NodeLocalId topZUpperRightId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_TopZUpperRight); }
+  //! En 3D, noeud au dessus en bas à droite de la maille \a c pour la direction \a dir
+  ARCCORE_HOST_DEVICE NodeLocalId topZLowerRightId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_TopZLowerRight); }
+  //! En 3D, noeud au dessus en bas à gauche de la maille \a c pour la direction \a dir
+  ARCCORE_HOST_DEVICE NodeLocalId topZLowerLeftId(CellLocalId c, Int32 dir) const { return _cellToNodeLocalId(c, dir, P_TopZLowerLeft); }
+
  private:
 
   //! Calcule les infos de connectivité.
   void _computeInfos(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
   //! Positionne les tableaux contenant les infos de connectivité
-  void _setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node);
+  void _setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node,
+                   const Permutation* permutation);
 
  private:
 
@@ -185,6 +234,16 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   ARCCORE_HOST_DEVICE NodeLocalId _cellToNodeLocalId(CellLocalId c, ePosition p) const
   {
     return NodeLocalId(m_cells_to_node[c].v[p]);
+  }
+  ARCCORE_HOST_DEVICE CellLocalId _nodeToCellLocalId(NodeLocalId n, Int32 dir, ePosition p) const
+  {
+    ARCCORE_CHECK_AT(dir, 3);
+    return _nodeToCellLocalId(n, m_permutation->permutation[dir][p]);
+  }
+  ARCCORE_HOST_DEVICE NodeLocalId _cellToNodeLocalId(CellLocalId c, Int32 dir, ePosition p) const
+  {
+    ARCCORE_CHECK_AT(dir, 3);
+    return _cellToNodeLocalId(c, m_permutation->permutation[dir][p]);
   }
   Cell _nodeToCell(Node n, ePosition p) const { return m_cells[m_nodes_to_cell[n.localId()].v[p]]; }
   Node _cellToNode(Cell c, ePosition p) const { return m_nodes[m_cells_to_node[c.localId()].v[p]]; }
@@ -201,6 +260,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   ArrayView<Index> m_cells_to_node;
   CellInfoListView m_cells;
   NodeInfoListView m_nodes;
+  const Permutation* m_permutation = nullptr;
+
+ private:
 
   void _computeInfos2D(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
   void _computeInfos3D(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
