@@ -1,4 +1,4 @@
-include(srcs.cmake)
+﻿include(srcs.cmake)
 
 arcane_add_library(arcane_aleph
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
@@ -21,3 +21,26 @@ if(MPI_FOUND)
   endif()
   add_subdirectory(tests)
 endif()
+
+# A supprimer mais en attendant permet de compiler Sloop avec IntelMPI
+if (ARCANE_WANT_MPI_DISTRIB MATCHES "intelmpi")
+  set(DISABLE_SLOOP_AND_TRILINOS YES)
+  include(cmake/FindItac.cmake)
+endif ()
+if(ARCANE_USE_MPC)
+  set(DISABLE_SLOOP_AND_TRILINOS YES)
+endif()
+
+if(NOT WIN32)
+  if(NOT DISABLE_SLOOP_AND_TRILINOS)
+    include(${CMAKE_CURRENT_LIST_DIR}/FindSuperLU.cmake)
+    add_subdirectory(sloop)
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
