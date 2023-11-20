@@ -48,6 +48,12 @@ if (NOT WIN32)
     # TODO: remettre cette option mais pour l'instant cela fait trop
     # d'avertissements de compilation.
   endif ()
+
+  # Ajoute de la couleur aux logs de compilations de Ninja.
+  check_cxx_compiler_flag("-fdiagnostics-color=always" HAVE_DIAGNOSTICS_COLOR_ALWAYS)
+  if(HAVE_DIAGNOSTICS_COLOR_ALWAYS)
+    target_compile_options(arccore_build_compile_flags INTERFACE -fdiagnostics-color=always)
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------
