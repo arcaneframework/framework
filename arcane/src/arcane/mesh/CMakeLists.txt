@@ -34,4 +34,8 @@ if(REMOVE_UID_ON_DETACH)
   target_compile_definitions(arcane_mesh PRIVATE REMOVE_UID_ON_DETACH)
 endif()
 
+option(USE_GRAPH_CONNECTIVITY_POLICY "Option to activate graph connectivity")
+if (USE_GRAPH_CONNECTIVITY_POLICY)
+  target_compile_definitions(arcane_mesh PRIVATE USE_GRAPH_CONNECTIVITY_POLICY)
+endif ()
 arcane_register_library(arcane_mesh)
