@@ -180,6 +180,7 @@ class MeshMaterialTesterModule
   void _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env);
   void _initUnitTest();
   void _applyEos(bool is_init);
+  void _testDumpProperties();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -703,6 +704,41 @@ startInit()
   _initUnitTest();
 
   _applyEos(true);
+  _testDumpProperties();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialTesterModule::
+_testDumpProperties()
+{
+  IMesh* mesh = defaultMesh();
+  VariableCellReal v0(VariableBuildInfo(mesh,"VarTestDump0",IVariable::PNoDump));
+  MaterialVariableCellReal v1(VariableBuildInfo(mesh,"VarTestDump0"));
+  Int32 p0 = v0.variable()->property();
+  Int32 p1 = v1.globalVariable().variable()->property();
+  info() << "PROP1 = " << p0 << " " << p1;
+
+  MaterialVariableCellReal v2(VariableBuildInfo(mesh,"VarTestDump1"));
+  VariableCellReal v3(VariableBuildInfo(mesh,"VarTestDump1",IVariable::PNoDump));
+  Int32 p2 = v2.globalVariable().variable()->property();
+  Int32 p3 = v3.variable()->property();
+  info() << "PROP2 = " << p2 << " " << p3;
+
+  MaterialVariableCellReal v4(VariableBuildInfo(mesh,"VarTestDump2",IVariable::PNoDump));
+  Int32 p4 = v4.globalVariable().variable()->property();
+  info() << "PROP4 = " << p4;
+
+  if (p0!=p1)
+    ARCANE_FATAL("Bad property value p0={0} p1={1}",p0,p1);
+  if (p2!=p3)
+    ARCANE_FATAL("Bad property value p2={0} p3={1}",p2,p3);
+
+  if ((p0 & IVariable::PNoDump)!=0)
+    ARCANE_FATAL("Bad property value p0={0}. Should be Dump",p0);
+  if ((p2 & IVariable::PNoDump)!=0)
+    ARCANE_FATAL("Bad property value p2={0}. Should be Dump",p2);
 }
 
 /*---------------------------------------------------------------------------*/
