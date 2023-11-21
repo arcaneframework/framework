@@ -5,7 +5,7 @@ arccon_return_if_package_found(Zoltan)
 # versions (avant 2012) de le trouver directement.
 set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 unset(CMAKE_MODULE_PATH)
-find_package(Zoltan2 NO_MODULE QUIET)
+find_package(Zoltan2 QUIET)
 set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 
 message(STATUS "Zoltan2_FOUND? ${Zoltan2_FOUND}")
