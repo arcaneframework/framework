@@ -60,8 +60,8 @@ jobs:
           fi
           
           echo "Common commit : $COMMON_COMMIT"
-        
-          export CC_H_FILES=$(git diff --name-only "$MY_COMMIT..$COMMON_COMMIT" -- '*.cc' '*.h')
+          
+          export CC_H_FILES=$(git diff --name-only --no-renames --diff-filter=a "$MY_COMMIT..$COMMON_COMMIT" -- '*.cc' '*.h')
           echo "::group::Files to check :"
           echo "$CC_H_FILES"
           echo "::endgroup::"

@@ -22,6 +22,12 @@ OUTPUT_LOG="Begin script\n\n"
 for FILE in $CC_H_FILES;
 do
 
+  if [[ ! -f "$FILE" ]]
+  then
+    OUTPUT_LOG+="CI Warning -- File not found: $FILE\n"
+    continue
+  fi
+
   # On retire les fichiers qui font moins de 10 lignes.
   NB_LINES=$(wc -l < "$FILE")
   if (( $NB_LINES < 10 ))
