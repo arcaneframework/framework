@@ -345,7 +345,7 @@ TEST(TestSchur, SchurEngine)
     auto error = op.computePrimarySystem(pA, pb);
 
     trace_mng->info() << "COMPUTE SECONDARY SOLUTION FROM PRIMARY";
-    //auto error2 = op.computeSolutionFromPrimaryUnknowns(px, x);
+    auto error2 = op.computeSolutionFromPrimaryUnknowns(px, x);
   }
 #endif
 }
