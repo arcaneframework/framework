@@ -143,22 +143,26 @@ namespace Common
     SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal().getCSRProfile();
     profile.init(m_local_size);
 
-    ArrayView<Integer> row_offsets = profile.getRowOffset();
-    Integer offset = 0;
-    for (Integer i = 0; i < m_local_size; ++i) {
-      row_offsets[i] = offset;
-      offset += static_cast<Integer>(m_def_matrix[i].size());
+    {
+      ArrayView<Integer> row_offsets = profile.getRowOffset();
+      Integer offset = 0;
+      for (Integer i = 0; i < m_local_size; ++i) {
+        row_offsets[i] = offset;
+        offset += static_cast<Integer>(m_def_matrix[i].size());
+      }
+      row_offsets[m_local_size] = offset;
     }
-    row_offsets[m_local_size] = offset;
 
     profile.allocate();
-    ArrayView<Integer> cols = profile.getCols();
+    {
+      ArrayView<Integer> cols = profile.getCols();
 
-    for (Integer i = 0, pos = 0; i < m_local_size; ++i) {
-      const VectorDefinition& vdef = m_def_matrix[i];
-      for (VectorDefinition::const_iterator iterJ = vdef.begin(); iterJ != vdef.end();
-           ++iterJ)
-        cols[pos++] = *iterJ;
+      for (Integer i = 0, pos = 0; i < m_local_size; ++i) {
+        const VectorDefinition& vdef = m_def_matrix[i];
+        for (VectorDefinition::const_iterator iterJ = vdef.begin(); iterJ != vdef.end();
+             ++iterJ)
+          cols[pos++] = *iterJ;
+      }
     }
 
     if (m_matrix_impl->vblock()) {
@@ -167,14 +171,15 @@ namespace Common
       auto& block_cols = profile.getBlockCols();
       auto kcol = profile.kcol();
       auto cols = profile.cols();
+      Integer offset = 0;
       for (Integer irow = 0; irow < m_local_size; ++irow) {
         block_row_offset[irow] = offset;
         auto row_blk_size = block_sizes->size(m_local_offset + irow);
         for (auto k = kcol[irow]; k < kcol[irow + 1]; ++k) {
+          block_cols[k] = offset;
           auto jcol = cols[k];
           auto col_blk_size = block_sizes->size(jcol);
           offset += row_blk_size * col_blk_size;
-          block_cols[k] = offset;
         }
       }
       block_row_offset[m_local_size] = offset;
