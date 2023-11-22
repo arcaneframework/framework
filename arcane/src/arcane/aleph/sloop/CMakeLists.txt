@@ -16,7 +16,7 @@ endif()
 include(srcs.cmake)
 
 arcane_add_library(arcane_aleph_sloop
-  INPUT_PATH ${ARCANECEA_SRC_PATH}
+  INPUT_PATH ${Arcane_SOURCE_DIR}/src
   RELATIVE_PATH arcane/aleph/sloop
   FILES ${ARCANE_SOURCES}
   )
