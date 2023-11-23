@@ -202,7 +202,8 @@ class LibXml2_ErrorHandler
 
  public:
   //! Handler à connecter à la libxml2.
-  static void XMLCDECL handler(void* user_data,xmlErrorPtr e)
+  template <class T>
+  static void XMLCDECL handler(void* user_data,T* e)
   {
     if (!e)
       return;
@@ -216,7 +217,7 @@ class LibXml2_ErrorHandler
  private:
   String m_error_message;
  public:
-  void addError(xmlErrorPtr e)
+  void addError(const xmlError* e)
   {
     StringBuilder sb;
     if (e->level==XML_ERR_WARNING)
