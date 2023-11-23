@@ -328,3 +328,9 @@ set(ARCANE_SOURCES
   internal/SpecificMemoryCopyList.h
   internal/MemoryBuffer.h
   )
+
+if (ARCANE_HAS_CXX20)
+  list(APPEND ARCANE_SOURCES
+    ArcaneCxx20.h
+  )
+endif()
