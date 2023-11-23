@@ -41,7 +41,6 @@ jobs:
           - image_short: 'U20_G11_C13'
             image_long: 'ubuntu-2004:gcc-11_clang-13'
             image_date: '20230808'
-            image_args: '-DARCCORE_CXX_STANDARD=20'
             image_cuda: false
 
           - image_short: 'U22_G12_C16'
