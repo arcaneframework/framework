@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataTypes.h                                                 (C) 2000-2018 */
+/* DataTypes.h                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Définition des types liées aux données.                                   */
 /*---------------------------------------------------------------------------*/
@@ -116,7 +116,16 @@ enum eDataInitialisationPolicy
    * prise en compte que lors d'un changement du nomnbre d'éléments (resize())
    * où pour les variables qui n'étaient pas des variables du maillage.
    */
-  DIP_Legacy = 3
+  DIP_Legacy = 3,
+  /*!
+   * \brief Initialisation avec des NaN pour à la création et le constructeur
+   * par défaut ensuite.
+   *
+   * Ce mode est identique à DIP_InitWithNan pour la création des variables
+   * et à DIP_InitWithDefault lorsqu'on la taille de la variable évolue
+   * (en géneral via un appel à IVariable::resize() ou IVariable::resizeFromGroup()).
+   */
+  DIP_InitInitialWithNanResizeWithDefault = 4
 };
 
 /*---------------------------------------------------------------------------*/

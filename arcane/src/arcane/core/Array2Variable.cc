@@ -490,9 +490,13 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   else
     data_values.resizeNoInit(new_size,dim2_size);
 
-  if (new_size>current_size && init_policy==DIP_InitWithNan){
-    for( Integer i=current_size; i<new_size; ++i )
-      DataTypeTraitsT<T>::fillNan(data_values[i]);
+  if (new_size>current_size){
+    bool use_nan = (init_policy==DIP_InitWithNan);
+    bool use_nan2 = (init_policy==DIP_InitInitialWithNanResizeWithDefault) && !_hasValidData();
+    if (use_nan || use_nan2){
+      for( Integer i=current_size; i<new_size; ++i )
+        DataTypeTraitsT<T>::fillNan(data_values[i]);
+    }
   }
 
   // Compacte la mémoire si demandé

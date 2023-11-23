@@ -211,6 +211,12 @@ class ARCANE_CORE_EXPORT Variable
 
   //! Indique si les données de la variable sont valides
   void _setValidData(bool valid_data);
+  /*!
+   * \brief Indique si les données de la variable sont valides.
+   *
+   * Les données sont valides à la fin d'un appel à setUsed().
+   */
+  bool _hasValidData() const;
 
  protected:
 
