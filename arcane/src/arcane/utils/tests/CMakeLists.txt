@@ -1,5 +1,4 @@
-arcane_add_component_test_executable(utils
-  FILES
+﻿set(SOURCE_FILES
   TestNumArray.cc
   TestDependencyInjection.cc
   TestRealN.cc
@@ -10,8 +9,25 @@ arcane_add_component_test_executable(utils
   TestHashTable.cc
   TestMemory.cc
   TestVector3.cc
+)
+
+if (ARCANE_HAS_CXX20)
+  list(APPEND SOURCE_FILES
+    TestCxx20.cc
+  )
+endif()
+
+arcane_add_component_test_executable(utils
+  FILES ${SOURCE_FILES}
   )
 
 target_link_libraries(arcane_utils.tests PUBLIC arcane_utils GTest::GTest GTest::Main)
 
 gtest_discover_tests(arcane_utils.tests DISCOVERY_TIMEOUT 30)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
