@@ -16,7 +16,7 @@
 
 #include "arcane/accelerator/core/IReduceMemoryImpl.h"
 
-#include "arcane/utils/NumArray.h"
+#include "arcane/utils/Array.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,16 +32,7 @@ class ReduceMemoryImpl
 {
  public:
 
-  ReduceMemoryImpl(RunCommandImpl* p)
-  : m_command(p)
-  , m_device_memory_bytes(eMemoryRessource::Device)
-  , m_host_memory_bytes(eMemoryRessource::HostPinned)
-  , m_grid_buffer(eMemoryRessource::Device)
-  , m_grid_device_count(eMemoryRessource::Device)
-  {
-    _allocateMemoryForReduceData(128);
-    _allocateMemoryForGridDeviceCount();
-  }
+  explicit ReduceMemoryImpl(RunCommandImpl* p);
 
  public:
 
@@ -69,10 +60,10 @@ class ReduceMemoryImpl
   std::byte* m_device_memory = nullptr;
 
   //! Allocation pour la donnée réduite en mémoire managée
-  NumArray<std::byte, MDDim1> m_device_memory_bytes;
+  UniqueArray<std::byte> m_device_memory_bytes;
 
   //! Allocation pour la donnée réduite en mémoire hôte
-  NumArray<std::byte, MDDim1> m_host_memory_bytes;
+  UniqueArray<std::byte> m_host_memory_bytes;
 
   //! Taille allouée pour \a m_device_memory
   Int64 m_size = 0;
@@ -86,7 +77,7 @@ class ReduceMemoryImpl
   GridMemoryInfo m_grid_memory_info;
 
   //! Tableau contenant la valeur de la réduction pour chaque bloc d'une grille
-  NumArray<Byte, MDDim1> m_grid_buffer;
+  UniqueArray<Byte> m_grid_buffer;
 
   //! Buffer pour conserver la valeur de l'identité
   UniqueArray<std::byte> m_identity_buffer;
@@ -95,7 +86,7 @@ class ReduceMemoryImpl
    * \brief Tableau de 1 entier non signé contenant le nombre de grilles ayant déja
    * effectuée la réduction.
    */
-  NumArray<unsigned int, MDDim1> m_grid_device_count;
+  UniqueArray<unsigned int> m_grid_device_count;
 
  private:
 
@@ -105,10 +96,10 @@ class ReduceMemoryImpl
   void _allocateMemoryForReduceData(Int32 new_size)
   {
     m_device_memory_bytes.resize(new_size);
-    m_device_memory = m_device_memory_bytes.to1DSpan().data();
+    m_device_memory = m_device_memory_bytes.data();
 
     m_host_memory_bytes.resize(new_size);
-    m_grid_memory_info.m_host_memory_for_reduced_value = m_host_memory_bytes.to1DSpan().data();
+    m_grid_memory_info.m_host_memory_for_reduced_value = m_host_memory_bytes.data();
 
     m_size = new_size;
   }
