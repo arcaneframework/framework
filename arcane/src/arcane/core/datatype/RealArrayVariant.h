@@ -16,10 +16,12 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
-#include "arcane/utils/NumArray.h"
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real3.h"
+#if defined(ARCANE_HAS_ACCELERATOR_API)
+#include "arcane/utils/NumArray.h"
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,14 +45,15 @@ class RealArrayVariant
   RealArrayVariant(UniqueArray<Real> v)
   : RealArrayVariant(v.constView())
   {}
-  template<typename LayoutType>
-  RealArrayVariant(const NumArray<Real,MDDim1,LayoutType>& v)
-  : RealArrayVariant(v.span())
-  {}
   RealArrayVariant(ConstArrayView<Real> v)
   {
     _setValue(v.data(), v.size());
   }
+#if defined(ARCANE_HAS_ACCELERATOR_API)
+  template<typename LayoutType>
+  RealArrayVariant(const NumArray<Real,MDDim1,LayoutType>& v)
+  : RealArrayVariant(v.span())
+  {}
   template<typename LayoutType>
   RealArrayVariant(MDSpan<Real,MDDim1,LayoutType> v)
   {
@@ -61,6 +64,7 @@ class RealArrayVariant
   {
     _setValue(v.to1DSpan().data(), v.extent0());
   }
+#endif
   RealArrayVariant(Real2 r)
   {
     _setValue(reinterpret_cast<Real*>(&r), 2);
@@ -114,6 +118,8 @@ class RealArrayVariant
   operator ConstArrayView<Real>() const { return ConstArrayView<Real>(m_nb_value, m_value); }
   operator Real2() const { return Real2(m_value[0], m_value[1]); }
   operator Real3() const { return Real3(m_value[0], m_value[1], m_value[2]); }
+
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   operator NumArray<Real,MDDim1>() const
   {
     NumArray<Real,MDDim1> v(m_nb_value);
@@ -121,6 +127,7 @@ class RealArrayVariant
       v[i] = m_value[i];
     return v;
   }
+#endif
 
  private:
 

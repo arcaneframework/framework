@@ -21,7 +21,7 @@
 
 #ifndef ARCANE_HAS_CXX20
 #error "You need to compile Arcane with C++20 support to use this header file."
-"Add -DARCCORE_CXX_STANDARD=20 to build with this support"
+"Add -DARCCORE_CXX_STANDARD=20 to build configuration"
 #endif
 
 /*---------------------------------------------------------------------------*/

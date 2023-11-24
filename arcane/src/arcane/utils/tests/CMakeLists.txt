@@ -1,5 +1,4 @@
 ﻿set(SOURCE_FILES
-  TestNumArray.cc
   TestDependencyInjection.cc
   TestRealN.cc
   TestNumVector.cc
@@ -11,9 +10,10 @@
   TestVector3.cc
 )
 
-if (ARCANE_HAS_CXX20)
+if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND SOURCE_FILES
     TestCxx20.cc
+    TestNumArray.cc
   )
 endif()
 

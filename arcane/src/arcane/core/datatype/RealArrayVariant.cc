@@ -32,8 +32,6 @@ namespace Arcane
 extern "C++" ARCANE_CORE_EXPORT
 void _arcaneTestRealArrayVariant()
 {
-  NumArray<Real,MDDim1> num_data(4, { 2.4, 5.6, 3.3, 5.4 });
-
   UniqueArray<Real> a1_({2.4, 5.6, 3.3, 5.4});
   ConstArrayView<Real> a1 = a1_.constView();
   Real2 a2{ 2.0, 3.1 };
@@ -49,10 +47,13 @@ void _arcaneTestRealArrayVariant()
     std::cout << "]\n";
   }
 
+#if defined(ARCANE_HAS_ACCELERATOR_API)
+  NumArray<Real,MDDim1> num_data(4, { 2.4, 5.6, 3.3, 5.4 });
   RealArrayVariant variant2{num_data};
   NumArray<Real,MDDim1> num_data_copy(variant2);
   if (num_data_copy.to1DSpan()!=num_data.to1DSpan())
     ARCANE_FATAL("Bad value for copy");
+#endif
 
   RealN2 b2{ 2.0, 3.1 };
   RealN3 b3{ 4.0, 7.2, 3.6 };

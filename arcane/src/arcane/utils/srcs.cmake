@@ -74,8 +74,6 @@ set(ARCANE_SOURCES
   MD5HashAlgorithm.cc
   MD5HashAlgorithm.h
   MDDim.h
-  MDSpan.cc
-  MDSpan.h
   Math.cc
   Math.h
   MemoryAccessInfo.cc
@@ -90,12 +88,8 @@ set(ARCANE_SOURCES
   Numeric.cc
   Numeric.h
   NumericTraits.h
-  NumArray.h
-  NumArray.cc
   NumMatrix.h
   NumVector.h
-  NumArrayUtils.h
-  NumArrayUtils.cc
   Observable.cc
   Observer.cc
   Observable.h
@@ -333,5 +327,16 @@ if (ARCANE_HAS_CXX20)
   list(APPEND ARCANE_SOURCES
     ArcaneCxx20.h
     ArcaneCxx20.cc
+    )
+endif()
+
+if (ARCANE_HAS_ACCELERATOR_API)
+  list(APPEND ARCANE_SOURCES
+    MDSpan.cc
+    MDSpan.h
+    NumArray.h
+    NumArray.cc
+    NumArrayUtils.h
+    NumArrayUtils.cc
   )
 endif()

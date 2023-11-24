@@ -71,9 +71,11 @@ _mainHelper(int argc,char* argv[])
   if (!standalone_subdomain_method.null())
     return arcaneTestStandaloneSubDomainLauncher(cmd_line_args,standalone_subdomain_method);
 
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   String standalone_accelerator_method = cmd_line_args.getParameter("StandaloneAcceleratorMethod");
   if (!standalone_accelerator_method.null())
     return arcaneTestStandaloneAcceleratorLauncher(cmd_line_args,standalone_accelerator_method);
+#endif
 
   _initDefaultApplicationInfo(cmd_line_args);
   String direct_exec_method = cmd_line_args.getParameter("DirectExecutionMethod");

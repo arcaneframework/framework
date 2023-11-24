@@ -1,11 +1,16 @@
 ﻿include(srcs.cmake)
 
-set(ARCANE_ACCELERATOR_SOURCES
-  AdiProjectionModule.cc
-  CartesianMeshTestUtils.cc
-  MeshMaterialSyncUnitTest.cc
-)
-arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
+if (ARCANE_HAS_ACCELERATOR_API)
+  list(APPEND ARCANE_SOURCES
+    AdiProjectionModule.cc
+  )
+  set(ARCANE_ACCELERATOR_SOURCES
+    AdiProjectionModule.cc
+    CartesianMeshTestUtils.cc
+    MeshMaterialSyncUnitTest.cc
+  )
+  arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
+endif()
 
 arcane_add_library(arcane_cea_tests
   INPUT_PATH ${ARCANECEA_SRC_PATH}
@@ -28,7 +33,7 @@ endif()
 if(TARGET arcane_aleph_sloop)
   target_link_libraries(arcane_cea_tests PUBLIC arcane_aleph_sloop)
 endif()
-target_link_libraries(arcane_cea_tests PRIVATE arcane_accelerator)
+target_link_libraries(arcane_cea_tests PRIVATE $<TARGET_NAME_IF_EXISTS:arcane_accelerator>)
 
 # ----------------------------------------------------------------------------
 # Test wrapping C#

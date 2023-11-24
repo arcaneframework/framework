@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ArcaneCxx20.h"
+
 #include "arcane/accelerator/RunCommand.h"
 #include "arcane/accelerator/RunQueueInternal.h"
 

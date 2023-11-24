@@ -44,7 +44,9 @@ arcaneRegisterSimpleData(IDataFactoryMng* dfm)
   registerScalarDataFactory(dfm);
   registerArrayDataFactory(dfm);
   registerArray2DataFactory(dfm);
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   registerNumArrayDataFactory(dfm);
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
