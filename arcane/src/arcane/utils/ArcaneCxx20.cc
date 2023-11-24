@@ -9,22 +9,24 @@
 /*                                                                           */
 /* Vérification des fonctionnalités minimale requises du C++20.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_ARCANECXX20_H
-#define ARCANE_UTILS_ARCANECXX20_H
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/utils/ArcaneCxx20.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_HAS_CXX20
-#error "You need to compile Arcane with C++20 support to use this header file."
-"Add -DARCCORE_CXX_STANDARD=20 to build with this support"
+// std::atomic_ref
+#include <atomic>
+#if __cpp_lib_atomic_ref < 201806L
+#error "The compiler does not support C++20 std::atomic_ref"
+#endif
+
+// concepts
+#include <concepts>
+#if __cpp_concepts < 201907L
+#error "The compiler does not support C++20 concepts"
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif

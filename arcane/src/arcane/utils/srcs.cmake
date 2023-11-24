@@ -332,5 +332,6 @@ set(ARCANE_SOURCES
 if (ARCANE_HAS_CXX20)
   list(APPEND ARCANE_SOURCES
     ArcaneCxx20.h
+    ArcaneCxx20.cc
   )
 endif()
