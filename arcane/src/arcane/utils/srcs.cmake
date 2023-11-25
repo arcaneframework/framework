@@ -336,6 +336,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
     MDSpan.h
     NumArray.h
     NumArray.cc
+    NumArrayContainer.h
     NumArrayUtils.h
     NumArrayUtils.cc
   )

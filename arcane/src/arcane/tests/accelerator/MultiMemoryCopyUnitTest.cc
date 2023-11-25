@@ -14,6 +14,7 @@
 #include "arcane/utils/NumArray.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/ServiceFactory.h"
