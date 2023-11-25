@@ -32,6 +32,7 @@ arcane_find_package(hiredis QUIET)
 include(srcs.cmake)
 
 set(ARCANE_ACCELERATOR_SOURCES
+  accelerator/AtomicUnitTest.cc
   accelerator/SimpleHydroAcceleratorService.cc
   accelerator/MiniWeatherArray.cc
   accelerator/MemoryCopyUnitTest.cc
@@ -657,6 +658,12 @@ if (HDF5_FOUND)
   ARCANE_ADD_TEST_PARALLEL(hydro1_checkpoint_3proc_rep4 testHydro-1-checkpoint.arc 12 -c 2 -m 25 -R 4)
 endif()
 
+macro(arcane_add_accelerator_test_all_policies TEST_NAME CASE_FILE)
+  arcane_add_test_sequential(${TEST_NAME} ${CASE_FILE})
+  arcane_add_test_sequential_task(${TEST_NAME} ${CASE_FILE} 4)
+  arcane_add_accelerator_test_sequential(${TEST_NAME} ${CASE_FILE})
+endmacro()
+
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(numarray1 testNumArray-1.arc)
   arcane_add_test_sequential_task(numarray1 testNumArray-1.arc 4)
@@ -707,6 +714,8 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_sequential(miniweather_array1_right_layout testMiniWeatherArray.arc)
   arcane_add_accelerator_test_sequential(miniweather_array1_left_layout testMiniWeatherArrayLeftLayout.arc)
   arcane_add_accelerator_test_sequential(miniweather_array1_device testMiniWeatherArrayDevice.arc)
+
+  arcane_add_accelerator_test_all_policies(accelerator_atomic testAcceleratorAtomic-1.arc)
 endif()
 
 arcane_add_test_sequential(pdes_random_number_generator_service testPDESRandomNumberGenerator.arc)
