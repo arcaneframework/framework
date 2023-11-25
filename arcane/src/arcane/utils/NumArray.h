@@ -381,52 +381,10 @@ class NumArray
 
  public:
 
-  //! Valeur pour l'élément \a i
-  DataType operator()(Int32 i) const requires(Extents::rank() == 1) { return m_span(i); }
-  //! Positionne la valeur pour l'élément \a i
-  DataType& operator()(Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
-  //! Positionne la valeur pour l'élément \a i
-  DataType& s(Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
   //! Récupère une référence pour l'élément \a i
   DataType& operator[](Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
   //! Valeur pour l'élément \a i
   DataType operator[](Int32 i) const requires(Extents::rank() == 1) { return m_span(i); }
-
- public:
-
-  //! Valeur pour l'élément \a i,j
-  DataType operator()(Int32 i, Int32 j) const requires(Extents::rank() == 2)
-  {
-    return m_span(i, j);
-  }
-  //! Positionne la valeur pour l'élément \a i,j
-  DataType& operator()(Int32 i, Int32 j) requires(Extents::rank() == 2)
-  {
-    return m_span(i, j);
-  }
-  //! Positionne la valeur pour l'élément \a i,j
-  DataType& s(Int32 i, Int32 j) requires(Extents::rank() == 2)
-  {
-    return m_span(i, j);
-  }
-
- public:
-
-  //! Valeur pour l'élément \a i,j,k
-  DataType operator()(Int32 i, Int32 j, Int32 k) const requires(Extents::rank() == 3)
-  {
-    return m_span(i, j, k);
-  }
-  //! Positionne la valeur pour l'élément \a i,j,k
-  DataType& operator()(Int32 i, Int32 j, Int32 k) requires(Extents::rank() == 3)
-  {
-    return m_span(i, j, k);
-  }
-  //! Positionne la valeur pour l'élément \a i,j,k
-  DataType& s(Int32 i, Int32 j, Int32 k) requires(Extents::rank() == 3)
-  {
-    return m_span(i, j, k);
-  }
 
  public:
 
@@ -440,12 +398,32 @@ class NumArray
   {
     return m_span(i, j, k, l);
   }
-  // TODO: rendre obsolète
-  //! Positionne la valeur pour l'élément \a i,j,k,l
-  DataType& s(Int32 i, Int32 j, Int32 k, Int32 l) requires(Extents::rank() == 4)
+
+  //! Valeur pour l'élément \a i,j,k
+  DataType operator()(Int32 i, Int32 j, Int32 k) const requires(Extents::rank() == 3)
   {
-    return m_span(i, j, k, l);
+    return m_span(i, j, k);
   }
+  //! Positionne la valeur pour l'élément \a i,j,k
+  DataType& operator()(Int32 i, Int32 j, Int32 k) requires(Extents::rank() == 3)
+  {
+    return m_span(i, j, k);
+  }
+
+  //! Valeur pour l'élément \a i,j
+  DataType operator()(Int32 i, Int32 j) const requires(Extents::rank() == 2)
+  {
+    return m_span(i, j);
+  }
+  //! Positionne la valeur pour l'élément \a i,j
+  DataType& operator()(Int32 i, Int32 j) requires(Extents::rank() == 2)
+  {
+    return m_span(i, j);
+  }
+  //! Valeur pour l'élément \a i
+  DataType operator()(Int32 i) const requires(Extents::rank() == 1) { return m_span(i); }
+  //! Positionne la valeur pour l'élément \a i
+  DataType& operator()(Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
 
  public:
 
@@ -460,6 +438,33 @@ class NumArray
     return m_span(idx);
   }
 
+ public:
+
+  // TODO: rendre obsolète
+  //! Positionne la valeur pour l'élément \a i,j,k,l
+  ARCANE_DEPRECATED_REASON("Y2023: Use operator() instead")
+  DataType& s(Int32 i, Int32 j, Int32 k, Int32 l) requires(Extents::rank() == 4)
+  {
+    return m_span(i, j, k, l);
+  }
+  //! Positionne la valeur pour l'élément \a i,j,k
+  ARCANE_DEPRECATED_REASON("Y2023: Use operator() instead")
+  DataType& s(Int32 i, Int32 j, Int32 k) requires(Extents::rank() == 3)
+  {
+    return m_span(i, j, k);
+  }
+  //! Positionne la valeur pour l'élément \a i,j
+  ARCANE_DEPRECATED_REASON("Y2023: Use operator() instead")
+  DataType& s(Int32 i, Int32 j) requires(Extents::rank() == 2)
+  {
+    return m_span(i, j);
+  }
+  //! Positionne la valeur pour l'élément \a i
+  ARCANE_DEPRECATED_REASON("Y2023: Use operator() instead")
+  DataType& s(Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
+
+  //! Positionne la valeur pour l'élément \a idx
+  ARCANE_DEPRECATED_REASON("Y2023: Use operator() instead")
   DataType& s(ArrayBoundsIndexType idx)
   {
     return m_span(idx);
