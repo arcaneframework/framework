@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataView.h                                                  (C) 2000-2022 */
+/* DataView.h                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Vues sur des données des variables.                                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DATAVIEW_H
-#define ARCANE_DATAVIEW_H
+#ifndef ARCANE_CORE_DATAVIEW_H
+#define ARCANE_CORE_DATAVIEW_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::Accelerator::impl
+{
+class AtomicImpl;
+}
 namespace Arcane
 {
 
@@ -241,6 +245,7 @@ class DataViewGetterSetter
 {
   using BaseType = DataViewSetter<DataType>;
   using BaseType::m_ptr;
+  friend class Arcane::Accelerator::impl::AtomicImpl;
 
  public:
 
@@ -293,6 +298,11 @@ class DataViewGetterSetter
   {
     return DataViewGetterSetter<typename DataTypeTraitsT<X>::FunctionCall2ReturnType>(&m_ptr->operator()(i0, i1));
   }
+
+ private:
+
+  //! Adresse de la donnée. Valide uniquement pour les types simples (i.e pas les Real3)
+  constexpr ARCCORE_HOST_DEVICE DataType* _address() const { return m_ptr; }
 };
 
 /*---------------------------------------------------------------------------*/
