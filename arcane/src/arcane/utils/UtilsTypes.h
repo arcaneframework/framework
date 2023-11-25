@@ -261,14 +261,14 @@ template<int RankValue> class LeftLayoutN;
 template<int RankValue> class MDDimType;
 class IMemoryRessourceMng;
 template<Int32... RankSize> class ExtentsV;
-template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
-class MDSpanBase;
 template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
 class MDSpan;
 template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
-class NumArrayBase;
+using MDSpanBase ARCANE_DEPRECATED_REASON("Use 'MDSpan' type instead") = MDSpan<DataType,Extents,LayoutPolicy>;
 template<class DataType,typename Extents,typename LayoutType = DefaultLayout >
 class NumArray;
+template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
+using NumArrayBase ARCANE_DEPRECATED_REASON("Use 'NumArray' type instead") = NumArray<DataType,Extents,LayoutPolicy>;
 template<typename ExtentType> class ArrayBounds;
 template<int RankValue> class ArrayIndexBase;
 template<int RankValue> class ArrayIndex;

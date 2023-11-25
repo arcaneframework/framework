@@ -105,11 +105,6 @@ template class NumArray<Real, MDDim3>;
 template class NumArray<Real, MDDim2>;
 template class NumArray<Real, MDDim1>;
 
-template class NumArrayBase<Real, MDDim4>;
-template class NumArrayBase<Real, MDDim3>;
-template class NumArrayBase<Real, MDDim2>;
-template class NumArrayBase<Real, MDDim1>;
-
 template class ArrayStridesBase<1>;
 template class ArrayStridesBase<2>;
 template class ArrayStridesBase<3>;
