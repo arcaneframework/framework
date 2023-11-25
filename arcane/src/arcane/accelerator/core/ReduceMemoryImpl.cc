@@ -14,6 +14,8 @@
 #include "arcane/accelerator/core/internal/ReduceMemoryImpl.h"
 
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -25,6 +27,28 @@
 
 namespace Arcane::Accelerator::impl
 {
+namespace
+{
+  IMemoryAllocator* _getAllocator(eMemoryRessource r)
+  {
+    return platform::getDataMemoryRessourceMng()->getAllocator(r);
+  }
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ReduceMemoryImpl::
+ReduceMemoryImpl(RunCommandImpl* p)
+: m_command(p)
+, m_device_memory_bytes(_getAllocator(eMemoryRessource::Device))
+, m_host_memory_bytes(_getAllocator(eMemoryRessource::HostPinned))
+, m_grid_buffer(_getAllocator(eMemoryRessource::Device))
+, m_grid_device_count(_getAllocator(eMemoryRessource::Device))
+{
+  _allocateMemoryForReduceData(128);
+  _allocateMemoryForGridDeviceCount();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -79,7 +103,7 @@ _allocateGridDataMemory()
 
   m_grid_buffer.resize(total_size);
 
-  auto mem_view = makeMutableMemoryView(m_grid_buffer.to1DSpan());
+  auto mem_view = makeMutableMemoryView(m_grid_buffer.span());
   m_grid_memory_info.m_grid_memory_values = mem_view;
 }
 
@@ -94,7 +118,7 @@ _allocateMemoryForGridDeviceCount()
   Int64 size = sizeof(unsigned int);
   const unsigned int zero = 0;
   m_grid_device_count.resize(1);
-  auto* ptr = m_grid_device_count.to1DSpan().data();
+  auto* ptr = m_grid_device_count.data();
 
   m_grid_memory_info.m_grid_device_count = ptr;
 

@@ -16,6 +16,7 @@
 
 #include "arcane/utils/ForLoopTraceInfo.h"
 #include "arcane/utils/ConcurrencyUtils.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"

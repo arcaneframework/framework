@@ -14,7 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Concurrency.h"
+#include "arcane/utils/ArcaneCxx20.h"
+
+#include "arcane/core/Concurrency.h"
 #include "arcane/core/materials/ComponentItemVectorView.h"
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 #include "arcane/core/materials/MatItem.h"

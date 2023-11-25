@@ -29,9 +29,11 @@
 #include "arcane/core/SimpleSVGMeshExporter.h"
 #include "arcane/core/UnstructuredMeshConnectivity.h"
 
+#if defined(ARCANE_HAS_ACCELERATOR_API)
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
 #include "arcane/accelerator/VariableViews.h"
+#endif
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
@@ -235,6 +237,7 @@ _testDirCell()
 void CartesianMeshTestUtils::
 _testDirCellAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   info() << "TEST_DIR_CELL_ACCELERATOR";
 
   IMesh* mesh = m_mesh;
@@ -295,6 +298,7 @@ _testDirCellAccelerator()
         ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*icell), dummy_var[icell]);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -407,6 +411,7 @@ _testDirFace(int idir)
 void CartesianMeshTestUtils::
 _testDirFaceAccelerator(int idir)
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   // Teste l'utilisation de DirFace et vérifie que
   // les valeurs sont correctes: pour une face donnée,
   // il faut que selon la direction choisie, la coordonnée du centre
@@ -479,6 +484,7 @@ _testDirFaceAccelerator(int idir)
     if (dummy_var[iface] < 0)
       ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*iface), dummy_var[iface]);
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -632,6 +638,7 @@ _testDirNode()
 void CartesianMeshTestUtils::
 _testDirNodeAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   info() << "TEST_DIR_NODE Accelerator";
   m_node_density.fill(0.0);
 
@@ -751,6 +758,7 @@ _testDirNodeAccelerator()
         ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*inode), dummy_var[inode]);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -801,6 +809,7 @@ _testDirCellNode()
 void CartesianMeshTestUtils::
 _testDirCellNodeAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   IMesh* mesh = m_mesh;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   Integer nb_dir = mesh->dimension();
@@ -857,6 +866,7 @@ _testDirCellNodeAccelerator()
                      ItemPrinter(*icell), c1, c2);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -898,6 +908,7 @@ _testDirCellFace()
 void CartesianMeshTestUtils::
 _testDirCellFaceAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   IMesh* mesh = m_mesh;
   //VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   Integer nb_dir = mesh->dimension();
@@ -949,6 +960,7 @@ _testDirCellFaceAccelerator()
       }
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1046,6 +1058,7 @@ _testNodeToCellConnectivity3D()
 void CartesianMeshTestUtils::
 _testNodeToCellConnectivity3DAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   info() << "Test NodeToCell Connectivity3D";
   IMesh* mesh = m_mesh;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
@@ -1131,6 +1144,7 @@ _testNodeToCellConnectivity3DAccelerator()
       ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*inode), dummy_var[inode]);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1290,6 +1304,7 @@ _testCellToNodeConnectivity3D()
 void CartesianMeshTestUtils::
 _testCellToNodeConnectivity3DAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   info() << "Test CellToNode Connectivity3D Accelerator";
   IMesh* mesh = m_mesh;
   VariableCellInt32 dummy_var(VariableBuildInfo(mesh, "DummyCellVariable"));
@@ -1386,6 +1401,7 @@ _testCellToNodeConnectivity3DAccelerator()
       ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*icell), dummy_var[icell]);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/

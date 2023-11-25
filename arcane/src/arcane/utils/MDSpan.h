@@ -18,6 +18,7 @@
 #include "arcane/utils/ArrayBounds.h"
 #include "arcane/utils/NumericTraits.h"
 #include "arcane/utils/ArrayLayout.h"
+#include "arcane/utils/ArcaneCxx20.h"
 
 /*
  * ATTENTION:

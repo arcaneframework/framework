@@ -26,10 +26,11 @@
 
 #include "arcane/IMesh.h"
 
-#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include "arcane/accelerator/RunCommandEnumerate.h"
 #include "arcane/accelerator/VariableViews.h"
-#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/tests/AdiProjection_axl.h"
 

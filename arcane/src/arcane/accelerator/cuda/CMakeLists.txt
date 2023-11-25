@@ -24,7 +24,7 @@ endif()
 target_compile_options(arcane_cuda_compile_flags INTERFACE
   "$<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>"
   "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>"
-  "$<$<COMPILE_LANGUAGE:CUDA>:-std=c++17>"
+  "$<$<COMPILE_LANGUAGE:CUDA>:-std=c++20>"
   "$<$<COMPILE_LANGUAGE:CUDA>:${_CUDA_DEBUG_FLAGS}>"
   "$<$<COMPILE_LANGUAGE:CUDA>:-g>"
   "$<$<COMPILE_LANGUAGE:CUDA>:-Werror>"

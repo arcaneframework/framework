@@ -124,9 +124,10 @@ if (Lima_FOUND)
 endif()
 arcane_add_test(cartesian2D_coarsen1 testCartesianMesh2D-coarsen-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,1")
 arcane_add_test(cartesian2D_coarsen2 testCartesianMesh2D-coarsen-2.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
-arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
-arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
-
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
+  arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
+endif()
 
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-1 testAMRCartesianMesh2D-Cell-RenumberingV1-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-2 testAMRCartesianMesh2D-Cell-RenumberingV1-2.arc "-m 20")
