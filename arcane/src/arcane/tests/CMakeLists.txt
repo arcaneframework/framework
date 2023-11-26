@@ -337,9 +337,9 @@ arcane_add_test_sequential(direct_exec_cartesian_sequential testRunDirect-1.arc 
 arcane_add_test(direct_exec_hello_world testRunDirect-1.arc -D TestRunDirectHelloWorld)
 arcane_add_test(direct_exec_cartesian testRunDirect-1.arc -D TestRunDirectCartesian -We,ARCANE_USE_OLD_MESHGENERATOR,1)
 
-ADD_TEST(dump_all_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_all_internal)
-ADD_TEST(dump_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_internal)
-ADD_TEST(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_database)
+add_test(dump_all_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_all_internal)
+add_test(dump_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -A,MessagePassingService=Sequential -arcane_opt arcane_internal)
+add_test(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_database)
 
 # ----------------------------------------------------------------------------
 

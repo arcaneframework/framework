@@ -1062,8 +1062,12 @@ _runDotNet()
 void ArcaneMain::
 _checkAutoDetectMPI()
 {
-  auto si = _staticInfo();
+  // N'active pas MPI si on utilise le service de parallélisme 'Sequential'
+  String mp_service = defaultApplicationInfo().commandLineArguments().getParameter("MessagePassingService");
+  if (mp_service=="Sequential")
+    return;
 
+  auto si = _staticInfo();
   // Pour pouvoir automatiquement enregisrer MPI, il faut
   // appeler la méthode 'arcaneAutoDetectMessagePassingServiceMPI' qui se trouve
   // dans la bibliothèque dynamique 'arcane_mpi'.
