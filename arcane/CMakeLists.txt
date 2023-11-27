@@ -902,6 +902,10 @@ if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
   add_subdirectory(src/arcane/accelerator/hip)
 endif()
 if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
+  # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+  message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
+  cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
+
   # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
   if (NOT CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
