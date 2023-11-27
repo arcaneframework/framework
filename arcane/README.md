@@ -22,22 +22,29 @@ Arcane est une platforme de développement pour les codes de calcul parallèles 
 
 ### Pré-requis
 
-Un compilateur supportant le C++17:
+Un compilateur supportant le C++17 est requis :
 
 - GCC 7+
 - Clang 6+
 - Visual Studio 2019 (version 16.8+)
 
+Si on souhaite utiliser l'API accélérateur, un compilateur supportant le
+C++20 est requis. Les versions minimales des compilateurs classiques sont:
+
+- GCC 11+
+- Clang 15+
+- Visual Studio 2022 (version 17.4+)
+
 Les outils et bibliothèques suivants sont requis:
 
-- [CMake 3.21+](https://cmake.org)
+- [CMake 3.21+](https://cmake.org) (ou 3.26+ pour le support de CUDA)
 - [.Net Core 6+](https://dotnet.microsoft.com/download)
 - [GLib](https://www.gtk.org/)
 - [LibXml2](http://www.xmlsoft.org/)
 
 Les outils et bibliothèques suivants sont optionnels mais fortement recommandés:
 
-- IntelTBB 2018+
+- IntelTBB 2018+ pour le support du multi-threading
 - MPI (implémentation MPI 3.1 nécessaire)
 
 Les outils et bibliothèques suivants sont optionnels:
@@ -53,9 +60,11 @@ répertoire contenant les sources et `${BUILD_DIR}` le répertoire de compilatio
 
 Arcane dépend de `Arccon`, `Arccore` et `Axlstar`. Il est nécessaire d'avoir accès
 aux sources de ces produits pour compiler. Les variables CMake
-`Arccon_ROOT`, `Arccore_ROOT` et `Axlstar_ROOT doivent respectivement pointer vers les sources de ces produits.
+`Arccon_ROOT`, `Arccore_ROOT` et `Axlstar_ROOT doivent respectivement
+pointer vers les sources de ces produits.
 
-Si `${INSTALL_PATH}` est le répertoire d'installation, les commandes suivantes permettent de compiler et installer Arcane
+Si `${INSTALL_PATH}` est le répertoire d'installation, les commandes
+suivantes permettent de compiler et installer Arcane
 
 ~~~{.sh}
 mkdir ${BUILD_DIR}
@@ -65,8 +74,8 @@ cmake --build ${BUILD_DIR}
 cmake --build ${BUILD_DIR} --target install
 ~~~
 
-Par défaut, l'installation se fait dans `/usr/local` si l'option `CMAKE_INSTALL_PREFIX` n'est
-pas spécifié.
+Par défaut, l'installation se fait dans `/usr/local` si l'option
+`CMAKE_INSTALL_PREFIX` n'est pas spécifiée.
 
 Par défaut, tous les packages optionnels sont détectés
 automatiquement. Il est possible de supprimer ce comportement et de
@@ -83,6 +92,10 @@ cmake -DARCANE_NO_DEFAULT_PACKAGE=TRUE -DARCANE_REQUIRED_PACKAGE_LIST="LibUnwind
 
 ### Support des accélérateurs
 
+Depuis la version 3.12 de Arcane, le support des accélérateurs nécessite un
+compilateur supportant le C++20. Il est donc nécessaire de compiler
+Arcane en spécifiant la variable CMake `-DARCCORE_CXX_STANDARD=20`.
+
 La variable CMake `ARCANE_ACCELERATOR_MODE` permet de spécifier le
 type d'accélerateur qu'on souhaite utiliser. Il y a actuellement deux
 valeurs supportées:
@@ -92,13 +105,19 @@ valeurs supportées:
 
 ##### Compilation CUDA
 
+Il est nécessaire d'avoir au moins la version 12 de
+[CUDA](https://developer.nvidia.com/cuda-downloads).
+
 Si on souhaite compiler le support CUDA, il faut ajouter l'argument
 `-DARCANE_ACCELERATOR_MODE=CUDANVCC` à la configuration et spécifier
 le chemin vers le compilateur `nvcc` via la variable CMake
 `CMAKE_CUDA_COMPILER` ou la variable d'environnement `CUDACXX`:
 
 ~~~{.sh}
-cmake -DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11/bin/nvcc ...
+cmake -DARCANE_ACCELERATOR_MODE=CUDANVCC
+-DCMAKE_CUDA_COMPILER=/usr/local/cuda-11/bin/nvcc \
+-DARCCORE_CXX_STANDARD=20 \
+...
 ~~~
 
 Il est aussi possible d'utiliser directement le compilateur du [HPC
@@ -107,7 +126,9 @@ SDK](https://developer.nvidia.com/hpc-sdk) de NVidia:
 ~~~{.sh}
 export CXX=`which nvc++`
 export CC=`which nvc`
-cmake -DARCANE_ACCELERATOR_MODE=CUDANVCC ...
+cmake -DARCANE_ACCELERATOR_MODE=CUDANVCC \
+-DARCCORE_CXX_STANDARD=20 \
+...
 ~~~
 
 Il est possible de spécifier une architecture cible (Capability
@@ -130,7 +151,11 @@ export CC=/opt/rocm/llvm/bin/clang
 export CXX=/opt/rocm/llvm/bin/clang++
 export CMAKE_HIP_COMPILER=/opt/rocm/hip/bin/hipcc
 
-cmake -DCMAKE_PREFIX_PATH="/opt/rocm;/opt/rocm/hip" -DARCANE_ACCELERATOR_MODE=ROCMHIP -DCMAKE_HIP_ARCHITECTURES=gfx90a ...
+cmake -DCMAKE_PREFIX_PATH="/opt/rocm;/opt/rocm/hip" \
+-DARCANE_ACCELERATOR_MODE=ROCMHIP \
+-DCMAKE_HIP_ARCHITECTURES=gfx90a \
+-DARCCORE_CXX_STANDARD=20 \
+...
 ~~~
 
 ### Génération de la documentation
@@ -189,4 +214,4 @@ utiles pour le développeur.
 ### Compilation et tests des exemples
 
 La page [Exemples](./samples_build/samples/README.md) explique comment
-récupérer, compiler et lancer les exemples.
+récupérer, compiler et exécuter les exemples.

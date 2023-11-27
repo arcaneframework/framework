@@ -87,16 +87,17 @@ nécessaires.
 
 ### CMake
 
-Il faut au moins la version 3.21 de CMake. Si elle n'est pas présente sur votre système, la commande
-suivante permet de l'installer dans `/usr/local`. Il faudra ensuite
-ajouter le chemin correspondant dans la variable d'environnement PATH;
+Il faut au moins la version 3.21 de CMake. Pour le support de CUDA, il faut
+au moins la version 3.26. Si elle n'est pas présente sur votre système, la commande
+suivante permet d'installer la version 3.27.8 pour Linux x64 dans `/usr/local`.
+Il faudra ensuite ajouter le chemin correspondant dans la variable d'environnement `PATH`.
 
 ~~~{sh}
-# Install CMake 21.3 in /usr/local/cmake
-MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.21.3
-wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-linux-x86_64.tar.gz
+# Install CMake 3.27.8 in /usr/local/cmake
+MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.27.8
+wget https://github.com/Kitware/CMake/releases/download/v3.27.8/cmake-3.27.8-linux-x86_64.tar.gz
 sudo mkdir ${MY_CMAKE_INSTALL_PATH}
-sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.21.3-linux-x86_64.tar.gz
+sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.27.8-linux-x86_64.tar.gz
 export PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
 cmake --version
 ~~~
