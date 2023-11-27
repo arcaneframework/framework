@@ -95,6 +95,8 @@ set(ARCANE_HAS_ACCELERATOR_API "@ARCANE_HAS_ACCELERATOR_API@" CACHE BOOL "True A
 
 macro(arcane_internal_enable_cuda)
   if (ARCANE_HAS_CUDA)
+    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
     # La commande 'enable_language(CUDA)' a besoin que la variable
     # d'environnement 'CUDACXX' ou la variable cmake 'CMAKE_CUDA_COMPILER'
     # soit définie. Si ce n'est pas le cas, utilise le chemin du compilateur
