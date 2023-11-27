@@ -5,7 +5,6 @@
 set(ARCANE_SOURCES
   CudaAccelerator.cc
   CudaAccelerator.h
-#  CudaReduceImpl.h
   )
 
 arcane_find_package(CUDAToolkit REQUIRED)
@@ -22,16 +21,16 @@ if (ARCANE_CUDA_DEVICE_DEBUG)
 endif()
 
 target_compile_options(arcane_cuda_compile_flags INTERFACE
+  "$<$<COMPILE_LANGUAGE:CUDA>:-ccbin>"
+  "$<$<COMPILE_LANGUAGE:CUDA>:${CMAKE_CXX_COMPILER}>"
   "$<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>"
   "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>"
-  "$<$<COMPILE_LANGUAGE:CUDA>:-std=c++20>"
   "$<$<COMPILE_LANGUAGE:CUDA>:${_CUDA_DEBUG_FLAGS}>"
   "$<$<COMPILE_LANGUAGE:CUDA>:-g>"
   "$<$<COMPILE_LANGUAGE:CUDA>:-Werror>"
   "$<$<COMPILE_LANGUAGE:CUDA>:cross-execution-space-call>"
 )
 
-  
 install(TARGETS arcane_cuda_compile_flags EXPORT ArcaneTargets)
 
 arcane_add_library(arcane_accelerator_cuda
