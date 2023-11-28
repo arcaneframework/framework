@@ -21,9 +21,17 @@
 #endif
 
 #include <atomic>
+#include <concepts>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
+//! Liste des types supportant les opérations atomiques.
+template <typename T>
+concept AcceleratorAtomicConcept = std::same_as<T, Real> || std::same_as<T, Int32> || std::same_as<T, Int64>;
+}
 
 namespace Arcane::Accelerator::impl
 {
@@ -35,19 +43,21 @@ class AtomicImpl
 {
  public:
 
-  template <typename DataType> ARCCORE_HOST_DEVICE static inline void
-  doAtomicAdd(DataType* ptr, const DataType& value_to_add)
+  template <AcceleratorAtomicConcept DataType>
+  ARCCORE_HOST_DEVICE static inline void
+  doAtomicAdd(DataType* ptr, DataType value_to_add)
   {
 #ifdef ARCCORE_DEVICE_CODE
-    impl::CommonCudaHipAtomic<DataType, eAtomicOperation::Add>::apply(ptr,value_to_add);
+    impl::CommonCudaHipAtomic<DataType, eAtomicOperation::Add>::apply(ptr, value_to_add);
 #else
     std::atomic_ref<DataType> v(*ptr);
     v.fetch_add(value_to_add);
 #endif
   }
 
-  template <typename DataType> ARCCORE_HOST_DEVICE static inline void
-  doAtomicAdd(const DataViewGetterSetter<DataType>& view, const DataType& value_to_add)
+  template <AcceleratorAtomicConcept DataType>
+  ARCCORE_HOST_DEVICE static inline void
+  doAtomicAdd(const DataViewGetterSetter<DataType>& view, DataType value_to_add)
   {
     doAtomicAdd(view._address(), value_to_add);
   }
@@ -65,17 +75,23 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 //! Ajoute de manière atomique \a value_to_add à l'objet à l'adresse \a ptr
+template <AcceleratorAtomicConcept DataType, typename ValueType>
 ARCCORE_HOST_DEVICE inline void
-atomicAdd(Real* ptr, Real value_to_add)
+atomicAdd(DataType* ptr, ValueType value_to_add)
+requires(std::convertible_to<ValueType, DataType>)
 {
-  impl::AtomicImpl::doAtomicAdd(ptr, value_to_add);
+  DataType v = value_to_add;
+  impl::AtomicImpl::doAtomicAdd(ptr, v);
 }
 
 //! Ajoute de manière atomique \a value_to_add à la vue \a view
+template <AcceleratorAtomicConcept DataType, typename ValueType>
 ARCCORE_HOST_DEVICE inline void
-atomicAdd(const DataViewGetterSetter<Real>& view, Real value_to_add)
+atomicAdd(const DataViewGetterSetter<DataType>& view, ValueType value_to_add)
+requires(std::convertible_to<ValueType, DataType>)
 {
-  impl::AtomicImpl::doAtomicAdd(view, value_to_add);
+  DataType v = value_to_add;
+  impl::AtomicImpl::doAtomicAdd(view, v);
 }
 
 /*---------------------------------------------------------------------------*/
