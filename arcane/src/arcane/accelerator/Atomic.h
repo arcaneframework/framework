@@ -39,7 +39,7 @@ class AtomicImpl
   doAtomicAdd(DataType* ptr, const DataType& value_to_add)
   {
 #ifdef ARCCORE_DEVICE_CODE
-    impl::CommonCudaHipAtomicAdd<DataType>::apply(ptr,value_to_add);
+    impl::CommonCudaHipAtomic<DataType, eAtomicOperation::Add>::apply(ptr,value_to_add);
 #else
     std::atomic_ref<DataType> v(*ptr);
     v.fetch_add(value_to_add);

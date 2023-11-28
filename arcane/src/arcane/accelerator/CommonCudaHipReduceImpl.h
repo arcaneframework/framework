@@ -47,18 +47,14 @@ constexpr const Int32 WARP_SIZE = 32;
 constexpr const Int32 MAX_BLOCK_SIZE = 1024;
 constexpr const Int32 MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
 
-template <typename T>
-struct SumReduceOperator
-{
-  static ARCCORE_DEVICE inline void apply(T& val, const T v)
-  {
-    CommonCudaHipAtomicAdd<T>::apply(&val, v);
-  }
-};
+template <typename T, enum eAtomicOperation>
+class SimpleReduceOperator;
 
 template <typename T>
-struct SimpleSumReduceOperator
+class SimpleReduceOperator<T, eAtomicOperation::Add>
 {
+ public:
+
   static ARCCORE_DEVICE inline void apply(T& val, const T v)
   {
     val = val + v;
@@ -66,20 +62,24 @@ struct SimpleSumReduceOperator
 };
 
 template <typename T>
-struct SimpleMaxReduceOperator
+class SimpleReduceOperator<T, eAtomicOperation::Max>
 {
+ public:
+
   static ARCCORE_DEVICE inline void apply(T& val, const T v)
   {
-    val = v>val ? v : val;
+    val = v > val ? v : val;
   }
 };
 
 template <typename T>
-struct SimpleMinReduceOperator
+class SimpleReduceOperator<T, eAtomicOperation::Min>
 {
+ public:
+
   static ARCCORE_DEVICE inline void apply(T& val, const T v)
   {
-    val = v<val ? v : val;
+    val = v < val ? v : val;
   }
 };
 
@@ -311,13 +311,13 @@ void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
+template <typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorSum<DataType>::
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  using ReduceOperator = impl::SimpleSumReduceOperator<DataType>;
-  using AtomicReduceOperator = impl::CommonCudaHipAtomicAdd<DataType>;
-  _applyDeviceGeneric<DataType,ReduceOperator,AtomicReduceOperator>(dev_info);
+  using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Add>;
+  using AtomicReduceOperator = impl::CommonCudaHipAtomic<DataType, eAtomicOperation::Add>;
+  _applyDeviceGeneric<DataType, ReduceOperator, AtomicReduceOperator>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -327,21 +327,21 @@ template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorMax<DataType>::
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  using ReduceOperator = impl::SimpleMaxReduceOperator<DataType>;
-  using AtomicReduceOperator = impl::CommonCudaHipAtomicMax<DataType>;
+  using ReduceOperator = impl::SimpleReduceOperator<DataType,eAtomicOperation::Max>;
+  using AtomicReduceOperator = impl::CommonCudaHipAtomic<DataType,eAtomicOperation::Max>;
   _applyDeviceGeneric<DataType,ReduceOperator,AtomicReduceOperator>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
+template <typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorMin<DataType>::
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  using ReduceOperator = impl::SimpleMinReduceOperator<DataType>;
-  using AtomicReduceOperator = impl::CommonCudaHipAtomicMin<DataType>;
-  _applyDeviceGeneric<DataType,ReduceOperator,AtomicReduceOperator>(dev_info);
+  using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Min>;
+  using AtomicReduceOperator = impl::CommonCudaHipAtomic<DataType, eAtomicOperation::Min>;
+  _applyDeviceGeneric<DataType, ReduceOperator, AtomicReduceOperator>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
