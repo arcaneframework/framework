@@ -35,6 +35,20 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Type d'opération atomique supportée
+enum class eAtomicOperation
+{
+  Add,
+  Min,
+  Max
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType, enum eAtomicOperation>
+class CommonCudaHipAtomic;
+
 template <typename DataType>
 class CommonCudaHipAtomicAdd;
 template <typename DataType>
@@ -43,7 +57,7 @@ template <typename DataType>
 class CommonCudaHipAtomicMin;
 
 template <>
-class CommonCudaHipAtomicAdd<int>
+class CommonCudaHipAtomic<int, eAtomicOperation::Add>
 {
  public:
 
@@ -54,7 +68,7 @@ class CommonCudaHipAtomicAdd<int>
 };
 
 template <>
-class CommonCudaHipAtomicMax<int>
+class CommonCudaHipAtomic<int, eAtomicOperation::Max>
 {
  public:
 
@@ -65,7 +79,7 @@ class CommonCudaHipAtomicMax<int>
 };
 
 template <>
-class CommonCudaHipAtomicMin<int>
+class CommonCudaHipAtomic<int, eAtomicOperation::Min>
 {
  public:
 
@@ -76,7 +90,7 @@ class CommonCudaHipAtomicMin<int>
 };
 
 template <>
-class CommonCudaHipAtomicAdd<Int64>
+class CommonCudaHipAtomic<Int64, eAtomicOperation::Add>
 {
  public:
 
@@ -88,7 +102,7 @@ class CommonCudaHipAtomicAdd<Int64>
 };
 
 template <>
-class CommonCudaHipAtomicMax<Int64>
+class CommonCudaHipAtomic<Int64, eAtomicOperation::Max>
 {
  public:
 
@@ -107,7 +121,7 @@ class CommonCudaHipAtomicMax<Int64>
 };
 
 template <>
-class CommonCudaHipAtomicMin<Int64>
+class CommonCudaHipAtomic<Int64, eAtomicOperation::Min>
 {
  public:
 
@@ -179,7 +193,7 @@ atomicMinDouble(double* address, double val)
 }
 
 template <>
-class CommonCudaHipAtomicAdd<double>
+class CommonCudaHipAtomic<double, eAtomicOperation::Add>
 {
  public:
 
@@ -194,7 +208,7 @@ class CommonCudaHipAtomicAdd<double>
 };
 
 template <>
-class CommonCudaHipAtomicMax<double>
+class CommonCudaHipAtomic<double, eAtomicOperation::Max>
 {
  public:
 
@@ -205,7 +219,7 @@ class CommonCudaHipAtomicMax<double>
 };
 
 template <>
-class CommonCudaHipAtomicMin<double>
+class CommonCudaHipAtomic<double, eAtomicOperation::Min>
 {
  public:
 
