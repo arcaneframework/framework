@@ -65,7 +65,8 @@ class AtomicUnitTest
 
  public:
 
-  void _executeTest1(eMemoryRessource mem_ressource);
+  template<typename DataType> void _executeTest1(eMemoryRessource mem_ressource);
+  template<typename DataType> void _executeTestType();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -110,43 +111,56 @@ initializeTest()
 void AtomicUnitTest::
 executeTest()
 {
+  _executeTestType<Real>();
+  _executeTestType<Int32>();
+  _executeTestType<Int64>();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void AtomicUnitTest::
+_executeTestType()
+{
   ax::eExecutionPolicy policy = m_runner.executionPolicy();
   if (ax::impl::isAcceleratorPolicy(policy)) {
     info() << "ExecuteTest1: using accelerator";
     if (policy!=ax::eExecutionPolicy::HIP){
       // Ne fonctionne pas sur les gros tableaux (>50000 valeurs) avec ROCM
-      _executeTest1(eMemoryRessource::UnifiedMemory);
-      _executeTest1(eMemoryRessource::HostPinned);
+      _executeTest1<DataType>(eMemoryRessource::UnifiedMemory);
+      _executeTest1<DataType>(eMemoryRessource::HostPinned);
     }
-    _executeTest1(eMemoryRessource::Device);
+    _executeTest1<DataType>(eMemoryRessource::Device);
   }
   else {
     info() << "ExecuteTest1: using host";
-    _executeTest1(eMemoryRessource::Host);
+    _executeTest1<DataType>(eMemoryRessource::Host);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AtomicUnitTest::
+template<typename DataType> void AtomicUnitTest::
 _executeTest1(eMemoryRessource mem_ressource)
 {
   info() << "Test Atomic";
   const Int32 nb_value = 83239;
   //const Int32 nb_value = 1250;
-  NumArray<Real, MDDim1> v0(nb_value);
-  Real ref_value = 0;
+  NumArray<DataType, MDDim1> v0(nb_value);
+  DataType ref_value = 0;
+  const DataType add0 = static_cast<DataType>(2);
   for (Int32 i = 0; i < nb_value; ++i) {
-    v0[i] = i;
-    Real to_add = v0[i] + static_cast<Real>(i + 2);
+    DataType x = static_cast<DataType>(i % (nb_value/4));
+    v0[i] = x;
+    DataType to_add = v0[i] + x + add0;
     ref_value += to_add;
   }
 
   auto queue = makeQueue(m_runner);
-  NumArray<Real, MDDim1> v_sum(1, mem_ressource);
+  NumArray<DataType, MDDim1> v_sum(1, mem_ressource);
   v_sum.fill(0.0, &queue);
-  Real* device_sum_ptr = &v_sum[0];
+  DataType* device_sum_ptr = &v_sum[0];
   {
     auto command = makeCommand(queue);
     auto inout_a = viewInOut(command, v0);
@@ -154,17 +168,18 @@ _executeTest1(eMemoryRessource mem_ressource)
     command << RUNCOMMAND_LOOP1(iter, nb_value)
     {
       auto [i] = iter();
-      Real v = static_cast<Real>(i + 2);
+      DataType x = static_cast<DataType>(i % (nb_value/4));
+      DataType v = x + add0;
       ax::atomicAdd(inout_a(iter), v);
       ax::atomicAdd(device_sum_ptr, inout_a(iter));
     };
   }
 
-  Real sum = {};
+  DataType sum = {};
   for (Int32 i = 0; i < nb_value; ++i) {
     sum += v0[i];
   }
-  NumArray<Real, MDDim1> host_sum(1);
+  NumArray<DataType, MDDim1> host_sum(1);
   host_sum.copy(v_sum);
   info() << "SUM=" << sum;
   info() << "REF=" << ref_value;
