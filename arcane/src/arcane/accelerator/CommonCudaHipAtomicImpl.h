@@ -35,17 +35,6 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Type d'opération atomique supportée
-enum class eAtomicOperation
-{
-  Add,
-  Min,
-  Max
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template <typename DataType, enum eAtomicOperation>
 class CommonCudaHipAtomic;
 
@@ -107,10 +96,17 @@ class CommonCudaHipAtomic<Int64, eAtomicOperation::Max>
  public:
 
 #if defined(__HIP__)
-  static ARCCORE_DEVICE void apply(Int64*, Int64)
+  static ARCCORE_DEVICE void apply(Int64* ptr, Int64 v)
   {
-    // N'existe pas sur ROCm (5.5)
-    assert(0); // "AtomicMax<Int64> is not supported on ROCm");
+    unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(ptr);
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do {
+      assumed = old;
+      Int64 assumed_as_int64 = static_cast<Int64>(assumed);
+      old = atomicCAS(address_as_ull, assumed,
+                      static_cast<unsigned long long int>(v > assumed_as_int64 ? v : assumed_as_int64));
+    } while (assumed != old);
   }
 #else
   static ARCCORE_DEVICE void apply(Int64* ptr, Int64 v)
@@ -126,10 +122,17 @@ class CommonCudaHipAtomic<Int64, eAtomicOperation::Min>
  public:
 
 #if defined(__HIP__)
-  static ARCCORE_DEVICE void apply(Int64*, Int64)
+  static ARCCORE_DEVICE void apply(Int64* ptr, Int64 v)
   {
-    // N'existe pas sur ROCm (5.3)
-    assert(0); // "AtomicMin<Int64> is only not supported on ROCm");
+    unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(ptr);
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do {
+      assumed = old;
+      Int64 assumed_as_int64 = static_cast<Int64>(assumed);
+      old = atomicCAS(address_as_ull, assumed,
+                      static_cast<unsigned long long int>(v < assumed_as_int64 ? v : assumed_as_int64));
+    } while (assumed != old);
   }
 #else
   static ARCCORE_DEVICE void apply(Int64* ptr, Int64 v)
