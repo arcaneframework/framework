@@ -65,8 +65,12 @@ class AtomicUnitTest
 
  public:
 
-  template<typename DataType> void _executeTest1(eMemoryRessource mem_ressource);
-  template<typename DataType> void _executeTestType();
+  template <typename DataType, enum ax::eAtomicOperation Operation>
+  void _executeTest1(eMemoryRessource mem_ressource);
+  template <enum ax::eAtomicOperation Operation>
+  void _executeTestOperation();
+  template <typename DataType, enum ax::eAtomicOperation Operation>
+  void _executeTestType();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -111,55 +115,91 @@ initializeTest()
 void AtomicUnitTest::
 executeTest()
 {
-  _executeTestType<Real>();
-  _executeTestType<Int32>();
-  _executeTestType<Int64>();
+  _executeTestOperation<ax::eAtomicOperation::Add>();
+  _executeTestOperation<ax::eAtomicOperation::Max>();
+  _executeTestOperation<ax::eAtomicOperation::Min>();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void AtomicUnitTest::
+template <enum ax::eAtomicOperation Operation> void AtomicUnitTest::
+_executeTestOperation()
+{
+  _executeTestType<Real, Operation>();
+  _executeTestType<Int32, Operation>();
+  _executeTestType<Int64, Operation>();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType, enum ax::eAtomicOperation Operation>
+void AtomicUnitTest::
 _executeTestType()
 {
   ax::eExecutionPolicy policy = m_runner.executionPolicy();
   if (ax::impl::isAcceleratorPolicy(policy)) {
     info() << "ExecuteTest1: using accelerator";
-    if (policy!=ax::eExecutionPolicy::HIP){
+    if (policy != ax::eExecutionPolicy::HIP) {
       // Ne fonctionne pas sur les gros tableaux (>50000 valeurs) avec ROCM
-      _executeTest1<DataType>(eMemoryRessource::UnifiedMemory);
-      _executeTest1<DataType>(eMemoryRessource::HostPinned);
+      _executeTest1<DataType, Operation>(eMemoryRessource::UnifiedMemory);
+      _executeTest1<DataType, Operation>(eMemoryRessource::HostPinned);
     }
-    _executeTest1<DataType>(eMemoryRessource::Device);
+    _executeTest1<DataType, Operation>(eMemoryRessource::Device);
   }
   else {
     info() << "ExecuteTest1: using host";
-    _executeTest1<DataType>(eMemoryRessource::Host);
+    _executeTest1<DataType, Operation>(eMemoryRessource::Host);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void AtomicUnitTest::
+template <typename DataType, enum ax::eAtomicOperation Operation>
+void AtomicUnitTest::
 _executeTest1(eMemoryRessource mem_ressource)
 {
-  info() << "Test Atomic";
+  info() << "Test Atomic ressource=" << mem_ressource << " Operation=" << (int)Operation;
   const Int32 nb_value = 83239;
   //const Int32 nb_value = 1250;
   NumArray<DataType, MDDim1> v0(nb_value);
   DataType ref_value = 0;
   const DataType add0 = static_cast<DataType>(2);
+  DataType init_value = {};
   for (Int32 i = 0; i < nb_value; ++i) {
-    DataType x = static_cast<DataType>(i % (nb_value/4));
+    DataType x = static_cast<DataType>(i % (nb_value / 4));
+    if ((i % 2) == 0)
+      x = -x;
     v0[i] = x;
-    DataType to_add = v0[i] + x + add0;
-    ref_value += to_add;
+    DataType value_to_apply = x + add0;
+    switch (Operation) {
+    case ax::eAtomicOperation::Add:
+      ref_value += v0[i] + value_to_apply;
+      break;
+    case ax::eAtomicOperation::Min:
+      if (i == 0)
+        ref_value = init_value = value_to_apply;
+      else if (value_to_apply < ref_value)
+        ref_value = value_to_apply;
+      v0[i] = ref_value;
+      break;
+    case ax::eAtomicOperation::Max:
+      if (i == 0)
+        ref_value = init_value = value_to_apply;
+      else if (ref_value < value_to_apply)
+        ref_value = value_to_apply;
+      v0[i] = ref_value;
+      break;
+    }
+    if (i < 10 || i > (nb_value - 10))
+      info() << "I=" << i << " ref_value=" << ref_value << " to_apply=" << value_to_apply;
   }
 
   auto queue = makeQueue(m_runner);
   NumArray<DataType, MDDim1> v_sum(1, mem_ressource);
-  v_sum.fill(0.0, &queue);
+  v_sum.fill(init_value, &queue);
   DataType* device_sum_ptr = &v_sum[0];
   {
     auto command = makeCommand(queue);
@@ -168,30 +208,35 @@ _executeTest1(eMemoryRessource mem_ressource)
     command << RUNCOMMAND_LOOP1(iter, nb_value)
     {
       auto [i] = iter();
-      DataType x = static_cast<DataType>(i % (nb_value/4));
+      DataType x = static_cast<DataType>(i % (nb_value / 4));
+      if ((i % 2) == 0)
+        x = -x;
       DataType v = x + add0;
-      ax::atomicAdd(inout_a(iter), v);
-      ax::atomicAdd(device_sum_ptr, inout_a(iter));
+      ax::doAtomic<Operation>(inout_a(iter), v);
+      ax::doAtomic<Operation>(device_sum_ptr, inout_a(iter));
     };
   }
 
-  DataType sum = {};
+  DataType cumulative = init_value;
   for (Int32 i = 0; i < nb_value; ++i) {
-    sum += v0[i];
+    if (i < 10)
+      info() << "V[" << i << "] = " << v0[i];
+    ax::doAtomic<Operation>(&cumulative, v0[i]);
   }
-  NumArray<DataType, MDDim1> host_sum(1);
-  host_sum.copy(v_sum);
-  info() << "SUM=" << sum;
+  NumArray<DataType, MDDim1> host_cumulative(1);
+  host_cumulative.copy(v_sum);
+  info() << "CURRENT=" << cumulative;
   info() << "REF=" << ref_value;
-  info() << "V_SUM=" << host_sum[0];
-  if (sum != ref_value)
-    ARCANE_FATAL("Bad value sum={0} expected={1}", sum, ref_value);
-  if (host_sum[0] != ref_value)
-    ARCANE_FATAL("Bad value host_sum={0} expected={1}", host_sum[0], ref_value);
+  info() << "V_CURRENT=" << host_cumulative[0];
+  if (cumulative != ref_value)
+    ARCANE_FATAL("Bad value cumulative={0} expected={1}", cumulative, ref_value);
+  if (host_cumulative[0] != ref_value)
+    ARCANE_FATAL("Bad value host_cumulative={0} expected={1}", host_cumulative[0], ref_value);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 } // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/

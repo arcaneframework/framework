@@ -36,6 +36,52 @@ concept AcceleratorAtomicConcept = std::same_as<T, Real> || std::same_as<T, Int3
 namespace Arcane::Accelerator::impl
 {
 
+template <enum eAtomicOperation Operation>
+class HostAtomic;
+
+template <>
+class HostAtomic<eAtomicOperation::Add>
+{
+ public:
+
+  template <AcceleratorAtomicConcept DataType> static void
+  apply(DataType* ptr, DataType value)
+  {
+    std::atomic_ref<DataType> v(*ptr);
+    v.fetch_add(value);
+  }
+};
+
+template <>
+class HostAtomic<eAtomicOperation::Max>
+{
+ public:
+
+  template <AcceleratorAtomicConcept DataType> static void
+  apply(DataType* ptr, DataType value)
+  {
+    std::atomic_ref<DataType> v(*ptr);
+    DataType prev_value = v;
+    while (prev_value < value && !v.compare_exchange_weak(prev_value, value)) {
+    }
+  }
+};
+
+template <>
+class HostAtomic<eAtomicOperation::Min>
+{
+ public:
+
+  template <AcceleratorAtomicConcept DataType> static void
+  apply(DataType* ptr, DataType value)
+  {
+    std::atomic_ref<DataType> v(*ptr);
+    DataType prev_value = v;
+    while (prev_value > value && !v.compare_exchange_weak(prev_value, value)) {
+    }
+  }
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,23 +89,22 @@ class AtomicImpl
 {
  public:
 
-  template <AcceleratorAtomicConcept DataType>
+  template <AcceleratorAtomicConcept DataType, enum eAtomicOperation Operation>
   ARCCORE_HOST_DEVICE static inline void
-  doAtomicAdd(DataType* ptr, DataType value_to_add)
+  doAtomic(DataType* ptr, DataType value)
   {
 #ifdef ARCCORE_DEVICE_CODE
-    impl::CommonCudaHipAtomic<DataType, eAtomicOperation::Add>::apply(ptr, value_to_add);
+    impl::CommonCudaHipAtomic<DataType, Operation>::apply(ptr, value);
 #else
-    std::atomic_ref<DataType> v(*ptr);
-    v.fetch_add(value_to_add);
+    HostAtomic<Operation>::apply(ptr, value);
 #endif
   }
 
-  template <AcceleratorAtomicConcept DataType>
+  template <AcceleratorAtomicConcept DataType, enum eAtomicOperation Operation>
   ARCCORE_HOST_DEVICE static inline void
-  doAtomicAdd(const DataViewGetterSetter<DataType>& view, DataType value_to_add)
+  doAtomic(const DataViewGetterSetter<DataType>& view, DataType value)
   {
-    doAtomicAdd(view._address(), value_to_add);
+    doAtomic<DataType, Operation>(view._address(), value);
   }
 };
 
@@ -74,24 +119,24 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Ajoute de manière atomique \a value_to_add à l'objet à l'adresse \a ptr
-template <AcceleratorAtomicConcept DataType, typename ValueType>
+//! Applique l'opération atomique \a Operation à la valeur à l'adresse \a ptr avec la valeur \a value
+template <enum eAtomicOperation Operation, AcceleratorAtomicConcept DataType, typename ValueType>
 ARCCORE_HOST_DEVICE inline void
-atomicAdd(DataType* ptr, ValueType value_to_add)
+doAtomic(DataType* ptr, ValueType value)
 requires(std::convertible_to<ValueType, DataType>)
 {
-  DataType v = value_to_add;
-  impl::AtomicImpl::doAtomicAdd(ptr, v);
+  DataType v = value;
+  impl::AtomicImpl::doAtomic<DataType, Operation>(ptr, v);
 }
 
-//! Ajoute de manière atomique \a value_to_add à la vue \a view
-template <AcceleratorAtomicConcept DataType, typename ValueType>
+//! Applique l'opération atomique \a Operation à la vue \a view avec la valeur \a value
+template <enum eAtomicOperation Operation, AcceleratorAtomicConcept DataType, typename ValueType>
 ARCCORE_HOST_DEVICE inline void
-atomicAdd(const DataViewGetterSetter<DataType>& view, ValueType value_to_add)
+doAtomic(const DataViewGetterSetter<DataType>& view, ValueType value)
 requires(std::convertible_to<ValueType, DataType>)
 {
-  DataType v = value_to_add;
-  impl::AtomicImpl::doAtomicAdd(view, v);
+  DataType v = value;
+  impl::AtomicImpl::doAtomic<DataType, Operation>(view, v);
 }
 
 /*---------------------------------------------------------------------------*/

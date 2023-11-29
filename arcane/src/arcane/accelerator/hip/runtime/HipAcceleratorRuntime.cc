@@ -308,10 +308,10 @@ class HipRunnerRuntime
         mem_type = ePointerMemoryType::Device;
     }
 
-    std::cout << "HIP Info: hip_memory_type=" << (int)pa.memoryType << " is_managed?=" << pa.isManaged
-              << " flags=" << pa.allocationFlags
-              << " my_memory_type=" << (int)mem_type
-              << "\n";
+    //std::cout << "HIP Info: hip_memory_type=" << (int)pa.memoryType << " is_managed?=" << pa.isManaged
+    //          << " flags=" << pa.allocationFlags
+    //          << " my_memory_type=" << (int)mem_type
+    //          << "\n";
     _fillPointerAttribute(attribute, mem_type, pa.device,
                           ptr, pa.devicePointer, pa.hostPointer);
   }
