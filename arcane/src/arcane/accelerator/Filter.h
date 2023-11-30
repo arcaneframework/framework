@@ -16,6 +16,7 @@
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NumArray.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
@@ -35,23 +36,26 @@ namespace Arcane::Accelerator::impl
  *
  * Contient les arguments nécessaires pour effectuer le filtrage.
  */
-class GenericFilteringBase
+class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 {
- protected:
-
-  Int32 _nbOutputElement() const
-  {
-    if (m_queue)
-      m_queue->barrier();
-    return m_host_nb_out;
-  }
+  template <typename DataType, typename FlagType>
+  friend class GenericFiltering;
 
  public:
+
+  GenericFilteringBase();
+
+ protected:
+
+  Int32 _nbOutputElement() const;
+  void _allocate();
+
+ protected:
 
   RunQueue* m_queue = nullptr;
   GenericDeviceStorage m_algo_storage;
   DeviceStorage<int> m_device_nb_out_storage;
-  int m_host_nb_out = 0;
+  NumArray<Int32, MDDim1> m_host_nb_out_storage;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -98,7 +102,7 @@ class GenericFiltering
       nb_out_ptr = s.m_device_nb_out_storage.address();
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(s.m_algo_storage.address(), temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
-      ARCANE_CHECK_CUDA(::cudaMemcpyAsync(&s.m_host_nb_out, nb_out_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
+      ARCANE_CHECK_CUDA(::cudaMemcpyAsync(s.m_host_nb_out_storage.bytes().data(), nb_out_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
@@ -116,7 +120,7 @@ class GenericFiltering
 
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
-      ARCANE_CHECK_HIP(::hipMemcpyAsync(&s.m_host_nb_out, nb_out_ptr, sizeof(int), hipMemcpyDeviceToHost, stream));
+      ARCANE_CHECK_HIP(::hipMemcpyAsync(s.m_host_nb_out_storage.bytes().data(), nb_out_ptr, sizeof(int), hipMemcpyDeviceToHost, stream));
     }
 #endif
     case eExecutionPolicy::Thread:
@@ -130,7 +134,7 @@ class GenericFiltering
           ++index;
         }
       }
-      s.m_host_nb_out = index;
+      s.m_host_nb_out_storage[0] = index;
     } break;
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
@@ -164,6 +168,22 @@ class Filterer
 {
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2023: Use Filterer(RunQueue*) instead")
+  Filterer()
+  : m_is_deprecated_usage(true)
+  {
+  }
+
+ public:
+
+  Filterer(RunQueue* queue)
+  {
+    m_queue = queue;
+    _allocate();
+  }
+
+ public:
+
   /*!
    * \brief Applique le filtre.
    *
@@ -188,26 +208,45 @@ class Filterer
    * après filtrage.
    */
   template <typename FlagType>
-  void apply(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
+  void apply(SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
   {
+    if (m_is_deprecated_usage)
+      ARCANE_FATAL("You need to create instance with Filterer(RunQueue*) to use this overload of apply()");
     if (m_is_already_called)
       ARCANE_FATAL("apply() has already been called for this instance");
-    m_queue = queue;
     m_is_already_called = true;
     impl::GenericFilteringBase* base_ptr = this;
     impl::GenericFiltering<DataType, FlagType> gf;
     gf.apply(*base_ptr, input, output, flag);
   }
 
-  //! Nombre d'éléments en sortie.
-  Int32 nbOutputElement() const
+  template <typename FlagType>
+  ARCANE_DEPRECATED_REASON("Y2023: Use apply() without RunQueue argument instead")
+  void apply(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
   {
+    if (!m_is_deprecated_usage)
+      ARCANE_FATAL("This overload of apply() is only valid when using default constructor");
+    if (m_is_already_called)
+      ARCANE_FATAL("apply() has already been called for this instance");
+    m_is_already_called = true;
+    m_queue = queue;
+    _allocate();
+    impl::GenericFilteringBase* base_ptr = this;
+    impl::GenericFiltering<DataType, FlagType> gf;
+    gf.apply(*base_ptr, input, output, flag);
+  }
+
+  //! Nombre d'éléments en sortie.
+  Int32 nbOutputElement()
+  {
+    m_is_already_called = false;
     return _nbOutputElement();
   }
 
  private:
 
   bool m_is_already_called = false;
+  bool m_is_deprecated_usage = false;
 };
 
 /*---------------------------------------------------------------------------*/
