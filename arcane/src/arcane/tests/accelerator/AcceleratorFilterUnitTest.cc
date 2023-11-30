@@ -66,11 +66,11 @@ class AcceleratorFilterUnitTest
  public:
 
   void _executeTest1();
-  template <typename DataType> void _executeTestDataType(Int32 size);
+  template <typename DataType> void _executeTestDataType(Int32 size, bool use_new);
 
  private:
 
-  void executeTest2(Int32 size);
+  void executeTest2(Int32 size, bool use_new);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -113,20 +113,28 @@ initializeTest()
 void AcceleratorFilterUnitTest::
 executeTest()
 {
-  executeTest2(15);
-  executeTest2(1000000);
+  executeTest2(15, true);
+  executeTest2(1000000, true);
+  executeTest2(15, false);
+  executeTest2(1000000, false);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void AcceleratorFilterUnitTest::
-executeTest2(Int32 size)
+executeTest2(Int32 size, bool use_new)
 {
-  _executeTestDataType<Int64>(size);
-  _executeTestDataType<Int32>(size);
-  _executeTestDataType<double>(size);
+  _executeTestDataType<Int64>(size, use_new);
+  _executeTestDataType<Int32>(size, use_new);
+  _executeTestDataType<double>(size, use_new);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType> void AcceleratorFilterUnitTest::
-_executeTestDataType(Int32 size)
+_executeTestDataType(Int32 size, bool use_new)
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -166,16 +174,37 @@ _executeTestDataType(Int32 size)
   expected_t2.resize(nb_filter);
   info() << "Expected NbFilter=" << nb_filter;
 
-  Arcane::Accelerator::Filterer<DataType> filterer;
-  SmallSpan<const Int16> filter_flags_view = filter_flags;
-  filterer.apply(m_queue, t1, t2, filter_flags_view);
-  Int32 nb_out = filterer.nbOutputElement();
-  info() << "NB_OUT_accelerator=" << nb_out;
+  // Nouvel usage
+  if (use_new) {
+    NumArray<DataType, MDDim1> t1_bis(t1);
+    NumArray<DataType, MDDim1> t2_bis(t2);
 
-  vc.areEqual(nb_filter, nb_out, "Filter");
-  t2.resize(nb_out);
-
-  vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArray");
+    Arcane::Accelerator::Filterer<DataType> filterer(m_queue);
+    SmallSpan<const Int16> filter_flags_view = filter_flags;
+    filterer.apply(t1, t2, filter_flags_view);
+    Int32 nb_out = filterer.nbOutputElement();
+    info() << "NB_OUT_accelerator1=" << nb_out;
+    vc.areEqual(nb_filter, nb_out, "Filter");
+    t2.resize(nb_out);
+    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArray1");
+    // Appelle une deuxième fois l'instance
+    filterer.apply(t1_bis, t2_bis, filter_flags_view);
+    Int32 nb_out2 = filterer.nbOutputElement();
+    info() << "NB_OUT_accelerator2=" << nb_out2;
+    t2_bis.resize(nb_out2);
+    vc.areEqualArray(t2_bis.to1DSpan(), expected_t2.to1DSpan(), "OutputArray2");
+  }
+  else {
+    // Usage obsolète
+    Arcane::Accelerator::Filterer<DataType> filterer;
+    SmallSpan<const Int16> filter_flags_view = filter_flags;
+    filterer.apply(m_queue, t1, t2, filter_flags_view);
+    Int32 nb_out = filterer.nbOutputElement();
+    info() << "NB_OUT_accelerator_old=" << nb_out;
+    vc.areEqual(nb_filter, nb_out, "Filter");
+    t2.resize(nb_out);
+    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArrayOld");
+  }
 }
 
 /*---------------------------------------------------------------------------*/
