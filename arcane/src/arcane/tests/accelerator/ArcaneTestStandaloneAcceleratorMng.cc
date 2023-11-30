@@ -38,8 +38,8 @@ _testSum(IAcceleratorMng* acc_mng)
   NumArray<Int64,MDDim1> b(nb_value);
   NumArray<Int64,MDDim1> c(nb_value);
   for( int i=0; i<nb_value; ++i ){
-    a.s(i) = i+2;
-    b.s(i) = i+3;
+    a(i) = i+2;
+    b(i) = i+3;
   }
 
   {
@@ -75,8 +75,8 @@ _testBinOp(IAcceleratorMng* acc_mng)
   NumArray<Int64,MDDim1> a(nb_value);
   NumArray<Int64,MDDim1> b(nb_value);
   for( int i=0; i<nb_value; ++i ){
-    a.s(i) = 1;
-    b.s(i) = 2;
+    a(i) = 1;
+    b(i) = 2;
   }
 
   // *=

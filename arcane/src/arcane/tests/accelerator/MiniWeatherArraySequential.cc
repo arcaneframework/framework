@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -559,7 +559,7 @@ init()
     for (i = 0; i < nx + 2 * hs; i++) {
       // Initialize the state to zero
       for (ll = 0; ll < NUM_VARS; ll++)
-        nstate.s(ll,k,i) = 0.0;
+        nstate(ll,k,i) = 0.0;
 
       //Use Gauss-Legendre quadrature to initialize a hydrostatic balance + temperature perturbation
       for (kk = 0; kk < nqpoints; kk++) {
@@ -580,7 +580,7 @@ init()
       }
 
       for (ll = 0; ll < NUM_VARS; ll++)
-        nstate_tmp.s(ll,k,i) = nstate(ll,k,i);
+        nstate_tmp(ll,k,i) = nstate(ll,k,i);
     }
   }
 

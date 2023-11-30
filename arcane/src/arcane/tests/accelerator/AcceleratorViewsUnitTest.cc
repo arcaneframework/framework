@@ -576,7 +576,7 @@ _executeTestMemoryCopy()
 
   // Initialise les tableaux
   for( int i=0; i<nb_value; ++i ){
-    a.s(i) = i + 3;
+    a(i) = i + 3;
     b[i] = i + 5;
   }
 
