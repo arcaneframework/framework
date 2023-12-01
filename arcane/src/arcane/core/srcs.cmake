@@ -67,7 +67,8 @@ set(ARCANE_INTERNAL_SOURCES
   internal/ItemGroupInternal.h
   internal/ICaseOptionListInternal.h
   internal/IVariableMngInternal.h
-  internal/IVariableSynchronizerMngInternal.h
+  internal/StringVariableReplace.h
+  internal/StringVariableReplace.cc
   )
 
 set(ARCANE_ORIGINAL_SOURCES
