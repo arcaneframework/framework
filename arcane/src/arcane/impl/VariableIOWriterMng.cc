@@ -218,14 +218,16 @@ _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
       String hash_str = Convert::toHexaString(hash_values);
       _writeAttribute(json_writer, var_node, "hash", hash_str);
       if (hash_context.get()) {
-        HashAlgorithmValue hash_value;
         hash_context->reset();
         DataHashInfo hash_info(hash_context.get());
         var->data()->_commonInternal()->computeHash(hash_info);
+        HashAlgorithmValue hash_value;
         hash_context->computeHashValue(hash_value);
-        Span<const std::byte> hash_bytes(hash_value.bytes());
-        info(4) << "Hash=" << Convert::toHexaString(hash_bytes) << " old_hash="
+        String hash2_str = Convert::toHexaString(asBytes(hash_value.bytes()));
+        info(6) << "Hash=" << hash2_str << " old_hash="
                 << hash_str << " name=" << var->name();
+        _writeAttribute(json_writer, var_node, "hash2", hash2_str);
+        _writeAttribute(json_writer, var_node, "hash-version", hash_info.version());
       }
     }
   }

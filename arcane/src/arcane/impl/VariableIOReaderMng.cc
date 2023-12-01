@@ -41,6 +41,7 @@
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IMeshFactoryMng.h"
 #include "arcane/core/MeshBuildInfo.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/core/ICheckpointReader.h"
 #include "arcane/core/IDataReader.h"
@@ -550,12 +551,15 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
   // d'une version antérieure à la 3.12 de Arcane. Dans ce cas l'algorithme
   // utilisé est 'MD5'.
   IHashAlgorithm* hash_algo = &md5_hash_algorithm;
+  Ref<IHashAlgorithmContext> hash_context;
   String hash_service_name = vmd_list.hashAlgorithmName();
   if (!hash_service_name.empty()) {
     if (hash_service_name == "MD5")
       hash_algo = &md5_hash_algorithm;
-    else if (hash_service_name == "SHA1")
+    else if (hash_service_name == "SHA1") {
       hash_algo = &sha1_hash_algorithm;
+      hash_context = sha1_hash_algorithm.createContext();
+    }
     else
       ARCANE_FATAL("Not supported hash algorithm '{0}'. Valid values are 'SHA1' or 'MD5'");
   }
@@ -563,9 +567,10 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
   IParallelMng* pm = m_variable_mng->m_parallel_mng;
   Int32 sid = pm->commRank();
   Directory listing_dir = m_variable_mng->subDomain()->listingDirectory();
-
   for (const auto& i : vmd_list) {
-    String reference_hash = i.second->hash();
+    const VariableMetaData* vmd = i.second;
+    Int32 hash_version = vmd->hashVersion();
+    String reference_hash = (hash_version > 0) ? vmd->hash2() : vmd->hash();
     // Teste si la valeur de hashage est présente. C'est normalement
     // toujours le cas, sauf si la protection vient d'une ancienne
     // version de Arcane qui ne sauvait pas cette information.
@@ -579,10 +584,25 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
       continue;
     hash_values.clear();
     IData* data = var->data();
-    data->computeHash(hash_algo, hash_values);
-    String hash_str = Convert::toHexaString(hash_values);
-    if (hash_str != reference_hash) {
-      ARCANE_FATAL("DIFF");
+    String hash_str;
+    bool do_compare = true;
+    if (hash_version > 0) {
+      ARCANE_CHECK_POINTER(hash_context.get());
+      hash_context->reset();
+      DataHashInfo hash_info(hash_context.get());
+      data->_commonInternal()->computeHash(hash_info);
+      HashAlgorithmValue hash_value;
+      hash_context->computeHashValue(hash_value);
+      hash_str = Convert::toHexaString(asBytes(hash_value.bytes()));
+      // Ne compare si les versions de hash associées à la variable différent
+      if (hash_version != hash_info.version())
+        do_compare = false;
+    }
+    else {
+      data->computeHash(hash_algo, hash_values);
+      hash_str = Convert::toHexaString(hash_values);
+    }
+    if (do_compare && (hash_str != reference_hash)) {
       ++nb_error;
       error() << "Hash values are different. Corrumpted values."
               << " name=" << var->fullName()
@@ -648,6 +668,8 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
   String ustr_full_type("full-type");
   String ustr_data_type("data-type");
   String ustr_hash("hash");
+  String ustr_hash2("hash2");
+  String ustr_hash_version("hash-version");
   String ustr_property("property");
   String ustr_multitag("multi-tag");
   vmd_list.clear();
@@ -660,9 +682,11 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
     String family_name;
     String group_name;
     String hash_value;
+    String hash2_value;
+    Int32 hash_version = 0;
     String multi_tag;
     String data_type;
-    Int32 property;
+    Int32 property = 0;
   };
   UniqueArray<VariableReadInfo> variables_info;
 
@@ -681,6 +705,8 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
       r.family_name = var.child(ustr_family_name).value();
       r.group_name = var.child(ustr_group_name).value();
       r.hash_value = var.child(ustr_hash).value();
+      r.hash2_value = var.child(ustr_hash2).value();
+      r.hash_version = var.child(ustr_hash_version).valueAsInt32();
       r.multi_tag = var.child(ustr_multitag).value();
       r.property = var.child(ustr_property).valueAsInt32();
       variables_info.add(r);
@@ -727,6 +753,8 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
 
     vmd->setFullType(full_type);
     vmd->setHash(r.hash_value);
+    vmd->setHash2(r.hash2_value);
+    vmd->setHashVersion(r.hash_version);
     vmd->setMultiTag(r.multi_tag);
     vmd->setProperty(r.property);
 
