@@ -19,6 +19,7 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/MD5HashAlgorithm.h"
+#include "arcane/utils/SHA1HashAlgorithm.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/JSONReader.h"
@@ -234,10 +235,13 @@ class VariableMetaDataList
   }
   VMDMap::const_iterator begin() const { return m_vmd_map.begin(); }
   VMDMap::const_iterator end() const { return m_vmd_map.end(); }
+  void setHashAlgorithmName(const String& v) { m_hash_algorithm = v; }
+  const String& hashAlgorithmName() const { return m_hash_algorithm; }
 
  public:
 
   std::map<String, VariableMetaData*> m_vmd_map;
+  String m_hash_algorithm;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -372,7 +376,7 @@ VariableIOReaderMng(VariableMng* vm)
 , m_is_use_json_metadata(false)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_JSON_METADATA", true))
-    m_is_use_json_metadata = (v.value()!=0);
+    m_is_use_json_metadata = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -487,6 +491,7 @@ _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
   ScopedPtrT<IXmlDocumentHolder> doc(IXmlDocumentHolder::loadFromBuffer(bytes, "meta_data", traceMng()));
   if (!doc.get())
     ARCANE_FATAL("The meta-data are invalid");
+  String hash_service_name;
   JSONDocument json_reader;
 
   XmlNode root_node = doc->documentNode().documentElement();
@@ -497,18 +502,26 @@ _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
   // si 'm_is_use_json_metadata' est vrai.
   JSONValue json_variables;
   JSONValue json_meshes;
-  if (m_is_use_json_metadata && !json_node.null()) {
+  if (!json_node.null()) {
     String json_meta_data = json_node.value();
     info(6) << "READER_JSON=" << json_meta_data;
     json_reader.parse(json_meta_data.bytes());
-    //json_reader_ptr = &json_reader;
+
     JSONValue json_meta_data_object = json_reader.root().expectedChild("arcane-checkpoint-metadata");
-    JSONValue json_version = json_meta_data_object.expectedChild("version");
-    Int32 v = json_version.valueAsInt32();
-    if (v != 1)
-      ARCANE_FATAL("Bad version for JSON Meta Data (v={0}). Only version '1' is supported", v);
-    json_variables = json_meta_data_object.expectedChild("variables");
-    json_meshes = json_meta_data_object.expectedChild("meshes");
+
+    // Lit toujours le nom de l'algorithme même si on n'utilise pas les meta-données
+    // car on s'en sert pour les comparaisons de la valeur du hash.
+    String hash_algo_name = json_meta_data_object.child("hash-algorithm-name").value();
+    vmd_list.setHashAlgorithmName(hash_algo_name);
+
+    if (m_is_use_json_metadata) {
+      JSONValue json_version = json_meta_data_object.expectedChild("version");
+      Int32 v = json_version.valueAsInt32();
+      if (v != 1)
+        ARCANE_FATAL("Bad version for JSON Meta Data (v={0}). Only version '1' is supported", v);
+      json_variables = json_meta_data_object.expectedChild("variables");
+      json_meshes = json_meta_data_object.expectedChild("meshes");
+    }
   }
   XmlNode variables_node = root_node.child("variables");
   _readVariablesMetaData(vmd_list, json_variables, variables_node);
@@ -531,7 +544,21 @@ void VariableIOReaderMng::
 _checkHashFunction(const VariableMetaDataList& vmd_list)
 {
   ByteUniqueArray hash_values;
-  MD5HashAlgorithm hash_algo;
+  MD5HashAlgorithm md5_hash_algorithm;
+  SHA1HashAlgorithm sha1_hash_algorithm;
+  // Par défaut si rien n'est spécifié, il s'agit d'une protection issue
+  // d'une version antérieure à la 3.12 de Arcane. Dans ce cas l'algorithme
+  // utilisé est 'MD5'.
+  IHashAlgorithm* hash_algo = &md5_hash_algorithm;
+  String hash_service_name = vmd_list.hashAlgorithmName();
+  if (!hash_service_name.empty()) {
+    if (hash_service_name == "MD5")
+      hash_algo = &md5_hash_algorithm;
+    else if (hash_service_name == "SHA1")
+      hash_algo = &sha1_hash_algorithm;
+    else
+      ARCANE_FATAL("Not supported hash algorithm '{0}'. Valid values are 'SHA1' or 'MD5'");
+  }
   Integer nb_error = 0;
   IParallelMng* pm = m_variable_mng->m_parallel_mng;
   Int32 sid = pm->commRank();
@@ -552,9 +579,10 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
       continue;
     hash_values.clear();
     IData* data = var->data();
-    data->computeHash(&hash_algo, hash_values);
+    data->computeHash(hash_algo, hash_values);
     String hash_str = Convert::toHexaString(hash_values);
     if (hash_str != reference_hash) {
+      ARCANE_FATAL("DIFF");
       ++nb_error;
       error() << "Hash values are different. Corrumpted values."
               << " name=" << var->fullName()
@@ -610,7 +638,8 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
 /*---------------------------------------------------------------------------*/
 
 void VariableIOReaderMng::
-_readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json, const XmlNode& variables_node)
+_readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
+                       const XmlNode& variables_node)
 {
   String ustr_base_name("base-name");
   String ustr_family_name("item-family-name");
@@ -680,8 +709,8 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
     VariableDataTypeInfo vdti(full_type);
 
     // Vérifie que 'data-type' est cohérent avec la valeur dans 'full_type'
-    if (vdti.dataTypeName()!=r.data_type)
-      ARCANE_FATAL("Incoherent value for 'data-type' name v='{0}' expected='{1}'",r.data_type,vdti.dataTypeName());
+    if (vdti.dataTypeName() != r.data_type)
+      ARCANE_FATAL("Incoherent value for 'data-type' name v='{0}' expected='{1}'", r.data_type, vdti.dataTypeName());
 
     String family_name = r.family_name;
     // Actuellement, si la variable n'est pas partielle alors son groupe
