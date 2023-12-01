@@ -301,6 +301,7 @@ class VariableIOWriterMng
  private:
 
   VariableMng* m_variable_mng = nullptr;
+  bool m_use_hash_v2 = false;
 
  private:
 
