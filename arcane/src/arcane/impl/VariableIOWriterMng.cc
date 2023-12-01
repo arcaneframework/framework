@@ -18,7 +18,9 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/MD5HashAlgorithm.h"
+#include "arcane/utils/SHA1HashAlgorithm.h"
 #include "arcane/utils/JSONWriter.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IDataWriter.h"
 #include "arcane/core/IXmlDocumentHolder.h"
@@ -31,6 +33,7 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/ICheckpointWriter.h"
 #include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IParallelMng.h"
@@ -51,6 +54,8 @@ VariableIOWriterMng(VariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_VARIABLEMNG_HASHV2", true))
+    m_use_hash_v2 = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -149,6 +154,7 @@ writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_has
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace
 {
   void _writeAttribute(JSONWriter& json_writer, XmlNode var_node, const String& name, const String& value)
@@ -170,6 +176,9 @@ namespace
 
 } // namespace
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void VariableIOWriterMng::
 _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
                            const VariableCollection& vars, bool use_hash)
@@ -177,6 +186,11 @@ _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
   StringBuilder var_full_type_b;
   ByteUniqueArray hash_values;
   MD5HashAlgorithm hash_algo;
+  Ref<IHashAlgorithmContext> hash_context;
+  if (m_use_hash_v2) {
+    SHA1HashAlgorithm sha1_hash_algo;
+    hash_context = sha1_hash_algo.createContext();
+  }
 
   json_writer.writeKey("variables");
   json_writer.beginArray();
@@ -206,6 +220,16 @@ _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
       var->data()->computeHash(&hash_algo, hash_values);
       String hash_str = Convert::toHexaString(hash_values);
       _writeAttribute(json_writer, var_node, "hash", hash_str);
+      if (hash_context.get()) {
+        HashAlgorithmValue hash_value;
+        hash_context->reset();
+        DataHashInfo hash_info(hash_context.get());
+        var->data()->_commonInternal()->computeHash(hash_info);
+        hash_context->computeHashValue(hash_value);
+        Span<const std::byte> hash_bytes(hash_value.bytes());
+        info(3) << "Hash=" << Convert::toHexaString(hash_bytes) << " old_hash="
+                << hash_str << " name=" << var->name();
+      }
     }
   }
 
