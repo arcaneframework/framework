@@ -553,7 +553,7 @@ endif()
 ARCANE_ADD_TEST_PARALLEL(hyoda testHyoda.arc 1)
 
 arcane_add_test(checkpoint_basic testCheckpoint-3.arc -c 3 -m 5)
-arcane_add_test(checkpoint_basic_hash_v2 testCheckpoint-3.arc -c 3 -m 5 "-We,ARCANE_VARIABLEMNG_HASHV2,1")
+arcane_add_test(checkpoint_basic_hash_v2 testCheckpoint-3.arc -c 3 -m 5 "-We,ARCANE_VARIABLEMNG_HASHV2,1" "-We,ARCANE_USE_JSON_METADATA,1")
 arcane_add_test(checkpoint_basic2-v1 testCheckpoint-basic2-v1.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2 testCheckpoint-basic2.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2-v3 testCheckpoint-basic2-v3.arc -c 3 -m 5)
