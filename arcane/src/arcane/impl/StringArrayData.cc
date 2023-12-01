@@ -30,8 +30,8 @@
 #include "arcane/impl/SerializedData.h"
 #include "arcane/impl/DataStorageFactory.h"
 
-#include "arcane/ISerializer.h"
-#include "arcane/IDataVisitor.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/IDataVisitor.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 
@@ -93,6 +93,7 @@ public:
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  void computeHash(DataHashInfo& hash_info) const;
   ArrayShape shape() const override { return {}; }
   void setShape(const ArrayShape&) override {}
   void setAllocationInfo(const DataAllocationInfo& v) override { m_allocation_info = v; }
@@ -151,6 +152,10 @@ class StringArrayData::Impl
   void shrink() const override { m_p->m_value.shrink(); }
   void resize(Integer new_size) override { m_p->m_value.resize(new_size);}
   void dispose() override { m_p->m_value.dispose(); }
+  void computeHash(DataHashInfo& hash_info) override
+  {
+    m_p->computeHash(hash_info);
+  }
 
  private:
 
@@ -358,6 +363,18 @@ computeHash(IHashAlgorithm* algo, ByteArray& output) const
   // TODO supprimer la sérialisation inutile.
   Ref<ISerializedData> s = createSerializedDataRef(true);
   s->computeHash(algo, output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void StringArrayData::
+computeHash(DataHashInfo& hash_info) const
+{
+  hash_info.setVersion(2);
+  IHashAlgorithmContext* context = hash_info.context();
+  for( const String& x : m_value )
+    context->updateHash(asBytes(x.bytes()));
 }
 
 /*---------------------------------------------------------------------------*/

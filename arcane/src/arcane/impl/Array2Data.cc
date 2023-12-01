@@ -113,6 +113,7 @@ class Array2DataT
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  void computeHash(DataHashInfo& hash_algo) const;
   ArrayShape shape() const override { return m_shape; }
   void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
   void setAllocationInfo(const DataAllocationInfo& v) override;
@@ -236,6 +237,10 @@ class Array2DataT<DataType>::Impl
     return makeMutableMemoryView(value.data(), datatype_size * dim2_size, dim1_size);
   }
   INumericDataInternal* numericData() override { return this; }
+  void computeHash(DataHashInfo& hash_info) override
+  {
+    m_p->computeHash(hash_info);
+  }
 
  private:
 
@@ -646,6 +651,26 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
   Int64 array_len = dimensions.size() * sizeof(Int64);
   input = Span<const Byte>(ptr,array_len);
   algo->computeHash64(input,output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void Array2DataT<DataType>::
+computeHash(DataHashInfo& hash_info) const
+{
+  hash_info.setVersion(2);
+  IHashAlgorithmContext* context = hash_info.context();
+
+  // Calcule la fonction de hashage pour les tailles
+  Int64 dimensions[2];
+  dimensions[0] = m_value.dim1Size();
+  dimensions[1] = m_value.dim2Size();
+  Span<const Int64> dimension_span(dimensions,2);
+  context->updateHash(asBytes(dimension_span));
+
+  // Calcule la fonction de hashage pour les valeurs
+  context->updateHash(asBytes(m_value.to1DSpan()));
 }
 
 /*---------------------------------------------------------------------------*/
