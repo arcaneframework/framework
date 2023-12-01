@@ -13,8 +13,10 @@
 /* Un symbole est défini par une chaine de caractères entourée de @.         */
 /* Exemple : @mon_symbole@                                                   */
 /*---------------------------------------------------------------------------*/
+
 #ifndef ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H
 #define ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,5 +48,4 @@ class ARCANE_CORE_EXPORT StringVariableReplace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

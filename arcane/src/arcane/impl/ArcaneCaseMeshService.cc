@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCaseMeshService.h                                     (C) 2000-2023 */
+/* ArcaneCaseMeshService.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Service Arcane gérant un maillage du jeu de données.                      */
 /*---------------------------------------------------------------------------*/
@@ -28,9 +28,9 @@
 #include "arcane/core/IMeshFactoryMng.h"
 #include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/MeshPartInfo.h"
-#include "arcane/impl/ArcaneCaseMeshService_axl.h"
 #include "arcane/core/internal/StringVariableReplace.h"
 #include "arcane/utils/CommandLineArguments.h"
+#include "arcane/impl/ArcaneCaseMeshService_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

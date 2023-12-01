@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringVariableReplace.h                                     (C) 2000-2023 */
+/* StringVariableReplace.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Classe permettant de remplacer les symboles d'une chaine de caractères    */
 /* par une autre chaine de caractères définie dans les arguments de          */
