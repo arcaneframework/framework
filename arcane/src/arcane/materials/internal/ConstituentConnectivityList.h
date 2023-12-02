@@ -73,6 +73,18 @@ class ConstituentConnectivityList
   //! Nombre de matériaux de la maille \a cell_id pour le milieu d'indice \a env_id
   Int16 cellNbMaterial(CellLocalId cell_id, Int16 env_id);
 
+  //! Supprime toutes les entités connectées
+  void removeAllConnectivities();
+
+  /*!
+   * \brief Indique si l'instance est activée.
+   *
+   * Valide uniquement après appel à endCreate().
+   * Si l'instance n'est pas active, il ne faut appeler aucune des méthodes qui
+   * modifient la liste des constituants.
+   */
+  bool isActive() const { return m_is_active; }
+
  public:
 
   // Implémentation de IIncrementalItemSourceConnectivity
@@ -93,6 +105,7 @@ class ConstituentConnectivityList
 
   //! Indice du milieu auquel appartient un matériau
   UniqueArray<Int16> m_environment_for_materials;
+  bool m_is_active = false;
 
  private:
 

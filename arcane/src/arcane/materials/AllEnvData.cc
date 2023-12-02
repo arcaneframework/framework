@@ -192,6 +192,20 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
 
   for( MeshEnvironment* env : true_environments )
     env->computeItemListForMaterials(m_nb_env_per_cell);
+
+  // Si on utilise les connectivités incrémentales, il faut les reconstruire
+  // à partir des informations des groupes
+  {
+    auto clist = m_component_connectivity_list;
+    if (clist->isActive()){
+      clist->removeAllConnectivities();
+      for( MeshEnvironment* env : true_environments ){
+        clist->addCellsToEnvironment(env->componentId(),env->cells().view().localIds());
+        for( MeshMaterial* mat : env->trueMaterials() )
+          clist->addCellsToMaterial(mat->componentId(),mat->cells().view().localIds());
+      }
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -328,8 +342,7 @@ forceRecompute(bool compute_all)
 
   ConstArrayView<MeshMaterialVariableIndexer*> vars_idx = m_material_mng->_internalApi()->variablesIndexer();
   Integer nb_var = vars_idx.size();
-  info(3) << "ForceRecompute NB_VAR_IDX=" << nb_var << " compute_all?=" << compute_all
-          << " stack=" << platform::getStackTrace();
+  info(4) << "ForceRecompute NB_VAR_IDX=" << nb_var << " compute_all?=" << compute_all;
 
   const bool is_verbose_debug = m_verbose_debug_level >0;
 
