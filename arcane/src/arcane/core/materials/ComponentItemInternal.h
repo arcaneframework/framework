@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternal.h"
-#include "arcane/Item.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/Item.h"
 #include "arcane/core/materials/MatVarIndex.h"
 
 /*---------------------------------------------------------------------------*/
@@ -30,8 +30,51 @@ namespace Arcane::Materials
 class ComponentItemSharedInfo
 {
  public:
+
   Int32* m_infos;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace matimpl
+{
+  class ConstituentItemBase
+  {
+    friend Arcane::Materials::ComponentCell;
+    friend Arcane::Materials::AllEnvCell;
+    friend Arcane::Materials::EnvCell;
+    friend Arcane::Materials::MatCell;
+
+   public:
+
+    ARCCORE_HOST_DEVICE constexpr ConstituentItemBase(ComponentItemInternal* component_item)
+    : m_component_item(component_item)
+    {
+    }
+
+   public:
+
+    ARCCORE_HOST_DEVICE constexpr friend bool
+    operator==(const ConstituentItemBase& a, const ConstituentItemBase& b)
+    {
+      return a.m_component_item == b.m_component_item;
+    }
+    ARCCORE_HOST_DEVICE constexpr friend bool
+    operator!=(const ConstituentItemBase& a, const ConstituentItemBase& b)
+    {
+      return a.m_component_item != b.m_component_item;
+    }
+
+   private:
+
+    ARCCORE_HOST_DEVICE constexpr ComponentItemInternal* _internal() const { return m_component_item; }
+
+   private:
+
+    ComponentItemInternal* m_component_item = nullptr;
+  };
+} // namespace matimpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,6 +92,18 @@ class ComponentItemSharedInfo
  */
 class ARCANE_CORE_EXPORT ComponentItemInternal
 {
+  friend class ComponentCell;
+  friend class MatCell;
+  friend class EnvCell;
+  friend class ComponentCell;
+  friend class AllEnvCell;
+  friend class CellComponentCellEnumerator;
+  friend class ComponentItemInternalData;
+  friend class MeshComponentData;
+  friend class MeshEnvironment;
+  friend class AllEnvData;
+  friend class MeshMaterialMng;
+
  private:
 
   static const int MAT_INDEX_OFFSET = 10;
@@ -58,28 +113,19 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
  public:
 
-  //! Entité nulle
-  static ComponentItemInternal* nullItem() { return &nullComponentItemInternal; }
-
- public:
-
   ComponentItemInternal()
-  : m_component_id(-1), m_level(-1), m_nb_sub_component_item(0), m_component(0),
-    m_super_component_item(0), m_first_sub_component_item(0), m_global_item(ItemInternal::nullItem())
+  : m_component_id(-1)
+  , m_level(-1)
+  , m_nb_sub_component_item(0)
+  , m_component(0)
+  , m_super_component_item(0)
+  , m_first_sub_component_item(0)
+  , m_global_item(ItemInternal::nullItem())
   {
     m_var_index.reset();
   }
 
  public:
-
-  /*!
-   * \internal
-   * Positionne l'indexeur dans les variables matériaux.
-   */
-  void setVariableIndex(MatVarIndex index)
-  {
-    m_var_index = index;
-  }
 
   //! Indexeur dans les variables matériaux
   ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const
@@ -96,81 +142,67 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Composant
   IMeshComponent* component() const { return m_component; }
 
-  //! Composant supérieur (0 si aucun)
-  ComponentItemInternal* superItem() const { return m_super_component_item; }
-
-  void setSuperAndGlobalItem(ComponentItemInternal* cii,Item ii)
-  {
-    m_super_component_item = cii;
-    m_global_item = ItemCompatibility::_itemInternal(ii);
-  }
-
-  void setGlobalItem(Item ii)
-  {
-    m_global_item = ItemCompatibility::_itemInternal(ii);
-  }
-
   //! Nombre de sous-composants.
   ARCCORE_HOST_DEVICE Int32 nbSubItem() const
   {
     return m_nb_sub_component_item;
   }
 
-  //! Première entité sous-composant.
-  ARCCORE_HOST_DEVICE ComponentItemInternal* firstSubItem() const { return m_first_sub_component_item; }
-
   //! Entité globale correspondante.
   impl::ItemBase globalItemBase() { return m_global_item; }
 
-  //! Positionne le nombre de sous-composants.
-  void setNbSubItem(Int32 nb_sub_item)
-  {
-    m_nb_sub_component_item = nb_sub_item;
-  }
-
-  //! Positionne le premier sous-composant.
-  void setFirstSubItem(ComponentItemInternal* first_sub_item)
-  {
-    m_first_sub_component_item = first_sub_item;
-  }
-
-  void setComponent(IMeshComponent* component,Int32 component_id)
-  {
-    m_component = component;
-#ifdef ARCANE_CHECK
-    _checkIsInt16(component_id);
-#endif
-    m_component_id = (Int16)component_id;
-  }
-
   Int32 level() const { return m_level; }
-
-  void setLevel(Int32 level)
-  {
-#ifdef ARCANE_CHECK
-    _checkIsInt16(level);
-#endif
-    m_level = (Int16)level;
-  }
 
   //! Numéro unique de l'entité component
   Int64 componentUniqueId() const
   {
     // TODO: Vérifier que arrayIndex() ne dépasse pas (1<<MAT_INDEX_OFFSET)
-    return (Int64)m_var_index.arrayIndex() + ( (Int64)m_global_item->uniqueId() << MAT_INDEX_OFFSET );
+    return (Int64)m_var_index.arrayIndex() + ((Int64)m_global_item->uniqueId() << MAT_INDEX_OFFSET);
   }
 
-  void reset()
+ public:
+
+  //! Entité nulle
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  static ComponentItemInternal* nullItem() { return &nullComponentItemInternal; }
+
+  //! Positionne l'indexeur dans les variables matériaux.
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  void setVariableIndex(MatVarIndex index) { _setVariableIndex(index); }
+
+  //! Composant supérieur (0 si aucun)
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  ComponentItemInternal* superItem() const { return m_super_component_item; }
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  void setSuperAndGlobalItem(ComponentItemInternal* cii, Item ii) { _setSuperAndGlobalItem(cii, ii); }
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  void setGlobalItem(Item ii) { _setGlobalItem(ii); }
+
+  //! Première entité sous-composant.
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  ARCCORE_HOST_DEVICE ComponentItemInternal* firstSubItem() const { return m_first_sub_component_item; }
+
+  //! Positionne le nombre de sous-composants.
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  void setNbSubItem(Int32 nb_sub_item) { _setNbSubItem(nb_sub_item); }
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  //! Positionne le premier sous-composant.
+  void setFirstSubItem(ComponentItemInternal* first_sub_item) { _setFirstSubItem(first_sub_item); }
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  void setComponent(IMeshComponent* component, Int32 component_id)
   {
-    m_var_index.reset();
-    m_component_id = -1;
-    m_component = 0;
-    m_level = (-1);
-    m_super_component_item = 0;
-    m_nb_sub_component_item = 0;
-    m_first_sub_component_item = 0;
-    m_global_item = ItemInternal::nullItem();
+    _setComponent(component, component_id);
   }
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  void setLevel(Int32 level) { _setLevel(level); }
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  void reset() { _reset(); }
 
  protected:
 
@@ -187,10 +219,88 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
   void _checkIsInt16(Int32 v)
   {
-    if (v<(-32768) || v>32767)
+    if (v < (-32768) || v > 32767)
       _throwBadCast(v);
   }
   void _throwBadCast(Int32 v);
+
+ private:
+
+  //! Entité nulle
+  static ComponentItemInternal* _nullItem()
+  {
+    return &nullComponentItemInternal;
+  }
+
+  //! Positionne l'indexeur dans les variables matériaux.
+  void _setVariableIndex(MatVarIndex index)
+  {
+    m_var_index = index;
+  }
+
+  //! Composant supérieur (0 si aucun)
+  matimpl::ConstituentItemBase _superItemBase() const
+  {
+    return m_super_component_item;
+  }
+
+  void _setSuperAndGlobalItem(ComponentItemInternal* cii, Item ii)
+  {
+    m_super_component_item = cii;
+    m_global_item = ItemCompatibility::_itemInternal(ii);
+  }
+
+  void _setGlobalItem(Item ii)
+  {
+    m_global_item = ItemCompatibility::_itemInternal(ii);
+  }
+
+  //! Première entité sous-composant.
+  ARCCORE_HOST_DEVICE ComponentItemInternal* _firstSubItem() const
+  {
+    return m_first_sub_component_item;
+  }
+
+  //! Positionne le nombre de sous-composants.
+  void _setNbSubItem(Int32 nb_sub_item)
+  {
+    m_nb_sub_component_item = nb_sub_item;
+  }
+
+  //! Positionne le premier sous-composant.
+  void _setFirstSubItem(ComponentItemInternal* first_sub_item)
+  {
+    m_first_sub_component_item = first_sub_item;
+  }
+
+  void _setComponent(IMeshComponent* component, Int32 component_id)
+  {
+    m_component = component;
+#ifdef ARCANE_CHECK
+    _checkIsInt16(component_id);
+#endif
+    m_component_id = (Int16)component_id;
+  }
+
+  void _setLevel(Int32 level)
+  {
+#ifdef ARCANE_CHECK
+    _checkIsInt16(level);
+#endif
+    m_level = (Int16)level;
+  }
+
+  void _reset()
+  {
+    m_var_index.reset();
+    m_component_id = -1;
+    m_component = 0;
+    m_level = (-1);
+    m_super_component_item = 0;
+    m_nb_sub_component_item = 0;
+    m_first_sub_component_item = 0;
+    m_global_item = ItemInternal::nullItem();
+  }
 };
 
 /*---------------------------------------------------------------------------*/

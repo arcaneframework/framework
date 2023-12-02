@@ -251,10 +251,10 @@ _computeInfosForEnvCells()
         Int32 nb_mat = nb_mat_per_cell[lid];
         ComponentItemInternal& ref_ii = env_items_internal[pos];
         env_items_internal_pointer[z] = &env_items_internal[pos];
-        ref_ii.setSuperAndGlobalItem(&all_env_items_internal[lid],items_internal[lid]);
-        ref_ii.setNbSubItem(nb_mat);
-        ref_ii.setVariableIndex(mvi);
-        ref_ii.setLevel(LEVEL_ENVIRONMENT);
+        ref_ii._setSuperAndGlobalItem(&all_env_items_internal[lid],items_internal[lid]);
+        ref_ii._setNbSubItem(nb_mat);
+        ref_ii._setVariableIndex(mvi);
+        ref_ii._setLevel(LEVEL_ENVIRONMENT);
       }
     }
     for( MeshEnvironment* env : true_environments ){
@@ -269,12 +269,12 @@ _computeInfosForEnvCells()
       Int32 lid = icell.itemLocalId();
       Int32 n = m_nb_env_per_cell[icell];
       ComponentItemInternal& ref_ii = all_env_items_internal[lid];
-      ref_ii.setSuperAndGlobalItem(nullptr,c);
-      ref_ii.setVariableIndex(MatVarIndex(0,lid));
-      ref_ii.setNbSubItem(n);
-      ref_ii.setLevel(LEVEL_ALLENVIRONMENT);
+      ref_ii._setSuperAndGlobalItem(nullptr,c);
+      ref_ii._setVariableIndex(MatVarIndex(0,lid));
+      ref_ii._setNbSubItem(n);
+      ref_ii._setLevel(LEVEL_ALLENVIRONMENT);
       if (n!=0)
-        ref_ii.setFirstSubItem(&env_items_internal[env_cell_indexes[lid]]);
+        ref_ii._setFirstSubItem(&env_items_internal[env_cell_indexes[lid]]);
     }
   }
 }
@@ -328,7 +328,8 @@ forceRecompute(bool compute_all)
 
   ConstArrayView<MeshMaterialVariableIndexer*> vars_idx = m_material_mng->_internalApi()->variablesIndexer();
   Integer nb_var = vars_idx.size();
-  info(4) << "ForceRecompute NB_VAR_IDX=" << nb_var << " compute_all?=" << compute_all;
+  info(3) << "ForceRecompute NB_VAR_IDX=" << nb_var << " compute_all?=" << compute_all
+          << " stack=" << platform::getStackTrace();
 
   const bool is_verbose_debug = m_verbose_debug_level >0;
 

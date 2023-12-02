@@ -56,9 +56,9 @@ void ComponentItemInternalData::
 resetEnvItemsInternal()
 {
   for (ComponentItemInternal& x : m_all_env_items_internal)
-    x.reset();
+    x._reset();
   for (ComponentItemInternal& x : m_env_items_internal)
-    x.reset();
+    x._reset();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -62,12 +62,12 @@ _build(CellVectorView view)
       if (ec.component()==my_component){
         MatVarIndex idx = ec._varIndex();
         if (idx.arrayIndex()==0){
-          internals[0].add(ec.internal());
+          internals[0].add(ec._internal());
           matvar_indexes[0].add(idx);
           local_ids[0].add(ec.globalCell().localId());
         }
         else{
-          internals[1].add(ec.internal());
+          internals[1].add(ec._internal());
           matvar_indexes[1].add(idx);
           local_ids[1].add(ec.globalCell().localId());
         }
