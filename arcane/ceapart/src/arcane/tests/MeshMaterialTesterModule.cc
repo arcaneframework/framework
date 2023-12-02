@@ -899,7 +899,7 @@ _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env)
     {
       Int32 total = 0;
       using MyEnvCell = EnvCell;
-      ENUMERATE_COMPONENTITEM(EnvCell,imc,env){
+      ENUMERATE_COMPONENTITEM(MyEnvCell,imc,env){
         total += test_var[imc];
       }
       vc.areEqual(total,total_full,"TotalFull1");
@@ -1101,26 +1101,26 @@ _checkVectorCopy(VectorType& vec_cells)
   // Normalement il s'agit d'une copie par référence donc les vues associées
   // pointent vers la même zone mémoire.
   VectorType vec_cells_copy(vec_cells);
-  vc.areEqual(vec_cells_copy.view().matvarIndexes().data(),
-              vec_cells.view().matvarIndexes().data(),"bad copy 1");
-  vc.areEqual(vec_cells_copy.view().itemsInternalView().data(),
-              vec_cells.view().itemsInternalView().data(),"bad copy 1");
+  vc.areEqual(vec_cells_copy.view()._matvarIndexes().data(),
+              vec_cells.view()._matvarIndexes().data(),"bad copy 1");
+  vc.areEqual(vec_cells_copy.view()._itemsInternalView().data(),
+              vec_cells.view()._itemsInternalView().data(),"bad copy 1");
 
   VectorType vec_cells_copy2(vec_cells);
-  vc.areEqual(vec_cells_copy2.view().matvarIndexes(),vec_cells.view().matvarIndexes(),"bad copy 2");
+  vc.areEqual(vec_cells_copy2.view()._matvarIndexes(),vec_cells.view()._matvarIndexes(),"bad copy 2");
 
   VectorType move_vec_cells(std::move(vec_cells_copy2));
-  vc.areEqual(move_vec_cells.view().matvarIndexes().data(),vec_cells.view().matvarIndexes().data(),"bad move 1");
+  vc.areEqual(move_vec_cells.view()._matvarIndexes().data(),vec_cells.view()._matvarIndexes().data(),"bad move 1");
 
   {
     // Teste le clone.
     // A la sortie les valeurs des index doivent être les mêmes mais pas les pointeurs.
     VectorType clone_vec(vec_cells_copy.clone());
-    vc.areEqual(clone_vec.view().matvarIndexes(),vec_cells.view().matvarIndexes(),"bad clone 1");
-    vc.areEqual(clone_vec.view().itemsInternalView(),vec_cells.view().itemsInternalView(),"bad clone 2");
-    if (clone_vec.view().matvarIndexes().data()==vec_cells.view().matvarIndexes().data())
+    vc.areEqual(clone_vec.view()._matvarIndexes(),vec_cells.view()._matvarIndexes(),"bad clone 1");
+    vc.areEqual(clone_vec.view()._itemsInternalView(),vec_cells.view()._itemsInternalView(),"bad clone 2");
+    if (clone_vec.view()._matvarIndexes().data()==vec_cells.view()._matvarIndexes().data())
       ARCANE_FATAL("bad clone 3");
-    if (clone_vec.view().itemsInternalView().data()==vec_cells.view().itemsInternalView().data())
+    if (clone_vec.view()._itemsInternalView().data()==vec_cells.view()._itemsInternalView().data())
       ARCANE_FATAL("bad clone 3");
   }
 }

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Test.cu.cc                                                  (C) 2000-2022 */
+/* Test.cu.cc                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Fichier contenant les tests pour l'implémentation HIP.                    */
 /*---------------------------------------------------------------------------*/
@@ -360,9 +360,9 @@ int arcaneTestHipNumArray()
   d_b.resize(vsize);
   d_out.resize(vsize);
   for( int i = 0; i<vsize; ++i ){
-    d_a.s(i) = (double)(i+1);
-    d_b.s(i) = (double)(i*i+1);
-    d_out.s(i) = 0.0; //a[i] + b[i];
+    d_a(i) = (double)(i+1);
+    d_b(i) = (double)(i*i+1);
+    d_out(i) = 0.0; //a[i] + b[i];
   }
 
 
@@ -435,13 +435,13 @@ int arcaneTestHipNumArray()
       Real a = (Real)(i+2);
       Real b = (Real)(i*i+3);
 
-      d_a3.s(i,0) = a;
-      d_a3.s(i,1) = a + 1.0;
-      d_a3.s(i,2) = a + 2.0;
+      d_a3(i,0) = a;
+      d_a3(i,1) = a + 1.0;
+      d_a3(i,2) = a + 2.0;
 
-      d_b3.s(i,0) = b;
-      d_b3.s(i,1) = b + 1.0;
-      d_b3.s(i,2) = b + 2.0;
+      d_b3(i,0) = b;
+      d_b3(i,1) = b + 1.0;
+      d_b3(i,2) = b + 2.0;
     }
 
     MDSpan<const Real,MDDim2> d_a3_span = d_a3.constSpan();
