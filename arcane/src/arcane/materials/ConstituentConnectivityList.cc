@@ -86,13 +86,8 @@ class ConstituentConnectivityList::ConstituentContainer
 
   void endCreate(bool is_continue)
   {
-    if (!is_continue) {
-      m_nb_component.fill(0);
-      m_component_index.fill(0);
-      // Le premier élément de la liste est utilisé pour les constituants vides
-      m_component_list.resize(1);
-      m_component_list[0] = 0;
-    }
+    if (!is_continue)
+      _resetConnectivities();
   }
 
   ArrayView<Int16> components(CellLocalId item_lid)
@@ -130,11 +125,16 @@ class ConstituentConnectivityList::ConstituentContainer
     m_component_list.updateFromInternal();
   }
 
+  void removeAllConnectivities()
+  {
+    _resetConnectivities();
+  }
+
  private:
 
   //! Nombre de milieu par maille (dimensionné au nombre de mailles)
   VariableArrayInt16 m_nb_component;
-  //! Indice dans \a m_componente_list (Dimensionné au nombre de mailles)
+  //! Indice dans \a m_component_list (Dimensionné au nombre de mailles)
   VariableArrayInt32 m_component_index;
   //! Liste des constituants
   VariableArrayInt16 m_component_list;
@@ -144,6 +144,17 @@ class ConstituentConnectivityList::ConstituentContainer
   VariableArrayInt16::ContainerType& m_nb_component_as_array;
   VariableArrayInt32::ContainerType& m_component_index_as_array;
   VariableArrayInt16::ContainerType& m_component_list_as_array;
+
+ private:
+
+  void _resetConnectivities()
+  {
+    m_nb_component.fill(0);
+    m_component_index.fill(0);
+    // Le premier élément de la liste est utilisé pour les constituants vides
+    m_component_list.resize(1);
+    m_component_list[0] = 0;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -220,8 +231,10 @@ endCreate(bool is_continue)
   {
     int opt_flag_value = m_material_mng->modificationFlags();
     bool use_incremental = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute) != 0;
-    if (use_incremental)
+    if (use_incremental) {
       m_cell_family->_internalApi()->addSourceConnectivity(this);
+      m_is_active = true;
+    }
   }
   if (!is_continue) {
     Int32 max_local_id = m_cell_family->maxLocalId();
@@ -415,6 +428,16 @@ Ref<IIncrementalItemSourceConnectivity> ConstituentConnectivityList::
 toSourceReference()
 {
   return Arccore::makeRef<IIncrementalItemSourceConnectivity>(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ConstituentConnectivityList::
+removeAllConnectivities()
+{
+  m_container->m_environment.removeAllConnectivities();
+  m_container->m_material.removeAllConnectivities();
 }
 
 /*---------------------------------------------------------------------------*/
