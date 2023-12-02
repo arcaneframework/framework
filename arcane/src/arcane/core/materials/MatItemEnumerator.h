@@ -376,7 +376,7 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
  public:
 
   ARCCORE_HOST_DEVICE explicit CellComponentCellEnumerator(ComponentCell super_item)
-  : m_index(0), m_size(super_item.internal()->nbSubItem()), m_items_begin(super_item.internal()->firstSubItem())
+  : m_index(0), m_size(super_item.internal()->nbSubItem()), m_items_begin(super_item.internal()->_firstSubItem())
   {
   }
 

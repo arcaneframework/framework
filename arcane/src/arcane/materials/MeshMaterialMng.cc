@@ -647,7 +647,7 @@ checkValid()
       EnvCell ec = all_env_cell.cell(z);
       Integer cell_nb_mat = ec.nbMaterial();
       ComponentItemInternal* eii = ec.internal();
-      if (all_env_cell.internal()!=eii->superItem())
+      if (all_env_cell.internal()!=eii->_superItem())
         ARCANE_FATAL("Bad corresponding allEnvItem() in env_item uid={0}",cell_uid);
       if (eii->globalItemBase()!=cell)
         ARCANE_FATAL("Bad corresponding globalItem() in env_item");
@@ -661,7 +661,7 @@ checkValid()
       for( Integer k=0; k<cell_nb_mat; ++k ){
         MatCell mc = ec.cell(k);
         ComponentItemInternal* mci = mc.internal();
-        if (eii!=mci->superItem())
+        if (eii!=mci->_superItem())
           ARCANE_FATAL("Bad corresponding env_item in mat_item");
         if (mci->globalItemBase()!=cell)
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");

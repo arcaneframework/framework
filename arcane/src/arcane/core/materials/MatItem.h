@@ -129,7 +129,7 @@ class EnvCell
   //! i-ème maille matériau de cette maille
   inline MatCell cell(Integer i)
   {
-    return (m_internal->firstSubItem() + i);
+    return (m_internal->_firstSubItem() + i);
   }
 
   //! Milieu associé
@@ -181,7 +181,7 @@ class AllEnvCell
   //! i-ème maille milieu
   EnvCell cell(Integer i) const
   {
-    return EnvCell(m_internal->firstSubItem() + i);
+    return EnvCell(m_internal->_firstSubItem() + i);
   }
 };
 
@@ -191,7 +191,7 @@ class AllEnvCell
 inline EnvCell MatCell::
 envCell()
 {
-  return EnvCell(m_internal->superItem());
+  return EnvCell(m_internal->_superItem());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -200,7 +200,7 @@ envCell()
 inline AllEnvCell EnvCell::
 allEnvCell() const
 {
-  return AllEnvCell(m_internal->superItem());
+  return AllEnvCell(m_internal->_superItem());
 }
 
 /*---------------------------------------------------------------------------*/

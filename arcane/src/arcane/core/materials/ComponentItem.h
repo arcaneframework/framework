@@ -53,7 +53,7 @@ class ARCANE_CORE_EXPORT ComponentCell
  public:
 
   ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii) : m_internal(mii){}
-  ComponentCell() : m_internal(ComponentItemInternal::nullItem()){}
+  ComponentCell() : m_internal(ComponentItemInternal::_nullItem()){}
 
  public:
 
@@ -78,7 +78,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   bool null() const { return m_internal->null(); }
 
   //! Maille de niveau supérieur dans la hiérarchie
-  ComponentCell superCell() const { return m_internal->superItem(); }
+  ComponentCell superCell() const { return m_internal->_superItem(); }
 
   //! Niveau hiérarchique de l'entité
   Int32 level() const { return m_internal->level(); }

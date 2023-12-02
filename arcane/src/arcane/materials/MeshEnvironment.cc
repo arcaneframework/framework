@@ -218,7 +218,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
   for( Integer i=0; i<total_nb_cell_mat; ++i ){
     ComponentItemInternal& ref_ii = mat_items_internal[i];
-    ref_ii.reset();
+    ref_ii._reset();
   } 
 
   Int32UniqueArray cells_index(max_local_id);
@@ -241,10 +241,10 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
       cells_index[lid] = cell_index;
       cells_pos[lid] = cell_index;
       //info(4) << "XZ=" << z << " LID=" << lid << " POS=" << cell_index;
-      env_item->setNbSubItem(nb_mat);
-      env_item->setComponent(this,env_id);
+      env_item->_setNbSubItem(nb_mat);
+      env_item->_setComponent(this,env_id);
       if (nb_mat!=0){
-        env_item->setFirstSubItem(&mat_items_internal[cell_index]);
+        env_item->_setFirstSubItem(&mat_items_internal[cell_index]);
         cells_env[lid] = env_item;
       }
       cell_index += nb_mat;
@@ -276,10 +276,10 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
         ++cells_pos[lid];
         ComponentItemInternal& ref_ii = mat_items_internal[pos];
         mat_items_internal_pointer[z] = &mat_items_internal[pos];
-        ref_ii.setSuperAndGlobalItem(cells_env[lid],items_internal[lid]);
-        ref_ii.setComponent(mat,mat_id);
-        ref_ii.setVariableIndex(mvi);
-        ref_ii.setLevel(LEVEL_MATERIAL);
+        ref_ii._setSuperAndGlobalItem(cells_env[lid],items_internal[lid]);
+        ref_ii._setComponent(mat,mat_id);
+        ref_ii._setVariableIndex(mvi);
+        ref_ii._setLevel(LEVEL_MATERIAL);
       }
     }
   }

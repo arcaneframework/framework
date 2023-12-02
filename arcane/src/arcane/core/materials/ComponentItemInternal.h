@@ -55,6 +55,11 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   friend class ComponentCell;
   friend class AllEnvCell;
   friend class CellComponentCellEnumerator;
+  friend class ComponentItemInternalData;
+  friend class MeshComponentData;
+  friend class MeshEnvironment;
+  friend class AllEnvData;
+  friend class MeshMaterialMng;
 
  private:
 
@@ -179,10 +184,16 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
  private:
 
   //! Entité nulle
-  static ComponentItemInternal* _nullItem() { return &nullComponentItemInternal; }
+  static ComponentItemInternal* _nullItem()
+  {
+    return &nullComponentItemInternal;
+  }
 
   //! Positionne l'indexeur dans les variables matériaux.
-  void _setVariableIndex(MatVarIndex index) { m_var_index = index; }
+  void _setVariableIndex(MatVarIndex index)
+  {
+    m_var_index = index;
+  }
 
   //! Composant supérieur (0 si aucun)
   ComponentItemInternal* _superItem() const
