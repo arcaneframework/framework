@@ -227,12 +227,12 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   // car on doit pouvoir directement utiliser les m_items_internal
   UniqueArray<ComponentItemInternal*> cells_env(max_local_id);
   Int32ArrayView nb_mat_per_cell = m_nb_mat_per_cell.asArray();
-  ConstArrayView<ComponentItemInternal*> items_internal = itemsInternalView();
 
   {
     Integer cell_index = 0;
     Int32 env_id = this->id();
     Int32ConstArrayView local_ids = variableIndexer()->localIds();
+    ConstArrayView<ComponentItemInternal*> items_internal = itemsInternalView();
 
     for( Integer z=0, nb=local_ids.size(); z<nb; ++z ){
       Int32 lid = local_ids[z];

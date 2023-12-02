@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellToAllEnvCellConverter.h                                 (C) 2000-2012 */
+/* CellToAllEnvCellConverter.h                                 (C) 2000-2023 */
 /*                                                                           */
 /* Conversion de 'Cell' en 'AllEnvCell'.                                     */
 /*---------------------------------------------------------------------------*/
@@ -71,10 +71,10 @@ class CellToAllEnvCellConverter
 {
  public:
 
-  CellToAllEnvCellConverter(ArrayView<ComponentItemInternal> v)
+  explicit CellToAllEnvCellConverter(ArrayView<ComponentItemInternal> v)
   : m_all_env_items_internal(v){}
 
-  CellToAllEnvCellConverter(IMeshMaterialMng* mm)
+  explicit CellToAllEnvCellConverter(IMeshMaterialMng* mm)
   {
     *this = mm->cellToAllEnvCellConverter();
   }

@@ -109,7 +109,7 @@ class NumArrayDataT
   {
    public:
 
-    void computeHash(DataHashInfo& hash_info) override
+    void computeHash(DataHashInfo&) override
     {
       ARCANE_THROW(NotImplementedException,"computeHash");
     }

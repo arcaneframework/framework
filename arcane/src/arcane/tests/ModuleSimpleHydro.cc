@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ModuleSimpleHydro.cc                                        (C) 2000-2020 */
+/* ModuleSimpleHydro.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Module Hydrodynamique simple.                                             */
 /*---------------------------------------------------------------------------*/
@@ -28,35 +28,36 @@
 #include "arcane/utils/GoBackwardException.h"
 #include "arcane/utils/Profiling.h"
 
-#include "arcane/BasicModule.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IApplication.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/MathUtils.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/Concurrency.h"
+#include "arcane/core/BasicModule.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/MathUtils.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Concurrency.h"
+#include "arcane/core/VariableView.h"
 
-#include "arcane/IMainFactory.h"
-#include "arcane/IMeshMng.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IMeshMng.h"
 
 #include "arcane/tests/TypesSimpleHydro.h"
 #include "arcane/tests/SimpleHydro_axl.h"
 #include "arcane/tests/TestTraceMessageListener.h"
 
 #include "arcane/hyoda/Hyoda.h"
-#include "arcane/ItemLoop.h"
-#include "arcane/ITimeHistoryMng.h"
+#include "arcane/core/ItemLoop.h"
+#include "arcane/core/ITimeHistoryMng.h"
 
-#include "arcane/MeshUtils.h"
+#include "arcane/core/MeshUtils.h"
 
 // Force la vectorisation avec GCC.
 #ifdef __GNUC__
@@ -367,13 +368,18 @@ hydroStartInit()
 void ModuleSimpleHydro::
 _initEquationOfState()
 {
+  auto in_pressure = viewIn(m_pressure);
+  auto in_adiabatic_cst = viewIn(m_adiabatic_cst);
+  auto in_density = viewIn(m_density);
+  auto out_internal_energy = viewOut(m_internal_energy);
+  auto out_sound_speed = viewOut(m_sound_speed);
   // Initialise l'énergie et la vitesse du son
   ENUMERATE_ITEM_LAMBDA(Cell,icell,allCells()){
-    Real pressure = m_pressure[icell];
-    Real adiabatic_cst = m_adiabatic_cst[icell];
-    Real density = m_density[icell];
-    m_internal_energy[icell] = pressure / ((adiabatic_cst-ARCANE_REAL(1.0)) * density);
-    m_sound_speed[icell] = math::sqrt(adiabatic_cst*pressure/density);
+    Real pressure = in_pressure[icell];
+    Real adiabatic_cst = in_adiabatic_cst[icell];
+    Real density = in_density[icell];
+    out_internal_energy[icell] = pressure / ((adiabatic_cst-ARCANE_REAL(1.0)) * density);
+    out_sound_speed[icell] = math::sqrt(adiabatic_cst*pressure/density);
   };
 }
 
@@ -482,14 +488,18 @@ computeVelocity()
 
   Real delta_t_n = m_delta_t_n();
 
+  auto in_node_mass = viewIn(m_node_mass);
+  auto in_force = viewIn(m_force);
+  auto inout_velocity = viewInOut(m_velocity);
+
   // Calcule l'impulsion aux noeuds
   ENUMERATE_ITEM_LAMBDA(Node,inode,allNodes()){
-     Real node_mass  = m_node_mass[inode];
+     Real node_mass  = in_node_mass[inode];
 
-    Real3 old_velocity = m_velocity[inode];
-    Real3 new_velocity = old_velocity + (delta_t_n / node_mass) * m_force[inode];
+    Real3 old_velocity = inout_velocity[inode];
+    Real3 new_velocity = old_velocity + (delta_t_n / node_mass) * in_force[inode];
 
-    m_velocity[inode] = new_velocity;
+    inout_velocity[inode] = new_velocity;
   };
 }
 
@@ -562,8 +572,10 @@ moveNodes()
   
   ARCANE_HYODA_SOFTBREAK(subDomain());
 
+  auto node_coord = viewInOut(m_node_coord);
+  auto velocity = viewIn(m_velocity);
   ENUMERATE_ITEM_LAMBDA(Node,inode,allNodes()){
-    m_node_coord[inode] += deltat_f * m_velocity[inode];
+    node_coord[inode] += deltat_f * velocity[inode];
   };
 }
 
@@ -615,10 +627,17 @@ _applyEquationOfState(CellVectorView cells)
   
   const bool add_viscosity_force = (options()->viscosity()!=TypesSimpleHydro::ViscosityNo);
 
-  // Calcul de l'énergie interne
+  auto in_adiabatic_cst = viewIn(m_adiabatic_cst);
+  auto in_volume = viewIn(m_volume);
+  auto in_old_volume = viewIn(m_old_volume);
+  auto in_cell_viscosity_work = viewIn(m_cell_viscosity_work);
+  auto in_cell_mass = viewIn(m_cell_mass);
+  auto out_internal_energy = viewOut(m_internal_energy);
+
+    // Calcul de l'énergie interne
   ENUMERATE_ITEM_LAMBDA(Cell,icell,cells){
-    Real adiabatic_cst = m_adiabatic_cst[icell];
-    Real volume_ratio = m_volume[icell] / m_old_volume[icell];
+    Real adiabatic_cst = in_adiabatic_cst[icell];
+    Real volume_ratio = in_volume[icell] / in_old_volume[icell];
     Real x = ARCANE_REAL(0.5)*(adiabatic_cst-ARCANE_REAL(1.0));
     Real numer_accrois_nrj = ARCANE_REAL(1.0) + x*(ARCANE_REAL(1.0)-volume_ratio);
     Real denom_accrois_nrj = ARCANE_REAL(1.0) + x*(ARCANE_REAL(1.0)-(ARCANE_REAL(1.0)/volume_ratio));
@@ -626,24 +645,32 @@ _applyEquationOfState(CellVectorView cells)
            << " d=" << denom_accrois_nrj << " volume_ratio=" << volume_ratio
            << " inv=" << (1.0/volume_ratio) << " x=" << x
            << " denom2=" << denom2 << " denom3=" << denom3 << " denom4=" << denom4;*/
-    m_internal_energy[icell] *= numer_accrois_nrj/denom_accrois_nrj;
+    out_internal_energy[icell] *= numer_accrois_nrj/denom_accrois_nrj;
   
     // Prise en compte du travail des forces de viscosité 
     if (add_viscosity_force)
-      m_internal_energy[icell] -= deltatf*m_cell_viscosity_work[icell] /
-      (m_cell_mass[icell]*denom_accrois_nrj);
+      out_internal_energy[icell] -= deltatf*in_cell_viscosity_work[icell] /
+      (in_cell_mass[icell]*denom_accrois_nrj);
   };
 
-  // Calcul de la pression et de la vitesse du son
-  ENUMERATE_ITEM_LAMBDA(Cell,icell,cells){
-    Real internal_energy = m_internal_energy[icell];
-    Real density = m_density[icell];
-    Real adiabatic_cst = m_adiabatic_cst[icell];
-    Real pressure = (adiabatic_cst-ARCANE_REAL(1.0)) * density * internal_energy; 
-    m_pressure[icell] = pressure;
-    Real sound_speed = math::sqrt(adiabatic_cst*pressure/density);
-    m_sound_speed[icell] = sound_speed;
-  };
+  {
+    auto in_internal_energy = viewIn(m_internal_energy);
+    auto in_density = viewIn(m_density);
+    auto in_adiabatic_cst = viewIn(m_adiabatic_cst);
+    auto out_pressure = viewOut(m_pressure);
+    auto out_sound_speed = viewOut(m_sound_speed);
+
+    // Calcul de la pression et de la vitesse du son
+    ENUMERATE_ITEM_LAMBDA(Cell,icell,cells){
+      Real internal_energy = in_internal_energy[icell];
+      Real density = in_density[icell];
+      Real adiabatic_cst = in_adiabatic_cst[icell];
+      Real pressure = (adiabatic_cst-ARCANE_REAL(1.0)) * density * internal_energy; 
+      out_pressure[icell] = pressure;
+      Real sound_speed = math::sqrt(adiabatic_cst*pressure/density);
+      out_sound_speed[icell] = sound_speed;
+    };
+  }
 }
 
 /*---------------------------------------------------------------------------*/
