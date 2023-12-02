@@ -27,6 +27,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::impl
+{
+class ItemBase;
+}
+
+namespace Arcane::Materials::matimpl
+{
+using Arcane::impl::ItemBase;
+class ConstituentItemBase;
+}
+
 namespace Arcane::Materials
 {
 

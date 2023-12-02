@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternal.h"
-#include "arcane/Item.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/Item.h"
 #include "arcane/core/materials/MatVarIndex.h"
 
 /*---------------------------------------------------------------------------*/
@@ -30,8 +30,51 @@ namespace Arcane::Materials
 class ComponentItemSharedInfo
 {
  public:
+
   Int32* m_infos;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace matimpl
+{
+  class ConstituentItemBase
+  {
+    friend Arcane::Materials::ComponentCell;
+    friend Arcane::Materials::AllEnvCell;
+    friend Arcane::Materials::EnvCell;
+    friend Arcane::Materials::MatCell;
+
+   public:
+
+    ARCCORE_HOST_DEVICE constexpr ConstituentItemBase(ComponentItemInternal* component_item)
+    : m_component_item(component_item)
+    {
+    }
+
+   public:
+
+    ARCCORE_HOST_DEVICE constexpr friend bool
+    operator==(const ConstituentItemBase& a, const ConstituentItemBase& b)
+    {
+      return a.m_component_item == b.m_component_item;
+    }
+    ARCCORE_HOST_DEVICE constexpr friend bool
+    operator!=(const ConstituentItemBase& a, const ConstituentItemBase& b)
+    {
+      return a.m_component_item != b.m_component_item;
+    }
+
+   private:
+
+    ARCCORE_HOST_DEVICE constexpr ComponentItemInternal* _internal() const { return m_component_item; }
+
+   private:
+
+    ComponentItemInternal* m_component_item = nullptr;
+  };
+} // namespace matimpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -196,7 +239,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   }
 
   //! Composant supérieur (0 si aucun)
-  ComponentItemInternal* _superItem() const
+  matimpl::ConstituentItemBase _superItemBase() const
   {
     return m_super_component_item;
   }

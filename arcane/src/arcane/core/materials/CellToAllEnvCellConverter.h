@@ -84,13 +84,13 @@ class CellToAllEnvCellConverter
   //! Converti une maille \a Cell en maille \a AllEnvCell
   AllEnvCell operator[](Cell c)
   {
-    return AllEnvCell(&m_all_env_items_internal[c.localId()]);
+    return AllEnvCell(matimpl::ConstituentItemBase(&m_all_env_items_internal[c.localId()]));
   }
   //! Converti une maille \a CellLocalId en maille \a AllEnvCell
   ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
   {
     const ComponentItemInternal* p = &m_all_env_items_internal[c.localId()];
-    return AllEnvCell(const_cast<ComponentItemInternal*>(p));
+    return AllEnvCell(matimpl::ConstituentItemBase(const_cast<ComponentItemInternal*>(p)));
   }
 
  private:

@@ -49,11 +49,19 @@ class MatCell
 {
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   ARCCORE_HOST_DEVICE MatCell(ComponentItemInternal* internal)
-  : ComponentCell(internal)
+  : ComponentCell(matimpl::ConstituentItemBase (internal))
   {
 #ifdef ARCANE_CHECK
     _checkLevel(internal,LEVEL_MATERIAL);
+#endif
+  }
+  ARCCORE_HOST_DEVICE MatCell(matimpl::ConstituentItemBase item_base)
+  : ComponentCell(item_base)
+  {
+#ifdef ARCANE_CHECK
+    _checkLevel(item_base._internal(),LEVEL_MATERIAL);
 #endif
   }
   MatCell() {}
@@ -106,11 +114,19 @@ class EnvCell
 {
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   explicit ARCCORE_HOST_DEVICE EnvCell(ComponentItemInternal* internal)
-  : ComponentCell(internal)
+  : ComponentCell(matimpl::ConstituentItemBase(internal))
   {
 #ifdef ARCANE_CHECK
     _checkLevel(internal,LEVEL_ENVIRONMENT);
+#endif
+  }
+  explicit ARCCORE_HOST_DEVICE EnvCell(matimpl::ConstituentItemBase item_base)
+  : ComponentCell(item_base)
+  {
+#ifdef ARCANE_CHECK
+    _checkLevel(item_base._internal(),LEVEL_ENVIRONMENT);
 #endif
   }
   EnvCell() {}
@@ -129,7 +145,7 @@ class EnvCell
   //! i-ème maille matériau de cette maille
   inline MatCell cell(Integer i)
   {
-    return (m_internal->_firstSubItem() + i);
+    return matimpl::ConstituentItemBase(m_internal->_firstSubItem() + i);
   }
 
   //! Milieu associé
@@ -162,11 +178,20 @@ class AllEnvCell
 {
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   explicit ARCCORE_HOST_DEVICE AllEnvCell(ComponentItemInternal* internal)
-  : ComponentCell(internal)
+  : ComponentCell(matimpl::ConstituentItemBase(internal))
   {
 #if defined(ARCANE_CHECK)
     _checkLevel(internal,LEVEL_ALLENVIRONMENT);
+#endif
+  }
+
+  explicit ARCCORE_HOST_DEVICE AllEnvCell(matimpl::ConstituentItemBase item_base)
+  : ComponentCell(item_base)
+  {
+#if defined(ARCANE_CHECK)
+    _checkLevel(item_base._internal(),LEVEL_ALLENVIRONMENT);
 #endif
   }
 
@@ -179,9 +204,9 @@ class AllEnvCell
   Cell globalCell() const { return Cell(m_internal->globalItemBase()); }
 
   //! i-ème maille milieu
-  EnvCell cell(Integer i) const
+  EnvCell cell(Int32 i) const
   {
-    return EnvCell(m_internal->_firstSubItem() + i);
+    return EnvCell(matimpl::ConstituentItemBase(m_internal->_firstSubItem() + i));
   }
 };
 
@@ -191,7 +216,7 @@ class AllEnvCell
 inline EnvCell MatCell::
 envCell()
 {
-  return EnvCell(m_internal->_superItem());
+  return EnvCell(m_internal->_superItemBase());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -200,7 +225,7 @@ envCell()
 inline AllEnvCell EnvCell::
 allEnvCell() const
 {
-  return AllEnvCell(m_internal->_superItem());
+  return AllEnvCell(m_internal->_superItemBase());
 }
 
 /*---------------------------------------------------------------------------*/

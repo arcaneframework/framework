@@ -50,9 +50,17 @@ namespace Arcane::Materials
  */
 class ARCANE_CORE_EXPORT ComponentCell
 {
+  // Pour accéder à _internal()
+  friend class CellComponentCellEnumerator;
+  friend class EnvCellVector;
+  friend class MatCellVector;
+  friend class MeshMaterialMng;
+
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii) : m_internal(mii){}
+  ARCCORE_HOST_DEVICE ComponentCell(matimpl::ConstituentItemBase mii) : m_internal(mii._internal()){}
   ComponentCell() : m_internal(ComponentItemInternal::_nullItem()){}
 
  public:
@@ -66,7 +74,10 @@ class ARCANE_CORE_EXPORT ComponentCell
   ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_internal->variableIndex(); }
 
   //! \internal
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
   ARCCORE_HOST_DEVICE ComponentItemInternal* internal() const { return m_internal; }
+
+  matimpl::ConstituentItemBase itemBase() const { return m_internal; }
 
   //! Composant associé
   IMeshComponent* component() const { return m_internal->component(); }
@@ -78,7 +89,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   bool null() const { return m_internal->null(); }
 
   //! Maille de niveau supérieur dans la hiérarchie
-  ComponentCell superCell() const { return m_internal->_superItem(); }
+  ComponentCell superCell() const { return m_internal->_superItemBase(); }
 
   //! Niveau hiérarchique de l'entité
   Int32 level() const { return m_internal->level(); }
@@ -120,6 +131,11 @@ class ARCANE_CORE_EXPORT ComponentCell
  protected:
 
   ComponentItemInternal* m_internal;
+
+ private:
+
+  //! \internal
+  ARCCORE_HOST_DEVICE ComponentItemInternal* _internal() const { return m_internal; }
 };
 
 /*---------------------------------------------------------------------------*/

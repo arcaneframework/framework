@@ -665,10 +665,10 @@ dumpValues(std::ostream& ostr,AllEnvCellVectorView view)
   ENUMERATE_ALLENVCELL(iallenvcell,view){
     AllEnvCell all_env_cell = *iallenvcell;
     ostr << "Cell uid=" << ItemPrinter(all_env_cell.globalCell()) << " v=" << value(all_env_cell._varIndex()) << '\n';
-    for( CellComponentCellEnumerator ienvcell(all_env_cell.internal()); ienvcell.hasNext(); ++ienvcell ){
+    for( CellComponentCellEnumerator ienvcell(all_env_cell); ienvcell.hasNext(); ++ienvcell ){
       MatVarIndex evi = ienvcell._varIndex();
       ostr << "env_value=" << value(evi) << ", mvi=" << evi << '\n';
-      for( CellComponentCellEnumerator imatcell((*ienvcell).internal()); imatcell.hasNext(); ++imatcell ){
+      for( CellComponentCellEnumerator imatcell(*ienvcell); imatcell.hasNext(); ++imatcell ){
         MatVarIndex mvi = imatcell._varIndex();
         ostr << "mat_value=" << value(mvi) << ", mvi=" << mvi << '\n';
       }
