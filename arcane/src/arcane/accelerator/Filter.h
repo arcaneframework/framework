@@ -39,7 +39,9 @@ namespace Arcane::Accelerator::impl
 class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 {
   template <typename DataType, typename FlagType>
-  friend class GenericFiltering;
+  friend class GenericFilteringFlag;
+  template <typename DataType>
+  friend class GenericFilteringIf;
 
  public:
 
@@ -68,7 +70,7 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
  * \a FlagType est le type du tableau de filtre.
  */
 template <typename DataType, typename FlagType>
-class GenericFiltering
+class GenericFilteringFlag
 {
   // TODO: Faire le malloc sur le device associé à la queue.
   //       et aussi regarder si on peut utiliser mallocAsync().
@@ -140,8 +142,93 @@ class GenericFiltering
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
     }
   }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe pour effectuer un filtrage
+ *
+ * \a DataType est le type de donnée.
+ * \a FlagType est le type du tableau de filtre.
+ */
+template <typename DataType>
+class GenericFilteringIf
+{
+  // TODO: Faire le malloc sur le device associé à la queue.
+  //       et aussi regarder si on peut utiliser mallocAsync().
 
  public:
+
+  template <typename SelectLambda>
+  void apply(GenericFilteringBase& s, SmallSpan<const DataType> input, SmallSpan<DataType> output,
+             const SelectLambda& select_lambda)
+  {
+    const Int32 nb_item = input.size();
+    if (output.size() != nb_item)
+      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
+    [[maybe_unused]] const DataType* input_data = input.data();
+    [[maybe_unused]] DataType* output_data = output.data();
+    eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
+    RunQueue* queue = s.m_queue;
+    if (queue)
+      exec_policy = queue->executionPolicy();
+    switch (exec_policy) {
+#if defined(ARCANE_COMPILING_CUDA)
+    case eExecutionPolicy::CUDA: {
+      size_t temp_storage_size = 0;
+      cudaStream_t stream = impl::CudaUtils::toNativeStream(queue);
+      // Premier appel pour connaitre la taille pour l'allocation
+      int* nb_out_ptr = nullptr;
+      ARCANE_CHECK_CUDA(::cub::DeviceSelect::If(nullptr, temp_storage_size,
+                                                input_data, output_data, nb_out_ptr, nb_item,
+                                                select_lambda, stream));
+
+      s.m_algo_storage.allocate(temp_storage_size);
+      s.m_device_nb_out_storage.allocate();
+      nb_out_ptr = s.m_device_nb_out_storage.address();
+      ARCANE_CHECK_CUDA(::cub::DeviceSelect::If(s.m_algo_storage.address(), temp_storage_size,
+                                                input_data, output_data, nb_out_ptr, nb_item,
+                                                select_lambda, stream));
+      ARCANE_CHECK_CUDA(::cudaMemcpyAsync(s.m_host_nb_out_storage.bytes().data(), nb_out_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
+    } break;
+#endif
+#if defined(ARCANE_COMPILING_HIP)
+    case eExecutionPolicy::HIP: {
+      size_t temp_storage_size = 0;
+      // Premier appel pour connaitre la taille pour l'allocation
+      hipStream_t stream = impl::HipUtils::toNativeStream(queue);
+      int* nb_out_ptr = nullptr;
+      ARCANE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_data, output_data,
+                                       nb_out_ptr, nb_item, select_lambda, stream));
+
+      s.m_algo_storage.allocate(temp_storage_size);
+      s.m_device_nb_out_storage.allocate();
+      nb_out_ptr = s.m_device_nb_out_storage.address();
+
+      ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_data, output_data,
+                                       nb_out_ptr, nb_item, select_lambda, stream));
+      ARCANE_CHECK_HIP(::hipMemcpyAsync(s.m_host_nb_out_storage.bytes().data(), nb_out_ptr, sizeof(int), hipMemcpyDeviceToHost, stream));
+    }
+#endif
+    case eExecutionPolicy::Thread:
+      // Pas encore implémenté en multi-thread
+      [[fallthrough]];
+    case eExecutionPolicy::Sequential: {
+      Int32 index = 0;
+      for (Int32 i = 0; i < nb_item; ++i) {
+        if (select_lambda(input[i])) {
+          output[index] = input[i];
+          ++index;
+        }
+      }
+      s.m_host_nb_out_storage[0] = index;
+    } break;
+    default:
+      ARCANE_FATAL(getBadPolicyMessage(exec_policy));
+    }
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -159,8 +246,6 @@ namespace Arcane::Accelerator
  *
  * Dans les méthodes suivantes, l'argument \a queue peut être nul auquel cas
  * l'algorithme s'applique sur l'hôte en séquentiel.
- *
- * Les instances de cette classe ne peuvent servir qu'une seule fois.
  */
 template <typename DataType>
 class Filterer
@@ -185,9 +270,9 @@ class Filterer
  public:
 
   /*!
-   * \brief Applique le filtre.
+   * \brief Applique un filtre.
    *
-   * Filtre tous les éléments de \a input pour lesquels \a flag vaut 1 et
+   * Filtre tous les éléments de \a input pour lesquels \a flag est différent de 0 et
    * remplit \a output avec les valeurs filtrées. \a output doit avoir une taille assez
    * grande pour contenir tous les éléments filtrés.
    *
@@ -216,8 +301,55 @@ class Filterer
       ARCANE_FATAL("apply() has already been called for this instance");
     m_is_already_called = true;
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFiltering<DataType, FlagType> gf;
+    impl::GenericFilteringFlag<DataType, FlagType> gf;
     gf.apply(*base_ptr, input, output, flag);
+  }
+
+  /*!
+   * \brief Applique un filtre.
+   *
+   * Filtre tous les éléments de \a input pour lesquels \a select_lambda vaut \a true et
+   * remplit \a output avec les valeurs filtrées. \a output doit avoir une taille assez
+   * grande pour contenir tous les éléments filtrés.
+   *
+   * \a select_lambda doit avoir un opérateur `ARCCORE_HOST_DEVICE bool operator()(const DataType& v) const`.
+   *
+   * Par exemple la lambda suivante permet de ne garder que les éléments dont
+   * la valeur est supérieure à 569.
+   *
+   * \code
+   * auto filter_lambda = [] ARCCORE_HOST_DEVICE (const Int32& x) -> bool {
+   *   return (x > 569);
+   * };
+   * \endcode
+   *
+   * L'algorithme séquentiel est le suivant:
+   *
+   * \code
+   * Int32 index = 0;
+   * for (Int32 i = 0; i < nb_item; ++i) {
+   *   if (select_lambda(i)) {
+   *     output[index] = input[i];
+   *     ++index;
+   *   }
+   * }
+   * return index;
+   * \endcode
+   *
+   * Il faut appeler la méthode nbOutputElement() pour obtenir le nombre d'éléments
+   * après filtrage.
+   */
+  template <typename SelectLambda>
+  void applyIf(SmallSpan<const DataType> input, SmallSpan<DataType> output, const SelectLambda& select_lambda)
+  {
+    if (m_is_deprecated_usage)
+      ARCANE_FATAL("You need to create instance with Filterer(RunQueue*) to use this overload of apply()");
+    if (m_is_already_called)
+      ARCANE_FATAL("apply() has already been called for this instance");
+    m_is_already_called = true;
+    impl::GenericFilteringBase* base_ptr = this;
+    impl::GenericFilteringIf<DataType> gf;
+    gf.apply(*base_ptr, input, output, select_lambda);
   }
 
   template <typename FlagType>
@@ -232,7 +364,7 @@ class Filterer
     m_queue = queue;
     _allocate();
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFiltering<DataType, FlagType> gf;
+    impl::GenericFilteringFlag<DataType, FlagType> gf;
     gf.apply(*base_ptr, input, output, flag);
   }
 
