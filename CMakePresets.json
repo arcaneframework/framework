@@ -1,0 +1,39 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "Arcane",
+            "displayName": "Arcane",
+            "description": "Default build using Arcane (need C++20)",
+            "cacheVariables": {
+                "ARCANEFRAMEWORK_BUILD_COMPONENTS" : "Arcane",
+                "CMAKE_BUILD_TYPE" : "RelWithDebInfo",
+                "ARCANE_DISABLE_DEPRECATED_WARNINGS" : "TRUE",
+                "ARCCORE_CXX_STANDARD" : "20"
+            }
+        },
+        {
+            "name": "ArcaneCxx17",
+            "displayName": "Arcane C++17",
+            "description": "Default build using Arcane with C++17",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE" : "RelWithDebInfo",
+                "ARCANEFRAMEWORK_BUILD_COMPONENTS" : "Arcane"
+            }
+        },
+        {
+            "name": "ArcaneCuda",
+            "displayName": "ArcaneCuda",
+            "description": "Default build using Arcane with CUDA support",
+            "inherits" : "Arcane",
+            "cacheVariables": {
+                "ARCANE_ACCELERATOR_MODE" : "CUDANVCC"
+            }
+        }
+    ]
+}
