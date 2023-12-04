@@ -39,33 +39,52 @@ jobs:
         include:
           - os: ubuntu-20.04
             full_name: 'ubuntu-20.04'
+            package_name: 'ubuntu-20.04'
             triplet: x64-linux
             vcpkg_os: ubuntu-20.04
-            cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+            cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
             ctest_specific_args : '-I 1,140'
           - os: ubuntu-22.04
             full_name: 'ubuntu-22.04'
+            package_name: 'ubuntu-22.04'
             triplet: x64-linux
             vcpkg_os: ubuntu-22.04
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
             ctest_specific_args : '-I 1,140'
+          - os: ubuntu-22.04
+            full_name: 'ubuntu-22.04-cxx20'
+            package_name: 'ubuntu-22.04'
+            triplet: x64-linux
+            vcpkg_os: ubuntu-22.04
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20'
+            ctest_specific_args : '-I 1,150'
           - os: 'windows-2019'
             full_name: 'windows-2019-msmpi'
+            package_name: 'windows-2019-msmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
             ctest_specific_args : '-I 1,160'
           - os: 'windows-2019'
             full_name: 'windows-2019-intelmpi'
+            package_name: 'windows-2019-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
             ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
             full_name: 'windows-2022-intelmpi'
+            package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
+            ctest_specific_args : '-I 1,160'
+          - os: 'windows-2022'
+            full_name: 'windows-2022-cxx20-intelmpi'
+            package_name: 'windows-2022-intelmpi'
+            triplet: x64-windows
+            vcpkg_os: windows-2022
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
             ctest_specific_args : '-I 1,160'
 
     env:
@@ -83,7 +102,7 @@ jobs:
       VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       VCPKG_BUILD_DIR: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       BUILD_COMMANDS_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/_build'
-      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.3.1-${{ matrix.full_name }}-${{ matrix.triplet }}'
+      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.3.1-${{ matrix.package_name }}-${{ matrix.triplet }}'
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       FRAMEWORKCI_BRANCH: main
@@ -169,7 +188,7 @@ jobs:
       - name: Configure build script
         shell: bash
         run: |
-          cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_ADD_RPATH_TO_LIBS=OFF -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -GNinja
+          cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_ADD_RPATH_TO_LIBS=OFF -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja
 
       - name: Dump Some Generated fileskCMakeCache.txt
         shell: bash
