@@ -36,7 +36,7 @@ class StringVariableReplaceTest
 {
  public:
 
-  StringVariableReplaceTest(const ServiceBuildInfo& sbi);
+  explicit StringVariableReplaceTest(const ServiceBuildInfo& sbi);
   ~StringVariableReplaceTest();
 
  public:
