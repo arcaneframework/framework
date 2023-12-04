@@ -29,6 +29,7 @@
 #include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/internal/StringVariableReplace.h"
+#include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/impl/ArcaneCaseMeshService_axl.h"
 

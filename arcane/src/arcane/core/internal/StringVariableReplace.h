@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ApplicationInfo.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/VariableTypes.h"
 #include "arcane/utils/ParameterList.h"
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/StringBuilder.h"
@@ -37,7 +38,10 @@ namespace Arcane
 class ARCANE_CORE_EXPORT StringVariableReplace
 {
  public:
-  static String replaceWithCmdLineArgs(const ParameterList& parameter_list, const String& name);
+  static String replaceWithCmdLineArgs(const ParameterList& parameter_list, const String& string_with_symbols);
+
+ private:
+  static void _splitString(const String& str, UniqueArray<String>& str_array, UniqueArray<Integer>& int_array, Integer& nb_c, char c);
 };
 
 /*---------------------------------------------------------------------------*/
