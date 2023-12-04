@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,7 +14,8 @@
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Exception.h"
-#include "arcane/Directory.h"
+#include "arcane/utils/CheckedConvert.h"
+#include "arcane/core/Directory.h"
 
 // Standard headers
 #include <stdio.h>
@@ -58,6 +59,15 @@ namespace
   {
     return ::_wcsdup(x);
   }
+  Arcane::String _toArcaneString(const char_t* x)
+  {
+    using namespace Arcane;
+    const UChar* ux = reinterpret_cast<const UChar*>(x);
+    size_t slen = wcslen(x);
+    Int32 len = CheckedConvert::toInt32(slen);
+    ConstArrayView<UChar> buf(len,ux);
+    return String(buf);
+  }
 } // namespace
 
 #else
@@ -82,6 +92,10 @@ namespace
   char_t* _duplicate(const char_t* x)
   {
     return ::strdup(x);
+  }
+  Arcane::String _toArcaneString(const char_t* x)
+  {
+    return Arcane::String(x,true);
   }
 } // namespace
 
@@ -365,7 +379,7 @@ LibHandle load_library(const char_t* path)
 {
   HMODULE h = ::LoadLibraryW(path);
   if (!h)
-    ARCANE_FATAL("Can not load library '{0}'",path);
+    ARCANE_FATAL("Can not load library '{0}'",_toArcaneString(path));
   return h;
 }
 void free_library(LibHandle h)
@@ -427,7 +441,7 @@ load_hostfxr(const string_t& assembly_name)
   //return false;
   // Load hostfxr and get desired exports
   LibHandle lib = load_library(buffer);
-  PRINT_FORMAT(1,"LIB_PTR={0} path={1}",lib,buffer);
+  PRINT_FORMAT(1,"LIB_PTR={0} path={1}",lib,_toArcaneString(buffer));
   lib_info.m_lib_handle = lib;
   lib_info.m_has_valid_lib_handle = true;
   lib_info.init_fptr = (hostfxr_initialize_for_runtime_config_fn)get_export(lib, "hostfxr_initialize_for_runtime_config");
