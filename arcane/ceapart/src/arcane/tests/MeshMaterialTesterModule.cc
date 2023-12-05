@@ -542,6 +542,12 @@ startInit()
         //info() << "Cell name=" << mmcell._varIndex();
         m_mat_density[mmcell] = 200.0;
         m_mat_nodump_real[mmcell] = 1.2;
+        ComponentCell x1(mmcell);
+        if (x1._varIndex()!=mmcell._varIndex())
+          ARCANE_FATAL("Bad convertsion MatCell -> ComponentCell");
+        MatCell x2(x1);
+        if (x1._varIndex()!=x2._varIndex())
+          ARCANE_FATAL("Bad convertsion ComponentCell -> MatCell");
       }
     }
   }
@@ -601,6 +607,12 @@ startInit()
       if (!back_cell.null()){
         AllEnvCell all_env_back_cell = all_env_cell_converter[back_cell];
         info() << "NB_ENV=" << all_env_back_cell.nbEnvironment();
+        ComponentCell x1 = all_env_back_cell;
+        AllEnvCell x2(x1);
+        if (x1._varIndex()!=all_env_back_cell._varIndex())
+          ARCANE_FATAL("Bad convertsion AllEnvCell -> ComponentCell");
+        if (x1._varIndex()!=x2._varIndex())
+          ARCANE_FATAL("Bad convertsion ComponentCell -> EnvCell");
       }
     }
   }
@@ -1664,6 +1676,9 @@ compute()
       MatVarIndex mvi = cv._varIndex();
       info() << "CELL IN ENV WITH COMPONENT vindex=" << mvi.arrayIndex() << " i=" << mvi.valueIndex();
       mat_pressure[cv] += 3.0;
+      EnvCell env_cell(cv);
+      if (env_cell._varIndex()!=cv._varIndex())
+        ARCANE_FATAL("Bad cell");
     }
   }
   _computeDensity();
