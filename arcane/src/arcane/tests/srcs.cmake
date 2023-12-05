@@ -75,6 +75,7 @@ set(ARCANE_SOURCES
   RandomNumberGeneratorUnitTest.cc
   SimpleTableOutputUnitTest.cc
   SimpleTableComparatorUnitTest.cc
+  StringVariableReplaceTest.cc
 )
 
 set(AXL_FILES
@@ -123,5 +124,6 @@ set(AXL_FILES
   SimpleTableOutputUnitTest
   SimpleTableComparatorUnitTest
   SimpleTableOutputUnitTest
+  StringVariableReplaceTest
 )
 

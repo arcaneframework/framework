@@ -954,6 +954,13 @@ if (TARGET arcane_mpi)
   arcane_add_test_script(checkpoint_change_n7_n4 checkpoint_change_n7_n4.xml)
 endif()
 
+#################################################################
+#################################################################
+
+# Test pour la partie StringVariableReplace.
+arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc)
+
+
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
