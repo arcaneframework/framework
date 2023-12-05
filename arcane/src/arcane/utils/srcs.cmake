@@ -1,6 +1,7 @@
 set(ARCANE_SOURCES
   ApplicationInfo.cc
   ApplicationInfo.h
+  ArcaneCxx20.h
   ArcaneGlobal.cc
   ArcaneGlobal.h
   ArithmeticException.cc
@@ -67,6 +68,7 @@ set(ARCANE_SOURCES
   IMessagePassingProfilingService.h
   ISO88591Transcoder.cc
   ISO88591Transcoder.h
+  MDSpan.h
   MemoryAllocator.h
   MemoryView.h
   MemoryView.cc
@@ -87,6 +89,9 @@ set(ARCANE_SOURCES
   MemoryUtils.cc
   Numeric.cc
   Numeric.h
+  NumArray.h
+  NumArrayContainer.h
+  NumArrayUtils.h
   NumericTraits.h
   NumMatrix.h
   NumVector.h
@@ -325,7 +330,6 @@ set(ARCANE_SOURCES
 
 if (ARCANE_HAS_CXX20)
   list(APPEND ARCANE_SOURCES
-    ArcaneCxx20.h
     ArcaneCxx20.cc
     )
 endif()
@@ -333,11 +337,7 @@ endif()
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
     MDSpan.cc
-    MDSpan.h
-    NumArray.h
     NumArray.cc
-    NumArrayContainer.h
-    NumArrayUtils.h
     NumArrayUtils.cc
   )
 endif()

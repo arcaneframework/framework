@@ -478,6 +478,7 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshAreaAccessor.h
   MeshBuildInfo.cc
   MeshBuildInfo.h
+  MeshMDVariableRef.h
   MeshEvents.h
   MeshHandle.cc
   MeshKind.h
@@ -754,7 +755,6 @@ set(ARCANE_ORIGINAL_SOURCES
 
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_ORIGINAL_SOURCES
-    MeshMDVariableRef.h
     MeshMDVariableRef.cc
   )
 endif()
