@@ -61,7 +61,7 @@ class ARCANE_CORE_EXPORT ComponentCell
 
  public:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
   ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii)
   : m_internal(mii)
   {}
@@ -84,7 +84,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   //! \internal
   ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_internal->variableIndex(); }
 
-  matimpl::ConstituentItemBase itemBase() const { return m_internal; }
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase itemBase() const { return m_internal; }
 
   //! Composant associé
   IMeshComponent* component() const { return m_internal->component(); }

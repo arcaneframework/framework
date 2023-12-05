@@ -62,7 +62,7 @@ class MatCell
   {
   }
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
   ARCCORE_HOST_DEVICE MatCell(ComponentItemInternal* internal)
   : MatCell(matimpl::ConstituentItemBase (internal))
   {
@@ -129,7 +129,7 @@ class EnvCell
   : EnvCell(item.itemBase())
   {
   }
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
   explicit ARCCORE_HOST_DEVICE EnvCell(ComponentItemInternal* internal)
   : EnvCell(matimpl::ConstituentItemBase(internal))
   {
@@ -196,7 +196,7 @@ class AllEnvCell
   {
   }
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
   explicit ARCCORE_HOST_DEVICE AllEnvCell(ComponentItemInternal* internal)
   : AllEnvCell(matimpl::ConstituentItemBase(internal))
   {
