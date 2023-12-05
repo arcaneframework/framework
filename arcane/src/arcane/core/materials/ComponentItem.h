@@ -55,13 +55,24 @@ class ARCANE_CORE_EXPORT ComponentCell
   friend class EnvCellVector;
   friend class MatCellVector;
   friend class MeshMaterialMng;
+  friend class AllEnvCell;
+  friend class EnvCell;
+  friend class MatCell;
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii) : m_internal(mii){}
-  ARCCORE_HOST_DEVICE ComponentCell(matimpl::ConstituentItemBase mii) : m_internal(mii._internal()){}
-  ComponentCell() : m_internal(ComponentItemInternal::_nullItem()){}
+  ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii)
+  : m_internal(mii)
+  {}
+
+  ARCCORE_HOST_DEVICE ComponentCell(const matimpl::ConstituentItemBase& mii)
+  : m_internal(mii._internal())
+  {}
+
+  ComponentCell()
+  : m_internal(ComponentItemInternal::_nullItem())
+  {}
 
  public:
 
@@ -72,10 +83,6 @@ class ARCANE_CORE_EXPORT ComponentCell
 
   //! \internal
   ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_internal->variableIndex(); }
-
-  //! \internal
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ARCCORE_HOST_DEVICE ComponentItemInternal* internal() const { return m_internal; }
 
   matimpl::ConstituentItemBase itemBase() const { return m_internal; }
 
@@ -89,7 +96,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   bool null() const { return m_internal->null(); }
 
   //! Maille de niveau supérieur dans la hiérarchie
-  ComponentCell superCell() const { return m_internal->_superItemBase(); }
+  ComponentCell superCell() const { return ComponentCell(m_internal->_superItemBase()); }
 
   //! Niveau hiérarchique de l'entité
   Int32 level() const { return m_internal->level(); }
@@ -113,20 +120,25 @@ class ARCANE_CORE_EXPORT ComponentCell
    */
   Int64 componentUniqueId() const { return m_internal->componentUniqueId(); }
 
+ public:
+
+  //! \internal
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use itemBase() instead")
+  ARCCORE_HOST_DEVICE ComponentItemInternal* internal() const { return m_internal; }
+
  protected:
 
-  static ARCCORE_HOST_DEVICE
-  void _checkLevel([[maybe_unused]] ComponentItemInternal* internal, [[maybe_unused]] Int32 expected_level)
+  static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] ComponentItemInternal* internal, [[maybe_unused]] Int32 expected_level)
   {
 #if !defined(ARCCORE_DEVICE_CODE)
     if (internal->null())
       return;
     Int32 lvl = internal->level();
-    if (!internal->null() && lvl!=expected_level)
-      _badConversion(lvl,expected_level);
+    if (!internal->null() && lvl != expected_level)
+      _badConversion(lvl, expected_level);
 #endif
   }
-  static void _badConversion(Int32 level,Int32 expected_level);
+  static void _badConversion(Int32 level, Int32 expected_level);
 
  protected:
 
@@ -135,7 +147,10 @@ class ARCANE_CORE_EXPORT ComponentCell
  private:
 
   //! \internal
-  ARCCORE_HOST_DEVICE ComponentItemInternal* _internal() const { return m_internal; }
+  ARCCORE_HOST_DEVICE ComponentItemInternal* _internal() const
+  {
+    return m_internal;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

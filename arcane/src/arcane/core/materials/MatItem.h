@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 
 #include "arcane/core/materials/ComponentItem.h"
 #include "arcane/core/materials/ComponentItemInternal.h"
@@ -49,22 +49,26 @@ class MatCell
 {
  public:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ARCCORE_HOST_DEVICE MatCell(ComponentItemInternal* internal)
-  : ComponentCell(matimpl::ConstituentItemBase (internal))
-  {
-#ifdef ARCANE_CHECK
-    _checkLevel(internal,LEVEL_MATERIAL);
-#endif
-  }
-  ARCCORE_HOST_DEVICE MatCell(matimpl::ConstituentItemBase item_base)
+  ARCCORE_HOST_DEVICE MatCell(const matimpl::ConstituentItemBase& item_base)
   : ComponentCell(item_base)
   {
 #ifdef ARCANE_CHECK
     _checkLevel(item_base._internal(),LEVEL_MATERIAL);
 #endif
   }
-  MatCell() {}
+
+  explicit ARCCORE_HOST_DEVICE MatCell(const ComponentCell& item)
+  : MatCell(item.itemBase())
+  {
+  }
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  ARCCORE_HOST_DEVICE MatCell(ComponentItemInternal* internal)
+  : MatCell(matimpl::ConstituentItemBase (internal))
+  {
+  }
+
+  MatCell() = default;
 
  public:
 
@@ -114,22 +118,23 @@ class EnvCell
 {
  public:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  explicit ARCCORE_HOST_DEVICE EnvCell(ComponentItemInternal* internal)
-  : ComponentCell(matimpl::ConstituentItemBase(internal))
-  {
-#ifdef ARCANE_CHECK
-    _checkLevel(internal,LEVEL_ENVIRONMENT);
-#endif
-  }
-  explicit ARCCORE_HOST_DEVICE EnvCell(matimpl::ConstituentItemBase item_base)
+  explicit ARCCORE_HOST_DEVICE EnvCell(const matimpl::ConstituentItemBase& item_base)
   : ComponentCell(item_base)
   {
 #ifdef ARCANE_CHECK
     _checkLevel(item_base._internal(),LEVEL_ENVIRONMENT);
 #endif
   }
-  EnvCell() {}
+  explicit ARCCORE_HOST_DEVICE EnvCell(const ComponentCell& item)
+  : EnvCell(item.itemBase())
+  {
+  }
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  explicit ARCCORE_HOST_DEVICE EnvCell(ComponentItemInternal* internal)
+  : EnvCell(matimpl::ConstituentItemBase(internal))
+  {
+  }
+  EnvCell() = default;
 
  public:
 
@@ -178,22 +183,26 @@ class AllEnvCell
 {
  public:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  explicit ARCCORE_HOST_DEVICE AllEnvCell(ComponentItemInternal* internal)
-  : ComponentCell(matimpl::ConstituentItemBase(internal))
-  {
-#if defined(ARCANE_CHECK)
-    _checkLevel(internal,LEVEL_ALLENVIRONMENT);
-#endif
-  }
-
-  explicit ARCCORE_HOST_DEVICE AllEnvCell(matimpl::ConstituentItemBase item_base)
+  explicit ARCCORE_HOST_DEVICE AllEnvCell(const matimpl::ConstituentItemBase& item_base)
   : ComponentCell(item_base)
   {
 #if defined(ARCANE_CHECK)
     _checkLevel(item_base._internal(),LEVEL_ALLENVIRONMENT);
 #endif
   }
+
+  explicit ARCCORE_HOST_DEVICE AllEnvCell(const ComponentCell& item)
+  : AllEnvCell(item.itemBase())
+  {
+  }
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
+  explicit ARCCORE_HOST_DEVICE AllEnvCell(ComponentItemInternal* internal)
+  : AllEnvCell(matimpl::ConstituentItemBase(internal))
+  {
+  }
+
+  AllEnvCell() = default;
 
  public:
 
