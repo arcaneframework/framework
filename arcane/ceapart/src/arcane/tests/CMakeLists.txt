@@ -16,15 +16,10 @@ arcane_add_library(arcane_cea_tests
   INPUT_PATH ${ARCANECEA_SRC_PATH}
   RELATIVE_PATH arcane/tests
   FILES ${ARCANE_SOURCES}
+  AXL_FILES ${AXL_FILES}
 )
 
 target_compile_definitions(arcane_cea_tests PRIVATE ARCANE_COMPONENT_arcane_cea_tests)
-
-arcane_add_axl_files(arcane_cea_tests
-  INPUT_PATH ${ARCANECEA_SRC_PATH}
-  RELATIVE_PATH arcane/tests
-  FILES ${AXL_FILES}
-)
 
 target_link_libraries(arcane_cea_tests PUBLIC arcane_materials arcane_cea_geometric arcane_cea ${ARCANE_BASE_LIBRARIES})
 if(TARGET arcane_aleph)
