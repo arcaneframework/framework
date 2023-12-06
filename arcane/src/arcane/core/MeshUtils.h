@@ -369,6 +369,17 @@ checkResizeArray(Array<DataType>& array, Int64 new_size, bool force_resize)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne le maximum des uniqueId() des entités standards du maillage.
+ *
+ * Les entités standards sont les noeuds, mailles, faces et arêtes.
+ * L'opération est collective sur mesh->parallelMng().
+ */
+extern "C++" ARCANE_CORE_EXPORT ItemUniqueId
+getMaxItemUniqueIdCollective(IMesh* mesh);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::MeshUtils
 

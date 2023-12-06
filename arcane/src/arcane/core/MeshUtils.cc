@@ -1783,6 +1783,38 @@ computeCapacity(Int64 size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace MeshUtils::impl
+{
+  //! Retourne le max des uniqueId() des entités de \a group
+  Int64 _getMaxUniqueId(const ItemGroup& group, Int64 max_uid)
+  {
+    ENUMERATE_ (Item, iitem, group) {
+      Item item = *iitem;
+      if (max_uid < item.uniqueId())
+        max_uid = item.uniqueId();
+    }
+    return max_uid;
+  }
+} // namespace MeshUtils::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemUniqueId MeshUtils::
+getMaxItemUniqueIdCollective(IMesh* mesh)
+{
+  Int64 max_uid = NULL_ITEM_UNIQUE_ID;
+  max_uid = impl::_getMaxUniqueId(mesh->allNodes(), max_uid);
+  max_uid = impl::_getMaxUniqueId(mesh->allEdges(), max_uid);
+  max_uid = impl::_getMaxUniqueId(mesh->allCells(), max_uid);
+  max_uid = impl::_getMaxUniqueId(mesh->allFaces(), max_uid);
+  Int64 global_max = mesh->parallelMng()->reduce(Parallel::ReduceMax, max_uid);
+  return ItemUniqueId(global_max);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
