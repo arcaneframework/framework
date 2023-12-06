@@ -3,6 +3,7 @@ set( ARCANE_SOURCES
   Accelerator.h
   AcceleratorGlobal.h
   AsyncRunQueuePool.h
+  Atomic.h
   CommonCudaHipReduceImpl.h
   CommonCudaHipAtomicImpl.h
   CommonUtils.h
