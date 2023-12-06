@@ -160,50 +160,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     return (Int64)m_var_index.arrayIndex() + ((Int64)m_global_item->uniqueId() << MAT_INDEX_OFFSET);
   }
 
- public:
-
-  //! Entité nulle
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  static ComponentItemInternal* nullItem() { return &nullComponentItemInternal; }
-
-  //! Positionne l'indexeur dans les variables matériaux.
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  void setVariableIndex(MatVarIndex index) { _setVariableIndex(index); }
-
-  //! Composant supérieur (0 si aucun)
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ComponentItemInternal* superItem() const { return m_super_component_item; }
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  void setSuperAndGlobalItem(ComponentItemInternal* cii, Item ii) { _setSuperAndGlobalItem(cii, ii); }
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  void setGlobalItem(Item ii) { _setGlobalItem(ii); }
-
-  //! Première entité sous-composant.
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ARCCORE_HOST_DEVICE ComponentItemInternal* firstSubItem() const { return m_first_sub_component_item; }
-
-  //! Positionne le nombre de sous-composants.
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  void setNbSubItem(Int32 nb_sub_item) { _setNbSubItem(nb_sub_item); }
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  //! Positionne le premier sous-composant.
-  void setFirstSubItem(ComponentItemInternal* first_sub_item) { _setFirstSubItem(first_sub_item); }
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  void setComponent(IMeshComponent* component, Int32 component_id)
-  {
-    _setComponent(component, component_id);
-  }
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  void setLevel(Int32 level) { _setLevel(level); }
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  void reset() { _reset(); }
-
  protected:
 
   MatVarIndex m_var_index;
