@@ -54,6 +54,7 @@ class CartesianMeshTestUtils
   void checkSameId(Face item, FaceLocalId local_id) { _checkSameId(item, local_id); }
   void checkSameId(Cell item, CellLocalId local_id) { _checkSameId(item, local_id); }
   void checkSameId(Node item,NodeLocalId local_id) { _checkSameId(item,local_id); }
+  void setNbPrint(Int32 v) { m_nb_print = v; }
 
  private:
 
@@ -63,7 +64,7 @@ class CartesianMeshTestUtils
   VariableCellReal3 m_cell_center;
   VariableFaceReal3 m_face_center;
   VariableNodeReal m_node_density; 
-  Integer m_nb_print = 100;
+  Int32 m_nb_print = 100;
   bool m_is_amr = false;
 
  private:

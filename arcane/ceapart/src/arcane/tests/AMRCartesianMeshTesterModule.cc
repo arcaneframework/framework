@@ -313,6 +313,8 @@ init()
     info() << "NB_BOUNDARY1=" << nb_boundary1 << " NB_BOUNDARY2=" << nb_boundary2;
   }
   bool is_amr = m_nb_expected_patch!=1;
+  if (options()->verbosityLevel()==0)
+    m_utils->setNbPrint(5);
   m_utils->testAll(is_amr);
   _writePostProcessing();
   _testDirections();
@@ -342,6 +344,7 @@ void AMRCartesianMeshTesterModule::
 _processPatches()
 {
   const bool do_check = true;
+  const bool is_verbose = options()->verbosityLevel()>=1;
 
   const Int32 dimension = defaultMesh()->dimension();
   // Vérifie qu'il y a autant de patchs que d'options raffinement dans
@@ -360,7 +363,8 @@ _processPatches()
 
   UniqueArray<Int32> nb_cells_expected(options()->expectedNumberOfCellsInPatchs);
   if (nb_cells_expected.size()!=nb_patch)
-    ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfCellsInPatchs.name());
+    ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
+                 nb_cells_expected.size(),nb_patch,options()->expectedNumberOfCellsInPatchs.name());
 
   // Nombre de mailles fantômes attendu. Utilisé uniquement en parallèle
   bool has_expected_ghost_cells = options()->expectedNumberOfGhostCellsInPatchs.isPresent();
@@ -369,7 +373,8 @@ _processPatches()
 
   UniqueArray<Int32> nb_ghost_cells_expected(options()->expectedNumberOfGhostCellsInPatchs);
   if (has_expected_ghost_cells && (nb_ghost_cells_expected.size()!=nb_patch))
-    ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfGhostCellsInPatchs.name());
+    ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
+                 nb_ghost_cells_expected.size(), nb_patch, options()->expectedNumberOfGhostCellsInPatchs.name());
   // Affiche les informations sur les patchs
   for( Integer i=0; i<nb_patch; ++i ){
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
@@ -386,7 +391,8 @@ _processPatches()
     UniqueArray<Int64> own_cells_uid;
     ENUMERATE_(Cell,icell,patch_own_cell){
       Cell cell{*icell};
-      info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
+      if (is_verbose)
+        info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
       own_cells_uid.add(cell.uniqueId());
     }
     // Affiche la liste globales des uniqueId() des mailles.
@@ -401,8 +407,9 @@ _processPatches()
       if (do_check && nb_cells_expected[i]!=nb_global_uid)
         ARCANE_FATAL("Bad number of cells for patch I={0} N={1} expected={2}",
                      i,nb_global_uid,nb_cells_expected[i]);
-      for( Integer c=0; c<nb_global_uid; ++c )
-        info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
+      if (is_verbose)
+        for( Integer c=0; c<nb_global_uid; ++c )
+          info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
     }
     // Teste le nombre de mailles fantômes
     if (has_expected_ghost_cells){
@@ -415,7 +422,7 @@ _processPatches()
     }
 
     // Exporte le patch au format SVG
-    if (dimension==2){
+    if (dimension==2 && options()->dumpSvg()){
       String filename = String::format("Patch{0}-{1}-{2}.svg",i,comm_rank,comm_size);
       Directory directory = subDomain()->exportDirectory();
       String full_filename = directory.file(filename);

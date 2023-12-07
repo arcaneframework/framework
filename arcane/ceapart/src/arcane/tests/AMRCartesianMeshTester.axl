@@ -58,8 +58,18 @@
        Indique si on dé-raffine à l'initialisation
      </description>
    </simple>
+   <simple name="verbosity-level" type="int32" default="1">
+     <description>
+       Niveau de verbosité
+     </description>
+   </simple>
+   <simple name="dump-svg" type="bool" default="true">
+     <description>
+       Indique si on exporte au format SVG les patchs
+     </description>
+   </simple>
 
-</options>
+ </options>
 
  <entry-points>
    <entry-point method-name="compute" name="compute" where="compute-loop" property="none" />
