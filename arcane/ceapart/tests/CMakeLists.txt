@@ -170,7 +170,8 @@ arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCa
 
 arcane_add_test(amr-cartesian2D-V1-coarse-1 testAMRCartesianMesh2D-V1-coarse-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
 arcane_add_test(amr-cartesian2D-V1-coarse-2 testAMRCartesianMesh2D-V1-coarse-2.arc "-m 20")
-
+arcane_add_test(amr-cartesian2D-V1-coarse-3 testAMRCartesianMesh2D-V1-coarse-3.arc "-m 10")
+arcane_add_test(amr-cartesian2D-V1-coarse-4 testAMRCartesianMesh2D-V1-coarse-4.arc "-m 10")
 
 # Tests sur le renumérotation des faces en cartésien
 # L'idéal est d'avoir pas mal de sous-domaines pour être sur que le
