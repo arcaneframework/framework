@@ -107,7 +107,6 @@ class AMRCartesianMeshTesterModule
   void _processPatches();
   void _writePostProcessing();
   void _checkUniqueIds();
-  void _checkUniqueIds(IItemFamily* family,const String& expected_hash);
   void _testDirections();
 };
 
@@ -276,6 +275,7 @@ init()
     m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
     _checkUniqueIds();
     _processPatches();
+    info() << "MaxUid for mesh=" << MeshUtils::getMaxItemUniqueIdCollective(m_cartesian_mesh->mesh());
   }
 
   // Initialise la densité.
@@ -322,42 +322,17 @@ init()
 /*---------------------------------------------------------------------------*/
 
 void AMRCartesianMeshTesterModule::
-_checkUniqueIds(IItemFamily* family,const String& expected_hash)
-{
-  // Vérifie que toutes les entités ont le bon uniqueId();
-  MD5HashAlgorithm hash_algo;
-  IMesh* mesh = m_cartesian_mesh->mesh();
-  IParallelMng* pm = mesh->parallelMng();
-
-  UniqueArray<Int64> own_items_uid;
-  ENUMERATE_(Item,iitem,family->allItems().own()){
-    Item item{*iitem};
-    own_items_uid.add(item.uniqueId());
-  }
-  UniqueArray<Int64> global_items_uid;
-  pm->allGatherVariable(own_items_uid,global_items_uid);
-  std::sort(global_items_uid.begin(),global_items_uid.end());
-
-  UniqueArray<Byte> hash_result;
-  hash_algo.computeHash64(asBytes(global_items_uid.constSpan()),hash_result);
-  String hash_str = Convert::toHexaString(hash_result);
-  info() << "HASH_RESULT family=" << family->name()
-         << " v=" << hash_str << " expected=" << expected_hash;
-  if (!expected_hash.empty() && hash_str!=expected_hash)
-    ARCANE_FATAL("Bad hash for uniqueId() for family '{0}' v={1} expected='{2}'",
-                 family->fullName(),hash_str,expected_hash);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AMRCartesianMeshTesterModule::
 _checkUniqueIds()
 {
   IMesh* mesh = m_cartesian_mesh->mesh();
-  _checkUniqueIds(mesh->nodeFamily(),options()->nodesUidHash());
-  _checkUniqueIds(mesh->faceFamily(),options()->facesUidHash());
-  _checkUniqueIds(mesh->cellFamily(),options()->cellsUidHash());
+  bool print_hash = true;
+  MD5HashAlgorithm hash_algo;
+  MeshUtils::checkUniqueIdsHashCollective(mesh->nodeFamily(),&hash_algo,
+                                          options()->nodesUidHash(), print_hash);
+  MeshUtils::checkUniqueIdsHashCollective(mesh->faceFamily(),&hash_algo,
+                                          options()->facesUidHash(), print_hash);
+  MeshUtils::checkUniqueIdsHashCollective(mesh->cellFamily(),&hash_algo,
+                                          options()->cellsUidHash(), print_hash);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -366,9 +341,7 @@ _checkUniqueIds()
 void AMRCartesianMeshTesterModule::
 _processPatches()
 {
-  bool do_check = true;
-  //if (options()->coarseAtInit())
-  //do_check = false;
+  const bool do_check = true;
 
   const Int32 dimension = defaultMesh()->dimension();
   // Vérifie qu'il y a autant de patchs que d'options raffinement dans
