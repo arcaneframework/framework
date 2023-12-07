@@ -40,6 +40,8 @@ class ICartesianMeshGenerationInfo;
 class CartesianMeshUniqueIdRenumbering
 : public TraceAccessor
 {
+  class NewUniqueIdList;
+
  public:
 
   CartesianMeshUniqueIdRenumbering(ICartesianMesh* cmesh, ICartesianMeshGenerationInfo* gen_info,
@@ -59,12 +61,10 @@ class CartesianMeshUniqueIdRenumbering
 
  private:
 
-  void _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt64& faces_new_uid,
-                            VariableCellInt64& cells_new_uid,
+  void _applyChildrenCell2D(Cell cell, NewUniqueIdList& new_uids,
                             Int64 coord_i, Int64 coord_j,
-                            Int64 nb_cell_x, Int64 nb_cell_y, Int32 level);
-  void _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt64& faces_new_uid,
-                            VariableCellInt64& cells_new_uid,
+                            Int64 nb_cell_x, Int64 nb_cell_y, Int32 level, Int64 base_adder);
+  void _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
                             Int64 coord_i, Int64 coord_j, Int64 coord_k,
                             Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y, Int64 current_level_nb_cell_z,
                             Int32 current_level, Int64 cell_adder, Int64 node_adder, Int64 face_adder);
