@@ -27,11 +27,22 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ComponentItemSharedInfo
+class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 {
- public:
+  friend class ComponentItemInternal;
+  friend class ComponentItemInternalData;
 
-  Int32* m_infos;
+ private:
+
+  //! Pour l'entité nulle
+  static ComponentItemSharedInfo null_shared_info;
+  static ComponentItemSharedInfo* null_shared_info_pointer;
+  static ComponentItemSharedInfo* _nullInstance() { return null_shared_info_pointer; }
+
+ private:
+
+  ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
+  Int16 m_level = (-1);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -39,7 +50,7 @@ class ComponentItemSharedInfo
 
 namespace matimpl
 {
-  class ConstituentItemBase
+  class ARCANE_CORE_EXPORT ConstituentItemBase
   {
     friend Arcane::Materials::ComponentCell;
     friend Arcane::Materials::AllEnvCell;
@@ -170,6 +181,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   ComponentItemInternal* m_super_component_item;
   ComponentItemInternal* m_first_sub_component_item;
   ItemInternal* m_global_item;
+  ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
 
@@ -256,6 +268,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_nb_sub_component_item = 0;
     m_first_sub_component_item = 0;
     m_global_item = ItemInternal::nullItem();
+    m_shared_info = ComponentItemSharedInfo::_nullInstance();
   }
 };
 
