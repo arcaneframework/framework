@@ -87,12 +87,16 @@ class ComponentItemInternalData
   }
 
   //! Redimensionne le nombre de mailles matériaux du \a env_index- ème milieu.
-  void resizeNbMatCellForEnvironment(Int32 env_index,Int32 size)
-  {
-    m_mat_items_internal[env_index].resize(size);
-  }
+  void resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size);
 
+  //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
   void resetEnvItemsInternal();
+
+  //! Instance partagée associée au niveau \a level
+  ComponentItemSharedInfo* sharedInfo(Int16 level) { return &m_shared_infos[level]; }
+  ComponentItemSharedInfo* allEnvSharedInfo() { return sharedInfo(LEVEL_ALLENVIRONMENT); }
+  ComponentItemSharedInfo* envSharedInfo() { return sharedInfo(LEVEL_ENVIRONMENT); }
+  ComponentItemSharedInfo* matSharedInfo() { return sharedInfo(LEVEL_MATERIAL); }
 
  private:
 
@@ -110,15 +114,22 @@ class ComponentItemInternalData
   UniqueArray<ComponentItemInternal> m_env_items_internal;
 
   //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
-  UniqueArray< UniqueArray<ComponentItemInternal> > m_mat_items_internal;
+  UniqueArray<UniqueArray<ComponentItemInternal>> m_mat_items_internal;
+
+  //! Liste des informations partagées
+  UniqueArray<ComponentItemSharedInfo> m_shared_infos;
+
+ private:
+
+  void _initSharedInfos();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

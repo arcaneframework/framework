@@ -27,11 +27,22 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ComponentItemSharedInfo
+class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 {
- public:
+  friend class ComponentItemInternal;
+  friend class ComponentItemInternalData;
 
-  Int32* m_infos;
+ private:
+
+  //! Pour l'entité nulle
+  static ComponentItemSharedInfo null_shared_info;
+  static ComponentItemSharedInfo* null_shared_info_pointer;
+  static ComponentItemSharedInfo* _nullInstance() { return null_shared_info_pointer; }
+
+ private:
+
+  ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
+  Int16 m_level = (-1);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -39,7 +50,7 @@ class ComponentItemSharedInfo
 
 namespace matimpl
 {
-  class ConstituentItemBase
+  class ARCANE_CORE_EXPORT ConstituentItemBase
   {
     friend Arcane::Materials::ComponentCell;
     friend Arcane::Materials::AllEnvCell;
@@ -115,12 +126,10 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
   ComponentItemInternal()
   : m_component_id(-1)
-  , m_level(-1)
   , m_nb_sub_component_item(0)
-  , m_component(0)
-  , m_super_component_item(0)
-  , m_first_sub_component_item(0)
-  , m_global_item(ItemInternal::nullItem())
+  , m_component(nullptr)
+  , m_super_component_item(nullptr)
+  , m_first_sub_component_item(nullptr)
   {
     m_var_index.reset();
   }
@@ -149,27 +158,34 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   }
 
   //! Entité globale correspondante.
-  impl::ItemBase globalItemBase() { return m_global_item; }
+  impl::ItemBase globalItemBase() const
+  {
+    return impl::ItemBase(m_global_item_local_id, m_shared_info->m_item_shared_info);
+  }
 
-  Int32 level() const { return m_level; }
+  ARCCORE_HOST_DEVICE constexpr Int32 level() const { return m_shared_info->m_level; }
 
   //! Numéro unique de l'entité component
   Int64 componentUniqueId() const
   {
     // TODO: Vérifier que arrayIndex() ne dépasse pas (1<<MAT_INDEX_OFFSET)
-    return (Int64)m_var_index.arrayIndex() + ((Int64)m_global_item->uniqueId() << MAT_INDEX_OFFSET);
+    impl::ItemBase item_base(globalItemBase());
+    return (Int64)m_var_index.arrayIndex() + ((Int64)item_base.uniqueId() << MAT_INDEX_OFFSET);
   }
 
  protected:
 
+  // NOTE: Cette classe est partagée avec le wrapper C#
+  // Toute modification de la structure interne doit être reportée
+  // dans la structure C# correspondante
   MatVarIndex m_var_index;
   Int16 m_component_id;
-  Int16 m_level;
-  Int32 m_nb_sub_component_item;
+  Int16 m_nb_sub_component_item;
+  Int32 m_global_item_local_id = NULL_ITEM_LOCAL_ID;
   IMeshComponent* m_component;
   ComponentItemInternal* m_super_component_item;
   ComponentItemInternal* m_first_sub_component_item;
-  ItemInternal* m_global_item;
+  ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
 
@@ -200,15 +216,15 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     return m_super_component_item;
   }
 
-  void _setSuperAndGlobalItem(ComponentItemInternal* cii, Item ii)
+  void _setSuperAndGlobalItem(ComponentItemInternal* cii, ItemLocalId ii)
   {
     m_super_component_item = cii;
-    m_global_item = ItemCompatibility::_itemInternal(ii);
+    m_global_item_local_id = ii.localId();
   }
 
-  void _setGlobalItem(Item ii)
+  void _setGlobalItem(ItemLocalId ii)
   {
-    m_global_item = ItemCompatibility::_itemInternal(ii);
+    m_global_item_local_id = ii.localId();
   }
 
   //! Première entité sous-composant.
@@ -220,7 +236,10 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Positionne le nombre de sous-composants.
   void _setNbSubItem(Int32 nb_sub_item)
   {
-    m_nb_sub_component_item = nb_sub_item;
+#ifdef ARCANE_CHECK
+    _checkIsInt16(nb_sub_item);
+#endif
+    m_nb_sub_component_item = static_cast<Int16>(nb_sub_item);
   }
 
   //! Positionne le premier sous-composant.
@@ -235,27 +254,19 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 #ifdef ARCANE_CHECK
     _checkIsInt16(component_id);
 #endif
-    m_component_id = (Int16)component_id;
+    m_component_id = static_cast<Int16>(component_id);
   }
 
-  void _setLevel(Int32 level)
-  {
-#ifdef ARCANE_CHECK
-    _checkIsInt16(level);
-#endif
-    m_level = (Int16)level;
-  }
-
-  void _reset()
+  void _reset(ComponentItemSharedInfo* shared_info)
   {
     m_var_index.reset();
     m_component_id = -1;
-    m_component = 0;
-    m_level = (-1);
-    m_super_component_item = 0;
+    m_component = nullptr;
+    m_super_component_item = nullptr;
     m_nb_sub_component_item = 0;
-    m_first_sub_component_item = 0;
-    m_global_item = ItemInternal::nullItem();
+    m_first_sub_component_item = nullptr;
+    m_global_item_local_id = NULL_ITEM_LOCAL_ID;
+    m_shared_info = shared_info;
   }
 };
 

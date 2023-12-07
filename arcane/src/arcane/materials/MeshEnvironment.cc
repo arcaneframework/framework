@@ -214,12 +214,8 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
   Integer total_nb_cell_mat = m_total_nb_cell_mat;
-  item_internal_data->resizeNbMatCellForEnvironment(id(),total_nb_cell_mat);
+  item_internal_data->resizeAndResetMatCellForEnvironment(id(), total_nb_cell_mat);
   ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
-  for( Integer i=0; i<total_nb_cell_mat; ++i ){
-    ComponentItemInternal& ref_ii = mat_items_internal[i];
-    ref_ii._reset();
-  } 
 
   Int32UniqueArray cells_index(max_local_id);
   Int32UniqueArray cells_pos(max_local_id);
@@ -279,7 +275,6 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
         ref_ii._setSuperAndGlobalItem(cells_env[lid],items_internal[lid]);
         ref_ii._setComponent(mat,mat_id);
         ref_ii._setVariableIndex(mvi);
-        ref_ii._setLevel(LEVEL_MATERIAL);
       }
     }
   }
