@@ -116,13 +116,6 @@ class ARCANE_CORE_EXPORT ComponentCellEnumerator
 
  protected:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ComponentCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                          ConstArrayView<MatVarIndex> matvar_indexes,
-                          IMeshComponent* component);
-
- protected:
-
   explicit ComponentCellEnumerator(const ComponentItemVectorView& v);
 
  public:
@@ -198,13 +191,6 @@ class ARCANE_CORE_EXPORT MatCellEnumerator
 {
  protected:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  MatCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                    ConstArrayView<MatVarIndex> matvar_indexes,
-                    IMeshComponent* component);
-
- protected:
-
   explicit MatCellEnumerator(const ComponentItemVectorView& v)
   : ComponentCellEnumerator(v)
   {
@@ -239,13 +225,6 @@ class ARCANE_CORE_EXPORT EnvCellEnumerator
 {
  protected:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  EnvCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                    ConstArrayView<MatVarIndex> matvar_indexes,
-                    IMeshComponent* component);
-
- protected:
-
   explicit EnvCellEnumerator(const ComponentItemVectorView& v)
   : ComponentCellEnumerator(v)
   {
@@ -277,22 +256,17 @@ class ARCANE_CORE_EXPORT EnvCellEnumerator
 class ARCANE_CORE_EXPORT ComponentPartCellEnumerator
 {
  protected:
-  ComponentPartCellEnumerator(IMeshComponent* component,Int32 var_idx,
-                              Int32ConstArrayView value_indexes,
-                              Int32ConstArrayView item_indexes,
-                              ConstArrayView<ComponentItemInternal*> items_internal,
-                              Int32 base_index)
-  : m_index(0), m_size(item_indexes.size()), m_var_idx(var_idx), m_base_index(base_index),
-    m_value_indexes(value_indexes), m_item_indexes(item_indexes),
-    m_items_internal(items_internal), m_component(component)
-  {
-  }
+
   ComponentPartCellEnumerator(const ComponentPartItemVectorView& view,Integer base_index);
+
  public:
+
   static ComponentPartCellEnumerator create(ComponentPartItemVectorView v);
   static ComponentPartCellEnumerator create(IMeshComponent* c,eMatPart part);
+
  public:
-  void operator++()
+
+ void operator++()
   {
     ++m_index;
   }
