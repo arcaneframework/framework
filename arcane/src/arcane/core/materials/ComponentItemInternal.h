@@ -126,7 +126,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
   ComponentItemInternal()
   : m_component_id(-1)
-  , m_level(-1)
   , m_nb_sub_component_item(0)
   , m_component(0)
   , m_super_component_item(0)
@@ -162,7 +161,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Entité globale correspondante.
   impl::ItemBase globalItemBase() { return m_global_item; }
 
-  Int32 level() const { return m_level; }
+  ARCCORE_HOST_DEVICE constexpr Int32 level() const { return m_shared_info->m_level; }
 
   //! Numéro unique de l'entité component
   Int64 componentUniqueId() const
@@ -175,7 +174,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
   MatVarIndex m_var_index;
   Int16 m_component_id;
-  Int16 m_level;
   Int32 m_nb_sub_component_item;
   IMeshComponent* m_component;
   ComponentItemInternal* m_super_component_item;
@@ -250,25 +248,16 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_component_id = (Int16)component_id;
   }
 
-  void _setLevel(Int32 level)
-  {
-#ifdef ARCANE_CHECK
-    _checkIsInt16(level);
-#endif
-    m_level = (Int16)level;
-  }
-
-  void _reset()
+  void _reset(ComponentItemSharedInfo* shared_info)
   {
     m_var_index.reset();
     m_component_id = -1;
     m_component = 0;
-    m_level = (-1);
     m_super_component_item = 0;
     m_nb_sub_component_item = 0;
     m_first_sub_component_item = 0;
     m_global_item = ItemInternal::nullItem();
-    m_shared_info = ComponentItemSharedInfo::_nullInstance();
+    m_shared_info = shared_info;
   }
 };
 

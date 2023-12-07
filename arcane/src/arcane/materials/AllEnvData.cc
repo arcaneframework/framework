@@ -268,7 +268,6 @@ _computeInfosForEnvCells()
         ref_ii._setSuperAndGlobalItem(&all_env_items_internal[lid],items_internal[lid]);
         ref_ii._setNbSubItem(nb_mat);
         ref_ii._setVariableIndex(mvi);
-        ref_ii._setLevel(LEVEL_ENVIRONMENT);
       }
     }
     for( MeshEnvironment* env : true_environments ){
@@ -286,7 +285,6 @@ _computeInfosForEnvCells()
       ref_ii._setSuperAndGlobalItem(nullptr,c);
       ref_ii._setVariableIndex(MatVarIndex(0,lid));
       ref_ii._setNbSubItem(n);
-      ref_ii._setLevel(LEVEL_ALLENVIRONMENT);
       if (n!=0)
         ref_ii._setFirstSubItem(&env_items_internal[env_cell_indexes[lid]]);
     }

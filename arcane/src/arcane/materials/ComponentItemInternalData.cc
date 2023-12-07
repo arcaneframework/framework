@@ -65,10 +65,29 @@ endCreate()
 void ComponentItemInternalData::
 resetEnvItemsInternal()
 {
+  ComponentItemSharedInfo* all_env_shared_info = allEnvSharedInfo();
   for (ComponentItemInternal& x : m_all_env_items_internal)
-    x._reset();
+    x._reset(all_env_shared_info);
+
+  ComponentItemSharedInfo* env_shared_info = envSharedInfo();
   for (ComponentItemInternal& x : m_env_items_internal)
-    x._reset();
+    x._reset(env_shared_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentItemInternalData::
+resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size)
+{
+  m_mat_items_internal[env_index].resize(size);
+
+  ArrayView<ComponentItemInternal> mat_items_internal = matItemsInternal(env_index);
+  ComponentItemSharedInfo* mat_shared_info = matSharedInfo();
+  for (Integer i = 0; i < size; ++i) {
+    ComponentItemInternal& ref_ii = mat_items_internal[i];
+    ref_ii._reset(mat_shared_info);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
