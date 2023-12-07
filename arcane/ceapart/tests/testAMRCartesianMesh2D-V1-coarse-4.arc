@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
-  <titre>Test CartesianMesh 2D Cell Renumbering V1 (Variant 1)</titre>
+  <titre>Test CartesianMesh</titre>
 
-  <description>Test du raffinement d'un maillage cartesian 2D avec le type d'AMR Cell et la renumérotation V1</description>
+  <description>Test des maillages cartesiens AMR 2D</description>
 
   <boucle-en-temps>AMRCartesianMeshTestLoop</boucle-en-temps>
 
@@ -27,45 +27,49 @@
  </arcane-post-traitement>
  
  
- <maillage amr="true">
+ <maillage amr="true" nb-ghostlayer="3" ghostlayer-builder-version="3">
    <meshgenerator>
      <cartesian>
        <nsd>2 2</nsd>
        <origine>0.0 0.0</origine>
-       <lx nx='2' prx='1.0'>2.0</lx>
-       <lx nx='4' prx='1.2'>3.0</lx>
-       <lx nx='5' prx='1.3'>3.0</lx>
-       <lx nx='6' prx='1.4'>4.0</lx>
-
-       <ly ny='2' pry='1.0'>2.0</ly>
-       <ly ny='3' pry='1.1'>4.0</ly>
-       <ly ny='4' pry='1.3'>5.0</ly>
+       <lx nx='80' prx='1.0'>8.0</lx>
+       <ly ny='80' pry='1.0'>8.0</ly>
      </cartesian>
    </meshgenerator>
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
+   <verbosity-level>0</verbosity-level>
+   <dump-svg>false</dump-svg>
    <renumber-patch-method>1</renumber-patch-method>
+   <coarse-at-init>true</coarse-at-init>
    <refinement-2d>
-     <position>1.0 2.0</position>
-     <length>1.0 2.0</length>
+     <position>0.0 0.0</position>
+     <length>1.1 1.1</length>
+   </refinement-2d>
+
+   <refinement-2d>
+     <position>5.0 0.5</position>
+     <length>2.2 1.3</length>
    </refinement-2d>
    <refinement-2d>
-     <position>1.4 3.0</position>
-     <length>0.5 1.0</length>
+     <position>1.0 4.0</position>
+     <length>2.2 2.2</length>
    </refinement-2d>
+
    <refinement-2d>
      <position>4.0 5.0</position>
      <length>3.0 4.0</length>
    </refinement-2d>
    <refinement-2d>
-     <position>5.0 7.0</position>
+     <position>5.0 3.0</position>
      <length>2.0 2.0</length>
    </refinement-2d>
-   <expected-number-of-cells-in-patchs>153 8 4 80 128</expected-number-of-cells-in-patchs>
-   <nodes-uid-hash>d0ef46e1ab3391a062232e491ab5833f</nodes-uid-hash>
-   <faces-uid-hash>ed6f4c975e26cfb86eafc83c9c9e6caa</faces-uid-hash>
-   <cells-uid-hash>f5304b74f95da0e344fc34a1b053025e</cells-uid-hash>
+   <expected-number-of-cells-in-patchs>1600 6400 484 1144 1936 3600 1600</expected-number-of-cells-in-patchs>
+   <expected-number-of-ghost-cells-in-patchs>516 2064 0 0 528 720 960</expected-number-of-ghost-cells-in-patchs>
+   <nodes-uid-hash>19f96ae658a9aa61b31d8d6e3d2571dc</nodes-uid-hash>
+   <faces-uid-hash>082ed72694144a6382d5e2e1f0078913</faces-uid-hash>
+   <cells-uid-hash>d019a200fcce273ba173ce9c9200e750</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>
