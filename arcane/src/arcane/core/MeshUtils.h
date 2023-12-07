@@ -380,6 +380,31 @@ getMaxItemUniqueIdCollective(IMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie le hash des uniqueId() des entités d'une famille.
+ *
+ * Calcule via l'algo \a hash_algo un hash des uniqueId() des entités
+ * d'une famille. Pour ce calcul, le rang 0 récupère l'ensemble des uniqueId()
+ * des entités propres de chaque sous-domaine, les trie et calcul le hash
+ * sur le tableau trié.
+ *
+ * Comme la majorité du travail est effectuée par le rang 0, cette méthode
+ * n'est pas très extensible et ne doit donc être utilisée qu'à des fins
+ * de test.
+ *
+ * \a expected_hash est la valeur attendue du hash sous forme de caractères
+ * hexadécimaux (obtenu via Convert::toHexaString()). Si \a expected_hash
+ * est non nul, compare le résultat avec cette valeur et si elle est différente,
+ * lance une exception FatalErrorException.
+ *
+ * Cette opération est collective.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
+                             const String& expected_hash, bool print_hash_value);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::MeshUtils
 
