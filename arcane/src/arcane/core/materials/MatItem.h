@@ -58,7 +58,7 @@ class MatCell
   }
 
   explicit ARCCORE_HOST_DEVICE MatCell(const ComponentCell& item)
-  : MatCell(item.itemBase())
+  : MatCell(item.constituentItemBase())
   {
   }
 
@@ -126,7 +126,7 @@ class EnvCell
 #endif
   }
   explicit ARCCORE_HOST_DEVICE EnvCell(const ComponentCell& item)
-  : EnvCell(item.itemBase())
+  : EnvCell(item.constituentItemBase())
   {
   }
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
@@ -192,7 +192,7 @@ class AllEnvCell
   }
 
   explicit ARCCORE_HOST_DEVICE AllEnvCell(const ComponentCell& item)
-  : AllEnvCell(item.itemBase())
+  : AllEnvCell(item.constituentItemBase())
   {
   }
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentItem.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Entité composant d'une maillage multi-matériau.                           */
+/* Entité représentant un constituant d'une maille multi-matériaux.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_COMPONENTITEM_H
 #define ARCANE_CORE_MATERIALS_COMPONENTITEM_H
@@ -84,7 +84,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   //! \internal
   ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_internal->variableIndex(); }
 
-  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase itemBase() const { return m_internal; }
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase constituentItemBase() const { return m_internal; }
 
   //! Composant associé
   IMeshComponent* component() const { return m_internal->component(); }
@@ -123,12 +123,13 @@ class ARCANE_CORE_EXPORT ComponentCell
  public:
 
   //! \internal
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use itemBase() instead")
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use constituentItemBase() instead")
   ARCCORE_HOST_DEVICE ComponentItemInternal* internal() const { return m_internal; }
 
  protected:
 
-  static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] ComponentItemInternal* internal, [[maybe_unused]] Int32 expected_level)
+  static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] ComponentItemInternal* internal,
+                                              [[maybe_unused]] Int32 expected_level)
   {
 #if !defined(ARCCORE_DEVICE_CODE)
     if (internal->null())
