@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialGlobal.cc                                           (C) 2000-2016 */
+/* MaterialGlobal.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations générales des matériaux de Arcane.                           */
 /*---------------------------------------------------------------------------*/
@@ -26,24 +26,6 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Opérateur de sortie sur un flot
-extern "C++" std::ostream&
-operator<< (std::ostream& o,eOperation operation)
-{
-  switch(operation){
-  case eOperation::Add:
-    o << "Add";
-    break;
-  case eOperation::Remove:
-    o << "Remove";
-    break;
-  default:
-    o << "Unknown";
-  }
-  return o;
-}
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
