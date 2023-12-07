@@ -238,7 +238,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
       cells_pos[lid] = cell_index;
       //info(4) << "XZ=" << z << " LID=" << lid << " POS=" << cell_index;
       env_item->_setNbSubItem(nb_mat);
-      env_item->_setComponent(this,env_id);
+      env_item->_setComponent(env_id);
       if (nb_mat!=0){
         env_item->_setFirstSubItem(&mat_items_internal[cell_index]);
         cells_env[lid] = env_item;
@@ -272,8 +272,8 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
         ++cells_pos[lid];
         ComponentItemInternal& ref_ii = mat_items_internal[pos];
         mat_items_internal_pointer[z] = &mat_items_internal[pos];
-        ref_ii._setSuperAndGlobalItem(cells_env[lid],items_internal[lid]);
-        ref_ii._setComponent(mat,mat_id);
+        ref_ii._setSuperAndGlobalItem(cells_env[lid], ItemLocalId(lid));
+        ref_ii._setComponent(mat_id);
         ref_ii._setVariableIndex(mvi);
       }
     }
