@@ -138,6 +138,9 @@ buildFromManager(bool is_continue)
   all_vars[0] = m_global_variable;
   IMesh* mesh = m_global_variable->mesh();
 
+  if (!m_global_variable->isUsed())
+    m_global_variable->setUsed(true);
+
   // Il faut attacher un observer sur la variable globale pour savoir quand elle change.
   // Pour les variables partielles, cela se fait automatiquement lorsque le matériau associé change.
   m_p->m_global_variable_changed_observer = new ObserverT<ThatClass>(this,&ThatClass::_syncFromGlobalVariable);
