@@ -55,7 +55,10 @@ class IncrementalItemConnectivityBase;
 class PolyhedralFamily;
 class PolyhedralMeshImpl;
 }
-
+namespace Arcane::Materials
+{
+class ComponentItemInternal;
+}
 namespace Arcane
 {
 class ItemInternalCompatibility;
@@ -477,6 +480,7 @@ class ARCANE_CORE_EXPORT ItemBase
   friend class ::Arcane::ItemInternal;
   friend class ::Arcane::Item;
   friend class ::Arcane::ItemInternalCompatibility;
+  friend class ::Arcane::Materials::ComponentItemInternal;
   friend MutableItemBase;
 
  private:

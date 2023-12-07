@@ -22,7 +22,7 @@ namespace Arcane.Materials
       set { m_internal = value; }
     }
 
-    public Cell GlobalCell { get { return new Cell(m_internal->m_global_item); } }
+    public Cell GlobalCell { get { return new Cell(m_internal->m_shared_info->m_item_shared_info->m_items_internal[m_internal->m_global_item_local_id]); } }
     public MatVarIndex MatVarIndex { get { return m_internal->m_var_index; } }
     internal int _matvarArrayIndex { get { return m_internal->m_var_index.ArrayIndex; } }
     internal int _matvarValueIndex { get { return m_internal->m_var_index.ValueIndex; } }
@@ -45,7 +45,7 @@ namespace Arcane.Materials
       get { return m_internal; }
       set { m_internal = value; }
     }
-    public Cell GlobalCell { get { return new Cell(m_internal->m_global_item); } }
+    public Cell GlobalCell { get { return new Cell(m_internal->m_shared_info->m_item_shared_info->m_items_internal[m_internal->m_global_item_local_id]); } }
     public MatVarIndex MatVarIndex { get { return m_internal->m_var_index; } }
     internal int _matvarArrayIndex { get { return m_internal->m_var_index.ArrayIndex; } }
     internal int _matvarValueIndex { get { return m_internal->m_var_index.ValueIndex; } }
@@ -66,7 +66,7 @@ namespace Arcane.Materials
       set { m_internal = value; }
     }
 
-    public Cell GlobalCell { get { return new Cell(m_internal->m_global_item); } }
+    public Cell GlobalCell { get { return new Cell(m_internal->m_shared_info->m_item_shared_info->m_items_internal[m_internal->m_global_item_local_id]); } }
     public MatVarIndex MatVarIndex { get { return m_internal->m_var_index; } }
     internal int _matvarArrayIndex { get { return m_internal->m_var_index.ArrayIndex; } }
     internal int _matvarValueIndex { get { return m_internal->m_var_index.ValueIndex; } }

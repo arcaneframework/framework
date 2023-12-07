@@ -10,6 +10,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Runtime.CompilerServices;
+
+// Pour accéder à ItemSharedInfo. A supprimer lorsqu'il n'y aura plus
+// besoin de ItemInternal
+[assembly: InternalsVisibleToAttribute("Arcane.Cea.Materials")]
 
 namespace Arcane
 {
