@@ -99,17 +99,26 @@ _initSharedInfos()
   IItemFamily* family = m_material_mng->mesh()->cellFamily();
   ItemSharedInfo* item_shared_info = family->_internalApi()->commonItemSharedInfo();
 
+  // NOTE : les champs 'm_components' sont des vues et donc il
+  // ne faut pas que conteneurs associés de \a m_materials_mng soient modifiées.
+  // Normalement ce n'est pas le cas, car la liste des constituants est fixe.
   ComponentItemSharedInfo* info_mat = sharedInfo(LEVEL_MATERIAL);
   info_mat->m_level = LEVEL_MATERIAL;
   info_mat->m_item_shared_info = item_shared_info;
+  info_mat->m_components = m_material_mng->materialsAsComponents();
 
   ComponentItemSharedInfo* info_env = sharedInfo(LEVEL_ENVIRONMENT);
   info_env->m_level = LEVEL_ENVIRONMENT;
   info_env->m_item_shared_info = item_shared_info;
+  info_env->m_components = m_material_mng->environmentsAsComponents();
 
   ComponentItemSharedInfo* info_all_env = sharedInfo(LEVEL_ALLENVIRONMENT);
   info_all_env->m_level = LEVEL_ALLENVIRONMENT;
   info_all_env->m_item_shared_info = item_shared_info;
+  info_all_env->m_components = ConstArrayView<IMeshComponent*>();
+
+  info() << "EndCreate ComponentItemInternalData nb_mat=" << info_mat->m_components.size()
+         << " nb_env=" << info_env->m_components.size();
 }
 
 /*---------------------------------------------------------------------------*/

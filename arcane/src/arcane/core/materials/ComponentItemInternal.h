@@ -43,6 +43,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 
   ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
   Int16 m_level = (-1);
+  ConstArrayView<IMeshComponent*> m_components;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -125,11 +126,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
  public:
 
   ComponentItemInternal()
-  : m_component_id(-1)
-  , m_nb_sub_component_item(0)
-  , m_component(nullptr)
-  , m_super_component_item(nullptr)
-  , m_first_sub_component_item(nullptr)
   {
     m_var_index.reset();
   }
@@ -137,22 +133,27 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
  public:
 
   //! Indexeur dans les variables matériaux
-  ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const
+  ARCCORE_HOST_DEVICE constexpr MatVarIndex variableIndex() const
   {
     return m_var_index;
   }
 
   //! Identifiant du composant
-  ARCCORE_HOST_DEVICE Int32 componentId() const { return m_component_id; }
+  ARCCORE_HOST_DEVICE constexpr Int32 componentId() const { return m_component_id; }
 
   //! Indique s'il s'agit de la maille nulle.
-  bool null() const { return m_var_index.null(); }
+  ARCCORE_HOST_DEVICE constexpr bool null() const { return m_var_index.null(); }
 
-  //! Composant
-  IMeshComponent* component() const { return m_component; }
+  /*!
+   * \brief Composant associé.
+   *
+   * Cet appel n'est valide que pour les mailles matériaux ou milieux. Si on souhaite
+   * un appel valide pour toutes les 'ComponentItem', il faut utiliser componentId().
+   */
+  IMeshComponent* component() const { return m_shared_info->m_components[m_component_id]; }
 
   //! Nombre de sous-composants.
-  ARCCORE_HOST_DEVICE Int32 nbSubItem() const
+  ARCCORE_HOST_DEVICE constexpr Int32 nbSubItem() const
   {
     return m_nb_sub_component_item;
   }
@@ -175,16 +176,15 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
  protected:
 
-  // NOTE: Cette classe est partagée avec le wrapper C#
+  // NOTE : Cette classe est partagée avec le wrapper C#
   // Toute modification de la structure interne doit être reportée
   // dans la structure C# correspondante
   MatVarIndex m_var_index;
-  Int16 m_component_id;
-  Int16 m_nb_sub_component_item;
+  Int16 m_component_id = -1;
+  Int16 m_nb_sub_component_item = 0;
   Int32 m_global_item_local_id = NULL_ITEM_LOCAL_ID;
-  IMeshComponent* m_component;
-  ComponentItemInternal* m_super_component_item;
-  ComponentItemInternal* m_first_sub_component_item;
+  ComponentItemInternal* m_super_component_item = nullptr;
+  ComponentItemInternal* m_first_sub_component_item = nullptr;
   ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
@@ -248,9 +248,8 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_first_sub_component_item = first_sub_item;
   }
 
-  void _setComponent(IMeshComponent* component, Int32 component_id)
+  void _setComponent(Int32 component_id)
   {
-    m_component = component;
 #ifdef ARCANE_CHECK
     _checkIsInt16(component_id);
 #endif
@@ -261,7 +260,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   {
     m_var_index.reset();
     m_component_id = -1;
-    m_component = nullptr;
     m_super_component_item = nullptr;
     m_nb_sub_component_item = 0;
     m_first_sub_component_item = nullptr;

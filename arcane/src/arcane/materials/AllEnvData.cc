@@ -265,7 +265,7 @@ _computeInfosForEnvCells()
         Int32 nb_mat = nb_mat_per_cell[lid];
         ComponentItemInternal& ref_ii = env_items_internal[pos];
         env_items_internal_pointer[z] = &env_items_internal[pos];
-        ref_ii._setSuperAndGlobalItem(&all_env_items_internal[lid],items_internal[lid]);
+        ref_ii._setSuperAndGlobalItem(&all_env_items_internal[lid], ItemLocalId(lid));
         ref_ii._setNbSubItem(nb_mat);
         ref_ii._setVariableIndex(mvi);
       }
