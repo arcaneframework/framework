@@ -282,6 +282,9 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
       face_uids[2] = (x + 0) + ((y + 0) * m_nb_cell_x) + ((z + 0) * m_nb_face_dir.y) + m_total_nb_face_x;
       face_uids[5] = (x + 0) + ((y + 1) * m_nb_cell_x) + ((z + 0) * m_nb_face_dir.y) + m_total_nb_face_x;
 
+      for (Int32 i = 0; i < 6; ++i)
+        face_uids[i] += m_base_offset;
+
       return face_uids;
     }
 
