@@ -124,6 +124,7 @@ if (Lima_FOUND)
 endif()
 arcane_add_test(cartesian2D_coarsen1 testCartesianMesh2D-coarsen-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,1")
 arcane_add_test(cartesian2D_coarsen2 testCartesianMesh2D-coarsen-2.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
+arcane_add_test(cartesian3D_coarsen2 testCartesianMesh3D-coarsen-2.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
   arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
@@ -166,7 +167,6 @@ arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-2 testAMRCa
 #arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-2 testAMRCartesianMesh3D-PatchCartesianMeshOnly-2.arc 8 "-m 20")
 arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCartesianMesh3D-PatchCartesianMeshOnly-3.arc "-m 20")
 #arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCartesianMesh3D-PatchCartesianMeshOnly-3.arc 8 "-m 20")
-
 
 arcane_add_test(amr-cartesian2D-V1-coarse-1 testAMRCartesianMesh2D-V1-coarse-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
 arcane_add_test(amr-cartesian2D-V1-coarse-2 testAMRCartesianMesh2D-V1-coarse-2.arc "-m 20")
