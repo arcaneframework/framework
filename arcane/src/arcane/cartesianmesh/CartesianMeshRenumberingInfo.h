@@ -35,12 +35,18 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshRenumberingInfo
   /*!
    * \brief Méthode pour renuméroter les patchs.
    *
-   * Si 0, il n'y a pas de renumérotation. La seule autre valeur valide est 1. Dans ce
-   * cas, les uniqueId() des entités (Node,Face,Cell) des patches sont renumérotées
-   * pour avoir la même numérotation
-   * quel que soit le découpage. La numérotation n'est pas contigue. Seules
-   * les entités des patchs sont renumérotées. Les entités issues du maillage initial
-   * ne sont pas renumérotées.
+   * Les valeurs possibles sont les suivantes:
+   * - 0 pas de renumérotation.
+   * - 1 renumérotation par défaut.
+   * - 2 version expérimentale de la renumérotation
+   * - 3 comme la version 1 mais avec une implémentation différente
+   * pour les maillages 2D.
+   *
+   * En cas de renumérotation, les uniqueId() des entités (Node,Face,Cell)
+   * des patches sont renumérotées pour avoir la même numérotation quel
+   * que soit le découpage.
+   * La numérotation n'est pas contigue. Seules les entités filles
+   * des entités du patch parentPatch() sont renumérotées.
    */
   void setRenumberPatchMethod(Int32 v) { m_renumber_patch_method = v; }
   Int32 renumberPatchMethod() const { return m_renumber_patch_method; }

@@ -3,7 +3,7 @@
  <arcane>
   <titre>Test CartesianMesh 3D Cell Renumbering V1 (Variant 2)</titre>
 
-  <description>Test du raffinement d'un maillage cartesian 3D avec le type d'AMR Cell et la renumérotation V1</description>
+  <description>Test du raffinement d'un maillage cartesian 3D avec le type d'AMR Cell et la renumerotation V1</description>
 
   <boucle-en-temps>AMRCartesianMeshTestLoop</boucle-en-temps>
 
@@ -70,9 +70,9 @@
      <length>2.0 2.0 2.0</length>
    </refinement-3d>
    <expected-number-of-cells-in-patchs>8 8 8 8 8 8 8 8</expected-number-of-cells-in-patchs>
-   <nodes-uid-hash>3cbd376d768e895a0b8e33d091bb3ff5</nodes-uid-hash>
-   <faces-uid-hash>2582173a840acc76dabb2abf8528410b</faces-uid-hash>
-   <cells-uid-hash>a39d1e99166f13d23ffb74d4965b06a2</cells-uid-hash>
+   <nodes-uid-hash>108ab65a162f420b2b49beee10b1f85b</nodes-uid-hash>
+   <faces-uid-hash>819e4e765d55fcb976d8b00e4c8d7718</faces-uid-hash>
+   <cells-uid-hash>04538c5721f934d717ee13d181b81d76</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>

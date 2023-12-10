@@ -45,7 +45,7 @@ class CartesianMeshUniqueIdRenumbering
  public:
 
   CartesianMeshUniqueIdRenumbering(ICartesianMesh* cmesh, ICartesianMeshGenerationInfo* gen_info,
-                                   CartesianPatch parent_patch);
+                                   CartesianPatch parent_patch, Int32 patch_method);
   ~CartesianMeshUniqueIdRenumbering() = default;
 
  public:
@@ -58,6 +58,7 @@ class CartesianMeshUniqueIdRenumbering
   ICartesianMeshGenerationInfo* m_generation_info = nullptr;
   CartesianPatch m_parent_patch;
   bool m_is_verbose = false;
+  Int32 m_patch_method = 1;
 
  private:
 
@@ -68,6 +69,10 @@ class CartesianMeshUniqueIdRenumbering
                             Int64 coord_i, Int64 coord_j, Int64 coord_k,
                             Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y, Int64 current_level_nb_cell_z,
                             Int32 current_level, Int64 cell_adder, Int64 node_adder, Int64 face_adder);
+  void _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
+                              Int64 coord_i, Int64 coord_j, Int64 coord_k,
+                              Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y, Int64 current_level_nb_cell_z,
+                              Int32 current_level, Int64 cell_adder, Int64 node_adder, Int64 face_adder);
   void _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid);
   void _markItemsToKeepCurrentNumbering(ICartesianMeshPatch* patch);
 };
