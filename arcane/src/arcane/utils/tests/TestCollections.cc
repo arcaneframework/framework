@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -9,15 +9,15 @@
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/String.h"
-
 #include "arcane/utils/SmallArray.h"
+#include "arcane/utils/FixedArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 using namespace Arcane;
 
-TEST(Collections,Basic)
+TEST(Collections, Basic)
 {
   std::cout << "TEST_Collection Basic\n";
 
@@ -26,36 +26,36 @@ TEST(Collections,Basic)
   String str2 = "Tata";
   String str3 = "Hello";
   String str4 = "MyStringToTest";
-  
+
   string_list.add(str1);
-  ASSERT_EQ(string_list.count(),1);
+  ASSERT_EQ(string_list.count(), 1);
 
   string_list.add(str2);
-  ASSERT_EQ(string_list.count(),2);
+  ASSERT_EQ(string_list.count(), 2);
 
   string_list.add(str3);
-  ASSERT_EQ(string_list.count(),3);
+  ASSERT_EQ(string_list.count(), 3);
 
   ASSERT_TRUE(string_list.contains("Tata"));
   ASSERT_FALSE(string_list.contains("NotTata"));
-  ASSERT_EQ(string_list[0],str1);
-  ASSERT_EQ(string_list[1],"Tata");
-  ASSERT_EQ(string_list[2],str3);
+  ASSERT_EQ(string_list[0], str1);
+  ASSERT_EQ(string_list[1], "Tata");
+  ASSERT_EQ(string_list[2], str3);
 
   string_list.remove("Tata");
-  ASSERT_EQ(string_list.count(),2);
-  ASSERT_EQ(string_list[0],str1);
-  ASSERT_EQ(string_list[1],str3);
+  ASSERT_EQ(string_list.count(), 2);
+  ASSERT_EQ(string_list[0], str1);
+  ASSERT_EQ(string_list[1], str3);
 
   string_list.clear();
-  ASSERT_EQ(string_list.count(),0);
+  ASSERT_EQ(string_list.count(), 0);
 
   string_list.add(str4);
-  ASSERT_EQ(string_list.count(),1);
+  ASSERT_EQ(string_list.count(), 1);
   string_list.add(str2);
-  ASSERT_EQ(string_list.count(),2);
+  ASSERT_EQ(string_list.count(), 2);
   string_list.add(str1);
-  ASSERT_EQ(string_list.count(),3);
+  ASSERT_EQ(string_list.count(), 3);
 
   ASSERT_TRUE(string_list.contains("Tata"));
   ASSERT_FALSE(string_list.contains("NotTata"));
@@ -173,7 +173,59 @@ TEST(Collections,SmallArray)
     Int64 s2 = 217;
     SmallArray<Int32> buf2(s2);
     ASSERT_EQ(buf2.size(),s2);
+  }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Collections, FixedArray)
+{
+  {
+    FixedArray<Int32, 0> empty_array;
+    ASSERT_EQ(empty_array.size(), 0);
+    ASSERT_EQ(empty_array.span().size(), 0);
+  }
+
+  {
+    static constexpr Int32 Size = 4;
+    FixedArray<Int32, Size> array1;
+    const FixedArray<Int32, Size>& const_array1(array1);
+    ASSERT_EQ(array1.size(), Size);
+    ASSERT_EQ(array1.span().size(), Size);
+    ASSERT_EQ(array1.view().size(), Size);
+    ASSERT_EQ(const_array1.span().size(), Size);
+    ASSERT_EQ(const_array1.view().size(), Size);
+    for (Int32 i = 0; i < Size; ++i) {
+      ASSERT_EQ(array1[i], 0);
+      ASSERT_EQ(array1.span()[i], 0);
+      ASSERT_EQ(array1.view()[i], 0);
+      ASSERT_EQ(const_array1.view()[i], 0);
+    }
+
+    array1[0] = 3;
+    array1[1] = 5;
+    array1[2] = -1;
+    array1[3] = 8;
+    ASSERT_EQ(array1[0], 3);
+    ASSERT_EQ(array1[1], 5);
+    ASSERT_EQ(const_array1[1], 5);
+    std::cout << "V[2]=" << array1[2] << "\n";
+    {
+      auto iter = array1.begin();
+      ASSERT_EQ(*iter, 3);
+      ASSERT_EQ(*iter, *const_array1.begin());
+      ++iter;
+      ASSERT_EQ(*iter, 5);
+      ++iter;
+      ASSERT_EQ(*iter, -1);
+      ++iter;
+      ASSERT_EQ(*iter, 8);
+      ++iter;
+      ASSERT_EQ(iter, array1.end());
+      ASSERT_EQ(iter, const_array1.end());
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -188,6 +240,8 @@ template class Collection<String>;
 template class CollectionImplT<String>;
 
 template class SmallArray<Int32>;
+template class FixedArray<Int32,3>;
+template class FixedArray<double, 21>;
 }
 
 /*---------------------------------------------------------------------------*/

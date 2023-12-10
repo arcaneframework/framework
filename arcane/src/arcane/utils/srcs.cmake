@@ -38,6 +38,7 @@ set(ARCANE_SOURCES
   Exception.cc
   Event.cc
   Event.h
+  FixedArray.h
   FloatingPointExceptionSentry.cc
   FloatingPointExceptionSentry.h
   FileContent.cc
