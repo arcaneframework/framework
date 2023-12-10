@@ -172,6 +172,15 @@ arcane_add_test(amr-cartesian2D-V1-coarse-1 testAMRCartesianMesh2D-V1-coarse-1.a
 arcane_add_test(amr-cartesian2D-V1-coarse-2 testAMRCartesianMesh2D-V1-coarse-2.arc "-m 20")
 arcane_add_test(amr-cartesian2D-V1-coarse-3 testAMRCartesianMesh2D-V1-coarse-3.arc "-m 10")
 arcane_add_test(amr-cartesian2D-V1-coarse-4 testAMRCartesianMesh2D-V1-coarse-4.arc "-m 10")
+arcane_add_test(amr-cartesian3D-V1-coarse-1 testAMRCartesianMesh3D-V1-coarse-1.arc "-m 10" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
+arcane_add_test_sequential(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1-coarse-2.arc "-m 10")
+arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1-coarse-2.arc 8 "-m 10")
+
+# Ce test prend du temps (environ 30 secondes) donc on ne l'active pas par défaut
+if (BIG_TEST)
+  arcane_add_test_sequential(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc "-m 10")
+  arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc 8 "-m 10")
+endif()
 
 # Tests sur le renumérotation des faces en cartésien
 # L'idéal est d'avoir pas mal de sous-domaines pour être sur que le
