@@ -65,9 +65,9 @@
    </refinement-2d>
    <expected-number-of-cells-in-patchs>48 192 12 8 64 72</expected-number-of-cells-in-patchs>
    <expected-number-of-ghost-cells-in-patchs>120 480 12 8 192 216</expected-number-of-ghost-cells-in-patchs>
-   <nodes-uid-hash>87b35ebb3e0f099582ec2c268d31c120</nodes-uid-hash>
-   <faces-uid-hash>36a596cfbd8ab6fc774feb97877ce810</faces-uid-hash>
-   <cells-uid-hash>f18aa5bcab39a0cc12e188576d5dbb0d</cells-uid-hash>
+   <nodes-uid-hash>abe468e571c521f6e1d0537d07c82d9f</nodes-uid-hash>
+   <faces-uid-hash>671e325a4fcd2785a83f38c5c227fbff</faces-uid-hash>
+   <cells-uid-hash>d21fc971bb27a0e0ed872cb755912f64</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>

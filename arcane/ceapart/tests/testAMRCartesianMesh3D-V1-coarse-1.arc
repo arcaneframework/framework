@@ -27,32 +27,38 @@
  </arcane-post-traitement>
  
  
- <maillage amr="true" nb-ghostlayer="3" ghostlayer-builder-version="3">
+ <maillage amr="true">
    <meshgenerator>
      <cartesian>
-       <nsd>2 2</nsd>
-       <origine>0.0 0.0</origine>
-       <lx nx='80' prx='1.0'>8.0</lx>
-       <ly ny='80' pry='1.0'>8.0</ly>
+       <nsd>2 2 1</nsd>
+       <origine>0.0 0.0 0.0</origine>
+       <lx nx='3' prx='1.1'>3.0</lx>
+       <lx nx='5' prx='1.0'>5.0</lx>
+
+       <ly ny='3' pry='1.0'>3.0</ly>
+       <ly ny='5' pry='1.1'>10.0</ly>
+
+       <lz nz='4' prz='1.0'>2.0</lz>
      </cartesian>
    </meshgenerator>
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
-   <verbosity-level>0</verbosity-level>
-   <dump-svg>false</dump-svg>
    <renumber-patch-method>1</renumber-patch-method>
    <coarse-at-init>true</coarse-at-init>
-   <refinement-2d>
-     <position>0.0 0.0</position>
-     <length>1.1 1.1</length>
-   </refinement-2d>
-
-   <expected-number-of-cells-in-patchs>1600 6400 484</expected-number-of-cells-in-patchs>
-   <expected-number-of-ghost-cells-in-patchs>516 2064 0</expected-number-of-ghost-cells-in-patchs>
-   <nodes-uid-hash>123ea5235d1fbd0f946407da35010199</nodes-uid-hash>
-   <faces-uid-hash>406c3302e3f2fedf56129dfbdfd27617</faces-uid-hash>
-   <cells-uid-hash>bd641ece2308db5e65f6c967c0e08478</cells-uid-hash>
+   <refinement-3d>
+     <position>1.0 2.0 0.5</position>
+     <length>1.0 2.0 1.0</length>
+   </refinement-3d>
+   <refinement-3d>
+     <position>1.4 3.0 1.0</position>
+     <length>0.5 1.0 0.5</length>
+   </refinement-3d>
+   <expected-number-of-cells-in-patchs>32 256 32 16</expected-number-of-cells-in-patchs>
+   <expected-number-of-ghost-cells-in-patchs>40 320 32 16</expected-number-of-ghost-cells-in-patchs>
+   <nodes-uid-hash>f708721c983630feaa936c31f1d839dc</nodes-uid-hash>
+   <faces-uid-hash>ec4598f6ca14d980bd3bee7e4959787f</faces-uid-hash>
+   <cells-uid-hash>6a466175634dd458394e1d44a488f908</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>

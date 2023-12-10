@@ -27,32 +27,43 @@
  </arcane-post-traitement>
  
  
- <maillage amr="true" nb-ghostlayer="3" ghostlayer-builder-version="3">
+ <maillage amr="true">
    <meshgenerator>
      <cartesian>
-       <nsd>2 2</nsd>
-       <origine>0.0 0.0</origine>
-       <lx nx='80' prx='1.0'>8.0</lx>
-       <ly ny='80' pry='1.0'>8.0</ly>
+       <nsd>2 2 2</nsd>
+       <origine>0.0 0.0 0.0</origine>
+       <lx nx='40' prx='1.0'>4.0</lx>
+       <ly ny='60' pry='1.0'>12.0</ly>
+       <lz nz='20' prz='1.0'>2.0</lz>
      </cartesian>
    </meshgenerator>
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
    <verbosity-level>0</verbosity-level>
-   <dump-svg>false</dump-svg>
    <renumber-patch-method>1</renumber-patch-method>
    <coarse-at-init>true</coarse-at-init>
-   <refinement-2d>
-     <position>0.0 0.0</position>
-     <length>1.1 1.1</length>
-   </refinement-2d>
-
-   <expected-number-of-cells-in-patchs>1600 6400 484</expected-number-of-cells-in-patchs>
-   <expected-number-of-ghost-cells-in-patchs>516 2064 0</expected-number-of-ghost-cells-in-patchs>
-   <nodes-uid-hash>123ea5235d1fbd0f946407da35010199</nodes-uid-hash>
-   <faces-uid-hash>406c3302e3f2fedf56129dfbdfd27617</faces-uid-hash>
-   <cells-uid-hash>bd641ece2308db5e65f6c967c0e08478</cells-uid-hash>
+   <refinement-3d>
+     <position>1.0 2.0 0.5</position>
+     <length>1.0 2.0 1.0</length>
+   </refinement-3d>
+   <refinement-3d>
+     <position>1.4 3.0 1.0</position>
+     <length>0.5 1.0 0.5</length>
+   </refinement-3d> 
+   <refinement-3d>
+     <position>1.4 3.0 1.0</position>
+     <length>0.5 1.0 0.5</length>
+   </refinement-3d> 
+   <refinement-3d>
+     <position>2.4 4.0 0.5</position>
+     <length>0.2 0.4 0.4</length>
+   </refinement-3d> 
+   <expected-number-of-cells-in-patchs>6000 48000 8000 8000 64000 128</expected-number-of-cells-in-patchs>
+   <expected-number-of-ghost-cells-in-patchs>2448 19584 5440 5440 43520 32</expected-number-of-ghost-cells-in-patchs>
+   <nodes-uid-hash>a25987a396eb57aade3170d3d0cab944</nodes-uid-hash>
+   <faces-uid-hash>9afdc3fecd353854428efc354bf1c8a3</faces-uid-hash>
+   <cells-uid-hash>fbc3d61943e2f2fafc40c2855553fbb6</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>

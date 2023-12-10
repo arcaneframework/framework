@@ -780,11 +780,11 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
 
   // Regarde ensuite les patchs si demandé.
   Int32 patch_method = v.renumberPatchMethod();
-  if (patch_method > 2 || patch_method < 0)
-    ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0 or 1 or 2");
+  if (patch_method > 3 || patch_method < 0)
+    ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0, 1, 2 or 3");
     
-  else if (patch_method == 1){
-    CartesianMeshUniqueIdRenumbering renumberer(this,cmgi,v.parentPatch());
+  else if (patch_method == 1 || patch_method == 3){
+    CartesianMeshUniqueIdRenumbering renumberer(this,cmgi,v.parentPatch(),patch_method);
     renumberer.renumber();
   }
   else if (patch_method == 2){
