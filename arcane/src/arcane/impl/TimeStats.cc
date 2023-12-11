@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeStats.cc                                                (C) 2000-2022 */
+/* TimeStats.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Statistiques sur les temps d'exécution.                                   */
 /*---------------------------------------------------------------------------*/
@@ -461,6 +461,7 @@ dumpStats(std::ostream& ostr,bool is_verbose,Real nb,const String& name,
   ostr << Trace::Width(50) << "        Action       "
        << Trace::Width(11) << "  Time  "
        << Trace::Width(11) << "  Time  "
+       << Trace::Width(8) << "N"
        << '\n';
   ostr << Trace::Width(50) << " "
        << Trace::Width(11) << "Total(s)"
@@ -680,7 +681,7 @@ _dumpAllPhases(std::ostream& ostr,Action& action,eTimeType tt,int tc,Real nb)
   }
 
   // Nombre d'appel
-  ostr.width(6);
+  ostr.width(9);
   ostr << action.nbCalled() << ' ';
 
   _printPercentage(ostr,all_phase_time,m_main_action.m_total_time.m_time[tt][tc]);
