@@ -266,28 +266,32 @@ class ProfInfos
   AddrMap m_addr_map;
   FuncMap m_func_map;
   StackMap m_stack_map;
-  Int64 m_total_event;
-  Int64 m_total_stack;
+  Int64 m_total_event = 0;
+  Int64 m_total_stack = 0;
   Int64 m_counters[MAX_COUNTER];
-  Int32 m_current_func_info;
+  Int32 m_current_func_info = 0;
   ProfFuncInfo m_func_info_buffer[MAX_FUNC];
-  int m_period;
-  Int64 m_nb_event_before_getting_stack;
-  int m_function_depth;
-  bool m_use_backtrace;
-  bool m_use_libunwind;
-  MonoFuncAddrGetter* m_mono_func_getter;
-  bool m_is_started;
-  IFuncInfoProvider* m_default_func_info_provider;
-  IFuncInfoProvider* m_libunwind_func_info_provider;
-  IFuncInfoProvider* m_backtrace_func_info_provider;
-  IFuncInfoProvider* m_func_info_provider;
+  int m_period = 0;
+  Int64 m_nb_event_before_getting_stack = 5000;
+  int m_function_depth = 3;
+  bool m_use_backtrace = false;
+  bool m_use_libunwind = false;
+  MonoFuncAddrGetter* m_mono_func_getter = nullptr;
+  bool m_is_started = false;
+  IFuncInfoProvider* m_default_func_info_provider = nullptr;
+  IFuncInfoProvider* m_libunwind_func_info_provider = nullptr;
+  IFuncInfoProvider* m_backtrace_func_info_provider = nullptr;
+  IFuncInfoProvider* m_func_info_provider = nullptr;
+
  protected:
+
   void _addEvent(void* address,int overflow_event[MAX_COUNTER],int nb_overflow_event,
                  IStackInfoProvider& stack_info,Integer function_depth);
   bool _getFunc(void* addr,FuncAddrInfo& info);
   void _sortFunctions(std::set<ProfFuncInfo*,ProfFuncComparer>& sorted_func);
+
  private:
+
   ProfFuncInfo* _getNextFuncInfo();
   ProfFuncInfo& _funcInfoFromIndex(Int32 index) { return m_func_info_buffer[index]; }
   void _storeAddress(void* address,bool is_counter0,int overflow_event[MAX_COUNTER],int nb_overflow_event,
