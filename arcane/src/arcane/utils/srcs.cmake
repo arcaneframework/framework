@@ -143,6 +143,7 @@ set(ARCANE_SOURCES
   UserDataList.h
   ValueChecker.cc
   ValueChecker.h
+  Vector2.h
   Vector3.h
   VersionInfo.cc
   VersionInfo.h

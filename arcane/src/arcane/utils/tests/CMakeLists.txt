@@ -7,6 +7,7 @@
   TestHash.cc
   TestHashTable.cc
   TestMemory.cc
+  TestVector2.cc
   TestVector3.cc
 )
 
