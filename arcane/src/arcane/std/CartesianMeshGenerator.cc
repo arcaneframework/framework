@@ -21,6 +21,7 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/Vector3.h"
+#include "arcane/utils/Vector2.h"
 
 #include "arcane/core/IMeshReader.h"
 #include "arcane/core/ISubDomain.h"
