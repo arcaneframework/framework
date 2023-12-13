@@ -63,9 +63,9 @@ class ARCANE_CORE_EXPORT CartesianMeshAllocateBuildInfo
                   Int64 node_unique_id_offset);
 
   //! Positionne les informations pour un maillage 3D.
-  void setInfos3D(std::array<Int64, 3> global_nb_cells,
-                  std::array<Int32, 3> own_nb_cells,
-                  std::array<Int64, 3> first_own_cell_offset,
+  void setInfos3D(const Int64x3& global_nb_cells,
+                  const Int32x3& own_nb_cells,
+                  const Int64x3& first_own_cell_offset,
                   Int64 cell_unique_id_offset);
 
   //! Positionne les informations pour un maillage 2D.
@@ -76,9 +76,9 @@ class ARCANE_CORE_EXPORT CartesianMeshAllocateBuildInfo
                   Int64 node_unique_id_offset);
 
   //! Positionne les informations pour un maillage 2D.
-  void setInfos2D(std::array<Int64, 2> global_nb_cells,
-                  std::array<Int32, 2> own_nb_cells,
-                  std::array<Int64, 2> first_own_cell_offset,
+  void setInfos2D(const Int64x2& global_nb_cells,
+                  const Int32x2& own_nb_cells,
+                  const Int64x2& first_own_cell_offset,
                   Int64 cell_unique_id_offset);
 
   /*!

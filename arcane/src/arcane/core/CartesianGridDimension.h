@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Vector3.h"
+#include "arcane/utils/Vector2.h"
 
 #include "arcane/core/ArcaneTypes.h"
 
@@ -301,12 +302,18 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
  public:
 
   CartesianGridDimension() = default;
+  //! Construit une grille 2D de dimension (nb_cell_x,nb_cell_y)
   CartesianGridDimension(Int64 nb_cell_x, Int64 nb_cell_y);
+  //! Construit une grille 3D de dimension (nb_cell_x,nb_cell_y,nb_cell_z)
   CartesianGridDimension(Int64 nb_cell_x, Int64 nb_cell_y, Int64 nb_cell_z);
-  explicit CartesianGridDimension(std::array<Int64, 2> dims);
-  explicit CartesianGridDimension(std::array<Int64, 3> dims);
-  explicit CartesianGridDimension(std::array<Int32, 2> dims);
-  explicit CartesianGridDimension(std::array<Int32, 3> dims);
+  //! Construit une grille 2D de dimension \a dims
+  explicit CartesianGridDimension(const Int64x2& dims);
+  //! Construit une grille 3D de dimension \a dims
+  explicit CartesianGridDimension(const Int64x3& dims);
+  //! Construit une grille 2D de dimension \a dims
+  explicit CartesianGridDimension(const Int32x2& dims);
+  //! Construit une grille 3D de dimension \a dims
+  explicit CartesianGridDimension(const Int32x3& dims);
 
  public:
 

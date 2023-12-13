@@ -16,9 +16,11 @@
 
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/Vector3.h"
+#include "arcane/utils/Vector2.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/FixedArray.h"
 
 #include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/ItemTypeId.h"
@@ -51,8 +53,8 @@ class CartesianMeshAllocateBuildInfo::Impl
   Int32 m_edge_builder_version = -1;
   CartesianMeshAllocateBuildInfoInternal m_internal;
 
-  std::array<Int64, 3> m_global_nb_cells = {};
-  std::array<Int32, 3> m_own_nb_cells = {};
+  Int64x3 m_global_nb_cells = {};
+  Int32x3 m_own_nb_cells = {};
   Int64x3 m_first_own_cell_offset;
   Int64 m_cell_unique_id_offset = -1;
   Int64 m_node_unique_id_offset = -1;
@@ -109,7 +111,7 @@ edgeBuilderVersion() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::array<Int64, 3> CartesianMeshAllocateBuildInfoInternal::
+const Int64x3& CartesianMeshAllocateBuildInfoInternal::
 globalNbCells() const
 {
   return m_p->m_global_nb_cells;
@@ -118,7 +120,7 @@ globalNbCells() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::array<Int32, 3> CartesianMeshAllocateBuildInfoInternal::
+const Int32x3& CartesianMeshAllocateBuildInfoInternal::
 ownNbCells() const
 {
   return m_p->m_own_nb_cells;
@@ -127,7 +129,7 @@ ownNbCells() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64x3 CartesianMeshAllocateBuildInfoInternal::
+const Int64x3& CartesianMeshAllocateBuildInfoInternal::
 firstOwnCellOffset() const
 {
   return m_p->m_first_own_cell_offset;
@@ -189,15 +191,15 @@ setInfos2D(std::array<Int64, 2> global_nb_cells,
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAllocateBuildInfo::
-setInfos2D(std::array<Int64, 2> global_nb_cells,
-           std::array<Int32, 2> own_nb_cells,
-           std::array<Int64, 2> first_own_cell_offset,
+setInfos2D(const Int64x2& global_nb_cells,
+           const Int32x2& own_nb_cells,
+           const Int64x2& first_own_cell_offset,
            Int64 cell_unique_id_offset)
 {
   m_p->m_mesh_dimension = 2;
-  m_p->m_global_nb_cells = { global_nb_cells[0], global_nb_cells[1] };
-  m_p->m_own_nb_cells = { own_nb_cells[0], own_nb_cells[1] };
-  m_p->m_first_own_cell_offset = { first_own_cell_offset[0], first_own_cell_offset[1], 0 };
+  m_p->m_global_nb_cells = { global_nb_cells.x, global_nb_cells.y, 0 };
+  m_p->m_own_nb_cells = { own_nb_cells.x, own_nb_cells.y, 0 };
+  m_p->m_first_own_cell_offset = { first_own_cell_offset.x, first_own_cell_offset.y, 0 };
   m_p->m_cell_unique_id_offset = cell_unique_id_offset;
   m_p->m_node_unique_id_offset = 0;
 }
@@ -211,7 +213,7 @@ setInfos3D(std::array<Int64, 3> global_nb_cells,
            Int64 cell_unique_id_offset,
            Int64 node_unique_id_offset)
 {
-  setInfos3D(global_nb_cells, own_nb_cells, { 0, 0, 0 }, cell_unique_id_offset);
+  setInfos3D(Int64x3(global_nb_cells), Int32x3(own_nb_cells), { 0, 0, 0 }, cell_unique_id_offset);
   m_p->m_node_unique_id_offset = node_unique_id_offset;
 }
 
@@ -219,15 +221,15 @@ setInfos3D(std::array<Int64, 3> global_nb_cells,
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAllocateBuildInfo::
-setInfos3D(std::array<Int64, 3> global_nb_cells,
-           std::array<Int32, 3> own_nb_cells,
-           std::array<Int64, 3> first_own_cell_offset,
+setInfos3D(const Int64x3& global_nb_cells,
+           const Int32x3& own_nb_cells,
+           const Int64x3& first_own_cell_offset,
            Int64 cell_unique_id_offset)
 {
   m_p->m_mesh_dimension = 3;
   m_p->m_global_nb_cells = global_nb_cells;
   m_p->m_own_nb_cells = own_nb_cells;
-  m_p->m_first_own_cell_offset = { first_own_cell_offset[0], first_own_cell_offset[1], first_own_cell_offset[2] };
+  m_p->m_first_own_cell_offset = first_own_cell_offset;
   m_p->m_cell_unique_id_offset = cell_unique_id_offset;
   m_p->m_node_unique_id_offset = 0;
 }
