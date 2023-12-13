@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RefDeclarations.h                                           (C) 2000-2022 */
+/* RefDeclarations.h                                           (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations liées à la gestion des références sur une instance.          */
 /*---------------------------------------------------------------------------*/
@@ -37,6 +37,12 @@ namespace Arccore
 {
 class ReferenceCounterImpl;
 
+namespace impl
+{
+template <typename InstanceType>
+class ReferenceCounterWrapper;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -49,7 +55,7 @@ class ReferenceCounterImpl;
  * class MyClass
  * {
  *   public:
- *    typedef ReferenceCounterTag ReferenceCounterTagType;
+ *    using ReferenceCounterTagType = ReferenceCounterTag;
  *   public:
  *    void addReference();
  *    void removeReference();
@@ -151,9 +157,9 @@ class ExternalReferenceCounterAccessor
  * \endcode
  */
 #define ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS() \
- public:\
-  typedef Arccore::ReferenceCounterTag ReferenceCounterTagType;  \
-  virtual Arccore::ReferenceCounterImpl* _internalReferenceCounter() =0; \
+ public:                                                        \
+  using ReferenceCounterTagType = Arccore::ReferenceCounterTag ;  \
+  virtual ::Arccore::ReferenceCounterImpl* _internalReferenceCounter() =0; \
   virtual void addReference() =0;\
   virtual void removeReference() =0
 

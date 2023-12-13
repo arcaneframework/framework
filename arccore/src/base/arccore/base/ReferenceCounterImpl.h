@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ReferenceCounterImpl.h                                      (C) 2000-2020 */
+/* ReferenceCounterImpl.h                                      (C) 2000-2023 */
 /*                                                                           */
 /* Implémentations liées au gestionnaire de compteur de référence.           */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ReferenceCounter.h"
+#include "arccore/base/RefBase.h"
 
 #include <atomic>
 
@@ -36,7 +37,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class T> ARCCORE_EXPORT void
+template <class T> ARCCORE_EXPORT void
 ExternalReferenceCounterAccessor<T>::
 addReference(T* t)
 {
@@ -46,7 +47,7 @@ addReference(T* t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class T> ARCCORE_EXPORT void
+template <class T> ARCCORE_EXPORT void
 ExternalReferenceCounterAccessor<T>::
 removeReference(T* t)
 {
@@ -66,6 +67,8 @@ removeReference(T* t)
  */
 class ReferenceCounterImpl
 {
+  template <typename InstanceType> friend class impl::ReferenceCounterWrapper;
+
  public:
 
   virtual ~ReferenceCounterImpl() = default;
@@ -82,12 +85,50 @@ class ReferenceCounterImpl
     // Décrémente et retourne la valeur d'avant.
     // Si elle vaut 1, cela signifie qu'on n'a plus de références
     // sur l'objet et qu'il faut le détruire.
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
-      delete this;
+    Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+    if (v == 1)
+      _destroyThisReference();
   }
+
+ private:
+
+  // Méthodes accessibles uniquement depuis ReferenceCounterWrapper
+  void _setExternalDeleter(RefBase::DeleterBase* v)
+  {
+    delete m_external_deleter;
+    m_external_deleter = v;
+  }
+  RefBase::DeleterBase* _externalDeleter() const
+  {
+    return m_external_deleter;
+  }
+
  public:
+
   std::atomic<Int32> m_nb_ref = 0;
+
+ private:
+
+  RefBase::DeleterBase* m_external_deleter = nullptr;
+
+ private:
+
+  void _destroyThisReference()
+  {
+    if (m_external_deleter) {
+      if (!m_external_deleter->m_no_destroy) {
+        bool is_destroyed = m_external_deleter->_destroyHandle(this, m_external_deleter->m_handle);
+        if (!is_destroyed) {
+          delete this;
+        }
+      }
+      delete m_external_deleter;
+      m_external_deleter = nullptr;
+    }
+    else {
+      delete this;
+    }
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -112,11 +153,21 @@ class ReferenceCounterImpl
  * };
  * \endcode
  */
-#define ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS()\
- public:\
-  Arccore::ReferenceCounterImpl* _internalReferenceCounter() override { return this; } \
-  void addReference() override { Arccore::ReferenceCounterImpl::addReference(); } \
-  void removeReference() override { Arccore::ReferenceCounterImpl::removeReference(); }
+#define ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS() \
+ public: \
+\
+  Arccore::ReferenceCounterImpl* _internalReferenceCounter() override \
+  { \
+    return this; \
+  } \
+  void addReference() override \
+  { \
+    Arccore::ReferenceCounterImpl::addReference(); \
+  } \
+  void removeReference() override \
+  { \
+    Arccore::ReferenceCounterImpl::removeReference(); \
+  }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -138,7 +189,7 @@ class ReferenceCounterImpl
  * \endcode
  */
 #define ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(class_name) \
-template class ExternalReferenceCounterAccessor<class_name>
+  template class ExternalReferenceCounterAccessor<class_name>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
