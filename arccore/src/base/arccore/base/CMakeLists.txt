@@ -43,6 +43,7 @@ set(SOURCES
   ReferenceCounter.h
   ReferenceCounterImpl.h
   Ref.h
+  RefBase.h
   RefDeclarations.h
   Ref.cc
   Span.h
