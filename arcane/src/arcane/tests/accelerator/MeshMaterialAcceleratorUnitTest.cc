@@ -584,7 +584,72 @@ _executeTest3(Integer nb_z)
 void MeshMaterialAcceleratorUnitTest::
 _executeTest4(Integer nb_z)
 {
-  // Some further functions testing, not really usefull here, but it improves cover
+  MaterialVariableCellReal& a_ref(m_mat_a_ref);
+  MaterialVariableCellReal& b_ref(m_mat_b_ref);
+  MaterialVariableCellReal& c_ref(m_mat_c_ref);
+
+  CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
+
+  // Ref CPU
+  for (Integer z=0, iz=nb_z; z<iz; ++z) {
+    ENUMERATE_CELL(icell, allCells()) {
+      Cell cell = * icell;
+      AllEnvCell all_env_cell = allenvcell_converter[cell];
+
+      Real sum2=0.;
+      ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
+        sum2 += b_ref[iev] + b_ref[icell];
+      }
+
+      Real sum3=0.;
+      if (all_env_cell.nbEnvironment() > 1) {
+        ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
+          Real contrib2 = (b_ref[iev] + b_ref[icell]) - (sum2+1.);
+          c_ref[iev] = contrib2 * c_ref[icell];
+          sum3 += contrib2;
+        }
+      }
+      a_ref[icell] = sum3;
+    }
+  }
+
+  // GPU
+  {
+    auto queue = makeQueue(m_runner);
+    auto cmd = makeCommand(queue);
+
+    auto in_b    = ax::viewIn(cmd, m_mat_b);
+    auto out_c   = ax::viewOut(cmd, m_mat_c);
+    auto in_c_g  = ax::viewIn(cmd, m_mat_c.globalVariable());
+    auto out_a_g = ax::viewOut(cmd, m_mat_a);
+
+    m_mm_mng->enableCellToAllEnvCellForRunCommand(true,true);
+    CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
+
+    for (Integer z=0, iz=nb_z; z<iz; ++z) {
+      cmd << RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcell, cid, allCells()) {
+
+        Real sum2=0.;
+        ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
+          sum2 += in_b[*iev] + in_b[cid];
+        }
+
+        Real sum3=0.;
+        if (cell2allenvcell.nbEnvironment(cid) > 1) {
+          ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
+            Real contrib2 = (in_b[*iev] + in_b[cid]) - (sum2+1.);
+            out_c[*iev] = contrib2 * in_c_g[cid];
+            sum3 += contrib2;
+          }
+        }
+        out_a_g[cid] = sum3;
+      };
+    }
+  }
+
+  _checkValues();
+
+    // Some further functions testing, not really usefull here, but it improves cover
   AllCellToAllEnvCell *useless(nullptr);
   useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
   AllCellToAllEnvCell::destroy(useless);
@@ -618,12 +683,7 @@ _executeTest4(Integer nb_z)
     m_mat_c[i] = m_mat_c_ref[i];
   }
 
-  MaterialVariableCellReal& a_ref(m_mat_a_ref);
-  MaterialVariableCellReal& b_ref(m_mat_b_ref);
-  MaterialVariableCellReal& c_ref(m_mat_c_ref);
-
-  CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
-
+  // Another round to test numerical pbs
   // Ref CPU
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
     ENUMERATE_CELL(icell, allCells()) {
