@@ -196,7 +196,7 @@ initializeTest()
   }
   {
     Materials::MeshEnvironmentBuildInfo env_build("ENV3");
-    env_build.addMaterial("MAT4");
+    env_build.addMaterial("MAT1");
     m_mm_mng->createEnvironment(env_build);
   }
 
@@ -649,7 +649,7 @@ _executeTest4(Integer nb_z)
 
   _checkValues();
 
-  // Some further functions testing, not really usefull here, but it improves cover
+    // Some further functions testing, not really usefull here, but it improves cover
   AllCellToAllEnvCell *useless(nullptr);
   useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
   AllCellToAllEnvCell::destroy(useless);
@@ -665,13 +665,83 @@ _executeTest4(Integer nb_z)
   m_mm_mng->forceRecompute();
 
   // Force last path of bruteForceUpdate testing
-  Int32UniqueArray env1_indexes;
+  Int32UniqueArray env3_indexes;
   ENUMERATE_CELL(icell,allCells()){
-    env1_indexes.add(icell.itemLocalId());
+    env3_indexes.add(icell.itemLocalId());
   }
   Materials::MeshMaterialModifier modifier(m_mm_mng);
-  modifier.addCells(m_mm_mng->environments()[2]->materials()[0],env1_indexes);
+  IMeshEnvironment* env3 = m_mm_mng->environments()[2];
+  modifier.addCells(env3->materials()[0],env3_indexes);
   m_mm_mng->forceRecompute();
+  ENUMERATE_ENVCELL(i,env3){
+    Real z = (Real)i.index();
+    m_mat_a_ref[i] = z*3.6;
+    m_mat_b_ref[i] = z*1.8;
+    m_mat_c_ref[i] = z*1.1;
+    m_mat_a[i] = m_mat_a_ref[i];
+    m_mat_b[i] = m_mat_b_ref[i];
+    m_mat_c[i] = m_mat_c_ref[i];
+  }
+
+  // Another round to test numerical pbs
+  // Ref CPU
+  for (Integer z=0, iz=nb_z; z<iz; ++z) {
+    ENUMERATE_CELL(icell, allCells()) {
+      Cell cell = * icell;
+      AllEnvCell all_env_cell = allenvcell_converter[cell];
+
+      Real sum2=0.;
+      ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
+        sum2 += b_ref[iev] + b_ref[icell];
+      }
+
+      Real sum3=0.;
+      if (all_env_cell.nbEnvironment() > 1) {
+        ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
+          Real contrib2 = (b_ref[iev] + b_ref[icell]) - (sum2+1.);
+          c_ref[iev] = contrib2 * c_ref[icell];
+          sum3 += contrib2;
+        }
+      }
+      a_ref[icell] = sum3;
+    }
+  }
+
+  // GPU
+  {
+    auto queue = makeQueue(m_runner);
+    auto cmd = makeCommand(queue);
+
+    auto in_b    = ax::viewIn(cmd, m_mat_b);
+    auto out_c   = ax::viewOut(cmd, m_mat_c);
+    auto in_c_g  = ax::viewIn(cmd, m_mat_c.globalVariable());
+    auto out_a_g = ax::viewOut(cmd, m_mat_a);
+
+    m_mm_mng->enableCellToAllEnvCellForRunCommand(true,true);
+    CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
+
+    for (Integer z=0, iz=nb_z; z<iz; ++z) {
+      cmd << RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcell, cid, allCells()) {
+
+        Real sum2=0.;
+        ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
+          sum2 += in_b[*iev] + in_b[cid];
+        }
+
+        Real sum3=0.;
+        if (cell2allenvcell.nbEnvironment(cid) > 1) {
+          ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
+            Real contrib2 = (in_b[*iev] + in_b[cid]) - (sum2+1.);
+            out_c[*iev] = contrib2 * in_c_g[cid];
+            sum3 += contrib2;
+          }
+        }
+        out_a_g[cid] = sum3;
+      };
+    }
+  }
+
+  _checkValues();
 }
 
 /*---------------------------------------------------------------------------*/

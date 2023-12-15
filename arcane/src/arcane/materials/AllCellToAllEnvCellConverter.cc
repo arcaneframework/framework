@@ -95,15 +95,13 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
     alloc->allocate(sizeof(Span<ComponentItemLocalId>) * _instance->m_size));
   // On force la valeur initiale sur tous les elmts car dans le ENUMERATE_CELL ci-dessous
   // il se peut que m_size (qui vaut maxLocalId()+1) soit different de allCells().size()
-  std::fill(_instance->m_allcell_allenvcell, _instance->m_allcell_allenvcell+_instance->m_size, Span<ComponentItemLocalId>());
+  std::fill_n(_instance->m_allcell_allenvcell, _instance->m_size, Span<ComponentItemLocalId>());
 
   _instance->m_current_max_nb_env = _instance->maxNbEnvPerCell();
   ComponentItemLocalId* env_cells(nullptr);
-  // Ici on alloue sur le allCells().size() car on va positionner les span
-  // via un ENUMERATE_CELL(...allCells)
-  auto pool_size(_instance->m_current_max_nb_env * mm->mesh()->allCells().size());
+  auto pool_size(_instance->m_current_max_nb_env * _instance->m_size);
   env_cells = reinterpret_cast<ComponentItemLocalId*>(alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
-  std::fill(env_cells, env_cells+pool_size, ComponentItemLocalId());
+  std::fill_n(env_cells, pool_size, ComponentItemLocalId());
 
   CellToAllEnvCellConverter all_env_cell_converter(mm);
   ENUMERATE_CELL (icell, mm->mesh()->allCells()) {
@@ -147,15 +145,17 @@ bruteForceUpdate()
     // Si les ids n'ont pas changé, on regarde si à cet instant, le nb max d'env par maille a changé
     // Si ca a changé, refaire le mem pool, sinon, juste update les valeurs
     if (current_max_nb_env != m_current_max_nb_env) {
+      // On n'oublie pas de mettre a jour la nouvelle valeur !
+      m_current_max_nb_env = current_max_nb_env;
       // Si le nb max d'env pour les mailles a changé à cet instant, on doit refaire le memory pool
       ARCANE_ASSERT((m_allcell_allenvcell), ("Trying to change memory pool within a null structure"));
       m_alloc->deallocate(m_allcell_allenvcell[0].data());
       // on reinit a un span vide
-      std::fill(m_allcell_allenvcell, m_allcell_allenvcell+m_size, Span<ComponentItemLocalId>());
+      std::fill_n(m_allcell_allenvcell, m_size, Span<ComponentItemLocalId>());
       // on recree le pool
-      auto pool_size(m_current_max_nb_env * m_material_mng->mesh()->allCells().size());
+      auto pool_size(m_current_max_nb_env * m_size);
       env_cells = reinterpret_cast<ComponentItemLocalId*>(m_alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
-      std::fill(env_cells, env_cells+pool_size, ComponentItemLocalId());
+      std::fill_n(env_cells, pool_size, ComponentItemLocalId());
       mem_pool_has_changed = true;
     }
     // Si on a pas touché au pool mémoire on repositionne le ptr sur l'existant
