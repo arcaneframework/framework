@@ -431,7 +431,7 @@ _createCoarseCells3D()
 
   const Int64 global_nb_cell_x = cdm_x.globalNbCell();
   const Int64 global_nb_cell_y = cdm_y.globalNbCell();
-  const Int64 global_nb_cell_z = cdm_y.globalNbCell();
+  const Int64 global_nb_cell_z = cdm_z.globalNbCell();
   CartesianGridDimension refined_grid_dim(global_nb_cell_x, global_nb_cell_y, global_nb_cell_z);
   CartesianGridDimension coarse_grid_dim(global_nb_cell_x / 2, global_nb_cell_y / 2, global_nb_cell_z / 2);
   CartesianGridDimension::CellUniqueIdComputer3D refined_cell_uid_computer(refined_grid_dim.getCellComputer3D(0));
