@@ -37,7 +37,7 @@ namespace Arcane.Axl
         ListOfServices = "Liste des services";
         ListOfInterfaces = "Liste des interfaces";
         DetailedListOfOptions = "Liste détaillée des options";
-        ModuleAndServices = "Liste des modules et services du jeu de données";
+        ModuleAndServices = "Listes des modules et des services";
         KeywordsIndex = "Index des mots clés";
         ServiceInterfaces = "Interface des services";
         Implementations = "Implémentation(s)";

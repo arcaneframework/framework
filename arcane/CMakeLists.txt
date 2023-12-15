@@ -1070,7 +1070,11 @@ endif()
 
 # ----------------------------------------------------------------------------
 
+set(IS_FOR User)
 configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos.sh @ONLY)
+set(IS_FOR Dev)
+configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos_dev.sh @ONLY)
+
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 
 # ----------------------------------------------------------------------------
@@ -1083,7 +1087,9 @@ if(DOXYGEN)
     # Cible pour générer la documentation des axl
     # TODO: pouvoir changer le shell
     add_custom_target(generate_axl_doc COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos.sh)
+    add_custom_target(generate_axl_doc_dev COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos_dev.sh)
     add_dependencies(userdoc generate_axl_doc)
+    add_dependencies(devdoc generate_axl_doc_dev)
   endif()
 endif()
 
