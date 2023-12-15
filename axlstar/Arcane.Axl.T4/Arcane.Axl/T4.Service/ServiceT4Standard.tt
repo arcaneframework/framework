@@ -85,7 +85,7 @@ public:
   // NOTE GG: attention code dupliqué avec 'ServiceT4CaseAndStrong'. Bien reporter les modifications
   template <typename ServiceClassType> static void fillServiceInfo(Arcane::ServiceInfo* si)
   {
-    si->setCaseOptionsFileName("<#= Xml.ClassName #>_<#= Path.Replace("/","_") #>");
+    si->setCaseOptionsFileName("<#= Xml.ClassName #><# if(!String.IsNullOrEmpty(Path)) { #>_<#= Path.Replace("/","_") #><# } #>");
     si->setAxlVersion(<#= Xml.Version #>);
     si->setDefaultTagName("<#= Xml.ClassName.ToLowerWithDash () #>");
     si->setAxlContent(getAxlContent());
