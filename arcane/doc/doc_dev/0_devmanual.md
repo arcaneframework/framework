@@ -33,3 +33,6 @@ Les pages/chapitres disponibles sont:
 
 - \subpage arcanedoc_mesh_reader <br>
   Présente comment écrire un lecteur de maillage pour %Arcane.
+
+- \subpage arcanedoc_services_modules <br>
+  Présente les services et les modules mis à disposition des développeurs
