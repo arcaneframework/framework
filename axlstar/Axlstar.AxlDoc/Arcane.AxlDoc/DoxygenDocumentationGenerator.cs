@@ -227,53 +227,71 @@ namespace Arcane.AxlDoc
       bool want_path = String.IsNullOrEmpty (m_config.user_class);
 
       using (TextWriter tw = new StreamWriter (full_name, false, Utils.WriteEncoding)) {
-        tw.WriteLine ("# {0} {{#axldoc_casemainpage}}\n", m_code_info.Translation.ModuleAndServices);
-        tw.WriteLine ("## {0}\n", m_code_info.Translation.ListOfModules);
-        tw.WriteLine ("<table>");
-        tw.Write ("<tr><th>Balise XML</th><th>Nom</th>");
-        if (want_path)
-          tw.Write ("<th>Chemin</th>");
-        tw.WriteLine ("<th>Description</th></tr>");
-        foreach (ModuleInfo module in modules) {
-          tw.Write ("<tr><td>{1}</td><td>\\subpage axldoc_module_{0} \"{2}\"</td>", module.FileBaseName,
-            module.GetTranslatedName (out_lang), module.Name);
-          if (want_path) {
-            string module_path = _GetServiceOrModulePath (module);
-            tw.Write ("<td>{0}</td>", module_path);
-          }
-          tw.Write ("<td>{0}</td>", _GetBriefDescription (module));
-          tw.Write ("</tr>\n");
-          if (m_dico_writer != null) {
-            m_dico_writer.Write ("pagename=axldoc_module_" + module.FileBaseName + " frname=" + module.GetTranslatedName (out_lang) + "\n");
-          }
+
+        if(modules.Count != 0 && services.Count != 0){
+          tw.WriteLine ("# {0} {{#axldoc_casemainpage}}\n", m_code_info.Translation.ModuleAndServices);
         }
-        tw.WriteLine ("</table>");
-        tw.WriteLine ("\n## {0}\n", m_code_info.Translation.ListOfServices);
-        tw.WriteLine ("<table>");
-        tw.WriteLine ("<tr><th>Nom</th><th>Interface</th>");
-        if (want_path)
-          tw.Write ("<th>Chemin</th>");
-        tw.Write ("<th>Description</th>");
-        tw.WriteLine ("</tr>");
-        foreach (ServiceInfo service in services) {
-          tw.Write ("<tr><td>\\subpage axldoc_service_{0} \"{1}\"</td>", service.FileBaseName,
-            service.GetTranslatedName (out_lang));
-          tw.Write ("<td>");
-          foreach (ServiceInfo.Interface ii in service.Interfaces) {
-            tw.WriteLine ("%{0} ", ii.Name);
-          }
-          tw.Write ("</td>");
-          if (want_path) {
-            string service_path = _GetServiceOrModulePath (service);
-            tw.Write ("<td>&space;{0}</td>", service_path);
-          }
-          tw.Write ("<td>{0}</td>", _GetBriefDescription (service));
-          tw.WriteLine ("</td></tr>");
-          if (m_dico_writer != null) {
-            m_dico_writer.Write ("pagename=axldoc_service_" + service.FileBaseName + " frname=" + service.GetTranslatedName (out_lang) + "\n");
-          }
+        else if(modules.Count != 0){
+          tw.WriteLine ("# {0} {{#axldoc_casemainpage}}\n", m_code_info.Translation.ListOfModules);
         }
-        tw.WriteLine ("</table>");
+        else if(services.Count != 0){
+          tw.WriteLine ("# {0} {{#axldoc_casemainpage}}\n", m_code_info.Translation.ListOfServices);
+        }
+        else{
+          tw.WriteLine ("# {0} {{#axldoc_casemainpage}}\n", m_code_info.Translation.ModuleAndServices);
+        }
+
+        if(modules.Count != 0){
+          tw.WriteLine ("## {0}\n", m_code_info.Translation.ListOfModules);
+          tw.WriteLine ("<table>");
+          tw.Write ("<tr><th>Balise XML</th><th>Nom</th>");
+          if (want_path)
+            tw.Write ("<th>Chemin</th>");
+          tw.WriteLine ("<th>Description</th></tr>");
+          foreach (ModuleInfo module in modules) {
+            tw.Write ("<tr><td>{1}</td><td>\\subpage axldoc_module_{0} \"{2}\"</td>", module.FileBaseName,
+              module.GetTranslatedName (out_lang), module.Name);
+            if (want_path) {
+              string module_path = _GetServiceOrModulePath (module);
+              tw.Write ("<td>{0}</td>", module_path);
+            }
+            tw.Write ("<td>{0}</td>", _GetBriefDescription (module));
+            tw.Write ("</tr>\n");
+            if (m_dico_writer != null) {
+              m_dico_writer.Write ("pagename=axldoc_module_" + module.FileBaseName + " frname=" + module.GetTranslatedName (out_lang) + "\n");
+            }
+          }
+          tw.WriteLine ("</table>");
+        }
+
+        if(services.Count != 0){
+          tw.WriteLine ("\n## {0}\n", m_code_info.Translation.ListOfServices);
+          tw.WriteLine ("<table>");
+          tw.WriteLine ("<tr><th>Nom</th><th>Interface</th>");
+          if (want_path)
+            tw.Write ("<th>Chemin</th>");
+          tw.Write ("<th>Description</th>");
+          tw.WriteLine ("</tr>");
+          foreach (ServiceInfo service in services) {
+            tw.Write ("<tr><td>\\subpage axldoc_service_{0} \"{1}\"</td>", service.FileBaseName,
+              service.GetTranslatedName (out_lang));
+            tw.Write ("<td>");
+            foreach (ServiceInfo.Interface ii in service.Interfaces) {
+              tw.WriteLine ("%{0} ", ii.Name);
+            }
+            tw.Write ("</td>");
+            if (want_path) {
+              string service_path = _GetServiceOrModulePath (service);
+              tw.Write ("<td>&space;{0}</td>", service_path);
+            }
+            tw.Write ("<td>{0}</td>", _GetBriefDescription (service));
+            tw.WriteLine ("</td></tr>");
+            if (m_dico_writer != null) {
+              m_dico_writer.Write ("pagename=axldoc_service_" + service.FileBaseName + " frname=" + service.GetTranslatedName (out_lang) + "\n");
+            }
+          }
+          tw.WriteLine ("</table>");
+        }
       }
     }
 
@@ -311,8 +329,14 @@ namespace Arcane.AxlDoc
             tw.WriteLine("<td>");
             foreach (var service in intface.Value.Values) {
               string service_path = _GetServiceOrModulePath (service);
-              tw.WriteLine ("- \\ref axldoc_service_{0} \"{1}\" ({2})",
-                            service.FileBaseName, service.GetTranslatedName (out_lang), service_path);
+              if(String.IsNullOrEmpty(service_path)){
+                tw.WriteLine ("- \\ref axldoc_service_{0} \"{1}\"",
+                              service.FileBaseName, service.GetTranslatedName (out_lang));
+              }
+              else{
+                tw.WriteLine ("- \\ref axldoc_service_{0} \"{1}\" ({2})",
+                              service.FileBaseName, service.GetTranslatedName (out_lang), service_path);
+              }
             }
             tw.WriteLine("</td></tr>");
           }
