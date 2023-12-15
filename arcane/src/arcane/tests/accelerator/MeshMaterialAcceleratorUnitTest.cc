@@ -196,7 +196,7 @@ initializeTest()
   }
   {
     Materials::MeshEnvironmentBuildInfo env_build("ENV3");
-    env_build.addMaterial("MAT4");
+    env_build.addMaterial("MAT1");
     m_mm_mng->createEnvironment(env_build);
   }
 
@@ -584,6 +584,40 @@ _executeTest3(Integer nb_z)
 void MeshMaterialAcceleratorUnitTest::
 _executeTest4(Integer nb_z)
 {
+  // Some further functions testing, not really usefull here, but it improves cover
+  AllCellToAllEnvCell *useless(nullptr);
+  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
+  AllCellToAllEnvCell::destroy(useless);
+
+  // Call to forceRecompute to test bruteForceUpdate
+  m_mm_mng->forceRecompute();
+
+  // Remove one cell to test other branch of bruteForceUpdate
+  Int32UniqueArray lid(1);
+  lid[0] = 1;
+  mesh()->modifier()->removeCells(lid);
+  mesh()->modifier()->endUpdate();
+  m_mm_mng->forceRecompute();
+
+  // Force last path of bruteForceUpdate testing
+  Int32UniqueArray env3_indexes;
+  ENUMERATE_CELL(icell,allCells()){
+    env3_indexes.add(icell.itemLocalId());
+  }
+  Materials::MeshMaterialModifier modifier(m_mm_mng);
+  IMeshEnvironment* env3 = m_mm_mng->environments()[2];
+  modifier.addCells(env3->materials()[0],env3_indexes);
+  m_mm_mng->forceRecompute();
+  ENUMERATE_ENVCELL(i,env3){
+    Real z = (Real)i.index();
+    m_mat_a_ref[i] = z*3.6;
+    m_mat_b_ref[i] = z*1.8;
+    m_mat_c_ref[i] = z*1.1;
+    m_mat_a[i] = m_mat_a_ref[i];
+    m_mat_b[i] = m_mat_b_ref[i];
+    m_mat_c[i] = m_mat_c_ref[i];
+  }
+
   MaterialVariableCellReal& a_ref(m_mat_a_ref);
   MaterialVariableCellReal& b_ref(m_mat_b_ref);
   MaterialVariableCellReal& c_ref(m_mat_c_ref);
@@ -648,30 +682,6 @@ _executeTest4(Integer nb_z)
   }
 
   _checkValues();
-
-  // Some further functions testing, not really usefull here, but it improves cover
-  AllCellToAllEnvCell *useless(nullptr);
-  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
-  AllCellToAllEnvCell::destroy(useless);
-
-  // Call to forceRecompute to test bruteForceUpdate
-  m_mm_mng->forceRecompute();
-
-  // Remove one cell to test other branch of bruteForceUpdate
-  Int32UniqueArray lid(1);
-  lid[0] = 1;
-  mesh()->modifier()->removeCells(lid);
-  mesh()->modifier()->endUpdate();
-  m_mm_mng->forceRecompute();
-
-  // Force last path of bruteForceUpdate testing
-  Int32UniqueArray env1_indexes;
-  ENUMERATE_CELL(icell,allCells()){
-    env1_indexes.add(icell.itemLocalId());
-  }
-  Materials::MeshMaterialModifier modifier(m_mm_mng);
-  modifier.addCells(m_mm_mng->environments()[2]->materials()[0],env1_indexes);
-  m_mm_mng->forceRecompute();
 }
 
 /*---------------------------------------------------------------------------*/
