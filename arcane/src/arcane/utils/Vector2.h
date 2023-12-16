@@ -36,6 +36,11 @@ class Vector2
 {
  public:
 
+  using ThatClass = Vector2<T>;
+  using value_type = T;
+
+ public:
+
   T x = {};
   T y = {};
 
@@ -107,6 +112,88 @@ class Vector2
   operator!=(const Vector2<T>& v1, const Vector2<T>& v2)
   {
     return !(v1 == v2);
+  }
+
+ public:
+
+   //! Ajoute \a b à l'instance
+  constexpr ARCCORE_HOST_DEVICE void operator+=(const T& b)
+  {
+    x += b;
+    y += b;
+  }
+  //! Ajoute \a b à l'instance
+  constexpr ARCCORE_HOST_DEVICE void operator+=(const ThatClass& b)
+  {
+    x += b.x;
+    y += b.y;
+  }
+  //! Soustrait \a b à l'instance
+  constexpr ARCCORE_HOST_DEVICE void operator-=(const T& b)
+  {
+    x -= b;
+    y -= b;
+  }
+  //! Soustrait \a b à l'instance
+  constexpr ARCCORE_HOST_DEVICE void operator-=(const ThatClass& b)
+  {
+    x -= b.x;
+    y -= b.y;
+  }
+  //! Multiple chaque composante de l'instance par \a b
+  constexpr ARCCORE_HOST_DEVICE void operator*=(const T& b)
+  {
+    x *= b;
+    y *= b;
+  }
+  //! Divise chaque composante de l'instance par \a b
+  constexpr ARCCORE_HOST_DEVICE void operator/=(const T& b)
+  {
+    x /= b;
+    y /= b;
+  }
+  //! Somme composante par composante de \a a et \a b
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, const ThatClass& b)
+  {
+    return ThatClass(a.x + b.x, a.y + b.y);
+  }
+  //! Retourne \a a en ajoutant \a b à chaque composante
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, const T& b)
+  {
+    return ThatClass(a.x + b, a.y + b);
+  }
+  //! Retourne \a b en ajoutant \a a à chaque composante
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const T& a, const ThatClass& b)
+  {
+    return ThatClass(a + b.x, a + b.y);
+  }
+  //! Soustrait chaque composante de \a a par chaque composante de \a b
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, const ThatClass& b)
+  {
+    return ThatClass(a.x - b.x, a.y - b.y);
+  }
+  //! Soustrait chaque composante de \a a par \a b
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, const T& b)
+  {
+    return ThatClass(a.x - b, a.y - b);
+  }
+  //! Retourne l'opposé de l'instance
+  constexpr ARCCORE_HOST_DEVICE ThatClass operator-() const { return ThatClass(-x, -y); }
+
+  //! Multiplie chaque composante de \a b par \a a
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const T& a, const ThatClass& b)
+  {
+    return ThatClass(b.x * a, b.y * a);
+  }
+  //! Multiplie chaque composante de \a a par \a b
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const ThatClass& a, const T& b)
+  {
+    return ThatClass(a.x * b, a.y * b);
+  }
+  //! Divise chaque composante de \a a par \a b
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator/(const ThatClass& a, const T& b)
+  {
+    return ThatClass(a.x / b, a.y / b);
   }
 
  private:
