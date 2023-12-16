@@ -54,6 +54,32 @@ TEST(TestVector2, Misc)
     ASSERT_EQ(v4.x, 1);
     ASSERT_EQ(v4.y, 2);
   }
+  {
+    Int64x2 v1(1, -2);
+    Int64x2 v2(3, 5);
+    Int64x2 sum_v1_v2(4, 3);
+    Int64x2 mul_v1_4(4, -8);
+    ASSERT_EQ((v1 + 7), Int64x2(8, 5));
+    ASSERT_EQ((7 + v1), Int64x2(8, 5));
+    ASSERT_EQ((v1 - 9), Int64x2(-8, -11));
+    ASSERT_EQ((v1 + v2), sum_v1_v2);
+    Int64x2 v3 = v1;
+    v3 += v2;
+    ASSERT_EQ(v3, sum_v1_v2);
+    v3 -= v2;
+    ASSERT_EQ(v3, v1);
+    v3 -= -5;
+    ASSERT_EQ(v3, (v1 + 5));
+    Int64x2 v4 = (v1 * 4);
+    ASSERT_EQ(v4, mul_v1_4);
+    ASSERT_EQ((4 * v1), mul_v1_4);
+    ASSERT_EQ((v4 / 4), v1);
+    Int64x2 v5 = v4;
+    v5 /= 4;
+    ASSERT_EQ(v5, v1);
+    Int64x2 v6 = -v1;
+    ASSERT_EQ(v6, Int64x2(-1, 2));
+  }
 }
 
 /*---------------------------------------------------------------------------*/
