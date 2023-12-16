@@ -867,6 +867,15 @@ addCells(Integer nb_cell,
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
+addCells(const MeshModifierAddCellsArgs& args)
+{
+  addCells(args.nbCell(),args.cellInfos(),args.cellLocalIds());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
 addCells(ISerializer* buffer)
 {
   _addCells(buffer,0);
@@ -1080,6 +1089,15 @@ addFaces(Integer nb_face,Int64ConstArrayView face_infos,Int32ArrayView faces)
     m_mesh_builder->addFaces3(nb_face,face_infos,rank,faces);
   else
     m_mesh_builder->addFaces(nb_face,face_infos,rank,faces);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addFaces(const MeshModifierAddFacesArgs& args)
+{
+  addFaces(args.nbFace(),args.faceInfos(),args.faceLocalIds());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -242,9 +242,11 @@ class ARCANE_MESH_EXPORT DynamicMesh
   void endAllocate() override;
 
   void addCells(Integer nb_cell,Int64ConstArrayView cell_infos,Int32ArrayView cells) override;
+  void addCells(const MeshModifierAddCellsArgs& args) override;
   void addCells(ISerializer* buffer) override;
   void addCells(ISerializer* buffer,Int32Array& cells_local_id) override;
   void addFaces(Integer nb_face,Int64ConstArrayView face_infos,Int32ArrayView faces) override;
+  void addFaces(const MeshModifierAddFacesArgs& args) override;
   void addEdges(Integer nb_edge,Int64ConstArrayView edge_infos,Int32ArrayView edges) override;
   void addNodes(Int64ConstArrayView nodes_uid,Int32ArrayView nodes) override;
   ARCANE_DEPRECATED ItemInternal *addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type);
