@@ -212,8 +212,8 @@ jobs:
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }}
 
-      - name: Test arcane Win32 x64
-        if: matrix.triplet == 'x64-windows'
+      - name: Test Aleph kappa
+#        if: matrix.triplet == 'x64-windows'
         shell: bash
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -R kappa
