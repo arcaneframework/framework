@@ -401,7 +401,9 @@ namespace Arcane
       // TODO: en ajouter d'autres
       if (aname.Name=="mscorlib")
         return;
-      if (aname.Name.StartsWith("System"))
+      if (aname.Name.StartsWith("System."))
+        return;
+      if (aname.Name.StartsWith("Mono."))
         return;
 
       Debug.Write("Reading assembly name={0}",a);
