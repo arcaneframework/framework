@@ -103,7 +103,7 @@ class ReferenceCounterImpl
     return m_external_deleter;
   }
 
- public:
+ private:
 
   std::atomic<Int32> m_nb_ref = 0;
 
