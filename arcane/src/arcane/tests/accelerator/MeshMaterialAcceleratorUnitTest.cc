@@ -669,9 +669,12 @@ _executeTest4(Integer nb_z)
   ENUMERATE_CELL(icell,allCells()){
     env3_indexes.add(icell.itemLocalId());
   }
-  Materials::MeshMaterialModifier modifier(m_mm_mng);
+
   IMeshEnvironment* env3 = m_mm_mng->environments()[2];
-  modifier.addCells(env3->materials()[0],env3_indexes);
+  {
+    Materials::MeshMaterialModifier modifier(m_mm_mng);
+    modifier.addCells(env3->materials()[0],env3_indexes);
+  }
   m_mm_mng->forceRecompute();
   ENUMERATE_ENVCELL(i,env3){
     Real z = (Real)i.index();
