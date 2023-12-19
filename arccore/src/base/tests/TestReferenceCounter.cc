@@ -134,18 +134,35 @@ namespace Test1
 class ITestClassWithDeleter
 {
  public:
+
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
-  virtual ~ITestClassWithDeleter()=default;
+  virtual ~ITestClassWithDeleter() = default;
+
+ public:
+
+  virtual bool func1() = 0;
+  virtual void func2() = 0;
 };
+
 class TestClassWithDeleter
 : public ReferenceCounterImpl
 , public ITestClassWithDeleter
 {
  public:
-  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
-};
 
-}
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
+ public:
+
+  bool func1() override { return true; }
+  void func2() override {}
+
+ public:
+
+  Int32 m_padding4 = 0;
+  Int64 m_padding3 = 0;
+};
+} // namespace Test1
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
