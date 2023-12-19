@@ -64,6 +64,8 @@ removeReference(T* t)
  *
  * La méthode removeReference() détruit l'instance lorsque ce compteur
  * de référence atteint 0.
+ *
+ * Cette classe est interne à Arcane.
  */
 class ReferenceCounterImpl
 {
@@ -75,19 +77,41 @@ class ReferenceCounterImpl
 
  public:
 
+  // TODO: Rendre obsolète
   void addReference()
   {
     ++m_nb_ref;
   }
 
+  // TODO: Rendre obsolète
   void removeReference()
   {
     // Décrémente et retourne la valeur d'avant.
     // Si elle vaut 1, cela signifie qu'on n'a plus de références
     // sur l'objet et qu'il faut le détruire.
     Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+    if (v == 1){
+      if (_destroyThisReference())
+        delete this;
+    }
+  }
+
+ public:
+
+  void _internalAddReference()
+  {
+    ++m_nb_ref;
+  }
+
+  bool _internalRemoveReference()
+  {
+    // Décrémente et retourne la valeur d'avant.
+    // Si elle vaut 1, cela signifie qu'on n'a plus de références
+    // sur l'objet et qu'il faut éventuellement le détruire.
+    Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
     if (v == 1)
-      _destroyThisReference();
+      return _destroyThisReference();
+    return false;
   }
 
  private:
@@ -106,28 +130,25 @@ class ReferenceCounterImpl
  private:
 
   std::atomic<Int32> m_nb_ref = 0;
-
- private:
-
   RefBase::DeleterBase* m_external_deleter = nullptr;
 
  private:
 
-  void _destroyThisReference()
+  //! Retourne \a true si l'instance doit être détruite par l'appel à operator delete()
+  bool _destroyThisReference()
   {
-    if (m_external_deleter) {
-      if (!m_external_deleter->m_no_destroy) {
-        bool is_destroyed = m_external_deleter->_destroyHandle(this, m_external_deleter->m_handle);
-        if (!is_destroyed) {
-          delete this;
-        }
+    if (!m_external_deleter)
+      return true;
+    bool do_delete = false;
+    if (!m_external_deleter->m_no_destroy) {
+      bool is_destroyed = m_external_deleter->_destroyHandle(this, m_external_deleter->m_handle);
+      if (!is_destroyed) {
+        do_delete = true;
       }
-      delete m_external_deleter;
-      m_external_deleter = nullptr;
     }
-    else {
-      delete this;
-    }
+    delete m_external_deleter;
+    m_external_deleter = nullptr;
+    return do_delete;
   }
 };
 
@@ -162,11 +183,12 @@ class ReferenceCounterImpl
   } \
   void addReference() override \
   { \
-    Arccore::ReferenceCounterImpl::addReference(); \
+    Arccore::ReferenceCounterImpl::_internalAddReference(); \
   } \
   void removeReference() override \
   { \
-    Arccore::ReferenceCounterImpl::removeReference(); \
+    if (Arccore::ReferenceCounterImpl::_internalRemoveReference()) \
+      delete this;                      \
   }
 
 /*---------------------------------------------------------------------------*/
