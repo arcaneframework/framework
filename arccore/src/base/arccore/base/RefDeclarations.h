@@ -105,6 +105,37 @@ struct RefTraitsTagId;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace impl
+{
+//! Classe template pour vérifier si T a la méthode _internalRemoveReference()
+template <typename T, typename = int>
+struct HasInternalRemoveReference
+: std::false_type
+{
+};
+template <typename T>
+struct HasInternalRemoveReference<T, decltype(&T::_internalRemoveReference, 0)>
+: std::true_type
+{
+};
+
+//! Classe template pour vérifier si T a la méthode _internalAddReference()
+template <typename T, typename = int>
+struct HasInternalAddReference
+: std::false_type
+{
+};
+template <typename T>
+struct HasInternalAddReference<T, decltype(&T::_internalAddReference, 0)>
+: std::true_type
+{
+};
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Accesseur des méthodes de gestion de compteurs de référence.
  *
@@ -116,8 +147,23 @@ template<class T>
 class ReferenceCounterAccessor
 {
  public:
-  static void addReference(T* t) { t->addReference(); }
-  static void removeReference(T* t) { t->removeReference(); }
+  static void addReference(T* t)
+  {
+    if constexpr(impl::HasInternalAddReference<T>::value)
+      t->_internalAddReference();
+    else
+      t->addReference();
+  }
+  static void removeReference(T* t)
+  {
+    if constexpr(impl::HasInternalRemoveReference<T>::value){
+      bool need_destroy = t->_internalRemoveReference();
+      if (need_destroy)
+        delete t;
+    }
+    else
+      t->removeReference();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -157,11 +203,15 @@ class ExternalReferenceCounterAccessor
  * \endcode
  */
 #define ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS() \
- public:                                                        \
+ private:\
+  template<typename T> friend class Arccore::ExternalReferenceCounterAccessor; \
+  template<typename T> friend class Arccore::ReferenceCounterAccessor;\
+ public:                                                          \
   using ReferenceCounterTagType = Arccore::ReferenceCounterTag ;  \
   virtual ::Arccore::ReferenceCounterImpl* _internalReferenceCounter() =0; \
-  virtual void addReference() =0;\
-  virtual void removeReference() =0
+  virtual void _internalAddReference() =0;\
+  [[nodiscard]] virtual bool _internalRemoveReference() =0
+  // NOTE: les classes 'friend' sont nécessaires pour l'accès au destructeur.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

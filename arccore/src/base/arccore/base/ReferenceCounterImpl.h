@@ -41,7 +41,10 @@ template <class T> ARCCORE_EXPORT void
 ExternalReferenceCounterAccessor<T>::
 addReference(T* t)
 {
-  t->addReference();
+  if constexpr(impl::HasInternalAddReference<T>::value)
+    t->_internalAddReference();
+  else
+    t->addReference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -51,7 +54,13 @@ template <class T> ARCCORE_EXPORT void
 ExternalReferenceCounterAccessor<T>::
 removeReference(T* t)
 {
-  t->removeReference();
+  if constexpr(impl::HasInternalRemoveReference<T>::value){
+    bool need_destroy = t->_internalRemoveReference();
+    if (need_destroy)
+      delete t;
+  }
+  else
+    t->removeReference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -67,7 +76,7 @@ removeReference(T* t)
  *
  * Cette classe est interne à Arcane.
  */
-class ReferenceCounterImpl
+class ARCCORE_BASE_EXPORT ReferenceCounterImpl
 {
   template <typename InstanceType> friend class impl::ReferenceCounterWrapper;
 
@@ -102,7 +111,6 @@ class ReferenceCounterImpl
   {
     ++m_nb_ref;
   }
-
   bool _internalRemoveReference()
   {
     // Décrémente et retourne la valeur d'avant.
@@ -181,14 +189,13 @@ class ReferenceCounterImpl
   { \
     return this; \
   } \
-  void addReference() override \
+  void _internalAddReference() override \
   { \
     Arccore::ReferenceCounterImpl::_internalAddReference(); \
   } \
-  void removeReference() override \
+  bool _internalRemoveReference() override \
   { \
-    if (Arccore::ReferenceCounterImpl::_internalRemoveReference()) \
-      delete this;                      \
+    return Arccore::ReferenceCounterImpl::_internalRemoveReference(); \
   }
 
 /*---------------------------------------------------------------------------*/
