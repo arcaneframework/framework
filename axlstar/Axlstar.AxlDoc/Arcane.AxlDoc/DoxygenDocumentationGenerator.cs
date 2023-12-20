@@ -199,27 +199,49 @@ namespace Arcane.AxlDoc
       // rencontré. De plus, si la chaîne dépasse 120 caractères, elle est tronquée aussi.
       // Cela permet d'éviter d'avoir une description brève trop longue.
       XmlElement desc_elem = info.DescriptionElement;
-      Console.WriteLine ("GET BRIEF DESCRIPTION name={0}", info.Name);
       if (desc_elem == null)
         return null;
 
+      // Partie permettant de forcer la fermeture des balises avant de couper
+      // la description.
       bool force_close_cmds = false;
-
-      if (desc_elem.HasAttribute("doc-force-close-cmds")){
-        string str = desc_elem.GetAttribute("doc-force-close-cmds");
+      if (desc_elem.HasAttribute("doc-brief-force-close-cmds")){
+        string str = desc_elem.GetAttribute("doc-brief-force-close-cmds");
         force_close_cmds = Convert.ToBoolean(str);
       }
 
-      Console.WriteLine ("force_close_cmds value={0}", force_close_cmds);
+      // Partie permettant de définir une limite au nombre de caractères
+      // pour la description (plus quelques caractères, on ne découpe pas
+      // un mot au milieu).
+      // -1 signifie pas de limites.
+      int max_nb_char = 120;
+      if (desc_elem.HasAttribute("doc-brief-max-nb-of-char")){
+        string str = desc_elem.GetAttribute("doc-brief-max-nb-of-char");
+        max_nb_char = Convert.ToInt32(str);
+        if(max_nb_char == -1){
+          max_nb_char = desc_elem.InnerText.Length;
+        }
+      }
 
-      string v = desc_elem.InnerText;
-      int v_len = v.Length;
-      int pos = v.IndexOf (".");
-      string v2 = v;
-      if (pos >= 0)
-        v2 = v.Substring (0, pos);
+      // Partie permettant de finir la description au premier point trouvé.
+      bool stop_at_dot = true;
+      if (desc_elem.HasAttribute("doc-brief-stop-at-dot")){
+        string str = desc_elem.GetAttribute("doc-brief-stop-at-dot");
+        stop_at_dot = Convert.ToBoolean(str);
+      }
 
-      int nb_char_max = 120;
+      Console.WriteLine ("GET BRIEF DESCRIPTION name={0} -- force_close_cmds={1} -- max_nb_char={2} -- stop_at_dot={3}", 
+        info.Name, force_close_cmds, max_nb_char, stop_at_dot
+      );
+
+      string input_text = desc_elem.InnerText;
+      if(stop_at_dot){
+        int pos = input_text.IndexOf(".");
+        if (pos >= 0){
+          input_text = input_text.Substring(0, pos+1);
+        }
+      }
+
       int nb_char = 0;
 
       // Le dico qui contient les balises qui peuvent apparaitre
@@ -244,7 +266,7 @@ namespace Arcane.AxlDoc
 
       string output_text = "";
 
-      string[] lines = v2.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
+      string[] lines = input_text.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
       foreach (string line in lines)
       {
         // Divise la ligne en mots.
@@ -291,14 +313,14 @@ namespace Arcane.AxlDoc
 
           // Si on a atteint la limite de caractère, on break.
           // Si force_close_attributes == True, alors il faut que la stack soit vide pour finir.
-          if(nb_char >= nb_char_max && (!force_close_cmds || stack_balises.Count == 0)){
+          if(nb_char >= max_nb_char && (!force_close_cmds || stack_balises.Count == 0)){
             break;
           }
         }
 
         // Si on a atteint la limite de caractère, on break.
         // Si force_close_attributes == True, alors il faut que la stack soit vide pour finir.
-        if(nb_char >= nb_char_max && (!force_close_cmds || stack_balises.Count == 0)){
+        if(nb_char >= max_nb_char && (!force_close_cmds || stack_balises.Count == 0)){
           break;
         }
         output_text += Environment.NewLine;
