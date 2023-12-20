@@ -28,6 +28,7 @@
 #include "arcane/core/Assertion.h"
 #include "arcane/core/IBase.h"
 #include "arcane/core/IBackwardMng.h"
+#include "arcane/core/ICaseFunction.h"
 #include "arcane/core/ICaseMng.h"
 #include "arcane/core/ICaseMeshReader.h"
 #include "arcane/core/ICaseMeshService.h"
