@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICaseFunction.h                                             (C) 2000-2022 */
+/* ICaseFunction.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'une fonction du jeu de données.                               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ICASEFUNCTION_H
-#define ARCANE_ICASEFUNCTION_H
+#ifndef ARCANE_CORE_ICASEFUNCTION_H
+#define ARCANE_CORE_ICASEFUNCTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,9 +42,10 @@ namespace Arcane
  * elles ne doivent pas être appelées une fois que le jeu de données complet
  * a été lu (ICaseMng::readCaseOptions).
  */
-class ICaseFunction
+class ARCANE_CORE_EXPORT ICaseFunction
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
 
   /*!
