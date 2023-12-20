@@ -1,4 +1,4 @@
-name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04 / GCC 11-12 / CLang 13-16 / Full / Debug)'
+name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04 / GCC 11-12 / CLang 16 / Full / Debug)'
 
 on:
   schedule:
@@ -36,6 +36,10 @@ jobs:
           - type_build: 'Debug'
             excluded_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
             excluded_tests_with_labels: 'LARGE_HYBRID'
+
+        exclude:
+          - image_short: 'U20_G11_C13'
+            compilo: 'CLang'
 
 
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_${{matrix.compilo}}_${{matrix.mpi}}_${{matrix.type_build}}'
