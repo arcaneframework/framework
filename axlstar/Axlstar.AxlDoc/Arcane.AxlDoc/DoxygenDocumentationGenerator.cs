@@ -202,17 +202,89 @@ namespace Arcane.AxlDoc
       Console.WriteLine ("GET BRIEF DESCRIPTION name={0}", info.Name);
       if (desc_elem == null)
         return null;
+
       string v = desc_elem.InnerText;
       int v_len = v.Length;
       int pos = v.IndexOf (".");
       string v2 = v;
       if (pos >= 0)
         v2 = v.Substring (0, pos);
-      if (v2.Length > 120) {
-        v2 = v2.Substring (0, 120) + "...";
+
+      int nb_char_max = 120;
+      int nb_char = 0;
+
+      Dictionary<string, string> balises = new Dictionary<string, string>
+      {
+          { "\\verbatim", "\\endverbatim" },
+          { "\\f{", "\\f}" }
+      };
+
+      string[] lines = v2.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
+
+      Stack<string> stack_balises = new Stack<string>();
+      string output_text = "";
+
+      foreach (string line in lines)
+      {
+        // Divise la ligne en mots.
+        string[] words = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (string word in words){
+
+          // Vérifie si le mot est une balise ouvrante.
+          if (balises.ContainsKey(word)){
+            stack_balises.Push(balises[word]);
+            output_text += word + " ";
+          }
+
+          // Vérifie si le mot est une balise fermante.
+          else if (balises.ContainsValue(word)){
+
+            // Dépile et écrit les balises jusqu'à trouver la bonne balise fermante.
+            while (stack_balises.Count > 0 && stack_balises.Peek() != word){
+              output_text += stack_balises.Pop() + " ";
+            }
+
+            // Retire la balise fermante de la pile si elle a été trouvée.
+            if (stack_balises.Count > 0 && stack_balises.Peek() == word){
+              output_text += stack_balises.Pop() + " ";
+            }
+          }
+
+          // Si le mot commence par un backslash et n'est pas une balise connue, on retire le backslash.
+          else if (word.StartsWith("\\")){
+            output_text += word.Substring(1) + " ";
+            nb_char += word.Length - 1;
+          }
+
+          // Si ce n'est pas une balise et ne commence pas par un backslash, on ajoute tel quel le mot.
+          else{
+            output_text += word + " ";
+            nb_char += word.Length;
+          }
+
+          // Si on a atteint la limite de caractère, on break.
+          if(nb_char >= nb_char_max){
+            break;
+          }
+        }
+
+        // Si on a atteint la limite de caractère, on break.
+        if(nb_char >= nb_char_max){
+          break;
+        }
+        output_text += Environment.NewLine;
       }
-      // Supprime les '\' car ils peuvent correspondre à une commande doxygen.
-      return v2.Replace ('\\', ' ');
+
+      // Ajoute les balises restantes de la pile à la fin du texte.
+      while (stack_balises.Count > 0){
+        output_text += stack_balises.Pop() + " ";
+      }
+
+      // Supprime le retour à la ligne final.
+      output_text = output_text.TrimEnd(Environment.NewLine.ToCharArray());
+
+      return output_text;
     }
 
     /*!
