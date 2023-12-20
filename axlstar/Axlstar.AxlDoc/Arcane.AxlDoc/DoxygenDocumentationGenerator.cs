@@ -203,6 +203,15 @@ namespace Arcane.AxlDoc
       if (desc_elem == null)
         return null;
 
+      bool force_close_cmds = false;
+
+      if (desc_elem.HasAttribute("doc-force-close-cmds")){
+        string str = desc_elem.GetAttribute("doc-force-close-cmds");
+        force_close_cmds = Convert.ToBoolean(str);
+      }
+
+      Console.WriteLine ("force_close_cmds value={0}", force_close_cmds);
+
       string v = desc_elem.InnerText;
       int v_len = v.Length;
       int pos = v.IndexOf (".");
@@ -213,17 +222,29 @@ namespace Arcane.AxlDoc
       int nb_char_max = 120;
       int nb_char = 0;
 
+      // Le dico qui contient les balises qui peuvent apparaitre
+      // dans les courtes descriptions.
       Dictionary<string, string> balises = new Dictionary<string, string>
       {
           { "\\verbatim", "\\endverbatim" },
+          { "\\code", "\\endcode" },
+          { "\\ref", "" },
+          { "\\subpage", "" }, // TODO : Verifier qu'on ne découpe pas les 2 mots d'après
+          { "\\f$", "\\f$" },
+          { "\\f(", "\\f)" },
+          { "\\f[", "\\f]" },
           { "\\f{", "\\f}" }
       };
 
-      string[] lines = v2.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
-
+      // La stack qui contiendra les balises fermantes restantes.
+      // Si, à la fin de la lecture, une ou plusieurs balises
+      // ne sont pas refermées, on a plus qu'a copier les balises de la stack
+      // à la fin de la chaine de caractères.
       Stack<string> stack_balises = new Stack<string>();
+
       string output_text = "";
 
+      string[] lines = v2.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
       foreach (string line in lines)
       {
         // Divise la ligne en mots.
@@ -233,7 +254,11 @@ namespace Arcane.AxlDoc
 
           // Vérifie si le mot est une balise ouvrante.
           if (balises.ContainsKey(word)){
-            stack_balises.Push(balises[word]);
+
+            // Pas besoin d'ajouter les balises qui n'ont pas de balises fermantes.
+            if(!string.IsNullOrEmpty(balises[word])){
+              stack_balises.Push(balises[word]);
+            }
             output_text += word + " ";
           }
 
@@ -251,8 +276,9 @@ namespace Arcane.AxlDoc
             }
           }
 
-          // Si le mot commence par un backslash et n'est pas une balise connue, on retire le backslash.
-          else if (word.StartsWith("\\")){
+          // Si le mot commence par un backslash, n'est pas une balise connue et si la stack
+          // n'est pas vide, on retire le backslash.
+          else if (word.StartsWith("\\") && stack_balises.Count == 0){
             output_text += word.Substring(1) + " ";
             nb_char += word.Length - 1;
           }
@@ -264,19 +290,21 @@ namespace Arcane.AxlDoc
           }
 
           // Si on a atteint la limite de caractère, on break.
-          if(nb_char >= nb_char_max){
+          // Si force_close_attributes == True, alors il faut que la stack soit vide pour finir.
+          if(nb_char >= nb_char_max && (!force_close_cmds || stack_balises.Count == 0)){
             break;
           }
         }
 
         // Si on a atteint la limite de caractère, on break.
-        if(nb_char >= nb_char_max){
+        // Si force_close_attributes == True, alors il faut que la stack soit vide pour finir.
+        if(nb_char >= nb_char_max && (!force_close_cmds || stack_balises.Count == 0)){
           break;
         }
         output_text += Environment.NewLine;
       }
 
-      // Ajoute les balises restantes de la pile à la fin du texte.
+      // Ajoute les balises restantes de la stack à la fin du texte.
       while (stack_balises.Count > 0){
         output_text += stack_balises.Pop() + " ";
       }
