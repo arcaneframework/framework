@@ -139,9 +139,13 @@ renumber()
 
   NewUniqueIdList new_uids(mesh);
 
+  // Indique si on utilise le patch par défaut.
+  bool use_default_patch = false;
   CartesianPatch patch0 = m_parent_patch;
-  if (patch0.isNull())
+  if (patch0.isNull()){
     patch0 = m_cartesian_mesh->patch(0);
+    use_default_patch = true;
+  }
 
   // TODO: Afficher le numéro du patch.
 
@@ -176,7 +180,7 @@ renumber()
 
   // Calcule le nombre de mailles du patch servant de référence.
   // Suppose qu'on raffine d'un facteur 2 à chaque fois
-  info() << "PatchLevel=" << patch_level;
+  info() << "PatchLevel=" << patch_level << " use_default_path=" << use_default_patch;
   Int32 multiplier = 1;
   for (Int32 z = 0; z < patch_level; ++z)
     multiplier *= 2;
@@ -189,6 +193,8 @@ renumber()
   Int64 max_item_uid = pm->reduce(Parallel::ReduceMax, new_uids.maxUniqueId());
   info() << "MaxItem uniqueId=" << max_item_uid;
   Int64 base_adder = 1 + max_item_uid;
+  if (use_default_patch)
+    base_adder = 0;
 
   // On suppose que la patch servant de référence a une numérotation cartésienne d'origine
   // ce qui veut dire qu'on peut déterminer les coordonnées topologiques de la maille
@@ -203,6 +209,9 @@ renumber()
       if (m_is_verbose)
         info() << "Renumbering: PARENT: cell_uid=" << uid << " I=" << coord_i
                << " J=" << coord_j << " nb_cell_x=" << nb_cell_x;
+      if (use_default_patch)
+        // Indique qu'on est de niveau 1 pour avoir la même numérotation qu'avec la version 3.9
+        level = 1;
       _applyChildrenCell2D(cell, new_uids, coord_i, coord_j, nb_cell_x, nb_cell_y, level, base_adder);
     }
   }
