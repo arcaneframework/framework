@@ -63,7 +63,7 @@ endCreate()
 /*---------------------------------------------------------------------------*/
 
 void ComponentItemInternalData::
-resetEnvItemsInternal()
+_resetEnvItemsInternal()
 {
   ComponentItemSharedInfo* all_env_shared_info = allEnvSharedInfo();
   for (ComponentItemInternal& x : m_all_env_items_internal)
@@ -106,6 +106,9 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell)
     Integer total_nb_cell_mat = env->totalNbCellMat();
     _resizeAndResetMatCellForEnvironment(env->id(), total_nb_cell_mat);
   }
+
+  // Initialise à des valeurs invalides pour détecter les erreurs.
+  _resetEnvItemsInternal();
 }
 
 /*---------------------------------------------------------------------------*/

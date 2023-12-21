@@ -74,9 +74,6 @@ class ComponentItemInternalData
     return m_mat_items_internal[env_index];
   }
 
-  //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
-  void resetEnvItemsInternal();
-
   //! Redimensionne les structures allouant les 'ComponentItemInternal'
   void resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell);
 
@@ -112,6 +109,8 @@ class ComponentItemInternalData
   void _initSharedInfos();
   //! Redimensionne le nombre de mailles matériaux du \a env_index- ème milieu.
   void _resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size);
+  //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
+  void _resetEnvItemsInternal();
 };
 
 /*---------------------------------------------------------------------------*/

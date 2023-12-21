@@ -364,9 +364,6 @@ forceRecompute(bool compute_all)
     }
   }
 
-  // Initialise à des valeurs invalides pour détecter les erreurs.
-  m_item_internal_data.resetEnvItemsInternal();
-
   _computeInfosForEnvCells();
 
   if (is_verbose_debug){
