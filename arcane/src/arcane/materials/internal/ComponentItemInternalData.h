@@ -74,23 +74,8 @@ class ComponentItemInternalData
     return m_mat_items_internal[env_index];
   }
 
-  //! Redimensionne le nombre de AllEnvCell
-  void resizeNbAllEnvCell(Int32 size)
-  {
-    m_all_env_items_internal.resize(size);
-  }
-
-  //! Redimensionne le nombre milieu
-  void resizeNbEnvCell(Int32 size)
-  {
-    m_env_items_internal.resize(size);
-  }
-
-  //! Redimensionne le nombre de mailles matériaux du \a env_index- ème milieu.
-  void resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size);
-
-  //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
-  void resetEnvItemsInternal();
+  //! Redimensionne les structures allouant les 'ComponentItemInternal'
+  void resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell);
 
   //! Instance partagée associée au niveau \a level
   ComponentItemSharedInfo* sharedInfo(Int16 level) { return &m_shared_infos[level]; }
@@ -122,6 +107,10 @@ class ComponentItemInternalData
  private:
 
   void _initSharedInfos();
+  //! Redimensionne le nombre de mailles matériaux du \a env_index- ème milieu.
+  void _resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size);
+  //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
+  void _resetEnvItemsInternal();
 };
 
 /*---------------------------------------------------------------------------*/
