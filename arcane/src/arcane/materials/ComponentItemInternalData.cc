@@ -78,7 +78,7 @@ resetEnvItemsInternal()
 /*---------------------------------------------------------------------------*/
 
 void ComponentItemInternalData::
-resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size)
+_resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size)
 {
   m_mat_items_internal[env_index].resize(size);
 
@@ -87,6 +87,24 @@ resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size)
   for (Integer i = 0; i < size; ++i) {
     ComponentItemInternal& ref_ii = mat_items_internal[i];
     ref_ii._reset(mat_shared_info);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentItemInternalData::
+resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell)
+{
+  m_all_env_items_internal.resize(max_local_id);
+  m_env_items_internal.resize(total_env_cell);
+
+  // Redimensionne les 'ComponentItemInternal' pour les matériaux des milieux.
+  // Il faut être certain que le nombre de matériaux par milieu a bien été calculé
+  // (par exemple par un appel à computeNbMatPerCell()).
+  for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
+    Integer total_nb_cell_mat = env->totalNbCellMat();
+    _resizeAndResetMatCellForEnvironment(env->id(), total_nb_cell_mat);
   }
 }
 

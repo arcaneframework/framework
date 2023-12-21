@@ -142,16 +142,7 @@ _computeAndResizeEnvItemsInternal()
   // Redimensionne les tableaux des infos
   // ATTENTION : ils ne doivent plus être redimensionnés par la suite sous peine
   // de tout invalider.
-  m_item_internal_data.resizeNbAllEnvCell(max_local_id);
-  m_item_internal_data.resizeNbEnvCell(total_env_cell);
-
-  // Redimensionne les 'ComponentItemInternal' pour les matériaux des milieux.
-  // Il faut être certain que le nombre de matériaux par milieu a bien été calculé
-  // (par exemple par un appel à computeNbMatPerCell()).
-  for (const MeshEnvironment* env : true_environments) {
-    Integer total_nb_cell_mat = env->totalNbCellMat();
-    m_item_internal_data.resizeAndResetMatCellForEnvironment(env->id(), total_nb_cell_mat);
-  }
+  m_item_internal_data.resizeComponentItemInternals(max_local_id, total_env_cell);
 }
 
 /*---------------------------------------------------------------------------*/
