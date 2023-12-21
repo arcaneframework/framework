@@ -135,15 +135,9 @@ _computeAndResizeEnvItemsInternal()
 
   // Il faut ajouter les infos pour les mailles de type AllEnvCell
   Int32 max_local_id = cell_family->maxLocalId();
-  info(4) << "TOTAL_ENV_CELL=" << total_env_cell
-          << " TOTAL_MAT_CELL=" << total_mat_cell;
-
-  // TODO:
-  // Le m_nb_mat_per_cell ne doit pas se faire sur les variablesIndexer().
-  // Il doit prendre être different suivant les milieux et les matériaux.
-  // - Si un milieu est le seul dans la maille, il prend la valeur globale.
-  // - Si un matériau est le seul dans la maille, il prend la valeur
-  // de la maille milieu correspondante (globale ou partielle suivant le cas)
+  info(4) << "RESIZE TotalEnvCell=" << total_env_cell
+          << " TotalMatCell=" << total_mat_cell
+          << " MaxLocalId=" << max_local_id;
 
   // Redimensionne les tableaux des infos
   // ATTENTION : ils ne doivent plus être redimensionnés par la suite sous peine
@@ -151,8 +145,13 @@ _computeAndResizeEnvItemsInternal()
   m_item_internal_data.resizeNbAllEnvCell(max_local_id);
   m_item_internal_data.resizeNbEnvCell(total_env_cell);
 
-  info(4) << "RESIZE all_env_items_internal size=" << max_local_id
-          << " total_env_cell=" << total_env_cell;
+  // Redimensionne les 'ComponentItemInternal' pour les matériaux des milieux.
+  // Il faut être certain que le nombre de matériaux par milieu a bien été calculé
+  // (par exemple par un appel à computeNbMatPerCell()).
+  for (const MeshEnvironment* env : true_environments) {
+    Integer total_nb_cell_mat = env->totalNbCellMat();
+    m_item_internal_data.resizeAndResetMatCellForEnvironment(env->id(), total_nb_cell_mat);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
