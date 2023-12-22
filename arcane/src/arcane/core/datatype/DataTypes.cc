@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataTypes.cc                                                (C) 2000-2021 */
+/* DataTypes.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Définition des types liés aux données.                                    */
 /*---------------------------------------------------------------------------*/
@@ -20,12 +20,14 @@
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/Real3x3.h"
+#include "arcane/utils/BFloat16.h"
+#include "arcane/utils/Float16.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/datatype/DataTypeTraits.h"
-#include "arcane/datatype/DataTypes.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataTypes.h"
 
 #include <limits>
 
@@ -59,6 +61,9 @@ dataTypeName(eDataType type)
   case DT_Real2x2: return "Real2x2";
   case DT_Real3x3: return "Real3x3";
   case DT_Byte: return "Byte";
+  case DT_BFloat16: return "BFloat16";
+  case DT_Float16: return "Float16";
+  case DT_Float32: return "Float32";
   case DT_Unknown: return "Unknown";
   }
   return "(Invalid)";
@@ -112,6 +117,15 @@ dataTypeFromName(const char* name,bool& has_error)
   else if (buf=="Byte"){
     return DT_Byte;
   }
+  else if (buf=="BFloat16"){
+    return DT_BFloat16;
+  }
+  else if (buf=="Float16"){
+    return DT_Float16;
+  }
+  else if (buf=="Float32"){
+    return DT_Float32;
+  }
   else if (buf=="Unknown"){
     return DT_Unknown;
   }
@@ -136,6 +150,9 @@ dataTypeSize(eDataType type)
   case DT_Real3: return sizeof(Real3);
   case DT_Real2x2: return sizeof(Real2x2);
   case DT_Real3x3: return sizeof(Real3x3);
+  case DT_BFloat16: return sizeof(BFloat16);
+  case DT_Float16: return sizeof(Float16);
+  case DT_Float32: return sizeof(Float32);
   case DT_String:
     throw ArgumentException("dataTypeSize()","datatype 'DT_String' has no size");
   case DT_Unknown:

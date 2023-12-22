@@ -44,6 +44,9 @@ enum eDataType
   DT_Real3, //!< Donnée de type vecteur 3
   DT_Real2x2, //!< Donnée de type tenseur 3x3
   DT_Real3x3, //!< Donnée de type tenseur 3x3
+  DT_BFloat16, //!< Donnée de type 'BFloat16'
+  DT_Float16, //!< Donnée de type 'Float16'
+  DT_Float32, //!< Donnée de type 'Float32'
   DT_Unknown  //!< Donnée de type inconnu ou non initilialisé
 };
 
