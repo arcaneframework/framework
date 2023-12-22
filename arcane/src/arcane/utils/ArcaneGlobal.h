@@ -237,7 +237,7 @@ using Arccore::Integer;
  * Les valeurs que peut prendre ce type indique combien d'entités
  * pourront être présentes sur un sous-domaine.
  */
-typedef Int32 LocalIdType;
+using LocalIdType = Int32;
 
 /*!
  * \brief Type des entiers utilisés pour stocker les identifiants uniques
@@ -246,7 +246,16 @@ typedef Int32 LocalIdType;
  * Les valeurs que peut prendre ce type indique combien d'entités
  * pourront être présentes sur le domaine initial.
  */
-typedef Int64 UniqueIdType;
+using UniqueIdType = Int64;
+
+//! Brain Float16
+class BFloat16;
+
+//! Float16
+class FLoat16;
+
+//! Type flottan IEEE-753 simple précision
+using Float32 = float;
 
 /*!
  * \def ARCANE_INTEGER_MAX

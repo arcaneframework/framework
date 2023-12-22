@@ -124,6 +124,7 @@ class UtilsUnitTest
   void _testConvertFromStringToInt32Array();
   void _testCommandLine();
   void _testHashAlgorithm();
+  void _testDataTypeNames();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -192,6 +193,7 @@ executeTest()
 
   _testCommandLine();
   _testHashAlgorithm();
+  _testDataTypeNames();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -851,6 +853,26 @@ _testHashAlgorithm()
     vc.areEqual(hash_bytes.size(),service->hashSize(),"HashSize");
     info() << "Algo=" << name << " value=" << Convert::toHexaString(hash_bytes);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UtilsUnitTest::
+_testDataTypeNames()
+{
+  ValueChecker vc(A_FUNCINFO);
+  vc.areEqual(String(dataTypeName(DT_BFloat16)),String("BFloat16"),"name BFloat16");
+  vc.areEqual(String(dataTypeName(DT_Float16)),String("Float16"),"name Float16");
+  vc.areEqual(String(dataTypeName(DT_Float32)),String("Float32"),"name Float32");
+
+  vc.areEqual(dataTypeFromName("BFloat16"),DT_BFloat16,"-> BFloat16");
+  vc.areEqual(dataTypeFromName("Float16"),DT_Float16,"-> Float16");
+  vc.areEqual(dataTypeFromName("Float32"),DT_Float32,"-> Float32");
+
+  vc.areEqual(dataTypeSize(DT_BFloat16),2,"sizeof BFloat16");
+  vc.areEqual(dataTypeSize(DT_Float16),2,"sizeof Float16");
+  vc.areEqual(dataTypeSize(DT_Float32),4,"sizeof Float32");
 }
 
 /*---------------------------------------------------------------------------*/

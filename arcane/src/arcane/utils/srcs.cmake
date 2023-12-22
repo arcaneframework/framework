@@ -19,6 +19,7 @@ set(ARCANE_SOURCES
   BadAlignmentException.h
   BadCastException.cc
   BadCastException.h
+  BFloat16.h
   Collection.cc
   Collection.h
   CommandLineArguments.h
@@ -39,6 +40,7 @@ set(ARCANE_SOURCES
   Event.cc
   Event.h
   FixedArray.h
+  Float16.h
   FloatingPointExceptionSentry.cc
   FloatingPointExceptionSentry.h
   FileContent.cc
