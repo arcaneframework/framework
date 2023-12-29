@@ -32,6 +32,7 @@ set(SOURCES
   FatalErrorException.cc
   FatalErrorException.h
   Float16.h
+  FloatConversion.h
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
