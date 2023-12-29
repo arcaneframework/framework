@@ -21,6 +21,8 @@
 
 // Nécessaire pour les exports de symboles
 #include "arccore/base/ReferenceCounterImpl.h"
+#include "arccore/base/Float16.h"
+#include "arccore/base/BFloat16.h"
 
 #include <iostream>
 #include <cstring>
@@ -187,12 +189,15 @@ operator<<(std::ostream& o,const TraceInfo& t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
 /// Fonction appelée lorsqu'une assertion échoue.
 typedef void (*fDoAssert)(const char*,const char*,const char*,size_t);
 /// Fonction appelée pour indiquer s'il faut afficher l'information de débug
 typedef bool (*fCheckDebug)(unsigned int);
 
-static fDoAssert g_do_assert_func = 0;
+fDoAssert g_do_assert_func = 0;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
