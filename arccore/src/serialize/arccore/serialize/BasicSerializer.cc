@@ -68,6 +68,8 @@ class BasicSerializerNewImpl
   static constexpr int IDX_NB_INT32 = 10;
   static constexpr int IDX_NB_INT64 = 11;
   static constexpr int IDX_NB_INT128 = 12;
+  static constexpr int IDX_NB_INT8 = 13;
+  static constexpr int IDX_NB_BFLOAT16 = 14;
 
   // Laisse de la place pour de nouveaux types.
   static constexpr int IDX_POS_BYTE = 32;
@@ -79,6 +81,8 @@ class BasicSerializerNewImpl
   static constexpr int IDX_POS_INT32 = 38;
   static constexpr int IDX_POS_INT64 = 39;
   static constexpr int IDX_POS_INT128 = 40;
+  static constexpr int IDX_POS_INT8 = 41;
+  static constexpr int IDX_POS_BFLOAT16 = 42;
 
   static constexpr Integer NB_SIZE_ELEM = 128;
   // La taille de l'alignement est aussi un diviseur de la mémoire
@@ -109,6 +113,10 @@ class BasicSerializerNewImpl
   Span<Int32> m_int32_view; //!< Vue sur les entiers 32 bits
   Span<Int16> m_int16_view; //!< Vue sur les entiers 16 bits
   Span<Byte> m_byte_view; //!< Vur les octets
+  Span<Int8> m_int8_view; //!< Vur les Int8
+  Span<Float16> m_float16_view; //!< Vur les Float16
+  Span<BFloat16> m_bfloat16_view; //!< Vur les BFloat16
+  Span<Float32> m_float32_view; //!< Vur les Float32
   
   Int64ArrayView m_sizes_view; //!< Vue pour les tailles (doit être un multiple de ALIGN_SIZE);
 
@@ -126,8 +134,24 @@ class BasicSerializerNewImpl
   Span<Int32> getInt32Buffer() override { return m_int32_view; }
   Span<Int64> getInt64Buffer() override { return m_int64_view; }
   Span<Byte> getByteBuffer() override { return m_byte_view; }
+  Span<Int8> getInt8Buffer() override { return m_int8_view; }
+  Span<Float16> getFloat16Buffer() override { return m_float16_view; }
+  Span<BFloat16> getBFloat16Buffer() override { return m_bfloat16_view; }
+  Span<Float32> getFloat32Buffer() override { return m_float32_view; }
+
   void allocateBuffer(Int64 nb_real,Int64 nb_int16,Int64 nb_int32,
                       Int64 nb_int64,Int64 nb_byte) override
+  {
+    Int64 nb_int8= 0;
+    Int64 nb_float16 = 0;
+    Int64 nb_bfloat16 = 0;
+    Int64 nb_float32 = 0;
+    allocateBuffer(nb_real,nb_int16,nb_int32,nb_int64,nb_byte,nb_int8,nb_float16,nb_bfloat16,nb_float32);
+  }
+
+  void allocateBuffer(Int64 nb_real, Int64 nb_int16, Int64 nb_int32,
+                      Int64 nb_int64, Int64 nb_byte, Int64 nb_int8, Int64 nb_float16,
+                      Int64 nb_bfloat16, Int64 nb_float32) override
   {
     SizeInfo size_info = getPaddingSize(NB_SIZE_ELEM,sizeof(Int64));
     Int64 total = size_info.m_padded_size;
@@ -152,6 +176,22 @@ class BasicSerializerNewImpl
     SizeInfo padded_byte_size = getPaddingSize(nb_byte,sizeof(Byte));
     total += padded_byte_size.m_padded_size;
 
+    Int64 int8_position = total;
+    SizeInfo padded_int8_size = getPaddingSize(nb_int8,sizeof(Int8));
+    total += padded_int8_size.m_padded_size;
+
+    Int64 float16_position = total;
+    SizeInfo padded_float16_size = getPaddingSize(nb_float16,sizeof(Float16));
+    total += padded_float16_size.m_padded_size;
+
+    Int64 bfloat16_position = total;
+    SizeInfo padded_bfloat16_size = getPaddingSize(nb_bfloat16,sizeof(BFloat16));
+    total += padded_bfloat16_size.m_padded_size;
+
+    Int64 float32_position = total;
+    SizeInfo padded_float32_size = getPaddingSize(nb_float32,sizeof(Float32));
+    total += padded_float32_size.m_padded_size;
+
     _allocBuffer(total);
 
     _fillPadding(0,size_info);
@@ -160,6 +200,10 @@ class BasicSerializerNewImpl
     _fillPadding(int32_position,padded_int32_size);
     _fillPadding(int64_position,padded_int64_size);
     _fillPadding(byte_position,padded_byte_size);
+    _fillPadding(int8_position,padded_int8_size);
+    _fillPadding(float16_position,padded_float16_size);
+    _fillPadding(bfloat16_position,padded_bfloat16_size);
+    _fillPadding(float32_position,padded_float32_size);
 
     m_sizes_view = Int64ArrayView(NB_SIZE_ELEM,(Int64*)&m_buffer_view[0]);
     m_sizes_view.fill(0);
@@ -174,18 +218,30 @@ class BasicSerializerNewImpl
     m_sizes_view[IDX_NB_INT32] = nb_int32;
     m_sizes_view[IDX_NB_INT16] = nb_int16;
     m_sizes_view[IDX_NB_BYTE] = nb_byte;
+    m_sizes_view[IDX_NB_INT8] = nb_int8;
+    m_sizes_view[IDX_NB_FLOAT16] = nb_float16;
+    m_sizes_view[IDX_NB_BFLOAT16] = nb_bfloat16;
+    m_sizes_view[IDX_NB_FLOAT32] = nb_float32;
 
     m_sizes_view[IDX_POS_FLOAT64] = real_position;
     m_sizes_view[IDX_POS_INT64] = int64_position;
     m_sizes_view[IDX_POS_INT32] = int32_position;
     m_sizes_view[IDX_POS_INT16] = int16_position;
     m_sizes_view[IDX_POS_BYTE] = byte_position;
+    m_sizes_view[IDX_POS_INT8] = int8_position;
+    m_sizes_view[IDX_POS_FLOAT16] = float16_position;
+    m_sizes_view[IDX_POS_BFLOAT16] = bfloat16_position;
+    m_sizes_view[IDX_POS_FLOAT32] = float32_position;
 
     m_real_view = Span<Real>((Real*)&m_buffer_view[real_position],nb_real);
     m_int16_view = Span<Int16>((Int16*)&m_buffer_view[int16_position],nb_int16);
     m_int32_view = Span<Int32>((Int32*)&m_buffer_view[int32_position],nb_int32);
     m_int64_view = Span<Int64>((Int64*)&m_buffer_view[int64_position],nb_int64);
     m_byte_view = Span<Byte>((Byte*)&m_buffer_view[byte_position],nb_byte);
+    m_int8_view = Span<Int8>((Int8*)&m_buffer_view[int8_position],nb_int8);
+    m_float16_view = Span<Float16>((Float16*)&m_buffer_view[float16_position],nb_float16);
+    m_bfloat16_view = Span<BFloat16>((BFloat16*)&m_buffer_view[bfloat16_position],nb_bfloat16);
+    m_float32_view = Span<Float32>((Float32*)&m_buffer_view[float32_position],nb_float32);
 
     _checkAlignment();
   }
@@ -197,6 +253,10 @@ class BasicSerializerNewImpl
     m_int32_view.copy(rhs->getInt32Buffer());
     m_int16_view.copy(rhs->getInt16Buffer());
     m_byte_view.copy(rhs->getByteBuffer());
+    m_int8_view.copy(rhs->getInt8Buffer());
+    m_float16_view.copy(rhs->getFloat16Buffer());
+    m_bfloat16_view.copy(rhs->getBFloat16Buffer());
+    m_float32_view.copy(rhs->getFloat32Buffer());
 
     _checkAlignment();
   }
@@ -238,18 +298,30 @@ class BasicSerializerNewImpl
     Int64 nb_int32 = m_sizes_view[IDX_NB_INT32];
     Int64 nb_int16 = m_sizes_view[IDX_NB_INT16];
     Int64 nb_byte = m_sizes_view[IDX_NB_BYTE];
+    Int64 nb_int8 = m_sizes_view[IDX_NB_INT8];
+    Int64 nb_float16 = m_sizes_view[IDX_NB_FLOAT16];
+    Int64 nb_bfloat16 = m_sizes_view[IDX_NB_BFLOAT16];
+    Int64 nb_float32 = m_sizes_view[IDX_NB_FLOAT32];
 
     Int64 real_position = m_sizes_view[IDX_POS_FLOAT64];
     Int64 int64_position = m_sizes_view[IDX_POS_INT64];
     Int64 int32_position = m_sizes_view[IDX_POS_INT32];
     Int64 int16_position = m_sizes_view[IDX_POS_INT16];
     Int64 byte_position = m_sizes_view[IDX_POS_BYTE];
+    Int64 int8_position = m_sizes_view[IDX_POS_INT8];
+    Int64 float16_position = m_sizes_view[IDX_POS_FLOAT16];
+    Int64 bfloat16_position = m_sizes_view[IDX_POS_BFLOAT16];
+    Int64 float32_position = m_sizes_view[IDX_POS_FLOAT32];
 
     m_real_view = Span<Real>((Real*)&m_buffer_view[real_position],nb_real);
     m_int16_view = Span<Int16>((Int16*)&m_buffer_view[int16_position],nb_int16);
     m_int32_view = Span<Int32>((Int32*)&m_buffer_view[int32_position],nb_int32);
     m_int64_view = Span<Int64>((Int64*)&m_buffer_view[int64_position],nb_int64);
     m_byte_view = Span<Byte>((Byte*)&m_buffer_view[byte_position],nb_byte);
+    m_int8_view = Span<Int8>((Int8*)&m_buffer_view[int8_position],nb_int8);
+    m_float16_view = Span<Float16>((Float16*)&m_buffer_view[float16_position],nb_float16);
+    m_bfloat16_view = Span<BFloat16>((BFloat16*)&m_buffer_view[bfloat16_position],nb_bfloat16);
+    m_float32_view = Span<Float32>((Float32*)&m_buffer_view[float32_position],nb_float32);
 
     _checkAlignment();
   }
@@ -281,6 +353,10 @@ class BasicSerializerNewImpl
       << " int32 " << sbuf_sizes[IDX_NB_INT32]
       << " int16 " << sbuf_sizes[IDX_NB_INT16]
       << " byte " << sbuf_sizes[IDX_NB_BYTE]
+      << " int8 " << sbuf_sizes[IDX_NB_INT8]
+      << " float16 " << sbuf_sizes[IDX_NB_FLOAT16]
+      << " bfloat16 " << sbuf_sizes[IDX_NB_BFLOAT16]
+      << " float32 " << sbuf_sizes[IDX_NB_FLOAT32]
       << " ptr=" << (void*)bytes.data();
   }
 
@@ -332,6 +408,10 @@ class BasicSerializerNewImpl
     _checkAddr(m_int32_view.data());
     _checkAddr(m_int64_view.data());
     _checkAddr(m_byte_view.data());
+    _checkAddr(m_int8_view.data());
+    _checkAddr(m_float16_view.data());
+    _checkAddr(m_bfloat16_view.data());
+    _checkAddr(m_float32_view.data());
   }
 
   void _checkAddr(void* ptr)
@@ -353,6 +433,10 @@ class BasicSerializerNewImpl
     _printAddr(m_int32_view.data(),"Int32");
     _printAddr(m_int64_view.data(),"Int64");
     _printAddr(m_byte_view.data(),"Byte");
+    _printAddr(m_int8_view.data(),"Int8");
+    _printAddr(m_float16_view.data(),"Float16");
+    _printAddr(m_bfloat16_view.data(),"BFloat16");
+    _printAddr(m_float32_view.data(),"Float32");
   }
 
   void _printAddr(void* ptr,const String& name)
@@ -418,6 +502,10 @@ reserve(eDataType dt,Int64 n,Int64 nb_put)
   case DT_Int32: m_int32.m_reserved_size += n; break;
   case DT_Int16: m_int16.m_reserved_size += n; break;
   case DT_Byte: m_byte.m_reserved_size += n; break;
+  case DT_Int8: m_int8.m_reserved_size += n; break;
+  case DT_Float16: m_float16.m_reserved_size += n; break;
+  case DT_BFloat16: m_bfloat16.m_reserved_size += n; break;
+  case DT_Float32: m_float32.m_reserved_size += n; break;
   default:
     ARCCORE_THROW(ArgumentException,"bad datatype v={0}",(int)dt);
   }
@@ -460,7 +548,8 @@ void BasicSerializer::Impl2::
 allocateBuffer()
 {
   m_p->allocateBuffer(m_real.m_reserved_size,m_int16.m_reserved_size,m_int32.m_reserved_size,
-                      m_int64.m_reserved_size,m_byte.m_reserved_size);
+                      m_int64.m_reserved_size,m_byte.m_reserved_size,m_int8.m_reserved_size,
+                      m_float16.m_reserved_size,m_bfloat16.m_reserved_size,m_float32.m_reserved_size);
   _setViews();
 }
 
@@ -494,6 +583,18 @@ _setViews()
 
   m_byte.m_buffer = m_p->getByteBuffer();
   m_byte.m_current_position = 0;
+
+  m_int8.m_buffer = m_p->getInt8Buffer();
+  m_int8.m_current_position = 0;
+
+  m_float16.m_buffer = m_p->getFloat16Buffer();
+  m_float16.m_current_position = 0;
+
+  m_bfloat16.m_buffer = m_p->getBFloat16Buffer();
+  m_bfloat16.m_current_position = 0;
+
+  m_float32.m_buffer = m_p->getFloat32Buffer();
+  m_float32.m_current_position = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -503,11 +604,30 @@ void BasicSerializer::Impl2::
 allocateBuffer(Int64 nb_real,Int64 nb_int16,Int64 nb_int32,
                Int64 nb_int64,Int64 nb_byte)
 {
+  Int64 nb_int8= 0;
+  Int64 nb_float16 = 0;
+  Int64 nb_bfloat16 = 0;
+  Int64 nb_float32 = 0;
+  allocateBuffer(nb_real,nb_int16,nb_int32,nb_int64,nb_byte,nb_int8,nb_float16,nb_bfloat16,nb_float32);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::Impl2::
+allocateBuffer(Int64 nb_real,Int64 nb_int16,Int64 nb_int32,
+               Int64 nb_int64,Int64 nb_byte,Int64 nb_int8, Int64 nb_float16,
+               Int64 nb_bfloat16, Int64 nb_float32)
+{
   m_real.m_reserved_size = nb_real;
   m_int64.m_reserved_size = nb_int64;
   m_int32.m_reserved_size = nb_int32;
   m_int16.m_reserved_size = nb_int16;
   m_byte.m_reserved_size = nb_byte;
+  m_int8.m_reserved_size = nb_int8;
+  m_float16.m_reserved_size = nb_float16;
+  m_bfloat16.m_reserved_size = nb_bfloat16;
+  m_float32.m_reserved_size = nb_float32;
   allocateBuffer();
 }
 
@@ -523,7 +643,12 @@ copy(const BasicSerializer& rhs)
   Span<Int32> int32_b = rhs_p->getInt32Buffer();
   Span<Int16> int16_b = rhs_p->getInt16Buffer();
   Span<Byte> byte_b = rhs_p->getByteBuffer();
-  allocateBuffer(real_b.size(),int16_b.size(),int32_b.size(),int64_b.size(),byte_b.size());
+  Span<Int8> int8_b = rhs_p->getInt8Buffer();
+  Span<Float16> float16_b = rhs_p->getFloat16Buffer();
+  Span<BFloat16> bfloat16_b = rhs_p->getBFloat16Buffer();
+  Span<Float32> float32_b = rhs_p->getFloat32Buffer();
+  allocateBuffer(real_b.size(),int16_b.size(),int32_b.size(),int64_b.size(),byte_b.size(),
+                 int8_b.size(),float16_b.size(),bfloat16_b.size(),float32_b.size());
   m_p->copy(rhs_p);
 }
 
@@ -539,6 +664,10 @@ setMode(eMode new_mode)
     m_int32.m_current_position = 0;
     m_int16.m_current_position = 0;
     m_byte.m_current_position = 0;
+    m_int8.m_current_position = 0;
+    m_float16.m_current_position = 0;
+    m_bfloat16.m_current_position = 0;
+    m_float32.m_current_position = 0;
   }
 
   m_mode = new_mode;
@@ -660,6 +789,34 @@ reserveArray(Span<const Byte> values)
   reserveSpan(values);
 }
 
+void BasicSerializer::
+reserveArray(Span<const Int8> values)
+{
+  reserve(DT_Int64,1);
+  reserveSpan(values);
+}
+
+void BasicSerializer::
+reserveArray(Span<const Float16> values)
+{
+  reserve(DT_Int64,1);
+  reserveSpan(values);
+}
+
+void BasicSerializer::
+reserveArray(Span<const BFloat16> values)
+{
+  reserve(DT_Int64,1);
+  reserveSpan(values);
+}
+
+void BasicSerializer::
+reserveArray(Span<const Float32> values)
+{
+  reserve(DT_Int64,1);
+  reserveSpan(values);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -719,6 +876,50 @@ put(Span<const Byte> values)
 /*---------------------------------------------------------------------------*/
 
 void BasicSerializer::
+putSpan(Span<const Int8> values)
+{
+  ARCCORE_ASSERT((m_p2->m_mode==ModePut),("Bad mode"));
+  m_p2->putType(eBasicDataType::Int8);
+  m_p2->m_int8.put(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
+putSpan(Span<const Float16> values)
+{
+  ARCCORE_ASSERT((m_p2->m_mode==ModePut),("Bad mode"));
+  m_p2->putType(eBasicDataType::Float16);
+  m_p2->m_float16.put(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
+putSpan(Span<const BFloat16> values)
+{
+  ARCCORE_ASSERT((m_p2->m_mode==ModePut),("Bad mode"));
+  m_p2->putType(eBasicDataType::BFloat16);
+  m_p2->m_bfloat16.put(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
+putSpan(Span<const Float32> values)
+{
+  ARCCORE_ASSERT((m_p2->m_mode==ModePut),("Bad mode"));
+  m_p2->putType(eBasicDataType::Float32);
+  m_p2->m_float32.put(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
 put(const String& str)
 {
   ARCCORE_ASSERT((m_p2->m_mode==ModePut),("Bad mode"));
@@ -760,6 +961,34 @@ putArray(Span<const Int64> values)
 
 void BasicSerializer::
 putArray(Span<const Byte> values)
+{
+  putInt64(values.size());
+  putSpan(values);
+}
+
+void BasicSerializer::
+putArray(Span<const Int8> values)
+{
+  putInt64(values.size());
+  putSpan(values);
+}
+
+void BasicSerializer::
+putArray(Span<const Float16> values)
+{
+  putInt64(values.size());
+  putSpan(values);
+}
+
+void BasicSerializer::
+putArray(Span<const BFloat16> values)
+{
+  putInt64(values.size());
+  putSpan(values);
+}
+
+void BasicSerializer::
+putArray(Span<const Float32> values)
 {
   putInt64(values.size());
   putSpan(values);
@@ -824,6 +1053,50 @@ getSpan(Span<Byte> values)
 /*---------------------------------------------------------------------------*/
 
 void BasicSerializer::
+getSpan(Span<Int8> values)
+{
+  ARCCORE_ASSERT((m_p2->m_mode==ModeGet),("Bad mode"));
+  m_p2->getAndCheckType(eBasicDataType::Int8);
+  m_p2->m_int8.get(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
+getSpan(Span<Float16> values)
+{
+  ARCCORE_ASSERT((m_p2->m_mode==ModeGet),("Bad mode"));
+  m_p2->getAndCheckType(eBasicDataType::Float16);
+  m_p2->m_float16.get(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
+getSpan(Span<BFloat16> values)
+{
+  ARCCORE_ASSERT((m_p2->m_mode==ModeGet),("Bad mode"));
+  m_p2->getAndCheckType(eBasicDataType::BFloat16);
+  m_p2->m_bfloat16.get(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
+getSpan(Span<Float32> values)
+{
+  ARCCORE_ASSERT((m_p2->m_mode==ModeGet),("Bad mode"));
+  m_p2->getAndCheckType(eBasicDataType::Float32);
+  m_p2->m_float32.get(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
 getArray(Array<Real>& values)
 {
   values.resize(getInt64());
@@ -853,6 +1126,34 @@ getArray(Array<Int64>& values)
 
 void BasicSerializer::
 getArray(Array<Byte>& values)
+{
+  values.resize(getInt64());
+  getSpan(values);
+}
+
+void BasicSerializer::
+getArray(Array<Int8>& values)
+{
+  values.resize(getInt64());
+  getSpan(values);
+}
+
+void BasicSerializer::
+getArray(Array<Float16>& values)
+{
+  values.resize(getInt64());
+  getSpan(values);
+}
+
+void BasicSerializer::
+getArray(Array<BFloat16>& values)
+{
+  values.resize(getInt64());
+  getSpan(values);
+}
+
+void BasicSerializer::
+getArray(Array<Float32>& values)
 {
   values.resize(getInt64());
   getSpan(values);
@@ -925,7 +1226,7 @@ void BasicSerializer::
 allocateBuffer(Int64 nb_real,Int64 nb_int16,Int64 nb_int32,
                Int64 nb_int64,Int64 nb_byte)
 {
-  m_p2->allocateBuffer(nb_real,nb_int16,nb_int32,nb_int64,nb_byte);
+  m_p2->allocateBuffer(nb_real,nb_int16,nb_int32,nb_int64,nb_byte,0,0,0,0);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicSerializer.h                                           (C) 2000-2020 */
+/* BasicSerializer.h                                           (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation simple de 'ISerializer'.                                   */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/serialize/ISerializer.h"
+
+#include "arccore/base/Float16.h"
+#include "arccore/base/BFloat16.h"
 #include "arccore/collections/Array.h"
 
 /*---------------------------------------------------------------------------*/
@@ -84,7 +87,10 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 {
   typedef BasicSerializer ThatClass;
   using ISerializer::reserveSpan;
+  using ISerializer::putSpan;
+
  public:
+
   // Classe temporaire pour afficher les tailles des buffers.
   class SizesPrinter
   {
@@ -94,16 +100,20 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
    private:
     const BasicSerializer& m_sbuf;
   };
+
  public:
+
   class Impl;
   class Impl2;
 
  public:
+
   BasicSerializer();
   BasicSerializer(const BasicSerializer& sb);
   ~BasicSerializer() override;
 
  private:
+
   void operator=(const BasicSerializer& sb);
 
  public:
@@ -128,12 +138,20 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   void reserveArray(Span<const Int32> values) override;
   void reserveArray(Span<const Int64> values) override;
   void reserveArray(Span<const Byte> values) override;
+  void reserveArray(Span<const Int8> values) override;
+  void reserveArray(Span<const Float16> values) override;
+  void reserveArray(Span<const BFloat16> values) override;
+  void reserveArray(Span<const Float32> values) override;
 
   void put(Span<const Real> values) override;
   void put(Span<const Int16> values) override;
   void put(Span<const Int32> values) override;
   void put(Span<const Int64> values) override;
   void put(Span<const Byte> values) override;
+  void putSpan(Span<const Int8> values) override;
+  void putSpan(Span<const Float16> values) override;
+  void putSpan(Span<const BFloat16> values) override;
+  void putSpan(Span<const Float32> values) override;
   void put(const String& value) override;
 
   void put(Real value) override
@@ -155,6 +173,22 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   void put(Byte value) override
   {
     putByte(value);
+  }
+  void put(Int8 value) override
+  {
+    putInt8(value);
+  }
+  void put(Float16 value) override
+  {
+    putFloat16(value);
+  }
+  void put(BFloat16 value) override
+  {
+    putBFloat16(value);
+  }
+  void put(Float32 value) override
+  {
+    putFloat32(value);
   }
 
   void putReal(Real value) override
@@ -185,12 +219,32 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   {
     put(ByteConstArrayView(1, &value));
   }
+  void putInt8(Int8 value) override
+  {
+    putSpan(ConstArrayView<Int8>(1, &value));
+  }
+  void putFloat16(Float16 value) override
+  {
+    putSpan(ConstArrayView<Float16>(1, &value));
+  }
+  void putBFloat16(BFloat16 value) override
+  {
+    putSpan(ConstArrayView<BFloat16>(1, &value));
+  }
+  void putFloat32(Float32 value) override
+  {
+    putSpan(ConstArrayView<Float32>(1, &value));
+  }
 
   void putArray(Span<const Real> values) override;
   void putArray(Span<const Int16> values) override;
   void putArray(Span<const Int32> values) override;
   void putArray(Span<const Int64> values) override;
   void putArray(Span<const Byte> values) override;
+  void putArray(Span<const Int8> values) override;
+  void putArray(Span<const Float16> values) override;
+  void putArray(Span<const BFloat16> values) override;
+  void putArray(Span<const Float32> values) override;
 
   void get(RealArrayView values) override { ThatClass::getSpan(values); }
   void get(Int64ArrayView values) override { ThatClass::getSpan(values); }
@@ -203,12 +257,20 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   void getSpan(Span<Int32> values) override;
   void getSpan(Span<Int64> values) override;
   void getSpan(Span<Byte> values) override;
+  void getSpan(Span<Int8> values) override;
+  void getSpan(Span<Float16> values) override;
+  void getSpan(Span<BFloat16> values) override;
+  void getSpan(Span<Float32> values) override;
 
   void getArray(Array<Real>& values) override;
   void getArray(Array<Int16>& values) override;
   void getArray(Array<Int32>& values) override;
   void getArray(Array<Int64>& values) override;
   void getArray(Array<Byte>& values) override;
+  void getArray(Array<Int8>& values) override;
+  void getArray(Array<Float16>& values) override;
+  void getArray(Array<BFloat16>& values) override;
+  void getArray(Array<Float32>& values) override;
 
   void get(String& values) override;
 
@@ -248,6 +310,30 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   {
     Byte r = 0;
     get(ArrayView<Byte>(1, &r));
+    return r;
+  }
+  Int8 getInt8() override
+  {
+    Int8 r = 0;
+    getSpan(ArrayView<Int8>(1, &r));
+    return r;
+  }
+  Float16 getFloat16() override
+  {
+    Float16 r = {};
+    getSpan(ArrayView<Float16>(1, &r));
+    return r;
+  }
+  BFloat16 getBFloat16() override
+  {
+    BFloat16 r = {};
+    getSpan(ArrayView<BFloat16>(1, &r));
+    return r;
+  }
+  Float32 getFloat32() override
+  {
+    Float32 r = {};
+    getSpan(ArrayView<Float32>(1, &r));
     return r;
   }
 
