@@ -164,7 +164,10 @@ convertToBFloat16Impl(uint16_t val)
   float result;
   char* const first = reinterpret_cast<char*>(&result);
   char* const second = first + sizeof(uint16_t);
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  // Les macros suivantes ne sont pas définies sous Windows mais ce dernier
+  // ne supporte que des architectures little-endian donc cela ne pose pas
+  // de problèmes.
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
   std::memcpy(first, &val, sizeof(uint16_t));
   std::memset(second, 0, sizeof(uint16_t));
 #else
