@@ -14,6 +14,7 @@ set(SOURCES
   Array4View.h
   ArgumentException.cc
   ArgumentException.h
+  BFloat16.h
   CheckedPointer.h
   CStringUtils.h
   CStringUtils.cc
@@ -30,6 +31,7 @@ set(SOURCES
   ExternalRef.cc
   FatalErrorException.cc
   FatalErrorException.h
+  Float16.h
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
