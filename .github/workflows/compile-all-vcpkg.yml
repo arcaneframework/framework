@@ -90,6 +90,8 @@ jobs:
     env:
       # Indique pour IntelMPI de ne pas faire d'attente active
       I_MPI_WAIT_MODE: 1
+      # Pour indiquer a OpenMPI qu'on utilise plus de PE que de coeurs disponibles
+      OMPI_MCA_rmaps_base_oversubscribe : true
       CCACHE_BASEDIR: ${{github.workspace}}
       CCACHE_DIR: '${{ github.workspace }}/ccache'
       CCACHE_COMPRESS: true
