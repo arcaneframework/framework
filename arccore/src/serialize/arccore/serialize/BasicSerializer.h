@@ -85,6 +85,7 @@ class BasicSerializerDataT
 class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 : public ISerializer
 {
+  friend class BasicSerializeGatherMessage;
   typedef BasicSerializer ThatClass;
   using ISerializer::reserveSpan;
   using ISerializer::putSpan;
@@ -425,10 +426,6 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 
   Impl* _p() const;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

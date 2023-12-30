@@ -325,6 +325,10 @@ mpSend(IMessagePassingMng* pm, const ISerializer* values, const PointToPointMess
 ARCCORE_MESSAGEPASSING_EXPORT Request
 mpReceive(IMessagePassingMng* pm, ISerializer* values, const PointToPointMessageInfo& message);
 
+//! Message allGather() pour une sérialisation
+ARCCORE_MESSAGEPASSING_EXPORT void
+mpAllGather(IMessagePassingMng* pm, const ISerializer* send_serializer, ISerializer* recv_serializer);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
