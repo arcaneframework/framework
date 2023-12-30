@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "arccore/serialize/BasicSerializer.h"
+#include "arccore/base/Ref.h"
 #include "arccore/base/FatalErrorException.h"
 
 using namespace Arccore;
@@ -196,7 +197,8 @@ class SerializeValueList
 
 void _doMisc()
 {
-  BasicSerializer serializer;
+  Ref<ISerializer> serializer_ref = createSerializer();
+  ISerializer* serializer = serializer_ref.get();
 
   SerializeValueList values;
 
@@ -211,13 +213,13 @@ void _doMisc()
   values.add<Int64>(12932, [](Int32 i) { return -124254342 + i * (-2332); });
   values.addString("Ceci est un test de chaîne de caractères");
 
-  serializer.setMode(ISerializer::ModeReserve);
-  values.doSerialize(&serializer);
-  serializer.allocateBuffer();
-  serializer.setMode(ISerializer::ModePut);
-  values.doSerialize(&serializer);
-  serializer.setMode(ISerializer::ModeGet);
-  values.doSerialize(&serializer);
+  serializer->setMode(ISerializer::ModeReserve);
+  values.doSerialize(serializer);
+  serializer->allocateBuffer();
+  serializer->setMode(ISerializer::ModePut);
+  values.doSerialize(serializer);
+  serializer->setMode(ISerializer::ModeGet);
+  values.doSerialize(serializer);
 
   values.checkValid();
 }
