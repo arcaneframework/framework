@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2020 */
+/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation MPI du gestionnaire des échanges de messages.              */
 /*---------------------------------------------------------------------------*/
@@ -141,6 +141,16 @@ create(MPI_Comm mpi_comm, bool clean_comm)
   dsp->setDispatcher(new MpiSerializeDispatcher(adapter));
 
   return mpm;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng::
+createRef(MPI_Comm mpi_comm, bool clean_comm)
+{
+  MpiMessagePassingMng* v = create(mpi_comm, clean_comm);
+  return makeRef<IMessagePassingMng>(v);
 }
 
 /*---------------------------------------------------------------------------*/
