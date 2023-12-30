@@ -16,6 +16,7 @@
 
 #include "arccore/serialize/SerializeGlobal.h"
 #include "arccore/base/BaseTypes.h"
+#include "arccore/base/RefDeclarations.h"
 #include "arccore/collections/CollectionsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -28,6 +29,9 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Interface d'un sérialiseur.
+ *
+ * Il est possible de créér une instance de cette classe via la méthode
+ * createSerializer();
  *
  * Cette interface gère un sérialiseur pour stocker et relire un
  * ensemble de valeurs. La sérialisation se déroule en trois phases:
@@ -357,6 +361,14 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   //! Copie les données de \a from dans cette instance
   virtual void copy(const ISerializer* from) =0;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé une instance de ISerializer
+ */
+extern "C++" ARCCORE_SERIALIZE_EXPORT Ref<ISerializer>
+createSerializer();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

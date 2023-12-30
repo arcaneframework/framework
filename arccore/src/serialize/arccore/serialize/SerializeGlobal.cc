@@ -11,8 +11,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/serialize/ISerializer.h"
+#include "arccore/serialize/BasicSerializer.h"
 
+#include "arccore/base/Ref.h"
 #include "arccore/base/Span.h"
 
 namespace Arccore
@@ -140,5 +141,18 @@ getSpan(Span<Byte> values)
 {
   get(values.smallView());
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<ISerializer>
+createSerializer()
+{
+  auto* x = new BasicSerializer();
+  return makeRef<ISerializer>(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arccore
