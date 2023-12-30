@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexOutOfRangeException.h                                  (C) 2000-2018 */
+/* IndexOutOfRangeException.h                                  (C) 2000-2023 */
 /*                                                                           */
-/* Exception lorsqu'un indice de tableau est invalide.                       */
+/* Exception lorsqu'une valeur n'est pas dans un intervalle donné.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_INDEXOUTOFRANGEEXCEPTION_H
 #define ARCCORE_BASE_INDEXOUTOFRANGEEXCEPTION_H
@@ -26,7 +26,9 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Core
- * \brief Exception lorsqu'une erreur fatale est survenue.
+ * \brief Exception lorsqu'une valeur n'est pas dans un intervalle donné.
+ *
+ * Indique que minValue() <= index() < maxValue() n'est pas respecté.
  */
 class ARCCORE_BASE_EXPORT IndexOutOfRangeException
 : public Exception
@@ -34,23 +36,25 @@ class ARCCORE_BASE_EXPORT IndexOutOfRangeException
  public:
 	
   IndexOutOfRangeException(const TraceInfo& where,const String& message,
-                           Int64 index,Int64 min_value,Int64 max_value);
-  IndexOutOfRangeException(const IndexOutOfRangeException& ex);
-  ~IndexOutOfRangeException() ARCCORE_NOEXCEPT {}
+                           Int64 index,Int64 min_value_inclusive,
+                           Int64 max_value_exclusive);
 
  public:
 	
-  virtual void explain(std::ostream& m) const;
+  void explain(std::ostream& m) const override;
   
+  //! Index
   Int64 index() const { return m_index; }
-  Int64 minValue() const { return m_min_value; }
-  Int64 maxValue() const { return m_max_value; }
+  //! Valeur minimale (inclusive) valide
+  Int64 minValue() const { return m_min_value_inclusive; }
+  //! Valeur maximale (exclusive) valide
+  Int64 maxValue() const { return m_max_value_exclusive; }
 
  private:
 
   Int64 m_index;
-  Int64 m_min_value;
-  Int64 m_max_value;
+  Int64 m_min_value_inclusive;
+  Int64 m_max_value_exclusive;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -104,6 +104,19 @@ arccoreDebugPause(const char* msg)
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreRangeError(Int64 i,Int64 min_value_inclusive,Int64 max_value_exclusive)
+{
+  arccoreDebugPause("arccoreRangeError");
+  throw IndexOutOfRangeException(A_FUNCINFO,String(),i,min_value_inclusive,max_value_exclusive);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreRangeError(Int32 i,Int32 max_size)
 {
