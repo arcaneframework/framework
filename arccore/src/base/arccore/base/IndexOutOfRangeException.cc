@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexOutOfRangeException.cc                                 (C) 2000-2018 */
+/* IndexOutOfRangeException.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Exception lorsqu'un indice de tableau est invalide.                       */
 /*---------------------------------------------------------------------------*/
@@ -26,23 +26,12 @@ namespace Arccore
 
 IndexOutOfRangeException::
 IndexOutOfRangeException(const TraceInfo& where,const String& message,
-                         Int64 index,Int64 min_value,Int64 max_value)
+                         Int64 index,Int64 min_value_inclusive,
+                         Int64 max_value_exclusive)
 : Exception("IndexOutOfRange",where,message)
 , m_index(index)
-, m_min_value(min_value)
-, m_max_value(max_value)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IndexOutOfRangeException::
-IndexOutOfRangeException(const IndexOutOfRangeException& ex)
-: Exception(ex)
-, m_index(ex.m_index)
-, m_min_value(ex.m_min_value)
-, m_max_value(ex.m_max_value)
+, m_min_value_inclusive(min_value_inclusive)
+, m_max_value_exclusive(max_value_exclusive)
 {
 }
 
@@ -52,11 +41,10 @@ IndexOutOfRangeException(const IndexOutOfRangeException& ex)
 void IndexOutOfRangeException::
 explain(std::ostream& m) const
 {
-  m << "Array index out of bounds ("
-    << " index=" << m_index
-    << " min_value=" << m_min_value
-    << " max_value=" << m_max_value
-    << ").\n";
+  m << "Index '" << m_index << "' out of bounds ("
+    << m_min_value_inclusive << " <= "
+    << m_index << " < "
+    << m_max_value_exclusive << ").\n";
 }
 
 /*---------------------------------------------------------------------------*/

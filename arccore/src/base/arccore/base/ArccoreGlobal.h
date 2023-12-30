@@ -471,10 +471,28 @@ arccoreNullPointerError ARCCORE_NORETURN ();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Signale une erreur de débordement.
+ * \brief Signale qu'une valeur n'est pas dans l'intervalle souhaité.
  *
- * Signale un débordement de tableau. Affiche un message et appelle
- * arcaneDebugPause().
+ * Indique que l'assertion `min_value_inclusive <= i < max_value_exclusive`
+ * est fausse.
+ * Appelle arccoreDebugPause() puis lève une exception de type
+ * IndexOutOfRangeException.
+ *
+ * \param i valeur invalide.
+ * \param min_value_inclusive valeur minimale inclusive autorisée.
+ * \param max_value_exclusive valeur maximale exclusive autorisée.
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 min_value_inclusive,
+                                    Int64 max_value_exclusive);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Signale qu'une valeur n'est pas dans l'intervalle souhaité.
+ *
+ * Indique que l'assertion `0 <= i < max_value est fausse`.
+ * Lance une execption IndexOutOfRangeException.
  *
  * \param i indice invalide
  * \param max_size nombre d'éléments du tableau
@@ -482,32 +500,48 @@ arccoreNullPointerError ARCCORE_NORETURN ();
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 max_size);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie que `min_value_inclusive <= i < max_value_exclusive`.
+ *
+ * Si ce n'est pas le cas, appelle arccoreRangeError() pour lancer une
+ * exception.
+ */
+inline ARCCORE_HOST_DEVICE void
+arccoreCheckRange(Int64 i,Int64 min_value_inclusive,Int64 max_value_exclusive)
+{
+  if (i>=min_value_inclusive && i<max_value_exclusive)
+    return;
+#ifndef ARCCORE_DEVICE_CODE
+  arccoreRangeError(i,min_value_inclusive,max_value_exclusive);
+#elif defined(ARCCORE_DEVICE_TARGET_CUDA)
+  // Code pour le device.
+  // assert() est disponible pour CUDA.
+  // TODO: regarder si une fonction similaire existe pour HIP
+  assert(false);
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
+ *
+ * Appelle arccoreCheckRange(i,0,max_size).
  */
 inline ARCCORE_HOST_DEVICE void
 arccoreCheckAt(Int64 i,Int64 max_size)
 {
-#ifndef ARCCORE_DEVICE_CODE
-  if (i<0 || i>=max_size)
-    arccoreRangeError(i,max_size);
-#else
-  // Code pour le device.
-  // assert() est disponible pour CUDA.
-  // TODO: regarder si une fonction similaire existe pour HIP
-#ifdef ARCCORE_DEVICE_TARGET_CUDA
-  assert(i>=0 && i<max_size);
-#else
-  ARCCORE_UNUSED(i);
-  ARCCORE_UNUSED(max_size);
-#endif
-#endif
+  arccoreCheckRange(i,0,max_size);
 }
 
 #if defined(ARCCORE_CHECK) || defined(ARCCORE_DEBUG)
 #define ARCCORE_CHECK_AT(a,b) ::Arccore::arccoreCheckAt((a),(b))
+#define ARCCORE_CHECK_RANGE(a,b,c) ::Arccore::arccoreCheckRange((a),(b),(c))
 #else
 #define ARCCORE_CHECK_AT(a,b)
+#define ARCCORE_CHECK_RANGE(a,b,c)
 #endif
 
 #define ARCCORE_CHECK_AT2(a0,a1,b0,b1) \
