@@ -69,6 +69,8 @@ set(SOURCES
   IFunctor.h
   Functor.h
   Functor.cc
+
+  internal/StringImpl.h
 )
 
 arccore_add_component_library(base

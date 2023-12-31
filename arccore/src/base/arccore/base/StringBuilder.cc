@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/StringBuilder.h"
-#include "arccore/base/StringImpl.h"
+#include "arccore/base/internal/StringImpl.h"
 #include "arccore/base/String.h"
 #include "arccore/base/StringView.h"
 
@@ -37,7 +37,7 @@ StringBuilder(const std::string& str)
 
 StringBuilder::
 StringBuilder(const UCharConstArrayView& ustr)
-: m_p(new StringImpl(ustr.data()))
+: m_p(new StringImpl(ustr))
 {
   m_p->addReference();
 }
