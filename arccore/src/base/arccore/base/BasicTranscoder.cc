@@ -30,9 +30,9 @@ namespace Arccore
 namespace
 {
 int
-_invalidChar(Int32& wc)
+_invalidChar(Int32 pos,Int32& wc)
 {
-  std::cout << "WARNING: Invalid sequence in conversion input\n";
+  std::cout << "WARNING: Invalid sequence '" << wc << "' in conversion input (position=" << pos << ")\n";
   wc = '?';
   return 1;
 }
@@ -40,10 +40,9 @@ _invalidChar(Int32& wc)
 int
 _notEnoughChar(Int32& wc)
 {
-  std::cout << "WARNING: Invalid sequence in conversion input (unexpected eof)\n";
+  std::cout << "WARNING: Invalid sequence '" << wc << "' in conversion input (unexpected eof)\n";
   wc = '?';
   return 1;
-}
 }
 
 /*---------------------------------------------------------------------------*/
@@ -59,7 +58,7 @@ _notEnoughChar(Int32& wc)
  * \param wc valeur ucs4 du caractère à convertir
  * \param utf8[out] Tableau contenant les caractères utf8 convertis
  */
-static void
+void
 ucs4_to_utf8(Int32 wc,CoreArray<Byte>& utf8)
 {
   Int32 r[6];
@@ -101,8 +100,6 @@ ucs4_to_utf8(Int32 wc,CoreArray<Byte>& utf8)
  * \param wc [out] valeur ucs4 du caractère.
  * \return le nombre de caractères utf8 lus.
  */
-namespace
-{
 Int64
 utf8_to_ucs4(Span<const Byte> uchar,Int64 index,Int32& wc)
 {
@@ -115,13 +112,13 @@ utf8_to_ucs4(Span<const Byte> uchar,Int64 index,Int32& wc)
   }
 
   if (c < 0xc2)
-    return _invalidChar(wc);
+    return _invalidChar(1,wc);
   
   if (c < 0xe0) {
     if (n < 2)
       return _notEnoughChar(wc);
     if (!((s[1] ^ 0x80) < 0x40))
-      return _invalidChar(wc);
+      return _invalidChar(2,wc);
     wc = ((Int32) (c & 0x1f) << 6) | (Int32) (s[1] ^ 0x80);
     return 2;
   }
@@ -131,7 +128,7 @@ utf8_to_ucs4(Span<const Byte> uchar,Int64 index,Int32& wc)
       return _notEnoughChar(wc);
     if (!((s[1] ^ 0x80) < 0x40 && (s[2] ^ 0x80) < 0x40
           && (c >= 0xe1 || s[1] >= 0xa0)))
-      return _invalidChar(wc);
+      return _invalidChar(4,wc);
     wc = ((Int32) (c & 0x0f) << 12)
     | ((Int32) (s[1] ^ 0x80) << 6)
     | (Int32) (s[2] ^ 0x80);
@@ -144,7 +141,7 @@ utf8_to_ucs4(Span<const Byte> uchar,Int64 index,Int32& wc)
     if (!((s[1] ^ 0x80) < 0x40 && (s[2] ^ 0x80) < 0x40
           && (s[3] ^ 0x80) < 0x40
           && (c >= 0xf1 || s[1] >= 0x90)))
-      return _invalidChar(wc);
+      return _invalidChar(5,wc);
     wc = ((Int32) (c & 0x07) << 18)
     | ((Int32) (s[1] ^ 0x80) << 12)
     | ((Int32) (s[2] ^ 0x80) << 6)
@@ -152,13 +149,17 @@ utf8_to_ucs4(Span<const Byte> uchar,Int64 index,Int32& wc)
     return 4;
   }
 
+  // On ne devrait jamais arriver ici
+  // car il n'y a plus (depuis la norme 2003) de caractères UTF-8
+  // encodés sur 5 ou 6 octets.
+
   if (c < 0xfc) {
     if (n < 5)
       return _notEnoughChar(wc);
     if (!((s[1] ^ 0x80) < 0x40 && (s[2] ^ 0x80) < 0x40
           && (s[3] ^ 0x80) < 0x40 && (s[4] ^ 0x80) < 0x40
           && (c >= 0xf9 || s[1] >= 0x88)))
-      return _invalidChar(wc);
+      return _invalidChar(7,wc);
     wc = ((Int32) (c & 0x03) << 24)
     | ((Int32) (s[1] ^ 0x80) << 18)
     | ((Int32) (s[2] ^ 0x80) << 12)
@@ -166,7 +167,6 @@ utf8_to_ucs4(Span<const Byte> uchar,Int64 index,Int32& wc)
     | (Int32) (s[4] ^ 0x80);
     return 5;
   }
-
   if (c < 0xfe) {
     if (n < 6)
       return _notEnoughChar(wc);
@@ -174,7 +174,7 @@ utf8_to_ucs4(Span<const Byte> uchar,Int64 index,Int32& wc)
           && (s[3] ^ 0x80) < 0x40 && (s[4] ^ 0x80) < 0x40
           && (s[5] ^ 0x80) < 0x40
           && (c >= 0xfd || s[1] >= 0x84)))
-      return _invalidChar(wc);
+      return _invalidChar(8,wc);
     wc = ((Int32) (c & 0x01) << 30)
     | ((Int32) (s[1] ^ 0x80) << 24)
     | ((Int32) (s[2] ^ 0x80) << 18)
@@ -183,8 +183,7 @@ utf8_to_ucs4(Span<const Byte> uchar,Int64 index,Int32& wc)
     | (Int32) (s[5] ^ 0x80);
     return 6;
   }
-  return _invalidChar(wc);
-}
+  return _invalidChar(9,wc);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -201,8 +200,6 @@ utf8_to_ucs4(Span<const Byte> uchar,Int64 index,Int32& wc)
  * \param wc [out] valeur ucs4 du caractère.
  * \return le nombre de caractères utf16 lus.
  */
-namespace
-{
 Int64
 utf16_to_ucs4(Span<const UChar> uchar,Int64 index,Int32& wc)
 {
@@ -215,7 +212,7 @@ utf16_to_ucs4(Span<const UChar> uchar,Int64 index,Int32& wc)
     }
     Int32 wc2 = uchar[index+1];
     if (!(wc2>=0xdc00 && wc2<0xe000)){
-      std::cout << "WARNING: utf16_to_ucs4(): Invalid sequence in conversion input\n";
+      std::cout << "WARNING: utf16_to_ucs4(): Invalid sequence (1) '" << wc2 << "' in conversion input\n";
       wc = 0x1A;
       return 1;
     }
@@ -223,12 +220,16 @@ utf16_to_ucs4(Span<const UChar> uchar,Int64 index,Int32& wc)
     return 2;
   }
   else if (wc>=0xdc00 && wc<0xe0000){
-    std::cout << "WARNING: utf16_to_ucs4(): Invalid sequence in conversion input\n";
+    std::cout << "WARNING: utf16_to_ucs4(): Invalid sequence (2) '" << wc << "' in conversion input\n";
     wc = 0x1A;
     return 1;
   }
   return 1;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 }
 
 /*---------------------------------------------------------------------------*/
