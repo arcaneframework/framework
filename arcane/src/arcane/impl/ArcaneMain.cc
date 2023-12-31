@@ -21,7 +21,6 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ParallelFatalErrorException.h"
-#include "arcane/utils/StringImpl.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/ValueConvert.h"
