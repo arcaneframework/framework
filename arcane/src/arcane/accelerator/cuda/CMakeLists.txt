@@ -9,6 +9,10 @@ set(ARCANE_SOURCES
 
 arcane_find_package(CUDAToolkit REQUIRED)
 
+if ((ARCANE_HAS_CXX23) AND (CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 13.0))
+  message(FATAL_ERROR "CUDA <=12 doesn't support C++23. Add -DARCCORE_CXX_STANDARD=20 to the configuration")
+endif()
+
 # Créé une cible interface pour propager les options de compilation
 # communes pour la compilation CUDA
 
