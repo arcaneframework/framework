@@ -48,6 +48,8 @@ env:
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
   CT_OPTS: "--timeout 300 --output-on-failure"
+  # OpenMPI
+  OMPI_MCA_rmaps_base_oversubscribe : true
 
 jobs:
   arccon-install:
