@@ -18,7 +18,6 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StdHeader.h"
-#include "arcane/utils/StringImpl.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/TraceInfo.h"
@@ -136,7 +135,7 @@ String fromChar(const xmlChar* value)
   Integer len = ::xmlStrlen(value);
   // Ne pas oublier le '\0' terminal
   ByteConstArrayView bytes(len+1,value);
-  return DOMString(new StringImpl(bytes));
+  return DOMString(bytes);
 }
 
 String fromCharAndFree(xmlChar* value)

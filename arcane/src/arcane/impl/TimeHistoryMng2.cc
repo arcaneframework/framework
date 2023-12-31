@@ -18,7 +18,6 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
-#include "arcane/utils/StringImpl.h"
 
 #include "arcane/ITimeHistoryMng.h"
 #include "arcane/IIOMng.h"

@@ -19,7 +19,6 @@
 #include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/StringImpl.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/ArrayShape.h"
 
@@ -714,8 +713,7 @@ metaData()
   Integer nb_byte = static_cast<Integer>(hdf_dims[0]);
   ByteUniqueArray uchars(nb_byte);
   dataset_id.read(m_types.nativeType(Byte()),uchars.data());
-  //String s((const char*)bytes.begin(),true);
-  String s(new StringImpl(uchars));
+  String s(uchars);
   return s;
 }
 
