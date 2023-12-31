@@ -12,7 +12,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/String.h"
-#include "arccore/base/StringImpl.h"
 #include "arccore/base/StringBuilder.h"
 #include "arccore/base/CStringUtils.h"
 #include "arccore/base/APReal.h"
@@ -20,6 +19,8 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/StringView.h"
 #include "arccore/base/StringUtils.h"
+
+#include "arccore/base/internal/StringImpl.h"
 
 #include <iostream>
 #include <cstring>

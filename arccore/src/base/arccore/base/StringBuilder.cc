@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/StringBuilder.h"
-#include "arccore/base/StringImpl.h"
+#include "arccore/base/internal/StringImpl.h"
 #include "arccore/base/String.h"
 #include "arccore/base/StringView.h"
 

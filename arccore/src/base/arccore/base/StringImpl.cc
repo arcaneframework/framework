@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringImpl.cc                                               (C) 2000-2022 */
+/* StringImpl.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation d'une chaîne de caractère UTf-8 ou UTF-16.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/StringImpl.h"
+#include "arccore/base/internal/StringImpl.h"
 #include "arccore/base/BasicTranscoder.h"
 #include "arccore/base/CStringUtils.h"
 #include "arccore/base/StringView.h"
