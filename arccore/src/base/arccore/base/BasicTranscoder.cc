@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicTranscoder.cc                                          (C) 2000-2022 */
+/* BasicTranscoder.cc                                          (C) 2000-2023 */
 /*                                                                           */
-/* Conversions utf8/utf16/iso-8859-1.                                        */
+/* Conversions entre utf8 et utf16.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -271,74 +271,6 @@ ucs4_to_utf16(Int32 wc,CoreArray<UChar>& uchar)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Convertie iso-8859-1 vers utf16.
- */
-void  BasicTranscoder::
-transcodeFromISO88591ToUtf16(const std::string& s,CoreArray<UChar>& utf16)
-{
-  // La conversion ISO-8859-1 vers UTF-16 est simple
-  // puisque les valeurs sont identiques. Il suffit
-  // donc de copier le tableau
-  Integer len = arccoreCheckArraySize(s.length());
-  utf16.resize(len+1);
-  UChar* ustr = utf16.data();
-  const Byte* str = (const Byte*)s.c_str();
-  for( int i=0; i<len+1; ++i )
-    ustr[i] = str[i];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Conversion UTF-16 vers iso-8859-1.
- *
- * Le tableau \a utf16 a un zéro terminal qu'il ne faut pas
- * mettre dans \a s.
- */
-void BasicTranscoder::
-transcodeFromUtf16ToISO88591(Span<const UChar> utf16,std::string& s)
-{
-  const UChar* ustr = utf16.data();
-  Int64 len = utf16.size();
-
-  s.clear();
-
-  // Ne devrait pas arriver mais on ne sait jamais
-  if (len==0){
-    std::cerr << "WARNING: empty 'utf16' array\n";
-    s = "";
-    return;
-  }
-  --len;
-
-  for( int i=0; i<len; ++i ){
-    Int32 wc = ustr[i];
-    if (wc>=0xd800 && wc<0xdc00){
-      if ((i+1)==len){
-        wc = '?';
-      }
-      else{
-        ++i;
-        Int32 wc2 = ustr[i];
-        if (!(wc2>=0xdc00 && wc2<0xe000)){
-          //cout << "WARNING: utf16_to_ucs4(): Invalid sequence in conversion input\n";
-          wc = '?';
-        }
-        else{
-          wc = (0x10000 + ((wc-0xd800)<<10) + (wc2 - 0xdc00));
-        }
-      }
-    }
-    else if (wc>=0xdc00 && wc<0xe0000){
-      wc = '?';
-    }
-    s.push_back((Byte)wc);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 Int64 BasicTranscoder::
 stringLen(const UChar* ustr)
@@ -349,74 +281,6 @@ stringLen(const UChar* ustr)
   while ((*u)!=0)
     ++u;
   return arccoreCheckLargeArraySize((std::size_t)(u - ustr));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Traduit depuis ISO-8859-1 vers UTF8
-void BasicTranscoder::
-transcodeFromISO88591ToUtf8(const char* str,Int64 len,CoreArray<Byte>& utf8)
-{
-  if (len<0)
-    throw std::exception();
-  for( Integer i=0; i<len; ++i ){
-    Int32 w = (Byte)str[i];
-    if (w<0x80){
-      utf8.add((Byte)w);
-    }
-    else{
-      Int32 r1 = 0x80 | (w & 0x3f);
-      Int32 r0 = (w>>6) | 0xc0;
-      utf8.add((Byte)r0);
-      utf8.add((Byte)r1);
-    }
-  }
-  utf8.add(0);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void BasicTranscoder::
-transcodeFromUtf8ToISO88591(Span<const Byte> utf8,std::string& s)
-{
-  // Caractère utilisé si la conversion échoue.
-  const char fallback_char = '?';
-  const Byte* ustr = utf8.data();
-  Int64 len = utf8.size();
-  if (len==0){
-    std::cerr << "empty 'utf8' array\n";
-    s = "";
-    return;
-  }
-  --len;
-  //char* new_str = new char[(len+1)*2];
-  //Integer index = 0;
-  s.clear();
-  for( int i=0; i<len; ++i ){
-    Int32 w = ustr[i];
-    if (w<0x80){
-      s.push_back((char)w);
-    }
-    else if (w<0xc2){
-      // caractère 'utf8' incorrect
-      s.push_back(fallback_char);
-    }
-    else if (w<0xe0){
-      if ((i+1)==len){
-        s.push_back(fallback_char);
-        continue;
-      }
-      char x = (char)( ((Int32)(w & 0x1f) << 6) | ((Int32)(ustr[i+1] ^ 0x80)) );
-      s.push_back(x);
-      ++i;
-    }
-    else{
-      // caractère 'utf8' ne pouvant pas être convert en 'iso-8859-1'
-      s.push_back(fallback_char);
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/
