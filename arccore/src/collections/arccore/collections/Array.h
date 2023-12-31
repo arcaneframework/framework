@@ -189,6 +189,8 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(float);
 ARCCORE_DEFINE_ARRAY_PODTYPE(double);
 ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
 ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Float16);
+ARCCORE_DEFINE_ARRAY_PODTYPE(BFloat16);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
