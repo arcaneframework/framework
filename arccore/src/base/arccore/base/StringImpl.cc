@@ -78,15 +78,24 @@ _checkReference()
 /*---------------------------------------------------------------------------*/
 
 inline void StringImpl::
-_initFromSpan(Span<const Byte> bytes)
+_finalizeUtf8Creation()
 {
   m_flags = eValidUtf8;
-  m_utf8_array = bytes;
   // \a m_utf8_array doit toujours avoir un zéro terminal.
   if (m_utf8_array.empty())
     m_utf8_array.add('\0');
   else if (m_utf8_array.back()!='\0')
     m_utf8_array.add('\0');
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline void StringImpl::
+_initFromSpan(Span<const Byte> bytes)
+{
+  m_utf8_array = bytes;
+  _finalizeUtf8Creation();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -105,11 +114,11 @@ StringImpl(std::string_view str)
 /*---------------------------------------------------------------------------*/
 
 StringImpl::
-StringImpl(const UChar* str)
+StringImpl(Span<const UChar> uchars)
 : m_nb_ref(0)
 , m_flags(0)
 {
-  _setUtf16(str);
+  _setUtf16(uchars);
   m_flags = eValidUtf16;
 }
 
@@ -455,7 +464,7 @@ _createUtf8()
 
   if (m_flags & eValidUtf16){
     BasicTranscoder::transcodeFromUtf16ToUtf8(m_utf16_array,m_utf8_array);
-    m_flags |= eValidUtf8;
+    _finalizeUtf8Creation();
     return;
   }
 
@@ -466,13 +475,13 @@ _createUtf8()
 /*---------------------------------------------------------------------------*/
 
 void StringImpl::
-_setUtf16(const UChar* src)
+_setUtf16(Span<const UChar> src)
 {
-  ARCCORE_CHECK_PTR(src);
-  Int64 len = BasicTranscoder::stringLen(src);
-  m_utf16_array.resize(len+1);
-  ::memcpy(m_utf16_array.data(),src,sizeof(UChar)*len);
-  m_utf16_array[len] = 0;
+  m_utf16_array = src;
+  if (m_utf16_array.empty())
+    m_utf16_array.add(0);
+  else if (m_utf16_array.back()!='0')
+    m_utf16_array.add(0);
 }
 
 /*---------------------------------------------------------------------------*/

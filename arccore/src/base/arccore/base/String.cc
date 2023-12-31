@@ -78,7 +78,7 @@ String(StringView str)
 
 String::
 String(const UCharConstArrayView& ustr)
-: m_p(new StringImpl(ustr.data()))
+: m_p(new StringImpl(ustr))
 , m_const_ptr_size(-1)
 {
   m_p->addReference();

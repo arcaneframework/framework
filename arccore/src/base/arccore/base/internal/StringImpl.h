@@ -45,13 +45,15 @@ class StringView;
  */
 class ARCCORE_BASE_EXPORT StringImpl
 {
+  friend class String;
+  friend class StringBuilder;
  public:
   StringImpl(std::string_view str);
-  StringImpl(const UChar* str);
   StringImpl(const StringImpl& str);
   StringImpl(Span<const Byte> bytes);
  private:
   StringImpl();
+  StringImpl(Span<const UChar> uchars);
  public:
   //TODO: rendre obsolète.
   UCharConstArrayView utf16();
@@ -97,7 +99,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   CoreArray<UChar> m_utf16_array;
   CoreArray<Byte> m_utf8_array;
 
-  void _setUtf16(const UChar* src);
+  void _setUtf16(Span<const UChar> src);
   void _createUtf16();
   void _setUtf8(const Byte* src);
   void _createUtf8();
@@ -110,6 +112,7 @@ class ARCCORE_BASE_EXPORT StringImpl
   void _printStrUtf8(std::ostream& o,Span<const Byte> str);
   void _appendUtf8(Span<const Byte> ref_str);
   inline void _initFromSpan(Span<const Byte> bytes);
+  inline void _finalizeUtf8Creation();
 };
 
 /*---------------------------------------------------------------------------*/

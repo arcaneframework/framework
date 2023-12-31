@@ -37,7 +37,7 @@ StringBuilder(const std::string& str)
 
 StringBuilder::
 StringBuilder(const UCharConstArrayView& ustr)
-: m_p(new StringImpl(ustr.data()))
+: m_p(new StringImpl(ustr))
 {
   m_p->addReference();
 }
