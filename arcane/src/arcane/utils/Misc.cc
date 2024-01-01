@@ -11,8 +11,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/StdHeader.h"
@@ -73,6 +71,20 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(double& v,const String& s)
   char* ptr2 = 0;
   v = ::strtod(ptr,&ptr2);
   return (ptr2!=(ptr+s.length()));
+}
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BFloat16& v,const String& s)
+{
+  float z = 0.0;
+  bool r = builtInGetValue(z,s);
+  v = z;
+  return r;
+}
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16& v,const String& s)
+{
+  float z = 0.0;
+  bool r = builtInGetValue(z,s);
+  v = z;
+  return r;
 }
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(float& v,const String& s)
 {
