@@ -172,15 +172,15 @@ endif()
 
 # ----------------------------------------------------------------------------
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CheckCompileFlags.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckCompileFlags.cmake)
 
 # ----------------------------------------------------------------------------
 # Fonctions utilitaires diverses
-include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Functions.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Functions.cmake)
 
 # ----------------------------------------------------------------------------
 # Regarde la taille des différents types (short,int,long,long long) du C++
-include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CheckArccoreTypeSize.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckArccoreTypeSize.cmake)
 
 # ----------------------------------------------------------------------------
 
@@ -247,7 +247,7 @@ write_basic_package_version_file(
 #   * TARGETS_EXPORT_NAME
 #   * PROJECT_NAME
 configure_package_config_file(
-  "CMake/ArccoreConfig.cmake.in"
+  "cmake/ArccoreConfig.cmake.in"
   "${project_config}"
   INSTALL_DESTINATION "${config_install_dir}"
   )
