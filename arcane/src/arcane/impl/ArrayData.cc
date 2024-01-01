@@ -726,6 +726,10 @@ registerArrayDataFactory(IDataFactoryMng* dfm)
 {
   DataStorageFactory<ArrayDataT<Byte>>::registerDataFactory(dfm);
   DataStorageFactory<ArrayDataT<Real>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Float16>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<BFloat16>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Float32>>::registerDataFactory(dfm);
+  DataStorageFactory<ArrayDataT<Int8>>::registerDataFactory(dfm);
   DataStorageFactory<ArrayDataT<Int16>>::registerDataFactory(dfm);
   DataStorageFactory<ArrayDataT<Int32>>::registerDataFactory(dfm);
   DataStorageFactory<ArrayDataT<Int64>>::registerDataFactory(dfm);
@@ -740,6 +744,10 @@ registerArrayDataFactory(IDataFactoryMng* dfm)
 
 template class ArrayDataT<Byte>;
 template class ArrayDataT<Real>;
+template class ArrayDataT<Float16>;
+template class ArrayDataT<BFloat16>;
+template class ArrayDataT<Float32>;
+template class ArrayDataT<Int8>;
 template class ArrayDataT<Int16>;
 template class ArrayDataT<Int32>;
 template class ArrayDataT<Int64>;

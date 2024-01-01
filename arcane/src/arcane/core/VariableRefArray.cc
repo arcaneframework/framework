@@ -1,28 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefArray.cc                                         (C) 2000-2021 */
+/* VariableRefArray.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Référence à une variable tableau 1D.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableRefArray.h"
+#include "arcane/core/VariableRefArray.h"
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/VariableArray.h"
-#include "arcane/VariableRefArrayLock.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableInfo.h"
-#include "arcane/VariableDataTypeTraits.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/VariableFactoryRegisterer.h"
+#include "arcane/core/VariableArray.h"
+#include "arcane/core/VariableRefArrayLock.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/VariableDataTypeTraits.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/VariableFactoryRegisterer.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -202,16 +202,8 @@ _internalTrueData()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class VariableRefArrayT<Byte>;
-template class VariableRefArrayT<Real>;
-template class VariableRefArrayT<Int16>;
-template class VariableRefArrayT<Int32>;
-template class VariableRefArrayT<Int64>;
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(VariableRefArrayT);
 template class VariableRefArrayT<String>;
-template class VariableRefArrayT<Real2>;
-template class VariableRefArrayT<Real3>;
-template class VariableRefArrayT<Real2x2>;
-template class VariableRefArrayT<Real3x3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

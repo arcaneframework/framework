@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -702,15 +702,7 @@ fillShape(ArrayShape& shape_with_item)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class Array2VariableT<Byte>;
-template class Array2VariableT<Real>;
-template class Array2VariableT<Int16>;
-template class Array2VariableT<Int32>;
-template class Array2VariableT<Int64>;
-template class Array2VariableT<Real2>;
-template class Array2VariableT<Real2x2>;
-template class Array2VariableT<Real3>;
-template class Array2VariableT<Real3x3>;
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(Array2VariableT);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

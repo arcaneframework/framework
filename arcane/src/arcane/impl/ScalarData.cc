@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ScalarData.cc                                               (C) 2000-2023 */
+/* ScalarData.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Donnée de type scalaire.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -421,6 +421,10 @@ registerScalarDataFactory(IDataFactoryMng* dfm)
 {
   DataStorageFactory<ScalarDataT<Byte>>::registerDataFactory(dfm);
   DataStorageFactory<ScalarDataT<Real>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<BFloat16>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Float16>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Float32>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Int8>>::registerDataFactory(dfm);
   DataStorageFactory<ScalarDataT<Int16>>::registerDataFactory(dfm);
   DataStorageFactory<ScalarDataT<Int32>>::registerDataFactory(dfm);
   DataStorageFactory<ScalarDataT<Int64>>::registerDataFactory(dfm);
@@ -435,6 +439,10 @@ registerScalarDataFactory(IDataFactoryMng* dfm)
 
 template class ScalarDataT<Byte>;
 template class ScalarDataT<Real>;
+template class ScalarDataT<BFloat16>;
+template class ScalarDataT<Float16>;
+template class ScalarDataT<Float32>;
+template class ScalarDataT<Int8>;
 template class ScalarDataT<Int16>;
 template class ScalarDataT<Int32>;
 template class ScalarDataT<Int64>;

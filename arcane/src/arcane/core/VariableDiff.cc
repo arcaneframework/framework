@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableDiff.cc                                             (C) 2000-2023 */
+/* VariableDiff.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des différences entre les variables                               */
 /*---------------------------------------------------------------------------*/
@@ -89,9 +89,13 @@ dump(ConstArrayView<DiffInfo> diffs_info, IVariable* var, IParallelMng* pm, int 
 
 template class VariableDiff<Byte>::DiffPrinter;
 template class VariableDiff<Real>::DiffPrinter;
+template class VariableDiff<Int8>::DiffPrinter;
 template class VariableDiff<Int16>::DiffPrinter;
 template class VariableDiff<Int32>::DiffPrinter;
 template class VariableDiff<Int64>::DiffPrinter;
+template class VariableDiff<BFloat16>::DiffPrinter;
+template class VariableDiff<Float16>::DiffPrinter;
+template class VariableDiff<Float32>::DiffPrinter;
 template class VariableDiff<Real2>::DiffPrinter;
 template class VariableDiff<Real2x2>::DiffPrinter;
 template class VariableDiff<Real3>::DiffPrinter;
