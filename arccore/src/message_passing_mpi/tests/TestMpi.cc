@@ -8,6 +8,8 @@
 
 #include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
 #include "arccore/base/Ref.h"
+#include "arccore/base/BFloat16.h"
+#include "arccore/base/Float16.h"
 #include "arccore/collections/Array.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/serialize/ISerializer.h"
@@ -75,6 +77,38 @@ TEST(MessagePassingMpi, SerializeGather)
   ASSERT_EQ(send_buf[0], receive_buf[0]);
   ASSERT_EQ(send_buf[1], receive_buf[1]);
   ASSERT_EQ(send_buf[2], receive_buf[2]);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+
+template <typename DataType>
+void _doTestFloat16(IMessagePassingMng* pm)
+{
+  ASSERT_EQ(pm->commSize(), 2);
+  Int32 my_rank = pm->commRank();
+  UniqueArray<DataType> send_buf = { DataType{ -1.2f }, DataType{ 4.5f }, DataType{ 3.2e5f } };
+  UniqueArray<DataType> receive_buf(send_buf.size());
+  if (my_rank == 0) {
+    mpSend(pm, send_buf, 1);
+  }
+  else {
+    mpReceive(pm, receive_buf, 0);
+    ASSERT_EQ(send_buf, receive_buf);
+  }
+}
+} // namespace
+
+TEST(MessagePassingMpi, Float16)
+{
+  // Teste uniquement l'appel. Les tests avec des vraies valeurs
+  // sont faits dans Arcane.
+  Ref<IMessagePassingMng> pm(StandaloneMpiMessagePassingMng::createRef(global_mpi_comm_world));
+  _doTestFloat16<Float16>(pm.get());
+  _doTestFloat16<BFloat16>(pm.get());
 }
 
 /*---------------------------------------------------------------------------*/
