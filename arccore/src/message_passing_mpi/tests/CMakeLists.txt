@@ -26,6 +26,7 @@ endmacro()
 mp_add_test(TEST_NAME Simple NB_PROC 1)
 mp_add_test(TEST_NAME Simple NB_PROC 2)
 mp_add_test(TEST_NAME SerializeGather NB_PROC 3)
+mp_add_test(TEST_NAME Float16 NB_PROC 2)
 
 # ----------------------------------------------------------------------------
 # Local Variables:

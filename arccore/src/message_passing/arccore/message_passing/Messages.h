@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Messages.h                                                  (C) 2000-2023 */
+/* Messages.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Interface du gestionnaire des échanges de messages.                       */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arccore/message_passing/IDispatchers.h"
 #include "arccore/message_passing/ITypeDispatcher.h"
 #include "arccore/message_passing/Request.h"
+
 #include "arccore/base/RefDeclarations.h"
 #include "arccore/base/Span.h"
 
@@ -31,146 +32,79 @@ namespace Arccore::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 #define ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(type) \
-  /*! AllGather */\
-  inline void mpAllGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf) \
-  { \
-    type* x = nullptr; \
-    pm->dispatchers()->dispatcher(x)->allGather(send_buf, recv_buf); \
-  } \
-  /*! gather */\
-  inline void mpGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 rank) \
-  { \
-    type* x = nullptr; \
-    pm->dispatchers()->dispatcher(x)->gather(send_buf, recv_buf, rank); \
-  } \
-  /*! AllGather non bloquant */\
-  inline Request mpNonBlockingAllGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->nonBlockingAllGather(send_buf, recv_buf); \
-  } \
-  /*! Gather non bloquant */\
-  inline Request mpNonBlockingGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 rank) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->nonBlockingGather(send_buf, recv_buf, rank); \
-  } \
-  /*! AllGatherVariable */\
-  inline void mpAllGatherVariable(IMessagePassingMng* pm, Span<const type> send_buf, Array<type>& recv_buf) \
-  { \
-    type* x = nullptr; \
-    pm->dispatchers()->dispatcher(x)->allGatherVariable(send_buf, recv_buf); \
-  } \
-  /*! GatherVariable */\
-  inline void mpGatherVariable(IMessagePassingMng* pm, Span<const type> send_buf, Array<type>& recv_buf, Int32 rank) \
-  { \
-    type* x = nullptr; \
-    pm->dispatchers()->dispatcher(x)->gatherVariable(send_buf, recv_buf, rank); \
-  } \
-  /*! Generic Gather */\
-  inline Request mpGather(IMessagePassingMng* pm, GatherMessageInfo<type>& gather_info) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->gather(gather_info); \
-  } \
-  /*! ScatterVariable */\
-  inline void mpScatterVariable(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 root); \
-  /*! AllReduce */\
-  inline type mpAllReduce(IMessagePassingMng* pm, eReduceType rt, type v) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->allReduce(rt, v); \
-  } \
-  /*! AllReduce */\
-  inline void mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<type> buf) \
-  { \
-    type* x = nullptr; \
-    pm->dispatchers()->dispatcher(x)->allReduce(rt, buf); \
-  } \
-  /*! AllReduce non bloquant */\
-  inline Request mpNonBlockingAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> recv_buf) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->nonBlockingAllReduce(rt, send_buf, recv_buf); \
-  } \
-  /*! Broadcast */\
-  inline void mpBroadcast(IMessagePassingMng* pm, Span<type> send_buf, Int32 rank) \
-  { \
-    type* x = nullptr; \
-    pm->dispatchers()->dispatcher(x)->broadcast(send_buf, rank); \
-  } \
-  /*! Broadcast non bloquant */\
-  inline Request mpNonBlockingBroadcast(IMessagePassingMng* pm, Span<type> send_buf, Int32 rank) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->nonBlockingBroadcast(send_buf, rank); \
-  } \
-  /*! Send */\
-  inline void mpSend(IMessagePassingMng* pm, Span<const type> values, Int32 rank) \
-  { \
-    type* x = nullptr; \
-    pm->dispatchers()->dispatcher(x)->send(values, rank, true); \
-  } \
-  /*! Receive */\
-  inline void mpReceive(IMessagePassingMng* pm, Span<type> values, Int32 rank) \
-  { \
-    type* x = nullptr; \
-    pm->dispatchers()->dispatcher(x)->receive(values, rank, true); \
-  } \
-  /*! Send */\
-  inline Request mpSend(IMessagePassingMng* pm, Span<const type> values, Int32 rank, bool is_blocked) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->send(values, rank, is_blocked); \
-  } \
-  /*! Send */\
-  inline Request mpSend(IMessagePassingMng* pm, Span<const type> values, const PointToPointMessageInfo& message) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->send(values, message); \
-  } \
-  /*! Receive */\
-  inline Request mpReceive(IMessagePassingMng* pm, Span<type> values, Int32 rank, bool is_blocked) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->receive(values, rank, is_blocked); \
-  } \
-  /*! Receive */\
-  inline Request mpReceive(IMessagePassingMng* pm, Span<type> values, const PointToPointMessageInfo& message) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->receive(values, message); \
-  } \
-  /*! AllToAll */\
-  inline void mpAllToAll(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 count) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->allToAll(send_buf, recv_buf, count); \
-  } \
-  /*! AllToAll non bloquant */\
-  inline Request mpNonBlockingAllToAll(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 count) \
-  { \
-    type* x = nullptr; \
-    return pm->dispatchers()->dispatcher(x)->nonBlockingAllToAll(send_buf, recv_buf, count); \
-  } \
-  /*! AllToAllVariable */\
-  inline void mpAllToAllVariable(IMessagePassingMng* pm, Span<const type> send_buf, ConstArrayView<Int32> send_count, \
-                                 ConstArrayView<Int32> send_index, Span<type> recv_buf, \
-                                 ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) \
-  { \
-    type* x = nullptr; \
-    auto d = pm->dispatchers()->dispatcher(x); \
-    d->allToAllVariable(send_buf, send_count, send_index, recv_buf, recv_count, recv_index); \
-  } \
-  /*! AllToAllVariable non bloquant */\
-  inline Request mpNonBlockingAllToAllVariable(IMessagePassingMng* pm, Span<const type> send_buf, ConstArrayView<Int32> send_count, \
-                                               ConstArrayView<Int32> send_index, Span<type> recv_buf, \
-                                               ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) \
-  { \
-    type* x = nullptr; \
-    auto d = pm->dispatchers()->dispatcher(x); \
-    return d->nonBlockingAllToAllVariable(send_buf, send_count, send_index, recv_buf, recv_count, recv_index); \
-  }
+  /*! AllGather */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpAllGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf); \
+  /*! gather */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 rank); \
+  /*! AllGather non bloquant */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpNonBlockingAllGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf); \
+  /*! Gather non bloquant */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpNonBlockingGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 rank); \
+  /*! AllGatherVariable */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpAllGatherVariable(IMessagePassingMng* pm, Span<const type> send_buf, Array<type>& recv_buf); \
+  /*! GatherVariable */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpGatherVariable(IMessagePassingMng* pm, Span<const type> send_buf, Array<type>& recv_buf, Int32 rank); \
+  /*! Generic Gather */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpGather(IMessagePassingMng* pm, GatherMessageInfo<type>& gather_info); \
+  /*! ScatterVariable */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpScatterVariable(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 root); \
+  /*! AllReduce */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT type \
+  mpAllReduce(IMessagePassingMng* pm, eReduceType rt, type v); \
+  /*! AllReduce */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<type> buf); \
+  /*! AllReduce non bloquant */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpNonBlockingAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> recv_buf); \
+  /*! Broadcast */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpBroadcast(IMessagePassingMng* pm, Span<type> send_buf, Int32 rank); \
+  /*! Broadcast non bloquant */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpNonBlockingBroadcast(IMessagePassingMng* pm, Span<type> send_buf, Int32 rank); \
+  /*! Send */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpSend(IMessagePassingMng* pm, Span<const type> values, Int32 rank); \
+  /*! Receive */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpReceive(IMessagePassingMng* pm, Span<type> values, Int32 rank); \
+  /*! Send */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpSend(IMessagePassingMng* pm, Span<const type> values, Int32 rank, bool is_blocked); \
+  /*! Send */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpSend(IMessagePassingMng* pm, Span<const type> values, const PointToPointMessageInfo& message); \
+  /*! Receive */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpReceive(IMessagePassingMng* pm, Span<type> values, Int32 rank, bool is_blocked); \
+  /*! Receive */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpReceive(IMessagePassingMng* pm, Span<type> values, const PointToPointMessageInfo& message); \
+  /*! AllToAll */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpAllToAll(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 count); \
+  /*! AllToAll non bloquant */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpNonBlockingAllToAll(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 count); \
+  /*! AllToAllVariable */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpAllToAllVariable(IMessagePassingMng* pm, Span<const type> send_buf, ConstArrayView<Int32> send_count, \
+                     ConstArrayView<Int32> send_index, Span<type> recv_buf, \
+                     ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index); \
+  /*! AllToAllVariable non bloquant */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
+  mpNonBlockingAllToAllVariable(IMessagePassingMng* pm, Span<const type> send_buf, ConstArrayView<Int32> send_count, \
+                                ConstArrayView<Int32> send_index, Span<type> recv_buf, \
+                                ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -348,6 +282,11 @@ ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(unsigned long long)
 ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(float)
 ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(double)
 ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(long double)
+
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(BFloat16)
+ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(Float16)
+
+#undef ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
