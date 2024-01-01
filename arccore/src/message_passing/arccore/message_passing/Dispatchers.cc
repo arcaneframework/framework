@@ -14,6 +14,7 @@
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/ITypeDispatcher.h"
 #include "arccore/message_passing/IControlDispatcher.h"
+#include "arccore/message_passing/ISerializeDispatcher.h"
 #include "arccore/message_passing/Request.h"
 
 #include "arccore/base/NotImplementedException.h"
@@ -56,6 +57,7 @@ Dispatchers::
     delete m_bfloat16;
     delete m_float16;
     delete m_control;
+    delete m_serialize;
   }
 }
 
