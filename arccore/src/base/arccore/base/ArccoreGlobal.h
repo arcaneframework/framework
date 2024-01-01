@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.h                                             (C) 2000-2023 */
+/* ArccoreGlobal.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -18,8 +18,8 @@
 
 #include "arccore/arccore_config.h"
 
-#ifdef ARCANE_VALID_TARGET
-#  undef ARCANE_VALID_TARGET
+#ifdef ARCCORE_VALID_TARGET
+#  undef ARCCORE_VALID_TARGET
 #endif
 
 // Determine le type de l'os.
@@ -462,7 +462,7 @@ arccoreSetPauseOnError(bool v);
  * \brief Signalue l'utilisation d'un pointeur nul.
  *
  * Signale une tentative d'utilisation d'un pointeur nul.
- * Affiche un message, appelle arcaneDebugPause() et lance une exception
+ * Affiche un message, appelle arccoreDebugPause() et lance une exception
  * de type FatalErrorException.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
@@ -593,6 +593,58 @@ _checkPointer(T* t,const char* file,const char* func,int line)
 #  define ARCCORE_WARNING(a)
 #  define ARCCORE_DCHECK_POINTER(a) (a);
 #endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Signalee l'utilisation d'un pointeur nul en envoyant une exception
+ *
+ * Signale une tentative d'utilisation d'un pointeur nul.
+ * Lance une exception de type FatalErrorException.
+ *
+ * Dans l'exception, affiche \a text si non nul, sinon affiche \a ptr_name.
+ *
+ * Normalement cette méthode ne doit pas être appelée directement mais
+ * via la macro ARCCORE_CHECK_POINTER.
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreThrowNullPointerError [[noreturn]] (const char* ptr_name,const char* text);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie qu'un pointeur n'est pas nul.
+ *
+ * Si le pointeur est nul, appelle arccoreThrowNullPointerError().
+ * Sinon, retourne le pointeur.
+ */
+inline void*
+arccoreThrowIfNull(void* ptr,const char* ptr_name,const char* text)
+{
+  if (!ptr)
+    arccoreThrowNullPointerError(ptr_name,text);
+  return ptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Macro retournant le pointeur \a ptr s'il est non nul
+ * ou lancant une exception s'il est nul.
+ *
+ * \sa arccoreThrowIfNull().
+ */
+#define ARCCORE_CHECK_POINTER(ptr) \
+  arccoreThrowIfNull(ptr,#ptr,nullptr)
+
+/*!
+ * \brief Macro retournant le pointeur \a ptr s'il est non nul
+ * ou lancant une exception s'il est nul.
+ *
+ * \sa arccoreThrowIfNull().
+ */
+#define ARCCORE_CHECK_POINTER2(ptr,text)\
+  arccoreThrowIfNull(ptr,#ptr,text)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

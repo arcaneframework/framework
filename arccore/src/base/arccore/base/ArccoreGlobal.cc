@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.cc                                            (C) 2000-2023 */
+/* ArccoreGlobal.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -144,6 +144,15 @@ arccoreNullPointerError()
   std::cerr << "** FATAL: Trying to dereference a null pointer.\n";
   arccoreDebugPause("arcaneNullPointerPtr");
   throw FatalErrorException(A_FUNCINFO,"null pointer");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreThrowNullPointerError(const char* ptr_name,const char* text)
+{
+  throw FatalErrorException(A_FUNCINFO,text ? text : ptr_name);
 }
 
 /*---------------------------------------------------------------------------*/
