@@ -14,6 +14,7 @@ set(SOURCES
   Array4View.h
   ArgumentException.cc
   ArgumentException.h
+  BuiltInDataTypeContainer.h
   BFloat16.h
   CheckedPointer.h
   CStringUtils.h
