@@ -7,8 +7,10 @@
 #include <gtest/gtest.h>
 
 #include "arccore/serialize/BasicSerializer.h"
+
 #include "arccore/base/Ref.h"
 #include "arccore/base/FatalErrorException.h"
+#include "arccore/base/ValueFiller.h"
 
 using namespace Arccore;
 
@@ -97,12 +99,10 @@ class SerializeValue
     ASSERT_EQ(m_array_values[0], m_unique_value);
   }
 
-  template <typename Lambda> void
-  resizeAndFill(Int32 size, const Lambda& func)
+  void resizeAndFill(Int32 size)
   {
     m_array_values.resize(size);
-    for (Int32 i = 0; i < size; ++i)
-      m_array_values[i] = func(i);
+    ValueFiller::fillRandom(542, m_array_values.span());
   }
 
  public:
@@ -175,11 +175,10 @@ class SerializeValueList
       v->checkValid();
   }
 
-  template <typename DataType, typename Lambda> void
-  add(Int32 size, const Lambda& func)
+  template <typename DataType> void add(Int32 size)
   {
     auto* sval = new SerializeValue<DataType>();
-    sval->resizeAndFill(size, func);
+    sval->resizeAndFill(size);
     m_values.add(sval);
   }
   void addString(const String& v)
@@ -202,15 +201,15 @@ void _doMisc()
 
   SerializeValueList values;
 
-  values.add<Float16>(12679, [](Int32 i) { return -2500.0f + (static_cast<float>(i) * 2.3f); });
-  values.add<BFloat16>(3212, [](Int32 i) { return 1500.0f + (static_cast<float>(i) * -1.3f); });
-  values.add<Int8>(6357, [](Int32 i) { return static_cast<Int8>(23 + i * 2); });
-  values.add<Float32>(983, [](Int32 i) { return -2500.0e15f + (static_cast<float>(i) * 2.3e2f); });
-  values.add<Int16>(16353, [](Int32 i) { return static_cast<Int16>(-256 + i * 4); });
-  values.add<Real>(29123, [](Int32 i) { return 129.0 + (static_cast<Real>(i) * -230.0e12); });
-  values.add<Int32>(16, [](Int32 i) { return static_cast<Int32>(-124254 + i * (-23)); });
-  values.add<Byte>(3289, [](Int32 i) { return static_cast<Byte>(-159 + i * 2); });
-  values.add<Int64>(12932, [](Int32 i) { return -124254342 + i * (-2332); });
+  values.add<Float16>(12679);
+  values.add<BFloat16>(3212);
+  values.add<Int8>(6357);
+  values.add<Float32>(983);
+  values.add<Int16>(16353);
+  values.add<Real>(29123);
+  values.add<Int32>(16);
+  values.add<Byte>(3289);
+  values.add<Int64>(12932);
   values.addString("Ceci est un test de chaîne de caractères");
 
   serializer->setMode(ISerializer::ModeReserve);
