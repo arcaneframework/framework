@@ -40,22 +40,8 @@ Dispatchers::
 ~Dispatchers()
 {
   if (m_is_delete_dispatchers) {
-    delete m_char;
-    delete m_unsigned_char;
-    delete m_signed_char;
-    delete m_short;
-    delete m_unsigned_short;
-    delete m_int;
-    delete m_unsigned_int;
-    delete m_long;
-    delete m_unsigned_long;
-    delete m_long_long;
-    delete m_unsigned_long_long;
-    delete m_float;
-    delete m_double;
-    delete m_long_double;
-    delete m_bfloat16;
-    delete m_float16;
+    m_container.apply([&](auto x){ delete x; });
+
     delete m_control;
     delete m_serialize;
   }
