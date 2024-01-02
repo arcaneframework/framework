@@ -127,7 +127,7 @@ class FillTraitsBaseT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
+template <typename DataType, typename RandomGeneratorDataType = DataType>
 class IntegerFillTraitsT
 : public FillTraitsBaseT<DataType>
 {
@@ -135,7 +135,7 @@ class IntegerFillTraitsT
 
  public:
 
-  using UniformGeneratorType = std::uniform_int_distribution<DataType>;
+  using UniformGeneratorType = std::uniform_int_distribution<RandomGeneratorDataType>;
 
  public:
 
@@ -169,19 +169,19 @@ class FloatFillTraitsT
 
 template <>
 class FillTraitsT<char>
-: public IntegerFillTraitsT<char>
+: public IntegerFillTraitsT<char,std::conditional<std::is_signed_v<char>,short,unsigned short>::type>
 {
 };
 
 template <>
 class FillTraitsT<signed char>
-: public IntegerFillTraitsT<signed char>
+: public IntegerFillTraitsT<signed char,short>
 {
 };
 
 template <>
 class FillTraitsT<unsigned char>
-: public IntegerFillTraitsT<unsigned char>
+: public IntegerFillTraitsT<unsigned char,unsigned short>
 {
 };
 
@@ -292,7 +292,7 @@ void fillRandom(Int64 seed, Span<DataType> values)
 
   Int64 n1 = values.size();
   for (Int32 i = 0; i < n1; ++i) {
-    values[i] = rng_distrib(randomizer);
+    values[i] = static_cast<DataType>(rng_distrib(randomizer));
   }
 }
 
