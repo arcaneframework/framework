@@ -324,3 +324,55 @@ dl.deprecated dd {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+
+/*
+ * Début : Personnalisation de la partie spoiler.
+ */
+details {
+  border: 1px solid;
+  border-color: var(--separator-color);
+  border-radius: 4px;
+  padding: 0.5em 0.5em 0;
+  margin: 10px 0 10px 0;
+}
+
+summary {
+  background-color: var(--side-nav-background);
+  margin: -0.5em -0.5em 0;
+  padding: 0.5em;
+  transition: color .08s ease-in-out, background-color .1s ease-in-out;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+summary:hover {
+  color: var(--primary-color) !important;
+  background-color: var(--odd-color);
+}
+
+summary::before {
+  content: '⯈' !important;
+}
+
+details[open] {
+  padding: 0.5em;
+}
+
+details[open] summary {
+  border-bottom: 2px solid;
+  border-bottom-color: var(--primary-color);
+  margin-bottom: 0.5em;
+  color: var(--primary-color) !important;
+}
+
+details[open] summary::before {
+  content: '⯆' !important;
+}
+/*
+ * Fin : Personnalisation de la partie spoiler.
+ */
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
