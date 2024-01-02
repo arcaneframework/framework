@@ -17,6 +17,8 @@
 #include "arccore/message_passing/Stat.h"
 #include "arccore/trace/ITraceMng.h"
 #include "arccore/base/ReferenceCounter.h"
+#include "arccore/base/BFloat16.h"
+#include "arccore/base/Float16.h"
 
 #include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiDatatype.h"
@@ -158,7 +160,7 @@ create(MPI_Comm mpi_comm, bool clean_comm)
     MPI_Datatype mpi_datatype;
     MPI_Type_contiguous(2, uint8_datatype, &mpi_datatype);
     MPI_Type_commit(&mpi_datatype);
-    auto* x = new MpiDatatype(mpi_datatype, false, nullptr);
+    auto* x = new MpiDatatype(mpi_datatype, false, new StdMpiReduceOperator<BFloat16>(true));
     _createAndSetCustomDispatcher<BFloat16>(dsp, mpm, adapter, x);
   }
   {
@@ -166,7 +168,7 @@ create(MPI_Comm mpi_comm, bool clean_comm)
     MPI_Datatype mpi_datatype;
     MPI_Type_contiguous(2, uint8_datatype, &mpi_datatype);
     MPI_Type_commit(&mpi_datatype);
-    auto* x = new MpiDatatype(mpi_datatype, false, nullptr);
+    auto* x = new MpiDatatype(mpi_datatype, false, new StdMpiReduceOperator<Float16>(true));
     _createAndSetCustomDispatcher<Float16>(dsp, mpm, adapter, x);
   }
   return mpm;
