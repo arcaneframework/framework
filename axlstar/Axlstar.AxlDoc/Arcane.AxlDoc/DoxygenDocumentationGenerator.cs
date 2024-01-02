@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Xml;
+using System.Text;
 using Arcane.Axl;
 
 namespace Arcane.AxlDoc
@@ -264,7 +265,7 @@ namespace Arcane.AxlDoc
       // à la fin de la chaine de caractères.
       Stack<string> stack_balises = new Stack<string>();
 
-      string output_text = "";
+      StringBuilder output_string = new StringBuilder();
 
       string[] lines = input_text.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
       foreach (string line in lines)
@@ -281,7 +282,7 @@ namespace Arcane.AxlDoc
             if(!string.IsNullOrEmpty(balises[word])){
               stack_balises.Push(balises[word]);
             }
-            output_text += word + " ";
+            output_string.Append(word).Append(" ");
           }
 
           // Vérifie si le mot est une balise fermante.
@@ -289,25 +290,25 @@ namespace Arcane.AxlDoc
 
             // Dépile et écrit les balises jusqu'à trouver la bonne balise fermante.
             while (stack_balises.Count > 0 && stack_balises.Peek() != word){
-              output_text += stack_balises.Pop() + " ";
+              output_string.Append(stack_balises.Pop()).Append(" ");
             }
 
             // Retire la balise fermante de la pile si elle a été trouvée.
             if (stack_balises.Count > 0 && stack_balises.Peek() == word){
-              output_text += stack_balises.Pop() + " ";
+              output_string.Append(stack_balises.Pop()).Append(" ");
             }
           }
 
           // Si le mot commence par un backslash, n'est pas une balise connue et si la stack
           // n'est pas vide, on retire le backslash.
           else if (word.StartsWith("\\") && stack_balises.Count == 0){
-            output_text += word.Substring(1) + " ";
+            output_string.Append(word.Substring(1)).Append(" ");
             nb_char += word.Length - 1;
           }
 
           // Si ce n'est pas une balise et ne commence pas par un backslash, on ajoute tel quel le mot.
           else{
-            output_text += word + " ";
+            output_string.Append(word).Append(" ");
             nb_char += word.Length;
           }
 
@@ -323,18 +324,16 @@ namespace Arcane.AxlDoc
         if(nb_char >= max_nb_char && (!force_close_cmds || stack_balises.Count == 0)){
           break;
         }
-        output_text += Environment.NewLine;
+        output_string.Append(Environment.NewLine);
       }
 
       // Ajoute les balises restantes de la stack à la fin du texte.
       while (stack_balises.Count > 0){
-        output_text += stack_balises.Pop() + " ";
+        output_string.Append(stack_balises.Pop()).Append(" ");
       }
 
-      // Supprime le retour à la ligne final.
-      output_text = output_text.TrimEnd(Environment.NewLine.ToCharArray());
-
-      return output_text;
+      // Récupère le string et supprime le retour à la ligne final.
+      return output_string.ToString().TrimEnd(Environment.NewLine.ToCharArray());
     }
 
     /*!
