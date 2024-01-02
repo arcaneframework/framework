@@ -7,6 +7,7 @@ arccore_add_component_test_executable(base
   TestArrayView.cc
   TestReferenceCounter.cc
   TestRef.cc
+  TestValueFiller.cc
   )
 
 target_link_libraries(arccore_base.tests PUBLIC arccore_base GTest::GTest GTest::Main)

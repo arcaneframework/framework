@@ -65,6 +65,7 @@ set(SOURCES
   TraceInfo.h
   TimeoutException.h
   TimeoutException.cc
+  ValueFiller.h
 
   IFunctor.h
   Functor.h
