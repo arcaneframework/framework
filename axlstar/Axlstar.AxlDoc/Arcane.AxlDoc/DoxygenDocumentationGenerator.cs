@@ -300,7 +300,7 @@ namespace Arcane.AxlDoc
           }
 
           // Si le mot commence par un backslash, n'est pas une balise connue et si la stack
-          // n'est pas vide, on retire le backslash.
+          // est vide, on retire le backslash.
           else if (word.StartsWith("\\") && stack_balises.Count == 0){
             output_string.Append(word.Substring(1)).Append(" ");
             nb_char += word.Length - 1;
@@ -322,6 +322,7 @@ namespace Arcane.AxlDoc
         // Si on a atteint la limite de caractère, on break.
         // Si force_close_attributes == True, alors il faut que la stack soit vide pour finir.
         if(nb_char >= max_nb_char && (!force_close_cmds || stack_balises.Count == 0)){
+          output_string.Append("...");
           break;
         }
         output_string.Append(Environment.NewLine);
