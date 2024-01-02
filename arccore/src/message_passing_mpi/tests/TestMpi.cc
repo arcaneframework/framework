@@ -88,6 +88,7 @@ namespace
 template <typename DataType>
 void _doTestFloat16(IMessagePassingMng* pm)
 {
+  Int32 nb_rank = pm->commSize();
   ASSERT_EQ(pm->commSize(), 2);
   Int32 my_rank = pm->commRank();
   UniqueArray<DataType> send_buf = { DataType{ -1.2f }, DataType{ 4.5f }, DataType{ 3.2e5f } };
@@ -99,7 +100,32 @@ void _doTestFloat16(IMessagePassingMng* pm)
     mpReceive(pm, receive_buf, 0);
     ASSERT_EQ(send_buf, receive_buf);
   }
+
+  // Teste les réductions
+  {
+    UniqueArray<DataType> values(nb_rank);
+    DataType expected_sum(0.0f);
+    for (Int32 i = 0; i < nb_rank; ++i) {
+      values[i] = (static_cast<float>(i) - 1.2f) * 3.4f;
+      expected_sum = expected_sum + values[i];
+    }
+    DataType expected_min = values[0];
+    DataType expected_max = values[nb_rank - 1];
+    DataType my_value(values[my_rank]);
+    DataType sum_result = mpAllReduce(pm, eReduceType::ReduceSum, my_value);
+    std::cout << "Sum=" << sum_result << "\n";
+    ASSERT_EQ(expected_sum, sum_result);
+
+    DataType max_result = mpAllReduce(pm, eReduceType::ReduceMax, my_value);
+    std::cout << "Max=" << max_result << "\n";
+    ASSERT_EQ(expected_max, max_result);
+
+    DataType min_result = mpAllReduce(pm, eReduceType::ReduceMin, my_value);
+    std::cout << "Min=" << min_result << "\n";
+    ASSERT_EQ(expected_min, min_result);
+  }
 }
+
 } // namespace
 
 TEST(MessagePassingMpi, Float16)
