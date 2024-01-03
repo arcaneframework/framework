@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataTypes.cc                                                (C) 2000-2023 */
+/* DataTypes.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Définition des types liés aux données.                                    */
 /*---------------------------------------------------------------------------*/
@@ -44,36 +44,47 @@
 namespace Arcane
 {
 
+namespace
+{
+  const char* N_ALL_NAMES[NB_ARCANE_DATA_TYPE] = {
+    DataTypeNames::N_BYTE, DataTypeNames::N_REAL,
+    DataTypeNames::N_INT16, DataTypeNames::N_INT32, DataTypeNames::N_INT64,
+    DataTypeNames::N_STRING,
+    DataTypeNames::N_REAL2, DataTypeNames::N_REAL3, DataTypeNames::N_REAL2x2, DataTypeNames::N_REAL3x3,
+    DataTypeNames::N_BFLOAT16, DataTypeNames::N_FLOAT16, DataTypeNames::N_FLOAT32,
+    DataTypeNames::N_INT8,
+    DataTypeNames::N_UNKNOWN
+  };
+
+  //! Taille d'un élément du type
+  int ALL_SIZEOF[NB_ARCANE_DATA_TYPE] = {
+    sizeof(Byte), sizeof(Real),
+    sizeof(Int16), sizeof(Int32), sizeof(Int64),
+    -1,
+    sizeof(Real2), sizeof(Real3), sizeof(Real2x2), sizeof(Real3x3),
+    sizeof(BFloat16), sizeof(Float16), sizeof(Float32),
+    sizeof(Int8),
+    0
+  };
+} // namespace
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" const char*
 dataTypeName(eDataType type)
 {
-  switch(type){
-  case DT_Real: return "Real";
-  case DT_Int16: return "Int16";
-  case DT_Int32: return "Int32";
-  case DT_Int64: return "Int64";
-  case DT_String: return "String";
-  case DT_Real2: return "Real2";
-  case DT_Real3: return "Real3";
-  case DT_Real2x2: return "Real2x2";
-  case DT_Real3x3: return "Real3x3";
-  case DT_Byte: return "Byte";
-  case DT_BFloat16: return "BFloat16";
-  case DT_Float16: return "Float16";
-  case DT_Float32: return "Float32";
-  case DT_Unknown: return "Unknown";
-  }
-  return "(Invalid)";
+  uint8_t v = type;
+  if (v >= NB_ARCANE_DATA_TYPE)
+    return "(Invalid)";
+  return N_ALL_NAMES[v];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" std::ostream&
-operator<< (std::ostream& ostr,eDataType data_type)
+operator<<(std::ostream& ostr, eDataType data_type)
 {
   ostr << dataTypeName(data_type);
   return ostr;
@@ -83,54 +94,16 @@ operator<< (std::ostream& ostr,eDataType data_type)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_DATATYPE_EXPORT eDataType
-dataTypeFromName(const char* name,bool& has_error)
+dataTypeFromName(const char* name, bool& has_error)
 {
   has_error = false;
-  String buf(name);
-  if (buf=="Real"){
-    return DT_Real;
+  std::string_view buf(name);
+  for (int i = 0; i < NB_ARCANE_DATA_TYPE; ++i) {
+    if (buf == std::string_view(N_ALL_NAMES[i])) {
+      has_error = false;
+      return static_cast<eDataType>(i);
+    }
   }
-  else if (buf=="Int16"){
-    return DT_Int32;
-  }
-  else if (buf=="Int32"){
-    return DT_Int32;
-  }
-  else if (buf=="Int64"){
-    return DT_Int64;
-  }
-  else if (buf=="String"){
-    return DT_String;
-  }
-  else if (buf=="Real2"){
-    return DT_Real2;
-  }
-  else if (buf=="Real3"){
-    return DT_Real3;
-  }
-  else if (buf=="Real2x2"){
-    return DT_Real2x2;
-  }
-  else if (buf=="Real3x3"){
-    return DT_Real3x3;
-  }
-  else if (buf=="Byte"){
-    return DT_Byte;
-  }
-  else if (buf=="BFloat16"){
-    return DT_BFloat16;
-  }
-  else if (buf=="Float16"){
-    return DT_Float16;
-  }
-  else if (buf=="Float32"){
-    return DT_Float32;
-  }
-  else if (buf=="Unknown"){
-    return DT_Unknown;
-  }
-  else
-    has_error = true;
   return DT_Unknown;
 }
 
@@ -140,25 +113,12 @@ dataTypeFromName(const char* name,bool& has_error)
 extern "C++" ARCANE_DATATYPE_EXPORT Integer
 dataTypeSize(eDataType type)
 {
-  switch(type){
-  case DT_Byte: return sizeof(Byte);
-  case DT_Int16: return sizeof(Int16);
-  case DT_Int32: return sizeof(Int32);
-  case DT_Int64: return sizeof(Int64);
-  case DT_Real: return sizeof(Real);
-  case DT_Real2: return sizeof(Real2);
-  case DT_Real3: return sizeof(Real3);
-  case DT_Real2x2: return sizeof(Real2x2);
-  case DT_Real3x3: return sizeof(Real3x3);
-  case DT_BFloat16: return sizeof(BFloat16);
-  case DT_Float16: return sizeof(Float16);
-  case DT_Float32: return sizeof(Float32);
-  case DT_String:
-    throw ArgumentException("dataTypeSize()","datatype 'DT_String' has no size");
-  case DT_Unknown:
-    return 0;
-  }
-  throw ArgumentException("dataTypeSize()","Unknown datatype");
+  if (type == DT_String)
+    ARCANE_THROW(ArgumentException, "datatype 'DT_String' has no size");
+  const uint8_t v = type;
+  if (v >= NB_ARCANE_DATA_TYPE)
+    ARCANE_THROW(ArgumentException, "Invalid datatype value '{0}'", v);
+  return ALL_SIZEOF[v];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -169,9 +129,9 @@ extern "C++" ARCANE_DATATYPE_EXPORT eDataType
 dataTypeFromName(const char* name)
 {
   bool has_error = true;
-  eDataType data_type = dataTypeFromName(name,has_error);
+  eDataType data_type = dataTypeFromName(name, has_error);
   if (has_error)
-    throw FatalErrorException(A_FUNCINFO,String::format("Bad DataType '{0}'",name));
+    ARCANE_FATAL("Bad DataType '{0}'", name);
   return data_type;
 }
 
@@ -179,13 +139,13 @@ dataTypeFromName(const char* name)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" std::istream&
-operator>> (std::istream& istr,eDataType& data_type)
+operator>>(std::istream& istr, eDataType& data_type)
 {
   std::string buf;
   istr >> buf;
   bool has_error = true;
-  data_type = dataTypeFromName(buf.c_str(),has_error);
-  if (has_error){
+  data_type = dataTypeFromName(buf.c_str(), has_error);
+  if (has_error) {
     data_type = DT_Unknown;
     istr.setstate(std::ios_base::failbit);
   }
@@ -197,7 +157,7 @@ operator>> (std::istream& istr,eDataType& data_type)
 
 static eDataInitialisationPolicy global_data_initialisation_policy = DIP_Legacy;
 
-extern "C++" ARCANE_CORE_EXPORT void 
+extern "C++" ARCANE_CORE_EXPORT void
 setGlobalDataInitialisationPolicy(eDataInitialisationPolicy init_policy)
 {
   global_data_initialisation_policy = init_policy;
@@ -212,20 +172,23 @@ getGlobalDataInitialisationPolicy()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-static Real _getNan()
+namespace
 {
-  return std::numeric_limits<Real>::signaling_NaN();
-}
+  Real _getNan()
+  {
+    return std::numeric_limits<Real>::signaling_NaN();
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Type> static void
+template <typename Type> static void
 _fillNoNan(ArrayView<Type> ptr)
 {
   Type v = Type();
   Integer n = ptr.size();
-  for( Integer i=0; i<n; ++i )
+  for (Integer i = 0; i < n; ++i)
     ptr[i] = v;
 }
 
@@ -264,7 +227,7 @@ _fillWithNan(RealArrayView ptr)
 {
   Real v = _getNan();
   Integer n = ptr.size();
-  for( Integer i=0; i<n; ++i )
+  for (Integer i = 0; i < n; ++i)
     ptr[i] = v;
 }
 
@@ -277,25 +240,25 @@ fillNan(ArrayView<Type> ptr)
 void DataTypeTraitsT<Real2>::
 fillNan(ArrayView<Type> ptr)
 {
-  _fillWithNan(RealArrayView(ptr.size()*2,(Real*)ptr.data()));
+  _fillWithNan(RealArrayView(ptr.size() * 2, (Real*)ptr.data()));
 }
 
 void DataTypeTraitsT<Real2x2>::
 fillNan(ArrayView<Type> ptr)
 {
-  _fillWithNan(RealArrayView(ptr.size()*4,(Real*)ptr.data()));
+  _fillWithNan(RealArrayView(ptr.size() * 4, (Real*)ptr.data()));
 }
 
 void DataTypeTraitsT<Real3x3>::
 fillNan(ArrayView<Type> ptr)
 {
-  _fillWithNan(RealArrayView(ptr.size()*9,(Real*)ptr.data()));
+  _fillWithNan(RealArrayView(ptr.size() * 9, (Real*)ptr.data()));
 }
 
 void DataTypeTraitsT<Real3>::
 fillNan(ArrayView<Type> ptr)
 {
-  _fillWithNan(RealArrayView(ptr.size()*3,(Real*)ptr.data()));
+  _fillWithNan(RealArrayView(ptr.size() * 3, (Real*)ptr.data()));
 }
 
 /*---------------------------------------------------------------------------*/
