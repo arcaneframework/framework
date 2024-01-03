@@ -92,6 +92,7 @@ set(ARCANE_SOURCES
   MemoryUtils.cc
   Numeric.cc
   Numeric.h
+  NumericTypes.h
   NumArray.h
   NumArrayContainer.h
   NumArrayUtils.h
