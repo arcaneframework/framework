@@ -1038,7 +1038,9 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARIES is ${ARCANE_EXTERNAL_LIBRARIES}")
 function(GENERATE_DOC_TARGET docname)
   set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR})
   configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}.doxyfile @ONLY)
-  add_custom_target(${docname} COMMAND ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}.doxyfile)
+  add_custom_target(${docname} COMMAND
+      ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}.doxyfile &&
+      echo "Doc index file : file://${ARCANEBUILDROOT}/share/${docname}/html/index.html")
 
   set(DOC_OUTPUT_DIR ${CMAKE_INSTALL_PREFIX})
   configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}_install.doxyfile @ONLY)
