@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshCoarsening.cc                                  (C) 2000-2023 */
+/* CartesianMeshCoarsening.cc                                  (C) 2000-2024 */
 /*                                                                           */
 /* Déraffinement d'un maillage cartésien.                                    */
 /*---------------------------------------------------------------------------*/
@@ -357,12 +357,17 @@ _createCoarseCells2D()
     }
   }
 
-  UniqueArray<Int32> cells_local_ids;
-  UniqueArray<Int32> faces_local_ids;
-  cells_local_ids.resize(nb_coarse_cell);
-  faces_local_ids.resize(nb_coarse_face);
+  // Construit les faces
+  UniqueArray<Int32> faces_local_ids(nb_coarse_face);
   mesh->modifier()->addFaces(nb_coarse_face, faces_infos, faces_local_ids);
-  mesh->modifier()->addCells(nb_coarse_cell, cells_infos, cells_local_ids);
+
+  // Construit les mailles
+  // Indique qu'on n'a pas le droit de construire à la volée les faces.
+  // Normalement elles ont toutes été ajoutées via addFaces();
+  UniqueArray<Int32> cells_local_ids(nb_coarse_cell);
+  MeshModifierAddCellsArgs add_cells_args(nb_coarse_cell, cells_infos, cells_local_ids);
+  add_cells_args.setAllowBuildFaces(false);
+  mesh->modifier()->addCells(add_cells_args);
 
   IItemFamily* cell_family = mesh->cellFamily();
 
@@ -588,12 +593,17 @@ _createCoarseCells3D()
     }
   }
 
-  UniqueArray<Int32> cells_local_ids;
-  UniqueArray<Int32> faces_local_ids;
-  cells_local_ids.resize(nb_coarse_cell);
-  faces_local_ids.resize(nb_coarse_face);
+  // Construit les faces
+  UniqueArray<Int32> faces_local_ids(nb_coarse_face);
   mesh->modifier()->addFaces(nb_coarse_face, faces_infos, faces_local_ids);
-  mesh->modifier()->addCells(nb_coarse_cell, cells_infos, cells_local_ids);
+
+  // Construit les mailles
+  // Indique qu'on n'a pas le droit de construire à la volée les faces.
+  // Normalement elles ont toutes été ajoutées via addFaces();
+  UniqueArray<Int32> cells_local_ids(nb_coarse_cell);
+  MeshModifierAddCellsArgs add_cells_args(nb_coarse_cell, cells_infos, cells_local_ids);
+  add_cells_args.setAllowBuildFaces(false);
+  mesh->modifier()->addCells(add_cells_args);
 
   IItemFamily* cell_family = mesh->cellFamily();
 

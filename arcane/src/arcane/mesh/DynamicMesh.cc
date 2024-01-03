@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.cc                                              (C) 2000-2023 */
+/* DynamicMesh.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Classe de gestion d'un maillage non structuré évolutif.                   */
 /*---------------------------------------------------------------------------*/
@@ -869,7 +869,13 @@ addCells(Integer nb_cell,
 void DynamicMesh::
 addCells(const MeshModifierAddCellsArgs& args)
 {
-  addCells(args.nbCell(),args.cellInfos(),args.cellLocalIds());
+  bool allow_build_face = args.isAllowBuildFaces();
+  // En parallèle, on ne peut pas construire à la volée les faces
+  // (car il faut générer un uniqueId() et ce dernier ne serait pas cohérent
+  // entre les sous-domaines)
+  if (m_parallel_mng->commSize() > 1)
+    allow_build_face = false;
+  _allocateCells(args.nbCell(),args.cellInfos(),args.cellLocalIds(),allow_build_face);
 }
 
 /*---------------------------------------------------------------------------*/

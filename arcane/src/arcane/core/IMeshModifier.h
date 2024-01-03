@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshModifier.h                                             (C) 2000-2023 */
+/* IMeshModifier.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Interface de modification du maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -37,6 +37,21 @@ class IMeshModifier;
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Arguments pour IMeshModifier::addCells().
+ *
+ * Le format de cellsInfos() est identiques à celui de la méthode
+ * IMesh::allocateCells(). Si \a cellsLocalIds() n'est pas vide, il contiendra
+ * en retour les numéros locaux des mailles créées.
+ *
+ * Si une maille ajoutée possède le même uniqueId() qu'une des mailles existantes,
+ * la maille existante est conservée telle qu'elle et rien ne se passe.
+ *
+ * Les mailles créées sont considérées comme appartenant à ce sous-domaine
+ * Si ce n'est pas le cas, il faut ensuite modifier leur appartenance.
+ *
+ * Par défaut, lorsqu'on ajoute des mailles, si les faces associées n'existent
+ * pas elles sont créées automatiquement. Cela n'est possible qu'en séquentiel.
+ * Il est possible de désactiver cela en appelant setAllowBuildFaces().
+ * En parallèle, la valeur de isAllowBuildFaces() est ignorée.
  */
 class MeshModifierAddCellsArgs
 {
@@ -60,12 +75,17 @@ class MeshModifierAddCellsArgs
   Int64ConstArrayView cellInfos() const { return m_cell_infos; }
   Int32ArrayView cellLocalIds() const { return m_cell_lids; }
 
+  //! Indique si on autorise la création des faces associées
+  void setAllowBuildFaces(bool v) { m_is_allow_build_faces = v; }
+  bool isAllowBuildFaces() const { return m_is_allow_build_faces; }
+
  private:
 
   Int32 m_nb_cell = 0;
   Int64ConstArrayView m_cell_infos;
   //! En retour, liste des localId() des mailles créées
   Int32ArrayView m_cell_lids;
+  bool m_is_allow_build_faces = true;
 };
 
 /*---------------------------------------------------------------------------*/
