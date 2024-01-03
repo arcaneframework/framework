@@ -869,7 +869,13 @@ addCells(Integer nb_cell,
 void DynamicMesh::
 addCells(const MeshModifierAddCellsArgs& args)
 {
-  addCells(args.nbCell(),args.cellInfos(),args.cellLocalIds());
+  bool allow_build_face = args.isAllowBuildFaces();
+  // En parallèle, on ne peut pas construire à la volée les faces
+  // (car il faut générer un uniqueId() et ce dernier ne serait pas cohérent
+  // entre les sous-domaines)
+  if (m_parallel_mng->commSize() > 1)
+    allow_build_face = false;
+  _allocateCells(args.nbCell(),args.cellInfos(),args.cellLocalIds(),allow_build_face);
 }
 
 /*---------------------------------------------------------------------------*/
