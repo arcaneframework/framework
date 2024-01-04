@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshUniqueIdRenumbering.cc                         (C) 2000-2023 */
+/* CartesianMeshUniqueIdRenumbering.cc                         (C) 2000-2024 */
 /*                                                                           */
 /* Renumérotation des uniqueId() pour les maillages cartésiens.              */
 /*---------------------------------------------------------------------------*/
@@ -135,6 +135,7 @@ renumber()
          << " global_nb_cell=" << cartesian_global_nb_cell
          << " global_nb_cell_by_dim=" << m_generation_info->globalNbCells()
          << " mesh_dimension=" << dimension
+         << " patch_method=" << m_patch_method
          << " use_v2=" << use_v2;
 
   NewUniqueIdList new_uids(mesh);
@@ -142,9 +143,10 @@ renumber()
   // Indique si on utilise le patch par défaut.
   bool use_default_patch = false;
   CartesianPatch patch0 = m_parent_patch;
-  if (patch0.isNull()){
+  if (patch0.isNull()) {
     patch0 = m_cartesian_mesh->patch(0);
-    use_default_patch = true;
+    if (m_patch_method != 4)
+      use_default_patch = true;
   }
 
   // TODO: Afficher le numéro du patch.

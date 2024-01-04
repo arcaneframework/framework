@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMesh.cc                                            (C) 2000-2023 */
+/* CartesianMesh.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Maillage cartésien.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -774,16 +774,18 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
   // Regarde d'abord si on renumérote les faces
   Int32 face_method = v.renumberFaceMethod();
   if (face_method!=0 && face_method!=1)
-    ARCANE_FATAL("Invalid value '{0}' for renumberFaceMethod(). Valid values are 0 or 1");
+    ARCANE_FATAL("Invalid value '{0}' for renumberFaceMethod(). Valid values are 0 or 1",
+                 face_method);
   if (face_method==1)
     ARCANE_THROW(NotImplementedException,"Method 1 for face renumbering");
 
   // Regarde ensuite les patchs si demandé.
   Int32 patch_method = v.renumberPatchMethod();
-  if (patch_method > 3 || patch_method < 0)
-    ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0, 1, 2 or 3");
+  if (patch_method < 0 || patch_method > 4)
+    ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0, 1, 2, 3 or 4",
+                 patch_method);
     
-  else if (patch_method == 1 || patch_method == 3){
+  else if (patch_method == 1 || patch_method == 3 || patch_method == 4){
     CartesianMeshUniqueIdRenumbering renumberer(this,cmgi,v.parentPatch(),patch_method);
     renumberer.renumber();
   }
