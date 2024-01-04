@@ -909,6 +909,8 @@ WARN_LOGFILE           =
 
 INPUT                  = @ARCANESRCROOT@/doc/doc_dev \
                          @ARCANESRCROOT@/doc/doc_common \
+                         @ARCANESRCROOT@/doc/doc_common/chap_build_install \
+                         @ARCANESRCROOT@/doc/doc_common/chap_build_install/subchap_prerequisites \
                          @ARCANE_SRC_PATH@/arcane \
                          @ARCANE_ADDITIONAL_SUBDIR_DOC@ \
                          @CMAKE_BINARY_DIR@/arcane \
@@ -1011,7 +1013,8 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = @ARCANE_CEA_SOURCE_PATH@/src/arcane/tests
+EXAMPLE_PATH           = @ARCANE_CEA_SOURCE_PATH@/src/arcane/tests \
+                         @ARCANESRCROOT@/doc/doc_common/chap_build_install/subchap_prerequisites/snippets
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and

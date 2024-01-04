@@ -25,6 +25,9 @@ dans les deux documentations).
 
 Les pages/chapitres disponibles sont:
 
+- \subpage arcanedoc_build_install <br>
+  Présente comment compiler et installer le framework %Arcane.
+
 - \ref arcanedoc_doxygen <br>
   Présente comment contribuer à la documentation %Arcane.
 

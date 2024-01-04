@@ -939,6 +939,8 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @ARCANE_SRC_PATH@/arcane/cartesianmesh \
                          @ARCANESRCROOT@/doc/doc_common \
                          @ARCANESRCROOT@/doc/doc_common/chap_news \
+                         @ARCANESRCROOT@/doc/doc_common/chap_build_install \
+                         @ARCANESRCROOT@/doc/doc_common/chap_build_install/subchap_prerequisites \
                          @ARCANESRCROOT@/doc/doc_user \
                          @ARCANESRCROOT@/doc/doc_user/chap_core_types \
                          @ARCANESRCROOT@/doc/doc_user/chap_core_types/subchap_axl \
@@ -1071,7 +1073,8 @@ EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           = @ARCANE_CEA_SOURCE_PATH@/src/arcane/tests \
                          @Arcane_SOURCE_DIR@/src/arcane/tests/accelerator \
                          @ARCANESRCROOT@/samples_build/samples \
-                         @Arcane_SOURCE_DIR@/src/arcane/tests
+                         @Arcane_SOURCE_DIR@/src/arcane/tests \
+                         @ARCANESRCROOT@/doc/doc_common/chap_build_install/subchap_prerequisites/snippets
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
