@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshRenumberingInfo.h                              (C) 2000-2023 */
+/* CartesianMeshRenumberingInfo.h                              (C) 2000-2024 */
 /*                                                                           */
 /* Informations pour la renumérotation.                                      */
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshRenumberingInfo
    * - 1 renumérotation par défaut.
    * - 2 version expérimentale de la renumérotation
    * - 3 comme la version 1 mais avec une implémentation différente
-   * pour les maillages 2D.
+   *   pour les maillages 2D.
+   * - 4 comme 1, mais utilise la même numérotation avec ou sans dé-raffinement
+   *   du maillage initial.
    *
    * En cas de renumérotation, les uniqueId() des entités (Node,Face,Cell)
    * des patches sont renumérotées pour avoir la même numérotation quel
