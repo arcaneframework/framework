@@ -132,7 +132,9 @@ endif()
 
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-1 testAMRCartesianMesh2D-Cell-RenumberingV1-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-2 testAMRCartesianMesh2D-Cell-RenumberingV1-2.arc "-m 20")
+arcane_add_test(amr-cartesian2D-cell-renumbering-v4-1 testAMRCartesianMesh2D-Cell-RenumberingV4-1.arc "-m 20")
 arcane_add_test(amr-cartesian3D-cell-renumbering-v1-1 testAMRCartesianMesh3D-Cell-RenumberingV1-1.arc "-m 20")
+arcane_add_test(amr-cartesian3D-cell-renumbering-v4-1 testAMRCartesianMesh3D-Cell-RenumberingV4-1.arc "-m 20")
 arcane_add_test_sequential(amr-cartesian3D-cell-renumbering-v1-2 testAMRCartesianMesh3D-Cell-RenumberingV1-2.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-cell-renumbering-v1-2 testAMRCartesianMesh3D-Cell-RenumberingV1-2.arc 8 "-m 20")
 
