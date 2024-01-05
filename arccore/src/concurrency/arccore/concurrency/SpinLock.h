@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SpinLock.h                                                  (C) 2000-2023 */
+/* SpinLock.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* SpinLock pour le multi-threading.                                         */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/concurrency/IThreadImplementation.h"
+
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,6 +28,7 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 
 class SpinLockImpl;
+// TODO: Ajouter énumération pour la gestion du spin_lock (None, FullSpin, Spin+Wait)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,41 +43,33 @@ class ARCCORE_CONCURRENCY_EXPORT SpinLock
   {
    public:
 
-    ARCCORE_DEPRECATED_REASON("Y2023: SpinLock are deprecated. Use std::atomic_flag instead")
     ScopedLock(SpinLock& sl)
+    : m_spin_lock_ref(sl)
     {
-      spin_lock_addr = &sl.spin_lock;
-      Concurrency::getThreadImplementation()->_deprecatedLockSpinLock(spin_lock_addr, scoped_spin_lock);
+      m_spin_lock_ref._doLock();
     }
     ~ScopedLock()
     {
-      Concurrency::getThreadImplementation()->_deprecatedUnlockSpinLock(spin_lock_addr, scoped_spin_lock);
+      m_spin_lock_ref._doUnlock();
     }
 
    private:
 
-    Int64* spin_lock_addr;
-    Int64 scoped_spin_lock[2];
+    SpinLock& m_spin_lock_ref;
   };
 
   class ManualLock
   {
    public:
 
-    ARCCORE_DEPRECATED_REASON("Y2023: SpinLock are deprecated. Use std::atomic_flag instead")
     void lock(SpinLock& sl)
     {
-      Concurrency::getThreadImplementation()->_deprecatedLockSpinLock(&sl.spin_lock, scoped_spin_lock);
+      sl._doLock();
     }
-    ARCCORE_DEPRECATED_REASON("Y2023: SpinLock are deprecated. Use std::atomic_flag instead")
     void unlock(SpinLock& sl)
     {
-      Concurrency::getThreadImplementation()->_deprecatedUnlockSpinLock(&sl.spin_lock, scoped_spin_lock);
+      sl._doUnlock();
     }
-
-   private:
-
-    Int64 scoped_spin_lock[2];
   };
 
   friend class ScopedLock;
@@ -82,17 +77,67 @@ class ARCCORE_CONCURRENCY_EXPORT SpinLock
 
  public:
 
-  ARCCORE_DEPRECATED_REASON("Y2023: SpinLock are deprecated. Use std::atomic_flag instead")
-  SpinLock()
+  //! Mode du spinlock. Le défaut est 'Auto'
+  enum class eMode : uint8_t
   {
-    Concurrency::getThreadImplementation()->_deprecatedCreateSpinLock(&spin_lock);
+    // Pas de synchronisation
+    None,
+    /*!
+     * \brief Choix automatique.
+     *
+     * Si `Concurrency::getThreadImplementation()->isMultiThread()` est vrai,
+     * alors le mode est SpinAndMutex. Sinon, le mode est None.
+     */
+    Auto,
+    /*!
+     * \brief Utilise toujours un spinlock.
+     *
+     * Ce type est plus rapide s'il y a très peu de contention mais les performances
+     * sont très mauvaises dans le cas contraire.
+     */
+    FullSpin,
+    /*!
+     * \brief SpinLock puis mutex.
+     *
+     * Effectue un spinlock puis rend la main (std::this_thread::yield())
+     * si cela dure trop longtemps. Ce mode n'est disponible que si on utilise le C++20.
+     * Sinon, il est équivalent à FullSpin.
+     */
+    SpinAndMutex
+  };
+
+ public:
+
+  //! SpinLock par défaut
+  SpinLock();
+  //! SpinLock avec le mode \a mode
+  SpinLock(eMode mode);
+  ~SpinLock();
+
+ private:
+
+  std::atomic_flag m_spin_lock = ATOMIC_FLAG_INIT;
+  eMode m_mode = eMode::SpinAndMutex;
+
+ private:
+
+  void _doLock()
+  {
+    if (m_mode != eMode::None)
+      _doLockReal();
+  }
+  void _doUnlock()
+  {
+    if (m_mode != eMode::None)
+      _doUnlockReal();
   }
 
  private:
 
-  Int64 spin_lock = 0;
-
- private:
+  // TODO: rendre ces fonctions inline lorsque le C++20 sera disponible
+  // partout. Pour l'instant on ne peut pas le faire à cause de l'ODR.
+  void _doLockReal();
+  void _doUnlockReal();
 };
 
 /*---------------------------------------------------------------------------*/
