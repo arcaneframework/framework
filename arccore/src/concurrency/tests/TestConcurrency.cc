@@ -22,14 +22,11 @@ class MyThread
 {
  public:
 
-  MyThread(IFunctor* f)
+  MyThread() = default;
+  explicit MyThread(IFunctor* f)
   {
     create(f);
   }
-  MyThread()
-  : m_functor(nullptr)
-  , m_thread(nullptr)
-  {}
   ~MyThread()
   {
     if (m_thread)
@@ -47,8 +44,8 @@ class MyThread
 
  public:
 
-  IFunctor* m_functor;
-  ThreadImpl* m_thread;
+  IFunctor* m_functor = nullptr;
+  ThreadImpl* m_thread = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -61,7 +58,7 @@ class TestSpinLock1
   {
   }
 
-  TestSpinLock1(SpinLock::eMode mode)
+  explicit TestSpinLock1(SpinLock::eMode mode)
   : m_lock(mode)
   {
   }
