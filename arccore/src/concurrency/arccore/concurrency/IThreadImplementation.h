@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IThreadImplementation.h                                     (C) 2000-2023 */
+/* IThreadImplementation.h                                     (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'un service implémentant le support des threads.               */
 /*---------------------------------------------------------------------------*/
@@ -76,6 +76,15 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
   virtual Int64 currentThread() = 0;
 
   virtual IThreadBarrier* createBarrier() = 0;
+
+  /*!
+   * \brief Vrai si l'implémentation supporte plusieurs threads.
+   *
+   * En mono-thread, seul un thread s'exécute. Il n'y a donc pas
+   * besoin de créer les classes gérant la synchronisation telles que les
+   * Mutex ou les SpinLock.
+   */
+  virtual bool isMultiThread() const { return true; }
 
  private:
 
