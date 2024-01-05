@@ -45,37 +45,39 @@ class ARCCORE_CONCURRENCY_EXPORT NullThreadImplementation
 : public IThreadImplementation
 {
  public:
-  virtual void initialize(){}
- public:
-  virtual void addReference() {}
-  virtual void removeReference() {}
-  virtual ThreadImpl* createThread(IFunctor*) { return nullptr; }
-  virtual void joinThread(ThreadImpl*) {}
-  virtual void destroyThread(ThreadImpl*) {}
 
-  virtual void createSpinLock(Int64* spin_lock_addr)
+  void initialize() override {}
+  void addReference() override {}
+  void removeReference() override {}
+  ThreadImpl* createThread(IFunctor*) override { return nullptr; }
+  void joinThread(ThreadImpl*) override {}
+  void destroyThread(ThreadImpl*) override {}
+
+  void createSpinLock(Int64* spin_lock_addr) override
   {
     ARCCORE_UNUSED(spin_lock_addr);
   }
-  virtual void lockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr)
-  {
-    ARCCORE_UNUSED(spin_lock_addr);
-    ARCCORE_UNUSED(scoped_spin_lock_addr);
-  }
-  virtual void unlockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr)
+  void lockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override
   {
     ARCCORE_UNUSED(spin_lock_addr);
     ARCCORE_UNUSED(scoped_spin_lock_addr);
   }
+  void unlockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override
+  {
+    ARCCORE_UNUSED(spin_lock_addr);
+    ARCCORE_UNUSED(scoped_spin_lock_addr);
+  }
 
-  virtual MutexImpl* createMutex() { return nullptr; }
-  virtual void destroyMutex(MutexImpl*) {}
-  virtual void lockMutex(MutexImpl*) {}
-  virtual void unlockMutex(MutexImpl*) {}
+  MutexImpl* createMutex() override { return nullptr; }
+  void destroyMutex(MutexImpl*) override {}
+  void lockMutex(MutexImpl*) override {}
+  void unlockMutex(MutexImpl*) override {}
 
-  virtual Int64 currentThread() { return 0; }
+  Int64 currentThread() override { return 0; }
 
-  virtual IThreadBarrier* createBarrier() { return new NullThreadBarrier(); }
+  IThreadBarrier* createBarrier() override { return new NullThreadBarrier(); }
+
+  bool isMultiThread() const override { return false; }
 };
 
 /*---------------------------------------------------------------------------*/

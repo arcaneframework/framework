@@ -77,6 +77,15 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
 
   virtual IThreadBarrier* createBarrier() = 0;
 
+  /*!
+   * \brief Vrai si l'implémentation supporte plusieurs threads.
+   *
+   * En mono-thread, seul un thread s'exécute. Il n'y a donc pas
+   * besoin de créer les classes gérant la synchronisation telles que les
+   * Mutex ou les SpinLock.
+   */
+  virtual bool isMultiThread() const { return true; }
+
  private:
 
   // Définitions pour éviter d'affichier les messages d'avertissement
