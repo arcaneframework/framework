@@ -84,6 +84,7 @@ class ARCANE_CORE_EXPORT ItemInfoListView
 
  protected:
 
+  using BaseClass::m_flags;
   using BaseClass::m_item_shared_info;
   void _checkValid(eItemKind expected_kind);
 };
@@ -183,6 +184,17 @@ class FaceInfoListView
   explicit FaceInfoListView(IItemFamily* family)
   : BaseClass(family)
   {}
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE bool isSubDomainBoundary(FaceLocalId local_id) const
+  {
+    return ItemFlags::isSubDomainBoundary(m_flags[local_id]);
+  }
+  constexpr ARCCORE_HOST_DEVICE bool isSubDomainBoundaryOutside(FaceLocalId local_id) const
+  {
+    return ItemFlags::isSubDomainBoundaryOutside(m_flags[local_id]);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
