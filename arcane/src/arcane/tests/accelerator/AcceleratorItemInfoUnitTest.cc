@@ -1,15 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorItemInfoUnitTest.cc                              (C) 2000-2023 */
+/* AcceleratorItemInfoUnitTest.cc                              (C) 2000-2024 */
 /*                                                                           */
 /* Service de test unitaire des 'ItemGenericInfoListView'.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/ValueChecker.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceFactory.h"
@@ -52,6 +54,7 @@ class AcceleratorItemInfoUnitTest
  public:
 
   void _executeTest1();
+  void _executeTest2();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -79,6 +82,7 @@ void AcceleratorItemInfoUnitTest::
 executeTest()
 {
   _executeTest1();
+  _executeTest2();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -138,6 +142,42 @@ _executeTest1()
       ARCANE_FATAL("Bad 2 typeId() expected={0} current={1}", cell.itemTypeId(), var_type_ids[cell]);
     if (cell.owner() != var_owners2[cell])
       ARCANE_FATAL("Bad 2 owner() expected={0} current={1}", cell.owner(), var_owners[cell]);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorItemInfoUnitTest::
+_executeTest2()
+{
+  ValueChecker vc(A_FUNCINFO);
+  VariableFaceByte var_subdomain_boundary(VariableBuildInfo(mesh(), "TestSubDomainBoundary"));
+  VariableFaceByte var_subdomain_boundary_outside(VariableBuildInfo(mesh(), "TestSubDomainBoundaryOutside"));
+
+  auto* queue = subDomain()->acceleratorMng()->defaultQueue();
+  FaceInfoListView faces_info(mesh()->faceFamily());
+  {
+    auto command = makeCommand(queue);
+
+    auto out_subdomain_boundary = viewOut(command, var_subdomain_boundary);
+    auto out_subdomain_boundary_outside = viewOut(command, var_subdomain_boundary_outside);
+
+    command << RUNCOMMAND_ENUMERATE (Face, face, allFaces())
+    {
+      out_subdomain_boundary[face] = faces_info.isSubDomainBoundary(face);
+      out_subdomain_boundary_outside[face] = faces_info.isSubDomainBoundaryOutside(face);
+    };
+  }
+
+  // Vérification
+  ENUMERATE_ (Face, iface, allFaces()) {
+    Face face = *iface;
+    bool sb = var_subdomain_boundary[face]!=0;
+    bool sbo = var_subdomain_boundary_outside[face]!=0;
+
+    vc.areEqual(face.isSubDomainBoundary(),sb,"SubDomainBoundary");
+    vc.areEqual(face.isSubDomainBoundaryOutside(),sbo,"SubDomainBoundaryOutside");
   }
 }
 
