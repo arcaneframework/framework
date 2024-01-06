@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.h                                            (C) 2000-2023 */
+/* MpiParallelMng.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des messages avec MPI.                                     */
 /*---------------------------------------------------------------------------*/
@@ -110,7 +110,6 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   void sendSerializer(ISerializer* values,Int32 rank) override;
   Request sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes) override;
   ISerializeMessage* createSendSerializer(Int32 rank) override;
-  void allGatherSerializer(ISerializer* send_serializer,ISerializer* recv_serializer) override;
 
   void recvSerializer(ISerializer* values,Int32 rank) override;
   ISerializeMessage* createReceiveSerializer(Int32 rank) override;
@@ -200,9 +199,6 @@ class ARCANE_MPI_EXPORT MpiParallelMng
 
  private:
 
-  void _checkInit();
-  SerializeBuffer* _castSerializer(ISerializer* serializer);
-  const SerializeBuffer* _castSerializer(const ISerializer* serializer);
   void _checkBigMessage(Int64 message_size);
   void _checkFinishedSubRequests();
   UniqueArray<Integer> _waitSomeRequests(ArrayView<Request> requests, bool is_non_blocking);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDispatcher.cc                                    (C) 2000-2023 */
+/* ParallelMngDispatcher.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Redirection de la gestion des messages suivant le type des arguments.     */
 /*---------------------------------------------------------------------------*/
@@ -34,6 +34,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 
 #include "arccore/message_passing/Dispatchers.h"
+#include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/MessagePassingMng.h"
 #include "arccore/message_passing/IControlDispatcher.h"
 #include "arccore/message_passing/ISerializeDispatcher.h"
@@ -469,6 +470,16 @@ broadcastMemoryBuffer(ByteArray& bytes,Int32 rank)
     bytes.resize(size);
   if (size!=0)
     broadcast(bytes,rank);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelMngDispatcher::
+allGather(ISerializer* send_serializer, ISerializer* recv_serializer)
+{
+  Timer::Phase tphase(timeStats(), TP_Communication);
+  mpAllGather(_messagePassingMng(), send_serializer, recv_serializer);
 }
 
 /*---------------------------------------------------------------------------*/
