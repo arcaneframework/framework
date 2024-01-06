@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SequentialParallelMng.cc                                    (C) 2000-2023 */
+/* SequentialParallelMng.cc                                    (C) 2000-2024 */
 /*                                                                           */
-/* Gestion du parallélisme dans le cas sequentiel.                           */
+/* Gestion du parallélisme dans le cas séquentiel.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,7 +15,6 @@
 
 #include "arccore/message_passing/PointToPointMessageInfo.h"
 
-#include "arcane/utils/String.h"
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/NotImplementedException.h"
@@ -27,19 +26,19 @@
 #include "arcane/utils/NullThreadMng.h"
 #include "arcane/utils/ArgumentException.h"
 
-#include "arcane/IIOMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
-#include "arcane/IParallelDispatch.h"
-#include "arcane/ParallelMngDispatcher.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/Timer.h"
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/SerializeMessage.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IParallelDispatch.h"
+#include "arcane/core/ParallelMngDispatcher.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/SerializeMessage.h"
 
 #include "arcane/parallel/IStat.h"
 
@@ -400,7 +399,7 @@ class SequentialParallelMng
 
  public:
 
-  void allGatherSerializer(ISerializer* send_serializer,ISerializer* recv_serializer) override
+  void allGather(ISerializer* send_serializer, ISerializer* recv_serializer) override
   {
     recv_serializer->copy(send_serializer);
   }

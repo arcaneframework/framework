@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDispatcher.h                                     (C) 2000-2023 */
+/* ParallelMngDispatcher.h                                     (C) 2000-2024 */
 /*                                                                           */
 /* Interface du gestionnaire du parallélisme sur un domaine.                 */
 /*---------------------------------------------------------------------------*/
@@ -144,12 +144,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   void broadcastMemoryBuffer(ByteArray& bytes, Int32 rank) override;
 
   //! Redéfinit ici allGather pour éviter de cacher le symbole dans les classes dérivées.
-  void allGather(ISerializer* send_serializer, ISerializer* recv_serializer) final
-  {
-    allGatherSerializer(send_serializer, recv_serializer);
-  }
-
-  virtual void allGatherSerializer(ISerializer* send_serializer, ISerializer* recv_serializer) = 0;
+  void allGather(ISerializer* send_serializer, ISerializer* recv_serializer) override;
 
  public:
 

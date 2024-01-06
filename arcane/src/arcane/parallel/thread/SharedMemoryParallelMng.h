@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelMng.h                                   (C) 2000-2020 */
+/* SharedMemoryParallelMng.h                                   (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des messages en mode mémoire partagé.                      */
 /*---------------------------------------------------------------------------*/
@@ -97,7 +97,6 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   void sendSerializer(ISerializer* values,Int32 rank) override;
   Request sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes) override;
   ISerializeMessage* createSendSerializer(Int32 rank) override;
-  void allGatherSerializer(ISerializer* send_serializer,ISerializer* recv_serializer) override;
 
   void recvSerializer(ISerializer* values,Int32 rank) override;
   ISerializeMessage* createReceiveSerializer(Int32 rank) override;
@@ -181,10 +180,6 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   Ref<IParallelMngContainer> m_parent_container_ref;
   MP::Communicator m_mpi_communicator;
   Ref<IParallelMngUtilsFactory> m_utils_factory;
-
- private:
-
-  SerializeBuffer* _castSerializer(ISerializer* serializer);
 };
 
 /*---------------------------------------------------------------------------*/
