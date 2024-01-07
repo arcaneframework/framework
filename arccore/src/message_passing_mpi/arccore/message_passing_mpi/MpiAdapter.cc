@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.cc                                               (C) 2000-2023 */
+/* MpiAdapter.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 
 #include "arccore/message_passing/Request.h"
 #include "arccore/message_passing/IStat.h"
+#include "arccore/message_passing/internal/SubRequestCompletionInfo.h"
 
 #include "arccore/base/IStackTraceService.h"
 #include "arccore/base/TimeoutException.h"
@@ -1329,9 +1330,17 @@ waitSomeRequests(ArrayView<Request> requests,
 
 struct MpiAdapter::SubRequestInfo
 {
-  SubRequestInfo(Ref<ISubRequest> sr,Integer i) : sub_request(sr), index(i){}
+  SubRequestInfo(Ref<ISubRequest> sr, Integer i, int source_rank, int source_tag)
+  : sub_request(sr)
+  , index(i)
+  , mpi_source_rank(source_rank)
+  , mpi_source_tag(source_tag)
+  {}
+
   Ref<ISubRequest> sub_request;
   Integer index = -1;
+  int mpi_source_rank = MPI_PROC_NULL;
+  int mpi_source_tag = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1354,8 +1363,10 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
         // d'une requête bloquante mais avoir tout de même une sous-requête.
         if (r.hasSubRequest()){
           if (m_is_trace)
-            info() << "Done request r=" << r << " mpi_r=" << r << " i=" << i << " has sub request";
-          new_requests.add(SubRequestInfo(r.subRequest(),i));
+            info() << "Done request with sub-request r=" << r << " mpi_r=" << r << " i=" << i
+                   << " source_rank=" << status[i].MPI_SOURCE
+                   << " source_tag=" << status[i].MPI_TAG;
+          new_requests.add(SubRequestInfo(r.subRequest(), i, status[i].MPI_SOURCE, status[i].MPI_TAG));
         }
         if (r.isValid()){
           _removeRequest((MPI_Request)(r));
@@ -1383,8 +1394,13 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
     }
     // S'il y a des nouvelles requêtes, il faut décaler les valeurs de 'status'
     for( SubRequestInfo& sri : new_requests ){
-      Request r = sri.sub_request->executeOnCompletion();
       Integer index = sri.index;
+      if (m_is_trace)
+        info() << "Before handle new request index=" << index
+               << " sri.source_rank=" << sri.mpi_source_rank
+               << " sri.source_tag=" << sri.mpi_source_tag;
+      SubRequestCompletionInfo completion_info(MessageRank(old_status[index].MPI_SOURCE), MessageTag(old_status[index].MPI_TAG));
+      Request r = sri.sub_request->executeOnCompletion(completion_info);
       if (m_is_trace)
         info() << "Handle new request index=" << index << " old_r=" << requests[index] << " new_r=" << r;
       // S'il y a une nouvelle requête, alors elle remplace
