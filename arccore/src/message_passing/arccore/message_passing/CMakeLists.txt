@@ -42,6 +42,7 @@ set(SOURCES
   Stat.cc
   SerializeMessageList.h
   SerializeMessageList.cc
+  internal/SubRequestCompletionInfo.h
 )
 
 arccore_add_component_library(message_passing

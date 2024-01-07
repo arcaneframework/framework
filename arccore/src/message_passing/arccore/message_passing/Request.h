@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Request.h                                                   (C) 2000-2020 */
+/* Request.h                                                   (C) 2000-2024 */
 /*                                                                           */
 /* Requête d'un message.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing/MessagePassingGlobal.h"
+#include "arccore/message_passing/MessageRank.h"
+#include "arccore/message_passing/MessageTag.h"
 #include "arccore/base/Ref.h"
 
 #include <cstddef>
@@ -25,14 +27,20 @@
 
 namespace Arccore::MessagePassing
 {
-class Request;
-
+/*!
+ * \internal
+ * \brief Sous-requête d'une requête
+ */
 class ARCCORE_MESSAGEPASSING_EXPORT ISubRequest
 {
  public:
+
   virtual ~ISubRequest() = default;
+
  public:
-  virtual Request executeOnCompletion() =0;
+
+  //! Callback appelé lorsque la requête associée est terminée
+  virtual Request executeOnCompletion(const SubRequestCompletionInfo&) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
