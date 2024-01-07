@@ -343,16 +343,11 @@ MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 , m_trace(bi.trace_mng)
 , m_thread_mng(bi.thread_mng)
 , m_world_parallel_mng(bi.world_parallel_mng)
-, m_io_mng(nullptr)
 , m_timer_mng(bi.timer_mng)
 , m_replication(new ParallelReplication())
-, m_is_timer_owned(false)
-, m_datatype_list(nullptr)
-, m_adapter(nullptr)
 , m_is_parallel(bi.is_parallel)
 , m_comm_rank(bi.commRank())
 , m_comm_size(bi.commSize())
-, m_is_initialized(false)
 , m_stat(bi.stat)
 , m_communicator(bi.mpiComm())
 , m_is_communicator_owned(bi.is_mpi_comm_owned)
@@ -492,9 +487,9 @@ build()
 
   // Pour l'instant (avril 2020) on laisse l'implémentation historique le
   // temps de valider l'ancienne.
-  if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_LIST_VERSION")=="2"){
-    m_use_serialize_list_v2 = true;
-    m_trace->info() << "Using MPI SerializeList version 2";
+  if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_LIST_VERSION") == "1") {
+    m_use_serialize_list_v2 = false;
+    m_trace->info() << "Using MPI SerializeList version 1";
   }
 }
 
