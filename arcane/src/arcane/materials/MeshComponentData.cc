@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentData.cc                                        (C) 2000-2023 */
+/* MeshComponentData.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Données d'un constituant (matériau ou milieu) d'un maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -116,8 +116,6 @@ _buildPartData()
 void MeshComponentData::
 _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 {
-  ItemInfoListView global_item_list = items().itemFamily()->itemInfoListView();
-
   // TODO: regarder s'il est possible de supprimer le tableau temporaire
   // new_internals (c'est à peu près sur que c'est possible).
   ConstArrayView<ComponentItemInternal*> current_internals(_itemsInternalView());

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -176,7 +176,7 @@ struct OptionTools
   struct Internal2<T, Nmin, Nmax, CurN, Head, Tail...>
   {
     static Arcane::UniqueArray<typename T::type>&&
-    requiredVariableArray(Arcane::UniqueArray<typename T::type>&& r, Head&& t, Tail&&... args)
+    requiredVariableArray(Arcane::UniqueArray<typename T::type>&& r, [[maybe_unused]] Head&& t, Tail&&... args)
     {
       return Internal2<T, Nmin, Nmax, CurN, Tail...>::requiredVariableArray(std::move(r), std::move(args)...);
     }
@@ -242,7 +242,7 @@ struct OptionTools
   struct Internal3<T, CurN>
   {
     static bool 
-    optionalSimple(typename T::type& r)
+    optionalSimple([[maybe_unused]] typename T::type& r)
     {
       static_assert(CurN <= 1, "Invalid required parameter count");
       return CurN == 1;
@@ -265,7 +265,7 @@ struct OptionTools
   struct Internal4<std::tuple<AllowedTypes...>, Head, Tail...>
   {
     static void 
-    checkRestriction(const Head& h, const Tail&... tail)
+    checkRestriction([[maybe_unused]] const Head& h, const Tail&... tail)
     {
       static_assert(Internal44<Head, AllowedTypes...>::checkType, "Illegal option");
       return Internal4<std::tuple<AllowedTypes...>, Tail...>::checkRestriction(tail...);
@@ -349,9 +349,17 @@ struct OptionProxy
 
 }; // namespace StrongOptions
 
+#if !defined(ARCANE_JOIN_HELPER2)
 #define ARCANE_JOIN_HELPER2(a, b) a##b
+#endif
+
+#if !defined(ARCANE_JOIN_HELPER)
 #define ARCANE_JOIN_HELPER(a, b) ARCANE_JOIN_HELPER2(a, b)
+#endif
+
+#if !defined(ARCANE_JOIN_WITH_LINE)
 #define ARCANE_JOIN_WITH_LINE(a) ARCANE_JOIN_HELPER(a, __LINE__)
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
