@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,10 +32,16 @@ class MPIEnvironment
 
   void SetUp() override
   {
-    std::cout << "SETUP MPI\n";
-    int mpi_error = MPI_Init(global_argc, global_argv);
+    int thread_required = MPI_THREAD_SERIALIZED;
+    int thread_provided = 0;
+    int mpi_error = ::MPI_Init_thread(global_argc, global_argv, thread_required, &thread_provided);
+    ASSERT_EQ(mpi_error, MPI_SUCCESS);
+
     global_mpi_comm_world = MPI_COMM_WORLD;
-    ASSERT_EQ(mpi_error,MPI_SUCCESS);
+    int comm_rank = 0;
+    ::MPI_Comm_rank(global_mpi_comm_world, &comm_rank);
+    if (comm_rank == 0)
+      std::cout << "SETUP MPI result thread_required=" << thread_required << " provided=" << thread_provided << "\n";
   }
   void TearDown() override
   {
