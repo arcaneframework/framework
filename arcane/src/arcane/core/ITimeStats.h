@@ -136,6 +136,18 @@ class ITimeStats
   virtual void notifyNewIterationLoop() = 0;
   virtual void saveTimeValues(Properties* p) = 0;
   virtual void mergeTimeValues(Properties* p) = 0;
+
+  /*
+   * \brief Remet à zéro les statistiques courantes une action est ses sous-actions
+   *
+   * Remet à zéro les statistiques pour l'action \a action_name est ses
+   * sous-actions. Si aucune action de nom \a action_name n'existe, ne fait rien.
+   *
+   * Cette méthode est réservée pour les tests et ne doit pas être utilisée
+   * en dehors de cette configuration pour éviter de rendre invalides les
+   * statistiques temporelles.
+   */
+  virtual void resetStats(const String& action_name) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -138,6 +138,8 @@ class TimeStats
   void saveTimeValues(Properties* p) override;
   void mergeTimeValues(Properties* p) override;
 
+  void resetStats(const String& name) override;
+
  private:
 
   ITimerMng* m_timer_mng = nullptr;
