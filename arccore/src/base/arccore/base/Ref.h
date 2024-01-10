@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Ref.h                                                       (C) 2000-2023 */
+/* Ref.h                                                       (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des références sur une instance.                                  */
 /*---------------------------------------------------------------------------*/
@@ -73,7 +73,8 @@ class ReferenceCounterWrapper
 
   //! Retourne l'instance
   InstanceType* get() const { return m_instance.get(); }
-  //! Relache l'instance. Il faudra la détruire manuellement
+
+  //! Supprime la référence associée actuellement.
   void reset() { m_instance = nullptr; }
 
   RefBase::DeleterBase* getDeleter()
@@ -155,6 +156,7 @@ class Ref
   {
    public:
 
+    Deleter() = default;
     Deleter(Internal::ExternalRef h)
     : DeleterBase(h)
     {}
@@ -295,13 +297,15 @@ class Ref
   /*!
    * \internal
    * \brief Libère le pointeur du compteur de référence sans le détruire.
+   * Cela n'est autorisé que si l'implémentation utiliser 'std::shared_ptr'.
    */
+  template<typename T = ThatClass, typename std::enable_if_t<T::RefType == REF_TAG_SHARED_PTR, bool> = true>
   InstanceType* _release()
   {
     // Relâche l'instance. Pour cela, on indique au destructeur
     // de ne pas détruire l'instance de 'm_instance' et on
     // retourne cette dernière.
-    DeleterBase* r = _getDeleter(m_instance);
+    auto* r = _getDeleter(m_instance);
     if (r)
       r->setNoDestroy(true);
     InstanceType* t = m_instance.get();
@@ -316,15 +320,15 @@ class Ref
 
  private:
 
-  static BasicDeleter _createBasicDeleter(std::shared_ptr<InstanceType>*)
+  static Deleter _createBasicDeleter(std::shared_ptr<InstanceType>*)
   {
-    return BasicDeleter{};
+    return {};
   }
   static BasicDeleterBase _createBasicDeleter(impl::ReferenceCounterWrapper<InstanceType>*)
   {
-    return BasicDeleterBase{};
+    return {};
   }
-  static DeleterBase* _getDeleter(std::shared_ptr<InstanceType>& v)
+  static Deleter* _getDeleter(std::shared_ptr<InstanceType>& v)
   {
     return std::get_deleter<Deleter>(v);
   }

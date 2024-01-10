@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -182,9 +182,6 @@ TEST(ReferenceCounter, RefWithDeleter)
     {
       auto* ptr1 = new TestClassWithDeleter();
       Ref<ITestClassWithDeleter> x4 = Ref<ITestClassWithDeleter>::createWithHandle(ptr1,external_ref);
-      ITestClassWithDeleter* t = x4._release();
-      std::cerr << "T=" << t << " ptr1=" << ptr1 << "\n";
-      delete t;    
     }
   }
   catch(const std::exception& ex){
