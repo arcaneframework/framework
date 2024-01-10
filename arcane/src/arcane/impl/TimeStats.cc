@@ -687,7 +687,9 @@ _dumpAllPhases(std::ostream& ostr,Action& action,eTimeType tt,int tc,Real nb)
       nb_called = (Real)action.nbCalled();
     if (!math::isZero(nb_called)){
       Real r = all_phase_time * 1.0e6;
-      ct_by_call = r / nb_called;
+      Real r_nb_called = static_cast<Real>(nb_called);
+      // Ajoute un epsilon pour éviter une exécution spéculative si \a nb_called vaut 0.
+      ct_by_call = r / (r_nb_called + 1.0e-10);
     }
     ostr << Trace::Width(11) << String::fromNumber(ct_by_call,3);
   }
