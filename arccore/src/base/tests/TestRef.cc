@@ -121,6 +121,13 @@ class TestRefSharedPtr
  public:
   TestRefSharedPtr(int a,const std::string& b) : TestBaseTypeNoRef(a,b){}
 };
+
+class TestRefMacroInternal
+: public ReferenceCounterImpl
+{
+  ARCCORE_INTERNAL_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+};
+
 }
 
 using namespace MyTest;
@@ -203,6 +210,10 @@ _doTest2()
 {
   TestRefOwn* x1 = new TestRefOwn(1,"ZXB");
   delete x1;
+
+  {
+    auto x2 = makeRef<TestRefMacroInternal>(new TestRefMacroInternal());
+  }
 }
 
 namespace Arccore
