@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RefBase.h                                                   (C) 2000-2023 */
+/* RefBase.h                                                   (C) 2000-2024 */
 /*                                                                           */
 /* Classe de base de la gestion des références sur une instance.             */
 /*---------------------------------------------------------------------------*/
@@ -60,9 +60,9 @@ class ARCCORE_BASE_EXPORT RefBase
 
    protected:
 
+    DeleterBase() = default;
     DeleterBase(ExternalRef h)
     : m_handle(std::move(h))
-    , m_no_destroy(false)
     {}
     DeleterBase(ExternalRef h, bool no_destroy)
     : m_handle(std::move(h))
@@ -77,7 +77,7 @@ class ARCCORE_BASE_EXPORT RefBase
      * \brief Indique si on doit appeler le destructeur de l'instance
      * lorsqu'il n'y a plus de références dessus.
      */
-    bool m_no_destroy;
+    bool m_no_destroy = false;
   };
 };
 

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExternalRef.h                                               (C) 2000-2019 */
+/* ExternalRef.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une référence sur un objet externe au C++.                      */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ReferenceCounter.h"
+
 #include <atomic>
 
 /*---------------------------------------------------------------------------*/
@@ -43,16 +44,21 @@ namespace Arccore::Internal
 class ARCCORE_BASE_EXPORT ExternalRef
 {
  private:
+
   struct Handle
   {
-    Handle() : handle(nullptr){}
-    Handle(void* h) : handle(h){}
+    Handle()
+    : handle(nullptr)
+    {}
+    Handle(void* h)
+    : handle(h)
+    {}
     ~Handle();
     void addReference() { ++m_nb_ref; }
     void removeReference()
     {
-      Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-      if (v==1)
+      Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+      if (v == 1)
         delete this;
     }
     void* handle;
@@ -66,19 +72,30 @@ class ARCCORE_BASE_EXPORT ExternalRef
  public:
 
   ExternalRef() = default;
-  ExternalRef(void* handle) : m_handle(new Handle(handle)){}
+  ExternalRef(void* handle)
+  : m_handle(new Handle(handle))
+  {}
 
  public:
-  bool isValid() const { return _internalHandle()!=nullptr; }
+
+  bool isValid() const
+  {
+    Handle* p = m_handle.get();
+    if (!p)
+      return false;
+    return _internalHandle() != nullptr;
+  }
   void* _internalHandle() const { return m_handle->handle; }
+
  private:
+
   Arccore::ReferenceCounter<Handle> m_handle;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::Internal
+} // namespace Arccore::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
