@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ReferenceCounterImpl.h                                      (C) 2000-2023 */
+/* ReferenceCounterImpl.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Implémentations liées au gestionnaire de compteur de référence.           */
 /*---------------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ template <class T> ARCCORE_EXPORT void
 ExternalReferenceCounterAccessor<T>::
 addReference(T* t)
 {
-  if constexpr(impl::HasInternalAddReference<T>::value)
+  if constexpr (impl::HasInternalAddReference<T>::value)
     t->_internalAddReference();
   else
     t->addReference();
@@ -54,7 +54,7 @@ template <class T> ARCCORE_EXPORT void
 ExternalReferenceCounterAccessor<T>::
 removeReference(T* t)
 {
-  if constexpr(impl::HasInternalRemoveReference<T>::value){
+  if constexpr (impl::HasInternalRemoveReference<T>::value) {
     bool need_destroy = t->_internalRemoveReference();
     if (need_destroy)
       delete t;
@@ -99,7 +99,7 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
     // Si elle vaut 1, cela signifie qu'on n'a plus de références
     // sur l'objet et qu'il faut le détruire.
     Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
-    if (v == 1){
+    if (v == 1) {
       if (_destroyThisReference())
         delete this;
     }
