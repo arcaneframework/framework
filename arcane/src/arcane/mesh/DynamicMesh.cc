@@ -471,7 +471,7 @@ reloadMesh()
   Timer timer(subDomain(),"DynamicMesh::reloadMesh",Timer::TimerReal);
   {
     Timer::Sentry sentry(&timer);
-    _computeSynchronizeInfos();
+    computeSynchronizeInfos();
     m_mesh_checker->checkMeshFromReferenceFile();
   }
   info() << "Time to reallocate the mesh structures (direct method) (unit: second): "
@@ -806,7 +806,7 @@ endAllocate()
   }
 #endif
 
-  _computeSynchronizeInfos();
+  computeSynchronizeInfos();
   m_mesh_checker->checkMeshFromReferenceFile();
 
   // Positionne les proprietaires pour que cela soit comme apres
@@ -2207,7 +2207,6 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
   CHECKPERF( m_perf_counter.start(PerfCounter::UPGHOSTLAYER1) ) ;
   
   m_need_compact = true;
-  
   //Integer current_iteration = subDomain()->commonVariables().globalIteration();
   if (!m_is_dynamic)
     ARCANE_FATAL("Property isDynamic() has to be 'true'");
@@ -2253,7 +2252,7 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
   // des entités
   //pm->computeSynchronizeInfos();
   CHECKPERF( m_perf_counter.start(PerfCounter::UPGHOSTLAYER4) )
-  _computeSynchronizeInfos();
+  computeSynchronizeInfos();
   _synchronizeGroupsAndVariables();
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPGHOSTLAYER4) )
 
@@ -3402,6 +3401,15 @@ IMeshModifierInternal* DynamicMesh::
 _modifierInternalApi()
 {
   return m_internal_api.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+computeSynchronizeInfos()
+{
+  _computeSynchronizeInfos();
 }
 
 /*---------------------------------------------------------------------------*/

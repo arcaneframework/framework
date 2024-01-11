@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.h                                               (C) 2000-2023 */
+/* DynamicMesh.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Classe de gestion d'un maillage évolutif.                                 */
 /*---------------------------------------------------------------------------*/
@@ -523,6 +523,8 @@ public:
   IMeshMng* meshMng() const override { return m_mesh_mng; }
   IVariableMng* variableMng() const override { return m_variable_mng; }
   ItemTypeMng* itemTypeMng() const override { return m_item_type_mng; }
+
+  void computeSynchronizeInfos() override;
 
  public:
 
