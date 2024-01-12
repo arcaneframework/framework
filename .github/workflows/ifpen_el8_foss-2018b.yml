@@ -26,6 +26,8 @@ env:
   CT_OPTS: "--timeout 300 --output-on-failure"
   # OpenMPI
   OMPI_MCA_rmaps_base_oversubscribe : true
+  # To remove test output directory to reduce disk usage
+  ARCANE_TEST_CLEANUP_AFTER_RUN : 1
 
 jobs:
 
