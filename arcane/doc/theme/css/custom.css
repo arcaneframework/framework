@@ -63,6 +63,10 @@ dl.deprecated dd {
   padding-bottom: 5px;
 }
 
+#projectlogo a:hover {
+  background: none;
+}
+
 /**
  * Arcane / Version.
  */
@@ -80,9 +84,9 @@ dl.deprecated dd {
   padding-top: 0px !important;
 }
 
-/** 
- * Pour les "Powertips" (bulles qui s'affichent quand on 
- * passe la souris dans un code.  
+/**
+ * Pour les "Powertips" (bulles qui s'affichent quand on
+ * passe la souris dans un code.
  */
 #powerTip {
   background-color: var(--side-nav-background);
@@ -185,7 +189,7 @@ dl.deprecated dd {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/* 
+/*
  * Début : Pour le 'corner' GitHub.
  */
 .github-corner:hover .octo-arm {
@@ -239,13 +243,18 @@ dl.deprecated dd {
 /*---------------------------------------------------------------------------*/
 
 
-/* 
+/*
  * Début : Bouton 'Prochaine page'.
  */
 /*
  * Dans le fichier ../doxygen-awesome-theme/doxygen-awesome-custom.css
  */
-/* 
+
+.next_section_button a:hover {
+  background: none;
+}
+
+/*
  * Fin : Bouton 'Prochaine page'.
  */
 
@@ -254,7 +263,7 @@ dl.deprecated dd {
 /*---------------------------------------------------------------------------*/
 
 
-/* 
+/*
  * Début : Bouton 'Précedente page'.
  */
 .back_section_button {
@@ -285,7 +294,7 @@ dl.deprecated dd {
 
 .back_section_button a:hover {
   color: var(--page-foreground-color) !important;
-  background-color: var(--odd-color);
+  background: var(--odd-color) none;
 }
 
 .back_section_button a::before {
