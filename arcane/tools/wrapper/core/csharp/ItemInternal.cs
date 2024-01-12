@@ -389,6 +389,7 @@ namespace Arcane
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
+  [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ItemBase
   {
     internal ItemBase(ItemInternal* v)

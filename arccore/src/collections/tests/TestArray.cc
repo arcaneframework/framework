@@ -293,6 +293,26 @@ void _testArrayNewInternal()
     ASSERT_EQ(c2.size(),1293);
     ASSERT_EQ(c22.size(),2);
 
+    {
+      SharedArray<IntSubClass> values1 = { -7, 3, 4 };
+      ASSERT_EQ(values1.size(),3);
+      ASSERT_EQ(values1[0],-7);
+      ASSERT_EQ(values1[1],3);
+      ASSERT_EQ(values1[2],4);
+      values1 = { 2, -1, 9, 13 };
+      ASSERT_EQ(values1.size(),4);
+      ASSERT_EQ(values1[0],2);
+      ASSERT_EQ(values1[1],-1);
+      ASSERT_EQ(values1[2],9);
+      ASSERT_EQ(values1[3],13);
+      SharedArray<IntSubClass> values2 = values1;
+      ASSERT_EQ(values2,values1);
+
+      values1 = {};
+      ASSERT_EQ(values1.size(),0);
+      ASSERT_EQ(values2.size(),0);
+    }
+
   }
   {
     UniqueArray<Int32> values1 = { 2, 5 };
@@ -312,6 +332,14 @@ void _testArrayNewInternal()
     UniqueArray<IntPtrSubClass>::iterator i = std::begin(vx);
     UniqueArray<IntPtrSubClass>::const_iterator ci = i;
     std::cout << "V=" << i->m_v << " " << ci->m_v << '\n';
+
+    values1 = { -7, 3 };
+    ASSERT_EQ(values1.size(),2);
+    ASSERT_EQ(values1[0],-7);
+    ASSERT_EQ(values1[1],3);
+
+    values1 = {};
+    ASSERT_EQ(values1.size(),0);
   }
   {
     UniqueArray<Int32> values1;

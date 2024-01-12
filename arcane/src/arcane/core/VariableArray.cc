@@ -562,9 +562,13 @@ _internalResize(Integer new_size,Integer nb_additional_element)
       for(Integer i=current_size; i<new_size; ++i)
         values[i] = T();
     }
-    else if (init_policy==DIP_InitWithNan){
-      ArrayView<T> view = this->valueView();
-      DataTypeTraitsT<T>::fillNan(view.subView(current_size,new_size-current_size));
+    else{
+      bool use_nan = (init_policy==DIP_InitWithNan);
+      bool use_nan2 = (init_policy==DIP_InitInitialWithNanResizeWithDefault) && !_hasValidData();
+      if (use_nan || use_nan2){
+        ArrayView<T> view = this->valueView();
+        DataTypeTraitsT<T>::fillNan(view.subView(current_size,new_size-current_size));
+      }
     }
   }
 

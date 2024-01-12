@@ -1,14 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/launcher/ArcaneLauncher.h"
 #include "arcane/utils/NumArray.h"
+#include "arcane/utils/PlatformUtils.h"
+
+#include "arcane/launcher/ArcaneLauncher.h"
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/accelerator/NumArrayViews.h"
@@ -36,8 +38,8 @@ _testSum(IAcceleratorMng* acc_mng)
   NumArray<Int64,MDDim1> b(nb_value);
   NumArray<Int64,MDDim1> c(nb_value);
   for( int i=0; i<nb_value; ++i ){
-    a.s(i) = i+2;
-    b.s(i) = i+3;
+    a(i) = i+2;
+    b(i) = i+3;
   }
 
   {
@@ -73,8 +75,8 @@ _testBinOp(IAcceleratorMng* acc_mng)
   NumArray<Int64,MDDim1> a(nb_value);
   NumArray<Int64,MDDim1> b(nb_value);
   for( int i=0; i<nb_value; ++i ){
-    a.s(i) = 1;
-    b.s(i) = 2;
+    a(i) = 1;
+    b(i) = 2;
   }
 
   // *=

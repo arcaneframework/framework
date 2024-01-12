@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInfoListView.h                                          (C) 2000-2023 */
+/* ItemInfoListView.h                                          (C) 2000-2024 */
 /*                                                                           */
 /* Vue sur une liste pour obtenir des informations sur les entités.          */
 /*---------------------------------------------------------------------------*/
@@ -14,12 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArrayView.h"
-
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemSharedInfo.h"
-#include "arcane/ItemUniqueId.h"
-#include "arcane/ItemLocalId.h"
+#include "arcane/core/ItemGenericInfoListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,13 +37,15 @@ namespace Arcane
  * d'un numéro local ItemLocalId.
  */
 class ARCANE_CORE_EXPORT ItemInfoListView
+: public ItemGenericInfoListView
 {
+  using BaseClass = ItemGenericInfoListView;
   friend class mesh::ItemFamily;
   friend ItemVector;
   friend ItemPairEnumerator;
   friend ItemGenericInfoListView;
-  template<int Extent> friend class ItemConnectedListView;
-  template<typename ItemType> friend class ItemEnumeratorBaseT;
+  template <int Extent> friend class ItemConnectedListView;
+  template <typename ItemType> friend class ItemEnumeratorBaseT;
 
   // A supprimer lorqu'on n'aura plus besoin de _itemsInternal()
   friend ItemVectorView;
@@ -78,43 +75,17 @@ class ARCANE_CORE_EXPORT ItemInfoListView
   //! Entité associée du numéro local \a local_id
   inline Item operator[](Int32 local_id) const;
 
-  //! Propriétaire de l'entité de numéro local \a local_id
-  Int32 owner(Int32 local_id) const { return m_item_shared_info->_ownerV2(local_id); }
-
-  //! Propriétaire de l'entité de numéro local \a local_id
-  Int32 owner(ItemLocalId local_id) const { return m_item_shared_info->_ownerV2(local_id.localId()); }
-
-  //! Type de l'entité de numéro local \a local_id
-  Int16 typeId(Int32 local_id) const { return m_item_shared_info->_typeId(local_id); }
-
-  //! Type de l'entité de numéro local \a local_id
-  Int16 typeId(ItemLocalId local_id) const { return m_item_shared_info->_typeId(local_id.localId()); }
-
-  //! uniqueId() de l'entité de numéro local \a local_id
-  ItemUniqueId uniqueId(Int32 local_id) const
-  {
-    return ItemUniqueId{ m_item_shared_info->m_unique_ids[local_id] };
-  }
-
-  //! uniqueId() de l'entité de numéro local \a local_id
-  ItemUniqueId uniqueId(ItemLocalId local_id) const
-  {
-    return ItemUniqueId{ m_item_shared_info->m_unique_ids[local_id.localId()] };
-  }
-
  private:
 
   // Seule ItemFamily peut créer des instances via ce constructeur
   explicit ItemInfoListView(ItemSharedInfo* shared_info)
-  : m_item_shared_info(shared_info)
+  : ItemGenericInfoListView(shared_info)
   {}
 
  protected:
 
-  ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
-
- protected:
-
+  using BaseClass::m_flags;
+  using BaseClass::m_item_shared_info;
   void _checkValid(eItemKind expected_kind);
 };
 
@@ -213,6 +184,17 @@ class FaceInfoListView
   explicit FaceInfoListView(IItemFamily* family)
   : BaseClass(family)
   {}
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE bool isSubDomainBoundary(FaceLocalId local_id) const
+  {
+    return ItemFlags::isSubDomainBoundary(m_flags[local_id]);
+  }
+  constexpr ARCCORE_HOST_DEVICE bool isSubDomainBoundaryOutside(FaceLocalId local_id) const
+  {
+    return ItemFlags::isSubDomainBoundaryOutside(m_flags[local_id]);
+  }
 };
 
 /*---------------------------------------------------------------------------*/

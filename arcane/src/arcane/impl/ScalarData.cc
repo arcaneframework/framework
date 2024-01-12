@@ -68,15 +68,38 @@ class ScalarDataT
 
  public:
 
+  class Internal
+  : public IDataInternal
+  {
+   public:
+
+    explicit Internal(ScalarDataT<DataType>* p) : m_p(p){}
+
+   public:
+
+    void computeHash(DataHashInfo& hash_info) override
+    {
+      m_p->computeHash(hash_info);
+    }
+
+   private:
+
+    ScalarDataT<DataType>* m_p = nullptr;
+  };
+
+ public:
+
   explicit ScalarDataT(ITraceMng* trace)
   : m_value(DataTypeTraitsT<DataType>::defaultValue())
   , m_trace(trace)
+  , m_internal(this)
   {}
   explicit ScalarDataT(const DataStorageBuildInfo& dsbi);
   ScalarDataT(const ScalarDataT<DataType>& rhs)
   : m_value(rhs.m_value)
   , m_trace(rhs.m_trace)
-  , m_allocation_info(rhs.m_allocation_info)
+  , m_internal(this)
+    , m_allocation_info(rhs.m_allocation_info)
   {}
 
  public:
@@ -106,6 +129,7 @@ class ScalarDataT
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  void computeHash(DataHashInfo& hash_info) const;
   ArrayShape shape() const override;
   void setShape(const ArrayShape&) override;
   void setAllocationInfo(const DataAllocationInfo& v) override { m_allocation_info = v; }
@@ -132,7 +156,7 @@ class ScalarDataT
 
   DataType m_value; //!< Donnée
   ITraceMng* m_trace;
-  NullDataInternal m_internal;
+  Internal m_internal;
   DataAllocationInfo m_allocation_info;
 
  private:
@@ -148,6 +172,7 @@ template<typename DataType> ScalarDataT<DataType>::
 ScalarDataT(const DataStorageBuildInfo& dsbi)
 : m_value(DataTypeTraitsT<DataType>::defaultValue())
 , m_trace(dsbi.traceMng())
+, m_internal(this)
 {
 }
 
@@ -299,6 +324,18 @@ computeHash(IHashAlgorithm* algo, ByteArray& output) const
   const Byte* ptr = reinterpret_cast<const Byte*>(&m_value);
   ByteConstArrayView input(type_size, ptr);
   algo->computeHash64(input, output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType>
+void ScalarDataT<DataType>::
+computeHash(DataHashInfo& hash_info) const
+{
+  hash_info.setVersion(2);
+  Span<const DataType> value_as_span(&m_value,1);
+  hash_info.context()->updateHash(asBytes(value_as_span));
 }
 
 /*---------------------------------------------------------------------------*/

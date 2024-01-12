@@ -104,6 +104,19 @@ class NumArrayDataT
 
  public:
 
+  class Internal
+  : public IDataInternal
+  {
+   public:
+
+    void computeHash(DataHashInfo&) override
+    {
+      ARCANE_THROW(NotImplementedException,"computeHash");
+    }
+  };
+
+ public:
+
   explicit NumArrayDataT(ITraceMng* trace);
   explicit NumArrayDataT(const DataStorageBuildInfo& dsbi);
   NumArrayDataT(const NumArrayDataT<DataType,RankValue>& rhs);
@@ -174,7 +187,7 @@ class NumArrayDataT
   NumArray<DataType,ExtentType> m_value; //!< Donnée
   ITraceMng* m_trace;
   ArrayShape m_shape;
-  NullDataInternal m_internal;
+  Internal m_internal;
   DataAllocationInfo m_allocation_info;
 
  private:

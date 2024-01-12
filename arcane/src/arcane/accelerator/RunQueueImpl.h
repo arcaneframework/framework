@@ -4,4 +4,5 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-#include "arcane/accelerator/core/RunQueueImpl.h"
+// La définition de 'RunQueueImpl' est maintenant dans 'core/internal.
+// Ce fichier est conservé pour des raisons de compatibilité

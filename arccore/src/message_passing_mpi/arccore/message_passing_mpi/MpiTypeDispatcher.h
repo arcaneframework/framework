@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcher.h                                         (C) 2000-2022 */
+/* MpiTypeDispatcher.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des messages pour un type de données.                             */
 /*---------------------------------------------------------------------------*/
@@ -71,12 +71,15 @@ class MpiTypeDispatcher
   MpiDatatype* datatype() const { return m_datatype; }
   IMessagePassingMng* messagePassingMng() const { return m_parallel_mng; }
   MpiAdapter* adapter() const { return m_adapter; }
+  void setDestroyDatatype(bool v) { m_is_destroy_datatype = v; }
+  bool isDestroyDatatype() const { return m_is_destroy_datatype; }
 
  private:
 
   IMessagePassingMng* m_parallel_mng;
   MpiAdapter* m_adapter;
   MpiDatatype* m_datatype;
+  bool m_is_destroy_datatype = false;
 
  private:
 

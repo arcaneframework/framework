@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DomLibXml2.cc                                               (C) 2000-2018 */
+/* DomLibXml2.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Encapsulation du DOM de libxml2.                                          */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,6 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StdHeader.h"
-#include "arcane/utils/StringImpl.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/TraceInfo.h"
@@ -136,7 +135,7 @@ String fromChar(const xmlChar* value)
   Integer len = ::xmlStrlen(value);
   // Ne pas oublier le '\0' terminal
   ByteConstArrayView bytes(len+1,value);
-  return DOMString(new StringImpl(bytes));
+  return DOMString(bytes);
 }
 
 String fromCharAndFree(xmlChar* value)
@@ -202,7 +201,8 @@ class LibXml2_ErrorHandler
 
  public:
   //! Handler à connecter à la libxml2.
-  static void XMLCDECL handler(void* user_data,xmlErrorPtr e)
+  template <class T>
+  static void XMLCDECL handler(void* user_data,T* e)
   {
     if (!e)
       return;
@@ -216,7 +216,7 @@ class LibXml2_ErrorHandler
  private:
   String m_error_message;
  public:
-  void addError(xmlErrorPtr e)
+  void addError(const xmlError* e)
   {
     StringBuilder sb;
     if (e->level==XML_ERR_WARNING)

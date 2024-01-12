@@ -50,7 +50,6 @@ set( ARCANE_SOURCES
   Array2Data.h
   MemoryDataReaderWriter.cc
   MemoryDataReaderWriter.h
-  NumArrayData.cc
   DefaultBackwardMng.cc
   DefaultBackwardMng.h
   LoadBalanceMng.cc
@@ -153,6 +152,12 @@ set( ARCANE_SOURCES
   internal/VariableSynchronizerMng.h
   internal/VariableSynchronizerComputeList.h
   )
+
+if (ARCANE_HAS_ACCELERATOR_API)
+  list(APPEND ARCANE_SOURCES
+    NumArrayData.cc
+  )
+endif()
 
 set(AXL_FILES
   ArcaneCaseMeshMasterService

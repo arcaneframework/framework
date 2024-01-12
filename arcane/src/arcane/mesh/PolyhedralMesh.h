@@ -188,7 +188,7 @@ class PolyhedralMesh
 
   Properties* properties() override { return m_properties.get(); }
 
-  const MeshPartInfo& meshPartInfo() const { return m_mesh_part_info; };
+  const MeshPartInfo& meshPartInfo() const override { return m_mesh_part_info; };
 
   IItemFamily* nodeFamily() override;
   IItemFamily* edgeFamily() override;

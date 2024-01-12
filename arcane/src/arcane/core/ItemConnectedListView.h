@@ -237,6 +237,8 @@ class ItemConnectedListView
   using value_type = Item;
   using reference_type = Item&;
   using const_reference_type = const Item&;
+  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  using SentinelType = const_iterator;
 
  public:
 
@@ -271,7 +273,13 @@ class ItemConnectedListView
   }
 
   //! Itérateur sur après la dernière entité connectée
-  const_iterator end() const
+  SentinelType end() const
+  {
+    return endIterator();
+  }
+
+  //! Itérateur sur après la dernière entité connectée
+  const_iterator endIterator() const
   {
     return const_iterator(m_shared_info, (m_index_view._data() + this->size()), _localIdOffset());
   }
@@ -357,6 +365,8 @@ class ItemConnectedListViewT
   using const_iterator = ItemConnectedListViewConstIteratorT<ItemType>;
   using difference_type = std::ptrdiff_t;
   using value_type = ItemType;
+  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  using SentinelType = const_iterator;
 
  private:
 
@@ -390,7 +400,12 @@ class ItemConnectedListViewT
     return const_iterator(m_shared_info, this->_localIdsData(), this->_localIdOffset());
   }
   //! Itérateur sur après la dernière entité connectée
-  inline const_iterator end() const
+  inline SentinelType end() const
+  {
+    return endIterator();
+  }
+  //! Itérateur sur après la dernière entité connectée
+  inline const_iterator endIterator() const
   {
     return const_iterator(m_shared_info, (this->_localIdsData() + this->size()), this->_localIdOffset());
   }

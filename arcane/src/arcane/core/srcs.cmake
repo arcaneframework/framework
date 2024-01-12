@@ -63,10 +63,13 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IParallelMngInternal.h
   internal/IItemFamilyInternal.h
   internal/IMeshInternal.h
+  internal/IMeshModifierInternal.h
   internal/ItemGroupInternal.h
   internal/ICaseOptionListInternal.h
   internal/IVariableMngInternal.h
   internal/IVariableSynchronizerMngInternal.h
+  internal/StringVariableReplace.h
+  internal/StringVariableReplace.cc
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -475,14 +478,13 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshAreaAccessor.h
   MeshBuildInfo.cc
   MeshBuildInfo.h
+  MeshMDVariableRef.h
   MeshEvents.h
   MeshHandle.cc
   MeshKind.h
   MeshKind.cc
   MeshItemInternalList.cc
   MeshItemInternalList.h
-  MeshMDVariableRef.cc
-  MeshMDVariableRef.h
   MeshPartInfo.cc
   MeshPartialVariableArrayRef.h
   MeshPartialVariableArrayRefT.H
@@ -751,11 +753,17 @@ set(ARCANE_ORIGINAL_SOURCES
   RawCopy.h
   )
 
+if (ARCANE_HAS_ACCELERATOR_API)
+  list(APPEND ARCANE_ORIGINAL_SOURCES
+    MeshMDVariableRef.cc
+  )
+endif()
+
 set(ARCANE_SOURCES
   ${ARCANE_ORIGINAL_SOURCES}
   ${ARCANE_MATERIALS_SOURCES}
   ${ARCANE_INTERNAL_SOURCES}
-  )
+)
 
 # ----------------------------------------------------------------------------
 # Local Variables:

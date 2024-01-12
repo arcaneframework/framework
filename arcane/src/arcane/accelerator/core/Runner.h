@@ -149,7 +149,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 
   impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl();
   impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
-  void _internalFreeRunQueueImpl(impl::RunQueueImpl*);
+  void _internalPutRunQueueImplInPool(impl::RunQueueImpl*);
   impl::IRunQueueEventImpl* _createEvent();
   impl::IRunQueueEventImpl* _createEventWithTimer();
   void _addCommandTime(double v);

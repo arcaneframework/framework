@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternal.h"
-#include "arcane/Item.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/Item.h"
 #include "arcane/core/materials/MatVarIndex.h"
 
 /*---------------------------------------------------------------------------*/
@@ -27,11 +27,66 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ComponentItemSharedInfo
+class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 {
- public:
-  Int32* m_infos;
+  friend class ComponentItemInternal;
+  friend class ComponentItemInternalData;
+
+ private:
+
+  //! Pour l'entité nulle
+  static ComponentItemSharedInfo null_shared_info;
+  static ComponentItemSharedInfo* null_shared_info_pointer;
+  static ComponentItemSharedInfo* _nullInstance() { return null_shared_info_pointer; }
+
+ private:
+
+  ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
+  Int16 m_level = (-1);
+  ConstArrayView<IMeshComponent*> m_components;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace matimpl
+{
+  class ARCANE_CORE_EXPORT ConstituentItemBase
+  {
+    friend Arcane::Materials::ComponentCell;
+    friend Arcane::Materials::AllEnvCell;
+    friend Arcane::Materials::EnvCell;
+    friend Arcane::Materials::MatCell;
+
+   public:
+
+    ARCCORE_HOST_DEVICE constexpr ConstituentItemBase(ComponentItemInternal* component_item)
+    : m_component_item(component_item)
+    {
+    }
+
+   public:
+
+    ARCCORE_HOST_DEVICE constexpr friend bool
+    operator==(const ConstituentItemBase& a, const ConstituentItemBase& b)
+    {
+      return a.m_component_item == b.m_component_item;
+    }
+    ARCCORE_HOST_DEVICE constexpr friend bool
+    operator!=(const ConstituentItemBase& a, const ConstituentItemBase& b)
+    {
+      return a.m_component_item != b.m_component_item;
+    }
+
+   private:
+
+    ARCCORE_HOST_DEVICE constexpr ComponentItemInternal* _internal() const { return m_component_item; }
+
+   private:
+
+    ComponentItemInternal* m_component_item = nullptr;
+  };
+} // namespace matimpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,6 +104,18 @@ class ComponentItemSharedInfo
  */
 class ARCANE_CORE_EXPORT ComponentItemInternal
 {
+  friend class ComponentCell;
+  friend class MatCell;
+  friend class EnvCell;
+  friend class ComponentCell;
+  friend class AllEnvCell;
+  friend class CellComponentCellEnumerator;
+  friend class ComponentItemInternalData;
+  friend class MeshComponentData;
+  friend class MeshEnvironment;
+  friend class AllEnvData;
+  friend class MeshMaterialMng;
+
  private:
 
   static const int MAT_INDEX_OFFSET = 10;
@@ -58,139 +125,147 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
  public:
 
-  //! Entité nulle
-  static ComponentItemInternal* nullItem() { return &nullComponentItemInternal; }
-
- public:
-
   ComponentItemInternal()
-  : m_component_id(-1), m_level(-1), m_nb_sub_component_item(0), m_component(0),
-    m_super_component_item(0), m_first_sub_component_item(0), m_global_item(ItemInternal::nullItem())
   {
     m_var_index.reset();
   }
 
  public:
 
-  /*!
-   * \internal
-   * Positionne l'indexeur dans les variables matériaux.
-   */
-  void setVariableIndex(MatVarIndex index)
-  {
-    m_var_index = index;
-  }
-
   //! Indexeur dans les variables matériaux
-  ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const
+  ARCCORE_HOST_DEVICE constexpr MatVarIndex variableIndex() const
   {
     return m_var_index;
   }
 
   //! Identifiant du composant
-  ARCCORE_HOST_DEVICE Int32 componentId() const { return m_component_id; }
+  ARCCORE_HOST_DEVICE constexpr Int32 componentId() const { return m_component_id; }
 
   //! Indique s'il s'agit de la maille nulle.
-  bool null() const { return m_var_index.null(); }
+  ARCCORE_HOST_DEVICE constexpr bool null() const { return m_var_index.null(); }
 
-  //! Composant
-  IMeshComponent* component() const { return m_component; }
-
-  //! Composant supérieur (0 si aucun)
-  ComponentItemInternal* superItem() const { return m_super_component_item; }
-
-  void setSuperAndGlobalItem(ComponentItemInternal* cii,Item ii)
-  {
-    m_super_component_item = cii;
-    m_global_item = ItemCompatibility::_itemInternal(ii);
-  }
-
-  void setGlobalItem(Item ii)
-  {
-    m_global_item = ItemCompatibility::_itemInternal(ii);
-  }
+  /*!
+   * \brief Composant associé.
+   *
+   * Cet appel n'est valide que pour les mailles matériaux ou milieux. Si on souhaite
+   * un appel valide pour toutes les 'ComponentItem', il faut utiliser componentId().
+   */
+  IMeshComponent* component() const { return m_shared_info->m_components[m_component_id]; }
 
   //! Nombre de sous-composants.
-  ARCCORE_HOST_DEVICE Int32 nbSubItem() const
+  ARCCORE_HOST_DEVICE constexpr Int32 nbSubItem() const
   {
     return m_nb_sub_component_item;
   }
 
-  //! Première entité sous-composant.
-  ARCCORE_HOST_DEVICE ComponentItemInternal* firstSubItem() const { return m_first_sub_component_item; }
-
   //! Entité globale correspondante.
-  impl::ItemBase globalItemBase() { return m_global_item; }
-
-  //! Positionne le nombre de sous-composants.
-  void setNbSubItem(Int32 nb_sub_item)
+  impl::ItemBase globalItemBase() const
   {
-    m_nb_sub_component_item = nb_sub_item;
+    return impl::ItemBase(m_global_item_local_id, m_shared_info->m_item_shared_info);
   }
 
-  //! Positionne le premier sous-composant.
-  void setFirstSubItem(ComponentItemInternal* first_sub_item)
-  {
-    m_first_sub_component_item = first_sub_item;
-  }
-
-  void setComponent(IMeshComponent* component,Int32 component_id)
-  {
-    m_component = component;
-#ifdef ARCANE_CHECK
-    _checkIsInt16(component_id);
-#endif
-    m_component_id = (Int16)component_id;
-  }
-
-  Int32 level() const { return m_level; }
-
-  void setLevel(Int32 level)
-  {
-#ifdef ARCANE_CHECK
-    _checkIsInt16(level);
-#endif
-    m_level = (Int16)level;
-  }
+  ARCCORE_HOST_DEVICE constexpr Int32 level() const { return m_shared_info->m_level; }
 
   //! Numéro unique de l'entité component
   Int64 componentUniqueId() const
   {
     // TODO: Vérifier que arrayIndex() ne dépasse pas (1<<MAT_INDEX_OFFSET)
-    return (Int64)m_var_index.arrayIndex() + ( (Int64)m_global_item->uniqueId() << MAT_INDEX_OFFSET );
-  }
-
-  void reset()
-  {
-    m_var_index.reset();
-    m_component_id = -1;
-    m_component = 0;
-    m_level = (-1);
-    m_super_component_item = 0;
-    m_nb_sub_component_item = 0;
-    m_first_sub_component_item = 0;
-    m_global_item = ItemInternal::nullItem();
+    impl::ItemBase item_base(globalItemBase());
+    return (Int64)m_var_index.arrayIndex() + ((Int64)item_base.uniqueId() << MAT_INDEX_OFFSET);
   }
 
  protected:
 
+  // NOTE : Cette classe est partagée avec le wrapper C#
+  // Toute modification de la structure interne doit être reportée
+  // dans la structure C# correspondante
   MatVarIndex m_var_index;
-  Int16 m_component_id;
-  Int16 m_level;
-  Int32 m_nb_sub_component_item;
-  IMeshComponent* m_component;
-  ComponentItemInternal* m_super_component_item;
-  ComponentItemInternal* m_first_sub_component_item;
-  ItemInternal* m_global_item;
+  Int16 m_component_id = -1;
+  Int16 m_nb_sub_component_item = 0;
+  Int32 m_global_item_local_id = NULL_ITEM_LOCAL_ID;
+  ComponentItemInternal* m_super_component_item = nullptr;
+  ComponentItemInternal* m_first_sub_component_item = nullptr;
+  ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
 
   void _checkIsInt16(Int32 v)
   {
-    if (v<(-32768) || v>32767)
+    if (v < (-32768) || v > 32767)
       _throwBadCast(v);
   }
   void _throwBadCast(Int32 v);
+
+ private:
+
+  //! Entité nulle
+  static ComponentItemInternal* _nullItem()
+  {
+    return &nullComponentItemInternal;
+  }
+
+  //! Positionne l'indexeur dans les variables matériaux.
+  void _setVariableIndex(MatVarIndex index)
+  {
+    m_var_index = index;
+  }
+
+  //! Composant supérieur (0 si aucun)
+  matimpl::ConstituentItemBase _superItemBase() const
+  {
+    return m_super_component_item;
+  }
+
+  void _setSuperAndGlobalItem(ComponentItemInternal* cii, ItemLocalId ii)
+  {
+    m_super_component_item = cii;
+    m_global_item_local_id = ii.localId();
+  }
+
+  void _setGlobalItem(ItemLocalId ii)
+  {
+    m_global_item_local_id = ii.localId();
+  }
+
+  //! Première entité sous-composant.
+  ARCCORE_HOST_DEVICE ComponentItemInternal* _firstSubItem() const
+  {
+    return m_first_sub_component_item;
+  }
+
+  //! Positionne le nombre de sous-composants.
+  void _setNbSubItem(Int32 nb_sub_item)
+  {
+#ifdef ARCANE_CHECK
+    _checkIsInt16(nb_sub_item);
+#endif
+    m_nb_sub_component_item = static_cast<Int16>(nb_sub_item);
+  }
+
+  //! Positionne le premier sous-composant.
+  void _setFirstSubItem(ComponentItemInternal* first_sub_item)
+  {
+    m_first_sub_component_item = first_sub_item;
+  }
+
+  void _setComponent(Int32 component_id)
+  {
+#ifdef ARCANE_CHECK
+    _checkIsInt16(component_id);
+#endif
+    m_component_id = static_cast<Int16>(component_id);
+  }
+
+  void _reset(ComponentItemSharedInfo* shared_info)
+  {
+    m_var_index.reset();
+    m_component_id = -1;
+    m_super_component_item = nullptr;
+    m_nb_sub_component_item = 0;
+    m_first_sub_component_item = nullptr;
+    m_global_item_local_id = NULL_ITEM_LOCAL_ID;
+    m_shared_info = shared_info;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeStats.h                                                 (C) 2000-2021 */
+/* TimeStats.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Statistiques sur les temps d'exécution.                                   */
 /*---------------------------------------------------------------------------*/
@@ -16,8 +16,9 @@
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/FixedArray.h"
 
-#include "arcane/ITimeStats.h"
+#include "arcane/core/ITimeStats.h"
 
 #include <stack>
 
@@ -39,11 +40,10 @@ class TimeStats
  public:
 
   class Action;
-  typedef List<Action*> ActionList;
   class ActionSeries;
   class PhaseValue;
-  typedef List<PhaseValue*> PhaseValueList;
   class MetricCollector;
+  using ActionList = List<Action*>;
 
   enum eTimeType
   {
@@ -60,33 +60,27 @@ class TimeStats
   struct TimeValue
   {
    public:
+
     TimeValue(Real real_time,Real virtual_time)
     {
-      _initTimes();
       m_time[TT_Real][TC_Local] = real_time;
       m_time[TT_Virtual][TC_Local] = virtual_time;
     }
     TimeValue()
     {
-      _initTimes();
     }
 
    public:
+
     void add(const TimeValue& phase)
     {
       for( Integer i=0; i<NB_TIME_TYPE; ++i )
         m_time[i][TC_Local] += phase.m_time[i][TC_Local];
     }
+
    public:
 
-    Real m_time[NB_TIME_TYPE][2];
-    void _initTimes()
-    {
-      for( Integer tt=0; tt<NB_TIME_TYPE; ++tt ){
-        m_time[tt][TC_Local] = 0.;
-        m_time[tt][TC_Cumulative] = 0.;
-      }
-    }
+    FixedArray<FixedArray<Real,NB_TIME_TYPE>,2> m_time;
   };
 
   class PhaseValue
@@ -95,12 +89,12 @@ class TimeStats
    public:
     PhaseValue(eTimePhase pt,Real real_time,Real virtual_time)
     : TimeValue(real_time,virtual_time), m_type(pt) { }
-    PhaseValue()
-    : m_type(TP_Computation) { }
+    PhaseValue() = default;
    public:
-    eTimePhase m_type;
+    eTimePhase phase() const { return m_type; }
+   public:
+    eTimePhase m_type = TP_Computation;
   };
-
 
  public:
 
@@ -144,14 +138,16 @@ class TimeStats
   void saveTimeValues(Properties* p) override;
   void mergeTimeValues(Properties* p) override;
 
+  void resetStats(const String& name) override;
+
  private:
 
   ITimerMng* m_timer_mng = nullptr;
   Timer* m_virtual_timer = nullptr;
   Timer* m_real_timer = nullptr;
-  bool m_is_gathering;
+  bool m_is_gathering = false;
   PhaseValue m_current_phase;
-  //! Statistiques sur l'exéctution en cours
+  //! Statistiques sur l'exécution en cours
   ActionSeries* m_current_action_series = nullptr;
   //! Statistiques sur les exécutions précédentes
   ActionSeries* m_previous_action_series = nullptr;
@@ -160,7 +156,7 @@ class TimeStats
   std::stack<eTimePhase> m_phases_type;
   bool m_need_compute_elapsed_time = false;
   std::ostringstream m_full_stats_str;
-  bool m_full_stats;
+  bool m_full_stats = false;
   String m_name;
   ITimeMetricCollector* m_metric_collector = nullptr;
 

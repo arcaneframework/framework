@@ -30,4 +30,7 @@
 // HDF5
 #cmakedefine ALIEN_USE_HDF5
 
+// Eigen3
+#cmakedefine ALIEN_USE_EIGEN3
+
 #endif // ALIENCONFIG_H

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiSerializeDispatcher.cc                                   (C) 2000-2020 */
+/* MpiSerializeDispatcher.cc                                   (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des messages de sérialisation avec MPI.                           */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arccore/message_passing_mpi/MpiSerializeMessageList.h"
 #include "arccore/message_passing_mpi/MpiLock.h"
 #include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/internal/SubRequestCompletionInfo.h"
 #include "arccore/serialize/BasicSerializer.h"
 #include "arccore/base/NotImplementedException.h"
 #include "arccore/base/FatalErrorException.h"
@@ -92,14 +93,14 @@ class MpiSerializeDispatcher::SendSerializerSubRequest
 : public ISubRequest
 {
  public:
+
   SendSerializerSubRequest(MpiSerializeDispatcher* pm,BasicSerializer* buf,
                            MessageRank rank,MessageTag mpi_tag)
   : m_dispatcher(pm), m_serialize_buffer(buf), m_rank(rank), m_mpi_tag(mpi_tag) {}
-  ~SendSerializerSubRequest() override
-  {
-  }
+
  public:
-  Request executeOnCompletion() override
+
+  Request executeOnCompletion(const SubRequestCompletionInfo&) override
   {
     if (!m_is_message_sent)
       sendMessage();
@@ -136,46 +137,62 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
 : public ISubRequest
 {
  public:
+
   ReceiveSerializerSubRequest(MpiSerializeDispatcher* d,BasicSerializer* buf,
-                              MessageRank rank,MessageTag mpi_tag,Integer action)
-  : m_dispatcher(d), m_serialize_buffer(buf), m_rank(rank),
-    m_mpi_tag(mpi_tag), m_action(action) {}
+                              MessageTag mpi_tag, Integer action)
+  : m_dispatcher(d)
+  , m_serialize_buffer(buf)
+  , m_mpi_tag(mpi_tag)
+  , m_action(action)
+  {}
+
  public:
-  Request executeOnCompletion() override
+
+  Request executeOnCompletion(const SubRequestCompletionInfo& completion_info) override
   {
-    if (m_dispatcher->m_is_trace_serializer){
-      ITraceMng* tm = m_dispatcher->traceMng();
+    MessageRank rank = completion_info.sourceRank();
+    bool is_trace = m_dispatcher->m_is_trace_serializer;
+    ITraceMng* tm = m_dispatcher->traceMng();
+    if (is_trace) {
       tm->info() << " ReceiveSerializerSubRequest::executeOnCompletion()"
-                 << " rank=" << m_rank << " tag=" << m_mpi_tag;
+                 << " rank=" << rank << " wanted_tag=" << m_mpi_tag << " action=" << m_action;
     }
     if (m_action==1){
       BasicSerializer* sbuf = m_serialize_buffer;
       Int64 total_recv_size = sbuf->totalSize();
 
+      if (is_trace) {
+        tm->info() << " ReceiveSerializerSubRequest::executeOnCompletion() total_size=" << total_recv_size
+                   << BasicSerializer::SizesPrinter(*m_serialize_buffer);
+      }
       // Si le message est plus petit que le buffer, le désérialise simplement
       if (total_recv_size<=m_dispatcher->m_serialize_buffer_size){
         sbuf->setFromSizes();
-        return Request();
+        return {};
       }
 
       sbuf->preallocate(total_recv_size);
       auto bytes = sbuf->globalBuffer();
-      //m_serialize_buffer->setTag(m_mpi_tag);
-      Request r2 = m_dispatcher->_recvSerializerBytes(bytes,m_rank,m_mpi_tag,false);
-      ISubRequest* sr = new ReceiveSerializerSubRequest(m_dispatcher,m_serialize_buffer,m_rank,m_mpi_tag,2);
+
+      // La nouvelle requête doit utiliser le même rang source que celui de cette requête
+      // pour être certain qu'il n'y a pas d'incohérence.
+      Request r2 = m_dispatcher->_recvSerializerBytes(bytes, rank, m_mpi_tag, false);
+      ISubRequest* sr = new ReceiveSerializerSubRequest(m_dispatcher, m_serialize_buffer, m_mpi_tag, 2);
       r2.setSubRequest(makeRef(sr));
       return r2;
     }
     if (m_action==2){
       m_serialize_buffer->setFromSizes();
     }
-    return Request();
+    return {};
   }
-  MpiSerializeDispatcher* m_dispatcher;
-  BasicSerializer* m_serialize_buffer;
-  MessageRank m_rank;
+
+ private:
+
+  MpiSerializeDispatcher* m_dispatcher = nullptr;
+  BasicSerializer* m_serialize_buffer = nullptr;
   MessageTag m_mpi_tag;
-  Int32 m_action;
+  Int32 m_action = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -494,7 +511,7 @@ receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message)
     r = _recvSerializerBytes(bytes,message.messageId(),is_blocking);
   else
     ARCCORE_THROW(NotSupportedException,"Only message.isRankTag() or message.isMessageId() is supported");
-  auto* sr = new ReceiveSerializerSubRequest(this,sbuf,rank,nextSerializeTag(tag),1);
+  auto* sr = new ReceiveSerializerSubRequest(this, sbuf, nextSerializeTag(tag), 1);
   r.setSubRequest(makeRef<ISubRequest>(sr));
   return r;
 }

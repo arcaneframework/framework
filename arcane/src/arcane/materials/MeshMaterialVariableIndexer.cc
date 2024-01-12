@@ -20,7 +20,7 @@
 
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
-#include "arcane/materials/internal/ComponentModifierWorkInfo.h"
+#include "arcane/materials/internal/ConstituentModifierWorkInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -156,7 +156,7 @@ void MeshMaterialVariableIndexer::
 endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove)
 {
   // TODO: à supprimer et à remplacer par la version qui prend un
-  // ComponentModifierWorkInfo à la place
+  // ConstituentModifierWorkInfo à la place
 
   Integer nb_item = nbItem();
   Integer orig_nb_item = nb_item;
@@ -192,7 +192,7 @@ endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdateRemove(const ComponentModifierWorkInfo& work_info,Integer nb_remove)
+endUpdateRemove(const ConstituentModifierWorkInfo& work_info,Integer nb_remove)
 {
   Integer nb_item = nbItem();
   Integer orig_nb_item = nb_item;
@@ -399,7 +399,7 @@ _transformPartialToPure(Int32ConstArrayView nb_env_per_cell,
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-transformCellsV2(ComponentModifierWorkInfo& work_info)
+transformCellsV2(ConstituentModifierWorkInfo& work_info)
 {
   if (work_info.isAdd())
     _transformPureToPartialV2(work_info);
@@ -411,7 +411,7 @@ transformCellsV2(ComponentModifierWorkInfo& work_info)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-_transformPureToPartialV2(ComponentModifierWorkInfo& work_info)
+_transformPureToPartialV2(ConstituentModifierWorkInfo& work_info)
 {
   Int32Array& pure_local_ids = work_info.pure_local_ids;
   Int32Array& partial_indexes = work_info.partial_indexes;
@@ -445,7 +445,7 @@ _transformPureToPartialV2(ComponentModifierWorkInfo& work_info)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-_transformPartialToPureV2(ComponentModifierWorkInfo& work_info)
+_transformPartialToPureV2(ConstituentModifierWorkInfo& work_info)
 {
   Int32Array& pure_local_ids = work_info.pure_local_ids;
   Int32Array& partial_indexes = work_info.partial_indexes;

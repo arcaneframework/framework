@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeStats.cc                                                (C) 2000-2022 */
+/* TimeStats.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Statistiques sur les temps d'exécution.                                   */
 /*---------------------------------------------------------------------------*/
@@ -151,6 +151,7 @@ class TimeStats::Action
   void dumpJSON(JSONWriter& writer,eTimeType tt);
   void computeCumulativeTimes();
   void dumpCurrentStats(std::ostream& ostr,int level,Real unit);
+  void reset();
  private:
   Action* m_parent; //!< Action parente
   String m_name; //!< Nom de l'action
@@ -461,6 +462,7 @@ dumpStats(std::ostream& ostr,bool is_verbose,Real nb,const String& name,
   ostr << Trace::Width(50) << "        Action       "
        << Trace::Width(11) << "  Time  "
        << Trace::Width(11) << "  Time  "
+       << Trace::Width(8) << "N"
        << '\n';
   ostr << Trace::Width(50) << " "
        << Trace::Width(11) << "Total(s)"
@@ -516,6 +518,18 @@ dumpCurrentStats(const String& action_name)
   info() << "-- Execution statistics: Action=" << action->name()
          << "\n"
          << ostr.str();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TimeStats::
+resetStats(const String& action_name)
+{
+  Action* action = m_main_action->findSubActionRecursive(action_name);
+  if (!action)
+    return;
+  action->reset();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -614,7 +628,6 @@ void TimeStats::ActionSeries::
 _dumpStats(std::ostream& ostr,Action& action,eTimeType tt,int level,int max_level,Real nb)
 {
   PhaseValue& pv = action.m_phases[TP_Computation];
-
   _printIndentedName(ostr,action.name(),level);
 
   if (pv.m_time[TT_Real][TC_Cumulative]!=0.0 || pv.m_time[TT_Virtual][TC_Cumulative]!=0.0){
@@ -674,13 +687,15 @@ _dumpAllPhases(std::ostream& ostr,Action& action,eTimeType tt,int tc,Real nb)
       nb_called = (Real)action.nbCalled();
     if (!math::isZero(nb_called)){
       Real r = all_phase_time * 1.0e6;
-      ct_by_call = r / nb_called;
+      Real r_nb_called = static_cast<Real>(nb_called);
+      // Ajoute un epsilon pour éviter une exécution spéculative si \a nb_called vaut 0.
+      ct_by_call = r / (r_nb_called + 1.0e-10);
     }
     ostr << Trace::Width(11) << String::fromNumber(ct_by_call,3);
   }
 
   // Nombre d'appel
-  ostr.width(6);
+  ostr.width(9);
   ostr << action.nbCalled() << ' ';
 
   _printPercentage(ostr,all_phase_time,m_main_action.m_total_time.m_time[tt][tc]);
@@ -942,6 +957,26 @@ merge(AllActionsInfo& save_info,Integer* index_ptr)
     a->merge(save_info,index_ptr);
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remet à zéro les statistiques de l'action et de ces filles.
+ */
+void TimeStats::Action::
+reset()
+{
+  m_nb_called = 0;
+  for( Integer phase=0; phase<NB_TIME_PHASE; ++phase )
+    for (Integer i = 0; i < NB_TIME_TYPE; ++i)
+      m_phases[phase].m_time[i][TC_Local] = 0.0;
+      
+  for( Action* s : m_sub_actions )
+    s->reset();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

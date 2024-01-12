@@ -1,2 +1,1 @@
-#include "arccore/base/StringImpl.h"
-#include "arcane/utils/UtilsTypes.h"
+#warning "This file is internal to Arccore. Do not include it"

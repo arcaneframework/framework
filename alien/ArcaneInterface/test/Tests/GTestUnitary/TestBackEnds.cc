@@ -20,6 +20,6 @@ TEST(TestBackEnds, CompositeVector)
 {
   Alien::CompositeKernel::MultiVectorImpl impl;
   ASSERT_EQ(nullptr, impl.block());
-  ASSERT_EQ(Alien::Space(), impl.space());
+  ASSERT_EQ(Alien::Space(), (const Alien::ISpace&)impl.space());
   ASSERT_EQ(Alien::VectorDistribution(), impl.distribution());
 }

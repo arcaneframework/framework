@@ -18,7 +18,9 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/MD5HashAlgorithm.h"
+#include "arcane/utils/SHA1HashAlgorithm.h"
 #include "arcane/utils/JSONWriter.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IDataWriter.h"
 #include "arcane/core/IXmlDocumentHolder.h"
@@ -31,11 +33,10 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/ICheckpointWriter.h"
 #include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IParallelMng.h"
-
-// TODO: gérer le hash en version 64 bits.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,6 +52,8 @@ VariableIOWriterMng(VariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_VARIABLEMNG_HASHV2", true))
+    m_use_hash_v2 = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -149,6 +152,7 @@ writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_has
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace
 {
   void _writeAttribute(JSONWriter& json_writer, XmlNode var_node, const String& name, const String& value)
@@ -170,13 +174,20 @@ namespace
 
 } // namespace
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void VariableIOWriterMng::
 _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
-                           const VariableCollection& vars, bool use_hash)
+                           const VariableCollection& vars, IHashAlgorithm* hash_algo)
 {
   StringBuilder var_full_type_b;
   ByteUniqueArray hash_values;
-  MD5HashAlgorithm hash_algo;
+  Ref<IHashAlgorithmContext> hash_context;
+  if (m_use_hash_v2) {
+    SHA1HashAlgorithm sha1_hash_algo;
+    hash_context = sha1_hash_algo.createContext();
+  }
 
   json_writer.writeKey("variables");
   json_writer.beginArray();
@@ -201,11 +212,23 @@ _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
     _writeAttribute(json_writer, var_node, "dimension", var->dimension());
     _writeAttribute(json_writer, var_node, "multi-tag", var->multiTag());
     _writeAttribute(json_writer, var_node, "property", var->property());
-    if (use_hash) {
+    if (hash_algo) {
       hash_values.clear();
-      var->data()->computeHash(&hash_algo, hash_values);
+      var->data()->computeHash(hash_algo, hash_values);
       String hash_str = Convert::toHexaString(hash_values);
       _writeAttribute(json_writer, var_node, "hash", hash_str);
+      if (hash_context.get()) {
+        hash_context->reset();
+        DataHashInfo hash_info(hash_context.get());
+        var->data()->_commonInternal()->computeHash(hash_info);
+        HashAlgorithmValue hash_value;
+        hash_context->computeHashValue(hash_value);
+        String hash2_str = Convert::toHexaString(asBytes(hash_value.bytes()));
+        info(6) << "Hash=" << hash2_str << " old_hash="
+                << hash_str << " name=" << var->name();
+        _writeAttribute(json_writer, var_node, "hash2", hash2_str);
+        _writeAttribute(json_writer, var_node, "hash-version", hash_info.version());
+      }
     }
   }
 
@@ -260,7 +283,7 @@ _generateMeshesMetaData(JSONWriter& json_writer, XmlNode meshes_node)
 /*---------------------------------------------------------------------------*/
 
 String VariableIOWriterMng::
-_generateMetaData(const VariableCollection& vars, bool use_hash)
+_generateMetaData(const VariableCollection& vars, IHashAlgorithm* hash_algo)
 {
   JSONWriter json_writer(JSONWriter::FormatFlags::None);
 
@@ -272,7 +295,9 @@ _generateMetaData(const VariableCollection& vars, bool use_hash)
     JSONWriter::Object o(json_writer);
     JSONWriter::Object o2(json_writer, "arcane-checkpoint-metadata");
     json_writer.write("version", static_cast<Int64>(1));
-    _generateVariablesMetaData(json_writer, variables_node, vars, use_hash);
+    if (hash_algo)
+      json_writer.write("hash-algorithm-name", hash_algo->name());
+    _generateVariablesMetaData(json_writer, variables_node, vars, hash_algo);
     XmlElement meshes_node(root_element, "meshes");
     _generateMeshesMetaData(json_writer, meshes_node);
   }
@@ -307,7 +332,14 @@ _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_ha
       var->notifyBeginWrite();
   }
 
-  String meta_data = _generateMetaData(vars, use_hash);
+  MD5HashAlgorithm md5_hash_algo;
+  SHA1HashAlgorithm sha1_hash_algo;
+  IHashAlgorithm* hash_algo = &md5_hash_algo;
+  if (m_use_hash_v2)
+    hash_algo = &sha1_hash_algo;
+  if (!use_hash)
+    hash_algo = nullptr;
+  String meta_data = _generateMetaData(vars, hash_algo);
   writer->setMetaData(meta_data);
 
   for (VariableCollection::Enumerator i(vars); ++i;) {

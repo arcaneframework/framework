@@ -28,9 +28,9 @@
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/internal/RunCommandImpl.h"
 
 #include <iostream>
 
@@ -294,19 +294,24 @@ class HipRunnerRuntime
   void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
   {
     hipPointerAttribute_t pa;
-    ARCANE_CHECK_HIP(hipPointerGetAttributes(&pa, ptr));
+    hipError_t ret_value = hipPointerGetAttributes(&pa, ptr);
     auto mem_type = ePointerMemoryType::Unregistered;
-    if (pa.isManaged)
-      mem_type = ePointerMemoryType::Managed;
-    else if (pa.memoryType == hipMemoryTypeHost)
-      mem_type = ePointerMemoryType::Host;
-    else if (pa.memoryType == hipMemoryTypeDevice)
-      mem_type = ePointerMemoryType::Device;
+    // Si \a ptr n'a pas été alloué dynamiquement (i.e: il est sur la pile),
+    // hipPointerGetAttribute() retourne une erreur. Dans ce cas on considère
+    // la mémoire comme non enregistrée.
+    if (ret_value==hipSuccess){
+      if (pa.isManaged)
+        mem_type = ePointerMemoryType::Managed;
+      else if (pa.memoryType == hipMemoryTypeHost)
+        mem_type = ePointerMemoryType::Host;
+      else if (pa.memoryType == hipMemoryTypeDevice)
+        mem_type = ePointerMemoryType::Device;
+    }
 
-    std::cout << "HIP Info: hip_memory_type=" << (int)pa.memoryType << " is_managed?=" << pa.isManaged
-              << " flags=" << pa.allocationFlags
-              << " my_memory_type=" << (int)mem_type
-              << "\n";
+    //std::cout << "HIP Info: hip_memory_type=" << (int)pa.memoryType << " is_managed?=" << pa.isManaged
+    //          << " flags=" << pa.allocationFlags
+    //          << " my_memory_type=" << (int)mem_type
+    //          << "\n";
     _fillPointerAttribute(attribute, mem_type, pa.device,
                           ptr, pa.devicePointer, pa.hostPointer);
   }

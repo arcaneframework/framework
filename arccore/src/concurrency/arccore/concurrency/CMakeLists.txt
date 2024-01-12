@@ -1,4 +1,4 @@
-find_package(Glib REQUIRED)
+﻿find_package(Glib REQUIRED)
 
 set(SOURCES
   ConcurrencyGlobal.h
@@ -13,6 +13,7 @@ set(SOURCES
   Mutex.cc
   NullThreadImplementation.h
   SpinLock.h
+  SpinLock.cc
   ThreadPrivate.h
   ThreadPrivate.cc
 )
@@ -23,3 +24,10 @@ arccore_add_component_library(concurrency
 
 target_link_libraries(arccore_concurrency PRIVATE arcconpkg_Glib)
 target_link_libraries(arccore_concurrency PUBLIC arccore_base)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

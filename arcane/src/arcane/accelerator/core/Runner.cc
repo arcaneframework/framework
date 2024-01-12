@@ -19,13 +19,13 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/MemoryView.h"
 
-#include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/DeviceId.h"
 #include "arcane/accelerator/core/IDeviceInfoList.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
 #include <stack>
 #include <map>
@@ -320,14 +320,10 @@ _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 
 void Runner::
-_internalFreeRunQueueImpl(impl::RunQueueImpl* p)
+_internalPutRunQueueImplInPool(impl::RunQueueImpl* p)
 {
-  _checkIsInit();
-  {
-    Impl::Lock my_lock(m_p.get());
-    if (p->_isInPool())
-      m_p->getPool()->push(p);
-  }
+  Impl::Lock my_lock(m_p.get());
+  m_p->getPool()->push(p);
 }
 
 /*---------------------------------------------------------------------------*/

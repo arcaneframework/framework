@@ -14,9 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 #include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/IHashAlgorithm.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,7 +29,9 @@ class INumericDataInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Classe pour gérer la compression/décompression des données.
+ */
 class DataCompressionBuffer
 {
  public:
@@ -37,6 +40,31 @@ class DataCompressionBuffer
   Int64 m_original_dim1_size = 0;
   Int64 m_original_dim2_size = 0;
   IDataCompressor* m_compressor = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations pour le calcul du hash d'une donnée.
+ */
+class DataHashInfo
+{
+ public:
+
+  explicit DataHashInfo(IHashAlgorithmContext* context)
+  : m_context(context)
+  {}
+
+ public:
+
+  IHashAlgorithmContext* context() const { return m_context; }
+  Int32 version() const { return m_version; }
+  void setVersion(Int32 v) { m_version = v; }
+
+ private:
+
+  IHashAlgorithmContext* m_context = nullptr;
+  Int32 m_version = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -92,8 +120,15 @@ class ARCANE_CORE_EXPORT IDataInternal
     return false;
   }
 
-  //! Interface générique pour les données numériques (nullptr si la donné n'est pas numérique)
+  //! Interface générique pour les données numériques (nullptr si la donnée n'est pas numérique)
   virtual INumericDataInternal* numericData() { return nullptr; }
+
+  /*!
+   * \brief Calcule le hash de la donnée.
+   *
+   * En sortie, remplit hash_info.m_version et hash_info.m_value.
+   */
+  virtual void computeHash(DataHashInfo& hash_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -202,8 +237,20 @@ namespace Arcane::impl
  * de destination doit déjà avoir été alloué à la bonne taille.
  */
 extern "C++" ARCANE_CORE_EXPORT void
-copyContigousData(IData* destination,IData* source,RunQueue& queue);
+copyContigousData(IData* destination, IData* source, RunQueue& queue);
+
+extern "C++" ARCANE_CORE_EXPORT void
+fillContigousDataGeneric(IData* data, const void* fill_address,
+                         Int32 datatype_size, RunQueue& queue);
+
+template <typename DataType> inline void
+fillContigousData(IData* data, const DataType& value, RunQueue& queue)
+{
+  constexpr Int32 type_size = static_cast<Int32>(sizeof(DataType));
+  fillContigousDataGeneric(data, &value, type_size, queue);
 }
+
+} // namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

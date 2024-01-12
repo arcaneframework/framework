@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFlags.h                                                 (C) 2000-2023 */
+/* ItemFlags.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Drapeaux contenant les caractéristiques d'une entité.                     */
 /*---------------------------------------------------------------------------*/
@@ -76,6 +76,12 @@ class ARCANE_CORE_EXPORT ItemFlags
   static constexpr bool isOwn(FlagType f) { return (f & II_Own) != 0; }
   static constexpr bool isShared(FlagType f) { return (f & II_Shared) != 0; }
   static constexpr bool isBoundary(FlagType f) { return (f & II_Boundary) != 0; }
+  static constexpr bool isSubDomainBoundary(FlagType f) { return (f & II_Boundary) != 0; }
+  static constexpr bool hasBackCell(FlagType f) { return (f & II_HasBackCell) != 0; }
+  static constexpr bool isSubDomainBoundaryOutside(FlagType f)
+  {
+    return isSubDomainBoundary(f) && hasBackCell(f);
+  }
 };
 
 /*---------------------------------------------------------------------------*/

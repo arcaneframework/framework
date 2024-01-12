@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ValueChecker.h                                              (C) 2000-2023 */
+/* ValueChecker.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Vérification de la validité de certaines valeurs.                         */
 /*---------------------------------------------------------------------------*/
@@ -42,19 +42,21 @@ class ARCANE_UTILS_EXPORT ValueChecker
  public:
 
   ValueChecker(const TraceInfo& ti)
-  : m_trace_info(ti), m_nb_error(0), m_throw_on_error(true) {}
+  : m_trace_info(ti)
+  , m_nb_error(0)
+  , m_throw_on_error(true)
+  {}
 
  public:
 
   /*!
-   * Vérifie que \a value et \a expected_value
-   * ont les mêmes valeurs.
+   * Vérifie que \a value et \a expected_value ont les mêmes valeurs.
    */
-  template<typename T> void
-  areEqual(const T& value,const T& expected_value,const String& message)
+  template <typename T1, typename T2, typename X = std::is_convertible<T2, T1>>
+  void areEqual(const T1& value, const T2& expected_value, const String& message)
   {
-    if (value!=expected_value){
-      _addError(String::format("{0} value={1} expected={2}",message,value,expected_value));
+    if (value != expected_value) {
+      _addError(String::format("{0} value={1} expected={2}", message, value, expected_value));
     }
   }
 
@@ -62,25 +64,31 @@ class ARCANE_UTILS_EXPORT ValueChecker
    * \brief Vérifie que les deux tableaux \a values et \a expected_values
    * ont les mêmes valeurs.
    */
-  template<typename T>
-  void areEqualArray(Span<const T> values,Span<const T> expected_values,
+  template <typename T1, typename T2,
+            typename ValueType = typename T1::value_type,
+            typename X1 = std::is_convertible<T1, Span<const ValueType>>,
+            typename X2 = std::is_convertible<T1, Span<const ValueType>>>
+  void areEqualArray(const T1& x_values, const T2& x_expected_values,
                      const String& message)
   {
+    auto values = static_cast<Span<const ValueType>>(x_values);
+    auto expected_values = static_cast<Span<const ValueType>>(x_expected_values);
+
     Int64 nb_value = values.size();
     Int64 nb_expected = expected_values.size();
-    if (nb_value!=nb_expected){
+    if (nb_value != nb_expected) {
       _addError(String::format("{0} bad array size n={1} expected={2}",
-                               message,nb_value,nb_expected));
+                               message, nb_value, nb_expected));
       // Ne compare pas les éléments du tableau si les tailles
       // sont différentes.
       return;
     }
 
-    for( Int64 i=0; i<nb_value; ++i ){
-      const T& v = values[i];
-      const T& e = expected_values[i];
-      if (v!=e){
-        _addError(String::format("{0} index={1} value={2} expected={3}",message,i,v,e));
+    for (Int64 i = 0; i < nb_value; ++i) {
+      const ValueType& v = values[i];
+      const ValueType& e = expected_values[i];
+      if (v != e) {
+        _addError(String::format("{0} index={1} value={2} expected={3}", message, i, v, e));
       }
     }
   }
@@ -89,76 +97,33 @@ class ARCANE_UTILS_EXPORT ValueChecker
    * \brief Vérifie que les deux tableaux 2D \a values et \a expected_values
    * ont les mêmes valeurs.
    */
-  template<typename T>
-  void areEqualArray(Span2<const T> values,Span2<const T> expected_values,
+  template <typename T>
+  void areEqualArray(Span2<const T> values, Span2<const T> expected_values,
                      const String& message)
   {
     Int64 nb_value = values.dim1Size();
     Int64 nb_expected = expected_values.dim1Size();
-    if (nb_value!=nb_expected){
+    if (nb_value != nb_expected) {
       _addError(String::format("{0} bad array size n={1} expected={2}",
-                               message,nb_value,nb_expected));
+                               message, nb_value, nb_expected));
       // Ne compare pas les éléments du tableau si les tailles
       // sont différentes.
       return;
     }
 
-    for( Int64 i=0; i<nb_value; ++i )
-      areEqualArray(values[i],expected_values[i],message);
+    for (Int64 i = 0; i < nb_value; ++i)
+      areEqualArray(values[i], expected_values[i], message);
   }
 
   /*!
    * \brief Vérifie que les deux tableaux \a values et \a expected_values
    * ont les mêmes valeurs.
    */
-  template<typename T>
-  void areEqualArray(Span<T> values,Span<T> expected_values,
+  template <typename T>
+  void areEqualArray(SmallSpan2<T> values, SmallSpan2<T> expected_values,
                      const String& message)
   {
-    return areEqualArray(Span<const T>(values),Span<const T>(expected_values),message);
-  }
-
-  /*!
-   * \brief Vérifie que les deux tableaux \a values et \a expected_values
-   * ont les mêmes valeurs.
-   */
-  template<typename T>
-  void areEqualArray(SmallSpan<T> values,SmallSpan<T> expected_values,const String& message)
-  {
-    return areEqualArray(Span<const T>(values),Span<const T>(expected_values),message);
-  }
-
-  /*!
-   * \brief Vérifie que les deux tableaux \a values et \a expected_values
-   * ont les mêmes valeurs.
-   */
-  template<typename T>
-  void areEqualArray(ConstArrayView<T> values,ConstArrayView<T> expected_values,
-                     const String& message)
-  {
-    return areEqualArray(Span<const T>(values),Span<const T>(expected_values),message);
-  }
-
-  /*!
-   * \brief Vérifie que les deux tableaux \a values et \a expected_values
-   * ont les mêmes valeurs.
-   */
-  template<typename T>
-  void areEqualArray(SmallSpan2<T> values,SmallSpan2<T> expected_values,
-                     const String& message)
-  {
-    return areEqualArray(Span2<const T>(values),Span2<const T>(expected_values),message);
-  }
-
-  /*!
-   * \brief Vérifie que les deux tableaux \a values et \a expected_values
-   * ont les mêmes valeurs.
-   */
-  template<typename T> void
-  areEqualArray(const Array<T>& values,const Array<T>& expected_values,
-                const String& message)
-  {
-    this->areEqualArray(values.constView(),expected_values.constView(),message);
+    return areEqualArray(Span2<const T>(values), Span2<const T>(expected_values), message);
   }
 
   /*!
@@ -171,7 +136,7 @@ class ARCANE_UTILS_EXPORT ValueChecker
   {
     m_throw_on_error = v;
   }
-  
+
   //! Indique si on lève une exception en cas d'erreur
   bool throwOnError() const { return m_throw_on_error; }
 

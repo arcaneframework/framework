@@ -116,7 +116,7 @@ template <typename ItemType>
 class ItemLocalIdListViewConstIteratorT
 : public ItemLocalIdListViewConstIterator
 {
-  friend class ItemLocalIdViewT<ItemType>;
+  friend class ItemLocalIdListViewT<ItemType>;
 
  private:
 
@@ -154,12 +154,12 @@ class ItemLocalIdListViewConstIteratorT
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, difference_type v)
   {
     const Int32* ptr = a.m_local_id_ptr - v;
-    return ThatClass(a.m_shared_info, ptr, a.m_local_id_offset);
+    return ThatClass(ptr, a.m_local_id_offset);
   }
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, difference_type v)
   {
     const Int32* ptr = a.m_local_id_ptr + v;
-    return ThatClass(a.m_shared_info, ptr, a.m_local_id_offset);
+    return ThatClass(ptr, a.m_local_id_offset);
   }
 };
 
@@ -171,7 +171,7 @@ class ItemLocalIdListViewConstIteratorT
 class ARCANE_CORE_EXPORT ItemLocalIdListView
 : private impl::ItemLocalIdListContainerView
 {
-  template <typename ItemType> friend class ItemLocalIdViewT;
+  template <typename ItemType> friend class ItemLocalIdListViewT;
   friend class ItemVectorView;
   using impl::ItemLocalIdListContainerView::m_size;
   using impl::ItemLocalIdListContainerView::localId;
@@ -224,7 +224,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
  * \brief Vue typée sur une liste d'entités d'une connectivité.
  */
 template <typename ItemType>
-class ItemLocalIdViewT
+class ItemLocalIdListViewT
 : public ItemLocalIdListView
 {
   friend class ItemConnectivityContainerView;
@@ -237,17 +237,19 @@ class ItemLocalIdViewT
 
   using LocalIdType = typename ItemLocalIdTraitsT<ItemType>::LocalIdType;
   using const_iterator = ItemLocalIdListViewConstIteratorT<ItemType>;
+  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  using SentinelType = const_iterator;
 
  public:
 
-  ItemLocalIdViewT() = default;
+  ItemLocalIdListViewT() = default;
 
  private:
 
-  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdListViewT(const Int32* ids, Int32 s, Int32 local_id_offset)
   : ItemLocalIdListView(ids, s, local_id_offset)
   {}
-  explicit constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const impl::ItemLocalIdListContainerView& view)
+  explicit constexpr ARCCORE_HOST_DEVICE ItemLocalIdListViewT(const impl::ItemLocalIdListContainerView& view)
   : ItemLocalIdListView(view)
   {}
 
@@ -259,7 +261,11 @@ class ItemLocalIdViewT
   {
     return const_iterator(m_local_ids, m_local_id_offset);
   }
-  constexpr ARCCORE_HOST_DEVICE const_iterator end() const
+  constexpr ARCCORE_HOST_DEVICE SentinelType end() const
+  {
+    return endIterator();
+  }
+  constexpr ARCCORE_HOST_DEVICE const_iterator endIterator() const
   {
     return const_iterator(m_local_ids + m_size, m_local_id_offset);
   }

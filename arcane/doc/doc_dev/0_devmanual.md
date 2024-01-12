@@ -25,6 +25,9 @@ dans les deux documentations).
 
 Les pages/chapitres disponibles sont:
 
+- \subpage arcanedoc_build_install <br>
+  Présente comment compiler et installer le framework %Arcane.
+
 - \ref arcanedoc_doxygen <br>
   Présente comment contribuer à la documentation %Arcane.
 
@@ -33,3 +36,6 @@ Les pages/chapitres disponibles sont:
 
 - \subpage arcanedoc_mesh_reader <br>
   Présente comment écrire un lecteur de maillage pour %Arcane.
+
+- \subpage arcanedoc_services_modules <br>
+  Présente les services et les modules mis à disposition des développeurs

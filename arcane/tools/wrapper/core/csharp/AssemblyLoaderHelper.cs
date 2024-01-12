@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -130,6 +130,8 @@ namespace Arcane
      */
     internal void LoadSpecifiedAssembly(string assembly_name)
     {
+      Debug.Write($"Loading Specified Assembly '{assembly_name}'");
+
       m_already_loaded.Clear();
       if (String.IsNullOrEmpty(assembly_name))
         return;
@@ -166,17 +168,19 @@ namespace Arcane
       if (aname==null)
         return;
       Debug.Write($"Analysing assembly '{aname}'");
-      // Ne tente pas de lire les assembly qui sont signées
-      // car normalement elles dépendent du framework.
-      // (ce n'est pas obligatoirement le cas mais pour nous si)
-      if (aname.GetPublicKeyToken().Length!=0)
+      string assembly_name = aname.Name;
+      if (assembly_name=="netstandard")
         return;
-      Debug.Write("Trying to load assembly '{0}'", aname);
+      if (assembly_name.StartsWith("Microsoft."))
+        return;
+      if (assembly_name.StartsWith("System."))
+        return;
+
+      Debug.Write($"Trying to load assembly '{aname}'");
       if (m_already_loaded.Contains(aname.FullName))
         return;
-      string full_path = Path.Combine(m_main_assembly_location,aname.Name+".dll");
+      string full_path = Path.Combine(m_main_assembly_location,assembly_name+".dll");
 
-      // TODO: fusionner avec le code de LoadSpecificAssembly
       Assembly a = _LoadAssembly(full_path);
       if (a==null)
         a = Assembly.Load(aname);

@@ -99,20 +99,6 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   //! Composant associé
   IMeshComponent* component() const { return m_component; }
 
- public:
-
-  //! Interne à Arcane
-  //@{
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
-  { return m_items_internal_main_view; }
-
-  // Tableau des MatVarIndex de cette vue.
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ConstArrayView<MatVarIndex> matvarIndexes() const { return m_matvar_indexes_view; }
-
-  //@}
-
  private:
 
   ConstArrayView<ComponentItemInternal*> _itemsInternalView() const

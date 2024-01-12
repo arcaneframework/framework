@@ -340,3 +340,20 @@ Coucou ! Voici l'onglet n°1 !
 
 </div>
 ```
+
+---
+
+Il est possible d'utiliser les balises `<details><summary>` dans la documentation
+pour réduire un bout de texte.
+
+Exemple :
+```xml
+<details>
+  <summary>Titre</summary>
+  Contenu réduit.
+</details>
+```
+<details>
+  <summary>Titre</summary>
+  Contenu réduit.
+</details>

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISerializer.h                                               (C) 2000-2020 */
+/* ISerializer.h                                               (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'un serialiseur.                                               */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arccore/serialize/SerializeGlobal.h"
 #include "arccore/base/BaseTypes.h"
+#include "arccore/base/RefDeclarations.h"
 #include "arccore/collections/CollectionsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -28,26 +29,29 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Interface d'un sérialiseur.
- 
- Cette interface gère un sérialiseur pour stocker et relire un
- ensemble de valeurs. La sérialisation se déroule en trois phases:
- 
- 1. chaque objet appelle une ou plusieurs des méthodes \c reserve() pour
- indiquer de combien de mémoire il a besoin</li>
- 2. la mémoire est allouée par allocateBuffer()</li>
- 3. chaque objet appelle une ou plusieurs des méthodes \c put() pour ajouter
- au sérialiseur ses informations</li>
-
- La désérialisation se fait de manière identique mais utilise les fonctions
- get(). Le fonctionnement est similaire à une file: à chaque get() doit
- correspondre un précédent put() et les get() et le put() doivent être dans
- le même ordre.
-
- Il est possible d'utiliser des surcharges de reserve()/get()/put(). Dans ce cas,
- il faut assurer la cohérence de leur utilisation. Par exemple, si on fait
- un reserveSpan(), il faut ensuite faire un putSpan() et un getSpan().
-
- \todo ajouter exemple.
+ *
+ * Il est possible de créér une instance de cette classe via la méthode
+ * createSerializer();
+ *
+ * Cette interface gère un sérialiseur pour stocker et relire un
+ * ensemble de valeurs. La sérialisation se déroule en trois phases:
+ *
+ * 1. chaque objet appelle une ou plusieurs des méthodes reserve()/reserveSpan() pour
+ *    indiquer de combien de mémoire il a besoin</li>
+ * 2. la mémoire est allouée par allocateBuffer()</li>
+ * 3. chaque objet appelle une ou plusieurs des méthodes put()/putSpan() pour ajouter
+ *    au sérialiseur ses informations</li>
+ *
+ * La désérialisation se fait de manière identique mais utilise les fonctions
+ * get()/getSpan(). Le fonctionnement est similaire à une file: à chaque
+ * get()/getSpan() doit correspondre un précédent put()/putSpan() et les
+ * get()/getSpan() et le put()/putSpan() doivent être dans le même ordre.
+ *
+ * Il est possible d'utiliser des surcharges de reserve()/get()/put(). Dans ce cas,
+ * il faut assurer la cohérence de leur utilisation. Par exemple, si on fait
+ * un reserveSpan(), il faut ensuite faire un putSpan() et un getSpan().
+ *
+ * \todo ajouter exemple.
  */
 class ARCCORE_SERIALIZE_EXPORT ISerializer
 {
@@ -75,6 +79,10 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
     DT_Int16 = 2, //!< Donnée de type entier 16 bits
     DT_Int32 = 3, //!< Donnée de type entier 32 bits
     DT_Int64 = 4, //!< Donnée de type entier 64 bits
+    DT_Float32 = 5, //!< Donnée de type flottant 32 bits
+    DT_Float16 = 6, //!< Donnée de type flottant 16 bits
+    DT_BFloat16 = 7, //!< Donnée de type 'brain float'
+    DT_Int8 = 8, //!< Donnée de type entier 8 bits
   };
 
   virtual ~ISerializer(){} //!< Libère les ressources
@@ -105,6 +113,14 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   virtual void reserveSpan(Span<const Int64> values);
   //! Réserve pour une vue de \a values éléments
   virtual void reserveSpan(Span<const Byte> values);
+  //! Réserve pour une vue de \a values éléments
+  virtual void reserveSpan(Span<const Int8> values);
+  //! Réserve pour une vue de \a values éléments
+  virtual void reserveSpan(Span<const Float16> values);
+  //! Réserve pour une vue de \a values éléments
+  virtual void reserveSpan(Span<const BFloat16> values);
+  //! Réserve pour une vue de \a values éléments
+  virtual void reserveSpan(Span<const Float32> values);
 
   //! Réserve pour sauver le nombre d'éléments et les \a values éléments
   virtual void reserveArray(Span<const Real> values) =0;
@@ -116,6 +132,14 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   virtual void reserveArray(Span<const Int64> values) =0;
   //! Réserve pour sauver le nombre d'éléments et les \a values éléments
   virtual void reserveArray(Span<const Byte> values) =0;
+  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  virtual void reserveArray(Span<const Int8> values) =0;
+  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  virtual void reserveArray(Span<const Float16> values) =0;
+  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  virtual void reserveArray(Span<const Float32> values) =0;
+  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  virtual void reserveArray(Span<const BFloat16> values) =0;
 
   /*!
    * \brief Réserve de la mémoire pour \a n objets de type \a dt.
@@ -169,6 +193,14 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   virtual void putSpan(Span<const Int64> values);
   //! Ajoute le tableau \a values
   virtual void putSpan(Span<const Byte> values);
+  //! Ajoute le tableau \a values
+  virtual void putSpan(Span<const Int8> values) =0;
+  //! Ajoute le tableau \a values
+  virtual void putSpan(Span<const Float16> values) =0;
+  //! Ajoute le tableau \a values
+  virtual void putSpan(Span<const BFloat16> values) =0;
+  //! Ajoute le tableau \a values
+  virtual void putSpan(Span<const Float32> values) =0;
 
   //! Sauve le nombre d'éléments et les \a values éléments
   virtual void putArray(Span<const Real> values) =0;
@@ -180,17 +212,33 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   virtual void putArray(Span<const Int64> values) =0;
   //! Sauve le nombre d'éléments et les \a values éléments
   virtual void putArray(Span<const Byte> values) =0;
+  //! Sauve le nombre d'éléments et les \a values éléments
+  virtual void putArray(Span<const Int8> values) =0;
+  //! Sauve le nombre d'éléments et les \a values éléments
+  virtual void putArray(Span<const Float16> values) =0;
+  //! Sauve le nombre d'éléments et les \a values éléments
+  virtual void putArray(Span<const BFloat16> values) =0;
+  //! Sauve le nombre d'éléments et les \a values éléments
+  virtual void putArray(Span<const Float32> values) =0;
 
-  //! Ajoute le réel \a value
+  //! Ajoute \a value
   virtual void put(Real value) =0;
-  //! Ajoute l'entier \a value
+  //! Ajoute \a value
   virtual void put(Int16 value) =0;
-  //! Ajoute l'entier \a value
+  //! Ajoute \a value
   virtual void put(Int32 value) =0;
-  //! Ajoute l'entier \a value
+  //! Ajoute \a value
   virtual void put(Int64 value) =0;
-  //! Ajoute l'octet \a value
+  //! Ajoute value
   virtual void put(Byte value) =0;
+  //! Ajoute value
+  virtual void put(Int8 value) =0;
+  //! Ajoute value
+  virtual void put(Float16 value) =0;
+  //! Ajoute value
+  virtual void put(BFloat16 value) =0;
+  //! Ajoute value
+  virtual void put(Float32 value) =0;
 
   //! Ajoute le réel \a value
   virtual void putReal(Real value) =0;
@@ -204,6 +252,14 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   virtual void putInteger(Integer value) =0;
   //! Ajoute l'octet \a value
   virtual void putByte(Byte value) =0;
+  //! Ajoute \a value
+  virtual void putInt8(Int8 value) =0;
+  //! Ajoute \a value
+  virtual void putFloat16(Float16 value) =0;
+  //! Ajoute \a value
+  virtual void putBFloat16(BFloat16 value) =0;
+  //! Ajoute \a value
+  virtual void putFloat32(Float32 value) =0;
 
  public:
   //! Récupère le tableau \a values
@@ -236,6 +292,14 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   virtual void getSpan(Span<Int64> values);
   //! Récupère le tableau \a values
   virtual void getSpan(Span<Byte> values);
+  //! Récupère le tableau \a values
+  virtual void getSpan(Span<Int8> values) =0;
+  //! Récupère le tableau \a values
+  virtual void getSpan(Span<Float16> values) =0;
+  //! Récupère le tableau \a values
+  virtual void getSpan(Span<BFloat16> values) =0;
+  //! Récupère le tableau \a values
+  virtual void getSpan(Span<Float32> values) =0;
 
   //! Redimensionne et remplit \a values
   virtual void getArray(Array<Real>& values) =0;
@@ -247,6 +311,14 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   virtual void getArray(Array<Int64>& values) =0;
   //! Redimensionne et remplit \a values
   virtual void getArray(Array<Byte>& values) =0;
+  //! Redimensionne et remplit \a values
+  virtual void getArray(Array<Int8>& values) =0;
+  //! Redimensionne et remplit \a values
+  virtual void getArray(Array<Float16>& values) =0;
+  //! Redimensionne et remplit \a values
+  virtual void getArray(Array<BFloat16>& values) =0;
+  //! Redimensionne et remplit \a values
+  virtual void getArray(Array<Float32>& values) =0;
 
   //! Récupère un réel
   virtual Real getReal() =0;
@@ -260,6 +332,14 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   virtual Integer getInteger() =0;
   //! Récupère un octet
   virtual Byte getByte() =0;
+  //! Récupère un Int8
+  virtual Int8 getInt8() =0;
+  //! Récupère un Float16
+  virtual Float16 getFloat16() =0;
+  //! Récupère un BFloat16
+  virtual BFloat16 getBFloat16() =0;
+  //! Récupère un Float32
+  virtual Float32 getFloat32() =0;
 
   //! Alloue la mémoire du sérialiseur
   virtual void allocateBuffer() =0;
@@ -281,6 +361,14 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   //! Copie les données de \a from dans cette instance
   virtual void copy(const ISerializer* from) =0;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé une instance de ISerializer
+ */
+extern "C++" ARCCORE_SERIALIZE_EXPORT Ref<ISerializer>
+createSerializer();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

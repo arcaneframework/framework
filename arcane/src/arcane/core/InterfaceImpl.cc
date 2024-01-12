@@ -28,6 +28,7 @@
 #include "arcane/core/Assertion.h"
 #include "arcane/core/IBase.h"
 #include "arcane/core/IBackwardMng.h"
+#include "arcane/core/ICaseFunction.h"
 #include "arcane/core/ICaseMng.h"
 #include "arcane/core/ICaseMeshReader.h"
 #include "arcane/core/ICaseMeshService.h"
@@ -113,11 +114,13 @@
 #include "arcane/core/ISimpleTableReaderWriter.h"
 #include "arcane/core/ISimpleTableWriterHelper.h"
 #include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/IMeshModifier.h"
 #include "arcane/core/MeshEvents.h"
 
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 #include "arcane/core/internal/IMeshInternal.h"
+#include "arcane/core/internal/IMeshModifierInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
 
@@ -230,6 +233,21 @@ setMesh([[maybe_unused]] IMesh* mesh)
   ARCANE_FATAL("This call is deprecated and does not do anything."
                " You can temporarely disable this exception if you set the environment"
                " variable ARCANE_ALLOW_POSTPROCESSOR_SETMESH to '1'");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IMeshModifier::
+addCells(const MeshModifierAddCellsArgs& args)
+{
+  addCells(args.nbCell(),args.cellInfos(),args.cellLocalIds());
+}
+
+void IMeshModifier::
+addFaces(const MeshModifierAddFacesArgs& args)
+{
+  addFaces(args.nbFace(),args.faceInfos(),args.faceLocalIds());
 }
 
 /*---------------------------------------------------------------------------*/

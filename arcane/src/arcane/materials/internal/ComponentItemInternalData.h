@@ -18,6 +18,7 @@
 #include "arcane/utils/Array.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
+#include "arcane/core/materials/ComponentItemInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,25 +74,14 @@ class ComponentItemInternalData
     return m_mat_items_internal[env_index];
   }
 
-  //! Redimensionne le nombre de AllEnvCell
-  void resizeNbAllEnvCell(Int32 size)
-  {
-    m_all_env_items_internal.resize(size);
-  }
+  //! Redimensionne les structures allouant les 'ComponentItemInternal'
+  void resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell);
 
-  //! Redimensionne le nombre milieu
-  void resizeNbEnvCell(Int32 size)
-  {
-    m_env_items_internal.resize(size);
-  }
-
-  //! Redimensionne le nombre de mailles matériaux du \a env_index- ème milieu.
-  void resizeNbMatCellForEnvironment(Int32 env_index,Int32 size)
-  {
-    m_mat_items_internal[env_index].resize(size);
-  }
-
-  void resetEnvItemsInternal();
+  //! Instance partagée associée au niveau \a level
+  ComponentItemSharedInfo* sharedInfo(Int16 level) { return &m_shared_infos[level]; }
+  ComponentItemSharedInfo* allEnvSharedInfo() { return sharedInfo(LEVEL_ALLENVIRONMENT); }
+  ComponentItemSharedInfo* envSharedInfo() { return sharedInfo(LEVEL_ENVIRONMENT); }
+  ComponentItemSharedInfo* matSharedInfo() { return sharedInfo(LEVEL_MATERIAL); }
 
  private:
 
@@ -109,15 +99,26 @@ class ComponentItemInternalData
   UniqueArray<ComponentItemInternal> m_env_items_internal;
 
   //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
-  UniqueArray< UniqueArray<ComponentItemInternal> > m_mat_items_internal;
+  UniqueArray<UniqueArray<ComponentItemInternal>> m_mat_items_internal;
+
+  //! Liste des informations partagées
+  UniqueArray<ComponentItemSharedInfo> m_shared_infos;
+
+ private:
+
+  void _initSharedInfos();
+  //! Redimensionne le nombre de mailles matériaux du \a env_index- ème milieu.
+  void _resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size);
+  //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
+  void _resetEnvItemsInternal();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

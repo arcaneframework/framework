@@ -134,6 +134,12 @@ option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_li
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
+
+option(ARCANE_ENABLE_TESTS "Enable compilation of tests" ON)
+option(ARCANE_ENABLE_DOTNET_WRAPPER "Enable compilation of '.Net' wrapper" ON)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Cherche 'Arccon'
 
 find_package(Arccon REQUIRED)
@@ -305,6 +311,27 @@ message(STATUS "Threads are always enabled")
 set(ARCANE_USE_CXX11 TRUE CACHE BOOL "true if C++11 is supported and used" FORCE)
 set(ARCANE_USE_CXX14 TRUE CACHE BOOL "true if C++14 is supported and used" FORCE)
 
+set(ARCANE_HAS_CXX20 FALSE)
+if (DEFINED ARCCORE_CXX_STANDARD)
+  if (${ARCCORE_CXX_STANDARD} VERSION_GREATER_EQUAL 20)
+    set(ARCANE_HAS_CXX20 TRUE)
+    message(STATUS "Arcane use C++20 or greater standard")
+    # Il faut au moins GCC 11 ou Clang 15
+    if(CMAKE_COMPILER_IS_GNUCXX)
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
+        message(FATAL_ERROR "Your version of GNU Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 11+ is required")
+      endif()
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15)
+        message(FATAL_ERROR "Your version of Clang Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 16+ is required")
+      endif()
+    endif()
+  endif()
+endif()
+set(ARCANE_HAS_CXX20 ${ARCANE_HAS_CXX20} CACHE BOOL "True if C++20 is used" FORCE)
+set(ARCANE_HAS_ACCELERATOR_API ${ARCANE_HAS_CXX20} CACHE BOOL "True Arcane has accelerator API" FORCE)
+
 # ----------------------------------------------------------------------------
 
 # Si on utilise gcc, supprime les extensions pour forcer le '-std=c++11'
@@ -324,7 +351,7 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.5.2")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.6.1")
 if (NOT Arccore_FOUND)
   find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 endif ()
@@ -361,6 +388,7 @@ set(ARCANE_INT64_MAX ${ARCCORE_INT64_MAX})
 
 # ----------------------------------------------------------------------------
 
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/ArcanePackageInfo.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Functions.cmake)
 
 # ----------------------------------------------------------------------------
@@ -771,6 +799,9 @@ endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
   target_compile_options(arcane_build_compile_flags INTERFACE -Wall -Wdeprecated ${_CONVERSION_WARNING})
+  if (ARCANE_DISABLE_DEPRECATED_WARNINGS)
+    target_compile_options(arcane_build_compile_flags INTERFACE -Wno-deprecated -Wno-deprecated-declarations)
+  endif()
   if(ARCANE_WANT_AVX)
     target_compile_options(arcane_export_compile_flags INTERFACE -mavx)
   endif()
@@ -861,6 +892,10 @@ if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
 endif()
 
 if(DEFINED ARCANE_ACCELERATOR_MODE)
+  if (NOT ARCANE_HAS_CXX20)
+    message(FATAL_ERROR "Arcane Accelerator API requires C++20. Add -DARCCORE_CXX_STANDARD=20 to the configuration")
+  endif()
+
   if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
     set (ARCANE_WANT_CUDA TRUE)
   elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
@@ -882,6 +917,10 @@ if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
   add_subdirectory(src/arcane/accelerator/hip)
 endif()
 if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
+  # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+  message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
+  cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
+
   # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
   if (NOT CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
@@ -891,8 +930,9 @@ if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
 endif()
 
 add_subdirectory(src/arcane/accelerator/core)
-add_subdirectory(src/arcane/accelerator)
-
+if (ARCANE_HAS_ACCELERATOR_API)
+  add_subdirectory(src/arcane/accelerator)
+endif()
 if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
   add_subdirectory(src/arcane/accelerator/hip/runtime)
 endif()
@@ -964,7 +1004,9 @@ endif()
 # Les tests ont besoin d'infos comme le partitionneur utilisé  donc il
 # faut ajouter le répertoire de test en dernier.
 
-add_subdirectory(src/arcane/tests)
+if (ARCANE_ENABLE_TESTS)
+  add_subdirectory(src/arcane/tests)
+endif()
 
 # ----------------------------------------------------------------------------
 
@@ -996,7 +1038,9 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARIES is ${ARCANE_EXTERNAL_LIBRARIES}")
 function(GENERATE_DOC_TARGET docname)
   set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR})
   configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}.doxyfile @ONLY)
-  add_custom_target(${docname} COMMAND ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}.doxyfile)
+  add_custom_target(${docname} COMMAND
+      ${DOXYGEN} ${ARCANEBUILDROOT}/share/${docname}.doxyfile &&
+      echo "Doc index file : file://${ARCANEBUILDROOT}/share/${docname}/html/index.html")
 
   set(DOC_OUTPUT_DIR ${CMAKE_INSTALL_PREFIX})
   configure_file(${ARCANESRCROOT}/doc/${docname}.doxyfile ${ARCANEBUILDROOT}/share/${docname}_install.doxyfile @ONLY)
@@ -1028,7 +1072,11 @@ endif()
 
 # ----------------------------------------------------------------------------
 
+set(IS_FOR User)
 configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos.sh @ONLY)
+set(IS_FOR Dev)
+configure_file(doc/generate_axl_infos.sh.in lib/generate_axl_infos_dev.sh @ONLY)
+
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/share/axl)
 
 # ----------------------------------------------------------------------------
@@ -1041,7 +1089,9 @@ if(DOXYGEN)
     # Cible pour générer la documentation des axl
     # TODO: pouvoir changer le shell
     add_custom_target(generate_axl_doc COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos.sh)
+    add_custom_target(generate_axl_doc_dev COMMAND "/bin/sh" ${CMAKE_CURRENT_BINARY_DIR}/lib/generate_axl_infos_dev.sh)
     add_dependencies(userdoc generate_axl_doc)
+    add_dependencies(devdoc generate_axl_doc_dev)
   endif()
 endif()
 
@@ -1108,6 +1158,9 @@ function(ARCANE_GEN_CORE_CONFIG_FILE filename)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_HIP ARCANE_HAS_HIP)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX11 ARCANE_HAS_CXX11)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX14 ARCANE_HAS_CXX14)
+  ARCANE_WRITE_ONE_CONFIG(ARCANE_HAS_CXX20 ARCANE_HAS_CXX20)
+  ARCANE_WRITE_ONE_CONFIG(ARCANE_HAS_ACCELERATOR_API ARCANE_HAS_ACCELERATOR_API)
+  ARCANE_WRITE_ONE_CONFIG(ARCANE_HAS_ACCELERATOR ARCANE_HAS_ACCELERATOR)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_64BIT ARCANE_64BIT)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_LONGDOUBLE ARCANE_REAL_LONG)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_AVX ARCANE_HAS_AVX)
@@ -1251,11 +1304,13 @@ endif()
 # TODO: pour 'libfabric.dll', plutôt modifier le package 'intel-mpi' de 'vcpkg' pour
 # indiquer explicitement où se trouve cette DLL.
 #
-file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:arcane_tests_exec>\")\n")
-set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
-file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
-add_custom_target(copy_dlls
-  COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
+if (ARCANE_ENABLE_TESTS)
+  file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:arcane_tests_exec>\")\n")
+  set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
+  file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
+  add_custom_target(copy_dlls
+    COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
+endif()
 
 find_path(INTEL_LIBFABRIC NAMES "libfabric.dll" PATH_SUFFIXES bin)
 if (INTEL_LIBFABRIC)

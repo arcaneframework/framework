@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMesh.h                                                     (C) 2000-2023 */
+/* IMesh.h                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'un maillage.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -355,6 +355,20 @@ class IMesh
 
   //! Gestionnaire de types d'entités associé
   virtual ItemTypeMng* itemTypeMng() const =0;
+
+ public:
+
+  /*!
+   * \brief Recalcule les informations de synchronisation.
+   *
+   * Cette opération est collective.
+   *
+   * Normalement cela est fait automatiquement par %Arcane lorsque c'est
+   * nécessaire. Néanmoins il peut arriver suite à certaines modifications
+   * internes qu'il faille manuellement mettre à jour les informations pour
+   * les synchronisations.
+   */
+  virtual void computeSynchronizeInfos() =0;
 
  public:
 

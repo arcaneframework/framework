@@ -27,6 +27,11 @@ if (ALIEN_USE_LIBXML2)
     target_sources(ref.gtest.mpi PRIVATE TestImportExport.cc)
 endif ()
 
+
+if (ALIEN_USE_EIGEN3)
+    target_sources(ref.gtest.mpi PRIVATE TestSchur.cc)
+endif ()
+
 add_executable(ref.gtest.seq main.cpp
         TestVector.cc
         TestVectorBuilder.cc
@@ -37,8 +42,11 @@ add_executable(ref.gtest.seq main.cpp
         TestBlockMatrix.cc
         TestVBlockMatrix.cc
         TestRedistributor.cc
-        TestMVExpr.cc
-        TestSchur.cc)
+        TestMVExpr.cc)
+
+if (ALIEN_USE_EIGEN3)
+    target_sources(ref.gtest.seq PRIVATE TestSchur.cc)
+endif ()
 
 IF (ALIEN_USE_SYCL)
     target_sources(ref.gtest.seq PRIVATE TestMVSYCL.cc)

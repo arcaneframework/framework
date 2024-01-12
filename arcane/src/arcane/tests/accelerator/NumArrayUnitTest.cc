@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/NumArray.h"
-
+#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 

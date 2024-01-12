@@ -213,13 +213,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
 
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
-  Integer total_nb_cell_mat = m_total_nb_cell_mat;
-  item_internal_data->resizeNbMatCellForEnvironment(id(),total_nb_cell_mat);
   ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
-  for( Integer i=0; i<total_nb_cell_mat; ++i ){
-    ComponentItemInternal& ref_ii = mat_items_internal[i];
-    ref_ii.reset();
-  } 
 
   Int32UniqueArray cells_index(max_local_id);
   Int32UniqueArray cells_pos(max_local_id);
@@ -227,12 +221,12 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   // car on doit pouvoir directement utiliser les m_items_internal
   UniqueArray<ComponentItemInternal*> cells_env(max_local_id);
   Int32ArrayView nb_mat_per_cell = m_nb_mat_per_cell.asArray();
-  ConstArrayView<ComponentItemInternal*> items_internal = itemsInternalView();
 
   {
     Integer cell_index = 0;
     Int32 env_id = this->id();
     Int32ConstArrayView local_ids = variableIndexer()->localIds();
+    ConstArrayView<ComponentItemInternal*> items_internal = itemsInternalView();
 
     for( Integer z=0, nb=local_ids.size(); z<nb; ++z ){
       Int32 lid = local_ids[z];
@@ -241,10 +235,10 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
       cells_index[lid] = cell_index;
       cells_pos[lid] = cell_index;
       //info(4) << "XZ=" << z << " LID=" << lid << " POS=" << cell_index;
-      env_item->setNbSubItem(nb_mat);
-      env_item->setComponent(this,env_id);
+      env_item->_setNbSubItem(nb_mat);
+      env_item->_setComponent(env_id);
       if (nb_mat!=0){
-        env_item->setFirstSubItem(&mat_items_internal[cell_index]);
+        env_item->_setFirstSubItem(&mat_items_internal[cell_index]);
         cells_env[lid] = env_item;
       }
       cell_index += nb_mat;
@@ -276,10 +270,9 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
         ++cells_pos[lid];
         ComponentItemInternal& ref_ii = mat_items_internal[pos];
         mat_items_internal_pointer[z] = &mat_items_internal[pos];
-        ref_ii.setSuperAndGlobalItem(cells_env[lid],items_internal[lid]);
-        ref_ii.setComponent(mat,mat_id);
-        ref_ii.setVariableIndex(mvi);
-        ref_ii.setLevel(LEVEL_MATERIAL);
+        ref_ii._setSuperAndGlobalItem(cells_env[lid], ItemLocalId(lid));
+        ref_ii._setComponent(mat_id);
+        ref_ii._setVariableIndex(mvi);
       }
     }
   }

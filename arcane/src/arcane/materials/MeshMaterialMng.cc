@@ -152,6 +152,9 @@ MeshMaterialMng::
   delete m_modifier;
 
   delete m_internal_api;
+
+  if (m_allcell_2_allenvcell)
+    AllCellToAllEnvCell::destroy(m_allcell_2_allenvcell);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -643,8 +646,8 @@ checkValid()
     for( Integer z=0; z<cell_nb_env; ++z ){
       EnvCell ec = all_env_cell.cell(z);
       Integer cell_nb_mat = ec.nbMaterial();
-      ComponentItemInternal* eii = ec.internal();
-      if (all_env_cell.internal()!=eii->superItem())
+      ComponentItemInternal* eii = ec._internal();
+      if (all_env_cell._internal()!=eii->_superItemBase())
         ARCANE_FATAL("Bad corresponding allEnvItem() in env_item uid={0}",cell_uid);
       if (eii->globalItemBase()!=cell)
         ARCANE_FATAL("Bad corresponding globalItem() in env_item");
@@ -657,8 +660,8 @@ checkValid()
 
       for( Integer k=0; k<cell_nb_mat; ++k ){
         MatCell mc = ec.cell(k);
-        ComponentItemInternal* mci = mc.internal();
-        if (eii!=mci->superItem())
+        ComponentItemInternal* mci = mc._internal();
+        if (eii!=mci->_superItemBase())
           ARCANE_FATAL("Bad corresponding env_item in mat_item");
         if (mci->globalItemBase()!=cell)
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");

@@ -301,13 +301,14 @@ class VariableIOWriterMng
  private:
 
   VariableMng* m_variable_mng = nullptr;
+  bool m_use_hash_v2 = false;
 
  private:
 
   void _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash);
-  String _generateMetaData(const VariableCollection& vars, bool use_hash);
+  String _generateMetaData(const VariableCollection& vars, IHashAlgorithm* hash_algo);
   void _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
-                                  const VariableCollection& vars, bool use_hash);
+                                  const VariableCollection& vars, IHashAlgorithm* hash_algo);
   void _generateMeshesMetaData(JSONWriter& json_writer, XmlNode meshes_node);
   static const char* _msgClassName() { return "Variable"; }
 };

@@ -190,7 +190,7 @@ class CaseMng
 
   Ref<ICaseFunction> findFunctionRef(const String& name) const;
 
-  Ref<ICaseMng> toReference() { return makeRef<ICaseMng>(this); }
+  Ref<ICaseMng> toReference() override { return makeRef<ICaseMng>(this); }
 
   ICaseMngInternal* _internalImpl() override { return this; }
 

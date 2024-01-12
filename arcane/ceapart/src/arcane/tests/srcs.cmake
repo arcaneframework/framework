@@ -3,7 +3,6 @@ set(ARCANE_SOURCES
   MaterialHeatTestModule.cc
   MeshMaterialTesterModule.cc
   CartesianMeshTesterModule.cc
-  AdiProjectionModule.cc
   HyodaMixedCellsUnitTest.cc
   GeometricUnitTest.cc
   MeshMaterialSyncUnitTest.cc

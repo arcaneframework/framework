@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableMetaData.h                                           C) 2000-2018 */
+/* VariableMetaData.h                                           C) 2000-2023 */
 /*                                                                           */
 /* Meta-données sur une variable.                                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_VARIABLEMETADATA_H
-#define ARCANE_VARIABLEMETADATA_H
+#ifndef ARCANE_CORE_VARIABLEMETADATA_H
+#define ARCANE_CORE_VARIABLEMETADATA_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,6 +29,8 @@ namespace Arcane
  *
  * Les informations de cette classe permettent de reconstruire une
  * variable.
+ *
+ * Si hash2() est non nul, on l'utilise. Sinon on utilise hash().
  */
 class ARCANE_CORE_EXPORT VariableMetaData
 {
@@ -59,8 +61,17 @@ class ARCANE_CORE_EXPORT VariableMetaData
   String fullType() const { return m_full_type; }
   void setFullType(const String& v) { m_full_type = v; }
 
+  //! Hash de la variable sous forme de hexadécimale
   String hash() const { return m_hash_str; }
   void setHash(const String& v) { m_hash_str = v; }
+
+  //! Hash de la variable sous forme de hexadécimale
+  String hash2() const { return m_hash2_str; }
+  void setHash2(const String& v) { m_hash2_str = v; }
+
+  //! Version du hash (associé à hash2())
+  Int32 hashVersion() const { return m_hash_version; }
+  void setHashVersion(Int32 v) { m_hash_version = v; }
 
   Integer property() const { return m_property; }
   void setProperty(Integer v) { m_property = v; }
@@ -81,6 +92,8 @@ class ARCANE_CORE_EXPORT VariableMetaData
   String m_multi_tag;
   String m_full_name;
   bool m_is_partial;
+  String m_hash2_str;
+  Int32 m_hash_version = 0;
 
  private:
 

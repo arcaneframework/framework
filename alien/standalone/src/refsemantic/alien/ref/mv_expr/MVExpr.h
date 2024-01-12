@@ -78,7 +78,6 @@ namespace MVExpr
     return [=](auto visitor) { return visitor(lazy::div_tag{}, a(visitor), b(visitor)); };
   }
 
-
   struct distribution_evaluator
   {
     template <class T>
@@ -743,6 +742,7 @@ namespace MVExpr
       return allocSize(r);
     }
   };
+
 
   template <class E>
   auto base_eval(E const& expr) { return expr(cpu_evaluator()); }
