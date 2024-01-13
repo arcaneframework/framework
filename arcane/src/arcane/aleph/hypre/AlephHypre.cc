@@ -967,7 +967,27 @@ class HypreAlephFactoryImpl
   }
 
  public:
-  void initialize() override {}
+
+  void initialize() override
+  {
+    // NOTE: A partir de la 2.29, on peut utiliser
+    // HYPRE_Initialize() et tester si l'initialisation
+    // a déjà été faite via HYPRE_Initialized().
+#if HYPRE_RELEASE_NUMBER >= 22900
+    if (!HYPRE_Initialized()){
+      info() << "Initializing HYPRE";
+      HYPRE_Initialize();
+    }
+#elif HYPRE_RELEASE_NUMBER >= 22700
+    info() << "Initializing HYPRE";
+    HYPRE_Init();
+#endif
+
+#if HYPRE_RELEASE_NUMBER >= 22700
+    HYPRE_SetMemoryLocation(HYPRE_MEMORY_HOST);
+    HYPRE_SetExecutionPolicy(HYPRE_EXEC_HOST);
+#endif
+  }
 
   IAlephTopology* createTopology(ITraceMng* tm,
                                  AlephKernel* kernel,
