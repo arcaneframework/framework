@@ -153,17 +153,7 @@ class AlephVectorHypre
     hypreCheck("IJVectorSetObjectType", HYPRE_IJVectorSetObjectType(m_hypre_ijvector, HYPRE_PARCSR));
 
     debug() << "[AlephVectorHypre::AlephVectorCreate] HYPRE IJVectorInitialize";
-
-    // Avec Hypre 2.29 compilé avec vcpkg 2023-12-12, l'appel à HYPRE_IJVectorInitialize
-    // provoque une erreur générique. A priori si on ignore l'erreur, cela semble
-    // fonctionner ensuite. Pour éviter de lever une exception, on ne fait donc pas
-    // d'appel à hypreCheck().
-#ifdef BUG_HYPRE_2_29
     hypreCheck("HYPRE_IJVectorInitialize", HYPRE_IJVectorInitialize(m_hypre_ijvector));
-#else
-    HYPRE_IJVectorInitialize(m_hypre_ijvector);
-    HYPRE_ClearAllErrors();
-#endif
 
     HYPRE_IJVectorGetObject(m_hypre_ijvector, &object);
     m_hypre_parvector = (HYPRE_ParVector)object;
