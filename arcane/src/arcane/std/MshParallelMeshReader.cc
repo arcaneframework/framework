@@ -240,12 +240,7 @@ class MshParallelMeshReader
 
  private:
 
-  Integer m_version = 0;
-
-  eReturnType _readNodesFromAsciiMshV2File(IosFile&, Array<Real3>&);
   eReturnType _readNodesFromAsciiMshV4File(IosFile&, MeshInfo& mesh_info);
-  eReturnType _readNodesFromBinaryMshFile(IosFile&, Array<Real3>&);
-  Integer _readElementsFromAsciiMshV2File(IosFile&, MeshInfo& mesh_info);
   Integer _readElementsFromAsciiMshV4File(IosFile&, MeshInfo& mesh_info);
   eReturnType _readMeshFromNewMshFile(IMesh*, IosFile&);
   void _allocateCells(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items);
@@ -326,31 +321,6 @@ _switchMshType(Integer mshElemType, Integer& nNodes)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-IMeshReader::eReturnType MshParallelMeshReader::
-_readNodesFromAsciiMshV2File(IosFile& ios_file, Array<Real3>& node_coords)
-{
-  // number-of-nodes & coords
-  info() << "[_readNodesFromAsciiMshV2File] Looking for number-of-nodes";
-  Integer nb_node = ios_file.getInteger();
-  if (nb_node < 0)
-    throw IOException(A_FUNCINFO, String("Invalid number of nodes: n=") + nb_node);
-  info() << "[_readNodesFromAsciiMshV2File] nb_node=" << nb_node;
-  for (Integer i = 0; i < nb_node; ++i) {
-    // Il faut lire l'id même si on ne s'en sert pas.
-    [[maybe_unused]] Int32 id = ios_file.getInteger();
-    Real nx = ios_file.getReal();
-    Real ny = ios_file.getReal();
-    Real nz = ios_file.getReal();
-    node_coords.add(Real3(nx, ny, nz));
-    //info() << "id_" << id << " xyz(" << nx << "," << ny << "," << nz << ")";
-  }
-  ios_file.getNextLine(); // Skip current \n\r
-  return IMeshReader::RTOk;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  *
  * \code
@@ -422,69 +392,6 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     ios_file.getNextLine(); // Skip current \n\r
   }
   return IMeshReader::RTOk;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer MshParallelMeshReader::
-_readElementsFromAsciiMshV2File(IosFile& ios_file, MeshInfo& mesh_info)
-{
-  Integer number_of_elements = ios_file.getInteger(); // is an integer equal to 0 in the ASCII file format, equal to 1 for the binary format
-  if (number_of_elements < 0)
-    ARCANE_THROW(IOException, String("Error with the number_of_elements=") + number_of_elements);
-
-  info() << "nb_elements=" << number_of_elements;
-
-  //elm-number elm-type number-of-tags < tag > ... node-number-list
-  // Lecture des infos des mailles & de la connectivité
-  // bool pour voir si on est depuis 0 ou 1
-  bool it_starts_at_zero = false;
-  for (Integer i = 0; i < number_of_elements; ++i) {
-    [[maybe_unused]] Integer elm_number = ios_file.getInteger(); // Index
-    Integer elm_type = ios_file.getInteger(); // Type
-    // info() << elm_number << " " << elm_type;
-    // Now get tags in the case the number of nodes is encoded
-    Integer number_of_tags = ios_file.getInteger();
-    Integer lastTag = 0;
-    for (Integer j = 0; j < number_of_tags; ++j)
-      lastTag = ios_file.getInteger();
-    Integer number_of_nodes = 0; // Set the number of nodes from the discovered type
-    if (elm_type == IT_NullType) {
-      number_of_nodes = lastTag;
-      info() << "We hit the case the number of nodes is encoded (number_of_nodes=" << number_of_nodes << ")";
-    }
-    Integer cell_type = _switchMshType(elm_type, number_of_nodes);
-    //#warning Skipping 2D lines & points
-    // We skip 2-node lines and 1-node points
-    if (number_of_nodes < 3) {
-      for (Integer j = 0; j < number_of_nodes; ++j)
-        ios_file.getInteger();
-      continue;
-    }
-
-    mesh_info.cells_type.add(cell_type);
-    mesh_info.cells_nb_node.add(number_of_nodes);
-    mesh_info.cells_uid.add(i);
-    info() << elm_number << " " << elm_type << " " << number_of_tags << " number_of_nodes=" << number_of_nodes;
-    //		printf("%i %i %i %i %i (", elm_number, elm_type, reg_phys, reg_elem, number_of_nodes);
-    for (Integer j = 0; j < number_of_nodes; ++j) {
-      //			printf("%i ", node_number);
-      Integer id = ios_file.getInteger();
-      if (id == 0)
-        it_starts_at_zero = true;
-      mesh_info.cells_connectivity.add(id);
-    }
-    //		printf(")\n");
-  }
-  if (!it_starts_at_zero)
-    for (Integer j = 0, max = mesh_info.cells_connectivity.size(); j < max; ++j)
-      mesh_info.cells_connectivity[j] = mesh_info.cells_connectivity[j] - 1;
-
-  ios_file.getNextLine(); // Skip current \n\r
-
-  // On ne supporte que les maillage de dimension 3 dans ce vieux format
-  return 3;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -608,22 +515,6 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
   }
 
   return mesh_dimension;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*
- * nodes-binary is the list of nodes in binary form, i.e., a array of
- * number-of-nodes *(4+3*data-size) bytes. For each node, the first 4 bytes
- * contain the node number and the next (3*data-size) bytes contain the three
- * floating point coordinates.
- */
-IMeshReader::eReturnType MshParallelMeshReader::
-_readNodesFromBinaryMshFile(IosFile& ios_file, Array<Real3>& node_coords)
-{
-  ARCANE_UNUSED(ios_file);
-  ARCANE_UNUSED(node_coords);
-  return IMeshReader::RTError;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1054,13 +945,8 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   const int MSH_BINARY_TYPE = 1;
 
   Real version = ios_file.getReal();
-  if (version == 2.0)
-    m_version = 2;
-  else if (version == 4.1)
-    m_version = 4;
-  else
-    ARCANE_THROW(IOException, "Wrong msh file version '{0}'. Only versions '2.0' or '4.1' are supported", version);
-  info() << "Msh mesh_major_version=" << m_version;
+  if (version != 4.1)
+    ARCANE_THROW(IOException, "Wrong msh file version '{0}'. Only version '4.1' is supported in parallel", version);
   Integer file_type = ios_file.getInteger(); // is an integer equal to 0 in the ASCII file format, equal to 1 for the binary format
   if (file_type == MSH_BINARY_TYPE)
     ARCANE_THROW(IOException, "Binary mode is not supported!");
@@ -1098,20 +984,9 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
     ARCANE_THROW(IOException, "Unexpected string '{0}'. Valid values are '$Nodes'", next_line);
 
   // Fetch nodes number and the coordinates
-  if (file_type != MSH_BINARY_TYPE) {
-    if (m_version == 2) {
-      if (_readNodesFromAsciiMshV2File(ios_file, mesh_info.node_coords) != IMeshReader::RTOk)
-        ARCANE_THROW(IOException, "Ascii nodes coords error");
-    }
-    else if (m_version == 4) {
-      if (_readNodesFromAsciiMshV4File(ios_file, mesh_info) != IMeshReader::RTOk)
-        ARCANE_THROW(IOException, "Ascii nodes coords error");
-    }
-  }
-  else {
-    if (_readNodesFromBinaryMshFile(ios_file, mesh_info.node_coords) != IMeshReader::RTOk)
-      ARCANE_THROW(IOException, "Binary nodes coords error");
-  }
+  if (_readNodesFromAsciiMshV4File(ios_file, mesh_info) != IMeshReader::RTOk)
+    ARCANE_THROW(IOException, "Ascii nodes coords error");
+
   // $EndNodes
   if (!ios_file.lookForString("$EndNodes"))
     ARCANE_THROW(IOException, "$EndNodes not found");
@@ -1122,10 +997,7 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
     if (!ios_file.lookForString("$Elements"))
       ARCANE_THROW(IOException, "$Elements not found");
 
-    if (m_version == 2)
-      mesh_dimension = _readElementsFromAsciiMshV2File(ios_file, mesh_info);
-    else if (m_version == 4)
-      mesh_dimension = _readElementsFromAsciiMshV4File(ios_file, mesh_info);
+    mesh_dimension = _readElementsFromAsciiMshV4File(ios_file, mesh_info);
 
     // $EndElements
     if (!ios_file.lookForString("$EndElements"))
