@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MshMeshReader.cc                                            (C) 2000-2023 */
+/* MshParallelMeshReader.cc                                    (C) 2000-2024 */
 /*                                                                           */
-/* Lecture/Ecriture d'un fichier au format MSH.				                       */
+/* Lecture parallèle d'un fichier au format MSH.				                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -95,7 +95,7 @@ namespace Arcane
  * - les coordonnées paramétriques ne sont pas supportées
  * - seules les sections `$Nodes` et `$Entities` sont lues
  */
-class MshMeshReader
+class MshParallelMeshReader
 : public TraceAccessor
 , public IMshMeshReader
 {
@@ -232,7 +232,7 @@ class MshMeshReader
 
  public:
 
-  explicit MshMeshReader(ITraceMng* tm)
+  explicit MshParallelMeshReader(ITraceMng* tm)
   : TraceAccessor(tm)
   {}
 
@@ -261,16 +261,7 @@ class MshMeshReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Ref<IMshMeshReader>
-createMshMeshReader(ITraceMng* tm)
-{
-  return makeRef<IMshMeshReader>(new MshMeshReader(tm));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer MshMeshReader::
+Integer MshParallelMeshReader::
 _switchMshType(Integer mshElemType, Integer& nNodes)
 {
   switch (mshElemType) {
@@ -336,7 +327,7 @@ _switchMshType(Integer mshElemType, Integer& nNodes)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMeshReader::eReturnType MshMeshReader::
+IMeshReader::eReturnType MshParallelMeshReader::
 _readNodesFromAsciiMshV2File(IosFile& ios_file, Array<Real3>& node_coords)
 {
   // number-of-nodes & coords
@@ -379,7 +370,7 @@ _readNodesFromAsciiMshV2File(IosFile& ios_file, Array<Real3>& node_coords)
  *$EndNodes
  * \endcode
  */
-IMeshReader::eReturnType MshMeshReader::
+IMeshReader::eReturnType MshParallelMeshReader::
 _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
 {
   // Première ligne du fichier
@@ -436,7 +427,7 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer MshMeshReader::
+Integer MshParallelMeshReader::
 _readElementsFromAsciiMshV2File(IosFile& ios_file, MeshInfo& mesh_info)
 {
   Integer number_of_elements = ios_file.getInteger(); // is an integer equal to 0 in the ASCII file format, equal to 1 for the binary format
@@ -515,7 +506,7 @@ _readElementsFromAsciiMshV2File(IosFile& ios_file, MeshInfo& mesh_info)
  *$EndElements
  * \endcode
  */
-Integer MshMeshReader::
+Integer MshParallelMeshReader::
 _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
 {
   Integer nb_block = ios_file.getInteger();
@@ -563,18 +554,19 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     block.dimension = entity_dim;
     block.entity_tag = entity_tag;
 
-    if (entity_type==MSH_PNT){
+    if (entity_type == MSH_PNT) {
       // Si le type est un point, le traitement semble
       // un peu particulier. Il y a dans ce cas
       // deux entiers dans la ligne suivante:
-      // - un entier qui ne semble
+      // - un entier qui ne semble pas être utilisé
       // - le numéro unique du noeud qui nous intéresse
       [[maybe_unused]] Int64 unused_id = ios_file.getInt64();
       Int64 item_unique_id = ios_file.getInt64();
       info(4) << "Adding unique node uid=" << item_unique_id;
       block.uids.add(item_unique_id);
     }
-    else{
+    else {
+      info(4) << "Reading block nb_entity=" << nb_entity_in_block << " item_nb_node=" << item_nb_node;
       for (Integer i = 0; i < nb_entity_in_block; ++i) {
         Int64 item_unique_id = ios_file.getInt64();
         block.uids.add(item_unique_id);
@@ -626,7 +618,7 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
  * contain the node number and the next (3*data-size) bytes contain the three
  * floating point coordinates.
  */
-IMeshReader::eReturnType MshMeshReader::
+IMeshReader::eReturnType MshParallelMeshReader::
 _readNodesFromBinaryMshFile(IosFile& ios_file, Array<Real3>& node_coords)
 {
   ARCANE_UNUSED(ios_file);
@@ -637,7 +629,7 @@ _readNodesFromBinaryMshFile(IosFile& ios_file, Array<Real3>& node_coords)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MshMeshReader::
+void MshParallelMeshReader::
 _allocateCells(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
 {
   Integer nb_elements = mesh_info.cells_type.size();
@@ -700,7 +692,7 @@ _allocateCells(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MshMeshReader::
+void MshParallelMeshReader::
 _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
 {
   Int32 mesh_dim = mesh->dimension();
@@ -768,7 +760,7 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MshMeshReader::
+void MshParallelMeshReader::
 _addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 {
   const Int32 nb_entity = block.nb_entity;
@@ -836,7 +828,7 @@ _addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MshMeshReader::
+void MshParallelMeshReader::
 _addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 {
   const Int32 nb_entity = block.nb_entity;
@@ -858,7 +850,7 @@ _addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MshMeshReader::
+void MshParallelMeshReader::
 _addNodeGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 {
   const Int32 nb_entity = block.nb_entity;
@@ -898,7 +890,7 @@ _addNodeGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
  *    ...
  * $EndPhysicalNames
  */
-void MshMeshReader::
+void MshParallelMeshReader::
 _readPhysicalNames(IosFile& ios_file, MeshInfo& mesh_info)
 {
   String quote_mark = "\"";
@@ -959,7 +951,7 @@ _readPhysicalNames(IosFile& ios_file, MeshInfo& mesh_info)
  *    $EndEntities
  * \endverbatim
  */
-void MshMeshReader::
+void MshParallelMeshReader::
 _readEntitiesV4(IosFile& ios_file, MeshInfo& mesh_info)
 {
   Int32 nb_dim_item[4];
@@ -1053,13 +1045,13 @@ _readEntitiesV4(IosFile& ios_file, MeshInfo& mesh_info)
  * $EndElements
  \endcode
 */
-IMeshReader::eReturnType MshMeshReader::
+IMeshReader::eReturnType MshParallelMeshReader::
 _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
 {
-  const char* func_name = "MshMeshReader::_readMeshFromNewMshFile()";
-  info() << "[_readMeshFromNewMshFile] New native mesh file format detected";
+  const char* func_name = "MshParallelMeshReader::_readMeshFromNewMshFile()";
+  info() << "[_readMeshFromNewMshFile] Reading 'msh' file in parallel";
   MeshInfo mesh_info;
-#define MSH_BINARY_TYPE 1
+  const int MSH_BINARY_TYPE = 1;
 
   Real version = ios_file.getReal();
   if (version == 2.0)
@@ -1161,10 +1153,10 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
  * readMeshFromMshFile switch wether the targetted file is to be read with
  * _readMeshFromOldMshFile or _readMeshFromNewMshFile function.
  */
-IMeshReader::eReturnType MshMeshReader::
+IMeshReader::eReturnType MshParallelMeshReader::
 readMeshFromMshFile(IMesh* mesh, const String& filename)
 {
-  info() << "Trying to read 'msh' file '" << filename << "'";
+  info() << "Trying to read in parallel 'msh' file '" << filename;
   std::ifstream ifile(filename.localstr());
   if (!ifile) {
     error() << "Unable to read file '" << filename << "'";
@@ -1181,135 +1173,11 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 extern "C++" Ref<IMshMeshReader>
-createMshParallelMeshReader(ITraceMng* tm);
-
-namespace
+createMshParallelMeshReader(ITraceMng* tm)
 {
-
-Ref<IMshMeshReader>
-_internalCreateReader(ITraceMng* tm)
-{
-  bool use_new_reader = false;
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_PARALLEL_MSH_READER", true))
-    use_new_reader = v.value();
-  Ref<IMshMeshReader> reader;
-  if (use_new_reader)
-    reader = createMshParallelMeshReader(tm);
-  else
-    reader = createMshMeshReader(tm);
-  return reader;
+  return makeRef<IMshMeshReader>(new MshParallelMeshReader(tm));
 }
-
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class MshMeshReaderService
-: public AbstractService
-, public IMeshReader
-{
- public:
-
-  explicit MshMeshReaderService(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi)
-  {
-  }
-
- public:
-
-  void build() override {}
-
-  bool allowExtension(const String& str) override { return str == "msh"; }
-
-  eReturnType readMeshFromFile(IPrimaryMesh* mesh, const XmlNode& mesh_node,
-                               const String& file_name, const String& dir_name,
-                               bool use_internal_partition) override
-  {
-    ARCANE_UNUSED(dir_name);
-    ARCANE_UNUSED(use_internal_partition);
-    ARCANE_UNUSED(mesh_node);
-
-    Ref<IMshMeshReader> reader = _internalCreateReader(traceMng());
-    return reader->readMeshFromMshFile(mesh, file_name);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_REGISTER_SERVICE(MshMeshReaderService,
-                        ServiceProperty("MshNewMeshReader", ST_SubDomain),
-                        ARCANE_SERVICE_INTERFACE(IMeshReader));
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class MshCaseMeshReader
-: public AbstractService
-, public ICaseMeshReader
-{
- public:
-
-  class Builder
-  : public IMeshBuilder
-  {
-   public:
-
-    explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info)
-    : m_trace_mng(tm)
-    , m_read_info(read_info)
-    {}
-
-   public:
-
-    void fillMeshBuildInfo(MeshBuildInfo& build_info) override
-    {
-      ARCANE_UNUSED(build_info);
-    }
-    void allocateMeshItems(IPrimaryMesh* pm) override
-    {
-      Ref<IMshMeshReader> reader = _internalCreateReader(m_trace_mng);
-      String fname = m_read_info.fileName();
-      m_trace_mng->info() << "Msh Reader (ICaseMeshReader) file_name=" << fname;
-      IMeshReader::eReturnType ret = reader->readMeshFromMshFile(pm, fname);
-      if (ret != IMeshReader::RTOk)
-        ARCANE_FATAL("Can not read MSH File");
-    }
-
-   private:
-
-    ITraceMng* m_trace_mng;
-    CaseMeshReaderReadInfo m_read_info;
-  };
-
- public:
-
-  explicit MshCaseMeshReader(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi)
-  {}
-
- public:
-
-  Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const override
-  {
-    IMeshBuilder* builder = nullptr;
-    if (read_info.format() == "msh")
-      builder = new Builder(traceMng(), read_info);
-    return makeRef(builder);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_REGISTER_SERVICE(MshCaseMeshReader,
-                        ServiceProperty("MshCaseMeshReader", ST_SubDomain),
-                        ARCANE_SERVICE_INTERFACE(ICaseMeshReader));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
