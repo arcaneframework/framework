@@ -24,6 +24,8 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/FixedArray.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/FactoryService.h"
@@ -610,7 +612,7 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
       Int32 entity_physical_tag = entity->physical_tag;
       physical_name = mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
     }
-    else{
+    else {
       MeshV4EntitiesWithNodes* entity = mesh_info.findEntities(block_dim, block_entity_tag);
       if (!entity) {
         info(5) << "[Groups] Skipping block index=" << block_index
@@ -758,15 +760,15 @@ _addNodeGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
   info(4) << "Adding " << nodes_id.size() << " nodes from block index=" << block.index
           << " to group '" << node_group.name() << "'";
 
-  if (nb_entity<10){
+  if (nb_entity < 10) {
     info(4) << "Nodes UIDS=" << block.uids;
     info(4) << "Nodes LIDS=" << nodes_id;
   }
   node_group.addItems(nodes_id);
 
-  if (nb_entity<10){
+  if (nb_entity < 10) {
     VariableNodeReal3& coords(mesh->nodesCoordinates());
-    ENUMERATE_(Node,inode,node_group){
+    ENUMERATE_ (Node, inode, node_group) {
       info(4) << "Node id=" << ItemPrinter(*inode) << " coord=" << coords[inode];
     }
   }
@@ -1029,11 +1031,23 @@ IMeshReader::eReturnType MshParallelMeshReader::
 readMeshFromMshFile(IMesh* mesh, const String& filename)
 {
   info() << "Trying to read in parallel 'msh' file '" << filename;
-  std::ifstream ifile(filename.localstr());
-  if (!ifile) {
-    error() << "Unable to read file '" << filename << "'";
+  IParallelMng* pm = mesh->parallelMng();
+  bool is_master_io = pm->isMasterIO();
+  Int32 master_io_rank = pm->masterIORank();
+  FixedArray<Int32, 1> file_readable;
+  if (is_master_io) {
+    bool is_readable = platform::isFileReadable(filename);
+    info() << "Is file readable ?=" << is_readable;
+    file_readable[0] = is_readable ? 1 : 0;
+    if (!is_readable)
+      error() << "Unable to read file '" << filename << "'";
+  }
+  pm->broadcast(file_readable.view(), master_io_rank);
+  if (file_readable[0] == 0) {
     return IMeshReader::RTError;
   }
+
+  std::ifstream ifile(filename.localstr());
   IosFile ios_file(&ifile);
   String mesh_format_str = ios_file.getNextLine(); // Comments do not seem to be implemented in .msh files
   if (IosFile::isEqualString(mesh_format_str, "$MeshFormat"))
