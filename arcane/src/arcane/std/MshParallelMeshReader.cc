@@ -244,7 +244,10 @@ class MshParallelMeshReader
 
   IMesh* m_mesh = nullptr;
   IParallelMng* m_parallel_mng = nullptr;
+  Int32 m_master_io_rank = A_NULL_RANK;
   bool m_is_read_items = true;
+  bool m_is_parallel = false;
+  Ref<IosFile> m_ios_file; // nullptr sauf pour le rang maitre.
 
  private:
 
@@ -259,7 +262,59 @@ class MshParallelMeshReader
   Integer _switchMshType(Integer, Integer&);
   void _readPhysicalNames(IosFile* ios_file, MeshInfo& mesh_info);
   void _readEntitiesV4(IosFile* ios_file, MeshInfo& mesh_info);
+  String _getNextLineAndBroadcast();
+  Int32 _getIntegerAndBroadcast();
+  void _getIntegersAndBroadcast(ArrayView<Int32> values);
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String MshParallelMeshReader::
+_getNextLineAndBroadcast()
+{
+  IosFile* f = m_ios_file.get();
+  String s;
+  if (f)
+    s = f->getNextLine();
+  if (m_is_parallel) {
+    if (f)
+      info() << "BroadcastNextLine: " << s;
+    m_parallel_mng->broadcastString(s, m_master_io_rank);
+  }
+  info() << "GetNextLine: " << s;
+  return s;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 MshParallelMeshReader::
+_getIntegerAndBroadcast()
+{
+  IosFile* f = m_ios_file.get();
+  FixedArray<Int32, 1> v;
+  if (f)
+    v[0] = f->getInteger();
+  if (m_is_parallel) {
+    m_parallel_mng->broadcast(v.view(), m_master_io_rank);
+  }
+  return v[0];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_getIntegersAndBroadcast(ArrayView<Int32> values)
+{
+  IosFile* f = m_ios_file.get();
+  if (f)
+    for (Int32& v : values)
+      v = f->getInteger();
+  if (m_is_parallel)
+    m_parallel_mng->broadcast(values, m_master_io_rank);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -424,12 +479,19 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
 Integer MshParallelMeshReader::
 _readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info)
 {
-  Integer nb_block = ios_file->getInteger();
+  IParallelMng* pm = m_parallel_mng;
 
-  Integer number_of_elements = ios_file->getInteger(); // is an integer equal to 0 in the ASCII file format, equal to 1 for the binary format
-  Integer min_element_tag = ios_file->getInteger();
-  Integer max_element_tag = ios_file->getInteger();
-  ios_file->getNextLine(); // Skip current \n\r
+  FixedArray<Int32, 4> elements_info;
+  _getIntegersAndBroadcast(elements_info.view());
+
+  Integer nb_block = elements_info[0];
+  Integer number_of_elements = elements_info[1];
+  Integer min_element_tag = elements_info[2];
+  Integer max_element_tag = elements_info[3];
+
+  if (ios_file)
+    ios_file->getNextLine(); // Skip current \n\r
+
   info() << "[Elements] nb_block=" << nb_block
          << " nb_elements=" << number_of_elements
          << " min_element_tag=" << min_element_tag
@@ -450,10 +512,13 @@ _readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info)
     }
   }
   for (MeshV4ElementsBlock& block : blocks) {
-    Integer entity_dim = ios_file->getInteger();
-    Integer entity_tag = ios_file->getInteger(); // is an integer equal to 0 in the ASCII file format, equal to 1 for the binary format
-    Integer entity_type = ios_file->getInteger();
-    Integer nb_entity_in_block = ios_file->getInteger();
+    FixedArray<Int32, 4> block_info;
+    _getIntegersAndBroadcast(block_info.view());
+
+    Integer entity_dim = block_info[0];
+    Integer entity_tag = block_info[1];
+    Integer entity_type = block_info[2];
+    Integer nb_entity_in_block = block_info[3];
 
     Integer item_nb_node = 0;
     Integer item_type = _switchMshType(entity_type, item_nb_node);
@@ -469,27 +534,47 @@ _readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info)
     block.dimension = entity_dim;
     block.entity_tag = entity_tag;
 
+    Int64 nb_uid = 0;
+    Int64 nb_connectivity = 0;
     if (entity_type == MSH_PNT) {
       // Si le type est un point, le traitement semble
       // un peu particulier. Il y a dans ce cas
       // deux entiers dans la ligne suivante:
       // - un entier qui ne semble pas être utilisé
       // - le numéro unique du noeud qui nous intéresse
-      [[maybe_unused]] Int64 unused_id = ios_file->getInt64();
-      Int64 item_unique_id = ios_file->getInt64();
-      info(4) << "Adding unique node uid=" << item_unique_id;
-      block.uids.add(item_unique_id);
+      if (ios_file) {
+        [[maybe_unused]] Int64 unused_id = ios_file->getInt64();
+        Int64 item_unique_id = ios_file->getInt64();
+        info(4) << "Adding unique node uid=" << item_unique_id;
+        block.uids.add(item_unique_id);
+      }
+      nb_uid = 1;
+      nb_connectivity = 0;
     }
     else {
-      info(4) << "Reading block nb_entity=" << nb_entity_in_block << " item_nb_node=" << item_nb_node;
-      for (Integer i = 0; i < nb_entity_in_block; ++i) {
-        Int64 item_unique_id = ios_file->getInt64();
-        block.uids.add(item_unique_id);
-        for (Integer j = 0; j < item_nb_node; ++j)
-          block.connectivity.add(ios_file->getInt64());
+      if (ios_file) {
+        info(4) << "Reading block nb_entity=" << nb_entity_in_block << " item_nb_node=" << item_nb_node;
+        for (Integer i = 0; i < nb_entity_in_block; ++i) {
+          Int64 item_unique_id = ios_file->getInt64();
+          block.uids.add(item_unique_id);
+          for (Integer j = 0; j < item_nb_node; ++j)
+            block.connectivity.add(ios_file->getInt64());
+        }
       }
+      nb_uid = nb_entity_in_block;
+      nb_connectivity = nb_uid * item_nb_node;
     }
-    ios_file->getNextLine(); // Skip current \n\r
+    // Envoie le tableau aux autres rangs
+    if (m_is_parallel) {
+      if (!pm->isMasterIO()) {
+        block.uids.resize(nb_uid);
+        block.connectivity.resize(nb_connectivity);
+      }
+      pm->broadcast(block.uids, m_master_io_rank);
+      pm->broadcast(block.connectivity, m_master_io_rank);
+    }
+    if (ios_file)
+      ios_file->getNextLine(); // Skip current \n\r
   }
   // Maintenant qu'on a tous les blocks, la dimension du maillage est
   // la plus grande dimension des blocks
@@ -611,7 +696,6 @@ _allocateGroups(MeshInfo& mesh_info)
       continue;
     }
     MeshPhysicalName physical_name;
-    // Pour l'instant on ne traite pas les nuages
     if (block_dim == 0) {
       MeshV4EntitiesNodes* entity = mesh_info.findNodeEntities(block_entity_tag);
       if (!entity) {
@@ -800,13 +884,14 @@ void MshParallelMeshReader::
 _readPhysicalNames(IosFile* ios_file, MeshInfo& mesh_info)
 {
   String quote_mark = "\"";
-  Int32 nb_name = ios_file->getInteger();
+  Int32 nb_name = _getIntegerAndBroadcast();
   info() << "nb_physical_name=" << nb_name;
-  ios_file->getNextLine();
+  if (ios_file)
+    ios_file->getNextLine();
   for (Int32 i = 0; i < nb_name; ++i) {
-    Int32 dim = ios_file->getInteger();
-    Int32 tag = ios_file->getInteger();
-    String s = ios_file->getNextLine();
+    Int32 dim = _getIntegerAndBroadcast();
+    Int32 tag = _getIntegerAndBroadcast();
+    String s = _getNextLineAndBroadcast();
     if (dim < 0 || dim > 3)
       ARCANE_FATAL("Invalid value for physical name dimension dim={0}", dim);
     // Les noms des groupes peuvent commencer par des espaces et contiennent
@@ -819,7 +904,7 @@ _readPhysicalNames(IosFile* ios_file, MeshInfo& mesh_info)
     mesh_info.physical_name_list.add(dim, tag, s);
     info(4) << "[PhysicalName] index=" << i << " dim=" << dim << " tag=" << tag << " name='" << s << "'";
   }
-  StringView s = ios_file->getNextLine();
+  String s = _getNextLineAndBroadcast();
   if (s != "$EndPhysicalNames")
     ARCANE_FATAL("found '{0}' and expected '$EndPhysicalNames'", s);
 }
@@ -860,60 +945,86 @@ _readPhysicalNames(IosFile* ios_file, MeshInfo& mesh_info)
 void MshParallelMeshReader::
 _readEntitiesV4(IosFile* ios_file, MeshInfo& mesh_info)
 {
-  Int32 nb_dim_item[4];
-  nb_dim_item[0] = ios_file->getInteger();
-  nb_dim_item[1] = ios_file->getInteger();
-  nb_dim_item[2] = ios_file->getInteger();
-  nb_dim_item[3] = ios_file->getInteger();
+  FixedArray<Int32, 4> nb_dim_item;
+  if (ios_file) {
+    nb_dim_item[0] = ios_file->getInteger();
+    nb_dim_item[1] = ios_file->getInteger();
+    nb_dim_item[2] = ios_file->getInteger();
+    nb_dim_item[3] = ios_file->getInteger();
+  }
+  m_parallel_mng->broadcast(nb_dim_item.view(), m_master_io_rank);
+
   info(4) << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
           << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
   // Après le format, on peut avoir les entités mais cela est optionnel
   // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
-  StringView next_line = ios_file->getNextLine();
+  if (ios_file)
+    ios_file->getNextLine();
   for (Int32 i = 0; i < nb_dim_item[0]; ++i) {
-    Int32 tag = ios_file->getInteger();
-    Real x = ios_file->getReal();
-    Real y = ios_file->getReal();
-    Real z = ios_file->getReal();
-    Int32 num_physical_tag = ios_file->getInteger();
-    if (num_physical_tag > 1)
-      ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
-    Int32 physical_tag = -1;
-    if (num_physical_tag == 1)
-      physical_tag = ios_file->getInteger();
-    info(4) << "[Entities] point tag=" << tag << " x=" << x << " y=" << y << " z=" << z << " phys_tag=" << physical_tag;
-    mesh_info.entities_nodes_list.add(MeshV4EntitiesNodes(tag, physical_tag));
-    next_line = ios_file->getNextLine();
-  }
-
-  for (Int32 dim = 1; dim <= 3; ++dim) {
-    for (Int32 i = 0; i < nb_dim_item[dim]; ++i) {
+    FixedArray<Int32, 2> tag_info;
+    if (ios_file) {
       Int32 tag = ios_file->getInteger();
-      Real min_x = ios_file->getReal();
-      Real min_y = ios_file->getReal();
-      Real min_z = ios_file->getReal();
-      Real max_x = ios_file->getReal();
-      Real max_y = ios_file->getReal();
-      Real max_z = ios_file->getReal();
+      Real x = ios_file->getReal();
+      Real y = ios_file->getReal();
+      Real z = ios_file->getReal();
       Int32 num_physical_tag = ios_file->getInteger();
       if (num_physical_tag > 1)
         ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
       Int32 physical_tag = -1;
       if (num_physical_tag == 1)
         physical_tag = ios_file->getInteger();
-      Int32 num_bounding_group = ios_file->getInteger();
-      for (Int32 k = 0; k < num_bounding_group; ++k) {
-        [[maybe_unused]] Int32 group_tag = ios_file->getInteger();
+      info(4) << "[Entities] point tag=" << tag << " x=" << x << " y=" << y << " z=" << z << " phys_tag=" << physical_tag;
+
+      tag_info[0] = tag;
+      tag_info[1] = physical_tag;
+    }
+    m_parallel_mng->broadcast(tag_info.view(), m_master_io_rank);
+    mesh_info.entities_nodes_list.add(MeshV4EntitiesNodes(tag_info[0], tag_info[1]));
+    if (ios_file)
+      ios_file->getNextLine();
+  }
+
+  for (Int32 dim = 1; dim <= 3; ++dim) {
+    for (Int32 i = 0; i < nb_dim_item[dim]; ++i) {
+      FixedArray<Int32, 3> dim_and_tag_info;
+      if (ios_file) {
+        Int32 tag = ios_file->getInteger();
+        Real min_x = ios_file->getReal();
+        Real min_y = ios_file->getReal();
+        Real min_z = ios_file->getReal();
+        Real max_x = ios_file->getReal();
+        Real max_y = ios_file->getReal();
+        Real max_z = ios_file->getReal();
+        Int32 num_physical_tag = ios_file->getInteger();
+        if (num_physical_tag > 1)
+          ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
+        Int32 physical_tag = -1;
+        if (num_physical_tag == 1)
+          physical_tag = ios_file->getInteger();
+        Int32 num_bounding_group = ios_file->getInteger();
+        for (Int32 k = 0; k < num_bounding_group; ++k) {
+          [[maybe_unused]] Int32 group_tag = ios_file->getInteger();
+        }
+        info(4) << "[Entities] dim=" << dim << " tag=" << tag
+                << " min_x=" << min_x << " min_y=" << min_y << " min_z=" << min_z
+                << " max_x=" << max_x << " max_y=" << max_y << " max_z=" << max_z
+                << " phys_tag=" << physical_tag;
+        dim_and_tag_info[0] = dim;
+        dim_and_tag_info[1] = tag;
+        dim_and_tag_info[2] = physical_tag;
       }
-      mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
-      info(4) << "[Entities] dim=" << dim << " tag=" << tag
-              << " min_x=" << min_x << " min_y=" << min_y << " min_z=" << min_z
-              << " max_x=" << max_x << " max_y=" << max_y << " max_z=" << max_z
-              << " phys_tag=" << physical_tag;
-      next_line = ios_file->getNextLine();
+      m_parallel_mng->broadcast(dim_and_tag_info.view(), m_master_io_rank);
+      {
+        Int32 dim = dim_and_tag_info[0];
+        Int32 tag = dim_and_tag_info[1];
+        Int32 physical_tag = dim_and_tag_info[2];
+        mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
+      }
+      if (ios_file)
+        ios_file->getNextLine();
     }
   }
-  StringView s = ios_file->getNextLine();
+  String s = _getNextLineAndBroadcast();
   if (s != "$EndEntities")
     ARCANE_FATAL("found '{0}' and expected '$EndEntities'", s);
 }
@@ -960,61 +1071,68 @@ _readMeshFromNewMshFile(IosFile* ios_file)
   MeshInfo mesh_info;
   const int MSH_BINARY_TYPE = 1;
 
-  Real version = ios_file->getReal();
-  if (version != 4.1)
-    ARCANE_THROW(IOException, "Wrong msh file version '{0}'. Only version '4.1' is supported in parallel", version);
-  Integer file_type = ios_file->getInteger(); // is an integer equal to 0 in the ASCII file format, equal to 1 for the binary format
-  if (file_type == MSH_BINARY_TYPE)
-    ARCANE_THROW(IOException, "Binary mode is not supported!");
+  if (ios_file) {
+    Real version = ios_file->getReal();
+    if (version != 4.1)
+      ARCANE_THROW(IOException, "Wrong msh file version '{0}'. Only version '4.1' is supported in parallel", version);
+    Integer file_type = ios_file->getInteger(); // is an integer equal to 0 in the ASCII file format, equal to 1 for the binary format
+    if (file_type == MSH_BINARY_TYPE)
+      ARCANE_THROW(IOException, "Binary mode is not supported!");
 
-  Integer data_size = ios_file->getInteger(); // is an integer equal to the size of the floating point numbers used in the file
-  ARCANE_UNUSED(data_size);
+    Integer data_size = ios_file->getInteger(); // is an integer equal to the size of the floating point numbers used in the file
+    ARCANE_UNUSED(data_size);
 
-  ios_file->getNextLine(); // Skip current \n\r
+    ios_file->getNextLine(); // Skip current \n\r
 
-  // $EndMeshFormat
-  if (!ios_file->lookForString("$EndMeshFormat"))
-    ARCANE_THROW(IOException, "$EndMeshFormat not found");
+    // $EndMeshFormat
+    if (!ios_file->lookForString("$EndMeshFormat"))
+      ARCANE_THROW(IOException, "$EndMeshFormat not found");
+  }
 
   // TODO: Les différentes sections ($Nodes, $Entitites, ...) peuvent
   // être dans n'importe quel ordre (à part $Nodes qui doit être avant $Elements)
   // Faire un méthode qui gère cela.
 
-  StringView next_line = ios_file->getNextLine();
+  String next_line = _getNextLineAndBroadcast();
   // Noms des groupes
   if (next_line == "$PhysicalNames") {
     _readPhysicalNames(ios_file, mesh_info);
-    next_line = ios_file->getNextLine();
+    next_line = _getNextLineAndBroadcast();
   }
+
   // Après le format, on peut avoir les entités mais cela est optionnel
   // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
   if (next_line == "$Entities") {
     _readEntitiesV4(ios_file, mesh_info);
-    next_line = ios_file->getNextLine();
+    next_line = _getNextLineAndBroadcast();
   }
   // $Nodes
   if (next_line != "$Nodes")
     ARCANE_THROW(IOException, "Unexpected string '{0}'. Valid values are '$Nodes'", next_line);
 
-  // Fetch nodes number and the coordinates
-  if (_readNodesFromAsciiMshV4File(*ios_file, mesh_info) != IMeshReader::RTOk)
-    ARCANE_THROW(IOException, "Ascii nodes coords error");
+  if (ios_file) {
+    // Fetch nodes number and the coordinates
+    if (_readNodesFromAsciiMshV4File(*ios_file, mesh_info) != IMeshReader::RTOk)
+      ARCANE_THROW(IOException, "Ascii nodes coords error");
 
-  // $EndNodes
-  if (!ios_file->lookForString("$EndNodes"))
-    ARCANE_THROW(IOException, "$EndNodes not found");
+    // $EndNodes
+    if (!ios_file->lookForString("$EndNodes"))
+      ARCANE_THROW(IOException, "$EndNodes not found");
+  }
 
   // $Elements
   Integer mesh_dimension = -1;
   {
-    if (!ios_file->lookForString("$Elements"))
-      ARCANE_THROW(IOException, "$Elements not found");
+    if (ios_file)
+      if (!ios_file->lookForString("$Elements"))
+        ARCANE_THROW(IOException, "$Elements not found");
 
     mesh_dimension = _readElementsFromAsciiMshV4File(ios_file, mesh_info);
 
     // $EndElements
-    if (!ios_file->lookForString("$EndElements"))
-      throw IOException(func_name, "$EndElements not found");
+    if (ios_file)
+      if (!ios_file->lookForString("$EndElements"))
+        throw IOException(func_name, "$EndElements not found");
   }
 
   info() << "Computed mesh dimension = " << mesh_dimension;
@@ -1042,7 +1160,9 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
   bool is_master_io = pm->isMasterIO();
   Int32 master_io_rank = pm->masterIORank();
   Int32 rank = mesh->meshPartInfo().partRank();
-  m_is_read_items = !(pm->isParallel() && rank != master_io_rank);
+  m_is_parallel = pm->isParallel();
+  m_is_read_items = !(m_is_parallel && rank != master_io_rank);
+  m_master_io_rank = master_io_rank;
   FixedArray<Int32, 1> file_readable;
   if (is_master_io) {
     bool is_readable = platform::isFileReadable(filename);
@@ -1056,11 +1176,16 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
     return IMeshReader::RTError;
   }
 
-  std::ifstream ifile(filename.localstr());
-  IosFile ios_file(&ifile);
-  String mesh_format_str = ios_file.getNextLine(); // Comments do not seem to be implemented in .msh files
+  std::ifstream ifile;
+  Ref<IosFile> ios_file;
+  if (is_master_io) {
+    ifile.open(filename.localstr());
+    ios_file = makeRef<IosFile>(new IosFile(&ifile));
+  }
+  m_ios_file = ios_file;
+  String mesh_format_str = _getNextLineAndBroadcast();
   if (IosFile::isEqualString(mesh_format_str, "$MeshFormat"))
-    return _readMeshFromNewMshFile(&ios_file);
+    return _readMeshFromNewMshFile(ios_file.get());
   info() << "The file does not begin with '$MeshFormat' returning RTError";
   return IMeshReader::RTError;
 }
