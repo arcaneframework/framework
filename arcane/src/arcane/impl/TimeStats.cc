@@ -530,6 +530,7 @@ resetStats(const String& action_name)
   if (!action)
     return;
   action->reset();
+  m_need_compute_elapsed_time = true;
 }
 
 /*---------------------------------------------------------------------------*/
