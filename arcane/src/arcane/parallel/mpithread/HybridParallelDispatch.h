@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelDispatch.h                                    (C) 2000-2023 */
+/* HybridParallelDispatch.h                                    (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des messages en mode hybride MPI/Mémoire partagée..        */
 /*---------------------------------------------------------------------------*/
@@ -19,11 +19,12 @@
 #include "arcane/utils/HPReal.h"
 #include "arcane/utils/DataTypeContainer.h"
 
-#include "arcane/IParallelDispatch.h"
+#include "arcane/core/IParallelDispatch.h"
+#include "arcane/core/ISerializer.h"
 
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
 
-#include "arcane/ISerializer.h"
+#include "arccore/base/ReferenceCounterImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -99,8 +100,11 @@ template<class Type>
 class HybridParallelDispatch
 : public TraceAccessor
 , public IParallelDispatchT<Type>
+, public ReferenceCounterImpl
 , public ITypeDispatcher<Type>
 {
+  ARCCORE_INTERNAL_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
   class AllToAllVariableInfo
   {
    public:
