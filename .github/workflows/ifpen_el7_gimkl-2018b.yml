@@ -150,7 +150,8 @@ jobs:
     name: test
     needs:
       - build
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     timeout-minutes: 120
     container:
       image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7-rt
