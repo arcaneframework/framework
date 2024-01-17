@@ -150,8 +150,7 @@ jobs:
     name: test
     needs:
       - build
-    #runs-on: ubuntu-latest
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
       image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7-rt
@@ -182,6 +181,11 @@ jobs:
       - name: Remove build artifact tar
         shell: bash
         run: rm -f build-artifact.tar.gz
+
+      - name: Info
+        id: info
+        shell: bash
+        run: nproc --all ; free -h
 
       - name: Test
         id: test
