@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBThreadImplementation.cc                                  (C) 2000-2021 */
+/* TBBThreadImplementation.cc                                  (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des threads utilisant TBB (Intel Threads Building Blocks). */
 /*---------------------------------------------------------------------------*/
@@ -162,7 +162,13 @@ createGlibThreadBarrier();
  */
 class TBBThreadImplementation
 : public IThreadImplementation
+, public ReferenceCounterImpl
 {
+  ARCCORE_INTERNAL_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
+  void addReference() override { ReferenceCounterImpl::addReference(); }
+  void removeReference() override { ReferenceCounterImpl::removeReference(); }
+
  public:
 
   class StartFunc
@@ -174,11 +180,12 @@ class TBBThreadImplementation
   };
 
  public:
+
   TBBThreadImplementation()
   : m_use_tbb_barrier(false), m_global_mutex_impl(nullptr)
   {
   }
-  virtual ~TBBThreadImplementation()
+  ~TBBThreadImplementation() override
   {
     //std::cout << "DESTROYING TBB IMPLEMENTATION\n";
     GlobalMutex::destroy();
@@ -198,16 +205,6 @@ class TBBThreadImplementation
   {
     m_global_mutex_impl = createMutex();
     GlobalMutex::init(m_global_mutex_impl);
-  }
-
- public:
-
-  void addReference() override { ++m_nb_ref; }
-  void removeReference() override
-  {
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
-      delete this;
   }
 
  public:
@@ -288,7 +285,6 @@ class TBBThreadImplementation
   
   bool m_use_tbb_barrier;
   MutexImpl* m_global_mutex_impl;
-  std::atomic<int> m_nb_ref = 0;
 };
 
 /*---------------------------------------------------------------------------*/

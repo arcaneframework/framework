@@ -100,6 +100,7 @@ set(ARCANE_SOURCES
   SimpleTableWriterHelper.h
 
   MshMeshReader.cc
+  MshParallelMeshReader.cc
   MshMeshWriter.cc
 
   internal/IosFile.cc
