@@ -185,7 +185,7 @@ jobs:
       - name: Info
         id: info
         shell: bash
-        run: nproc --all ; free -h
+        run: nproc --all ; free -h ; ulimit -a
 
       - name: Test
         id: test
