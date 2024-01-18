@@ -1,22 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyGlobal.h                                         (C) 2000-2023 */
+/* ConcurrencyGlobal.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Définitions globales de la composante 'Concurrency' de 'Arccore'.         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/ReferenceCounter.h"
+#include "arccore/base/Ref.h"
+
 #include "arccore/concurrency/ConcurrencyGlobal.h"
 
 #include "arccore/concurrency/NullThreadImplementation.h"
+#include "arccore/concurrency/GlibThreadImplementation.h"
 #include "arccore/concurrency/SpinLock.h"
-#include "arccore/base/ReferenceCounterImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,7 +36,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation* Concurrency::
+IThreadImplementation* Concurrency::
 getThreadImplementation()
 {
   return global_thread_implementation.get();
@@ -42,7 +45,7 @@ getThreadImplementation()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_CONCURRENCY_EXPORT IThreadImplementation* Concurrency::
+IThreadImplementation* Concurrency::
 setThreadImplementation(IThreadImplementation* service)
 {
   IThreadImplementation* old_service = global_thread_implementation.get();
@@ -50,6 +53,33 @@ setThreadImplementation(IThreadImplementation* service)
   if (!service)
     global_thread_implementation = &global_null_thread_implementation;
   return old_service;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IThreadImplementation> Concurrency::
+createGlibThreadImplementation()
+{
+  return makeRef<IThreadImplementation>(new GlibThreadImplementation());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class NullThreadImplementationFactory
+{
+ public:
+  static Ref<IThreadImplementation> create()
+  {
+    return makeRef<>(new NullThreadImplementation());
+  }
+};
+
+Ref<IThreadImplementation> Concurrency::
+createNullThreadImplementation()
+{
+  return NullThreadImplementationFactory::create();
 }
 
 /*---------------------------------------------------------------------------*/
