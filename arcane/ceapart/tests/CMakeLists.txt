@@ -159,7 +159,7 @@ arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-cell-renumbering-
 arcane_add_test_sequential(amr-cartesian2D-patch-cartesian-mesh-only-1 testAMRCartesianMesh2D-PatchCartesianMeshOnly-1.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian2D-patch-cartesian-mesh-only-1 testAMRCartesianMesh2D-PatchCartesianMeshOnly-1.arc 4 "-m 20")
 arcane_add_test_sequential(amr-cartesian2D-patch-cartesian-mesh-only-2 testAMRCartesianMesh2D-PatchCartesianMeshOnly-2.arc "-m 20")
-#arcane_add_test_parallel(amr-cartesian2D-patch-cartesian-mesh-only-2 testAMRCartesianMesh2D-PatchCartesianMeshOnly-2.arc 4 "-m 20")
+arcane_add_test_parallel(amr-cartesian2D-patch-cartesian-mesh-only-2 testAMRCartesianMesh2D-PatchCartesianMeshOnly-2.arc 4 "-m 20")
 arcane_add_test_sequential(amr-cartesian2D-patch-cartesian-mesh-only-3 testAMRCartesianMesh2D-PatchCartesianMeshOnly-3.arc "-m 20")
 #arcane_add_test_parallel(amr-cartesian2D-patch-cartesian-mesh-only-3 testAMRCartesianMesh2D-PatchCartesianMeshOnly-3.arc 4 "-m 20")
 

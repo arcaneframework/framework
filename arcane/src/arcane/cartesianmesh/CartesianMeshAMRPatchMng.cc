@@ -243,11 +243,15 @@ refine()
       }
 
       debug() << "parent_cell : " << parent_cell
-              << " -- left_cell : " << left_parent_cell
-              << " -- right_cell : " << right_parent_cell
-              << " -- bottom_cell : " << bottom_parent_cell
-              << " -- top_cell : " << top_parent_cell
-              << " -- left_bottom_cell : " << left_bottom_parent_cell;
+              << " -- left_parent_cell : " << left_parent_cell
+              << " -- right_parent_cell : " << right_parent_cell
+              << " -- bottom_parent_cell : " << bottom_parent_cell
+              << " -- top_parent_cell : " << top_parent_cell
+              << " -- left_bottom_parent_cell : " << left_bottom_parent_cell
+              << " -- left_top_parent_cell : " << left_top_parent_cell
+              << " -- right_bottom_parent_cell : " << right_bottom_parent_cell
+              << " -- right_top_parent_cell : " << right_top_parent_cell
+      ;
 
       // On peut noter une différence entre "left" et "right" et entre "bottom" et "top".
       // En effet, au sein d'un même patch, se sont "left" et "bottom" qui crée les noeuds/faces
@@ -259,23 +263,6 @@ refine()
       // Un autre cas à gérer est le cas où il y a une maille à gauche et/ou bas qui a le flag "II_Refine" (donc
       // dans notre patch) mais qui n'est pas à notre processus. Dans ce cas, on doit créer le noeud/face
       // mais en modifiant le propriétaire...
-      //      bool is_parent_cell_left = (!left_parent_cell.null() && ( (left_parent_cell.itemBase().flags() & ItemFlags::II_Inactive) || (left_parent_cell.isOwn() && (left_parent_cell.itemBase().flags() & ItemFlags::II_Refine)) ));
-      //      bool is_parent_cell_right = (!right_parent_cell.null() && (right_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
-      //      bool is_parent_cell_bottom = (!bottom_parent_cell.null() && ( (bottom_parent_cell.itemBase().flags() & ItemFlags::II_Inactive) || (bottom_parent_cell.isOwn() && (bottom_parent_cell.itemBase().flags() & ItemFlags::II_Refine)) ));
-      //      bool is_parent_cell_top = (!top_parent_cell.null() && (top_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
-      //
-      //      // ... ce qui est possible grâce à ces deux booléens.
-      //      bool is_ghost_parent_cell_left_same_patch = (!left_parent_cell.null() && !left_parent_cell.isOwn() && (left_parent_cell.itemBase().flags() & ItemFlags::II_Refine));
-      //      bool is_ghost_parent_cell_bottom_same_patch = (!bottom_parent_cell.null() && !bottom_parent_cell.isOwn() && (bottom_parent_cell.itemBase().flags() & ItemFlags::II_Refine));
-      //
-      //      debug() << "is_cell_left : " << is_parent_cell_left
-      //              << " -- is_cell_right : " << is_parent_cell_right
-      //              << " -- is_cell_bottom : " << is_parent_cell_bottom
-      //              << " -- is_cell_top : " << is_parent_cell_top
-      //              << " -- is_ghost_cell_left_same_patch : " << is_ghost_parent_cell_left_same_patch
-      //              << " -- is_ghost_cell_bottom_same_patch : " << is_ghost_parent_cell_bottom_same_patch
-      //      ;
-
       bool is_parent_cell_left = ((!left_parent_cell.null()) && ((left_parent_cell.isOwn() && (left_parent_cell.itemBase().flags() & ItemFlags::II_Refine))));
       bool is_parent_cell_right = false;
       bool is_parent_cell_bottom = ((!bottom_parent_cell.null()) && ((bottom_parent_cell.isOwn() && (bottom_parent_cell.itemBase().flags() & ItemFlags::II_Refine))));
@@ -291,6 +278,9 @@ refine()
       bool is_ghost_parent_cell_right_same_patch = (!right_parent_cell.null() && !right_parent_cell.isOwn() && (right_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
       bool is_ghost_parent_cell_top_same_patch = (!top_parent_cell.null() && !top_parent_cell.isOwn() && (top_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
 
+      bool is_ghost_parent_cell_left_top_same_patch = (!left_top_parent_cell.null() && !left_top_parent_cell.isOwn() && (left_top_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
+      bool is_ghost_parent_cell_right_top_same_patch = (!right_top_parent_cell.null() && !right_top_parent_cell.isOwn() && (right_top_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
+
 
 
       debug() << "is_parent_cell_left : " << is_parent_cell_left
@@ -298,7 +288,14 @@ refine()
               << " -- is_parent_cell_bottom : " << is_parent_cell_bottom
               << " -- is_parent_cell_top : " << is_parent_cell_top
               << " -- is_ghost_parent_cell_left_same_patch : " << is_ghost_parent_cell_left_same_patch
-              << " -- is_ghost_parent_cell_bottom_same_patch : " << is_ghost_parent_cell_bottom_same_patch;
+              << " -- is_ghost_parent_cell_bottom_same_patch : " << is_ghost_parent_cell_bottom_same_patch
+              << " -- is_ghost_parent_cell_left_bottom_same_patch : " << is_ghost_parent_cell_left_bottom_same_patch
+              << " -- is_ghost_parent_cell_right_bottom_same_patch : " << is_ghost_parent_cell_right_bottom_same_patch
+              << " -- is_ghost_parent_cell_right_same_patch : " << is_ghost_parent_cell_right_same_patch
+              << " -- is_ghost_parent_cell_top_same_patch : " << is_ghost_parent_cell_top_same_patch
+              << " -- is_ghost_parent_cell_left_top_same_patch : " << is_ghost_parent_cell_left_top_same_patch
+              << " -- is_ghost_parent_cell_right_top_same_patch : " << is_ghost_parent_cell_right_top_same_patch
+      ;
 
       for (Int64 j = child_coord_y; j < child_coord_y + pattern; ++j) {
         for (Int64 i = child_coord_x; i < child_coord_x + pattern; ++i) {
@@ -438,20 +435,47 @@ refine()
                 else if(is_ghost_parent_cell_right_bottom_same_patch){
                   new_owner = right_bottom_parent_cell.owner();
                 }
-                else if(is_ghost_parent_cell_right_same_patch){
-                  get_back_node_owner[right_parent_cell.owner()][1]++;
-                  get_back_node_owner[right_parent_cell.owner()].add(ua_node_uid[l]);
-                  new_owner = parent_cell.owner();
-                }
-                else{
+                else {
+                  if (is_ghost_parent_cell_right_same_patch) {
+                    get_back_node_owner[right_parent_cell.owner()][1]++;
+                    get_back_node_owner[right_parent_cell.owner()].add(ua_node_uid[l]);
+                  }
                   new_owner = parent_cell.owner();
                 }
               }
 
               else if(i == child_coord_x && j == (child_coord_y + pattern-1) && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_top[l])) {
-
+                if(is_ghost_parent_cell_left_same_patch){
+                  new_owner = left_parent_cell.owner();
+                }
+                else {
+                  if (is_ghost_parent_cell_left_top_same_patch) {
+                    get_back_node_owner[left_top_parent_cell.owner()][1]++;
+                    get_back_node_owner[left_top_parent_cell.owner()].add(ua_node_uid[l]);
+                  }
+                  if (is_ghost_parent_cell_top_same_patch) {
+                    get_back_node_owner[top_parent_cell.owner()][1]++;
+                    get_back_node_owner[top_parent_cell.owner()].add(ua_node_uid[l]);
+                  }
+                  new_owner = parent_cell.owner();
+                }
               }
 
+              else if(i == (child_coord_x + pattern-1) && j == (child_coord_y + pattern-1) && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_top[l])) {
+                if(is_ghost_parent_cell_right_same_patch){
+                  get_back_node_owner[right_parent_cell.owner()][1]++;
+                  get_back_node_owner[right_parent_cell.owner()].add(ua_node_uid[l]);
+                }
+                if (is_ghost_parent_cell_top_same_patch) {
+                  get_back_node_owner[top_parent_cell.owner()][1]++;
+                  get_back_node_owner[top_parent_cell.owner()].add(ua_node_uid[l]);
+                }
+                if (is_ghost_parent_cell_right_top_same_patch) {
+                  get_back_node_owner[right_top_parent_cell.owner()][1]++;
+                  get_back_node_owner[right_top_parent_cell.owner()].add(ua_node_uid[l]);
+                }
+                new_owner = parent_cell.owner();
+              }
 
               else if(i == child_coord_x && is_ghost_parent_cell_left_same_patch && (!mask_node_if_cell_left[l])){
                 new_owner = left_parent_cell.owner();
@@ -461,6 +485,19 @@ refine()
                 new_owner = bottom_parent_cell.owner();
               }
 
+              else if(i == (child_coord_x + pattern-1) && is_ghost_parent_cell_right_same_patch && (!mask_node_if_cell_right[l])){
+                get_back_node_owner[right_parent_cell.owner()][1]++;
+                get_back_node_owner[right_parent_cell.owner()].add(ua_node_uid[l]);
+                new_owner = parent_cell.owner();
+              }
+
+              else if(j == (child_coord_y + pattern-1) && is_ghost_parent_cell_top_same_patch && (!mask_node_if_cell_top[l])){
+                get_back_node_owner[top_parent_cell.owner()][1]++;
+                get_back_node_owner[top_parent_cell.owner()].add(ua_node_uid[l]);
+                new_owner = parent_cell.owner();
+              }
+
+              // Noeuds qui ne sont pas à la frontière.
               else{
                 new_owner = parent_cell.owner();
               }
@@ -860,8 +897,47 @@ refine()
       }
 
     }
+
+
+
+
+
+
+    UniqueArray<Int64> recv_buffer;
+    UniqueArray<Int64> empty_buffer;
+
+    for(Integer rank = 0; rank < nb_rank; ++rank){
+      m_mesh->parallelMng()->gatherVariable(get_back_node_owner[rank], recv_buffer, rank);
+    }
+
+    Integer i = 0;
+    while(i < recv_buffer.size()){
+
+      Integer rank = recv_buffer[i++];
+      Integer size = recv_buffer[i++];
+      ArrayView<Int64> av = recv_buffer.subView(i, size);
+      i += size;
+      UniqueArray<Int32> local_ids(size);
+      m_mesh->nodeFamily()->itemsUniqueIdToLocalId(local_ids, av, true);
+
+      ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(local_ids)) {
+        Node node = *inode;
+        debug() << "Change node owner -- UniqueId : " << node.uniqueId()
+                << " -- Old Owner : " << node.owner()
+                << " -- New Owner : " << rank
+        ;
+        node.mutableItemBase().setOwner(rank, pm->commRank());
+      }
+    }
+
+
+
+
+
+
+
+
     m_mesh->nodeFamily()->notifyItemsOwnerChanged();
-    m_mesh->nodeFamily()->computeSynchronizeInfos();
   }
 
   // Faces
