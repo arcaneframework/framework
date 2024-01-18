@@ -8,7 +8,7 @@
 
 #include "arccore/base/PlatformUtils.h"
 #include "arccore/base/Functor.h"
-#include "arccore/base/ReferenceCounterImpl.h"
+#include "arccore/base/Ref.h"
 
 #include "arccore/concurrency/SpinLock.h"
 #include "arccore/concurrency/GlibThreadImplementation.h"
@@ -106,7 +106,7 @@ class TestSpinLock1
 
 TEST(Concurrency, SpinLock)
 {
-  ReferenceCounter<IThreadImplementation> timpl(new GlibThreadImplementation());
+  Ref<IThreadImplementation> timpl(Concurrency::createGlibThreadImplementation());
   Concurrency::setThreadImplementation(timpl.get());
 
   {
