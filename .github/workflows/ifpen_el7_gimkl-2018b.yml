@@ -182,11 +182,6 @@ jobs:
         shell: bash
         run: rm -f build-artifact.tar.gz
 
-      - name: Info
-        id: info
-        shell: bash
-        run: nproc --all ; free -h ; ulimit -a
-
       - name: Test
         id: test
         shell: bash
