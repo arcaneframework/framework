@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRef.h                                               (C) 2000-2023 */
+/* VariableRef.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant une référence sur une variable.                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_VARIABLEREF_H
-#define ARCANE_VARIABLEREF_H
+#ifndef ARCANE_CORE_VARIABLEREF_H
+#define ARCANE_CORE_VARIABLEREF_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -88,7 +88,7 @@ class ARCANE_CORE_EXPORT VariableRef
   IVariableMng* variableMng() const;
 
   //! Nom de la variable
-  const String& name() const;
+  String name() const;
 
  public:
 
