@@ -109,6 +109,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   IMemoryAllocator* m_alloc = nullptr;
   Integer m_size = 0;
   Span<ComponentItemLocalId>* m_allcell_allenvcell = nullptr;
+  ComponentItemLocalId* m_mem_pool = nullptr;
   Int32 m_current_max_nb_env = 0;
 };
 

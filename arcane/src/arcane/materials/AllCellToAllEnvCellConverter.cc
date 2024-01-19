@@ -32,12 +32,12 @@ void AllCellToAllEnvCell::
 reset()
 {
   if (m_allcell_allenvcell) {
-    ComponentItemLocalId* env_cells(m_allcell_allenvcell[0].data());
     for (auto i(m_size - 1); i >= 0; --i)
       m_allcell_allenvcell[i].~Span<ComponentItemLocalId>();
-    m_alloc->deallocate(env_cells);
     m_alloc->deallocate(m_allcell_allenvcell);
     m_allcell_allenvcell = nullptr;
+    m_alloc->deallocate(m_mem_pool);
+    m_mem_pool = nullptr;
   }
   m_material_mng = nullptr;
   m_alloc = nullptr;
@@ -98,10 +98,9 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   std::fill_n(_instance->m_allcell_allenvcell, _instance->m_size, Span<ComponentItemLocalId>());
 
   _instance->m_current_max_nb_env = _instance->maxNbEnvPerCell();
-  ComponentItemLocalId* env_cells(nullptr);
   auto pool_size(_instance->m_current_max_nb_env * _instance->m_size);
-  env_cells = reinterpret_cast<ComponentItemLocalId*>(alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
-  std::fill_n(env_cells, pool_size, ComponentItemLocalId());
+  _instance->m_mem_pool = reinterpret_cast<ComponentItemLocalId*>(alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
+  std::fill_n(_instance->m_mem_pool, pool_size, ComponentItemLocalId());
 
   CellToAllEnvCellConverter all_env_cell_converter(mm);
   ENUMERATE_CELL (icell, mm->mesh()->allCells()) {
@@ -113,10 +112,10 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
       Integer offset(cid * _instance->m_current_max_nb_env);
       ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
         EnvCell ev = *ienvcell;
-        env_cells[offset + i] = ComponentItemLocalId(ev._varIndex());
+        _instance->m_mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
         ++i;
       }
-      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(env_cells+offset, nb_env);
+      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(_instance->m_mem_pool+offset, nb_env);
     }
   }
   return _instance;
@@ -135,13 +134,12 @@ bruteForceUpdate()
     std::swap(this->m_alloc, swap_ptr->m_alloc);
     std::swap(this->m_size, swap_ptr->m_size);
     std::swap(this->m_allcell_allenvcell, swap_ptr->m_allcell_allenvcell);
+    std::swap(this->m_mem_pool, swap_ptr->m_mem_pool);
     std::swap(this->m_current_max_nb_env, swap_ptr->m_current_max_nb_env);
     destroy(swap_ptr);
   }
   else {
     Int32 current_max_nb_env(maxNbEnvPerCell());
-    ComponentItemLocalId* env_cells(nullptr);
-    bool mem_pool_has_changed(false);
     // Si les ids n'ont pas changé, on regarde si à cet instant, le nb max d'env par maille a changé
     // Si ca a changé, refaire le mem pool, sinon, juste update les valeurs
     if (current_max_nb_env != m_current_max_nb_env) {
@@ -149,18 +147,14 @@ bruteForceUpdate()
       m_current_max_nb_env = current_max_nb_env;
       // Si le nb max d'env pour les mailles a changé à cet instant, on doit refaire le memory pool
       ARCANE_ASSERT((m_allcell_allenvcell), ("Trying to change memory pool within a null structure"));
-      m_alloc->deallocate(m_allcell_allenvcell[0].data());
       // on reinit a un span vide
       std::fill_n(m_allcell_allenvcell, m_size, Span<ComponentItemLocalId>());
       // on recree le pool
+      m_alloc->deallocate(m_mem_pool);
       auto pool_size(m_current_max_nb_env * m_size);
-      env_cells = reinterpret_cast<ComponentItemLocalId*>(m_alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
-      std::fill_n(env_cells, pool_size, ComponentItemLocalId());
-      mem_pool_has_changed = true;
+      m_mem_pool = reinterpret_cast<ComponentItemLocalId*>(m_alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
+      std::fill_n(m_mem_pool, pool_size, ComponentItemLocalId());
     }
-    // Si on a pas touché au pool mémoire on repositionne le ptr sur l'existant
-    if (!mem_pool_has_changed)
-      env_cells = m_allcell_allenvcell[0].data();
     // mise a jour des valeurs
     CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
     ENUMERATE_CELL (icell, m_material_mng->mesh()->allCells()) {
@@ -172,10 +166,10 @@ bruteForceUpdate()
         Integer offset(cid * m_current_max_nb_env);
         ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
           EnvCell ev = *ienvcell;
-          env_cells[offset+i] = ComponentItemLocalId(ev._varIndex());
+          m_mem_pool[offset+i] = ComponentItemLocalId(ev._varIndex());
           ++i;
         }
-        m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(env_cells+offset, nb_env);
+        m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(m_mem_pool+offset, nb_env);
       } else {
         m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
       }

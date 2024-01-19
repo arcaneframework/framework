@@ -214,19 +214,21 @@ initializeTest()
     Int32UniqueArray env1_indexes;
     Int32UniqueArray mat2_indexes;
     Int32UniqueArray sub_group_indexes;
-    Integer nb_cell = ownCells().size();
+    Integer nb_cell = allCells().size();
     Int64 total_nb_cell = nb_cell;
     ENUMERATE_CELL(icell,allCells()){
-      Cell cell = *icell;
-      Int64 cell_index = cell.uniqueId();
-      if (cell_index<((2*total_nb_cell)/3)){
-        env1_indexes.add(icell.itemLocalId());
+      if (icell.itemLocalId() != 0) {  // on ne veut pas de la première maille pour tester un cas tordu en //
+        Cell cell = *icell;
+        Int64 cell_index = cell.uniqueId();
+        if (cell_index<((2*total_nb_cell)/3)){
+          env1_indexes.add(icell.itemLocalId());
+        }
+        if (cell_index<(total_nb_cell/2) && cell_index>(total_nb_cell/3)){
+          mat2_indexes.add(icell.itemLocalId());
+        }
+        if ((cell_index%2)==0)
+          sub_group_indexes.add(icell.itemLocalId());
       }
-      if (cell_index<(total_nb_cell/2) && cell_index>(total_nb_cell/3)){
-        mat2_indexes.add(icell.itemLocalId());
-      }
-      if ((cell_index%2)==0)
-        sub_group_indexes.add(icell.itemLocalId());
     }
 
     // Ajoute les mailles du milieu 1
