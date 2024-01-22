@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AllCellToAllEnvCellConverter.h                              (C) 2000-2023 */
+/* AllCellToAllEnvCellConverter.h                              (C) 2000-2024 */
 /*                                                                           */
 /* Conversion de 'Cell' en 'AllEnvCell'.                                     */
 /*---------------------------------------------------------------------------*/
@@ -109,6 +109,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   IMemoryAllocator* m_alloc = nullptr;
   Integer m_size = 0;
   Span<ComponentItemLocalId>* m_allcell_allenvcell = nullptr;
+  ComponentItemLocalId* m_mem_pool = nullptr;
   Int32 m_current_max_nb_env = 0;
 };
 
