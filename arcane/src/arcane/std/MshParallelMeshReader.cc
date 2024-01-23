@@ -230,6 +230,7 @@ class MshParallelMeshReader
  private:
 
   void _readNodesFromFileAscii();
+  void _readNodesOneEntity(Int32 entity_index);
   Integer _readElementsFromFileAscii();
   void _readMeshFromFile();
   void _setNodesCoordinates();
@@ -244,12 +245,15 @@ class MshParallelMeshReader
   Int32 _switchMshType(Int64, Int32&) const;
   void _readPhysicalNames();
   void _readEntities();
+  void _readOneEntity(Int32 entity_dim);
   String _getNextLineAndBroadcast();
   Int32 _getIntegerAndBroadcast();
   void _getInt64ArrayAndBroadcast(ArrayView<Int64> values);
   void _readOneElementBlock(MeshV4ElementsBlock& block);
   void _computeNodesPartition();
   void _computeOwnCells(MeshV4ElementsBlock& block);
+  Real3 _getReal3();
+  void _goToNextLine();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -324,6 +328,29 @@ _getInt64ArrayAndBroadcast(ArrayView<Int64> values)
       v = f->getInt64();
   if (m_is_parallel)
     m_parallel_mng->broadcast(values, m_master_io_rank);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Real3 MshParallelMeshReader::
+_getReal3()
+{
+  IosFile* f = m_ios_file.get();
+  Real x = f->getReal();
+  Real y = f->getReal();
+  Real z = f->getReal();
+  return Real3(x,y,z);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_goToNextLine()
+{
+  if (m_ios_file.get())
+    m_ios_file->getNextLine();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -478,10 +505,6 @@ _computeNodesPartition()
 void MshParallelMeshReader::
 _readNodesFromFileAscii()
 {
-  IosFile* ios_file = m_ios_file.get();
-  IParallelMng* pm = m_parallel_mng;
-  const Int32 my_rank = pm->commRank();
-
   FixedArray<Int64, 4> nodes_info;
   _getInt64ArrayAndBroadcast(nodes_info.view());
 
@@ -490,8 +513,7 @@ _readNodesFromFileAscii()
   Int64 min_node_tag = nodes_info[2];
   Int64 max_node_tag = nodes_info[3];
 
-  if (ios_file)
-    ios_file->getNextLine(); // Skip current \n\r
+  _goToNextLine();
 
   if (total_nb_node < 0)
     ARCANE_THROW(IOException, "Invalid number of nodes : '{0}'", total_nb_node);
@@ -502,106 +524,114 @@ _readNodesFromFileAscii()
          << " max_tag=" << max_node_tag
          << " read_nb_part=" << m_nb_part;
 
-  UniqueArray<Int64> nodes_uids;
-  UniqueArray<Real3> nodes_coordinates;
-
   for (Integer i_entity = 0; i_entity < nb_entity; ++i_entity) {
-
-    FixedArray<Int64, 4> entity_infos;
-    _getInt64ArrayAndBroadcast(entity_infos.view());
-    if (ios_file)
-      ios_file->getNextLine();
-
-    // Dimension de l'entité (pas utile)
-    [[maybe_unused]] Int64 entity_dim = entity_infos[0];
-    // Tag de l'entité (pas utile)
-    [[maybe_unused]] Int64 entity_tag = entity_infos[1];
-    Int64 parametric_coordinates = entity_infos[2];
-    Int64 nb_node2 = entity_infos[3];
-
-    info() << "[Nodes] index=" << i_entity << " entity_dim=" << entity_dim << " entity_tag=" << entity_tag
-           << " parametric=" << parametric_coordinates
-           << " nb_node2=" << nb_node2;
-
-    if (parametric_coordinates != 0)
-      ARCANE_THROW(NotSupportedException, "Only 'parametric coordinates' value of '0' is supported (current={0})", parametric_coordinates);
-
-    // Il est possible que le nombre de noeuds soit 0.
-    // Dans ce cas, il faut directement passer à la ligne suivante
-    if (nb_node2 == 0)
-      continue;
-
-    // Partitionne la lecture en \a m_nb_part
-    // Pour chaque i_entity , on a d'abord la liste des identifiants puis la liste des coordonnées
-
-    for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
-      Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
-      Int32 dest_rank = m_parts_rank[i_part];
-      info() << "Reading UIDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
-      if (my_rank == dest_rank || my_rank == m_master_io_rank) {
-        nodes_uids.resize(nb_to_read);
-      }
-
-      // Le rang maitre lit les informations des noeuds pour la partie concernée
-      // et les transfère au rang destination
-      if (ios_file) {
-        for (Integer i = 0; i < nb_to_read; ++i) {
-          // Conserve le uniqueId() du noeuds.
-          nodes_uids[i] = ios_file->getInt64();
-          //info() << "I=" << i << " ID=" << nodes_uids[i];
-        }
-        if (dest_rank != m_master_io_rank) {
-          pm->send(nodes_uids, dest_rank);
-        }
-      }
-      else if (my_rank == dest_rank) {
-        pm->recv(nodes_uids, m_master_io_rank);
-      }
-
-      // Conserve les informations de ma partie
-      if (my_rank == dest_rank) {
-        m_mesh_info.nodes_unique_id.addRange(nodes_uids);
-      }
-    }
-
-    // Lecture par partie des coordonnées
-    for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
-      Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
-      Int32 dest_rank = m_parts_rank[i_part];
-      info() << "Reading COORDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
-      if (my_rank == dest_rank || my_rank == m_master_io_rank) {
-        nodes_coordinates.resize(nb_to_read);
-      }
-
-      // Le rang maitre lit les informations des noeuds pour la partie concernée
-      // et les transfère au rang destination
-      if (ios_file) {
-        for (Integer i = 0; i < nb_to_read; ++i) {
-          Real nx = ios_file->getReal();
-          Real ny = ios_file->getReal();
-          Real nz = ios_file->getReal();
-          nodes_coordinates[i] = Real3(nx, ny, nz);
-          //info() << "I=" << i << " ID=" << nodes_uids[i] << " COORD=" << Real3(nx, ny, nz);
-        }
-        if (dest_rank != m_master_io_rank) {
-          pm->send(nodes_coordinates, dest_rank);
-        }
-      }
-      else if (my_rank == dest_rank) {
-        pm->recv(nodes_coordinates, m_master_io_rank);
-      }
-
-      // Conserve les informations de ma partie
-      if (my_rank == dest_rank) {
-        m_mesh_info.nodes_coordinates.addRange(nodes_coordinates);
-      }
-    }
-
-    if (ios_file)
-      ios_file->getNextLine(); // Skip current \n\r
+    _readNodesOneEntity(i_entity);
   }
 
   _computeNodesPartition();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_readNodesOneEntity(Int32 entity_index)
+{
+  IosFile* ios_file = m_ios_file.get();
+  IParallelMng* pm = m_parallel_mng;
+  const Int32 my_rank = pm->commRank();
+
+  UniqueArray<Int64> nodes_uids;
+  UniqueArray<Real3> nodes_coordinates;
+
+  FixedArray<Int64, 4> entity_infos;
+  _getInt64ArrayAndBroadcast(entity_infos.view());
+
+  _goToNextLine();
+
+  // Dimension de l'entité (pas utile)
+  [[maybe_unused]] Int64 entity_dim = entity_infos[0];
+  // Tag de l'entité (pas utile)
+  [[maybe_unused]] Int64 entity_tag = entity_infos[1];
+  Int64 parametric_coordinates = entity_infos[2];
+  Int64 nb_node2 = entity_infos[3];
+
+  info() << "[Nodes] index=" << entity_index << " entity_dim=" << entity_dim << " entity_tag=" << entity_tag
+         << " parametric=" << parametric_coordinates
+         << " nb_node2=" << nb_node2;
+
+  if (parametric_coordinates != 0)
+    ARCANE_THROW(NotSupportedException, "Only 'parametric coordinates' value of '0' is supported (current={0})", parametric_coordinates);
+
+  // Il est possible que le nombre de noeuds soit 0.
+  // Dans ce cas, il faut directement passer à la ligne suivante
+  if (nb_node2 == 0)
+    return;
+
+  // Partitionne la lecture en \a m_nb_part
+  // Pour chaque i_entity , on a d'abord la liste des identifiants puis la liste des coordonnées
+
+  for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
+    Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
+    Int32 dest_rank = m_parts_rank[i_part];
+    info() << "Reading UIDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
+    if (my_rank == dest_rank || my_rank == m_master_io_rank) {
+      nodes_uids.resize(nb_to_read);
+    }
+
+    // Le rang maitre lit les informations des noeuds pour la partie concernée
+    // et les transfère au rang destination
+    if (ios_file) {
+      for (Integer i = 0; i < nb_to_read; ++i) {
+        // Conserve le uniqueId() du noeuds.
+        nodes_uids[i] = ios_file->getInt64();
+        //info() << "I=" << i << " ID=" << nodes_uids[i];
+      }
+      if (dest_rank != m_master_io_rank) {
+        pm->send(nodes_uids, dest_rank);
+      }
+    }
+    else if (my_rank == dest_rank) {
+      pm->recv(nodes_uids, m_master_io_rank);
+    }
+
+    // Conserve les informations de ma partie
+    if (my_rank == dest_rank) {
+      m_mesh_info.nodes_unique_id.addRange(nodes_uids);
+    }
+  }
+
+  // Lecture par partie des coordonnées
+  for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
+    Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
+    Int32 dest_rank = m_parts_rank[i_part];
+    info() << "Reading COORDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
+    if (my_rank == dest_rank || my_rank == m_master_io_rank) {
+      nodes_coordinates.resize(nb_to_read);
+    }
+
+    // Le rang maitre lit les informations des noeuds pour la partie concernée
+    // et les transfère au rang destination
+    if (ios_file) {
+      for (Integer i = 0; i < nb_to_read; ++i) {
+        nodes_coordinates[i] = _getReal3();
+        //info() << "I=" << i << " ID=" << nodes_uids[i] << " COORD=" << Real3(nx, ny, nz);
+      }
+      if (dest_rank != m_master_io_rank) {
+        pm->send(nodes_coordinates, dest_rank);
+      }
+    }
+    else if (my_rank == dest_rank) {
+      pm->recv(nodes_coordinates, m_master_io_rank);
+    }
+
+    // Conserve les informations de ma partie
+    if (my_rank == dest_rank) {
+      m_mesh_info.nodes_coordinates.addRange(nodes_coordinates);
+    }
+  }
+
+  _goToNextLine();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -704,8 +734,7 @@ _readElementsFromFileAscii()
   Int64 min_element_tag = elements_info[2];
   Int64 max_element_tag = elements_info[3];
 
-  if (ios_file)
-    ios_file->getNextLine(); // Skip current \n\r
+  _goToNextLine();
 
   info() << "[Elements] nb_block=" << nb_block
          << " nb_elements=" << number_of_elements
@@ -769,14 +798,13 @@ _readElementsFromFileAscii()
     else {
       _readOneElementBlock(block);
     }
-    if (ios_file)
-      ios_file->getNextLine(); // Skip current \n\r
+    _goToNextLine();
   }
 
   // Maintenant qu'on a tout les blocs, la dimension du maillage est
   // la plus grande dimension des blocs
   Integer mesh_dimension = -1;
-  for (MeshV4ElementsBlock& block : blocks)
+  for (const MeshV4ElementsBlock& block : blocks)
     mesh_dimension = math::max(mesh_dimension, block.dimension);
   if (mesh_dimension < 0)
     ARCANE_FATAL("Invalid computed mesh dimension '{0}'", mesh_dimension);
@@ -1084,7 +1112,6 @@ _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
   UniqueArray<Int32> faces_id; // Numéro de la face dans le maillage \a mesh
   faces_id.reserve(nb_entity);
 
-  //const Int32 item_nb_node = block.item_nb_node;
   const Int32 face_nb_node = nb_entity * item_nb_node;
 
   UniqueArray<Int64> faces_first_node_unique_id(nb_entity);
@@ -1217,12 +1244,12 @@ _addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
 void MshParallelMeshReader::
 _readPhysicalNames()
 {
-  IosFile* ios_file = m_ios_file.get();
   String quote_mark = "\"";
   Int32 nb_name = _getIntegerAndBroadcast();
   info() << "nb_physical_name=" << nb_name;
-  if (ios_file)
-    ios_file->getNextLine();
+
+  _goToNextLine();
+
   for (Int32 i = 0; i < nb_name; ++i) {
     Int32 dim = _getIntegerAndBroadcast();
     Int32 tag = _getIntegerAndBroadcast();
@@ -1239,6 +1266,7 @@ _readPhysicalNames()
     m_mesh_info.physical_name_list.add(dim, tag, s);
     info(4) << "[PhysicalName] index=" << i << " dim=" << dim << " tag=" << tag << " name='" << s << "'";
   }
+
   String s = _getNextLineAndBroadcast();
   if (s != "$EndPhysicalNames")
     ARCANE_FATAL("found '{0}' and expected '$EndPhysicalNames'", s);
@@ -1282,89 +1310,87 @@ _readEntities()
 {
   IosFile* ios_file = m_ios_file.get();
 
-  FixedArray<Int32, 4> nb_dim_item;
-  if (ios_file) {
-    nb_dim_item[0] = ios_file->getInteger();
-    nb_dim_item[1] = ios_file->getInteger();
-    nb_dim_item[2] = ios_file->getInteger();
-    nb_dim_item[3] = ios_file->getInteger();
-  }
-  m_parallel_mng->broadcast(nb_dim_item.view(), m_master_io_rank);
+  FixedArray<Int64, 4> nb_dim_item;
+  _getInt64ArrayAndBroadcast(nb_dim_item.view());
 
   info(4) << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
           << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
   // Après le format, on peut avoir les entités mais cela est optionnel
   // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
-  if (ios_file)
-    ios_file->getNextLine();
+  _goToNextLine();
 
-  for (Int32 i = 0; i < nb_dim_item[0]; ++i) {
+  for (Int64 i = 0; i < nb_dim_item[0]; ++i) {
     FixedArray<Int64, 2> tag_info;
     if (ios_file) {
       Int64 tag = ios_file->getInt64();
-      Real x = ios_file->getReal();
-      Real y = ios_file->getReal();
-      Real z = ios_file->getReal();
+      Real3 xyz = _getReal3();
       Int64 num_physical_tag = ios_file->getInt64();
       if (num_physical_tag > 1)
         ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
+
       Int32 physical_tag = -1;
       if (num_physical_tag == 1)
         physical_tag = ios_file->getInteger();
-      info(4) << "[Entities] point tag=" << tag << " x=" << x << " y=" << y << " z=" << z << " phys_tag=" << physical_tag;
+      info(4) << "[Entities] point tag=" << tag << " pos=" << xyz << " phys_tag=" << physical_tag;
 
       tag_info[0] = tag;
       tag_info[1] = physical_tag;
     }
     m_parallel_mng->broadcast(tag_info.view(), m_master_io_rank);
     m_mesh_info.entities_nodes_list.add(MeshV4EntitiesNodes(tag_info[0], tag_info[1]));
-    if (ios_file)
-      ios_file->getNextLine();
+    _goToNextLine();
   }
 
-  for (Int32 i_dim = 1; i_dim <= 3; ++i_dim) {
-    for (Int32 i = 0; i < nb_dim_item[i_dim]; ++i) {
-      FixedArray<Int64, 3> dim_and_tag_info;
-      if (ios_file) {
-        Int64 tag = ios_file->getInt64();
-        Real min_x = ios_file->getReal();
-        Real min_y = ios_file->getReal();
-        Real min_z = ios_file->getReal();
-        Real max_x = ios_file->getReal();
-        Real max_y = ios_file->getReal();
-        Real max_z = ios_file->getReal();
-        Int64 num_physical_tag = ios_file->getInt64();
-        if (num_physical_tag > 1)
-          ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
-        Int32 physical_tag = -1;
-        if (num_physical_tag == 1)
-          physical_tag = ios_file->getInteger();
-        Int32 num_bounding_group = ios_file->getInteger();
-        for (Int32 k = 0; k < num_bounding_group; ++k) {
-          [[maybe_unused]] Int32 group_tag = ios_file->getInteger();
-        }
-        info(4) << "[Entities] dim=" << i_dim << " tag=" << tag
-                << " min_x=" << min_x << " min_y=" << min_y << " min_z=" << min_z
-                << " max_x=" << max_x << " max_y=" << max_y << " max_z=" << max_z
-                << " phys_tag=" << physical_tag;
-        dim_and_tag_info[0] = i_dim;
-        dim_and_tag_info[1] = tag;
-        dim_and_tag_info[2] = physical_tag;
-      }
-      m_parallel_mng->broadcast(dim_and_tag_info.view(), m_master_io_rank);
-      {
-        Int32 dim = CheckedConvert::toInt32(dim_and_tag_info[0]);
-        Int64 tag = dim_and_tag_info[1];
-        Int64 physical_tag = dim_and_tag_info[2];
-        m_mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
-      }
-      if (ios_file)
-        ios_file->getNextLine();
-    }
-  }
+  for (Int32 i_dim = 1; i_dim <= 3; ++i_dim)
+    for (Int32 i = 0; i < nb_dim_item[i_dim]; ++i)
+      _readOneEntity(i_dim);
+
   String s = _getNextLineAndBroadcast();
   if (s != "$EndEntities")
     ARCANE_FATAL("found '{0}' and expected '$EndEntities'", s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_readOneEntity(Int32 entity_dim)
+{
+  IosFile* ios_file = m_ios_file.get();
+
+  FixedArray<Int64, 3> dim_and_tag_info;
+  if (ios_file) {
+    Int64 tag = ios_file->getInt64();
+    Real3 min_pos = _getReal3();
+    Real3 max_pos = _getReal3();
+    Int64 num_physical_tag = ios_file->getInt64();
+    if (num_physical_tag > 1)
+      ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
+    Int32 physical_tag = -1;
+    if (num_physical_tag == 1)
+      physical_tag = ios_file->getInteger();
+    Int32 num_bounding_group = ios_file->getInteger();
+    for (Int32 k = 0; k < num_bounding_group; ++k) {
+      [[maybe_unused]] Int32 group_tag = ios_file->getInteger();
+    }
+    info(4) << "[Entities] dim=" << entity_dim << " tag=" << tag
+            << " min_pos=" << min_pos << " max_pos=" << max_pos
+            << " phys_tag=" << physical_tag;
+    dim_and_tag_info[0] = entity_dim;
+    dim_and_tag_info[1] = tag;
+    dim_and_tag_info[2] = physical_tag;
+  }
+
+  m_parallel_mng->broadcast(dim_and_tag_info.view(), m_master_io_rank);
+
+  {
+    Int32 dim = CheckedConvert::toInt32(dim_and_tag_info[0]);
+    Int64 tag = dim_and_tag_info[1];
+    Int64 physical_tag = dim_and_tag_info[2];
+    m_mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
+  }
+
+  _goToNextLine();
 }
 
 /*---------------------------------------------------------------------------*/
