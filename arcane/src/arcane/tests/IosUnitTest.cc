@@ -11,50 +11,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/List.h"
-#include "arcane/utils/MD5HashAlgorithm.h"
-#include "arcane/utils/ArithmeticException.h"
-#include "arcane/utils/ITraceMng.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/AbstractItemOperationByBasicType.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/IMeshReader.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/ITiedInterface.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/Directory.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/IMeshPartitioner.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/Properties.h"
-#include "arcane/IInitialPartitioner.h"
-#include "arcane/Timer.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNode.h"
-#include "arcane/ItemArrayEnumerator.h"
-#include "arcane/ItemPairGroup.h"
-#include "arcane/ItemPairEnumerator.h"
-#include "arcane/IPostProcessorWriter.h"
-#include "arcane/ItemVectorView.h"
-#include "arcane/GeometricUtilities.h"
-#include "arcane/BasicUnitTest.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/DomUtils.h"
 
-#include "arcane/tests/ArcaneTestGlobal.h"
-#include "arcane/tests/MeshUnitTest_axl.h"
 #include "arcane/tests/IosUnitTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -139,7 +109,7 @@ _testIosWriterReader(IMesh* this_mesh, bool option, String Ext, Integer z)
 	IApplication* app = sd->application();
 	IMainFactory* main_factory = app->mainFactory();
 	
-	ScopedPtrT<IXmlDocumentHolder> xdoc(app->ressourceMng()->createXmlDocument());
+	ScopedPtrT<IXmlDocumentHolder> xdoc(domutils::createXmlDocument());
 	XmlNode dummyXmlNode = xdoc->documentNode();
 
 	StringBuilder outputFileName(options()->outputFileName());
