@@ -21,6 +21,7 @@
 
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
+#include "arcane/utils/Array2View.h"
 
 #include <map>
 
@@ -144,6 +145,106 @@ refine()
   // lors de la création des mailles.
   UniqueArray<Cell> parent_cells;
 
+
+
+  std::unordered_map<Int64, Integer> muo;
+  std::unordered_map<Int64, Int32> muo2;
+  {
+    Int32 usefull_flag = ItemFlags::II_Refine + ItemFlags::II_Inactive;
+    {
+      UniqueArray<Int64> ask;
+
+
+      ENUMERATE_CELL (icell, m_mesh->ownCells()) {
+        Cell cell = *icell;
+        muo[cell.uniqueId()] = my_rank;
+        muo2[cell.uniqueId()] = (cell.itemBase().flags() & usefull_flag);
+        debug() << "Proc : " << my_rank
+                << " -- uid : " << icell->uniqueId()
+                << (cell.itemBase().flags() & ItemFlags::II_Refine ? " -- II_Refine " : "")
+                << (cell.itemBase().flags() & ItemFlags::II_Inactive ? " -- II_Inactive " : "")
+        ;
+      }
+
+      UniqueArray<Int64> around((m_mesh->dimension() == 2) ? 9 : 27);
+      for (Cell parent_cell : cell_to_refine_internals) {
+        m_num_mng->getCellUidsAround(around, parent_cell);
+        for (Int64 elem : around) {
+          if (elem == -1)
+            continue;
+          if (muo.find(elem) != muo.end() && muo[elem] == my_rank)
+            continue;
+          ask.add(elem);
+        }
+      }
+
+      UniqueArray<Integer> size_ask(nb_rank);
+      Integer sizeof_ask = ask.size();
+      ArrayView<Integer> av(1, &sizeof_ask);
+      pm->allGather(av, size_ask);
+
+      UniqueArray<Int64> ask_all;
+      pm->allGatherVariable(ask, ask_all);
+
+      UniqueArray<Int32> flag_all(ask_all.size());
+
+      UniqueArray<Int32> local_ids(ask_all.size());
+      m_mesh->cellFamily()->itemsUniqueIdToLocalId(local_ids, ask_all, false);
+      Integer compt = 0;
+      ENUMERATE_ (Cell, icell, m_mesh->cellFamily()->view(local_ids)) {
+        if(!icell->null() && icell->isOwn()) {
+          ask_all[compt] = my_rank;
+          flag_all[compt] = (icell->itemBase().flags() & usefull_flag);
+        }
+        else {
+          ask_all[compt] = -1;
+          flag_all[compt] = -1;
+        }
+        compt++;
+      }
+
+      ARCANE_ASSERT((compt == ask_all.size()), ("Pb..."));
+      ARCANE_ASSERT((compt == flag_all.size()), ("Pb..."));
+
+      pm->reduce(Parallel::eReduceType::ReduceMax, ask_all);
+      pm->reduce(Parallel::eReduceType::ReduceMax, flag_all);
+
+      Integer my_pos = 0;
+      for (Integer i = 0; i < my_rank; ++i) {
+        my_pos += size_ask[i];
+      }
+
+      ArrayView<Int64> reduced_ask = ask_all.subView(my_pos, sizeof_ask);
+      ArrayView<Int32> reduced_flag = flag_all.subView(my_pos, sizeof_ask);
+      for (Integer i = 0; i < sizeof_ask; ++i) {
+        muo[ask[i]] = reduced_ask[i];
+        muo2[ask[i]] = reduced_flag[i];
+      }
+    }
+
+    {
+      UniqueArray<Int64> around((m_mesh->dimension() == 2) ? 9 : 27);
+      for (Cell parent_cell : cell_to_refine_internals) {
+        m_num_mng->getCellUidsAround(around, parent_cell);
+        debug() << around;
+        for (Int64 elem : around) {
+          if(muo.find(elem) != muo.end()){
+            debug() << "Rank : " << my_rank
+                    << " -- elem : " << muo[elem]
+                    << (muo2[elem] & ItemFlags::II_Refine ? " -- II_Refine " : "")
+                    << (muo2[elem] & ItemFlags::II_Inactive ? " -- II_Inactive " : "")
+            ;
+          }
+          else{
+            debug() << "Rank : " << my_rank << " -- elem : -1";
+          }
+        }
+      }
+    }
+  }
+
+
+
   if(m_mesh->dimension() == 2) {
 
     // Masques pour les cas "voisins enfants" et "voisins parents du même patch".
@@ -207,51 +308,46 @@ refine()
 
       Integer pattern = m_num_mng->getPattern();
 
-      CellDirectionMng cdmx(m_cmesh->cellDirection(MD_DirX));
-      CellDirectionMng cdmy(m_cmesh->cellDirection(MD_DirY));
 
-      DirCell ccx(cdmx.cell(parent_cell));
-      DirCell ccy(cdmy.cell(parent_cell));
 
-      Cell all_dir_parent_cells[3][3] = {{Cell()}};
 
-      all_dir_parent_cells[1][1] = parent_cell;
 
-      all_dir_parent_cells[0][1] = ccx.previous();
-      all_dir_parent_cells[2][1] = ccx.next();
-      all_dir_parent_cells[1][0] = ccy.previous();
-      all_dir_parent_cells[1][2] = ccy.next();
+      
+      UniqueArray<Int64> uid_cells_1d(9);
+      m_num_mng->getCellUidsAround(uid_cells_1d, parent_cell);
 
-      if(!all_dir_parent_cells[0][1].null() && !all_dir_parent_cells[1][0].null()){
-        DirCell ccx2(cdmx.cell(all_dir_parent_cells[1][0]));
-        all_dir_parent_cells[0][0] = ccx2.previous();
+
+      UniqueArray<Int64> owner_cells_1d(9);
+      UniqueArray<Int64> flags_cells_1d(9);
+      for(Integer i = 0; i < 9; ++i){
+        if(uid_cells_1d[i] != -1) {
+          owner_cells_1d[i] = muo[uid_cells_1d[i]];
+          flags_cells_1d[i] = muo2[uid_cells_1d[i]];
+        }
+        else{
+          owner_cells_1d[i] = -1;
+          flags_cells_1d[i] = -1;
+        }
       }
 
-      if(!all_dir_parent_cells[0][1].null() && !all_dir_parent_cells[1][2].null()){
-        DirCell ccx2(cdmx.cell(all_dir_parent_cells[1][2]));
-        all_dir_parent_cells[0][2] = ccx2.previous();
-      }
+      Array2View uid_cells(uid_cells_1d.data(), 3, 3);
+      Array2View owner_cells(owner_cells_1d.data(), 3, 3);
+      Array2View flags_cells(flags_cells_1d.data(), 3, 3);
 
-      if(!all_dir_parent_cells[2][1].null() && !all_dir_parent_cells[1][0].null()){
-        DirCell ccx2(cdmx.cell(all_dir_parent_cells[1][0]));
-        all_dir_parent_cells[2][0] = ccx2.next();
-      }
+      info() << "uid_cells_1d : " << uid_cells_1d;
+      info() << "owner_cells_1d : " << owner_cells_1d;
+      info() << "flags_cells_1d : " << flags_cells_1d;
 
-      if(!all_dir_parent_cells[2][1].null() && !all_dir_parent_cells[1][2].null()){
-        DirCell ccx2(cdmx.cell(all_dir_parent_cells[1][2]));
-        all_dir_parent_cells[2][2] = ccx2.next();
-      }
 
-      debug() << "parent_cell : " << parent_cell
-              << " -- all_dir_parent_cells[0][1] : " << all_dir_parent_cells[0][1]
-              << " -- all_dir_parent_cells[2][1] : " << all_dir_parent_cells[2][1]
-              << " -- all_dir_parent_cells[1][0] : " << all_dir_parent_cells[1][0]
-              << " -- all_dir_parent_cells[1][2] : " << all_dir_parent_cells[1][2]
-              << " -- all_dir_parent_cells[0][0] : " << all_dir_parent_cells[0][0]
-              << " -- all_dir_parent_cells[0][2] : " << all_dir_parent_cells[0][2]
-              << " -- all_dir_parent_cells[2][0] : " << all_dir_parent_cells[2][0]
-              << " -- all_dir_parent_cells[2][2] : " << all_dir_parent_cells[2][2]
-      ;
+
+
+
+
+
+
+
+
+
 
       // On peut noter une différence entre "left" et "right" et entre "bottom" et "top".
       // En effet, au sein d'un même patch, se sont "left" et "bottom" qui crée les noeuds/faces
@@ -263,9 +359,9 @@ refine()
       // Un autre cas à gérer est le cas où il y a une maille à gauche et/ou bas qui a le flag "II_Refine" (donc
       // dans notre patch) mais qui n'est pas à notre processus. Dans ce cas, on doit créer le noeud/face
       // mais en modifiant le propriétaire...
-      bool is_parent_cell_left = ((!all_dir_parent_cells[0][1].null()) && ((all_dir_parent_cells[0][1].isOwn() && (all_dir_parent_cells[0][1].itemBase().flags() & ItemFlags::II_Refine))));
+      bool is_parent_cell_left = ((uid_cells[1][0] != -1) && ((owner_cells[1][0] == my_rank && (flags_cells[1][0] & ItemFlags::II_Refine))));
       bool is_parent_cell_right = false;
-      bool is_parent_cell_bottom = ((!all_dir_parent_cells[1][0].null()) && ((all_dir_parent_cells[1][0].isOwn() && (all_dir_parent_cells[1][0].itemBase().flags() & ItemFlags::II_Refine))));
+      bool is_parent_cell_bottom = ((uid_cells[0][1] != -1) && ((owner_cells[0][1] == my_rank && (flags_cells[0][1] & ItemFlags::II_Refine))));
       bool is_parent_cell_top = false;
 
       // ... ce qui est possible grâce à ces deux booléens.
@@ -281,14 +377,14 @@ refine()
       // 4 = parent_cell
       bool is_ghost[3][3] = {{false}};
 
-      is_ghost[0][1] = (!all_dir_parent_cells[0][1].null() && !all_dir_parent_cells[0][1].isOwn() && (all_dir_parent_cells[0][1].itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost[1][0] = (!all_dir_parent_cells[1][0].null() && !all_dir_parent_cells[1][0].isOwn() && (all_dir_parent_cells[1][0].itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost[0][0] = (!all_dir_parent_cells[0][0].null() && !all_dir_parent_cells[0][0].isOwn() && (all_dir_parent_cells[0][0].itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost[2][0] = (!all_dir_parent_cells[2][0].null() && !all_dir_parent_cells[2][0].isOwn() && (all_dir_parent_cells[2][0].itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost[2][1] = (!all_dir_parent_cells[2][1].null() && !all_dir_parent_cells[2][1].isOwn() && (all_dir_parent_cells[2][1].itemBase().flags() & ItemFlags::II_Inactive));
-      is_ghost[1][2] = (!all_dir_parent_cells[1][2].null() && !all_dir_parent_cells[1][2].isOwn() && (all_dir_parent_cells[1][2].itemBase().flags() & ItemFlags::II_Inactive));
-      is_ghost[0][2] = (!all_dir_parent_cells[0][2].null() && !all_dir_parent_cells[0][2].isOwn() && (all_dir_parent_cells[0][2].itemBase().flags() & ItemFlags::II_Inactive));
-      is_ghost[2][2] = (!all_dir_parent_cells[2][2].null() && !all_dir_parent_cells[2][2].isOwn() && (all_dir_parent_cells[2][2].itemBase().flags() & ItemFlags::II_Inactive));
+      is_ghost[1][0] = (uid_cells[1][0] != -1 && owner_cells[1][0] != my_rank && (flags_cells[1][0] & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_ghost[0][1] = (uid_cells[0][1] != -1 && owner_cells[0][1] != my_rank && (flags_cells[0][1] & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_ghost[0][0] = (uid_cells[0][0] != -1 && owner_cells[0][0] != my_rank && (flags_cells[0][0] & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_ghost[0][2] = (uid_cells[0][2] != -1 && owner_cells[0][2] != my_rank && (flags_cells[0][2] & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_ghost[1][2] = (uid_cells[1][2] != -1 && owner_cells[1][2] != my_rank && (flags_cells[1][2] & ItemFlags::II_Inactive));
+      is_ghost[2][1] = (uid_cells[2][1] != -1 && owner_cells[2][1] != my_rank && (flags_cells[2][1] & ItemFlags::II_Inactive));
+      is_ghost[2][0] = (uid_cells[2][0] != -1 && owner_cells[2][0] != my_rank && (flags_cells[2][0] & ItemFlags::II_Inactive));
+      is_ghost[2][2] = (uid_cells[2][2] != -1 && owner_cells[2][2] != my_rank && (flags_cells[2][2] & ItemFlags::II_Inactive));
 
 
 
@@ -296,13 +392,13 @@ refine()
               << " -- is_parent_cell_right : " << is_parent_cell_right
               << " -- is_parent_cell_bottom : " << is_parent_cell_bottom
               << " -- is_parent_cell_top : " << is_parent_cell_top
-              << " -- is_ghost[0][1] : " << is_ghost[0][1]
-              << " -- is_ghost[1][0] : " << is_ghost[1][0]
+              << " -- is_ghost[0][1] : " << is_ghost[1][0]
+              << " -- is_ghost[1][0] : " << is_ghost[0][1]
               << " -- is_ghost[0][0] : " << is_ghost[0][0]
-              << " -- is_ghost[2][0] : " << is_ghost[2][0]
-              << " -- is_ghost[2][1] : " << is_ghost[2][1]
-              << " -- is_ghost[1][2] : " << is_ghost[1][2]
-              << " -- is_ghost[0][2] : " << is_ghost[0][2]
+              << " -- is_ghost[2][0] : " << is_ghost[0][2]
+              << " -- is_ghost[2][1] : " << is_ghost[1][2]
+              << " -- is_ghost[1][2] : " << is_ghost[2][1]
+              << " -- is_ghost[0][2] : " << is_ghost[2][0]
               << " -- is_ghost[2][2] : " << is_ghost[2][2]
       ;
 
@@ -333,14 +429,14 @@ refine()
             // Sinon, on applique le masque pour savoir si on doit créer la face ou pas
             // pour éviter les doublons entre deux mailles.
             if (
-                ( (i == child_coord_x && !is_parent_cell_left) || (mask_face_if_cell_left[l]) )
-                &&
-                ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_face_if_cell_right[l] )
-                &&
-                ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_face_if_cell_bottom[l]) )
-                &&
-                ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_face_if_cell_top[l] )
-                )
+            ( (i == child_coord_x && !is_parent_cell_left) || (mask_face_if_cell_left[l]) )
+            &&
+            ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_face_if_cell_right[l] )
+            &&
+            ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_face_if_cell_bottom[l]) )
+            &&
+            ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_face_if_cell_top[l] )
+            )
             {
               m_faces_infos.add(type_face);
               m_faces_infos.add(ua_face_uid[l]);
@@ -360,21 +456,21 @@ refine()
               // À noter l'inversion du masque. En effet, dans ce cas, on doit changer le propriétaire
               // des faces à gauche/en bas, le masque étant prévu pour traiter uniquement les faces
               // qui ne sont pas à gauche/en bas (pour éviter les doublons), il suffit de l'inverser.
-              if(i == child_coord_x && is_ghost[0][1] && (!mask_face_if_cell_left[l])){
-                new_owner = all_dir_parent_cells[0][1].owner();
+              if(i == child_coord_x && is_ghost[1][0] && (!mask_face_if_cell_left[l])){
+                new_owner = owner_cells[1][0];
               }
-              else if(j == child_coord_y && is_ghost[1][0] && (!mask_face_if_cell_bottom[l])){
-                new_owner = all_dir_parent_cells[1][0].owner();
+              else if(j == child_coord_y && is_ghost[0][1] && (!mask_face_if_cell_bottom[l])){
+                new_owner = owner_cells[0][1];
               }
 
-              else if(i == (child_coord_x + pattern-1) && is_ghost[2][1] && (!mask_face_if_cell_right[l])){
-                get_back_face_owner[all_dir_parent_cells[2][1].owner()][1]++;
-                get_back_face_owner[all_dir_parent_cells[2][1].owner()].add(ua_face_uid[l]);
+              else if(i == (child_coord_x + pattern-1) && is_ghost[1][2] && (!mask_face_if_cell_right[l])){
+                get_back_face_owner[owner_cells[1][2]][1]++;
+                get_back_face_owner[owner_cells[1][2]].add(ua_face_uid[l]);
                 new_owner = parent_cell.owner();
               }
-              else if(j == (child_coord_y + pattern-1) && is_ghost[1][2] && (!mask_face_if_cell_top[l])){
-                get_back_face_owner[all_dir_parent_cells[1][2].owner()][1]++;
-                get_back_face_owner[all_dir_parent_cells[1][2].owner()].add(ua_face_uid[l]);
+              else if(j == (child_coord_y + pattern-1) && is_ghost[2][1] && (!mask_face_if_cell_top[l])){
+                get_back_face_owner[owner_cells[2][1]][1]++;
+                get_back_face_owner[owner_cells[2][1]].add(ua_face_uid[l]);
                 new_owner = parent_cell.owner();
               }
 
@@ -395,14 +491,14 @@ refine()
             // Sinon, on applique le masque pour savoir si on doit créer le noeud ou pas
             // pour éviter les doublons entre deux mailles.
             if (
-                ( (i == child_coord_x && !is_parent_cell_left) || (mask_node_if_cell_left[l]) )
-                &&
-                ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_node_if_cell_right[l] )
-                &&
-                ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_node_if_cell_bottom[l]) )
-                &&
-                ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_node_if_cell_top[l] )
-               )
+            ( (i == child_coord_x && !is_parent_cell_left) || (mask_node_if_cell_left[l]) )
+            &&
+            ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_node_if_cell_right[l] )
+            &&
+            ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_node_if_cell_bottom[l]) )
+            &&
+            ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_node_if_cell_top[l] )
+            )
             {
               m_nodes_infos.add(ua_node_uid[l]);
               total_nb_nodes++;
@@ -424,13 +520,13 @@ refine()
               // (Et oui, en 3D, c'est encore plus amusant !)
               if(i == child_coord_x && j == child_coord_y && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_bottom[l])){
                 if(is_ghost[0][0]){
-                  new_owner = all_dir_parent_cells[0][0].owner();
-                }
-                else if(is_ghost[1][0]){
-                  new_owner = all_dir_parent_cells[1][0].owner();
+                  new_owner = owner_cells[0][0];
                 }
                 else if(is_ghost[0][1]){
-                  new_owner = all_dir_parent_cells[0][1].owner();
+                  new_owner = owner_cells[0][1];
+                }
+                else if(is_ghost[1][0]){
+                  new_owner = owner_cells[1][0];
                 }
                 else{
                   new_owner = parent_cell.owner();
@@ -438,71 +534,71 @@ refine()
               }
               // Noeud en bas à droite de la maille bas droite.
               else if(i == (child_coord_x + pattern-1) && j == child_coord_y && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_bottom[l])){
-                if(is_ghost[1][0]){
-                  new_owner = all_dir_parent_cells[1][0].owner();
+                if(is_ghost[0][1]){
+                  new_owner = owner_cells[0][1];
                 }
-                else if(is_ghost[2][0]){
-                  new_owner = all_dir_parent_cells[2][0].owner();
+                else if(is_ghost[0][2]){
+                  new_owner = owner_cells[0][2];
                 }
                 else {
-                  if (is_ghost[2][1]) {
-                    get_back_node_owner[all_dir_parent_cells[2][1].owner()][1]++;
-                    get_back_node_owner[all_dir_parent_cells[2][1].owner()].add(ua_node_uid[l]);
+                  if (is_ghost[1][2]) {
+                    get_back_node_owner[owner_cells[1][2]][1]++;
+                    get_back_node_owner[owner_cells[1][2]].add(ua_node_uid[l]);
                   }
                   new_owner = parent_cell.owner();
                 }
               }
 
               else if(i == child_coord_x && j == (child_coord_y + pattern-1) && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_top[l])) {
-                if(is_ghost[0][1]){
-                  new_owner = all_dir_parent_cells[0][1].owner();
+                if(is_ghost[1][0]){
+                  new_owner = owner_cells[1][0];
                 }
                 else {
-                  if (is_ghost[0][2]) {
-                    get_back_node_owner[all_dir_parent_cells[0][2].owner()][1]++;
-                    get_back_node_owner[all_dir_parent_cells[0][2].owner()].add(ua_node_uid[l]);
+                  if (is_ghost[2][0]) {
+                    get_back_node_owner[owner_cells[2][0]][1]++;
+                    get_back_node_owner[owner_cells[2][0]].add(ua_node_uid[l]);
                   }
-                  if (is_ghost[1][2]) {
-                    get_back_node_owner[all_dir_parent_cells[1][2].owner()][1]++;
-                    get_back_node_owner[all_dir_parent_cells[1][2].owner()].add(ua_node_uid[l]);
+                  if (is_ghost[2][1]) {
+                    get_back_node_owner[owner_cells[2][1]][1]++;
+                    get_back_node_owner[owner_cells[2][1]].add(ua_node_uid[l]);
                   }
                   new_owner = parent_cell.owner();
                 }
               }
 
               else if(i == (child_coord_x + pattern-1) && j == (child_coord_y + pattern-1) && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_top[l])) {
-                if(is_ghost[2][1]){
-                  get_back_node_owner[all_dir_parent_cells[2][1].owner()][1]++;
-                  get_back_node_owner[all_dir_parent_cells[2][1].owner()].add(ua_node_uid[l]);
+                if(is_ghost[1][2]){
+                  get_back_node_owner[owner_cells[1][2]][1]++;
+                  get_back_node_owner[owner_cells[1][2]].add(ua_node_uid[l]);
                 }
-                if (is_ghost[1][2]) {
-                  get_back_node_owner[all_dir_parent_cells[1][2].owner()][1]++;
-                  get_back_node_owner[all_dir_parent_cells[1][2].owner()].add(ua_node_uid[l]);
+                if (is_ghost[2][1]) {
+                  get_back_node_owner[owner_cells[2][1]][1]++;
+                  get_back_node_owner[owner_cells[2][1]].add(ua_node_uid[l]);
                 }
                 if (is_ghost[2][2]) {
-                  get_back_node_owner[all_dir_parent_cells[2][2].owner()][1]++;
-                  get_back_node_owner[all_dir_parent_cells[2][2].owner()].add(ua_node_uid[l]);
+                  get_back_node_owner[owner_cells[2][2]][1]++;
+                  get_back_node_owner[owner_cells[2][2]].add(ua_node_uid[l]);
                 }
                 new_owner = parent_cell.owner();
               }
 
-              else if(i == child_coord_x && is_ghost[0][1] && (!mask_node_if_cell_left[l])){
-                new_owner = all_dir_parent_cells[0][1].owner();
+              else if(i == child_coord_x && is_ghost[1][0] && (!mask_node_if_cell_left[l])){
+                new_owner = owner_cells[1][0];
               }
 
-              else if(j == child_coord_y && is_ghost[1][0] && (!mask_node_if_cell_bottom[l])){
-                new_owner = all_dir_parent_cells[1][0].owner();
+              else if(j == child_coord_y && is_ghost[0][1] && (!mask_node_if_cell_bottom[l])){
+                new_owner = owner_cells[0][1];
               }
 
-              else if(i == (child_coord_x + pattern-1) && is_ghost[2][1] && (!mask_node_if_cell_right[l])){
-                get_back_node_owner[all_dir_parent_cells[2][1].owner()][1]++;
-                get_back_node_owner[all_dir_parent_cells[2][1].owner()].add(ua_node_uid[l]);
+              else if(i == (child_coord_x + pattern-1) && is_ghost[1][2] && (!mask_node_if_cell_right[l])){
+                get_back_node_owner[owner_cells[1][2]][1]++;
+                get_back_node_owner[owner_cells[1][2]].add(ua_node_uid[l]);
                 new_owner = parent_cell.owner();
               }
 
-              else if(j == (child_coord_y + pattern-1) && is_ghost[1][2] && (!mask_node_if_cell_top[l])){
-                get_back_node_owner[all_dir_parent_cells[1][2].owner()][1]++;
-                get_back_node_owner[all_dir_parent_cells[1][2].owner()].add(ua_node_uid[l]);
+              else if(j == (child_coord_y + pattern-1) && is_ghost[2][1] && (!mask_node_if_cell_top[l])){
+                get_back_node_owner[owner_cells[2][1]][1]++;
+                get_back_node_owner[owner_cells[2][1]].add(ua_node_uid[l]);
                 new_owner = parent_cell.owner();
               }
 
@@ -815,17 +911,17 @@ refine()
               // Sinon, on applique le masque pour savoir si on doit créer la face ou pas
               // pour éviter les doublons entre deux mailles.
               if (
-                ( (i == child_coord_x && !is_parent_cell_left) || (mask_face_if_cell_left[l]) )
-                &&
-                ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_face_if_cell_right[l] )
-                &&
-                ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_face_if_cell_bottom[l]) )
-                &&
-                ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_face_if_cell_top[l] )
-                &&
-                ( (k == child_coord_z && !is_parent_cell_rear) || (mask_face_if_cell_rear[l]) )
-                &&
-                ( (k != (child_coord_z + pattern-1) || !is_parent_cell_front) || mask_face_if_cell_front[l] )
+              ( (i == child_coord_x && !is_parent_cell_left) || (mask_face_if_cell_left[l]) )
+              &&
+              ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_face_if_cell_right[l] )
+              &&
+              ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_face_if_cell_bottom[l]) )
+              &&
+              ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_face_if_cell_top[l] )
+              &&
+              ( (k == child_coord_z && !is_parent_cell_rear) || (mask_face_if_cell_rear[l]) )
+              &&
+              ( (k != (child_coord_z + pattern-1) || !is_parent_cell_front) || mask_face_if_cell_front[l] )
               ){
                 m_faces_infos.add(type_face);
                 m_faces_infos.add(ua_face_uid[l]);
@@ -911,17 +1007,17 @@ refine()
               // Sinon, on applique le masque pour savoir si on doit créer le noeud ou pas
               // pour éviter les doublons entre deux mailles.
               if (
-                ( (i == child_coord_x && !is_parent_cell_left) || (mask_node_if_cell_left[l]) )
-                &&
-                ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_node_if_cell_right[l] )
-                &&
-                ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_node_if_cell_bottom[l]) )
-                &&
-                ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_node_if_cell_top[l] )
-                &&
-                ( (k == child_coord_z && !is_parent_cell_rear) || (mask_node_if_cell_rear[l]) )
-                &&
-                ( (k != (child_coord_z + pattern-1) || !is_parent_cell_front) || mask_node_if_cell_front[l] )
+              ( (i == child_coord_x && !is_parent_cell_left) || (mask_node_if_cell_left[l]) )
+              &&
+              ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_node_if_cell_right[l] )
+              &&
+              ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_node_if_cell_bottom[l]) )
+              &&
+              ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_node_if_cell_top[l] )
+              &&
+              ( (k == child_coord_z && !is_parent_cell_rear) || (mask_node_if_cell_rear[l]) )
+              &&
+              ( (k != (child_coord_z + pattern-1) || !is_parent_cell_front) || mask_node_if_cell_front[l] )
               )
               {
                 m_nodes_infos.add(ua_node_uid[l]);
@@ -932,35 +1028,35 @@ refine()
                 // Par rapport au 2D, un noeud peut être lié à 8 mailles différentes. On regarde donc chaque
                 // possibilité.
                 if(
-                  i == child_coord_x && is_ghost[0][1][1] && (!mask_node_if_cell_left[l])
-                  &&
-                  j == child_coord_y && is_ghost[1][0][1] && (!mask_node_if_cell_bottom[l])
-                  &&
-                  k == child_coord_z && is_ghost[1][1][0] && (!mask_node_if_cell_rear[l])
+                i == child_coord_x && is_ghost[0][1][1] && (!mask_node_if_cell_left[l])
+                &&
+                j == child_coord_y && is_ghost[1][0][1] && (!mask_node_if_cell_bottom[l])
+                &&
+                k == child_coord_z && is_ghost[1][1][0] && (!mask_node_if_cell_rear[l])
                 ){
                   new_owner = all_dir_parent_cells[0][0][0].owner();
                 }
 
                 else if(
-                  i == child_coord_x && is_ghost[0][1][1] && (!mask_node_if_cell_left[l])
-                  &&
-                  j == child_coord_y && is_ghost[1][0][1] && (!mask_node_if_cell_bottom[l])
+                i == child_coord_x && is_ghost[0][1][1] && (!mask_node_if_cell_left[l])
+                &&
+                j == child_coord_y && is_ghost[1][0][1] && (!mask_node_if_cell_bottom[l])
                 ){
                   new_owner = all_dir_parent_cells[0][0][1].owner();
                 }
 
                 else if(
-                  j == child_coord_y && is_ghost[1][0][1] && (!mask_node_if_cell_bottom[l])
-                  &&
-                  k == child_coord_z && is_ghost[1][1][0] && (!mask_node_if_cell_rear[l])
+                j == child_coord_y && is_ghost[1][0][1] && (!mask_node_if_cell_bottom[l])
+                &&
+                k == child_coord_z && is_ghost[1][1][0] && (!mask_node_if_cell_rear[l])
                 ){
                   new_owner = all_dir_parent_cells[1][0][0].owner();
                 }
 
                 else if(
-                  k == child_coord_z && is_ghost[1][1][0] && (!mask_node_if_cell_rear[l])
-                  &&
-                  i == child_coord_x && is_ghost[0][1][1] && (!mask_node_if_cell_left[l])
+                k == child_coord_z && is_ghost[1][1][0] && (!mask_node_if_cell_rear[l])
+                &&
+                i == child_coord_x && is_ghost[0][1][1] && (!mask_node_if_cell_left[l])
                 ){
                   new_owner = all_dir_parent_cells[0][1][0].owner();
                 }

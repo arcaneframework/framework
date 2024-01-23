@@ -446,6 +446,51 @@ getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_
 }
 
 void CartesianMeshNumberingMng::
+getCellUidsAround(ArrayView<Int64> uid, Cell cell)
+{
+  Int64 coord_x = uidToCoordX(cell);
+  Int64 coord_y = uidToCoordY(cell);
+  Integer level = cell.level();
+  uid.fill(-1);
+
+  // TODO : Utiliser pattern.
+  if(m_mesh->dimension() == 2){
+
+    for(Integer j = -1; j < 2; ++j){
+      Integer tmp_y = coord_y + j;
+      if(tmp_y >= 0 && tmp_y < getGlobalNbCellsY(level)){
+        for(Integer i = -1; i < 2; ++i){
+          Integer tmp_x = coord_x + i;
+          if(tmp_x >= 0 && tmp_x < getGlobalNbCellsX(level)) {
+            uid[(i+1) + ((j+1) * 3)] = getCellUid(level, tmp_x, tmp_y);
+          }
+        }
+      }
+    }
+
+  }
+  else {
+    Int64 coord_z = uidToCoordZ(cell);
+    for(Integer k = -1; k < 2; ++k){
+      Integer tmp_z = coord_z + k;
+      if(tmp_z >= 0 && tmp_z < getGlobalNbCellsZ(level)) {
+        for(Integer j = -1; j < 2; ++j){
+          Integer tmp_y = coord_y + j;
+          if(tmp_y >= 0 && tmp_y < getGlobalNbCellsY(level)){
+            for(Integer i = -1; i < 2; ++i){
+              Integer tmp_x = coord_x + i;
+              if(tmp_x >= 0 && tmp_x < getGlobalNbCellsX(level)) {
+                uid[(i+1) + ((j+1) * 3) + ((k+1) * 9)] = getCellUid(level, tmp_x, tmp_y, tmp_z);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+void CartesianMeshNumberingMng::
 setNodeCoordinates(Cell child_cell)
 {
   if (!(child_cell.itemBase().flags() & ItemFlags::II_JustAdded)) {

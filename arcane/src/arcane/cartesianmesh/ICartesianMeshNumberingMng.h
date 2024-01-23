@@ -278,7 +278,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * @param cell_coord_i La position X de la maille.
    * @param cell_coord_j La position Y de la maille.
    */
-  virtual void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_cell_coord_i, Int64 cell_coord_j) =0;
+  virtual void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) =0;
+
+  virtual void getCellUidsAround(ArrayView<Int64> uid, Cell cell) =0;
 
 
   /*!
