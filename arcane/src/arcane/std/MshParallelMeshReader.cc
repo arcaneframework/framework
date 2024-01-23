@@ -1476,7 +1476,15 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
   const Int32 nb_rank = pm->commSize();
 
   // Détermine les rangs qui vont conserver les données
-  m_nb_part = math::min(m_nb_part, nb_rank);
+  m_nb_part = nb_rank;
+  if (nb_rank > 64)
+    m_nb_part = nb_rank / 2;
+  if (nb_rank > 128)
+    m_nb_part = nb_rank / 4;
+  if (nb_rank > 512)
+    m_nb_part = nb_rank / 8;
+  if (nb_rank > 2048)
+    m_nb_part = nb_rank / 16;
   m_parts_rank.resize(m_nb_part);
   for (Int32 i = 0; i < m_nb_part; ++i) {
     m_parts_rank[i] = i % nb_rank;
