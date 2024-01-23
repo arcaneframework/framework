@@ -99,19 +99,19 @@ _syncFlagCell()
 void CartesianMeshAMRPatchMng::
 refine()
 {
+  IParallelMng* pm = m_mesh->parallelMng();
+  Integer nb_rank = pm->commSize();
+  Integer my_rank = pm->commRank();
 
   UniqueArray<Cell> cell_to_refine_internals;
   ENUMERATE_CELL(icell,m_mesh->ownActiveCells()) {
     Cell cell = *icell;
-    if(cell.owner() != m_mesh->parallelMng()->commRank()) continue;
+    if(cell.owner() != pm->commRank()) continue;
     if (cell.itemBase().flags() & ItemFlags::II_Refine) {
       cell_to_refine_internals.add(cell);
     }
   }
 
-  IParallelMng* pm = m_mesh->parallelMng();
-  Integer nb_rank = pm->commSize();
-  Integer my_rank = pm->commRank();
 
   Int64UniqueArray m_cells_infos;
 
@@ -213,44 +213,44 @@ refine()
       DirCell ccx(cdmx.cell(parent_cell));
       DirCell ccy(cdmy.cell(parent_cell));
 
-      Cell left_parent_cell = ccx.previous();
-      Cell right_parent_cell = ccx.next();
-      Cell bottom_parent_cell = ccy.previous();
-      Cell top_parent_cell = ccy.next();
+      Cell all_dir_parent_cells[3][3] = {{Cell()}};
 
-      Cell left_bottom_parent_cell;
-      if(!left_parent_cell.null() && !bottom_parent_cell.null()){
-        DirCell ccx2(cdmx.cell(bottom_parent_cell));
-        left_bottom_parent_cell = ccx2.previous();
+      all_dir_parent_cells[1][1] = parent_cell;
+
+      all_dir_parent_cells[0][1] = ccx.previous();
+      all_dir_parent_cells[2][1] = ccx.next();
+      all_dir_parent_cells[1][0] = ccy.previous();
+      all_dir_parent_cells[1][2] = ccy.next();
+
+      if(!all_dir_parent_cells[0][1].null() && !all_dir_parent_cells[1][0].null()){
+        DirCell ccx2(cdmx.cell(all_dir_parent_cells[1][0]));
+        all_dir_parent_cells[0][0] = ccx2.previous();
       }
 
-      Cell left_top_parent_cell;
-      if(!left_parent_cell.null() && !top_parent_cell.null()){
-        DirCell ccx2(cdmx.cell(top_parent_cell));
-        left_top_parent_cell = ccx2.previous();
+      if(!all_dir_parent_cells[0][1].null() && !all_dir_parent_cells[1][2].null()){
+        DirCell ccx2(cdmx.cell(all_dir_parent_cells[1][2]));
+        all_dir_parent_cells[0][2] = ccx2.previous();
       }
 
-      Cell right_bottom_parent_cell;
-      if(!right_parent_cell.null() && !bottom_parent_cell.null()){
-        DirCell ccx2(cdmx.cell(bottom_parent_cell));
-        right_bottom_parent_cell = ccx2.next();
+      if(!all_dir_parent_cells[2][1].null() && !all_dir_parent_cells[1][0].null()){
+        DirCell ccx2(cdmx.cell(all_dir_parent_cells[1][0]));
+        all_dir_parent_cells[2][0] = ccx2.next();
       }
 
-      Cell right_top_parent_cell;
-      if(!right_parent_cell.null() && !top_parent_cell.null()){
-        DirCell ccx2(cdmx.cell(top_parent_cell));
-        right_top_parent_cell = ccx2.next();
+      if(!all_dir_parent_cells[2][1].null() && !all_dir_parent_cells[1][2].null()){
+        DirCell ccx2(cdmx.cell(all_dir_parent_cells[1][2]));
+        all_dir_parent_cells[2][2] = ccx2.next();
       }
 
       debug() << "parent_cell : " << parent_cell
-              << " -- left_parent_cell : " << left_parent_cell
-              << " -- right_parent_cell : " << right_parent_cell
-              << " -- bottom_parent_cell : " << bottom_parent_cell
-              << " -- top_parent_cell : " << top_parent_cell
-              << " -- left_bottom_parent_cell : " << left_bottom_parent_cell
-              << " -- left_top_parent_cell : " << left_top_parent_cell
-              << " -- right_bottom_parent_cell : " << right_bottom_parent_cell
-              << " -- right_top_parent_cell : " << right_top_parent_cell
+              << " -- all_dir_parent_cells[0][1] : " << all_dir_parent_cells[0][1]
+              << " -- all_dir_parent_cells[2][1] : " << all_dir_parent_cells[2][1]
+              << " -- all_dir_parent_cells[1][0] : " << all_dir_parent_cells[1][0]
+              << " -- all_dir_parent_cells[1][2] : " << all_dir_parent_cells[1][2]
+              << " -- all_dir_parent_cells[0][0] : " << all_dir_parent_cells[0][0]
+              << " -- all_dir_parent_cells[0][2] : " << all_dir_parent_cells[0][2]
+              << " -- all_dir_parent_cells[2][0] : " << all_dir_parent_cells[2][0]
+              << " -- all_dir_parent_cells[2][2] : " << all_dir_parent_cells[2][2]
       ;
 
       // On peut noter une différence entre "left" et "right" et entre "bottom" et "top".
@@ -263,9 +263,9 @@ refine()
       // Un autre cas à gérer est le cas où il y a une maille à gauche et/ou bas qui a le flag "II_Refine" (donc
       // dans notre patch) mais qui n'est pas à notre processus. Dans ce cas, on doit créer le noeud/face
       // mais en modifiant le propriétaire...
-      bool is_parent_cell_left = ((!left_parent_cell.null()) && ((left_parent_cell.isOwn() && (left_parent_cell.itemBase().flags() & ItemFlags::II_Refine))));
+      bool is_parent_cell_left = ((!all_dir_parent_cells[0][1].null()) && ((all_dir_parent_cells[0][1].isOwn() && (all_dir_parent_cells[0][1].itemBase().flags() & ItemFlags::II_Refine))));
       bool is_parent_cell_right = false;
-      bool is_parent_cell_bottom = ((!bottom_parent_cell.null()) && ((bottom_parent_cell.isOwn() && (bottom_parent_cell.itemBase().flags() & ItemFlags::II_Refine))));
+      bool is_parent_cell_bottom = ((!all_dir_parent_cells[1][0].null()) && ((all_dir_parent_cells[1][0].isOwn() && (all_dir_parent_cells[1][0].itemBase().flags() & ItemFlags::II_Refine))));
       bool is_parent_cell_top = false;
 
       // ... ce qui est possible grâce à ces deux booléens.
@@ -279,17 +279,16 @@ refine()
       // │0   1   2│
       // └─────────┘
       // 4 = parent_cell
-      bool is_ghost_parent_cell_left_same_patch = (!left_parent_cell.null() && !left_parent_cell.isOwn() && (left_parent_cell.itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      bool is_ghost_parent_cell_bottom_same_patch = (!bottom_parent_cell.null() && !bottom_parent_cell.isOwn() && (bottom_parent_cell.itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      bool is_ghost[3][3] = {{false}};
 
-      bool is_ghost_parent_cell_left_bottom_same_patch = (!left_bottom_parent_cell.null() && !left_bottom_parent_cell.isOwn() && (left_bottom_parent_cell.itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      bool is_ghost_parent_cell_right_bottom_same_patch = (!right_bottom_parent_cell.null() && !right_bottom_parent_cell.isOwn() && (right_bottom_parent_cell.itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-
-      bool is_ghost_parent_cell_right_same_patch = (!right_parent_cell.null() && !right_parent_cell.isOwn() && (right_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
-      bool is_ghost_parent_cell_top_same_patch = (!top_parent_cell.null() && !top_parent_cell.isOwn() && (top_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
-
-      bool is_ghost_parent_cell_left_top_same_patch = (!left_top_parent_cell.null() && !left_top_parent_cell.isOwn() && (left_top_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
-      bool is_ghost_parent_cell_right_top_same_patch = (!right_top_parent_cell.null() && !right_top_parent_cell.isOwn() && (right_top_parent_cell.itemBase().flags() & ItemFlags::II_Inactive));
+      is_ghost[0][1] = (!all_dir_parent_cells[0][1].null() && !all_dir_parent_cells[0][1].isOwn() && (all_dir_parent_cells[0][1].itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_ghost[1][0] = (!all_dir_parent_cells[1][0].null() && !all_dir_parent_cells[1][0].isOwn() && (all_dir_parent_cells[1][0].itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_ghost[0][0] = (!all_dir_parent_cells[0][0].null() && !all_dir_parent_cells[0][0].isOwn() && (all_dir_parent_cells[0][0].itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_ghost[2][0] = (!all_dir_parent_cells[2][0].null() && !all_dir_parent_cells[2][0].isOwn() && (all_dir_parent_cells[2][0].itemBase().flags() & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_ghost[2][1] = (!all_dir_parent_cells[2][1].null() && !all_dir_parent_cells[2][1].isOwn() && (all_dir_parent_cells[2][1].itemBase().flags() & ItemFlags::II_Inactive));
+      is_ghost[1][2] = (!all_dir_parent_cells[1][2].null() && !all_dir_parent_cells[1][2].isOwn() && (all_dir_parent_cells[1][2].itemBase().flags() & ItemFlags::II_Inactive));
+      is_ghost[0][2] = (!all_dir_parent_cells[0][2].null() && !all_dir_parent_cells[0][2].isOwn() && (all_dir_parent_cells[0][2].itemBase().flags() & ItemFlags::II_Inactive));
+      is_ghost[2][2] = (!all_dir_parent_cells[2][2].null() && !all_dir_parent_cells[2][2].isOwn() && (all_dir_parent_cells[2][2].itemBase().flags() & ItemFlags::II_Inactive));
 
 
 
@@ -297,14 +296,14 @@ refine()
               << " -- is_parent_cell_right : " << is_parent_cell_right
               << " -- is_parent_cell_bottom : " << is_parent_cell_bottom
               << " -- is_parent_cell_top : " << is_parent_cell_top
-              << " -- is_ghost_parent_cell_left_same_patch : " << is_ghost_parent_cell_left_same_patch
-              << " -- is_ghost_parent_cell_bottom_same_patch : " << is_ghost_parent_cell_bottom_same_patch
-              << " -- is_ghost_parent_cell_left_bottom_same_patch : " << is_ghost_parent_cell_left_bottom_same_patch
-              << " -- is_ghost_parent_cell_right_bottom_same_patch : " << is_ghost_parent_cell_right_bottom_same_patch
-              << " -- is_ghost_parent_cell_right_same_patch : " << is_ghost_parent_cell_right_same_patch
-              << " -- is_ghost_parent_cell_top_same_patch : " << is_ghost_parent_cell_top_same_patch
-              << " -- is_ghost_parent_cell_left_top_same_patch : " << is_ghost_parent_cell_left_top_same_patch
-              << " -- is_ghost_parent_cell_right_top_same_patch : " << is_ghost_parent_cell_right_top_same_patch
+              << " -- is_ghost[0][1] : " << is_ghost[0][1]
+              << " -- is_ghost[1][0] : " << is_ghost[1][0]
+              << " -- is_ghost[0][0] : " << is_ghost[0][0]
+              << " -- is_ghost[2][0] : " << is_ghost[2][0]
+              << " -- is_ghost[2][1] : " << is_ghost[2][1]
+              << " -- is_ghost[1][2] : " << is_ghost[1][2]
+              << " -- is_ghost[0][2] : " << is_ghost[0][2]
+              << " -- is_ghost[2][2] : " << is_ghost[2][2]
       ;
 
       for (Int64 j = child_coord_y; j < child_coord_y + pattern; ++j) {
@@ -361,21 +360,21 @@ refine()
               // À noter l'inversion du masque. En effet, dans ce cas, on doit changer le propriétaire
               // des faces à gauche/en bas, le masque étant prévu pour traiter uniquement les faces
               // qui ne sont pas à gauche/en bas (pour éviter les doublons), il suffit de l'inverser.
-              if(i == child_coord_x && is_ghost_parent_cell_left_same_patch && (!mask_face_if_cell_left[l])){
-                new_owner = left_parent_cell.owner();
+              if(i == child_coord_x && is_ghost[0][1] && (!mask_face_if_cell_left[l])){
+                new_owner = all_dir_parent_cells[0][1].owner();
               }
-              else if(j == child_coord_y && is_ghost_parent_cell_bottom_same_patch && (!mask_face_if_cell_bottom[l])){
-                new_owner = bottom_parent_cell.owner();
+              else if(j == child_coord_y && is_ghost[1][0] && (!mask_face_if_cell_bottom[l])){
+                new_owner = all_dir_parent_cells[1][0].owner();
               }
 
-              else if(i == (child_coord_x + pattern-1) && is_ghost_parent_cell_right_same_patch && (!mask_face_if_cell_right[l])){
-                get_back_face_owner[right_parent_cell.owner()][1]++;
-                get_back_face_owner[right_parent_cell.owner()].add(ua_face_uid[l]);
+              else if(i == (child_coord_x + pattern-1) && is_ghost[2][1] && (!mask_face_if_cell_right[l])){
+                get_back_face_owner[all_dir_parent_cells[2][1].owner()][1]++;
+                get_back_face_owner[all_dir_parent_cells[2][1].owner()].add(ua_face_uid[l]);
                 new_owner = parent_cell.owner();
               }
-              else if(j == (child_coord_y + pattern-1) && is_ghost_parent_cell_top_same_patch && (!mask_face_if_cell_top[l])){
-                get_back_face_owner[top_parent_cell.owner()][1]++;
-                get_back_face_owner[top_parent_cell.owner()].add(ua_face_uid[l]);
+              else if(j == (child_coord_y + pattern-1) && is_ghost[1][2] && (!mask_face_if_cell_top[l])){
+                get_back_face_owner[all_dir_parent_cells[1][2].owner()][1]++;
+                get_back_face_owner[all_dir_parent_cells[1][2].owner()].add(ua_face_uid[l]);
                 new_owner = parent_cell.owner();
               }
 
@@ -424,14 +423,14 @@ refine()
               // maille gauche/bas. Quatre propriétaires possibles.
               // (Et oui, en 3D, c'est encore plus amusant !)
               if(i == child_coord_x && j == child_coord_y && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_bottom[l])){
-                if(is_ghost_parent_cell_left_bottom_same_patch){
-                  new_owner = left_bottom_parent_cell.owner();
+                if(is_ghost[0][0]){
+                  new_owner = all_dir_parent_cells[0][0].owner();
                 }
-                else if(is_ghost_parent_cell_bottom_same_patch){
-                  new_owner = bottom_parent_cell.owner();
+                else if(is_ghost[1][0]){
+                  new_owner = all_dir_parent_cells[1][0].owner();
                 }
-                else if(is_ghost_parent_cell_left_same_patch){
-                  new_owner = left_parent_cell.owner();
+                else if(is_ghost[0][1]){
+                  new_owner = all_dir_parent_cells[0][1].owner();
                 }
                 else{
                   new_owner = parent_cell.owner();
@@ -439,71 +438,71 @@ refine()
               }
               // Noeud en bas à droite de la maille bas droite.
               else if(i == (child_coord_x + pattern-1) && j == child_coord_y && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_bottom[l])){
-                if(is_ghost_parent_cell_bottom_same_patch){
-                  new_owner = bottom_parent_cell.owner();
+                if(is_ghost[1][0]){
+                  new_owner = all_dir_parent_cells[1][0].owner();
                 }
-                else if(is_ghost_parent_cell_right_bottom_same_patch){
-                  new_owner = right_bottom_parent_cell.owner();
+                else if(is_ghost[2][0]){
+                  new_owner = all_dir_parent_cells[2][0].owner();
                 }
                 else {
-                  if (is_ghost_parent_cell_right_same_patch) {
-                    get_back_node_owner[right_parent_cell.owner()][1]++;
-                    get_back_node_owner[right_parent_cell.owner()].add(ua_node_uid[l]);
+                  if (is_ghost[2][1]) {
+                    get_back_node_owner[all_dir_parent_cells[2][1].owner()][1]++;
+                    get_back_node_owner[all_dir_parent_cells[2][1].owner()].add(ua_node_uid[l]);
                   }
                   new_owner = parent_cell.owner();
                 }
               }
 
               else if(i == child_coord_x && j == (child_coord_y + pattern-1) && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_top[l])) {
-                if(is_ghost_parent_cell_left_same_patch){
-                  new_owner = left_parent_cell.owner();
+                if(is_ghost[0][1]){
+                  new_owner = all_dir_parent_cells[0][1].owner();
                 }
                 else {
-                  if (is_ghost_parent_cell_left_top_same_patch) {
-                    get_back_node_owner[left_top_parent_cell.owner()][1]++;
-                    get_back_node_owner[left_top_parent_cell.owner()].add(ua_node_uid[l]);
+                  if (is_ghost[0][2]) {
+                    get_back_node_owner[all_dir_parent_cells[0][2].owner()][1]++;
+                    get_back_node_owner[all_dir_parent_cells[0][2].owner()].add(ua_node_uid[l]);
                   }
-                  if (is_ghost_parent_cell_top_same_patch) {
-                    get_back_node_owner[top_parent_cell.owner()][1]++;
-                    get_back_node_owner[top_parent_cell.owner()].add(ua_node_uid[l]);
+                  if (is_ghost[1][2]) {
+                    get_back_node_owner[all_dir_parent_cells[1][2].owner()][1]++;
+                    get_back_node_owner[all_dir_parent_cells[1][2].owner()].add(ua_node_uid[l]);
                   }
                   new_owner = parent_cell.owner();
                 }
               }
 
               else if(i == (child_coord_x + pattern-1) && j == (child_coord_y + pattern-1) && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_top[l])) {
-                if(is_ghost_parent_cell_right_same_patch){
-                  get_back_node_owner[right_parent_cell.owner()][1]++;
-                  get_back_node_owner[right_parent_cell.owner()].add(ua_node_uid[l]);
+                if(is_ghost[2][1]){
+                  get_back_node_owner[all_dir_parent_cells[2][1].owner()][1]++;
+                  get_back_node_owner[all_dir_parent_cells[2][1].owner()].add(ua_node_uid[l]);
                 }
-                if (is_ghost_parent_cell_top_same_patch) {
-                  get_back_node_owner[top_parent_cell.owner()][1]++;
-                  get_back_node_owner[top_parent_cell.owner()].add(ua_node_uid[l]);
+                if (is_ghost[1][2]) {
+                  get_back_node_owner[all_dir_parent_cells[1][2].owner()][1]++;
+                  get_back_node_owner[all_dir_parent_cells[1][2].owner()].add(ua_node_uid[l]);
                 }
-                if (is_ghost_parent_cell_right_top_same_patch) {
-                  get_back_node_owner[right_top_parent_cell.owner()][1]++;
-                  get_back_node_owner[right_top_parent_cell.owner()].add(ua_node_uid[l]);
+                if (is_ghost[2][2]) {
+                  get_back_node_owner[all_dir_parent_cells[2][2].owner()][1]++;
+                  get_back_node_owner[all_dir_parent_cells[2][2].owner()].add(ua_node_uid[l]);
                 }
                 new_owner = parent_cell.owner();
               }
 
-              else if(i == child_coord_x && is_ghost_parent_cell_left_same_patch && (!mask_node_if_cell_left[l])){
-                new_owner = left_parent_cell.owner();
+              else if(i == child_coord_x && is_ghost[0][1] && (!mask_node_if_cell_left[l])){
+                new_owner = all_dir_parent_cells[0][1].owner();
               }
 
-              else if(j == child_coord_y && is_ghost_parent_cell_bottom_same_patch && (!mask_node_if_cell_bottom[l])){
-                new_owner = bottom_parent_cell.owner();
+              else if(j == child_coord_y && is_ghost[1][0] && (!mask_node_if_cell_bottom[l])){
+                new_owner = all_dir_parent_cells[1][0].owner();
               }
 
-              else if(i == (child_coord_x + pattern-1) && is_ghost_parent_cell_right_same_patch && (!mask_node_if_cell_right[l])){
-                get_back_node_owner[right_parent_cell.owner()][1]++;
-                get_back_node_owner[right_parent_cell.owner()].add(ua_node_uid[l]);
+              else if(i == (child_coord_x + pattern-1) && is_ghost[2][1] && (!mask_node_if_cell_right[l])){
+                get_back_node_owner[all_dir_parent_cells[2][1].owner()][1]++;
+                get_back_node_owner[all_dir_parent_cells[2][1].owner()].add(ua_node_uid[l]);
                 new_owner = parent_cell.owner();
               }
 
-              else if(j == (child_coord_y + pattern-1) && is_ghost_parent_cell_top_same_patch && (!mask_node_if_cell_top[l])){
-                get_back_node_owner[top_parent_cell.owner()][1]++;
-                get_back_node_owner[top_parent_cell.owner()].add(ua_node_uid[l]);
+              else if(j == (child_coord_y + pattern-1) && is_ghost[1][2] && (!mask_node_if_cell_top[l])){
+                get_back_node_owner[all_dir_parent_cells[1][2].owner()][1]++;
+                get_back_node_owner[all_dir_parent_cells[1][2].owner()].add(ua_node_uid[l]);
                 new_owner = parent_cell.owner();
               }
 
