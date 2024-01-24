@@ -198,7 +198,7 @@ refine()
         }
         else {
           ask_all[compt] = -1;
-          flag_all[compt] = -1;
+          flag_all[compt] = 0;
         }
         compt++;
       }
@@ -230,9 +230,12 @@ refine()
         for (Int64 elem : around) {
           if(muo.find(elem) != muo.end()){
             debug() << "Rank : " << my_rank
-                    << " -- elem : " << muo[elem]
-                    << (muo2[elem] & ItemFlags::II_Refine ? " -- II_Refine " : "")
-                    << (muo2[elem] & ItemFlags::II_Inactive ? " -- II_Inactive " : "")
+                    << " -- parent_cell : " << parent_cell.uniqueId()
+                    << " -- around_cell : " << elem
+                    << " -- owner : " << muo[elem]
+                    << " -- flags : " << muo2[elem]
+                    << (muo2[elem] & ItemFlags::II_Refine ? " -- II_Refine" : "")
+                    << (muo2[elem] & ItemFlags::II_Inactive ? " -- II_Inactive" : "")
             ;
           }
           else{
@@ -316,17 +319,21 @@ refine()
       UniqueArray<Int64> uid_cells_1d(9);
       m_num_mng->getCellUidsAround(uid_cells_1d, parent_cell);
 
-
       UniqueArray<Int64> owner_cells_1d(9);
       UniqueArray<Int64> flags_cells_1d(9);
+
+      // Si uid_cell != -1 alors il y a peut-être une maille (mais on ne sait pas si elle est bien présente).
+      // Si muo[uid_cell] != -1 alors il y a bien une maille.
       for(Integer i = 0; i < 9; ++i){
-        if(uid_cells_1d[i] != -1) {
-          owner_cells_1d[i] = muo[uid_cells_1d[i]];
-          flags_cells_1d[i] = muo2[uid_cells_1d[i]];
+        Int64 uid_cell = uid_cells_1d[i];
+        if(uid_cell != -1 && muo[uid_cell] != -1) {
+          owner_cells_1d[i] = muo[uid_cell];
+          flags_cells_1d[i] = muo2[uid_cell];
         }
         else{
+          uid_cells_1d[i] = -1;
           owner_cells_1d[i] = -1;
-          flags_cells_1d[i] = -1;
+          flags_cells_1d[i] = 0;
         }
       }
 
