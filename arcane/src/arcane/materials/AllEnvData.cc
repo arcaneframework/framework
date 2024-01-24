@@ -31,7 +31,7 @@
 #include "arcane/materials/internal/MeshMaterialMng.h"
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/MaterialModifierOperation.h"
-#include "arcane/materials/internal/ComponentConnectivityList.h"
+#include "arcane/materials/internal/ConstituentConnectivityList.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 
 /*---------------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ AllEnvData(MeshMaterialMng* mmg)
 {
   // \a m_component_connectivity_list utilse un compteur de référence
   // et ne doit pas être détruit explicitement
-  m_component_connectivity_list = new ComponentConnectivityList(m_material_mng);
+  m_component_connectivity_list = new ConstituentConnectivityList(m_material_mng);
   m_component_connectivity_list_ref = m_component_connectivity_list->toSourceReference();
 
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ALLENVDATA_DEBUG_LEVEL", true))
@@ -135,24 +135,14 @@ _computeAndResizeEnvItemsInternal()
 
   // Il faut ajouter les infos pour les mailles de type AllEnvCell
   Int32 max_local_id = cell_family->maxLocalId();
-  info(4) << "TOTAL_ENV_CELL=" << total_env_cell
-          << " TOTAL_MAT_CELL=" << total_mat_cell;
-
-  // TODO:
-  // Le m_nb_mat_per_cell ne doit pas se faire sur les variablesIndexer().
-  // Il doit prendre être different suivant les milieux et les matériaux.
-  // - Si un milieu est le seul dans la maille, il prend la valeur globale.
-  // - Si un matériau est le seul dans la maille, il prend la valeur
-  // de la maille milieu correspondante (globale ou partielle suivant le cas)
+  info(4) << "RESIZE TotalEnvCell=" << total_env_cell
+          << " TotalMatCell=" << total_mat_cell
+          << " MaxLocalId=" << max_local_id;
 
   // Redimensionne les tableaux des infos
   // ATTENTION : ils ne doivent plus être redimensionnés par la suite sous peine
   // de tout invalider.
-  m_item_internal_data.resizeNbAllEnvCell(max_local_id);
-  m_item_internal_data.resizeNbEnvCell(total_env_cell);
-
-  info(4) << "RESIZE all_env_items_internal size=" << max_local_id
-          << " total_env_cell=" << total_env_cell;
+  m_item_internal_data.resizeComponentItemInternals(max_local_id, total_env_cell);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -192,6 +182,20 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
 
   for( MeshEnvironment* env : true_environments )
     env->computeItemListForMaterials(m_nb_env_per_cell);
+
+  // Si on utilise les connectivités incrémentales, il faut les reconstruire
+  // à partir des informations des groupes
+  {
+    auto clist = m_component_connectivity_list;
+    if (clist->isActive()){
+      clist->removeAllConnectivities();
+      for( MeshEnvironment* env : true_environments ){
+        clist->addCellsToEnvironment(env->componentId(),env->cells().view().localIds());
+        for( MeshMaterial* mat : env->trueMaterials() )
+          clist->addCellsToMaterial(mat->componentId(),mat->cells().view().localIds());
+      }
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -251,10 +255,9 @@ _computeInfosForEnvCells()
         Int32 nb_mat = nb_mat_per_cell[lid];
         ComponentItemInternal& ref_ii = env_items_internal[pos];
         env_items_internal_pointer[z] = &env_items_internal[pos];
-        ref_ii.setSuperAndGlobalItem(&all_env_items_internal[lid],items_internal[lid]);
-        ref_ii.setNbSubItem(nb_mat);
-        ref_ii.setVariableIndex(mvi);
-        ref_ii.setLevel(LEVEL_ENVIRONMENT);
+        ref_ii._setSuperAndGlobalItem(&all_env_items_internal[lid], ItemLocalId(lid));
+        ref_ii._setNbSubItem(nb_mat);
+        ref_ii._setVariableIndex(mvi);
       }
     }
     for( MeshEnvironment* env : true_environments ){
@@ -269,12 +272,11 @@ _computeInfosForEnvCells()
       Int32 lid = icell.itemLocalId();
       Int32 n = m_nb_env_per_cell[icell];
       ComponentItemInternal& ref_ii = all_env_items_internal[lid];
-      ref_ii.setSuperAndGlobalItem(nullptr,c);
-      ref_ii.setVariableIndex(MatVarIndex(0,lid));
-      ref_ii.setNbSubItem(n);
-      ref_ii.setLevel(LEVEL_ALLENVIRONMENT);
+      ref_ii._setSuperAndGlobalItem(nullptr,c);
+      ref_ii._setVariableIndex(MatVarIndex(0,lid));
+      ref_ii._setNbSubItem(n);
       if (n!=0)
-        ref_ii.setFirstSubItem(&env_items_internal[env_cell_indexes[lid]]);
+        ref_ii._setFirstSubItem(&env_items_internal[env_cell_indexes[lid]]);
     }
   }
 }
@@ -362,9 +364,6 @@ forceRecompute(bool compute_all)
     }
   }
 
-  // Initialise à des valeurs invalides pour détecter les erreurs.
-  m_item_internal_data.resetEnvItemsInternal();
-
   _computeInfosForEnvCells();
 
   if (is_verbose_debug){
@@ -402,7 +401,7 @@ forceRecompute(bool compute_all)
   if (m_material_mng->isCellToAllEnvCellForRunCommand()) {
     auto* all_cell_to_all_env_cell(m_material_mng->_internalApi()->getAllCellToAllEnvCell());
     if (all_cell_to_all_env_cell)
-      all_cell_to_all_env_cell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
+      all_cell_to_all_env_cell->bruteForceUpdate();
     else
       m_material_mng->_internalApi()->createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
   }

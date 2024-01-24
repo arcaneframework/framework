@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshModifier.h                                             (C) 2000-2023 */
+/* IMeshModifier.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Interface de modification du maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,98 @@ class IMesh;
 class IExtraGhostCellsBuilder;
 class IExtraGhostParticlesBuilder;
 class IAMRTransportFunctor;
+class IMeshModifierInternal;
+class IMeshModifier;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments pour IMeshModifier::addCells().
+ *
+ * Le format de cellsInfos() est identiques à celui de la méthode
+ * IMesh::allocateCells(). Si \a cellsLocalIds() n'est pas vide, il contiendra
+ * en retour les numéros locaux des mailles créées.
+ *
+ * Si une maille ajoutée possède le même uniqueId() qu'une des mailles existantes,
+ * la maille existante est conservée telle qu'elle et rien ne se passe.
+ *
+ * Les mailles créées sont considérées comme appartenant à ce sous-domaine
+ * Si ce n'est pas le cas, il faut ensuite modifier leur appartenance.
+ *
+ * Par défaut, lorsqu'on ajoute des mailles, si les faces associées n'existent
+ * pas elles sont créées automatiquement. Cela n'est possible qu'en séquentiel.
+ * Il est possible de désactiver cela en appelant setAllowBuildFaces().
+ * En parallèle, la valeur de isAllowBuildFaces() est ignorée.
+ */
+class MeshModifierAddCellsArgs
+{
+ public:
+
+  MeshModifierAddCellsArgs(Integer nb_cell, Int64ConstArrayView cell_infos)
+  : m_nb_cell(nb_cell)
+  , m_cell_infos(cell_infos)
+  {}
+
+  MeshModifierAddCellsArgs(Integer nb_cell, Int64ConstArrayView cell_infos,
+                           Int32ArrayView cell_lids)
+  : MeshModifierAddCellsArgs(nb_cell, cell_infos)
+  {
+    m_cell_lids = cell_lids;
+  }
+
+ public:
+
+  Int32 nbCell() const { return m_nb_cell; }
+  Int64ConstArrayView cellInfos() const { return m_cell_infos; }
+  Int32ArrayView cellLocalIds() const { return m_cell_lids; }
+
+  //! Indique si on autorise la création des faces associées
+  void setAllowBuildFaces(bool v) { m_is_allow_build_faces = v; }
+  bool isAllowBuildFaces() const { return m_is_allow_build_faces; }
+
+ private:
+
+  Int32 m_nb_cell = 0;
+  Int64ConstArrayView m_cell_infos;
+  //! En retour, liste des localId() des mailles créées
+  Int32ArrayView m_cell_lids;
+  bool m_is_allow_build_faces = true;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments pour IMeshModifier::addFaces().
+ */
+class MeshModifierAddFacesArgs
+{
+ public:
+
+  MeshModifierAddFacesArgs(Int32 nb_face, Int64ConstArrayView face_infos)
+  : m_nb_face(nb_face)
+  , m_face_infos(face_infos)
+  {}
+
+  MeshModifierAddFacesArgs(Int32 nb_face, Int64ConstArrayView face_infos,
+                           Int32ArrayView face_lids)
+  : MeshModifierAddFacesArgs(nb_face, face_infos)
+  {
+    m_face_lids = face_lids;
+  }
+
+ public:
+
+  Int32 nbFace() const { return m_nb_face; }
+  Int64ConstArrayView faceInfos() const { return m_face_infos; }
+  Int32ArrayView faceLocalIds() const { return m_face_lids; }
+
+ private:
+
+  Int32 m_nb_face = 0;
+  Int64ConstArrayView m_face_infos;
+  //! En retour, liste des localId() des faces créées
+  Int32ArrayView m_face_lids;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +131,7 @@ class IAMRTransportFunctor;
  * Cette interface fournit les services permettant de modifier un
  * maillage.
  */
-class IMeshModifier
+class ARCANE_CORE_EXPORT IMeshModifier
 {
  public:
 
@@ -47,12 +139,12 @@ class IMeshModifier
 
  public:
 
-  virtual void build() =0;
+  virtual void build() = 0;
 
  public:
 
   //! Maillage associé
-  virtual IMesh* mesh() =0;
+  virtual IMesh* mesh() = 0;
 
  public:
 
@@ -68,7 +160,7 @@ class IMeshModifier
    *
    * Le positionnement de la propriété ne peut se faire qu'à l'initialisation.
    */
-  virtual void setDynamic(bool v) =0;
+  virtual void setDynamic(bool v) = 0;
 
   /*!
    * \brief Ajoute des mailles.
@@ -87,9 +179,11 @@ class IMeshModifier
    * Cette méthode est collective. Si un sous-domaine ne souhaite pas ajouter
    * de mailles, il est possible de passer un tableau vide.
    */
-  virtual void addCells(Integer nb_cell,Int64ConstArrayView cell_infos,
-                        Int32ArrayView cells_lid = Int32ArrayView()) =0;
+  virtual void addCells(Integer nb_cell, Int64ConstArrayView cell_infos,
+                        Int32ArrayView cells_lid = Int32ArrayView()) = 0;
 
+  //! Ajoute des mailles
+  virtual void addCells(const MeshModifierAddCellsArgs& args);
 
   /*!
    * \brief Ajoute des faces.
@@ -108,8 +202,11 @@ class IMeshModifier
    * Cette méthode est collective. Si un sous-domaine ne souhaite pas ajouter
    * de faces, il est possible de passer un tableau vide.
    */
-  virtual void addFaces(Integer nb_face,Int64ConstArrayView face_infos,
-                        Int32ArrayView face_lids = Int32ArrayView()) =0;
+  virtual void addFaces(Integer nb_face, Int64ConstArrayView face_infos,
+                        Int32ArrayView face_lids = Int32ArrayView()) = 0;
+
+  //! Ajoute des faces
+  virtual void addFaces(const MeshModifierAddFacesArgs& args);
 
   /*!
    * \brief Ajoute des arêtes.
@@ -128,8 +225,8 @@ class IMeshModifier
    * Cette méthode est collective. Si un sous-domaine ne souhaite pas ajouter
    * de arêtes, il est possible de passer un tableau vide.
    */
-  virtual void addEdges(Integer nb_edge,Int64ConstArrayView edge_infos,
-                        Int32ArrayView edge_lids = Int32ArrayView()) =0;
+  virtual void addEdges(Integer nb_edge, Int64ConstArrayView edge_infos,
+                        Int32ArrayView edge_lids = Int32ArrayView()) = 0;
 
   /*!
    * \brief Ajoute des noeuds.
@@ -148,7 +245,7 @@ class IMeshModifier
    * de noeuds, il est possible de passer un tableau vide.
    */
   virtual void addNodes(Int64ConstArrayView nodes_uid,
-                        Int32ArrayView nodes_lid = Int32ArrayView()) =0;
+                        Int32ArrayView nodes_lid = Int32ArrayView()) = 0;
 
   /*!
    * \brief Supprime des mailles.
@@ -158,9 +255,9 @@ class IMeshModifier
    * successives. Une fois les suppressions terminées, il faut appeler la méthode
    * endUpdate().
    */
-  virtual void removeCells(Int32ConstArrayView cells_local_id) =0;
+  virtual void removeCells(Int32ConstArrayView cells_local_id) = 0;
 
-  virtual void removeCells(Int32ConstArrayView cells_local_id,bool update_ghost) = 0 ;
+  virtual void removeCells(Int32ConstArrayView cells_local_id, bool update_ghost) = 0;
 
   /*!
    * \brief Détache des mailles du maillage.
@@ -170,7 +267,7 @@ class IMeshModifier
    * être réutilisés. Pour détruire définitivement ces mailles, il faut appeler
    * la méthode removeDetachedCells().
    */
-  virtual void detachCells(Int32ConstArrayView cells_local_id) =0;
+  virtual void detachCells(Int32ConstArrayView cells_local_id) = 0;
 
   /*!
    * \brief Supprime les mailles détachées
@@ -180,23 +277,23 @@ class IMeshModifier
    * successives. Une fois les suppressions terminées, il faut appeler la méthode
    * endUpdate().
    */
-  virtual void removeDetachedCells(Int32ConstArrayView cells_local_id) =0;
+  virtual void removeDetachedCells(Int32ConstArrayView cells_local_id) = 0;
 
   //! AMR
-  virtual void flagCellToRefine(Int32ConstArrayView cells_lids) =0;
-  virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids) =0;
-  virtual void refineItems() =0;
-  virtual void coarsenItems() =0;
-  virtual bool adapt() =0;
-  virtual void registerCallBack(IAMRTransportFunctor* f) =0;
-  virtual void unRegisterCallBack(IAMRTransportFunctor* f) =0;
-  virtual void addHChildrenCells(Cell parent_cell,Integer nb_cell,
-                                 Int64ConstArrayView cells_infos,Int32ArrayView cells_lid = Int32ArrayView()) =0;
+  virtual void flagCellToRefine(Int32ConstArrayView cells_lids) = 0;
+  virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids) = 0;
+  virtual void refineItems() = 0;
+  virtual void coarsenItems() = 0;
+  virtual bool adapt() = 0;
+  virtual void registerCallBack(IAMRTransportFunctor* f) = 0;
+  virtual void unRegisterCallBack(IAMRTransportFunctor* f) = 0;
+  virtual void addHChildrenCells(Cell parent_cell, Integer nb_cell,
+                                 Int64ConstArrayView cells_infos, Int32ArrayView cells_lid = Int32ArrayView()) = 0;
   virtual void addParentCellToCell(Cell child, Cell parent) = 0;
   virtual void addChildCellToCell(Cell parent, Cell child) = 0;
 
   //! Supprime toutes les entitées de toutes les familles de ce maillage.
-  virtual void clearItems() =0;
+  virtual void clearItems() = 0;
 
   /*!
    * \brief Ajoute les mailles à partir des données contenues dans \a buffer.
@@ -206,7 +303,7 @@ class IMeshModifier
    *
    * \deprecated Utiliser IMesh::cellFamily()->policyMng()->createSerializer() à la place.
    */
-  ARCANE_DEPRECATED_240 virtual void addCells(ISerializer* buffer) =0;
+  ARCANE_DEPRECATED_240 virtual void addCells(ISerializer* buffer) = 0;
 
   /*!
    * \brief Ajoute les mailles à partir des données contenues dans \a buffer.
@@ -219,16 +316,16 @@ class IMeshModifier
    *
    * \deprecated Utiliser IMesh::cellFamily()->policyMng()->createSerializer() à la place.
    */
-  ARCANE_DEPRECATED_240 virtual void addCells(ISerializer* buffer,Int32Array& cells_local_id) =0;
+  ARCANE_DEPRECATED_240 virtual void addCells(ISerializer* buffer, Int32Array& cells_local_id) = 0;
 
   /*!
    * \brief Notifie l'instance de la fin de la modification du maillage.
    *
    * Cette méthode est collective.
    */
-  virtual void endUpdate() =0;
+  virtual void endUpdate() = 0;
 
-  virtual void endUpdate(bool update_ghost_layer,bool remove_old_ghost) = 0; // SDC: this signature is needed @IFPEN.
+  virtual void endUpdate(bool update_ghost_layer, bool remove_old_ghost) = 0; // SDC: this signature is needed @IFPEN.
 
  public:
 
@@ -237,29 +334,34 @@ class IMeshModifier
    *
    * Cette opération est collective.
    */
-  virtual void updateGhostLayers() =0;
+  virtual void updateGhostLayers() = 0;
 
   //! AMR
   virtual void updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine,
                                           Array<Int64>& ghost_cell_to_coarsen,
-                                          bool remove_old_ghost) =0;
+                                          bool remove_old_ghost) = 0;
 
   //! ajout du algorithme d'ajout de mailles fantômes "extraordinaires".
-  virtual void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) =0;
+  virtual void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) = 0;
 
   //! Supprime l'association à l'instance \a builder.
-  virtual void removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) =0;
+  virtual void removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) = 0;
 
   //! Ajout du algorithme d'ajout de particules fantômes "extraordinaires"
-  virtual void addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) =0;
+  virtual void addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) = 0;
 
   //! Supprime l'association à l'instance \a builder.
-  virtual void removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) =0;
-  
+  virtual void removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) = 0;
+
  public:
 
   //! Fusionne les maillages de \a meshes avec le maillage actuel.
-  virtual void mergeMeshes(ConstArrayView<IMesh*> meshes) =0;
+  virtual void mergeMeshes(ConstArrayView<IMesh*> meshes) = 0;
+
+ public:
+
+  //! API interne à Arcane
+  virtual IMeshModifierInternal* _modifierInternalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

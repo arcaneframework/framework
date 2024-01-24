@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellToAllEnvCellConverter.h                                 (C) 2000-2012 */
+/* CellToAllEnvCellConverter.h                                 (C) 2000-2023 */
 /*                                                                           */
 /* Conversion de 'Cell' en 'AllEnvCell'.                                     */
 /*---------------------------------------------------------------------------*/
@@ -71,10 +71,10 @@ class CellToAllEnvCellConverter
 {
  public:
 
-  CellToAllEnvCellConverter(ArrayView<ComponentItemInternal> v)
+  explicit CellToAllEnvCellConverter(ArrayView<ComponentItemInternal> v)
   : m_all_env_items_internal(v){}
 
-  CellToAllEnvCellConverter(IMeshMaterialMng* mm)
+  explicit CellToAllEnvCellConverter(IMeshMaterialMng* mm)
   {
     *this = mm->cellToAllEnvCellConverter();
   }
@@ -84,13 +84,13 @@ class CellToAllEnvCellConverter
   //! Converti une maille \a Cell en maille \a AllEnvCell
   AllEnvCell operator[](Cell c)
   {
-    return AllEnvCell(&m_all_env_items_internal[c.localId()]);
+    return AllEnvCell(matimpl::ConstituentItemBase(&m_all_env_items_internal[c.localId()]));
   }
   //! Converti une maille \a CellLocalId en maille \a AllEnvCell
   ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
   {
     const ComponentItemInternal* p = &m_all_env_items_internal[c.localId()];
-    return AllEnvCell(const_cast<ComponentItemInternal*>(p));
+    return AllEnvCell(matimpl::ConstituentItemBase(const_cast<ComponentItemInternal*>(p)));
   }
 
  private:

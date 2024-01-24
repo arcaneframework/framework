@@ -977,12 +977,17 @@ _initDataInitialisationPolicy()
     init_policy = DIP_Legacy;
     is_changed = true;
   }
+  else if (data_init_policy=="NAN_AND_DEFAULT"){
+    init_policy = DIP_InitInitialWithNanResizeWithDefault;
+    is_changed = true;
+  }
   if (is_changed){
     setGlobalDataInitialisationPolicy(init_policy);
     init_policy = getGlobalDataInitialisationPolicy();
     m_trace->info() << "Change data initialisation policy: " << data_init_policy
                     << " (" << (int)init_policy << ")";
   }
+  m_trace->info() << "Data initialisation policy is : " << (int)init_policy;
 }
 
 /*---------------------------------------------------------------------------*/

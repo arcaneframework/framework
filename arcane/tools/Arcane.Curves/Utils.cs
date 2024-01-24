@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -8,9 +8,9 @@ using System.Collections.Generic;
 
 namespace Arcane.Curves
 {
-
   public static class Utils
   {
+    static readonly bool g_verbose = false;
     /// <summary>
     /// Intersection entre deux grilles
     /// </summary>
@@ -25,7 +25,6 @@ namespace Arcane.Curves
     /// </returns>
     public static RealArray Intersection(RealConstArrayView grille1,RealConstArrayView grille2)
     {
-      const bool verbose = false;
       RealArray grilleRes = new RealArray();
       //List<double> grilleRes = new List<double>();
       //CurveGrid res = new CurveGrid();
@@ -50,7 +49,7 @@ namespace Arcane.Curves
         Console.WriteLine("erreur dans l'intersection des 2 grilles: intersection vide");
         return grilleRes;
       }
-      if(verbose){
+      if (g_verbose){
         Console.WriteLine("les bornes de l'intersection des 2 grilles sont : {0},{1}",a,b);
       }
       // 2: remplissage

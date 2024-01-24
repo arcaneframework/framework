@@ -105,16 +105,25 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * Il y a toujours au moins un patch qui représente la maillage cartésien
    */
-  virtual Integer nbPatch() const = 0;
+  virtual Int32 nbPatch() const = 0;
 
   /*!
-   * \brief Retourne la \a index-ième patch du maillage.
+   * \brief Retourne le \a index-ième patch du maillage.
    *
    * Si le maillage est cartésien, il n'y a qu'un seul patch.
    *
    * L'instance retournée reste valide tant que cette instance n'est pas détruite.
    */
-  virtual ICartesianMeshPatch* patch(Integer index) const = 0;
+  virtual ICartesianMeshPatch* patch(Int32 index) const = 0;
+
+  /*!
+   * \brief Retourne le \a index-ième patch du maillage.
+   *
+   * Si le maillage est cartésien, il n'y a qu'un seul patch.
+   *
+   * L'instance retournée reste valide tant que cette instance n'est pas détruite.
+   */
+  virtual CartesianPatch amrPatch(Int32 index) const = 0;
 
   /*!
    * \brief Vue sur la liste des patchs.

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMesh.cc                                            (C) 2000-2023 */
+/* CartesianMesh.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Maillage cartésien.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -151,8 +151,9 @@ class CartesianMeshImpl
     return m_connectivity;
   }
 
-  Integer nbPatch() const override { return m_amr_patches.size(); }
-  ICartesianMeshPatch* patch(Integer index) const override { return m_amr_patches[index].get(); }
+  Int32 nbPatch() const override { return m_amr_patches.size(); }
+  ICartesianMeshPatch* patch(Int32 index) const override { return m_amr_patches[index].get(); }
+  CartesianPatch amrPatch(Int32 index) const override { return CartesianPatch(m_amr_patches[index].get()); }
   CartesianMeshPatchListView patches() const override { return CartesianMeshPatchListView(m_amr_patches_pointer); }
 
   void refinePatch2D(Real2 position,Real2 length) override;
@@ -184,6 +185,7 @@ class CartesianMeshImpl
   CartesianConnectivity m_connectivity;
   UniqueArray<CartesianConnectivity::Index> m_nodes_to_cell_storage;
   UniqueArray<CartesianConnectivity::Index> m_cells_to_node_storage;
+  UniqueArray<CartesianConnectivity::Permutation> m_permutation_storage;
   bool m_is_amr = false;
   //! Groupe de mailles parentes pour chaque patch AMR.
   UniqueArray<CellGroup> m_amr_patch_cell_groups;
@@ -240,6 +242,7 @@ CartesianMeshImpl(IMesh* mesh)
 , m_mesh(mesh)
 , m_nodes_to_cell_storage(platform::getDefaultDataAllocator())
 , m_cells_to_node_storage(platform::getDefaultDataAllocator())
+, m_permutation_storage(platform::getDefaultDataAllocator())
 , m_amr_type(mesh->meshKind().meshAMRKind())
 {
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly)
@@ -484,10 +487,12 @@ computeDirections()
 
   info() << "Compute cartesian connectivity";
 
+  m_permutation_storage.resize(1);
+  m_permutation_storage[0].compute();
   m_nodes_to_cell_storage.resize(mesh()->nodeFamily()->maxLocalId());
   m_cells_to_node_storage.resize(mesh()->cellFamily()->maxLocalId());
-  m_connectivity.setStorage(m_nodes_to_cell_storage,m_cells_to_node_storage);
-  m_connectivity.computeInfos(mesh(),nodes_coord,cells_center);
+  m_connectivity._setStorage(m_nodes_to_cell_storage,m_cells_to_node_storage,&m_permutation_storage[0]);
+  m_connectivity._computeInfos(mesh(),nodes_coord,cells_center);
 
   // Ajoute informations de connectivités pour les patchs AMR
   // TODO: supporter plusieurs appels à cette méthode
@@ -769,17 +774,19 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
   // Regarde d'abord si on renumérote les faces
   Int32 face_method = v.renumberFaceMethod();
   if (face_method!=0 && face_method!=1)
-    ARCANE_FATAL("Invalid value '{0}' for renumberFaceMethod(). Valid values are 0 or 1");
+    ARCANE_FATAL("Invalid value '{0}' for renumberFaceMethod(). Valid values are 0 or 1",
+                 face_method);
   if (face_method==1)
     ARCANE_THROW(NotImplementedException,"Method 1 for face renumbering");
 
   // Regarde ensuite les patchs si demandé.
   Int32 patch_method = v.renumberPatchMethod();
-  if (patch_method > 2 || patch_method < 0)
-    ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0 or 1 or 2");
+  if (patch_method < 0 || patch_method > 4)
+    ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0, 1, 2, 3 or 4",
+                 patch_method);
     
-  else if (patch_method == 1){
-    CartesianMeshUniqueIdRenumbering renumberer(this,cmgi);
+  else if (patch_method == 1 || patch_method == 3 || patch_method == 4){
+    CartesianMeshUniqueIdRenumbering renumberer(this,cmgi,v.parentPatch(),patch_method);
     renumberer.renumber();
   }
   else if (patch_method == 2){

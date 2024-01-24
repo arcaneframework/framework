@@ -21,6 +21,7 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/Vector3.h"
+#include "arcane/utils/Vector2.h"
 
 #include "arcane/core/IMeshReader.h"
 #include "arcane/core/ISubDomain.h"
@@ -605,10 +606,6 @@ generateMesh()
 
   m_generation_info = ICartesianMeshGenerationInfo::getReference(mesh,true);
 
-  bool use_specific_allocator = (m_mesh_dimension == 3 || m_mesh_dimension == 2);
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_OLD_MESHGENERATOR", true))
-    use_specific_allocator = (v.value()==0);
-
   CartesianMeshAllocateBuildInfo cartesian_mesh_build_info(mesh);
 
   info() << " decomposing the subdomains:" << m_build_info.m_nsdx << "x"
@@ -835,11 +832,6 @@ generateMesh()
   //             1 pour son type,
   //             8 pour chaque noeud
   Int64 cell_unique_id_offset = 0;
-  Int64UniqueArray cells_infos;
-  if (m_mesh_dimension == 3)
-    cells_infos.resize(own_nb_cell_xyz * (1 + 1 + 8));
-  if (m_mesh_dimension == 2)
-    cells_infos.resize(own_nb_cell_xyz * (1 + 1 + 4));
   // On calcule l'offset en x des cell_unique_id
   cell_unique_id_offset += sd_x_cell_offset.at(sdXOffset());
   info() << "cell_unique_id_offset=" << cell_unique_id_offset;
@@ -851,71 +843,15 @@ generateMesh()
     cell_unique_id_offset += sd_z_cell_offset.at(sdZOffset());
     info() << "cell_unique_id_offset=" << cell_unique_id_offset;
   }
-  Integer cells_infos_index = 0;
   info() << "cell_unique_id_offset=" << cell_unique_id_offset;
   m_generation_info->setFirstOwnCellUniqueId(cell_unique_id_offset);
-  if (m_mesh_dimension == 3) {
-    for (Integer z = 0; z < own_nb_cell_z; ++z) {
-      for (Integer y = 0; y < own_nb_cell_y; ++y) {
-        for (Integer x = 0; x < own_nb_cell_x; ++x) {
-          Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell_x + z * all_nb_cell_xy;
-          /*debug() << "[2;33m[CartesianMeshGenerator::generateMesh] cell @ "
-            <<x<<"x"<<y<<"x"<<z<<":"<<", uid=" << cell_unique_id<< "[0m";*/
-          cells_infos[cells_infos_index] = IT_Hexaedron8;
-          ++cells_infos_index;
-          cells_infos[cells_infos_index] = cell_unique_id;
-          ++cells_infos_index;
-          Integer node_lid = x + y * own_nb_node_x + z * own_nb_node_xy;
-          cells_infos[cells_infos_index + 0] = nodes_unique_id[node_lid];
-          cells_infos[cells_infos_index + 1] = nodes_unique_id[node_lid + 1];
-          cells_infos[cells_infos_index + 2] = nodes_unique_id[node_lid + own_nb_node_x + 1];
-          cells_infos[cells_infos_index + 3] = nodes_unique_id[node_lid + own_nb_node_x + 0];
-          cells_infos[cells_infos_index + 4] = nodes_unique_id[node_lid + own_nb_node_xy];
-          cells_infos[cells_infos_index + 5] = nodes_unique_id[node_lid + own_nb_node_xy + 1];
-          cells_infos[cells_infos_index + 6] = nodes_unique_id[node_lid + own_nb_node_xy + own_nb_node_x + 1];
-          cells_infos[cells_infos_index + 7] = nodes_unique_id[node_lid + own_nb_node_xy + own_nb_node_x + 0];
-          /*debug() << "[2;33m[CartesianMeshGenerator::generateMesh] cell #" << cell_unique_id
-                 <<", connected to nodes: "
-                 << cells_infos[cells_infos_index+0] << ", " << cells_infos[cells_infos_index+1] << ", "
-                 << cells_infos[cells_infos_index+2] << ", " << cells_infos[cells_infos_index+3] << ", "
-                 << cells_infos[cells_infos_index+4] << ", " << cells_infos[cells_infos_index+5] << ", "
-                 << cells_infos[cells_infos_index+6] << ", " << cells_infos[cells_infos_index+7]<< "[0m";*/
-          cells_infos_index += 8;
-        }
-      }
-    }
-  }
-  if (m_mesh_dimension == 2) {
-    for (Integer y = 0; y < own_nb_cell_y; ++y) {
-      for (Integer x = 0; x < own_nb_cell_x; ++x) {
-        Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell_x;
-        //info() << "X=" << x << " y=" << y << " UID=" << cell_unique_id;
-        /*debug() << "[2;33m[CartesianMeshGenerator::generateMesh] cell @ "
-          <<x<<"x"<<y<<":"<<", uid=" << cell_unique_id<< "[0m";*/
-        cells_infos[cells_infos_index] = IT_Quad4;
-        ++cells_infos_index;
-        cells_infos[cells_infos_index] = cell_unique_id;
-        ++cells_infos_index;
-        Integer node_lid = x + y * own_nb_node_x;
-        cells_infos[cells_infos_index + 0] = nodes_unique_id[node_lid];
-        cells_infos[cells_infos_index + 1] = nodes_unique_id[node_lid + 1];
-        cells_infos[cells_infos_index + 2] = nodes_unique_id[node_lid + own_nb_node_x + 1];
-        cells_infos[cells_infos_index + 3] = nodes_unique_id[node_lid + own_nb_node_x + 0];
-        /*debug() << "[2;33m[CartesianMeshGenerator::generateMesh] cell #" << cell_unique_id
-               <<", connected to nodes: "
-               << cells_infos[cells_infos_index+0] << ", " << cells_infos[cells_infos_index+1] << ", "
-               << cells_infos[cells_infos_index+2] << ", " << cells_infos[cells_infos_index+3] << "[0m";*/
-        cells_infos_index += 4;
-      }
-    }
-  }
 
   const Int32 face_numbering_version = m_build_info.m_face_numbering_version;
   info() << "FaceNumberingVersion = " << face_numbering_version;
   const Int32 edge_numbering_version = m_build_info.m_edge_numbering_version;
   info() << "EdgeNumberingVersion = " << edge_numbering_version;
 
-  if (use_specific_allocator){
+  {
     info() << "Set Specific info for cartesian mesh";
     if (m_mesh_dimension==3)
       cartesian_mesh_build_info.setInfos3D({all_nb_cell_x,all_nb_cell_y,all_nb_cell_z},
@@ -935,24 +871,9 @@ generateMesh()
       cartesian_mesh_build_info._internal()->setFaceBuilderVersion(face_numbering_version);
     if (edge_numbering_version>=0)
       cartesian_mesh_build_info._internal()->setEdgeBuilderVersion(edge_numbering_version);
-
-  }
-  else{
-    mesh->setDimension(m_mesh_dimension);
-
-    if (face_numbering_version>=0)
-      mesh->meshUniqueIdMng()->setFaceBuilderVersion(face_numbering_version);
-    if (edge_numbering_version>=0)
-      mesh->meshUniqueIdMng()->setEdgeBuilderVersion(edge_numbering_version);
   }
 
-
-  if (use_specific_allocator){
-    cartesian_mesh_build_info.allocateMesh();
-  }
-  else{
-    mesh->allocateCells(own_nb_cell_xyz, cells_infos, true);
-  }
+  cartesian_mesh_build_info.allocateMesh();
 
   VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
   {

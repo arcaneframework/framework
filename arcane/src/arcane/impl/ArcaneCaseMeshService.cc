@@ -1,33 +1,36 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCaseMeshService.h                                     (C) 2000-2020 */
+/* ArcaneCaseMeshService.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Service Arcane gérant un maillage du jeu de données.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ServiceFactory.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/ICaseMeshService.h"
-#include "arcane/ICaseMeshReader.h"
-#include "arcane/IMeshBuilder.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMeshPartitionerBase.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshBuildInfo.h"
-#include "arcane/IMeshMng.h"
-#include "arcane/IMeshFactoryMng.h"
-#include "arcane/IGhostLayerMng.h"
-#include "arcane/MeshPartInfo.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/ICaseMeshService.h"
+#include "arcane/core/ICaseMeshReader.h"
+#include "arcane/core/IMeshBuilder.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMeshPartitionerBase.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshBuildInfo.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/IMeshFactoryMng.h"
+#include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/internal/StringVariableReplace.h"
+#include "arcane/utils/ApplicationInfo.h"
+#include "arcane/utils/CommandLineArguments.h"
 #include "arcane/impl/ArcaneCaseMeshService_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -106,7 +109,7 @@ createMesh(const String& default_name)
                  options()->generator.rootTagName(),
                  options()->filename.name());
   if (has_filename){
-    m_mesh_file_name = options()->filename;
+    m_mesh_file_name = StringVariableReplace::replaceWithCmdLineArgs(m_sub_domain->applicationInfo().commandLineArguments().parameters(), options()->filename);
     if (m_mesh_file_name.empty())
       ARCANE_FATAL("Invalid filename '{0}' in option '{1}'",
                    m_mesh_file_name,options()->filename.xpathFullName());

@@ -20,9 +20,11 @@
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/RunQueue.h"
 
+#if defined(ARCANE_HAS_ACCELERATOR_API)
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"
 #include "arcane/accelerator/MaterialVariableViews.h"
 #include "arcane/accelerator/VariableViews.h"
+#endif
 
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MeshMaterialInfo.h"
@@ -78,7 +80,9 @@ class MeshMaterialSyncUnitTest
 
  public:
 
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   void _checkVariableSync2(bool do_check,Int32 iteration);
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -267,9 +271,11 @@ _doPhase2()
     m_cell_unique_ids[cell] = cell.uniqueId();
   }
 
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   for( int i=0; i<10; ++i )
     _checkVariableSync2(false,i);
   _checkVariableSync2(true,5);
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -316,6 +322,7 @@ _checkVariableSync1()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_HAS_ACCELERATOR_API)
 void MeshMaterialSyncUnitTest::
 _checkVariableSync2(bool do_check,Int32 iteration)
 {
@@ -372,6 +379,7 @@ _checkVariableSync2(bool do_check,Int32 iteration)
   if (nb_error!=0)
     ARCANE_FATAL("Bad variable synchronization nb_error={0}",nb_error);
 }
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

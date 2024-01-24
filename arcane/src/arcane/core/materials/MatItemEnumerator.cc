@@ -33,39 +33,17 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 ComponentCellEnumerator::
-ComponentCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                        ConstArrayView<MatVarIndex> matvar_indexes,
-                        IMeshComponent* component)
+ComponentCellEnumerator(const ComponentItemVectorView& v)
 : m_index(0)
-, m_size(items.size())
-, m_items(items)
-, m_matvar_indexes(matvar_indexes)
-, m_component(component)
+, m_size(v._itemsInternalView().size())
+, m_items(v._itemsInternalView())
+, m_matvar_indexes(v._matvarIndexes())
+, m_component(v.component())
 {
 #ifdef ARCANE_CHECK
   if (m_index<m_size)
     _check();
 #endif
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ComponentCellEnumerator::
-ComponentCellEnumerator(const ComponentItemVectorView& v)
-: ComponentCellEnumerator(v._itemsInternalView(),v._matvarIndexes(),v.component())
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MatCellEnumerator::
-MatCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                  ConstArrayView<MatVarIndex> matvar_indexes,
-                  IMeshComponent* component)
-: ComponentCellEnumerator(items,matvar_indexes,component)
-{
 }
 
 /*---------------------------------------------------------------------------*/
@@ -97,17 +75,6 @@ create(MatCellVectorView v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-EnvCellEnumerator::
-EnvCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                  ConstArrayView<MatVarIndex> matvar_indexes,
-                  IMeshComponent* component)
-: ComponentCellEnumerator(items,matvar_indexes,component)
-{
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -375,9 +342,7 @@ create(IMeshBlock* block)
 ComponentPartCellEnumerator ComponentPartCellEnumerator::
 create(ComponentPartItemVectorView v)
 {
-  return ComponentPartCellEnumerator(v.component(),v.componentPartIndex(),
-                                     v.valueIndexes(),v.itemIndexes(),
-                                     v.itemsInternal(),0);
+  return ComponentPartCellEnumerator(v,0);
 }
 
 /*---------------------------------------------------------------------------*/

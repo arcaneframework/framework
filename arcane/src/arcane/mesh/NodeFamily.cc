@@ -16,21 +16,22 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ValueConvert.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IMesh.h"
-#include "arcane/MeshUtils.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/Connectivity.h"
+#include "arcane/core/ConnectivityItemVector.h"
+#include "arcane/core/Properties.h"
 
-#include "arcane/Connectivity.h"
-#include "arcane/ConnectivityItemVector.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 #include "arcane/mesh/CompactIncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivitySelector.h"
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 #include "arcane/mesh/NewWithLegacyConnectivity.h"
-
 #include "arcane/mesh/FaceFamily.h"
 
 /*---------------------------------------------------------------------------*/
@@ -71,17 +72,11 @@ class NodeFamily::TopologyModifier
 NodeFamily::
 NodeFamily(IMesh* mesh,const String& name)
 : ItemFamily(mesh,IK_Node,name)
-, m_node_type(0)
-, m_edge_prealloc(0)
-, m_face_prealloc(0)
-, m_cell_prealloc(0)
-, m_mesh_connectivity(0)
-, m_no_face_connectivity(false)
-, m_nodes_coords(0)
-, m_edge_connectivity(nullptr)
-, m_face_connectivity(nullptr)
-, m_cell_connectivity(nullptr)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_SORT_FACE_AND_EDGE_OF_NODE", true)){
+    m_is_sort_connected_faces_and_edges = v.value() !=0;
+    info() << "Set sort faces and edges of nodes v?=" << m_is_sort_connected_faces_and_edges;
+  }
   _setTopologyModifier(new TopologyModifier(this));
 }
 
@@ -320,12 +315,22 @@ setConnectivity(const Integer c)
 class NodeFamily::ItemCompare2
 {
  public:
-  ItemInfoListView m_items;
+
+  explicit ItemCompare2(const ItemInfoListView& items)
+  : m_items(items)
+  {
+  }
+
  public:
+
   bool operator()(Int32 item1,Int32 item2) const
   {
     return m_items.uniqueId(item1) < m_items.uniqueId(item2);
   }
+
+ private:
+
+  ItemInfoListView m_items;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -334,7 +339,7 @@ class NodeFamily::ItemCompare2
 class NodeFamily::ItemCompare3
 {
  public:
-  ItemCompare3(ITraceMng* msg) : m_msg(msg) {}
+  explicit ItemCompare3(ITraceMng* msg) : m_msg(msg) {}
  public:
   ITraceMng* m_msg;
   ItemInternalArrayView m_items;
@@ -354,21 +359,41 @@ class NodeFamily::ItemCompare3
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
+_sortConnectedItems(IItemFamily* family, IncrementalItemConnectivity* connectivity)
+{
+  if (!connectivity)
+    return;
+
+  // Trie les entités connectées aux noeuds par uniqueId() croissant.
+  // Cela est utile pour garantir un ordre de parcours de ces entités
+  // identique quel que soit le découpage et ainsi améliorer
+  // la reproductibilité.
+  ItemInfoListView items_infos(family->itemInfoListView());
+  ItemCompare2 ic_items(items_infos);
+  ENUMERATE_ITEM(iitem,allItems()){
+    ItemLocalId lid(iitem.itemLocalId());
+    Int32ArrayView conn_lids = connectivity->_connectedItemsLocalId(lid);
+    std::sort(std::begin(conn_lids),std::end(conn_lids),ic_items);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NodeFamily::
 sortInternalReferences()
 {
   // Trie les mailles connectées aux noeuds par uniqueId() croissant.
-  // Cela est utile pour garantir un ordre de parcours des mailles
-  // des noeuds identique quel que soit le découpage et ainsi améliorer
-  // la reproductibilité.
-  ItemCompare2 ic_cell;
-  ic_cell.m_items = mesh()->cellFamily()->itemInfoListView();
-  auto new_connectivity = m_cell_connectivity->trueCustomConnectivity();
-  if (new_connectivity){
-    ENUMERATE_ITEM(iitem,allItems()){
-      ItemLocalId lid(iitem.itemLocalId());
-      Int32ArrayView conn_lids = new_connectivity->_connectedItemsLocalId(lid);
-      std::sort(std::begin(conn_lids),std::end(conn_lids),ic_cell);
-    }
+  _sortConnectedItems(mesh()->cellFamily(),m_cell_connectivity->trueCustomConnectivity());
+
+  // Fait de même pour les faces et les arêtes.
+  // Pour des raisons historiques, cela n'est pas actif par défaut.
+  bool do_sort = properties()->getBoolWithDefault("sort-connected-faces-edges",m_is_sort_connected_faces_and_edges);
+  if (do_sort){
+    info(4) << "Sorting connected faces and edges family=" << fullName();
+    _sortConnectedItems(m_face_family,m_face_connectivity->trueCustomConnectivity());
+    if (Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToEdge))
+      _sortConnectedItems(mesh()->edgeFamily(),m_edge_connectivity->trueCustomConnectivity());
   }
 }
 

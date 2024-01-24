@@ -181,6 +181,20 @@ copy(const ItemVariableScalarRefT<DataTypeT>& v,RunQueue* queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<class DataTypeT> void
+ItemVariableScalarRefT<DataTypeT>::
+fill(const DataTypeT& v, RunQueue* queue)
+{
+  if (!queue){
+    fill(v);
+    return;
+  }
+  impl::fillContigousData<DataTypeT>(this->m_private_part->data(),v,*queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<class DataTypeT> void 
 ItemVariableScalarRefT<DataTypeT>::
 operator=(const ItemVariableScalarRefT<DataTypeT>& rhs)

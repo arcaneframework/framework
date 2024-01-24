@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.h                                            (C) 2000-2023 */
+/* MpiParallelMng.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des messages avec MPI.                                     */
 /*---------------------------------------------------------------------------*/
@@ -81,13 +81,11 @@ class ARCANE_MPI_EXPORT MpiParallelMng
 {
  public:
   friend ArcaneMpiSerializeMessageList;
-  class SendSerializerSubRequest;
-  class ReceiveSerializerSubRequest;
   class RequestList;
 
  public:
 
-  MpiParallelMng(const MpiParallelMngBuildInfo& bi);
+  explicit MpiParallelMng(const MpiParallelMngBuildInfo& bi);
   ~MpiParallelMng() override;
   
   bool isParallel()  const override { return m_is_parallel; }
@@ -110,7 +108,6 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   void sendSerializer(ISerializer* values,Int32 rank) override;
   Request sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes) override;
   ISerializeMessage* createSendSerializer(Int32 rank) override;
-  void allGatherSerializer(ISerializer* send_serializer,ISerializer* recv_serializer) override;
 
   void recvSerializer(ISerializer* values,Int32 rank) override;
   ISerializeMessage* createReceiveSerializer(Int32 rank) override;
@@ -174,36 +171,32 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const override;
 
  private:
-  
-  ITraceMng* m_trace;
-  IThreadMng* m_thread_mng;
-  IParallelMng* m_world_parallel_mng;
-  IIOMng* m_io_mng;
+
+  ITraceMng* m_trace = nullptr;
+  IThreadMng* m_thread_mng = nullptr;
+  IParallelMng* m_world_parallel_mng = nullptr;
+  IIOMng* m_io_mng = nullptr;
   Ref<IParallelMng> m_sequential_parallel_mng;
-  ITimerMng* m_timer_mng;
-  IParallelReplication* m_replication;
-  bool m_is_timer_owned;
-  MpiDatatypeList* m_datatype_list;
-  MpiAdapter* m_adapter;
-  bool m_is_parallel;
-  Int32 m_comm_rank; //!< Numéro du processeur actuel
-  Int32 m_comm_size; //!< Nombre de sous-domaines
-  bool m_is_initialized; //!< \a true si déjà initialisé
-  Parallel::IStat* m_stat;
-  MPI_Comm m_communicator;
-  bool m_is_communicator_owned;
-  MpiLock* m_mpi_lock;
-  IParallelNonBlockingCollective* m_non_blocking_collective;
+  ITimerMng* m_timer_mng = nullptr;
+  IParallelReplication* m_replication = nullptr;
+  bool m_is_timer_owned = false;
+  MpiDatatypeList* m_datatype_list = nullptr;
+  MpiAdapter* m_adapter = nullptr;
+  bool m_is_parallel = false;
+  Int32 m_comm_rank = A_NULL_RANK; //!< Numéro du processeur actuel
+  Int32 m_comm_size = 0; //!< Nombre de sous-domaines
+  bool m_is_initialized = false; //!< \a true si déjà initialisé
+  Parallel::IStat* m_stat = nullptr;
+  MPI_Comm m_communicator = MPI_COMM_NULL;
+  bool m_is_communicator_owned = false;
+  MpiLock* m_mpi_lock = nullptr;
+  IParallelNonBlockingCollective* m_non_blocking_collective = nullptr;
   MpiSerializeDispatcher* m_mpi_serialize_dispatcher = nullptr;
   Ref<IParallelMngUtilsFactory> m_utils_factory;
-  bool m_use_serialize_list_v2 = false;
+  bool m_use_serialize_list_v2 = true;
 
  private:
 
-  void _checkInit();
-  SerializeBuffer* _castSerializer(ISerializer* serializer);
-  const SerializeBuffer* _castSerializer(const ISerializer* serializer);
-  void _checkBigMessage(Int64 message_size);
   void _checkFinishedSubRequests();
   UniqueArray<Integer> _waitSomeRequests(ArrayView<Request> requests, bool is_non_blocking);
 };

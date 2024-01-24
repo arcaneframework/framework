@@ -1,7 +1,5 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 // Wrapper Arcane vers le C#
-%text %{
-%}
 %module(directors="1", allprotected="1") ArcaneDotNet
 
 // Ces deux macros permettent que les constructeurs des
@@ -204,11 +202,13 @@ namespace Arcane
 %rename("size", regextarget=1, fullname=1) "std::vector<.*>::size$";
 %rename("reserve", regextarget=1, fullname=1) "std::vector<.*>::reserve$";
 %rename("getitemcopy", regextarget=1, fullname=1) "std::vector<.*>::getitemcopy$";
+%rename("empty", regextarget=1, fullname=1) "std::vector<.*>::empty$";
 
 // Fait de même avec 'std::map'
 %rename("getitem", regextarget=1, fullname=1) "std::map<.*>::getitem$";
 %rename("setitem", regextarget=1, fullname=1) "std::map<.*>::setitem$";
 %rename("size", regextarget=1, fullname=1) "std::map<.*>::size$";
+%rename("empty", regextarget=1, fullname=1) "std::map<.*>::empty$";
 %rename("create_iterator_begin", regextarget=1, fullname=1) "std::map<.*>::create_iterator_begin$";
 %rename("get_next_key", regextarget=1, fullname=1) "std::map<.*>::get_next_key$";
 %rename("destroy_iterator", regextarget=1, fullname=1) "std::map<.*>::destroy_iterator$";

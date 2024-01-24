@@ -72,7 +72,7 @@ class AllEnvData
   //! Notification de la fin de création des milieux/matériaux
   void endCreate(bool is_continue);
 
-  ComponentConnectivityList* componentConnectivityList()
+  ConstituentConnectivityList* componentConnectivityList()
   {
     return m_component_connectivity_list;
   }
@@ -80,7 +80,7 @@ class AllEnvData
  private:
 
   MeshMaterialMng* m_material_mng = nullptr;
-  ComponentConnectivityList* m_component_connectivity_list = nullptr;
+  ConstituentConnectivityList* m_component_connectivity_list = nullptr;
   Ref<IIncrementalItemSourceConnectivity> m_component_connectivity_list_ref;
 
   //! Nombre de milieux par mailles

@@ -63,6 +63,10 @@ Sommaire de ce sous-chapitre :
   Explique comment paramétrer les modules avec des options utilisateurs fournies 
   dans le jeu de données.
 
+4. \subpage arcanedoc_core_types_axl_others <br>
+  Présente les détails qui n'apparaissent pas dans les
+  autres sous-chapitres.
+
 ____
 
 <div class="section_buttons">

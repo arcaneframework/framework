@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentItem.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Entité composant d'une maillage multi-matériau.                           */
+/* Entité représentant un constituant d'une maille multi-matériaux.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_COMPONENTITEM_H
 #define ARCANE_CORE_MATERIALS_COMPONENTITEM_H
@@ -50,10 +50,29 @@ namespace Arcane::Materials
  */
 class ARCANE_CORE_EXPORT ComponentCell
 {
+  // Pour accéder à _internal()
+  friend class CellComponentCellEnumerator;
+  friend class EnvCellVector;
+  friend class MatCellVector;
+  friend class MeshMaterialMng;
+  friend class AllEnvCell;
+  friend class EnvCell;
+  friend class MatCell;
+
  public:
 
-  ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii) : m_internal(mii){}
-  ComponentCell() : m_internal(ComponentItemInternal::nullItem()){}
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
+  ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii)
+  : m_internal(mii)
+  {}
+
+  ARCCORE_HOST_DEVICE ComponentCell(const matimpl::ConstituentItemBase& mii)
+  : m_internal(mii._internal())
+  {}
+
+  ComponentCell()
+  : m_internal(ComponentItemInternal::_nullItem())
+  {}
 
  public:
 
@@ -65,8 +84,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   //! \internal
   ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_internal->variableIndex(); }
 
-  //! \internal
-  ARCCORE_HOST_DEVICE ComponentItemInternal* internal() const { return m_internal; }
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase constituentItemBase() const { return m_internal; }
 
   //! Composant associé
   IMeshComponent* component() const { return m_internal->component(); }
@@ -78,7 +96,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   bool null() const { return m_internal->null(); }
 
   //! Maille de niveau supérieur dans la hiérarchie
-  ComponentCell superCell() const { return m_internal->superItem(); }
+  ComponentCell superCell() const { return ComponentCell(m_internal->_superItemBase()); }
 
   //! Niveau hiérarchique de l'entité
   Int32 level() const { return m_internal->level(); }
@@ -102,24 +120,38 @@ class ARCANE_CORE_EXPORT ComponentCell
    */
   Int64 componentUniqueId() const { return m_internal->componentUniqueId(); }
 
+ public:
+
+  //! \internal
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use constituentItemBase() instead")
+  ARCCORE_HOST_DEVICE ComponentItemInternal* internal() const { return m_internal; }
+
  protected:
 
-  static ARCCORE_HOST_DEVICE
-  void _checkLevel([[maybe_unused]] ComponentItemInternal* internal, [[maybe_unused]] Int32 expected_level)
+  static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] ComponentItemInternal* internal,
+                                              [[maybe_unused]] Int32 expected_level)
   {
 #if !defined(ARCCORE_DEVICE_CODE)
     if (internal->null())
       return;
     Int32 lvl = internal->level();
-    if (!internal->null() && lvl!=expected_level)
-      _badConversion(lvl,expected_level);
+    if (!internal->null() && lvl != expected_level)
+      _badConversion(lvl, expected_level);
 #endif
   }
-  static void _badConversion(Int32 level,Int32 expected_level);
+  static void _badConversion(Int32 level, Int32 expected_level);
 
  protected:
 
   ComponentItemInternal* m_internal;
+
+ private:
+
+  //! \internal
+  ARCCORE_HOST_DEVICE ComponentItemInternal* _internal() const
+  {
+    return m_internal;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

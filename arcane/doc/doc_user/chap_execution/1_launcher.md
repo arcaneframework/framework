@@ -191,6 +191,17 @@ calcul.
 </tr>
 
 <tr>
+<td>AcceleratorRuntime</td>
+<td></td>
+<td>string</td>
+<td></td>
+<td>Runtime accélérateur à utiliser. Les deux valeurs possibles sont
+`cuda` ou `hip`. Il faut avoir compiler %Arcane avec le support des
+accélérateurs pour que cette option soit accessible.
+</td>
+</tr>
+
+<tr>
 <td>MaxIteration</td>
 <td></td>
 <td>Int32</td>
@@ -381,10 +392,10 @@ a.out -A,S=4 Test.arc
 # lancement avec 12 sous-domaines et 4 processus (4 sous-domaines en
 # mémoire partagée par processus)
 mpiexec -n 3 -c 4 a.out -A,S=4 Test.arc
+
+# lancement avec le runtime accélérateur CUDA.
+a.out -A,AcceleratorRuntime=cuda Test.arc
 ```
-
-
-
 
 ____
 

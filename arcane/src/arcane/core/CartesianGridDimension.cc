@@ -47,8 +47,8 @@ CartesianGridDimension(Int64 nb_cell_x, Int64 nb_cell_y)
 /*---------------------------------------------------------------------------*/
 
 CartesianGridDimension::
-CartesianGridDimension(std::array<Int64, 2> dims)
-: CartesianGridDimension(dims[0], dims[1])
+CartesianGridDimension(const Int64x2& dims)
+: CartesianGridDimension(dims.x, dims.y)
 {
 }
 
@@ -56,8 +56,8 @@ CartesianGridDimension(std::array<Int64, 2> dims)
 /*---------------------------------------------------------------------------*/
 
 CartesianGridDimension::
-CartesianGridDimension(std::array<Int64, 3> dims)
-: CartesianGridDimension(dims[0], dims[1], dims[2])
+CartesianGridDimension(const Int64x3& dims)
+: CartesianGridDimension(dims.x, dims.y, dims.z)
 {
 }
 
@@ -65,8 +65,8 @@ CartesianGridDimension(std::array<Int64, 3> dims)
 /*---------------------------------------------------------------------------*/
 
 CartesianGridDimension::
-CartesianGridDimension(std::array<Int32, 2> dims)
-: CartesianGridDimension(dims[0], dims[1])
+CartesianGridDimension(const Int32x2& dims)
+: CartesianGridDimension(dims.x, dims.y)
 {
 }
 
@@ -74,8 +74,8 @@ CartesianGridDimension(std::array<Int32, 2> dims)
 /*---------------------------------------------------------------------------*/
 
 CartesianGridDimension::
-CartesianGridDimension(std::array<Int32, 3> dims)
-: CartesianGridDimension(dims[0], dims[1], dims[2])
+CartesianGridDimension(const Int32x3& dims)
+: CartesianGridDimension(dims.x, dims.y, dims.z)
 {
 }
 

@@ -717,14 +717,16 @@ bool _getHasColorTerminal()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_BASE_EXPORT void Platform::
-platformInitialize()
+void Platform::
+platformInitialize(bool enable_fpe)
 {
   // Pour l'instant, la seule initialisation spécifique dépend
   // des processeurs i386. Elle consiste à changer la valeur par
   // défaut des flags de la FPU pour générer une exception
   // lors d'une erreur arithmétique (comme les divisions par zéro).
-  enableFloatingException(true);
+  if (enable_fpe)
+    enableFloatingException(true);
+
   getCPUTime();
 
   global_has_color_console = _getHasColorTerminal();
@@ -733,6 +735,15 @@ platformInitialize()
     arccoreSetPauseOnException(true);
   if (getEnvironmentVariable("ARCCORE_PRINT_ON_EXCEPTION")=="1")
     arccoreCallExplainInExceptionConstructor(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Platform::
+platformInitialize()
+{
+  platformInitialize(true);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -189,6 +189,8 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(float);
 ARCCORE_DEFINE_ARRAY_PODTYPE(double);
 ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
 ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Float16);
+ARCCORE_DEFINE_ARRAY_PODTYPE(BFloat16);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1066,7 +1068,6 @@ class Array
   Array(const Array<T>& rhs) = delete;
   void operator=(const Array<T>& rhs) = delete;
 
-
  public:
 
   ~Array()
@@ -1607,6 +1608,13 @@ class SharedArray
     this->copy(rhs);
     this->_checkValidSharedArray();
   }
+  void operator=(std::initializer_list<T> alist)
+  {
+    this->clear();
+    for( const auto& x : alist )
+      this->add(x);
+    this->_checkValidSharedArray();
+  }
   //! Détruit le tableau
   ~SharedArray() override
   {
@@ -1926,6 +1934,13 @@ class UniqueArray
   void operator=(const Span<const T>& rhs)
   {
     this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a alist dans cette instance.
+  void operator=(std::initializer_list<T> alist)
+  {
+    this->clear();
+    for( const auto& x : alist )
+      this->add(x);
   }
   //! Détruit l'instance.
   ~UniqueArray() override

@@ -44,18 +44,26 @@ class IMainFactory;
 /*!
  * \brief Classe de gestion de l'exécution.
  *
- * La première chose à faire est d'initialiser Arcane en
+ * Il existe deux modes d'utilisation d'%Arcane : le mode classique et le mode
+ * autonome.
+ *
+ * Quel que soit le mode retenu, la première chose à faire est d'initialiser %Arcane en
  * positionnant les arguments via la méthode init() car certains paramètres de la
  * ligne de commande sont utilisés pour remplir les propriétés
  * de applicationInfo() et dotNetRuntimeInitialisationInfo().
  *
- * Il existe ensuite deux possibilités pour exécuter du code:
- * - le comportement classique qui utilise une boucle en temps. Dans
- *   ce cas il suffit d'appeler la méthode run().
- * - l'exécution directe d'une fonction sans passer par la boucle
- *   en temps. Dans ce cas, il faut appeler la méthode runDirect().
+ * La page \ref arcanedoc_execution_launcher donne des exemples d'usage.
  *
- * L'usage est le suivant:
+ * Les deux modes d'éxécutions sont:
+ * - le mode classique qui utilise une boucle en temps et donc l'exécution
+ *   complète sera gérée par %Arcane. Dans mode il suffit d'appeler
+ *   la méthode run() sans arguments.
+ * - le mode autonome qui permet d'utiliser %Arcane sous la forme d'une bibliothèque.
+ *   Pour ce mode il faut utiliser la méthode createStandaloneSubDomain()
+ *   ou createStandaloneAcceleratorMng(). La page \ref arcanedoc_execution_direct_execution
+ *   décrit comment utiliser ce mécanisme.
+ *
+ * L'usage classique est le suivant:
  *
  * \code
  * int main(int* argc,char* argv[])
@@ -68,6 +76,7 @@ class IMainFactory;
  * }
  * \endcode
  *
+ * L
  */
 class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 {
@@ -186,8 +195,6 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 
   /*!
    * \brief Créé une implémentation autonome pour gérer un sous-domaine.
-   *
-   * \warning Expérimental. Ne pas utiliser en dehors de Arcane.
    *
    * Une seule instance de StandaloneSubDomain est autorisée. Si on
    * appelle cette méthode plus d'une fois cela génère une exception.

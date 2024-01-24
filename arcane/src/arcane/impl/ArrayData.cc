@@ -112,6 +112,7 @@ class ArrayDataT
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo,ByteArray& output) const override;
+  void computeHash(DataHashInfo& hash_info) const;
   ArrayShape shape() const override { return m_shape; }
   void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
   void setAllocationInfo(const DataAllocationInfo& v) override;
@@ -217,6 +218,10 @@ class ArrayDataT<DataType>::Impl
     return makeMutableMemoryView<DataType>(m_p->view());
   }
   INumericDataInternal* numericData() override { return this; }
+  void computeHash(DataHashInfo& hash_info) override
+  {
+    m_p->computeHash(hash_info);
+  }
 
  private:
 
@@ -620,6 +625,16 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
   const Byte* ptr = reinterpret_cast<const Byte*>(m_value.data());
   Span<const Byte> input(ptr,type_size*nb_element);
   algo->computeHash64(input,output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void ArrayDataT<DataType>::
+computeHash(DataHashInfo& hash_info) const
+{
+  hash_info.setVersion(2);
+  hash_info.context()->updateHash(asBytes(m_value.span()));
 }
 
 /*---------------------------------------------------------------------------*/

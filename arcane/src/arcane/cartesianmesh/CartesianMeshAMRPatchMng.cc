@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshAMRPatchMng.cc                                 (C) 2000-2023 */
+/* CartesianMeshAMRPatchMng.cc                                 (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de l'AMR par patch d'un maillage cartésien.                  */
 /*---------------------------------------------------------------------------*/
@@ -244,8 +244,8 @@ refine()
               << " -- is_ghost_cell_bottom_same_patch : " << is_ghost_parent_cell_bottom_same_patch;
 
 
-      for (Integer j = child_coord_y; j < child_coord_y + pattern; ++j) {
-        for (Integer i = child_coord_x; i < child_coord_x + pattern; ++i) {
+      for (Int64 j = child_coord_y; j < child_coord_y + pattern; ++j) {
+        for (Int64 i = child_coord_x; i < child_coord_x + pattern; ++i) {
           parent_cells.add(parent_cell);
           total_nb_cells++;
           Int64 uid_child = m_num_mng->getCellUid(level+1, i, j);
@@ -546,9 +546,9 @@ refine()
               << " -- is_ghost_cell_rear_same_patch : " << is_ghost_parent_cell_rear_same_patch;
 
 
-      for (Integer k = child_coord_z; k < child_coord_z + pattern; ++k) {
-        for (Integer j = child_coord_y; j < child_coord_y + pattern; ++j) {
-          for (Integer i = child_coord_x; i < child_coord_x + pattern; ++i) {
+      for (Int64 k = child_coord_z; k < child_coord_z + pattern; ++k) {
+        for (Int64 j = child_coord_y; j < child_coord_y + pattern; ++j) {
+          for (Int64 i = child_coord_x; i < child_coord_x + pattern; ++i) {
             parent_cells.add(cell);
             total_nb_cells++;
             Int64 uid_child = m_num_mng->getCellUid(level+1, i, j, k);

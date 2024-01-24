@@ -1,17 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcher.cc                                        (C) 2000-2023 */
+/* MpiTypeDispatcher.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/MpiTypeDispatcherImpl.h"
+
+#include "arccore/base/BFloat16.h"
+#include "arccore/base/Float16.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,6 +39,8 @@ template class MpiTypeDispatcher<unsigned long long>;
 template class MpiTypeDispatcher<float>;
 template class MpiTypeDispatcher<double>;
 template class MpiTypeDispatcher<long double>;
+template class MpiTypeDispatcher<BFloat16>;
+template class MpiTypeDispatcher<Float16>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

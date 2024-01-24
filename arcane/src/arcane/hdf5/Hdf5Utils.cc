@@ -19,7 +19,6 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/IOException.h"
-#include <arcane/utils/StringImpl.h>
 
 #include "arcane/ArcaneException.h"
 #include "arcane/IParallelMng.h"
@@ -1231,7 +1230,7 @@ read(Hdf5Utils::StandardTypes & st)
   }
   
   m_hdataset.read(st.nativeType(Byte()),utf8_bytes.data());
-  return String(new StringImpl(utf8_bytes));
+  return String(utf8_bytes);
 }
 
 /*---------------------------------------------------------------------------*/

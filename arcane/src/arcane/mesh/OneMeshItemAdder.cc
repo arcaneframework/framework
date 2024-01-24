@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* OneMeshItemAdder.cc                                         (C) 2000-2022 */
+/* OneMeshItemAdder.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Ajout des entités une par une.                                            */
 /*---------------------------------------------------------------------------*/
@@ -228,9 +228,15 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
   ItemInternal* nbi = nodes_map.lookupValue(m_work_face_sorted_nodes[0]);
   Face face_internal = ItemTools::findFaceInNode2(nbi,lf.typeId(),m_work_face_sorted_nodes);
   if (face_internal.null()) {
-    if (!cell_info.allowBuildFace())
-      ARCANE_FATAL("On the fly face allocation is not allowed here."
-                   " You need to add faces with IMeshModifier::addFaces()");
+    if (!cell_info.allowBuildFace()){
+      info() << "BadCell uid=" << cell_info.uniqueId();
+      for( Int32 i=0; i<cell_info.nbNode(); ++i )
+        info() << "Cell node I=" << i << " uid=" << cell_info.nodeUniqueId(i);
+      ARCANE_FATAL("On the fly face allocation is not allowed here.\n"
+                   " You need to add faces with IMeshModifier::addFaces().\n"
+                   " CellUid={0} LocalFace={1} FaceNodes={2}",
+                   cell_info.uniqueId(),i_face,m_work_face_sorted_nodes);
+    }
     ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
     const Int64 face_unique_id = m_next_face_uid++;
     is_add = true;

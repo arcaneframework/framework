@@ -125,20 +125,6 @@ class ARCANE_CORE_EXPORT ComponentItemVector
   //! Liste des entités impures (partielles) du composant
   ComponentImpurePartItemVectorView impureItems() const;
 
- public:
-
-  //! Interne à Arcane
-  //@{
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ConstArrayView<MatVarIndex> matvarIndexes() const { return m_p->m_matvar_indexes; }
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
-  {
-    return m_p->m_items_internal.constView();
-  }
-  //@}
-
  private:
 
   ConstArrayView<MatVarIndex> _matvarIndexes() const { return m_p->m_matvar_indexes; }

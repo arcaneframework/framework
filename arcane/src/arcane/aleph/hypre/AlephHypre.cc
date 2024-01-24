@@ -1,12 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephHypre.cc                                               (C) 2000-2023 */
+/* AlephHypre.cc                                               (C) 2000-2024 */
 /*                                                                           */
+/* Implémentation Hypre de Aleph.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -73,13 +74,7 @@ inline T*
 _allocHypre(Integer size)
 {
   size_t s = sizeof(T) * size;
-  // NOTE: Si erreur de compilation ici, cela signifie que la version de Hypre est
-  // trop vieille (2.14+ nécessaire)
-#ifdef ALEPH_HYPRE_USE_OLD_MALLOC
-  return (T*)hypre_TAlloc(char, s);
-#else
-  return (T*)hypre_TAlloc(char, s, HYPRE_MEMORY_HOST);
-#endif
+  return reinterpret_cast<T*>(hypre_TAlloc(char, s, HYPRE_MEMORY_HOST));
 }
 
 template <typename T>
@@ -87,13 +82,7 @@ inline T*
 _callocHypre(Integer size)
 {
   size_t s = sizeof(T) * size;
-  // NOTE: Si erreur de compilation ici, cela signifie que la version de Hypre est
-  // trop vieille (2.14+ nécessaire)
-#ifdef ALEPH_HYPRE_USE_OLD_MALLOC
-  return (T*)hypre_CTAlloc(char, s);
-#else
-  return (T*)hypre_CTAlloc(char, s, HYPRE_MEMORY_HOST);
-#endif
+  return reinterpret_cast<T*>(hypre_CTAlloc(char, s, HYPRE_MEMORY_HOST));
 }
 
 inline void
@@ -957,7 +946,27 @@ class HypreAlephFactoryImpl
   }
 
  public:
-  void initialize() override {}
+
+  void initialize() override
+  {
+    // NOTE: A partir de la 2.29, on peut utiliser
+    // HYPRE_Initialize() et tester si l'initialisation
+    // a déjà été faite via HYPRE_Initialized().
+#if HYPRE_RELEASE_NUMBER >= 22900
+    if (!HYPRE_Initialized()){
+      info() << "Initializing HYPRE";
+      HYPRE_Initialize();
+    }
+#elif HYPRE_RELEASE_NUMBER >= 22700
+    info() << "Initializing HYPRE";
+    HYPRE_Init();
+#endif
+
+#if HYPRE_RELEASE_NUMBER >= 22700
+    HYPRE_SetMemoryLocation(HYPRE_MEMORY_HOST);
+    HYPRE_SetExecutionPolicy(HYPRE_EXEC_HOST);
+#endif
+  }
 
   IAlephTopology* createTopology(ITraceMng* tm,
                                  AlephKernel* kernel,

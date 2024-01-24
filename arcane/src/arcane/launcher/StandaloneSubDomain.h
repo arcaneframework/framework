@@ -30,8 +30,6 @@ namespace Arcane
 /*!
  * \brief Implémentation autonome d'un sous-domaine.
  *
- * \warning API expérimentale.
- *
  * L'instance de cette classe doit être créée par
  * ArcaneLauncher::createStandaloneSubDomain().
  *

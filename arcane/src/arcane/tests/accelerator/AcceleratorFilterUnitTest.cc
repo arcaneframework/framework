@@ -66,11 +66,11 @@ class AcceleratorFilterUnitTest
  public:
 
   void _executeTest1();
-  template <typename DataType> void _executeTestDataType(Int32 size);
+  template <typename DataType> void _executeTestDataType(Int32 size, Int32 test_id);
 
  private:
 
-  void executeTest2(Int32 size);
+  void executeTest2(Int32 size, Int32 test_id);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -113,27 +113,35 @@ initializeTest()
 void AcceleratorFilterUnitTest::
 executeTest()
 {
-  executeTest2(15);
-  executeTest2(1000000);
+  for( Int32 i=0; i<3; ++i ){
+    executeTest2(15, i);
+    executeTest2(1000000, i);
+  }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void AcceleratorFilterUnitTest::
-executeTest2(Int32 size)
+executeTest2(Int32 size, Int32 test_id)
 {
-  _executeTestDataType<Int64>(size);
-  _executeTestDataType<Int32>(size);
-  _executeTestDataType<double>(size);
+  _executeTestDataType<Int64>(size, test_id);
+  _executeTestDataType<Int32>(size, test_id);
+  _executeTestDataType<double>(size, test_id);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType> void AcceleratorFilterUnitTest::
-_executeTestDataType(Int32 size)
+_executeTestDataType(Int32 size, Int32 test_id)
 {
   ValueChecker vc(A_FUNCINFO);
 
   RunQueue queue(makeQueue(subDomain()->acceleratorMng()->defaultRunner()));
   queue.setAsync(true);
 
-  info() << "Execute Filter Test1";
+  info() << "Execute Filter Test1 size=" << size << " test_id=" << test_id;
 
   constexpr Int32 min_size_display = 100;
   const Int32 n1 = size;
@@ -166,16 +174,61 @@ _executeTestDataType(Int32 size)
   expected_t2.resize(nb_filter);
   info() << "Expected NbFilter=" << nb_filter;
 
-  Arcane::Accelerator::Filterer<DataType> filterer;
-  SmallSpan<const Int16> filter_flags_view = filter_flags;
-  filterer.apply(m_queue, t1, t2, filter_flags_view);
-  Int32 nb_out = filterer.nbOutputElement();
-  info() << "NB_OUT_accelerator=" << nb_out;
+  switch (test_id) {
+  case 0: // Mode obsolète avec flag
+  {
+    Arcane::Accelerator::Filterer<DataType> filterer;
+    SmallSpan<const Int16> filter_flags_view = filter_flags;
+    filterer.apply(m_queue, t1, t2, filter_flags_view);
+    Int32 nb_out = filterer.nbOutputElement();
+    info() << "NB_OUT_accelerator_old=" << nb_out;
+    vc.areEqual(nb_filter, nb_out, "Filter");
+    t2.resize(nb_out);
+    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArrayOld");
+  } break;
+  case 1: // Mode avec flag
+  {
+    NumArray<DataType, MDDim1> t1_bis(t1);
+    NumArray<DataType, MDDim1> t2_bis(t2);
 
-  vc.areEqual(nb_filter, nb_out, "Filter");
-  t2.resize(nb_out);
-
-  vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArray");
+    Arcane::Accelerator::Filterer<DataType> filterer(m_queue);
+    SmallSpan<const Int16> filter_flags_view = filter_flags;
+    filterer.apply(t1, t2, filter_flags_view);
+    Int32 nb_out = filterer.nbOutputElement();
+    info() << "NB_OUT_accelerator1=" << nb_out;
+    vc.areEqual(nb_filter, nb_out, "Filter");
+    t2.resize(nb_out);
+    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArray1");
+    // Appelle une deuxième fois l'instance
+    filterer.apply(t1_bis, t2_bis, filter_flags_view);
+    Int32 nb_out2 = filterer.nbOutputElement();
+    info() << "NB_OUT_accelerator2=" << nb_out2;
+    t2_bis.resize(nb_out2);
+    vc.areEqualArray(t2_bis.to1DSpan(), expected_t2.to1DSpan(), "OutputArray2");
+  } break;
+  case 2: // Mode avec lambda de filtrage
+  {
+    auto filter_lambda = [] ARCCORE_HOST_DEVICE(const DataType& x) -> bool {
+      return (x > static_cast<DataType>(569));
+    };
+    NumArray<DataType, MDDim1> t1_bis(t1);
+    NumArray<DataType, MDDim1> t2_bis(t2);
+    //FilterLambda filter_lambda;
+    Arcane::Accelerator::Filterer<DataType> filterer(m_queue);
+    filterer.applyIf(t1, t2, filter_lambda);
+    Int32 nb_out = filterer.nbOutputElement();
+    info() << "NB_OUT_accelerator1=" << nb_out;
+    vc.areEqual(nb_filter, nb_out, "Filter");
+    t2.resize(nb_out);
+    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArray1");
+    // Appelle une deuxième fois l'instance
+    filterer.applyIf(t1_bis, t2_bis, filter_lambda);
+    Int32 nb_out2 = filterer.nbOutputElement();
+    info() << "NB_OUT_accelerator2=" << nb_out2;
+    t2_bis.resize(nb_out2);
+    vc.areEqualArray(t2_bis.to1DSpan(), expected_t2.to1DSpan(), "OutputArray2");
+  } break;
+  }
 }
 
 /*---------------------------------------------------------------------------*/

@@ -26,9 +26,12 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/ITraceMngPolicy.h"
 #include "arcane/utils/StringList.h"
+#include "arcane/utils/IHashAlgorithm.h"
+#include "arcane/utils/ValueChecker.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/FactoryService.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/ServiceBuilder.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -43,7 +46,8 @@ extern "C++" ARCANE_UTILS_EXPORT void
 _internalTestEvent();
 }
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -119,6 +123,8 @@ class UtilsUnitTest
   void _testConvertFromString();
   void _testConvertFromStringToInt32Array();
   void _testCommandLine();
+  void _testHashAlgorithm();
+  void _testDataTypeNames();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -186,6 +192,8 @@ executeTest()
   _testFloatingException();
 
   _testCommandLine();
+  _testHashAlgorithm();
+  _testDataTypeNames();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -819,7 +827,58 @@ _testCommandLine()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+void UtilsUnitTest::
+_testHashAlgorithm()
+{
+  ValueChecker vc(A_FUNCINFO);
+  UniqueArray<String> names = {
+    "MD5HashAlgorithm",
+    "SHA1HashAlgorithm",
+    "SHA3_224HashAlgorithm",
+    "SHA3_256HashAlgorithm",
+    "SHA3_384HashAlgorithm",
+    "SHA3_512HashAlgorithm"
+  };
+  ServiceBuilder<IHashAlgorithm> builder(subDomain()->application());
+  UniqueArray<Int32> test_values(12345);
+  for( Int32 i=0, n=test_values.size(); i<n; ++i )
+    test_values[i] = 2 + (i*3);
+
+  for( const String& name : names ){
+    info() << "Create service name=" << name;
+    Ref<IHashAlgorithm> service = builder.createReference(name);
+    HashAlgorithmValue hash_value;
+    service->computeHash(asBytes(test_values),hash_value);
+    SmallSpan<const std::byte> hash_bytes(hash_value.bytes());
+    vc.areEqual(hash_bytes.size(),service->hashSize(),"HashSize");
+    info() << "Algo=" << name << " value=" << Convert::toHexaString(hash_bytes);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UtilsUnitTest::
+_testDataTypeNames()
+{
+  ValueChecker vc(A_FUNCINFO);
+  vc.areEqual(String(dataTypeName(DT_BFloat16)),String("BFloat16"),"name BFloat16");
+  vc.areEqual(String(dataTypeName(DT_Float16)),String("Float16"),"name Float16");
+  vc.areEqual(String(dataTypeName(DT_Float32)),String("Float32"),"name Float32");
+
+  vc.areEqual(dataTypeFromName("BFloat16"),DT_BFloat16,"-> BFloat16");
+  vc.areEqual(dataTypeFromName("Float16"),DT_Float16,"-> Float16");
+  vc.areEqual(dataTypeFromName("Float32"),DT_Float32,"-> Float32");
+
+  vc.areEqual(dataTypeSize(DT_BFloat16),2,"sizeof BFloat16");
+  vc.areEqual(dataTypeSize(DT_Float16),2,"sizeof Float16");
+  vc.areEqual(dataTypeSize(DT_Float32),4,"sizeof Float32");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

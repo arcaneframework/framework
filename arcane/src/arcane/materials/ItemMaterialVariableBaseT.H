@@ -138,6 +138,9 @@ buildFromManager(bool is_continue)
   all_vars[0] = m_global_variable;
   IMesh* mesh = m_global_variable->mesh();
 
+  if (!m_global_variable->isUsed())
+    m_global_variable->setUsed(true);
+
   // Il faut attacher un observer sur la variable globale pour savoir quand elle change.
   // Pour les variables partielles, cela se fait automatiquement lorsque le matériau associé change.
   m_p->m_global_variable_changed_observer = new ObserverT<ThatClass>(this,&ThatClass::_syncFromGlobalVariable);
@@ -529,7 +532,7 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
     if (mat_var)
       true_mat_var = dynamic_cast<VariableTrueType*>(mat_var);
     else{
-      VariableRefType* var_ref = new VariableRefType(true_ptr);
+      VariableRefType* var_ref = new VariableRefType(gvar_bi);
       MaterialVariableBuildInfo mvbi(mat_mng,v);
       true_mat_var = new VariableTrueType(mvbi,true_ptr,var_ref,mvs);
       mat_mng->_internalApi()->addVariable(true_mat_var);

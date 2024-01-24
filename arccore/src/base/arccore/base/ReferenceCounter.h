@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ReferenceCounter.h                                          (C) 2000-2019 */
+/* ReferenceCounter.h                                          (C) 2000-2023 */
 /*                                                                           */
 /* Encapsulation d'un pointeur avec compteur de référence.                   */
 /*---------------------------------------------------------------------------*/
@@ -28,16 +28,16 @@ namespace Arccore
 /*!
  * \brief Encapsulation d'un pointeur avec compteur de référence.
  *
- Cette classe renferme un pointeur d'un type qui doit implémenter
- les méthodes suivantes:
- - addReference() pour ajouter une référence
- - removeReference() pour supprimer une référence.
- 
- A la différence de std::shared_ptr, le compteur de référence est donc géré
- en interne par le type *T*.
- Cette classe n'effectue aucune action basée sur la valeur de compteur de référence.
- la destruction éventuelle de l'objet lorsque le compteur de référence arrive
- à zéro est gérée par l'objet lui même.
+ * Cette classe renferme un pointeur d'un type qui doit implémenter
+ * les méthodes suivantes:
+ * - addReference() pour ajouter une référence
+ * - removeReference() pour supprimer une référence.
+ *
+ * A la différence de std::shared_ptr, le compteur de référence est donc géré
+ * en interne par le type *T*.
+ * Cette classe n'effectue aucune action basée sur la valeur de compteur de référence.
+ *  la destruction éventuelle de l'objet lorsque le compteur de référence arrive
+ * à zéro est gérée par l'objet lui même.
  */
 template<class T>
 class ReferenceCounter

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RealArray2Variant.h                                         (C) 2000-2022 */
+/* RealArray2Variant.h                                         (C) 2000-2023 */
 /*                                                                           */
 /* Variant pouvant contenir les types ConstArray2View, Real2x2 et Real3x3.   */
 /*---------------------------------------------------------------------------*/
@@ -19,7 +19,9 @@
 #include "arcane/utils/Array2View.h"
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
+#if defined(ARCANE_HAS_ACCELERATOR_API)
 #include "arcane/utils/NumArray.h"
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,14 +46,24 @@ class RealArray2Variant
   RealArray2Variant(UniqueArray2<Real> v)
   : RealArray2Variant(v.constView())
   {}
-  template<typename LayoutType>
-  RealArray2Variant(const NumArray<Real,MDDim2,LayoutType>& v)
-  : RealArray2Variant(v.span())
-  {}
   RealArray2Variant(ConstArray2View<Real> v)
   {
     _setValue(v.data(), v.dim1Size(), v.dim2Size());
   }
+  RealArray2Variant(Real2x2 r)
+  {
+    _setValue(reinterpret_cast<Real*>(&r), 2, 2);
+  }
+  RealArray2Variant(Real3x3 r)
+  {
+    _setValue(reinterpret_cast<Real*>(&r), 3, 3);
+  }
+
+#if defined(ARCANE_HAS_ACCELERATOR_API)
+  template<typename LayoutType>
+  RealArray2Variant(const NumArray<Real,MDDim2,LayoutType>& v)
+  : RealArray2Variant(v.span())
+  {}
   template<typename LayoutType>
   RealArray2Variant(MDSpan<Real,MDDim2,LayoutType> v)
   {
@@ -62,14 +74,7 @@ class RealArray2Variant
   {
     _setValue(v.to1DSpan().data(), v.extent0(), v.extent1());
   }
-  RealArray2Variant(Real2x2 r)
-  {
-    _setValue(reinterpret_cast<Real*>(&r), 2, 2);
-  }
-  RealArray2Variant(Real3x3 r)
-  {
-    _setValue(reinterpret_cast<Real*>(&r), 3, 3);
-  }
+#endif
 
   RealArray2Variant& operator=(const RealArray2Variant& rhs) = default;
   RealArray2Variant& operator=(ConstArray2View<Real> v)
@@ -130,6 +135,7 @@ class RealArray2Variant
                               m_value[1][0], m_value[1][1], m_value[1][2],
                               m_value[2][0], m_value[2][1], m_value[2][2]);
   }
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   template<typename LayoutType>
   operator NumArray<Real,MDDim2,LayoutType>() const
   {
@@ -139,6 +145,7 @@ class RealArray2Variant
         v(i,j) = m_value[i][j];
     return v;
   }
+#endif
 
  private:
 

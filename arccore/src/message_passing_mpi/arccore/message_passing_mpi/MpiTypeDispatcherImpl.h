@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcherImpl.h                                     (C) 2000-2023 */
+/* MpiTypeDispatcherImpl.h                                     (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de 'MpiTypeDispatcher'.                                    */
 /*---------------------------------------------------------------------------*/
@@ -51,7 +51,8 @@ MpiTypeDispatcher(IMessagePassingMng* parallel_mng,MpiAdapter* adapter,MpiDataty
 template<class Type> MpiTypeDispatcher<Type>::
 ~MpiTypeDispatcher()
 {
-  m_datatype = nullptr;
+  if (m_is_destroy_datatype)
+    delete m_datatype;
 }
 
 /*---------------------------------------------------------------------------*/

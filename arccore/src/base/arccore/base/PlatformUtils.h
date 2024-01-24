@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.h                                             (C) 2000-2018 */
+/* PlatformUtils.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -40,21 +40,42 @@ class IStackTraceService;
 namespace Platform
 {
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Initialisations spécifiques à une platforme.
  *
- Cette routine est appelé lors de l'initialisation de l'architecture.
- Elle permet d'effectuer certains traitements qui dépendent de la
- plateforme
+ * Cette routine est appelé lors de l'initialisation de l'architecture.
+ * Elle permet d'effectuer certains traitements qui dépendent de la
+ * plateforme.
+ *
+ * Active les exceptions flottantes i elles sont disponibles.
  */
-extern "C++" ARCCORE_BASE_EXPORT void platformInitialize();
+extern "C++" ARCCORE_BASE_EXPORT void
+platformInitialize();
 
+/*!
+ * \brief Initialisations spécifiques à une platforme.
+ *
+ * Cette routine est appelé lors de l'initialisation de l'architecture.
+ * Elle permet d'effectuer certains traitements qui dépendent de la
+ * plateforme.
+ *
+ * Si \a enable_fpe est vrai, les exceptions flottantes sont activées si elles
+ * sont disponibles (via l'appel à enableFloatingException().
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+platformInitialize(bool enable_fpe);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Routines de fin de programme spécifiques à une platforme.
  *
  Cette routine est appelé juste avant de quitter le programme.
  */
-extern "C++" ARCCORE_BASE_EXPORT void platformTerminate();
+extern "C++" ARCCORE_BASE_EXPORT void
+platformTerminate();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

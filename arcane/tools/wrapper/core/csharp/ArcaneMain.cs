@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -10,6 +10,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Runtime.CompilerServices;
+
+// Pour accéder à ItemSharedInfo. A supprimer lorsqu'il n'y aura plus
+// besoin de ItemInternal
+[assembly: InternalsVisibleToAttribute("Arcane.Cea.Materials")]
 
 namespace Arcane
 {
@@ -295,6 +300,19 @@ namespace Arcane
       CallGarbageCollector();
     }
 
+    //! Indique si \a aname est un nom valide pour une assembly contenant des services ou des modules
+    static bool _IsValidArcaneAssembly(string aname)
+    {
+      // Pas besoin de parcourir ce genre d'assembly.
+      if (aname=="mscorlib")
+        return false;
+      if (aname.StartsWith("System."))
+        return false;
+      if (aname.StartsWith("Mono."))
+        return false;
+      return true;
+    }
+
     /*!
      * \brief Parcours les assembly et charge les modules ou services qui y sont definis.
      *
@@ -307,11 +325,15 @@ namespace Arcane
       foreach(Assembly a in AppDomain.CurrentDomain.GetAssemblies()){
         string full_name = a.GetName().FullName;
         if (m_already_loaded.Contains(full_name)){
-          Debug.Write($" skip assembly '{full_name}' because it has already been analysed");
+          Debug.Write($"Skip assembly '{full_name}' because it has already been analysed");
           continue;
         }
         m_already_loaded.Add(full_name);
-        _LoadModuleAndServiceFromAssembly(a);
+        if (_IsValidArcaneAssembly(a.GetName().Name)){
+          _LoadModuleAndServiceFromAssembly(a);
+        }
+        else
+          Debug.Write($"Skip assembly '{full_name}' because it is filtered by name");
       }
       Debug.Write("End Loading internal modules and services");
     }
@@ -390,16 +412,7 @@ namespace Arcane
 
     static void _LoadModuleAndServiceFromAssembly(Assembly a)
     {
-
-      AssemblyName aname = a.GetName();
-      // Pas besoin de parcourir ce genre d'assembly.
-      // TODO: en ajouter d'autres
-      if (aname.Name=="mscorlib")
-        return;
-      if (aname.Name.StartsWith("System"))
-        return;
-
-      Debug.Write("Reading assembly name={0}",a);
+      Debug.Write("Reading assembly name={0} path={1}",a,a.Location);
       Type[] atypes = null;
       try{
         atypes = a.GetTypes();

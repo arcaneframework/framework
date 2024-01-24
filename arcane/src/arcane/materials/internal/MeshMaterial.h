@@ -85,12 +85,12 @@ class MeshMaterial
   IMeshEnvironment* environment() const override;
   CellGroup cells() const override;
 
-  MeshMaterialVariableIndexer* variableIndexer() const override
+  MeshMaterialVariableIndexer* variableIndexer() const
   {
     return m_data.variableIndexer();
   }
 
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
+  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
   {
     return m_data._itemsInternalView();
   }

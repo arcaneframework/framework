@@ -858,7 +858,7 @@ simple_env_loop(ComponentPartItemVectorView pure_items,
   views[1] = impure_items;
 
   for( Integer iview=0; iview<2; ++iview ){
-    auto xiter = views[iview];
+    const auto& xiter = views[iview];
     Int32 cpi = xiter.componentPartIndex();
     Int32ConstArrayView item_indexes = xiter.valueIndexes();
     Integer nb_item = xiter.nbItem();

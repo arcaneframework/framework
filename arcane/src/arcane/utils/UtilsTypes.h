@@ -171,9 +171,12 @@ class Real2;
 class Real3;
 class Real2x2;
 class Real3x3;
+template <typename T> class Vector2;
 template <typename T> class Vector3;
 using Int64x3 = Vector3<Int64>;
 using Int32x3 = Vector3<Int32>;
+using Int64x2 = Vector2<Int64>;
+using Int32x2 = Vector2<Int32>;
 template<typename T,int Size> class NumVector;
 template<typename T,int RowSize,int ColumnSize = RowSize> class NumMatrix;
 using RealN2 = NumVector<Real,2>;
@@ -261,14 +264,14 @@ template<int RankValue> class LeftLayoutN;
 template<int RankValue> class MDDimType;
 class IMemoryRessourceMng;
 template<Int32... RankSize> class ExtentsV;
-template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
-class MDSpanBase;
 template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
 class MDSpan;
 template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
-class NumArrayBase;
+using MDSpanBase ARCANE_DEPRECATED_REASON("Use 'MDSpan' type instead") = MDSpan<DataType,Extents,LayoutPolicy>;
 template<class DataType,typename Extents,typename LayoutType = DefaultLayout >
 class NumArray;
+template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
+using NumArrayBase ARCANE_DEPRECATED_REASON("Use 'NumArray' type instead") = NumArray<DataType,Extents,LayoutPolicy>;
 template<typename ExtentType> class ArrayBounds;
 template<int RankValue> class ArrayIndexBase;
 template<int RankValue> class ArrayIndex;

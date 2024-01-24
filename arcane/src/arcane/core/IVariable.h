@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariable.h                                                 (C) 2000-2023 */
+/* IVariable.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Interface de la classe Variable.                                          */
 /*---------------------------------------------------------------------------*/
@@ -181,10 +181,10 @@ class ARCANE_CORE_EXPORT IVariable
   virtual Real allocatedMemory() const =0;
 
   //! Nom de la variable
-  virtual const String& name() const =0;
+  virtual String name() const =0;
 
   //! Nom complet de la variable (avec le préfixe de la famille)
-  virtual const String& fullName() const =0;
+  virtual String fullName() const =0;
 
   //! Type de la donnée gérée par la variable (Real, Integer, ...)
   virtual eDataType dataType() const =0;
@@ -444,7 +444,7 @@ class ARCANE_CORE_EXPORT IVariable
   virtual ItemGroup itemGroup() const =0;
 
   //! Nom du groupe d'entité associée.
-  virtual const String& itemGroupName() const =0;
+  virtual String itemGroupName() const =0;
 
   /*!
    * \brief Famille d'entité associée.
@@ -461,10 +461,10 @@ class ARCANE_CORE_EXPORT IVariable
   virtual IItemFamily* itemFamily() const =0;
 
   //! Nom de la famille associée (nul si aucune).
-  virtual const String& itemFamilyName() const =0;
+  virtual String itemFamilyName() const =0;
 
   //! Nom du maillage associé (nul si aucun).
-  virtual const String& meshName() const =0;
+  virtual String meshName() const =0;
 
   /*!
    * \brief Créé une instance contenant les meta-données de la variable.

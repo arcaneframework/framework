@@ -1,5 +1,5 @@
-make_directory(${CMAKE_BINARY_DIR}/arcane/geometry)
-make_directory(${CMAKE_BINARY_DIR}/arcane/geometry/euclidian)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arcane/geometry)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arcane/geometry/euclidian)
 
 include(srcs.cmake)
 

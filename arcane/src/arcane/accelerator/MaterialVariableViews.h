@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ArcaneCxx20.h"
+
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
 #include "arcane/core/materials/MeshEnvironmentVariableRef.h"
@@ -148,10 +150,10 @@ class MatItemVariableScalarOutViewT
   }
 
   //! Surcharge pour accéder à la valeure globale à partir du cell id
-  ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType item) const
+  ARCCORE_HOST_DEVICE Accessor operator[](ItemIndexType item) const
   {
     ARCANE_CHECK_AT(item.localId(),this->m_value[0].size());
-    return Accessor(this->m_value0[item.localId()]);
+    return Accessor(this->m_value0 + item.localId());
   }
 
   //! Opérateur d'accès pour l'entité \a item

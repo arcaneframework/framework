@@ -90,7 +90,7 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
   AllEnvCell operator[](Integer index)
   {
     Int32 lid = m_local_ids[index];
-    return AllEnvCell(&m_items_internal[lid]);
+    return AllEnvCell(matimpl::ConstituentItemBase(&m_items_internal[lid]));
   }
 
   // localId() de la \i ème maille du vecteur
@@ -116,13 +116,6 @@ class ARCANE_CORE_EXPORT ComponentCellEnumerator
 
  protected:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ComponentCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                          ConstArrayView<MatVarIndex> matvar_indexes,
-                          IMeshComponent* component);
-
- protected:
-
   explicit ComponentCellEnumerator(const ComponentItemVectorView& v);
 
  public:
@@ -145,7 +138,7 @@ class ARCANE_CORE_EXPORT ComponentCellEnumerator
 
   ComponentCell operator*() const
   {
-    return ComponentCell(m_items[m_index]);
+    return ComponentCell(matimpl::ConstituentItemBase(m_items[m_index]));
   }
 
   Integer index() const { return m_index; }
@@ -198,13 +191,6 @@ class ARCANE_CORE_EXPORT MatCellEnumerator
 {
  protected:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  MatCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                    ConstArrayView<MatVarIndex> matvar_indexes,
-                    IMeshComponent* component);
-
- protected:
-
   explicit MatCellEnumerator(const ComponentItemVectorView& v)
   : ComponentCellEnumerator(v)
   {
@@ -223,7 +209,7 @@ class ARCANE_CORE_EXPORT MatCellEnumerator
 #ifdef ARCANE_CHECK
     _check();
 #endif
-    return MatCell(m_items[m_index]);
+    return MatCell(matimpl::ConstituentItemBase(m_items[m_index]));
   }
 
  private:
@@ -237,13 +223,6 @@ class ARCANE_CORE_EXPORT MatCellEnumerator
 class ARCANE_CORE_EXPORT EnvCellEnumerator
 : public ComponentCellEnumerator
 {
- protected:
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  EnvCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                    ConstArrayView<MatVarIndex> matvar_indexes,
-                    IMeshComponent* component);
-
  protected:
 
   explicit EnvCellEnumerator(const ComponentItemVectorView& v)
@@ -264,7 +243,7 @@ class ARCANE_CORE_EXPORT EnvCellEnumerator
 #ifdef ARCANE_CHECK
     _check();
 #endif
-    return EnvCell(m_items[m_index]);
+    return EnvCell(matimpl::ConstituentItemBase(m_items[m_index]));
   }
 };
 
@@ -277,22 +256,17 @@ class ARCANE_CORE_EXPORT EnvCellEnumerator
 class ARCANE_CORE_EXPORT ComponentPartCellEnumerator
 {
  protected:
-  ComponentPartCellEnumerator(IMeshComponent* component,Int32 var_idx,
-                              Int32ConstArrayView value_indexes,
-                              Int32ConstArrayView item_indexes,
-                              ConstArrayView<ComponentItemInternal*> items_internal,
-                              Int32 base_index)
-  : m_index(0), m_size(item_indexes.size()), m_var_idx(var_idx), m_base_index(base_index),
-    m_value_indexes(value_indexes), m_item_indexes(item_indexes),
-    m_items_internal(items_internal), m_component(component)
-  {
-  }
+
   ComponentPartCellEnumerator(const ComponentPartItemVectorView& view,Integer base_index);
+
  public:
+
   static ComponentPartCellEnumerator create(ComponentPartItemVectorView v);
   static ComponentPartCellEnumerator create(IMeshComponent* c,eMatPart part);
+
  public:
-  void operator++()
+
+ void operator++()
   {
     ++m_index;
   }
@@ -307,7 +281,7 @@ class ARCANE_CORE_EXPORT ComponentPartCellEnumerator
 
   ComponentCell operator*() const
   {
-    return ComponentCell(m_items_internal[m_item_indexes[m_index]]);
+    return ComponentCell(matimpl::ConstituentItemBase(m_items_internal[m_item_indexes[m_index]]));
   }
 
  protected:
@@ -339,7 +313,7 @@ class ARCANE_CORE_EXPORT MatPartCellEnumerator
 
   MatCell operator*() const
   {
-    return MatCell(m_items_internal[m_item_indexes[m_index]]);
+    return MatCell(matimpl::ConstituentItemBase(m_items_internal[m_item_indexes[m_index]]));
   }
 };
 
@@ -360,7 +334,7 @@ class ARCANE_CORE_EXPORT  EnvPartCellEnumerator
 
   EnvCell operator*() const
   {
-    return EnvCell(m_items_internal[m_item_indexes[m_index]]);
+    return EnvCell(matimpl::ConstituentItemBase(m_items_internal[m_item_indexes[m_index]]));
   }
 };
 
@@ -376,7 +350,7 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
  public:
 
   ARCCORE_HOST_DEVICE explicit CellComponentCellEnumerator(ComponentCell super_item)
-  : m_index(0), m_size(super_item.internal()->nbSubItem()), m_items_begin(super_item.internal()->firstSubItem())
+  : m_index(0), m_size(super_item._internal()->nbSubItem()), m_items_begin(super_item._internal()->_firstSubItem())
   {
   }
 
@@ -388,7 +362,7 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
   ARCCORE_HOST_DEVICE ComponentCell operator*() const
   {
     ARCANE_CHECK_AT(m_index,m_size);
-    return ComponentCell(m_items_begin+m_index);
+    return ComponentCell(matimpl::ConstituentItemBase(m_items_begin+m_index));
   }
   ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_items_begin[m_index].variableIndex(); }
   ARCCORE_HOST_DEVICE Integer index() const { return m_index; }
@@ -422,7 +396,7 @@ template <typename ComponentCellType> class CellComponentCellEnumeratorT
   ARCCORE_HOST_DEVICE ComponentCellType operator*() const
   {
     ARCANE_CHECK_AT(m_index,m_size);
-    return ComponentCellType(m_items_begin+m_index);
+    return ComponentCellType(matimpl::ConstituentItemBase(m_items_begin+m_index));
   }
 };
 

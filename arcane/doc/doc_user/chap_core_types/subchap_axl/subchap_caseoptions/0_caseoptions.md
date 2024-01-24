@@ -67,7 +67,7 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_axl
+\ref arcanedoc_core_types_axl_entrypoint
 </span>
 <span class="next_section_button">
 \ref arcanedoc_core_types_axl_caseoptions_struct

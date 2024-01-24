@@ -32,6 +32,7 @@ arcane_find_package(hiredis QUIET)
 include(srcs.cmake)
 
 set(ARCANE_ACCELERATOR_SOURCES
+  accelerator/AtomicUnitTest.cc
   accelerator/SimpleHydroAcceleratorService.cc
   accelerator/MiniWeatherArray.cc
   accelerator/MemoryCopyUnitTest.cc
@@ -45,13 +46,20 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
   accelerator/MeshMaterialAcceleratorUnitTest.cc
-  )
-list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
+)
+if (ARCANE_HAS_ACCELERATOR_API)
+  list(APPEND ARCANE_SOURCES
+    MDVariableUnitTest.cc
+    accelerator/MiniWeatherOriginalSequential.cc
+    accelerator/MiniWeatherArraySequential.cc
+    )
+  list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
+  arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
+endif()
+
 if (TARGET hiredis::hiredis)
   list(APPEND ARCANE_SOURCES RedisUnitTest.cc)
 endif()
-
-arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 
 set(CURRENT_SRC_PATH ${Arcane_SOURCE_DIR}/src)
 
@@ -187,7 +195,10 @@ set(ARCANE_TEST_DRIVER ${ARCANE_TEST_DRIVER} CACHE STRING "Driver for test" FORC
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-target_link_libraries(arcane_tests_lib PRIVATE arcane_accelerator)
+if (ARCANE_HAS_ACCELERATOR_API)
+  target_link_libraries(arcane_tests_lib PRIVATE arcane_accelerator)
+endif()
+target_link_libraries(arcane_tests_lib PRIVATE arcane_accelerator_core)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -279,7 +290,9 @@ ARCANE_ADD_TEST_SEQUENTIAL(variable testVariable-1.arc)
 if (LZ4_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(variable_lz4 testVariable-1-lz4.arc)
 endif()
-ARCANE_ADD_TEST_SEQUENTIAL(mdvariable testMDVariable-1.arc)
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_test_sequential(mdvariable testMDVariable-1.arc)
+endif()
 ARCANE_ADD_TEST_SEQUENTIAL(variablesimd testVariableSimd-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(partial-variable-seq testPartialVariable-seq.arc)
 if(PARTITIONER_FOUND)
@@ -322,19 +335,21 @@ add_test(
   )
 arcane_add_test_sequential(direct_exec_cartesian_sequential testRunDirect-1.arc -D TestRunDirectCartesianSequential)
 arcane_add_test(direct_exec_hello_world testRunDirect-1.arc -D TestRunDirectHelloWorld)
-arcane_add_test(direct_exec_cartesian testRunDirect-1.arc -D TestRunDirectCartesian -We,ARCANE_USE_OLD_MESHGENERATOR,1)
+arcane_add_test(direct_exec_cartesian testRunDirect-1.arc -D TestRunDirectCartesian)
 
-ADD_TEST(dump_all_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_all_internal)
-ADD_TEST(dump_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_internal)
-ADD_TEST(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_database)
+add_test(dump_all_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_all_internal)
+add_test(dump_internal ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -A,MessagePassingService=Sequential -arcane_opt arcane_internal)
+add_test(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane -arcane_opt arcane_database)
 
 # ----------------------------------------------------------------------------
 
-arcane_add_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
-arcane_add_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
-arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  arcane_add_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
+  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
+  arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
+endif()
 
 arcane_add_test_sequential(standalone_subdomain1 dummy.arc "-A,StandaloneSubDomainMethod=Test1")
 arcane_add_test_sequential(standalone_subdomain2 dummy.arc "-A,StandaloneSubDomainMethod=Test2")
@@ -372,10 +387,10 @@ add_test_message_passing(sub_all)
 arcane_add_test_message_passing_hybrid(parallelmng_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
 arcane_add_test_message_passing_hybrid(parallelmng_sub_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
 
-add_test(serialize_message_list_v2_4proc
+add_test(serialize_message_list_v1_4proc
   ${ARCANE_TEST_DRIVER} launch -n 4
   -We,MESSAGE_PASSING_TEST,serialize_message_list
-  -We,ARCANE_SYNCHRONIZE_LIST_VERSION,2
+  -We,ARCANE_SYNCHRONIZE_LIST_VERSION,1
   -arcane_opt direct_test ParallelMngTest null)
 
 # ----------------------------------------------------------------------------
@@ -456,6 +471,10 @@ if(PARTITIONER_FOUND)
 endif()
 
 ARCANE_ADD_TEST(mesh2 testMesh-2.arc)
+arcane_add_test_sequential(mesh2_sort_faces testMesh-2-sorted-faces.arc)
+arcane_add_test_sequential(mesh2_init_nan testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,NAN")
+arcane_add_test_sequential(mesh2_init_default testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,DEFAULT")
+arcane_add_test_sequential(mesh2_init_nan_and_default testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,NAN_AND_DEFAULT")
 ARCANE_ADD_TEST_PARALLEL(mesh2_5ghost testMesh-2-5ghost.arc 4)
 ARCANE_ADD_TEST_SEQUENTIAL(matvec testMatVec-1.arc)
 #ARCANE_ADD_TEST_SEQUENTIAL(amr2 testAMR-2.arc)
@@ -517,9 +536,11 @@ arcane_add_test_sequential(ios_msh2 testIos-msh2.arc)
 arcane_add_test_sequential(ios_msh3 testIos-msh3.arc)
 arcane_add_test_sequential(ios_msh4 testIos-msh4.arc)
 arcane_add_test_sequential(ios_msh5 testIos-msh5.arc)
+arcane_add_test_sequential(ios_msh5_parallel testIos-msh5.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,1")
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(ios_msh4 testIos-msh4.arc 4)
   arcane_add_test_parallel_thread(ios_msh5 testIos-msh5.arc 5)
+  arcane_add_test_parallel(ios_msh5_parallel testIos-msh5.arc 4 "-We,ARCANE_USE_PARALLEL_MSH_READER,1")
 endif()
 if(vtkIOXML_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(ios_vtu testIos-vtu.arc)
@@ -534,6 +555,7 @@ endif()
 ARCANE_ADD_TEST_PARALLEL(hyoda testHyoda.arc 1)
 
 arcane_add_test(checkpoint_basic testCheckpoint-3.arc -c 3 -m 5)
+arcane_add_test(checkpoint_basic_hash_v2 testCheckpoint-3.arc -c 3 -m 5 "-We,ARCANE_VARIABLEMNG_HASHV2,1" "-We,ARCANE_USE_JSON_METADATA,1")
 arcane_add_test(checkpoint_basic2-v1 testCheckpoint-basic2-v1.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2 testCheckpoint-basic2.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2-v3 testCheckpoint-basic2-v3.arc -c 3 -m 5)
@@ -556,8 +578,8 @@ arcane_add_test_parallel_all(amr2 testAMR-2.arc 3 4)
 arcane_add_test_parallel_all(amr2_checkpoint testAMR-2-checkpoint.arc 3 4 -c 2)
 ARCANE_ADD_TEST(hydro3 testHydro-3.arc -m 50)
 arcane_add_test_sequential(hydro3_cartesian testHydro-3-cartesian.arc -m 50)
-arcane_add_test_sequential(hydro3_cartesian_small testHydro-3-cartesian-small.arc -m 10 -We,ARCANE_USE_OLD_MESHGENERATOR,1)
-arcane_add_test_parallel_thread(hydro3_cartesian_small testHydro-3-cartesian-small.arc 4 -m 10 -We,ARCANE_USE_OLD_MESHGENERATOR,1)
+arcane_add_test_sequential(hydro3_cartesian_small testHydro-3-cartesian-small.arc -m 10)
+arcane_add_test_parallel_thread(hydro3_cartesian_small testHydro-3-cartesian-small.arc 4 -m 10)
 arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian_small.xml)
 arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
@@ -576,21 +598,23 @@ if(NOT ARCANE_DISABLE_PERFCOUNTER_TESTS)
   arcane_add_test(hydrosimd5_trace testHydroSimd-5.arc -m 50 -We,ARCANE_TRACE_ENUMERATOR,1)
 endif()
 
-arcane_add_accelerator_test_sequential(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
-arcane_add_accelerator_test_parallel(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
-arcane_add_accelerator_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
-arcane_add_accelerator_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
-arcane_add_test(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
-arcane_add_test_sequential_task(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
-arcane_add_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
-arcane_add_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
-if (ARCANE_ACCELERATOR_RUNTIME_NAME STREQUAL cuda)
-  arcane_add_accelerator_test_sequential(hydro_accelerator5_cupti testHydroAccelerator-5.arc -m 20 -We,ARCANE_CUPTI_LEVEL,1)
-endif()
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_accelerator_test_sequential(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
+  arcane_add_accelerator_test_parallel(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
+  arcane_add_accelerator_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
+  arcane_add_accelerator_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
+  arcane_add_test(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
+  arcane_add_test_sequential_task(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
+  arcane_add_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
+  arcane_add_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
+  if (ARCANE_ACCELERATOR_RUNTIME_NAME STREQUAL cuda)
+    arcane_add_accelerator_test_sequential(hydro_accelerator5_cupti testHydroAccelerator-5.arc -m 20 -We,ARCANE_CUPTI_LEVEL,1)
+  endif()
 
-arcane_add_accelerator_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
-arcane_add_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
-arcane_add_test_sequential_task(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc 4 -m 50)
+  arcane_add_accelerator_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
+  arcane_add_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
+  arcane_add_test_sequential_task(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc 4 -m 50)
+endif()
 
 arcane_add_test_sequential_task(hydrosimd5 testHydroSimd-5.arc 4 -m 50)
 ARCANE_ADD_TEST_PARALLEL(hydro5-3proc_rep4 testHydro-5.arc 12 -m 50 -R 4)
@@ -637,55 +661,66 @@ if (HDF5_FOUND)
   ARCANE_ADD_TEST_PARALLEL(hydro1_checkpoint_3proc_rep4 testHydro-1-checkpoint.arc 12 -c 2 -m 25 -R 4)
 endif()
 
-arcane_add_test_sequential(numarray1 testNumArray-1.arc)
-arcane_add_test_sequential_task(numarray1 testNumArray-1.arc 4)
-arcane_add_accelerator_test_sequential(numarray1 testNumArray-1.arc)
+macro(arcane_add_accelerator_test_all_policies TEST_NAME CASE_FILE)
+  arcane_add_test_sequential(${TEST_NAME} ${CASE_FILE})
+  arcane_add_test_sequential_task(${TEST_NAME} ${CASE_FILE} 4)
+  arcane_add_accelerator_test_sequential(${TEST_NAME} ${CASE_FILE})
+endmacro()
 
-arcane_add_test_sequential(runqueue1 testRunQueue-1.arc)
-arcane_add_test_sequential_task(runqueue1 testRunQueue-1.arc 4)
-arcane_add_accelerator_test_sequential(runqueue1 testRunQueue-1.arc)
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_test_sequential(numarray1 testNumArray-1.arc)
+  arcane_add_test_sequential_task(numarray1 testNumArray-1.arc 4)
+  arcane_add_accelerator_test_sequential(numarray1 testNumArray-1.arc)
 
-arcane_add_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
-arcane_add_test_sequential_task(acceleratorviews1 testAcceleratorViews-1.arc 4)
-arcane_add_accelerator_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
+  arcane_add_test_sequential(runqueue1 testRunQueue-1.arc)
+  arcane_add_test_sequential_task(runqueue1 testRunQueue-1.arc 4)
+  arcane_add_accelerator_test_sequential(runqueue1 testRunQueue-1.arc)
 
-arcane_add_test_sequential(accelerator_reduce1 testAcceleratorReduce-1.arc)
-arcane_add_test_sequential_task(accelerator_reduce1 testAcceleratorReduce-1.arc 4)
-arcane_add_accelerator_test_sequential(accelelerator_reduce1 testAcceleratorReduce-1.arc)
-arcane_add_accelerator_test_sequential(accelelerator_reduce1_atomic testAcceleratorReduce-1-atomic.arc)
+  arcane_add_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
+  arcane_add_test_sequential_task(acceleratorviews1 testAcceleratorViews-1.arc 4)
+  arcane_add_accelerator_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
 
-arcane_add_test_sequential(accelerator_scan1 testAcceleratorScan-1.arc)
-arcane_add_test_sequential_task(accelerator_scan1 testAcceleratorScan-1.arc 4)
-arcane_add_accelerator_test_sequential(accelelerator_scan1 testAcceleratorScan-1.arc)
+  arcane_add_test_sequential(accelerator_reduce1 testAcceleratorReduce-1.arc)
+  arcane_add_test_sequential_task(accelerator_reduce1 testAcceleratorReduce-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelelerator_reduce1 testAcceleratorReduce-1.arc)
+  arcane_add_accelerator_test_sequential(accelelerator_reduce1_atomic testAcceleratorReduce-1-atomic.arc)
 
-arcane_add_test_sequential(accelerator_filter1 testAcceleratorFilter-1.arc)
-arcane_add_test_sequential_task(accelerator_filter1 testAcceleratorFilter-1.arc 4)
-arcane_add_accelerator_test_sequential(accelelerator_filter1 testAcceleratorFilter-1.arc)
+  arcane_add_test_sequential(accelerator_scan1 testAcceleratorScan-1.arc)
+  arcane_add_test_sequential_task(accelerator_scan1 testAcceleratorScan-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelelerator_scan1 testAcceleratorScan-1.arc)
 
-arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
-arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
-arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
+  arcane_add_test_sequential(accelerator_filter1 testAcceleratorFilter-1.arc)
+  arcane_add_test_sequential_task(accelerator_filter1 testAcceleratorFilter-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelelerator_filter1 testAcceleratorFilter-1.arc)
 
-arcane_add_test_sequential(memorycopy1 testMemoryCopy-1.arc)
-arcane_add_test_sequential_task(memorycopy1 testMemoryCopy-1.arc 4)
-arcane_add_accelerator_test_sequential(memorycopy1 testMemoryCopy-1.arc)
+  arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
+  arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
 
-arcane_add_test_sequential(multi_memorycopy1 testMultiMemoryCopy-1.arc)
-arcane_add_test_sequential_task(multi_memorycopy1 testMultiMemoryCopy-1.arc 4)
-arcane_add_accelerator_test_sequential(multi_memorycopy1 testMultiMemoryCopy-1.arc)
+  arcane_add_test_sequential(memorycopy1 testMemoryCopy-1.arc)
+  arcane_add_test_sequential_task(memorycopy1 testMemoryCopy-1.arc 4)
+  arcane_add_accelerator_test_sequential(memorycopy1 testMemoryCopy-1.arc)
 
-arcane_add_test_sequential(accelerator_iteminfo1 testAcceleratorItemInfo-1.arc)
-arcane_add_test_sequential_task(accelerator_iteminfo1 testAcceleratorItemInfo-1.arc 4)
-arcane_add_accelerator_test_sequential(accelerator_iteminfo1 testAcceleratorItemInfo-1.arc)
+  arcane_add_test_sequential(multi_memorycopy1 testMultiMemoryCopy-1.arc)
+  arcane_add_test_sequential_task(multi_memorycopy1 testMultiMemoryCopy-1.arc 4)
+  arcane_add_accelerator_test_sequential(multi_memorycopy1 testMultiMemoryCopy-1.arc)
 
-arcane_add_test_sequential(miniweather_orig1 testMiniWeatherOriginal.arc)
-arcane_add_test_sequential(miniweather_array_seq1 testMiniWeatherArraySequential.arc)
-arcane_add_test_sequential(miniweather_array1_right_layout testMiniWeatherArray.arc)
-arcane_add_test_sequential(miniweather_array1_left_layout testMiniWeatherArrayLeftLayout.arc)
-arcane_add_test_sequential_task(miniweather_array1 testMiniWeatherArray.arc 4)
-arcane_add_accelerator_test_sequential(miniweather_array1_right_layout testMiniWeatherArray.arc)
-arcane_add_accelerator_test_sequential(miniweather_array1_left_layout testMiniWeatherArrayLeftLayout.arc)
-arcane_add_accelerator_test_sequential(miniweather_array1_device testMiniWeatherArrayDevice.arc)
+  arcane_add_test_sequential(accelerator_iteminfo1 testAcceleratorItemInfo-1.arc)
+  arcane_add_test_sequential_task(accelerator_iteminfo1 testAcceleratorItemInfo-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelerator_iteminfo1 testAcceleratorItemInfo-1.arc)
+
+  arcane_add_test_sequential(miniweather_orig1 testMiniWeatherOriginal.arc)
+  arcane_add_test_sequential(miniweather_array_seq1 testMiniWeatherArraySequential.arc)
+  arcane_add_test_sequential(miniweather_array1_right_layout testMiniWeatherArray.arc)
+  arcane_add_test_sequential(miniweather_array1_left_layout testMiniWeatherArrayLeftLayout.arc)
+  arcane_add_test_sequential_task(miniweather_array1 testMiniWeatherArray.arc 4)
+  arcane_add_accelerator_test_sequential(miniweather_array1_right_layout testMiniWeatherArray.arc)
+  arcane_add_accelerator_test_sequential(miniweather_array1_left_layout testMiniWeatherArrayLeftLayout.arc)
+  arcane_add_accelerator_test_sequential(miniweather_array1_device testMiniWeatherArrayDevice.arc)
+
+  arcane_add_accelerator_test_all_policies(accelerator_atomic testAcceleratorAtomic-1.arc)
+endif()
+
 arcane_add_test_sequential(pdes_random_number_generator_service testPDESRandomNumberGenerator.arc)
 arcane_add_test_sequential(simple_csv_output_service testSimpleCsvOutputService.arc)
 arcane_add_test_sequential(simple_csv_comparator_service testSimpleCsvComparatorService.arc)
@@ -920,6 +955,13 @@ if (TARGET arcane_mpi)
   arcane_add_test_script(checkpoint_change_n8_n5 checkpoint_change_n8_n5.xml)
   arcane_add_test_script(checkpoint_change_n7_n4 checkpoint_change_n7_n4.xml)
 endif()
+
+#################################################################
+#################################################################
+
+# Test pour la partie StringVariableReplace.
+arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc)
+
 
 # ----------------------------------------------------------------------------
 # Local Variables:

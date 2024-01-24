@@ -41,7 +41,6 @@ arcane_set_if_unset(ARCANE_WANT_NUMERICS TRUE BOOL "Compile numerical library")
 arcane_set_if_unset(ARCANE_WANT_TOTALVIEW TRUE BOOL "Compile total view display")
 arcane_set_if_unset(ARCANE_DEFAULT_PARTITIONER Auto STRING "Default partitioner")
 
-arcane_set_if_unset(ARCANE_BUILD_TYPE Release STRING "Arcane build type")
 arcane_set_if_unset(ARCANE_WANT_LIBXML2 TRUE BOOL "Use libxml2")
 arcane_set_if_unset(ARCANE_WANT_LEGACY_CONNECTIVITY FALSE BOOL "Use legacy item connectivity accessor")
 arcane_set_if_unset(ARCANE_WANT_CHECK FALSE BOOL "Compilation with additional check (array bounds, ...)")

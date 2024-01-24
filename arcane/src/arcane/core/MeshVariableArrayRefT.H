@@ -275,6 +275,20 @@ copy(const ItemVariableArrayRefT<DataTypeT>& v,RunQueue* queue)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+template<typename DataTypeT> void
+ItemVariableArrayRefT<DataTypeT>::
+fill(const DataTypeT& v,RunQueue* queue)
+{
+  if (!queue){
+    fill(v);
+    return;
+  }
+  impl::fillContigousData(this->m_private_part->data(),v,*queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Échange les valeurs de la variable \a rhs avec celles de l'instance.
  *

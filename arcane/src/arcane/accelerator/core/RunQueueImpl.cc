@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.cc                                             (C) 2000-2022 */
+/* RunQueueImpl.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/RunQueueImpl.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
 #include "arcane/utils/FatalErrorException.h"
 
@@ -19,8 +19,8 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
-#include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/DeviceId.h"
+#include "arcane/accelerator/core/internal/RunCommandImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,9 +61,19 @@ RunQueueImpl::
 /*---------------------------------------------------------------------------*/
 
 void RunQueueImpl::
-release()
+_release()
 {
-  m_runner->_internalFreeRunQueueImpl(this);
+  // S'il reste des commandes en cours d'exécution au moment de libérer
+  // la file d'exécution il faut attendre pour éviter des fuites mémoire car
+  // les commandes ne seront pas désallouées.
+  // TODO: Regarder s'il ne faudrait pas plutôt indiquer cela à l'utilisateur
+  // ou faire une erreur fatale.
+  if (!m_active_run_command_list.empty())
+    _internalBarrier();
+  if (_isInPool())
+    m_runner->_internalPutRunQueueImplInPool(this);
+  else
+    delete this;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -72,7 +82,7 @@ release()
 RunQueueImpl* RunQueueImpl::
 create(Runner* r)
 {
-  return r->_internalCreateOrGetRunQueueImpl();
+  return _reset(r->_internalCreateOrGetRunQueueImpl());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -81,7 +91,7 @@ create(Runner* r)
 RunQueueImpl* RunQueueImpl::
 create(Runner* r, const RunQueueBuildInfo& bi)
 {
-  return r->_internalCreateOrGetRunQueueImpl(bi);
+  return _reset(r->_internalCreateOrGetRunQueueImpl(bi));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -133,6 +143,23 @@ _internalBarrier()
 {
   _internalStream()->barrier();
   _internalFreeRunningCommands();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Réinitialise l'implémentation
+ *
+ * Cette méthode est appelée lorsqu'on va initialiser une RunQueue avec
+ * cette instance. Il faut dans ce car réinitialiser les valeurs de l'instance
+ * qui dépendent de l'état actuel.
+ */
+RunQueueImpl* RunQueueImpl::
+_reset(RunQueueImpl* p)
+{
+  p->m_nb_ref = 1;
+  p->m_is_async = false;
+  return p;
 }
 
 /*---------------------------------------------------------------------------*/

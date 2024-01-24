@@ -35,6 +35,24 @@ macro(arcane_find_package package_name)
     set(CMAKE_DISABLE_FIND_PACKAGE_${package_name} TRUE)
   endif()
   find_package(${package_name} ${ARGN})
+  # Si cette variable est définie, elle contient une liste de noms de
+  # cibles pour le package. Il faut qu'au moins une de ces cibles
+  # existe pour qu'on considère le package comme trouvé.
+  if (ARCANE_PACKAGE_SEARCH_TARGETS_${package_name})
+    set(__arcane_sub_target_found FALSE)
+    message(STATUS "Found package search targets for'${package_name}'")
+    foreach(sub_target_name ${ARCANE_PACKAGE_SEARCH_TARGETS_${package_name}})
+      message(STATUS "Search target '${sub_target_name}' for package '${package_name}'")
+      if (TARGET ${sub_target_name})
+        arccon_register_cmake_config_target(${package_name} CONFIG_TARGET_NAME ${sub_target_name})
+        set(__arcane_sub_target_found TRUE)
+        break()
+      endif()
+    endforeach()
+    if (NOT __arcane_sub_target_found)
+      set(${package_name}_FOUND FALSE)
+    endif()
+  endif()
   if(__arcane_required_package)
     if(NOT ${package_name}_FOUND)
       message(FATAL_ERROR "Required package '${package_name}' is not available")
@@ -74,8 +92,7 @@ macro(arcane_add_axl_files target)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  set(rel_path ${ARGS_RELATIVE_PATH})
-  set(_OUT_AXL_DIR ${CMAKE_BINARY_DIR}/${rel_path})
+  set(_OUT_AXL_DIR ${CMAKE_BINARY_DIR}/${ARGS_RELATIVE_PATH})
   file(MAKE_DIRECTORY ${_OUT_AXL_DIR})
   if (NOT ARGS_INPUT_PATH)
     set(ARGS_INPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
@@ -92,13 +109,33 @@ macro(arcane_add_axl_files target)
   set(_INCLUDES_TO_ADD)
   foreach(iaxl ${ARGS_FILES})
     #message(STATUS "FOREACH i='${iaxl}'")
-    set(_AXL_FILE ${ARGS_INPUT_PATH}/${rel_path}/${iaxl}.axl)
+
+    # Partie permettant de prendre en compte le cas suivant :
+    # ARGS_INPUT_PATH      ${Arcane_SOURCE_DIR}/src
+    # ARGS_RELATIVE_PATH   arcane/geometry
+    # iaxl                 euclidian/Euclidian3Geometry
+
+    get_filename_component(TRUE_RELATIVE_PATH ${ARGS_RELATIVE_PATH}/${iaxl} DIRECTORY)
+    get_filename_component(TRUE_IAXL ${ARGS_RELATIVE_PATH}/${iaxl} NAME)
+
+#    message(STATUS "TRUE_RELATIVE_PATH : ${TRUE_RELATIVE_PATH}")
+#    message(STATUS "TRUE_IAXL : ${TRUE_IAXL}")
+
+    # ARGS_INPUT_PATH      ${Arcane_SOURCE_DIR}/src
+    # TRUE_RELATIVE_PATH   arcane/geometry/euclidian
+    # TRUE_IAXL            Euclidian3Geometry
+
+    # Des erreurs surviennent lors de la génération de la documentation si le
+    # relative path n'est pas correct.
+
+    set(_AXL_FILE ${ARGS_INPUT_PATH}/${TRUE_RELATIVE_PATH}/${TRUE_IAXL}.axl)
+
     set(_CUSTOM_ARGS)
-    # _TOCOPY_AXL_FILE est le nom du fichier 'axl' suffixé par 'rel_path' et où
+    # _TOCOPY_AXL_FILE est le nom du fichier 'axl' suffixé par 'TRUE_RELATIVE_PATH' et où
     # les '/' sont remplacés par des '_'.
-    # Par exemple, si \a rel_path vaut 'arcane/std' et le fichier est 'ArcaneVerifier',
+    # Par exemple, si \a TRUE_RELATIVE_PATH vaut 'arcane/std' et le fichier est 'ArcaneVerifier',
     # alors la valeur sera 'ArcaneVerifier_arcane_std.axl'
-    set(_AXL_RELATIVE_FILE ${rel_path}/${iaxl})
+    set(_AXL_RELATIVE_FILE ${TRUE_RELATIVE_PATH}/${TRUE_IAXL})
     get_filename_component(_AXL_RELATIVE_PATH ${_AXL_RELATIVE_FILE} DIRECTORY)
     get_filename_component(_AXL_ONLY_FILE ${_AXL_RELATIVE_FILE} NAME)
     string(REPLACE "/" "_" _TOCOPY_AXL_FILE ${_AXL_ONLY_FILE}/${_AXL_RELATIVE_PATH}.axl)
@@ -112,7 +149,7 @@ macro(arcane_add_axl_files target)
     file(MAKE_DIRECTORY ${_OUT_AXL_PATH})
     add_custom_command(OUTPUT ${_OUT_AXL_FILE}
       DEPENDS ${_AXL_FILE} ${AXLSTAR_AXL2CC_TARGETDEPEND}
-      COMMAND ${ARCANE_AXL2CC} ARGS -i ${rel_path} -o ${_OUT_AXL_PATH} ${_CUSTOM_ARGS} ${_AXL_FILE}
+      COMMAND ${ARCANE_AXL2CC} ARGS -i ${TRUE_RELATIVE_PATH} -o ${_OUT_AXL_PATH} ${_CUSTOM_ARGS} ${_AXL_FILE}
       )
     set_source_files_properties(${_OUT_AXL_FILE} PROPERTIES GENERATED TRUE)
     # Ajoute le fichier généré à la liste des sources. Cela n'est utile
@@ -216,7 +253,6 @@ function(arcane_add_library target)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  set(rel_path ${ARGS_RELATIVE_PATH})
   set(_FILES)
   #set(_INSTALL_FILES)
   foreach(isource ${ARGS_FILES})
@@ -231,7 +267,7 @@ function(arcane_add_library target)
       get_filename_component(_HEADER_RELATIVE_PATH ${isource} DIRECTORY)
       string(REGEX MATCH "internal/" _INTERNAL_HEADER ${isource})
       if (NOT _INTERNAL_HEADER)
-        install(FILES ${_FILE} DESTINATION include/${rel_path}/${_HEADER_RELATIVE_PATH})
+        install(FILES ${_FILE} DESTINATION include/${ARGS_RELATIVE_PATH}/${_HEADER_RELATIVE_PATH})
       endif()
     endif()
     list(APPEND _FILES ${_FILE})
@@ -272,6 +308,16 @@ endfunction()
 #
 # La liste des packages est sans le préfix 'arccon::'.
 #
+# Afin de supporter le fait que les noms des cibles puissent
+# évoluer en fonction des versions des produits, de CMake ou
+# de la configuration, on supporte plusieurs mécanismes pour
+# associer une cible à un package. Pour chaque package '<pkg>, la
+# recherche de la cible associé se fait comme suit:
+#
+# 1. Si la variable 'ARCCON_TARGET_${pkg}' on considère qu'il
+#    s'agit du nom de la cible
+# 2. Sinon, on la cible recherchée sera 'arccon::${pkg}'
+
 # En plus d'ajouter la liste des packages, cette fonction
 # ajoute aussi en public un argument '-rpath' pour chaque
 # répertoire contenant une bibliothèque des packages.
@@ -316,6 +362,10 @@ function(arcane_add_arccon_packages target visibility)
       # Récupère les bibliothèques définies dans le package.
       # TODO: ne traiter que les répertoires correspondants aux bibliothèques
       # dynamiques.
+      # NOTE: Ce mécanisme est obsolète (2023) et n'est actif que
+      # si ARCANE_ADD_RPATH_TO_LIBS est défini. Ce n'est normalement
+      # plus le cas. On le laisse temporairement pour des raisons
+      # de compatibilité
       get_target_property(_LIB ${_PKG} INTERFACE_LINK_LIBRARIES)
       foreach(lib ${_LIB})
         #message(STATUS "LIB::${lib}")

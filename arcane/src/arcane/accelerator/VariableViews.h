@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableViews.h                                             (C) 2000-2022 */
+/* VariableViews.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des vues sur les variables pour les accélérateurs.                */
 /*---------------------------------------------------------------------------*/
@@ -14,10 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-#include "arcane/SimdItem.h"
+#include "arcane/utils/ArcaneCxx20.h"
 
-#include "arcane/ItemLocalId.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/SimdItem.h"
+#include "arcane/core/ItemLocalId.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/ViewsCommon.h"

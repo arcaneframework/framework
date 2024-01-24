@@ -107,7 +107,6 @@ class AMRCartesianMeshTesterModule
   void _processPatches();
   void _writePostProcessing();
   void _checkUniqueIds();
-  void _checkUniqueIds(IItemFamily* family,const String& expected_hash);
   void _testDirections();
 };
 
@@ -271,9 +270,12 @@ init()
     CartesianMeshRenumberingInfo renumbering_info;
     renumbering_info.setRenumberPatchMethod(options()->renumberPatchMethod());
     renumbering_info.setSortAfterRenumbering(true);
+    if (options()->coarseAtInit())
+      renumbering_info.setParentPatch(m_cartesian_mesh->amrPatch(1));
     m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
     _checkUniqueIds();
     _processPatches();
+    info() << "MaxUid for mesh=" << MeshUtils::getMaxItemUniqueIdCollective(m_cartesian_mesh->mesh());
   }
 
   // Initialise la densité.
@@ -311,6 +313,8 @@ init()
     info() << "NB_BOUNDARY1=" << nb_boundary1 << " NB_BOUNDARY2=" << nb_boundary2;
   }
   bool is_amr = m_nb_expected_patch!=1;
+  if (options()->verbosityLevel()==0)
+    m_utils->setNbPrint(5);
   m_utils->testAll(is_amr);
   _writePostProcessing();
   _testDirections();
@@ -320,42 +324,17 @@ init()
 /*---------------------------------------------------------------------------*/
 
 void AMRCartesianMeshTesterModule::
-_checkUniqueIds(IItemFamily* family,const String& expected_hash)
-{
-  // Vérifie que toutes les entités ont le bon uniqueId();
-  MD5HashAlgorithm hash_algo;
-  IMesh* mesh = m_cartesian_mesh->mesh();
-  IParallelMng* pm = mesh->parallelMng();
-
-  UniqueArray<Int64> own_items_uid;
-  ENUMERATE_(Item,iitem,family->allItems().own()){
-    Item item{*iitem};
-    own_items_uid.add(item.uniqueId());
-  }
-  UniqueArray<Int64> global_items_uid;
-  pm->allGatherVariable(own_items_uid,global_items_uid);
-  std::sort(global_items_uid.begin(),global_items_uid.end());
-
-  UniqueArray<Byte> hash_result;
-  hash_algo.computeHash64(asBytes(global_items_uid.constSpan()),hash_result);
-  String hash_str = Convert::toHexaString(hash_result);
-  info() << "HASH_RESULT family=" << family->name()
-         << " v=" << hash_str << " expected=" << expected_hash;
-  if (!expected_hash.empty() && hash_str!=expected_hash)
-    ARCANE_FATAL("Bad hash for uniqueId() for family '{0}' v={1} expected='{2}'",
-                 family->fullName(),hash_str,expected_hash);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AMRCartesianMeshTesterModule::
 _checkUniqueIds()
 {
   IMesh* mesh = m_cartesian_mesh->mesh();
-  _checkUniqueIds(mesh->nodeFamily(),options()->nodesUidHash());
-  _checkUniqueIds(mesh->faceFamily(),options()->facesUidHash());
-  _checkUniqueIds(mesh->cellFamily(),options()->cellsUidHash());
+  bool print_hash = true;
+  MD5HashAlgorithm hash_algo;
+  MeshUtils::checkUniqueIdsHashCollective(mesh->nodeFamily(),&hash_algo,
+                                          options()->nodesUidHash(), print_hash);
+  MeshUtils::checkUniqueIdsHashCollective(mesh->faceFamily(),&hash_algo,
+                                          options()->facesUidHash(), print_hash);
+  MeshUtils::checkUniqueIdsHashCollective(mesh->cellFamily(),&hash_algo,
+                                          options()->cellsUidHash(), print_hash);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -364,9 +343,8 @@ _checkUniqueIds()
 void AMRCartesianMeshTesterModule::
 _processPatches()
 {
-  bool do_check = true;
-  //if (options()->coarseAtInit())
-  //do_check = false;
+  const bool do_check = true;
+  const bool is_verbose = options()->verbosityLevel()>=1;
 
   const Int32 dimension = defaultMesh()->dimension();
   // Vérifie qu'il y a autant de patchs que d'options raffinement dans
@@ -385,7 +363,8 @@ _processPatches()
 
   UniqueArray<Int32> nb_cells_expected(options()->expectedNumberOfCellsInPatchs);
   if (nb_cells_expected.size()!=nb_patch)
-    ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfCellsInPatchs.name());
+    ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
+                 nb_cells_expected.size(),nb_patch,options()->expectedNumberOfCellsInPatchs.name());
 
   // Nombre de mailles fantômes attendu. Utilisé uniquement en parallèle
   bool has_expected_ghost_cells = options()->expectedNumberOfGhostCellsInPatchs.isPresent();
@@ -394,7 +373,8 @@ _processPatches()
 
   UniqueArray<Int32> nb_ghost_cells_expected(options()->expectedNumberOfGhostCellsInPatchs);
   if (has_expected_ghost_cells && (nb_ghost_cells_expected.size()!=nb_patch))
-    ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfGhostCellsInPatchs.name());
+    ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
+                 nb_ghost_cells_expected.size(), nb_patch, options()->expectedNumberOfGhostCellsInPatchs.name());
   // Affiche les informations sur les patchs
   for( Integer i=0; i<nb_patch; ++i ){
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
@@ -411,7 +391,8 @@ _processPatches()
     UniqueArray<Int64> own_cells_uid;
     ENUMERATE_(Cell,icell,patch_own_cell){
       Cell cell{*icell};
-      info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
+      if (is_verbose)
+        info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
       own_cells_uid.add(cell.uniqueId());
     }
     // Affiche la liste globales des uniqueId() des mailles.
@@ -426,8 +407,9 @@ _processPatches()
       if (do_check && nb_cells_expected[i]!=nb_global_uid)
         ARCANE_FATAL("Bad number of cells for patch I={0} N={1} expected={2}",
                      i,nb_global_uid,nb_cells_expected[i]);
-      for( Integer c=0; c<nb_global_uid; ++c )
-        info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
+      if (is_verbose)
+        for( Integer c=0; c<nb_global_uid; ++c )
+          info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
     }
     // Teste le nombre de mailles fantômes
     if (has_expected_ghost_cells){
@@ -440,7 +422,7 @@ _processPatches()
     }
 
     // Exporte le patch au format SVG
-    if (dimension==2){
+    if (dimension==2 && options()->dumpSvg()){
       String filename = String::format("Patch{0}-{1}-{2}.svg",i,comm_rank,comm_size);
       Directory directory = subDomain()->exportDirectory();
       String full_filename = directory.file(filename);
@@ -505,8 +487,8 @@ _initAMR()
     {
       Int32 index = 0;
       info() << "NB_PATCH=" << nb_patch;
-      for( ICartesianMeshPatch* p : patches){
-        info() << "Patch i=" << index << " nb_cell=" << p->cells().size();
+      for( CartesianPatch p : patches){
+        info() << "Patch i=" << index << " nb_cell=" << p.cells().size();
         ++index;
       }
     }
@@ -688,8 +670,8 @@ _writePostProcessing()
   post_processor->setVariables(variables);
   ItemGroupList groups;
   groups.add(allCells());
-  for( ICartesianMeshPatch* p : m_cartesian_mesh->patches() )
-    groups.add(p->cells());
+  for( CartesianPatch p : m_cartesian_mesh->patches() )
+    groups.add(p.cells());
   post_processor->setGroups(groups);
   IVariableMng* vm = subDomain()->variableMng();
   vm->writePostProcessing(post_processor);

@@ -124,13 +124,17 @@ if (Lima_FOUND)
 endif()
 arcane_add_test(cartesian2D_coarsen1 testCartesianMesh2D-coarsen-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,1")
 arcane_add_test(cartesian2D_coarsen2 testCartesianMesh2D-coarsen-2.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
-arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
-arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
-
+arcane_add_test(cartesian3D_coarsen2 testCartesianMesh3D-coarsen-2.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
+  arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
+endif()
 
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-1 testAMRCartesianMesh2D-Cell-RenumberingV1-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-2 testAMRCartesianMesh2D-Cell-RenumberingV1-2.arc "-m 20")
+arcane_add_test(amr-cartesian2D-cell-renumbering-v4-1 testAMRCartesianMesh2D-Cell-RenumberingV4-1.arc "-m 20")
 arcane_add_test(amr-cartesian3D-cell-renumbering-v1-1 testAMRCartesianMesh3D-Cell-RenumberingV1-1.arc "-m 20")
+arcane_add_test(amr-cartesian3D-cell-renumbering-v4-1 testAMRCartesianMesh3D-Cell-RenumberingV4-1.arc "-m 20")
 arcane_add_test_sequential(amr-cartesian3D-cell-renumbering-v1-2 testAMRCartesianMesh3D-Cell-RenumberingV1-2.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-cell-renumbering-v1-2 testAMRCartesianMesh3D-Cell-RenumberingV1-2.arc 8 "-m 20")
 
@@ -166,10 +170,19 @@ arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-2 testAMRCa
 arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCartesianMesh3D-PatchCartesianMeshOnly-3.arc "-m 20")
 #arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCartesianMesh3D-PatchCartesianMeshOnly-3.arc 8 "-m 20")
 
-
 arcane_add_test(amr-cartesian2D-V1-coarse-1 testAMRCartesianMesh2D-V1-coarse-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
 arcane_add_test(amr-cartesian2D-V1-coarse-2 testAMRCartesianMesh2D-V1-coarse-2.arc "-m 20")
+arcane_add_test(amr-cartesian2D-V1-coarse-3 testAMRCartesianMesh2D-V1-coarse-3.arc "-m 10")
+arcane_add_test(amr-cartesian2D-V1-coarse-4 testAMRCartesianMesh2D-V1-coarse-4.arc "-m 10")
+arcane_add_test(amr-cartesian3D-V1-coarse-1 testAMRCartesianMesh3D-V1-coarse-1.arc "-m 10" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
+arcane_add_test_sequential(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1-coarse-2.arc "-m 10")
+arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1-coarse-2.arc 8 "-m 10")
 
+# Ce test prend du temps (environ 30 secondes) donc on ne l'active pas par défaut
+if (BIG_TEST)
+  arcane_add_test_sequential(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc "-m 10")
+  arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc 8 "-m 10")
+endif()
 
 # Tests sur le renumérotation des faces en cartésien
 # L'idéal est d'avoir pas mal de sous-domaines pour être sur que le
@@ -292,12 +305,11 @@ foreach(test_index 1 2 3)
     configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
     arcane_add_test(material_heat_opt${opt_level}_${test_index} ${_TEST_FILENAME})
 
-    # Test avec équilibrage (sauf pour opt15 car cela ne fonctionne pas encore)
-    if (NOT ${opt_level} STREQUAL "15")
-      set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}-lb.arc")
-      configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
-      arcane_add_test(material_heat_lb_opt${opt_level}_${test_index} ${_TEST_FILENAME})
-    endif()
+    # Test avec équilibrage
+    set(TEST_ACTIVE_LOAD_BALANCE "true")
+    set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}-lb.arc")
+    configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
+    arcane_add_test(material_heat_lb_opt${opt_level}_${test_index} ${_TEST_FILENAME})
   endforeach()
 endforeach()
 arcane_add_test_sequential(material_heat_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.h                                               (C) 2000-2023 */
+/* DynamicMesh.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Classe de gestion d'un maillage évolutif.                                 */
 /*---------------------------------------------------------------------------*/
@@ -95,6 +95,8 @@ class ARCANE_MESH_EXPORT DynamicMesh
 , public IUnstructuredMeshInitialAllocator
 , public ICartesianMeshInitialAllocator
 {
+  class InternalApi;
+
  private:
   // TEMPORAIRE
   friend DynamicMeshMergerHelper;
@@ -240,9 +242,11 @@ class ARCANE_MESH_EXPORT DynamicMesh
   void endAllocate() override;
 
   void addCells(Integer nb_cell,Int64ConstArrayView cell_infos,Int32ArrayView cells) override;
+  void addCells(const MeshModifierAddCellsArgs& args) override;
   void addCells(ISerializer* buffer) override;
   void addCells(ISerializer* buffer,Int32Array& cells_local_id) override;
   void addFaces(Integer nb_face,Int64ConstArrayView face_infos,Int32ArrayView faces) override;
+  void addFaces(const MeshModifierAddFacesArgs& args) override;
   void addEdges(Integer nb_edge,Int64ConstArrayView edge_infos,Int32ArrayView edges) override;
   void addNodes(Int64ConstArrayView nodes_uid,Int32ArrayView nodes) override;
   ARCANE_DEPRECATED ItemInternal *addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type);
@@ -520,6 +524,8 @@ public:
   IVariableMng* variableMng() const override { return m_variable_mng; }
   ItemTypeMng* itemTypeMng() const override { return m_item_type_mng; }
 
+  void computeSynchronizeInfos() override;
+
  public:
 
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
@@ -538,29 +544,35 @@ public:
   const MeshKind meshKind() const override { return m_mesh_kind; }
 
   IMeshInternal* _internalApi() override;
+  IMeshModifierInternal* _modifierInternalApi() override;
 
  private:
 
-  IMeshUtilities* m_mesh_utilities;
+  IMeshUtilities* m_mesh_utilities = nullptr;
+
  public:
-  DynamicMeshIncrementalBuilder* m_mesh_builder;
+
+  DynamicMeshIncrementalBuilder* m_mesh_builder = nullptr;
+
  private:
-  DynamicMeshChecker* m_mesh_checker;
-  SubMeshTools * m_submesh_tools;
+
+  DynamicMeshChecker* m_mesh_checker = nullptr;
+  SubMeshTools* m_submesh_tools = nullptr;
   //! AMR
-  MeshRefinement* m_mesh_refinement;
-  NewItemOwnerBuilder * m_new_item_owner_builder;
-  ExtraGhostCellsBuilder* m_extra_ghost_cells_builder;
-  ExtraGhostParticlesBuilder* m_extra_ghost_particles_builder;
+  MeshRefinement* m_mesh_refinement = nullptr;
+  NewItemOwnerBuilder * m_new_item_owner_builder = nullptr;
+  ExtraGhostCellsBuilder* m_extra_ghost_cells_builder = nullptr;
+  ExtraGhostParticlesBuilder* m_extra_ghost_particles_builder = nullptr;
   InitialAllocator m_initial_allocator;
+  std::unique_ptr<InternalApi> m_internal_api;
 
  private:
   
   //! AMR
-  bool m_is_amr_activated;
+  bool m_is_amr_activated = false;
   eMeshAMRKind m_amr_type;
 
-  bool m_is_dynamic;
+  bool m_is_dynamic = false;
 
   //! Liste des groupes d'entités
   ItemGroupList m_all_groups;
@@ -573,15 +585,15 @@ public:
   UniqueArray<IItemFamilyModifier*> m_family_modifiers; // used for item family network
 
   ObserverPool m_observer_pool;
-  TiedInterfaceMng* m_tied_interface_mng;
-  bool m_is_sub_connectivity_set;
-  bool m_tied_interface_need_prepare_dump;
+  TiedInterfaceMng* m_tied_interface_mng = nullptr;
+  bool m_is_sub_connectivity_set = false;
+  bool m_tied_interface_need_prepare_dump = false;
   
-  MeshPartitionConstraintMng* m_partition_constraint_mng;
-  IGhostLayerMng* m_ghost_layer_mng;
-  IMeshUniqueIdMng* m_mesh_unique_id_mng;
-  IMeshExchangeMng* m_mesh_exchange_mng;
-  IMeshCompactMng* m_mesh_compact_mng;
+  MeshPartitionConstraintMng* m_partition_constraint_mng = nullptr;
+  IGhostLayerMng* m_ghost_layer_mng = nullptr;
+  IMeshUniqueIdMng* m_mesh_unique_id_mng = nullptr;
+  IMeshExchangeMng* m_mesh_exchange_mng = nullptr;
+  IMeshCompactMng* m_mesh_compact_mng = nullptr;
 
 #ifdef ACTIVATE_PERF_COUNTER
   PerfCounterMng<PerfCounter> m_perf_counter;

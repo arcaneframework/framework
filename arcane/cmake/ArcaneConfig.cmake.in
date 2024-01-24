@@ -91,9 +91,12 @@ set(ARCANE_HIP_COMPILER_HINT "@CMAKE_HIP_COMPILER@")
 set(ARCANE_HIP_DIR_HINT "@Hip_DIR@")
 set(ARCANE_DEFAULT_HIP_ARCHITECTURES "@CMAKE_HIP_ARCHITECTURES@" CACHE STRING "Default GPU architectures?" FORCE)
 set(ARCANE_HAS_DOTNET_WRAPPER "@ARCANE_HAS_DOTNET_WRAPPER@" CACHE BOOL "Is C# wrapping enabled?" FORCE)
+set(ARCANE_HAS_ACCELERATOR_API "@ARCANE_HAS_ACCELERATOR_API@" CACHE BOOL "True Arcane has accelerator API" FORCE)
 
 macro(arcane_internal_enable_cuda)
   if (ARCANE_HAS_CUDA)
+    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
     # La commande 'enable_language(CUDA)' a besoin que la variable
     # d'environnement 'CUDACXX' ou la variable cmake 'CMAKE_CUDA_COMPILER'
     # soit définie. Si ce n'est pas le cas, utilise le chemin du compilateur
@@ -294,20 +297,53 @@ set(Arcane_FOUND YES)
 # ----------------------------------------------------------------------------
 # Macro pour générer les _axl.h à partir des fichier axl
 macro(arcane_generate_axl filename)
+  set(options        )
+  set(oneValueArgs   COPY_AXL_TO_PATH AXL_RELATIVE_PATH)
+  set(multiValueArgs )
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
   get_filename_component(_base_filename ${filename} NAME)
   get_filename_component(_base_dirname ${filename} DIRECTORY)
+
+  set(_custom_args)
+  set(_add_in_axl_filename)
+
+  if (ARGS_AXL_RELATIVE_PATH)
+    list(APPEND _custom_args "-i")
+    list(APPEND _custom_args "${ARGS_AXL_RELATIVE_PATH}")
+    string(REPLACE "/" "_" _add_in_axl_filename ${ARGS_AXL_RELATIVE_PATH})
+    set(_add_in_axl_filename _${_add_in_axl_filename})
+  else()
+    if (ARGS_COPY_AXL_TO_PATH)
+      list(APPEND _custom_args "-i")
+      list(APPEND _custom_args "''")
+    endif()
+  endif()
+
+  if (ARGS_COPY_AXL_TO_PATH)
+    list(APPEND _custom_args "--copy")
+    list(APPEND _custom_args "${ARGS_COPY_AXL_TO_PATH}/${_base_filename}${_add_in_axl_filename}.axl")
+  endif()
+
   set(dirname ${CMAKE_CURRENT_BINARY_DIR}/${_base_dirname})
   file(MAKE_DIRECTORY ${dirname})
   message(STATUS "Adding AXL generation '${filename}.axl' in '${dirname}'")
   set_source_files_properties(${dirname}/${_base_filename}_axl.h PROPERTIES GENERATED TRUE)
-  add_custom_command(OUTPUT ${dirname}/${_base_filename}_axl.h 
+  add_custom_command(OUTPUT ${dirname}/${_base_filename}_axl.h
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.axl
-    COMMAND ${ARCANE_AXL2CC} ARGS -o ${dirname} ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.axl)
+    COMMAND ${ARCANE_AXL2CC} ARGS -o ${dirname} ${_custom_args} ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.axl)
 endmacro()
 
 # Macro pour ajouter le fichier 'axlfilename' à la cible 'target'
 macro(arcane_target_add_axl target axlfilename)
-  arcane_generate_axl(${axlfilename})
+  set(options        )
+  set(oneValueArgs   COPY_AXL_TO_PATH AXL_RELATIVE_PATH)
+  set(multiValueArgs )
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  arcane_generate_axl(${axlfilename} COPY_AXL_TO_PATH ${ARGS_COPY_AXL_TO_PATH} AXL_RELATIVE_PATH ${ARGS_AXL_RELATIVE_PATH})
   target_sources(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/${axlfilename}_axl.h)
   target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endmacro()

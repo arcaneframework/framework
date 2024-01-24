@@ -8,6 +8,8 @@ endif()
 # Recherche le numéro de version de Hypre.
 # Il est dans le fichier 'Hypre_config.h', sous la forme:
 # #define HYPRE_RELEASE_VERSION "2.20.0"
+# NOTE: on pourrait aussi utilier HYPRE_RELEASE_NUMBER. Il faudrait
+# vérifier depuis quelle version de Hypre cette macro est disponible
 find_file(_HYPRE_CONFIG_PATH NAMES HYPRE_config.h PATHS ${Hypre_INCLUDE_DIRS} REQUIRED)
 file(STRINGS ${_HYPRE_CONFIG_PATH} _HYPRE_VERSION_STR REGEX HYPRE_RELEASE_VERSION)
 string(REGEX MATCH "#define HYPRE_RELEASE_VERSION \"([0-9]+)\.([0-9]+)\.([0-9]+)\"" HYPRE_VERSION_REGEX_MATCH ${_HYPRE_VERSION_STR})
@@ -24,9 +26,6 @@ arcane_add_library(arcane_aleph_hypre
 
 arcane_add_arccon_packages(arcane_aleph_hypre PRIVATE ${PKGS})
 target_compile_definitions(arcane_aleph_hypre PRIVATE ARCANE_COMPONENT_arcane_aleph_hypre)
-if (ARCANE_HYPRE_VERSION VERSION_LESS 2.14)
-  target_compile_definitions(arcane_aleph_hypre PUBLIC ALEPH_HYPRE_USE_OLD_MALLOC)
-endif()
 
 target_link_libraries(arcane_aleph_hypre PUBLIC ${ARCANE_BASE_LIBRARIES})
 target_link_libraries(arcane_aleph_hypre PRIVATE arcane_aleph)

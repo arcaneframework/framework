@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -12,6 +12,8 @@
 #include "arcane/utils/Convert.h"
 #include "arcane/utils/MD5HashAlgorithm.h"
 #include "arcane/utils/SHA3HashAlgorithm.h"
+#include "arcane/utils/SHA1HashAlgorithm.h"
+#include "arcane/utils/Ref.h"
 
 #include <gtest/gtest.h>
 
@@ -42,13 +44,40 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
   ByteUniqueArray output1;
   ByteUniqueArray output2;
   ByteUniqueArray output3;
+  UniqueArray<std::byte> output4;
+  UniqueArray<std::byte> output1_incremental;
 
+  Ref<IHashAlgorithmContext> context;
+  bool has_context = false;
+  if (algo.hasCreateContext()){
+    context = algo.createContext();
+    has_context = true;
+  }
+
+  // TODO: ajouter test ou ne fait clear() entre les appels
   for (const TestInfo& ti : values_to_test) {
     Span<const Byte> str_bytes(ti.data_value.bytes());
     {
       Span<const std::byte> input1(asBytes(str_bytes));
       output1.clear();
       algo.computeHash64(input1, output1);
+      if (has_context){
+        output1_incremental.clear();
+        context->reset();
+        // Fais l'appel en deux fois.
+        auto span1 = input1.subspan(0,input1.size()/2);
+        auto span2 = input1.subspan(input1.size()/2,input1.size());
+        context->updateHash(span1);
+        context->updateHash(span2);
+        HashAlgorithmValue value;
+        context->computeHashValue(value);
+        output1_incremental = value.bytes();
+      }
+      {
+        HashAlgorithmValue value;
+        algo.computeHash(input1, value);
+        output4 = value.bytes();
+      }
     }
     {
       Span<const Byte> input2(str_bytes);
@@ -63,14 +92,22 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
     String hash1 = Convert::toHexaString(output1);
     String hash2 = Convert::toHexaString(output2);
     String hash3 = Convert::toHexaString(output3);
+    String hash4 = Convert::toHexaString(output4);
+    String hash1_incremental = Convert::toHexaString(output1_incremental);
     String expected_hash = ti.expected_hash.lower();
     std::cout << "REF=" << expected_hash << "\n";
     std::cout << "HASH1=" << hash1 << "\n";
     std::cout << "HASH2=" << hash2 << "\n";
     std::cout << "HASH3=" << hash3 << "\n";
+    std::cout << "HASH4=" << hash4 << "\n";
+    std::cout << "HASH1_INCREMENTAL=" << hash1_incremental << "\n";
     ASSERT_EQ(hash1, expected_hash);
+    if (has_context){
+      ASSERT_EQ(hash1_incremental, expected_hash);
+    }
     ASSERT_EQ(hash2, expected_hash);
     ASSERT_EQ(hash3, expected_hash);
+    ASSERT_EQ(hash4, expected_hash);
   }
 
   {
@@ -88,6 +125,23 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
     }
     String hash_big = Convert::toHexaString(output1);
     std::cout << "HASH_BIG=" << hash_big << "\n";
+    if (has_context){
+      context->reset();
+      Int32 to_add = 549;
+      Int32 nb_iter = 0;
+      for( Int32 i=0; i<nb_byte; i+=to_add ){
+        ++nb_iter;
+        to_add += 15;
+        context->updateHash(bytes.span().subspan(i,to_add));
+      }
+      HashAlgorithmValue value;
+      context->computeHashValue(value);
+      output1_incremental = value.bytes();
+      String hash_big_incremental = Convert::toHexaString(output1_incremental);
+      std::cout << "nb_iter=" << nb_iter << "\n";
+      std::cout << "HASH_BIG_INCREMENTAL=" << hash_big_incremental << "\n";
+      ASSERT_EQ(hash_big_incremental, hash_big);
+    }
   }
 }
 
@@ -202,6 +256,23 @@ TEST(Hash, SHA3_512)
 
   SHA3_512HashAlgorithm sha3;
   _testHash(sha3, SmallSpan<TestInfo>(values_to_test));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Hash, SHA1)
+{
+  std::cout << "TEST_SHA1\n";
+
+  std::array<TestInfo, 3> values_to_test = {
+    { { "", "da39a3ee5e6b4b0d3255bfef95601890afd80709" },
+      { "The quick brown fox jumps over the lazy cog", "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3" },
+      { "The quick brown fox jumps over the lazy dog", "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12" } }
+  };
+
+  SHA1HashAlgorithm sha1;
+  _testHash(sha1, SmallSpan<TestInfo>(values_to_test));
 }
 
 /*---------------------------------------------------------------------------*/

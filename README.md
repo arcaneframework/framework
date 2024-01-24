@@ -87,16 +87,17 @@ nécessaires.
 
 ### CMake
 
-Il faut au moins la version 3.21 de CMake. Si elle n'est pas présente sur votre système, la commande
-suivante permet de l'installer dans `/usr/local`. Il faudra ensuite
-ajouter le chemin correspondant dans la variable d'environnement PATH;
+Il faut au moins la version 3.21 de CMake. Pour le support de CUDA, il faut
+au moins la version 3.26. Si elle n'est pas présente sur votre système, la commande
+suivante permet d'installer la version 3.27.8 pour Linux x64 dans `/usr/local`.
+Il faudra ensuite ajouter le chemin correspondant dans la variable d'environnement `PATH`.
 
 ~~~{sh}
-# Install CMake 21.3 in /usr/local/cmake
-MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.21.3
-wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-linux-x86_64.tar.gz
+# Install CMake 3.27.8 in /usr/local/cmake
+MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.27.8
+wget https://github.com/Kitware/CMake/releases/download/v3.27.8/cmake-3.27.8-linux-x86_64.tar.gz
 sudo mkdir ${MY_CMAKE_INSTALL_PATH}
-sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.21.3-linux-x86_64.tar.gz
+sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.27.8-linux-x86_64.tar.gz
 export PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
 cmake --version
 ~~~
@@ -109,8 +110,9 @@ sudo snap install --classic cmake
 
 ### Environnement `.Net`
 
-L'environnement [.Net](https://dotnet.microsoft.com) est nécessaire pour compiler Arcane. Il est
-accessible via `apt` mais vous pouvez aussi directement télécharger un
+L'environnement [.Net 6.0](https://dotnet.microsoft.com) est nécessaire
+pour compiler Arcane. Il est accessible via les packages systèmes
+(`apt` ou `yum`) mais vous pouvez aussi directement télécharger un
 fichier `tar` contenant le binaire et les fichiers nécessaires. Pour
 l'architecture `x64`, les commandes suivantes installent
 l'environnement dans le répertoire `$HOME/dotnet`.
@@ -202,3 +204,16 @@ sudo pacman -Syu
 sudo pacman -S gcc cmake python git gcc-fortran glib2 libxml2 hdf5-openmpi wget tbb dotnet-sdk aspnet-runtime aspnet-targeting-pack
 yay -S aur/parmetis
 ~~~
+
+### AlmaLinux 9 (or RedHat 9)
+
+Pour compiler Arcane, il est nécessaire d'installer les packages
+suivants:
+
+~~~{sh}
+# Packages nécessaires
+yum -y install dotnet-sdk-6.0 glib2-devel libxml2-devel gcc-c++
+~~~
+
+La version par défaut de CMake sur AlmaLinux 9 est trop ancienne
+(3.20). Il faut donc télécharger une version plus récente

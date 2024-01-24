@@ -36,6 +36,8 @@ ___
   \pr{944}, \pr{945}).
 - Ajoute itérateur (\arcane{ICartesianMesh::patches()}) sur les patchs
   des maillages cartésiens (\pr{948}).
+- Ajoute classe \arcane{CartesianPatch} pour encapsuler les
+  \arcane{ICartesianMeshPatch} (\pr{971}).
 - Ajoute pour les statistiques d'échange de messages les valeurs
   cumulées sur toutes les exécutions (\pr{852}, \pr{853}).
 - Ajoute support en C# des fonctions du jeu de données (\pr{797},
@@ -63,6 +65,10 @@ ___
 - Ajoute accès accélérateur à certaines méthodes de
   \arcanemat{AllEnvCell} et \arcanemat{EnvCell} (\pr{925}).
 - Ajoute support pour le filtrage de tableaux (\pr{954}, \pr{955}).
+- Ajoute méthode de copie asynchrone pour \arcane{NumArray} et les
+  variables sur le maillage (\pr{961}, \pr{962})
+- Ajoute méthode de remplissage asynchrone \arcane{NumArrayBase::fill()}
+  (\pr{963}, \pr{964}).
 
 ### Changements
 

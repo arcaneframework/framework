@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -8,6 +8,7 @@
 
 #include "arccore/base/ReferenceCounter.h"
 #include "arccore/base/Ref.h"
+#include "arccore/base/ReferenceCounterImpl.h"
 
 #include <iostream>
 
@@ -108,7 +109,6 @@ TEST(ReferenceCounter, Misc)
   }
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // Teste si le compteur de référence détruit bien l'instance.
@@ -125,3 +125,70 @@ TEST(ReferenceCounter, Ref)
     ASSERT_TRUE(stat_info.checkValid(0)) << "Bad destroy3";
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Test1
+{
+class ITestClassWithDeleter
+{
+ public:
+
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+  virtual ~ITestClassWithDeleter() = default;
+
+ public:
+
+  virtual bool func1() = 0;
+  virtual void func2() = 0;
+};
+
+class TestClassWithDeleter
+: public ReferenceCounterImpl
+, public ITestClassWithDeleter
+{
+ public:
+
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
+ public:
+
+  bool func1() override { return true; }
+  void func2() override {}
+
+ public:
+
+  Int32 m_padding4 = 0;
+  Int64 m_padding3 = 0;
+};
+} // namespace Test1
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Teste si le compteur de référence détruit bien l'instance.
+TEST(ReferenceCounter, RefWithDeleter)
+{
+  try{
+    using namespace Test1;
+    Ref<ITestClassWithDeleter> myx2;
+    {
+      Ref<ITestClassWithDeleter> myx1 = makeRef<ITestClassWithDeleter>(new TestClassWithDeleter());
+      myx2 = myx1;
+    }
+    myx2.reset();
+    Internal::ExternalRef external_ref;
+    {
+      auto* ptr1 = new TestClassWithDeleter();
+      Ref<ITestClassWithDeleter> x4 = Ref<ITestClassWithDeleter>::createWithHandle(ptr1,external_ref);
+    }
+  }
+  catch(const std::exception& ex){
+    std::cerr << "Exception ex=" << ex.what() << "\n";
+    throw;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

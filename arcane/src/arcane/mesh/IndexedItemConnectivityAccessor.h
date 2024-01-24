@@ -48,7 +48,7 @@ class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
 
  private:
 
-  ItemSharedInfo* m_item_shared_info;
+  ItemSharedInfo* m_item_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

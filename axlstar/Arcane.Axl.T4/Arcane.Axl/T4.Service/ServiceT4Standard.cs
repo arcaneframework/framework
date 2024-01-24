@@ -108,8 +108,10 @@ using BasicMeshService = BasicService;
                     "en reporter les modifications\n  template <typename ServiceClassType> static void" +
                     " fillServiceInfo(Arcane::ServiceInfo* si)\n  {\n    si->setCaseOptionsFileName(\"");
             this.Write(this.ToStringHelper.ToStringWithCulture( Xml.ClassName ));
+    if(!String.IsNullOrEmpty(Path)){
             this.Write("_");
             this.Write(this.ToStringHelper.ToStringWithCulture( Path.Replace("/","_") ));
+    }
             this.Write("\");\n    si->setAxlVersion(");
             this.Write(this.ToStringHelper.ToStringWithCulture( Xml.Version ));
             this.Write(");\n    si->setDefaultTagName(\"");

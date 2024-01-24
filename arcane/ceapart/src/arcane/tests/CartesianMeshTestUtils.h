@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTestUtils.cc                                   (C) 2000-2022 */
+/* CartesianMeshTestUtils.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
 /*---------------------------------------------------------------------------*/
@@ -54,6 +54,7 @@ class CartesianMeshTestUtils
   void checkSameId(Face item, FaceLocalId local_id) { _checkSameId(item, local_id); }
   void checkSameId(Cell item, CellLocalId local_id) { _checkSameId(item, local_id); }
   void checkSameId(Node item,NodeLocalId local_id) { _checkSameId(item,local_id); }
+  void setNbPrint(Int32 v) { m_nb_print = v; }
 
  private:
 
@@ -63,7 +64,7 @@ class CartesianMeshTestUtils
   VariableCellReal3 m_cell_center;
   VariableFaceReal3 m_face_center;
   VariableNodeReal m_node_density; 
-  Integer m_nb_print = 100;
+  Int32 m_nb_print = 100;
   bool m_is_amr = false;
 
  private:
@@ -100,6 +101,9 @@ class CartesianMeshTestUtils
   void _testDirCellFaceAccelerator();
   void _testNodeToCellConnectivity3DAccelerator();
   void _testCellToNodeConnectivity3DAccelerator();
+  void _testConnectivityByDirection();
+  template<typename ItemType> void
+  _testConnectivityByDirectionHelper(const ItemGroup& group);
 };
 
 /*---------------------------------------------------------------------------*/
