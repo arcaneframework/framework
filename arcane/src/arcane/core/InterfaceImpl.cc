@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* InterfaceImpl.cc                                            (C) 2000-2023 */
+/* InterfaceImpl.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des interfaces.                                            */
 /*---------------------------------------------------------------------------*/
@@ -120,6 +120,7 @@
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 #include "arcane/core/internal/IMeshInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 #include "arcane/core/internal/IMeshModifierInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
