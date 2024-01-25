@@ -934,17 +934,17 @@ refine()
               // Sinon, on applique le masque pour savoir si on doit créer le noeud ou pas
               // pour éviter les doublons entre deux mailles.
               if (
-              ( (i == child_coord_x && !is_parent_cell_left) || (mask_node_if_cell_left[l]) )
-              &&
-              ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_node_if_cell_right[l] )
-              &&
-              ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_node_if_cell_bottom[l]) )
-              &&
-              ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_node_if_cell_top[l] )
-              &&
-              ( (k == child_coord_z && !is_parent_cell_rear) || (mask_node_if_cell_rear[l]) )
-              &&
-              ( (k != (child_coord_z + pattern-1) || !is_parent_cell_front) || mask_node_if_cell_front[l] )
+                ( (i == child_coord_x && !is_parent_cell_left) || (mask_node_if_cell_left[l]) )
+                &&
+                ( (i != (child_coord_x + pattern-1) || !is_parent_cell_right) || mask_node_if_cell_right[l] )
+                &&
+                ( (j == child_coord_y && !is_parent_cell_bottom) || (mask_node_if_cell_bottom[l]) )
+                &&
+                ( (j != (child_coord_y + pattern-1) || !is_parent_cell_top) || mask_node_if_cell_top[l] )
+                &&
+                ( (k == child_coord_z && !is_parent_cell_rear) || (mask_node_if_cell_rear[l]) )
+                &&
+                ( (k != (child_coord_z + pattern-1) || !is_parent_cell_front) || mask_node_if_cell_front[l] )
               )
               {
                 m_nodes_infos.add(ua_node_uid[l]);
@@ -952,41 +952,459 @@ refine()
 
                 Integer new_owner = -1;
 
-                // Par rapport au 2D, un noeud peut être lié à 8 mailles différentes. On regarde donc chaque
-                // possibilité.
-                if(
-                i == child_coord_x && is_ghost[1][1][0] && (!mask_node_if_cell_left[l])
-                &&
-                j == child_coord_y && is_ghost[1][0][1] && (!mask_node_if_cell_bottom[l])
-                &&
-                k == child_coord_z && is_ghost[0][1][1] && (!mask_node_if_cell_rear[l])
-                ){
-                  new_owner = owner_cells[0][0][0];
+                if(i == child_coord_x && j == child_coord_y && k == child_coord_z && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_bottom[l]) && (!mask_node_if_cell_rear[l]))
+                {
+                  if(is_ghost[0][0][0]){
+                    new_owner = owner_cells[0][0][0];
+                  }
+                  else if(is_ghost[0][0][1]){
+                    new_owner = owner_cells[0][0][1];
+                  }
+                  else if(is_ghost[0][1][0]){
+                    new_owner = owner_cells[0][1][0];
+                  }
+                  else if(is_ghost[0][1][1]){
+                    new_owner = owner_cells[0][1][1];
+                  }
+                  else if(is_ghost[1][0][0]){
+                    new_owner = owner_cells[1][0][0];
+                  }
+                  else if(is_ghost[1][0][1]){
+                    new_owner = owner_cells[1][0][1];
+                  }
+                  else if(is_ghost[1][1][0]){
+                    new_owner = owner_cells[1][1][0];
+                  }
+                  else{
+                    new_owner = parent_cell.owner();
+                  }
                 }
 
-                else if(
-                i == child_coord_x && is_ghost[1][1][0] && (!mask_node_if_cell_left[l])
-                &&
-                j == child_coord_y && is_ghost[1][0][1] && (!mask_node_if_cell_bottom[l])
-                ){
-                  new_owner = owner_cells[1][0][0];
+                else if(i == (child_coord_x + pattern-1) && j == child_coord_y && k == child_coord_z && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_bottom[l]) && (!mask_node_if_cell_rear[l]))
+                {
+                  if(is_ghost[0][0][1]){
+                    new_owner = owner_cells[0][0][1];
+                  }
+                  else if(is_ghost[0][0][2]){
+                    new_owner = owner_cells[0][0][2];
+                  }
+                  else if(is_ghost[0][1][1]){
+                    new_owner = owner_cells[0][1][1];
+                  }
+                  else if(is_ghost[0][1][2]){
+                    new_owner = owner_cells[0][1][2];
+                  }
+                  else if(is_ghost[1][0][1]){
+                    new_owner = owner_cells[1][0][1];
+                  }
+                  else if(is_ghost[1][0][2]){
+                    new_owner = owner_cells[1][0][2];
+                  }
+                  else{
+                    if(is_ghost[1][1][2]){
+                      get_back_node_owner[owner_cells[1][1][2]][1]++;
+                      get_back_node_owner[owner_cells[1][1][2]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
                 }
 
-                else if(
-                j == child_coord_y && is_ghost[1][0][1] && (!mask_node_if_cell_bottom[l])
-                &&
-                k == child_coord_z && is_ghost[0][1][1] && (!mask_node_if_cell_rear[l])
-                ){
-                  new_owner = owner_cells[0][0][1];
+                else if(i == child_coord_x && j == (child_coord_y + pattern-1) && k == child_coord_z && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_top[l]) && (!mask_node_if_cell_rear[l]))
+                {
+                  if(is_ghost[0][1][0]){
+                    new_owner = owner_cells[0][1][0];
+                  }
+                  else if(is_ghost[0][1][1]){
+                    new_owner = owner_cells[0][1][1];
+                  }
+                  else if(is_ghost[0][2][0]){
+                    new_owner = owner_cells[0][2][0];
+                  }
+                  else if(is_ghost[0][2][1]){
+                    new_owner = owner_cells[0][2][1];
+                  }
+                  else if(is_ghost[1][1][0]){
+                    new_owner = owner_cells[1][1][0];
+                  }
+                  else{
+                    if(is_ghost[1][2][0]){
+                      get_back_node_owner[owner_cells[1][2][0]][1]++;
+                      get_back_node_owner[owner_cells[1][2][0]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[1][2][1]){
+                      get_back_node_owner[owner_cells[1][2][1]][1]++;
+                      get_back_node_owner[owner_cells[1][2][1]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
                 }
 
-                else if(
-                k == child_coord_z && is_ghost[0][1][1] && (!mask_node_if_cell_rear[l])
-                &&
-                i == child_coord_x && is_ghost[1][1][0] && (!mask_node_if_cell_left[l])
-                ){
-                  new_owner = owner_cells[0][1][0];
+                else if(i == (child_coord_x + pattern-1) && j == (child_coord_y + pattern-1) && k == child_coord_z && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_top[l]) && (!mask_node_if_cell_rear[l]))
+                {
+                  if(is_ghost[0][1][1]){
+                    new_owner = owner_cells[0][1][1];
+                  }
+                  else if(is_ghost[0][1][2]){
+                    new_owner = owner_cells[0][1][2];
+                  }
+                  else if(is_ghost[0][2][1]){
+                    new_owner = owner_cells[0][2][1];
+                  }
+                  else if(is_ghost[0][2][2]){
+                    new_owner = owner_cells[0][2][2];
+                  }
+                  else{
+                    if(is_ghost[1][1][2]){
+                      get_back_node_owner[owner_cells[1][1][2]][1]++;
+                      get_back_node_owner[owner_cells[1][1][2]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[1][2][1]){
+                      get_back_node_owner[owner_cells[1][2][1]][1]++;
+                      get_back_node_owner[owner_cells[1][2][1]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[1][2][2]){
+                      get_back_node_owner[owner_cells[1][2][2]][1]++;
+                      get_back_node_owner[owner_cells[1][2][2]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
                 }
+
+                else if(i == child_coord_x && j == child_coord_y && k == (child_coord_z + pattern-1) && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_bottom[l]) && (!mask_node_if_cell_front[l]))
+                {
+                  if(is_ghost[1][0][0]){
+                    new_owner = owner_cells[1][0][0];
+                  }
+                  else if(is_ghost[1][0][1]){
+                    new_owner = owner_cells[1][0][1];
+                  }
+                  else if(is_ghost[1][1][0]){
+                    new_owner = owner_cells[1][1][0];
+                  }
+                  else{
+                    if(is_ghost[2][0][0]){
+                      get_back_node_owner[owner_cells[2][0][0]][1]++;
+                      get_back_node_owner[owner_cells[2][0][0]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][0][1]){
+                      get_back_node_owner[owner_cells[2][0][1]][1]++;
+                      get_back_node_owner[owner_cells[2][0][1]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][1][0]){
+                      get_back_node_owner[owner_cells[2][1][0]][1]++;
+                      get_back_node_owner[owner_cells[2][1][0]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][1][1]){
+                      get_back_node_owner[owner_cells[2][1][1]][1]++;
+                      get_back_node_owner[owner_cells[2][1][1]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
+                }
+
+                else if(i == (child_coord_x + pattern-1) && j == child_coord_y && k == (child_coord_z + pattern-1) && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_bottom[l]) && (!mask_node_if_cell_front[l]))
+                {
+                  if(is_ghost[1][0][1]){
+                    new_owner = owner_cells[1][0][1];
+                  }
+                  else if(is_ghost[1][0][2]){
+                    new_owner = owner_cells[1][0][2];
+                  }
+                  else{
+                    if(is_ghost[1][1][2]){
+                      get_back_node_owner[owner_cells[1][1][2]][1]++;
+                      get_back_node_owner[owner_cells[1][1][2]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][0][1]){
+                      get_back_node_owner[owner_cells[2][0][1]][1]++;
+                      get_back_node_owner[owner_cells[2][0][1]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][0][2]){
+                      get_back_node_owner[owner_cells[2][0][2]][1]++;
+                      get_back_node_owner[owner_cells[2][0][2]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][1][1]){
+                      get_back_node_owner[owner_cells[2][1][1]][1]++;
+                      get_back_node_owner[owner_cells[2][1][1]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][1][2]){
+                      get_back_node_owner[owner_cells[2][1][2]][1]++;
+                      get_back_node_owner[owner_cells[2][1][2]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
+                }
+
+                else if(i == child_coord_x && j == (child_coord_y + pattern-1) && k == (child_coord_z + pattern-1) && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_top[l]) && (!mask_node_if_cell_front[l]))
+                {
+                  if(is_ghost[1][1][0]){
+                    new_owner = owner_cells[1][1][0];
+                  }
+                  else{
+                    if(is_ghost[1][2][0]){
+                      get_back_node_owner[owner_cells[1][2][0]][1]++;
+                      get_back_node_owner[owner_cells[1][2][0]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[1][2][1]){
+                      get_back_node_owner[owner_cells[1][2][1]][1]++;
+                      get_back_node_owner[owner_cells[1][2][1]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][1][0]){
+                      get_back_node_owner[owner_cells[2][1][0]][1]++;
+                      get_back_node_owner[owner_cells[2][1][0]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][1][1]){
+                      get_back_node_owner[owner_cells[2][1][1]][1]++;
+                      get_back_node_owner[owner_cells[2][1][1]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][2][0]){
+                      get_back_node_owner[owner_cells[2][2][0]][1]++;
+                      get_back_node_owner[owner_cells[2][2][0]].add(ua_node_uid[l]);
+                    }
+                    if(is_ghost[2][2][1]){
+                      get_back_node_owner[owner_cells[2][2][1]][1]++;
+                      get_back_node_owner[owner_cells[2][2][1]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
+                }
+
+                else if(i == (child_coord_x + pattern-1) && j == (child_coord_y + pattern-1) && k == (child_coord_z + pattern-1) && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_top[l]) && (!mask_node_if_cell_front[l]))
+                {
+                  if(is_ghost[1][1][2]){
+                    get_back_node_owner[owner_cells[1][1][2]][1]++;
+                    get_back_node_owner[owner_cells[1][1][2]].add(ua_node_uid[l]);
+                  }
+                  if(is_ghost[1][2][1]){
+                    get_back_node_owner[owner_cells[1][2][1]][1]++;
+                    get_back_node_owner[owner_cells[1][2][1]].add(ua_node_uid[l]);
+                  }
+                  if(is_ghost[1][2][2]){
+                    get_back_node_owner[owner_cells[1][2][2]][1]++;
+                    get_back_node_owner[owner_cells[1][2][2]].add(ua_node_uid[l]);
+                  }
+                  if(is_ghost[2][1][1]){
+                    get_back_node_owner[owner_cells[2][1][1]][1]++;
+                    get_back_node_owner[owner_cells[2][1][1]].add(ua_node_uid[l]);
+                  }
+                  if(is_ghost[2][1][2]){
+                    get_back_node_owner[owner_cells[2][1][2]][1]++;
+                    get_back_node_owner[owner_cells[2][1][2]].add(ua_node_uid[l]);
+                  }
+                  if(is_ghost[2][2][1]){
+                    get_back_node_owner[owner_cells[2][2][1]][1]++;
+                    get_back_node_owner[owner_cells[2][2][1]].add(ua_node_uid[l]);
+                  }
+                  if(is_ghost[2][2][2]){
+                    get_back_node_owner[owner_cells[2][2][2]][1]++;
+                    get_back_node_owner[owner_cells[2][2][2]].add(ua_node_uid[l]);
+                  }
+                  new_owner = parent_cell.owner();
+                }
+
+
+
+
+
+                else if(i == child_coord_x && j == child_coord_y && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_bottom[l])){
+                  if(is_ghost[1][0][0]){
+                    new_owner = owner_cells[1][0][0];
+                  }
+                  else if(is_ghost[1][0][1]){
+                    new_owner = owner_cells[1][0][1];
+                  }
+                  else if(is_ghost[1][1][0]){
+                    new_owner = owner_cells[1][1][0];
+                  }
+                  else{
+                    new_owner = parent_cell.owner();
+                  }
+                }
+                else if(i == (child_coord_x + pattern-1) && j == child_coord_y && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_bottom[l])){
+                  if(is_ghost[1][0][1]){
+                    new_owner = owner_cells[1][0][1];
+                  }
+                  else if(is_ghost[1][0][2]){
+                    new_owner = owner_cells[1][0][2];
+                  }
+                  else {
+                    if (is_ghost[1][1][2]) {
+                      get_back_node_owner[owner_cells[1][1][2]][1]++;
+                      get_back_node_owner[owner_cells[1][1][2]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
+                }
+
+                else if(i == child_coord_x && j == (child_coord_y + pattern-1) && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_top[l])) {
+                  if(is_ghost[1][1][0]){
+                    new_owner = owner_cells[1][1][0];
+                  }
+                  else {
+                    if (is_ghost[1][2][0]) {
+                      get_back_node_owner[owner_cells[1][2][0]][1]++;
+                      get_back_node_owner[owner_cells[1][2][0]].add(ua_node_uid[l]);
+                    }
+                    if (is_ghost[1][2][1]) {
+                      get_back_node_owner[owner_cells[1][2][1]][1]++;
+                      get_back_node_owner[owner_cells[1][2][1]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
+                }
+
+                else if(i == (child_coord_x + pattern-1) && j == (child_coord_y + pattern-1) && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_top[l])) {
+                  if(is_ghost[1][1][2]){
+                    get_back_node_owner[owner_cells[1][1][2]][1]++;
+                    get_back_node_owner[owner_cells[1][1][2]].add(ua_node_uid[l]);
+                  }
+                  if (is_ghost[1][2][1]) {
+                    get_back_node_owner[owner_cells[1][2][1]][1]++;
+                    get_back_node_owner[owner_cells[1][2][1]].add(ua_node_uid[l]);
+                  }
+                  if (is_ghost[1][2][2]) {
+                    get_back_node_owner[owner_cells[1][2][2]][1]++;
+                    get_back_node_owner[owner_cells[1][2][2]].add(ua_node_uid[l]);
+                  }
+                  new_owner = parent_cell.owner();
+                }
+
+
+
+
+
+
+                else if(i == child_coord_x && k == child_coord_z && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_rear[l])){
+                  if(is_ghost[0][1][0]){
+                    new_owner = owner_cells[0][1][0];
+                  }
+                  else if(is_ghost[0][1][1]){
+                    new_owner = owner_cells[0][1][1];
+                  }
+                  else if(is_ghost[1][1][0]){
+                    new_owner = owner_cells[1][1][0];
+                  }
+                  else{
+                    new_owner = parent_cell.owner();
+                  }
+                }
+                else if(i == (child_coord_x + pattern-1) && k == child_coord_z && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_rear[l])){
+                  if(is_ghost[0][1][1]){
+                    new_owner = owner_cells[0][1][1];
+                  }
+                  else if(is_ghost[0][1][2]){
+                    new_owner = owner_cells[0][1][2];
+                  }
+                  else {
+                    if (is_ghost[1][1][2]) {
+                      get_back_node_owner[owner_cells[1][1][2]][1]++;
+                      get_back_node_owner[owner_cells[1][1][2]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
+                }
+
+                else if(i == child_coord_x && k == (child_coord_z + pattern-1) && (!mask_node_if_cell_left[l]) && (!mask_node_if_cell_front[l])) {
+                  if(is_ghost[1][1][0]){
+                    new_owner = owner_cells[1][1][0];
+                  }
+                  else {
+                    if (is_ghost[2][1][0]) {
+                      get_back_node_owner[owner_cells[2][1][0]][1]++;
+                      get_back_node_owner[owner_cells[2][1][0]].add(ua_node_uid[l]);
+                    }
+                    if (is_ghost[2][1][1]) {
+                      get_back_node_owner[owner_cells[2][1][1]][1]++;
+                      get_back_node_owner[owner_cells[2][1][1]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
+                }
+
+                else if(i == (child_coord_x + pattern-1) && k == (child_coord_z + pattern-1) && (!mask_node_if_cell_right[l]) && (!mask_node_if_cell_front[l])) {
+                  if(is_ghost[1][1][2]){
+                    get_back_node_owner[owner_cells[1][1][2]][1]++;
+                    get_back_node_owner[owner_cells[1][1][2]].add(ua_node_uid[l]);
+                  }
+                  if (is_ghost[2][1][1]) {
+                    get_back_node_owner[owner_cells[2][1][1]][1]++;
+                    get_back_node_owner[owner_cells[2][1][1]].add(ua_node_uid[l]);
+                  }
+                  if (is_ghost[2][1][2]) {
+                    get_back_node_owner[owner_cells[2][1][2]][1]++;
+                    get_back_node_owner[owner_cells[2][1][2]].add(ua_node_uid[l]);
+                  }
+                  new_owner = parent_cell.owner();
+                }
+
+
+
+
+
+
+                else if(j == child_coord_y && k == child_coord_z && (!mask_node_if_cell_bottom[l]) && (!mask_node_if_cell_rear[l])){
+                  if(is_ghost[0][0][1]){
+                    new_owner = owner_cells[0][0][1];
+                  }
+                  else if(is_ghost[0][1][1]){
+                    new_owner = owner_cells[0][1][1];
+                  }
+                  else if(is_ghost[1][0][1]){
+                    new_owner = owner_cells[1][0][1];
+                  }
+                  else{
+                    new_owner = parent_cell.owner();
+                  }
+                }
+                else if(j == (child_coord_y + pattern-1) && k == child_coord_z && (!mask_node_if_cell_top[l]) && (!mask_node_if_cell_rear[l])){
+                  if(is_ghost[0][1][1]){
+                    new_owner = owner_cells[0][1][1];
+                  }
+                  else if(is_ghost[0][2][1]){
+                    new_owner = owner_cells[0][2][1];
+                  }
+                  else {
+                    if (is_ghost[1][2][1]) {
+                      get_back_node_owner[owner_cells[1][2][1]][1]++;
+                      get_back_node_owner[owner_cells[1][2][1]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
+                }
+
+                else if(j == child_coord_y && k == (child_coord_z + pattern-1) && (!mask_node_if_cell_bottom[l]) && (!mask_node_if_cell_front[l])) {
+                  if(is_ghost[1][0][1]){
+                    new_owner = owner_cells[1][0][1];
+                  }
+                  else {
+                    if (is_ghost[2][0][1]) {
+                      get_back_node_owner[owner_cells[2][0][1]][1]++;
+                      get_back_node_owner[owner_cells[2][0][1]].add(ua_node_uid[l]);
+                    }
+                    if (is_ghost[2][1][1]) {
+                      get_back_node_owner[owner_cells[2][1][1]][1]++;
+                      get_back_node_owner[owner_cells[2][1][1]].add(ua_node_uid[l]);
+                    }
+                    new_owner = parent_cell.owner();
+                  }
+                }
+
+                else if(j == (child_coord_y + pattern-1) && k == (child_coord_z + pattern-1) && (!mask_node_if_cell_top[l]) && (!mask_node_if_cell_front[l])) {
+                  if(is_ghost[1][2][1]){
+                    get_back_node_owner[owner_cells[1][2][1]][1]++;
+                    get_back_node_owner[owner_cells[1][2][1]].add(ua_node_uid[l]);
+                  }
+                  if (is_ghost[2][1][1]) {
+                    get_back_node_owner[owner_cells[2][1][1]][1]++;
+                    get_back_node_owner[owner_cells[2][1][1]].add(ua_node_uid[l]);
+                  }
+                  if (is_ghost[2][2][1]) {
+                    get_back_node_owner[owner_cells[2][2][1]][1]++;
+                    get_back_node_owner[owner_cells[2][2][1]].add(ua_node_uid[l]);
+                  }
+                  new_owner = parent_cell.owner();
+                }
+
 
                 else if(i == child_coord_x && is_ghost[1][1][0] && (!mask_node_if_cell_left[l])){
                   new_owner = owner_cells[1][1][0];
@@ -999,6 +1417,25 @@ refine()
                 else if(k == child_coord_z && is_ghost[0][1][1] && (!mask_node_if_cell_rear[l])){
                   new_owner = owner_cells[0][1][1];
                 }
+
+                else if(i == (child_coord_x + pattern-1) && is_ghost[1][1][2] && (!mask_node_if_cell_right[l])){
+                  get_back_node_owner[owner_cells[1][1][2]][1]++;
+                  get_back_node_owner[owner_cells[1][1][2]].add(ua_node_uid[l]);
+                  new_owner = parent_cell.owner();
+                }
+
+                else if(j == (child_coord_y + pattern-1) && is_ghost[1][2][1] && (!mask_node_if_cell_top[l])){
+                  get_back_node_owner[owner_cells[1][2][1]][1]++;
+                  get_back_node_owner[owner_cells[1][2][1]].add(ua_node_uid[l]);
+                  new_owner = parent_cell.owner();
+                }
+
+                else if(k == (child_coord_z + pattern-1) && is_ghost[2][1][1] && (!mask_node_if_cell_front[l])){
+                  get_back_node_owner[owner_cells[2][1][1]][1]++;
+                  get_back_node_owner[owner_cells[2][1][1]].add(ua_node_uid[l]);
+                  new_owner = parent_cell.owner();
+                }
+
 
                 else{
                   new_owner = parent_cell.owner();
