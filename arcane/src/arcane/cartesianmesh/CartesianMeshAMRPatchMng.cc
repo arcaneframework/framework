@@ -102,8 +102,8 @@ void CartesianMeshAMRPatchMng::
 refine()
 {
   IParallelMng* pm = m_mesh->parallelMng();
-  Integer nb_rank = pm->commSize();
-  Integer my_rank = pm->commRank();
+  Int32 nb_rank = pm->commSize();
+  Int32 my_rank = pm->commRank();
 
   UniqueArray<Cell> cell_to_refine_internals;
   ENUMERATE_CELL(icell,m_mesh->ownActiveCells()) {
@@ -148,18 +148,17 @@ refine()
 
 
 
-  std::unordered_map<Int64, Integer> muo;
-  std::unordered_map<Int64, Int32> muo2;
+  std::unordered_map<Int64, Integer> around_parent_cells_uid_to_owner;
+  std::unordered_map<Int64, Int32> around_parent_cells_uid_to_flags;
   {
     Int32 usefull_flag = ItemFlags::II_Refine + ItemFlags::II_Inactive;
     {
-      UniqueArray<Int64> ask;
 
 
       ENUMERATE_CELL (icell, m_mesh->ownCells()) {
         Cell cell = *icell;
-        muo[cell.uniqueId()] = my_rank;
-        muo2[cell.uniqueId()] = (cell.itemBase().flags() & usefull_flag);
+        around_parent_cells_uid_to_owner[cell.uniqueId()] = my_rank;
+        around_parent_cells_uid_to_flags[cell.uniqueId()] = (cell.itemBase().flags() & usefull_flag);
         debug() << "Proc : " << my_rank
                 << " -- uid : " << icell->uniqueId()
                 << (cell.itemBase().flags() & ItemFlags::II_Refine ? " -- II_Refine " : "")
@@ -167,47 +166,50 @@ refine()
         ;
       }
 
-      UniqueArray<Int64> around((m_mesh->dimension() == 2) ? 9 : 27);
+      UniqueArray<Int64> uid_of_cells_needed;
+      UniqueArray<Int64> cell_uids_around((m_mesh->dimension() == 2) ? 9 : 27);
       for (Cell parent_cell : cell_to_refine_internals) {
-        m_num_mng->getCellUidsAround(around, parent_cell);
-        for (Int64 elem : around) {
+        m_num_mng->getCellUidsAround(cell_uids_around, parent_cell);
+        for (Int64 elem : cell_uids_around) {
           if (elem == -1)
             continue;
-          if (muo.find(elem) != muo.end() && muo[elem] == my_rank)
+          // TODO C++20 : Mettre map.contains().
+          if (around_parent_cells_uid_to_owner.find(elem) != around_parent_cells_uid_to_owner.end() && around_parent_cells_uid_to_owner[elem] == my_rank)
             continue;
-          ask.add(elem);
+          uid_of_cells_needed.add(elem);
         }
       }
 
       UniqueArray<Integer> size_ask(nb_rank);
-      Integer sizeof_ask = ask.size();
+      Integer sizeof_ask = uid_of_cells_needed.size();
       ArrayView<Integer> av(1, &sizeof_ask);
       pm->allGather(av, size_ask);
 
       UniqueArray<Int64> ask_all;
-      pm->allGatherVariable(ask, ask_all);
+      pm->allGatherVariable(uid_of_cells_needed, ask_all);
 
       UniqueArray<Int32> flag_all(ask_all.size());
+      UniqueArray<Int32> ask2_all(ask_all.size());
 
       UniqueArray<Int32> local_ids(ask_all.size());
       m_mesh->cellFamily()->itemsUniqueIdToLocalId(local_ids, ask_all, false);
       Integer compt = 0;
       ENUMERATE_ (Cell, icell, m_mesh->cellFamily()->view(local_ids)) {
         if(!icell->null() && icell->isOwn()) {
-          ask_all[compt] = my_rank;
+          ask2_all[compt] = my_rank;
           flag_all[compt] = (icell->itemBase().flags() & usefull_flag);
         }
         else {
-          ask_all[compt] = -1;
+          ask2_all[compt] = -1;
           flag_all[compt] = 0;
         }
         compt++;
       }
 
-      ARCANE_ASSERT((compt == ask_all.size()), ("Pb..."));
+      ARCANE_ASSERT((compt == ask2_all.size()), ("Pb..."));
       ARCANE_ASSERT((compt == flag_all.size()), ("Pb..."));
 
-      pm->reduce(Parallel::eReduceType::ReduceMax, ask_all);
+      pm->reduce(Parallel::eReduceType::ReduceMax, ask2_all);
       pm->reduce(Parallel::eReduceType::ReduceMax, flag_all);
 
       Integer my_pos = 0;
@@ -215,11 +217,11 @@ refine()
         my_pos += size_ask[i];
       }
 
-      ArrayView<Int64> reduced_ask = ask_all.subView(my_pos, sizeof_ask);
+      ArrayView<Int32> reduced_ask = ask2_all.subView(my_pos, sizeof_ask);
       ArrayView<Int32> reduced_flag = flag_all.subView(my_pos, sizeof_ask);
       for (Integer i = 0; i < sizeof_ask; ++i) {
-        muo[ask[i]] = reduced_ask[i];
-        muo2[ask[i]] = reduced_flag[i];
+        around_parent_cells_uid_to_owner[uid_of_cells_needed[i]] = reduced_ask[i];
+        around_parent_cells_uid_to_flags[uid_of_cells_needed[i]] = reduced_flag[i];
       }
     }
 
@@ -229,14 +231,14 @@ refine()
         m_num_mng->getCellUidsAround(around, parent_cell);
         debug() << around;
         for (Int64 elem : around) {
-          if(muo.find(elem) != muo.end()){
+          if(around_parent_cells_uid_to_owner.find(elem) != around_parent_cells_uid_to_owner.end()){
             debug() << "Rank : " << my_rank
                     << " -- parent_cell : " << parent_cell.uniqueId()
                     << " -- around_cell : " << elem
-                    << " -- owner : " << muo[elem]
-                    << " -- flags : " << muo2[elem]
-                    << (muo2[elem] & ItemFlags::II_Refine ? " -- II_Refine" : "")
-                    << (muo2[elem] & ItemFlags::II_Inactive ? " -- II_Inactive" : "")
+                    << " -- owner : " << around_parent_cells_uid_to_owner[elem]
+                    << " -- flags : " << around_parent_cells_uid_to_flags[elem]
+                    << (around_parent_cells_uid_to_flags[elem] & ItemFlags::II_Refine ? " -- II_Refine" : "")
+                    << (around_parent_cells_uid_to_flags[elem] & ItemFlags::II_Inactive ? " -- II_Inactive" : "")
             ;
           }
           else{
@@ -320,16 +322,16 @@ refine()
       UniqueArray<Int64> uid_cells_1d(9);
       m_num_mng->getCellUidsAround(uid_cells_1d, parent_cell);
 
-      UniqueArray<Int64> owner_cells_1d(9);
-      UniqueArray<Int64> flags_cells_1d(9);
+      UniqueArray<Int32> owner_cells_1d(9);
+      UniqueArray<Int32> flags_cells_1d(9);
 
       // Si uid_cell != -1 alors il y a peut-être une maille (mais on ne sait pas si elle est bien présente).
       // Si muo[uid_cell] != -1 alors il y a bien une maille.
       for(Integer i = 0; i < 9; ++i){
         Int64 uid_cell = uid_cells_1d[i];
-        if(uid_cell != -1 && muo[uid_cell] != -1) {
-          owner_cells_1d[i] = muo[uid_cell];
-          flags_cells_1d[i] = muo2[uid_cell];
+        if(uid_cell != -1 && around_parent_cells_uid_to_owner[uid_cell] != -1) {
+          owner_cells_1d[i] = around_parent_cells_uid_to_owner[uid_cell];
+          flags_cells_1d[i] = around_parent_cells_uid_to_flags[uid_cell];
         }
         else{
           uid_cells_1d[i] = -1;
@@ -718,16 +720,16 @@ refine()
       UniqueArray<Int64> uid_cells_1d(27);
       m_num_mng->getCellUidsAround(uid_cells_1d, parent_cell);
 
-      UniqueArray<Int64> owner_cells_1d(27);
-      UniqueArray<Int64> flags_cells_1d(27);
+      UniqueArray<Int32> owner_cells_1d(27);
+      UniqueArray<Int32> flags_cells_1d(27);
 
       // Si uid_cell != -1 alors il y a peut-être une maille (mais on ne sait pas si elle est bien présente).
       // Si muo[uid_cell] != -1 alors il y a bien une maille.
       for(Integer i = 0; i < 27; ++i){
         Int64 uid_cell = uid_cells_1d[i];
-        if(uid_cell != -1 && muo[uid_cell] != -1) {
-          owner_cells_1d[i] = muo[uid_cell];
-          flags_cells_1d[i] = muo2[uid_cell];
+        if(uid_cell != -1 && around_parent_cells_uid_to_owner[uid_cell] != -1) {
+          owner_cells_1d[i] = around_parent_cells_uid_to_owner[uid_cell];
+          flags_cells_1d[i] = around_parent_cells_uid_to_flags[uid_cell];
         }
         else{
           uid_cells_1d[i] = -1;
