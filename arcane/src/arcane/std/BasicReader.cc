@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReader.cc                                              (C) 2000-2023 */
+/* BasicReader.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Lecture simple pour les protections/reprises.                             */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/IDataCompressor.h"
 #include "arcane/utils/IHashAlgorithm.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/core/IApplication.h"
 #include "arcane/core/IXmlDocumentHolder.h"
@@ -50,19 +51,8 @@ BasicGenericReader(IApplication* app, Int32 version, Ref<KeyValueTextReader> tex
 : TraceAccessor(app->traceMng())
 , m_application(app)
 , m_text_reader(text_reader)
-, m_rank(A_NULL_RANK)
 , m_version(version)
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-BasicGenericReader::
-~BasicGenericReader()
-{
-  for (const auto& x : m_variables_data_info)
-    delete x.second;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -143,7 +133,7 @@ initialize(const String& path, Int32 rank)
   for (Integer i = 0, is = variables_elem.size(); i < is; ++i) {
     XmlNode n = variables_elem[i];
     String var_full_name = n.attrValue("full-name");
-    auto vdi = new VariableDataInfo(var_full_name, n);
+    Ref<VariableDataInfo> vdi = makeRef(new VariableDataInfo(var_full_name, n));
     m_variables_data_info.insert(std::make_pair(var_full_name, vdi));
   }
 
@@ -164,14 +154,14 @@ initialize(const String& path, Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-VariableDataInfo* BasicGenericReader::
+Ref<VariableDataInfo> BasicGenericReader::
 _getVarInfo(const String& full_name)
 {
   VariableDataInfoMap::const_iterator ivar = m_variables_data_info.find(full_name);
   if (ivar == m_variables_data_info.end())
     ARCANE_THROW(ReaderWriterException,
                  "Can not find own metadata infos for data var={0} rank={1}", full_name, m_rank);
-  VariableDataInfo* vdi = ivar->second;
+  Ref<VariableDataInfo> vdi = ivar->second;
   return vdi;
 }
 
@@ -183,7 +173,7 @@ readData(const String& var_full_name, IData* data)
 {
   KeyValueTextReader* reader = m_text_reader.get();
   String vname = var_full_name;
-  VariableDataInfo* vdi = _getVarInfo(vname);
+  Ref<VariableDataInfo> vdi = _getVarInfo(vname);
   if (m_version < 3)
     reader->setFileOffset(vdi->fileOffset());
 
@@ -354,18 +344,6 @@ initialize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-BasicReader::
-~BasicReader()
-{
-  for (const auto& i : m_parallel_data_readers)
-    delete i.second;
-  for (const auto& r : m_global_readers)
-    delete r;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void BasicReader::
 _directReadVal(VariableMetaData* varmd, IData* data)
 {
@@ -396,7 +374,7 @@ _directReadVal(VariableMetaData* varmd, IData* data)
   }
 
   if (is_item_variable) {
-    ParallelDataReader* parallel_data_reader = _getReader(varmd);
+    Ref<ParallelDataReader> parallel_data_reader = _getReader(varmd);
 
     Int64UniqueArray full_written_unique_ids;
     IData* full_written_data = nullptr;
@@ -439,7 +417,7 @@ _directReadVal(VariableMetaData* varmd, IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ParallelDataReader* BasicReader::
+Ref<ParallelDataReader> BasicReader::
 _getReader(VariableMetaData* varmd)
 {
   Int32 nb_to_read = m_nb_rank_to_read;
@@ -454,7 +432,7 @@ _getReader(VariableMetaData* varmd)
     return ix->second;
 
   IParallelMng* pm = m_parallel_mng;
-  auto reader = new ParallelDataReader(pm);
+  Ref<ParallelDataReader> reader = makeRef(new ParallelDataReader(pm));
   {
     UniqueArray<SharedArray<Int64>> written_unique_ids(nb_to_read);
     Int64Array& wanted_unique_ids = reader->wantedUniqueIds();
@@ -609,7 +587,7 @@ _setRanksToRead()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IGenericReader* BasicReader::
+Ref<IGenericReader> BasicReader::
 _readOwnMetaDataAndCreateReader(Int32 rank)
 {
   String main_filename = _getBasicVariableFile(m_version, m_path, rank);
@@ -628,7 +606,7 @@ _readOwnMetaDataAndCreateReader(Int32 rank)
     }
   }
 
-  auto r = new BasicGenericReader(m_application, m_version, text_reader);
+  auto r = makeRef<IGenericReader>(new BasicGenericReader(m_application, m_version, text_reader));
   r->initialize(m_path, rank);
   return r;
 }

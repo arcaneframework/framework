@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriter.h                                         (C) 2000-2023 */
+/* BasicReaderWriter.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Lecture/Ecriture simple.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -193,7 +193,6 @@ class BasicGenericReader
   // Si 'version==-1', alors cela sera déterminé lors de
   // l'initialisation.
   BasicGenericReader(IApplication* app, Int32 version, Ref<KeyValueTextReader> text_reader);
-  ~BasicGenericReader() override;
 
  public:
 
@@ -204,18 +203,18 @@ class BasicGenericReader
 
  private:
 
-  using VariableDataInfoMap = std::map<String, VariableDataInfo*>;
+  using VariableDataInfoMap = std::map<String, Ref<VariableDataInfo>>;
 
-  IApplication* m_application;
+  IApplication* m_application = nullptr;
   Ref<KeyValueTextReader> m_text_reader;
   String m_path;
-  Int32 m_rank;
-  Int32 m_version;
+  Int32 m_rank = A_NULL_RANK;
+  Int32 m_version = -1;
   VariableDataInfoMap m_variables_data_info;
 
  private:
 
-  VariableDataInfo* _getVarInfo(const String& full_name);
+  Ref<VariableDataInfo> _getVarInfo(const String& full_name);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -228,7 +227,7 @@ class IGenericWriter
 {
  public:
 
-  virtual ~IGenericWriter() {}
+  virtual ~IGenericWriter() = default;
 
  public:
 
@@ -335,7 +334,6 @@ class BasicWriter
 
   BasicWriter(IApplication* app, IParallelMng* pm, const String& path,
               eOpenMode open_mode, Integer version, bool want_parallel);
-  ~BasicWriter() override;
 
  public:
 
@@ -355,15 +353,15 @@ class BasicWriter
 
  private:
 
-  bool m_want_parallel;
-  bool m_is_gather;
-  Int32 m_version;
+  bool m_want_parallel = false;
+  bool m_is_gather = false;
+  Int32 m_version = -1;
 
   Ref<IDataCompressor> m_data_compressor;
   Ref<IHashAlgorithm> m_hash_algorithm;
   Ref<KeyValueTextWriter> m_text_writer;
 
-  std::map<ItemGroup, ParallelDataWriter*> m_parallel_data_writers;
+  std::map<ItemGroup, Ref<ParallelDataWriter>> m_parallel_data_writers;
   std::set<ItemGroup> m_written_groups;
 
   ScopedPtrT<IGenericWriter> m_global_writer;
@@ -371,10 +369,8 @@ class BasicWriter
  private:
 
   void _directWriteVal(IVariable* v, IData* data);
-  void _writeVal(TextWriter* writer, VariableDataInfo* data_info,
-                 const ISerializedData* sdata);
 
-  ParallelDataWriter* _getWriter(IVariable* var);
+  Ref<ParallelDataWriter> _getWriter(IVariable* var);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -405,7 +401,6 @@ class BasicReader
 
   BasicReader(IApplication* app, IParallelMng* pm, Int32 forced_rank_to_read,
               const String& path, bool want_parallel);
-  ~BasicReader() override;
 
  public:
 
@@ -428,16 +423,16 @@ class BasicReader
 
  private:
 
-  bool m_want_parallel;
-  Integer m_nb_written_part;
-  Int32 m_version;
+  bool m_want_parallel = false;
+  Integer m_nb_written_part = 0;
+  Int32 m_version = -1;
 
-  Int32 m_first_rank_to_read;
-  Int32 m_nb_rank_to_read;
-  Int32 m_forced_rank_to_read;
+  Int32 m_first_rank_to_read = -1;
+  Int32 m_nb_rank_to_read = -1;
+  Int32 m_forced_rank_to_read = -1;
 
-  std::map<String, ParallelDataReader*> m_parallel_data_readers;
-  UniqueArray<IGenericReader*> m_global_readers;
+  std::map<String, Ref<ParallelDataReader>> m_parallel_data_readers;
+  UniqueArray<Ref<IGenericReader>> m_global_readers;
   IItemGroupFinder* m_item_group_finder;
   Ref<KeyValueTextReader> m_forced_rank_to_read_text_reader; //!< Lecteur pour le premier rang à lire.
   Ref<IDataCompressor> m_data_compressor;
@@ -446,9 +441,9 @@ class BasicReader
 
   void _directReadVal(VariableMetaData* varmd, IData* data);
 
-  ParallelDataReader* _getReader(VariableMetaData* varmd);
+  Ref<ParallelDataReader> _getReader(VariableMetaData* varmd);
   void _setRanksToRead();
-  IGenericReader* _readOwnMetaDataAndCreateReader(Int32 rank);
+  Ref<IGenericReader> _readOwnMetaDataAndCreateReader(Int32 rank);
 };
 
 /*---------------------------------------------------------------------------*/

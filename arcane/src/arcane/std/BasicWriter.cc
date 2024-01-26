@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicWriter.cc                                              (C) 2000-2023 */
+/* BasicWriter.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Ecriture simple pour les protections/reprises.                            */
 /*---------------------------------------------------------------------------*/
@@ -201,19 +201,8 @@ BasicWriter(IApplication* app, IParallelMng* pm, const String& path,
             eOpenMode open_mode, Integer version, bool want_parallel)
 : BasicReaderWriterCommon(app, pm, path, open_mode)
 , m_want_parallel(want_parallel)
-, m_is_gather(false)
 , m_version(version)
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-BasicWriter::
-~BasicWriter()
-{
-  for (const auto& i : m_parallel_data_writers)
-    delete i.second;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -264,14 +253,14 @@ initialize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ParallelDataWriter* BasicWriter::
+Ref<ParallelDataWriter> BasicWriter::
 _getWriter(IVariable* var)
 {
   ItemGroup group = var->itemGroup();
   auto i = m_parallel_data_writers.find(group);
   if (i != m_parallel_data_writers.end())
     return i->second;
-  ParallelDataWriter* writer = new ParallelDataWriter(m_parallel_mng);
+  Ref<ParallelDataWriter> writer = makeRef<ParallelDataWriter>(new ParallelDataWriter(m_parallel_mng));
   writer->setGatherAll(m_is_gather);
   {
     Int64UniqueArray items_uid;
@@ -300,7 +289,7 @@ _directWriteVal(IVariable* var, IData* data)
   if (var->itemKind() != IK_Unknown) {
     ItemGroup group = var->itemGroup();
     if (m_want_parallel) {
-      ParallelDataWriter* writer = _getWriter(var);
+      Ref<ParallelDataWriter> writer = _getWriter(var);
       written_unique_ids = writer->sortedUniqueIds();
       allocated_write_data = writer->getSortedValues(data);
       write_data = allocated_write_data.get();
@@ -314,7 +303,7 @@ _directWriteVal(IVariable* var, IData* data)
     if (m_written_groups.find(group) == m_written_groups.end()) {
       info(5) << "WRITE GROUP " << group.name();
       IItemFamily* item_family = group.itemFamily();
-      String gname = group.name();
+      const String& gname = group.name();
       String group_full_name = item_family->fullName() + "_" + gname;
       m_global_writer->writeItemGroup(group_full_name, written_unique_ids, wanted_unique_ids.view());
       m_written_groups.insert(group);
