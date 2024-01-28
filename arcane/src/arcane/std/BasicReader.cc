@@ -455,8 +455,7 @@ _getReader(VariableMetaData* varmd)
     }
     Int64Array& full_written_unique_ids = reader->writtenUniqueIds();
     for (Integer i = 0; i < nb_to_read; ++i)
-      for (Integer z = 0, zs = written_unique_ids[i].size(); z < zs; ++z)
-        full_written_unique_ids.add(written_unique_ids[i][z]);
+      full_written_unique_ids.addRange(written_unique_ids[i]);
     info(5) << "FULL UID SIZE=" << full_written_unique_ids.size();
     if (m_want_parallel)
       reader->sort();

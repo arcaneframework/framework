@@ -80,36 +80,36 @@ class VariableDataInfo
 
  public:
 
-  void write(XmlNode element);
+  void write(XmlNode element) const;
 
  private:
 
-  void _addAttribute(XmlNode& node, const String& attr_name, Int64 value)
+  static void _addAttribute(XmlNode& node, const String& attr_name, Int64 value)
   {
     node.setAttrValue(attr_name, String::fromNumber(value));
   }
 
-  void _addAttribute(XmlNode& node, const String& attr_name, const String& value)
+  static void _addAttribute(XmlNode& node, const String& attr_name, const String& value)
   {
     node.setAttrValue(attr_name, value);
   }
 
-  Integer _readInteger(const XmlNode& node, const String& attr_name)
+  static Integer _readInteger(const XmlNode& node, const String& attr_name)
   {
     return node.attr(attr_name, true).valueAsInteger(true);
   }
 
-  Int64 _readInt64(const XmlNode& node, const String& attr_name)
+  static Int64 _readInt64(const XmlNode& node, const String& attr_name)
   {
     return node.attr(attr_name, true).valueAsInt64(true);
   }
 
-  bool _readBool(const XmlNode& node, const String& attr_name)
+  static bool _readBool(const XmlNode& node, const String& attr_name)
   {
     return node.attr(attr_name, true).valueAsBoolean(true);
   }
 
-  String _readString(const XmlNode& node, const String& attr_name)
+  static String _readString(const XmlNode& node, const String& attr_name)
   {
     return node.attr(attr_name, true).value();
   }
@@ -117,16 +117,16 @@ class VariableDataInfo
  private:
 
   String m_full_name;
-  Integer m_nb_dimension;
-  Int64 m_dim1_size;
-  Int64 m_dim2_size;
-  Int64 m_nb_element;
-  Int64 m_nb_base_element;
-  Integer m_dimension_array_size;
-  bool m_is_multi_size;
-  eDataType m_base_data_type;
-  Int64 m_memory_size;
-  Int64 m_file_offset;
+  Integer m_nb_dimension = 0;
+  Int64 m_dim1_size = 0;
+  Int64 m_dim2_size = 0;
+  Int64 m_nb_element = 0;
+  Int64 m_nb_base_element = 0;
+  Integer m_dimension_array_size = 0;
+  bool m_is_multi_size = false;
+  eDataType m_base_data_type = DT_Unknown;
+  Int64 m_memory_size = 0;
+  Int64 m_file_offset = 0;
   ArrayShape m_shape;
 };
 
@@ -137,12 +137,12 @@ class BasicVariableMetaData
 {
  public:
 
-  BasicVariableMetaData(VariableMetaData* varmd)
+  explicit BasicVariableMetaData(VariableMetaData* varmd)
+  : m_full_name(varmd->fullName())
+  , m_item_group_name(varmd->itemGroupName())
+  , m_mesh_name(varmd->meshName())
+  , m_item_family_name(varmd->itemFamilyName())
   {
-    m_full_name = varmd->fullName();
-    m_item_group_name = varmd->itemGroupName();
-    m_mesh_name = varmd->meshName();
-    m_item_family_name = varmd->itemFamilyName();
   }
 
  public:
@@ -171,7 +171,7 @@ class IGenericReader
 {
  public:
 
-  virtual ~IGenericReader() {}
+  virtual ~IGenericReader() = default;
 
  public:
 
@@ -250,7 +250,6 @@ class BasicGenericWriter
 
   BasicGenericWriter(IApplication* app, Int32 version,
                      Ref<KeyValueTextWriter> text_writer);
-  ~BasicGenericWriter() override;
 
  public:
 
@@ -262,12 +261,12 @@ class BasicGenericWriter
 
  private:
 
-  using VariableDataInfoMap = std::map<String, VariableDataInfo*>;
+  using VariableDataInfoMap = std::map<String, Ref<VariableDataInfo>>;
 
-  IApplication* m_application;
-  Int32 m_version;
+  IApplication* m_application = nullptr;
+  Int32 m_version = -1;
   String m_path;
-  Int32 m_rank;
+  Int32 m_rank = A_NULL_RANK;
   Ref<KeyValueTextWriter> m_text_writer;
   VariableDataInfoMap m_variables_data_info;
 };
@@ -295,19 +294,18 @@ class BasicReaderWriterCommon
 
   BasicReaderWriterCommon(IApplication* app, IParallelMng* pm,
                           const String& path, eOpenMode open_mode);
-  ~BasicReaderWriterCommon();
 
  protected:
 
-  IApplication* m_application;
-  IParallelMng* m_parallel_mng;
-  eOpenMode m_open_mode;
+  IApplication* m_application = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
+  eOpenMode m_open_mode = OpenModeRead;
   String m_path;
-  Integer m_verbose_level;
+  Integer m_verbose_level = 0;
 
  protected:
 
-  String _getMetaDataFileName(Int32 rank);
+  String _getMetaDataFileName(Int32 rank) const;
 
  protected:
 
@@ -342,6 +340,11 @@ class BasicWriter
   {
     m_data_compressor = data_compressor;
   }
+  //! Positionne le service de calcul de hash global. Doit être appelé avant initialize()
+  void setGlobalHashAlgorithm(Ref<IHashAlgorithm> hash_algo)
+  {
+    m_global_hash_algorithm = hash_algo;
+  }
   void initialize();
 
   void beginWrite(const VariableCollection& vars) override;
@@ -358,6 +361,7 @@ class BasicWriter
   Int32 m_version = -1;
 
   Ref<IDataCompressor> m_data_compressor;
+  Ref<IHashAlgorithm> m_global_hash_algorithm;
   Ref<IHashAlgorithm> m_hash_algorithm;
   Ref<KeyValueTextWriter> m_text_writer;
 
@@ -369,7 +373,7 @@ class BasicWriter
  private:
 
   void _directWriteVal(IVariable* v, IData* data);
-
+  void _computeGlobalHash(IVariable* var, IData* write_data);
   Ref<ParallelDataWriter> _getWriter(IVariable* var);
 };
 
@@ -393,7 +397,7 @@ class BasicReader
   {
    public:
 
-    virtual ~IItemGroupFinder() {}
+    virtual ~IItemGroupFinder() = default;
     virtual ItemGroup getWantedGroup(VariableMetaData* vmd) = 0;
   };
 

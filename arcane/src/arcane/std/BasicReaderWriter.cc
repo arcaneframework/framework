@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriter.cc                                        (C) 2000-2023 */
+/* BasicReaderWriter.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Lecture/Ecriture simple.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -34,16 +34,13 @@ namespace Arcane::impl
 VariableDataInfo::
 VariableDataInfo(const String& full_name, const ISerializedData* sdata)
 : m_full_name(full_name)
+, m_nb_dimension(sdata->nbDimension())
+, m_nb_element(sdata->nbElement())
+, m_nb_base_element(sdata->nbBaseElement())
+, m_is_multi_size(sdata->isMultiSize())
 {
-  m_nb_dimension = sdata->nbDimension();
   Int64ConstArrayView extents = sdata->extents();
 
-  m_nb_base_element = sdata->nbBaseElement();
-
-  m_nb_element = sdata->nbElement();
-  m_is_multi_size = sdata->isMultiSize();
-  m_dim2_size = 0;
-  m_dim1_size = 0;
   if (m_nb_dimension == 2 && !m_is_multi_size) {
     m_dim1_size = extents[0];
     m_dim2_size = extents[1];
@@ -52,7 +49,6 @@ VariableDataInfo(const String& full_name, const ISerializedData* sdata)
   m_base_data_type = sdata->baseDataType();
   m_memory_size = sdata->memorySize();
   m_shape = sdata->shape();
-  m_file_offset = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -89,7 +85,7 @@ VariableDataInfo(const String& full_name, const XmlNode& element)
 /*---------------------------------------------------------------------------*/
 
 void VariableDataInfo::
-write(XmlNode element)
+write(XmlNode element) const
 {
   _addAttribute(element, "nb-dimension", m_nb_dimension);
   _addAttribute(element, "dim1-size", m_dim1_size);
@@ -196,7 +192,7 @@ _fillUniqueIds(const ItemGroup& group, Array<Int64>& uids)
 /*---------------------------------------------------------------------------*/
 
 String BasicReaderWriterCommon::
-_getMetaDataFileName(Int32 rank)
+_getMetaDataFileName(Int32 rank) const
 {
   StringBuilder filename = m_path;
   filename += "/metadata";
@@ -217,16 +213,7 @@ BasicReaderWriterCommon(IApplication* app, IParallelMng* pm,
 , m_parallel_mng(pm)
 , m_open_mode(open_mode)
 , m_path(path)
-, m_verbose_level(0)
 {}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-BasicReaderWriterCommon::
-~BasicReaderWriterCommon()
-{
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
