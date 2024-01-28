@@ -357,7 +357,7 @@ _computeGlobalHash(IVariable* var, IData* write_data)
 
   UniqueArray<Byte> bytes;
 
-  pm->gatherVariable(asSpan<Byte>(memory_view.bytes()).smallView(), bytes, master_rank);
+  pm->gatherVariable(Arccore::asSpan<Byte>(memory_view.bytes()).smallView(), bytes, master_rank);
 
   if (my_rank == master_rank) {
     HashAlgorithmValue hash_value;
