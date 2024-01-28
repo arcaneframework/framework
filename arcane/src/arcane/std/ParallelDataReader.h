@@ -49,14 +49,14 @@ class ParallelDataReader
 
  public:
 
-  ParallelDataReader(IParallelMng* pm);
+  explicit ParallelDataReader(IParallelMng* pm);
   ParallelDataReader(const ParallelDataReader& rhs) = delete;
   ~ParallelDataReader();
 
  public:
 
-  Int64Array& writtenUniqueIds();
-  Int64Array& wantedUniqueIds();
+  Array<Int64>& writtenUniqueIds();
+  Array<Int64>& wantedUniqueIds();
   void sort();
   void getSortedValues(IData* written_data,IData* data);
 
