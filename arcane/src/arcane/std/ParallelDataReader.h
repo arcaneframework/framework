@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataReader.h                                        (C) 2000-2018 */
+/* ParallelDataReader.h                                        (C) 2000-2024 */
 /*                                                                           */
 /* Lecteur de IData en parallèle.                                            */
 /*---------------------------------------------------------------------------*/
@@ -49,14 +49,14 @@ class ParallelDataReader
 
  public:
 
-  ParallelDataReader(IParallelMng* pm);
+  explicit ParallelDataReader(IParallelMng* pm);
   ParallelDataReader(const ParallelDataReader& rhs) = delete;
   ~ParallelDataReader();
 
  public:
 
-  Int64Array& writtenUniqueIds();
-  Int64Array& wantedUniqueIds();
+  Array<Int64>& writtenUniqueIds();
+  Array<Int64>& wantedUniqueIds();
   void sort();
   void getSortedValues(IData* written_data,IData* data);
 

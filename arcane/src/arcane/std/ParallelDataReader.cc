@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataReader.cc                                       (C) 2000-2022 */
+/* ParallelDataReader.cc                                       (C) 2000-2024 */
 /*                                                                           */
 /* Lecteur de IData en parallèle.                                            */
 /*---------------------------------------------------------------------------*/
@@ -15,51 +15,23 @@
 
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/FixedArray.h"
+#include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/IData.h"
-#include "arcane/parallel/BitonicSortT.H"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/parallel/BitonicSortT.H"
+#include "arcane/core/ParallelMngUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-// Dichotomie
-// Les xx doivent etre croissants
-template<typename T>
-class Bissection
-{
- public:
-  static Integer locate(ConstArrayView<T> xx, T x)
-  {
-    Integer n = xx.size();
-    if (x<xx[0] || x>xx[n-1])
-      return (-1);
-    if (x==xx[0])
-      return 0;
-    if (x==xx[n-1])
-      return (n-1);
-    Integer jl = 0;
-    Integer ju = n;
-    while (ju-jl > 1) {
-      Integer jm = (ju+jl) >> 1;
-      if (x >= xx[jm])
-        jl = jm;
-      else
-        ju = jm;
-    }
-    return jl;
-  }
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,7 +56,9 @@ class ParallelDataReader::Impl
 : public TraceAccessor
 {
  public:
-  Impl(IParallelMng* pm);
+
+  explicit Impl(IParallelMng* pm);
+
  public:
 
   Int64Array& writtenUniqueIds() { return m_written_unique_ids; }
@@ -92,26 +66,29 @@ class ParallelDataReader::Impl
 
  private:
 
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
 
   Int32UniqueArray m_data_to_send_ranks;
   //TODO ne pas utiliser un tableau dimensionné au commSize()
-  UniqueArray< SharedArray<Int32> > m_data_to_send_local_indexes;
-  UniqueArray< SharedArray<Int32> > m_data_to_recv_indexes;
+  UniqueArray<SharedArray<Int32>> m_data_to_send_local_indexes;
+  UniqueArray<SharedArray<Int32>> m_data_to_recv_indexes;
   Int64UniqueArray m_written_unique_ids;
   Int64UniqueArray m_wanted_unique_ids;
   Int32UniqueArray m_local_send_indexes;
 
  public:
 
- public:
   void sort();
+
  public:
-  void getSortedValues(IData* written_data,IData* data);
+
+  void getSortedValues(IData* written_data, IData* data);
+
  private:
+
   void _searchUniqueIdIndexes(Int64ConstArrayView recv_uids,
                               Int64ConstArrayView written_unique_ids,
-                              Int32Array& indexes);
+                              Int32Array& indexes) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -132,20 +109,23 @@ ParallelDataReader::
   delete m_p;
 }
 
-Int64Array& ParallelDataReader::writtenUniqueIds()
+Array<Int64>& ParallelDataReader::
+writtenUniqueIds()
 {
   return m_p->writtenUniqueIds();
 }
-Int64Array& ParallelDataReader::
+Array<Int64>& ParallelDataReader::
 wantedUniqueIds()
 {
   return m_p->wantedUniqueIds();
 }
-void ParallelDataReader::sort()
+void ParallelDataReader::
+sort()
 {
   return m_p->sort();
 }
-void ParallelDataReader::getSortedValues(IData* written_data,IData* data)
+void ParallelDataReader::
+getSortedValues(IData* written_data, IData* data)
 {
   m_p->getSortedValues(written_data,data);
 }
@@ -166,14 +146,14 @@ Impl(IParallelMng* pm)
 void ParallelDataReader::Impl::
 sort()
 {
-  Integer nb_wanted_uid = m_wanted_unique_ids.size();
-    
-  Integer nb_rank = m_parallel_mng->commSize();
-  Integer my_rank = m_parallel_mng->commRank();
+  Int32 nb_wanted_uid = m_wanted_unique_ids.size();
+
+  Int32 nb_rank = m_parallel_mng->commSize();
+  Int32 my_rank = m_parallel_mng->commRank();
 
   Int64UniqueArray global_min_max_uid(nb_rank*2);
   {
-    Int64 min_max_written_uid[2];
+    FixedArray<Int64, 2> min_max_written_uid;
     min_max_written_uid[0] = NULL_ITEM_UNIQUE_ID;
     min_max_written_uid[1] = NULL_ITEM_UNIQUE_ID;
     Integer nb_written_uid = m_written_unique_ids.size();
@@ -184,18 +164,15 @@ sort()
       min_max_written_uid[0] = m_written_unique_ids[0];
       min_max_written_uid[1] = m_written_unique_ids[nb_written_uid-1];
     }
-    m_parallel_mng->allGather(Int64ConstArrayView(2,min_max_written_uid),global_min_max_uid);
+    m_parallel_mng->allGather(min_max_written_uid.view(), global_min_max_uid);
   }
   for( Integer irank=0; irank<nb_rank; ++irank )
     info(5) << "MIN_MAX_UIDS p=" << irank << " min=" << global_min_max_uid[irank*2]
             << " max=" << global_min_max_uid[(irank*2)+1];
 
   m_data_to_recv_indexes.resize(nb_rank);
-  //Int32UniqueArray senders_rank(nb_rank);
-  //senders_rank.fill(-1);
   {
     UniqueArray< SharedArray<Int64> > uids_list(nb_rank);
-    //Integer current_sender = 0;
     auto exchanger { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
     for( Integer i=0; i<nb_wanted_uid; ++i ){
       Int64 uid = m_wanted_unique_ids[i];
@@ -214,8 +191,6 @@ sort()
       if (rank!=my_rank){
         if (uids_list[rank].empty()){
           exchanger->addSender(rank);
-          //senders_rank[rank] = current_sender;
-          //uids_list.add(Int64UniqueArray());
         }
         uids_list[rank].add(uid);
       }
@@ -231,17 +206,10 @@ sort()
       ISerializeMessage* send_msg = exchanger->messageToSend(i);
       Int32 dest_rank = senders[i];
       ISerializer* serializer = send_msg->serializer();
-      //Integer nb_to_send = uids_list[dest_rank].size();
-      //indexes_to_recv[i] = own_indexes_list[dest_rank]; //indexes_list[dest_rank];
-      //ranks_to_recv[i] = dest_rank;
       serializer->setMode(ISerializer::ModeReserve);
-      //serializer->reserveInteger(1);
-      //serializer->reserve(DT_Int32,nb_to_send);
       serializer->reserveArray(uids_list[dest_rank]);
       serializer->allocateBuffer();
       serializer->setMode(ISerializer::ModePut);
-      //serializer->putInteger(nb_to_send);
-      //serializer->put(indexes_list[dest_rank]);
       serializer->putArray(uids_list[dest_rank]);
 #if 0
       for( Integer z=0; z<nb_to_send; ++z ){
@@ -268,15 +236,6 @@ sort()
       Int64UniqueArray recv_uids;
       serializer->getArray(recv_uids);
       Int64 nb_to_recv = recv_uids.largeSize();
-      //Int32ArrayView own_group_local_ids = own_group.internal()->itemsLocalId();
-      //info() << " RECEIVE FROM A: NB_TO_RECEIVE " << nb_to_recv << " S2=" << own_group_local_ids.size();
-      //for( Integer z=0; z<nb_to_recv; ++z ){
-      //Integer index = recv_indexes[z];
-      //info() << " RECV Z=" << z << " RANK=" << orig_rank << " index=" << index
-      //     << " index2=" << own_group_local_ids[index];
-      //recv_indexes[z] = own_group_local_ids[index];
-      //}
-      //info() << "READ END RECEIVE FROM A: NB_TO_RECEIVE " << nb_to_recv;
 
       m_data_to_send_local_indexes[i].resize(nb_to_recv);
       _searchUniqueIdIndexes(recv_uids,m_written_unique_ids,m_data_to_send_local_indexes[i]);
@@ -285,7 +244,6 @@ sort()
 
   // Traite les données qui sont déjà présentes sur ce processeur.
   {
-    Integer my_rank = m_parallel_mng->commRank();
     Int32Array& local_recv_indexes = m_data_to_recv_indexes[my_rank];
     Integer nb_local_index = local_recv_indexes.size();
     if (nb_local_index>0){
@@ -334,17 +292,9 @@ getSortedValues(IData* written_data,IData* data)
   // Traite les données qui sont déjà présente sur ce processeur.
   {
     Integer my_rank = m_parallel_mng->commRank();
-    Int32Array& local_recv_indexes = m_data_to_recv_indexes[my_rank];
+    ConstArrayView<Int32> local_recv_indexes = m_data_to_recv_indexes[my_rank];
     Integer nb_local_index = local_recv_indexes.size();
     if (nb_local_index>0){
-      //Int32UniqueArray local_send_indexes(nb_local_index);
-      //Int64UniqueArray uids(nb_local_index);
-
-      //for( Integer i=0; i<nb_local_index; ++i ){
-      //uids[i] = m_wanted_unique_ids[local_recv_indexes[i]];
-      //}
-      //_searchUniqueIdIndexes(uids,m_written_unique_ids,local_send_indexes);
-
       //info() << "SERIALIZE RESERVE";
       SerializeBuffer sbuf;
       sbuf.setMode(ISerializer::ModeReserve);
@@ -379,20 +329,21 @@ getSortedValues(IData* written_data,IData* data)
 void ParallelDataReader::Impl::
 _searchUniqueIdIndexes(Int64ConstArrayView recv_uids,
                        Int64ConstArrayView written_unique_ids,
-                       Int32Array& indexes)
+                       Array<Int32>& indexes) const
 {
   Integer nb_to_recv = recv_uids.size();
   Integer nb_written_uid = written_unique_ids.size();
 
   for( Integer irecv=0; irecv<nb_to_recv; ++irecv ){
-    //Integer my_index = -1;
     Int64 my_uid = recv_uids[irecv];
-    // Comme les writtent_unique_ids sont triés, on peut utiliser une dichotomie
-    Integer my_index = Bissection<Int64>::locate(written_unique_ids,my_uid);
-    //info() << "MY_INDEX=" << my_index << " my_uid=" << my_uid;
-    if (my_index==(-1))
-      ARCANE_FATAL("Can not find uid uid={0} (index={1})",my_uid,my_index);
-    //info() << "MY_INDEX2=" << my_index << " my_uid=" << my_uid;
+    // Comme les written_unique_ids sont triés, on peut utiliser une dichotomie
+    auto iter_end = written_unique_ids.end();
+    auto iter_begin = written_unique_ids.begin();
+    auto x2 = std::lower_bound(iter_begin, iter_end, my_uid);
+    if (x2 == iter_end)
+      ARCANE_FATAL("Can not find uid uid={0} (with binary_search)", my_uid);
+    Int32 my_index = CheckedConvert::toInt32(x2 - iter_begin);
+
     // Teste si la dichotomie est correcte
     if (written_unique_ids[my_index]!=my_uid)
       ARCANE_FATAL("INTERNAL: bad index for bissection "
