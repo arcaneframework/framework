@@ -19,6 +19,8 @@
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/IDataCompressor.h"
 #include "arcane/utils/IHashAlgorithm.h"
+#include "arcane/utils/MemoryView.h"
+#include "arcane/utils/SHA1HashAlgorithm.h"
 
 #include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/IParallelMng.h"
@@ -31,6 +33,7 @@
 #include "arcane/core/IVariable.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IData.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/std/ParallelDataWriter.h"
 #include "arcane/std/TextWriter.h"
@@ -50,20 +53,8 @@ BasicGenericWriter(IApplication* app, Int32 version,
 : TraceAccessor(app->traceMng())
 , m_application(app)
 , m_version(version)
-, m_rank(A_NULL_RANK)
 , m_text_writer(text_writer)
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-BasicGenericWriter::
-~BasicGenericWriter()
-{
-  for (const auto& x : m_variables_data_info) {
-    delete x.second;
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -85,7 +76,7 @@ void BasicGenericWriter::
 writeData(const String& var_full_name, const ISerializedData* sdata)
 {
   //TODO: Verifier que initialize() a bien été appelé.
-  auto var_data_info = new VariableDataInfo(var_full_name, sdata);
+  auto var_data_info = makeRef(new VariableDataInfo(var_full_name, sdata));
   KeyValueTextWriter* writer = m_text_writer.get();
   var_data_info->setFileOffset(writer->fileOffset());
   m_variables_data_info.insert(std::make_pair(var_full_name, var_data_info));
@@ -163,14 +154,14 @@ endWrite()
   ScopedPtrT<IXmlDocumentHolder> xdoc(app->ressourceMng()->createXmlDocument());
   XmlNode doc = xdoc->documentNode();
   XmlElement root(doc, "variables-data");
-  IDataCompressor* dc = m_text_writer->dataCompressor().get();
+  const IDataCompressor* dc = m_text_writer->dataCompressor().get();
   if (dc) {
     root.setAttrValue("deflater-service", dc->name());
     root.setAttrValue("min-compress-size", String::fromNumber(dc->minCompressSize()));
   }
   root.setAttrValue("version", String::fromNumber(m_version));
   for (const auto& i : m_variables_data_info) {
-    VariableDataInfo* vdi = i.second;
+    Ref<VariableDataInfo> vdi = i.second;
     XmlNode e = root.createAndAppendElement("variable-data");
     e.setAttrValue("full-name", vdi->fullName());
     vdi->write(e);
@@ -198,7 +189,7 @@ endWrite()
 
 BasicWriter::
 BasicWriter(IApplication* app, IParallelMng* pm, const String& path,
-            eOpenMode open_mode, Integer version, bool want_parallel)
+            eOpenMode open_mode, Int32 version, bool want_parallel)
 : BasicReaderWriterCommon(app, pm, path, open_mode)
 , m_want_parallel(want_parallel)
 , m_version(version)
@@ -245,6 +236,17 @@ initialize()
     m_text_writer->setHashAlgorithm(v);
   }
 
+  // Pour test, permet de spécifier un service pour le calcul du hash global.
+  if (!m_global_hash_algorithm.get()) {
+    String algo_name = platform::getEnvironmentVariable("ARCANE_GLOBALHASHALGORITHM");
+    if (!algo_name.empty()) {
+      info() << "Use global hash algorithm from environment variable ARCANE_GLOBALHASHALGORITHM name=" << algo_name;
+      algo_name = algo_name + "HashAlgorithm";
+      auto v = _createHashAlgorithm(m_application, algo_name);
+      m_global_hash_algorithm = v;
+    }
+  }
+
   m_global_writer = new BasicGenericWriter(m_application, m_version, m_text_writer);
   if (m_verbose_level > 0)
     info() << "** OPEN MODE = " << m_open_mode;
@@ -260,7 +262,8 @@ _getWriter(IVariable* var)
   auto i = m_parallel_data_writers.find(group);
   if (i != m_parallel_data_writers.end())
     return i->second;
-  Ref<ParallelDataWriter> writer = makeRef<ParallelDataWriter>(new ParallelDataWriter(m_parallel_mng));
+
+  Ref<ParallelDataWriter> writer = makeRef(new ParallelDataWriter(m_parallel_mng));
   writer->setGatherAll(m_is_gather);
   {
     Int64UniqueArray items_uid;
@@ -269,7 +272,7 @@ _getWriter(IVariable* var)
     Int32ConstArrayView local_ids = own_group.internal()->itemsLocalId();
     writer->sort(local_ids, items_uid);
   }
-  m_parallel_data_writers.insert(std::make_pair(group, writer));
+  m_parallel_data_writers.try_emplace(group, writer);
   return writer;
 }
 
@@ -285,8 +288,10 @@ _directWriteVal(IVariable* var, IData* data)
   Int64ConstArrayView written_unique_ids;
   Int64UniqueArray wanted_unique_ids;
   Int64UniqueArray sequential_written_unique_ids;
+
   Ref<IData> allocated_write_data;
-  if (var->itemKind() != IK_Unknown) {
+  const bool is_mesh_variable = (var->itemKind() != IK_Unknown);
+  if (is_mesh_variable) {
     ItemGroup group = var->itemGroup();
     if (m_want_parallel) {
       Ref<ParallelDataWriter> writer = _getWriter(var);
@@ -295,22 +300,71 @@ _directWriteVal(IVariable* var, IData* data)
       write_data = allocated_write_data.get();
     }
     else {
-      //TODO il faut trier les uniqueId
+      // TODO vérifier que les uniqueId() sont bien triés.
+      // Normalement c'est toujours le cas.
       _fillUniqueIds(group, sequential_written_unique_ids);
       written_unique_ids = sequential_written_unique_ids.view();
     }
-    _fillUniqueIds(group, wanted_unique_ids);
+    // Ecrit les informations du groupe si c'est la première fois qu'on accède à ce groupe.
     if (m_written_groups.find(group) == m_written_groups.end()) {
       info(5) << "WRITE GROUP " << group.name();
-      IItemFamily* item_family = group.itemFamily();
+      const IItemFamily* item_family = group.itemFamily();
       const String& gname = group.name();
       String group_full_name = item_family->fullName() + "_" + gname;
+      _fillUniqueIds(group, wanted_unique_ids);
       m_global_writer->writeItemGroup(group_full_name, written_unique_ids, wanted_unique_ids.view());
       m_written_groups.insert(group);
     }
   }
+
   Ref<ISerializedData> sdata(write_data->createSerializedDataRef(false));
   m_global_writer->writeData(var->fullName(), sdata.get());
+
+  if (is_mesh_variable)
+    _computeGlobalHash(var, write_data);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Calcul un hash global pour la variable.
+ *
+ * Le rang maitre récupère un tableau contenant la concaténation des valeurs
+ * de la variable pour tous les rangs et calcul un hash sur ce tableau.
+ *
+ * Comme ce tableau est trié suivant les uniqueId(), il peut servir à
+ * comparer directement la valeur de la variable.
+ */
+void BasicWriter::
+_computeGlobalHash(IVariable* var, IData* write_data)
+{
+  IHashAlgorithm* hash_algo = m_global_hash_algorithm.get();
+  if (!hash_algo)
+    return;
+
+  INumericDataInternal* num_data = write_data->_commonInternal()->numericData();
+  if (!num_data)
+    ARCANE_FATAL("Variable '{0}' is not a numeric variable", var->fullName());
+
+  IParallelMng* pm = m_parallel_mng;
+  Int32 my_rank = pm->commRank();
+  Int32 master_rank = pm->masterIORank();
+  ConstMemoryView memory_view = num_data->memoryView();
+  Int64 nb_element = memory_view.nbElement();
+  Int64 total_nb = m_parallel_mng->reduce(Parallel::ReduceSum, nb_element);
+  info() << "ComputeGlobalHash VAR v=" << var->fullName()
+         << " num_data_nb_element=" << nb_element << " total=" << total_nb;
+
+  UniqueArray<Byte> bytes;
+
+  pm->gatherVariable(asSpan<Byte>(memory_view.bytes()).smallView(), bytes, master_rank);
+
+  if (my_rank == master_rank) {
+    HashAlgorithmValue hash_value;
+    hash_algo->computeHash(asBytes(bytes), hash_value);
+    info() << "VAR_HASH=" << Convert::toHexaString(asBytes(hash_value.bytes()))
+           << " name=" << var->fullName();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -366,7 +420,7 @@ beginWrite(const VariableCollection& vars)
 void BasicWriter::
 endWrite()
 {
-  IParallelMng* pm = m_parallel_mng;
+  const IParallelMng* pm = m_parallel_mng;
   if (pm->isMasterIO()) {
     Int64 nb_part = pm->commSize();
     if (m_version >= 3) {
