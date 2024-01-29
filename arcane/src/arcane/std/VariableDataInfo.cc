@@ -77,6 +77,12 @@ VariableDataInfo(const String& full_name, const XmlNode& element)
       m_shape.setDimensions(values);
     }
   }
+  {
+    // L'attribut 'compare-hash' est nul si on repart d'une veille protection (avant Arcane 3.12)
+    XmlNode hash_attr = element.attr("compare-hash");
+    if (!hash_attr.null())
+      m_compare_hash_value = hash_attr.value();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -96,6 +102,7 @@ write(XmlNode element) const
   _addAttribute(element, "memory-size", m_memory_size);
   _addAttribute(element, "file-offset", m_file_offset);
   _addAttribute(element, "shape-size", m_shape.dimensions().size());
+  _addAttribute(element, "compare-hash", m_compare_hash_value);
   {
     String s;
     if (builtInPutValue(m_shape.dimensions().smallView(), s))

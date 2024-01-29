@@ -183,10 +183,10 @@ _directWriteVal(IVariable* var, IData* data)
   }
 
   Ref<ISerializedData> sdata(write_data->createSerializedDataRef(false));
-  m_global_writer->writeData(var->fullName(), sdata.get());
-
+  String compare_hash;
   if (is_mesh_variable)
-    _computeCompareHash(var, write_data);
+    compare_hash = _computeCompareHash(var, write_data);
+  m_global_writer->writeData(var->fullName(), sdata.get(), compare_hash);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -199,13 +199,16 @@ _directWriteVal(IVariable* var, IData* data)
  *
  * Comme ce tableau est trié suivant les uniqueId(), il peut servir à
  * comparer directement la valeur de la variable.
+ *
+ * \return le hash sous-forme de chaîne de caratères si un algorithme de hash
+ * est spécifié.
  */
-void BasicWriter::
+String BasicWriter::
 _computeCompareHash(IVariable* var, IData* write_data)
 {
   IHashAlgorithm* hash_algo = m_compare_hash_algorithm.get();
   if (!hash_algo)
-    return;
+    return {};
 
   INumericDataInternal* num_data = write_data->_commonInternal()->numericData();
   if (!num_data)
@@ -224,12 +227,14 @@ _computeCompareHash(IVariable* var, IData* write_data)
 
   pm->gatherVariable(Arccore::asSpan<Byte>(memory_view.bytes()).smallView(), bytes, master_rank);
 
+  String hash_string;
   if (my_rank == master_rank) {
     HashAlgorithmValue hash_value;
     hash_algo->computeHash(asBytes(bytes), hash_value);
-    info() << "VAR_HASH=" << Convert::toHexaString(asBytes(hash_value.bytes()))
-           << " name=" << var->fullName();
+    hash_string = Convert::toHexaString(asBytes(hash_value.bytes()));
+    info() << "VAR_HASH=" << hash_string << " name=" << var->fullName();
   }
+  return hash_string;
 }
 
 /*---------------------------------------------------------------------------*/

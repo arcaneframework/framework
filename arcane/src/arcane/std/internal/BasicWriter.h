@@ -85,7 +85,7 @@ class BasicWriter
  private:
 
   void _directWriteVal(IVariable* v, IData* data);
-  void _computeCompareHash(IVariable* var, IData* write_data);
+  String _computeCompareHash(IVariable* var, IData* write_data);
   Ref<ParallelDataWriter> _getWriter(IVariable* var);
   void _endWriteV3();
   void _checkNoInit();

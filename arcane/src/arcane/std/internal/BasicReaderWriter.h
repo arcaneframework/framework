@@ -149,7 +149,8 @@ class IGenericWriter
  public:
 
   virtual void initialize(const String& path, Int32 rank) = 0;
-  virtual void writeData(const String& var_full_name, const ISerializedData* sdata) = 0;
+  virtual void writeData(const String& var_full_name, const ISerializedData* sdata,
+                         const String& compare_hash) = 0;
   virtual void writeItemGroup(const String& group_full_name,
                               SmallSpan<const Int64> written_unique_ids,
                               SmallSpan<const Int64> wanted_unique_ids) = 0;
@@ -171,7 +172,7 @@ class BasicGenericWriter
  public:
 
   void initialize(const String& path, Int32 rank) override;
-  void writeData(const String& var_full_name, const ISerializedData* sdata) override;
+  void writeData(const String& var_full_name, const ISerializedData* sdata, const String& compare_hash) override;
   void writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_unique_ids,
                       SmallSpan<const Int64> wanted_unique_ids) override;
   void endWrite() override;
