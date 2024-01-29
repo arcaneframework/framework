@@ -15,6 +15,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IDataCompressor.h"
+#include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/Ref.h"
 
 #include "arcane/core/IXmlDocumentHolder.h"
@@ -149,13 +150,21 @@ endWrite()
     root.setAttrValue("min-compress-size", String::fromNumber(dc->minCompressSize()));
   }
   root.setAttrValue("version", String::fromNumber(m_version));
-  for (const auto& i : m_variables_data_info) {
-    Ref<VariableDataInfo> vdi = i.second;
-    XmlNode e = root.createAndAppendElement("variable-data");
-    e.setAttrValue("full-name", vdi->fullName());
-    vdi->write(e);
+  JSONWriter jsw;
+  {
+    JSONWriter::Object main_object(jsw);
+    JSONWriter::Object json_vars(jsw, "Variables");
+    for (const auto& i : m_variables_data_info) {
+      Ref<VariableDataInfo> vdi = i.second;
+      XmlNode e = root.createAndAppendElement("variable-data");
+      e.setAttrValue("full-name", vdi->fullName());
+      vdi->write(e, jsw);
+    }
   }
   if (m_version >= 3) {
+    // Ajoute la sauvegarde des meta-données au format JSON
+    XmlElement json_var(root, "variables-data-json", jsw.getBuffer());
+
     // Sauve les méta-données dans la base de données.
     UniqueArray<Byte> bytes;
     xdoc->save(bytes);
