@@ -21,6 +21,8 @@
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/XmlNode.h"
 
+#include <map>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -107,6 +109,38 @@ class VariableDataInfo
   ArrayShape m_shape;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Tableau associatif des données des variables.
+ */
+class VariableDataInfoMap
+{
+  using MapType = std::map<String, Ref<VariableDataInfo>>;
+
+ public:
+
+  using const_iterator = MapType::const_iterator;
+
+ public:
+
+  //! Ajoute une variable
+  Ref<VariableDataInfo> add(const String& full_name, const ISerializedData* sdata);
+  //! Ajoute une variable
+  Ref<VariableDataInfo> add(const String& full_name, const XmlNode& node);
+
+  //! Retourne la variable de nom \a full_name. Retourne null si non trouvé.
+  Ref<VariableDataInfo> find(const String& full_name) const;
+
+  //@{ //! Itérateurs
+  const_iterator begin() const { return m_data_info_map.begin(); }
+  const_iterator end() const { return m_data_info_map.end(); }
+  //@}
+
+ private:
+
+  MapType m_data_info_map;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

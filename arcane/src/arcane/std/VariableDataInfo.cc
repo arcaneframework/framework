@@ -16,6 +16,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/core/ISerializedData.h"
 
@@ -101,6 +102,43 @@ write(XmlNode element) const
       ARCANE_FATAL("Can not write '{0}'", m_shape.dimensions());
     _addAttribute(element, "shape", s);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<VariableDataInfo> VariableDataInfoMap::
+add(const String& full_name, const ISerializedData* sdata)
+{
+  auto v = makeRef(new VariableDataInfo(full_name, sdata));
+  m_data_info_map.insert(std::make_pair(full_name, v));
+  return v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<VariableDataInfo> VariableDataInfoMap::
+add(const String& full_name, const XmlNode& node)
+{
+  auto v = makeRef(new VariableDataInfo(full_name, node));
+  m_data_info_map.insert(std::make_pair(full_name, v));
+  return v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<VariableDataInfo> VariableDataInfoMap::
+find(const String& full_name) const
+{
+  auto ivar = m_data_info_map.find(full_name);
+  if (ivar != m_data_info_map.end())
+    return ivar->second;
+  return {};
 }
 
 /*---------------------------------------------------------------------------*/

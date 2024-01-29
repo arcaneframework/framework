@@ -122,8 +122,6 @@ class BasicGenericReader
 
  private:
 
-  using VariableDataInfoMap = std::map<String, Ref<VariableDataInfo>>;
-
   IApplication* m_application = nullptr;
   Ref<KeyValueTextReader> m_text_reader;
   String m_path;
@@ -179,8 +177,6 @@ class BasicGenericWriter
   void endWrite() override;
 
  private:
-
-  using VariableDataInfoMap = std::map<String, Ref<VariableDataInfo>>;
 
   IApplication* m_application = nullptr;
   Int32 m_version = -1;
