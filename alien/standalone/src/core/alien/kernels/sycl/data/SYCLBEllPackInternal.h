@@ -23,6 +23,7 @@
 #include <CL/sycl.hpp>
 
 #include <alien/kernels/sycl/data/SendRecvOp.h>
+#include <alien/kernels/sycl/data/LUSendRecvOp.h>
 
 #include <alien/kernels/sycl/data/BEllPackStructInfo.h>
 

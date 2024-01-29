@@ -251,6 +251,22 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
     //Universe().traceMng()->flush() ;
   }
 
+  void upperRecv(bool insitu = true) 
+  {
+  }
+  
+  void upperSend() 
+  {
+  }
+  
+  void lowerRecv(bool insitu = true)
+  {
+  }
+  
+  void lowerSend()
+  {
+  
+  }
  private:
   // clang-format off
   ValueBufferType&                                       m_send_buffer;

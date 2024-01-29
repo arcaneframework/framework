@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <vector>
 #include <alien/core/impl/IVectorImpl.h>
 #include <alien/data/ISpace.h>
 #include <alien/kernels/sycl/SYCLBackEnd.h>

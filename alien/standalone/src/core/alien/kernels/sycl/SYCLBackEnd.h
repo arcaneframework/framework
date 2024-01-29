@@ -76,6 +76,7 @@ template <>
 struct AlgebraTraits<BackEnd::tag::sycl>
 {
   // clang-format off
+  typedef Real                                      value_type;
   typedef SYCLBEllPackTraits<Real>::MatrixType      matrix_type;
   typedef SYCLBEllPackTraits<Real>::VectorType      vector_type;
   typedef SYCLBEllPackTraits<Real>::AlgebraType     algebra_type;

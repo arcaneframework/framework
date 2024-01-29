@@ -22,6 +22,7 @@
 #include <unordered_set>
 
 #include "alien/distribution/MatrixDistribution.h"
+#include <alien/kernels/simple_csr/CSRStructInfo.h>
 #include <alien/kernels/simple_csr/DistStructInfo.h>
 
 /*---------------------------------------------------------------------------*/

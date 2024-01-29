@@ -66,6 +66,7 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
  public:
   // clang-format off
   static const bool                                         on_host_only = false ;
+  typedef BackEnd::tag::sycl                                TagType ;
   typedef ValueT                                            ValueType;
   typedef ValueT                                            value_type ;
 
@@ -111,6 +112,11 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
 
   ValueType const* getAddressData() const;
   ValueType const* data() const;
+
+  IMessagePassingMng* getParallelMng()
+  {
+    return m_parallel_mng;
+  }
 
  public:
   bool initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,

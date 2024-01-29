@@ -28,9 +28,15 @@
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
 #include <alien/kernels/sycl/SYCLPrecomp.h>
+#include "alien/kernels/sycl/data/SYCLEnv.h"
+#include "alien/kernels/sycl/data/SYCLEnvInternal.h"
+
 #include <alien/kernels/sycl/data/SYCLBEllPackMatrix.h>
 #include <alien/kernels/sycl/data/SYCLVector.h>
 #include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
+
+#include "alien/kernels/sycl/data/SYCLVectorInternal.h"
+#include <alien/kernels/sycl/data/SYCLBEllPackInternal.h>
 #include <alien/kernels/sycl/algebra/SYCLInternalLinearAlgebra.h>
 
 #include "alien/kernels/sycl/data/SYCLEnv.h"

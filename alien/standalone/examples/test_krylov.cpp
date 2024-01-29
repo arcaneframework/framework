@@ -42,13 +42,18 @@
 
 #ifdef ALIEN_USE_SYCL
 #include <alien/kernels/sycl/SYCLPrecomp.h>
-#include <alien/kernels/sycl/data/SYCLBEllPackMatrix.h>
-#include <alien/kernels/sycl/data/SYCLVector.h>
-#include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
-#include <alien/kernels/sycl/algebra/SYCLInternalLinearAlgebra.h>
 
 #include "alien/kernels/sycl/data/SYCLEnv.h"
 #include "alien/kernels/sycl/data/SYCLEnvInternal.h"
+
+#include <alien/kernels/sycl/data/SYCLBEllPackMatrix.h>
+#include <alien/kernels/sycl/data/SYCLVector.h>
+#include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
+
+#include "alien/kernels/sycl/data/SYCLVectorInternal.h"
+#include <alien/kernels/sycl/data/SYCLBEllPackInternal.h>
+#include <alien/kernels/sycl/algebra/SYCLInternalLinearAlgebra.h>
+
 #include <alien/kernels/sycl/algebra/SYCLKernelInternal.h>
 #endif
 
@@ -673,7 +678,7 @@ int main(int argc, char** argv)
 #ifdef ALIEN_USE_SYCL
       Alien::SYCLInternalLinearAlgebra alg;
       alg.setDotAlgo(vm["dot-algo"].as<int>());
-      run(alg);
+      //run(alg);
 #else
       trace_mng->info() << "SYCL BackEnd not available";
 #endif
