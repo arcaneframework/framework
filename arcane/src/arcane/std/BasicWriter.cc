@@ -54,6 +54,8 @@ BasicWriter(IApplication* app, IParallelMng* pm, const String& path,
 void BasicWriter::
 initialize()
 {
+  _checkNoInit();
+
   Int32 rank = m_parallel_mng->commRank();
   if (m_open_mode == OpenModeTruncate && m_parallel_mng->isMasterIO())
     platform::recursiveCreateDirectory(m_path);
@@ -75,6 +77,7 @@ initialize()
       m_text_writer->setDataCompressor(bc);
     }
   }
+
   // Idem pour le service de calcul de hash
   if (!m_hash_algorithm.get()) {
     String hash_algorithm_name = platform::getEnvironmentVariable("ARCANE_HASHALGORITHM");
@@ -89,19 +92,29 @@ initialize()
   }
 
   // Pour test, permet de spécifier un service pour le calcul du hash global.
-  if (!m_global_hash_algorithm.get()) {
-    String algo_name = platform::getEnvironmentVariable("ARCANE_GLOBALHASHALGORITHM");
+  if (!m_compare_hash_algorithm.get()) {
+    String algo_name = platform::getEnvironmentVariable("ARCANE_COMPAREHASHALGORITHM");
     if (!algo_name.empty()) {
-      info() << "Use global hash algorithm from environment variable ARCANE_GLOBALHASHALGORITHM name=" << algo_name;
+      info() << "Use global hash algorithm from environment variable ARCANE_COMPAREHASHALGORITHM name=" << algo_name;
       algo_name = algo_name + "HashAlgorithm";
       auto v = _createHashAlgorithm(m_application, algo_name);
-      m_global_hash_algorithm = v;
+      m_compare_hash_algorithm = v;
     }
   }
 
   m_global_writer = new BasicGenericWriter(m_application, m_version, m_text_writer);
   if (m_verbose_level > 0)
     info() << "** OPEN MODE = " << m_open_mode;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicWriter::
+_checkNoInit()
+{
+  if (m_is_init)
+    ARCANE_FATAL("initialize() has already been called");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -173,13 +186,13 @@ _directWriteVal(IVariable* var, IData* data)
   m_global_writer->writeData(var->fullName(), sdata.get());
 
   if (is_mesh_variable)
-    _computeGlobalHash(var, write_data);
+    _computeCompareHash(var, write_data);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul un hash global pour la variable.
+ * \brief Calcul un hash de comparaison pour la variable.
  *
  * Le rang maitre récupère un tableau contenant la concaténation des valeurs
  * de la variable pour tous les rangs et calcul un hash sur ce tableau.
@@ -188,9 +201,9 @@ _directWriteVal(IVariable* var, IData* data)
  * comparer directement la valeur de la variable.
  */
 void BasicWriter::
-_computeGlobalHash(IVariable* var, IData* write_data)
+_computeCompareHash(IVariable* var, IData* write_data)
 {
-  IHashAlgorithm* hash_algo = m_global_hash_algorithm.get();
+  IHashAlgorithm* hash_algo = m_compare_hash_algorithm.get();
   if (!hash_algo)
     return;
 
@@ -204,7 +217,7 @@ _computeGlobalHash(IVariable* var, IData* write_data)
   ConstMemoryView memory_view = num_data->memoryView();
   Int64 nb_element = memory_view.nbElement();
   Int64 total_nb = m_parallel_mng->reduce(Parallel::ReduceSum, nb_element);
-  info() << "ComputeGlobalHash VAR v=" << var->fullName()
+  info() << "ComputeCompareHash VAR v=" << var->fullName()
          << " num_data_nb_element=" << nb_element << " total=" << total_nb;
 
   UniqueArray<Byte> bytes;
@@ -270,44 +283,68 @@ beginWrite(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 
 void BasicWriter::
+_endWriteV3()
+{
+  const Int64 nb_part = m_parallel_mng->commSize();
+
+  // Sauvegarde les informations au format JSON
+  JSONWriter jsw;
+
+  {
+    JSONWriter::Object main_object(jsw);
+    jsw.writeKey(_getArcaneDBTag());
+    {
+      JSONWriter::Object db_object(jsw);
+      jsw.write("Version", (Int64)m_version);
+      jsw.write("NbPart", nb_part);
+
+      String data_compressor_name;
+      Int64 data_compressor_min_size = 0;
+      if (m_data_compressor.get()) {
+        data_compressor_name = m_data_compressor->name();
+        data_compressor_min_size = m_data_compressor->minCompressSize();
+      }
+      jsw.write("DataCompressor", data_compressor_name);
+      jsw.write("DataCompressorMinSize", String::fromNumber(data_compressor_min_size));
+
+      // Sauve le nom de l'algorithme de hash
+      {
+        String name;
+        if (m_hash_algorithm.get())
+          name = m_hash_algorithm->name();
+        jsw.write("HashAlgorithm", name);
+      }
+
+      // Sauve le nom de l'algorithme de hash pour les comparaisons
+      {
+        String name;
+        if (m_compare_hash_algorithm.get())
+          name = m_compare_hash_algorithm->name();
+        jsw.write("CompareHashAlgorithm", name);
+      }
+    }
+  }
+
+  StringBuilder filename = m_path;
+  filename += "/arcane_acr_db.json";
+  String fn = filename.toString();
+  std::ofstream ofile(fn.localstr());
+  ofile << jsw.getBuffer();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicWriter::
 endWrite()
 {
   const IParallelMng* pm = m_parallel_mng;
   if (pm->isMasterIO()) {
-    Int64 nb_part = pm->commSize();
     if (m_version >= 3) {
-      // Sauvegarde les informations au format JSON
-      JSONWriter jsw;
-      {
-        JSONWriter::Object main_object(jsw);
-        jsw.writeKey(_getArcaneDBTag());
-        {
-          JSONWriter::Object db_object(jsw);
-          jsw.write("Version", (Int64)m_version);
-          jsw.write("NbPart", nb_part);
-
-          String data_compressor_name;
-          Int64 data_compressor_min_size = 0;
-          if (m_data_compressor.get()) {
-            data_compressor_name = m_data_compressor->name();
-            data_compressor_min_size = m_data_compressor->minCompressSize();
-          }
-          jsw.write("DataCompressor", data_compressor_name);
-          jsw.write("DataCompressorMinSize", String::fromNumber(data_compressor_min_size));
-
-          String hash_algorithm_name;
-          if (m_hash_algorithm.get())
-            hash_algorithm_name = m_hash_algorithm->name();
-          jsw.write("HashAlgorithm", hash_algorithm_name);
-        }
-      }
-      StringBuilder filename = m_path;
-      filename += "/arcane_acr_db.json";
-      String fn = filename.toString();
-      std::ofstream ofile(fn.localstr());
-      ofile << jsw.getBuffer();
+      _endWriteV3();
     }
     else {
+      Int64 nb_part = pm->commSize();
       StringBuilder filename = m_path;
       filename += "/infos.txt";
       String fn = filename.toString();

@@ -42,33 +42,38 @@ class BasicWriter
 
  public:
 
+  //!@{ Implémentation de IDataWriter
+  void beginWrite(const VariableCollection& vars) override;
+  void endWrite() override;
+  void setMetaData(const String& meta_data) override;
+  void write(IVariable* v, IData* data) override;
+  //@}
+
+ public:
+
   //! Positionne le service de compression. Doit être appelé avant initialize()
   void setDataCompressor(Ref<IDataCompressor> data_compressor)
   {
+    _checkNoInit();
     m_data_compressor = data_compressor;
   }
-  //! Positionne le service de calcul de hash global. Doit être appelé avant initialize()
-  void setGlobalHashAlgorithm(Ref<IHashAlgorithm> hash_algo)
+  //! Positionne le service de calcul de hash pour la comparaison. Doit être appelé avant initialize()
+  void setCompareHashAlgorithm(Ref<IHashAlgorithm> hash_algo)
   {
-    m_global_hash_algorithm = hash_algo;
+    _checkNoInit();
+    m_compare_hash_algorithm = hash_algo;
   }
   void initialize();
-
-  void beginWrite(const VariableCollection& vars) override;
-  void endWrite() override;
-
-  void setMetaData(const String& meta_data) override;
-
-  void write(IVariable* v, IData* data) override;
 
  private:
 
   bool m_want_parallel = false;
   bool m_is_gather = false;
+  bool m_is_init = false;
   Int32 m_version = -1;
 
   Ref<IDataCompressor> m_data_compressor;
-  Ref<IHashAlgorithm> m_global_hash_algorithm;
+  Ref<IHashAlgorithm> m_compare_hash_algorithm;
   Ref<IHashAlgorithm> m_hash_algorithm;
   Ref<KeyValueTextWriter> m_text_writer;
 
@@ -80,8 +85,10 @@ class BasicWriter
  private:
 
   void _directWriteVal(IVariable* v, IData* data);
-  void _computeGlobalHash(IVariable* var, IData* write_data);
+  void _computeCompareHash(IVariable* var, IData* write_data);
   Ref<ParallelDataWriter> _getWriter(IVariable* var);
+  void _endWriteV3();
+  void _checkNoInit();
 };
 
 /*---------------------------------------------------------------------------*/
