@@ -47,6 +47,7 @@
 #include "alien/kernels/sycl/algebra/SYCLInternalLinearAlgebra.h"
 
 #include "alien/kernels/sycl/algebra/SYCLBEllPackMatrixMult.h"
+
 /*---------------------------------------------------------------------------*/
 
 namespace Alien
@@ -128,7 +129,6 @@ Real SYCLInternalLinearAlgebra::norm1(const SYCLVector<Real>& vx ALIEN_UNUSED_PA
   throw NotImplementedException(
   A_FUNCINFO, "SYCLLinearAlgebra::norm1 not implemented");
 }
-
 /*---------------------------------------------------------------------------*/
 
 Real SYCLInternalLinearAlgebra::norm2(const SYCLVector<Real>& vx) const
@@ -343,12 +343,6 @@ Real SYCLInternalLinearAlgebraExpr::norm2(const SYCLVector<Real>& vx) const
   return std::sqrt(m_internal->dot(vx.internal()->values(), vx.internal()->values()));
 }
 
-Real SYCLInternalLinearAlgebraExpr::norm2(const SYCLBEllPackMatrix<Real>& ma) const
-{
-  throw NotImplementedException(
-  A_FUNCINFO, "SYCLLinearAlgebra::norm2 mat not implemented");
-}
-
 /*---------------------------------------------------------------------------*/
 
 void SYCLInternalLinearAlgebraExpr::mult(
@@ -398,24 +392,6 @@ const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
   //cblas::copy(vx.size(), dataPtr(vx), 1, dataPtr(vr), 1);
 }
 
-void SYCLInternalLinearAlgebraExpr::copy(const SYCLBEllPackMatrix<Real>& vx, SYCLBEllPackMatrix<Real>& vy) const
-{
-  throw NotImplementedException(
-  A_FUNCINFO, "SYCLLinearAlgebra::copy mat not implemented");
-}
-
-void SYCLInternalLinearAlgebraExpr::add(const SYCLBEllPackMatrix<Real>& vx, SYCLBEllPackMatrix<Real>& vy) const
-{
-  throw NotImplementedException(
-  A_FUNCINFO, "SYCLLinearAlgebra::add mat not implemented");
-}
-
-void SYCLInternalLinearAlgebraExpr::scal(Real a, SYCLBEllPackMatrix<Real>& ma) const
-{
-  throw NotImplementedException(
-  A_FUNCINFO, "SYCLLinearAlgebra::add mat not implemented");
-}
-
 void SYCLInternalLinearAlgebraExpr::copy(const SYCLVector<Real>& vx, SYCLVector<Real>& vy) const
 {
   m_internal->copy(vx.internal()->values(), vy.internal()->values());
@@ -434,6 +410,29 @@ Real SYCLInternalLinearAlgebraExpr::dot(const SYCLVector<Real>& vx, const SYCLVe
   return m_internal->dot(vx.internal()->values(), vy.internal()->values());
 }
 
+Real SYCLInternalLinearAlgebraExpr::norm2(const SYCLBEllPackMatrix<Real>& a) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::notm2 not implemented");
+}
+
+void SYCLInternalLinearAlgebraExpr::copy(const SYCLBEllPackMatrix<Real>& a, SYCLBEllPackMatrix<Real>& r) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::copy not implemented");
+}
+
+void SYCLInternalLinearAlgebraExpr::add(const SYCLBEllPackMatrix<Real>& a, SYCLBEllPackMatrix<Real>& r) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::add not implemented");
+}
+
+void SYCLInternalLinearAlgebraExpr::scal(Real alpha, SYCLBEllPackMatrix<Real>& a) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::scal not implemented");
+}
 /*---------------------------------------------------------------------------*/
 void SYCLInternalLinearAlgebraExpr::scal(Real alpha ALIEN_UNUSED_PARAM, UniqueArray<Real>& x ALIEN_UNUSED_PARAM) const
 {

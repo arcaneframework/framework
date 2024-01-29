@@ -26,25 +26,35 @@
 
 #include <alien/kernels/sycl/SYCLPrecomp.h>
 
+#ifdef USE_SYCL2020
+#include <sycl/sycl.hpp>
+#else
 #include <CL/sycl.hpp>
+#endif
 
 namespace Alien
 {
 
 namespace SYCLInternal
 {
+#ifndef USE_SYCL2020
+  using namespace cl ;
+#endif
+
   struct ALIEN_EXPORT EnvInternal
   {
     EnvInternal()
+#ifndef USE_SYCL2020
     : m_queue(m_device_selector)
+#endif
     {
       printPlatformInfo();
 
       auto device = m_queue.get_device();
 
-      m_max_num_groups = m_queue.get_device().get_info<cl::sycl::info::device::max_compute_units>();
+      m_max_num_groups = m_queue.get_device().get_info<sycl::info::device::max_compute_units>();
       // getting the maximum work group size per thread
-      m_max_work_group_size = m_queue.get_device().get_info<cl::sycl::info::device::max_work_group_size>();
+      m_max_work_group_size = m_queue.get_device().get_info<sycl::info::device::max_work_group_size>();
 
       m_max_num_threads = m_max_num_groups * m_max_work_group_size;
 
@@ -54,7 +64,7 @@ namespace SYCLInternal
       std::cout << "MAX NB THREADS      = " << m_max_num_threads << std::endl;
     }
 
-    cl::sycl::queue& queue()
+    sycl::queue& queue()
     {
       return m_queue;
     }
@@ -78,34 +88,34 @@ namespace SYCLInternal
     {
 
       // Loop over all available SYCL platforms.
-      for (const cl::sycl::platform& platform :
-           cl::sycl::platform::get_platforms()) {
+      for (const sycl::platform& platform :
+           sycl::platform::get_platforms()) {
 
         // Print some information about the platform.
         std::cout << "============ Platform ============" << std::endl;
         std::cout << " Name   : "
-                  << platform.get_info<cl::sycl::info::platform::name>()
+                  << platform.get_info<sycl::info::platform::name>()
                   << std::endl;
         std::cout << " Vendor : "
-                  << platform.get_info<cl::sycl::info::platform::vendor>()
+                  << platform.get_info<sycl::info::platform::vendor>()
                   << std::endl;
         std::cout << " Version: "
-                  << platform.get_info<cl::sycl::info::platform::version>()
+                  << platform.get_info<sycl::info::platform::version>()
                   << std::endl;
 
         // Loop over all devices available from this platform.
-        for (const cl::sycl::device& device : platform.get_devices()) {
+        for (const sycl::device& device : platform.get_devices()) {
 
           // Print some information about the device.
           std::cout << "------------- Device -------------" << std::endl;
           std::cout << " Name   : "
-                    << device.get_info<cl::sycl::info::device::name>()
+                    << device.get_info<sycl::info::device::name>()
                     << std::endl;
           std::cout << " Vendor : "
-                    << device.get_info<cl::sycl::info::device::vendor>()
+                    << device.get_info<sycl::info::device::vendor>()
                     << std::endl;
           std::cout << " Version: "
-                    << device.get_info<cl::sycl::info::device::version>()
+                    << device.get_info<sycl::info::device::version>()
                     << std::endl;
         }
       }
@@ -113,8 +123,11 @@ namespace SYCLInternal
     }
 
     // clang-format off
-    cl::sycl::default_selector m_device_selector;
-    cl::sycl::queue            m_queue;
+#ifdef USE_SYCL2020
+#else
+    sycl::default_selector     m_device_selector;
+#endif
+    sycl::queue                m_queue;
     std::size_t                m_max_num_groups      = 0 ;
     std::size_t                m_max_work_group_size = 0 ;
     std::size_t                m_max_num_threads     = 0 ;

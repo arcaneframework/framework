@@ -29,9 +29,6 @@
 
 #include <alien/kernels/simple_csr/SendRecvOp.h>
 
-#ifndef USE_SYCL_USM
-//#define USE_SYCL_USM
-#endif
 
 namespace Arccore
 {
@@ -40,15 +37,19 @@ class ITraceMng;
 namespace Alien::SYCLInternal
 {
 
+#ifndef USE_SYCL2020
+  using namespace cl ;
+#endif
+
 template <typename ValueT>
 class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 {
  public:
   // clang-format off
   typedef ValueT                                ValueType ;
-  typedef cl::sycl::buffer<ValueType, 1>        ValueBufferType ;
+  typedef sycl::buffer<ValueType, 1>            ValueBufferType ;
 
-  typedef cl::sycl::buffer<int>                 IndexBufferType ;
+  typedef sycl::buffer<int>                     IndexBufferType ;
   typedef std::unique_ptr<IndexBufferType>      IndexBufferPtrType ;
   // clang-format on
 
@@ -78,8 +79,8 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
   {
 #ifdef USE_SYCL_USM
     auto& queue = SYCLEnv::instance()->internal()->queue();
-    cl::sycl::free(m_rbuffer, queue);
-    cl::sycl::free(m_sbuffer, queue);
+    sycl::free(m_rbuffer, queue);
+    sycl::free(m_sbuffer, queue);
 #endif
   }
 
@@ -97,7 +98,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
       m_recv_request.resize(m_recv_info.m_num_neighbours);
       Integer total_nb_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
 #ifdef USE_SYCL_USM
-      m_rbuffer = cl::sycl::malloc_shared<ValueT>(total_nb_recv_ids, queue);
+      m_rbuffer = sycl::malloc_shared<ValueT>(total_nb_recv_ids, queue);
 #else
       m_rbuffer.resize(total_nb_recv_ids);
 #endif
@@ -123,25 +124,31 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
     if (m_send_info.m_ids.size()) {
       std::size_t total_nb_send_ids = m_send_info.m_ids_offset[m_send_info.m_num_neighbours] - m_send_info.m_ids_offset[0];
 #ifdef USE_SYCL_USM
-      m_sbuffer = cl::sycl::malloc_shared<ValueT>(total_nb_send_ids, queue);
+      m_sbuffer = sycl::malloc_shared<ValueT>(total_nb_send_ids, queue);
 #else
       m_sbuffer.resize(total_nb_send_ids);
 #endif
       {
 #ifdef USE_SYCL_USM
-        cl::sycl::buffer<ValueType> sbuffer{ { cl::sycl::buffer_allocation::empty_view(m_sbuffer, queue.get_device()) }, total_nb_send_ids };
+        sycl::buffer<ValueType> sbuffer{ { sycl::buffer_allocation::empty_view(m_sbuffer, queue.get_device()) }, total_nb_send_ids };
 #else
-        cl::sycl::buffer<ValueType> sbuffer(m_sbuffer.data(), total_nb_send_ids);
+        sycl::buffer<ValueType> sbuffer(m_sbuffer.data(), total_nb_send_ids);
 #endif
         // clang-format off
-        queue.submit([&](cl::sycl::handler& cgh)
+        queue.submit([&](sycl::handler& cgh)
                      {
-                       auto access_send_buffer = m_send_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
-                       auto access_ids         = m_send_ids.template get_access<cl::sycl::access::mode::read>(cgh);
-                       cl::sycl::accessor<ValueType> access_sbuffer{sbuffer, cgh,cl::sycl::write_only, cl::sycl::property::no_init{}};
+                       auto access_send_buffer = m_send_buffer.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_ids         = m_send_ids.template get_access<sycl::access::mode::read>(cgh);
+#define USE_ONEAPI
+#ifdef USE_HIPSYCL
+                       sycl::accessor<ValueType> access_sbuffer{sbuffer, cgh, , sycl::property::no_init{}};
+#endif
+#ifdef USE_ONEAPI
+                       auto access_sbuffer = sycl::accessor(sbuffer, cgh, sycl::write_only, sycl::property::no_init{});
+#endif
 
-                       cgh.parallel_for<class vector_mult_send>(cl::sycl::range<1>{total_threads},
-                                                                [=] (cl::sycl::item<1> itemId)
+                       cgh.parallel_for<class vector_mult_send>(sycl::range<1>{total_threads},
+                                                                [=] (sycl::item<1> itemId)
                                                                 {
                                                                    auto id = itemId.get_id(0);
                                                                    for( auto i=id; i<total_nb_send_ids; i+=total_threads)
@@ -197,7 +204,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
       if (m_recv_info.m_ids.size()) {
         Arccore::Integer total_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
 #ifdef USE_SYCL_USM
-        m_rbuffer = cl::sycl::malloc_shared<ValueT>(total_recv_ids, queue);
+        m_rbuffer = sycl::malloc_shared<ValueT>(total_recv_ids, queue);
 #else
         m_rbuffer.resize(total_recv_ids);
 #endif
@@ -219,21 +226,26 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 
       {
 #ifdef USE_SYCL_USM
-        cl::sycl::buffer<ValueType> rbuffer{ { cl::sycl::buffer_allocation::view(m_rbuffer, queue.get_device()) }, total_nb_recv_ids };
+        sycl::buffer<ValueType> rbuffer{ { sycl::buffer_allocation::view(m_rbuffer, queue.get_device()) }, total_nb_recv_ids };
 #else
-        cl::sycl::buffer<ValueType> rbuffer(m_rbuffer.data(), total_nb_recv_ids);
+        sycl::buffer<ValueType> rbuffer(m_rbuffer.data(), total_nb_recv_ids);
 #endif
         // clang-format off
-        queue.submit([&](cl::sycl::handler& cgh)
+        queue.submit([&](sycl::handler& cgh)
                      {
-                       //auto access_recv_buffer = m_recv_buffer.template get_access<cl::sycl::access::mode::read_write>(cgh);
-                       //auto access_ids         = m_recv_ids.template get_access<cl::sycl::access::mode::read>(cgh);
+                       //auto access_recv_buffer = m_recv_buffer.template get_access<sycl::access::mode::read_write>(cgh);
+                       //auto access_ids         = m_recv_ids.template get_access<sycl::access::mode::read>(cgh);
+#ifdef USE_HIPSYCL
+                       sycl::accessor<ValueType> access_recv_buffer{m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{}};
+#endif
+#ifdef USE_ONEAPI
+                       auto access_recv_buffer = sycl::accessor(m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{});
+#endif
 
-                       cl::sycl::accessor<ValueType> access_recv_buffer{m_recv_buffer, cgh,cl::sycl::write_only, cl::sycl::property::no_init{}};
-                       cl::sycl::accessor<ValueType> access_rbuffer{rbuffer, cgh};
+                       sycl::accessor<ValueType> access_rbuffer{rbuffer, cgh};
 
-                       cgh.parallel_for<class vector_mult_recv>(cl::sycl::range<1>{total_threads},
-                                                                [=] (cl::sycl::item<1> itemId)
+                       cgh.parallel_for<class vector_mult_recv>(sycl::range<1>{total_threads},
+                                                                [=] (sycl::item<1> itemId)
                                                                 {
                                                                  auto id = itemId.get_id(0);
                                                                  for(auto i=id;i<total_nb_recv_ids;i += total_threads)
@@ -285,6 +297,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
   std::vector<ValueT>                                    m_rbuffer ;
   std::vector<ValueT>                                    m_sbuffer ;
 #endif
+  Arccore::Integer                                       m_unknowns_num = 0;
   Arccore::MessagePassing::IMessagePassingMng*           m_parallel_mng = nullptr;
   Arccore::ITraceMng*                                    m_trace        = nullptr;
   Arccore::UniqueArray<Arccore::MessagePassing::Request> m_recv_request;

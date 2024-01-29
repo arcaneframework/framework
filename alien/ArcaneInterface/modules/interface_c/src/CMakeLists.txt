@@ -20,7 +20,7 @@ endif ()
 linkLibraries(alien_interface_c Alien::alien_core alien_external_packages)
 
 if (TARGET intel)
-    linkLibraries(gtest.refmvhandlers intel)
+    linkLibraries(alien_interface_c intel)
 endif ()
 
 if (TARGET alien_external_packages)

@@ -18,9 +18,33 @@ find_package(MPI REQUIRED)
 find_package(Boost COMPONENTS program_options)
 
 if(ALIEN_USE_SYCL)
-add_executable(sycl_example.exe test_sycl.cpp)
+    IF(ALIEN_USE_HIPSYCL)
+      find_package(hipSYCL CONFIG REQUIRED)
+    ENDIF()
+    IF(ALIEN_USE_INTELDPCPP)
+      find_package(IntelDPCPP CONFIG REQUIRED)
+      message(status "IntelDPCPP : ${IntelDPCPP_FOUND}")
+      message(status "IntelDPCPP FOUND : ${IntelDPCPP_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+    IF(ALIEN_USE_INTELSYCL)
+      find_package(IntelSYCL REQUIRED)
+      message(status "IntelDPCPP : ${IntelDPCPP_FOUND}")
+      message(status "IntelDPCPP FOUND : ${IntelDPCPP_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
 
-target_link_libraries(sycl_example.exe PUBLIC
+    add_executable(sycl_example.exe test_sycl.cpp)
+    IF(ALIEN_USE_INTELSYCL)
+        set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64 -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+        target_compile_options(sycl_example.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
+    ENDIF()
+    
+    target_link_libraries(sycl_example.exe PUBLIC
                       Alien::alien_core
                       Alien::alien_semantic_ref
                       arcconpkg_MPI
@@ -47,7 +71,10 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
 endif()
 
 if(ALIEN_USE_SYCL)
-  target_compile_definitions(krylov_example.exe PUBLIC -DALIEN_USE_SYCL)
+  target_compile_definitions(krylov_example.exe PUBLIC -DALIEN_USE_SYCL) 
+  set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64 -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+  target_compile_options(krylov_example.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
+  
 endif()
  
 target_link_libraries(krylov_example.exe PUBLIC

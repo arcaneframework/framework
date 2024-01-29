@@ -25,5 +25,53 @@
 #include <alien/kernels/simple_csr/CSRStructInfo.h>
 #include <alien/kernels/simple_csr/DistStructInfo.h>
 
+
+#include <alien/kernels/sycl/SYCLPrecomp.h>
+
+namespace Alien
+{
+
+
+/*---------------------------------------------------------------------------*/
+namespace SYCLInternal {
+
+
+class ALIEN_EXPORT SYCLDistStructInfo : public SimpleCSRInternal::DistStructInfo
+{
+ public:
+  typedef SimpleCSRInternal::DistStructInfo BaseType ;
+
+  typedef BEllPackStructInfo<1024,int>      ProfileType;
+
+  SYCLDistStructInfo()
+  : BaseType()
+  {}
+
+  SYCLDistStructInfo(const SYCLDistStructInfo& src)
+  {
+    BaseType::copy(src);
+  }
+
+
+  SYCLDistStructInfo& operator=(const SYCLDistStructInfo& src)
+  {
+    BaseType::copy(src);
+    return *this;
+  }
+
+
+  int const* dcol(const ProfileType& profile) const
+  {
+    //getUpperDiagOffset(profile);
+    //return m_upper_diag_offset.data();
+    return nullptr ;
+  }
+
+
+};
+
+}
+
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -43,18 +43,6 @@ namespace SYCLInternal
 typedef AlgebraTraits<BackEnd::tag::sycl>::matrix_type SYCLMatrixType;
 typedef AlgebraTraits<BackEnd::tag::sycl>::vector_type SYCLVectorType;
 
-template <>
-struct LUSendRecvTraits<BackEnd::tag::sycl>
-{
-  // clang-format off
-  typedef SYCLMatrixType                                      matrix_type ;
-  typedef SYCLVectorType                                      vector_type ;
-  typedef AlgebraTraits<BackEnd::tag::sycl>::value_type       value_type ;
-  typedef SYCLInternal::SYCLLUSendRecvOp<matrix_type>         matrix_op_type ;
-  typedef SYCLInternal::SYCLSendRecvOp<value_type>            vector_op_type ;
-  // clang-format on
-};
-
 class ALIEN_EXPORT SYCLInternalLinearAlgebra
 : public IInternalLinearAlgebra<SYCLMatrixType, SYCLVectorType>
 {
@@ -164,19 +152,20 @@ class SYCLInternalLinearAlgebraExpr
   Real norm0(const Vector& x) const;
   Real norm1(const Vector& x) const;
   Real norm2(const Vector& x) const;
-  Real norm2(const Matrix& x) const;
   void mult(const Matrix& a, const Vector& x, Vector& r) const;
   void axpy(Real alpha, const Vector& x, Vector& r) const;
   void aypx(Real alpha, Vector& y, const Vector& x) const;
   void copy(const Vector& x, Vector& r) const;
-  void copy(const Matrix& a, Matrix& r) const;
-  void scal(Real a, Matrix& r) const;
-  void add(const Matrix& a, Matrix& r) const;
   Real dot(const Vector& x, const Vector& y) const;
   void scal(Real alpha, Vector& x) const;
   void diagonal(const Matrix& a, Vector& x) const;
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
+
+  Real norm2(const Matrix& x) const;
+  void copy(const Matrix& a, Matrix& r) const;
+  void add(const Matrix& a, Matrix& r) const;
+  void scal(Real alpha, Matrix& a) const;
 
   // IInternalLinearAlgebra interface.
 
@@ -187,6 +176,7 @@ class SYCLInternalLinearAlgebraExpr
   Real dot(Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
 
   void scal(Real alpha, UniqueArray<Real>& x) const;
+
 
  private:
   std::unique_ptr<SYCLInternal::KernelInternal> m_internal;

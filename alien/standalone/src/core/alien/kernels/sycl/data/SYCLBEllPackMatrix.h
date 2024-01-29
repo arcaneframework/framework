@@ -32,7 +32,7 @@
 #include <alien/kernels/sycl/SYCLPrecomp.h>
 
 #include <alien/kernels/sycl/data/BEllPackStructInfo.h>
-#include <alien/kernels/sycl/data/DistStructInfo.h>
+#include <alien/kernels/sycl/data/SYCLDistStructInfo.h>
 
 #include <alien/kernels/sycl/SYCLBackEnd.h>
 
@@ -70,7 +70,7 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   typedef ValueT                                            ValueType;
   typedef ValueT                                            value_type ;
 
-  typedef SimpleCSRInternal::DistStructInfo                 DistStructInfo;
+  typedef SYCLInternal::SYCLDistStructInfo                  DistStructInfo;
   typedef SYCLInternal::MatrixInternal<ValueType,1024>      MatrixInternal1024;
 
 
@@ -209,7 +209,8 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   Integer                                 m_global_size  = 0;
   Integer                                 m_ghost_size   = 0;
 
-  SimpleCSRInternal::DistStructInfo            m_matrix_dist_info;
+  //SimpleCSRInternal::DistStructInfo            m_matrix_dist_info;
+  DistStructInfo                               m_matrix_dist_info;
   SimpleCSRInternal::CommProperty::ePolicyType m_send_policy;
   SimpleCSRInternal::CommProperty::ePolicyType m_recv_policy;
   ITraceMng*                                   m_trace = nullptr;

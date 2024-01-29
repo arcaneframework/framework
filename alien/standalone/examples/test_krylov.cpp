@@ -42,6 +42,7 @@
 
 #ifdef ALIEN_USE_SYCL
 #include <alien/kernels/sycl/SYCLPrecomp.h>
+#include <alien/kernels/sycl/SYCLBackEnd.h>
 
 #include "alien/kernels/sycl/data/SYCLEnv.h"
 #include "alien/kernels/sycl/data/SYCLEnvInternal.h"
@@ -674,11 +675,153 @@ int main(int argc, char** argv)
       Alien::SimpleCSRInternalLinearAlgebra alg;
       run(alg);
     }
+
+    // clang-format off
+    auto run_sycl = [&](auto& alg)
+              {
+                typedef typename
+                    boost::remove_reference<decltype(alg)>::type AlgebraType ;
+                typedef typename AlgebraType::BackEndType        BackEndType ;
+                typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
+
+
+                auto const& true_A = A.impl()->get<BackEndType>() ;
+                auto const& true_b = b.impl()->get<BackEndType>() ;
+                auto&       true_x = x.impl()->get<BackEndType>(true) ;
+
+                StopCriteriaType stop_criteria{alg,true_b,tol,max_iteration,output_level>0?trace_mng:nullptr} ;
+
+                if(solver.compare("cg")==0)
+                {
+                  typedef Alien::CG<AlgebraType> SolverType ;
+
+                  SolverType solver{alg,trace_mng} ;
+                  solver.setOutputLevel(output_level) ;
+
+                  if(precond.compare("diag")==0)
+                    {
+                      trace_mng->info()<<"DIAG PRECONDITIONER";
+                      trace_mng->flush() ;
+                      typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A} ;
+                      precond.init() ;
+                      SentryType sentry(timer,"CG-Diag") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("cheb")==0)
+                    {
+                      trace_mng->info()<<"CHEBYSHEV PRECONDITIONER";
+                      double polynom_factor          = vm["poly-factor"].as<double>() ;
+                      int    polynom_order           = vm["poly-order"].as<int>() ;
+                      int    polynom_factor_max_iter = vm["poly-factor-max-iter"].as<int>() ;
+
+                      typedef Alien::ChebyshevPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,trace_mng} ;
+                      precond.setOutputLevel(output_level) ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"CG-ChebyshevPoly") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("neumann")==0)
+                    {
+                      trace_mng->info()<<"NEUMANN PRECONDITIONER";
+                      double polynom_factor          = vm["poly-factor"].as<double>() ;
+                      int    polynom_order           = vm["poly-order"].as<int>() ;
+                      int    polynom_factor_max_iter = vm["poly-factor-max-iter"].as<int>() ;
+
+                      typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,trace_mng} ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"CG-NeumanPoly") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                }
+
+                if(solver.compare("bicgs")==0)
+                {
+                  typedef Alien::BiCGStab<AlgebraType> SolverType ;
+                  SolverType solver{alg,trace_mng} ;
+                  solver.setOutputLevel(output_level) ;
+                  if(precond.compare("diag")==0)
+                    {
+                      trace_mng->info()<<"DIAG PRECONDITIONER";
+                      trace_mng->flush() ;
+                      typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A} ;
+                      precond.init() ;
+                      SentryType sentry(timer,"BiCGS-Diag") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("cheb")==0)
+                    {
+                      trace_mng->info()<<"CHEBYSHEV PRECONDITIONER";
+                      double polynom_factor          = vm["poly-factor"].as<double>() ;
+                      int    polynom_order           = vm["poly-order"].as<int>() ;
+                      int    polynom_factor_max_iter = vm["poly-factor-max-iter"].as<int>() ;
+
+                      typedef Alien::ChebyshevPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,trace_mng} ;
+                      precond.setOutputLevel(output_level) ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"BiCGS-ChebyshevPoly") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                  if(precond.compare("neumann")==0)
+                    {
+                      trace_mng->info()<<"NEUMANN PRECONDITIONER";
+                      double polynom_factor          = vm["poly-factor"].as<double>() ;
+                      int    polynom_order           = vm["poly-order"].as<int>() ;
+                      int    polynom_factor_max_iter = vm["poly-factor-max-iter"].as<int>() ;
+
+                      typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,trace_mng} ;
+                      precond.init() ;
+
+                      SentryType sentry(timer,"BiCGS-NeumanPoly") ;
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+
+                }
+
+                if(stop_criteria.getStatus())
+                {
+                  trace_mng->info()<<"Solver has converged";
+                  trace_mng->info()<<"Nb iterations  : "<<stop_criteria();
+                  trace_mng->info()<<"Criteria value : "<<stop_criteria.getValue();
+                }
+                else
+                {
+                  trace_mng->info()<<"Solver convergence failed";
+                }
+              } ;
+    // clang-format on
+
     if (kernel.compare("sycl") == 0) {
 #ifdef ALIEN_USE_SYCL
       Alien::SYCLInternalLinearAlgebra alg;
       alg.setDotAlgo(vm["dot-algo"].as<int>());
-      //run(alg);
+      run_sycl(alg);
 #else
       trace_mng->info() << "SYCL BackEnd not available";
 #endif

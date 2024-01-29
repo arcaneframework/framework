@@ -18,7 +18,7 @@
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMake)
 
 IF(ALIEN_USE_HIPSYCL)
-find_package(hipSYCL CONFIG REQUIRED)
+  find_package(hipSYCL CONFIG REQUIRED)
 ENDIF()
 IF(ALIEN_USE_INTELDPCPP)
 find_package(IntelDPCPP CONFIG REQUIRED)
@@ -28,6 +28,11 @@ find_package(IntelDPCPP CONFIG REQUIRED)
   message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
   message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
 ENDIF()
+IF(ALIEN_USE_INTELSYCL)
+  #set(CMAKE_CXX_COMPILER dpcpp)
+  #find_package(IntelSYCL REQUIRED)
+ENDIF()
+
 find_package(Boost COMPONENTS context)
 
 add_library(alien_kernel_sycl OBJECT
@@ -50,8 +55,8 @@ add_library(alien_kernel_sycl OBJECT
         SYCLPrecomp.h
         )
 
-IF(ALIEN_USE_HIPSYCL)
-	#target_compile_options(alien_kernel_sycl PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
+IF(ALIEN_USE_HISYCL)
+  target_compile_options(alien_kernel_sycl PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
   add_sycl_to_target(TARGET alien_kernel_sycl 
                    SOURCES data/SYCLVector.cc 
                            data/SYCLBEllPackMatrix.cc
@@ -63,6 +68,21 @@ IF(ALIEN_USE_INTELDPCPP)
    target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20>)
    target_include_directories(alien_kernel_sycl PRIVATE ${SYCL_INCLUDE_DIR_HINT})
    target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda)
+   add_sycl_to_target(TARGET  alien_kernel_sycl 
+                      SOURCES data/SYCLVector.cc 
+                              data/SYCLBEllPackMatrix.cc
+                              algebra/SYCLInternalLinearAlgebra.cc)
+ENDIF()
+IF(ALIEN_USE_INTELSYCL)
+   set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64 -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+   target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
+   #target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda)
+   #target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+   #target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS})
+   add_sycl_to_target(TARGET  alien_kernel_sycl 
+                      SOURCES data/SYCLVector.cc 
+                              data/SYCLBEllPackMatrix.cc
+                              algebra/SYCLInternalLinearAlgebra.cc)
 ENDIF()
 
 target_link_libraries(alien_kernel_sycl PUBLIC

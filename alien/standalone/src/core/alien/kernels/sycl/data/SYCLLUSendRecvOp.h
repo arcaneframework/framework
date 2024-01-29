@@ -41,6 +41,10 @@ class MatrixDistribution;
 namespace Alien::SYCLInternal
 {
 
+#ifndef USE_SYCL2020
+  using namespace cl ;
+#endif
+
 template <typename MatrixT>
 class SYCLLUSendRecvOp
 {
@@ -49,9 +53,9 @@ class SYCLLUSendRecvOp
   typedef MatrixT                               MatrixType;
   typedef typename MatrixType::ValueType        ValueType;
 
-  typedef cl::sycl::buffer<ValueType, 1>        ValueBufferType ;
+  typedef sycl::buffer<ValueType, 1>        ValueBufferType ;
 
-  typedef cl::sycl::buffer<int>                 IndexBufferType ;
+  typedef sycl::buffer<int>                 IndexBufferType ;
   typedef std::unique_ptr<IndexBufferType>      IndexBufferPtrType ;
   // clang-format on
 
@@ -76,13 +80,13 @@ class SYCLLUSendRecvOp
 #ifdef USE_SYCL_USM
     auto& queue = SYCLEnv::instance()->internal()->queue();
     for(auto& buf : m_recv_lu_buffer)
-       cl::sycl::free(buf, queue);
+       sycl::free(buf, queue);
     for(auto& buf : m_recv_lu_ibuffer)
-       cl::sycl::free(buf, queue);
+       sycl::free(buf, queue);
     for(auto& buf : m_send_lu_buffer)
-       cl::sycl::free(buf, queue);
+       sycl::free(buf, queue);
     for(auto& buf : m_send_lu_ibuffer)
-       cl::sycl::free(buf, queue);
+       sycl::free(buf, queue);
 #endif
   }
 
@@ -160,8 +164,8 @@ class SYCLLUSendRecvOp
 #ifdef USE_SYCL_USM
       int icount = 0 ;
       int count = 0 ;
-      ibuffer = cl::sycl::malloc_shared<int>(nb_send_rows * max_row_size, queue);
-      buffer = cl::sycl::malloc_shared<ValueType>(nb_send_rows * max_row_size, queue);
+      ibuffer = sycl::malloc_shared<int>(nb_send_rows * max_row_size, queue);
+      buffer = sycl::malloc_shared<ValueType>(nb_send_rows * max_row_size, queue);
 #else
       buffer.clear();
       buffer.reserve(nb_send_rows * max_row_size);
@@ -207,8 +211,8 @@ class SYCLLUSendRecvOp
       Arccore::MessagePassing::mpSend(m_parallel_mng, ArrayView<int>(counts[0],ibuffer), neighb);
       Arccore::MessagePassing::mpSend(m_parallel_mng, ArrayView<ValueType>(counts[1],buffer), neighb);
 #else
-      counts[0] = ibuffer.size();
-      counts[1] = buffer.size();
+      counts[0] = (int) ibuffer.size();
+      counts[1] = (int) buffer.size();
       Arccore::MessagePassing::mpSend(m_parallel_mng, counts, neighb);
       Arccore::MessagePassing::mpSend(m_parallel_mng, ArrayView<int>(counts[0],ibuffer.data()), neighb);
       Arccore::MessagePassing::mpSend(m_parallel_mng, ArrayView<ValueType>(counts[1],buffer.data()), neighb);
@@ -242,15 +246,15 @@ class SYCLLUSendRecvOp
       auto& ibuffer = m_recv_lu_ibuffer[ineighb];
       auto& buffer = m_recv_lu_buffer[ineighb];
 #ifdef USE_SYCL_USM
-      ibuffer = cl::sycl::malloc_shared<int>(counts[0], queue);
-      buffer = cl::sycl::malloc_shared<int>(counts[1], queue);
+      ibuffer = sycl::malloc_shared<int>(counts[0], queue);
+      buffer = sycl::malloc_shared<int>(counts[1], queue);
       Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<int>(counts[0],ibuffer), neighb);
-      Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<int>(counts[1],buffer), neighb);
+      Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueType>(counts[1],buffer), neighb);
 #else
       ibuffer.resize(counts[0]);
       buffer.resize(counts[1]);
       Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<int>(counts[0],ibuffer.data()), neighb);
-      Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<int>(counts[1],buffer.data()), neighb);
+      Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueType>(counts[1],buffer.data()), neighb);
 #endif
       int icount = 0;
       int icount2 = 0;

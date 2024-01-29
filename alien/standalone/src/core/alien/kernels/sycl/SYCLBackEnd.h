@@ -46,6 +46,16 @@ class SYCLBEllPackMatrix;
 template <typename T>
 class SYCLVector;
 
+namespace SYCLInternal
+{
+
+  template <typename MatrixT>
+  class SYCLSendRecvOp ;
+
+  template <typename MatrixT>
+  class SYCLLUSendRecvOp ;
+}
+
 template <typename T>
 struct SYCLBEllPackTraits
 {
@@ -95,6 +105,19 @@ struct AlgebraTraits<BackEnd::tag::sycl>
   }
 
   static BackEndId name() { return "sycl"; }
+};
+
+
+template <>
+struct LUSendRecvTraits<BackEnd::tag::sycl>
+{
+  // clang-format off
+  typedef AlgebraTraits<BackEnd::tag::sycl>::matrix_type      matrix_type ;
+  typedef AlgebraTraits<BackEnd::tag::sycl>::vector_type      vector_type ;
+  typedef AlgebraTraits<BackEnd::tag::sycl>::value_type       value_type ;
+  typedef SYCLInternal::SYCLLUSendRecvOp<matrix_type>         matrix_op_type ;
+  typedef SYCLInternal::SYCLSendRecvOp<value_type>            vector_op_type ;
+  // clang-format on
 };
 
 /*---------------------------------------------------------------------------*/

@@ -20,7 +20,11 @@
 
 #include <alien/kernels/sycl/SYCLPrecomp.h>
 
+#ifdef USE_SYCL2020
+#include <sycl/sycl.hpp>
+#else
 #include <CL/sycl.hpp>
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -29,6 +33,10 @@ namespace Alien::SYCLInternal
 
 /*---------------------------------------------------------------------------*/
 
+#ifndef USE_SYCL2020
+  using namespace cl ;
+#endif
+
 template <typename ValueT = Real>
 class VectorInternal
 {
@@ -36,13 +44,13 @@ class VectorInternal
   // clang-format off
   typedef ValueT                           ValueType;
   typedef VectorInternal<ValueType>        ThisType;
-  typedef cl::sycl::buffer<ValueType, 1>   ValueBufferType;
+  typedef sycl::buffer<ValueType, 1>   ValueBufferType;
   typedef std::unique_ptr<ValueBufferType> ValueBufferPtrType;
   // clang-format on
 
  public:
   VectorInternal(ValueType const* ptr, std::size_t size)
-  : m_values(ptr, cl::sycl::range<1>(size))
+  : m_values(ptr, sycl::range<1>(size))
   {
     m_values.set_final_data(nullptr);
   }
@@ -70,7 +78,7 @@ class VectorInternal
 
   void copyValuesToHost(std::size_t size, ValueT* ptr)
   {
-    auto h_values = m_values.template get_access<cl::sycl::access::mode::read>();
+    auto h_values = m_values.template get_access<sycl::access::mode::read>();
     for (std::size_t i = 0; i < size; ++i)
       ptr[i] = h_values[i];
   }

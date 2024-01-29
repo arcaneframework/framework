@@ -19,3 +19,10 @@
 #pragma once
 
 #include <alien/utils/Precomp.h>
+
+#ifndef USE_SYCL_USM
+//#define USE_SYCL_USM
+#endif
+#ifndef USE_SYCL2020
+#define USE_SYCL2020
+#endif

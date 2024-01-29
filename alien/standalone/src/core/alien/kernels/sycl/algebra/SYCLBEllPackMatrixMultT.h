@@ -20,7 +20,7 @@
 
 #include <arccore/collections/Array2.h>
 
-#include <alien/kernels/sycl/data/SendRecvOp.h>
+#include <alien/kernels/sycl/data/SYCLSendRecvOp.h>
 /*---------------------------------------------------------------------------*/
 
 namespace Alien::SYCLInternal

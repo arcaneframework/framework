@@ -1,3 +1,28 @@
+
+
+
+if(ALIEN_USE_SYCL)
+    IF(ALIEN_USE_HIPSYCL)
+      find_package(hipSYCL CONFIG REQUIRED)
+    ENDIF()
+    IF(ALIEN_USE_INTELDPCPP)
+      find_package(IntelDPCPP CONFIG REQUIRED)
+      message(status "IntelDPCPP : ${IntelDPCPP_FOUND}")
+      message(status "IntelDPCPP FOUND : ${IntelDPCPP_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+    IF(ALIEN_USE_INTELSYCL)
+      find_package(IntelSYCL REQUIRED)
+      message(status "IntelDPCPP : ${IntelDPCPP_FOUND}")
+      message(status "IntelDPCPP FOUND : ${IntelDPCPP_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+ENDIF()
+
 createExecutable(alien_bench.exe)
 
 addSources(alien_bench.exe
@@ -12,6 +37,13 @@ generateAxl(alien_bench.exe
         AlienStokes.axl
         NO_COPY
         )
+
+if(ALIEN_USE_SYCL)
+    IF(ALIEN_USE_INTELSYCL)
+        set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64 -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+        target_compile_options(alien_bench.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
+    ENDIF()
+ENDIF()
 
 if (TARGET intel)
     linkLibraries(alien_bench.exe intel)
