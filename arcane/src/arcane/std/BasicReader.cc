@@ -71,6 +71,7 @@ initialize()
   }
   String data_compressor_name;
   String hash_algorithm_name;
+  String comparison_hash_algorithm_name;
   if (has_db_file) {
     UniqueArray<Byte> bytes;
     pm->ioMng()->collectiveRead(db_filename, bytes, false);
@@ -82,10 +83,12 @@ initialize()
     m_nb_written_part = jv_arcane_db.expectedChild("NbPart").valueAsInt32();
     data_compressor_name = jv_arcane_db.child("DataCompressor").value();
     hash_algorithm_name = jv_arcane_db.child("HashAlgorithm").value();
+    comparison_hash_algorithm_name = jv_arcane_db.child("ComparisonHashAlgorithm").value();
     info() << "**--** Begin read using database version=" << m_version
            << " nb_part=" << m_nb_written_part
            << " compressor=" << data_compressor_name
-           << " hash_algorithm=" << hash_algorithm_name;
+           << " hash_algorithm=" << hash_algorithm_name
+           << " comparison_hash_algorithm=" << comparison_hash_algorithm_name;
   }
   else {
     // Ancien format
@@ -120,6 +123,10 @@ initialize()
       Ref<IHashAlgorithm> v = _createHashAlgorithm(m_application, hash_algorithm_name);
       m_forced_rank_to_read_text_reader->setHashAlgorithm(v);
     }
+    if (!comparison_hash_algorithm_name.empty()) {
+      Ref<IHashAlgorithm> v = _createHashAlgorithm(m_application, comparison_hash_algorithm_name);
+      m_comparison_hash_algorithm = v;
+    }
   }
 }
 
@@ -130,7 +137,7 @@ void BasicReader::
 _directReadVal(VariableMetaData* varmd, IData* data)
 {
   info(4) << "DIRECT READ VAL v=" << varmd->fullName();
-
+    
   bool is_item_variable = !varmd->itemFamilyName().null();
   Int32 nb_rank_to_read = m_nb_rank_to_read;
   // S'il s'agit d'une variable qui n'est pas sur le maillage,
@@ -153,6 +160,8 @@ _directReadVal(VariableMetaData* varmd, IData* data)
     String vname = varmd->fullName();
     info(4) << " TRY TO READ var_full_name=" << vname;
     m_global_readers[i]->readData(vname, written_data[i]);
+    if (i==0 && m_comparison_hash_algorithm.get() )
+      info(5) << "COMPARISON_HASH =" << m_global_readers[i]->comparisonHashValue(vname);
   }
 
   if (is_item_variable) {

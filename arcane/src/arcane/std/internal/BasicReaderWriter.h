@@ -30,6 +30,7 @@
 #include "arcane/core/IDataReader2.h"
 
 #include "arcane/std/internal/BasicReaderWriterDatabase.h"
+#include "arcane/std/internal/VariableDataInfo.h"
 
 #include <map>
 
@@ -47,84 +48,6 @@ class ParallelDataReader;
 namespace Arcane::impl
 {
 class TextWriter;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class VariableDataInfo
-{
- public:
-
-  VariableDataInfo(const String& full_name, const ISerializedData* sdata);
-  VariableDataInfo(const String& full_name, const XmlNode& element);
-
- public:
-
-  const String& fullName() const { return m_full_name; }
-  Integer nbDimension() const { return m_nb_dimension; }
-  Int64 dim1Size() const { return m_dim1_size; }
-  Int64 dim2Size() const { return m_dim2_size; }
-  Int64 nbElement() const { return m_nb_element; }
-  Int64 nbBaseElement() const { return m_nb_base_element; }
-  Integer dimensionArraySize() const { return m_dimension_array_size; }
-  bool isMultiSize() const { return m_is_multi_size; }
-  eDataType baseDataType() const { return m_base_data_type; }
-  Int64 memorySize() const { return m_memory_size; }
-  const ArrayShape& shape() const { return m_shape; }
-  void setFileOffset(Int64 v) { m_file_offset = v; }
-  Int64 fileOffset() const { return m_file_offset; }
-
- public:
-
-  void write(XmlNode element) const;
-
- private:
-
-  static void _addAttribute(XmlNode& node, const String& attr_name, Int64 value)
-  {
-    node.setAttrValue(attr_name, String::fromNumber(value));
-  }
-
-  static void _addAttribute(XmlNode& node, const String& attr_name, const String& value)
-  {
-    node.setAttrValue(attr_name, value);
-  }
-
-  static Integer _readInteger(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).valueAsInteger(true);
-  }
-
-  static Int64 _readInt64(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).valueAsInt64(true);
-  }
-
-  static bool _readBool(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).valueAsBoolean(true);
-  }
-
-  static String _readString(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).value();
-  }
-
- private:
-
-  String m_full_name;
-  Integer m_nb_dimension = 0;
-  Int64 m_dim1_size = 0;
-  Int64 m_dim2_size = 0;
-  Int64 m_nb_element = 0;
-  Int64 m_nb_base_element = 0;
-  Integer m_dimension_array_size = 0;
-  bool m_is_multi_size = false;
-  eDataType m_base_data_type = DT_Unknown;
-  Int64 m_memory_size = 0;
-  Int64 m_file_offset = 0;
-  ArrayShape m_shape;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -175,11 +98,14 @@ class IGenericReader
   virtual void readData(const String& var_full_name, IData* data) = 0;
   virtual void readItemGroup(const String& group_name, Int64Array& written_unique_ids,
                              Int64Array& wanted_unique_ids) = 0;
+  virtual String comparisonHashValue(const String& var_full_name) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Implémentation basique de \a IGenericReader
+ */
 class BasicGenericReader
 : public TraceAccessor
 , public IGenericReader
@@ -196,10 +122,9 @@ class BasicGenericReader
   void readData(const String& var_full_name, IData* data) override;
   void readItemGroup(const String& group_name, Int64Array& written_unique_ids,
                      Int64Array& wanted_unique_ids) override;
+  String comparisonHashValue(const String& var_full_name) const override;
 
  private:
-
-  using VariableDataInfoMap = std::map<String, Ref<VariableDataInfo>>;
 
   IApplication* m_application = nullptr;
   Ref<KeyValueTextReader> m_text_reader;
@@ -228,7 +153,8 @@ class IGenericWriter
  public:
 
   virtual void initialize(const String& path, Int32 rank) = 0;
-  virtual void writeData(const String& var_full_name, const ISerializedData* sdata) = 0;
+  virtual void writeData(const String& var_full_name, const ISerializedData* sdata,
+                         const String& compare_hash) = 0;
   virtual void writeItemGroup(const String& group_full_name,
                               SmallSpan<const Int64> written_unique_ids,
                               SmallSpan<const Int64> wanted_unique_ids) = 0;
@@ -250,14 +176,12 @@ class BasicGenericWriter
  public:
 
   void initialize(const String& path, Int32 rank) override;
-  void writeData(const String& var_full_name, const ISerializedData* sdata) override;
+  void writeData(const String& var_full_name, const ISerializedData* sdata, const String& compare_hash) override;
   void writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_unique_ids,
                       SmallSpan<const Int64> wanted_unique_ids) override;
   void endWrite() override;
 
  private:
-
-  using VariableDataInfoMap = std::map<String, Ref<VariableDataInfo>>;
 
   IApplication* m_application = nullptr;
   Int32 m_version = -1;

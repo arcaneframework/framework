@@ -61,13 +61,14 @@ initialize(const String& path, Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 void BasicGenericWriter::
-writeData(const String& var_full_name, const ISerializedData* sdata)
+writeData(const String& var_full_name, const ISerializedData* sdata,
+          const String& comparison_hash)
 {
   //TODO: Verifier que initialize() a bien été appelé.
-  auto var_data_info = makeRef(new VariableDataInfo(var_full_name, sdata));
+  auto var_data_info = m_variables_data_info.add(var_full_name, sdata);
   KeyValueTextWriter* writer = m_text_writer.get();
   var_data_info->setFileOffset(writer->fileOffset());
-  m_variables_data_info.insert(std::make_pair(var_full_name, var_data_info));
+  var_data_info->setComparisonHashValue(comparison_hash);
   info(4) << " SDATA name=" << var_full_name << " nb_element=" << sdata->nbElement()
           << " dim=" << sdata->nbDimension() << " datatype=" << sdata->baseDataType()
           << " nb_basic_element=" << sdata->nbBaseElement()

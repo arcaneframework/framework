@@ -101,6 +101,8 @@ set(ARCANE_SOURCES
   SimpleTableWriterHelper.cc
   SimpleTableWriterHelper.h
 
+  VariableDataInfo.cc
+
   MshMeshReader.cc
   MshParallelMeshReader.cc
   MshMeshWriter.cc
@@ -120,6 +122,7 @@ set(ARCANE_SOURCES
   internal/BasicReaderWriterDatabase.h
   internal/BasicReader.h
   internal/BasicWriter.h
+  internal/VariableDataInfo.h
 )
 
 set(AXL_FILES
