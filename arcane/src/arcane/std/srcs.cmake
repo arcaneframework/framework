@@ -2,6 +2,8 @@ set(ARCANE_SOURCES
   ArcaneStdRegisterer.cc
   ArcaneStdRegisterer.h
   BasicCheckpointService.cc
+  BasicGenericReader.cc
+  BasicGenericWriter.cc
   BasicReader.cc
   BasicWriter.cc
   BasicReaderWriter.cc
@@ -116,6 +118,8 @@ set(ARCANE_SOURCES
   internal/IRedisContext.h
   internal/BasicReaderWriter.h
   internal/BasicReaderWriterDatabase.h
+  internal/BasicReader.h
+  internal/BasicWriter.h
 )
 
 set(AXL_FILES

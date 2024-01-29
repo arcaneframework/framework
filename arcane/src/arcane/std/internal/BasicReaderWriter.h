@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_BASICREADERWRITER_H
-#define ARCANE_STD_INTERANL_BASICREADERWRITER_H
+#define ARCANE_STD_INTERNAL_BASICREADERWRITER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,7 +32,6 @@
 #include "arcane/std/internal/BasicReaderWriterDatabase.h"
 
 #include <map>
-#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,14 +42,11 @@ class ISerializedData;
 class IParallelMng;
 class ParallelDataWriter;
 class ParallelDataReader;
-namespace impl
-{
-  class TextWriter;
 }
-} // namespace Arcane
 
 namespace Arcane::impl
 {
+class TextWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -317,137 +313,6 @@ class BasicReaderWriterCommon
   static Ref<IDataCompressor> _createDeflater(IApplication* app, const String& name);
   static Ref<IHashAlgorithm> _createHashAlgorithm(IApplication* app, const String& name);
   static void _fillUniqueIds(const ItemGroup& group, Array<Int64>& uids);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Lecture/Ecriture simple.
- */
-class BasicWriter
-: public BasicReaderWriterCommon
-, public IDataWriter
-{
- public:
-
-  BasicWriter(IApplication* app, IParallelMng* pm, const String& path,
-              eOpenMode open_mode, Integer version, bool want_parallel);
-
- public:
-
-  //! Positionne le service de compression. Doit être appelé avant initialize()
-  void setDataCompressor(Ref<IDataCompressor> data_compressor)
-  {
-    m_data_compressor = data_compressor;
-  }
-  //! Positionne le service de calcul de hash global. Doit être appelé avant initialize()
-  void setGlobalHashAlgorithm(Ref<IHashAlgorithm> hash_algo)
-  {
-    m_global_hash_algorithm = hash_algo;
-  }
-  void initialize();
-
-  void beginWrite(const VariableCollection& vars) override;
-  void endWrite() override;
-
-  void setMetaData(const String& meta_data) override;
-
-  void write(IVariable* v, IData* data) override;
-
- private:
-
-  bool m_want_parallel = false;
-  bool m_is_gather = false;
-  Int32 m_version = -1;
-
-  Ref<IDataCompressor> m_data_compressor;
-  Ref<IHashAlgorithm> m_global_hash_algorithm;
-  Ref<IHashAlgorithm> m_hash_algorithm;
-  Ref<KeyValueTextWriter> m_text_writer;
-
-  std::map<ItemGroup, Ref<ParallelDataWriter>> m_parallel_data_writers;
-  std::set<ItemGroup> m_written_groups;
-
-  ScopedPtrT<IGenericWriter> m_global_writer;
-
- private:
-
-  void _directWriteVal(IVariable* v, IData* data);
-  void _computeGlobalHash(IVariable* var, IData* write_data);
-  Ref<ParallelDataWriter> _getWriter(IVariable* var);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Lecteur simple.
- */
-class BasicReader
-: public BasicReaderWriterCommon
-, public IDataReader
-, public IDataReader2
-{
- public:
-
-  /*!
-    \brief  Interface pour retrouver le groupe associée à une variable à partir
-    de ces meta-données.
-  */
-  class IItemGroupFinder
-  {
-   public:
-
-    virtual ~IItemGroupFinder() = default;
-    virtual ItemGroup getWantedGroup(VariableMetaData* vmd) = 0;
-  };
-
- public:
-
-  BasicReader(IApplication* app, IParallelMng* pm, Int32 forced_rank_to_read,
-              const String& path, bool want_parallel);
-
- public:
-
-  void beginRead(const VariableCollection& vars) override;
-  void endRead() override {}
-  String metaData() override;
-  void read(IVariable* v, IData* data) override;
-
-  void fillMetaData(ByteArray& bytes) override;
-  void beginRead(const DataReaderInfo& infos) override;
-  void read(const VariableDataReadInfo& infos) override;
-
- public:
-
-  void initialize();
-  void setItemGroupFinder(IItemGroupFinder* group_finder)
-  {
-    m_item_group_finder = group_finder;
-  }
-
- private:
-
-  bool m_want_parallel = false;
-  Integer m_nb_written_part = 0;
-  Int32 m_version = -1;
-
-  Int32 m_first_rank_to_read = -1;
-  Int32 m_nb_rank_to_read = -1;
-  Int32 m_forced_rank_to_read = -1;
-
-  std::map<String, Ref<ParallelDataReader>> m_parallel_data_readers;
-  UniqueArray<Ref<IGenericReader>> m_global_readers;
-  IItemGroupFinder* m_item_group_finder;
-  Ref<KeyValueTextReader> m_forced_rank_to_read_text_reader; //!< Lecteur pour le premier rang à lire.
-  Ref<IDataCompressor> m_data_compressor;
-
- private:
-
-  void _directReadVal(VariableMetaData* varmd, IData* data);
-
-  Ref<ParallelDataReader> _getReader(VariableMetaData* varmd);
-  void _setRanksToRead();
-  Ref<IGenericReader> _readOwnMetaDataAndCreateReader(Int32 rank);
 };
 
 /*---------------------------------------------------------------------------*/
