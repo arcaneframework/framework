@@ -36,10 +36,29 @@ namespace Arcane::impl
  */
 class VariableDataInfo
 {
- public:
+  friend class VariableDataInfoMap;
+
+ private:
+
+  static constexpr const char* V_NB_DIMENSION = "nb-dimension";
+  static constexpr const char* V_DIM1_SIZE = "dim1-size";
+  static constexpr const char* V_DIM2_SIZE = "dim2-size";
+  static constexpr const char* V_NB_ELEMENT = "nb-element";
+  static constexpr const char* V_NB_BASE_ELEMENT = "nb-base-element";
+  static constexpr const char* V_DIMENSION_ARRAY_SIZE = "dimension-array-size";
+  static constexpr const char* V_IS_MULTI_SIZE = "is-multi-size";
+  static constexpr const char* V_BASE_DATA_TYPE = "base-data-type";
+  static constexpr const char* V_MEMORY_SIZE = "memory-size";
+  static constexpr const char* V_FILE_OFFSET = "file-offset";
+  static constexpr const char* V_SHAPE_SIZE = "shape-size";
+  static constexpr const char* V_SHAPE = "shape";
+  static constexpr const char* V_COMPARISON_HASH = "comparison-hash";
+
+ private:
 
   VariableDataInfo(const String& full_name, const ISerializedData* sdata);
   VariableDataInfo(const String& full_name, const XmlNode& element);
+  VariableDataInfo(const String& full_name, const JSONValue& jvalue);
 
  public:
 
@@ -61,39 +80,7 @@ class VariableDataInfo
 
  public:
 
-  void write(XmlNode element) const;
-
- private:
-
-  static void _addAttribute(XmlNode& node, const String& attr_name, Int64 value)
-  {
-    node.setAttrValue(attr_name, String::fromNumber(value));
-  }
-
-  static void _addAttribute(XmlNode& node, const String& attr_name, const String& value)
-  {
-    node.setAttrValue(attr_name, value);
-  }
-
-  static Integer _readInteger(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).valueAsInteger(true);
-  }
-
-  static Int64 _readInt64(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).valueAsInt64(true);
-  }
-
-  static bool _readBool(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).valueAsBoolean(true);
-  }
-
-  static String _readString(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).value();
-  }
+  void write(XmlNode element,JSONWriter& writer) const;
 
  private:
 
@@ -110,6 +97,11 @@ class VariableDataInfo
   Int64 m_file_offset = 0;
   ArrayShape m_shape;
   String m_comparison_hash_value;
+
+ private:
+
+  void _write(XmlNode element) const;
+  void _write(JSONWriter& writer) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -131,6 +123,8 @@ class VariableDataInfoMap
   Ref<VariableDataInfo> add(const String& full_name, const ISerializedData* sdata);
   //! Ajoute une variable
   Ref<VariableDataInfo> add(const String& full_name, const XmlNode& node);
+  //! Ajoute une variable
+  Ref<VariableDataInfo> add(const String& full_name, const JSONValue& jvalue);
 
   //! Retourne la variable de nom \a full_name. Retourne null si non trouvé.
   Ref<VariableDataInfo> find(const String& full_name) const;
@@ -143,6 +137,10 @@ class VariableDataInfoMap
  private:
 
   MapType m_data_info_map;
+
+ private:
+
+  Ref<VariableDataInfo> _add(VariableDataInfo* v);
 };
 
 /*---------------------------------------------------------------------------*/

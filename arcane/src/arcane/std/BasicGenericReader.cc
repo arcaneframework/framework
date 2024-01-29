@@ -16,6 +16,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/IDataCompressor.h"
+#include "arcane/utils/JSONReader.h"
 #include "arcane/utils/Ref.h"
 
 #include "arcane/core/IApplication.h"
@@ -121,9 +122,24 @@ initialize(const String& path, Int32 rank)
   if (!hash_algorithm_name.null())
     hash_algorithm = BasicReaderWriterCommon::_createHashAlgorithm(m_application, hash_algorithm_name);
 
-  for (const XmlNode& n : variables_elem) {
-    String var_full_name = n.attrValue("full-name");
-    m_variables_data_info.add(var_full_name, n);
+  // Si disponible, essaie de relire les informations des variables au format JSON
+  bool do_json = true;
+  String json_variables_elem = root.child("variables-data-json").value();
+  if (do_json && !json_variables_elem.empty()) {
+    JSONDocument json_doc;
+    json_doc.parse(json_variables_elem.bytes(), "Internal variables data");
+    JSONValue json_root = json_doc.root();
+    JSONValue json_vars = json_root.expectedChild("Variables");
+    for (JSONKeyValue kv : json_vars.keyValueChildren()) {
+      String var_full_name = kv.name();
+      m_variables_data_info.add(var_full_name, kv.value());
+    }
+  }
+  else {
+    for (const XmlNode& n : variables_elem) {
+      String var_full_name = n.attrValue("full-name");
+      m_variables_data_info.add(var_full_name, n);
+    }
   }
 
   if (!m_text_reader.get()) {
