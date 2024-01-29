@@ -325,7 +325,7 @@ _endWriteV3()
         String name;
         if (m_compare_hash_algorithm.get())
           name = m_compare_hash_algorithm->name();
-        jsw.write("CompareHashAlgorithm", name);
+        jsw.write("ComparisonHashAlgorithm", name);
       }
     }
   }

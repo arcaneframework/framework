@@ -98,11 +98,14 @@ class IGenericReader
   virtual void readData(const String& var_full_name, IData* data) = 0;
   virtual void readItemGroup(const String& group_name, Int64Array& written_unique_ids,
                              Int64Array& wanted_unique_ids) = 0;
+  virtual String comparisonHashValue(const String& var_full_name) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Implémentation basique de \a IGenericReader
+ */
 class BasicGenericReader
 : public TraceAccessor
 , public IGenericReader
@@ -119,6 +122,7 @@ class BasicGenericReader
   void readData(const String& var_full_name, IData* data) override;
   void readItemGroup(const String& group_name, Int64Array& written_unique_ids,
                      Int64Array& wanted_unique_ids) override;
+  String comparisonHashValue(const String& var_full_name) const override;
 
  private:
 

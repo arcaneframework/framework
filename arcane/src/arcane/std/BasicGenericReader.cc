@@ -121,8 +121,7 @@ initialize(const String& path, Int32 rank)
   if (!hash_algorithm_name.null())
     hash_algorithm = BasicReaderWriterCommon::_createHashAlgorithm(m_application, hash_algorithm_name);
 
-  for (Integer i = 0, is = variables_elem.size(); i < is; ++i) {
-    XmlNode n = variables_elem[i];
+  for (const XmlNode& n : variables_elem) {
     String var_full_name = n.attrValue("full-name");
     m_variables_data_info.add(var_full_name, n);
   }
@@ -234,6 +233,18 @@ readItemGroup(const String& group_full_name, Int64Array& written_unique_ids,
     wanted_unique_ids.resize(nb_unique_id);
     reader.read(asWritableBytes(wanted_unique_ids.span()));
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String BasicGenericReader::
+comparisonHashValue(const String& var_full_name) const
+{
+  Ref<VariableDataInfo> vdi = m_variables_data_info.find(var_full_name);
+  if (vdi.get())
+    return vdi->comparisonHashValue();
+  return {};
 }
 
 /*---------------------------------------------------------------------------*/

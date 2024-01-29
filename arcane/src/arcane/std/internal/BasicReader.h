@@ -88,6 +88,7 @@ class BasicReader
   IItemGroupFinder* m_item_group_finder;
   Ref<KeyValueTextReader> m_forced_rank_to_read_text_reader; //!< Lecteur pour le premier rang à lire.
   Ref<IDataCompressor> m_data_compressor;
+  Ref<IHashAlgorithm> m_comparison_hash_algorithm;
 
  private:
 

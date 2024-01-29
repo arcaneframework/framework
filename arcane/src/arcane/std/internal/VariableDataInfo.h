@@ -56,8 +56,8 @@ class VariableDataInfo
   const ArrayShape& shape() const { return m_shape; }
   void setFileOffset(Int64 v) { m_file_offset = v; }
   Int64 fileOffset() const { return m_file_offset; }
-  void setCompareHashValue(const String& v) { m_compare_hash_value = v; }
-  const String& compareHashValue() const { return m_compare_hash_value; }
+  void setComparisonHashValue(const String& v) { m_comparison_hash_value = v; }
+  const String& comparisonHashValue() const { return m_comparison_hash_value; }
 
  public:
 
@@ -109,7 +109,7 @@ class VariableDataInfo
   Int64 m_memory_size = 0;
   Int64 m_file_offset = 0;
   ArrayShape m_shape;
-  String m_compare_hash_value;
+  String m_comparison_hash_value;
 };
 
 /*---------------------------------------------------------------------------*/
