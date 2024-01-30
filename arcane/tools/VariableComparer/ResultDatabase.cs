@@ -95,6 +95,14 @@ namespace Arcane.VariableComparer
       return values;
     }
 
+    //! Valeur du hash des valeurs de la variable \a varname pour la comparaison
+    public string GetComparisonHashValue(string varname)
+    {
+      // Seule la partie 0 contient la valeur du hash.
+      VariableDataInfo vdi = m_parts[0].VariablesDataInfo[varname];
+      return vdi.ComparisonHashValue;
+    }
+
     class JSONDataBaseObject
     {
 #pragma warning disable 0649
