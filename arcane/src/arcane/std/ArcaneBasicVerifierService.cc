@@ -25,6 +25,7 @@
 #include "arcane/core/IVariable.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/ServiceFactory.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/std/internal/BasicReader.h"
 #include "arcane/std/internal/BasicWriter.h"
@@ -125,6 +126,9 @@ writeReferenceFile()
   bool want_parallel = pm->isParallel();
   ScopedPtrT<BasicWriter> verif(new BasicWriter(sd->application(), pm, m_full_file_name,
                                                 open_mode, version, want_parallel));
+  if (compareMode() == eCompareMode::HashOnly)
+    verif->setSaveValues(false);
+
   verif->initialize();
 
   // En parallèle, comme l'écriture nécessite des communications entre les sous-domaines,
@@ -206,6 +210,11 @@ class ArcaneBasicVerifierServiceV3
   : ArcaneBasicVerifierService(sbi)
   {
     _setFormatVersion(3);
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_VERIF_HASHONLY", true)) {
+      bool use_hash = (v.value() != 0);
+      info() << "ArcaneBasicVerifierServiceV3: using hash?=" << use_hash;
+      setCompareMode(use_hash ? eCompareMode::HashOnly : eCompareMode::Values);
+    }
   }
 };
 
