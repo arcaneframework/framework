@@ -63,6 +63,12 @@ class BasicWriter
     _checkNoInit();
     m_compare_hash_algorithm = hash_algo;
   }
+  //! Indique si on sauve les valeurs des variables et des groupes. Si \a false, sauve uniquement les hash
+  void setSaveValues(bool v)
+  {
+    _checkNoInit();
+    m_is_save_values = v;
+  }
   void initialize();
 
  private:
@@ -70,6 +76,8 @@ class BasicWriter
   bool m_want_parallel = false;
   bool m_is_gather = false;
   bool m_is_init = false;
+  //! Indique si on sauve les valeurs
+  bool m_is_save_values = true;
   Int32 m_version = -1;
 
   Ref<IDataCompressor> m_data_compressor;
