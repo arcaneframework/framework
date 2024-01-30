@@ -177,7 +177,8 @@ _directWriteVal(IVariable* var, IData* data)
       const String& gname = group.name();
       String group_full_name = item_family->fullName() + "_" + gname;
       _fillUniqueIds(group, wanted_unique_ids);
-      m_global_writer->writeItemGroup(group_full_name, written_unique_ids, wanted_unique_ids.view());
+      if (m_is_save_values)
+        m_global_writer->writeItemGroup(group_full_name, written_unique_ids, wanted_unique_ids.view());
       m_written_groups.insert(group);
     }
   }
@@ -186,7 +187,7 @@ _directWriteVal(IVariable* var, IData* data)
   String compare_hash;
   if (is_mesh_variable)
     compare_hash = _computeCompareHash(var, write_data);
-  m_global_writer->writeData(var->fullName(), sdata.get(), compare_hash);
+  m_global_writer->writeData(var->fullName(), sdata.get(), compare_hash, m_is_save_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -302,6 +303,7 @@ _endWriteV3()
       JSONWriter::Object db_object(jsw);
       jsw.write("Version", (Int64)m_version);
       jsw.write("NbPart", nb_part);
+      jsw.write("HasValues", m_is_save_values);
 
       String data_compressor_name;
       Int64 data_compressor_min_size = 0;

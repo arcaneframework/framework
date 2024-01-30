@@ -153,8 +153,16 @@ class IGenericWriter
  public:
 
   virtual void initialize(const String& path, Int32 rank) = 0;
+  /*!
+   * \brief Sauve une variable.
+   * \param var_full_name Nom de la variable
+   * \param sdata valeurs sérialisées de la variable
+   * \param comparison_hash hash de comparaison (null si aucun)
+   * \param is_save_values Indique si on sauvegarde les valeurs.
+   */
   virtual void writeData(const String& var_full_name, const ISerializedData* sdata,
-                         const String& compare_hash) = 0;
+                         const String& comparison_hash,
+                         bool is_save_values) = 0;
   virtual void writeItemGroup(const String& group_full_name,
                               SmallSpan<const Int64> written_unique_ids,
                               SmallSpan<const Int64> wanted_unique_ids) = 0;
@@ -176,7 +184,8 @@ class BasicGenericWriter
  public:
 
   void initialize(const String& path, Int32 rank) override;
-  void writeData(const String& var_full_name, const ISerializedData* sdata, const String& compare_hash) override;
+  void writeData(const String& var_full_name, const ISerializedData* sdata,
+                 const String& compare_hash, bool is_save_values) override;
   void writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_unique_ids,
                       SmallSpan<const Int64> wanted_unique_ids) override;
   void endWrite() override;

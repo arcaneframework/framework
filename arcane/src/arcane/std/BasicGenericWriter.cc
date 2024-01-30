@@ -63,7 +63,7 @@ initialize(const String& path, Int32 rank)
 
 void BasicGenericWriter::
 writeData(const String& var_full_name, const ISerializedData* sdata,
-          const String& comparison_hash)
+          const String& comparison_hash, bool is_save_values)
 {
   //TODO: Verifier que initialize() a bien été appelé.
   auto var_data_info = m_variables_data_info.add(var_full_name, sdata);
@@ -78,17 +78,19 @@ writeData(const String& var_full_name, const ISerializedData* sdata,
           << " memory_size=" << sdata->memorySize()
           << " bytes_size=" << sdata->constBytes().size();
 
-  const void* ptr = sdata->constBytes().data();
+  if (is_save_values) {
+    const void* ptr = sdata->constBytes().data();
 
-  // Si la variable est de type tableau à deux dimensions, sauve les
-  // tailles de la deuxième dimension par élément.
-  Int64ConstArrayView extents = sdata->extents();
-  writer->setExtents(var_full_name, extents);
+    // Si la variable est de type tableau à deux dimensions, sauve les
+    // tailles de la deuxième dimension par élément.
+    Int64ConstArrayView extents = sdata->extents();
+    writer->setExtents(var_full_name, extents);
 
-  // Maintenant, sauve les valeurs si necessaire
-  Int64 nb_base_element = sdata->nbBaseElement();
-  if (nb_base_element != 0 && ptr) {
-    writer->write(var_full_name, asBytes(sdata->constBytes()));
+    // Maintenant, sauve les valeurs si necessaire
+    Int64 nb_base_element = sdata->nbBaseElement();
+    if (nb_base_element != 0 && ptr) {
+      writer->write(var_full_name, asBytes(sdata->constBytes()));
+    }
   }
 }
 
