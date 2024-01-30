@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableIOMng.cc                                            (C) 2000-2023 */
+/* VariableIOMng.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant les entrées/sorties pour les variables.                     */
 /*---------------------------------------------------------------------------*/
@@ -374,7 +374,7 @@ VariableIOReaderMng::
 VariableIOReaderMng(VariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
-, m_is_use_json_metadata(false)
+, m_is_use_json_metadata(true)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_JSON_METADATA", true))
     m_is_use_json_metadata = (v.value() != 0);
