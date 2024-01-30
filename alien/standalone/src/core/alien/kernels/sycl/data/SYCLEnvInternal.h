@@ -32,6 +32,7 @@
 #include <CL/sycl.hpp>
 #endif
 
+
 namespace Alien
 {
 
@@ -44,7 +45,9 @@ namespace SYCLInternal
   struct ALIEN_EXPORT EnvInternal
   {
     EnvInternal()
-#ifndef USE_SYCL2020
+#ifdef USE_SYCL2020
+    : m_queue(sycl::gpu_selector{})
+#else
     : m_queue(m_device_selector)
 #endif
     {
@@ -59,6 +62,7 @@ namespace SYCLInternal
       m_max_num_threads = m_max_num_groups * m_max_work_group_size;
 
       std::cout << "========== SYCL QUEUE INFO ===============" << std::endl;
+      std::cout<< " DEVICE NAME         = " << m_queue.get_device().get_info<sycl::info::device::name>() << std::endl;
       std::cout << "MAX NB GROUPS       = " << m_max_num_groups << std::endl;
       std::cout << "MAX WORK GROUP SIZE = " << m_max_work_group_size << std::endl;
       std::cout << "MAX NB THREADS      = " << m_max_num_threads << std::endl;

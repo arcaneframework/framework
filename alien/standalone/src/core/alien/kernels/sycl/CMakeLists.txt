@@ -45,7 +45,8 @@ add_library(alien_kernel_sycl OBJECT
         converters/SimpleCSRtoSYCLVectorConverter.cc
         converters/SYCLtoSimpleCSRVectorConverter.cc
         data/BEllPackStructInfo.h
-        data/SendRecvOp.h
+        data/SYCLSendRecvOp.h
+        data/SYCLLUSendRecvOp.h
         data/SYCLBEllPackInternal.h
         data/SYCLBEllPackMatrix.cc
         data/SYCLBEllPackMatrix.h
@@ -74,8 +75,10 @@ IF(ALIEN_USE_INTELDPCPP)
                               algebra/SYCLInternalLinearAlgebra.cc)
 ENDIF()
 IF(ALIEN_USE_INTELSYCL)
-   set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64 -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
-   target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
+   set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+   target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -DUSE_SYCL2020>)
+   #target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
+
    #target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda)
    #target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
    #target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS})
