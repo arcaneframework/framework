@@ -1,0 +1,232 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* ArcaneBasicVerifierService.cc                               (C) 2000-2024 */
+/*                                                                           */
+/* Service de comparaison des variables.                                     */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/StringBuilder.h"
+
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IVariableUtilities.h"
+#include "arcane/core/VerifierService.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ServiceFactory.h"
+
+#include "arcane/std/internal/BasicReader.h"
+#include "arcane/std/internal/BasicWriter.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+using namespace Arcane::impl;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ArcaneBasicVerifierService
+: public VerifierService
+{
+  class GroupFinder
+  : public BasicReader::IItemGroupFinder
+  {
+   public:
+
+    GroupFinder(IVariableMng* vm)
+    : m_variable_mng(vm)
+    {}
+    ItemGroup getWantedGroup(VariableMetaData* vmd) override
+    {
+      String full_name = vmd->fullName();
+      IVariable* var = m_variable_mng->findVariableFullyQualified(full_name);
+      if (!var)
+        ARCANE_FATAL("Variable '{0}' not found");
+      return var->itemGroup();
+    }
+
+   private:
+
+    IVariableMng* m_variable_mng;
+  };
+
+ public:
+
+  explicit ArcaneBasicVerifierService(const ServiceBuildInfo& sbi)
+  : VerifierService(sbi)
+  {
+  }
+
+ public:
+
+  void build() override {}
+  void writeReferenceFile() override;
+  void doVerifFromReferenceFile(bool parallel_sequential, bool compare_ghost) override;
+
+ protected:
+
+  void _setFormatVersion(Int32 v)
+  {
+    m_wanted_format_version = v;
+  }
+
+ private:
+
+  String m_full_file_name;
+  Int32 m_wanted_format_version = 1;
+
+ private:
+
+  void _computeFullFileName(bool is_read)
+  {
+    ARCANE_UNUSED(is_read);
+    StringBuilder s = fileName();
+    //m_full_file_name = fileName();
+    const String& sub_dir = subDir();
+    if (!sub_dir.empty()) {
+      s += "/";
+      s += sub_dir;
+    }
+    m_full_file_name = s;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcaneBasicVerifierService::
+writeReferenceFile()
+{
+  ISubDomain* sd = subDomain();
+  IParallelMng* pm = sd->parallelMng();
+  IVariableMng* vm = sd->variableMng();
+  _computeFullFileName(false);
+  String dir_name = platform::getFileDirName(m_full_file_name);
+  platform::recursiveCreateDirectory(m_full_file_name);
+  auto open_mode = BasicReaderWriterCommon::OpenModeTruncate;
+  // Pour l'instant utilise la version 1
+  // A partir de janvier 2019, il est possible d'utiliser la version 2 ou 3
+  // car le comparateur C# supporte cette version.
+  Int32 version = m_wanted_format_version;
+  bool want_parallel = pm->isParallel();
+  ScopedPtrT<BasicWriter> verif(new BasicWriter(sd->application(), pm, m_full_file_name,
+                                                open_mode, version, want_parallel));
+  verif->initialize();
+
+  // En parallèle, comme l'écriture nécessite des communications entre les sous-domaines,
+  // il est indispensable que tous les PE aient les mêmes variables. On les filtre pour
+  // garantir cela.
+  VariableCollection used_variables = vm->usedVariables();
+  if (pm->isParallel()) {
+    bool dump_not_common = true;
+    VariableCollection filtered_variables = vm->utilities()->filterCommonVariables(pm, used_variables, dump_not_common);
+    vm->writeVariables(verif.get(), filtered_variables);
+  }
+  else {
+    vm->writeVariables(verif.get(), used_variables);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcaneBasicVerifierService::
+doVerifFromReferenceFile(bool parallel_sequential, bool compare_ghost)
+{
+  ISubDomain* sd = subDomain();
+  IParallelMng* pm = sd->parallelMng();
+  IVariableMng* vm = subDomain()->variableMng();
+  ITraceMng* tm = sd->traceMng();
+  _computeFullFileName(true);
+  bool want_parallel = pm->isParallel();
+  ScopedPtrT<BasicReader> reader(new BasicReader(sd->application(), pm, A_NULL_RANK, m_full_file_name, want_parallel));
+  reader->initialize();
+  GroupFinder group_finder(vm);
+  reader->setItemGroupFinder(&group_finder);
+
+  VariableList read_variables;
+  _getVariables(read_variables, parallel_sequential);
+
+  // En parallèle, comme la lecture nécessite des communications entre les sous-domaines,
+  // il est indispensable que tous les PE aient les mêmes variables. On les filtre pour
+  // garantir cela.
+  if (pm->isParallel()) {
+    IVariableMng* vm = sd->variableMng();
+    bool dump_not_common = true;
+    VariableCollection filtered_variables = vm->utilities()->filterCommonVariables(pm, read_variables, dump_not_common);
+    read_variables = filtered_variables;
+  }
+
+  tm->info() << "Checking (" << m_full_file_name << ")";
+  reader->beginRead(read_variables);
+  _doVerif(reader.get(), read_variables, compare_ghost);
+  reader->endRead();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ArcaneBasicVerifierService2
+: public ArcaneBasicVerifierService
+{
+ public:
+
+  explicit ArcaneBasicVerifierService2(const ServiceBuildInfo& sbi)
+  : ArcaneBasicVerifierService(sbi)
+  {
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ArcaneBasicVerifierServiceV3
+: public ArcaneBasicVerifierService
+{
+ public:
+
+  explicit ArcaneBasicVerifierServiceV3(const ServiceBuildInfo& sbi)
+  : ArcaneBasicVerifierService(sbi)
+  {
+    _setFormatVersion(3);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierService2,
+                        ServiceProperty("ArcaneBasicVerifier2", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IVerifierService));
+
+ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierServiceV3,
+                        ServiceProperty("ArcaneBasicVerifier3", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IVerifierService));
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
