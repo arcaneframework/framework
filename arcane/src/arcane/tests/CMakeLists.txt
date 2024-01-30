@@ -560,6 +560,7 @@ arcane_add_test(checkpoint_basic2-v1 testCheckpoint-basic2-v1.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2 testCheckpoint-basic2.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2-v3 testCheckpoint-basic2-v3.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2-v3_json_metadata testCheckpoint-basic2-v3.arc -c 3 -m 5 -We,ARCANE_USE_JSON_METADATA,1)
+arcane_add_test(checkpoint_basic2-v3_xml_metadata testCheckpoint-basic2-v3.arc -c 3 -m 5 -We,ARCANE_USE_JSON_METADATA,0)
 arcane_add_test(checkpoint_basic_hash_file testCheckpoint-basic2-v3.arc -c 3 -m 5 -We,ARCANE_HASHDATABASE_DIRECTORY,${CMAKE_CURRENT_BINARY_DIR}/hashdb)
 
 if (ARCANE_ENABLE_REDIS_TEST)
