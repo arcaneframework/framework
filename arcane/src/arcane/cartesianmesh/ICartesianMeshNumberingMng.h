@@ -280,6 +280,15 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    */
   virtual void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) =0;
 
+  /*!
+   * @brief Méthode permettant de récupérer les uniqueIds des mailles autour de la maille passée
+   * en paramètre.
+   *
+   * La vue passée en paramètre doit faire une taille de 9 en 2D et de 27 en 3D.
+   *
+   * @param uid [OUT] Les uniqueIds des mailles autour.
+   * @param cell La maille au centre.
+   */
   virtual void getCellUidsAround(ArrayView<Int64> uid, Cell cell) =0;
 
 
