@@ -49,7 +49,7 @@ arcane_set_if_unset(ARCANE_WANT_CHECK FALSE BOOL "Compilation with additional ch
 set(BUILD_SHARED_LIBS TRUE)
 
 # Compile en release par défaut si rien n'est spécifié
-if (NOT DEFINED CMAKE_BUILD_TYPE)
+if (NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED ARCCORE_BUILD_MODE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
