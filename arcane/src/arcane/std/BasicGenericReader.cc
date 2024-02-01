@@ -27,7 +27,7 @@
 #include "arcane/core/ISerializedData.h"
 #include "arcane/core/XmlNodeList.h"
 
-#include "arcane/std/TextReader.h"
+#include "arcane/std/internal/TextReader2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -232,7 +232,7 @@ readItemGroup(const String& group_full_name, Int64Array& written_unique_ids,
   }
   info(5) << "READ GROUP " << group_full_name;
   String filename = BasicReaderWriterCommon::_getBasicGroupFile(m_path, group_full_name, m_rank);
-  TextReader reader(filename);
+  TextReader2 reader(filename);
 
   {
     Integer nb_unique_id = 0;
