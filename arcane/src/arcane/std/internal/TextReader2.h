@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TextWriter.h                                                (C) 2000-2024 */
+/* TextReader2.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Ecrivain de données.                                                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_TEXTWRITER_H
-#define ARCANE_STD_TEXTWRITER_H
+#ifndef ARCANE_STD_INTERNAL_TEXTREADER2_H
+#define ARCANE_STD_INTERNAL_TEXTREADER2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,46 +34,30 @@ namespace Arcane::impl
  * \internal
  * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
  */
-class TextWriter
+class TextReader2
 {
   class Impl;
 
  public:
 
-  ARCANE_DEPRECATED_REASON("Y2024: This class is deprecated")
-  explicit TextWriter(const String& filename);
-  ARCANE_DEPRECATED_REASON("Y2024: This class is deprecated")
-  TextWriter();
-
-  TextWriter(const TextWriter& rhs) = delete;
-  ~TextWriter();
-  TextWriter& operator=(const TextWriter& rhs) = delete;
+  explicit TextReader2(const String& filename);
+  TextReader2(const TextReader2& rhs) = delete;
+  ~TextReader2();
+  TextReader2& operator=(const TextReader2& rhs) = delete;
 
  public:
 
-  void open(const String& filename);
-  void write(Span<const std::byte> values);
+  void read(Span<std::byte> values);
+  void readIntegers(Span<Integer> values);
 
  public:
 
   String fileName() const;
+  void setFileOffset(Int64 v);
   void setDataCompressor(Ref<IDataCompressor> ds);
   Ref<IDataCompressor> dataCompressor() const;
-  Int64 fileOffset();
-  std::ostream& stream();
-
- public:
-
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Real> values);
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Int16> values);
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Int32> values);
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Int64> values);
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Byte> values);
+  std::istream& stream();
+  Int64 fileLength() const;
 
  private:
 
@@ -81,7 +65,8 @@ class TextWriter
 
  private:
 
-  void _binaryWrite(const void* bytes, Int64 len);
+  void _binaryRead(void* bytes, Int64 len);
+  void _checkStream(const char* type, Int64 nb_read_value);
 };
 
 /*---------------------------------------------------------------------------*/

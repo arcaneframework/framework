@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TextReader.h                                                (C) 2000-2023 */
+/* TextReader.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Ecrivain de données.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -33,6 +33,7 @@ namespace Arcane::impl
 /*!
  * \internal
  * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
+ * \deprecated Utiliser TextReader2 à la place
  */
 class TextReader
 {
@@ -40,7 +41,9 @@ class TextReader
 
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2024: This class is deprecated")
   explicit TextReader(const String& filename);
+
   TextReader(const TextReader& rhs) = delete;
   ~TextReader();
   TextReader& operator=(const TextReader& rhs) = delete;
