@@ -51,7 +51,6 @@ class CartesianMeshAMRPatchMng
   ICartesianMesh* m_cmesh;
   IMesh* m_mesh;
   Ref<ICartesianMeshNumberingMng> m_num_mng;
-  Ref<VariableCellInteger> m_flag_cells_consistent;
 };
 
 /*---------------------------------------------------------------------------*/
