@@ -13,6 +13,8 @@ set(ARCANE_SOURCES
   ParallelDataReader.h
   ParallelDataWriter.cc
   ParallelDataWriter.h
+  TextReader2.cc
+  TextWriter2.cc
   TextReader.cc
   TextReader.h
   TextWriter.cc
@@ -124,6 +126,8 @@ set(ARCANE_SOURCES
   internal/BasicReader.h
   internal/BasicWriter.h
   internal/VariableDataInfo.h
+  internal/TextReader2.h
+  internal/TextWriter2.h
 )
 
 set(AXL_FILES

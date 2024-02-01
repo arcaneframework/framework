@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TextWriter.h                                                (C) 2000-2024 */
+/* TextWriter2.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Ecrivain de données.                                                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_TEXTWRITER_H
-#define ARCANE_STD_TEXTWRITER_H
+#ifndef ARCANE_STD_INTERNAL_TEXTWRITER2_H
+#define ARCANE_STD_INTERNAL_TEXTWRITER2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,20 +34,17 @@ namespace Arcane::impl
  * \internal
  * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
  */
-class TextWriter
+class TextWriter2
 {
   class Impl;
 
  public:
 
-  ARCANE_DEPRECATED_REASON("Y2024: This class is deprecated")
-  explicit TextWriter(const String& filename);
-  ARCANE_DEPRECATED_REASON("Y2024: This class is deprecated")
-  TextWriter();
-
-  TextWriter(const TextWriter& rhs) = delete;
-  ~TextWriter();
-  TextWriter& operator=(const TextWriter& rhs) = delete;
+  explicit TextWriter2(const String& filename);
+  TextWriter2(const TextWriter2& rhs) = delete;
+  TextWriter2();
+  ~TextWriter2();
+  TextWriter2& operator=(const TextWriter2& rhs) = delete;
 
  public:
 
@@ -61,19 +58,6 @@ class TextWriter
   Ref<IDataCompressor> dataCompressor() const;
   Int64 fileOffset();
   std::ostream& stream();
-
- public:
-
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Real> values);
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Int16> values);
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Int32> values);
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Int64> values);
-  ARCANE_DEPRECATED_REASON("Y2023: Use write(Span<const std::byte>) instead")
-  void write(Span<const Byte> values);
 
  private:
 

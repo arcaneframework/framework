@@ -25,7 +25,7 @@
 #include "arcane/core/ISerializedData.h"
 #include "arcane/core/IRessourceMng.h"
 
-#include "arcane/std/TextWriter.h"
+#include "arcane/std/internal/TextWriter2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_uni
   }
 
   String filename = BasicReaderWriterCommon::_getBasicGroupFile(m_path, group_full_name, m_rank);
-  TextWriter writer(filename);
+  TextWriter2 writer(filename);
 
   // Sauve la liste des unique_ids écrits
   {
