@@ -257,6 +257,28 @@ _getReader(VariableMetaData* varmd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit l'argument avec des couples (nom_de_variable,valeur du hash).
+ *
+ * Cela n'est valide que pour le rang 0
+ */
+void BasicReader::
+fillComparisonHash(std::map<String, String>& comparison_hash_map)
+{
+  comparison_hash_map.clear();
+  if (m_nb_rank_to_read==0)
+    return;
+  if (m_parallel_mng->commRank()!=m_parallel_mng->masterIORank())
+    return;
+  const VariableDataInfoMap& var_map = m_global_readers[0]->variablesDataInfoMap();
+  for( auto v : var_map){
+    VariableDataInfo* vd = v.second.get();
+    comparison_hash_map.try_emplace(vd->fullName(),vd->comparisonHashValue());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void BasicReader::
 read(IVariable* var, IData* data)

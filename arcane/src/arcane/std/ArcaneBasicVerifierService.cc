@@ -104,27 +104,26 @@ class ArcaneBasicVerifierService
     }
     m_full_file_name = s;
   }
+  void _doVerifHash(BasicReader* reader,const VariableCollection& variables);
+  void _writeReferenceFile(const String& file_name);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ArcaneBasicVerifierService::
-writeReferenceFile()
+_writeReferenceFile(const String& file_name)
 {
   ISubDomain* sd = subDomain();
   IParallelMng* pm = sd->parallelMng();
   IVariableMng* vm = sd->variableMng();
-  _computeFullFileName(false);
-  String dir_name = platform::getFileDirName(m_full_file_name);
-  platform::recursiveCreateDirectory(m_full_file_name);
   auto open_mode = BasicReaderWriterCommon::OpenModeTruncate;
   // Pour l'instant utilise la version 1
   // A partir de janvier 2019, il est possible d'utiliser la version 2 ou 3
   // car le comparateur C# supporte cette version.
   Int32 version = m_wanted_format_version;
   bool want_parallel = pm->isParallel();
-  ScopedPtrT<BasicWriter> verif(new BasicWriter(sd->application(), pm, m_full_file_name,
+  ScopedPtrT<BasicWriter> verif(new BasicWriter(sd->application(), pm, file_name,
                                                 open_mode, version, want_parallel));
   if (compareMode() == eCompareMode::HashOnly)
     verif->setSaveValues(false);
@@ -149,6 +148,18 @@ writeReferenceFile()
 /*---------------------------------------------------------------------------*/
 
 void ArcaneBasicVerifierService::
+writeReferenceFile()
+{
+  _computeFullFileName(false);
+  String dir_name = platform::getFileDirName(m_full_file_name);
+  platform::recursiveCreateDirectory(m_full_file_name);
+  _writeReferenceFile(m_full_file_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcaneBasicVerifierService::
 doVerifFromReferenceFile(bool parallel_sequential, bool compare_ghost)
 {
   ISubDomain* sd = subDomain();
@@ -157,7 +168,7 @@ doVerifFromReferenceFile(bool parallel_sequential, bool compare_ghost)
   ITraceMng* tm = sd->traceMng();
   _computeFullFileName(true);
   bool want_parallel = pm->isParallel();
-  ScopedPtrT<BasicReader> reader(new BasicReader(sd->application(), pm, A_NULL_RANK, m_full_file_name, want_parallel));
+  Ref<BasicReader> reader = makeRef(new BasicReader(sd->application(), pm, A_NULL_RANK, m_full_file_name, want_parallel));
   reader->initialize();
   GroupFinder group_finder(vm);
   reader->setItemGroupFinder(&group_finder);
@@ -177,8 +188,73 @@ doVerifFromReferenceFile(bool parallel_sequential, bool compare_ghost)
 
   tm->info() << "Checking (" << m_full_file_name << ")";
   reader->beginRead(read_variables);
-  _doVerif(reader.get(), read_variables, compare_ghost);
+  if (compareMode() == eCompareMode::Values)
+    _doVerif(reader.get(), read_variables, compare_ghost);
+  if (compareMode() == eCompareMode::HashOnly)
+    _doVerifHash(reader.get(), read_variables);
   reader->endRead();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcaneBasicVerifierService::
+_doVerifHash(BasicReader* ref_reader, const VariableCollection& variables)
+{
+  ISubDomain* sd = subDomain();
+  IParallelMng* pm = sd->parallelMng();
+  bool is_master = pm->isMasterIO();
+  IVariableMng* vm = subDomain()->variableMng();
+  GroupFinder group_finder(vm);
+
+  // Il faut d'abord faire un dump des valeurs courantes pour pouvoir comparer
+  // les hashs.
+  info() << "Check Verif Hash";
+  std::map<String, String> current_comparison_hash_map;
+  {
+    String tmp_dir_name("Test1");
+    {
+      if (is_master) {
+        platform::recursiveCreateDirectory(tmp_dir_name);
+      }
+      pm->barrier();
+      _writeReferenceFile(tmp_dir_name);
+    }
+    {
+      info() << "REREAD_ME";
+      bool want_parallel = pm->isParallel();
+      Ref<BasicReader> current_reader = makeRef(new BasicReader(sd->application(), pm, A_NULL_RANK, tmp_dir_name, want_parallel));
+      current_reader->initialize();
+      current_reader->setItemGroupFinder(&group_finder);
+      current_reader->beginRead(variables);
+      current_reader->fillComparisonHash(current_comparison_hash_map);
+      current_reader->endRead();
+    }
+  }
+
+  std::map<String, String> ref_comparison_hash_map;
+  ref_reader->fillComparisonHash(ref_comparison_hash_map);
+  if (is_master) {
+    for (VariableCollection::Enumerator ivar(variables); ++ivar;) {
+      IVariable* var = *ivar;
+      {
+        auto x = ref_comparison_hash_map.find(var->fullName());
+        if (x != ref_comparison_hash_map.end()) {
+          String v = x->second;
+          if (!v.empty())
+            info() << "Found Ref Hash hash=" << v << " var=" << var->fullName();
+        }
+      }
+      {
+        auto x = current_comparison_hash_map.find(var->fullName());
+        if (x != current_comparison_hash_map.end()) {
+          String v = x->second;
+          if (!v.empty())
+            info() << "Found Current Hash hash=" << x->second << " var=" << var->fullName();
+        }
+      }
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
