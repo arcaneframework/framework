@@ -99,6 +99,7 @@ class IGenericReader
   virtual void readItemGroup(const String& group_name, Int64Array& written_unique_ids,
                              Int64Array& wanted_unique_ids) = 0;
   virtual String comparisonHashValue(const String& var_full_name) const = 0;
+  virtual const VariableDataInfoMap& variablesDataInfoMap() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -123,6 +124,10 @@ class BasicGenericReader
   void readItemGroup(const String& group_name, Int64Array& written_unique_ids,
                      Int64Array& wanted_unique_ids) override;
   String comparisonHashValue(const String& var_full_name) const override;
+  const VariableDataInfoMap& variablesDataInfoMap() const override
+  {
+    return m_variables_data_info;
+  }
 
  private:
 
