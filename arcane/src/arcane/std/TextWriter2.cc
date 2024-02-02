@@ -49,16 +49,7 @@ TextWriter2::
 TextWriter2(const String& filename)
 : m_p(new Impl())
 {
-  open(filename);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-TextWriter2::
-TextWriter2()
-: m_p(new Impl())
-{
+  _open(filename);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -74,7 +65,7 @@ TextWriter2::
 /*---------------------------------------------------------------------------*/
 
 void TextWriter2::
-open(const String& filename)
+_open(const String& filename)
 {
   m_p->m_filename = filename;
   std::ios::openmode mode = std::ios::out | std::ios::binary;
@@ -90,7 +81,7 @@ open(const String& filename)
 void TextWriter2::
 write(Span<const std::byte> values)
 {
-  _binaryWrite(values.data(), values.size());
+  _binaryWrite(values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -120,22 +111,25 @@ fileOffset()
   return m_p->m_ostream.tellp();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void TextWriter2::
-_binaryWrite(const void* bytes, Int64 len)
+_binaryWrite(Span<const std::byte> values)
 {
   std::ostream& o = m_p->m_ostream;
   //cout << "** BINARY WRITE len=" << len << " deflater=" << m_data_compressor << '\n';
   IDataCompressor* d = m_p->m_data_compressor.get();
-  if (d && len > d->minCompressSize()) {
+  if (d && values.size() > d->minCompressSize()) {
     UniqueArray<std::byte> compressed_values;
-    m_p->m_data_compressor->compress(Span<const std::byte>((const std::byte*)bytes, len), compressed_values);
+    m_p->m_data_compressor->compress(values, compressed_values);
     Int64 compressed_size = compressed_values.largeSize();
-    o.write((const char*)&compressed_size, sizeof(Int64));
-    o.write((const char*)compressed_values.data(), compressed_size);
+    binaryWrite(o, asBytes(SmallSpan<Int64>(&compressed_size, 1)));
+    binaryWrite(o, compressed_values);
     //cout << "** BINARY WRITE len=" << len << " compressed_len=" << compressed_size << '\n';
   }
   else
-    o.write((const char*)bytes, len);
+    binaryWrite(o, values);
 }
 
 /*---------------------------------------------------------------------------*/

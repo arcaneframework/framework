@@ -27,8 +27,6 @@
 #include "arcane/core/ISerializedData.h"
 #include "arcane/core/XmlNodeList.h"
 
-#include "arcane/std/internal/TextReader2.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -230,24 +228,25 @@ readItemGroup(const String& group_full_name, Int64Array& written_unique_ids,
     }
     return;
   }
+
   info(5) << "READ GROUP " << group_full_name;
   String filename = BasicReaderWriterCommon::_getBasicGroupFile(m_path, group_full_name, m_rank);
-  TextReader2 reader(filename);
+  std::ifstream reader(filename.localstr(), std::ios::in | std::ios::binary);
 
   {
     Integer nb_unique_id = 0;
-    reader.readIntegers(IntegerArrayView(1, &nb_unique_id));
+    binaryRead(reader,asWritableBytes(SmallSpan<Integer>(&nb_unique_id, 1)));
     info(5) << "NB_WRITTEN_UNIQUE_ID = " << nb_unique_id;
     written_unique_ids.resize(nb_unique_id);
-    reader.read(asWritableBytes(written_unique_ids.span()));
+    binaryRead(reader,asWritableBytes(written_unique_ids.span()));
   }
 
   {
     Integer nb_unique_id = 0;
-    reader.readIntegers(IntegerArrayView(1, &nb_unique_id));
+    binaryRead(reader,asWritableBytes(SmallSpan<Integer>(&nb_unique_id, 1)));
     info(5) << "NB_WANTED_UNIQUE_ID = " << nb_unique_id;
     wanted_unique_ids.resize(nb_unique_id);
-    reader.read(asWritableBytes(wanted_unique_ids.span()));
+    binaryRead(reader,asWritableBytes(wanted_unique_ids.span()));
   }
 }
 
