@@ -596,7 +596,6 @@ refine()
                         << " -- owner : " << new_owner
                 ;
               }
-
             }
           }
 
@@ -904,6 +903,8 @@ refine()
     for (Cell parent_cell : cell_to_refine_internals) {
       Int64 parent_cell_uid = parent_cell.uniqueId();
       Int32 parent_cell_level = parent_cell.level();
+      bool parent_cell_not_ghost = (parent_cell.owner() == my_rank);
+
       Int64 parent_coord_x = m_num_mng->uidToCoordX(parent_cell_uid, parent_cell_level);
       Int64 parent_coord_y = m_num_mng->uidToCoordY(parent_cell_uid, parent_cell_level);
       Int64 parent_coord_z = m_num_mng->uidToCoordZ(parent_cell_uid, parent_cell_level);
@@ -944,9 +945,9 @@ refine()
 
       // On regarde si la maille parent à gauche/en bas/l'arrière est à nous et si elle doit être raffinée.
       // Si c'est le cas, alors c'est à elle de créer les noeuds et les faces qu'on a en commun.
-      bool is_own_parent_cell_same_patch_left = ((uid_cells_around(1, 1, 0) != -1) && ((owner_cells_around(1, 1, 0) == my_rank && (flags_cells_around(1, 1, 0) & ItemFlags::II_Refine))));
-      bool is_own_parent_cell_same_patch_bottom = ((uid_cells_around(1, 0, 1) != -1) && ((owner_cells_around(1, 0, 1) == my_rank && (flags_cells_around(1, 0, 1) & ItemFlags::II_Refine))));
-      bool is_own_parent_cell_same_patch_rear = ((uid_cells_around(0, 1, 1) != -1) && ((owner_cells_around(0, 1, 1) == my_rank && (flags_cells_around(0, 1, 1) & ItemFlags::II_Refine))));
+//      bool is_own_parent_cell_same_patch_left = ((uid_cells_around(1, 1, 0) != -1) && ((owner_cells_around(1, 1, 0) == my_rank && (flags_cells_around(1, 1, 0) & ItemFlags::II_Refine))));
+//      bool is_own_parent_cell_same_patch_bottom = ((uid_cells_around(1, 0, 1) != -1) && ((owner_cells_around(1, 0, 1) == my_rank && (flags_cells_around(1, 0, 1) & ItemFlags::II_Refine))));
+//      bool is_own_parent_cell_same_patch_rear = ((uid_cells_around(0, 1, 1) != -1) && ((owner_cells_around(0, 1, 1) == my_rank && (flags_cells_around(0, 1, 1) & ItemFlags::II_Refine))));
 
       // En revanche, s'il y a des mailles autour de nous mais qu'elle ne sont pas à nous,
       // on doit créer les noeuds/faces mais attribuer un autre propriétaire.
@@ -983,27 +984,27 @@ refine()
       // On simplifie avec un tableau de booléens.
       // Si true, alors on doit appliquer la priorité de propriété.
       // Si false, alors on considère qu'il n'y a pas de maille à la position définie.
-      bool is_ghost_parent_cell[3][3][3] = {{{false}}};
+//      bool is_ghost_parent_cell[3][3][3] = {{{false}}};
 
       // Pour les mailles prioritaires sur nous, on doit regarder les deux flags.
       // Si une maille a le flag "II_Refine", on n'existe pas pour elle donc elle prend la propriété
       // des faces et des noeuds qu'on a en commun.
       // Si une maille a le flag "II_Inactive", elle a déjà les bons propriétaires.
       // Quoi qu'il en soit, si true alors les faces et noeuds qu'on a en commun leurs appartiennent.
-      is_ghost_parent_cell[0][0][0] = ((uid_cells_around(0, 0, 0) != -1) && (owner_cells_around(0, 0, 0) != my_rank) && (flags_cells_around(0, 0, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[0][0][1] = ((uid_cells_around(0, 0, 1) != -1) && (owner_cells_around(0, 0, 1) != my_rank) && (flags_cells_around(0, 0, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[0][0][2] = ((uid_cells_around(0, 0, 2) != -1) && (owner_cells_around(0, 0, 2) != my_rank) && (flags_cells_around(0, 0, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[0][1][0] = ((uid_cells_around(0, 1, 0) != -1) && (owner_cells_around(0, 1, 0) != my_rank) && (flags_cells_around(0, 1, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[0][1][1] = ((uid_cells_around(0, 1, 1) != -1) && (owner_cells_around(0, 1, 1) != my_rank) && (flags_cells_around(0, 1, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[0][1][2] = ((uid_cells_around(0, 1, 2) != -1) && (owner_cells_around(0, 1, 2) != my_rank) && (flags_cells_around(0, 1, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[0][2][0] = ((uid_cells_around(0, 2, 0) != -1) && (owner_cells_around(0, 2, 0) != my_rank) && (flags_cells_around(0, 2, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[0][2][1] = ((uid_cells_around(0, 2, 1) != -1) && (owner_cells_around(0, 2, 1) != my_rank) && (flags_cells_around(0, 2, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[0][2][2] = ((uid_cells_around(0, 2, 2) != -1) && (owner_cells_around(0, 2, 2) != my_rank) && (flags_cells_around(0, 2, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-
-      is_ghost_parent_cell[1][0][0] = ((uid_cells_around(1, 0, 0) != -1) && (owner_cells_around(1, 0, 0) != my_rank) && (flags_cells_around(1, 0, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[1][0][1] = ((uid_cells_around(1, 0, 1) != -1) && (owner_cells_around(1, 0, 1) != my_rank) && (flags_cells_around(1, 0, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[1][0][2] = ((uid_cells_around(1, 0, 2) != -1) && (owner_cells_around(1, 0, 2) != my_rank) && (flags_cells_around(1, 0, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
-      is_ghost_parent_cell[1][1][0] = ((uid_cells_around(1, 1, 0) != -1) && (owner_cells_around(1, 1, 0) != my_rank) && (flags_cells_around(1, 1, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[0][0][0] = ((uid_cells_around(0, 0, 0) != -1) && (owner_cells_around(0, 0, 0) != my_rank) && (flags_cells_around(0, 0, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[0][0][1] = ((uid_cells_around(0, 0, 1) != -1) && (owner_cells_around(0, 0, 1) != my_rank) && (flags_cells_around(0, 0, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[0][0][2] = ((uid_cells_around(0, 0, 2) != -1) && (owner_cells_around(0, 0, 2) != my_rank) && (flags_cells_around(0, 0, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[0][1][0] = ((uid_cells_around(0, 1, 0) != -1) && (owner_cells_around(0, 1, 0) != my_rank) && (flags_cells_around(0, 1, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[0][1][1] = ((uid_cells_around(0, 1, 1) != -1) && (owner_cells_around(0, 1, 1) != my_rank) && (flags_cells_around(0, 1, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[0][1][2] = ((uid_cells_around(0, 1, 2) != -1) && (owner_cells_around(0, 1, 2) != my_rank) && (flags_cells_around(0, 1, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[0][2][0] = ((uid_cells_around(0, 2, 0) != -1) && (owner_cells_around(0, 2, 0) != my_rank) && (flags_cells_around(0, 2, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[0][2][1] = ((uid_cells_around(0, 2, 1) != -1) && (owner_cells_around(0, 2, 1) != my_rank) && (flags_cells_around(0, 2, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[0][2][2] = ((uid_cells_around(0, 2, 2) != -1) && (owner_cells_around(0, 2, 2) != my_rank) && (flags_cells_around(0, 2, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//
+//      is_ghost_parent_cell[1][0][0] = ((uid_cells_around(1, 0, 0) != -1) && (owner_cells_around(1, 0, 0) != my_rank) && (flags_cells_around(1, 0, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[1][0][1] = ((uid_cells_around(1, 0, 1) != -1) && (owner_cells_around(1, 0, 1) != my_rank) && (flags_cells_around(1, 0, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[1][0][2] = ((uid_cells_around(1, 0, 2) != -1) && (owner_cells_around(1, 0, 2) != my_rank) && (flags_cells_around(1, 0, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+//      is_ghost_parent_cell[1][1][0] = ((uid_cells_around(1, 1, 0) != -1) && (owner_cells_around(1, 1, 0) != my_rank) && (flags_cells_around(1, 1, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
       // is_ghost_parent_cell[1][1][1] = parent_cell;
 
       // Pour les mailles non prioritaires, on doit regarder qu'un seul flag.
@@ -1012,20 +1013,76 @@ refine()
       // On ne regarde pas le flag "II_Refine" car, si ces mailles sont aussi en train d'être raffinée,
       // elles savent qu'on existe et qu'on obtient la propriété des noeuds et des faces qu'on a en commun.
       // En résumé, si true alors les faces et noeuds qu'on a en commun nous appartiennent.
-      is_ghost_parent_cell[1][1][2] = ((uid_cells_around(1, 1, 2) != -1) && (owner_cells_around(1, 1, 2) != my_rank) && (flags_cells_around(1, 1, 2) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[1][2][0] = ((uid_cells_around(1, 2, 0) != -1) && (owner_cells_around(1, 2, 0) != my_rank) && (flags_cells_around(1, 2, 0) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[1][2][1] = ((uid_cells_around(1, 2, 1) != -1) && (owner_cells_around(1, 2, 1) != my_rank) && (flags_cells_around(1, 2, 1) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[1][2][2] = ((uid_cells_around(1, 2, 2) != -1) && (owner_cells_around(1, 2, 2) != my_rank) && (flags_cells_around(1, 2, 2) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[1][1][2] = ((uid_cells_around(1, 1, 2) != -1) && (owner_cells_around(1, 1, 2) != my_rank) && (flags_cells_around(1, 1, 2) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[1][2][0] = ((uid_cells_around(1, 2, 0) != -1) && (owner_cells_around(1, 2, 0) != my_rank) && (flags_cells_around(1, 2, 0) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[1][2][1] = ((uid_cells_around(1, 2, 1) != -1) && (owner_cells_around(1, 2, 1) != my_rank) && (flags_cells_around(1, 2, 1) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[1][2][2] = ((uid_cells_around(1, 2, 2) != -1) && (owner_cells_around(1, 2, 2) != my_rank) && (flags_cells_around(1, 2, 2) & ItemFlags::II_Inactive));
+//
+//      is_ghost_parent_cell[2][0][0] = ((uid_cells_around(2, 0, 0) != -1) && (owner_cells_around(2, 0, 0) != my_rank) && (flags_cells_around(2, 0, 0) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[2][0][1] = ((uid_cells_around(2, 0, 1) != -1) && (owner_cells_around(2, 0, 1) != my_rank) && (flags_cells_around(2, 0, 1) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[2][0][2] = ((uid_cells_around(2, 0, 2) != -1) && (owner_cells_around(2, 0, 2) != my_rank) && (flags_cells_around(2, 0, 2) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[2][1][0] = ((uid_cells_around(2, 1, 0) != -1) && (owner_cells_around(2, 1, 0) != my_rank) && (flags_cells_around(2, 1, 0) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[2][1][1] = ((uid_cells_around(2, 1, 1) != -1) && (owner_cells_around(2, 1, 1) != my_rank) && (flags_cells_around(2, 1, 1) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[2][1][2] = ((uid_cells_around(2, 1, 2) != -1) && (owner_cells_around(2, 1, 2) != my_rank) && (flags_cells_around(2, 1, 2) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[2][2][0] = ((uid_cells_around(2, 2, 0) != -1) && (owner_cells_around(2, 2, 0) != my_rank) && (flags_cells_around(2, 2, 0) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[2][2][1] = ((uid_cells_around(2, 2, 1) != -1) && (owner_cells_around(2, 2, 1) != my_rank) && (flags_cells_around(2, 2, 1) & ItemFlags::II_Inactive));
+//      is_ghost_parent_cell[2][2][2] = ((uid_cells_around(2, 2, 2) != -1) && (owner_cells_around(2, 2, 2) != my_rank) && (flags_cells_around(2, 2, 2) & ItemFlags::II_Inactive));
 
-      is_ghost_parent_cell[2][0][0] = ((uid_cells_around(2, 0, 0) != -1) && (owner_cells_around(2, 0, 0) != my_rank) && (flags_cells_around(2, 0, 0) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[2][0][1] = ((uid_cells_around(2, 0, 1) != -1) && (owner_cells_around(2, 0, 1) != my_rank) && (flags_cells_around(2, 0, 1) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[2][0][2] = ((uid_cells_around(2, 0, 2) != -1) && (owner_cells_around(2, 0, 2) != my_rank) && (flags_cells_around(2, 0, 2) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[2][1][0] = ((uid_cells_around(2, 1, 0) != -1) && (owner_cells_around(2, 1, 0) != my_rank) && (flags_cells_around(2, 1, 0) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[2][1][1] = ((uid_cells_around(2, 1, 1) != -1) && (owner_cells_around(2, 1, 1) != my_rank) && (flags_cells_around(2, 1, 1) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[2][1][2] = ((uid_cells_around(2, 1, 2) != -1) && (owner_cells_around(2, 1, 2) != my_rank) && (flags_cells_around(2, 1, 2) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[2][2][0] = ((uid_cells_around(2, 2, 0) != -1) && (owner_cells_around(2, 2, 0) != my_rank) && (flags_cells_around(2, 2, 0) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[2][2][1] = ((uid_cells_around(2, 2, 1) != -1) && (owner_cells_around(2, 2, 1) != my_rank) && (flags_cells_around(2, 2, 1) & ItemFlags::II_Inactive));
-      is_ghost_parent_cell[2][2][2] = ((uid_cells_around(2, 2, 2) != -1) && (owner_cells_around(2, 2, 2) != my_rank) && (flags_cells_around(2, 2, 2) & ItemFlags::II_Inactive));
+
+
+      bool is_todo_rename[3][3][3] = {{{false}}};
+
+      is_todo_rename[0][0][0] = ((uid_cells_around(0, 0, 0) != -1) && (flags_cells_around(0, 0, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[0][0][1] = ((uid_cells_around(0, 0, 1) != -1) && (flags_cells_around(0, 0, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[0][0][2] = ((uid_cells_around(0, 0, 2) != -1) && (flags_cells_around(0, 0, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[0][1][0] = ((uid_cells_around(0, 1, 0) != -1) && (flags_cells_around(0, 1, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[0][1][1] = ((uid_cells_around(0, 1, 1) != -1) && (flags_cells_around(0, 1, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[0][1][2] = ((uid_cells_around(0, 1, 2) != -1) && (flags_cells_around(0, 1, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[0][2][0] = ((uid_cells_around(0, 2, 0) != -1) && (flags_cells_around(0, 2, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[0][2][1] = ((uid_cells_around(0, 2, 1) != -1) && (flags_cells_around(0, 2, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[0][2][2] = ((uid_cells_around(0, 2, 2) != -1) && (flags_cells_around(0, 2, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+
+      is_todo_rename[1][0][0] = ((uid_cells_around(1, 0, 0) != -1) && (flags_cells_around(1, 0, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[1][0][1] = ((uid_cells_around(1, 0, 1) != -1) && (flags_cells_around(1, 0, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[1][0][2] = ((uid_cells_around(1, 0, 2) != -1) && (flags_cells_around(1, 0, 2) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+
+      is_todo_rename[1][1][0] = ((uid_cells_around(1, 1, 0) != -1) && (flags_cells_around(1, 1, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
+      is_todo_rename[1][1][2] = ((uid_cells_around(1, 1, 2) != -1) && (flags_cells_around(1, 1, 2) & ItemFlags::II_Inactive));
+
+      is_todo_rename[1][2][0] = ((uid_cells_around(1, 2, 0) != -1) && (flags_cells_around(1, 2, 0) & ItemFlags::II_Inactive));
+      is_todo_rename[1][2][1] = ((uid_cells_around(1, 2, 1) != -1) && (flags_cells_around(1, 2, 1) & ItemFlags::II_Inactive));
+      is_todo_rename[1][2][2] = ((uid_cells_around(1, 2, 2) != -1) && (flags_cells_around(1, 2, 2) & ItemFlags::II_Inactive));
+
+      is_todo_rename[2][0][0] = ((uid_cells_around(2, 0, 0) != -1) && (flags_cells_around(2, 0, 0) & ItemFlags::II_Inactive));
+      is_todo_rename[2][0][1] = ((uid_cells_around(2, 0, 1) != -1) && (flags_cells_around(2, 0, 1) & ItemFlags::II_Inactive));
+      is_todo_rename[2][0][2] = ((uid_cells_around(2, 0, 2) != -1) && (flags_cells_around(2, 0, 2) & ItemFlags::II_Inactive));
+      is_todo_rename[2][1][0] = ((uid_cells_around(2, 1, 0) != -1) && (flags_cells_around(2, 1, 0) & ItemFlags::II_Inactive));
+      is_todo_rename[2][1][1] = ((uid_cells_around(2, 1, 1) != -1) && (flags_cells_around(2, 1, 1) & ItemFlags::II_Inactive));
+      is_todo_rename[2][1][2] = ((uid_cells_around(2, 1, 2) != -1) && (flags_cells_around(2, 1, 2) & ItemFlags::II_Inactive));
+      is_todo_rename[2][2][0] = ((uid_cells_around(2, 2, 0) != -1) && (flags_cells_around(2, 2, 0) & ItemFlags::II_Inactive));
+      is_todo_rename[2][2][1] = ((uid_cells_around(2, 2, 1) != -1) && (flags_cells_around(2, 2, 1) & ItemFlags::II_Inactive));
+      is_todo_rename[2][2][2] = ((uid_cells_around(2, 2, 2) != -1) && (flags_cells_around(2, 2, 2) & ItemFlags::II_Inactive));
+
+      auto v1 = [&](Integer z, Integer y, Integer x){
+        return is_todo_rename[z][y][x] && (flags_cells_around(z, y, x) & ItemFlags::II_UserMark1);
+      };
+
+      auto v2 = [&](Integer z, Integer y, Integer x){
+        return is_todo_rename[z][y][x] && (owner_cells_around(z, y, x) == owner_cells_around(1, 1, 1));
+      };
+
+      auto v3 = [&](Integer z, Integer y, Integer x){
+        return is_todo_rename[z][y][x] && (owner_cells_around(z, y, x) != owner_cells_around(1, 1, 1));
+      };
+
+
+
+
+
+
+
+
+
 
 
       // On itère sur toutes les mailles enfants.
@@ -1034,6 +1091,7 @@ refine()
           for (Int64 i = child_coord_x; i < child_coord_x + pattern; ++i) {
             parent_cells.add(parent_cell);
             total_nb_cells++;
+
             Int64 uid_child = m_num_mng->getCellUid(parent_cell_level + 1, i, j, k);
             debug() << "Child -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << parent_cell_level + 1 << " -- uid : " << uid_child;
 
@@ -1052,16 +1110,26 @@ refine()
 
             // Partie Face.
             for(Integer l = 0; l < m_num_mng->getNbFace(); ++l){
+              Integer new_owner = -1;
+              bool new_face = false;
+
               // Si la face l est en commun avec la maille d'à côté, que la maille d'à côté est à nous et qu'elle est
               // en train d'être raffinée, elle s'occupe de la création, pas nous.
               // Sinon, on la créée.
               if (
-                ((i == child_coord_x && !is_own_parent_cell_same_patch_left) || (mask_face_if_cell_left[l]))
+                ( (i == child_coord_x && !v1(1, 1, 0)) || mask_face_if_cell_left[l] )
                 &&
-                ((j == child_coord_y && !is_own_parent_cell_same_patch_bottom) || (mask_face_if_cell_bottom[l]))
+                ( (i != (child_coord_x + pattern-1) || !v1(1, 1, 2)) || mask_face_if_cell_right[l] )
                 &&
-                ((k == child_coord_z && !is_own_parent_cell_same_patch_rear) || (mask_face_if_cell_rear[l]))
+                ( (j == child_coord_y && !v1(1, 0, 1)) || mask_face_if_cell_bottom[l] )
+                &&
+                ( (j != (child_coord_y + pattern-1) || !v1(1, 2, 1)) || mask_face_if_cell_top[l] )
+                &&
+                ( (k == child_coord_z && !v1(0, 1, 1)) || mask_face_if_cell_rear[l] )
+                &&
+                ( (k != (child_coord_z + pattern-1) || !v1(2, 1, 1)) || mask_face_if_cell_front[l] )
               ){
+                new_face = true;
                 m_faces_infos.add(type_face);
                 m_faces_infos.add(ua_face_uid[l]);
 
@@ -1094,8 +1162,24 @@ refine()
                 }
                 total_nb_faces++;
 
+                new_owner = owner_cells_around(1, 1, 1);
+              }
 
-                Integer new_owner = -1;
+
+              if (
+                ( (i == child_coord_x && !v2(1, 1, 0)) || mask_face_if_cell_left[l] )
+                &&
+                ( (i != (child_coord_x + pattern-1) || !v2(1, 1, 2)) || mask_face_if_cell_right[l] )
+                &&
+                ( (j == child_coord_y && !v2(1, 0, 1)) || mask_face_if_cell_bottom[l] )
+                &&
+                ( (j != (child_coord_y + pattern-1) || !v2(1, 2, 1)) || mask_face_if_cell_top[l] )
+                &&
+                ( (k == child_coord_z && !v2(0, 1, 1)) || mask_face_if_cell_rear[l] )
+                &&
+                ( (k != (child_coord_z + pattern-1) || !v2(2, 1, 1)) || mask_face_if_cell_front[l] )
+              )
+              {
 
                 // Ici, la construction des conditions est la même à chaque fois.
                 // Le premier booléen (i == child_coord_x) regarde si l'enfant se trouve
@@ -1106,68 +1190,117 @@ refine()
                 // maille à côté qui peut prendre la propriété de la face ou à qui on prend la propriété.
 
                 // À gauche, priorité 12 < 13 donc il prend la propriété de la face.
-                if(i == child_coord_x && (!mask_face_if_cell_left[l]) && is_ghost_parent_cell[1][1][0]){
+                if(i == child_coord_x && (!mask_face_if_cell_left[l]) && v3(1, 1, 0)){
                   new_owner = owner_cells_around(1, 1, 0);
                 }
 
                 // En bas, priorité 10 < 13 donc il prend la propriété de la face.
-                else if(j == child_coord_y && (!mask_face_if_cell_bottom[l]) && is_ghost_parent_cell[1][0][1]){
+                else if(j == child_coord_y && (!mask_face_if_cell_bottom[l]) && v3(1, 0, 1)){
                   new_owner = owner_cells_around(1, 0, 1);
                 }
 
                 // À l'arrière, priorité 4 < 13 donc il prend la propriété de la face.
-                else if(k == child_coord_z && (!mask_face_if_cell_rear[l]) && is_ghost_parent_cell[0][1][1]){
+                else if(k == child_coord_z && (!mask_face_if_cell_rear[l]) && v3(0, 1, 1)){
                   new_owner = owner_cells_around(0, 1, 1);
                 }
 
                 // Sinon, on est propriétaire de la face.
                 else {
-                  // À droite, priorité 14 > 13 donc on récupère la propriété de la face. On prévient le sous-domaine.
-                  if (i == (child_coord_x + pattern - 1) && (!mask_face_if_cell_right[l]) && is_ghost_parent_cell[1][1][2]) {
-                    get_back_face_owner[owner_cells_around(1, 1, 2)][1]++;
-                    get_back_face_owner[owner_cells_around(1, 1, 2)].add(ua_face_uid[l]);
+                  if (parent_cell_not_ghost) {
+                    // À droite, priorité 14 > 13 donc on récupère la propriété de la face. On prévient le sous-domaine.
+                    if (i == (child_coord_x + pattern - 1) && (!mask_face_if_cell_right[l]) && v3(1, 1, 2)) {
+                      get_back_face_owner[owner_cells_around(1, 1, 2)][1]++;
+                      get_back_face_owner[owner_cells_around(1, 1, 2)].add(ua_face_uid[l]);
+                    }
+
+                    // En haut, priorité 16 > 13 donc on récupère la propriété de la face. On prévient le sous-domaine.
+                    else if (j == (child_coord_y + pattern - 1) && (!mask_face_if_cell_top[l]) && v3(1, 2, 1)) {
+                      get_back_face_owner[owner_cells_around(1, 2, 1)][1]++;
+                      get_back_face_owner[owner_cells_around(1, 2, 1)].add(ua_face_uid[l]);
+                    }
+
+                    // À l'avant, priorité 22 > 13 donc on récupère la propriété de la face. On prévient le sous-domaine.
+                    else if (k == (child_coord_z + pattern - 1) && (!mask_face_if_cell_front[l]) && v3(2, 1, 1)) {
+                      get_back_face_owner[owner_cells_around(2, 1, 1)][1]++;
+                      get_back_face_owner[owner_cells_around(2, 1, 1)].add(ua_face_uid[l]);
+                    }
                   }
 
-                  // En haut, priorité 16 > 13 donc on récupère la propriété de la face. On prévient le sous-domaine.
-                  else if (j == (child_coord_y + pattern - 1) && (!mask_face_if_cell_top[l]) && is_ghost_parent_cell[1][2][1]) {
-                    get_back_face_owner[owner_cells_around(1, 2, 1)][1]++;
-                    get_back_face_owner[owner_cells_around(1, 2, 1)].add(ua_face_uid[l]);
-                  }
+                  new_owner = owner_cells_around(1, 1, 1);
+                }
+              }
 
-                  // À l'avant, priorité 22 > 13 donc on récupère la propriété de la face. On prévient le sous-domaine.
-                  else if (k == (child_coord_z + pattern - 1) && (!mask_face_if_cell_front[l]) && is_ghost_parent_cell[2][1][1]) {
-                    get_back_face_owner[owner_cells_around(2, 1, 1)][1]++;
-                    get_back_face_owner[owner_cells_around(2, 1, 1)].add(ua_face_uid[l]);
-                  }
-
-                  new_owner = parent_cell.owner();
+              if(new_owner != -1){
+                face_uid_to_owner[ua_face_uid[l]] = new_owner;
+                if(!new_face){
+                  face_uid_change_owner_only.add(ua_face_uid[l]);
+                  debug() << "Child face (change owner) -- x : " << i
+                          << " -- y : " << j
+                          << " -- z : " << k
+                          << " -- level : " << parent_cell_level + 1
+                          << " -- face : " << l
+                          << " -- uid_face : " << ua_face_uid[l]
+                          << " -- owner : " << new_owner
+                  ;
+                }
+                else{
+                  debug() << "Child face (create face)  -- x : " << i
+                          << " -- y : " << j
+                          << " -- z : " << k
+                          << " -- level : " << parent_cell_level + 1
+                          << " -- face : " << l
+                          << " -- uid_face : " << ua_face_uid[l]
+                          << " -- owner : " << new_owner
+                  ;
                 }
 
-                ARCANE_ASSERT((face_uid_to_owner[ua_face_uid[l]] != -1), ("Error face owner"));
-                face_uid_to_owner[ua_face_uid[l]] = new_owner;
-
-                debug() << "Child face -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << parent_cell_level + 1 << " -- face : " << l << " -- uid_face : " << ua_face_uid[l] << " -- owner : " << new_owner;
               }
             }
 
 
             // Partie Node.
             for(Integer l = 0; l < m_num_mng->getNbNode(); ++l){
+              Integer new_owner = -1;
+              bool new_node = false;
+
               // Si le noeud l est en commun avec la maille d'à côté, que la maille d'à côté est à nous et qu'elle est
               // en train d'être raffinée, elle s'occupe de la création, pas nous.
               // Sinon, on le créé.
               if (
-                ((i == child_coord_x && !is_own_parent_cell_same_patch_left) || (mask_node_if_cell_left[l]))
+                ( (i == child_coord_x && !v1(1, 1, 0)) || mask_node_if_cell_left[l] )
                 &&
-                ((j == child_coord_y && !is_own_parent_cell_same_patch_bottom) || (mask_node_if_cell_bottom[l]))
+                ( (i != (child_coord_x + pattern-1) || !v1(1, 1, 2)) || mask_node_if_cell_right[l] )
                 &&
-                ((k == child_coord_z && !is_own_parent_cell_same_patch_rear) || (mask_node_if_cell_rear[l]))
+                ( (j == child_coord_y && !v1(1, 0, 1)) || mask_node_if_cell_bottom[l] )
+                &&
+                ( (j != (child_coord_y + pattern-1) || !v1(1, 2, 1)) || mask_node_if_cell_top[l] )
+                &&
+                ( (k == child_coord_z && !v1(0, 1, 1)) || mask_node_if_cell_rear[l] )
+                &&
+                ( (k != (child_coord_z + pattern-1) || !v1(2, 1, 1)) || mask_node_if_cell_front[l] )
               )
               {
+                new_node = true;
                 m_nodes_infos.add(ua_node_uid[l]);
                 total_nb_nodes++;
 
-                Integer new_owner = -1;
+                new_owner = owner_cells_around(1, 1, 1);
+              }
+
+              if (
+                ( (i == child_coord_x && !v2(1, 1, 0)) || mask_node_if_cell_left[l] )
+                &&
+                ( (i != (child_coord_x + pattern-1) || !v2(1, 1, 2)) || mask_node_if_cell_right[l] )
+                &&
+                ( (j == child_coord_y && !v2(1, 0, 1)) || mask_node_if_cell_bottom[l] )
+                &&
+                ( (j != (child_coord_y + pattern-1) || !v2(1, 2, 1)) || mask_node_if_cell_top[l] )
+                &&
+                ( (k == child_coord_z && !v2(0, 1, 1)) || mask_node_if_cell_rear[l] )
+                &&
+                ( (k != (child_coord_z + pattern-1) || !v2(2, 1, 1)) || mask_node_if_cell_front[l] )
+              )
+              {
 
                 // Par rapport aux faces qui n'ont que deux propriétaires possibles, un noeud peut
                 // en avoir jusqu'à huit.
@@ -1184,43 +1317,43 @@ refine()
                     if(k == child_coord_z && (!mask_node_if_cell_rear[l])) {
 
                       // Priorité 0 < 13.
-                      if (is_ghost_parent_cell[0][0][0]) {
+                      if (v3(0, 0, 0)) {
                         new_owner = owner_cells_around(0, 0, 0);
                       }
 
                       // Priorité 1 < 13.
-                      else if (is_ghost_parent_cell[0][0][1]) {
+                      else if (v3(0, 0, 1)) {
                         new_owner = owner_cells_around(0, 0, 1);
                       }
 
                       // Priorité 3 < 13.
-                      else if (is_ghost_parent_cell[0][1][0]) {
+                      else if (v3(0, 1, 0)) {
                         new_owner = owner_cells_around(0, 1, 0);
                       }
 
                       // Priorité 4 < 13.
-                      else if (is_ghost_parent_cell[0][1][1]) {
+                      else if (v3(0, 1, 1)) {
                         new_owner = owner_cells_around(0, 1, 1);
                       }
 
                       // Priorité 9 < 13.
-                      else if (is_ghost_parent_cell[1][0][0]) {
+                      else if (v3(1, 0, 0)) {
                         new_owner = owner_cells_around(1, 0, 0);
                       }
 
                       // Priorité 10 < 13.
-                      else if (is_ghost_parent_cell[1][0][1]) {
+                      else if (v3(1, 0, 1)) {
                         new_owner = owner_cells_around(1, 0, 1);
                       }
 
                       // Priorité 12 < 13.
-                      else if (is_ghost_parent_cell[1][1][0]) {
+                      else if (v3(1, 1, 0)) {
                         new_owner = owner_cells_around(1, 1, 0);
                       }
 
                       // Pas de mailles autour.
                       else {
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1229,48 +1362,51 @@ refine()
                     else if(k == (child_coord_z + pattern-1) && (!mask_node_if_cell_front[l])) {
 
                       // Priorité 9 < 13.
-                      if (is_ghost_parent_cell[1][0][0]) {
+                      if (v3(1, 0, 0)) {
                         new_owner = owner_cells_around(1, 0, 0);
                       }
 
                       // Priorité 10 < 13.
-                      else if (is_ghost_parent_cell[1][0][1]) {
+                      else if (v3(1, 0, 1)) {
                         new_owner = owner_cells_around(1, 0, 1);
                       }
 
                       // Priorité 12 < 13.
-                      else if (is_ghost_parent_cell[1][1][0]) {
+                      else if (v3(1, 1, 0)) {
                         new_owner = owner_cells_around(1, 1, 0);
                       }
 
                       // Je suis le proprio.
                       else {
 
-                        // Priorité 18 > 13.
-                        if (is_ghost_parent_cell[2][0][0]) {
-                          get_back_node_owner[owner_cells_around(2, 0, 0)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 0, 0)].add(ua_node_uid[l]);
+                        if (parent_cell_not_ghost) {
+
+                          // Priorité 18 > 13.
+                          if (v3(2, 0, 0)) {
+                            get_back_node_owner[owner_cells_around(2, 0, 0)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 0, 0)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 19 > 13.
+                          if (v3(2, 0, 1)) {
+                            get_back_node_owner[owner_cells_around(2, 0, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 0, 1)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 21 > 13.
+                          if (v3(2, 1, 0)) {
+                            get_back_node_owner[owner_cells_around(2, 1, 0)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 1, 0)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 22 > 13.
+                          if (v3(2, 1, 1)) {
+                            get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
+                          }
                         }
 
-                        // Priorité 19 > 13.
-                        if (is_ghost_parent_cell[2][0][1]) {
-                          get_back_node_owner[owner_cells_around(2, 0, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 0, 1)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 21 > 13.
-                        if (is_ghost_parent_cell[2][1][0]) {
-                          get_back_node_owner[owner_cells_around(2, 1, 0)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 1, 0)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 22 > 13.
-                        if (is_ghost_parent_cell[2][1][1]) {
-                          get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
-                        }
-
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1278,23 +1414,23 @@ refine()
                     else{
 
                       // Priorité 9 < 13.
-                      if (is_ghost_parent_cell[1][0][0]) {
+                      if (v3(1, 0, 0)) {
                         new_owner = owner_cells_around(1, 0, 0);
                       }
 
                       // Priorité 10 < 13.
-                      else if (is_ghost_parent_cell[1][0][1]) {
+                      else if (v3(1, 0, 1)) {
                         new_owner = owner_cells_around(1, 0, 1);
                       }
 
                       // Priorité 12 < 13.
-                      else if (is_ghost_parent_cell[1][1][0]) {
+                      else if (v3(1, 1, 0)) {
                         new_owner = owner_cells_around(1, 1, 0);
                       }
 
                       // Pas de mailles autour.
                       else {
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
                   }
@@ -1308,46 +1444,49 @@ refine()
                     if(k == child_coord_z && (!mask_node_if_cell_rear[l])) {
 
                       // Priorité 3 < 13.
-                      if (is_ghost_parent_cell[0][1][0]) {
+                      if (v3(0, 1, 0)) {
                         new_owner = owner_cells_around(0, 1, 0);
                       }
 
                       // Priorité 4 < 13.
-                      else if (is_ghost_parent_cell[0][1][1]) {
+                      else if (v3(0, 1, 1)) {
                         new_owner = owner_cells_around(0, 1, 1);
                       }
 
                       // Priorité 6 < 13.
-                      else if (is_ghost_parent_cell[0][2][0]) {
+                      else if (v3(0, 2, 0)) {
                         new_owner = owner_cells_around(0, 2, 0);
                       }
 
                       // Priorité 7 < 13.
-                      else if (is_ghost_parent_cell[0][2][1]) {
+                      else if (v3(0, 2, 1)) {
                         new_owner = owner_cells_around(0, 2, 1);
                       }
 
                       // Priorité 12 < 13.
-                      else if (is_ghost_parent_cell[1][1][0]) {
+                      else if (v3(1, 1, 0)) {
                         new_owner = owner_cells_around(1, 1, 0);
                       }
 
                       // Je suis le proprio.
                       else {
 
-                        // Priorité 15 > 13.
-                        if (is_ghost_parent_cell[1][2][0]) {
-                          get_back_node_owner[owner_cells_around(1, 2, 0)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 2, 0)].add(ua_node_uid[l]);
+                        if (parent_cell_not_ghost) {
+
+                          // Priorité 15 > 13.
+                          if (v3(1, 2, 0)) {
+                            get_back_node_owner[owner_cells_around(1, 2, 0)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 2, 0)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 16 > 13.
+                          if (v3(1, 2, 1)) {
+                            get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
+                          }
                         }
 
-                        // Priorité 16 > 13.
-                        if (is_ghost_parent_cell[1][2][1]) {
-                          get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
-                        }
-
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1356,50 +1495,53 @@ refine()
                     else if(k == (child_coord_z + pattern-1) && (!mask_node_if_cell_front[l])) {
 
                       // Priorité 4 < 13.
-                      if (is_ghost_parent_cell[1][1][0]) {
+                      if (v3(1, 1, 0)) {
                         new_owner = owner_cells_around(1, 1, 0);
                       }
 
                       // Je suis le proprio.
                       else {
 
-                        // Priorité 15 > 13.
-                        if (is_ghost_parent_cell[1][2][0]) {
-                          get_back_node_owner[owner_cells_around(1, 2, 0)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 2, 0)].add(ua_node_uid[l]);
+                        if (parent_cell_not_ghost) {
+
+                          // Priorité 15 > 13.
+                          if (v3(1, 2, 0)) {
+                            get_back_node_owner[owner_cells_around(1, 2, 0)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 2, 0)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 16 > 13.
+                          if (v3(1, 2, 1)) {
+                            get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 21 > 13.
+                          if (v3(2, 1, 0)) {
+                            get_back_node_owner[owner_cells_around(2, 1, 0)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 1, 0)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 22 > 13.
+                          if (v3(2, 1, 1)) {
+                            get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 24 > 13.
+                          if (v3(2, 2, 0)) {
+                            get_back_node_owner[owner_cells_around(2, 2, 0)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 2, 0)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 25 > 13.
+                          if (v3(2, 2, 1)) {
+                            get_back_node_owner[owner_cells_around(2, 2, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 2, 1)].add(ua_node_uid[l]);
+                          }
                         }
 
-                        // Priorité 16 > 13.
-                        if (is_ghost_parent_cell[1][2][1]) {
-                          get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 21 > 13.
-                        if (is_ghost_parent_cell[2][1][0]) {
-                          get_back_node_owner[owner_cells_around(2, 1, 0)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 1, 0)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 22 > 13.
-                        if (is_ghost_parent_cell[2][1][1]) {
-                          get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 24 > 13.
-                        if (is_ghost_parent_cell[2][2][0]) {
-                          get_back_node_owner[owner_cells_around(2, 2, 0)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 2, 0)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 25 > 13.
-                        if (is_ghost_parent_cell[2][2][1]) {
-                          get_back_node_owner[owner_cells_around(2, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 2, 1)].add(ua_node_uid[l]);
-                        }
-
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1407,25 +1549,27 @@ refine()
                     else {
 
                       // Priorité 12 < 13.
-                      if (is_ghost_parent_cell[1][1][0]) {
+                      if (v3(1, 1, 0)) {
                         new_owner = owner_cells_around(1, 1, 0);
                       }
 
                       // Je suis le proprio.
                       else {
 
-                        // Priorité 15 > 13.
-                        if (is_ghost_parent_cell[1][2][0]) {
-                          get_back_node_owner[owner_cells_around(1, 2, 0)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 2, 0)].add(ua_node_uid[l]);
-                        }
+                        if (parent_cell_not_ghost) {
+                          // Priorité 15 > 13.
+                          if (v3(1, 2, 0)) {
+                            get_back_node_owner[owner_cells_around(1, 2, 0)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 2, 0)].add(ua_node_uid[l]);
+                          }
 
-                        // Priorité 16 > 13.
-                        if (is_ghost_parent_cell[1][2][1]) {
-                          get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
+                          // Priorité 16 > 13.
+                          if (v3(1, 2, 1)) {
+                            get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
+                          }
                         }
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
                   }
@@ -1437,23 +1581,23 @@ refine()
                     if (k == child_coord_z && (!mask_node_if_cell_rear[l])) {
 
                       // Priorité 3 < 13.
-                      if (is_ghost_parent_cell[0][1][0]) {
+                      if (v3(0, 1, 0)) {
                         new_owner = owner_cells_around(0, 1, 0);
                       }
 
                       // Priorité 4 < 13.
-                      else if (is_ghost_parent_cell[0][1][1]) {
+                      else if (v3(0, 1, 1)) {
                         new_owner = owner_cells_around(0, 1, 1);
                       }
 
                       // Priorité 12 < 13.
-                      else if (is_ghost_parent_cell[1][1][0]) {
+                      else if (v3(1, 1, 0)) {
                         new_owner = owner_cells_around(1, 1, 0);
                       }
 
                       // Pas de mailles autour.
                       else {
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1461,26 +1605,28 @@ refine()
                     else if (k == (child_coord_z + pattern - 1) && (!mask_node_if_cell_front[l])) {
 
                       // Priorité 12 < 13.
-                      if (is_ghost_parent_cell[1][1][0]) {
+                      if (v3(1, 1, 0)) {
                         new_owner = owner_cells_around(1, 1, 0);
                       }
 
                       // Je suis le proprio.
                       else {
 
-                        // Priorité 21 > 13.
-                        if (is_ghost_parent_cell[2][1][0]) {
-                          get_back_node_owner[owner_cells_around(2, 1, 0)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 1, 0)].add(ua_node_uid[l]);
+                        if (parent_cell_not_ghost) {
+                          // Priorité 21 > 13.
+                          if (v3(2, 1, 0)) {
+                            get_back_node_owner[owner_cells_around(2, 1, 0)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 1, 0)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 22 > 13.
+                          if (v3(2, 1, 1)) {
+                            get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
+                          }
                         }
 
-                        // Priorité 22 > 13.
-                        if (is_ghost_parent_cell[2][1][1]) {
-                          get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
-                        }
-
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1488,13 +1634,13 @@ refine()
                     else {
 
                       // Priorité 12 < 13.
-                      if (is_ghost_parent_cell[1][1][0]) {
+                      if (v3(1, 1, 0)) {
                         new_owner = owner_cells_around(1, 1, 0);
                       }
 
                       // Je suis le proprio.
                       else {
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
                   }
@@ -1514,32 +1660,32 @@ refine()
                     if(k == child_coord_z && (!mask_node_if_cell_rear[l])){
 
                       // Priorité 1 < 13.
-                      if (is_ghost_parent_cell[0][0][1]) {
+                      if (v3(0, 0, 1)) {
                         new_owner = owner_cells_around(0, 0, 1);
                       }
 
                       // Priorité 2 < 13.
-                      else if (is_ghost_parent_cell[0][0][2]) {
+                      else if (v3(0, 0, 2)) {
                         new_owner = owner_cells_around(0, 0, 2);
                       }
 
                       // Priorité 4 < 13.
-                      else if (is_ghost_parent_cell[0][1][1]) {
+                      else if (v3(0, 1, 1)) {
                         new_owner = owner_cells_around(0, 1, 1);
                       }
 
                       // Priorité 5 < 13.
-                      else if (is_ghost_parent_cell[0][1][2]) {
+                      else if (v3(0, 1, 2)) {
                         new_owner = owner_cells_around(0, 1, 2);
                       }
 
                       // Priorité 10 < 13.
-                      else if (is_ghost_parent_cell[1][0][1]) {
+                      else if (v3(1, 0, 1)) {
                         new_owner = owner_cells_around(1, 0, 1);
                       }
 
                       // Priorité 11 < 13.
-                      else if (is_ghost_parent_cell[1][0][2]) {
+                      else if (v3(1, 0, 2)) {
                         new_owner = owner_cells_around(1, 0, 2);
                       }
 
@@ -1547,12 +1693,12 @@ refine()
                       else {
 
                         // Priorité 14 > 13.
-                        if (is_ghost_parent_cell[1][1][2]) {
+                        if (v3(1, 1, 2) && parent_cell_not_ghost) {
                           get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
                           get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
                         }
 
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1561,49 +1707,51 @@ refine()
                     else if(k == (child_coord_z + pattern-1) && (!mask_node_if_cell_front[l])) {
 
                       // Priorité 10 < 13.
-                      if (is_ghost_parent_cell[1][0][1]) {
+                      if (v3(1, 0, 1)) {
                         new_owner = owner_cells_around(1, 0, 1);
                       }
 
                       // Priorité 11 < 13.
-                      else if (is_ghost_parent_cell[1][0][2]) {
+                      else if (v3(1, 0, 2)) {
                         new_owner = owner_cells_around(1, 0, 2);
                       }
 
                       // Je suis le proprio.
                       else {
 
-                        // Priorité 14 > 13.
-                        if (is_ghost_parent_cell[1][1][2]) {
-                          get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                        if (parent_cell_not_ghost) {
+                          // Priorité 14 > 13.
+                          if (v3(1, 1, 2)) {
+                            get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 19 > 13.
+                          if (v3(2, 0, 1)) {
+                            get_back_node_owner[owner_cells_around(2, 0, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 0, 1)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 20 > 13.
+                          if (v3(2, 0, 2)) {
+                            get_back_node_owner[owner_cells_around(2, 0, 2)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 0, 2)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 22 > 13.
+                          if (v3(2, 1, 1)) {
+                            get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 23 > 13.
+                          if (v3(2, 1, 2)) {
+                            get_back_node_owner[owner_cells_around(2, 1, 2)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 1, 2)].add(ua_node_uid[l]);
+                          }
                         }
 
-                        // Priorité 19 > 13.
-                        if (is_ghost_parent_cell[2][0][1]) {
-                          get_back_node_owner[owner_cells_around(2, 0, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 0, 1)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 20 > 13.
-                        if (is_ghost_parent_cell[2][0][2]) {
-                          get_back_node_owner[owner_cells_around(2, 0, 2)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 0, 2)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 22 > 13.
-                        if (is_ghost_parent_cell[2][1][1]) {
-                          get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 23 > 13.
-                        if (is_ghost_parent_cell[2][1][2]) {
-                          get_back_node_owner[owner_cells_around(2, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 1, 2)].add(ua_node_uid[l]);
-                        }
-
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1611,12 +1759,12 @@ refine()
                     else {
 
                       // Priorité 10 < 13.
-                      if (is_ghost_parent_cell[1][0][1]) {
+                      if (v3(1, 0, 1)) {
                         new_owner = owner_cells_around(1, 0, 1);
                       }
 
                       // Priorité 11 < 13.
-                      else if (is_ghost_parent_cell[1][0][2]) {
+                      else if (v3(1, 0, 2)) {
                         new_owner = owner_cells_around(1, 0, 2);
                       }
 
@@ -1624,12 +1772,12 @@ refine()
                       else {
 
                         // Priorité 14 > 13.
-                        if (is_ghost_parent_cell[1][1][2]) {
+                        if (v3(1, 1, 2) && parent_cell_not_ghost) {
                           get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
                           get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
                         }
 
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
                   }
@@ -1643,47 +1791,49 @@ refine()
                     if(k == child_coord_z && (!mask_node_if_cell_rear[l])) {
 
                       // Priorité 4 < 13.
-                      if (is_ghost_parent_cell[0][1][1]) {
+                      if (v3(0, 1, 1)) {
                         new_owner = owner_cells_around(0, 1, 1);
                       }
 
                       // Priorité 5 < 13.
-                      else if (is_ghost_parent_cell[0][1][2]) {
+                      else if (v3(0, 1, 2)) {
                         new_owner = owner_cells_around(0, 1, 2);
                       }
 
                       // Priorité 7 < 13.
-                      else if (is_ghost_parent_cell[0][2][1]) {
+                      else if (v3(0, 2, 1)) {
                         new_owner = owner_cells_around(0, 2, 1);
                       }
 
                       // Priorité 8 < 13.
-                      else if (is_ghost_parent_cell[0][2][2]) {
+                      else if (v3(0, 2, 2)) {
                         new_owner = owner_cells_around(0, 2, 2);
                       }
 
                       // Je suis le proprio.
                       else {
 
-                        // Priorité 14 > 13.
-                        if (is_ghost_parent_cell[1][1][2]) {
-                          get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                        if (parent_cell_not_ghost) {
+                          // Priorité 14 > 13.
+                          if (v3(1, 1, 2)) {
+                            get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 16 > 13.
+                          if (v3(1, 2, 1)) {
+                            get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 17 > 13.
+                          if (v3(1, 2, 2)) {
+                            get_back_node_owner[owner_cells_around(1, 2, 2)][1]++;
+                            get_back_node_owner[owner_cells_around(1, 2, 2)].add(ua_node_uid[l]);
+                          }
                         }
 
-                        // Priorité 16 > 13.
-                        if (is_ghost_parent_cell[1][2][1]) {
-                          get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
-                        }
-
-                        // Priorité 17 > 13.
-                        if (is_ghost_parent_cell[1][2][2]) {
-                          get_back_node_owner[owner_cells_around(1, 2, 2)][1]++;
-                          get_back_node_owner[owner_cells_around(1, 2, 2)].add(ua_node_uid[l]);
-                        }
-
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1691,73 +1841,78 @@ refine()
                     // Donc noeud à droite, en haut, en avant (même position que le noeud de la maille parente).
                     else if(k == (child_coord_z + pattern-1) && (!mask_node_if_cell_front[l])) {
 
-                      // Priorité 14 > 13.
-                      if (is_ghost_parent_cell[1][1][2]) {
-                        get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
-                        get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                      if (parent_cell_not_ghost) {
+                        // Priorité 14 > 13.
+                        if (v3(1, 1, 2)) {
+                          get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
+                          get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 16 > 13.
+                        if (v3(1, 2, 1)) {
+                          get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
+                          get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 17 > 13.
+                        if (v3(1, 2, 2)) {
+                          get_back_node_owner[owner_cells_around(1, 2, 2)][1]++;
+                          get_back_node_owner[owner_cells_around(1, 2, 2)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 22 > 13.
+                        if (v3(2, 1, 1)) {
+                          get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
+                          get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 23 > 13.
+                        if (v3(2, 1, 2)) {
+                          get_back_node_owner[owner_cells_around(2, 1, 2)][1]++;
+                          get_back_node_owner[owner_cells_around(2, 1, 2)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 25 > 13.
+                        if (v3(2, 2, 1)) {
+                          get_back_node_owner[owner_cells_around(2, 2, 1)][1]++;
+                          get_back_node_owner[owner_cells_around(2, 2, 1)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 26 > 13.
+                        if (v3(2, 2, 2)) {
+                          get_back_node_owner[owner_cells_around(2, 2, 2)][1]++;
+                          get_back_node_owner[owner_cells_around(2, 2, 2)].add(ua_node_uid[l]);
+                        }
                       }
 
-                      // Priorité 16 > 13.
-                      if (is_ghost_parent_cell[1][2][1]) {
-                        get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
-                        get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
-                      }
-
-                      // Priorité 17 > 13.
-                      if (is_ghost_parent_cell[1][2][2]) {
-                        get_back_node_owner[owner_cells_around(1, 2, 2)][1]++;
-                        get_back_node_owner[owner_cells_around(1, 2, 2)].add(ua_node_uid[l]);
-                      }
-
-                      // Priorité 22 > 13.
-                      if (is_ghost_parent_cell[2][1][1]) {
-                        get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
-                        get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
-                      }
-
-                      // Priorité 23 > 13.
-                      if (is_ghost_parent_cell[2][1][2]) {
-                        get_back_node_owner[owner_cells_around(2, 1, 2)][1]++;
-                        get_back_node_owner[owner_cells_around(2, 1, 2)].add(ua_node_uid[l]);
-                      }
-
-                      // Priorité 25 > 13.
-                      if (is_ghost_parent_cell[2][2][1]) {
-                        get_back_node_owner[owner_cells_around(2, 2, 1)][1]++;
-                        get_back_node_owner[owner_cells_around(2, 2, 1)].add(ua_node_uid[l]);
-                      }
-
-                      // Priorité 26 > 13.
-                      if (is_ghost_parent_cell[2][2][2]) {
-                        get_back_node_owner[owner_cells_around(2, 2, 2)][1]++;
-                        get_back_node_owner[owner_cells_around(2, 2, 2)].add(ua_node_uid[l]);
-                      }
-
-                      new_owner = parent_cell.owner();
+                      new_owner = owner_cells_around(1, 1, 1);
                     }
 
                     // Sinon le noeud est quelque part sur l'arête à droite en haut...
                     else {
 
-                      // Priorité 14 > 13.
-                      if (is_ghost_parent_cell[1][1][2]) {
-                        get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
-                        get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                      if (parent_cell_not_ghost) {
+
+                        // Priorité 14 > 13.
+                        if (v3(1, 1, 2)) {
+                          get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
+                          get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 16 > 13.
+                        if (v3(1, 2, 1)) {
+                          get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
+                          get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 17 > 13.
+                        if (v3(1, 2, 2)) {
+                          get_back_node_owner[owner_cells_around(1, 2, 2)][1]++;
+                          get_back_node_owner[owner_cells_around(1, 2, 2)].add(ua_node_uid[l]);
+                        }
                       }
 
-                      // Priorité 16 > 13.
-                      if (is_ghost_parent_cell[1][2][1]) {
-                        get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
-                        get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
-                      }
-
-                      // Priorité 17 > 13.
-                      if (is_ghost_parent_cell[1][2][2]) {
-                        get_back_node_owner[owner_cells_around(1, 2, 2)][1]++;
-                        get_back_node_owner[owner_cells_around(1, 2, 2)].add(ua_node_uid[l]);
-                      }
-
-                      new_owner = parent_cell.owner();
+                      new_owner = owner_cells_around(1, 1, 1);
                     }
                   }
 
@@ -1767,12 +1922,12 @@ refine()
                     if (k == child_coord_z && (!mask_node_if_cell_rear[l])) {
 
                       // Priorité 4 < 13.
-                      if (is_ghost_parent_cell[0][1][1]) {
+                      if (v3(0, 1, 1)) {
                         new_owner = owner_cells_around(0, 1, 1);
                       }
 
                       // Priorité 5 < 13.
-                      else if (is_ghost_parent_cell[0][1][2]) {
+                      else if (v3(0, 1, 2)) {
                         new_owner = owner_cells_around(0, 1, 2);
                       }
 
@@ -1780,49 +1935,52 @@ refine()
                       else {
 
                         // Priorité 14 > 13.
-                        if (is_ghost_parent_cell[1][1][2]) {
+                        if (v3(1, 1, 2) && parent_cell_not_ghost) {
                           get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
                           get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
                         }
 
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
                     // Si le noeud est quelque part sur l'arête à droite en avant.
                     else if (k == (child_coord_z + pattern - 1) && (!mask_node_if_cell_front[l])) {
 
-                      // Priorité 14 > 13.
-                      if (is_ghost_parent_cell[1][1][2]) {
-                        get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
-                        get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                      if (parent_cell_not_ghost) {
+
+                        // Priorité 14 > 13.
+                        if (v3(1, 1, 2)) {
+                          get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
+                          get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 22 > 13.
+                        if (v3(2, 1, 1)) {
+                          get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
+                          get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 23 > 13.
+                        if (v3(2, 1, 2)) {
+                          get_back_node_owner[owner_cells_around(2, 1, 2)][1]++;
+                          get_back_node_owner[owner_cells_around(2, 1, 2)].add(ua_node_uid[l]);
+                        }
                       }
 
-                      // Priorité 22 > 13.
-                      if (is_ghost_parent_cell[2][1][1]) {
-                        get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
-                        get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
-                      }
-
-                      // Priorité 23 > 13.
-                      if (is_ghost_parent_cell[2][1][2]) {
-                        get_back_node_owner[owner_cells_around(2, 1, 2)][1]++;
-                        get_back_node_owner[owner_cells_around(2, 1, 2)].add(ua_node_uid[l]);
-                      }
-
-                      new_owner = parent_cell.owner();
+                      new_owner = owner_cells_around(1, 1, 1);
                     }
 
                     // Sinon le noeud est quelque part sur la face droite...
                     else {
 
                       // Priorité 14 > 13.
-                      if (is_ghost_parent_cell[1][1][2]) {
+                      if (v3(1, 1, 2) && parent_cell_not_ghost) {
                         get_back_node_owner[owner_cells_around(1, 1, 2)][1]++;
                         get_back_node_owner[owner_cells_around(1, 1, 2)].add(ua_node_uid[l]);
                       }
 
-                      new_owner = parent_cell.owner();
+                      new_owner = owner_cells_around(1, 1, 1);
                     }
                   }
                 }
@@ -1842,23 +2000,23 @@ refine()
                     if (k == child_coord_z && (!mask_node_if_cell_rear[l])) {
 
                       // Priorité 1 < 13.
-                      if (is_ghost_parent_cell[0][0][1]) {
+                      if (v3(0, 0, 1)) {
                         new_owner = owner_cells_around(0, 0, 1);
                       }
 
                       // Priorité 4 < 13.
-                      else if (is_ghost_parent_cell[0][1][1]) {
+                      else if (v3(0, 1, 1)) {
                         new_owner = owner_cells_around(0, 1, 1);
                       }
 
                       // Priorité 10 < 13.
-                      else if (is_ghost_parent_cell[1][0][1]) {
+                      else if (v3(1, 0, 1)) {
                         new_owner = owner_cells_around(1, 0, 1);
                       }
 
                       // Pas de mailles autour.
                       else {
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1867,26 +2025,29 @@ refine()
                     else if (k == (child_coord_z + pattern - 1) && (!mask_node_if_cell_front[l])) {
 
                       // Priorité 10 < 13.
-                      if (is_ghost_parent_cell[1][0][1]) {
+                      if (v3(1, 0, 1)) {
                         new_owner = owner_cells_around(1, 0, 1);
                       }
 
                       // Je suis le proprio.
                       else {
 
-                        // Priorité 19 > 13.
-                        if (is_ghost_parent_cell[2][0][1]) {
-                          get_back_node_owner[owner_cells_around(2, 0, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 0, 1)].add(ua_node_uid[l]);
+                        if (parent_cell_not_ghost) {
+
+                          // Priorité 19 > 13.
+                          if (v3(2, 0, 1)) {
+                            get_back_node_owner[owner_cells_around(2, 0, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 0, 1)].add(ua_node_uid[l]);
+                          }
+
+                          // Priorité 22 > 13.
+                          if (v3(2, 1, 1)) {
+                            get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
+                            get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
+                          }
                         }
 
-                        // Priorité 22 > 13.
-                        if (is_ghost_parent_cell[2][1][1]) {
-                          get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
-                          get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
-                        }
-
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1894,13 +2055,13 @@ refine()
                     else {
 
                       // Priorité 10 < 13.
-                      if (is_ghost_parent_cell[1][0][1]) {
+                      if (v3(1, 0, 1)) {
                         new_owner = owner_cells_around(1, 0, 1);
                       }
 
                       // Je suis le proprio.
                       else {
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
                   }
@@ -1913,12 +2074,12 @@ refine()
                     if (k == child_coord_z && (!mask_node_if_cell_rear[l])) {
 
                       // Priorité 4 < 13.
-                      if (is_ghost_parent_cell[0][1][1]) {
+                      if (v3(0, 1, 1)) {
                         new_owner = owner_cells_around(0, 1, 1);
                       }
 
                       // Priorité 7 < 13.
-                      else if (is_ghost_parent_cell[0][2][1]) {
+                      else if (v3(0, 2, 1)) {
                         new_owner = owner_cells_around(0, 2, 1);
                       }
 
@@ -1926,12 +2087,12 @@ refine()
                       else {
 
                         // Priorité 16 > 13.
-                        if (is_ghost_parent_cell[1][2][1]) {
+                        if (v3(1, 2, 1) && parent_cell_not_ghost) {
                           get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
                           get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
                         }
 
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1939,37 +2100,40 @@ refine()
                     // Donc noeud sur l'arête en avant en haut.
                     else if (k == (child_coord_z + pattern - 1) && (!mask_node_if_cell_front[l])) {
 
-                      // Priorité 16 > 13.
-                      if (is_ghost_parent_cell[1][2][1]) {
-                        get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
-                        get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
+                      if (parent_cell_not_ghost) {
+
+                        // Priorité 16 > 13.
+                        if (v3(1, 2, 1)) {
+                          get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
+                          get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 22 > 13.
+                        if (v3(2, 1, 1)) {
+                          get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
+                          get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
+                        }
+
+                        // Priorité 25 > 13.
+                        if (v3(2, 2, 1)) {
+                          get_back_node_owner[owner_cells_around(2, 2, 1)][1]++;
+                          get_back_node_owner[owner_cells_around(2, 2, 1)].add(ua_node_uid[l]);
+                        }
                       }
 
-                      // Priorité 22 > 13.
-                      if (is_ghost_parent_cell[2][1][1]) {
-                        get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
-                        get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
-                      }
-
-                      // Priorité 25 > 13.
-                      if (is_ghost_parent_cell[2][2][1]) {
-                        get_back_node_owner[owner_cells_around(2, 2, 1)][1]++;
-                        get_back_node_owner[owner_cells_around(2, 2, 1)].add(ua_node_uid[l]);
-                      }
-
-                      new_owner = parent_cell.owner();
+                      new_owner = owner_cells_around(1, 1, 1);
                     }
 
                     // Sinon le noeud est quelque part sur la face en haut...
                     else {
 
                       // Priorité 16 > 13.
-                      if (is_ghost_parent_cell[1][2][1]) {
+                      if (v3(1, 2, 1) && parent_cell_not_ghost) {
                         get_back_node_owner[owner_cells_around(1, 2, 1)][1]++;
                         get_back_node_owner[owner_cells_around(1, 2, 1)].add(ua_node_uid[l]);
                       }
 
-                      new_owner = parent_cell.owner();
+                      new_owner = owner_cells_around(1, 1, 1);
                     }
                   }
 
@@ -1980,13 +2144,13 @@ refine()
                     if (k == child_coord_z && (!mask_node_if_cell_rear[l])) {
 
                       // Priorité 4 < 13.
-                      if (is_ghost_parent_cell[0][1][1]) {
+                      if (v3(0, 1, 1)) {
                         new_owner = owner_cells_around(0, 1, 1);
                       }
 
                       // Je suis le proprio.
                       else {
-                        new_owner = parent_cell.owner();
+                        new_owner = owner_cells_around(1, 1, 1);
                       }
                     }
 
@@ -1994,25 +2158,45 @@ refine()
                     else if (k == (child_coord_z + pattern - 1) && (!mask_node_if_cell_front[l])) {
 
                       // Priorité 22 < 13.
-                      if (is_ghost_parent_cell[2][1][1]) {
+                      if (v3(2, 1, 1) && parent_cell_not_ghost) {
                         get_back_node_owner[owner_cells_around(2, 1, 1)][1]++;
                         get_back_node_owner[owner_cells_around(2, 1, 1)].add(ua_node_uid[l]);
                       }
 
-                      new_owner = parent_cell.owner();
+                      new_owner = owner_cells_around(1, 1, 1);
                     }
 
                     // Sinon, le noeud est à l'intérieur de la maille parente.
                     else {
-                      new_owner = parent_cell.owner();
+                      new_owner = owner_cells_around(1, 1, 1);
                     }
                   }
                 }
+              }
 
-                ARCANE_ASSERT((node_uid_to_owner[ua_node_uid[l]] != -1), ("Error node owner"));
+              if(new_owner != -1){
                 node_uid_to_owner[ua_node_uid[l]] = new_owner;
-
-                debug() << "Child node -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << parent_cell_level +1 << " -- node : " << l << " -- uid_node : " << ua_node_uid[l] << " -- owner : " << new_owner;
+                if(!new_node){
+                  node_uid_change_owner_only.add(ua_node_uid[l]);
+                  debug() << "Child node (change owner) -- x : " << i
+                          << " -- y : " << j
+                          << " -- z : " << k
+                          << " -- level : " << parent_cell_level + 1
+                          << " -- node : " << l
+                          << " -- uid_node : " << ua_node_uid[l]
+                          << " -- owner : " << new_owner
+                  ;
+                }
+                else{
+                  debug() << "Child node (create node)  -- x : " << i
+                          << " -- y : " << j
+                          << " -- z : " << k
+                          << " -- level : " << parent_cell_level + 1
+                          << " -- node : " << l
+                          << " -- uid_node : " << ua_node_uid[l]
+                          << " -- owner : " << new_owner
+                  ;
+                }
               }
             }
           }
