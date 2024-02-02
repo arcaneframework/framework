@@ -31,6 +31,7 @@
 
 #include <arccore/base/FatalErrorException.h>
 #include <arccore/base/TraceInfo.h>
+#include <ctime>
 
 /*---------------------------------------------------------------------------*/
 
