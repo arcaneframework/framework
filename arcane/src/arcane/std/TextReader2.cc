@@ -19,6 +19,7 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IDataCompressor.h"
+#include "arcane/utils/FixedArray.h"
 
 #include "arcane/core/ArcaneException.h"
 
@@ -103,7 +104,7 @@ void TextReader2::
 read(Span<std::byte> values)
 {
   Int64 nb_value = values.size();
-  _binaryRead(values.data(), nb_value);
+  _binaryRead(values);
   _checkStream("byte[]", nb_value);
 }
 
@@ -111,20 +112,20 @@ read(Span<std::byte> values)
 /*---------------------------------------------------------------------------*/
 
 void TextReader2::
-_binaryRead(void* values, Int64 len)
+_binaryRead(Span<std::byte> values)
 {
   std::istream& s = m_p->m_istream;
   IDataCompressor* d = m_p->m_data_compressor.get();
-  if (d && len > d->minCompressSize()) {
+  if (d && values.size() > d->minCompressSize()) {
     UniqueArray<std::byte> compressed_values;
-    Int64 compressed_size = 0;
-    s.read((char*)&compressed_size, sizeof(Int64));
-    compressed_values.resize(compressed_size);
-    s.read((char*)compressed_values.data(), compressed_size);
-    m_p->m_data_compressor->decompress(compressed_values, Span<std::byte>((std::byte*)values, len));
+    FixedArray<Int64, 1> compressed_size;
+    binaryRead(s, asWritableBytes(compressed_size.span()));
+    compressed_values.resize(compressed_size[0]);
+    binaryRead(s, asWritableBytes(compressed_values));
+    m_p->m_data_compressor->decompress(compressed_values, values);
   }
   else {
-    s.read((char*)values, len);
+    binaryRead(s, values);
   }
 }
 

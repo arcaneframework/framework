@@ -42,13 +42,11 @@ class TextWriter2
 
   explicit TextWriter2(const String& filename);
   TextWriter2(const TextWriter2& rhs) = delete;
-  TextWriter2();
   ~TextWriter2();
   TextWriter2& operator=(const TextWriter2& rhs) = delete;
 
  public:
 
-  void open(const String& filename);
   void write(Span<const std::byte> values);
 
  public:
@@ -65,7 +63,8 @@ class TextWriter2
 
  private:
 
-  void _binaryWrite(const void* bytes, Int64 len);
+  void _open(const String& filename);
+  void _binaryWrite(Span<const std::byte> values);
 };
 
 /*---------------------------------------------------------------------------*/

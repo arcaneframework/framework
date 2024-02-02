@@ -65,7 +65,7 @@ class TextReader2
 
  private:
 
-  void _binaryRead(void* bytes, Int64 len);
+  void _binaryRead(Span<std::byte> values);
   void _checkStream(const char* type, Int64 nb_read_value);
 };
 
