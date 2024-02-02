@@ -24,6 +24,7 @@
 
 #include <alien/core/backend/ISolverFabric.h>
 #include <alien/core/backend/SolverFabricRegisterer.h>
+#include <alien/utils/Precomp.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

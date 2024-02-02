@@ -6,6 +6,7 @@
 
 #include <alien/core/backend/BackEnd.h>
 #include <alien/utils/Precomp.h>
+#include <alien/AlienExternalPackagesExport.h>
 
 namespace Arccore::MessagePassing {
 class IMessagePassingMng;
@@ -27,7 +28,7 @@ class Space;
 template <class Matrix, class Vector> class IInternalLinearAlgebra;
 template <class Matrix, class Vector> class IInternalLinearSolver;
 
-extern IInternalLinearAlgebra<MTLMatrix, MTLVector>* MTLInternalLinearAlgebraFactory();
+extern ALIEN_EXTERNAL_PACKAGES_EXPORT IInternalLinearAlgebra<MTLMatrix, MTLVector>* MTLInternalLinearAlgebraFactory();
 
 extern IInternalLinearSolver<MTLMatrix, MTLVector>* MTLInternalLinearSolverFactory(
     Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsMTLLinearSolver* options);

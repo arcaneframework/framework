@@ -2,6 +2,8 @@
 #pragma once
 
 #include <alien/utils/Precomp.h>
+#include <alien/AlienArcaneToolsExport.h>
+
 #include "alien/arcane_tools/block/BlockSizes.h"
 
 /*---------------------------------------------------------------------------*/
@@ -19,11 +21,11 @@ class IIndexManager;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ALIEN_EXPORT BlockBuilder
+class ALIEN_ARCANE_TOOLS_EXPORT BlockBuilder
 {
 public:
   
-  class SizeVector
+  class ALIEN_ARCANE_TOOLS_EXPORT SizeVector
   {
   public:
     SizeVector(BlockBuilder& block_Builder, ConstArrayView<Integer>  indexes);

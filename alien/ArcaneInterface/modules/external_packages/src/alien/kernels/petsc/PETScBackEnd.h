@@ -7,6 +7,7 @@
 
 #include <alien/core/backend/BackEnd.h>
 #include <alien/utils/Precomp.h>
+#include <alien/AlienExternalPackagesExport.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +33,7 @@ class Space;
 template <class Matrix, class Vector> class IInternalLinearAlgebra;
 template <class Matrix, class Vector> class IInternalLinearSolver;
 
-extern IInternalLinearAlgebra<PETScMatrix, PETScVector>*
+extern ALIEN_EXTERNAL_PACKAGES_EXPORT IInternalLinearAlgebra<PETScMatrix, PETScVector>*
 PETScInternalLinearAlgebraFactory(
     Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr);
 
