@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.h                                                 (C) 2000-2023 */
+/* MeshUtils.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires diverses sur le maillage.                           */
 /*---------------------------------------------------------------------------*/
@@ -402,6 +402,14 @@ getMaxItemUniqueIdCollective(IMesh* mesh);
 extern "C++" ARCANE_CORE_EXPORT void
 checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
                              const String& expected_hash, bool print_hash_value);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Rempli \a uids avec les uniqueId() des entités de \a view.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+fillUniqueIds(ItemVectorView items,Array<Int64>& uids);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

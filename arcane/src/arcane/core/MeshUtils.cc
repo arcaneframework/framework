@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.cc                                                (C) 2000-2023 */
+/* MeshUtils.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -1858,6 +1858,18 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
   if (!expected_hash.empty() && hash_str != expected_hash)
     ARCANE_FATAL("Bad hash for uniqueId() for family '{0}' v={1} expected='{2}'",
                  family->fullName(), hash_str, expected_hash);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUtils::
+fillUniqueIds(ItemVectorView items,Array<Int64>& uids)
+{
+  Integer nb_item = items.size();
+  uids.resize(nb_item);
+  ENUMERATE_ITEM (iitem, items)
+    uids[iitem.index()] = iitem->uniqueId();
 }
 
 /*---------------------------------------------------------------------------*/
