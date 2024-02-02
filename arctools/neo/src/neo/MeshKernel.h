@@ -290,6 +290,12 @@ namespace MeshKernel
 
   /*---------------------------------------------------------------------------*/
 
+#ifdef _MSC_VER
+  struct PropertyHolderLessComparator {
+      bool operator() (PropertyHolder const& a, PropertyHolder const& b) const { return a.uniqueName() < b.uniqueName(); }
+  };
+#endif
+
   class AlgorithmPropertyGraph
   {
    public:
@@ -299,9 +305,13 @@ namespace MeshKernel
     using ProducingAlgoArray = std::vector<AlgoPtr>;
     using ConsumingAlgoArray = std::vector<AlgoPtr>;
     using PropertyRef = std::reference_wrapper<const PropertyHolder>;
+#ifndef _MSC_VER
     static inline auto m_prop_holder_less_comparator = [](PropertyHolder const& a, PropertyHolder const& b) { return a.uniqueName() < b.uniqueName(); };
     using PropertyHolderLessComparator = decltype(m_prop_holder_less_comparator);
-    std::map<PropertyHolder, std::pair<ProducingAlgoArray, ConsumingAlgoArray>, PropertyHolderLessComparator> m_property_algorithms{ m_prop_holder_less_comparator };
+#else
+    PropertyHolderLessComparator  m_prop_holder_less_comparator;
+#endif
+    std::map<PropertyHolder, std::pair<ProducingAlgoArray, ConsumingAlgoArray>, PropertyHolderLessComparator> m_property_algorithms{m_prop_holder_less_comparator };
     SGraph::DirectedAcyclicGraph<AlgoPtr, PropertyHolder> m_dag;
     std::list<AlgoPtr> m_kept_in_out_algos;
     std::list<AlgoPtr> m_kept_out_algos;
@@ -321,6 +331,7 @@ namespace MeshKernel
     };
 
    public:
+
     template <typename Algorithm>
     void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
       auto algo_handler = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property), std::move(out_property), std::forward<Algorithm>(algo));

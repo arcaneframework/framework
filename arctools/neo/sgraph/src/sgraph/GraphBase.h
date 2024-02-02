@@ -134,18 +134,22 @@ class GraphBase
   using EdgeTypeRefArray = std::vector<EdgeTypeRef>;
   using EdgeTypeConstRefArray = std::vector<EdgeTypeConstRef>;
   static inline auto m_vertex_less_comparator = [](VertexTypeConstRef const& a, VertexTypeConstRef const& b) {
+#ifndef _MSC_VER // Visual 2017 doesn't support if constexpr
     if constexpr (utils::has_less_v<VertexType>)
       return a.get() < b.get();
     else
+#endif
       return &(a.get()) < &(b.get());
   };
   using VertexLessComparator = decltype(m_vertex_less_comparator);
   using AdjacencyListType = std::map<VertexTypeConstRef, std::pair<VertexTypeRefArray, EdgeTypeRefArray>, VertexLessComparator>;
   using VertexPair = std::pair<VertexTypeRef, VertexTypeRef>;
   static inline auto m_edge_less_comparator = [](EdgeTypeConstRef const& a, EdgeTypeConstRef const& b) {
+#ifndef _MSC_VER // Visual 2017 doesn't support if constexpr
     if constexpr (utils::has_less_v<EdgeType>)
       return a.get() < b.get();
     else
+#endif
       return &(a.get()) < &(b.get());
   };
   using EdgeLessComparator = decltype(m_edge_less_comparator);
@@ -165,18 +169,22 @@ class GraphBase
  public:
   static inline auto m_vertex_stream_converter = [](VertexType const& vertex) {
     std::ostringstream oss;
+#ifndef _MSC_VER // Visual 2017 doesn't support if constexpr
     if constexpr (utils::is_stream_convertible_v<VertexType>)
       oss << vertex;
     else
+#endif
       oss << &vertex;
     return oss.str();
   };
 
   static inline auto m_edge_stream_converter = [](EdgeType const& edge) {
     std::ostringstream oss;
+#ifndef _MSC_VER // Visual 2017 doesn't support if constexpr
     if constexpr (utils::is_stream_convertible_v<EdgeType>)
       oss << edge;
     else
+#endif
       oss << &edge;
     return oss.str();
   };
