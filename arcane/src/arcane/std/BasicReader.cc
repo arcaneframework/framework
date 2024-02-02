@@ -24,7 +24,7 @@
 #include "arcane/core/IVariable.h"
 #include "arcane/core/SerializeBuffer.h"
 
-#include "arcane/std/ParallelDataReader.h"
+#include "arcane/std/internal/ParallelDataReader.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

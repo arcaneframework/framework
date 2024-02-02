@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Lecteur de IData en parallèle.                                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_PARALLELDATAREADER_H
-#define ARCANE_STD_PARALLELDATAREADER_H
+#ifndef ARCANE_STD_INTERNAL_PARALLELDATAREADER_H
+#define ARCANE_STD_INTERNAL_PARALLELDATAREADER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

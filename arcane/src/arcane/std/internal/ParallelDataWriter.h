@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Ecrivain de IData en parallèle.                                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_PARALLELDATAWRITER_H
-#define ARCANE_STD_PARALLELDATAWRITER_H
+#ifndef ARCANE_STD_INTERNAL_PARALLELDATAWRITER_H
+#define ARCANE_STD_INTERNAL_PARALLELDATAWRITER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

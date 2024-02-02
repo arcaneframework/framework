@@ -10,9 +10,7 @@ set(ARCANE_SOURCES
   BasicReaderWriter.cc
   BasicReaderWriterDatabase.cc
   ParallelDataReader.cc
-  ParallelDataReader.h
   ParallelDataWriter.cc
-  ParallelDataWriter.h
   TextReader2.cc
   TextWriter2.cc
   TextReader.cc
@@ -59,8 +57,6 @@ set(ARCANE_SOURCES
   MasterModule.cc
   UnitTestModule.cc
   ArcaneStdRegisterer.h
-  ParallelDataReader.h
-  ParallelDataWriter.h
   TextReader.h
   TextWriter.h
   Hdf5Utils.h
@@ -126,6 +122,8 @@ set(ARCANE_SOURCES
   internal/BasicReader.h
   internal/BasicWriter.h
   internal/VariableDataInfo.h
+  internal/ParallelDataReader.h
+  internal/ParallelDataWriter.h
   internal/TextReader2.h
   internal/TextWriter2.h
 )
