@@ -28,7 +28,7 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/internal/IDataInternal.h"
 
-#include "arcane/std/ParallelDataWriter.h"
+#include "arcane/std/internal/ParallelDataWriter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

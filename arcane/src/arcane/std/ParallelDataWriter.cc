@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/ParallelDataWriter.h"
+#include "arcane/std/internal/ParallelDataWriter.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IParallelExchanger.h"
