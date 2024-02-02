@@ -206,6 +206,9 @@ generate_export_header(alien_core
 
 target_link_libraries(alien_core PUBLIC alien_headers)
 
+find_package(BLAS REQUIRED)
+target_link_libraries(alien_core PUBLIC BLAS::BLAS)
+
 install(DIRECTORY alien
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.h"
