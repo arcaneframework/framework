@@ -123,22 +123,7 @@ _checkNoInit()
 Ref<ParallelDataWriter> BasicWriter::
 _getWriter(IVariable* var)
 {
-  ItemGroup group = var->itemGroup();
-  auto i = m_parallel_data_writers.find(group);
-  if (i != m_parallel_data_writers.end())
-    return i->second;
-
-  Ref<ParallelDataWriter> writer = makeRef(new ParallelDataWriter(m_parallel_mng));
-  writer->setGatherAll(m_is_gather);
-  {
-    Int64UniqueArray items_uid;
-    ItemGroup own_group = var->itemGroup().own();
-    _fillUniqueIds(own_group, items_uid);
-    Int32ConstArrayView local_ids = own_group.internal()->itemsLocalId();
-    writer->sort(local_ids, items_uid);
-  }
-  m_parallel_data_writers.try_emplace(group, writer);
-  return writer;
+  return m_parallel_data_writers.getOrCreateWriter(var->itemGroup());
 }
 
 /*---------------------------------------------------------------------------*/
