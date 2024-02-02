@@ -25,8 +25,6 @@
 #include "arcane/core/ISerializedData.h"
 #include "arcane/core/IRessourceMng.h"
 
-#include "arcane/std/internal/TextWriter2.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -119,20 +117,20 @@ writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_uni
   }
 
   String filename = BasicReaderWriterCommon::_getBasicGroupFile(m_path, group_full_name, m_rank);
-  TextWriter2 writer(filename);
+  ofstream writer(filename.localstr(),std::ios::out | std::ios::binary);
 
   // Sauve la liste des unique_ids écrits
   {
     Integer nb_unique_id = written_unique_ids.size();
-    writer.write(asBytes(Span<const Int32>(&nb_unique_id, 1)));
-    writer.write(asBytes(written_unique_ids));
+    binaryWrite(writer,asBytes(Span<const Int32>(&nb_unique_id, 1)));
+    binaryWrite(writer,asBytes(written_unique_ids));
   }
 
   // Sauve la liste des unique_ids souhaités par ce sous-domaine
   {
     Integer nb_unique_id = wanted_unique_ids.size();
-    writer.write(asBytes(Span<const Int32>(&nb_unique_id, 1)));
-    writer.write(asBytes(wanted_unique_ids));
+    binaryWrite(writer,asBytes(Span<const Int32>(&nb_unique_id, 1)));
+    binaryWrite(writer,asBytes(wanted_unique_ids));
   }
 }
 
