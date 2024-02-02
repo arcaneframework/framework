@@ -198,7 +198,8 @@ find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(MPI REQUIRED)
 
 target_link_libraries(alien_core PRIVATE MPI::MPI_CXX)
-target_link_libraries(alien_core PUBLIC Boost::boost)
+target_link_libraries(alien_core PUBLIC Boost::dynamic_linking)
+target_link_libraries(alien_core PUBLIC Boost::program_options)
 
 generate_export_header(alien_core
         EXPORT_MACRO_NAME ALIEN_EXPORT
