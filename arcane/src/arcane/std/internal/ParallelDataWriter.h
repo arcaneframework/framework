@@ -16,17 +16,21 @@
 
 #include "arcane/ArcaneTypes.h"
 
+#include <map>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class IParallelMng;
-class IData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Écrivain parallèle pour faire des sorties par uniqueId() croissant.
+ *
+ * Une instance de cette classe est associée à un groupe du maillage.
+ */
 class ParallelDataWriter
 {
   class Impl;
@@ -41,12 +45,28 @@ class ParallelDataWriter
 
   Int64ConstArrayView sortedUniqueIds() const;
   void setGatherAll(bool v);
-  void sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid);
+  void sort(Int32ConstArrayView local_ids, Int64ConstArrayView items_uid);
   Ref<IData> getSortedValues(IData* data);
 
  private:
 
   Impl* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief liste de 'ParallelDataWriter'.
+ */
+class ParallelDataWriterList
+{
+ public:
+
+  Ref<ParallelDataWriter> getOrCreateWriter(const ItemGroup& group);
+
+ private:
+
+  std::map<ItemGroup, Ref<ParallelDataWriter>> m_data_writers;
 };
 
 /*---------------------------------------------------------------------------*/

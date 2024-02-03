@@ -33,6 +33,25 @@ class ARCANE_CORE_EXPORT IVariableInternal
  public:
 
   virtual ~IVariableInternal() = default;
+
+ public:
+
+  /*!
+   * \brief Calcule de Hash de comparaison pour la variable.
+   *
+   * \a sorted_data doit être trié en fonction des uniqueId() et aussi
+   * par rang du IParallelMng associé à la variable.
+   *
+   * Cette méthode est collective mais seul le rang maitre (celui pour lequel
+   * IParallelMng::isMasterIO() est vrai) retourne un hash valide. Les autres
+   * retournent une chaîne nulle.
+   *
+   * Retourn aussi une chaîne nulle si la donnée n'est pas numérique
+   * (si sorted_data->_commonInternal()->numericData()==nullptr) ou si
+   * la variable n'est pas associée à une entité du maillage.
+   */
+  virtual String computeComparisonHashCollective(IHashAlgorithm* hash_algo,
+                                                 IData* sorted_data) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

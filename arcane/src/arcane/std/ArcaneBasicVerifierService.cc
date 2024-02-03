@@ -15,6 +15,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringBuilder.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/VariableCollection.h"
@@ -25,7 +26,8 @@
 #include "arcane/core/IVariable.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/ServiceFactory.h"
-#include "arcane/utils/ValueConvert.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 #include "arcane/std/internal/BasicReader.h"
 #include "arcane/std/internal/BasicWriter.h"
@@ -104,7 +106,7 @@ class ArcaneBasicVerifierService
     }
     m_full_file_name = s;
   }
-  void _doVerifHash(BasicReader* reader,const VariableCollection& variables);
+  void _doVerifHash(BasicReader* reader, const VariableCollection& variables);
   void _writeReferenceFile(const String& file_name);
 };
 
@@ -197,6 +199,17 @@ doVerifFromReferenceFile(bool parallel_sequential, bool compare_ghost)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+namespace
+{
+  String
+  _getHashValueOrNull(const std::map<String, String>& comparison_hash_map, const String& name)
+  {
+    auto x = comparison_hash_map.find(name);
+    if (x != comparison_hash_map.end())
+      return x->second;
+    return {};
+  }
+} // namespace
 
 void ArcaneBasicVerifierService::
 _doVerifHash(BasicReader* ref_reader, const VariableCollection& variables)
@@ -204,56 +217,66 @@ _doVerifHash(BasicReader* ref_reader, const VariableCollection& variables)
   ISubDomain* sd = subDomain();
   IParallelMng* pm = sd->parallelMng();
   bool is_master = pm->isMasterIO();
-  IVariableMng* vm = subDomain()->variableMng();
-  GroupFinder group_finder(vm);
+  const bool want_parallel = pm->isParallel();
 
-  // Il faut d'abord faire un dump des valeurs courantes pour pouvoir comparer
-  // les hashs.
   info() << "Check Verif Hash";
+  // Récupère l'algorithm de calcul du hash
+  IHashAlgorithm* ref_compare_hash_algo = ref_reader->comparisonHashAlgorithm();
+  if (!ref_compare_hash_algo)
+    // TODO: regarder s'il faut ne rien faire ou s'il faut signaler une erreur.
+    return;
+
+  // Calcul les hash des valeurs courantes des variables
   std::map<String, String> current_comparison_hash_map;
-  {
-    String tmp_dir_name("Test1");
-    {
-      if (is_master) {
-        platform::recursiveCreateDirectory(tmp_dir_name);
-      }
-      pm->barrier();
-      _writeReferenceFile(tmp_dir_name);
+  ParallelDataWriterList parallel_data_writers;
+  info() << "DoVerifHash";
+  for (VariableCollection::Enumerator ivar(variables); ++ivar;) {
+    IVariable* var = *ivar;
+    Ref<IData> allocated_data;
+    IData* data = var->data();
+    // En parallèle, trie les entités par uniqueId() croissant.
+    // En séquentiel c'est toujours le cas.
+    // NOTE: pour l'instant on utilise le IParallelMng global mais il faudrait
+    // vérifier s'il ne faut pas utiliser celui associé au maillage de la
+    // variable courante \a var.
+    if (want_parallel) {
+      // En parallèle, ne compare que les variables sur les entités
+      ItemGroup group = var->itemGroup();
+      if (group.null())
+        continue;
+      Ref<ParallelDataWriter> writer = parallel_data_writers.getOrCreateWriter(group);
+      allocated_data = writer->getSortedValues(data);
+      data = allocated_data.get();
     }
-    {
-      info() << "REREAD_ME";
-      bool want_parallel = pm->isParallel();
-      Ref<BasicReader> current_reader = makeRef(new BasicReader(sd->application(), pm, A_NULL_RANK, tmp_dir_name, want_parallel));
-      current_reader->initialize();
-      current_reader->setItemGroupFinder(&group_finder);
-      current_reader->beginRead(variables);
-      current_reader->fillComparisonHash(current_comparison_hash_map);
-      current_reader->endRead();
-    }
+    String hash_string = var->_internalApi()->computeComparisonHashCollective(ref_compare_hash_algo, data);
+    if (!hash_string.empty())
+      current_comparison_hash_map.try_emplace(var->fullName(), hash_string);
   }
 
   std::map<String, String> ref_comparison_hash_map;
   ref_reader->fillComparisonHash(ref_comparison_hash_map);
   if (is_master) {
+    Int32 nb_variable = 0;
+    Int32 nb_compared = 0;
+    Int32 nb_different = 0;
     for (VariableCollection::Enumerator ivar(variables); ++ivar;) {
       IVariable* var = *ivar;
-      {
-        auto x = ref_comparison_hash_map.find(var->fullName());
-        if (x != ref_comparison_hash_map.end()) {
-          String v = x->second;
-          if (!v.empty())
-            info() << "Found Ref Hash hash=" << v << " var=" << var->fullName();
+      String var_full_name = var->fullName();
+      ++nb_variable;
+      String ref_hash = _getHashValueOrNull(ref_comparison_hash_map, var_full_name);
+      String current_hash = _getHashValueOrNull(current_comparison_hash_map, var_full_name);
+      if (!ref_hash.empty() && !current_hash.empty()) {
+        ++nb_compared;
+        if (ref_hash != current_hash) {
+          info() << "Different hash ref_hash=" << ref_hash << " current=" << current_hash
+                 << " var=" << var_full_name;
+          ++nb_different;
         }
-      }
-      {
-        auto x = current_comparison_hash_map.find(var->fullName());
-        if (x != current_comparison_hash_map.end()) {
-          String v = x->second;
-          if (!v.empty())
-            info() << "Found Current Hash hash=" << x->second << " var=" << var->fullName();
-        }
+        else
+          info(4) << "Found Hash hash=" << ref_hash << " var=" << var_full_name;
       }
     }
+    info() << "NbVariable=" << nb_variable << " nb_compared=" << nb_compared << " nb_different=" << nb_different;
   }
 }
 

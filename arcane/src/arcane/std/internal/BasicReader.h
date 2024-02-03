@@ -73,6 +73,7 @@ class BasicReader
     m_item_group_finder = group_finder;
   }
   void fillComparisonHash(std::map<String, String>& comparison_hash_map);
+  IHashAlgorithm* comparisonHashAlgorithm() const { return m_comparison_hash_algorithm.get(); }
 
  private:
 

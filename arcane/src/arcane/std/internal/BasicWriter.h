@@ -16,6 +16,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/std/internal/BasicReaderWriter.h"
+#include "arcane/std/internal/ParallelDataWriter.h"
 
 #include <map>
 #include <set>
@@ -85,7 +86,7 @@ class BasicWriter
   Ref<IHashAlgorithm> m_hash_algorithm;
   Ref<KeyValueTextWriter> m_text_writer;
 
-  std::map<ItemGroup, Ref<ParallelDataWriter>> m_parallel_data_writers;
+  ParallelDataWriterList m_parallel_data_writers;
   std::set<ItemGroup> m_written_groups;
 
   ScopedPtrT<IGenericWriter> m_global_writer;
