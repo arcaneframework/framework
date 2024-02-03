@@ -20,13 +20,14 @@
 #include "arcane/utils/IDataCompressor.h"
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/IHashAlgorithm.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/IVariable.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IData.h"
-#include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 #include "arcane/std/internal/ParallelDataWriter.h"
 
@@ -170,8 +171,9 @@ _directWriteVal(IVariable* var, IData* data)
 
   Ref<ISerializedData> sdata(write_data->createSerializedDataRef(false));
   String compare_hash;
-  if (is_mesh_variable)
+  if (is_mesh_variable) {
     compare_hash = _computeCompareHash(var, write_data);
+  }
   m_global_writer->writeData(var->fullName(), sdata.get(), compare_hash, m_is_save_values);
 }
 
@@ -195,32 +197,7 @@ _computeCompareHash(IVariable* var, IData* write_data)
   IHashAlgorithm* hash_algo = m_compare_hash_algorithm.get();
   if (!hash_algo)
     return {};
-
-  INumericDataInternal* num_data = write_data->_commonInternal()->numericData();
-  if (!num_data)
-    ARCANE_FATAL("Variable '{0}' is not a numeric variable", var->fullName());
-
-  IParallelMng* pm = m_parallel_mng;
-  Int32 my_rank = pm->commRank();
-  Int32 master_rank = pm->masterIORank();
-  ConstMemoryView memory_view = num_data->memoryView();
-  Int64 nb_element = memory_view.nbElement();
-  Int64 total_nb = m_parallel_mng->reduce(Parallel::ReduceSum, nb_element);
-  info() << "ComputeCompareHash VAR v=" << var->fullName()
-         << " num_data_nb_element=" << nb_element << " total=" << total_nb;
-
-  UniqueArray<Byte> bytes;
-
-  pm->gatherVariable(Arccore::asSpan<Byte>(memory_view.bytes()).smallView(), bytes, master_rank);
-
-  String hash_string;
-  if (my_rank == master_rank) {
-    HashAlgorithmValue hash_value;
-    hash_algo->computeHash(asBytes(bytes), hash_value);
-    hash_string = Convert::toHexaString(asBytes(hash_value.bytes()));
-    info() << "VAR_HASH=" << hash_string << " name=" << var->fullName();
-  }
-  return hash_string;
+  return var->_internalApi()->computeComparisonHashCollective(hash_algo, write_data);
 }
 
 /*---------------------------------------------------------------------------*/
