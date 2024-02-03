@@ -239,6 +239,7 @@ class ARCANE_CORE_EXPORT Variable
   void _checkSetProperty(VariableRef*);
   bool _hasReference() const;
   void _removeMeshReference();
+  String _computeComparisonHashCollective(IData* sorted_data);
 };
 
 /*---------------------------------------------------------------------------*/
