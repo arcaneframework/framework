@@ -563,7 +563,7 @@ computeHash64(Span<const std::byte> input, ByteArray& output)
 Ref<IHashAlgorithmContext> SHA1HashAlgorithm::
 createContext()
 {
-  return makeRef<IHashAlgorithmContext>(new SHA1Algorithm::SHA1());
+  return createRef<SHA1Algorithm::SHA1>();
 }
 
 /*---------------------------------------------------------------------------*/
