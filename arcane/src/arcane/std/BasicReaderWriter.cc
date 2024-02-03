@@ -21,6 +21,7 @@
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/ISerializedData.h"
+#include "arcane/core/MeshUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -101,13 +102,7 @@ _createHashAlgorithm(IApplication* app, const String& name)
 void BasicReaderWriterCommon::
 _fillUniqueIds(const ItemGroup& group, Array<Int64>& uids)
 {
-  Integer nb_item = group.size();
-  uids.clear();
-  uids.reserve(nb_item);
-  ENUMERATE_ITEM (iitem, group) {
-    Int64 uid = iitem->uniqueId();
-    uids.add(uid);
-  }
+  MeshUtils::fillUniqueIds(group.view(),uids);
 }
 
 /*---------------------------------------------------------------------------*/
