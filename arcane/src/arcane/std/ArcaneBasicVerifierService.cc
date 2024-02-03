@@ -199,6 +199,17 @@ doVerifFromReferenceFile(bool parallel_sequential, bool compare_ghost)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+namespace
+{
+  String
+  _getHashValueOrNull(const std::map<String, String>& comparison_hash_map, const String& name)
+  {
+    auto x = comparison_hash_map.find(name);
+    if (x != comparison_hash_map.end())
+      return x->second;
+    return {};
+  }
+} // namespace
 
 void ArcaneBasicVerifierService::
 _doVerifHash(BasicReader* ref_reader, const VariableCollection& variables)
@@ -225,6 +236,9 @@ _doVerifHash(BasicReader* ref_reader, const VariableCollection& variables)
     IData* data = var->data();
     // En parallèle, trie les entités par uniqueId() croissant.
     // En séquentiel c'est toujours le cas.
+    // NOTE: pour l'instant on utilise le IParallelMng global mais il faudrait
+    // vérifier s'il ne faut pas utiliser celui associé au maillage de la
+    // variable courante \a var.
     if (want_parallel) {
       // En parallèle, ne compare que les variables sur les entités
       ItemGroup group = var->itemGroup();
@@ -242,25 +256,27 @@ _doVerifHash(BasicReader* ref_reader, const VariableCollection& variables)
   std::map<String, String> ref_comparison_hash_map;
   ref_reader->fillComparisonHash(ref_comparison_hash_map);
   if (is_master) {
+    Int32 nb_variable = 0;
+    Int32 nb_compared = 0;
+    Int32 nb_different = 0;
     for (VariableCollection::Enumerator ivar(variables); ++ivar;) {
       IVariable* var = *ivar;
-      {
-        auto x = ref_comparison_hash_map.find(var->fullName());
-        if (x != ref_comparison_hash_map.end()) {
-          String v = x->second;
-          if (!v.empty())
-            info() << "Found Ref Hash hash=" << v << " var=" << var->fullName();
+      String var_full_name = var->fullName();
+      ++nb_variable;
+      String ref_hash = _getHashValueOrNull(ref_comparison_hash_map, var_full_name);
+      String current_hash = _getHashValueOrNull(current_comparison_hash_map, var_full_name);
+      if (!ref_hash.empty() && !current_hash.empty()) {
+        ++nb_compared;
+        if (ref_hash != current_hash) {
+          info() << "Different hash ref_hash=" << ref_hash << " current=" << current_hash
+                 << " var=" << var_full_name;
+          ++nb_different;
         }
-      }
-      {
-        auto x = current_comparison_hash_map.find(var->fullName());
-        if (x != current_comparison_hash_map.end()) {
-          String v = x->second;
-          if (!v.empty())
-            info() << "Found Current Hash hash=" << x->second << " var=" << var->fullName();
-        }
+        else
+          info(4) << "Found Hash hash=" << ref_hash << " var=" << var_full_name;
       }
     }
+    info() << "NbVariable=" << nb_variable << " nb_compared=" << nb_compared << " nb_different=" << nb_different;
   }
 }
 
