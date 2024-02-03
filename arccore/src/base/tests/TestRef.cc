@@ -216,6 +216,30 @@ _doTest2()
   }
 }
 
+void _doTest3()
+{
+  Ref<TestBaseType> t0;
+  {
+    auto myx3 = createRef<TestRefOwn>(23, "abc");
+    t0 = myx3;
+    bool is_ok = false;
+    if (myx3)
+      is_ok = true;
+    ASSERT_TRUE(is_ok);
+    ASSERT_FALSE(!myx3);
+    ASSERT_EQ(t0->pa(), 23);
+    ASSERT_EQ(t0->pb(), "abc");
+  }
+  {
+    Ref<TestBaseType> myx4;
+    bool is_null = true;
+    if (myx4)
+      is_null = false;
+    ASSERT_TRUE(is_null);
+    ASSERT_TRUE(!myx4);
+  }
+}
+
 namespace Arccore
 {
 ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(MyTest::TestBaseType);
@@ -230,4 +254,5 @@ TEST(Ref, Misc)
   _doTest1<TestRefOwn,1>();
   _doTest1<TestRefSharedPtr,0>();
   _doTest2();
+  _doTest3();
 }
