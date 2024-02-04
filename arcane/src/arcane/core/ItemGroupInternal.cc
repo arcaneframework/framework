@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupInternal.cc                                        (C) 2000-2023 */
+/* ItemGroupInternal.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Partie interne à Arcane de ItemGroup.                                     */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,8 @@
 #include "arcane/core/internal/ItemGroupInternal.h"
 
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ArrayUtils.h"
 
 #include "arcane/core/ItemGroupObserver.h"
 #include "arcane/core/IItemFamily.h"
@@ -114,6 +116,12 @@ _init()
 
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_APPLYOPERATION", true))
     m_is_debug_apply_operation = (v.value()>0);
+
+  m_is_check_simd_padding = arcaneIsCheck();
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SIMDPADDING", true)){
+    m_is_check_simd_padding = (v.value()>0);
+    m_is_print_check_simd_padding = (v.value()>1);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -267,6 +275,67 @@ checkIsContigous()
   }
   if (!is_bad)
     m_is_contigous = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupInternal::
+applySimdPadding()
+{
+  // Fait un padding des derniers éléments du tableau en recopiant la
+  // dernière valeurs.
+  m_simd_timestamp = timestamp();
+  Arcane::applySimdPadding(mutableItemsLocalId());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit les derniers éléments du groupe pour avoir un vecteur
+ * SIMD complet.
+ *
+ * Pour que la vectorisation fonctionne il faut que le nombre d'éléments
+ * du groupe soit un multiple de la taille d'un vecteur SIMD. Si ce n'est
+ * pas le cas, on remplit les dernières valeurs du tableau des localId()
+ * avec le dernier élément.
+ *
+ * Par exemple, on supporse une taille d'un vecteur SIMD de 8 (ce qui est le maximum
+ * actuellement avec l'AVX512) et un groupe \a grp de 13 éléments. Il faut donc
+ * remplit le groupe comme suit:
+ * \code
+ * Int32 last_local_id = grp[12];
+ * grp[13] = grp[14] = grp[15] = last_local_id.
+ * \endcode
+ *
+ * A noter que la taille du groupe reste effectivement de 13 éléments. Le
+ * padding supplémentaire n'est que pour les itérations via ENUMERATE_SIMD.
+ * Comme le tableau des localId() est alloué avec l'allocateur d'alignement
+ * il est garanti que la mémoire allouée est suffisante pour faire le padding.
+ *
+ * \todo Ne pas faire cela dans tous les checkNeedUpdate() mais mettre
+ * en place une méthode qui retourne un énumérateur spécifique pour
+ * la vectorisation.
+ */
+void ItemGroupInternal::
+checkUpdateSimdPadding()
+{
+  if (m_simd_timestamp >= timestamp()){
+    // Vérifie que le padding est bon
+    if (m_is_check_simd_padding){
+      if (m_is_print_check_simd_padding && m_item_family){
+        ITraceMng* tm = m_item_family->traceMng();
+        tm->info() << "check padding name=" << fullName()
+                   << " timestamp=" << timestamp()
+                   << " simd_timestamp=" << m_simd_timestamp
+                   << " size=" << mutableItemsLocalId().size()
+                   << " capacity=" << mutableItemsLocalId().capacity();
+      }
+      ArrayUtils::checkSimdPadding(itemsLocalId());
+    }
+    return;
+  }
+  this->applySimdPadding();
 }
 
 /*---------------------------------------------------------------------------*/

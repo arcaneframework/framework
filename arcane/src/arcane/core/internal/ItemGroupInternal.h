@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupInternal.h                                         (C) 2000-2023 */
+/* ItemGroupInternal.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Partie interne à Arcane de ItemGroup.                                     */
 /*---------------------------------------------------------------------------*/
@@ -93,6 +93,11 @@ class ItemGroupInternal
     m_need_recompute = true;
   }
 
+  //! Applique le padding pour la vectorisation
+  void applySimdPadding();
+
+  void checkUpdateSimdPadding();
+
  public:
 
   IMesh* m_mesh; //!< Gestionnare de groupe associé
@@ -104,9 +109,11 @@ class ItemGroupInternal
   eItemKind m_kind; //!< Genre de entités du groupe
   String m_name; //!< Nom du groupe
   bool m_is_own = false; //!< \a true si groupe local.
+
  private:
 
   Int64 m_timestamp = -1; //!< Temps de la derniere modification
+
  public:
 
   Int64 m_simd_timestamp = -1; //!< Temps de la derniere modification pour le calcul des infos SIMD
@@ -167,10 +174,12 @@ class ItemGroupInternal
   Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
   VariableArrayInt32* m_variable_items_local_id = nullptr;
   bool m_is_contigous = false; //! Vrai si les localIds sont consécutifs.
+  bool m_is_check_simd_padding = true;
+  bool m_is_print_check_simd_padding = false;
 
  private:
 
-  // TODO: Mettre cela dans une classe spécifique ce qui permettre
+  // TODO: Mettre cela dans une classe spécifique ce qui permettra
   // de l'utiliser par exemple pour ItemVector
 
   //! Gestion pour applyOperation() Version 2
