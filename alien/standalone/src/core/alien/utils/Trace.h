@@ -30,7 +30,7 @@ namespace Alien
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void alien_debug(T&& t)
+void alien_debug([[maybe_unused]] T&& t)
 {
 #ifndef NDEBUG
   if (Universe().traceMng() == nullptr)
@@ -42,7 +42,7 @@ void alien_debug(T&& t)
 /*---------------------------------------------------------------------------*/
 
 template <typename T>
-void alien_debug(bool flag, T&& t)
+void alien_debug([[maybe_unused]] bool flag, [[maybe_unused]] T&& t)
 {
 #ifndef NDEBUG
   if (not flag)
