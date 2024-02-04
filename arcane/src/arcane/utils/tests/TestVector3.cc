@@ -46,6 +46,7 @@ TEST(TestVector3, Misc)
     Int64x3 v5(2, 7, 2);
     ASSERT_TRUE(v3 < v2);
     ASSERT_TRUE(v4 < v2);
+    ASSERT_TRUE(v4 < v5);
   }
   {
     Int64x3 v1({ 1 });

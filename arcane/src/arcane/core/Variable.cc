@@ -276,8 +276,9 @@ public:
 
     if (group_size != (old_size-removed_lids.size()))
       ARCANE_FATAL("Inconsitent reduced size {0} vs {1}",group_size,old_size);
-    ItemVectorView view = group.view();
-    Int32UniqueArray source, destination;
+    [[maybe_unused]] ItemVectorView view = group.view();
+    Int32UniqueArray source;
+    Int32UniqueArray destination;
     source.reserve(group_size);
     destination.reserve(group_size);
     for(Integer i=0,index=0,removed_index=0; i<old_size ;++i) {

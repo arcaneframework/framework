@@ -31,6 +31,10 @@ class ARCANE_UTILS_EXPORT IMemoryCopier
 {
  public:
 
+  virtual ~IMemoryCopier() = default;
+
+ public:
+
   /*!
    * \brief Copie les données de \a from vers \a to avec la queue \a queue.
    *

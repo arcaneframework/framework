@@ -586,8 +586,8 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   // élément si on utilise un allocateur spécifique ce qui est le cas
   // pour les variables.
   Int64 capacity = value_internal->capacity();
-  ARCANE_ASSERT((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment()),
-                ("Wrong unused data size %d",capacity));
+  if ( !((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment())) )
+    ARCANE_FATAL("Wrong unused data size {0}",capacity);
 }
 
 /*---------------------------------------------------------------------------*/

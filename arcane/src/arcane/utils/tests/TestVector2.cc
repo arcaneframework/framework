@@ -42,6 +42,7 @@ TEST(TestVector2, Misc)
     Int64x2 v5(2, 7);
     ASSERT_TRUE(v3 < v2);
     ASSERT_TRUE(v4 < v2);
+    ASSERT_TRUE(v4 < v5);
   }
   {
     Int64x2 v2({1});

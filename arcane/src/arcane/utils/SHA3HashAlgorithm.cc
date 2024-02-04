@@ -59,10 +59,6 @@ namespace Arcane::SHA3Algorithm
 namespace
 {
   // constants
-  constexpr int sha3_224_hash_size = 28;
-  constexpr int sha3_256_hash_size = 32;
-  constexpr int sha3_384_hash_size = 48;
-  constexpr int sha3_512_hash_size = 64;
   constexpr int sha3_max_permutation_size = 25;
   constexpr int sha3_max_rate_in_qwords = 24;
 

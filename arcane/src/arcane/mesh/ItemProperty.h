@@ -188,7 +188,9 @@ class ItemMultiArrayProperty
 
   // nb_element per item est de taille IItemFamily::maxLocalId
   template <class AbstractFamily>
-  void resize(AbstractFamily* item_family, const Arcane::IntegerConstArrayView nb_element_per_item, const DataType default_value) // SDC Template AbstractFamily necessaire pour applications IFPEN
+  void resize([[maybe_unused]] AbstractFamily* item_family,
+              const Arcane::IntegerConstArrayView nb_element_per_item,
+              const DataType default_value) // SDC Template AbstractFamily necessaire pour applications IFPEN
   {
     ARCANE_ASSERT((nb_element_per_item.size() == item_family->maxLocalId()),
                   ("In item property resize : nb_element_per_item must have size IItemFamilyy::maxLocalId"))

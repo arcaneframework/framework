@@ -243,7 +243,7 @@ _onlyFirstBitUsed(const Type id)
 {
   ARCANE_ASSERT((Nbit > 0),("Error template parameter Nbit <= 0"));
 
-  const Integer nb_bit_max = (Integer)(8*sizeof(Type));
+  [[maybe_unused]] const Integer nb_bit_max = (Integer)(8*sizeof(Type));
 
   ARCANE_ASSERT((Nbit < nb_bit_max),("Error 8*sizeof(Type) <= Nbit"));
 

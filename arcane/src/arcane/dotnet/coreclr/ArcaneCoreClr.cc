@@ -95,7 +95,7 @@ namespace
   }
   Arcane::String _toArcaneString(const char_t* x)
   {
-    return Arcane::String(x,true);
+    return Arcane::String(Arcane::StringView(x));
   }
 } // namespace
 
