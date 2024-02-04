@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SerializedData.cc                                           (C) 2000-2022 */
+/* SerializedData.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Donnée sérialisée.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -401,9 +401,8 @@ arcaneCreateSerializedDataRef(eDataType data_type, Int64 memory_size,
                               Integer nb_dim, Int64 nb_element, Int64 nb_base_element,
                               bool is_multi_size, Int64ConstArrayView dimensions, const ArrayShape& shape)
 {
-  auto* x = new SerializedData(data_type, memory_size, nb_dim, nb_element,
-                               nb_base_element, is_multi_size, dimensions, shape);
-  return makeRef(x);
+  return createRef<SerializedData>(data_type, memory_size, nb_dim, nb_element,
+                                   nb_base_element, is_multi_size, dimensions, shape);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -426,7 +425,7 @@ extern "C++" ARCANE_CORE_EXPORT
 Ref<ISerializedData>
 arcaneCreateEmptySerializedDataRef()
 {
-  return makeRef(new SerializedData());
+  return createRef<SerializedData>();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -16,6 +16,7 @@
 
 #include "arcane/core/IParallelMng.h"
 #include "arccore/base/ReferenceCounterImpl.h"
+#include "arccore/message_passing/MessagePassingMng.h"
 
 #include <atomic>
 
