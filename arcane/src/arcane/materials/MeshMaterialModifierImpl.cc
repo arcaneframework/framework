@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialModifierImpl.cc                                 (C) 2000-2023 */
+/* MeshMaterialModifierImpl.cc                                 (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -115,12 +115,12 @@ initOptimizationFlags()
   m_use_incremental_recompute = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute)!=0;
   if (m_use_incremental_recompute){
     m_allow_optimize_multiple_operation = true;
-    m_allow_optimize_multiple_material = true;
   }
 
   info() << "MeshMaterialModifier::optimization: "
          << " allow?=" << m_allow_optimization
          << " allow_multiple?=" << m_allow_optimize_multiple_operation
+         << " allow_multiple_mat?=" << m_allow_optimize_multiple_material
          << " use_incremental_recompute?=" << m_use_incremental_recompute;
 }
 
