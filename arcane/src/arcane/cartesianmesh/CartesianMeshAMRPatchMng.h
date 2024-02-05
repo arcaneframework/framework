@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshAMRPatchMng.h                                  (C) 2000-2023 */
+/* CartesianMeshAMRPatchMng.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de l'AMR par patch d'un maillage cartésien.                  */
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ class CartesianMeshAMRPatchMng
 , public ICartesianMeshAMRPatchMng
 {
  public:
-  CartesianMeshAMRPatchMng(ICartesianMesh* mesh);
+  explicit CartesianMeshAMRPatchMng(ICartesianMesh* mesh);
 
  public:
   void flagCellToRefine(Int32ConstArrayView cells_lids) override;
@@ -48,7 +48,6 @@ class CartesianMeshAMRPatchMng
   void refine() override;
 
  private:
-  ICartesianMesh* m_cmesh;
   IMesh* m_mesh;
   Ref<ICartesianMeshNumberingMng> m_num_mng;
 };
