@@ -223,6 +223,9 @@ ConstituentConnectivityList::
 void ConstituentConnectivityList::
 endCreate(bool is_continue)
 {
+  // Maintenant (février 2024) on construit toujours les connectivités incrémentales
+  const bool always_build_connectivity = true;
+
   // S'enregistre auprès la famille pour être notifié des évolutions
   // mais uniquement si on a demandé le support des modifications incrémentales
   // pour éviter de consommer inutilement de la mémoire.
@@ -231,9 +234,10 @@ endCreate(bool is_continue)
   {
     int opt_flag_value = m_material_mng->modificationFlags();
     bool use_incremental = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute) != 0;
-    if (use_incremental) {
+    if (use_incremental || always_build_connectivity) {
       m_cell_family->_internalApi()->addSourceConnectivity(this);
       m_is_active = true;
+      info() << "Activating incremental material connectivities";
     }
   }
   if (!is_continue) {
