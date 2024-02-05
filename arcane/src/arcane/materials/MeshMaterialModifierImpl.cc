@@ -115,12 +115,12 @@ initOptimizationFlags()
   m_use_incremental_recompute = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute)!=0;
   if (m_use_incremental_recompute){
     m_allow_optimize_multiple_operation = true;
-    m_allow_optimize_multiple_material = true;
   }
 
   info() << "MeshMaterialModifier::optimization: "
          << " allow?=" << m_allow_optimization
          << " allow_multiple?=" << m_allow_optimize_multiple_operation
+         << " allow_multiple_mat?=" << m_allow_optimize_multiple_material
          << " use_incremental_recompute?=" << m_use_incremental_recompute;
 }
 
