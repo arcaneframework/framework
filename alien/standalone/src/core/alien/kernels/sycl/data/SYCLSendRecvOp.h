@@ -139,13 +139,8 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
                      {
                        auto access_send_buffer = m_send_buffer.template get_access<sycl::access::mode::read>(cgh);
                        auto access_ids         = m_send_ids.template get_access<sycl::access::mode::read>(cgh);
-#define USE_ONEAPI
-#ifdef USE_HIPSYCL
-                       sycl::accessor<ValueType> access_sbuffer{sbuffer, cgh, , sycl::property::no_init{}};
-#endif
-#ifdef USE_ONEAPI
                        auto access_sbuffer = sycl::accessor(sbuffer, cgh, sycl::write_only, sycl::property::no_init{});
-#endif
+                       auto access_sbuffer = sycl::accessor(sbuffer, cgh, sycl::write_only, sycl::property::no_init{});
 
                        cgh.parallel_for<class vector_mult_send>(sycl::range<1>{total_threads},
                                                                 [=] (sycl::item<1> itemId)

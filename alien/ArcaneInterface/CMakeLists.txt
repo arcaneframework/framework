@@ -139,6 +139,10 @@ enable_testing()
 message_separator()
 logStatus("Loading components...")
 
+IF(ALIEN_USE_INTELSYCL)
+	set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER)
+ENDIF()
+
 add_subdirectory(modules/options)
 add_subdirectory(modules/external_packages)
 add_subdirectory(modules/trilinos)

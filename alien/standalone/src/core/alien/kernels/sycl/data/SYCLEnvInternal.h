@@ -45,11 +45,7 @@ namespace SYCLInternal
   struct ALIEN_EXPORT EnvInternal
   {
     EnvInternal()
-#ifdef USE_SYCL2020
     : m_queue(sycl::gpu_selector{})
-#else
-    : m_queue(m_device_selector)
-#endif
     {
       printPlatformInfo();
 
@@ -90,7 +86,6 @@ namespace SYCLInternal
 
     int printPlatformInfo()
     {
-
       // Loop over all available SYCL platforms.
       for (const sycl::platform& platform :
            sycl::platform::get_platforms()) {
@@ -127,10 +122,7 @@ namespace SYCLInternal
     }
 
     // clang-format off
-#ifdef USE_SYCL2020
-#else
-    sycl::default_selector     m_device_selector;
-#endif
+    //sycl::default_selector     m_device_selector;
     sycl::queue                m_queue;
     std::size_t                m_max_num_groups      = 0 ;
     std::size_t                m_max_work_group_size = 0 ;

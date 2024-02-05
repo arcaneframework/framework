@@ -105,8 +105,11 @@ AlienBenchModule::init()
   m_lambdaz = options()->lambdaz();
   m_alpha = options()->alpha();
 
-  Alien::ILinearSolver* solver = options()->linearSolver();
-  solver->init();
+  if(options()->linearSolver.size()>0)
+  {
+    Alien::ILinearSolver* solver = options()->linearSolver[0];
+    solver->init();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -747,7 +750,7 @@ AlienBenchModule::test()
   }
   else
   {
-    Alien::ILinearSolver* solver = options()->linearSolver();
+    Alien::ILinearSolver* solver = options()->linearSolver[0];
     solver->init();
 #ifdef ALIEN_USE_TRILINOS
       if(solver->getBackEndName().contains("tpetraserial"))
@@ -926,7 +929,7 @@ AlienBenchModule::test()
     Alien::RedistributedVector rr(vectorR, redist);
     rbuild_timer.stop();
     if (keep_proc) {
-      auto solver = options()->linearSolver();
+      auto solver = options()->linearSolver[0];
       // solver->updateParallelMng(Aa.distribution().parallelMng());
       solver->init();
       {

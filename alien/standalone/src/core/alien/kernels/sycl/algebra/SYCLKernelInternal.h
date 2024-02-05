@@ -542,7 +542,6 @@ class KernelInternal
                       auto access_y = y.template get_access<sycl::access::mode::read>(h);
 
                       sycl::accessor access_sum {sum, h};
-#define USE_ONEAPI
 #ifdef USE_HIPSYCL
                       auto sumReduction = sycl::reduction(access_sum, sycl::plus<T>());
 #endif

@@ -131,7 +131,7 @@
       <description>number of solver resolution</description>
     </simple>
     
-    <service-instance name="linear-solver" type="Alien::ILinearSolver">
+    <service-instance name="linear-solver" type="Alien::ILinearSolver"  minOccurs="0" maxOccurs="1">
        <description>Service solveur</description>
     </service-instance>
     
