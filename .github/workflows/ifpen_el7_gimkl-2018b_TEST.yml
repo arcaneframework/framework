@@ -185,10 +185,14 @@ jobs:
       - name: Test
         id: test
         shell: bash
+        #run: |
+        #  ulimit -c unlimited
+        #  env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '^(hydro5_4proc_3sd_4proc|alien.interface.c.seq.mpi-1|alien.interface.fortran.seq.mpi-1)$' -R 'alien.test.petsc'
         run: |
-          ulimit -c unlimited
-          env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '^(hydro5_4proc_3sd_4proc|alien.interface.c.seq.mpi-1|alien.interface.fortran.seq.mpi-1)$' -R 'alien.test.petsc'
-
+           export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
+           cd /__w/framework/framework/build/_common/build_all/alien/ArcaneInterface/test/Tests/MoveSemantic/AlienTest
+           /__w/framework/framework/build/_common/build_all/alien/ArcaneInterface/bin/alien_test.exe" "--nx=10" "--ny=10" "--solver-package=petsc" "--solver=bicgs" "--precond=bjacobi" "--tol=1.e-10" "--max-iter=100" "--builder=1"
+           #strace env LD_LIBRARY_PATH="./_common/build_all/alien/standalone/src/movesemantic:./_common/build_all/alien/ArcaneInterface/lib:./lib:./_common/build_all/alien/standalone/src/core:./extlib:$LD_LIBRARY_PATH" _common/build_all/alien/ArcaneInterface/bin/alien_test.exe 2>&1 |tee strace.log
       - name: Upload test artifact
         id: upload-test-artifact
         uses: actions/upload-artifact@v3
