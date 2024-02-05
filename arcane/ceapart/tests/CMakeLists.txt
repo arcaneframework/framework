@@ -296,7 +296,7 @@ ARCANE_ADD_TEST_SEQUENTIAL(geometric1 testGeometric-1.arc)
 
 # Material Heat
 foreach(test_index 1 2 3)
-  foreach(opt_level 0 3 7 15)
+  foreach(opt_level 0 3 7 11 15)
     set(TEST_MODIFICATION_FLAG ${opt_level})
 
     # Test sans équilibrage
