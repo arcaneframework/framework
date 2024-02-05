@@ -251,18 +251,13 @@ void SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx,
 
   auto& dist = vx.distribution();
   if (dist.isParallel()) {
-    using namespace Arccore::MessagePassing::Mpi;
-    res.get();
+    Real local_value = res() ;
     Real* x = &res();
-    auto pm = dist.parallelMng();
-    auto type_dispatcher = pm->dispatchers()->dispatcher(x);
-    MpiTypeDispatcher<Real>* ptr = dynamic_cast<MpiTypeDispatcher<Real>*>(type_dispatcher);
-    if (ptr) {
-      auto datatype = ptr->datatype();
-      auto op = datatype->reduceOperator(Arccore::MessagePassing::ReduceSum);
-      auto request = ptr->adapter()->nonBlockingAllReduce(x, x, 1, datatype->datatype(), op);
-      res.addRequest(pm, request);
-    }
+    auto request = mpNonBlockingAllReduce(dist.parallelMng(),
+                                          Arccore::MessagePassing::ReduceSum,
+                                          Arccore::ConstArrayView<Real>(1,&local_value),
+                                          Arccore::ArrayView<Real>(1,x)) ;
+    res.addRequest(dist.parallelMng(), request);
   }
 }
 

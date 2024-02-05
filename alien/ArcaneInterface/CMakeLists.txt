@@ -140,7 +140,7 @@ message_separator()
 logStatus("Loading components...")
 
 IF(ALIEN_USE_INTELSYCL)
-	set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER)
+  set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
 ENDIF()
 
 add_subdirectory(modules/options)
