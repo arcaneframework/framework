@@ -114,10 +114,10 @@ jobs:
       #   shell: bash
       #   run: ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -R "refmvhandlers.scalar.Direct" -V
 
-      - name TestValgrind
+      - name: TestValgrind
         id: test-valgrind
         shell: bash
-        run valgrind --tool=memcheck /__w/framework/framework/build/_common/build_all/alien/ArcaneInterface/bin/refmvhandlers.ScalarDirect "--size=100" "--solver-package=petsc" "--solver=lu"
+        run: valgrind --tool=memcheck /__w/framework/framework/build/_common/build_all/alien/ArcaneInterface/bin/refmvhandlers.ScalarDirect "--size=100" "--solver-package=petsc" "--solver=lu"
 
       - name: Upload test artifact
         id: upload-test-artifact
