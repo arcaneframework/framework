@@ -3,7 +3,7 @@ project(HydroAccelerator LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 
-add_executable(HydroAccelerator SimpleHydroAcceleratorService.cc ModuleSimpleHydroGeneric.cc main.cc SimpleHydro_axl.h)
+add_executable(HydroAccelerator SimpleHydroAcceleratorService.cc SimpleHydroAcceleratorMQService.cc ModuleSimpleHydroGeneric.cc main.cc SimpleHydro_axl.h)
 
 arcane_generate_axl(SimpleHydro)
 arcane_add_arcane_libraries_to_target(HydroAccelerator)
@@ -13,7 +13,7 @@ configure_file(HydroAccelerator.arc ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 # Partie spécifique accélérateur
 arcane_accelerator_enable()
-arcane_accelerator_add_source_files(SimpleHydroAcceleratorService.cc)
+arcane_accelerator_add_source_files(SimpleHydroAcceleratorService.cc SimpleHydroAcceleratorMQService.cc SimpleHydroAcceleratorDQService.cc)
 arcane_accelerator_add_to_target(HydroAccelerator)
 
 # Ajout des tests
