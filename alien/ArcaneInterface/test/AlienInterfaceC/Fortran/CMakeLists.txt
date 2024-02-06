@@ -19,6 +19,10 @@ linkLibraries(alien_interface_fortran.exe
         alien_ifpen_solvers
         )
 
+if (TARGET intel)
+    linkLibraries(gtest.refmvhandlers intel)
+endif ()
+
 if (TARGET trilinos)
     linkLibraries(alien_interface_fortran.exe alien_trilinos)
 endif ()

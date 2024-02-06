@@ -198,13 +198,17 @@ find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(MPI REQUIRED)
 
 target_link_libraries(alien_core PRIVATE MPI::MPI_CXX)
-target_link_libraries(alien_core PUBLIC Boost::boost)
+target_link_libraries(alien_core PUBLIC Boost::dynamic_linking)
+target_link_libraries(alien_core PUBLIC Boost::program_options)
 
 generate_export_header(alien_core
         EXPORT_MACRO_NAME ALIEN_EXPORT
         EXPORT_FILE_NAME alien/AlienExport.h)
 
 target_link_libraries(alien_core PUBLIC alien_headers)
+
+find_package(BLAS REQUIRED)
+target_link_libraries(alien_core PUBLIC BLAS::BLAS)
 
 install(DIRECTORY alien
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}

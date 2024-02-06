@@ -15,7 +15,7 @@ endif ()
 
 loadPackage(NAME MPI   ESSENTIAL)
 loadPackage(NAME Boost ESSENTIAL)
-loadPackage(NAME GTest ESSENTIAL)
+loadPackage(NAME GTest)
 
 set(MPI_ROOT ${MPI_ROOT_PATH})
 
