@@ -71,8 +71,7 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 
 // Valeurs des références pour la validation
-
-double reference_density_ratio_maximum[50] =
+double mq_reference_density_ratio_maximum[50] =
 {
   0.0160000000000123,  0.00170124869728498, 0.00204753556227649, 0.00246464898229085, 0.00296699303969296,
   0.00357184605321602, 0.00429990753718348, 0.00517593569890155, 0.00622948244180328, 0.00749572737143143,
@@ -86,7 +85,7 @@ double reference_density_ratio_maximum[50] =
   0.0741457462067702,  0.0730964375784472,  0.0682069575016942,  0.0596677042759776,  0.0543168109309979
 };
 
-double reference_global_deltat[50] =
+double mq_reference_global_deltat[50] =
 {
   0.000000000000000e+00, 1.000000000000000e-04, 1.100000000000000e-04, 1.210000000000000e-04, 1.331000000000000e-04,
   1.464100000000001e-04, 1.610510000000001e-04, 1.771561000000001e-04, 1.948717100000001e-04, 2.143588810000001e-04,
@@ -99,7 +98,6 @@ double reference_global_deltat[50] =
   6.706540214144399e-04, 6.723370623794280e-04, 6.751721250357102e-04, 6.790835285303133e-04, 6.783102389627785e-04,
   6.765647969871316e-04, 6.753134577141526e-04, 6.751179527299745e-04, 6.762828720782492e-04, 6.789494792300497e-04
 };
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -376,7 +374,7 @@ hydroStartInit()
   // Cela permet de garantir avec les accélérateurs qu'on pourra accéder
   // de manière concurrente aux données.
   {
-    bool use_multiple_queue = options()->useMultipleQueueForBoundaryConditions;
+    bool use_multiple_queue = true ;
     info() << "Using multiple queue for boundary conditions ? = " << use_multiple_queue;
     m_boundary_conditions.clear();
     for( auto bc : m_module->getBoundaryConditions() ){
@@ -669,7 +667,7 @@ updateDensity()
       Integer iteration = m_global_iteration();
       if (iteration<=50){
         Real max_dr = m_density_ratio_maximum();
-        Real ref_max_dr = reference_density_ratio_maximum[iteration-1];
+        Real ref_max_dr = mq_reference_density_ratio_maximum[iteration-1];
         if (!math::isNearlyEqualWithEpsilon(max_dr,ref_max_dr,1.0e-12))
           ARCANE_FATAL("Bad value for density_ratio_maximum: ref={0} v={1} diff={2}",
                        ref_max_dr,max_dr,(ref_max_dr-max_dr)/ref_max_dr);
@@ -784,7 +782,7 @@ computeDeltaT()
   if (m_module->isCheckNumericalResult()){
     Integer iteration = m_global_iteration();
     if (iteration<25){
-      Real ref_new_dt = reference_global_deltat[iteration];
+      Real ref_new_dt = mq_reference_global_deltat[iteration];
       if (!math::isNearlyEqual(new_dt,ref_new_dt))
         ARCANE_FATAL("Bad value for 'new_dt' ref={0} v={1} diff={2}",
                      ref_new_dt,new_dt,(new_dt-ref_new_dt)/ref_new_dt);

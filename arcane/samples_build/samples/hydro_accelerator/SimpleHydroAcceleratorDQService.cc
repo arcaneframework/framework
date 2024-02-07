@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleHydroAcceleratorMQService.cc                            (C) 2000-2020 */
+/* SimpleHydroAcceleratorDQService.cc                            (C) 2000-2020 */
 /*                                                                           */
 /* Hydrodynamique simplifiée utilisant les accélerateurs.                    */
 /*---------------------------------------------------------------------------*/
@@ -72,7 +72,7 @@ using namespace Arcane;
 
 // Valeurs des références pour la validation
 
-double reference_density_ratio_maximum[50] =
+double dq_reference_density_ratio_maximum[50] =
 {
   0.0160000000000123,  0.00170124869728498, 0.00204753556227649, 0.00246464898229085, 0.00296699303969296,
   0.00357184605321602, 0.00429990753718348, 0.00517593569890155, 0.00622948244180328, 0.00749572737143143,
@@ -86,7 +86,7 @@ double reference_density_ratio_maximum[50] =
   0.0741457462067702,  0.0730964375784472,  0.0682069575016942,  0.0596677042759776,  0.0543168109309979
 };
 
-double reference_global_deltat[50] =
+double dq_reference_global_deltat[50] =
 {
   0.000000000000000e+00, 1.000000000000000e-04, 1.100000000000000e-04, 1.210000000000000e-04, 1.331000000000000e-04,
   1.464100000000001e-04, 1.610510000000001e-04, 1.771561000000001e-04, 1.948717100000001e-04, 2.143588810000001e-04,
@@ -99,7 +99,6 @@ double reference_global_deltat[50] =
   6.706540214144399e-04, 6.723370623794280e-04, 6.751721250357102e-04, 6.790835285303133e-04, 6.783102389627785e-04,
   6.765647969871316e-04, 6.753134577141526e-04, 6.751179527299745e-04, 6.762828720782492e-04, 6.789494792300497e-04
 };
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -110,7 +109,7 @@ double reference_global_deltat[50] =
  * parallèle, avec une pseudo-viscosité aux mailles en utilisant
  * les classes de vectorisation fournies par Arcane.
  */
-class SimpleHydroAcceleratorMQService
+class SimpleHydroAcceleratorDQService
 : public BasicService
 , public ISimpleHydroService
 {
@@ -133,8 +132,8 @@ class SimpleHydroAcceleratorMQService
  public:
 
   //! Constructeur
-  SimpleHydroAcceleratorMQService(const ServiceBuildInfo& sbi);
-  ~SimpleHydroAcceleratorMQService(); //!< Destructeur
+  SimpleHydroAcceleratorDQService(const ServiceBuildInfo& sbi);
+  ~SimpleHydroAcceleratorDQService(); //!< Destructeur
 
  public:
   
@@ -217,8 +216,8 @@ class SimpleHydroAcceleratorMQService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SimpleHydroAcceleratorMQService::
-SimpleHydroAcceleratorMQService(const ServiceBuildInfo& sbi)
+SimpleHydroAcceleratorDQService::
+SimpleHydroAcceleratorDQService(const ServiceBuildInfo& sbi)
 : BasicService(sbi)
 , m_cell_unique_id (VariableBuildInfo(sbi.mesh(),"UniqueId"))
 , m_sub_domain_id (VariableBuildInfo(sbi.mesh(),"SubDomainId"))
@@ -255,15 +254,15 @@ SimpleHydroAcceleratorMQService(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SimpleHydroAcceleratorMQService::
-~SimpleHydroAcceleratorMQService()
+SimpleHydroAcceleratorDQService::
+~SimpleHydroAcceleratorDQService()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 hydroBuild()
 {
   info() << "Using hydro with accelerator";
@@ -273,7 +272,7 @@ hydroBuild()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 hydroExit()
 {
   info() << "Hydro exit entry point";
@@ -284,7 +283,7 @@ hydroExit()
 /*!
  * \brief Initialisation du module hydro lors du démarrage du cas.
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 hydroStartInit()
 {
   info() << "START_INIT sizeof(ItemLocalId)=" << sizeof(ItemLocalId);
@@ -374,7 +373,7 @@ hydroStartInit()
   // Cela permet de garantir avec les accélérateurs qu'on pourra accéder
   // de manière concurrente aux données.
   {
-    bool use_multiple_queue = options()->useMultipleQueueForBoundaryConditions;
+    bool use_multiple_queue = true ;
     info() << "Using multiple queue for boundary conditions ? = " << use_multiple_queue;
     m_boundary_conditions.clear();
     for( auto bc : m_module->getBoundaryConditions() ){
@@ -400,7 +399,7 @@ hydroStartInit()
 /*!
  * \brief Calcul des forces au temps courant \f$t^{n}\f$
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 computeForces()
 {
   // Calcul pour chaque noeud de chaque maille la contribution
@@ -429,7 +428,7 @@ computeForces()
 /*!
  * \brief Pseudo viscosité scalaire aux mailles
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 _computePressureAndCellPseudoViscosityForces()
 {
   Real linear_coef = m_module->getViscosityLinearCoef();
@@ -504,7 +503,7 @@ _computePressureAndCellPseudoViscosityForces()
 /*!
  * \brief Calcul de l'impulsion (phase2).
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 computeVelocity()
 {
   m_force.synchronize();
@@ -530,7 +529,7 @@ computeVelocity()
 /*!
  * \brief Calcul de l'impulsion (phase3).
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 computeViscosityWork()
 {
   auto command = makeCommand(m_default_queue);
@@ -561,7 +560,7 @@ computeViscosityWork()
 /*!
  * \brief Prise en compte des conditions aux limites.
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 applyBoundaryCondition()
 {
   auto queue = makeQueue(m_runner);
@@ -604,7 +603,7 @@ applyBoundaryCondition()
 /*
  * \brief Déplace les noeuds.
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 moveNodes()
 {
   auto command = makeCommand(m_default_queue);
@@ -626,7 +625,7 @@ moveNodes()
  * \brief Mise à jour des densités et calcul de l'accroissements max
  *	  de la densité sur l'ensemble du maillage.
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 updateDensity()
 {
   auto command = makeCommand(m_default_queue);
@@ -658,7 +657,7 @@ updateDensity()
       Integer iteration = m_global_iteration();
       if (iteration<=50){
         Real max_dr = m_density_ratio_maximum();
-        Real ref_max_dr = reference_density_ratio_maximum[iteration-1];
+        Real ref_max_dr = dq_reference_density_ratio_maximum[iteration-1];
         if (!math::isNearlyEqualWithEpsilon(max_dr,ref_max_dr,1.0e-12))
           ARCANE_FATAL("Bad value for density_ratio_maximum: ref={0} v={1} diff={2}",
                        ref_max_dr,max_dr,(ref_max_dr-max_dr)/ref_max_dr);
@@ -673,7 +672,7 @@ updateDensity()
  * \brief Applique l'équation d'état et calcul l'énergie interne et la
  * pression.
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 applyEquationOfState()
 {
   auto command = makeCommand(m_default_queue);
@@ -721,7 +720,7 @@ applyEquationOfState()
 /*!
  * \brief Calcul des nouveaux pas de temps.
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 computeDeltaT()
 {
   const Real old_dt = m_global_deltat();
@@ -771,7 +770,7 @@ computeDeltaT()
   if (m_module->isCheckNumericalResult()){
     Integer iteration = m_global_iteration();
     if (iteration<25){
-      Real ref_new_dt = reference_global_deltat[iteration];
+      Real ref_new_dt = dq_reference_global_deltat[iteration];
       if (!math::isNearlyEqual(new_dt,ref_new_dt))
         ARCANE_FATAL("Bad value for 'new_dt' ref={0} v={1} diff={2}",
                      ref_new_dt,new_dt,(new_dt-ref_new_dt)/ref_new_dt);
@@ -804,7 +803,7 @@ computeDeltaT()
  *
  * La méthode utilisée est celle du découpage en quatre triangles.
  */
-ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorMQService::
+ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorDQService::
 computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
 {
   const Real3 c0 = face_coord[0];
@@ -880,7 +879,7 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
  * \brief Calcul du volume des mailles, des longueurs caractéristiques
  * et des résultantes aux sommets.
  */
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 computeGeometricValues()
 {
   auto command = makeCommand(m_default_queue);
@@ -953,7 +952,7 @@ computeGeometricValues()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 hydroInit()
 {
   if (m_module->getBackwardIteration()!=0){
@@ -969,7 +968,7 @@ hydroInit()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleHydroAcceleratorMQService::
+void SimpleHydroAcceleratorDQService::
 _computeNodeIndexInCells()
 {
   info() << "ComputeNodeIndexInCells";
