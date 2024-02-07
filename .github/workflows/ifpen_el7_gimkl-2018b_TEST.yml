@@ -80,7 +80,7 @@ jobs:
           (success() || failure()) &&
           steps.checkout.outcome == 'success'
         shell: bash
-        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DARCANE_WANT_CHECK=ON -DARCANE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all
+        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DARCANE_WANT_CHECK=ON -DARCANE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all -DCMAKE_DISABLE_FIND_PACKAGE_MCGSOLVER = TRUE
 
       - name: Build
         id: build
@@ -185,24 +185,15 @@ jobs:
       - name: Test
         id: test
         shell: bash
-        #run: |
-        #  ulimit -c unlimited
-        #  env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '^(hydro5_4proc_3sd_4proc|alien.interface.c.seq.mpi-1|alien.interface.fortran.seq.mpi-1)$' -R 'alien.test.petsc'
-        run: |
-           export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
-           cd /__w/framework/framework/build/_common/build_all/alien/ArcaneInterface/test/Tests/MoveSemantic/AlienTest
-           /__w/framework/framework/build/_common/build_all/alien/ArcaneInterface/bin/alien_test.exe || true
-           cp -avf /var/lib/systemd/coredump /__w/framework/framework/build/.
-           #/__w/framework/framework/build/_common/build_all/alien/ArcaneInterface/bin/alien_test.exe "--nx=10" "--ny=10" "--solver-package=petsc" "--solver=bicgs" "--precond=bjacobi" "--tol=1.e-10" "--max-iter=100" "--builder=1"
-           #strace env LD_LIBRARY_PATH="./_common/build_all/alien/standalone/src/movesemantic:./_common/build_all/alien/ArcaneInterface/lib:./lib:./_common/build_all/alien/standalone/src/core:./extlib:$LD_LIBRARY_PATH" _common/build_all/alien/ArcaneInterface/bin/alien_test.exe 2>&1 |tee strace.log
+        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '^(hydro5_4proc_3sd_4proc|alien.interface.c.seq.mpi-1|alien.interface.fortran.seq.mpi-1)$'
+
       - name: Upload test artifact
         id: upload-test-artifact
         uses: actions/upload-artifact@v3
-        #if: |
-        #  (success() || failure()) &&
-        #  steps.test.outcome == 'failure'
+        if: |
+          (success() || failure()) &&
+          steps.test.outcome == 'failure'
         with:
           name: test-artifact
-          #path: ${{ env.BUILD_DIR }}/Testing
-          path: ${{ env.BUILD_DIR }}/coredump
+          path: ${{ env.BUILD_DIR }}/Testing
           retention-days: 1
