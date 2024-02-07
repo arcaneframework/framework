@@ -204,5 +204,5 @@ jobs:
         with:
           name: test-artifact
           #path: ${{ env.BUILD_DIR }}/Testing
-          path: ${{ env.BUILD_DIR }}
+          path: ${{ env.BUILD_DIR }}/coredump
           retention-days: 1
