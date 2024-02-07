@@ -88,6 +88,7 @@ class SimpleHydroModuleBase
   Real getFinalTime();
   Integer getBackwardIteration();
   bool isCheckNumericalResult();
+  Integer getFuncOrder() ;
  protected:
   void _setHydroOptions(CaseOptionsSimpleHydro* o) { m_options = o; }
  private:

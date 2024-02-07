@@ -462,6 +462,13 @@
         car cela n'est pas implémenté pour toutes les implémentations de l'hydro).
       </description>
     </simple>
+    
+    
+    <!-- - - - - - func order - - - - -->
+    <simple name="func-order" type="integer" default="0" >
+      <description>
+      </description>
+    </simple>
 
   </options>
   
