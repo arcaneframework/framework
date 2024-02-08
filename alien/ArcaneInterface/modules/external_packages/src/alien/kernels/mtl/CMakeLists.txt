@@ -17,6 +17,7 @@
         ${IS_WITH_ARCANE}
         ${IS_WITH_MESH}
         INSTALL_GENERATED_FILES
+        USER_INSTALL_PREFIX ALIEN
         )
   endif()
   

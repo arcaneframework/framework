@@ -19,6 +19,7 @@ generateAxl(alien_trilinos
     ${IS_WITH_ARCANE}
     ${IS_WITH_MESH}
     INSTALL_GENERATED_FILES
+    USER_INSTALL_PREFIX ALIEN
     )
 generateAxl(alien_trilinos
     eigen_solver/arcane/TrilinosEigenSolver.axl
@@ -27,6 +28,7 @@ generateAxl(alien_trilinos
     ${IS_WITH_ARCANE}
     ${IS_WITH_MESH}
     INSTALL_GENERATED_FILES
+    USER_INSTALL_PREFIX ALIEN
     )
 addSources(alien_trilinos
     linear_solver/arcane/TrilinosLinearSolver.cc
