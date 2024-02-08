@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItem.h                                                   (C) 2000-2023 */
+/* MatItem.h                                                   (C) 2000-2024 */
 /*                                                                           */
 /* Entités matériau et milieux.                                              */
 /*---------------------------------------------------------------------------*/
@@ -62,13 +62,15 @@ class MatCell
   {
   }
 
+  MatCell() = default;
+
+ protected:
+
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
   ARCCORE_HOST_DEVICE MatCell(ComponentItemInternal* internal)
   : MatCell(matimpl::ConstituentItemBase (internal))
   {
   }
-
-  MatCell() = default;
 
  public:
 
@@ -129,12 +131,15 @@ class EnvCell
   : EnvCell(item.constituentItemBase())
   {
   }
+  EnvCell() = default;
+
+ protected:
+
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
   explicit ARCCORE_HOST_DEVICE EnvCell(ComponentItemInternal* internal)
   : EnvCell(matimpl::ConstituentItemBase(internal))
   {
   }
-  EnvCell() = default;
 
  public:
 
@@ -196,19 +201,24 @@ class AllEnvCell
   {
   }
 
+  AllEnvCell() = default;
+
+ protected:
+
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
   explicit ARCCORE_HOST_DEVICE AllEnvCell(ComponentItemInternal* internal)
   : AllEnvCell(matimpl::ConstituentItemBase(internal))
   {
   }
 
-  AllEnvCell() = default;
-
  public:
 
   //! Nombre de milieux présents dans la maille
-  Int32 nbEnvironment() { return m_internal->nbSubItem(); }
-  
+  Int32 nbEnvironment()
+  {
+    return m_internal->nbSubItem();
+  }
+
   //! Maille arcane standard
   Cell globalCell() const { return Cell(m_internal->globalItemBase()); }
 
