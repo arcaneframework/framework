@@ -66,9 +66,9 @@ Real SimpleHydroModuleBase::getDensityGlobalRatio(){ return m_options->densityGl
 Real SimpleHydroModuleBase::getDeltatMax(){ return m_options->deltatMax(); }
 Real SimpleHydroModuleBase::getDeltatMin(){ return m_options->deltatMin(); }
 Real SimpleHydroModuleBase::getFinalTime(){ return m_options->finalTime(); }
+Integer SimpleHydroModuleBase::getFuncOrder(){ return m_options->funcOrder(); }
 Integer SimpleHydroModuleBase::getBackwardIteration(){ return m_options->backwardIteration(); }
 bool SimpleHydroModuleBase::isCheckNumericalResult() { return m_options->checkNumericalResult(); }
-Integer SimpleHydroModuleBase::getFuncOrder(){ return m_options->funcOrder(); }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

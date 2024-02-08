@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleHydroAcceleratorService.cc                            (C) 2000-2020 */
+/* SimpleHydroAcceleratorFatAIService.cc                            (C) 2000-2020 */
 /*                                                                           */
 /* Hydrodynamique simplifiée utilisant les accélerateurs.                    */
 /*---------------------------------------------------------------------------*/
@@ -65,7 +65,7 @@ using namespace Arcane;
 
 // Valeurs des références pour la validation
 
-double reference_density_ratio_maximum[50] =
+double fatai_reference_density_ratio_maximum[50] =
 {
   0.0160000000000123,  0.00170124869728498, 0.00204753556227649, 0.00246464898229085, 0.00296699303969296,
   0.00357184605321602, 0.00429990753718348, 0.00517593569890155, 0.00622948244180328, 0.00749572737143143,
@@ -79,7 +79,7 @@ double reference_density_ratio_maximum[50] =
   0.0741457462067702,  0.0730964375784472,  0.0682069575016942,  0.0596677042759776,  0.0543168109309979
 };
 
-double reference_global_deltat[50] =
+double fatai_reference_global_deltat[50] =
 {
   0.000000000000000e+00, 1.000000000000000e-04, 1.100000000000000e-04, 1.210000000000000e-04, 1.331000000000000e-04,
   1.464100000000001e-04, 1.610510000000001e-04, 1.771561000000001e-04, 1.948717100000001e-04, 2.143588810000001e-04,
@@ -103,7 +103,7 @@ double reference_global_deltat[50] =
  * parallèle, avec une pseudo-viscosité aux mailles en utilisant
  * les classes de vectorisation fournies par Arcane.
  */
-class SimpleHydroAcceleratorService
+class SimpleHydroAcceleratorFatAIService
 : public BasicService
 , public ISimpleHydroService
 {
@@ -125,8 +125,8 @@ class SimpleHydroAcceleratorService
  public:
 
   //! Constructeur
-  SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi);
-  ~SimpleHydroAcceleratorService(); //!< Destructeur
+  SimpleHydroAcceleratorFatAIService(const ServiceBuildInfo& sbi);
+  ~SimpleHydroAcceleratorFatAIService(); //!< Destructeur
 
  public:
   
@@ -155,7 +155,7 @@ class SimpleHydroAcceleratorService
   }
 
  private:
-  void computeFatAIFunc(Real energy, Real energy_max, Integer n) ;
+  ARCCORE_HOST_DEVICE static inline Real computeFatAIFunc(Real energy, Real energy_max, Integer n) ;
   
   void computeGeometricValues2();
 
@@ -214,8 +214,8 @@ class SimpleHydroAcceleratorService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SimpleHydroAcceleratorService::
-SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
+SimpleHydroAcceleratorFatAIService::
+SimpleHydroAcceleratorFatAIService(const ServiceBuildInfo& sbi)
 : BasicService(sbi)
 , m_cell_unique_id (VariableBuildInfo(sbi.mesh(),"UniqueId"))
 , m_sub_domain_id (VariableBuildInfo(sbi.mesh(),"SubDomainId"))
@@ -236,6 +236,7 @@ SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 , m_node_coord(VariableBuildInfo(sbi.mesh(),"NodeCoord"))
 , m_cell_cqs(VariableBuildInfo(sbi.mesh(),"CellCQS"))
 , m_density_ratio_maximum(VariableBuildInfo(sbi.mesh(),"DensityRatioMaximum"))
+, m_cell_fatai(VariableBuildInfo(sbi.mesh(),"CellFaiAI"))
 , m_delta_t_n(VariableBuildInfo(sbi.mesh(),"CenteredDeltaT"))
 , m_delta_t_f(VariableBuildInfo(sbi.mesh(),"SplitDeltaT"))
 , m_old_dt_f(VariableBuildInfo(sbi.mesh(),"OldDTf"))
@@ -250,15 +251,15 @@ SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SimpleHydroAcceleratorService::
-~SimpleHydroAcceleratorService()
+SimpleHydroAcceleratorFatAIService::
+~SimpleHydroAcceleratorFatAIService()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 hydroBuild()
 {
   info() << "Using hydro with accelerator";
@@ -269,7 +270,7 @@ hydroBuild()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 hydroExit()
 {
   info() << "Hydro exit entry point";
@@ -280,7 +281,7 @@ hydroExit()
 /*!
  * \brief Initialisation du module hydro lors du démarrage du cas.
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 hydroStartInit()
 {
   info() << "START_INIT sizeof(ItemLocalId)=" << sizeof(ItemLocalId);
@@ -347,7 +348,7 @@ hydroStartInit()
   m_node_mass.synchronize();
 
   {
-    info() << "Initialize SoundSpeed and InternalEnergy";
+    info() << "Initialize SoundSpeed and InternalEnergy : FATAI"<<m_module->getFuncOrder();
     auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
     // Initialise l'énergie et la vitesse du son
@@ -365,11 +366,14 @@ hydroStartInit()
       Real pressure = in_pressure[vi];
       Real adiabatic_cst = in_adiabatic_cst[vi];
       Real density = in_density[vi];
-      out_internal_energy[vi] = pressure / ((adiabatic_cst-1.0) * density);
+      Real internal_energy = pressure / ((adiabatic_cst-1.0) * density);
+      out_internal_energy[vi] = internal_energy ;
       out_sound_speed[vi] = math::sqrt(adiabatic_cst*pressure/density);
-      energy_maximum.max(density_ratio);
+      energy_maximum.max(internal_energy);
     };
     m_energy_maximum = energy_maximum.reduce();
+    m_fatai_order = m_module->getFuncOrder() ;
+    info()<<"FATAI ORDER : "<<m_fatai_order<<" "<<m_energy_maximum;
   }
 
   // Remplit la structure contenant les informations sur les conditions aux limites
@@ -396,7 +400,7 @@ hydroStartInit()
 /*!
  * \brief Calcul des forces au temps courant \f$t^{n}\f$
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 computeForces()
 {
   // Calcul pour chaque noeud de chaque maille la contribution
@@ -426,7 +430,7 @@ computeForces()
 /*!
  * \brief Pseudo viscosité scalaire aux mailles
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 _computePressureAndCellPseudoViscosityForces()
 {
   Real linear_coef = m_module->getViscosityLinearCoef();
@@ -503,7 +507,7 @@ _computePressureAndCellPseudoViscosityForces()
 /*!
  * \brief Calcul de l'impulsion (phase2).
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 computeVelocity()
 {
   m_force.synchronize();
@@ -530,7 +534,7 @@ computeVelocity()
 /*!
  * \brief Calcul de l'impulsion (phase3).
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 computeViscosityWork()
 {
   auto queue = makeQueue(m_runner);
@@ -562,7 +566,7 @@ computeViscosityWork()
 /*!
  * \brief Prise en compte des conditions aux limites.
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 applyBoundaryCondition()
 {
   auto queue = makeQueue(m_runner);
@@ -604,7 +608,7 @@ applyBoundaryCondition()
 /*
  * \brief Déplace les noeuds.
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 moveNodes()
 {
   auto queue = makeQueue(m_runner);
@@ -627,7 +631,7 @@ moveNodes()
  * \brief Mise à jour des densités et calcul de l'accroissements max
  *	  de la densité sur l'ensemble du maillage.
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 updateDensity()
 {
   auto queue = makeQueue(m_runner);
@@ -660,7 +664,7 @@ updateDensity()
       Integer iteration = m_global_iteration();
       if (iteration<=50){
         Real max_dr = m_density_ratio_maximum();
-        Real ref_max_dr = reference_density_ratio_maximum[iteration-1];
+        Real ref_max_dr = fatai_reference_density_ratio_maximum[iteration-1];
         if (!math::isNearlyEqualWithEpsilon(max_dr,ref_max_dr,1.0e-12))
           ARCANE_FATAL("Bad value for density_ratio_maximum: ref={0} v={1} diff={2}",
                        ref_max_dr,max_dr,(ref_max_dr-max_dr)/ref_max_dr);
@@ -669,7 +673,7 @@ updateDensity()
   }
 }
 
-Real SimpleHydroAcceleratorService::
+ARCCORE_HOST_DEVICE inline Real SimpleHydroAcceleratorFatAIService::
 computeFatAIFunc(Real energy,Real energy_max,Integer n)
 {
   Real value = 1. ;
@@ -679,7 +683,7 @@ computeFatAIFunc(Real energy,Real energy_max,Integer n)
     value += x ;
     x = x*x ;
   }
-  return values ;
+  return value ;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -687,7 +691,7 @@ computeFatAIFunc(Real energy,Real energy_max,Integer n)
  * \brief Applique l'équation d'état et calcul l'énergie interne et la
  * pression.
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 applyEquationOfState()
 {
   auto queue = makeQueue(m_runner);
@@ -706,7 +710,7 @@ applyEquationOfState()
   auto out_sound_speed = ax::viewOut(command,m_sound_speed);
   auto out_pressure = ax::viewOut(command,m_pressure);
 
-  const Real energy_max = m_energy_maximum() ;
+  const Real energy_max = m_energy_maximum ;
   const Integer fatai_order = m_fatai_order ;
 
   auto out_fatai = ax::viewOut(command,m_cell_fatai);
@@ -743,7 +747,7 @@ applyEquationOfState()
 /*!
  * \brief Calcul des nouveaux pas de temps.
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 computeDeltaT()
 {
   const Real old_dt = m_global_deltat();
@@ -794,7 +798,7 @@ computeDeltaT()
   if (m_module->isCheckNumericalResult()){
     Integer iteration = m_global_iteration();
     if (iteration<25){
-      Real ref_new_dt = reference_global_deltat[iteration];
+      Real ref_new_dt = fatai_reference_global_deltat[iteration];
       if (!math::isNearlyEqual(new_dt,ref_new_dt))
         ARCANE_FATAL("Bad value for 'new_dt' ref={0} v={1} diff={2}",
                      ref_new_dt,new_dt,(new_dt-ref_new_dt)/ref_new_dt);
@@ -827,7 +831,7 @@ computeDeltaT()
  *
  * La méthode utilisée est celle du découpage en quatre triangles.
  */
-ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorService::
+ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorFatAIService::
 computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
 {
   const Real3 c0 = face_coord[0];
@@ -903,7 +907,7 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
  * \brief Calcul du volume des mailles, des longueurs caractéristiques
  * et des résultantes aux sommets.
  */
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 computeGeometricValues()
 {
   auto queue = makeQueue(m_runner);
@@ -977,7 +981,7 @@ computeGeometricValues()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 hydroInit()
 {
   if (m_module->getBackwardIteration()!=0){
@@ -993,7 +997,7 @@ hydroInit()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleHydroAcceleratorService::
+void SimpleHydroAcceleratorFatAIService::
 _computeNodeIndexInCells()
 {
   info() << "ComputeNodeIndexInCells";
@@ -1026,8 +1030,8 @@ _computeNodeIndexInCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE(SimpleHydroAcceleratorService,
-                        ServiceProperty("SimpleHydroAcceleratorService",ST_SubDomain),
+ARCANE_REGISTER_SERVICE(SimpleHydroAcceleratorFatAIService,
+                        ServiceProperty("SimpleHydroAcceleratorFatAIService",ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(ISimpleHydroService));
 
 /*---------------------------------------------------------------------------*/
