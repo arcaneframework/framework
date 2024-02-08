@@ -184,7 +184,7 @@ class ItemGroupInternal
 
   //! Gestion pour applyOperation() Version 2
   //@{
-  bool m_use_v2_for_apply_operation = false;
+  bool m_use_v2_for_apply_operation = true;
 
  public:
 

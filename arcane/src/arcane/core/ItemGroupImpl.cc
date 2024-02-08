@@ -1606,8 +1606,9 @@ _computeChildrenByTypeV2()
       trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
                     << " type=" << type_mng->typeName(i) << " nb=" << n;
   }
-  trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
-                << " nb_item=" << nb_item << " nb_different_type=" << nb_different_type;
+  if (is_verbose)
+    trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
+                  << " nb_item=" << nb_item << " nb_different_type=" << nb_different_type;
 
   // Si nb_different_type == 1, cela signifie qu'il n'y a qu'un seul
   // type d'entité et on conserve juste ce type car dans ce cas on passera
