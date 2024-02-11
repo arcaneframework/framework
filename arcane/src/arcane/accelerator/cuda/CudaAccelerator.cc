@@ -121,7 +121,7 @@ class UnifiedMemoryCudaMemoryAllocator
       _applyHint(ptr.baseAddress(), ptr.size(), new_args);
   }
 
-  Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const
+  Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const override
   {
     wanted_capacity = AlignedMemoryAllocator3::adjustedCapacity(args, wanted_capacity, element_size);
     const bool do_page = m_page_allocate_level > 0;
@@ -173,7 +173,7 @@ class UnifiedMemoryCudaMemoryAllocator
     return ::cudaFree(ptr);
   }
 
-  cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs args)
+  cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs args) override
   {
     auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
     void* p = *ptr;
