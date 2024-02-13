@@ -53,3 +53,5 @@ install(DIRECTORY alien
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
   )
+
+target_compile_definitions(alien_interface_c PRIVATE alien_core_EXPORTS)

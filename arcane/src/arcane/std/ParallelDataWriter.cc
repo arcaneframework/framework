@@ -11,7 +11,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/ParallelDataWriter.h"
+#include "arcane/std/internal/ParallelDataWriter.h"
+
+#include "arcane/utils/Ref.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IParallelExchanger.h"
@@ -21,6 +23,8 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/parallel/BitonicSortT.H"
 #include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/MeshUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -346,6 +350,31 @@ getSortedValues(IData* data)
     }
   }
   return sorted_data;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<ParallelDataWriter> ParallelDataWriterList::
+getOrCreateWriter(const ItemGroup& group)
+{
+  auto i = m_data_writers.find(group);
+  if (i != m_data_writers.end())
+    return i->second;
+  IParallelMng* pm = group.itemFamily()->parallelMng();
+  Ref<ParallelDataWriter> writer = makeRef(new ParallelDataWriter(pm));
+  {
+    Int64UniqueArray items_uid;
+    ItemGroup own_group = group.own();
+    MeshUtils::fillUniqueIds(own_group.view(), items_uid);
+    Int32ConstArrayView local_ids = own_group.internal()->itemsLocalId();
+    writer->sort(local_ids, items_uid);
+  }
+  m_data_writers.try_emplace(group, writer);
+  return writer;
 }
 
 /*---------------------------------------------------------------------------*/

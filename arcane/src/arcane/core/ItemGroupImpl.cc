@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.cc                                            (C) 2000-2023 */
+/* ItemGroupImpl.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités de maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -794,7 +794,8 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
       Int32 local_id = items_local_id[i];
       items_lid.add(local_id);
       m_p->m_items_index_in_all_group[local_id] = nb_items_id+i;
-    } 
+    }
+    nb_added = nb_item_to_add;
   }
   else if (check_if_present) {
     // Vérifie que les entités à ajouter ne sont pas déjà présentes
@@ -823,11 +824,11 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
   }
 
   if (arcaneIsCheck()){
-    trace->debug(Trace::High) << "ItemGroupImpl::addItems() group <" << name() << "> "
-                              << " checkpresent=" << check_if_present
-                              << " nb_current=" << current_size
-                              << " want_to_add=" << nb_item_to_add
-                              << " effective_added=" << nb_added;
+    trace->info(5) << "ItemGroupImpl::addItems() group <" << name() << "> "
+                   << " checkpresent=" << check_if_present
+                   << " nb_current=" << current_size
+                   << " want_to_add=" << nb_item_to_add
+                   << " effective_added=" << nb_added;
     checkValid();
   }
 
@@ -915,10 +916,10 @@ removeItems(Int32ConstArrayView items_local_id,bool check_if_present)
   
     m_p->updateTimestamp();
     if(arcaneIsCheck()){
-      trace->debug(Trace::High) << "ItemGroupImpl::removeItems() group <" << name() << "> "
-                                << " old_size=" << old_size
-                                << " new_size=" << size()
-                                << " removed?=" << has_removed;
+      trace->info(5) << "ItemGroupImpl::removeItems() group <" << name() << "> "
+                     << " old_size=" << old_size
+                     << " new_size=" << size()
+                     << " removed?=" << has_removed;
       checkValid();
     }
   }
@@ -974,14 +975,14 @@ removeAddItems(Int32ConstArrayView removed_items_lids,
           ++index;
         }
       }
-      if (index!=new_size){
-        trace->fatal() << "Inconsistent number of elements in the generation "
-                       << "of the group " << name()
-                       << " (expected: " << new_size
-                       << " present: " << index
-                       << ")";
-      }
+      if (index!=new_size)
+        ARCANE_FATAL("Inconsistent number of elements in the generation of the group '{0}' expected={1} present={2}",
+                     name(), new_size, index);
     }
+
+    // On ne peut pas savoir ce qui a changé donc dans le doute on
+    // incrémente le timestamp.
+    m_p->updateTimestamp();
   }
   else {
     removeItems(removed_items_lids,check_if_present);
@@ -989,11 +990,11 @@ removeAddItems(Int32ConstArrayView removed_items_lids,
   }
   
   if(arcaneIsCheck()){
-    trace->debug(Trace::High) << "ItemGroupImpl::removeAddItems() group <" << name() << "> "
-                              << " old_size=" << m_p->m_item_family->nbItem()
-                              << " new_size=" << size()
-                              << " nb_removed=" << removed_items_lids.size()
-                              << " nb_added=" << added_items_lids.size();
+    trace->info(5) << "ItemGroupImpl::removeAddItems() group <" << name() << "> "
+                   << " old_size=" << m_p->m_item_family->nbItem()
+                   << " new_size=" << size()
+                   << " nb_removed=" << removed_items_lids.size()
+                   << " nb_added=" << added_items_lids.size();
     checkValid();
   }
 }
@@ -1181,10 +1182,6 @@ removeSuppressedItems()
 void ItemGroupImpl::
 checkValid()
 {
-#if 0
-  if (!arcaneIsCheck())
-    return;
-#endif
   ITraceMng* msg = m_p->mesh()->traceMng();
   if (m_p->m_need_recompute && m_p->m_compute_functor) {
     msg->debug(Trace::High) << "ItemGroupImpl::checkValid on " << name() << " : skip group to recompute";
@@ -1287,41 +1284,11 @@ checkNeedUpdate()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Remplit les derniers éléments du groupe pour avoir un vecteur
- * SIMD complet.
- *
- * Pour que la vectorisation fonctionne il faut que le nombre d'éléments
- * du groupe soit un multiple de la taille d'un vecteur SIMD. Si ce n'est
- * pas le cas, on remplit les dernières valeurs du tableau des localId()
- * avec le dernier élément.
- *
- * Par exemple, on supporse une taille d'un vecteur SIMD de 8 (ce qui est le maximum
- * actuellement avec l'AVX512) et un groupe \a grp de 13 éléments. Il faut donc
- * remplit le groupe comme suit:
- * \code
- * Int32 last_local_id = grp[12];
- * grp[13] = grp[14] = grp[15] = last_local_id.
- * \endcode
- *
- * A noter que la taille du groupe reste effectivement de 13 éléments. Le
- * padding supplémentaire n'est que pour les itérations via ENUMERATE_SIMD.
- * Comme le tableau des localId() est alloué avec l'allocateur d'alignement
- * il est garanti que la mémoire allouée est suffisante pour faire le padding.
- *
- * \todo Ne pas faire cela dans tous les checkNeedUpdate() mais mettre
- * en place une méthode qui retourne un énumérateur spécifique pour
- * la vectorisation.
- */
+
 void ItemGroupImpl::
 _checkUpdateSimdPadding()
 {
-  if (m_p->m_simd_timestamp >= m_p->timestamp())
-    return;
-  // Fait un padding des derniers éléments du tableau en recopiant la
-  // dernière valeurs.
-  m_p->m_simd_timestamp = m_p->timestamp();
-  applySimdPadding(m_p->mutableItemsLocalId());
+  m_p->checkUpdateSimdPadding();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1639,11 +1606,12 @@ _computeChildrenByTypeV2()
       trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
                     << " type=" << type_mng->typeName(i) << " nb=" << n;
   }
-  trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
-                << " nb_item=" << nb_item << " nb_different_type=" << nb_different_type;
+  if (is_verbose)
+    trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name()
+                  << " nb_item=" << nb_item << " nb_different_type=" << nb_different_type;
 
   // Si nb_different_type == 1, cela signifie qu'il n'y a qu'un seul
-  // type d'entité et on conserver juste ce type car dans ce cas on passera
+  // type d'entité et on conserve juste ce type car dans ce cas on passera
   // directement le groupe en argument de applyOperation().
   if (nb_item>0 && nb_different_type==1){
     ItemInfoListView lv(m_p->m_item_family->itemInfoListView());
@@ -1660,6 +1628,9 @@ _computeChildrenByTypeV2()
     if (item_type<nb_basic_item_type)
       m_p->m_children_by_type_ids[item_type].add(iitem.itemLocalId());
   }
+
+  for( Int32 i=0; i<nb_basic_item_type; ++i )
+    applySimdPadding(m_p->m_children_by_type_ids[i]);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1926,6 +1897,8 @@ shrinkMemory()
     m_p->variableItemsLocalid()->variable()->shrinkMemory();
   else
     m_p->mutableItemsLocalId().shrink();
+
+  m_p->applySimdPadding();
 }
 
 /*---------------------------------------------------------------------------*/

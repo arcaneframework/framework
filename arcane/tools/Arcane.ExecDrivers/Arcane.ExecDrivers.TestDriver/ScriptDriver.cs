@@ -23,15 +23,13 @@ namespace Arcane.ExecDrivers.TestDriver
       m_script_path = args [0];
       Console.WriteLine("SCRIPT_PATH='{0}'", m_script_path);
     }
-    void _ExecuteTestDriver(string test_driver_path,string args)
+    int _ExecuteTestDriver(string test_driver_path,string args)
     {
       if (Utils.IsWin32){
-        Utils.ExecCommand(test_driver_path+".bat", args, null);
+        return Utils.ExecCommandNoException(test_driver_path+".bat", args, null);
       }
-      else{
-        string cmd = test_driver_path + " " + args;
-        Utils.ExecShellCommand(cmd, null);
-      }
+      string cmd = test_driver_path + " " + args;
+      return Utils.ExecShellCommandNoException(cmd, null);
     }
 
     public int Execute()
@@ -44,19 +42,30 @@ namespace Arcane.ExecDrivers.TestDriver
       XDocument doc = XDocument.Load(m_script_path);
       string test_driver_path = Path.Combine(Utils.CodeBinPath, "arcane_test_driver");
       foreach (XElement command_elem in doc.Document.Root.Elements()) {
+        XAttribute expected_return_attr = command_elem.Attribute("expected-return-value");
+        int expected_return_value = 0;
+        if (expected_return_attr!=null)
+          expected_return_value = int.Parse(expected_return_attr.Value);
+
         XName command_name = command_elem.Name;
         string local_name = command_name.LocalName;
-        Console.WriteLine("NAME = {0}", local_name);
+        Console.WriteLine($"NAME = {local_name} expected_return={expected_return_value}");
+        int return_value = 0;
         if (local_name == "test") {
           string args = command_elem.Value;
           string cmd_args = " launch " + args;
-          _ExecuteTestDriver(test_driver_path,cmd_args);
+          return_value = _ExecuteTestDriver(test_driver_path,cmd_args);
         }
-        if (local_name == "driver") {
+        else if (local_name == "driver") {
           string args = command_elem.Value;
           string cmd_args = args;
-          _ExecuteTestDriver(test_driver_path,cmd_args);
+          return_value = _ExecuteTestDriver(test_driver_path,cmd_args);
         }
+        else
+          throw new ApplicationException($"Bad element {local_name}. Valid values are 'test' or 'driver'");
+
+        if (return_value!=expected_return_value)
+          throw new ApplicationException($"Bad return value '{return_value}'. Expected value is '{expected_return_value}'");
       }
       return 0;
     }

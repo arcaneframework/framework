@@ -11,178 +11,31 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/internal/BasicReaderWriter.h"
+#include "arcane/std/internal/BasicWriter.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/IDataCompressor.h"
-#include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/MemoryView.h"
-#include "arcane/utils/SHA1HashAlgorithm.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/utils/IHashAlgorithm.h"
 
-#include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/IIOMng.h"
-#include "arcane/core/IApplication.h"
-#include "arcane/core/ISerializedData.h"
 #include "arcane/core/ItemGroup.h"
-#include "arcane/core/IRessourceMng.h"
-#include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/IVariable.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IData.h"
-#include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
-#include "arcane/std/ParallelDataWriter.h"
-#include "arcane/std/TextWriter.h"
+#include "arcane/std/internal/ParallelDataWriter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::impl
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-BasicGenericWriter::
-BasicGenericWriter(IApplication* app, Int32 version,
-                   Ref<KeyValueTextWriter> text_writer)
-: TraceAccessor(app->traceMng())
-, m_application(app)
-, m_version(version)
-, m_text_writer(text_writer)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void BasicGenericWriter::
-initialize(const String& path, Int32 rank)
-{
-  if (!m_text_writer)
-    ARCANE_FATAL("Null text writer");
-  m_path = path;
-  m_rank = rank;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void BasicGenericWriter::
-writeData(const String& var_full_name, const ISerializedData* sdata)
-{
-  //TODO: Verifier que initialize() a bien été appelé.
-  auto var_data_info = makeRef(new VariableDataInfo(var_full_name, sdata));
-  KeyValueTextWriter* writer = m_text_writer.get();
-  var_data_info->setFileOffset(writer->fileOffset());
-  m_variables_data_info.insert(std::make_pair(var_full_name, var_data_info));
-  info(4) << " SDATA name=" << var_full_name << " nb_element=" << sdata->nbElement()
-          << " dim=" << sdata->nbDimension() << " datatype=" << sdata->baseDataType()
-          << " nb_basic_element=" << sdata->nbBaseElement()
-          << " is_multi=" << sdata->isMultiSize()
-          << " dimensions_size=" << sdata->extents().size()
-          << " memory_size=" << sdata->memorySize()
-          << " bytes_size=" << sdata->constBytes().size();
-
-  const void* ptr = sdata->constBytes().data();
-
-  // Si la variable est de type tableau à deux dimensions, sauve les
-  // tailles de la deuxième dimension par élément.
-  Int64ConstArrayView extents = sdata->extents();
-  writer->setExtents(var_full_name, extents);
-
-  // Maintenant, sauve les valeurs si necessaire
-  Int64 nb_base_element = sdata->nbBaseElement();
-  if (nb_base_element != 0 && ptr) {
-    writer->write(var_full_name, asBytes(sdata->constBytes()));
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void BasicGenericWriter::
-writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_unique_ids,
-               SmallSpan<const Int64> wanted_unique_ids)
-{
-  if (m_version >= 3) {
-    // Sauve les informations du groupe la base de données (clé,valeur)
-    {
-      String written_uid_name = String("GroupWrittenUid:") + group_full_name;
-      Int64 nb_written_uid = written_unique_ids.size();
-      m_text_writer->setExtents(written_uid_name, Int64ConstArrayView(1, &nb_written_uid));
-      m_text_writer->write(written_uid_name, asBytes(written_unique_ids));
-    }
-    {
-      String wanted_uid_name = String("GroupWantedUid:") + group_full_name;
-      Int64 nb_wanted_uid = wanted_unique_ids.size();
-      m_text_writer->setExtents(wanted_uid_name, Int64ConstArrayView(1, &nb_wanted_uid));
-      m_text_writer->write(wanted_uid_name, asBytes(wanted_unique_ids));
-    }
-    return;
-  }
-
-  String filename = BasicReaderWriterCommon::_getBasicGroupFile(m_path, group_full_name, m_rank);
-  TextWriter writer(filename);
-
-  // Sauve la liste des unique_ids écrits
-  {
-    Integer nb_unique_id = written_unique_ids.size();
-    writer.write(asBytes(Span<const Int32>(&nb_unique_id, 1)));
-    writer.write(asBytes(written_unique_ids));
-  }
-
-  // Sauve la liste des unique_ids souhaités par ce sous-domaine
-  {
-    Integer nb_unique_id = wanted_unique_ids.size();
-    writer.write(asBytes(Span<const Int32>(&nb_unique_id, 1)));
-    writer.write(asBytes(wanted_unique_ids));
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void BasicGenericWriter::
-endWrite()
-{
-  IApplication* app = m_application;
-  ScopedPtrT<IXmlDocumentHolder> xdoc(app->ressourceMng()->createXmlDocument());
-  XmlNode doc = xdoc->documentNode();
-  XmlElement root(doc, "variables-data");
-  const IDataCompressor* dc = m_text_writer->dataCompressor().get();
-  if (dc) {
-    root.setAttrValue("deflater-service", dc->name());
-    root.setAttrValue("min-compress-size", String::fromNumber(dc->minCompressSize()));
-  }
-  root.setAttrValue("version", String::fromNumber(m_version));
-  for (const auto& i : m_variables_data_info) {
-    Ref<VariableDataInfo> vdi = i.second;
-    XmlNode e = root.createAndAppendElement("variable-data");
-    e.setAttrValue("full-name", vdi->fullName());
-    vdi->write(e);
-  }
-  if (m_version >= 3) {
-    // Sauve les méta-données dans la base de données.
-    UniqueArray<Byte> bytes;
-    xdoc->save(bytes);
-    Int64 length = bytes.length();
-    String key_name = "Global:OwnMetadata";
-    m_text_writer->setExtents(key_name, Int64ConstArrayView(1, &length));
-    m_text_writer->write(key_name, asBytes(bytes.span()));
-  }
-  else {
-    String filename = BasicReaderWriterCommon::_getOwnMetatadaFile(m_path, m_rank);
-    app->ioMng()->writeXmlFile(xdoc.get(), filename);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -202,6 +55,8 @@ BasicWriter(IApplication* app, IParallelMng* pm, const String& path,
 void BasicWriter::
 initialize()
 {
+  _checkNoInit();
+
   Int32 rank = m_parallel_mng->commRank();
   if (m_open_mode == OpenModeTruncate && m_parallel_mng->isMasterIO())
     platform::recursiveCreateDirectory(m_path);
@@ -223,6 +78,7 @@ initialize()
       m_text_writer->setDataCompressor(bc);
     }
   }
+
   // Idem pour le service de calcul de hash
   if (!m_hash_algorithm.get()) {
     String hash_algorithm_name = platform::getEnvironmentVariable("ARCANE_HASHALGORITHM");
@@ -237,13 +93,13 @@ initialize()
   }
 
   // Pour test, permet de spécifier un service pour le calcul du hash global.
-  if (!m_global_hash_algorithm.get()) {
-    String algo_name = platform::getEnvironmentVariable("ARCANE_GLOBALHASHALGORITHM");
+  if (!m_compare_hash_algorithm.get()) {
+    String algo_name = platform::getEnvironmentVariable("ARCANE_COMPAREHASHALGORITHM");
     if (!algo_name.empty()) {
-      info() << "Use global hash algorithm from environment variable ARCANE_GLOBALHASHALGORITHM name=" << algo_name;
+      info() << "Use global hash algorithm from environment variable ARCANE_COMPAREHASHALGORITHM name=" << algo_name;
       algo_name = algo_name + "HashAlgorithm";
       auto v = _createHashAlgorithm(m_application, algo_name);
-      m_global_hash_algorithm = v;
+      m_compare_hash_algorithm = v;
     }
   }
 
@@ -255,25 +111,20 @@ initialize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void BasicWriter::
+_checkNoInit()
+{
+  if (m_is_init)
+    ARCANE_FATAL("initialize() has already been called");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<ParallelDataWriter> BasicWriter::
 _getWriter(IVariable* var)
 {
-  ItemGroup group = var->itemGroup();
-  auto i = m_parallel_data_writers.find(group);
-  if (i != m_parallel_data_writers.end())
-    return i->second;
-
-  Ref<ParallelDataWriter> writer = makeRef(new ParallelDataWriter(m_parallel_mng));
-  writer->setGatherAll(m_is_gather);
-  {
-    Int64UniqueArray items_uid;
-    ItemGroup own_group = var->itemGroup().own();
-    _fillUniqueIds(own_group, items_uid);
-    Int32ConstArrayView local_ids = own_group.internal()->itemsLocalId();
-    writer->sort(local_ids, items_uid);
-  }
-  m_parallel_data_writers.try_emplace(group, writer);
-  return writer;
+  return m_parallel_data_writers.getOrCreateWriter(var->itemGroup());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -312,59 +163,41 @@ _directWriteVal(IVariable* var, IData* data)
       const String& gname = group.name();
       String group_full_name = item_family->fullName() + "_" + gname;
       _fillUniqueIds(group, wanted_unique_ids);
-      m_global_writer->writeItemGroup(group_full_name, written_unique_ids, wanted_unique_ids.view());
+      if (m_is_save_values)
+        m_global_writer->writeItemGroup(group_full_name, written_unique_ids, wanted_unique_ids.view());
       m_written_groups.insert(group);
     }
   }
 
   Ref<ISerializedData> sdata(write_data->createSerializedDataRef(false));
-  m_global_writer->writeData(var->fullName(), sdata.get());
-
-  if (is_mesh_variable)
-    _computeGlobalHash(var, write_data);
+  String compare_hash;
+  if (is_mesh_variable) {
+    compare_hash = _computeCompareHash(var, write_data);
+  }
+  m_global_writer->writeData(var->fullName(), sdata.get(), compare_hash, m_is_save_values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul un hash global pour la variable.
+ * \brief Calcul un hash de comparaison pour la variable.
  *
  * Le rang maitre récupère un tableau contenant la concaténation des valeurs
  * de la variable pour tous les rangs et calcul un hash sur ce tableau.
  *
  * Comme ce tableau est trié suivant les uniqueId(), il peut servir à
  * comparer directement la valeur de la variable.
+ *
+ * \return le hash sous-forme de chaîne de caratères si un algorithme de hash
+ * est spécifié.
  */
-void BasicWriter::
-_computeGlobalHash(IVariable* var, IData* write_data)
+String BasicWriter::
+_computeCompareHash(IVariable* var, IData* write_data)
 {
-  IHashAlgorithm* hash_algo = m_global_hash_algorithm.get();
+  IHashAlgorithm* hash_algo = m_compare_hash_algorithm.get();
   if (!hash_algo)
-    return;
-
-  INumericDataInternal* num_data = write_data->_commonInternal()->numericData();
-  if (!num_data)
-    ARCANE_FATAL("Variable '{0}' is not a numeric variable", var->fullName());
-
-  IParallelMng* pm = m_parallel_mng;
-  Int32 my_rank = pm->commRank();
-  Int32 master_rank = pm->masterIORank();
-  ConstMemoryView memory_view = num_data->memoryView();
-  Int64 nb_element = memory_view.nbElement();
-  Int64 total_nb = m_parallel_mng->reduce(Parallel::ReduceSum, nb_element);
-  info() << "ComputeGlobalHash VAR v=" << var->fullName()
-         << " num_data_nb_element=" << nb_element << " total=" << total_nb;
-
-  UniqueArray<Byte> bytes;
-
-  pm->gatherVariable(Arccore::asSpan<Byte>(memory_view.bytes()).smallView(), bytes, master_rank);
-
-  if (my_rank == master_rank) {
-    HashAlgorithmValue hash_value;
-    hash_algo->computeHash(asBytes(bytes), hash_value);
-    info() << "VAR_HASH=" << Convert::toHexaString(asBytes(hash_value.bytes()))
-           << " name=" << var->fullName();
-  }
+    return {};
+  return var->_internalApi()->computeComparisonHashCollective(hash_algo, write_data);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -418,44 +251,69 @@ beginWrite(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 
 void BasicWriter::
+_endWriteV3()
+{
+  const Int64 nb_part = m_parallel_mng->commSize();
+
+  // Sauvegarde les informations au format JSON
+  JSONWriter jsw;
+
+  {
+    JSONWriter::Object main_object(jsw);
+    jsw.writeKey(_getArcaneDBTag());
+    {
+      JSONWriter::Object db_object(jsw);
+      jsw.write("Version", (Int64)m_version);
+      jsw.write("NbPart", nb_part);
+      jsw.write("HasValues", m_is_save_values);
+
+      String data_compressor_name;
+      Int64 data_compressor_min_size = 0;
+      if (m_data_compressor.get()) {
+        data_compressor_name = m_data_compressor->name();
+        data_compressor_min_size = m_data_compressor->minCompressSize();
+      }
+      jsw.write("DataCompressor", data_compressor_name);
+      jsw.write("DataCompressorMinSize", String::fromNumber(data_compressor_min_size));
+
+      // Sauve le nom de l'algorithme de hash
+      {
+        String name;
+        if (m_hash_algorithm.get())
+          name = m_hash_algorithm->name();
+        jsw.write("HashAlgorithm", name);
+      }
+
+      // Sauve le nom de l'algorithme de hash pour les comparaisons
+      {
+        String name;
+        if (m_compare_hash_algorithm.get())
+          name = m_compare_hash_algorithm->name();
+        jsw.write("ComparisonHashAlgorithm", name);
+      }
+    }
+  }
+
+  StringBuilder filename = m_path;
+  filename += "/arcane_acr_db.json";
+  String fn = filename.toString();
+  std::ofstream ofile(fn.localstr());
+  ofile << jsw.getBuffer();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicWriter::
 endWrite()
 {
   const IParallelMng* pm = m_parallel_mng;
   if (pm->isMasterIO()) {
-    Int64 nb_part = pm->commSize();
     if (m_version >= 3) {
-      // Sauvegarde les informations au format JSON
-      JSONWriter jsw;
-      {
-        JSONWriter::Object main_object(jsw);
-        jsw.writeKey(_getArcaneDBTag());
-        {
-          JSONWriter::Object db_object(jsw);
-          jsw.write("Version", (Int64)m_version);
-          jsw.write("NbPart", nb_part);
-
-          String data_compressor_name;
-          Int64 data_compressor_min_size = 0;
-          if (m_data_compressor.get()) {
-            data_compressor_name = m_data_compressor->name();
-            data_compressor_min_size = m_data_compressor->minCompressSize();
-          }
-          jsw.write("DataCompressor", data_compressor_name);
-          jsw.write("DataCompressorMinSize", String::fromNumber(data_compressor_min_size));
-
-          String hash_algorithm_name;
-          if (m_hash_algorithm.get())
-            hash_algorithm_name = m_hash_algorithm->name();
-          jsw.write("HashAlgorithm", hash_algorithm_name);
-        }
-      }
-      StringBuilder filename = m_path;
-      filename += "/arcane_acr_db.json";
-      String fn = filename.toString();
-      std::ofstream ofile(fn.localstr());
-      ofile << jsw.getBuffer();
+      _endWriteV3();
     }
     else {
+      Int64 nb_part = pm->commSize();
       StringBuilder filename = m_path;
       filename += "/infos.txt";
       String fn = filename.toString();

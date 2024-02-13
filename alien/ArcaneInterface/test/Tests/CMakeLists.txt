@@ -1,6 +1,6 @@
-if(TARGET GTest::GTest)
-  add_subdirectory(GTestUnitary)
-endif()
+if (TARGET GTest::GTest)
+    add_subdirectory(GTestUnitary)
+endif ()
 
 if (TARGET Alien::alien_semantic_move)
     add_subdirectory(MoveSemantic)

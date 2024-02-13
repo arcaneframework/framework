@@ -113,7 +113,7 @@ SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 , m_sub_builder_factory(build_info.sub_builder_factory)
 , m_parent_container_ref(build_info.container)
 , m_mpi_communicator(build_info.communicator)
-, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new ParallelMngUtilsFactoryBase()))
+, m_utils_factory(createRef<ParallelMngUtilsFactoryBase>())
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;

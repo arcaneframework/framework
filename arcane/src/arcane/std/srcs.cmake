@@ -1,15 +1,18 @@
 set(ARCANE_SOURCES
   ArcaneStdRegisterer.cc
   ArcaneStdRegisterer.h
+  ArcaneBasicVerifierService.cc
   BasicCheckpointService.cc
+  BasicGenericReader.cc
+  BasicGenericWriter.cc
   BasicReader.cc
   BasicWriter.cc
   BasicReaderWriter.cc
   BasicReaderWriterDatabase.cc
   ParallelDataReader.cc
-  ParallelDataReader.h
   ParallelDataWriter.cc
-  ParallelDataWriter.h
+  TextReader2.cc
+  TextWriter2.cc
   TextReader.cc
   TextReader.h
   TextWriter.cc
@@ -54,8 +57,6 @@ set(ARCANE_SOURCES
   MasterModule.cc
   UnitTestModule.cc
   ArcaneStdRegisterer.h
-  ParallelDataReader.h
-  ParallelDataWriter.h
   TextReader.h
   TextWriter.h
   Hdf5Utils.h
@@ -99,6 +100,8 @@ set(ARCANE_SOURCES
   SimpleTableWriterHelper.cc
   SimpleTableWriterHelper.h
 
+  VariableDataInfo.cc
+
   MshMeshReader.cc
   MshParallelMeshReader.cc
   MshMeshWriter.cc
@@ -116,6 +119,13 @@ set(ARCANE_SOURCES
   internal/IRedisContext.h
   internal/BasicReaderWriter.h
   internal/BasicReaderWriterDatabase.h
+  internal/BasicReader.h
+  internal/BasicWriter.h
+  internal/VariableDataInfo.h
+  internal/ParallelDataReader.h
+  internal/ParallelDataWriter.h
+  internal/TextReader2.h
+  internal/TextWriter2.h
 )
 
 set(AXL_FILES

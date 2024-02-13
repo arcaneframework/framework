@@ -175,7 +175,7 @@ HybridParallelMng(const HybridParallelMngBuildInfo& bi)
 , m_all_dispatchers(bi.all_dispatchers)
 , m_sub_builder_factory(bi.sub_builder_factory)
 , m_parent_container_ref(bi.container)
-, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new ParallelMngUtilsFactoryBase()))
+, m_utils_factory(createRef<ParallelMngUtilsFactoryBase>())
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;

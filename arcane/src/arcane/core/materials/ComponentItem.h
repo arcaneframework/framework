@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItem.h                                             (C) 2000-2023 */
+/* ComponentItem.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Entité représentant un constituant d'une maille multi-matériaux.          */
 /*---------------------------------------------------------------------------*/
@@ -61,17 +61,19 @@ class ARCANE_CORE_EXPORT ComponentCell
 
  public:
 
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
-  ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii)
-  : m_internal(mii)
-  {}
-
   ARCCORE_HOST_DEVICE ComponentCell(const matimpl::ConstituentItemBase& mii)
   : m_internal(mii._internal())
   {}
 
   ComponentCell()
   : m_internal(ComponentItemInternal::_nullItem())
+  {}
+
+ protected:
+
+  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
+  ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii)
+  : m_internal(mii)
   {}
 
  public:

@@ -5,54 +5,72 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataWriter.h                                        (C) 2000-2024 */
+/* TextWriter2.h                                               (C) 2000-2024 */
 /*                                                                           */
-/* Ecrivain de IData en parallèle.                                           */
+/* Ecrivain de données.                                                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_PARALLELDATAWRITER_H
-#define ARCANE_STD_PARALLELDATAWRITER_H
+#ifndef ARCANE_STD_INTERNAL_TEXTWRITER2_H
+#define ARCANE_STD_INTERNAL_TEXTWRITER2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/String.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class IParallelMng;
-class IData;
+class IDataCompressor;
+}
+
+namespace Arcane::impl
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class ParallelDataWriter
+/*!
+ * \internal
+ * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
+ */
+class TextWriter2
 {
   class Impl;
 
  public:
 
-  explicit ParallelDataWriter(IParallelMng* pm);
-  ParallelDataWriter(const ParallelDataWriter& rhs) = delete;
-  ~ParallelDataWriter();
+  explicit TextWriter2(const String& filename);
+  TextWriter2(const TextWriter2& rhs) = delete;
+  ~TextWriter2();
+  TextWriter2& operator=(const TextWriter2& rhs) = delete;
 
  public:
 
-  Int64ConstArrayView sortedUniqueIds() const;
-  void setGatherAll(bool v);
-  void sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid);
-  Ref<IData> getSortedValues(IData* data);
+  void write(Span<const std::byte> values);
+
+ public:
+
+  String fileName() const;
+  void setDataCompressor(Ref<IDataCompressor> ds);
+  Ref<IDataCompressor> dataCompressor() const;
+  Int64 fileOffset();
+  std::ostream& stream();
 
  private:
 
   Impl* m_p;
+
+ private:
+
+  void _open(const String& filename);
+  void _binaryWrite(Span<const std::byte> values);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // End namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

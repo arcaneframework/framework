@@ -285,6 +285,8 @@ class Ref
     return a.isNull();
   }
 
+  operator bool() const { return (!isNull()); }
+
  public:
 
   //! Instance associée ou `nullptr` si aucune
@@ -350,7 +352,7 @@ class Ref
  * sera détruit par l'opérateur 'operator delete' lorsqu'il n'y aura plus
  * de référence dessus.
  */
-template <typename InstanceType> auto
+template <typename InstanceType> inline auto
 makeRef(InstanceType* t) -> Ref<InstanceType>
 {
   return Ref<InstanceType>::create(t);
@@ -379,6 +381,18 @@ inline Ref<InstanceType>
 makeRefFromInstance(InstanceType2* t)
 {
   return Ref<InstanceType>::create(t);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé une instance de type \a TrueType avec les arguments \a Args
+ * et retourne une référence dessus.
+ */
+template <typename TrueType, class... Args> inline Ref<TrueType>
+createRef(Args&&... args)
+{
+  return makeRef<TrueType>(new TrueType(std::forward<Args>(args)...));
 }
 
 /*---------------------------------------------------------------------------*/

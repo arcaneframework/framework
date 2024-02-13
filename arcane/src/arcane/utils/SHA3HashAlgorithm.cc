@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SHA3HashAlgorithm.cc                                        (C) 2000-2023 */
+/* SHA3HashAlgorithm.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Calcule de fonction de hashage SHA-3.                                     */
 /*---------------------------------------------------------------------------*/
@@ -59,10 +59,6 @@ namespace Arcane::SHA3Algorithm
 namespace
 {
   // constants
-  constexpr int sha3_224_hash_size = 28;
-  constexpr int sha3_256_hash_size = 32;
-  constexpr int sha3_384_hash_size = 48;
-  constexpr int sha3_512_hash_size = 64;
   constexpr int sha3_max_permutation_size = 25;
   constexpr int sha3_max_rate_in_qwords = 24;
 

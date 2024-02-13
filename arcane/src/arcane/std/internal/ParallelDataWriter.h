@@ -5,64 +5,68 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataReader.h                                        (C) 2000-2024 */
+/* ParallelDataWriter.h                                        (C) 2000-2024 */
 /*                                                                           */
-/* Lecteur de IData en parallèle.                                            */
+/* Ecrivain de IData en parallèle.                                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_PARALLELDATAREADER_H
-#define ARCANE_STD_PARALLELDATAREADER_H
+#ifndef ARCANE_STD_INTERNAL_PARALLELDATAWRITER_H
+#define ARCANE_STD_INTERNAL_PARALLELDATAWRITER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
+#include "arcane/ArcaneTypes.h"
+
+#include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class IParallelMng;
-class IData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecture parallèle.
+ * \brief Écrivain parallèle pour faire des sorties par uniqueId() croissant.
  *
  * Une instance de cette classe est associée à un groupe du maillage.
- *
- * Pour pouvoir l'utiliser, chaque rang du IParallelMng doit spécifier:
- * - la liste des uid qu'il souhaite, à remplir dans wantedUniqueIds()
- * - la liste triée par ordre croissant des uids qui sont gérés par ce rang, à remplir
- * dans writtenUniqueIds().
- * Une fois ceci fait, il faut appeler la méthode sort() pour calculer
- * les infos dont on a besoin pour l'envoie et la réception des valeurs.
- *
- * L'instance est alors utilisable pour toutes les variables qui reposent
- * sur ce groupe et il faut appeler getSortedValues() pour récupérer
- * les valeurs pour une variable.
- * 
  */
-class ParallelDataReader
+class ParallelDataWriter
 {
   class Impl;
 
  public:
 
-  explicit ParallelDataReader(IParallelMng* pm);
-  ParallelDataReader(const ParallelDataReader& rhs) = delete;
-  ~ParallelDataReader();
+  explicit ParallelDataWriter(IParallelMng* pm);
+  ParallelDataWriter(const ParallelDataWriter& rhs) = delete;
+  ~ParallelDataWriter();
 
  public:
 
-  Array<Int64>& writtenUniqueIds();
-  Array<Int64>& wantedUniqueIds();
-  void sort();
-  void getSortedValues(IData* written_data,IData* data);
+  Int64ConstArrayView sortedUniqueIds() const;
+  void setGatherAll(bool v);
+  void sort(Int32ConstArrayView local_ids, Int64ConstArrayView items_uid);
+  Ref<IData> getSortedValues(IData* data);
 
  private:
 
   Impl* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief liste de 'ParallelDataWriter'.
+ */
+class ParallelDataWriterList
+{
+ public:
+
+  Ref<ParallelDataWriter> getOrCreateWriter(const ItemGroup& group);
+
+ private:
+
+  std::map<ItemGroup, Ref<ParallelDataWriter>> m_data_writers;
 };
 
 /*---------------------------------------------------------------------------*/

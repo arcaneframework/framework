@@ -41,6 +41,7 @@ generateAxl(alien_bench.exe
         AlienBench.axl
         AlienStokes.axl
         NO_COPY
+        USER_INSTALL_PREFIX ALIEN
         )
 
 if(ALIEN_USE_SYCL)

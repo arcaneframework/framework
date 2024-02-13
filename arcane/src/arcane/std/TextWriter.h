@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TextWriter.h                                                (C) 2000-2021 */
+/* TextWriter.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Ecrivain de données.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -40,9 +40,12 @@ class TextWriter
 
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2024: This class is deprecated")
   explicit TextWriter(const String& filename);
-  TextWriter(const TextWriter& rhs) = delete;
+  ARCANE_DEPRECATED_REASON("Y2024: This class is deprecated")
   TextWriter();
+
+  TextWriter(const TextWriter& rhs) = delete;
   ~TextWriter();
   TextWriter& operator=(const TextWriter& rhs) = delete;
 

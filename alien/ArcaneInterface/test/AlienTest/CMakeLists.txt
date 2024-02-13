@@ -11,6 +11,7 @@ addSources(alien_arcane_test.exe
 generateAxl(alien_arcane_test.exe
             AlienTest.axl
             NO_COPY
+            USER_INSTALL_PREFIX ALIEN
            )
 
 # Les hooks pour les mallocs sont obsolètes et n'existent

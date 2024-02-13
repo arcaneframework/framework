@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/ParallelDataReader.h"
+#include "arcane/std/internal/ParallelDataReader.h"
 
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/FatalErrorException.h"

@@ -164,7 +164,7 @@ class TBBThreadImplementation
 : public IThreadImplementation
 , public ReferenceCounterImpl
 {
-  ARCCORE_INTERNAL_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 
   void addReference() override { ReferenceCounterImpl::addReference(); }
   void removeReference() override { ReferenceCounterImpl::removeReference(); }

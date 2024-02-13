@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayViews.h                                             (C) 2000-2022 */
+/* NumArrayViews.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des vues pour les 'NumArray' pour les accélérateurs.              */
 /*---------------------------------------------------------------------------*/
@@ -192,6 +192,21 @@ viewIn(RunCommand& command, const NumArray<DataType, Extents, LayoutType>& v)
   using Accessor = DataViewGetter<DataType>;
   return NumArrayView<Accessor, Extents, LayoutType>(command, v.constSpan());
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Vue en entrée sur un NumArray
+template <typename DataType, typename Extents, typename LayoutType = DefaultLayout>
+using NumArrayInView = NumArrayView<DataViewGetter<DataType>, Extents, LayoutType>;
+
+//! Vue en sortie sur un NumArray
+template <typename DataType, typename Extents, typename LayoutType = DefaultLayout>
+using NumArrayOutView = NumArrayView<DataViewSetter<DataType>, Extents, LayoutType>;
+
+//! Vue en entrée/sortie sur un NumArray
+template <typename DataType, typename Extents, typename LayoutType = DefaultLayout>
+using NumArrayInOutView = NumArrayView<DataViewGetterSetter<DataType>, Extents, LayoutType>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
