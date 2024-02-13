@@ -362,6 +362,8 @@ set(ARCANE_ORIGINAL_SOURCES
   VariableBuildInfo.h
   VariableCollection.h
   VariableRef.h
+  VariableUtils.h
+  VariableUtils.cc
 
   XmlNode.h
   XmlNodeList.h
