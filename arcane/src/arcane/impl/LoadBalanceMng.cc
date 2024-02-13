@@ -1,40 +1,39 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LoadBalanceMng.cc                                           (C) 2000-2023 */
+/* LoadBalanceMng.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Module standard de description du probleme pour l'equilibrage de charge.  */
 /* Est utilise par le MeshPartioner comme entree.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/impl/LoadBalanceMng.h"
+
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/MultiArray2.h"
+#include "arcane/utils/ITraceMng.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IModule.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/VariableCollection.h"
-
-#include "arcane/ILoadBalanceMng.h"
-#include "arcane/impl/LoadBalanceMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/VariableCollection.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,6 +51,7 @@ class ProxyItemVariableNull
 : public IProxyItemVariable
 {
  public:
+
   ProxyItemVariableNull() {}
   ~ProxyItemVariableNull() {}
 
@@ -65,7 +65,8 @@ class ProxyItemVariableNull
   }
 
  protected:
-  void deleteMe() { }
+
+  void deleteMe() {}
 };
 
 //! Représentant nul de la classe précédente.
@@ -82,19 +83,25 @@ template <typename DataType> class ProxyItemVariable
 : public IProxyItemVariable
 {
  public:
-  ProxyItemVariable(IVariable* var, Integer pos=0)
-  : m_var(var), m_pos(pos){
+
+  ProxyItemVariable(IVariable* var, Integer pos = 0)
+  : m_var(var)
+  , m_pos(pos)
+  {
   }
   ~ProxyItemVariable() {}
 
-  Real operator[](ItemEnumerator i) const {
+  Real operator[](ItemEnumerator i) const
+  {
     return static_cast<Real>(m_var[i]);
   }
-  Integer getPos() const {
+  Integer getPos() const
+  {
     return m_pos;
   }
 
  private:
+
   ItemVariableScalarRefT<DataType> m_var;
   Integer m_pos;
 };
@@ -111,7 +118,7 @@ proxyItemVariableFactory(IVariable* var, Integer pos)
 {
   if (!var)
     return &nullProxy;
-  switch(var->dataType()) {
+  switch (var->dataType()) {
   case DT_Real:
     return new ProxyItemVariable<Real>(var, pos);
     break;
@@ -127,24 +134,21 @@ proxyItemVariableFactory(IVariable* var, Integer pos)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/* Utility class to manage multicriteria weights.                            */
-/* Nota: This class is not thread safe.                                      */
-/*---------------------------------------------------------------------------*/
-
 /*!
- * @brief Classe de gestion des criteres de partitionnement.
+ * \brief Classe de gestion des criteres de partitionnement.
  *
  * Sert essentiellement à fournir les informations mémoire associées à chaque
  * entité.
  * Permet d'obtenir le numéro d'entité à partir de son nom.
+ * \note This class is not thread safe.
  */
 class CriteriaMng
 {
  public:
+
   //! Construction en fonction du IVariableMng.
-  CriteriaMng(IVariableMng* varMng);
-  ~CriteriaMng() { }
+  explicit CriteriaMng(IVariableMng* varMng);
+  ~CriteriaMng() {}
 
   //! Ajoute une entité et lui attribue un numéro. Un même nom n'est pas dupliqué.
   Integer addEntity(const String& entity);
@@ -154,32 +158,40 @@ class CriteriaMng
 
   //! Retourne la mémoire totale associée à une entité.
   Real getOverallMemory(const String& entity) const;
-  inline Real getOverallMemory(Integer offset) const {
-    return m_overallMem[offset];
+  Real getOverallMemory(Integer offset) const
+  {
+    return m_overall_memory[offset];
   }
-  inline Real getOverallMemory(const Cell& cell) {
-    _computeMemCell(cell); return m_buffer.overallMem;
+  Real getOverallMemory(const Cell& cell)
+  {
+    _computeMemCell(cell);
+    return m_buffer.overall_memory;
   }
 
   //! Retourne la mémoire "résidente" (à transférer) associée à une entité.
   Real getResidentMemory(const String& entity) const;
-  inline Real getResidentMemory(Integer offset) const {
-    return m_residentMem[offset];
+  Real getResidentMemory(Integer offset) const
+  {
+    return m_resident_memory[offset];
   }
-  inline Real getResidentMemory(const Cell& cell) {
-    _computeMemCell(cell); return m_buffer.residentMem;
+  Real getResidentMemory(const Cell& cell)
+  {
+    _computeMemCell(cell);
+    return m_buffer.resident_memory;
   }
 
   //! Gestion des entités et de leur nom.
-  Integer operator[] (const String& entity) const {
-    return _findEntity(entity) ; }
-  const String& operator[] (unsigned int i) const {
-    return m_familyName[i];
+  Integer operator[](const String& entity) const
+  {
+    return _findEntity(entity);
+  }
+  const String& operator[](unsigned int i) const
+  {
+    return m_family_names[i];
   }
 
  private:
 
-  void _setup();
   Integer _findEntity(const String& entity) const;
   void _computeMemCell(Cell cell);
 
@@ -189,96 +201,103 @@ class CriteriaMng
   {
     Real contrib = 0.0;
     //ItemEnumeratorT<ItemKind> iterator = list.enumerator();
-    for ( const auto& item : list ) {
-      contrib += 1.0/(Real)(item.nbCell());
+    for (const auto& item : list) {
+      contrib += 1.0 / (Real)(item.nbCell());
     }
     return contrib;
   }
 
-  IVariableMng *m_varMng;
-  UniqueArray<String> m_familyName;
-  UniqueArray<Int32> m_overallMem;
-  UniqueArray<Int32> m_residentMem;
+  IVariableMng* m_variable_mng;
+  UniqueArray<String> m_family_names;
+  UniqueArray<Int32> m_overall_memory;
+  UniqueArray<Int32> m_resident_memory;
 
   //! Système de cache pour l'accès aux mémoires relatives à une maille.
   struct MemInfo
   {
-    Int32 id;
-    Real overallMem;
-    Real residentMem;
-    MemInfo() : id(-1), overallMem(0), residentMem(0){}
+    Int32 id = -1;
+    Real overall_memory = 0;
+    Real resident_memory = 0;
   };
   MemInfo m_buffer;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CriteriaMng::
 CriteriaMng(IVariableMng* varMng)
-: m_varMng(varMng)
-, m_familyName(IK_Unknown+1, "__special__") // +1 car certaines variables sont associées à IK_Unknown
+: m_variable_mng(varMng)
+, m_family_names(IK_Unknown + 1, "__special__") // +1 car certaines variables sont associées à IK_Unknown
 {
-  m_familyName[IK_Cell] = "Cell";
-  m_familyName[IK_Face] = "Face";
-  m_familyName[IK_Edge] = "Edge";
-  m_familyName[IK_Node] = "Node";
+  m_family_names[IK_Cell] = "Cell";
+  m_family_names[IK_Face] = "Face";
+  m_family_names[IK_Edge] = "Edge";
+  m_family_names[IK_Node] = "Node";
 }
 
-Integer
-CriteriaMng::
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer CriteriaMng::
 addEntity(const String& entity)
 {
   Integer pos;
   pos = _findEntity(entity);
   if (pos < 0) {
-    pos = m_familyName.size();
-    m_familyName.add(entity);
+    pos = m_family_names.size();
+    m_family_names.add(entity);
   }
   return pos;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Calcul de la consommation mémoire pour chaque type d'entité.
 // Les mailles bénéficient ensuite des contributions des autres entités adjacentes.
 void CriteriaMng::
 computeMemory()
 {
-  int lenght = m_familyName.size();
-  m_overallMem.resize(lenght);
-  m_residentMem.resize(lenght);
+  Int32 length = m_family_names.size();
+  m_overall_memory.resize(length);
+  m_resident_memory.resize(length);
   m_buffer.id = -1;
-  m_overallMem.fill(0);
-  m_residentMem.fill(0);
+  m_overall_memory.fill(0);
+  m_resident_memory.fill(0);
 
   // For each variable, compute the size for one object.
-  for (VariableCollectionEnumerator vc(m_varMng->usedVariables()) ; ++vc ; ) {
-    IVariable* var = *vc;
+  for (VariableCollectionEnumerator vc(m_variable_mng->usedVariables()); ++vc;) {
+    const IVariable* var = *vc;
     Integer memory = 0;
     try {
-      if (var->dataType()!=DT_String)
+      if (var->dataType() != DT_String)
         memory = dataTypeSize(var->dataType());
     }
     catch (const ArgumentException&) {
       memory = 0; // Cannot know memory used for that ...
       continue;
     }
-    Integer family = -1;
+    Int32 family_index = -1;
     Integer kind = var->itemKind();
     if (kind == IK_Particle) { // Not the same counter for all items
-      family = _findEntity(var->itemFamilyName());
-      if (family >= 0) {
-        m_overallMem[family] += memory;
+      family_index = _findEntity(var->itemFamilyName());
+      if (family_index >= 0) {
+        m_overall_memory[family_index] += memory;
       }
     }
-    m_overallMem[kind] += memory;
+    m_overall_memory[kind] += memory;
 
     int properties = var->property();
     if ((properties & IVariable::PNoExchange) ||
         (properties & IVariable::PNoNeedSync) ||
-        (properties & IVariable::PTemporary)  ||
+        (properties & IVariable::PTemporary) ||
         (properties & IVariable::PSubDomainPrivate)) {
-        continue;
+      continue;
     }
-    m_residentMem[kind] += memory;
-    if (family >= 0) {
-      m_residentMem[family] += memory;
+    m_resident_memory[kind] += memory;
+    if (family_index >= 0) {
+      m_resident_memory[family_index] += memory;
     }
   }
 }
@@ -289,8 +308,8 @@ computeMemory()
 Integer CriteriaMng::
 _findEntity(const String& entity) const
 {
-  for (int i = 0 ; i < m_familyName.size() ; ++i) {
-    if (m_familyName[i] == entity)
+  for (int i = 0; i < m_family_names.size(); ++i) {
+    if (m_family_names[i] == entity)
       return i;
   }
   return -1;
@@ -332,50 +351,35 @@ _computeMemCell(Cell cell)
   if (cell.localId() == m_buffer.id) // already computed
     return;
   m_buffer.id = cell.localId();
-  m_buffer.overallMem = m_overallMem[IK_Cell];
-  m_buffer.residentMem = m_residentMem[IK_Cell];
+  m_buffer.overall_memory = m_overall_memory[IK_Cell];
+  m_buffer.resident_memory = m_resident_memory[IK_Cell];
 
   contrib = _computeMemContrib<Node>(cell.nodes());
-  m_buffer.overallMem += contrib*m_overallMem[IK_Node];
-  m_buffer.residentMem += contrib*m_residentMem[IK_Node];
+  m_buffer.overall_memory += contrib * m_overall_memory[IK_Node];
+  m_buffer.resident_memory += contrib * m_resident_memory[IK_Node];
 
   contrib = _computeMemContrib<Face>(cell.faces());
-  m_buffer.overallMem += contrib*m_overallMem[IK_Face];
-  m_buffer.residentMem += contrib*m_residentMem[IK_Face];
+  m_buffer.overall_memory += contrib * m_overall_memory[IK_Face];
+  m_buffer.resident_memory += contrib * m_resident_memory[IK_Face];
 
   contrib = _computeMemContrib<Edge>(cell.edges());
-  m_buffer.overallMem += contrib*m_overallMem[IK_Edge];
-  m_buffer.residentMem += contrib*m_residentMem[IK_Edge];
-
+  m_buffer.overall_memory += contrib * m_overall_memory[IK_Edge];
+  m_buffer.resident_memory += contrib * m_resident_memory[IK_Edge];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 LoadBalanceMng::
-LoadBalanceMng(ISubDomain* sd, bool massAsCriterion)
+LoadBalanceMng(ISubDomain* sd, bool mass_as_criterion)
 : m_mesh_handle(sd->defaultMeshHandle())
 , m_criteria(new CriteriaMng(sd->variableMng()))
-, m_mass_criterion(massAsCriterion)
-, m_nb_criterion(false)
-, m_cell_comm(true)
-, m_compute_comm(true)
-, m_comm_costs(nullptr)
-, m_mass_over_weigth(nullptr)
-, m_mass_res_weight(nullptr)
-, m_event_weights(nullptr)
-  // TODO: vérifier s'il est utile de créer cette variable. // SdC This variable is a problem when using a custom mesh
-, m_cell_new_owner(nullptr)
+, m_mass_criterion(mass_as_criterion)
 {
   reset();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-LoadBalanceMng::
-~LoadBalanceMng()
-{
 }
 
 /*---------------------------------------------------------------------------*/
@@ -400,17 +404,19 @@ initAccess(IMesh* mesh)
   if (!mesh)
     ARCANE_FATAL("Null mesh");
   m_mesh_handle = mesh->handle();
-  int vflags = IVariable::PExecutionDepend|IVariable::PNoDump|IVariable::PTemporary;
+  int vflags = IVariable::PExecutionDepend | IVariable::PNoDump | IVariable::PTemporary;
   m_cell_new_owner = std::make_unique<VariableCellInt32>(VariableBuildInfo(m_mesh_handle, "CellFamilyNewOwner", IVariable::PExecutionDepend | IVariable::PNoDump));
   m_comm_costs = new VariableFaceReal(VariableBuildInfo(m_mesh_handle, "LbMngCommCost", vflags));
-  m_mass_over_weigth = new VariableCellReal(VariableBuildInfo(m_mesh_handle, "LbMngOverallMass",vflags));
-  m_mass_res_weight = new VariableCellReal(VariableBuildInfo(m_mesh_handle, "LbMngResidentMass",vflags));
+  m_mass_over_weigth = new VariableCellReal(VariableBuildInfo(m_mesh_handle, "LbMngOverallMass", vflags));
+  m_mass_res_weight = new VariableCellReal(VariableBuildInfo(m_mesh_handle, "LbMngResidentMass", vflags));
   m_event_weights = new VariableCellArrayReal(VariableBuildInfo(m_mesh_handle, "LbMngMCriteriaWgt", vflags));
   m_comm_costs->fill(1);
   m_mass_over_weigth->fill(1);
   m_mass_res_weight->fill(1);
 
-  if (m_compute_comm || m_mass_criterion) {// Memory useful only for communication cost or mass lb criterion
+  mesh->traceMng()->info() << "LoadBalanceMng::initAccess(): use_memory=" << m_mass_criterion;
+
+  if (m_compute_comm || m_mass_criterion) { // Memory useful only for communication cost or mass lb criterion
     m_criteria->computeMemory();
     _computeResidentMass();
   }
@@ -484,8 +490,8 @@ nbCriteria()
   Integer count;
 
   count = m_event_vars.size();
-  count -= ((m_mass_criterion)?0:1); // First event is mass !
-  count += ((m_nb_criterion)?1:0);
+  count -= ((m_mass_criterion) ? 0 : 1); // First event is mass !
+  count += ((m_nb_criterion) ? 1 : 0);
   return count;
 }
 
@@ -497,7 +503,7 @@ notifyEndPartition()
 {
   IMesh* mesh = m_mesh_handle.mesh();
   if (m_cell_new_owner)
-    m_cell_new_owner->fill(mesh->parallelMng()->commRank(),mesh->ownCells());
+    m_cell_new_owner->fill(mesh->parallelMng()->commRank(), mesh->ownCells());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -506,8 +512,8 @@ notifyEndPartition()
 void LoadBalanceMng::
 _computeOverallMass()
 {
-  ENUMERATE_CELL(icell, m_mesh_handle.mesh()->ownCells()) {
-    (*m_mass_over_weigth)[icell] = m_criteria->getOverallMemory(*icell) ;
+  ENUMERATE_CELL (icell, m_mesh_handle.mesh()->ownCells()) {
+    (*m_mass_over_weigth)[icell] = m_criteria->getOverallMemory(*icell);
   }
 }
 
@@ -517,8 +523,8 @@ _computeOverallMass()
 void LoadBalanceMng::
 _computeResidentMass()
 {
-  ENUMERATE_CELL(icell, m_mesh_handle.mesh()->ownCells()) {
-    (*m_mass_res_weight)[icell] = m_criteria->getResidentMemory(*icell) ;
+  ENUMERATE_CELL (icell, m_mesh_handle.mesh()->ownCells()) {
+    (*m_mass_res_weight)[icell] = m_criteria->getResidentMemory(*icell);
   }
 }
 
@@ -529,30 +535,30 @@ void LoadBalanceMng::
 _computeComm()
 {
   IMesh* mesh = m_mesh_handle.mesh();
-  Integer penalty=2; // How many times we do synchronization ?
+  Integer penalty = 2; // How many times we do synchronization ?
 
   if (m_comm_vars.size())
     m_comm_costs->fill(0);
 
-  for (int i = 0 ; i < m_comm_vars.size() ; ++i) {
+  for (int i = 0; i < m_comm_vars.size(); ++i) {
     StoreIProxyItemVariable& commvar = m_comm_vars[i];
-    ENUMERATE_FACE(iface, mesh->ownFaces()) {
-      (*m_comm_costs)[iface] += commvar[iface]*m_criteria->getResidentMemory(commvar.getPos());
+    ENUMERATE_FACE (iface, mesh->ownFaces()) {
+      (*m_comm_costs)[iface] += commvar[iface] * m_criteria->getResidentMemory(commvar.getPos());
     }
   }
   if (cellCommContrib()) {
-    ENUMERATE_CELL(icell, mesh->ownCells()) {
+    ENUMERATE_CELL (icell, mesh->ownCells()) {
       Real mem = (*m_mass_res_weight)[icell];
-      for( Face face : icell->faces()) {
-        (*m_comm_costs)[face] += mem*penalty;
+      for (Face face : icell->faces()) {
+        (*m_comm_costs)[face] += mem * penalty;
       }
     }
   }
 
-  IVariable *ivar;
+  IVariable* ivar;
   // Make sure that ghosts contribution is used
   ivar = m_comm_costs->variable();
-  ivar->itemFamily()->reduceFromGhostItems(ivar,Parallel::ReduceSum);
+  ivar->itemFamily()->reduceFromGhostItems(ivar, Parallel::ReduceSum);
   m_comm_costs->synchronize();
 }
 
@@ -573,9 +579,9 @@ _computeEvents()
     eventVars = m_event_vars.subView(1, m_event_vars.size());
   }
 
-  for (Integer i = 0 ; i < eventVars.size() ;  ++i) {
-    ENUMERATE_CELL(icell, m_mesh_handle.mesh()->ownCells()) {
-      Integer count=i;
+  for (Integer i = 0; i < eventVars.size(); ++i) {
+    ENUMERATE_CELL (icell, m_mesh_handle.mesh()->ownCells()) {
+      Integer count = i;
       if (m_nb_criterion) {
         count += 1;
         (*m_event_weights)[icell][0] = 1;
@@ -591,14 +597,14 @@ _computeEvents()
 extern "C++" ILoadBalanceMng*
 arcaneCreateLoadBalanceMng(ISubDomain* sd)
 {
-  ILoadBalanceMng *lbm = new LoadBalanceMng(sd);
+  ILoadBalanceMng* lbm = new LoadBalanceMng(sd);
   return lbm;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
