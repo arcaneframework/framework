@@ -50,6 +50,8 @@
 #include "arcane/core/UnstructuredMeshConnectivity.h"
 #include "arcane/core/datatype/DataAllocationInfo.h"
 
+#include "arcane/core/VariableUtils.h"
+
 #include <algorithm>
 #include <map>
 
@@ -1739,7 +1741,7 @@ computeConnectivityPatternOccurence(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 void MeshUtils::
-markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh)
+markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh, RunQueue* queue, bool do_prefetch)
 {
   if (!mesh)
     return;
@@ -1747,13 +1749,17 @@ markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh)
   VariableCollection used_variables = vm->usedVariables();
   const String tag_name = "ArcaneConnectivity";
   DataAllocationInfo alloc_info(eMemoryLocationHint::HostAndDeviceMostlyRead);
+
   // Les variables associées à la connectivité ont le tag 'ArcaneConnectivity'.
   for (VariableCollection::Enumerator iv(used_variables); ++iv;) {
     IVariable* v = *iv;
     if (!v->hasTag(tag_name))
       continue;
-    if (v->meshHandle().meshOrNull() == mesh)
+    if (v->meshHandle().meshOrNull() == mesh) {
       v->setAllocationInfo(alloc_info);
+      if (do_prefetch)
+        VariableUtils::prefetchVariableAsync(v, queue);
+    }
   }
 }
 

@@ -100,11 +100,13 @@ class HipRunQueueStream
   }
   void prefetchMemory(const MemoryPrefetchArgs& args) override
   {
+    auto src = args.source().bytes();
+    if (src.size()==0)
+      return;
     DeviceId d = args.deviceId();
     int device = hipCpuDeviceId;
     if (!d.isHost())
       device = d.asInt32();
-    auto src = args.source().bytes();
     auto r = hipMemPrefetchAsync(src.data(), src.size(), device, m_hip_stream);
     ARCANE_CHECK_HIP(r);
     if (!args.isAsync())

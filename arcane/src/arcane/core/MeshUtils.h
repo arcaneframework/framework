@@ -238,9 +238,14 @@ computeConnectivityPatternOccurence(IMesh* mesh);
  * En cas d'utilisation sur accélérateur, cela permet de dupliquer les
  * informations entre l'accélérateur et l'hôte pour éviter des aller-retour
  * multiples si les connectivités sont utilisées sur les deux à la fois.
+ *
+ * Si \a q est non nul et que \a do_prefetch vaut \a true, alors
+ * VariableUtils::prefetchVariableAsync() est appelé pour chaque variable
+ * gérant la connectivité.
  */
 extern "C++" ARCANE_CORE_EXPORT void
-markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh);
+markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh,RunQueue* q = nullptr,
+                                       bool do_prefetch = false);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
