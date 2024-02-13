@@ -16,25 +16,32 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ITimeLoop.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IApplication.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/MathUtils.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/Concurrency.h"
-#include "arcane/BasicService.h"
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/FactoryService.h"
-#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/MathUtils.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Concurrency.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/SimdItem.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
+#include "arcane/core/ItemGenericInfoListView.h"
+
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/IMainFactory.h"
 
@@ -115,6 +122,7 @@ class SimpleHydroAcceleratorService
     NodeVectorView view;
     Real value;
     TypesSimpleHydro::eBoundaryCondition type;
+    Ref<ax::RunQueue> queue_ref;
   };
 
   // Note: il faut mettre ce champs statique si on veut que sa valeur
@@ -155,6 +163,7 @@ class SimpleHydroAcceleratorService
   }
 
  private:
+  ARCCORE_HOST_DEVICE static inline Real computeFatAIFunc(Real energy, Real energy_max, Integer n) ;
   
   void computeGeometricValues2();
 
@@ -181,10 +190,15 @@ class SimpleHydroAcceleratorService
   VariableNodeReal3 m_node_coord; //!< Coordonnées des noeuds
   VariableCellArrayReal3 m_cell_cqs; //!< Résultantes aux sommets pour chaque maille
 
+  VariableCellReal m_cell_fatai;  //!< Energie interne des mailles
+
   VariableScalarReal m_density_ratio_maximum; //!< Accroissement maximum de la densité sur un pas de temps
   VariableScalarReal m_delta_t_n; //!< Delta t n entre t^{n-1/2} et t^{n+1/2}
   VariableScalarReal m_delta_t_f; //!< Delta t n+\demi  entre t^{n} et t^{n+1}
   VariableScalarReal m_old_dt_f; //!< Delta t n-\demi  entre t^{n-1} et t^{n}
+
+  Real m_energy_maximum = 0.;
+  Integer m_fatai_order = 0 ;
 
   SimpleHydro::SimpleHydroModuleBase* m_module;
   //! Indice de chaque noeud dans la maille
@@ -230,6 +244,7 @@ SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 , m_node_coord(VariableBuildInfo(sbi.mesh(),"NodeCoord"))
 , m_cell_cqs(VariableBuildInfo(sbi.mesh(),"CellCQS"))
 , m_density_ratio_maximum(VariableBuildInfo(sbi.mesh(),"DensityRatioMaximum"))
+, m_cell_fatai(VariableBuildInfo(sbi.mesh(),"CellFaiAI"))
 , m_delta_t_n(VariableBuildInfo(sbi.mesh(),"CenteredDeltaT"))
 , m_delta_t_f(VariableBuildInfo(sbi.mesh(),"SplitDeltaT"))
 , m_old_dt_f(VariableBuildInfo(sbi.mesh(),"OldDTf"))
@@ -352,20 +367,45 @@ hydroStartInit()
     auto out_internal_energy = ax::viewOut(command,m_internal_energy);
     auto out_sound_speed = ax::viewOut(command,m_sound_speed);
 
-    command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+    m_fatai_order = m_module->getFuncOrder() ;
+    if(m_fatai_order>0)
     {
-      Real pressure = in_pressure[vi];
-      Real adiabatic_cst = in_adiabatic_cst[vi];
-      Real density = in_density[vi];
-      out_internal_energy[vi] = pressure / ((adiabatic_cst-1.0) * density);
-      out_sound_speed[vi] = math::sqrt(adiabatic_cst*pressure/density);
-    };
+        // TEST de ROOFLINE, funcOrder est une parametre pour augmenter artificiellement l'intensité arythmétique des calculs thermo
+        ax::ReducerMax<double> energy_maximum(command);
+        command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+        {
+          Real pressure = in_pressure[vi];
+          Real adiabatic_cst = in_adiabatic_cst[vi];
+          Real density = in_density[vi];
+          Real internal_energy = pressure / ((adiabatic_cst-1.0) * density);
+          out_internal_energy[vi] = internal_energy ;
+          out_sound_speed[vi] = math::sqrt(adiabatic_cst*pressure/density);
+          energy_maximum.max(internal_energy);
+        };
+        m_energy_maximum = energy_maximum.reduce();
+        info()<<"FATAI ORDER : "<<m_fatai_order<<" "<<m_energy_maximum;
+    }
+    else
+    {
+        command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+        {
+          Real pressure = in_pressure[vi];
+          Real adiabatic_cst = in_adiabatic_cst[vi];
+          Real density = in_density[vi];
+          Real internal_energy = pressure / ((adiabatic_cst-1.0) * density);
+          out_internal_energy[vi] = internal_energy ;
+          out_sound_speed[vi] = math::sqrt(adiabatic_cst*pressure/density);
+        };
+
+    }
   }
 
   // Remplit la structure contenant les informations sur les conditions aux limites
   // Cela permet de garantir avec les accélérateurs qu'on pourra accéder
   // de manière concurrente aux données.
   {
+    bool use_multiple_queue = m_module->useMultipleQueueForBoundaryConditions();
+    info() << "Using multiple queue for boundary conditions ? = " << use_multiple_queue;
     m_boundary_conditions.clear();
     for( auto bc : m_module->getBoundaryConditions() ){
       FaceGroup face_group = bc->getSurface();
@@ -375,6 +415,10 @@ hydroStartInit()
       bcn.nodes = face_group.nodeGroup();
       bcn.value = value;
       bcn.type = type;
+      if (use_multiple_queue){
+        bcn.queue_ref = makeQueueRef(m_runner);
+        bcn.queue_ref->setAsync(true);
+      }
       m_boundary_conditions.add(bcn);
     }
   }
@@ -395,11 +439,24 @@ computeForces()
     _computePressureAndCellPseudoViscosityForces();
   }
   else{
+    auto cnc = m_connectivity_view.cellNode();
     auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
     auto out_force = ax::viewOut(command,m_force);
     auto in_force = ax::viewIn(command,m_force);
+    auto in_pressure = ax::viewIn(command,m_pressure);
+    auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
 
+    command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
+    {
+      Real pressure = in_pressure[cid] ;
+      Int32 i = 0;
+      for( NodeLocalId nid : cnc.nodes(cid) ){
+          out_force[nid] = in_force[nid] + pressure * in_cell_cqs[cid][i];
+          ++i ;
+      }
+    } ;
+    /*
     ENUMERATE_CELL(icell,allCells()){
       Cell cell = *icell;
       Real pressure = m_pressure[cell];
@@ -407,7 +464,7 @@ computeForces()
         NodeLocalId nid = *i_node;
         out_force[nid] = in_force[nid] + pressure * m_cell_cqs[icell][i_node.index()];
       }
-    }
+    }*/
   }
 }
 
@@ -561,6 +618,7 @@ applyBoundaryCondition()
   // indépendants (ou alors avec la même valeur si c'est sur les mêmes noeuds),
   // on peut exécuter les noyaux en asynchrone.
   queue.setAsync(true);
+  bool use_one_queue = !m_module->useMultipleQueueForBoundaryConditions();
 
   // Repositionne les vues si les groupes associés ont été modifiés
   for( auto& bc : m_boundary_conditions )
@@ -570,7 +628,8 @@ applyBoundaryCondition()
     TypesSimpleHydro::eBoundaryCondition type = bc.type;
     NodeVectorView view = bc.view;
 
-    auto command = makeCommand(queue);
+    ax::RunQueue& used_queue = (use_one_queue) ? queue : *(bc.queue_ref.get());
+    auto command = makeCommand(used_queue);
     auto in_out_velocity = ax::viewInOut(command,m_velocity);
     // boucle sur les faces de la surface
     command << RUNCOMMAND_ENUMERATE(Node,node,view)
@@ -586,7 +645,12 @@ applyBoundaryCondition()
       in_out_velocity[node] = v;
     };
   }
-  queue.barrier();
+  if (use_one_queue)
+    queue.barrier();
+  else
+    for( auto bc : m_boundary_conditions ){
+      bc.queue_ref->barrier();
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -659,6 +723,18 @@ updateDensity()
   }
 }
 
+ARCCORE_HOST_DEVICE inline Real SimpleHydroAcceleratorService::
+computeFatAIFunc(Real energy,Real energy_max,Integer n)
+{
+  Real value = 1. ;
+  Real x = energy/energy_max;
+  for(Integer i=0;i<n;++i)
+  {
+    value += x ;
+    x = x*x ;
+  }
+  return value ;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -684,29 +760,64 @@ applyEquationOfState()
   auto out_sound_speed = ax::viewOut(command,m_sound_speed);
   auto out_pressure = ax::viewOut(command,m_pressure);
 
-  // Calcul de l'énergie interne
-  command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+  if(m_fatai_order>0)
   {
-    Real adiabatic_cst = in_adiabatic_cst[vi];
-    Real volume_ratio = in_volume[vi] / in_old_volume[vi];
-    Real x = 0.5* (adiabatic_cst-1.0);
-    Real numer_accrois_nrj = 1.0 + x*(1.0-volume_ratio);
-    Real denom_accrois_nrj = 1.0 + x*(1.0-(1.0/volume_ratio));
-    Real internal_energy = in_out_internal_energy[vi];
-    internal_energy = internal_energy * (numer_accrois_nrj/denom_accrois_nrj);
+    const Real energy_max = m_energy_maximum ;
+    const Integer fatai_order = m_fatai_order ;
 
-    // Prise en compte du travail des forces de viscosité
-    if (add_viscosity_force)
-      internal_energy = internal_energy - deltatf*in_viscosity_work[vi] / (in_cell_mass[vi]*denom_accrois_nrj);
+    auto out_fatai = ax::viewOut(command,m_cell_fatai);
 
-    in_out_internal_energy[vi] = internal_energy;
+    // Calcul de l'énergie interne
+    command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+    {
+      Real adiabatic_cst = in_adiabatic_cst[vi];
+      Real volume_ratio = in_volume[vi] / in_old_volume[vi];
+      Real x = 0.5* (adiabatic_cst-1.0);
+      Real numer_accrois_nrj = 1.0 + x*(1.0-volume_ratio);
+      Real denom_accrois_nrj = 1.0 + x*(1.0-(1.0/volume_ratio));
+      Real internal_energy = in_out_internal_energy[vi];
+      internal_energy = internal_energy * (numer_accrois_nrj/denom_accrois_nrj);
 
-    Real density = in_density[vi];
-    Real pressure = (adiabatic_cst-1.0) * density * internal_energy;
-    Real sound_speed = math::sqrt(adiabatic_cst*pressure/density);
-    out_pressure[vi] = pressure;
-    out_sound_speed[vi] = sound_speed;
-  };
+      // Prise en compte du travail des forces de viscosité
+      if (add_viscosity_force)
+        internal_energy = internal_energy - deltatf*in_viscosity_work[vi] / (in_cell_mass[vi]*denom_accrois_nrj);
+      Real fatai = computeFatAIFunc(internal_energy,energy_max,fatai_order) ;
+
+      out_fatai[vi] = fatai ;
+      in_out_internal_energy[vi] = internal_energy;
+
+      Real density = in_density[vi];
+      Real pressure = (adiabatic_cst-1.0) * density * internal_energy;
+      Real sound_speed = math::sqrt(adiabatic_cst*pressure/density);
+      out_pressure[vi] = pressure;
+      out_sound_speed[vi] = sound_speed;
+    };
+  }
+  else
+  {
+      // Calcul de l'énergie interne
+      command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+      {
+        Real adiabatic_cst = in_adiabatic_cst[vi];
+        Real volume_ratio = in_volume[vi] / in_old_volume[vi];
+        Real x = 0.5* (adiabatic_cst-1.0);
+        Real numer_accrois_nrj = 1.0 + x*(1.0-volume_ratio);
+        Real denom_accrois_nrj = 1.0 + x*(1.0-(1.0/volume_ratio));
+        Real internal_energy = in_out_internal_energy[vi];
+        internal_energy = internal_energy * (numer_accrois_nrj/denom_accrois_nrj);
+
+        // Prise en compte du travail des forces de viscosité
+        if (add_viscosity_force)
+          internal_energy = internal_energy - deltatf*in_viscosity_work[vi] / (in_cell_mass[vi]*denom_accrois_nrj);
+        in_out_internal_energy[vi] = internal_energy;
+
+        Real density = in_density[vi];
+        Real pressure = (adiabatic_cst-1.0) * density * internal_energy;
+        Real sound_speed = math::sqrt(adiabatic_cst*pressure/density);
+        out_pressure[vi] = pressure;
+        out_sound_speed[vi] = sound_speed;
+      };
+  }
 }
 
 /*---------------------------------------------------------------------------*/
