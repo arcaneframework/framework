@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -162,6 +168,11 @@ class SYCLInternalLinearAlgebraExpr
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
 
+  Real norm2(const Matrix& x) const;
+  void copy(const Matrix& a, Matrix& r) const;
+  void add(const Matrix& a, Matrix& r) const;
+  void scal(Real alpha, Matrix& a) const;
+
   // IInternalLinearAlgebra interface.
 
   void mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
@@ -171,6 +182,7 @@ class SYCLInternalLinearAlgebraExpr
   Real dot(Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
 
   void scal(Real alpha, UniqueArray<Real>& x) const;
+
 
  private:
   std::unique_ptr<SYCLInternal::KernelInternal> m_internal;

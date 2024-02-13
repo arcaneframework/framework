@@ -28,11 +28,17 @@ endif ()
 linkLibraries(alien_arcane_test.exe
         Alien::alien_core
         Alien::alien_semantic_move
-        alien_external_packages
-        alien_ifpen_solvers
         alien_arcane_tools
         arcane_full
         )
+
+if (TARGET alien_external_packages)
+    linkLibraries(alien_arcane_test.exe alien_external_packages)
+endif ()
+
+if (TARGET alien_ifpen_solvers)
+    linkLibraries(alien_arcane_test.exe alien_ifpen_solvers)
+endif ()
 
 if (TARGET trilinos)
     linkLibraries(alien_arcane_test.exe alien_trilinos)

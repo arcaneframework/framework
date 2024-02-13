@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -20,9 +26,14 @@
 
 #include <alien/kernels/sycl/SYCLPrecomp.h>
 
+#ifdef USE_SYCL2020
+#include <sycl/sycl.hpp>
+#else
 #include <CL/sycl.hpp>
+#endif
 
-#include <alien/kernels/sycl/data/SendRecvOp.h>
+#include <alien/kernels/sycl/data/SYCLSendRecvOp.h>
+#include <alien/kernels/sycl/data/SYCLLUSendRecvOp.h>
 
 #include <alien/kernels/sycl/data/BEllPackStructInfo.h>
 
@@ -31,15 +42,19 @@
 namespace Alien::SYCLInternal
 {
 
+#ifndef USE_SYCL2020
+  using namespace cl ;
+#endif
+
 template <int BlockSize, typename IndexT>
 struct ALIEN_EXPORT StructInfoInternal
 {
   // clang-format off
   static const int                        block_size = BlockSize ;
   typedef IndexT                          index_type ;
-  typedef cl::sycl::buffer<index_type, 1> index_buffer_type ;
-  typedef cl::sycl::buffer<index_type, 1> IndexBufferType ;
-  typedef cl::sycl::buffer<uint8_t, 1>    MaskBufferType ;
+  typedef sycl::buffer<index_type, 1> index_buffer_type ;
+  typedef sycl::buffer<index_type, 1> IndexBufferType ;
+  typedef sycl::buffer<uint8_t, 1>    MaskBufferType ;
   // clang-format on
 
   StructInfoInternal(std::size_t nrows,
@@ -118,12 +133,12 @@ class MatrixInternal
       InternalProfileType::IndexBufferType      IndexBufferType ;
   typedef std::unique_ptr<IndexBufferType>      IndexBufferPtrType ;
 
-  typedef cl::sycl::buffer<value_type, 1>       value_buffer_type ;
+  typedef sycl::buffer<value_type, 1>       value_buffer_type ;
 
-  typedef cl::sycl::buffer<value_type, 1>       ValueBufferType ;
+  typedef sycl::buffer<value_type, 1>       ValueBufferType ;
   typedef std::unique_ptr<ValueBufferType>      ValueBufferPtrType ;
 
-  typedef cl::sycl::queue                       QueueType ;
+  typedef sycl::queue                       QueueType ;
   // clang-format on
 
  public:

@@ -14,6 +14,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+IF(ALIEN_USE_INTELSYCL)
+	set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+ENDIF()
+
 set(alien_refsemantic_public_header
         alien/ref/AlienImportExport.h
         alien/ref/AlienRefSemantic.h

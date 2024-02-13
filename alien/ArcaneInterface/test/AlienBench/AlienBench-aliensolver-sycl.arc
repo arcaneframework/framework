@@ -40,19 +40,20 @@
       <zero-rhs>false</zero-rhs>
       <nb-resolutions>1</nb-resolutions>
       <alien-core-solver>
+        <backend>SYCL</backend>
         <solver>BCGS</solver>
         <preconditioner>Diag</preconditioner>
         <max-iter>1000</max-iter>
         <tol>1.e-6</tol>
         <output-level>1</output-level>
       </alien-core-solver>
-      <linear-solver name="HypreSolver">
+      <!--linear-solver name="HypreSolver">
         <solver>BiCGStab</solver>
         <num-iterations-max>1000</num-iterations-max>
         <stop-criteria-value>1e-8</stop-criteria-value>
         <preconditioner>Euclid</preconditioner>
         <verbose>true</verbose>
-      </linear-solver>
+      </linear-solver-->
 
   </alien-bench>
 </case>

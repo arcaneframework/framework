@@ -27,6 +27,11 @@ cmake_policy(SET CMP0074 NEW)
 
 project(AlienBenchmark VERSION 1.0 LANGUAGES CXX)
 
+IF(ALIEN_USE_INTELSYCL)
+	set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+ENDIF()
+
+
 find_package(Alien REQUIRED)
 if (NOT Arccore_FOUND)
     find_package(Arccore REQUIRED)

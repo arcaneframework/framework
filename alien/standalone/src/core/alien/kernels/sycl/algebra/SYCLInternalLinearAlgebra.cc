@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -47,6 +53,7 @@
 #include "alien/kernels/sycl/algebra/SYCLInternalLinearAlgebra.h"
 
 #include "alien/kernels/sycl/algebra/SYCLBEllPackMatrixMult.h"
+
 /*---------------------------------------------------------------------------*/
 
 namespace Alien
@@ -128,7 +135,6 @@ Real SYCLInternalLinearAlgebra::norm1(const SYCLVector<Real>& vx ALIEN_UNUSED_PA
   throw NotImplementedException(
   A_FUNCINFO, "SYCLLinearAlgebra::norm1 not implemented");
 }
-
 /*---------------------------------------------------------------------------*/
 
 Real SYCLInternalLinearAlgebra::norm2(const SYCLVector<Real>& vx) const
@@ -251,18 +257,13 @@ void SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx,
 
   auto& dist = vx.distribution();
   if (dist.isParallel()) {
-    using namespace Arccore::MessagePassing::Mpi;
-    res.get();
+    Real local_value = res() ;
     Real* x = &res();
-    auto pm = dist.parallelMng();
-    auto type_dispatcher = pm->dispatchers()->dispatcher(x);
-    MpiTypeDispatcher<Real>* ptr = dynamic_cast<MpiTypeDispatcher<Real>*>(type_dispatcher);
-    if (ptr) {
-      auto datatype = ptr->datatype();
-      auto op = datatype->reduceOperator(Arccore::MessagePassing::ReduceSum);
-      auto request = ptr->adapter()->nonBlockingAllReduce(x, x, 1, datatype->datatype(), op);
-      res.addRequest(pm, request);
-    }
+    auto request = mpNonBlockingAllReduce(dist.parallelMng(),
+                                          Arccore::MessagePassing::ReduceSum,
+                                          Arccore::ConstArrayView<Real>(1,&local_value),
+                                          Arccore::ArrayView<Real>(1,x)) ;
+    res.addRequest(dist.parallelMng(), request);
   }
 }
 
@@ -410,6 +411,29 @@ Real SYCLInternalLinearAlgebraExpr::dot(const SYCLVector<Real>& vx, const SYCLVe
   return m_internal->dot(vx.internal()->values(), vy.internal()->values());
 }
 
+Real SYCLInternalLinearAlgebraExpr::norm2(const SYCLBEllPackMatrix<Real>& a) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::notm2 not implemented");
+}
+
+void SYCLInternalLinearAlgebraExpr::copy(const SYCLBEllPackMatrix<Real>& a, SYCLBEllPackMatrix<Real>& r) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::copy not implemented");
+}
+
+void SYCLInternalLinearAlgebraExpr::add(const SYCLBEllPackMatrix<Real>& a, SYCLBEllPackMatrix<Real>& r) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::add not implemented");
+}
+
+void SYCLInternalLinearAlgebraExpr::scal(Real alpha, SYCLBEllPackMatrix<Real>& a) const
+{
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::scal not implemented");
+}
 /*---------------------------------------------------------------------------*/
 void SYCLInternalLinearAlgebraExpr::scal(Real alpha ALIEN_UNUSED_PARAM, UniqueArray<Real>& x ALIEN_UNUSED_PARAM) const
 {

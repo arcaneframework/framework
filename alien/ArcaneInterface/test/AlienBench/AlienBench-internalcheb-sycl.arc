@@ -40,7 +40,7 @@
       <epsilon>0.01</epsilon>
 
       <alien-core-solver>
-        <backend>SimpleCSR</backend>
+	<backend>SYCL</backend>
         <solver>BCGS</solver>
         <preconditioner>ChebyshevPoly</preconditioner>
         <poly-order>1</poly-order>

@@ -201,6 +201,12 @@ if(NOT WIN32)
                MESSAGE     "ENABLE CUDA " 
                DEFAULT     OFF)
   
+  # HIP
+  createOption(COMMANDLINE EnableHIP
+               NAME        ENABLE_HIP
+               MESSAGE     "ENABLE HIP" 
+               DEFAULT     OFF)
+  
 endif()
 
 # ---------------------------------------------------------------------------
