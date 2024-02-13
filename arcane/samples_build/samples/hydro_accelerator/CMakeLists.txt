@@ -3,11 +3,7 @@ project(HydroAccelerator LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 
-add_executable(HydroAccelerator 
-	       SimpleHydroAcceleratorService.cc 
-	       ModuleSimpleHydroGeneric.cc 
-	       main.cc 
-	       SimpleHydro_axl.h)
+add_executable(HydroAccelerator SimpleHydroAcceleratorService.cc ModuleSimpleHydroGeneric.cc main.cc SimpleHydro_axl.h)
 
 arcane_generate_axl(SimpleHydro)
 arcane_add_arcane_libraries_to_target(HydroAccelerator)

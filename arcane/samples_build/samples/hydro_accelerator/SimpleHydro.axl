@@ -462,16 +462,6 @@
         car cela n'est pas implémenté pour toutes les implémentations de l'hydro).
       </description>
     </simple>
-    
-    <simple name = "use-multiple-queue-for-boundary-conditions" type="bool" default="false" >
-       <description>Indique si on utilise plusieurs une file d'exécution par condition aux limites</description>
-    </simple>
-    
-    <!-- - - - - - func order - - - - -->
-    <simple name="func-order" type="integer" default="0" >
-      <description>
-      </description>
-    </simple>
 
   </options>
   
