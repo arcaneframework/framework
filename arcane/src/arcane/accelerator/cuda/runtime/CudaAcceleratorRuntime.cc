@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAcceleratorRuntime.cc                                   (C) 2000-2023 */
+/* CudaAcceleratorRuntime.cc                                   (C) 2000-2024 */
 /*                                                                           */
 /* Runtime pour 'Cuda'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -159,12 +159,14 @@ class CudaRunQueueStream
   }
   void prefetchMemory(const MemoryPrefetchArgs& args) override
   {
+    auto src = args.source().bytes();
+    if (src.size()==0)
+      return;
     DeviceId d = args.deviceId();
     int device = cudaCpuDeviceId;
     if (!d.isHost())
       device = d.asInt32();
     //std::cout << "PREFETCH device=" << device << " host=" << cudaCpuDeviceId << " size=" << args.source().length() << "\n";
-    auto src = args.source().bytes();
     auto r = cudaMemPrefetchAsync(src.data(), src.size(), device, m_cuda_stream);
     ARCANE_CHECK_CUDA(r);
     if (!args.isAsync())
