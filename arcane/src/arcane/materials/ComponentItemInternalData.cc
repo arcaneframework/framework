@@ -35,6 +35,7 @@ ComponentItemInternalData(MeshMaterialMng* mmg)
 , m_material_mng(mmg)
 , m_component_item_internal_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_shared_infos(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_mat_items_internal_range(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
   // Il y a une instance pour les MatCell, les EnvCell et les AllEnvCell
   // Il ne faut ensuite plus modifier ce tableau car on conserve des pointeurs
@@ -49,9 +50,8 @@ void ComponentItemInternalData::
 endCreate()
 {
   const Int32 nb_env = m_material_mng->environments().size();
-  m_mat_items_internal.clear();
   m_mat_items_internal.resize(nb_env);
-
+  m_mat_items_internal_range.resize(nb_env);
   _initSharedInfos();
 }
 
@@ -63,19 +63,22 @@ endCreate()
 void ComponentItemInternalData::
 _resetItemsInternal()
 {
+  ComponentItemInternalLocalId internal_local_id;
+  ArrayView<ComponentItemInternal> storage = m_component_item_internal_storage;
+
   ComponentItemSharedInfo* all_env_shared_info = allEnvSharedInfo();
-  for (ComponentItemInternal& x : m_all_env_items_internal)
-    x._reset(all_env_shared_info);
+  for (ComponentItemInternalLocalId id : m_all_env_items_internal_range)
+    storage[id.localId()]._reset(id, all_env_shared_info);
 
   ComponentItemSharedInfo* env_shared_info = envSharedInfo();
-  for (ComponentItemInternal& x : m_env_items_internal)
-    x._reset(env_shared_info);
+  for (ComponentItemInternalLocalId id : m_env_items_internal_range)
+    storage[id.localId()]._reset(id, env_shared_info);
 
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
     ArrayView<ComponentItemInternal> mat_items_internal = matItemsInternal(env->id());
     ComponentItemSharedInfo* mat_shared_info = matSharedInfo();
     for (ComponentItemInternal& x : mat_items_internal) {
-      x._reset(mat_shared_info);
+      x._reset(internal_local_id, mat_shared_info);
     }
   }
 }
@@ -93,6 +96,7 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell)
   // dès qu'un des nombre d'élément change.
   Int32 total_nb_internal = 0;
   total_nb_internal += max_local_id; // Pour les AllEnvCell
+
   total_nb_internal += total_env_cell; // Pour les EnvCell
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments())
     total_nb_internal += env->totalNbCellMat();
@@ -103,16 +107,24 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell)
   // Maintenant récupère les vues sur chaque partie de 'm_component_item_internal_storage'
   {
     m_all_env_items_internal = m_component_item_internal_storage.subView(0, max_local_id);
+    m_all_env_items_internal_range.setRange(0, max_local_id);
     m_env_items_internal = m_component_item_internal_storage.subView(max_local_id, total_env_cell);
+    m_env_items_internal_range.setRange(max_local_id, total_env_cell);
     Int32 index_in_container = max_local_id + total_env_cell;
     for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
       Int32 nb_cell_mat = env->totalNbCellMat();
-      m_mat_items_internal[env->id()] = m_component_item_internal_storage.subView(index_in_container, nb_cell_mat);
+      Int32 env_id = env->id();
+      m_mat_items_internal[env_id] = m_component_item_internal_storage.subView(index_in_container, nb_cell_mat);
+      m_mat_items_internal_range[env_id].setRange(index_in_container, nb_cell_mat);
       index_in_container += nb_cell_mat;
     }
   }
 
   _resetItemsInternal();
+
+  // Met à jour les vues sur m_component_item_internal_storage.
+  for (ComponentItemSharedInfo& x : m_shared_infos)
+    x.m_component_item_internal_view = m_component_item_internal_storage;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -128,20 +140,22 @@ _initSharedInfos()
   // ne faut pas que conteneurs associés de \a m_materials_mng soient modifiées.
   // Normalement ce n'est pas le cas, car la liste des constituants est fixe.
   ComponentItemSharedInfo* info_mat = sharedInfo(LEVEL_MATERIAL);
+  ComponentItemSharedInfo* info_env = sharedInfo(LEVEL_ENVIRONMENT);
+  ComponentItemSharedInfo* info_all_env = sharedInfo(LEVEL_ALLENVIRONMENT);
+
   info_mat->m_level = LEVEL_MATERIAL;
   info_mat->m_item_shared_info = item_shared_info;
   info_mat->m_components = m_material_mng->materialsAsComponents();
+  info_mat->m_parent_component_item_shared_info = info_env;
 
-  ComponentItemSharedInfo* info_env = sharedInfo(LEVEL_ENVIRONMENT);
   info_env->m_level = LEVEL_ENVIRONMENT;
   info_env->m_item_shared_info = item_shared_info;
   info_env->m_components = m_material_mng->environmentsAsComponents();
+  info_env->m_parent_component_item_shared_info = info_all_env;
 
-  ComponentItemSharedInfo* info_all_env = sharedInfo(LEVEL_ALLENVIRONMENT);
   info_all_env->m_level = LEVEL_ALLENVIRONMENT;
   info_all_env->m_item_shared_info = item_shared_info;
   info_all_env->m_components = ConstArrayView<IMeshComponent*>();
-
   info() << "EndCreate ComponentItemInternalData nb_mat=" << info_mat->m_components.size()
          << " nb_env=" << info_env->m_components.size();
 }

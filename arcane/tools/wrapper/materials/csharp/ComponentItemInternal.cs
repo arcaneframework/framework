@@ -17,6 +17,7 @@ namespace Arcane.Materials
     internal Int16 m_component_id;
     internal Int16 m_nb_sub_component_item;
     internal Int32 m_global_item_local_id;
+    internal Int32 m_component_item_internal_local_id;
     internal ComponentItemInternal* m_super_component_item;
     internal ComponentItemInternal* m_first_sub_component_item;
     internal ComponentItemSharedInfo* m_shared_info;

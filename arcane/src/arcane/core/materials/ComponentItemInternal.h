@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemInternal.h                                     (C) 2000-2023 */
+/* ComponentItemInternal.h                                     (C) 2000-2024 */
 /*                                                                           */
 /* Partie interne d'une maille multi-matériau.                               */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,27 @@
 
 namespace Arcane::Materials
 {
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ */
+class ARCANE_CORE_EXPORT ComponentItemInternalLocalId
+{
+ public:
+
+  ComponentItemInternalLocalId() = default;
+  explicit ComponentItemInternalLocalId(Int32 id)
+  : m_id(id)
+  {}
+  Int32 localId() const { return m_id; }
+
+ private:
+
+  Int32 m_id = -1;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,6 +65,8 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
   Int16 m_level = (-1);
   ConstArrayView<IMeshComponent*> m_components;
+  ComponentItemSharedInfo* m_parent_component_item_shared_info = null_shared_info_pointer;
+  ArrayView<ComponentItemInternal> m_component_item_internal_view;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -183,6 +206,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   Int16 m_component_id = -1;
   Int16 m_nb_sub_component_item = 0;
   Int32 m_global_item_local_id = NULL_ITEM_LOCAL_ID;
+  ComponentItemInternalLocalId m_component_item_internal_local_id;
   ComponentItemInternal* m_super_component_item = nullptr;
   ComponentItemInternal* m_first_sub_component_item = nullptr;
   ComponentItemSharedInfo* m_shared_info = nullptr;
@@ -256,11 +280,12 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_component_id = static_cast<Int16>(component_id);
   }
 
-  void _reset(ComponentItemSharedInfo* shared_info)
+  void _reset(ComponentItemInternalLocalId id, ComponentItemSharedInfo* shared_info)
   {
     m_var_index.reset();
     m_component_id = -1;
     m_super_component_item = nullptr;
+    m_component_item_internal_local_id = id;
     m_nb_sub_component_item = 0;
     m_first_sub_component_item = nullptr;
     m_global_item_local_id = NULL_ITEM_LOCAL_ID;
