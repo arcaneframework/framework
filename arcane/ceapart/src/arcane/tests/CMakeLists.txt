@@ -3,6 +3,7 @@
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
     AdiProjectionModule.cc
+    MaterialHeatTestModule.cc
   )
   set(ARCANE_ACCELERATOR_SOURCES
     AdiProjectionModule.cc

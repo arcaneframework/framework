@@ -303,16 +303,21 @@ foreach(test_index 1 2 3)
     set(TEST_ACTIVE_LOAD_BALANCE "false")
     set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}.arc")
     configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
-    arcane_add_test(material_heat_opt${opt_level}_${test_index} ${_TEST_FILENAME})
 
     # Test avec équilibrage
     set(TEST_ACTIVE_LOAD_BALANCE "true")
     set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}-lb.arc")
     configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
-    arcane_add_test(material_heat_lb_opt${opt_level}_${test_index} ${_TEST_FILENAME})
+    if (ARCANE_HAS_ACCELERATOR_API)
+      arcane_add_test(material_heat_opt${opt_level}_${test_index} ${_TEST_FILENAME})
+      arcane_add_test(material_heat_lb_opt${opt_level}_${test_index} ${_TEST_FILENAME})
+    endif()
   endforeach()
 endforeach()
-arcane_add_test_sequential(material_heat_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_test_sequential(material_heat_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
+  arcane_add_accelerator_test_sequential(material_heat_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
+endif()
 
 ###################
 # WRAPPING '.Net' #

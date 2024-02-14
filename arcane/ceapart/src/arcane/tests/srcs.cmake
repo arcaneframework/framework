@@ -1,6 +1,5 @@
 set(ARCANE_SOURCES
   RayMeshIntersectionUnitTest.cc
-  MaterialHeatTestModule.cc
   MeshMaterialTesterModule.cc
   CartesianMeshTesterModule.cc
   HyodaMixedCellsUnitTest.cc
