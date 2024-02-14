@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemInternalData.cc                                (C) 2000-2023 */
+/* ComponentItemInternalData.cc                                (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des listes de 'ComponentItemInternal'.                            */
 /*---------------------------------------------------------------------------*/
@@ -33,8 +33,7 @@ ComponentItemInternalData::
 ComponentItemInternalData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
 , m_material_mng(mmg)
-, m_all_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
-, m_env_items_internal(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_component_item_internal_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_shared_infos(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
   // Il y a une instance pour les MatCell, les EnvCell et les AllEnvCell
@@ -51,19 +50,18 @@ endCreate()
 {
   const Int32 nb_env = m_material_mng->environments().size();
   m_mat_items_internal.clear();
-  m_mat_items_internal.reserve(nb_env);
-  auto allocator = MemoryUtils::getAllocatorForMostlyReadOnlyData();
-  for (Int32 i = 0; i < nb_env; ++i)
-    m_mat_items_internal.add(UniqueArray<ComponentItemInternal>(allocator));
+  m_mat_items_internal.resize(nb_env);
 
   _initSharedInfos();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Réinitialise les ComponentItemInternal.
+ */
 void ComponentItemInternalData::
-_resetEnvItemsInternal()
+_resetItemsInternal()
 {
   ComponentItemSharedInfo* all_env_shared_info = allEnvSharedInfo();
   for (ComponentItemInternal& x : m_all_env_items_internal)
@@ -72,21 +70,13 @@ _resetEnvItemsInternal()
   ComponentItemSharedInfo* env_shared_info = envSharedInfo();
   for (ComponentItemInternal& x : m_env_items_internal)
     x._reset(env_shared_info);
-}
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ComponentItemInternalData::
-_resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size)
-{
-  m_mat_items_internal[env_index].resize(size);
-
-  ArrayView<ComponentItemInternal> mat_items_internal = matItemsInternal(env_index);
-  ComponentItemSharedInfo* mat_shared_info = matSharedInfo();
-  for (Integer i = 0; i < size; ++i) {
-    ComponentItemInternal& ref_ii = mat_items_internal[i];
-    ref_ii._reset(mat_shared_info);
+  for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
+    ArrayView<ComponentItemInternal> mat_items_internal = matItemsInternal(env->id());
+    ComponentItemSharedInfo* mat_shared_info = matSharedInfo();
+    for (ComponentItemInternal& x : mat_items_internal) {
+      x._reset(mat_shared_info);
+    }
   }
 }
 
@@ -96,19 +86,33 @@ _resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size)
 void ComponentItemInternalData::
 resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell)
 {
-  m_all_env_items_internal.resize(max_local_id);
-  m_env_items_internal.resize(total_env_cell);
+  // Calcule le nombre total de ComponentItemInternal dont on a besoin
+  // Les 'ComponentItemInternal' seront rangés dans 'm_component_item_internal_storage'
+  // dans l'ordre suivant: AllEnvCell, EnvCell et chaque MatCell
+  // TODO: Réserver de la place entre les vues pour ne pas être obligé de tout réallouer
+  // dès qu'un des nombre d'élément change.
+  Int32 total_nb_internal = 0;
+  total_nb_internal += max_local_id; // Pour les AllEnvCell
+  total_nb_internal += total_env_cell; // Pour les EnvCell
+  for (const MeshEnvironment* env : m_material_mng->trueEnvironments())
+    total_nb_internal += env->totalNbCellMat();
 
-  // Redimensionne les 'ComponentItemInternal' pour les matériaux des milieux.
-  // Il faut être certain que le nombre de matériaux par milieu a bien été calculé
-  // (par exemple par un appel à computeNbMatPerCell()).
-  for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
-    Integer total_nb_cell_mat = env->totalNbCellMat();
-    _resizeAndResetMatCellForEnvironment(env->id(), total_nb_cell_mat);
+  // Redimensionne le conteneur. Il ne faut plus le modifier ensuite
+  m_component_item_internal_storage.resize(total_nb_internal);
+
+  // Maintenant récupère les vues sur chaque partie de 'm_component_item_internal_storage'
+  {
+    m_all_env_items_internal = m_component_item_internal_storage.subView(0, max_local_id);
+    m_env_items_internal = m_component_item_internal_storage.subView(max_local_id, total_env_cell);
+    Int32 index_in_container = max_local_id + total_env_cell;
+    for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
+      Int32 nb_cell_mat = env->totalNbCellMat();
+      m_mat_items_internal[env->id()] = m_component_item_internal_storage.subView(index_in_container, nb_cell_mat);
+      index_in_container += nb_cell_mat;
+    }
   }
 
-  // Initialise à des valeurs invalides pour détecter les erreurs.
-  _resetEnvItemsInternal();
+  _resetItemsInternal();
 }
 
 /*---------------------------------------------------------------------------*/
