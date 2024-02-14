@@ -495,22 +495,6 @@ _checkConnectivityCoherency()
     }
   }
 
-  // Vérifie le nombre de matériaux par milieu
-  for( MeshEnvironment* env : true_environments ){
-    Int16 env_id = env->componentId();
-    ENUMERATE_CELL(icell,all_cells){
-      Int32 ref_nb_mat = env->m_nb_mat_per_cell[icell];
-      Int32 current_nb_mat = m_component_connectivity_list->cellNbMaterial(icell,env_id);
-      if (ref_nb_mat!=current_nb_mat){
-        ++nb_error;
-        if (nb_error<10)
-          error() << "Invalid values for nb_material environment=" << env->name()
-                  << " cell=" << icell->uniqueId()
-                  << " ref=" << ref_nb_mat << " current=" << current_nb_mat;
-      }
-    }
-  }
-
   if (nb_error!=0)
     ARCANE_FATAL("Invalid values for component connectivity nb_error={0}",nb_error);
 }

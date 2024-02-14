@@ -22,9 +22,6 @@
     <variable>Density_ENV1_MAT2</variable>
     <variable>Density_ENV2_MAT2</variable>
     <variable>Pressure</variable>
-    <variable>StdMat_CellNbMaterial_ENV1</variable>
-    <variable>StdMat_CellNbMaterial_ENV2</variable>
-    <variable>StdMat_CellNbMaterial_ENV3</variable>
     <groupe>StdMat_ENV1</groupe>
     <groupe>StdMat_ENV2</groupe>
     <groupe>StdMat_ENV3</groupe>

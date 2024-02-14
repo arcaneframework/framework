@@ -100,7 +100,6 @@ MeshEnvironment::
 MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int16 env_id)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, m_nb_mat_per_cell(VariableBuildInfo(mm->mesh(), mm->name() + "_CellNbMaterial_" + name))
 , m_data(this, name, env_id, false)
 , m_non_const_this(this)
 , m_internal_api(this)
@@ -169,23 +168,13 @@ computeNbMatPerCell()
 {
   info(4) << "ComputeNbMatPerCell env=" << name();
   Integer nb_mat = m_materials.size();
-  m_nb_mat_per_cell.fill(0);
   Integer total = 0;
   for( Integer i=0; i<nb_mat; ++i ){
     IMeshMaterial* mat = m_materials[i];
     CellGroup mat_cells = mat->cells();
     total += mat_cells.size();
-    ENUMERATE_CELL(icell,mat_cells){
-      ++m_nb_mat_per_cell[icell];
-    }
   }
   m_total_nb_cell_mat = total;
-  ENUMERATE_CELL(icell,this->cells()){
-    Int32 n = m_nb_mat_per_cell[icell];
-    if (n==0)
-      ARCANE_FATAL("No material in cell '{0}' for environment '{1}'",
-                   icell->uniqueId(),name());
-  }
 }
 
 /*---------------------------------------------------------------------------*/

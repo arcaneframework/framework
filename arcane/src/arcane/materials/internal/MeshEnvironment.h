@@ -178,13 +178,6 @@ class MeshEnvironment
   UniqueArray<IMeshMaterial*> m_materials;
   UniqueArray<MeshMaterial*> m_true_materials;
 
- public:
-
-  //! Nombre de matériaux de ce milieu par maille
-  VariableCellInt32 m_nb_mat_per_cell;
-
- private:
-  
   //! Nombre total de mailles pour tous les matériaux
   Integer m_total_nb_cell_mat = 0;
   IItemGroupObserver* m_group_observer = nullptr;
