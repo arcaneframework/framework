@@ -59,6 +59,10 @@ class ComponentItemInternalRange
     {
       return m_current_value == m_last_value;
     }
+    bool operator!=(const Sentinel&) const
+    {
+      return m_current_value != m_last_value;
+    }
 
    private:
 
