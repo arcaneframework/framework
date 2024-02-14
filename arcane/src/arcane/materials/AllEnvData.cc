@@ -139,6 +139,24 @@ _computeAndResizeEnvItemsInternal()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Reconstruit les connectivités incrémentales à parties des groupes.
+ */
+void AllEnvData::
+_rebuildIncrementalConnectivitiesFromGroups()
+{
+  ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
+  auto clist = m_component_connectivity_list;
+  clist->removeAllConnectivities();
+  for( MeshEnvironment* env : true_environments ){
+    clist->addCellsToEnvironment(env->componentId(),env->cells().view().localIds());
+    for( MeshMaterial* mat : env->trueMaterials() )
+      clist->addCellsToMaterial(mat->componentId(),mat->cells().view().localIds());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void AllEnvData::
 _rebuildMaterialsAndEnvironmentsFromGroups()
@@ -174,20 +192,6 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
 
   for( MeshEnvironment* env : true_environments )
     env->computeItemListForMaterials(m_nb_env_per_cell);
-
-  // Si on utilise les connectivités incrémentales, il faut les reconstruire
-  // à partir des informations des groupes
-  {
-    auto clist = m_component_connectivity_list;
-    if (clist->isActive()){
-      clist->removeAllConnectivities();
-      for( MeshEnvironment* env : true_environments ){
-        clist->addCellsToEnvironment(env->componentId(),env->cells().view().localIds());
-        for( MeshMaterial* mat : env->trueMaterials() )
-          clist->addCellsToMaterial(mat->componentId(),mat->cells().view().localIds());
-      }
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -330,8 +334,10 @@ forceRecompute(bool compute_all)
 
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
-  if (compute_all)
+  if (compute_all){
+    _rebuildIncrementalConnectivitiesFromGroups();
     _computeNbEnvAndNbMatPerCell();
+  }
 
   // Calcul le nombre de milieux par maille, et pour chaque
   // milieu le nombre de matériaux par maille
