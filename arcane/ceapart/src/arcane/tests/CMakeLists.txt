@@ -3,11 +3,13 @@
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
     AdiProjectionModule.cc
+    MaterialHeatTestModule.cc
   )
   set(ARCANE_ACCELERATOR_SOURCES
     AdiProjectionModule.cc
     CartesianMeshTestUtils.cc
     MeshMaterialSyncUnitTest.cc
+    MaterialHeatTestModule.cc
   )
   arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 endif()
