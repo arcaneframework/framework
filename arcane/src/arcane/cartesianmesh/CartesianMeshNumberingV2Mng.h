@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshNumberingMng.h                                 (C) 2000-2024 */
+/* CartesianMeshNumberingV2Mng.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
 /* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGMNG_H
-#define ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGMNG_H
+#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGV2MNG_H
+#define ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGV2MNG_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,15 +33,15 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class CartesianMeshNumberingMng
+class CartesianMeshNumberingV2Mng
 : public TraceAccessor
 , public ICartesianMeshNumberingMng
 {
  public:
-  CartesianMeshNumberingMng(IMesh* mesh);
+  CartesianMeshNumberingV2Mng(IMesh* mesh);
 
  public:
-  void prepareLevel(Int32 level) override{}
+  void prepareLevel(Int32 level) override;
 
   Int64 getFirstCellUidLevel(Integer level) override;
   Int64 getFirstNodeUidLevel(Integer level) override;
@@ -80,23 +80,25 @@ class CartesianMeshNumberingMng
   void getCellUidsAround(ArrayView<Int64> uid, Cell cell) override;
 
   void setNodeCoordinates(Cell child_cell) override;
-
-  Int64 getParentCellUidOfCell(Cell cell) override{/*TODO*/};
-
+  Int64 getParentCellUidOfCell(Cell cell) override;
 
  private:
   IMesh* m_mesh;
 
   Integer m_pattern;
 
+  UniqueArray<Int32> m_p_to_l_level;
+  Int32 m_max_level;
+  Int32 m_min_level;
+
+  Int64 m_latest_cell_uid;
   UniqueArray<Int64> m_first_cell_uid_level;
-  UniqueArray<Int64> m_nb_cell_level;
 
+  Int64 m_latest_node_uid;
   UniqueArray<Int64> m_first_node_uid_level;
-  UniqueArray<Int64> m_nb_node_level;
 
+  Int64 m_latest_face_uid;
   UniqueArray<Int64> m_first_face_uid_level;
-  UniqueArray<Int64> m_nb_face_level;
 
   Int64 m_nb_cell_x;
   Int64 m_nb_cell_y;
@@ -111,4 +113,4 @@ class CartesianMeshNumberingMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif //ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGMNG_H
+#endif //ARCANE_CARTESIANMESH_CARTESIANMESHNUMBERINGV2MNG_H

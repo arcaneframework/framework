@@ -255,9 +255,9 @@ init()
 
   const Integer dimension = defaultMesh()->dimension();
   if (dimension==2)
-    m_nb_expected_patch = 1 + options()->refinement2d().size();
+    m_nb_expected_patch = 1 + options()->refinement2d().size() + options()->coarsement2d().size();
   else if (dimension==3)
-    m_nb_expected_patch = 1 + options()->refinement3d().size();
+    m_nb_expected_patch = 1 + options()->refinement3d().size() + options()->coarsement3d().size();
 
   // Si on dé-raffine à l'init, on aura un patch de plus
   if (do_coarse_at_init)
@@ -502,10 +502,18 @@ _initAMR()
       m_cartesian_mesh->refinePatch2D(x->position(),x->length());
       m_cartesian_mesh->computeDirections();
     }
+    for( auto& x : options()->coarsement2d() ){
+      m_cartesian_mesh->coarsePatch2D(x->position(),x->length());
+      m_cartesian_mesh->computeDirections();
+    }
   }
   if (dim==3){
     for( auto& x : options()->refinement3d() ){    
       m_cartesian_mesh->refinePatch3D(x->position(),x->length());
+      m_cartesian_mesh->computeDirections();
+    }
+    for( auto& x : options()->coarsement3d() ){
+      m_cartesian_mesh->coarsePatch3D(x->position(),x->length());
       m_cartesian_mesh->computeDirections();
     }
   }

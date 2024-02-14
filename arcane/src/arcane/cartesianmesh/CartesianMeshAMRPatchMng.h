@@ -47,6 +47,9 @@ class CartesianMeshAMRPatchMng
   void _syncFlagCell();
   void refine() override;
 
+  void flagCellToCoarse(Int32ConstArrayView cells_lids) override;
+  void coarse() override;
+
  private:
   IMesh* m_mesh;
   Ref<ICartesianMeshNumberingMng> m_num_mng;
