@@ -185,7 +185,7 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
   }
 
   for( MeshEnvironment* env : true_environments )
-    env->computeItemListForMaterials(cells_nb_env);
+    env->computeItemListForMaterials(*m_component_connectivity_list);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -220,11 +220,10 @@ _computeInfosForEnvCells()
   // Positionne les infos pour les EnvCell
   {
     Int32UniqueArray current_pos(env_cell_indexes);
-    ItemInfoListView items_internal(cell_family);
     for( MeshEnvironment* env : true_environments ){
+      const Int16 env_id = env->componentId();
       const MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
       CellGroup cells = env->cells();
-      Int32ConstArrayView nb_mat_per_cell = env->m_nb_mat_per_cell.asArray();
 
       env->resizeItemsInternal(var_indexer->nbItem());
 
@@ -243,7 +242,7 @@ _computeInfosForEnvCells()
         Int32 lid = local_ids[z];
         Int32 pos = current_pos[lid];
         ++current_pos[lid];
-        Int32 nb_mat = nb_mat_per_cell[lid];
+        Int32 nb_mat = m_component_connectivity_list->cellNbMaterial(CellLocalId(lid), env_id);
         ComponentItemInternal& ref_ii = env_items_internal[pos];
         env_items_internal_pointer[z] = &env_items_internal[pos];
         ref_ii._setSuperAndGlobalItem(&all_env_items_internal[lid], ItemLocalId(lid));
@@ -252,7 +251,7 @@ _computeInfosForEnvCells()
       }
     }
     for( MeshEnvironment* env : true_environments ){
-      env->computeMaterialIndexes(&m_item_internal_data);
+      env->computeMaterialIndexes(*m_component_connectivity_list, &m_item_internal_data);
     }
   }
 
@@ -484,7 +483,8 @@ _checkConnectivityCoherency()
   ENUMERATE_CELL(icell,all_cells){
     Int32 ref_nb_mat = 0;
     for( MeshEnvironment* env : true_environments ){
-      ref_nb_mat += env->m_nb_mat_per_cell[icell];
+      Int16 env_id = env->componentId();
+      ref_nb_mat += m_component_connectivity_list->cellNbMaterial(icell, env_id);
     }
     Int32 current_nb_mat = nb_mat_v2[icell.itemLocalId()];
     if (ref_nb_mat!=current_nb_mat){

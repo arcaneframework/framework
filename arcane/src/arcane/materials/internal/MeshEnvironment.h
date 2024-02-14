@@ -73,7 +73,6 @@ class MeshEnvironment
  public:
 
   MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int16 env_id);
-  ~MeshEnvironment() override;
 
  public:
 
@@ -152,19 +151,16 @@ class MeshEnvironment
   //! Recalcule le nombre de mailles par matériau et de mailles totales
   void computeNbMatPerCell();
 
-  void computeItemListForMaterials(ConstArrayView<Int16> nb_env_per_cell);
+  void computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list);
 
   //! Nombre total de mailles pour tous les matériaux
   Integer totalNbCellMat() const { return m_total_nb_cell_mat; }
   void addToTotalNbCellMat(Int32 v) { m_total_nb_cell_mat += v; }
 
   void resizeItemsInternal(Integer nb_item);
-  void computeMaterialIndexes(ComponentItemInternalData* item_internal_data);
+  void computeMaterialIndexes(const ConstituentConnectivityList& connectivity_list, ComponentItemInternalData* item_internal_data);
   void notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids);
   MeshComponentData* componentData() { return &m_data; }
-
-  void updateItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
-                         Int32ConstArrayView local_ids,bool is_add_operation,bool add_to_env_indexer=false);
 
   ConstArrayView<MeshMaterial*> trueMaterials()
   {
@@ -199,17 +195,6 @@ class MeshEnvironment
  private:
   
   void _changeIds(MeshComponentData* component_data,Int32ConstArrayView old_to_new_ids);
-  void _removeItemsDirect(MeshMaterial* mat,Int32ConstArrayView local_ids,
-                          bool update_env_indexer);
-  void _addItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
-                       Int32ConstArrayView local_ids,bool update_env_indexer);
-
- public:
-
-  // Temporairement publique pour IncrementalOneMaterialModifier
-  void _addItemsToIndexer(const VariableCellInt32& nb_env_per_cell,
-                          MeshMaterialVariableIndexer* var_indexer,
-                          Int32ConstArrayView local_ids);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -819,7 +819,8 @@ dumpInfos(std::ostream& o)
 void MeshMaterialMng::
 dumpInfos2(std::ostream& o)
 {
-  ConstArrayView<Int16> nb_env_per_cell = m_all_env_data->componentConnectivityList()->cellsNbEnvironment();
+  const ConstituentConnectivityList& constituent_list = *m_all_env_data->componentConnectivityList();
+  ConstArrayView<Int16> nb_env_per_cell = constituent_list.cellsNbEnvironment();
   Integer nb_mat = m_materials.size();
   Integer nb_env = m_environments.size();
   Integer nb_var_idx = m_variables_indexer.size();
@@ -844,13 +845,13 @@ dumpInfos2(std::ostream& o)
   for( MeshEnvironment* me : m_true_environments ){
     ConstArrayView<IMeshMaterial*> env_materials = me->materials();
     const MeshMaterialVariableIndexer* env_var_idx = me->variableIndexer();
+    const Int16 env_id = me->componentId();
     Integer nb_env_mat = env_materials.size();
     Integer nb_env_cell = me->cells().size();
     Integer nb_pure_mat = 0;
     if (nb_env_mat>1){
-      const VariableCellInt32& nb_mat_per_cell = me->m_nb_mat_per_cell;
       ENUMERATE_CELL(icell,me->cells()){
-        if (nb_mat_per_cell[icell]<=1)
+        if (constituent_list.cellNbMaterial(icell, env_id) <= 1)
           ++nb_pure_mat;
       }
     }
