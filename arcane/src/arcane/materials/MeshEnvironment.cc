@@ -285,7 +285,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
  * dans le tableau d'indexation des variables.
  */
 void MeshEnvironment::
-computeItemListForMaterials(const VariableCellInt32& nb_env_per_cell)
+computeItemListForMaterials(ConstArrayView<Int16> nb_env_per_cell)
 {
   info(4) << "ComputeItemListForMaterials (V2)";
 
@@ -303,7 +303,7 @@ computeItemListForMaterials(const VariableCellInt32& nb_env_per_cell)
       Int32 lid = icell.itemLocalId();
       // On ne prend l'indice global que si on est le seul matériau et le seul
       // milieu de la maille. Sinon, on prend un indice multiple
-      if (nb_env_per_cell[icell]>1 || m_nb_mat_per_cell[icell]>1)
+      if (nb_env_per_cell[lid] > 1 || m_nb_mat_per_cell[icell] > 1)
         list_builder.addPartialItem(lid);
       else
         list_builder.addPureItem(lid);

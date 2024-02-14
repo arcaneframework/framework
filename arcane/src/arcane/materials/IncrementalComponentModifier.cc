@@ -66,11 +66,6 @@ finalize()
   // TODO: ne le faire que pour les mailles dont les matériaux ont été modifiés
   CellGroup all_cells = m_material_mng->mesh()->allCells();
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
-  ConstArrayView<Int16> incremental_cells_nb_env = connectivity->cellsNbEnvironment();
-  ENUMERATE_(Cell,icell,all_cells){
-    cells_nb_env[icell] = incremental_cells_nb_env[icell.itemLocalId()];
-  }
 
   // Met à jour le nombre de matériaux par milieu
   // TODO: Faire cela en une passe

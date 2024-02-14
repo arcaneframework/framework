@@ -151,8 +151,8 @@ class MeshEnvironment
   void setVariableIndexer(MeshMaterialVariableIndexer* idx);
   //! Recalcule le nombre de mailles par matériau et de mailles totales
   void computeNbMatPerCell();
-  
-  void computeItemListForMaterials(const VariableCellInt32& nb_env_per_cell);
+
+  void computeItemListForMaterials(ConstArrayView<Int16> nb_env_per_cell);
 
   //! Nombre total de mailles pour tous les matériaux
   Integer totalNbCellMat() const { return m_total_nb_cell_mat; }

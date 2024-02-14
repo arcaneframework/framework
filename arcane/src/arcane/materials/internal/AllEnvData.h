@@ -60,11 +60,6 @@ class AllEnvData
     return m_item_internal_data.allEnvItemsInternal();
   }
 
-  const VariableCellInt32& nbEnvPerCell() const
-  {
-    return m_nb_env_per_cell;
-  }
-
   //! Notification de la fin de création des milieux/matériaux
   void endCreate(bool is_continue);
 
@@ -78,9 +73,6 @@ class AllEnvData
   MeshMaterialMng* m_material_mng = nullptr;
   ConstituentConnectivityList* m_component_connectivity_list = nullptr;
   Ref<IIncrementalItemSourceConnectivity> m_component_connectivity_list_ref;
-
-  //! Nombre de milieux par mailles
-  VariableCellInt32 m_nb_env_per_cell;
 
   //! Niveau de verbosité
   Int32 m_verbose_debug_level = 0;
