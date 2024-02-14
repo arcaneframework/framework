@@ -14,6 +14,7 @@
 #include "arcane/accelerator/VariableViews.h"
 
 #include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/RunQueue.h"
 
 #include "arcane/core/VariableUtils.h"
 
@@ -30,10 +31,6 @@
 
 namespace Arcane::Accelerator
 {
-namespace
-{
-  bool global_do_prefetch = false;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,8 +38,9 @@ namespace
 VariableViewBase::
 VariableViewBase(RunCommand& command, IVariable* var)
 {
-  if (global_do_prefetch)
-    VariableUtils::prefetchVariableAsync(var, &command.m_run_queue);
+  RunQueue& q = command.m_run_queue;
+  if (q._isAutoPrefetchCommand())
+    VariableUtils::prefetchVariableAsync(var, &q);
 }
 
 /*---------------------------------------------------------------------------*/

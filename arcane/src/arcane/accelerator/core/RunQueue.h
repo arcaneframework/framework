@@ -92,7 +92,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   void setAsync(bool v);
   //! Indique si la file d'exécution est asynchrone.
   bool isAsync() const;
-   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
+  //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
   void barrier();
 
   //! Copie des informations entre deux zones mémoires
@@ -127,6 +127,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl();
+
+  // Pour VariableViewBase
+  friend class VariableViewBase;
+  bool _isAutoPrefetchCommand() const;
 
  private:
 

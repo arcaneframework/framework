@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.h                                                    (C) 2000-2023 */
+/* Runner.h                                                    (C) 2000-2024 */
 /*                                                                           */
 /* Gestion de l'exécution sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -155,7 +155,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   void _addCommandTime(double v);
   impl::IRunnerRuntime* _internalRuntime() const;
 
-
  private:
 
   std::shared_ptr<Impl> m_p;
@@ -163,6 +162,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
  private:
 
   void _checkIsInit() const;
+  bool _isAutoPrefetchCommand() const;
 };
 
 /*---------------------------------------------------------------------------*/
