@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemInternalData.h                                 (C) 2000-2023 */
+/* ComponentItemInternalData.h                                 (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des listes de 'ComponentItemInternal'.                            */
 /*---------------------------------------------------------------------------*/
@@ -87,19 +87,20 @@ class ComponentItemInternalData
 
   MeshMaterialMng* m_material_mng = nullptr;
 
+  UniqueArray<ComponentItemInternal> m_component_item_internal_storage;
   /*!
    * \brief Liste des ComponentItemInternal pour les AllEnvcell.
    *
    * Les éléments de ce tableau peuvent être indexés directement avec
    * le localId() de la maille.
    */
-  UniqueArray<ComponentItemInternal> m_all_env_items_internal;
+  ArrayView<ComponentItemInternal> m_all_env_items_internal;
 
   //! Liste des ComponentItemInternal pour chaque milieu
-  UniqueArray<ComponentItemInternal> m_env_items_internal;
+  ArrayView<ComponentItemInternal> m_env_items_internal;
 
   //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
-  UniqueArray<UniqueArray<ComponentItemInternal>> m_mat_items_internal;
+  UniqueArray<ArrayView<ComponentItemInternal>> m_mat_items_internal;
 
   //! Liste des informations partagées
   UniqueArray<ComponentItemSharedInfo> m_shared_infos;
@@ -107,10 +108,9 @@ class ComponentItemInternalData
  private:
 
   void _initSharedInfos();
-  //! Redimensionne le nombre de mailles matériaux du \a env_index- ème milieu.
-  void _resizeAndResetMatCellForEnvironment(Int32 env_index, Int32 size);
+  void _resetMatItemsInternal(Int32 env_index);
   //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
-  void _resetEnvItemsInternal();
+  void _resetItemsInternal();
 };
 
 /*---------------------------------------------------------------------------*/

@@ -590,10 +590,9 @@ _executeTest4(Integer nb_z)
   MaterialVariableCellReal& b_ref(m_mat_b_ref);
   MaterialVariableCellReal& c_ref(m_mat_c_ref);
 
-  CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
-
   // Ref CPU
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
+    CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
     ENUMERATE_CELL(icell, allCells()) {
       Cell cell = * icell;
       AllEnvCell all_env_cell = allenvcell_converter[cell];
@@ -691,6 +690,7 @@ _executeTest4(Integer nb_z)
   // Another round to test numerical pbs
   // Ref CPU
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
+    CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
     ENUMERATE_CELL(icell, allCells()) {
       Cell cell = * icell;
       AllEnvCell all_env_cell = allenvcell_converter[cell];
