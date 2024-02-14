@@ -112,7 +112,7 @@ initOptimizationFlags()
 
   m_allow_optimize_multiple_operation = (opt_flag_value & (int)eModificationFlags::OptimizeMultiAddRemove)!=0;
   m_allow_optimize_multiple_material = (opt_flag_value & (int)eModificationFlags::OptimizeMultiMaterialPerEnvironment)!=0;
-  m_use_incremental_recompute = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute)!=0;
+  m_use_incremental_recompute = true;
   if (m_use_incremental_recompute){
     m_allow_optimize_multiple_operation = true;
   }
@@ -271,18 +271,14 @@ _endUpdate()
       }
       keeped_lids = op->ids();
 
-      if (m_use_incremental_recompute){
-        incremental_modifier.m_work_info.setCurrentOperation(op);
+      incremental_modifier.m_work_info.setCurrentOperation(op);
 
-        // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
-        // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
-        if (arcaneIsCheck())
-          op->filterIds();
+      // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
+      // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
+      if (arcaneIsCheck())
+        op->filterIds();
 
-        incremental_modifier.apply(op);
-      }
-      else
-        all_env_data->updateMaterialDirect(op);
+      incremental_modifier.apply(op);
     }
     no_optimization_done = false;
   }
@@ -303,12 +299,8 @@ _endUpdate()
     }
   }
   else{
-    if (m_use_incremental_recompute){
-      incremental_modifier.finalize();
-      all_env_data->recomputeIncremental();
-    }
-    else
-      all_env_data->forceRecompute(false);
+    incremental_modifier.finalize();
+    all_env_data->recomputeIncremental();
   }
 
   linfo() << "END_UPDATE_MAT End";

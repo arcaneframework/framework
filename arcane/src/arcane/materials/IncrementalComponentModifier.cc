@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalComponentModifier.cc                             (C) 2000-2023 */
+/* IncrementalComponentModifier.cc                             (C) 2000-2024 */
 /*                                                                           */
 /* Modification incrémentale des constituants.                               */
 /*---------------------------------------------------------------------------*/
@@ -60,27 +60,6 @@ initialize()
 void IncrementalComponentModifier::
 finalize()
 {
-  // Met à jour les variables contenant le nombre de milieux et de matériaux
-  // par milieu en fonction des valeurs de ConstituentConnectivityList.
-
-  // TODO: ne le faire que pour les mailles dont les matériaux ont été modifiés
-  CellGroup all_cells = m_material_mng->mesh()->allCells();
-  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  VariableCellInt32& cells_nb_env = m_all_env_data->m_nb_env_per_cell;
-  ConstArrayView<Int16> incremental_cells_nb_env = connectivity->cellsNbEnvironment();
-  ENUMERATE_(Cell,icell,all_cells){
-    cells_nb_env[icell] = incremental_cells_nb_env[icell.itemLocalId()];
-  }
-
-  // Met à jour le nombre de matériaux par milieu
-  // TODO: Faire cela en une passe
-  for (MeshEnvironment* env : m_material_mng->trueEnvironments()) {
-    VariableCellInt32& cells_nb_mat = env->m_nb_mat_per_cell;
-    Int16 env_id = env->componentId();
-    ENUMERATE_(Cell,icell,all_cells){
-      cells_nb_mat[icell] = connectivity->cellNbMaterial(icell, env_id);
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/

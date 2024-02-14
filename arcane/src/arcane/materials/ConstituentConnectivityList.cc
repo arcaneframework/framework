@@ -370,7 +370,7 @@ cellsNbMaterial() const
 /*---------------------------------------------------------------------------*/
 
 Int16 ConstituentConnectivityList::
-cellNbMaterial(CellLocalId cell_id, Int16 env_id)
+cellNbMaterial(CellLocalId cell_id, Int16 env_id) const
 {
   Int16 nb_mat = 0;
   ArrayView<Int16> mats = m_container->m_material.components(cell_id);

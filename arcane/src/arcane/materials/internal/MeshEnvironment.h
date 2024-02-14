@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshEnvironment.h                                           (C) 2000-2023 */
+/* MeshEnvironment.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Milieu d'un maillage.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -73,7 +73,6 @@ class MeshEnvironment
  public:
 
   MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int16 env_id);
-  ~MeshEnvironment() override;
 
  public:
 
@@ -151,20 +150,17 @@ class MeshEnvironment
   void setVariableIndexer(MeshMaterialVariableIndexer* idx);
   //! Recalcule le nombre de mailles par matériau et de mailles totales
   void computeNbMatPerCell();
-  
-  void computeItemListForMaterials(const VariableCellInt32& nb_env_per_cell);
+
+  void computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list);
 
   //! Nombre total de mailles pour tous les matériaux
   Integer totalNbCellMat() const { return m_total_nb_cell_mat; }
   void addToTotalNbCellMat(Int32 v) { m_total_nb_cell_mat += v; }
 
   void resizeItemsInternal(Integer nb_item);
-  void computeMaterialIndexes(ComponentItemInternalData* item_internal_data);
+  void computeMaterialIndexes(const ConstituentConnectivityList& connectivity_list, ComponentItemInternalData* item_internal_data);
   void notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids);
   MeshComponentData* componentData() { return &m_data; }
-
-  void updateItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
-                         Int32ConstArrayView local_ids,bool is_add_operation,bool add_to_env_indexer=false);
 
   ConstArrayView<MeshMaterial*> trueMaterials()
   {
@@ -182,13 +178,6 @@ class MeshEnvironment
   UniqueArray<IMeshMaterial*> m_materials;
   UniqueArray<MeshMaterial*> m_true_materials;
 
- public:
-
-  //! Nombre de matériaux de ce milieu par maille
-  VariableCellInt32 m_nb_mat_per_cell;
-
- private:
-  
   //! Nombre total de mailles pour tous les matériaux
   Integer m_total_nb_cell_mat = 0;
   IItemGroupObserver* m_group_observer = nullptr;
@@ -199,17 +188,6 @@ class MeshEnvironment
  private:
   
   void _changeIds(MeshComponentData* component_data,Int32ConstArrayView old_to_new_ids);
-  void _removeItemsDirect(MeshMaterial* mat,Int32ConstArrayView local_ids,
-                          bool update_env_indexer);
-  void _addItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
-                       Int32ConstArrayView local_ids,bool update_env_indexer);
-
- public:
-
-  // Temporairement publique pour IncrementalOneMaterialModifier
-  void _addItemsToIndexer(const VariableCellInt32& nb_env_per_cell,
-                          MeshMaterialVariableIndexer* var_indexer,
-                          Int32ConstArrayView local_ids);
 };
 
 /*---------------------------------------------------------------------------*/

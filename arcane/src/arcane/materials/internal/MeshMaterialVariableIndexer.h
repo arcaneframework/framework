@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableIndexer.h                               (C) 2000-2023 */
+/* MeshMaterialVariableIndexer.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Indexer pour les variables materiaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -33,10 +33,8 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMeshMaterialVariableIndexerMng;
 class MeshMaterialInfo;
 class IMeshEnvironment;
-class MatItemInternal;
 class ComponentItemListBuilder;
 
 /*---------------------------------------------------------------------------*/
@@ -97,11 +95,6 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   ConstArrayView<Int32> localIds() const { return m_local_ids; }
 
   void changeLocalIds(Int32ConstArrayView old_to_new_ids);
-  void transformCells(Int32ConstArrayView nb_env_per_cell,
-                      Int32ConstArrayView nb_mat_per_cell,
-                      Int32Array& pure_local_ids,
-                      Int32Array& partial_indexes,
-                      bool is_add_operation, bool is_env,bool is_verbose);
   void endUpdateAdd(const ComponentItemListBuilder& builder);
   void endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove);
   void endUpdateRemove(const ConstituentModifierWorkInfo& args,Integer nb_remove);
@@ -145,17 +138,6 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 
   static void _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,
                                 Int32ConstArrayView old_to_new_ids);
-  void _transformPureToPartial(Int32ConstArrayView nb_env_per_cell,
-                               Int32ConstArrayView nb_mat_per_cell,
-                               Int32Array& pure_local_ids,
-                               Int32Array& partial_indexes,
-                               bool is_env,bool is_verbose);
-  void _transformPartialToPure(Int32ConstArrayView nb_env_per_cell,
-                               Int32ConstArrayView nb_mat_per_cell,
-                               Int32Array& pure_local_ids,
-                               Int32Array& partial_indexes,
-                               bool is_env,bool is_verbose);
-
   void _transformPureToPartialV2(ConstituentModifierWorkInfo& args);
   void _transformPartialToPureV2(ConstituentModifierWorkInfo& args);
 };

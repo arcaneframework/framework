@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshEnvironment.cc                                          (C) 2000-2023 */
+/* MeshEnvironment.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Milieu d'un maillage.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,7 @@
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 #include "arcane/materials/internal/ComponentItemInternalData.h"
+#include "arcane/materials/internal/ConstituentConnectivityList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -99,21 +100,10 @@ MeshEnvironment::
 MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int16 env_id)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, m_nb_mat_per_cell(VariableBuildInfo(mm->mesh(), mm->name() + "_CellNbMaterial_" + name))
 , m_data(this, name, env_id, false)
 , m_non_const_this(this)
 , m_internal_api(this)
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MeshEnvironment::
-~MeshEnvironment()
-{
-  // A priori, pas besoin de détruire l'observer car le groupe associé
-  // le fera lorsqu'il sera détruit.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -178,23 +168,13 @@ computeNbMatPerCell()
 {
   info(4) << "ComputeNbMatPerCell env=" << name();
   Integer nb_mat = m_materials.size();
-  m_nb_mat_per_cell.fill(0);
   Integer total = 0;
   for( Integer i=0; i<nb_mat; ++i ){
     IMeshMaterial* mat = m_materials[i];
     CellGroup mat_cells = mat->cells();
     total += mat_cells.size();
-    ENUMERATE_CELL(icell,mat_cells){
-      ++m_nb_mat_per_cell[icell];
-    }
   }
   m_total_nb_cell_mat = total;
-  ENUMERATE_CELL(icell,this->cells()){
-    Int32 n = m_nb_mat_per_cell[icell];
-    if (n==0)
-      ARCANE_FATAL("No material in cell '{0}' for environment '{1}'",
-                   icell->uniqueId(),name());
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -207,7 +187,7 @@ computeNbMatPerCell()
  * computeNbMatPerCell() et computeItemListForMaterials() ont été appelées
  */
 void MeshEnvironment::
-computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
+computeMaterialIndexes(const ConstituentConnectivityList& connectivity_list, ComponentItemInternalData* item_internal_data)
 {
   info(4) << "Compute (V2) indexes for environment name=" << name();
 
@@ -220,17 +200,17 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   //TODO: regarder comment supprimer ce tableau cells_env qui n'est normalement pas utile
   // car on doit pouvoir directement utiliser les m_items_internal
   UniqueArray<ComponentItemInternal*> cells_env(max_local_id);
-  Int32ArrayView nb_mat_per_cell = m_nb_mat_per_cell.asArray();
+  //Int32ArrayView nb_mat_per_cell = m_nb_mat_per_cell.asArray();
 
   {
     Integer cell_index = 0;
-    Int32 env_id = this->id();
+    const Int16 env_id = this->componentId();
     Int32ConstArrayView local_ids = variableIndexer()->localIds();
     ConstArrayView<ComponentItemInternal*> items_internal = itemsInternalView();
 
     for( Integer z=0, nb=local_ids.size(); z<nb; ++z ){
       Int32 lid = local_ids[z];
-      Int32 nb_mat = nb_mat_per_cell[lid];
+      Int32 nb_mat = connectivity_list.cellNbMaterial(CellLocalId(lid), env_id);
       ComponentItemInternal* env_item = items_internal[z];
       cells_index[lid] = cell_index;
       cells_pos[lid] = cell_index;
@@ -246,7 +226,6 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   }
   {
     Integer nb_mat = m_true_materials.size();
-    ItemInfoListView items_internal(cell_family->itemInfoListView());
     for( Integer i=0; i<nb_mat; ++i ){
       MeshMaterial* mat = m_true_materials[i];
       Int32 mat_id = mat->id();
@@ -285,10 +264,11 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
  * dans le tableau d'indexation des variables.
  */
 void MeshEnvironment::
-computeItemListForMaterials(const VariableCellInt32& nb_env_per_cell)
+computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list)
 {
   info(4) << "ComputeItemListForMaterials (V2)";
-
+  ConstArrayView<Int16> nb_env_per_cell = connectivity_list.cellsNbEnvironment();
+  const Int16 env_id = componentId();
   // Calcul pour chaque matériau le nombre de mailles mixtes
   // TODO: a faire dans MeshMaterialVariableIndexer
   for( MeshMaterial* mat : m_true_materials ){
@@ -303,7 +283,7 @@ computeItemListForMaterials(const VariableCellInt32& nb_env_per_cell)
       Int32 lid = icell.itemLocalId();
       // On ne prend l'indice global que si on est le seul matériau et le seul
       // milieu de la maille. Sinon, on prend un indice multiple
-      if (nb_env_per_cell[icell]>1 || m_nb_mat_per_cell[icell]>1)
+      if (nb_env_per_cell[lid] > 1 || connectivity_list.cellNbMaterial(icell, env_id) > 1)
         list_builder.addPartialItem(lid);
       else
         list_builder.addPureItem(lid);
@@ -317,139 +297,6 @@ computeItemListForMaterials(const VariableCellInt32& nb_env_per_cell)
              << " (ids=" << list_builder.partialLocalIds() << ")";
     var_indexer->endUpdate(list_builder);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshEnvironment::
-_addItemsToIndexer(const VariableCellInt32& nb_env_per_cell,
-                   MeshMaterialVariableIndexer* var_indexer,
-                   Int32ConstArrayView local_ids)
-{
-  ComponentItemListBuilder list_builder(var_indexer,var_indexer->maxIndexInMultipleArray());
-
-  for( Int32 lid : local_ids ){
-    CellLocalId cell_id(lid);
-    // On ne prend l'indice global que si on est le seul matériau et le seul
-    // milieu de la maille. Sinon, on prend un indice multiple
-    if (nb_env_per_cell[cell_id]>1 || m_nb_mat_per_cell[cell_id]>1)
-      list_builder.addPartialItem(lid);
-    else
-      list_builder.addPureItem(lid);
-  }
-
-  if (traceMng()->verbosityLevel()>=5)
-    info() << "ADD_MATITEM_TO_INDEXER component=" << var_indexer->name()
-           << " nb_pure=" << list_builder.pureMatVarIndexes().size()
-           << " nb_partial=" << list_builder.partialMatVarIndexes().size()
-           << "\n pure=(" << list_builder.pureMatVarIndexes() << ")"
-           << "\n partial=(" << list_builder.partialMatVarIndexes() << ")";
-
-  var_indexer->endUpdateAdd(list_builder);
-
-  // Maintenant que les nouveaux MatVar sont créés, il faut les
-  // initialiser avec les bonnes valeurs.
-  functor::apply(m_material_mng,&IMeshMaterialMng::visitVariables,
-                 [&](IMeshMaterialVariable* mv) { mv->_internalApi()->initializeNewItems(list_builder); }
-                 );
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Ajoute les mailles d'un matériau du milieu.
- *
- * Ajoute les mailles données par \a local_ids au matériau \a mat
- * du milieu. L'indexeur du matériau est mis à jour et si \a update_env_indexer
- * est vrai, celui du milieu aussi (ce qui signifie que le milieu apparait
- * dans les mailles \a local_ids).
- */
-void MeshEnvironment::
-_addItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
-                Int32ConstArrayView local_ids,bool update_env_indexer)
-{
-  info(4) << "MeshEnvironment::addItemsDirect" << " mat=" << mat->name();
-
-  MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
-  Int32 nb_to_add = local_ids.size();
-
-  // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
-  for( Int32 lid : local_ids )
-    ++m_nb_mat_per_cell[CellLocalId{lid}];
-
-  m_total_nb_cell_mat += nb_to_add;
-
-  _addItemsToIndexer(nb_env_per_cell,var_indexer,local_ids);
-
-  if (update_env_indexer){
-    // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
-    // Cela n'est possible que si le nombre de matériaux du milieu
-    // est supérieur ou égal à 2 (car sinon le matériau et le milieu
-    // ont le même indexeur)
-    _addItemsToIndexer(nb_env_per_cell,this->variableIndexer(),local_ids);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Supprime les mailles d'un matériau du milieu.
- *
- * Supprime les mailles données par \a local_ids du matériau \a mat
- * du milieu. L'indexeur du matériau est mis à jour et si \a update_env_indexer
- * est vrai, celui du milieu aussi (ce qui signifie que le milieu disparait
- * des mailles \a local_ids).
- *
- * TODO: optimiser cela en ne parcourant pas toutes les mailles
- * matériaux du milieu (il faut supprimer removed_local_ids_filter).
- * Si on connait l'indice de chaque maille dans la liste des MatVarIndex
- * de l'indexeur, on peut directement taper dedans.
- */
-void MeshEnvironment::
-_removeItemsDirect(MeshMaterial* mat,Int32ConstArrayView local_ids,
-                   bool update_env_indexer)
-{
-  info(4) << "MeshEnvironment::removeItemsDirect mat=" << mat->name();
-
-  IItemFamily* cell_family = cells().itemFamily();
-
-  Integer nb_to_remove = local_ids.size();
-
-  UniqueArray<bool> removed_local_ids_filter(cell_family->maxLocalId(),false);
-
-  // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
-  for( Integer i=0; i<nb_to_remove; ++i ){
-    Int32 lid = local_ids[i];
-    CellLocalId cell_lid(lid);
-    --m_nb_mat_per_cell[cell_lid];
-    removed_local_ids_filter[lid] = true;
-  }
-  m_total_nb_cell_mat -= nb_to_remove;
-
-  mat->variableIndexer()->endUpdateRemove(removed_local_ids_filter,nb_to_remove);
-
-  if (update_env_indexer){
-    // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
-    // Cela n'est possible que si le nombre de matériaux du milieu
-    // est supérieur ou égal à 2 (car sinon le matériau et le milieu
-    // ont le même indexeur)
-    this->variableIndexer()->endUpdateRemove(removed_local_ids_filter,nb_to_remove);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshEnvironment::
-updateItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
-                  Int32ConstArrayView local_ids,bool is_add_operation,
-                  bool update_env_indexer)
-{
-  if (is_add_operation)
-    _addItemsDirect(nb_env_per_cell,mat,local_ids,update_env_indexer);
-  else
-    _removeItemsDirect(mat,local_ids,update_env_indexer);
 }
 
 /*---------------------------------------------------------------------------*/

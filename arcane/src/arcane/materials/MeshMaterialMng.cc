@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.cc                                          (C) 2000-2023 */
+/* MeshMaterialMng.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire des matériaux et milieux d'un maillage.                      */
 /*---------------------------------------------------------------------------*/
@@ -43,6 +43,7 @@
 #include "arcane/materials/internal/MeshMaterialModifierImpl.h"
 #include "arcane/materials/internal/MeshMaterialSynchronizer.h"
 #include "arcane/materials/internal/MeshMaterialVariableSynchronizer.h"
+#include "arcane/materials/internal/ConstituentConnectivityList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -628,7 +629,7 @@ checkValid()
 {
   const IItemFamily* cell_family = mesh()->cellFamily();
   ItemGroup all_cells = cell_family->allItems();
-  const VariableCellInt32 nb_env_per_cell = m_all_env_data->nbEnvPerCell();
+  ConstArrayView<Int16> nb_env_per_cell = m_all_env_data->componentConnectivityList()->cellsNbEnvironment();
   ENUMERATE_ALLENVCELL(iallenvcell,view(all_cells.view().localIds())){
     AllEnvCell all_env_cell = *iallenvcell;
     Integer cell_nb_env = all_env_cell.nbEnvironment();
@@ -639,10 +640,10 @@ checkValid()
 
     if (all_env_cell.globalCell()!=cell)
       ARCANE_FATAL("Bad corresponding globalCell() in all_env_item");
-    if (cell_nb_env!=nb_env_per_cell[cell])
+    if (cell_nb_env != nb_env_per_cell[cell.localId()])
       ARCANE_FATAL("Bad value for nb_env direct='{0}' var='{1}'",
-                   cell_nb_env,nb_env_per_cell[cell]);
-    
+                   cell_nb_env, nb_env_per_cell[cell.localId()]);
+
     for( Integer z=0; z<cell_nb_env; ++z ){
       EnvCell ec = all_env_cell.cell(z);
       Integer cell_nb_mat = ec.nbMaterial();
@@ -818,6 +819,8 @@ dumpInfos(std::ostream& o)
 void MeshMaterialMng::
 dumpInfos2(std::ostream& o)
 {
+  const ConstituentConnectivityList& constituent_list = *m_all_env_data->componentConnectivityList();
+  ConstArrayView<Int16> nb_env_per_cell = constituent_list.cellsNbEnvironment();
   Integer nb_mat = m_materials.size();
   Integer nb_env = m_environments.size();
   Integer nb_var_idx = m_variables_indexer.size();
@@ -828,9 +831,8 @@ dumpInfos2(std::ostream& o)
   Integer nb_cell = mesh()->allCells().size();
   if (nb_cell!=0){
     Integer nb_pure_env = 0;
-    const VariableCellInt32& nb_env_per_cell = m_all_env_data->nbEnvPerCell();
     ENUMERATE_CELL(icell,mesh()->allCells()){
-      if (nb_env_per_cell[icell]<=1)
+      if (nb_env_per_cell[icell.localId()] <= 1)
         ++nb_pure_env;
     }
     o << " nb_cell=" << nb_cell << " nb_pure_env=" << nb_pure_env
@@ -843,13 +845,13 @@ dumpInfos2(std::ostream& o)
   for( MeshEnvironment* me : m_true_environments ){
     ConstArrayView<IMeshMaterial*> env_materials = me->materials();
     const MeshMaterialVariableIndexer* env_var_idx = me->variableIndexer();
+    const Int16 env_id = me->componentId();
     Integer nb_env_mat = env_materials.size();
     Integer nb_env_cell = me->cells().size();
     Integer nb_pure_mat = 0;
     if (nb_env_mat>1){
-      const VariableCellInt32& nb_mat_per_cell = me->m_nb_mat_per_cell;
       ENUMERATE_CELL(icell,me->cells()){
-        if (nb_mat_per_cell[icell]<=1)
+        if (constituent_list.cellNbMaterial(icell, env_id) <= 1)
           ++nb_pure_mat;
       }
     }
