@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemInternal.h                                     (C) 2000-2023 */
+/* ComponentItemInternal.h                                     (C) 2000-2024 */
 /*                                                                           */
 /* Partie interne d'une maille multi-matériau.                               */
 /*---------------------------------------------------------------------------*/
@@ -24,6 +24,27 @@
 namespace Arcane::Materials
 {
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ */
+class ARCANE_CORE_EXPORT ComponentItemInternalLocalId
+{
+ public:
+
+  ComponentItemInternalLocalId() = default;
+  explicit ARCCORE_HOST_DEVICE ComponentItemInternalLocalId(Int32 id)
+  : m_id(id)
+  {}
+  ARCCORE_HOST_DEVICE Int32 localId() const { return m_id; }
+
+ private:
+
+  Int32 m_id = -1;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,6 +52,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 {
   friend class ComponentItemInternal;
   friend class ComponentItemInternalData;
+  friend class CellComponentCellEnumerator;
 
  private:
 
@@ -41,9 +63,14 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 
  private:
 
+  // NOTE : Cette classe est partagée avec le wrapper C#
+  // Toute modification de la structure interne doit être reportée
+  // dans la structure C# correspondante
   ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
   Int16 m_level = (-1);
   ConstArrayView<IMeshComponent*> m_components;
+  ComponentItemSharedInfo* m_parent_component_item_shared_info = null_shared_info_pointer;
+  ArrayView<ComponentItemInternal> m_component_item_internal_view;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -183,8 +210,9 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   Int16 m_component_id = -1;
   Int16 m_nb_sub_component_item = 0;
   Int32 m_global_item_local_id = NULL_ITEM_LOCAL_ID;
-  ComponentItemInternal* m_super_component_item = nullptr;
-  ComponentItemInternal* m_first_sub_component_item = nullptr;
+  ComponentItemInternalLocalId m_component_item_internal_local_id;
+  ComponentItemInternalLocalId m_super_component_item_local_id;
+  ComponentItemInternalLocalId m_first_sub_component_item_local_id;
   ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
@@ -213,12 +241,13 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Composant supérieur (0 si aucun)
   matimpl::ConstituentItemBase _superItemBase() const
   {
-    return m_super_component_item;
+    return &m_shared_info->m_component_item_internal_view[m_super_component_item_local_id.localId()];
   }
 
   void _setSuperAndGlobalItem(ComponentItemInternal* cii, ItemLocalId ii)
   {
-    m_super_component_item = cii;
+    if (cii)
+      m_super_component_item_local_id = cii->_internalLocalId();
     m_global_item_local_id = ii.localId();
   }
 
@@ -228,9 +257,14 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   }
 
   //! Première entité sous-composant.
-  ARCCORE_HOST_DEVICE ComponentItemInternal* _firstSubItem() const
+  ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _firstSubItemLocalId() const
   {
-    return m_first_sub_component_item;
+    return m_first_sub_component_item_local_id;
+  }
+
+  ARCCORE_HOST_DEVICE ComponentItemInternal* _subItem(Int32 i) const
+  {
+    return &m_shared_info->m_component_item_internal_view[m_first_sub_component_item_local_id.localId() + i];
   }
 
   //! Positionne le nombre de sous-composants.
@@ -245,7 +279,8 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Positionne le premier sous-composant.
   void _setFirstSubItem(ComponentItemInternal* first_sub_item)
   {
-    m_first_sub_component_item = first_sub_item;
+    if (first_sub_item)
+      m_first_sub_component_item_local_id = first_sub_item->_internalLocalId();
   }
 
   void _setComponent(Int32 component_id)
@@ -256,13 +291,19 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_component_id = static_cast<Int16>(component_id);
   }
 
-  void _reset(ComponentItemSharedInfo* shared_info)
+  ComponentItemInternalLocalId _internalLocalId() const
+  {
+    return m_component_item_internal_local_id;
+  }
+
+  void _reset(ComponentItemInternalLocalId id, ComponentItemSharedInfo* shared_info)
   {
     m_var_index.reset();
     m_component_id = -1;
-    m_super_component_item = nullptr;
+    m_super_component_item_local_id = {};
+    m_component_item_internal_local_id = id;
     m_nb_sub_component_item = 0;
-    m_first_sub_component_item = nullptr;
+    m_first_sub_component_item_local_id = {};
     m_global_item_local_id = NULL_ITEM_LOCAL_ID;
     m_shared_info = shared_info;
   }

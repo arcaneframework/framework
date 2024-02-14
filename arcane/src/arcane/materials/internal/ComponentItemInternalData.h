@@ -31,6 +31,81 @@ class MeshMaterialMng;
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Interval des identifiants des constituants dans la liste des
+ * ComponentItemInternal.
+ */
+class ComponentItemInternalRange
+{
+ public:
+
+  class Sentinel
+  {};
+  class Iterator
+  {
+    friend ComponentItemInternalRange;
+
+   private:
+
+    Iterator(Int32 current_value, Int32 last_value)
+    : m_current_value(current_value)
+    , m_last_value(last_value)
+    {}
+
+   public:
+
+    ComponentItemInternalLocalId operator*() const { return ComponentItemInternalLocalId(m_current_value); }
+    void operator++() { ++m_current_value; }
+    bool operator==(const Sentinel&) const
+    {
+      return m_current_value == m_last_value;
+    }
+    bool operator!=(const Sentinel&) const
+    {
+      return m_current_value != m_last_value;
+    }
+
+   private:
+
+    Int32 m_current_value = 0;
+    Int32 m_last_value = 0;
+  };
+
+ public:
+
+  ComponentItemInternalLocalId operator[](Int32 index) const
+  {
+    ARCANE_CHECK_AT(index, m_nb_value);
+    return ComponentItemInternalLocalId(m_first_index + index);
+  }
+
+ public:
+
+  void setRange(Int32 first_index, Int32 nb_value)
+  {
+    m_first_index = first_index;
+    m_nb_value = nb_value;
+  }
+  Iterator begin() const
+  {
+    return Iterator(m_first_index, m_first_index + m_nb_value);
+  }
+  Sentinel end() const
+  {
+    return {};
+  }
+  Int32 size() const { return m_nb_value; }
+  ComponentItemInternalLocalId firstValue() const { return ComponentItemInternalLocalId(m_first_index); }
+
+ private:
+
+  Int32 m_first_index = -1;
+  Int32 m_nb_value = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
  * \brief Gestion des listes de 'ComponentItemInternal'.
  *
  * Il faut appeler endCreate() avant de pouvoir utiliser les instances de
@@ -74,6 +149,17 @@ class ComponentItemInternalData
     return m_mat_items_internal[env_index];
   }
 
+  ComponentItemInternalRange allEnvItemsInternalRange() const
+  {
+    return m_all_env_items_internal_range;
+  }
+
+  //! Liste des mailles milieux.
+  ComponentItemInternalRange envItemsInternalRange() const
+  {
+    return m_env_items_internal_range;
+  }
+
   //! Redimensionne les structures allouant les 'ComponentItemInternal'
   void resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell);
 
@@ -105,9 +191,14 @@ class ComponentItemInternalData
   //! Liste des informations partagées
   UniqueArray<ComponentItemSharedInfo> m_shared_infos;
 
+  ComponentItemInternalRange m_all_env_items_internal_range;
+  ComponentItemInternalRange m_env_items_internal_range;
+  UniqueArray<ComponentItemInternalRange> m_mat_items_internal_range;
+
  private:
 
-  void _initSharedInfos();
+  void
+  _initSharedInfos();
   void _resetMatItemsInternal(Int32 env_index);
   //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
   void _resetItemsInternal();
