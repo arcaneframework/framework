@@ -62,6 +62,9 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 
  private:
 
+  // NOTE : Cette classe est partagée avec le wrapper C#
+  // Toute modification de la structure interne doit être reportée
+  // dans la structure C# correspondante
   ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
   Int16 m_level = (-1);
   ConstArrayView<IMeshComponent*> m_components;
@@ -207,7 +210,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   Int16 m_nb_sub_component_item = 0;
   Int32 m_global_item_local_id = NULL_ITEM_LOCAL_ID;
   ComponentItemInternalLocalId m_component_item_internal_local_id;
-  ComponentItemInternal* m_super_component_item = nullptr;
+  ComponentItemInternalLocalId m_super_component_item_local_id;
   ComponentItemInternal* m_first_sub_component_item = nullptr;
   ComponentItemSharedInfo* m_shared_info = nullptr;
 
@@ -237,12 +240,13 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Composant supérieur (0 si aucun)
   matimpl::ConstituentItemBase _superItemBase() const
   {
-    return m_super_component_item;
+    return &m_shared_info->m_component_item_internal_view[m_super_component_item_local_id.localId()];
   }
 
   void _setSuperAndGlobalItem(ComponentItemInternal* cii, ItemLocalId ii)
   {
-    m_super_component_item = cii;
+    if (cii)
+      m_super_component_item_local_id = cii->_internalLocalId();
     m_global_item_local_id = ii.localId();
   }
 
@@ -280,11 +284,16 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_component_id = static_cast<Int16>(component_id);
   }
 
+  ComponentItemInternalLocalId _internalLocalId() const
+  {
+    return m_component_item_internal_local_id;
+  }
+
   void _reset(ComponentItemInternalLocalId id, ComponentItemSharedInfo* shared_info)
   {
     m_var_index.reset();
     m_component_id = -1;
-    m_super_component_item = nullptr;
+    m_super_component_item_local_id = {};
     m_component_item_internal_local_id = id;
     m_nb_sub_component_item = 0;
     m_first_sub_component_item = nullptr;

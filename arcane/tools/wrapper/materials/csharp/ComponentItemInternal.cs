@@ -8,6 +8,9 @@ namespace Arcane.Materials
   {
     internal ItemSharedInfo* m_item_shared_info;
     internal Int16 m_level;
+    internal MeshEnvironmentListView m_components;
+    internal ComponentItemSharedInfo* m_parent_component_item_shared_info;
+    internal ComponentItemInternalConstArrayView m_component_item_internal_view;
   }
 
   [StructLayout(LayoutKind.Sequential)]
@@ -18,9 +21,16 @@ namespace Arcane.Materials
     internal Int16 m_nb_sub_component_item;
     internal Int32 m_global_item_local_id;
     internal Int32 m_component_item_internal_local_id;
-    internal ComponentItemInternal* m_super_component_item;
+    internal Int32 m_super_component_item_local_id;
     internal ComponentItemInternal* m_first_sub_component_item;
     internal ComponentItemSharedInfo* m_shared_info;
+  }
+
+  [StructLayout(LayoutKind.Sequential)]
+  public unsafe struct ComponentItemInternalConstArrayView
+  {
+    internal Int32 m_size;
+    internal Arcane.Materials.ComponentItemInternal* m_ptr;
   }
 }
 
