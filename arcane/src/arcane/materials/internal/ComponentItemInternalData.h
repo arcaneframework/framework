@@ -38,7 +38,8 @@ class ComponentItemInternalRange
 {
  public:
 
-  class Sentinel{};
+  class Sentinel
+  {};
   class Iterator
   {
     friend ComponentItemInternalRange;
@@ -197,10 +198,10 @@ class ComponentItemInternalData
   void _resetMatItemsInternal(Int32 env_index);
   //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
   void _resetItemsInternal();
-  };
+};
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Materials
 

@@ -74,12 +74,10 @@ _resetItemsInternal()
   for (ComponentItemInternalLocalId id : m_env_items_internal_range)
     storage[id.localId()]._reset(id, env_shared_info);
 
-  for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
-    ArrayView<ComponentItemInternal> mat_items_internal = matItemsInternal(env->id());
-    ComponentItemSharedInfo* mat_shared_info = matSharedInfo();
-    for (ComponentItemInternal& x : mat_items_internal) {
-      x._reset(internal_local_id, mat_shared_info);
-    }
+  ComponentItemSharedInfo* mat_shared_info = matSharedInfo();
+  for (ComponentItemInternalRange mat_range : m_mat_items_internal_range) {
+    for (ComponentItemInternalLocalId id : mat_range)
+      storage[id.localId()]._reset(id, mat_shared_info);
   }
 }
 

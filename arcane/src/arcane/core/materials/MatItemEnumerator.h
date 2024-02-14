@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemEnumerator.h                                         (C) 2000-2023 */
+/* MatItemEnumerator.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Enumérateurs sur les mailles materiaux.                                   */
 /*---------------------------------------------------------------------------*/
@@ -341,7 +341,7 @@ class ARCANE_CORE_EXPORT  EnvPartCellEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Enumérateur sur les matériaux d'une maille.
+ * \brief Enumérateur sur les constituants d'une maille.
  */
 class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 {
@@ -350,7 +350,9 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
  public:
 
   ARCCORE_HOST_DEVICE explicit CellComponentCellEnumerator(ComponentCell super_item)
-  : m_index(0), m_size(super_item._internal()->nbSubItem()), m_items_begin(super_item._internal()->_firstSubItem())
+  : m_size(super_item._internal()->nbSubItem())
+  , m_items_begin(super_item._internal()->_firstSubItemLocalId().localId())
+  , m_item_internal_list(super_item._internal()->m_shared_info->m_component_item_internal_view)
   {
   }
 
@@ -362,20 +364,28 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
   ARCCORE_HOST_DEVICE ComponentCell operator*() const
   {
     ARCANE_CHECK_AT(m_index,m_size);
-    return ComponentCell(matimpl::ConstituentItemBase(m_items_begin+m_index));
+    return ComponentCell(_currentItemBase());
   }
-  ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_items_begin[m_index].variableIndex(); }
+  ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_item_internal_list[m_items_begin+m_index].variableIndex(); }
   ARCCORE_HOST_DEVICE Integer index() const { return m_index; }
   ARCCORE_HOST_DEVICE operator ComponentItemLocalId() const
   {
-    return ComponentItemLocalId(m_items_begin[m_index].variableIndex());
+    return ComponentItemLocalId(_varIndex());
   }
 
  protected:
 
- Integer m_index;
-  Integer m_size;
-  ComponentItemInternal* m_items_begin;
+  Int32 m_index = 0;
+  Int32 m_size = 0;
+  Int32 m_items_begin = -1;
+  ArrayView<ComponentItemInternal> m_item_internal_list;
+
+ protected:
+
+ ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _currentItemBase() const
+  {
+    return matimpl::ConstituentItemBase(const_cast<ComponentItemInternal*>(m_item_internal_list.ptrAt(m_items_begin+m_index)));
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -396,7 +406,7 @@ template <typename ComponentCellType> class CellComponentCellEnumeratorT
   ARCCORE_HOST_DEVICE ComponentCellType operator*() const
   {
     ARCANE_CHECK_AT(m_index,m_size);
-    return ComponentCellType(matimpl::ConstituentItemBase(m_items_begin+m_index));
+    return ComponentCellType(_currentItemBase());
   }
 };
 

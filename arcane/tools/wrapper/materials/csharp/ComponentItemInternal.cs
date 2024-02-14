@@ -22,7 +22,7 @@ namespace Arcane.Materials
     internal Int32 m_global_item_local_id;
     internal Int32 m_component_item_internal_local_id;
     internal Int32 m_super_component_item_local_id;
-    internal ComponentItemInternal* m_first_sub_component_item;
+    internal Int32 m_first_sub_component_item_local_id;
     internal ComponentItemSharedInfo* m_shared_info;
   }
 

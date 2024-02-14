@@ -35,10 +35,10 @@ class ARCANE_CORE_EXPORT ComponentItemInternalLocalId
  public:
 
   ComponentItemInternalLocalId() = default;
-  explicit ComponentItemInternalLocalId(Int32 id)
+  explicit ARCCORE_HOST_DEVICE ComponentItemInternalLocalId(Int32 id)
   : m_id(id)
   {}
-  Int32 localId() const { return m_id; }
+  ARCCORE_HOST_DEVICE Int32 localId() const { return m_id; }
 
  private:
 
@@ -52,6 +52,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 {
   friend class ComponentItemInternal;
   friend class ComponentItemInternalData;
+  friend class CellComponentCellEnumerator;
 
  private:
 
@@ -211,7 +212,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   Int32 m_global_item_local_id = NULL_ITEM_LOCAL_ID;
   ComponentItemInternalLocalId m_component_item_internal_local_id;
   ComponentItemInternalLocalId m_super_component_item_local_id;
-  ComponentItemInternal* m_first_sub_component_item = nullptr;
+  ComponentItemInternalLocalId m_first_sub_component_item_local_id;
   ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
@@ -256,9 +257,14 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   }
 
   //! Première entité sous-composant.
-  ARCCORE_HOST_DEVICE ComponentItemInternal* _firstSubItem() const
+  ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _firstSubItemLocalId() const
   {
-    return m_first_sub_component_item;
+    return m_first_sub_component_item_local_id;
+  }
+
+  ARCCORE_HOST_DEVICE ComponentItemInternal* _subItem(Int32 i) const
+  {
+    return &m_shared_info->m_component_item_internal_view[m_first_sub_component_item_local_id.localId() + i];
   }
 
   //! Positionne le nombre de sous-composants.
@@ -273,7 +279,8 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Positionne le premier sous-composant.
   void _setFirstSubItem(ComponentItemInternal* first_sub_item)
   {
-    m_first_sub_component_item = first_sub_item;
+    if (first_sub_item)
+      m_first_sub_component_item_local_id = first_sub_item->_internalLocalId();
   }
 
   void _setComponent(Int32 component_id)
@@ -296,7 +303,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_super_component_item_local_id = {};
     m_component_item_internal_local_id = id;
     m_nb_sub_component_item = 0;
-    m_first_sub_component_item = nullptr;
+    m_first_sub_component_item_local_id = {};
     m_global_item_local_id = NULL_ITEM_LOCAL_ID;
     m_shared_info = shared_info;
   }
