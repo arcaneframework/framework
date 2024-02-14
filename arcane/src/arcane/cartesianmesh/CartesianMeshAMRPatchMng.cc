@@ -20,7 +20,7 @@
 #include "arcane/core/IMeshModifier.h"
 
 #include "arcane/cartesianmesh/CellDirectionMng.h"
-#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
+#include "arcane/cartesianmesh/CartesianMeshNumberingV2Mng.h"
 
 #include "arcane/utils/Array2View.h"
 #include "arcane/utils/Array3View.h"
@@ -39,7 +39,7 @@ CartesianMeshAMRPatchMng::
 CartesianMeshAMRPatchMng(ICartesianMesh* cmesh)
 : TraceAccessor(cmesh->mesh()->traceMng())
 , m_mesh(cmesh->mesh())
-, m_num_mng(Arccore::makeRef(new CartesianMeshNumberingMng(cmesh->mesh())))
+, m_num_mng(Arccore::makeRef(new CartesianMeshNumberingV2Mng(cmesh->mesh())))
 {
 
 }
@@ -62,6 +62,20 @@ flagCellToRefine(Int32ConstArrayView cells_lids)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRPatchMng::
+flagCellToCoarse(Int32ConstArrayView cells_lids)
+{
+  ItemInfoListView cells(m_mesh->cellFamily());
+  for (int lid : cells_lids) {
+    Item item = cells[lid];
+    item.mutableItemBase().addFlags(ItemFlags::II_Coarsen);
+  }
+  _syncFlagCell();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRPatchMng::
 _syncFlagCell()
 {
   if (!m_mesh->parallelMng()->isParallel())
@@ -71,7 +85,12 @@ _syncFlagCell()
   ENUMERATE_(Cell, icell, m_mesh->ownCells()){
     Cell cell = *icell;
     flag_cells_consistent[cell] = cell.mutableItemBase().flags();
-    debug() << "Send " << cell << " flag : " << cell.mutableItemBase().flags() << " II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine) << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive);
+    debug() << "Send " << cell
+            << " -- flag : " << cell.mutableItemBase().flags()
+            << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
+            << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
+            << " -- II_Coarsen : " << (cell.itemBase().flags() & ItemFlags::II_Coarsen)
+    ;
   }
 
   flag_cells_consistent.synchronize();
@@ -87,7 +106,15 @@ _syncFlagCell()
     if(flag_cells_consistent[cell] & ItemFlags::II_Inactive) {
       cell.mutableItemBase().setFlags(ItemFlags::II_Inactive);
     }
-    debug() << "After Compute " << cell << " flag : " << cell.mutableItemBase().flags() << " II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine) << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive);
+    if(flag_cells_consistent[cell] & ItemFlags::II_Coarsen) {
+      cell.mutableItemBase().setFlags(ItemFlags::II_Coarsen);
+    }
+    debug() << "After Compute " << cell
+            << " -- flag : " << cell.mutableItemBase().flags()
+            << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
+            << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
+            << " -- II_Coarsen : " << (cell.itemBase().flags() & ItemFlags::II_Coarsen)
+    ;
   }
 }
 
@@ -110,14 +137,17 @@ refine()
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 nb_rank = pm->commSize();
   Int32 my_rank = pm->commRank();
+  Int32 max_level = 0;
 
   UniqueArray<Cell> cell_to_refine_internals;
   ENUMERATE_ (Cell, icell, m_mesh->allActiveCells()) {
     Cell cell = *icell;
     if (cell.itemBase().flags() & ItemFlags::II_Refine) {
       cell_to_refine_internals.add(cell);
+      if(cell.level() > max_level) max_level = cell.level();
     }
   }
+  m_num_mng->prepareLevel(max_level+1);
 
   UniqueArray<Int64> cells_infos;
   UniqueArray<Int64> faces_infos;
@@ -2459,6 +2489,35 @@ refine()
 //  }
 }
 
+void CartesianMeshAMRPatchMng::
+coarse()
+{
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int32 nb_rank = pm->commSize();
+  Int32 my_rank = pm->commRank();
+  Int32 min_level = 1;
+
+  UniqueArray<Int64> cell_uid_to_create;
+
+  UniqueArray<Cell> cell_to_coarse_internals;
+  ENUMERATE_ (Cell, icell, m_mesh->allActiveCells()) {
+    Cell cell = *icell;
+    if (cell.itemBase().flags() & ItemFlags::II_Coarsen) {
+      cell_to_coarse_internals.add(cell);
+      if(min_level == 1) {
+        min_level = cell.level();
+        m_num_mng->prepareLevel(min_level-1);
+      }
+      if(cell.level() != min_level) ARCANE_FATAL("Different levels not supported");
+      Int64 parent_uid = m_num_mng->getParentCellUidOfCell(cell);
+      info() << "Test : " << cell.uniqueId() << " " << cell.level() << " " << parent_uid;
+      if(!cell_uid_to_create.contains(parent_uid)) cell_uid_to_create.add(parent_uid);
+    }
+  }
+  info() << cell_uid_to_create;
+  ARCANE_FATAL("Normal");
+
+}
 
 
 /*---------------------------------------------------------------------------*/

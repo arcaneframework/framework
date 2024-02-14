@@ -36,6 +36,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   ~ICartesianMeshNumberingMng() = default;
 
  public:
+
+  virtual void prepareLevel(Int32 level) =0;
+
   /*!
    * @brief Méthode permettant de récupérer le premier unique id utilisé par les mailles d'un niveau.
    * L'appel de cette méthode avec level et level+1 permet de récupérer l'intervalle des uniqueids
@@ -299,6 +302,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * @param child_cell La maille enfant.
    */
   virtual void setNodeCoordinates(Cell child_cell) =0;
+
+  virtual Int64 getParentCellUidOfCell(Cell cell) =0;
 };
 
 /*---------------------------------------------------------------------------*/

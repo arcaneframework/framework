@@ -45,6 +45,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
    * flag "II_Refine".
    */
   virtual void refine() =0;
+
+  virtual void flagCellToCoarse(Int32ConstArrayView cells_lids) =0;
+  virtual void coarse() =0;
+
 };
 
 /*---------------------------------------------------------------------------*/
