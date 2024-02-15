@@ -70,6 +70,12 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
     m_cells_to_transform[local_id.localId()] = v;
   }
 
+  //! Positionne l'état de transformation de la maille \a local_id pour l'opération courante
+  void resetTransformedCells(ConstArrayView<Int32> local_ids)
+  {
+    for( Int32 x : local_ids )
+      m_cells_to_transform[x] = false;
+  }
   //! Indique si la maille \a local_id est supprimée du matériaux pour l'opération courante.
   bool isRemovedCell(Int32 local_id) const { return m_removed_local_ids_filter[local_id]; }
 
