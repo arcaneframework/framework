@@ -238,6 +238,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    */
   virtual void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) =0;
 
+  virtual void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid) =0;
+
 
   /*!
    * @brief Méthode permettant de récupérer le nombre de faces dans une maille.
@@ -282,6 +284,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * @param cell_coord_j La position Y de la maille.
    */
   virtual void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) =0;
+
+  virtual void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid) =0;
 
   /*!
    * @brief Méthode permettant de récupérer les uniqueIds des mailles autour de la maille passée

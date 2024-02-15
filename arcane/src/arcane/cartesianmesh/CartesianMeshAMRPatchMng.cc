@@ -2515,8 +2515,45 @@ coarse()
     }
   }
   info() << cell_uid_to_create;
-  ARCANE_FATAL("Normal");
 
+  UniqueArray<Int64> cells_infos;
+  UniqueArray<Int64> faces_infos;
+  UniqueArray<Int64> nodes_infos;
+
+  Integer total_nb_cells = 0;
+  Integer total_nb_nodes = 0;
+  Integer total_nb_faces = 0;
+
+  // Deux tableaux permettant de récupérer les uniqueIds des noeuds et des faces
+  // de chaque maille parent à chaque appel à getNodeUids()/getFaceUids().
+  UniqueArray<Int64> parent_nodes_uids(m_num_mng->getNbNode());
+  UniqueArray<Int64> parent_faces_uids(m_num_mng->getNbFace());
+
+  for(Int64 parent_cell_uid : cell_uid_to_create){
+
+    total_nb_cells++;
+    debug() << "Parent"
+            << " -- x : " << m_num_mng->uidToCoordX(parent_cell_uid, min_level-1)
+            << " -- y : " << m_num_mng->uidToCoordY(parent_cell_uid, min_level-1)
+            << " -- level : " << min_level - 1
+            << " -- uid : " << parent_cell_uid
+    ;
+
+    m_num_mng->getNodeUids(parent_nodes_uids, min_level-1, parent_cell_uid);
+    m_num_mng->getFaceUids(parent_faces_uids, min_level-1, parent_cell_uid);
+
+    const Integer type_cell = IT_Quad4;
+    const Integer type_face = IT_Line2;
+
+    // Partie Cell.
+    cells_infos.add(type_cell);
+    cells_infos.add(parent_cell_uid);
+    for (Integer nc = 0; nc < m_num_mng->getNbNode(); nc++) {
+      cells_infos.add(parent_nodes_uids[nc]);
+    }
+  }
+
+  ARCANE_FATAL("Normal");
 }
 
 
