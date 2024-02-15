@@ -61,58 +61,60 @@ if (Parmetis_FOUND AND Lima_FOUND)
   ARCANE_ADD_TEST_PARALLEL(case_part_metis_2_mli testCasePart-2.arc 4)
 endif ()
 
-arcane_add_test(material1 testMaterial-1.arc "-m 10")
-arcane_add_test_parallel_thread(material1 testMaterial-1.arc 4 "-m 10")
-arcane_add_test_parallel(material1_legacy_sync testMaterial-1.arc 4 "-m 10" "-We,ARCANE_MATERIAL_LEGACY_SYNCHRONIZE,1")
-if (LZ4_FOUND)
-  arcane_add_test_sequential(material1_lz4 testMaterial-1.arc "-m 10" "-We,ARCANE_MATERIAL_DATA_COMPRESSOR_NAME,LZ4DataCompressor")
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_test(material1 testMaterial-1.arc "-m 10")
+  arcane_add_test_parallel_thread(material1 testMaterial-1.arc 4 "-m 10")
+  arcane_add_test_parallel(material1_legacy_sync testMaterial-1.arc 4 "-m 10" "-We,ARCANE_MATERIAL_LEGACY_SYNCHRONIZE,1")
+  if (LZ4_FOUND)
+    arcane_add_test_sequential(material1_lz4 testMaterial-1.arc "-m 10" "-We,ARCANE_MATERIAL_DATA_COMPRESSOR_NAME,LZ4DataCompressor")
+  endif()
+  arcane_add_test_sequential_task(material1 testMaterial-1.arc 4 "-m 10")
+
+  # Les trois tests suivants doivent faire le même nombre d'itérations et avoir le
+  # même nombre de mailles (pour test)
+  ARCANE_ADD_TEST(material2 testMaterial-2.arc "-m 13")
+  ARCANE_ADD_TEST(material2_opt1 testMaterial-2-opt1.arc "-m 13")
+  ARCANE_ADD_TEST(material2_opt3 testMaterial-2-opt3.arc "-m 13")
+  ARCANE_ADD_TEST(material2_opt5 testMaterial-2-opt5.arc "-m 13")
+  ARCANE_ADD_TEST(material2_opt7 testMaterial-2-opt7.arc "-m 13")
+  ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv2 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,2)
+  ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv3 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,3)
+  ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv6 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
+  ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv7 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+  ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv8 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
+  ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint testMaterial-checkpoint.arc 3 3)
+  ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint_recreate testMaterial-checkpoint-recreate.arc 3 3)
+
+  arcane_add_test_sequential_task(material2 testMaterial-2task.arc 4 "-m 1")
+
+  ARCANE_ADD_TEST(material_sync1 testMaterial-sync-1.arc)
+  ARCANE_ADD_TEST_PARALLEL_THREAD(material_sync1 testMaterial-sync-1.arc 4)
+  ARCANE_ADD_TEST_PARALLEL(material_sync2 testMaterial-sync-2.arc 4)
+  ARCANE_ADD_TEST_PARALLEL(material_sync2_v3 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,3)
+  arcane_add_test(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+  arcane_add_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+  arcane_add_test_message_passing_hybrid(material_sync2_v7 CASE_FILE testMaterial-sync-2.arc NB_MPI 3 NB_SHM 4 ARGS -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+
+  arcane_add_accelerator_test_parallel(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
+  arcane_add_accelerator_test_parallel(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+  arcane_add_accelerator_test_parallel(material_sync2_v8 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
+  arcane_add_accelerator_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+
+  ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
+  # NOTE Ajoute test optmisation uniquement en sequentiel car pour l'instant cela
+  # ne marche pas en parallele a cause de la suppression de mailles.
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt1 testMaterial-3-opt1.arc "-m 20")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt3 testMaterial-3-opt3.arc "-m 20")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt5 testMaterial-3-opt5.arc "-m 20")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt7 testMaterial-3-opt7.arc "-m 20")
+  if(NOT ARCANE_DISABLE_PERFCOUNTER_TESTS)
+    arcane_add_test_sequential(material3_opt7_trace testMaterial-3-opt7.arc "-m 20" "-We,ARCANE_TRACE_ENUMERATOR,1")
+  endif()
+
+  ARCANE_ADD_TEST_PARALLEL(material3_opt7_lb testMaterial-3-opt7-lb.arc 4 "-m 20")
+
+  ARCANE_ADD_TEST_SEQUENTIAL(material1_simd1 testMaterialSimd-1.arc)
 endif()
-arcane_add_test_sequential_task(material1 testMaterial-1.arc 4 "-m 10")
-
-# Les trois tests suivants doivent faire le même nombre d'itérations et avoir le
-# même nombre de mailles (pour test)
-ARCANE_ADD_TEST(material2 testMaterial-2.arc "-m 13")
-ARCANE_ADD_TEST(material2_opt1 testMaterial-2-opt1.arc "-m 13")
-ARCANE_ADD_TEST(material2_opt3 testMaterial-2-opt3.arc "-m 13")
-ARCANE_ADD_TEST(material2_opt5 testMaterial-2-opt5.arc "-m 13")
-ARCANE_ADD_TEST(material2_opt7 testMaterial-2-opt7.arc "-m 13")
-ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv2 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,2)
-ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv3 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,3)
-ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv6 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
-ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv7 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
-ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv8 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
-ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint testMaterial-checkpoint.arc 3 3)
-ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint_recreate testMaterial-checkpoint-recreate.arc 3 3)
-
-arcane_add_test_sequential_task(material2 testMaterial-2task.arc 4 "-m 1")
-
-ARCANE_ADD_TEST(material_sync1 testMaterial-sync-1.arc)
-ARCANE_ADD_TEST_PARALLEL_THREAD(material_sync1 testMaterial-sync-1.arc 4)
-ARCANE_ADD_TEST_PARALLEL(material_sync2 testMaterial-sync-2.arc 4)
-ARCANE_ADD_TEST_PARALLEL(material_sync2_v3 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,3)
-arcane_add_test(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
-arcane_add_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
-arcane_add_test_message_passing_hybrid(material_sync2_v7 CASE_FILE testMaterial-sync-2.arc NB_MPI 3 NB_SHM 4 ARGS -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
-
-arcane_add_accelerator_test_parallel(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
-arcane_add_accelerator_test_parallel(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
-arcane_add_accelerator_test_parallel(material_sync2_v8 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
-arcane_add_accelerator_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
-
-ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
-# NOTE Ajoute test optmisation uniquement en sequentiel car pour l'instant cela
-# ne marche pas en parallele a cause de la suppression de mailles.
-ARCANE_ADD_TEST_SEQUENTIAL(material3_opt1 testMaterial-3-opt1.arc "-m 20")
-ARCANE_ADD_TEST_SEQUENTIAL(material3_opt3 testMaterial-3-opt3.arc "-m 20")
-ARCANE_ADD_TEST_SEQUENTIAL(material3_opt5 testMaterial-3-opt5.arc "-m 20")
-ARCANE_ADD_TEST_SEQUENTIAL(material3_opt7 testMaterial-3-opt7.arc "-m 20")
-if(NOT ARCANE_DISABLE_PERFCOUNTER_TESTS)
-  arcane_add_test_sequential(material3_opt7_trace testMaterial-3-opt7.arc "-m 20" "-We,ARCANE_TRACE_ENUMERATOR,1")
-endif()
-
-ARCANE_ADD_TEST_PARALLEL(material3_opt7_lb testMaterial-3-opt7-lb.arc 4 "-m 20")
-
-ARCANE_ADD_TEST_SEQUENTIAL(material1_simd1 testMaterialSimd-1.arc)
 
 ARCANE_ADD_TEST(cartesian1 testCartesianMesh-1.arc "-m 20")
 arcane_add_accelerator_test_sequential(cartesian1 testCartesianMesh-1.arc "-m 20")
@@ -258,7 +260,9 @@ arcane_add_test_sequential(cartesianpatch1 unitCartesianPatch1.arc)
 #####################
 # HyODA Mixed Cells #
 #####################
-ARCANE_ADD_TEST_SEQUENTIAL(hyoda_mixed_cells testHyodaMixedCells.arc)
+if (ARCANE_HAS_ACCELERATOR_API)
+  ARCANE_ADD_TEST_SEQUENTIAL(hyoda_mixed_cells testHyodaMixedCells.arc)
+endif()
 
 # Fonction pour recopier les maillages issus de répertoires
 # qui ne sont pas dans les dépots arcane (pour des raisons de taille)
