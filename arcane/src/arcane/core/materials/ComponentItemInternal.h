@@ -244,10 +244,9 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     return &m_shared_info->m_component_item_internal_view[m_super_component_item_local_id.localId()];
   }
 
-  void _setSuperAndGlobalItem(ComponentItemInternal* cii, ItemLocalId ii)
+  void _setSuperAndGlobalItem(ComponentItemInternalLocalId cii, ItemLocalId ii)
   {
-    if (cii)
-      m_super_component_item_local_id = cii->_internalLocalId();
+    m_super_component_item_local_id = cii;
     m_global_item_local_id = ii.localId();
   }
 
@@ -277,10 +276,9 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   }
 
   //! Positionne le premier sous-composant.
-  void _setFirstSubItem(ComponentItemInternal* first_sub_item)
+  void _setFirstSubItem(ComponentItemInternalLocalId first_sub_item)
   {
-    if (first_sub_item)
-      m_first_sub_component_item_local_id = first_sub_item->_internalLocalId();
+    m_first_sub_component_item_local_id = first_sub_item;
   }
 
   void _setComponent(Int32 component_id)

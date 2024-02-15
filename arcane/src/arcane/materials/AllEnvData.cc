@@ -199,8 +199,10 @@ _computeInfosForEnvCells()
   ItemGroup all_cells = cell_family->allItems();
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
+  ComponentItemInternalRange all_env_items_internal_range = m_item_internal_data.allEnvItemsInternalRange();
   ArrayView<ComponentItemInternal> all_env_items_internal = m_item_internal_data.allEnvItemsInternal();
   ArrayView<ComponentItemInternal> env_items_internal = m_item_internal_data.envItemsInternal();
+  ComponentItemInternalRange env_items_internal_range = m_item_internal_data.envItemsInternalRange();
   ConstArrayView<Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
 
   // Calcule pour chaque maille sa position dans le tableau des milieux
@@ -245,13 +247,14 @@ _computeInfosForEnvCells()
         Int32 nb_mat = m_component_connectivity_list->cellNbMaterial(CellLocalId(lid), env_id);
         ComponentItemInternal& ref_ii = env_items_internal[pos];
         env_items_internal_pointer[z] = &env_items_internal[pos];
-        ref_ii._setSuperAndGlobalItem(&all_env_items_internal[lid], ItemLocalId(lid));
+        ref_ii._setSuperAndGlobalItem(all_env_items_internal_range[lid], ItemLocalId(lid));
         ref_ii._setNbSubItem(nb_mat);
         ref_ii._setVariableIndex(mvi);
+        ref_ii._setComponent(env_id);
       }
     }
     for( MeshEnvironment* env : true_environments ){
-      env->computeMaterialIndexes(*m_component_connectivity_list, &m_item_internal_data);
+      env->computeMaterialIndexes(&m_item_internal_data);
     }
   }
 
@@ -262,11 +265,11 @@ _computeInfosForEnvCells()
       Int32 lid = icell.itemLocalId();
       Int32 n = cells_nb_env[lid];
       ComponentItemInternal& ref_ii = all_env_items_internal[lid];
-      ref_ii._setSuperAndGlobalItem(nullptr,c);
+      ref_ii._setSuperAndGlobalItem({},c);
       ref_ii._setVariableIndex(MatVarIndex(0,lid));
       ref_ii._setNbSubItem(n);
       if (n!=0)
-        ref_ii._setFirstSubItem(&env_items_internal[env_cell_indexes[lid]]);
+        ref_ii._setFirstSubItem(env_items_internal_range[env_cell_indexes[lid]]);
     }
   }
 }

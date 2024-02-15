@@ -187,40 +187,37 @@ computeNbMatPerCell()
  * computeNbMatPerCell() et computeItemListForMaterials() ont été appelées
  */
 void MeshEnvironment::
-computeMaterialIndexes(const ConstituentConnectivityList& connectivity_list, ComponentItemInternalData* item_internal_data)
+computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
 {
   info(4) << "Compute (V2) indexes for environment name=" << name();
 
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
   ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
+  ComponentItemInternalRange mat_items_internal_range = item_internal_data->matItemsInternalRange(id());
 
   Int32UniqueArray cells_index(max_local_id);
   Int32UniqueArray cells_pos(max_local_id);
   //TODO: regarder comment supprimer ce tableau cells_env qui n'est normalement pas utile
   // car on doit pouvoir directement utiliser les m_items_internal
-  UniqueArray<ComponentItemInternal*> cells_env(max_local_id);
-  //Int32ArrayView nb_mat_per_cell = m_nb_mat_per_cell.asArray();
+  UniqueArray<ComponentItemInternalLocalId> cells_env(max_local_id);
 
   {
     Integer cell_index = 0;
-    const Int16 env_id = this->componentId();
     Int32ConstArrayView local_ids = variableIndexer()->localIds();
     ConstArrayView<ComponentItemInternal*> items_internal = itemsInternalView();
 
     for( Integer z=0, nb=local_ids.size(); z<nb; ++z ){
       Int32 lid = local_ids[z];
-      Int32 nb_mat = connectivity_list.cellNbMaterial(CellLocalId(lid), env_id);
       ComponentItemInternal* env_item = items_internal[z];
+      Int32 nb_mat = env_item->nbSubItem();
       cells_index[lid] = cell_index;
       cells_pos[lid] = cell_index;
       //info(4) << "XZ=" << z << " LID=" << lid << " POS=" << cell_index;
-      env_item->_setNbSubItem(nb_mat);
-      env_item->_setComponent(env_id);
       if (nb_mat!=0){
-        env_item->_setFirstSubItem(&mat_items_internal[cell_index]);
-        cells_env[lid] = env_item;
+        env_item->_setFirstSubItem(mat_items_internal_range[cell_index]);
       }
+      cells_env[lid] = env_item->_internalLocalId();
       cell_index += nb_mat;
     }
   }
