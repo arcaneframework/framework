@@ -406,7 +406,8 @@ void AllEnvData::
 recomputeIncremental()
 {
   forceRecompute(false);
-  _checkConnectivityCoherency();
+  if (arcaneIsCheck())
+    _checkConnectivityCoherency();
 }
 
 /*---------------------------------------------------------------------------*/
