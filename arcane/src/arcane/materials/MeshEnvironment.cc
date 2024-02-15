@@ -194,12 +194,13 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
   ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
+  ComponentItemInternalRange mat_items_internal_range = item_internal_data->matItemsInternalRange(id());
 
   Int32UniqueArray cells_index(max_local_id);
   Int32UniqueArray cells_pos(max_local_id);
   //TODO: regarder comment supprimer ce tableau cells_env qui n'est normalement pas utile
   // car on doit pouvoir directement utiliser les m_items_internal
-  UniqueArray<ComponentItemInternal*> cells_env(max_local_id);
+  UniqueArray<ComponentItemInternalLocalId> cells_env(max_local_id);
 
   {
     Integer cell_index = 0;
@@ -214,9 +215,9 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
       cells_pos[lid] = cell_index;
       //info(4) << "XZ=" << z << " LID=" << lid << " POS=" << cell_index;
       if (nb_mat!=0){
-        env_item->_setFirstSubItem(&mat_items_internal[cell_index]);
+        env_item->_setFirstSubItem(mat_items_internal_range[cell_index]);
       }
-      cells_env[lid] = env_item;
+      cells_env[lid] = env_item->_internalLocalId();
       cell_index += nb_mat;
     }
   }

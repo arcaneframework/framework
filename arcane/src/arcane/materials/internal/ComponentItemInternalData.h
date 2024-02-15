@@ -160,6 +160,12 @@ class ComponentItemInternalData
     return m_env_items_internal_range;
   }
 
+  //! Liste des mailles matériaux pour le \a env_index ème milieu
+  ComponentItemInternalRange matItemsInternalRange(Int32 env_index)
+  {
+    return m_mat_items_internal_range[env_index];
+  }
+
   //! Redimensionne les structures allouant les 'ComponentItemInternal'
   void resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell);
 
