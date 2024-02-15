@@ -78,6 +78,7 @@ class AllEnvData
   Int32 m_verbose_debug_level = 0;
 
   ComponentItemInternalData m_item_internal_data;
+  Int64 m_current_mesh_timestamp = -1;
 
  private:
 
