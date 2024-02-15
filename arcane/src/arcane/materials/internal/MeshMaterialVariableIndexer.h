@@ -96,7 +96,6 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 
   void changeLocalIds(Int32ConstArrayView old_to_new_ids);
   void endUpdateAdd(const ComponentItemListBuilder& builder);
-  void endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove);
   void endUpdateRemove(const ConstituentModifierWorkInfo& args,Integer nb_remove);
   //@}
 
