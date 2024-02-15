@@ -309,6 +309,21 @@ getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_
   uid[3] = (cell_coord_i + 0) + ((cell_coord_j + 1) * nb_node_x) + first_node_uid;
 }
 
+void CartesianMeshNumberingV2Mng::
+getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid)
+{
+  const Int64 cell_coord_i = uidToCoordX(cell_uid, level);
+  const Int64 cell_coord_j = uidToCoordY(cell_uid, level);
+
+  if(m_mesh->dimension() == 2) {
+    getNodeUids(uid, level, cell_coord_i, cell_coord_j);
+  }
+  else{
+    const Int64 cell_coord_k = uidToCoordZ(cell_uid, level);
+    getNodeUids(uid, level, cell_coord_i, cell_coord_j, cell_coord_k);
+  }
+}
+
 Integer CartesianMeshNumberingV2Mng::
 getNbFace()
 {
@@ -451,6 +466,21 @@ getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_
   uid[1] += first_face_uid;
   uid[2] += first_face_uid;
   uid[3] += first_face_uid;
+}
+
+void CartesianMeshNumberingV2Mng::
+getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid)
+{
+  const Int64 cell_coord_i = uidToCoordX(cell_uid, level);
+  const Int64 cell_coord_j = uidToCoordY(cell_uid, level);
+
+  if(m_mesh->dimension() == 2) {
+    getFaceUids(uid, level, cell_coord_i, cell_coord_j);
+  }
+  else{
+    const Int64 cell_coord_k = uidToCoordZ(cell_uid, level);
+    getFaceUids(uid, level, cell_coord_i, cell_coord_j, cell_coord_k);
+  }
 }
 
 void CartesianMeshNumberingV2Mng::
