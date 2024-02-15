@@ -153,45 +153,6 @@ endUpdateAdd(const ComponentItemListBuilder& builder)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove)
-{
-  // TODO: à supprimer et à remplacer par la version qui prend un
-  // ConstituentModifierWorkInfo à la place
-
-  Integer nb_item = nbItem();
-  Integer orig_nb_item = nb_item;
-
-  //ATTENTION: on modifie nb_item pendant l'itération.
-  for (Integer i=0; i<nb_item; ++i) {
-    Int32 lid = m_local_ids[i];
-    if (removed_local_ids_filter[lid]) {
-      // Déplace le dernier MatVarIndex vers l'élément courant.
-      Int32 last = nb_item - 1;
-      m_matvar_indexes[i] = m_matvar_indexes[last];
-      m_local_ids[i] = m_local_ids[last];
-      //info() << "REMOVE ITEM lid=" << lid << " i=" << i;
-      --nb_item;
-      --i; // Il faut refaire l'itération courante.
-    }
-  }
-  m_matvar_indexes.resize(nb_item);
-  m_local_ids.resize(nb_item);
-
-  // Vérifie qu'on a bien supprimé autant d'entité que prévu.
-  Integer nb_remove_computed = (orig_nb_item - nb_item);
-  if (nb_remove_computed!=nb_remove)
-    ARCANE_FATAL("Bad number of removed material items expected={0} v={1} name={2}",
-                 nb_remove,nb_remove_computed,name());
-  info(4) << "END_UPDATE_REMOVE nb_removed=" << nb_remove_computed;
-
-  // TODO: il faut recalculer m_max_index_in_multiple_array
-  // et compacter éventuellement les variables. (pas indispensable)
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshMaterialVariableIndexer::
 endUpdateRemove(const ConstituentModifierWorkInfo& work_info,Integer nb_remove)
 {
   Integer nb_item = nbItem();
