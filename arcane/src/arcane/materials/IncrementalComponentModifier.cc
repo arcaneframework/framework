@@ -70,7 +70,7 @@ apply(MaterialModifierOperation* operation)
 {
   bool is_add = operation->isAdd();
   IMeshMaterial* mat = operation->material();
-  Int32ConstArrayView ids = operation->ids();
+  ConstArrayView<Int32> ids = operation->ids();
 
   auto* true_mat = ARCANE_CHECK_POINTER(dynamic_cast<MeshMaterial*>(mat));
 
@@ -82,8 +82,6 @@ apply(MaterialModifierOperation* operation)
 
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
 
-  Int32UniqueArray cells_changed_in_env;
-
   if (nb_mat != 1) {
 
     // S'il est possible d'avoir plusieurs matériaux par milieu, il faut gérer
@@ -94,12 +92,18 @@ apply(MaterialModifierOperation* operation)
     // - en cas de suppression, le milieu évolue dans la maille s'il y avait
     //   1 seul matériau avant. Dans ce cas le milieu est supprimé de la maille.
 
-    Int32UniqueArray cells_unchanged_in_env;
+    UniqueArray<Int32>& cells_changed_in_env = m_work_info.cells_changed_in_env;
+    UniqueArray<Int32>& cells_unchanged_in_env = m_work_info.cells_unchanged_in_env;
+    const Int32 nb_id = ids.size();
+    cells_unchanged_in_env.clear();
+    cells_unchanged_in_env.reserve(nb_id);
+    cells_changed_in_env.clear();
+    cells_changed_in_env.reserve(nb_id);
     const Int32 ref_nb_mat = is_add ? 0 : 1;
     const Int16 env_id = true_env->componentId();
     info(4) << "Using optimisation updateMaterialDirect is_add?=" << is_add;
 
-    for (Integer i = 0, n = ids.size(); i < n; ++i) {
+    for (Integer i = 0; i < nb_id; ++i) {
       Int32 lid = ids[i];
       Int32 current_cell_nb_mat = connectivity->cellNbMaterial(CellLocalId(lid), env_id);
       if (current_cell_nb_mat != ref_nb_mat) {

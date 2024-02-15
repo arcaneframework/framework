@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConstituentModifierWorkInfo.h                               (C) 2000-2023 */
+/* ConstituentModifierWorkInfo.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Structure de travail utilisée lors de la modification des constituants.   */
 /*---------------------------------------------------------------------------*/
@@ -45,6 +45,11 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   UniqueArray<Int32> pure_local_ids;
   UniqueArray<Int32> partial_indexes;
   bool is_verbose = false;
+
+  //! Liste des mailles d'un milieu qui vont être ajoutées ou supprimées lors d'une opération
+  UniqueArray<Int32> cells_changed_in_env;
+  //! Liste des mailles d'un milieu qui sont déjà présentes dans un milieu lors d'une opération
+  UniqueArray<Int32> cells_unchanged_in_env;
 
  public:
 
