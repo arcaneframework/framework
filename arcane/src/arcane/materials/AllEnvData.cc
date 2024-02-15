@@ -248,10 +248,11 @@ _computeInfosForEnvCells()
         ref_ii._setSuperAndGlobalItem(&all_env_items_internal[lid], ItemLocalId(lid));
         ref_ii._setNbSubItem(nb_mat);
         ref_ii._setVariableIndex(mvi);
+        ref_ii._setComponent(env_id);
       }
     }
     for( MeshEnvironment* env : true_environments ){
-      env->computeMaterialIndexes(*m_component_connectivity_list, &m_item_internal_data);
+      env->computeMaterialIndexes(&m_item_internal_data);
     }
   }
 
