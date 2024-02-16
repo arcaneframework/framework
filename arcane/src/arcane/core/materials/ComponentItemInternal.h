@@ -358,7 +358,7 @@ _itemInternal(ComponentItemInternalLocalId id)
 class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
 {
   friend class ConstituentItemLocalIdList;
-  friend class AllEnvCellVectorView;
+  friend class ComponentItemVectorView;
 
  private:
 
