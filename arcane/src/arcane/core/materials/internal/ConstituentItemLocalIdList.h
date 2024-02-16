@@ -36,7 +36,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 {
  public:
 
-  ConstituentItemLocalIdList(ComponentItemSharedInfo* shared_info);
+  explicit ConstituentItemLocalIdList(ComponentItemSharedInfo* shared_info);
 
  public:
 
@@ -94,6 +94,11 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
     return m_item_internal_local_id_list[index];
   }
 
+  MatVarIndex variableIndex(Int32 index) const
+  {
+    return _itemInternal(index)->variableIndex();
+  }
+
   ConstituentItemLocalIdListView view() const
   {
     return { m_shared_info, m_item_internal_local_id_list, m_items_internal };
@@ -116,6 +121,13 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
   UniqueArray<ComponentItemInternalLocalId> m_item_internal_local_id_list;
 
   ComponentItemSharedInfo* m_shared_info = nullptr;
+
+ private:
+
+  ComponentItemInternal* _itemInternal(Int32 index) const
+  {
+    return m_shared_info->_itemInternal(localId(index));
+  }
 };
 
 /*---------------------------------------------------------------------------*/

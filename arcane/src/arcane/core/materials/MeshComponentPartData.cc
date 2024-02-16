@@ -52,14 +52,6 @@ MeshComponentPartData(IMeshComponent* component)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MeshComponentPartData::
-~MeshComponentPartData()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -125,7 +117,7 @@ checkValid() const
     vc.areEqual(nb_item,item_indexes.size(),"Indexes size");
     for( Integer k=0; k<nb_item; ++k ){
       MatVarIndex mvi(var_idx,indexes[k]);
-      MatVarIndex component_mvi = m_items_internal[item_indexes[k]]->variableIndex();
+      MatVarIndex component_mvi = m_constituent_list_view._matVarIndex(item_indexes[k]);
       if (mvi!=component_mvi){
         info() << "Bad MatVarIndex i=" << i << " k=" << k
                << " mvi=" << mvi << " component_mvi=" << component_mvi;
@@ -146,7 +138,7 @@ pureView() const
   Int32ConstArrayView value_indexes = valueIndexes(eMatPart::Pure);
   Int32ConstArrayView item_indexes = itemIndexes(eMatPart::Pure);
   return ComponentPurePartItemVectorView(m_component,value_indexes,
-                                         item_indexes,m_items_internal);
+                                         item_indexes, m_constituent_list_view._itemsInternal());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -159,7 +151,7 @@ impureView() const
   Int32ConstArrayView item_indexes = itemIndexes(eMatPart::Impure);
   Int32 var_idx = impureVarIdx();
   return ComponentImpurePartItemVectorView(m_component,var_idx,value_indexes,
-                                           item_indexes,m_items_internal);
+                                           item_indexes, m_constituent_list_view._itemsInternal());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -172,7 +164,7 @@ partView(eMatPart part) const
   Int32ConstArrayView item_indexes = itemIndexes(part);
   Int32 var_idx = (part==eMatPart::Pure) ? 0 : impureVarIdx();
   return ComponentPartItemVectorView(m_component,var_idx,value_indexes,
-                                     item_indexes,m_items_internal,part);
+                                     item_indexes, m_constituent_list_view._itemsInternal(), part);
 }
 
 /*---------------------------------------------------------------------------*/

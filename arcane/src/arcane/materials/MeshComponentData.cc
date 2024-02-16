@@ -68,7 +68,7 @@ void MeshComponentData::
 _setPartInfo()
 {
   if (m_part_data)
-    m_part_data->_setComponentItemInternalView(m_constituent_local_id_list.itemsInternalView());
+    m_part_data->_setConstituentListView(m_constituent_local_id_list.view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -218,9 +218,8 @@ checkValid()
   info(4) << "CheckValid component_name=" << name()
          << " matvar_indexes=" << mat_var_indexes;
   info(4) << "Cells=" << m_variable_indexer->cells().view().localIds();
-  ConstArrayView<ComponentItemInternal*> internal_view = m_constituent_local_id_list.itemsInternalView();
   for( Integer i=0; i<nb_val; ++ i){
-    MatVarIndex component_mvi = internal_view[i]->variableIndex();
+    MatVarIndex component_mvi = m_constituent_local_id_list.variableIndex(i);
     MatVarIndex mvi = mat_var_indexes[i];
     if (component_mvi!=mvi)
       ARCANE_FATAL("Bad 'var_index' environment={3} component='{0}' direct='{1}' i={2}",
