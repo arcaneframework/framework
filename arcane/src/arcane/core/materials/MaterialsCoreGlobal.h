@@ -70,6 +70,7 @@ class ComponentItemVectorView;
 class ComponentPartItemVectorView;
 class ComponentPurePartItemVectorView;
 class ComponentImpurePartItemVectorView;
+class ConstituentItemLocalIdListView;
 class MeshComponentPartData;
 class MatCellEnumerator;
 class ComponentItemVector;

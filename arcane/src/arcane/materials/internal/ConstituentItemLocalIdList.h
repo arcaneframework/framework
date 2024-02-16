@@ -77,6 +77,11 @@ class ConstituentItemLocalIdList
     return m_item_internal_local_id_list[index];
   }
 
+  ConstituentItemLocalIdListView view() const
+  {
+    return { m_shared_info, m_item_internal_local_id_list, m_items_internal };
+  }
+
  private:
 
   //! Liste des ComponentItemInternal* pour ce constituant.

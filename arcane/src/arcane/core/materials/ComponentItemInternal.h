@@ -96,19 +96,6 @@ namespace Arcane::Materials::matimpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- */
-class ARCANE_CORE_EXPORT ComponentItemInternalLocalIdListView
-{
- private:
-
-  ComponentItemSharedInfo* m_component_shared_info = nullptr;
-  ArrayView<ComponentItemInternalLocalId> m_ids;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 class ARCANE_CORE_EXPORT ConstituentItemBase
 {
@@ -149,7 +136,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace matimpl
+} // namespace Arcane::Materials::matimpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -357,6 +344,43 @@ _itemInternal(ComponentItemInternalLocalId id)
 {
   return m_component_item_internal_view.ptrAt(id.localId());
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \internal
+ * \brief Vue sur une instance de ConstituentItemLocalIdList.
+ *
+ * Les instances de ces classes sont notamment utilisées pour les énumérateurs
+ * sur les constituants.
+ */
+class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
+{
+  friend class ConstituentItemLocalIdList;
+  friend class AllEnvCellVectorView;
+
+ private:
+
+  ConstituentItemLocalIdListView(ComponentItemSharedInfo* shared_info,
+                                 ConstArrayView<ComponentItemInternalLocalId> ids,
+                                 ConstArrayView<ComponentItemInternal*> items_internal)
+  : m_component_shared_info(shared_info)
+  , m_ids(ids)
+  , m_items_internal(items_internal)
+  {
+  }
+
+ private:
+
+  ConstArrayView<ComponentItemInternal*> _itemsInternal() const { return m_items_internal; }
+
+ private:
+
+  ComponentItemSharedInfo* m_component_shared_info = nullptr;
+  ConstArrayView<ComponentItemInternalLocalId> m_ids;
+  ConstArrayView<ComponentItemInternal*> m_items_internal;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
