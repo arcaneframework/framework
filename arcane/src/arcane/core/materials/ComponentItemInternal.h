@@ -38,6 +38,13 @@ class ARCANE_CORE_EXPORT ComponentItemInternalLocalId
   : m_id(id)
   {}
   ARCCORE_HOST_DEVICE Int32 localId() const { return m_id; }
+  ARCCORE_HOST_DEVICE friend bool operator==(ComponentItemInternalLocalId a,
+                                             ComponentItemInternalLocalId b)
+  {
+    return a.m_id == b.m_id;
+  }
+  ARCANE_CORE_EXPORT friend std::ostream&
+  operator<<(std::ostream& o,const ComponentItemInternalLocalId& id);
 
  private:
 
@@ -379,12 +386,29 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
 
  private:
 
-  ConstArrayView<ComponentItemInternal*> _itemsInternal() const { return m_items_internal; }
   matimpl::ConstituentItemBase _constituenItemBase(Int32 index) const { return matimpl::ConstituentItemBase(m_items_internal[index]); }
   MatVarIndex _matVarIndex(Int32 index) const { return m_items_internal[index]->variableIndex(); }
   ConstituentItemLocalIdListView _subView(Int32 begin, Int32 size) const
   {
     return { m_component_shared_info, m_ids.subView(begin, size), m_items_internal.subView(begin, size) };
+  }
+  //! Pour les tests, vérifie que les vues pointent vers les mêmes données
+  bool _isSamePointerData(const ConstituentItemLocalIdListView& rhs) const
+  {
+    return (m_ids.data() == rhs.m_ids.data()) && (m_items_internal.data() == rhs.m_items_internal.data());
+  }
+  friend bool operator==(const ConstituentItemLocalIdListView& a,
+                         const ConstituentItemLocalIdListView& b)
+  {
+    bool t1 = a.m_component_shared_info == b.m_component_shared_info;
+    bool t2 = a.m_ids == b.m_ids;
+    bool t3 = a.m_items_internal == b.m_items_internal;
+    return (t1 && t2 && t3);
+  }
+  friend bool operator!=(const ConstituentItemLocalIdListView& a,
+                         const ConstituentItemLocalIdListView& b)
+  {
+    return (!(a == b));
   }
 
  private:

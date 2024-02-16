@@ -105,11 +105,6 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
  private:
 
-  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const
-  {
-    return m_constituent_list_view._itemsInternal();
-  }
-
   // Tableau des MatVarIndex de cette vue.
   ConstArrayView<MatVarIndex> _matvarIndexes() const { return m_matvar_indexes_view; }
 
@@ -124,6 +119,13 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
    * Cette méthode est interne à Arcane et ne doit pas être utilisée.
    */
   ComponentItemVectorView _subView(Integer begin, Integer size);
+
+  //! Pour les tests vérifie que \a rhs et l'instance pointent sur les même données
+  bool _isSamePointerData(const ComponentItemVectorView& rhs) const
+  {
+    bool test1 = m_constituent_list_view._isSamePointerData(rhs.m_constituent_list_view);
+    return test1 && (m_matvar_indexes_view.data() == rhs.m_matvar_indexes_view.data());
+  }
 
  private:
 
