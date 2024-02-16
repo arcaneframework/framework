@@ -56,7 +56,8 @@ class MeshComponentData
 
  public:
 
-  MeshComponentData(IMeshComponent* component,const String& name,Int16 component_id,
+  MeshComponentData(IMeshComponent* component, const String& name,
+                    Int16 component_id, ComponentItemSharedInfo* shared_info,
                     bool create_indexer);
   ~MeshComponentData() override;
 

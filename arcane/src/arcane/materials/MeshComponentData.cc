@@ -32,15 +32,17 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshComponentData::
-MeshComponentData(IMeshComponent* component,const String& name,
-                  Int16 component_id,bool create_indexer)
+MeshComponentData(IMeshComponent* component, const String& name,
+                  Int16 component_id, ComponentItemSharedInfo* shared_info,
+                  bool create_indexer)
 : TraceAccessor(component->traceMng())
 , m_component(component)
 , m_component_id(component_id)
 , m_name(name)
+, m_constituent_local_id_list(shared_info)
 {
-  if (create_indexer){
-    m_variable_indexer = new MeshMaterialVariableIndexer(traceMng(),name);
+  if (create_indexer) {
+    m_variable_indexer = new MeshMaterialVariableIndexer(traceMng(), name);
     m_is_indexer_owner = true;
   }
 }

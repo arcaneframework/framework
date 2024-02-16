@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialMngInternal.h                                  (C) 2000-2023 */
+/* IMeshMaterialMngInternal.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* API interne Arcane de 'IMeshMaterialMng'.                                 */
 /*---------------------------------------------------------------------------*/
@@ -22,6 +22,7 @@
 
 namespace Arcane::Materials
 {
+class ComponentItemSharedInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -83,7 +84,6 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
  public:
 
   /*!
-   * \internal
    * \brief Renvoie la table de "connectivité" CellLocalId -> AllEnvCell
    * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
    * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
@@ -91,7 +91,6 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
   virtual AllCellToAllEnvCell* getAllCellToAllEnvCell() const = 0;
 
   /*!
-   * \internal
    * \brief Construit la table de "connectivité" CellLocalId -> AllEnvCell
    * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
    * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
@@ -100,6 +99,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    * platform::getDefaultDataAllocator() est utilisée
    */
   virtual void createAllCellToAllEnvCell(IMemoryAllocator* alloc) = 0;
+
+  //! Instance générique de ComponentItemSharedInfo
+  virtual ComponentItemSharedInfo* componentItemSharedInfo() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

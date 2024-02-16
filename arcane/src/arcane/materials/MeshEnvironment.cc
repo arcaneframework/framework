@@ -23,6 +23,7 @@
 #include "arcane/core/VariableBuildInfo.h"
 #include "arcane/core/ItemGroupObserver.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MatItemEnumerator.h"
@@ -51,12 +52,17 @@ class MeshEnvironmentObserver
 , public IItemGroupObserver
 {
  public:
-  MeshEnvironmentObserver(MeshEnvironment* env,ITraceMng* tm)
-  : TraceAccessor(tm), m_environment(env){}
+
+  MeshEnvironmentObserver(MeshEnvironment* env, ITraceMng* tm)
+  : TraceAccessor(tm)
+  , m_environment(env)
+  {}
+
  public:
+
   void executeExtend(const Int32ConstArrayView* info1) override
   {
-    if (info1){
+    if (info1) {
       info(4) << "EXTEND_ENV " << m_environment->name() << " ids=" << (*info1);
       if (m_environment->materialMng()->isInMeshMaterialExchange())
         info() << "EXTEND_ENV_IN_LOADBALANCE " << m_environment->name()
@@ -65,7 +71,7 @@ class MeshEnvironmentObserver
   }
   void executeReduce(const Int32ConstArrayView* info1) override
   {
-    if (info1){
+    if (info1) {
       info(4) << "REDUCE_ENV " << m_environment->name() << " ids=" << (*info1);
       if (m_environment->materialMng()->isInMeshMaterialExchange())
         info() << "REDUCE_ENV_IN_LOADBALANCE " << m_environment->name()
@@ -86,7 +92,9 @@ class MeshEnvironmentObserver
            << " env=" << m_environment->name();
   }
   bool needInfo() const override { return true; }
+
  private:
+
   MeshEnvironment* m_environment;
 };
 
@@ -100,7 +108,7 @@ MeshEnvironment::
 MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int16 env_id)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, m_data(this, name, env_id, false)
+, m_data(this, name, env_id, mm->_internalApi()->componentItemSharedInfo(), false)
 , m_non_const_this(this)
 , m_internal_api(this)
 {
@@ -118,11 +126,11 @@ build()
   IMesh* mesh = m_material_mng->mesh();
   IItemFamily* cell_family = mesh->cellFamily();
   String group_name = m_material_mng->name() + "_" + name();
-  CellGroup cells = cell_family->findGroup(group_name,true);
+  CellGroup cells = cell_family->findGroup(group_name, true);
 
-  if (m_material_mng->isMeshModificationNotified()){
-    m_group_observer = new MeshEnvironmentObserver(this,traceMng());
-    cells.internal()->attachObserver(this,m_group_observer);
+  if (m_material_mng->isMeshModificationNotified()) {
+    m_group_observer = new MeshEnvironmentObserver(this, traceMng());
+    cells.internal()->attachObserver(this, m_group_observer);
   }
 
   m_data._setItems(cells);
@@ -153,10 +161,10 @@ setVariableIndexer(MeshMaterialVariableIndexer* idx)
   // cohérent, il faut être sur que ce matériau a aussi le même groupe.
   // TODO: pour garantir la cohérence, il faudrait supprimer
   // dans m_data le groupe d'entité.
-  if (m_true_materials.size()==1)
+  if (m_true_materials.size() == 1)
     m_true_materials[0]->componentData()->_setItems(m_data.items());
   m_data._buildPartData();
-  for( MeshMaterial* mat : m_true_materials )
+  for (MeshMaterial* mat : m_true_materials)
     mat->componentData()->_buildPartData();
 }
 
@@ -169,7 +177,7 @@ computeNbMatPerCell()
   info(4) << "ComputeNbMatPerCell env=" << name();
   Integer nb_mat = m_materials.size();
   Integer total = 0;
-  for( Integer i=0; i<nb_mat; ++i ){
+  for (Integer i = 0; i < nb_mat; ++i) {
     IMeshMaterial* mat = m_materials[i];
     CellGroup mat_cells = mat->cells();
     total += mat_cells.size();
@@ -207,14 +215,14 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
     Int32ConstArrayView local_ids = variableIndexer()->localIds();
     ConstArrayView<ComponentItemInternal*> items_internal = itemsInternalView();
 
-    for( Integer z=0, nb=local_ids.size(); z<nb; ++z ){
+    for (Integer z = 0, nb = local_ids.size(); z < nb; ++z) {
       Int32 lid = local_ids[z];
       ComponentItemInternal* env_item = items_internal[z];
       Int32 nb_mat = env_item->nbSubItem();
       cells_index[lid] = cell_index;
       cells_pos[lid] = cell_index;
       //info(4) << "XZ=" << z << " LID=" << lid << " POS=" << cell_index;
-      if (nb_mat!=0){
+      if (nb_mat != 0) {
         env_item->_setFirstSubItem(mat_items_internal_range[cell_index]);
       }
       cells_env[lid] = env_item->_internalLocalId();
@@ -223,7 +231,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   }
   {
     Integer nb_mat = m_true_materials.size();
-    for( Integer i=0; i<nb_mat; ++i ){
+    for (Integer i = 0; i < nb_mat; ++i) {
       MeshMaterial* mat = m_true_materials[i];
       Int32 mat_id = mat->id();
       const MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
@@ -238,7 +246,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
       ArrayView<ComponentItemInternal*> mat_items_internal_pointer = mat->itemsInternalView();
       Int32ConstArrayView local_ids = var_indexer->localIds();
 
-      for( Integer z=0, nb_id = matvar_indexes.size(); z<nb_id; ++z){
+      for (Integer z = 0, nb_id = matvar_indexes.size(); z < nb_id; ++z) {
         MatVarIndex mvi = matvar_indexes[z];
         Int32 lid = local_ids[z];
         Int32 pos = cells_pos[lid];
@@ -268,15 +276,15 @@ computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list
   const Int16 env_id = componentId();
   // Calcul pour chaque matériau le nombre de mailles mixtes
   // TODO: a faire dans MeshMaterialVariableIndexer
-  for( MeshMaterial* mat : m_true_materials ){
+  for (MeshMaterial* mat : m_true_materials) {
     MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
     CellGroup cells = var_indexer->cells();
     Integer var_nb_cell = cells.size();
 
-    ComponentItemListBuilder list_builder(var_indexer,0);
+    ComponentItemListBuilder list_builder(var_indexer, 0);
 
     info(4) << "MAT_INDEXER mat=" << mat->name() << " NB_CELL=" << var_nb_cell << " name=" << cells.name();
-    ENUMERATE_CELL(icell,cells){
+    ENUMERATE_CELL (icell, cells) {
       Int32 lid = icell.itemLocalId();
       // On ne prend l'indice global que si on est le seul matériau et le seul
       // milieu de la maille. Sinon, on prend un indice multiple
@@ -286,7 +294,7 @@ computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list
         list_builder.addPureItem(lid);
     }
 
-    if (traceMng()->verbosityLevel()>=5)
+    if (traceMng()->verbosityLevel() >= 5)
       info() << "MAT_NB_MULTIPLE_CELL (V2) mat=" << var_indexer->name()
              << " nb_in_global=" << list_builder.pureMatVarIndexes().size()
              << " (ids=" << list_builder.pureMatVarIndexes() << ")"
@@ -321,7 +329,7 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
           << " n=" << variableIndexer()->matvarIndexes().size();
   Integer nb_mat = m_true_materials.size();
   info(4) << "NotifyLocalIdsChanged env=" << name() << " nb_mat=" << nb_mat
-         << " old_to_new_ids.size=" << old_to_new_ids.size();
+          << " old_to_new_ids.size=" << old_to_new_ids.size();
 
   // Si le milieu n'a qu'un seul matériau, ils partagent le même variable_indexer
   // donc il ne faut changer les ids qu'une seule fois. Par contre, le
@@ -332,26 +340,26 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
   // aura changé et il ne sera plus possible de déterminer la correspondance
   // entre les nouveaux et les anciens localId
 
-  if (nb_mat==1){
+  if (nb_mat == 1) {
     m_data._changeLocalIdsForInternalList(old_to_new_ids);
     MeshMaterial* true_mat = m_true_materials[0];
-    _changeIds(true_mat->componentData(),old_to_new_ids);
+    _changeIds(true_mat->componentData(), old_to_new_ids);
   }
-  else{
+  else {
     // Change les infos des matériaux
-    for( Integer i=0; i<nb_mat; ++i ){
+    for (Integer i = 0; i < nb_mat; ++i) {
       MeshMaterial* true_mat = m_true_materials[i];
       info(4) << "ChangeIds MAT i=" << i << " MAT=" << true_mat->name();
-      _changeIds(true_mat->componentData(),old_to_new_ids);
+      _changeIds(true_mat->componentData(), old_to_new_ids);
     }
     // Change les infos du milieu
-    _changeIds(componentData(),old_to_new_ids);
+    _changeIds(componentData(), old_to_new_ids);
   }
 
   // Reconstruit les infos sur les mailles pures et mixtes.
   // Il faut le faire une fois que tous les valeurs sont à jour.
   {
-    for( Integer i=0; i<nb_mat; ++i ){
+    for (Integer i = 0; i < nb_mat; ++i) {
       MeshMaterial* true_mat = m_true_materials[i];
       true_mat->componentData()->_rebuildPartData();
     }
@@ -365,7 +373,7 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshEnvironment::
-_changeIds(MeshComponentData* cdata,Int32ConstArrayView old_to_new_ids)
+_changeIds(MeshComponentData* cdata, Int32ConstArrayView old_to_new_ids)
 {
   info(4) << "ChangeIds() (V4) for name=" << cdata->name();
   info(4) << "Use new version for ChangeIds()";
@@ -381,10 +389,10 @@ EnvCell MeshEnvironment::
 findEnvCell(AllEnvCell c) const
 {
   Int32 env_id = m_data.componentId();
-  ENUMERATE_CELL_ENVCELL(ienvcell,c){
+  ENUMERATE_CELL_ENVCELL (ienvcell, c) {
     EnvCell ec = *ienvcell;
     Int32 eid = ec.environmentId();
-    if (eid==env_id)
+    if (eid == env_id)
       return ec;
   }
   return EnvCell();
@@ -398,7 +406,6 @@ findComponentCell(AllEnvCell c) const
 {
   return findEnvCell(c);
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -493,11 +500,10 @@ checkValid()
 
   m_data.checkValid();
 
-  for( IMeshMaterial* mat : m_materials ){
+  for (IMeshMaterial* mat : m_materials) {
     mat->checkValid();
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

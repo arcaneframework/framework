@@ -67,6 +67,10 @@ class AllEnvData
   {
     return m_component_connectivity_list;
   }
+  ComponentItemInternalData* componentItemInternalData()
+  {
+    return &m_item_internal_data;
+  }
 
  private:
 

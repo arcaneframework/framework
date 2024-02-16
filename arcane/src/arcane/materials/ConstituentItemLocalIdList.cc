@@ -27,8 +27,9 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 ConstituentItemLocalIdList::
-ConstituentItemLocalIdList()
+ConstituentItemLocalIdList(ComponentItemSharedInfo* shared_info)
 : m_item_internal_local_id_list(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_shared_info(shared_info)
 {
 }
 

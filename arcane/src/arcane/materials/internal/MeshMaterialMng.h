@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.h                                           (C) 2000-2023 */
+/* MeshMaterialMng.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -102,6 +102,10 @@ class MeshMaterialMng
     IMeshMaterialVariableSynchronizer* allCellsEnvOnlySynchronizer() override
     {
       return m_material_mng->_allCellsEnvOnlySynchronizer();
+    }
+    ComponentItemSharedInfo* componentItemSharedInfo() const override
+    {
+      return m_material_mng->componentItemSharedInfo();
     }
 
    private:
@@ -239,6 +243,7 @@ class MeshMaterialMng
  public:
 
   AllEnvData* allEnvData() { return m_all_env_data.get(); }
+  ComponentItemSharedInfo* componentItemSharedInfo() const;
   void syncVariablesReferences();
 
   void incrementTimestamp() { ++m_timestamp; }

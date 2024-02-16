@@ -36,7 +36,7 @@ class ConstituentItemLocalIdList
 {
  public:
 
-  ConstituentItemLocalIdList();
+  ConstituentItemLocalIdList(ComponentItemSharedInfo* shared_info);
 
  public:
 
@@ -61,6 +61,8 @@ class ConstituentItemLocalIdList
 
   //! Liste des ComponentItemInternalLocalId pour ce constituant.
   UniqueArray<ComponentItemInternalLocalId> m_item_internal_local_id_list;
+
+  ComponentItemSharedInfo* m_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
