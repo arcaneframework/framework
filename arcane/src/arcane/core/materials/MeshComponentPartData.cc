@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentPartData.cc                                    (C) 2000-2023 */
+/* MeshComponentPartData.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Données d'une partie (pure ou partielle) d'un constituant.                */
 /*---------------------------------------------------------------------------*/
@@ -137,8 +137,8 @@ pureView() const
 {
   Int32ConstArrayView value_indexes = valueIndexes(eMatPart::Pure);
   Int32ConstArrayView item_indexes = itemIndexes(eMatPart::Pure);
-  return ComponentPurePartItemVectorView(m_component,value_indexes,
-                                         item_indexes, m_constituent_list_view._itemsInternal());
+  return { m_component, value_indexes,
+           item_indexes, m_constituent_list_view };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -150,8 +150,8 @@ impureView() const
   Int32ConstArrayView value_indexes = valueIndexes(eMatPart::Impure);
   Int32ConstArrayView item_indexes = itemIndexes(eMatPart::Impure);
   Int32 var_idx = impureVarIdx();
-  return ComponentImpurePartItemVectorView(m_component,var_idx,value_indexes,
-                                           item_indexes, m_constituent_list_view._itemsInternal());
+  return { m_component, var_idx, value_indexes,
+           item_indexes, m_constituent_list_view };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,8 +163,8 @@ partView(eMatPart part) const
   Int32ConstArrayView value_indexes = valueIndexes(part);
   Int32ConstArrayView item_indexes = itemIndexes(part);
   Int32 var_idx = (part==eMatPart::Pure) ? 0 : impureVarIdx();
-  return ComponentPartItemVectorView(m_component,var_idx,value_indexes,
-                                     item_indexes, m_constituent_list_view._itemsInternal(), part);
+  return { m_component, var_idx, value_indexes,
+           item_indexes, m_constituent_list_view, part };
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentPartItemVectorView.h                               (C) 2000-2022 */
+/* ComponentPartItemVectorView.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Vue sur un vecteur sur une partie des entités composants.                 */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/ArrayView.h"
 
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
+#include "arcane/core/materials/ComponentItemInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,11 +46,14 @@ class ARCANE_CORE_EXPORT ComponentPartItemVectorView
   ComponentPartItemVectorView(IMeshComponent* component,Int32 component_part_index,
                               Int32ConstArrayView value_indexes,
                               Int32ConstArrayView item_indexes,
-                              ConstArrayView<ComponentItemInternal*> items_internal,
+                              const ConstituentItemLocalIdListView& constituent_list_view,
                               eMatPart part)
-  : m_component(component), m_component_part_index(component_part_index),
-    m_value_indexes(value_indexes), m_item_indexes(item_indexes),
-    m_items_internal(items_internal), m_part(part)
+  : m_component(component)
+  , m_component_part_index(component_part_index)
+  , m_value_indexes(value_indexes)
+  , m_item_indexes(item_indexes)
+  , m_constituent_list_view(constituent_list_view)
+  , m_part(part)
   {
   }
 
@@ -77,10 +81,14 @@ class ARCANE_CORE_EXPORT ComponentPartItemVectorView
   Int32ConstArrayView itemIndexes() const { return m_item_indexes; }
 
   //! Tableau parties internes des entités
-  ConstArrayView<ComponentItemInternal*> itemsInternal() const { return m_items_internal; }
+  ConstArrayView<ComponentItemInternal*> itemsInternal() const { return m_constituent_list_view._itemsInternal(); }
 
   //! Partie du composant.
   eMatPart part() const { return m_part; }
+
+ protected:
+
+  const ConstituentItemLocalIdListView& constituentItemListView() const { return m_constituent_list_view; }
 
  private:
 
@@ -97,7 +105,7 @@ class ARCANE_CORE_EXPORT ComponentPartItemVectorView
   Int32ConstArrayView m_item_indexes;
 
   //! Liste des ComponentItemInternal* pour ce constituant.
-  ConstArrayView<ComponentItemInternal*> m_items_internal;
+  ConstituentItemLocalIdListView m_constituent_list_view;
 
   //! Partie du constituant
   eMatPart m_part;
@@ -113,16 +121,18 @@ class ARCANE_CORE_EXPORT ComponentPurePartItemVectorView
 : public ComponentPartItemVectorView
 {
  public:
+
   //! Construit une vue sur une partie des entité du composant \a component.
   ComponentPurePartItemVectorView(IMeshComponent* component,
                                   Int32ConstArrayView value_indexes,
                                   Int32ConstArrayView item_indexes,
-                                  ConstArrayView<ComponentItemInternal*> items_internal)
-  : ComponentPartItemVectorView(component,0,value_indexes,item_indexes,items_internal,eMatPart::Pure)
+                                  const ConstituentItemLocalIdListView& constituent_list_view)
+  : ComponentPartItemVectorView(component, 0, value_indexes, item_indexes, constituent_list_view, eMatPart::Pure)
   {
   }
+
   //! Construit une vue non initialisée
-  ComponentPurePartItemVectorView() {}
+  ComponentPurePartItemVectorView() = default;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -135,18 +145,20 @@ class ARCANE_CORE_EXPORT ComponentImpurePartItemVectorView
 : public ComponentPartItemVectorView
 {
  public:
+
   //! Construit une vue sur une partie des entité du composant \a component.
   ComponentImpurePartItemVectorView(IMeshComponent* component,
                                     Int32 component_part_index,
                                     Int32ConstArrayView value_indexes,
                                     Int32ConstArrayView item_indexes,
-                                    ConstArrayView<ComponentItemInternal*> items_internal)
+                                    const ConstituentItemLocalIdListView& constituent_list_view)
   : ComponentPartItemVectorView(component,component_part_index,value_indexes,
-                                item_indexes,items_internal,eMatPart::Impure)
+                                item_indexes, constituent_list_view, eMatPart::Impure)
   {
   }
+
   //! Construit une vue non initialisée
-  ComponentImpurePartItemVectorView() {}
+  ComponentImpurePartItemVectorView() = default;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -166,8 +178,7 @@ class ARCANE_CORE_EXPORT MatPartItemVectorView
   //! Construit une vue pour le matériau \a material.
   MatPartItemVectorView(IMeshMaterial* material,const ComponentPartItemVectorView& view);
   //! Construit une vue non initialisée
-  MatPartItemVectorView()
-  : m_material(nullptr) { }
+  MatPartItemVectorView() = default;
 
  public:
 
@@ -176,7 +187,7 @@ class ARCANE_CORE_EXPORT MatPartItemVectorView
 
  private:
 
-  IMeshMaterial* m_material;
+  IMeshMaterial* m_material = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -200,8 +211,8 @@ class ARCANE_CORE_EXPORT MatPurePartItemVectorView
 
   operator ComponentPurePartItemVectorView() const
   {
-    return ComponentPurePartItemVectorView(component(),valueIndexes(),
-                                           itemIndexes(),itemsInternal());
+    return { component(), valueIndexes(),
+             itemIndexes(), constituentItemListView() };
   }
 };
 
@@ -226,9 +237,9 @@ class ARCANE_CORE_EXPORT MatImpurePartItemVectorView
 
   operator ComponentImpurePartItemVectorView() const
   {
-    return ComponentImpurePartItemVectorView(component(),componentPartIndex(),
-                                             valueIndexes(),
-                                             itemIndexes(),itemsInternal());
+    return { component(), componentPartIndex(),
+             valueIndexes(),
+             itemIndexes(), constituentItemListView() };
   }
 };
 
@@ -249,8 +260,7 @@ class ARCANE_CORE_EXPORT EnvPartItemVectorView
   //! Construit une vue pour le milieu \a env.
   EnvPartItemVectorView(IMeshEnvironment* env,const ComponentPartItemVectorView& view);
   //! Construit une vue non initialisée
-  EnvPartItemVectorView()
-  : m_environment(nullptr) { }
+  EnvPartItemVectorView() = default;
 
  public:
 
@@ -259,7 +269,7 @@ class ARCANE_CORE_EXPORT EnvPartItemVectorView
 
  private:
 
-  IMeshEnvironment* m_environment;
+  IMeshEnvironment* m_environment = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -283,8 +293,8 @@ class ARCANE_CORE_EXPORT EnvPurePartItemVectorView
 
   operator ComponentPurePartItemVectorView() const
   {
-    return ComponentPurePartItemVectorView(component(),valueIndexes(),
-                                           itemIndexes(),itemsInternal());
+    return { component(), valueIndexes(),
+             itemIndexes(), constituentItemListView() };
   }
 };
 
@@ -309,9 +319,9 @@ class ARCANE_CORE_EXPORT EnvImpurePartItemVectorView
 
   operator ComponentImpurePartItemVectorView() const
   {
-    return ComponentImpurePartItemVectorView(component(),componentPartIndex(),
-                                             valueIndexes(),
-                                             itemIndexes(),itemsInternal());
+    return { component(), componentPartIndex(),
+             valueIndexes(),
+             itemIndexes(), constituentItemListView() };
   }
 };
 

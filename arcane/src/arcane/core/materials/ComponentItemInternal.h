@@ -361,6 +361,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
   friend class ConstituentItemLocalIdList;
   friend class ComponentItemVectorView;
   friend class MeshComponentPartData;
+  friend class ComponentPartItemVectorView;
 
  private:
 
