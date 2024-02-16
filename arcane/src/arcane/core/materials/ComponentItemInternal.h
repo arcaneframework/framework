@@ -362,6 +362,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
   friend class ComponentItemVectorView;
   friend class MeshComponentPartData;
   friend class ComponentPartItemVectorView;
+  friend class ComponentPartCellEnumerator;
 
  private:
 
@@ -378,6 +379,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
  private:
 
   ConstArrayView<ComponentItemInternal*> _itemsInternal() const { return m_items_internal; }
+  matimpl::ConstituentItemBase _constituenItemBase(Int32 index) const { return matimpl::ConstituentItemBase(m_items_internal[index]); }
   MatVarIndex _matVarIndex(Int32 index) const { return m_items_internal[index]->variableIndex(); }
   ConstituentItemLocalIdListView _subView(Int32 begin, Int32 size) const
   {

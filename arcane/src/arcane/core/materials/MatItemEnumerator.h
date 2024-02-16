@@ -281,7 +281,7 @@ class ARCANE_CORE_EXPORT ComponentPartCellEnumerator
 
   ComponentCell operator*() const
   {
-    return ComponentCell(matimpl::ConstituentItemBase(m_items_internal[m_item_indexes[m_index]]));
+    return ComponentCell(m_constituent_list_view._constituenItemBase(m_item_indexes[m_index]));
   }
 
  protected:
@@ -292,8 +292,15 @@ class ARCANE_CORE_EXPORT ComponentPartCellEnumerator
   Integer m_base_index;
   Int32ConstArrayView m_value_indexes;
   Int32ConstArrayView m_item_indexes;
-  ConstArrayView<ComponentItemInternal*> m_items_internal;
+  ConstituentItemLocalIdListView m_constituent_list_view; // ConstArrayView<ComponentItemInternal*> m_items_internal;
   IMeshComponent* m_component;
+
+ protected:
+
+  matimpl::ConstituentItemBase _currentConstituentItemBase() const
+  {
+    return m_constituent_list_view._constituenItemBase(m_item_indexes[m_index]);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -313,7 +320,7 @@ class ARCANE_CORE_EXPORT MatPartCellEnumerator
 
   MatCell operator*() const
   {
-    return MatCell(matimpl::ConstituentItemBase(m_items_internal[m_item_indexes[m_index]]));
+    return MatCell(_currentConstituentItemBase());
   }
 };
 
@@ -334,7 +341,7 @@ class ARCANE_CORE_EXPORT  EnvPartCellEnumerator
 
   EnvCell operator*() const
   {
-    return EnvCell(matimpl::ConstituentItemBase(m_items_internal[m_item_indexes[m_index]]));
+    return EnvCell(_currentConstituentItemBase());
   }
 };
 

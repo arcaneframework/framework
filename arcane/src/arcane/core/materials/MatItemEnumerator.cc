@@ -365,7 +365,7 @@ ComponentPartCellEnumerator(const ComponentPartItemVectorView& v,Integer base_in
 , m_base_index(base_index)
 , m_value_indexes(v.valueIndexes())
 , m_item_indexes(v.itemIndexes())
-, m_items_internal(v.itemsInternal())
+, m_constituent_list_view(v.constituentItemListView())
 , m_component(v.component())
 {
 }

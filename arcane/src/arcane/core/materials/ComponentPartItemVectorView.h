@@ -34,6 +34,7 @@ namespace Arcane::Materials
 class ARCANE_CORE_EXPORT ComponentPartItemVectorView
 {
   friend class MeshComponentPartData;
+  friend class ComponentPartCellEnumerator;
 
  protected:
 
@@ -81,14 +82,12 @@ class ARCANE_CORE_EXPORT ComponentPartItemVectorView
   //! Liste des indices dans \a itemsInternal() des entités.
   Int32ConstArrayView itemIndexes() const { return m_item_indexes; }
 
-  //! Tableau parties internes des entités
-  ConstArrayView<ComponentItemInternal*> itemsInternal() const { return m_constituent_list_view._itemsInternal(); }
-
   //! Partie du composant.
   eMatPart part() const { return m_part; }
 
  protected:
 
+  //! Tableau parties internes des entités
   const ConstituentItemLocalIdListView& constituentItemListView() const { return m_constituent_list_view; }
 
  private:
