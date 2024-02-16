@@ -43,6 +43,11 @@ class ARCANE_CORE_EXPORT ComponentItemInternalLocalId
   {
     return a.m_id == b.m_id;
   }
+  ARCCORE_HOST_DEVICE friend bool operator!=(ComponentItemInternalLocalId a,
+                                             ComponentItemInternalLocalId b)
+  {
+    return a.m_id != b.m_id;
+  }
   ARCANE_CORE_EXPORT friend std::ostream&
   operator<<(std::ostream& o,const ComponentItemInternalLocalId& id);
 
