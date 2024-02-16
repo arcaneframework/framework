@@ -32,18 +32,17 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshComponentData::
-MeshComponentData(IMeshComponent* component,const String& name,
-                  Int16 component_id,bool create_indexer)
+MeshComponentData(IMeshComponent* component, const String& name,
+                  Int16 component_id, ComponentItemSharedInfo* shared_info,
+                  bool create_indexer)
 : TraceAccessor(component->traceMng())
 , m_component(component)
 , m_component_id(component_id)
 , m_name(name)
-, m_is_indexer_owner(false)
-, m_variable_indexer(nullptr)
-, m_part_data(nullptr)
+, m_constituent_local_id_list(shared_info)
 {
-  if (create_indexer){
-    m_variable_indexer = new MeshMaterialVariableIndexer(traceMng(),name);
+  if (create_indexer) {
+    m_variable_indexer = new MeshMaterialVariableIndexer(traceMng(), name);
     m_is_indexer_owner = true;
   }
 }
@@ -66,11 +65,20 @@ MeshComponentData::
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentData::
+_setPartInfo()
+{
+  if (m_part_data)
+    m_part_data->_setComponentItemInternalView(_itemsInternalView());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshComponentData::
 _resizeItemsInternal(Integer nb_item)
 {
-  m_items_internal.resize(nb_item);
-  if (m_part_data)
-    m_part_data->_setComponentItemInternalView(m_items_internal);
+  m_constituent_local_id_list.resize(nb_item);
+  _setPartInfo();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -101,7 +109,7 @@ void MeshComponentData::
 _buildPartData()
 {
   m_part_data = new MeshComponentPartData(m_component);
-  m_part_data->_setComponentItemInternalView(m_items_internal);
+  _setPartInfo();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -118,24 +126,24 @@ _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 {
   // TODO: regarder s'il est possible de supprimer le tableau temporaire
   // new_internals (c'est à peu près sur que c'est possible).
-  ConstArrayView<ComponentItemInternal*> current_internals(_itemsInternalView());
-  UniqueArray<ComponentItemInternal*> new_internals;
+  ConstArrayView<ComponentItemInternalLocalId> current_internals(m_constituent_local_id_list.localIds());
+  UniqueArray<ComponentItemInternalLocalId> new_internals;
 
   Int32ConstArrayView local_ids = variableIndexer()->localIds();
 
-  for( Integer i=0, nb=current_internals.size(); i<nb; ++i ){
+  for (Integer i = 0, nb = current_internals.size(); i < nb; ++i) {
     Int32 lid = local_ids[i];
     Int32 new_lid = old_to_new_ids[lid];
-    if (new_lid!=NULL_ITEM_LOCAL_ID){
+    if (new_lid != NULL_ITEM_LOCAL_ID) {
       new_internals.add(current_internals[i]);
-      current_internals[i]->_setGlobalItem(ItemLocalId(new_lid));
+      m_constituent_local_id_list.itemInternal(i)->_setGlobalItem(ItemLocalId(new_lid));
     }
   }
 
   // TODO: regarder supprimer cette copie aussi.
   {
     _resizeItemsInternal(new_internals.size());
-    _itemsInternalView().copy(new_internals);
+    m_constituent_local_id_list.copy(new_internals);
   }
 }
 
@@ -147,7 +155,7 @@ _rebuildPartData()
 {
   if (!m_part_data)
     _buildPartData();
-  m_part_data->_setComponentItemInternalView(m_items_internal);
+  _setPartInfo();
   m_part_data->_setFromMatVarIndexes(m_variable_indexer->matvarIndexes());
 }
 
@@ -210,8 +218,9 @@ checkValid()
   info(4) << "CheckValid component_name=" << name()
          << " matvar_indexes=" << mat_var_indexes;
   info(4) << "Cells=" << m_variable_indexer->cells().view().localIds();
+  ConstArrayView<ComponentItemInternal*> internal_view = m_constituent_local_id_list.itemsInternalView();
   for( Integer i=0; i<nb_val; ++ i){
-    MatVarIndex component_mvi = m_items_internal[i]->variableIndex();
+    MatVarIndex component_mvi = internal_view[i]->variableIndex();
     MatVarIndex mvi = mat_var_indexes[i];
     if (component_mvi!=mvi)
       ARCANE_FATAL("Bad 'var_index' environment={3} component='{0}' direct='{1}' i={2}",

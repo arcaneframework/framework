@@ -98,13 +98,13 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 // TODO: utiliser le ITraceMng du maillage. Le faire lors de l'init
 : TraceAccessor(mesh_handle.traceMng())
 , m_mesh_handle(mesh_handle)
-, m_internal_api(new InternalApi(this))
+, m_internal_api(std::make_unique<InternalApi>(this))
 , m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
 {
-  m_modifier = new MeshMaterialModifierImpl(this);
-  m_all_env_data = new AllEnvData(this);
-  m_exchange_mng = new MeshMaterialExchangeMng(this);
+  m_modifier = std::make_unique<MeshMaterialModifierImpl>(this);
+  m_all_env_data = std::make_unique<AllEnvData>(this);
+  m_exchange_mng = std::make_unique<MeshMaterialExchangeMng>(this);
   m_variable_factory_mng = arcaneCreateMeshMaterialVariableFactoryMng(this);
   m_observer_pool = std::make_unique<ObserverPool>();
   m_observer_pool->addObserver(this,&MeshMaterialMng::_onMeshDestroyed,mesh_handle.onDestroyObservable());
@@ -126,11 +126,11 @@ MeshMaterialMng::
     tracer->dumpStats();
 
   delete m_variable_factory_mng;
-  delete m_exchange_mng;
-  delete m_all_cells_env_only_synchronizer;
-  delete m_all_cells_mat_env_synchronizer;
-  delete m_all_env_data;
-  delete m_properties;
+  m_exchange_mng.reset();
+  m_all_cells_env_only_synchronizer.reset();
+  m_all_cells_mat_env_synchronizer.reset();
+  m_all_env_data.reset();
+  m_properties.reset();
 
   for( MeshMaterial* m : m_true_materials )
     delete m;
@@ -150,9 +150,9 @@ MeshMaterialMng::
     delete mvi;
 
   m_modifier->dumpStats();
-  delete m_modifier;
+  m_modifier.reset();
 
-  delete m_internal_api;
+  m_internal_api.reset();
 
   if (m_allcell_2_allenvcell)
     AllCellToAllEnvCell::destroy(m_allcell_2_allenvcell);
@@ -426,8 +426,8 @@ endCreate(bool is_continue)
   m_all_env_data->endCreate(is_continue);
 
   auto synchronizer = mesh()->cellFamily()->allItemsSynchronizer();
-  m_all_cells_mat_env_synchronizer = new MeshMaterialVariableSynchronizer(this,synchronizer,MatVarSpace::MaterialAndEnvironment);
-  m_all_cells_env_only_synchronizer = new MeshMaterialVariableSynchronizer(this,synchronizer,MatVarSpace::Environment);
+  m_all_cells_mat_env_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this,synchronizer,MatVarSpace::MaterialAndEnvironment);
+  m_all_cells_env_only_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this,synchronizer,MatVarSpace::Environment);
 
   // Détermine la liste de tous les composants.
   {
@@ -500,7 +500,7 @@ setDataCompressorServiceName(const String& name)
 IMeshMaterialModifierImpl* MeshMaterialMng::
 _modifier()
 {
-  return m_modifier;
+  return m_modifier.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1011,7 +1011,7 @@ _checkCreateProperties()
 {
   if (m_properties)
     return;
-  m_properties = new Properties(*(mesh()->properties()),String("MeshMaterialMng_")+name());
+  m_properties = std::make_unique<Properties>(*(mesh()->properties()),String("MeshMaterialMng_")+name());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1165,8 +1165,7 @@ _onMeshDestroyed()
   // dans son destructeur et il est possible qu'il n'y ait plus de famille
   // si le destructeur de IMeshMaterialMng est appelé après la destruction
   // du maillage (ce qui peut arriver en C# par exemple).
-  delete m_exchange_mng;
-  m_exchange_mng = nullptr;
+  m_exchange_mng.reset();
 
   _unregisterAllVariables();
 }
@@ -1193,6 +1192,15 @@ _unregisterAllVariables()
 
   for( MeshMaterialVariableRef* ref : m_all_refs )
     ref->unregisterVariable();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentItemSharedInfo* MeshMaterialMng::
+componentItemSharedInfo() const
+{
+  return m_all_env_data->componentItemInternalData()->allEnvSharedInfo();
 }
 
 /*---------------------------------------------------------------------------*/

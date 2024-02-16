@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.h                                           (C) 2000-2023 */
+/* MeshMaterialMng.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -102,6 +102,10 @@ class MeshMaterialMng
     IMeshMaterialVariableSynchronizer* allCellsEnvOnlySynchronizer() override
     {
       return m_material_mng->_allCellsEnvOnlySynchronizer();
+    }
+    ComponentItemSharedInfo* componentItemSharedInfo() const override
+    {
+      return m_material_mng->componentItemSharedInfo();
     }
 
    private:
@@ -238,7 +242,8 @@ class MeshMaterialMng
 
  public:
 
-  AllEnvData* allEnvData() { return m_all_env_data; }
+  AllEnvData* allEnvData() { return m_all_env_data.get(); }
+  ComponentItemSharedInfo* componentItemSharedInfo() const;
   void syncVariablesReferences();
 
   void incrementTimestamp() { ++m_timestamp; }
@@ -254,7 +259,7 @@ class MeshMaterialMng
   }
   bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
 
-  IMeshMaterialMngInternal* _internalApi() const override { return m_internal_api; }
+  IMeshMaterialMngInternal* _internalApi() const override { return m_internal_api.get(); }
 
  private:
 
@@ -278,7 +283,7 @@ class MeshMaterialMng
  private:
 
   MeshHandle m_mesh_handle;
-  InternalApi* m_internal_api = nullptr;
+  std::unique_ptr<InternalApi> m_internal_api;
   IVariableMng* m_variable_mng = nullptr;
   String m_name;
   bool m_is_end_create = false;
@@ -292,7 +297,7 @@ class MeshMaterialMng
 
   Mutex m_variable_lock;
 
-  MeshMaterialModifierImpl* m_modifier = nullptr;
+  std::unique_ptr<MeshMaterialModifierImpl> m_modifier;
   UniqueArray<MeshMaterialInfo*> m_materials_info;
   UniqueArray<IMeshMaterial*> m_materials;
   UniqueArray<IMeshComponent*> m_materials_as_components;
@@ -309,13 +314,13 @@ class MeshMaterialMng
   FullNameVariableMap m_full_name_variable_map;
   VariableToMaterialVariableMap m_var_to_mat_var_map;
 
-  Properties* m_properties = nullptr;
-  AllEnvData* m_all_env_data = nullptr;
+  std::unique_ptr<Properties> m_properties;
+  std::unique_ptr<AllEnvData> m_all_env_data;
   Int64 m_timestamp = 0; //!< Compteur du nombre de modifications des matériaux.
-  IMeshMaterialVariableSynchronizer* m_all_cells_mat_env_synchronizer = nullptr;
-  IMeshMaterialVariableSynchronizer* m_all_cells_env_only_synchronizer = nullptr;
+  std::unique_ptr<IMeshMaterialVariableSynchronizer> m_all_cells_mat_env_synchronizer;
+  std::unique_ptr<IMeshMaterialVariableSynchronizer> m_all_cells_env_only_synchronizer;
   Integer m_synchronize_variable_version = 1;
-  MeshMaterialExchangeMng* m_exchange_mng = nullptr;
+  std::unique_ptr<MeshMaterialExchangeMng> m_exchange_mng;
   IMeshMaterialVariableFactoryMng* m_variable_factory_mng = nullptr;
   std::unique_ptr<ObserverPool> m_observer_pool;
   String m_data_compressor_service_name;
@@ -348,11 +353,11 @@ class MeshMaterialMng
   }
   IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer() override
   {
-    return m_all_cells_mat_env_synchronizer;
+    return m_all_cells_mat_env_synchronizer.get();
   }
   IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer() override
   {
-    return m_all_cells_env_only_synchronizer;
+    return m_all_cells_env_only_synchronizer.get();
   }
 };
 

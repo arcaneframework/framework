@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterial.h                                              (C) 2000-2023 */
+/* MeshMaterial.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Matériau d'un maillage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -74,7 +74,6 @@ class MeshMaterial
 
   MeshMaterial(MeshMaterialInfo* infos,MeshEnvironment* env,
                const String& name,Int16 mat_id);
-  ~MeshMaterial() override;
 
  public:
 
@@ -128,9 +127,9 @@ class MeshMaterial
 
  public:
 
-  ArrayView<ComponentItemInternal*> itemsInternalView()
+  void setConstituentItem(Int32 index, ComponentItemInternalLocalId id)
   {
-    return m_data._itemsInternalView();
+    m_data._setConstituentItem(index,id);
   }
   Int16 componentId() const { return m_data.componentId(); }
 

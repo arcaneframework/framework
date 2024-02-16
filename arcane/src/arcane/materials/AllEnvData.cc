@@ -254,7 +254,6 @@ _computeInfosForEnvCells()
 
       ConstArrayView<MatVarIndex> matvar_indexes = var_indexer->matvarIndexes();
 
-      ArrayView<ComponentItemInternal*> env_items_internal_pointer = env->itemsInternalView();
       Int32ConstArrayView local_ids = var_indexer->localIds();
 
       for (Integer z = 0, nb_id = matvar_indexes.size(); z < nb_id; ++z) {
@@ -265,8 +264,9 @@ _computeInfosForEnvCells()
         ++current_pos[lid];
         Int32 nb_mat = m_component_connectivity_list->cellNbMaterial(CellLocalId(lid), env_id);
         ComponentItemInternal& ref_ii = env_items_internal[pos];
-        env_items_internal_pointer[z] = &env_items_internal[pos];
-        ref_ii._setSuperAndGlobalItem(all_env_items_internal_range[lid], ItemLocalId(lid));
+        ComponentItemInternalLocalId cii_lid = all_env_items_internal_range[lid];
+        env->setConstituentItem(z, ref_ii._internalLocalId());
+        ref_ii._setSuperAndGlobalItem(cii_lid, ItemLocalId(lid));
         ref_ii._setNbSubItem(nb_mat);
         ref_ii._setVariableIndex(mvi);
         ref_ii._setComponent(env_id);
