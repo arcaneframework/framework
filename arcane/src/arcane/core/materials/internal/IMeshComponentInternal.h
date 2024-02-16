@@ -39,10 +39,6 @@ class ARCANE_CORE_EXPORT IMeshComponentInternal
   //! Indexeur pour accéder aux variables partielles.
   virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
 
-  //! Vue sur les mailles du composant.
-  ARCANE_DEPRECATED_REASON("Use constituenListView() instead")
-  virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const = 0;
-
   //! Vue sur les mailles du constituant.
   virtual ConstituentItemLocalIdListView constituentItemListView() const =0;
 

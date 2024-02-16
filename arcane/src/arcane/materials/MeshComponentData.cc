@@ -68,7 +68,7 @@ void MeshComponentData::
 _setPartInfo()
 {
   if (m_part_data)
-    m_part_data->_setComponentItemInternalView(_itemsInternalView());
+    m_part_data->_setComponentItemInternalView(m_constituent_local_id_list.itemsInternalView());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -77,12 +77,6 @@ class MeshComponentData
 
  private:
 
-  ARCANE_DEPRECATED_REASON("Use constituentItemListView() instead")
-  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const
-  {
-    return m_constituent_local_id_list.itemsInternalView();
-  }
-
   //! Retourne un pointeur vers la \a index-ème entité de la liste
   ComponentItemInternal* _itemInternal(Int32 index) const
   {
@@ -106,11 +100,6 @@ class MeshComponentData
   Int16 componentId() const
   {
     return m_component_id;
-  }
-
-  ConstArrayView<ComponentItemInternal*> _deprecatedItemsInternalView() const
-  {
-    return m_constituent_local_id_list.itemsInternalView();
   }
 
  private:

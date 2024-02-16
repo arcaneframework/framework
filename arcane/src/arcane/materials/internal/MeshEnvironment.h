@@ -61,10 +61,6 @@ class MeshEnvironment
     {
       return m_environment->variableIndexer();
     }
-    ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
-    {
-      return m_environment->deprecatedItemsInternalView();
-    }
     ConstituentItemLocalIdListView constituentItemListView() const override
     {
       return m_environment->constituentItemListView();
@@ -95,10 +91,6 @@ class MeshEnvironment
   MeshMaterialVariableIndexer* variableIndexer() const
   {
     return m_data.variableIndexer();
-  }
-  ConstArrayView<ComponentItemInternal*> deprecatedItemsInternalView() const
-  {
-    return m_data._deprecatedItemsInternalView();
   }
   ConstituentItemLocalIdListView constituentItemListView() const
   {

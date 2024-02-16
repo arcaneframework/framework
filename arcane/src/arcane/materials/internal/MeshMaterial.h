@@ -61,10 +61,6 @@ class MeshMaterial
     {
       return m_material->variableIndexer();
     }
-    ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
-    {
-      return m_material->deprecatedItemsInternalView();
-    }
     ConstituentItemLocalIdListView constituentItemListView() const override
     {
       return m_material->constituentItemListView();
@@ -94,10 +90,6 @@ class MeshMaterial
     return m_data.variableIndexer();
   }
 
-  ConstArrayView<ComponentItemInternal*> deprecatedItemsInternalView() const
-  {
-    return m_data._deprecatedItemsInternalView();
-  }
   ConstituentItemLocalIdListView constituentItemListView() const
   {
     return m_data.constituentItemListView();
