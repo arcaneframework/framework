@@ -63,6 +63,22 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
       setConstituentItem(i, ids[i]);
   }
 
+  /*!
+   * \brief Copie les constituents partitionnés en partie pure et partielle.
+   */
+  void copyPureAndPartial(ConstArrayView<ComponentItemInternalLocalId> pure_ids,
+                          ConstArrayView<ComponentItemInternalLocalId> partial_ids)
+  {
+    Int32 nb_pure = pure_ids.size();
+    Int32 nb_partial = partial_ids.size();
+
+    resize(nb_pure + nb_partial);
+    for (Int32 i = 0; i < nb_pure; ++i)
+      setConstituentItem(i, pure_ids[i]);
+    for (Int32 i = 0; i < nb_partial; ++i)
+      setConstituentItem(nb_pure + i, partial_ids[i]);
+  }
+
   ConstArrayView<ComponentItemInternalLocalId> localIds() const
   {
     return m_item_internal_local_id_list;

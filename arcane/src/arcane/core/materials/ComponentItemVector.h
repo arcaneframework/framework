@@ -131,14 +131,10 @@ class ARCANE_CORE_EXPORT ComponentItemVector
   ConstArrayView<MatVarIndex> _matvarIndexes() const { return m_p->m_matvar_indexes; }
   ConstituentItemLocalIdListView _constituentItemListView() const;
 
-  ARCANE_DEPRECATED_REASON("Use overload with ComponentItemInternalLocalId instead")
-  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const;
-
  protected:
 
-  ARCANE_DEPRECATED_REASON("Use overload with ComponentItemInternalLocalId instead")
-  void _setItemsInternal(ConstArrayView<ComponentItemInternal*> globals,
-                         ConstArrayView<ComponentItemInternal*> multiples);
+  void _setItems(ConstArrayView<ComponentItemInternalLocalId> globals,
+                 ConstArrayView<ComponentItemInternalLocalId> multiples);
 
   void _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
                          ConstArrayView<MatVarIndex> multiples);

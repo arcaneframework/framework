@@ -95,17 +95,10 @@ ComponentItemVector(ComponentItemVectorView rhs)
 /*---------------------------------------------------------------------------*/
 
 void ComponentItemVector::
-_setItemsInternal(ConstArrayView<ComponentItemInternal*> globals,
-                  ConstArrayView<ComponentItemInternal*> multiples)
+_setItems(ConstArrayView<ComponentItemInternalLocalId> globals,
+          ConstArrayView<ComponentItemInternalLocalId> multiples)
 {
-  Integer nb_global = globals.size();
-  Integer nb_multiple = multiples.size();
-
-  UniqueArray<ComponentItemInternal*> new_values(nb_global + nb_multiple);
-  new_values.subView(0, nb_global).copy(globals);
-  new_values.subView(nb_global, nb_multiple).copy(multiples);
-
-  m_p->m_constituent_list->deprecatedCopy(new_values);
+  m_p->m_constituent_list->copyPureAndPartial(globals, multiples);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -180,15 +173,6 @@ ComponentImpurePartItemVectorView ComponentItemVector::
 impureItems() const
 {
   return m_p->m_part_data->impureView();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ConstArrayView<ComponentItemInternal*> ComponentItemVector::
-_itemsInternalView() const
-{
-  return m_p->m_constituent_list->itemsInternalView();
 }
 
 /*---------------------------------------------------------------------------*/

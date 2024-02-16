@@ -154,6 +154,11 @@ class ARCANE_CORE_EXPORT ComponentCell
   {
     return m_internal;
   }
+  //! \internal
+  ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _internalLocalId() const
+  {
+    return m_internal->_internalLocalId();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
