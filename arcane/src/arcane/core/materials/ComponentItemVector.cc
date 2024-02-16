@@ -47,11 +47,11 @@ Impl(IMeshComponent* component)
 /*---------------------------------------------------------------------------*/
 
 ComponentItemVector::Impl::
-Impl(IMeshComponent* component, ConstArrayView<ComponentItemInternal*> items_internal,
+Impl(IMeshComponent* component, const ConstituentItemLocalIdListView& constituent_list_view,
      ConstArrayView<MatVarIndex> matvar_indexes, ConstArrayView<Int32> items_local_id)
 : Impl(component)
 {
-  m_constituent_list->deprecatedCopy(items_internal);
+  m_constituent_list->copy(constituent_list_view);
   m_matvar_indexes.copy(matvar_indexes);
   m_items_local_id.copy(items_local_id);
   m_part_data->_setFromMatVarIndexes(matvar_indexes);
@@ -83,7 +83,7 @@ ComponentItemVector(IMeshComponent* component)
 
 ComponentItemVector::
 ComponentItemVector(ComponentItemVectorView rhs)
-: m_p(new Impl(rhs.component(), rhs._itemsInternalView(),
+: m_p(new Impl(rhs.component(), rhs._constituentItemListView(),
                rhs._matvarIndexes(), rhs._internalLocalIds()))
 {
 }

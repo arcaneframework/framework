@@ -44,11 +44,6 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 
  public:
 
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
-  {
-    return m_items_internal;
-  }
-
   void setConstituentItem(Int32 index, ComponentItemInternalLocalId id)
   {
     m_item_internal_local_id_list[index] = id;
@@ -61,6 +56,15 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
     resize(size);
     for (Int32 i = 0; i < size; ++i)
       setConstituentItem(i, ids[i]);
+  }
+
+  void copy(const ConstituentItemLocalIdListView& view)
+  {
+    m_shared_info = view.m_component_shared_info;
+    const Int32 size = view.m_ids.size();
+    resize(size);
+    for (Int32 i = 0; i < size; ++i)
+      setConstituentItem(i, view.m_ids[i]);
   }
 
   /*!
@@ -102,14 +106,6 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
   ConstituentItemLocalIdListView view() const
   {
     return { m_shared_info, m_item_internal_local_id_list, m_items_internal };
-  }
-
-  void deprecatedCopy(ConstArrayView<ComponentItemInternal*> items)
-  {
-    const Int32 size = items.size();
-    resize(size);
-    for (Int32 i = 0; i < size; ++i)
-      setConstituentItem(i, items[i]->_internalLocalId());
   }
 
  private:
