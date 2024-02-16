@@ -15,10 +15,10 @@ namespace Arcane.Materials
     internal T m_true_type;
     internal ComponentItemEnumerator(ComponentItemVectorView view, T true_type)
     {
-      m_items = view.m_items_internal_main_view.m_ptr;
+      m_items = view.m_constituent_list_view.m_items_internal.m_ptr;
       m_matvar_indexes = view.m_matvar_indexes_view.m_ptr;
       m_index = -1;
-      m_size = view.m_items_internal_main_view.m_size;
+      m_size = view.m_constituent_list_view.m_items_internal.m_size;
       m_component = view.m_component;
       m_true_type = true_type;
     }

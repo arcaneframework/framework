@@ -379,9 +379,16 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
 
   ConstArrayView<ComponentItemInternal*> _itemsInternal() const { return m_items_internal; }
   MatVarIndex _matVarIndex(Int32 index) const { return m_items_internal[index]->variableIndex(); }
+  ConstituentItemLocalIdListView _subView(Int32 begin, Int32 size) const
+  {
+    return { m_component_shared_info, m_ids.subView(begin, size), m_items_internal.subView(begin, size) };
+  }
 
  private:
 
+  // NOTE: Cette classe est wrappé directement en C#.
+  // Si on modifie les champs de cette classe il faut modifier le type correspondant
+  // dans le wrappeur.
   ComponentItemSharedInfo* m_component_shared_info = nullptr;
   ConstArrayView<ComponentItemInternalLocalId> m_ids;
   ConstArrayView<ComponentItemInternal*> m_items_internal;
