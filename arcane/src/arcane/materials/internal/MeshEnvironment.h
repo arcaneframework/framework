@@ -63,7 +63,11 @@ class MeshEnvironment
     }
     ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
     {
-      return m_environment->itemsInternalView();
+      return m_environment->deprecatedItemsInternalView();
+    }
+    ConstituentItemLocalIdListView constituentListView() const override
+    {
+      return m_environment->constituentListView();
     }
     Int32 variableIndexerIndex() const override;
    private:
@@ -92,9 +96,18 @@ class MeshEnvironment
   {
     return m_data.variableIndexer();
   }
+  ARCANE_DEPRECATED_REASON("Use constituentListView() instead")
   ConstArrayView<ComponentItemInternal*> itemsInternalView() const
   {
     return m_data._itemsInternalView();
+  }
+  ConstArrayView<ComponentItemInternal*> deprecatedItemsInternalView() const
+  {
+    return m_data._itemsInternalView();
+  }
+  ConstituentItemLocalIdListView constituentListView() const
+  {
+    return m_data.constituentListView();
   }
   Int32 id() const override
   {

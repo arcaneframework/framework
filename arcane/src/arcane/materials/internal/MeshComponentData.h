@@ -70,6 +70,11 @@ class MeshComponentData
     return m_variable_indexer;
   }
 
+  ConstituentItemLocalIdListView constituentListView() const
+  {
+    return m_constituent_local_id_list.view();
+  }
+
  private:
 
   ConstArrayView<ComponentItemInternal*> _itemsInternalView() const
