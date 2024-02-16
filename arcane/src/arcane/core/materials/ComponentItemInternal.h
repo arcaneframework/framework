@@ -319,7 +319,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_component_id = static_cast<Int16>(component_id);
   }
 
-  ComponentItemInternalLocalId _internalLocalId() const
+  ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _internalLocalId() const
   {
     return m_component_item_internal_local_id;
   }
