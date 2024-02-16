@@ -24,7 +24,6 @@
 namespace Arcane::Materials
 {
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -76,44 +75,73 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace matimpl
+}
+
+namespace Arcane::Materials::matimpl
 {
-  class ARCANE_CORE_EXPORT ConstituentItemBase
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ */
+class ARCANE_CORE_EXPORT ComponentItemInternalLocalIdListView
+{
+ private:
+
+  ComponentItemSharedInfo* m_component_shared_info = nullptr;
+  ArrayView<ComponentItemInternalLocalId> m_ids;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_CORE_EXPORT ConstituentItemBase
+{
+  friend Arcane::Materials::ComponentCell;
+  friend Arcane::Materials::AllEnvCell;
+  friend Arcane::Materials::EnvCell;
+  friend Arcane::Materials::MatCell;
+
+ public:
+
+  ARCCORE_HOST_DEVICE constexpr ConstituentItemBase(ComponentItemInternal* component_item)
+  : m_component_item(component_item)
   {
-    friend Arcane::Materials::ComponentCell;
-    friend Arcane::Materials::AllEnvCell;
-    friend Arcane::Materials::EnvCell;
-    friend Arcane::Materials::MatCell;
+  }
 
-   public:
+ public:
 
-    ARCCORE_HOST_DEVICE constexpr ConstituentItemBase(ComponentItemInternal* component_item)
-    : m_component_item(component_item)
-    {
-    }
+  ARCCORE_HOST_DEVICE constexpr friend bool
+  operator==(const ConstituentItemBase& a, const ConstituentItemBase& b)
+  {
+    return a.m_component_item == b.m_component_item;
+  }
+  ARCCORE_HOST_DEVICE constexpr friend bool
+  operator!=(const ConstituentItemBase& a, const ConstituentItemBase& b)
+  {
+    return a.m_component_item != b.m_component_item;
+  }
 
-   public:
+ private:
 
-    ARCCORE_HOST_DEVICE constexpr friend bool
-    operator==(const ConstituentItemBase& a, const ConstituentItemBase& b)
-    {
-      return a.m_component_item == b.m_component_item;
-    }
-    ARCCORE_HOST_DEVICE constexpr friend bool
-    operator!=(const ConstituentItemBase& a, const ConstituentItemBase& b)
-    {
-      return a.m_component_item != b.m_component_item;
-    }
+  ARCCORE_HOST_DEVICE constexpr ComponentItemInternal* _internal() const { return m_component_item; }
 
-   private:
+ private:
 
-    ARCCORE_HOST_DEVICE constexpr ComponentItemInternal* _internal() const { return m_component_item; }
+  ComponentItemInternal* m_component_item = nullptr;
+};
 
-   private:
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-    ComponentItemInternal* m_component_item = nullptr;
-  };
 } // namespace matimpl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
