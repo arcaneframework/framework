@@ -72,10 +72,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 
  private:
 
-  ComponentItemInternal* _itemInternal(ComponentItemInternalLocalId id)
-  {
-    return m_component_item_internal_view.ptrAt(id.localId());
-  }
+  inline ComponentItemInternal* _itemInternal(ComponentItemInternalLocalId id);
 
  private:
 
@@ -351,6 +348,15 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_shared_info = shared_info;
   }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline ComponentItemInternal* ComponentItemSharedInfo::
+_itemInternal(ComponentItemInternalLocalId id)
+{
+  return m_component_item_internal_view.ptrAt(id.localId());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
