@@ -213,11 +213,10 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   {
     Integer cell_index = 0;
     Int32ConstArrayView local_ids = variableIndexer()->localIds();
-    ConstArrayView<ComponentItemInternal*> items_internal = itemsInternalView();
 
     for (Integer z = 0, nb = local_ids.size(); z < nb; ++z) {
       Int32 lid = local_ids[z];
-      ComponentItemInternal* env_item = items_internal[z];
+      ComponentItemInternal* env_item = m_data._itemInternal(z);
       Int32 nb_mat = env_item->nbSubItem();
       cells_index[lid] = cell_index;
       cells_pos[lid] = cell_index;
@@ -413,7 +412,7 @@ EnvItemVectorView MeshEnvironment::
 envView() const
 {
   return { m_non_const_this, variableIndexer()->matvarIndexes(),
-           itemsInternalView(), variableIndexer()->localIds() };
+           constituentItemListView(), variableIndexer()->localIds() };
 }
 
 /*---------------------------------------------------------------------------*/

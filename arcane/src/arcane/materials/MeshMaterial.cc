@@ -112,7 +112,7 @@ MatItemVectorView MeshMaterial::
 matView() const
 {
   return { m_non_const_this, variableIndexer()->matvarIndexes(),
-           itemsInternalView(), variableIndexer()->localIds() };
+           constituentItemListView(), variableIndexer()->localIds() };
 }
 
 /*---------------------------------------------------------------------------*/

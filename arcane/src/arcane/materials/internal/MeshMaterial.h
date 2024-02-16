@@ -65,9 +65,9 @@ class MeshMaterial
     {
       return m_material->deprecatedItemsInternalView();
     }
-    ConstituentItemLocalIdListView constituentListView() const override
+    ConstituentItemLocalIdListView constituentItemListView() const override
     {
-      return m_material->constituentListView();
+      return m_material->constituentItemListView();
     }
     Int32 variableIndexerIndex() const override;
 
@@ -94,18 +94,13 @@ class MeshMaterial
     return m_data.variableIndexer();
   }
 
-  ARCANE_DEPRECATED_REASON("Use constituentListView() instead")
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
-  {
-    return m_data._itemsInternalView();
-  }
   ConstArrayView<ComponentItemInternal*> deprecatedItemsInternalView() const
   {
-    return m_data._itemsInternalView();
+    return m_data._deprecatedItemsInternalView();
   }
-  ConstituentItemLocalIdListView constituentListView() const
+  ConstituentItemLocalIdListView constituentItemListView() const
   {
-    return m_data.constituentListView();
+    return m_data.constituentItemListView();
   }
 
   Int32 id() const override { return m_data.componentId(); }

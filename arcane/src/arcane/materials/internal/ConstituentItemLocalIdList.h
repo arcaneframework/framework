@@ -67,12 +67,12 @@ class ConstituentItemLocalIdList
     return m_item_internal_local_id_list;
   }
 
-  ComponentItemInternal* itemInternal(Int32 index)
+  ComponentItemInternal* itemInternal(Int32 index) const
   {
     return m_shared_info->_itemInternal(localId(index));
   }
 
-  ComponentItemInternalLocalId localId(Int32 index)
+  ComponentItemInternalLocalId localId(Int32 index) const
   {
     return m_item_internal_local_id_list[index];
   }

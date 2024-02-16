@@ -44,7 +44,7 @@ class ARCANE_CORE_EXPORT IMeshComponentInternal
   virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const = 0;
 
   //! Vue sur les mailles du constituant.
-  virtual ConstituentItemLocalIdListView constituentListView() const =0;
+  virtual ConstituentItemLocalIdListView constituentItemListView() const =0;
 
   //! Index pour accéder aux variables partielles.
   virtual Int32 variableIndexerIndex() const =0;
