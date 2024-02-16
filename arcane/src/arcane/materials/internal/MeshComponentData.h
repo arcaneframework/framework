@@ -18,9 +18,9 @@
 
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/MatItem.h"
+#include "arcane/core/materials/internal/ConstituentItemLocalIdList.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
-#include "arcane/materials/internal/ConstituentItemLocalIdList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -70,11 +70,17 @@ class MeshComponentData
     return m_variable_indexer;
   }
 
+  ConstituentItemLocalIdListView constituentItemListView() const
+  {
+    return m_constituent_local_id_list.view();
+  }
+
  private:
 
-  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const
+  //! Retourne un pointeur vers la \a index-ème entité de la liste
+  ComponentItemInternal* _itemInternal(Int32 index) const
   {
-    return m_constituent_local_id_list.itemsInternalView();
+    return m_constituent_local_id_list.itemInternal(index);
   }
 
   void _setConstituentItem(Int32 index, ComponentItemInternalLocalId id)

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVector.cc                                      (C) 2000-2023 */
+/* ComponentItemVector.cc                                      (C) 2000-2024 */
 /*                                                                           */
 /* Vecteur sur les entités d'un composant.                                   */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,10 @@
 #include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/materials/IMeshComponent.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/MeshComponentPartData.h"
+#include "arcane/core/materials/internal/ConstituentItemLocalIdList.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +38,8 @@ Impl(IMeshComponent* component)
 , m_component(component)
 , m_matvar_indexes(platform::getDefaultDataAllocator())
 , m_items_local_id(platform::getDefaultDataAllocator())
-, m_part_data(new MeshComponentPartData(component))
+, m_part_data(std::make_unique<MeshComponentPartData>(component))
+, m_constituent_list(std::make_unique<ConstituentItemLocalIdList>(m_material_mng->_internalApi()->componentItemSharedInfo()))
 {
 }
 
@@ -43,41 +47,14 @@ Impl(IMeshComponent* component)
 /*---------------------------------------------------------------------------*/
 
 ComponentItemVector::Impl::
-Impl(Impl&& rhs)
-: m_material_mng(rhs.m_material_mng)
-, m_component(rhs.m_component)
-, m_items_internal(rhs.m_items_internal)
-, m_matvar_indexes(rhs.m_matvar_indexes)
-, m_items_local_id(rhs.m_items_local_id)
-, m_part_data(new MeshComponentPartData(std::move(*rhs.m_part_data)))
+Impl(IMeshComponent* component, ConstArrayView<ComponentItemInternal*> items_internal,
+     ConstArrayView<MatVarIndex> matvar_indexes, ConstArrayView<Int32> items_local_id)
+: Impl(component)
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ComponentItemVector::Impl::
-Impl(IMeshComponent* component,ConstArrayView<ComponentItemInternal*> items_internal,
-     ConstArrayView<MatVarIndex> matvar_indexes,ConstArrayView<Int32> items_local_id)
-: m_material_mng(component->materialMng())
-, m_component(component)
-, m_items_internal(items_internal)
-, m_matvar_indexes(platform::getDefaultDataAllocator())
-, m_items_local_id(platform::getDefaultDataAllocator())
-, m_part_data(new MeshComponentPartData(component))
-{
+  m_constituent_list->deprecatedCopy(items_internal);
   m_matvar_indexes.copy(matvar_indexes);
   m_items_local_id.copy(items_local_id);
   m_part_data->_setFromMatVarIndexes(matvar_indexes);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ComponentItemVector::Impl::
-~Impl()
-{
-  delete m_part_data;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,8 +83,8 @@ ComponentItemVector(IMeshComponent* component)
 
 ComponentItemVector::
 ComponentItemVector(ComponentItemVectorView rhs)
-: m_p(new Impl(rhs.component(),rhs._itemsInternalView(),
-               rhs._matvarIndexes(),rhs._internalLocalIds()))
+: m_p(new Impl(rhs.component(), rhs._itemsInternalView(),
+               rhs._matvarIndexes(), rhs._internalLocalIds()))
 {
 }
 
@@ -118,16 +95,10 @@ ComponentItemVector(ComponentItemVectorView rhs)
 /*---------------------------------------------------------------------------*/
 
 void ComponentItemVector::
-_setItemsInternal(ConstArrayView<ComponentItemInternal*> globals,
-                  ConstArrayView<ComponentItemInternal*> multiples)
+_setItems(ConstArrayView<ComponentItemInternalLocalId> globals,
+          ConstArrayView<ComponentItemInternalLocalId> multiples)
 {
-  Integer nb_global = globals.size();
-  Integer nb_multiple = multiples.size();
-
-  m_p->m_items_internal.resize(nb_global+nb_multiple);
-
-  m_p->m_items_internal.subView(0,nb_global).copy(globals);
-  m_p->m_items_internal.subView(nb_global,nb_multiple).copy(multiples);
+  m_p->m_constituent_list->copyPureAndPartial(globals, multiples);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -140,22 +111,22 @@ _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
   Integer nb_global = globals.size();
   Integer nb_multiple = multiples.size();
 
-  m_p->m_matvar_indexes.resize(nb_global+nb_multiple);
+  m_p->m_matvar_indexes.resize(nb_global + nb_multiple);
 
-  m_p->m_matvar_indexes.subView(0,nb_global).copy(globals);
-  m_p->m_matvar_indexes.subView(nb_global,nb_multiple).copy(multiples);
+  m_p->m_matvar_indexes.subView(0, nb_global).copy(globals);
+  m_p->m_matvar_indexes.subView(nb_global, nb_multiple).copy(multiples);
 
   {
     Int32Array& idx = m_p->m_part_data->_mutableValueIndexes(eMatPart::Pure);
     idx.resize(nb_global);
-    for( Integer i=0; i<nb_global; ++i )
+    for (Integer i = 0; i < nb_global; ++i)
       idx[i] = globals[i].valueIndex();
   }
 
   {
     Int32Array& idx = m_p->m_part_data->_mutableValueIndexes(eMatPart::Impure);
     idx.resize(nb_multiple);
-    for( Integer i=0; i<nb_multiple; ++i )
+    for (Integer i = 0; i < nb_multiple; ++i)
       idx[i] = multiples[i].valueIndex();
   }
 
@@ -166,15 +137,15 @@ _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
 /*---------------------------------------------------------------------------*/
 
 void ComponentItemVector::
-_setLocalIds(ConstArrayView<Int32> globals,ConstArrayView<Int32> multiples)
+_setLocalIds(ConstArrayView<Int32> globals, ConstArrayView<Int32> multiples)
 {
   Integer nb_global = globals.size();
   Integer nb_multiple = multiples.size();
 
-  m_p->m_items_local_id.resize(nb_global+nb_multiple);
+  m_p->m_items_local_id.resize(nb_global + nb_multiple);
 
-  m_p->m_items_local_id.subView(0,nb_global).copy(globals);
-  m_p->m_items_local_id.subView(nb_global,nb_multiple).copy(multiples);
+  m_p->m_items_local_id.subView(0, nb_global).copy(globals);
+  m_p->m_items_local_id.subView(nb_global, nb_multiple).copy(multiples);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -184,7 +155,7 @@ ComponentItemVectorView ComponentItemVector::
 view() const
 {
   return ComponentItemVectorView(m_p->m_component, m_p->m_matvar_indexes,
-                                 m_p->m_items_internal, m_p->m_items_local_id);
+                                 m_p->m_constituent_list->view(), m_p->m_items_local_id);
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -202,6 +173,15 @@ ComponentImpurePartItemVectorView ComponentItemVector::
 impureItems() const
 {
   return m_p->m_part_data->impureView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstituentItemLocalIdListView ComponentItemVector::
+_constituentItemListView() const
+{
+  return m_p->m_constituent_list->view();
 }
 
 /*---------------------------------------------------------------------------*/

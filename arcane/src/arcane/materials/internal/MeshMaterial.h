@@ -61,11 +61,12 @@ class MeshMaterial
     {
       return m_material->variableIndexer();
     }
-    ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
+    ConstituentItemLocalIdListView constituentItemListView() const override
     {
-      return m_material->itemsInternalView();
+      return m_material->constituentItemListView();
     }
     Int32 variableIndexerIndex() const override;
+
    private:
     MeshMaterial* m_material;
   };
@@ -89,9 +90,9 @@ class MeshMaterial
     return m_data.variableIndexer();
   }
 
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
+  ConstituentItemLocalIdListView constituentItemListView() const
   {
-    return m_data._itemsInternalView();
+    return m_data.constituentItemListView();
   }
 
   Int32 id() const override { return m_data.componentId(); }

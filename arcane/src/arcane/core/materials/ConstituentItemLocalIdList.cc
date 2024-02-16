@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/internal/ConstituentItemLocalIdList.h"
+#include "arcane/core/materials/internal/ConstituentItemLocalIdList.h"
 
 #include "arcane/utils/MemoryUtils.h"
 

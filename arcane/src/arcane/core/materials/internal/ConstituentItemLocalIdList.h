@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Gestion des listes d'identifiants locaux de 'ComponentItemInternal'.      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_INTERNAL_CONSTITUENTITEMLOCALIDLIST_H
-#define ARCANE_MATERIALS_INTERNAL_CONSTITUENTITEMLOCALIDLIST_H
+#ifndef ARCANE_CORE_MATERIALS_INTERNAL_CONSTITUENTITEMLOCALIDLIST_H
+#define ARCANE_CORE_MATERIALS_INTERNAL_CONSTITUENTITEMLOCALIDLIST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,7 +32,7 @@ namespace Arcane::Materials
  * \internal
  * \brief Liste d'indices locaux pour les 'ComponentItemInternal'.
  */
-class ConstituentItemLocalIdList
+class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 {
  public:
 
@@ -58,8 +58,25 @@ class ConstituentItemLocalIdList
   void copy(ConstArrayView<ComponentItemInternalLocalId> ids)
   {
     const Int32 size = ids.size();
+    resize(size);
     for (Int32 i = 0; i < size; ++i)
       setConstituentItem(i, ids[i]);
+  }
+
+  /*!
+   * \brief Copie les constituents partitionnés en partie pure et partielle.
+   */
+  void copyPureAndPartial(ConstArrayView<ComponentItemInternalLocalId> pure_ids,
+                          ConstArrayView<ComponentItemInternalLocalId> partial_ids)
+  {
+    Int32 nb_pure = pure_ids.size();
+    Int32 nb_partial = partial_ids.size();
+
+    resize(nb_pure + nb_partial);
+    for (Int32 i = 0; i < nb_pure; ++i)
+      setConstituentItem(i, pure_ids[i]);
+    for (Int32 i = 0; i < nb_partial; ++i)
+      setConstituentItem(nb_pure + i, partial_ids[i]);
   }
 
   ConstArrayView<ComponentItemInternalLocalId> localIds() const
@@ -67,14 +84,27 @@ class ConstituentItemLocalIdList
     return m_item_internal_local_id_list;
   }
 
-  ComponentItemInternal* itemInternal(Int32 index)
+  ComponentItemInternal* itemInternal(Int32 index) const
   {
     return m_shared_info->_itemInternal(localId(index));
   }
 
-  ComponentItemInternalLocalId localId(Int32 index)
+  ComponentItemInternalLocalId localId(Int32 index) const
   {
     return m_item_internal_local_id_list[index];
+  }
+
+  ConstituentItemLocalIdListView view() const
+  {
+    return { m_shared_info, m_item_internal_local_id_list, m_items_internal };
+  }
+
+  void deprecatedCopy(ConstArrayView<ComponentItemInternal*> items)
+  {
+    const Int32 size = items.size();
+    resize(size);
+    for (Int32 i = 0; i < size; ++i)
+      setConstituentItem(i, items[i]->_internalLocalId());
   }
 
  private:

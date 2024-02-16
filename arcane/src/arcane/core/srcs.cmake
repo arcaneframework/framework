@@ -30,6 +30,7 @@ set(ARCANE_MATERIALS_SOURCES
   materials/ComponentItemVectorView.h
   materials/ComponentPartItemVectorView.cc
   materials/ComponentPartItemVectorView.h
+  materials/ConstituentItemLocalIdList.cc
   materials/EnvItemVector.cc
   materials/EnvItemVector.h
   materials/MatItemVector.cc
@@ -51,6 +52,7 @@ set(ARCANE_MATERIALS_SOURCES
   materials/internal/IMeshMaterialVariableInternal.h
   materials/internal/IMeshComponentInternal.h
   materials/internal/IMeshMaterialMngInternal.h
+  materials/internal/ConstituentItemLocalIdList.h
   )
 
 set(ARCANE_INTERNAL_SOURCES

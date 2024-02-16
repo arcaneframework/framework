@@ -61,9 +61,9 @@ class MeshEnvironment
     {
       return m_environment->variableIndexer();
     }
-    ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
+    ConstituentItemLocalIdListView constituentItemListView() const override
     {
-      return m_environment->itemsInternalView();
+      return m_environment->constituentItemListView();
     }
     Int32 variableIndexerIndex() const override;
    private:
@@ -92,9 +92,9 @@ class MeshEnvironment
   {
     return m_data.variableIndexer();
   }
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
+  ConstituentItemLocalIdListView constituentItemListView() const
   {
-    return m_data._itemsInternalView();
+    return m_data.constituentItemListView();
   }
   Int32 id() const override
   {
