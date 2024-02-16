@@ -77,11 +77,6 @@ class MeshComponentData
     return m_constituent_local_id_list.itemsInternalView();
   }
 
-  ArrayView<ComponentItemInternal*> _itemsInternalView()
-  {
-    return m_constituent_local_id_list.itemsInternalView();
-  }
-
   void _setConstituentItem(Int32 index, ComponentItemInternalLocalId id)
   {
     return m_constituent_local_id_list.setConstituentItem(index, id);

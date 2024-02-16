@@ -49,15 +49,32 @@ class ConstituentItemLocalIdList
     return m_items_internal;
   }
 
-  ArrayView<ComponentItemInternal*> itemsInternalView()
-  {
-    return m_items_internal;
-  }
-
   void setConstituentItem(Int32 index, ComponentItemInternalLocalId id)
   {
     m_item_internal_local_id_list[index] = id;
     m_items_internal[index] = m_shared_info->_itemInternal(id);
+  }
+
+  void copy(ConstArrayView<ComponentItemInternalLocalId> ids)
+  {
+    const Int32 size = ids.size();
+    for (Int32 i = 0; i < size; ++i)
+      setConstituentItem(i, ids[i]);
+  }
+
+  ConstArrayView<ComponentItemInternalLocalId> localIds() const
+  {
+    return m_item_internal_local_id_list;
+  }
+
+  ComponentItemInternal* itemInternal(Int32 index)
+  {
+    return m_shared_info->_itemInternal(localId(index));
+  }
+
+  ComponentItemInternalLocalId localId(Int32 index)
+  {
+    return m_item_internal_local_id_list[index];
   }
 
  private:
