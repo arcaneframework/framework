@@ -18,9 +18,9 @@
 
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/MatItem.h"
+#include "arcane/core/materials/internal/ConstituentItemLocalIdList.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
-#include "arcane/materials/internal/ConstituentItemLocalIdList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

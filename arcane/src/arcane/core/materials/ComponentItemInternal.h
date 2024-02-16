@@ -171,6 +171,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   friend class MeshEnvironment;
   friend class AllEnvData;
   friend class MeshMaterialMng;
+  friend class ConstituentItemLocalIdList;
 
  private:
 
