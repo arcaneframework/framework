@@ -135,9 +135,9 @@ class MeshEnvironment
 
  public:
 
-  ArrayView<ComponentItemInternal*> itemsInternalView()
+  void setConstituentItem(Int32 index, ComponentItemInternalLocalId id)
   {
-    return m_data._itemsInternalView();
+    m_data._setConstituentItem(index,id);
   }
   Int16 componentId() const { return m_data.componentId(); }
 

@@ -46,12 +46,22 @@ class ARCANE_CORE_EXPORT ComponentItemInternalLocalId
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal
+ * \brief Informations partagées sur les 'ComponentItemInternal'.
+ *
+ * Il y a 3 instances de cette classe : une pour les AllEnvCell, une pour les
+ * EnvCell et une pour les MatCell. Ces instances sont gérées par la classe
+ * ComponentItemInternalData. Il est possible de conserver un pointeur sur
+ * les intances de cette classe car ils sont valides durant toute la vie
+ * d'un MeshMaterialMng.
+ */
 class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 {
   friend class ComponentItemInternal;
   friend class ComponentItemInternalData;
   friend class CellComponentCellEnumerator;
+  friend class ConstituentItemLocalIdList;
 
  private:
 
@@ -59,6 +69,13 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   static ComponentItemSharedInfo null_shared_info;
   static ComponentItemSharedInfo* null_shared_info_pointer;
   static ComponentItemSharedInfo* _nullInstance() { return null_shared_info_pointer; }
+
+ private:
+
+  ComponentItemInternal* _itemInternal(ComponentItemInternalLocalId id)
+  {
+    return m_component_item_internal_view.ptrAt(id.localId());
+  }
 
  private:
 

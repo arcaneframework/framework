@@ -54,6 +54,12 @@ class ConstituentItemLocalIdList
     return m_items_internal;
   }
 
+  void setConstituentItem(Int32 index, ComponentItemInternalLocalId id)
+  {
+    m_item_internal_local_id_list[index] = id;
+    m_items_internal[index] = m_shared_info->_itemInternal(id);
+  }
+
  private:
 
   //! Liste des ComponentItemInternal* pour ce constituant.

@@ -243,7 +243,6 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
 
       ConstArrayView<MatVarIndex> matvar_indexes = var_indexer->matvarIndexes();
 
-      ArrayView<ComponentItemInternal*> mat_items_internal_pointer = mat->itemsInternalView();
       Int32ConstArrayView local_ids = var_indexer->localIds();
 
       for (Integer z = 0, nb_id = matvar_indexes.size(); z < nb_id; ++z) {
@@ -253,7 +252,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
         //info(4) << "Z=" << z << " LID=" << lid << " POS=" << pos;
         ++cells_pos[lid];
         ComponentItemInternal& ref_ii = mat_items_internal[pos];
-        mat_items_internal_pointer[z] = &mat_items_internal[pos];
+        mat->setConstituentItem(z, ref_ii._internalLocalId());
         ref_ii._setSuperAndGlobalItem(cells_env[lid], ItemLocalId(lid));
         ref_ii._setComponent(mat_id);
         ref_ii._setVariableIndex(mvi);
