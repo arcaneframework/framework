@@ -64,14 +64,6 @@ class MatCell
 
   MatCell() = default;
 
- protected:
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
-  ARCCORE_HOST_DEVICE MatCell(ComponentItemInternal* internal)
-  : MatCell(matimpl::ConstituentItemBase (internal))
-  {
-  }
-
  public:
 
   //! Maille milieu auquel cette maille matériau appartient.
@@ -132,14 +124,6 @@ class EnvCell
   {
   }
   EnvCell() = default;
-
- protected:
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
-  explicit ARCCORE_HOST_DEVICE EnvCell(ComponentItemInternal* internal)
-  : EnvCell(matimpl::ConstituentItemBase(internal))
-  {
-  }
 
  public:
 
@@ -202,14 +186,6 @@ class AllEnvCell
   }
 
   AllEnvCell() = default;
-
- protected:
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
-  explicit ARCCORE_HOST_DEVICE AllEnvCell(ComponentItemInternal* internal)
-  : AllEnvCell(matimpl::ConstituentItemBase(internal))
-  {
-  }
 
  public:
 
