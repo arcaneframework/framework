@@ -64,7 +64,7 @@ class ARCANE_CORE_EXPORT ComponentItemVector
    public:
 
     Impl(IMeshComponent* component);
-    Impl(IMeshComponent* component, ConstArrayView<ComponentItemInternal*> items_internal,
+    Impl(IMeshComponent* component, const ConstituentItemLocalIdListView& constituent_list_view,
          ConstArrayView<MatVarIndex> matvar_indexes, ConstArrayView<Int32> items_local_id);
 
    private:

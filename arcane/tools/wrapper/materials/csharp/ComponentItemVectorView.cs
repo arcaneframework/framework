@@ -5,10 +5,18 @@ using Arcane;
 namespace Arcane.Materials
 {
   [StructLayout(LayoutKind.Sequential)]
+  public unsafe struct ConstituentItemLocalIdListView
+  {
+    internal ComponentItemSharedInfo* m_component_shared_info;
+    internal Int32ConstArrayView m_ids;
+    internal ComponentItemInternalPtrConstArrayView m_items_internal;
+  }
+ 
+  [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ComponentItemVectorView
   {
     internal MatVarIndexConstArrayView m_matvar_indexes_view;
-    internal ComponentItemInternalPtrConstArrayView m_items_internal_main_view;
+    internal ConstituentItemLocalIdListView m_constituent_list_view;
     internal Int32ConstArrayView m_items_local_id_view;
     internal IntPtr m_component; //IMeshComponent*
 

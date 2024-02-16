@@ -69,13 +69,6 @@ class ARCANE_CORE_EXPORT ComponentCell
   : m_internal(ComponentItemInternal::_nullItem())
   {}
 
- protected:
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
-  ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii)
-  : m_internal(mii)
-  {}
-
  public:
 
   //! Opérateur de conversion vers un ComponentItemLocalId
@@ -122,12 +115,6 @@ class ARCANE_CORE_EXPORT ComponentCell
    */
   Int64 componentUniqueId() const { return m_internal->componentUniqueId(); }
 
- public:
-
-  //! \internal
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use constituentItemBase() instead")
-  ARCCORE_HOST_DEVICE ComponentItemInternal* internal() const { return m_internal; }
-
  protected:
 
   static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] ComponentItemInternal* internal,
@@ -150,10 +137,12 @@ class ARCANE_CORE_EXPORT ComponentCell
  private:
 
   //! \internal
+  // TODO: rendre obsolète
   ARCCORE_HOST_DEVICE ComponentItemInternal* _internal() const
   {
     return m_internal;
   }
+
   //! \internal
   ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _internalLocalId() const
   {

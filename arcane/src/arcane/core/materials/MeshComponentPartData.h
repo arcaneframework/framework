@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentPartData.h                                     (C) 2000-2023 */
+/* MeshComponentPartData.h                                     (C) 2000-2024 */
 /*                                                                           */
-/* Données séparées en parties pure et impures d'un constituant .            */
+/* Données séparées en parties pures et impures d'un constituant.            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MESHCOMPONENTPARTDATA_H
 #define ARCANE_CORE_MATERIALS_MESHCOMPONENTPARTDATA_H
@@ -16,8 +16,10 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/FixedArray.h"
 
 #include "arcane/core/materials/MatVarIndex.h"
+#include "arcane/core/materials/ComponentItemInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,8 +44,6 @@ class ARCANE_CORE_EXPORT MeshComponentPartData
  public:
 
   explicit MeshComponentPartData(IMeshComponent* component);
-  MeshComponentPartData(const MeshComponentPartData& rhs) = default;
-  ~MeshComponentPartData() override;
 
  public:
 
@@ -76,9 +76,9 @@ class ARCANE_CORE_EXPORT MeshComponentPartData
 
  private:
 
-  void _setComponentItemInternalView(ConstArrayView<ComponentItemInternal*> v)
+  void _setConstituentListView(const ConstituentItemLocalIdListView& v)
   {
-    m_items_internal = v;
+    m_constituent_list_view = v;
   }
 
   void _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes);
@@ -94,22 +94,19 @@ class ARCANE_CORE_EXPORT MeshComponentPartData
  private:
 
   //! Gestionnaire de constituants
-  IMeshComponent* m_component;
+  IMeshComponent* m_component = nullptr;
 
   //! Indice du constituant pour l'accès aux valeurs partielles.
-  Int32 m_impure_var_idx;
+  Int32 m_impure_var_idx = -1;
 
   //! Liste des valueIndex() de chaque partie
-  UniqueArray<Int32> m_value_indexes[2];
+  FixedArray<UniqueArray<Int32>, 2> m_value_indexes;
 
   //! Liste des indices dans \a m_items_internal de chaque maille matériau.
-  UniqueArray<Int32> m_items_internal_indexes[2];
+  FixedArray<UniqueArray<Int32>, 2> m_items_internal_indexes;
 
-  //! Liste des ComponentItemInternal* pour ce constituant.
-  ConstArrayView<ComponentItemInternal*> m_items_internal;
-
- private:
-
+  //! Liste des ComponentItem pour ce constituant.
+  ConstituentItemLocalIdListView m_constituent_list_view;
 };
 
 /*---------------------------------------------------------------------------*/
