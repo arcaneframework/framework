@@ -36,7 +36,7 @@ ComponentCellEnumerator::
 ComponentCellEnumerator(const ComponentItemVectorView& v)
 : m_index(0)
 , m_size(v._itemsInternalView().size())
-, m_items(v._itemsInternalView())
+, m_constituent_list_view(v._constituentItemListView())
 , m_matvar_indexes(v._matvarIndexes())
 , m_component(v.component())
 {

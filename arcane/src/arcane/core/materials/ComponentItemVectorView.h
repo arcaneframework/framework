@@ -116,6 +116,7 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   //! Tableau des localId() des entités associées
   ConstArrayView<Int32> _internalLocalIds() const { return m_items_local_id_view; }
 
+  ConstituentItemLocalIdListView _constituentItemListView() const { return m_constituent_list_view; }
   /*!
    * \internal
    * \brief Créé une sous-vue de cette vue.
