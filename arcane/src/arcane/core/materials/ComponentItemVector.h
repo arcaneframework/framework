@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVector.h                                       (C) 2000-2023 */
+/* ComponentItemVector.h                                       (C) 2000-2024 */
 /*                                                                           */
 /* Vecteur sur des entités composants.                                       */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@
 
 namespace Arcane::Materials
 {
-
+class ConstituentItemLocalIdList;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -64,13 +64,14 @@ class ARCANE_CORE_EXPORT ComponentItemVector
    public:
 
     Impl(IMeshComponent* component);
-    Impl(Impl&& rhs);
     Impl(IMeshComponent* component, ConstArrayView<ComponentItemInternal*> items_internal,
-         ConstArrayView<MatVarIndex> matvar_indexes,ConstArrayView<Int32> items_local_id);
+         ConstArrayView<MatVarIndex> matvar_indexes, ConstArrayView<Int32> items_local_id);
 
-   protected:
+   private:
 
-    ~Impl() override;
+    Impl(const Impl& rhs) = delete;
+    Impl(Impl&& rhs) = delete;
+    Impl& operator=(const Impl& rhs) = delete;
 
    public:
 
@@ -78,12 +79,12 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 
    public:
 
-    IMeshMaterialMng* m_material_mng;
-    IMeshComponent* m_component;
-    UniqueArray<ComponentItemInternal*> m_items_internal;
+    IMeshMaterialMng* m_material_mng = nullptr;
+    IMeshComponent* m_component = nullptr;
     UniqueArray<MatVarIndex> m_matvar_indexes;
     UniqueArray<Int32> m_items_local_id;
-    MeshComponentPartData* m_part_data;
+    std::unique_ptr<MeshComponentPartData> m_part_data;
+    std::unique_ptr<ConstituentItemLocalIdList> m_constituent_list;
   };
 
  public:
@@ -128,10 +129,14 @@ class ARCANE_CORE_EXPORT ComponentItemVector
  private:
 
   ConstArrayView<MatVarIndex> _matvarIndexes() const { return m_p->m_matvar_indexes; }
-  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const { return m_p->m_items_internal.constView(); }
+  ConstituentItemLocalIdListView _constituentItemListView() const;
+
+  ARCANE_DEPRECATED_REASON("Use overload with ComponentItemInternalLocalId instead")
+  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const;
 
  protected:
 
+  ARCANE_DEPRECATED_REASON("Use overload with ComponentItemInternalLocalId instead")
   void _setItemsInternal(ConstArrayView<ComponentItemInternal*> globals,
                          ConstArrayView<ComponentItemInternal*> multiples);
 
