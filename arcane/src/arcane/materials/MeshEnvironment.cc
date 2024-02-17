@@ -108,7 +108,7 @@ MeshEnvironment::
 MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int16 env_id)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, m_data(this, name, env_id, mm->_internalApi()->componentItemSharedInfo(), false)
+, m_data(this, name, env_id, mm->_internalApi()->componentItemSharedInfo(LEVEL_ENVIRONMENT), false)
 , m_non_const_this(this)
 , m_internal_api(this)
 {
@@ -216,15 +216,15 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
 
     for (Integer z = 0, nb = local_ids.size(); z < nb; ++z) {
       Int32 lid = local_ids[z];
-      ComponentItemInternal* env_item = m_data._itemInternal(z);
-      Int32 nb_mat = env_item->nbSubItem();
+      matimpl::ConstituentItemBase env_item = m_data._itemBase(z);
+      Int32 nb_mat = env_item.nbSubItem();
       cells_index[lid] = cell_index;
       cells_pos[lid] = cell_index;
       //info(4) << "XZ=" << z << " LID=" << lid << " POS=" << cell_index;
       if (nb_mat != 0) {
-        env_item->_setFirstSubItem(mat_items_internal_range[cell_index]);
+        env_item._setFirstSubItem(mat_items_internal_range[cell_index]);
       }
-      cells_env[lid] = env_item->_internalLocalId();
+      cells_env[lid] = env_item._internalLocalId();
       cell_index += nb_mat;
     }
   }

@@ -39,8 +39,16 @@ Impl(IMeshComponent* component)
 , m_matvar_indexes(platform::getDefaultDataAllocator())
 , m_items_local_id(platform::getDefaultDataAllocator())
 , m_part_data(std::make_unique<MeshComponentPartData>(component))
-, m_constituent_list(std::make_unique<ConstituentItemLocalIdList>(m_material_mng->_internalApi()->componentItemSharedInfo()))
 {
+  Int32 level = -1;
+  if (component->isMaterial())
+    level = LEVEL_MATERIAL;
+  else if (component->isEnvironment())
+    level = LEVEL_ENVIRONMENT;
+  else
+    ARCANE_FATAL("Bad internal type of component");
+  ComponentItemSharedInfo* shared_info = m_material_mng->_internalApi()->componentItemSharedInfo(level);
+  m_constituent_list = std::make_unique<ConstituentItemLocalIdList>(shared_info);
 }
 
 /*---------------------------------------------------------------------------*/

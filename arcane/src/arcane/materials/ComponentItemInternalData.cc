@@ -156,6 +156,8 @@ _initSharedInfos()
   info_all_env->m_components = ConstArrayView<IMeshComponent*>();
   info() << "EndCreate ComponentItemInternalData nb_mat=" << info_mat->m_components.size()
          << " nb_env=" << info_env->m_components.size();
+  info() << "EndCreate ComponentItemInternalData mat_shared_info=" << info_mat
+         << " env_shared_info=" << info_env;
 }
 
 /*---------------------------------------------------------------------------*/

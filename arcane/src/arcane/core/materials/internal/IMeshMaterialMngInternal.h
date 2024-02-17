@@ -100,8 +100,12 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    */
   virtual void createAllCellToAllEnvCell(IMemoryAllocator* alloc) = 0;
 
-  //! Instance générique de ComponentItemSharedInfo
-  virtual ComponentItemSharedInfo* componentItemSharedInfo() const =0;
+  /*!
+   * \briefInstance de ComponentItemSharedInfo pour un constituant
+   *
+   * La valeur de \a level doit être LEVEL_MATERIAL ou LEVEL_ENVIRONMENT
+   */
+  virtual ComponentItemSharedInfo* componentItemSharedInfo(Int32 level) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

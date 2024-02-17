@@ -45,7 +45,7 @@ MeshMaterial(MeshMaterialInfo* infos, MeshEnvironment* env,
 , m_infos(infos)
 , m_environment(env)
 , m_user_material(nullptr)
-, m_data(this, name, mat_id, m_material_mng->_internalApi()->componentItemSharedInfo(), true)
+, m_data(this, name, mat_id, m_material_mng->_internalApi()->componentItemSharedInfo(LEVEL_MATERIAL), true)
 , m_non_const_this(this)
 , m_internal_api(this)
 {

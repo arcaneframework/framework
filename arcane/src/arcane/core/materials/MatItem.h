@@ -139,7 +139,7 @@ class EnvCell
   //! i-ème maille matériau de cette maille
   inline MatCell cell(Integer i)
   {
-    return matimpl::ConstituentItemBase(m_internal->_subItem(i));
+    return m_internal->_subItemBase(i);
   }
 
   //! Milieu associé
@@ -201,7 +201,7 @@ class AllEnvCell
   //! i-ème maille milieu
   EnvCell cell(Int32 i) const
   {
-    return EnvCell(matimpl::ConstituentItemBase(m_internal->_subItem(i)));
+    return EnvCell(m_internal->_subItemBase(i));
   }
 };
 
