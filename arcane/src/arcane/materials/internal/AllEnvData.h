@@ -55,7 +55,7 @@ class AllEnvData
 
  public:
 
-  ArrayView<ComponentItemInternal> allEnvItemsInternal()
+  ConstArrayView<ComponentItemInternal> allEnvItemsInternal()
   {
     return m_item_internal_data.allEnvItemsInternal();
   }

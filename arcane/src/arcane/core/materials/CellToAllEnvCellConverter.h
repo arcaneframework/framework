@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellToAllEnvCellConverter.h                                 (C) 2000-2023 */
+/* CellToAllEnvCellConverter.h                                 (C) 2000-2024 */
 /*                                                                           */
 /* Conversion de 'Cell' en 'AllEnvCell'.                                     */
 /*---------------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ class CellToAllEnvCellConverter
 {
  public:
 
-  explicit CellToAllEnvCellConverter(ArrayView<ComponentItemInternal> v)
+  explicit CellToAllEnvCellConverter(ConstArrayView<ComponentItemInternal> v)
   : m_all_env_items_internal(v){}
 
   explicit CellToAllEnvCellConverter(IMeshMaterialMng* mm)
@@ -84,7 +84,7 @@ class CellToAllEnvCellConverter
   //! Converti une maille \a Cell en maille \a AllEnvCell
   AllEnvCell operator[](Cell c)
   {
-    return AllEnvCell(matimpl::ConstituentItemBase(&m_all_env_items_internal[c.localId()]));
+    return operator[](CellLocalId(c));
   }
   //! Converti une maille \a CellLocalId en maille \a AllEnvCell
   ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
@@ -95,7 +95,7 @@ class CellToAllEnvCellConverter
 
  private:
 
-  ArrayView<ComponentItemInternal> m_all_env_items_internal;
+  ConstArrayView<ComponentItemInternal> m_all_env_items_internal;
 };
 
 /*---------------------------------------------------------------------------*/

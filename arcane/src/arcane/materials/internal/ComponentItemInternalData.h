@@ -125,28 +125,28 @@ class ComponentItemInternalData
 
  public:
 
-  //! Liste des AllEnvCell
+  //! Liste des AllEnvCell. Uniquement pour les itérateurs.
   ConstArrayView<ComponentItemInternal> allEnvItemsInternal() const
   {
     return m_all_env_items_internal;
   }
 
-  //! Liste des AllEnvCell
-  ArrayView<ComponentItemInternal> allEnvItemsInternal()
+  //! Retourne la AllEnvCell correspondant à la maille \a id
+  matimpl::ConstituentItemBase allEnvItemBase(CellLocalId id)
   {
-    return m_all_env_items_internal;
+    return matimpl::ConstituentItemBase(&m_all_env_items_internal[id.localId()]);
   }
 
-  //! Liste des mailles milieux.
-  ArrayView<ComponentItemInternal> envItemsInternal()
+  //! Retourne la EnvCell correspondant à l'indice \a index
+  matimpl::ConstituentItemBase envItemBase(Int32 index)
   {
-    return m_env_items_internal;
+    return matimpl::ConstituentItemBase(&m_env_items_internal[index]);
   }
 
-  //! Liste des mailles matériaux pour le \a env_index ème milieu
-  ArrayView<ComponentItemInternal> matItemsInternal(Int32 env_index)
+  //! Retourne la MatCell correspondant au milieu d'indice \a index du milieu \a env_index
+  matimpl::ConstituentItemBase matItemBase(Int16 env_index,Int32 index)
   {
-    return m_mat_items_internal[env_index];
+    return matimpl::ConstituentItemBase(&m_mat_items_internal[env_index][index]);
   }
 
   ComponentItemInternalRange allEnvItemsInternalRange() const
@@ -179,7 +179,9 @@ class ComponentItemInternalData
 
   MeshMaterialMng* m_material_mng = nullptr;
 
-  UniqueArray<ComponentItemInternal> m_component_item_internal_storage;
+  UniqueArray<ComponentItemInternal> m_all_env_item_internal_storage;
+  UniqueArray<ComponentItemInternal> m_env_item_internal_storage;
+  UniqueArray<ComponentItemInternal> m_mat_item_internal_storage;
   /*!
    * \brief Liste des ComponentItemInternal pour les AllEnvcell.
    *
@@ -203,8 +205,7 @@ class ComponentItemInternalData
 
  private:
 
-  void
-  _initSharedInfos();
+  void _initSharedInfos();
   void _resetMatItemsInternal(Int32 env_index);
   //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
   void _resetItemsInternal();

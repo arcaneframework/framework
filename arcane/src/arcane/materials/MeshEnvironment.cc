@@ -201,7 +201,8 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
 
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
-  ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
+  const Int16 env_id = componentId();
+  //ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
   ComponentItemInternalRange mat_items_internal_range = item_internal_data->matItemsInternalRange(id());
 
   Int32UniqueArray cells_index(max_local_id);
@@ -248,9 +249,8 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
         MatVarIndex mvi = matvar_indexes[z];
         Int32 lid = local_ids[z];
         Int32 pos = cells_pos[lid];
-        //info(4) << "Z=" << z << " LID=" << lid << " POS=" << pos;
         ++cells_pos[lid];
-        ComponentItemInternal& ref_ii = mat_items_internal[pos];
+        matimpl::ConstituentItemBase ref_ii = item_internal_data->matItemBase(env_id,pos);
         mat->setConstituentItem(z, ref_ii._internalLocalId());
         ref_ii._setSuperAndGlobalItem(cells_env[lid], ItemLocalId(lid));
         ref_ii._setComponent(mat_id);

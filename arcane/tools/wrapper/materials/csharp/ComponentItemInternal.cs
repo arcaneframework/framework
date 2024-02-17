@@ -9,7 +9,8 @@ namespace Arcane.Materials
     internal ItemSharedInfo* m_item_shared_info;
     internal Int16 m_level;
     internal MeshEnvironmentListView m_components;
-    internal ComponentItemSharedInfo* m_parent_component_item_shared_info;
+    internal ComponentItemSharedInfo* m_super_component_item_shared_info;
+    internal ComponentItemSharedInfo* m_sub_component_item_shared_info;
     internal ComponentItemInternalConstArrayView m_component_item_internal_view;
   }
 
