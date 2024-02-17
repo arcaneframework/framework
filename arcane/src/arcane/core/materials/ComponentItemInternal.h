@@ -199,7 +199,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
   //! Première entité sous-composant.
   inline ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _firstSubItemLocalId() const;
 
-  inline ARCCORE_HOST_DEVICE ComponentItemInternal* _subItem(Int32 i) const;
+  inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(Int32 i) const;
 
   //! Positionne le nombre de sous-composants.
   inline void _setNbSubItem(Int32 nb_sub_item);
@@ -383,10 +383,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     return m_first_sub_component_item_local_id;
   }
 
-  ARCCORE_HOST_DEVICE ComponentItemInternal* _subItem(Int32 i) const
-  {
-    return &m_shared_info->m_component_item_internal_view[m_first_sub_component_item_local_id.localId() + i];
-  }
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(Int32 i) const;
 
   //! Positionne le nombre de sous-composants.
   void _setNbSubItem(Int32 nb_sub_item)
@@ -452,6 +449,19 @@ ConstituentItemBase(ComponentItemSharedInfo* shared_info, ComponentItemInternalL
 : m_component_item(shared_info->_itemInternal(id))
 {
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase ComponentItemInternal::
+_subItemBase(Int32 i) const
+{
+  ComponentItemInternalLocalId lid(m_first_sub_component_item_local_id.localId() + i);
+  return m_shared_info->_item(lid);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 inline ARCCORE_HOST_DEVICE constexpr MatVarIndex matimpl::ConstituentItemBase::
 variableIndex() const
@@ -532,10 +542,10 @@ _firstSubItemLocalId() const
   return m_component_item->_firstSubItemLocalId();
 }
 
-inline ARCCORE_HOST_DEVICE ComponentItemInternal* matimpl::ConstituentItemBase::
-_subItem(Int32 i) const
+inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase matimpl::ConstituentItemBase::
+_subItemBase(Int32 i) const
 {
-  return m_component_item->_subItem(i);
+  return m_component_item->_subItemBase(i);
 }
 
 //! Positionne le nombre de sous-composants.
