@@ -28,6 +28,7 @@ ARCANE_BEGIN_NAMESPACE
 class ITimeHistoryCurveWriter;
 class ITimeHistoryCurveWriter2;
 class ITimeHistoryTransformer;
+class ITimeHistoryMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -217,6 +218,11 @@ class ITimeHistoryMng
    * \brief Positionne le booléen indiquant si l'historique est compressé
    */
   virtual void setShrinkActive(bool is_active) =0;
+
+ public:
+
+  //! API interne à Arcane
+  virtual ITimeHistoryMngInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/

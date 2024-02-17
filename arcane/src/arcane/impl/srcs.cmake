@@ -134,6 +134,8 @@ set( ARCANE_SOURCES
   DataOperation.h
   DataOperation.cc
   SequentialParallelSuperMng.h
+  MeshTimeHistoryAdder.h
+  MeshTimeHistoryAdder.cc
 
   internal/ArcaneMainExecInfo.h
   internal/DataSynchronizeBuffer.h
@@ -151,6 +153,8 @@ set( ARCANE_SOURCES
   internal/VariableSynchronizer.h
   internal/VariableSynchronizerMng.h
   internal/VariableSynchronizerComputeList.h
+  internal/TimeHistoryMngInternal.h
+  internal/TimeHistoryMngInternal.cc
   )
 
 if (ARCANE_HAS_ACCELERATOR_API)

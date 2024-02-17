@@ -40,6 +40,8 @@
 
 #include "arcane/datatype/DataTypeTraits.h"
 
+#include "arcane/impl/internal/TimeHistoryMngInternal.h"
+
 #include <map>
 #include <set>
 #include <variant>
@@ -392,6 +394,7 @@ class GnuplotTimeHistoryCurveWriter2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Gestionnaire d'un historique de valeurs.
  *
@@ -427,29 +430,29 @@ class TimeHistoryMng2
   void addValue(const String& name,Real value,bool end_time,bool is_local) override
   {
     RealConstArrayView values(1,&value);
-    _addHistoryValue(name,values,end_time,is_local);
+    m_internal->addValue(name,values,end_time,is_local);
   }
   void addValue(const String& name,Int64 value,bool end_time,bool is_local) override
   {
     Int64ConstArrayView values(1,&value);
-    _addHistoryValue(name,values,end_time,is_local);
+    m_internal->addValue(name,values,end_time,is_local);
   }
   void addValue(const String& name,Int32 value,bool end_time,bool is_local) override
   {
     Int32ConstArrayView values(1,&value);
-    _addHistoryValue(name,values,end_time,is_local);
+    m_internal->addValue(name,values,end_time,is_local);
   }
   void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
   {
-    _addHistoryValue(name,values,end_time,is_local);
+    m_internal->addValue(name,values,end_time,is_local);
   }
   void addValue(const String& name,Int32ConstArrayView values,bool end_time,bool is_local) override
   {
-    _addHistoryValue(name,values,end_time,is_local);
+    m_internal->addValue(name,values,end_time,is_local);
   }
   void addValue(const String& name,Int64ConstArrayView values,bool end_time,bool is_local) override
   {
-    _addHistoryValue(name,values,end_time,is_local);
+    m_internal->addValue(name,values,end_time,is_local);
   }
 
  public:
@@ -476,14 +479,16 @@ class TimeHistoryMng2
   void dumpHistory(bool is_verbose) override;
   void dumpCurves(ITimeHistoryCurveWriter2* writer) override;
 
-  bool active() const override { return m_is_active; }
-  void setActive(bool is_active) override { m_is_active = is_active; }
+  bool active() const override { return m_internal->active(); }
+  void setActive(bool is_active) override { m_internal->setActive(is_active); }
 
-  bool isDumpActive() const override { return m_is_dump_active; }
-  void setDumpActive(bool is_active) override { m_is_dump_active = is_active; }
+  bool isDumpActive() const override { return m_internal->isDumpActive(); }
+  void setDumpActive(bool is_active) override { m_internal->setDumpActive(is_active); }
 
-  bool isShrinkActive() const override { return m_is_shrink_active; }
-  void setShrinkActive(bool is_active) override { m_is_shrink_active = is_active; }
+  bool isShrinkActive() const override { return m_internal->isShrinkActive(); }
+  void setShrinkActive(bool is_active) override { m_internal->setShrinkActive(is_active); }
+
+  ITimeHistoryMngInternal* _internalApi() override {return m_internal.get();}
 
   void applyTransformation(ITimeHistoryTransformer* v) override;
 
@@ -491,29 +496,16 @@ class TimeHistoryMng2
 
   bool m_is_master_io; //!< True si je suis le gestionnaire actif
   bool m_enable_non_io_master_curves; //!< Indique si l'ecriture  de courbes par des procs non io_master est possible
-  bool m_is_active; //!< Indique si le service est actif.
-  bool m_is_dump_active; //!< Indique si les dump sont actifs
-  bool m_is_shrink_active; //!< Indique si la compression de l'historique est active
   String m_output_path;
   ObserverPool m_observer_pool;
   HistoryList m_history_list; //!< Liste des historiques
   RealUniqueArray m_global_times; //!< Liste des temps globaux
-  VariableScalarString m_th_meta_data; //!< Infos des historiques
-  VariableArrayReal m_th_global_time; //!< Tableau des instants de temps
   CurveWriter2List m_curve_writers2;
+  Ref<ITimeHistoryMngInternal> m_internal;
 
  private:
 
-  template<class DataType> void
-  _addHistoryValue(const String& name,ConstArrayView<DataType> value,bool end_time,bool is_local);
-  void _addCurveWriter(AnyRef<ITimeHistoryCurveWriter2> writer);
-  void _removeCurveWriter(AnyRef<ITimeHistoryCurveWriter2> writer)
-  {
-    m_curve_writers2.erase(writer);
-  }
-
   void _writeVariablesNotify();
-  void _readVariables();
   void _checkOutputPath();
   void _destroyAll();
 };
@@ -527,11 +519,7 @@ TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 , CommonVariables(this)
 , m_is_master_io(true)
 , m_enable_non_io_master_curves(false)
-, m_is_active(true)
-, m_is_dump_active(true)
-, m_is_shrink_active(false)
-, m_th_meta_data(VariableBuildInfo(this,"TimeHistoryMetaData"))
-, m_th_global_time(VariableBuildInfo(this,"TimeHistoryGlobalTime"))
+, m_internal(makeRef(new TimeHistoryMngInternal(subDomain())))
 {
   if (add_entry_points){
     addEntryPoint(this,"ArcaneTimeHistoryBegin",&TimeHistoryMng2::timeHistoryBegin,
@@ -587,8 +575,7 @@ void TimeHistoryMng2::
 timeHistoryStartInit()
 {
   //warning() << "timeHistoryStartInit " << m_global_time() << " " << m_global_times.size();
-  m_global_times.add(m_global_time());
-  addValue(m_global_time.name(),m_global_time(),true,false);
+  m_internal->addNowInGlobalTime();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -596,8 +583,7 @@ timeHistoryStartInit()
 void TimeHistoryMng2::
 timeHistoryStartInitEnd()
 {
-  m_th_global_time.resize(m_global_times.size());
-  m_th_global_time.copy(m_global_times);
+  m_internal->updateThGlobalTime();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -613,8 +599,7 @@ timeHistoryBegin()
   }
   else{
     //warning() << "timeHistoryBegin " << m_global_time() << " " << m_global_times.size();
-    m_global_times.add(m_global_time());
-    addValue(m_global_time.name(),m_global_time(),true,false);
+    m_internal->addNowInGlobalTime();
   }
   
   // Regarde s'il faut imprimer les sorties temporelles
@@ -629,7 +614,7 @@ timeHistoryBegin()
     if (subDomain()->applicationInfo().isDebug())
       force_print_thm = true;
     if (force_print_thm)
-      dumpHistory(false);
+      m_internal->dumpHistory(false);
   }
 }
 
@@ -639,8 +624,7 @@ timeHistoryBegin()
 void TimeHistoryMng2::
 timeHistoryEnd()
 {
-  m_th_global_time.resize(m_global_times.size());
-  m_th_global_time.copy(m_global_times);
+  m_internal->updateThGlobalTime();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -658,7 +642,6 @@ timeHistoryInit()
   m_is_master_io = sd->allReplicaParallelMng()->isMasterIO();
   info(4) << "TimeHistory is MasterIO ? " << m_is_master_io;
   m_enable_non_io_master_curves = ! platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null() ;
-
   if (!m_is_master_io && !m_enable_non_io_master_curves)
     return;
 
@@ -674,7 +657,7 @@ timeHistoryInit()
   
   if (platform::getEnvironmentVariable("ARCANE_DISABLE_GNUPLOT_CURVES").null()){
     ITimeHistoryCurveWriter2* gnuplot_curve_writer = new GnuplotTimeHistoryCurveWriter2(traceMng());
-    addCurveWriter(gnuplot_curve_writer);
+    m_internal->addCurveWriter(makeRef(gnuplot_curve_writer));
   }
 
   if (m_is_master_io || m_enable_non_io_master_curves){
@@ -684,7 +667,7 @@ timeHistoryInit()
       ITimeHistoryCurveWriter2* cw = wr_ref.get();
       if (cw){
         info() << "FOUND CURVE SERVICE (V2)!";
-        _addCurveWriter(wr_ref);
+        m_internal->addCurveWriter(wr_ref);
       }
     }
   }
@@ -696,18 +679,8 @@ timeHistoryInit()
 void TimeHistoryMng2::
 addCurveWriter(ITimeHistoryCurveWriter2* writer)
 {
-  _addCurveWriter(writer);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void TimeHistoryMng2::
-_addCurveWriter(AnyRef<ITimeHistoryCurveWriter2> writer)
-{
-  info() << "Add CurveWriter2 name=" << writer->name();
-  if(m_is_master_io || m_enable_non_io_master_curves)
-    m_curve_writers2.insert(writer);
+  // TODO bof
+  m_internal->addCurveWriter(makeRef(writer));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -716,86 +689,7 @@ _addCurveWriter(AnyRef<ITimeHistoryCurveWriter2> writer)
 void TimeHistoryMng2::
 _writeVariablesNotify()
 {
-  OStringStream meta_data_str;
-
-  meta_data_str() << "<?xml version='1.0' ?>\n";
-  meta_data_str() << "<curves>\n";
-  for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-    TimeHistoryValue2* val = i->second;
-    meta_data_str() << "<curve "
-                    << " name='" << val->name() << "'"
-                    << " index='" << val->index() << "'"
-                    << " data-type='" << dataTypeName(val->dataType()) << "'"
-                    << " sub-size='" << val->subSize() << "'"
-                    << "/>\n";
-  }
-  meta_data_str() << "</curves>\n";
-
-  {
-    String ss = meta_data_str.str();
-    m_th_meta_data = ss;
-    //warning() << "TimeHistoryMng MetaData: size=" << ss.len() << " v=" << ss;
-  }
-
-  m_th_global_time.resize(m_global_times.size());
-  m_th_global_time.copy(m_global_times);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void TimeHistoryMng2::
-_readVariables()
-{
-  info(4) << "_readVariables resizes m_global_time to " << m_th_global_time.size();
-  m_global_times.resize(m_th_global_time.size());
-  m_global_times.copy(m_th_global_time);
-
-  info() << "Reading the values history";
-  
-  IIOMng* io_mng = subDomain()->ioMng();
-  ScopedPtrT<IXmlDocumentHolder> doc(io_mng->parseXmlString(m_th_meta_data(),"meta_data"));
-  if (!doc.get()){
-    error() << " METADATA len=" << m_th_meta_data().length()
-            << " str='" << m_th_meta_data() << "'";
-    ARCANE_FATAL("The meta-data of TimeHistoryMng2 are invalid.");
-  }
-  XmlNode root_node = doc->documentNode();
-  XmlNode curves_node = root_node.child(String("curves"));
-  XmlNodeList curves = curves_node.children(String("curve"));
-  String ustr_name("name");
-  String ustr_index("index");
-  String ustr_sub_size("sub-size");
-  String ustr_data_type("data-type");
-
-  for( XmlNode curve : curves ){
-    String name = curve.attrValue(ustr_name);
-    Integer index = curve.attr(ustr_index).valueAsInteger();
-    Integer sub_size = curve.attr(ustr_sub_size).valueAsInteger();
-    String data_type_str = curve.attrValue(ustr_data_type);
-    eDataType dt = dataTypeFromName(data_type_str.localstr());
-    if (name.null())
-      ARCANE_FATAL("null name for curve");
-    if (index<0)
-      ARCANE_FATAL("Invalid index '{0}' for curve",index);
-    TimeHistoryValue2* val = 0;
-    switch(dt){
-    case DT_Real:
-      val = new TimeHistoryValue2T<Real>(this,name,index,sub_size,isShrinkActive());
-      break;
-    case DT_Int32:
-      val = new TimeHistoryValue2T<Int32>(this,name,index,sub_size,isShrinkActive());
-      break;
-    case DT_Int64:
-      val = new TimeHistoryValue2T<Int64>(this,name,index,sub_size,isShrinkActive());
-      break;
-    default:
-      break;
-    }
-    if (!val)
-      ARCANE_FATAL("Bad data-type");
-    m_history_list.insert(HistoryValueType(name,val));
-  }
+  m_internal->updateMetaData();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -805,7 +699,7 @@ void TimeHistoryMng2::
 timeHistoryContinueInit()
 {
   if (m_is_master_io || m_enable_non_io_master_curves)
-    _readVariables();
+    m_internal->_readVariables();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -814,26 +708,7 @@ timeHistoryContinueInit()
 void TimeHistoryMng2::
 timeHistoryRestore()
 {
-  Integer current_iteration = m_global_iteration();
-  {
-    // Vérifie qu'on n'a pas plus d'éléments que d'itérations
-    // dans 'm_th_global_time'. Normalement cela ne peut arriver
-    // que lors d'un retour-arrière si les variables ont été sauvegardées
-    // au cours du pas de temps.
-    // TODO: ce test ne fonctionne pas si isShrinkActive() est vrai.
-    Integer n = m_th_global_time.size();
-    if (n>current_iteration){
-      n = current_iteration;
-      m_th_global_time.resize(n);
-      info() << "TimeHistoryRestore: truncating TimeHistoryGlobalTime array to size n=" << n << "\n";
-    }
-  }
-  m_global_times.resize(m_th_global_time.size());
-  m_global_times.copy(m_th_global_time);
-
-  for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-    i->second->removeAfterIteration(current_iteration);
-  }
+  m_internal->timeHistoryRestore();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -854,80 +729,7 @@ _checkOutputPath()
 void TimeHistoryMng2::
 dumpHistory(bool is_verbose)
 {
-  if (!m_is_master_io && !m_enable_non_io_master_curves)
-    return;
-  if (!m_is_dump_active)
-    return;
-  
-  _checkOutputPath();
-
-  ITraceMng* tm = traceMng();
-  Directory out_dir(m_output_path);
-
-  if (is_verbose)
-    info() << "Writing of the history of values path=" << out_dir.path();
-  if (m_is_master_io || m_enable_non_io_master_curves) {
-    info() << "Begin output history: " << platform::getCurrentDateTime();
-
-    // Ecriture via version 2 des curve writers
-    for( auto& cw_ref : m_curve_writers2 ){
-      ITimeHistoryCurveWriter2* writer = cw_ref.get();
-        if (is_verbose){
-         info() << "Writing curves with '" << writer->name()
-                << "' date=" << platform::getCurrentDateTime();
-        }
-        TimeHistoryCurveWriterInfo infos(out_dir.path(),m_global_times.constView());
-        writer->beginWrite(infos);
-        for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-          const TimeHistoryValue2& th = *(i->second);
-          th.dumpValues(tm,writer,infos);
-        }
-        writer->endWrite();
-    }
-  }
-
- 
-  // Génère un fichier xml contenant la liste des courbes de l'historique
-  ISubDomain* sd = subDomain();
-  IParallelMng* parallel_mng = sd->parallelMng();
-  Integer master_io_rank = parallel_mng->masterIORank() ;
-
-  if (m_is_master_io) {
-    std::ofstream ofile(out_dir.file("time_history.xml").localstr());
-    ofile << "<?xml version='1.0' ?>\n";
-    ofile << "<curves>\n";
-    for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-      const TimeHistoryValue2& th = *(i->second);
-      ofile << "<curve name='" <<  th.name() << "'/>\n";
-    }
-    if (m_enable_non_io_master_curves) {
-      for(Integer i=0;i<parallel_mng->commSize();++i)
-        if(i!=master_io_rank) {
-          Integer nb_curve = 0 ;
-          parallel_mng->recv(ArrayView<Integer>(1,&nb_curve),i);
-          for(Integer icurve=0;icurve<nb_curve;++icurve) {
-            Integer length = 0 ;
-            parallel_mng->recv(ArrayView<Integer>(1,&length),i) ;
-            UniqueArray<char> buf(length) ;
-            parallel_mng->recv(buf,i) ;
-            ofile << "<curve name='" <<  buf.unguardedBasePointer() << "'/>\n";
-          }
-        }
-    }
-    ofile << "</curves>\n";
-  }
-  else if(m_enable_non_io_master_curves) {
-    Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
-    parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
-    for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-      const TimeHistoryValue2& th = *(i->second);
-      String name = th.name() ;
-      Integer length = arcaneCheckArraySize(name.length()+1);
-      parallel_mng->send(ArrayView<Integer>(1,&length),master_io_rank) ;
-      parallel_mng->send(ArrayView<char>(length,(char*)name.localstr()),master_io_rank) ;
-    }
-  }
-  info() << "Fin sortie historique: " << platform::getCurrentDateTime();
+  m_internal->dumpHistory(is_verbose);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -936,16 +738,7 @@ dumpHistory(bool is_verbose)
 void TimeHistoryMng2::
 dumpCurves(ITimeHistoryCurveWriter2* writer)
 {
-  if (!m_is_master_io && !m_enable_non_io_master_curves)
-    return;
-  ITraceMng* tm = traceMng();
-  TimeHistoryCurveWriterInfo infos(m_output_path,m_global_times.constView());
-  writer->beginWrite(infos);
-  for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-    const TimeHistoryValue2& th = *(i->second);
-    th.dumpValues(tm,writer,infos);
-  }
-  writer->endWrite();
+  m_internal->dumpCurves(writer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -954,49 +747,7 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
 void TimeHistoryMng2::
 applyTransformation(ITimeHistoryTransformer* v)
 {
-  if (!m_is_master_io && !m_enable_non_io_master_curves)
-    return;
-  ITraceMng* tm = traceMng();
-  for( IterT<HistoryList> i(m_history_list); i(); ++i ){
-    TimeHistoryValue2& th = *(i->second);
-    th.applyTransformation(tm,v);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<class DataType> void TimeHistoryMng2::
-_addHistoryValue(const String& name,ConstArrayView<DataType> values,bool end_time,bool is_local)
-{
-  if (!m_is_master_io && !(m_enable_non_io_master_curves && is_local))
-    return;
-
-  if (!m_is_active)
-    return;
-
-  Integer iteration = globalIteration();
-  
-  if (!end_time && iteration!=0)
-    --iteration;
-
-  auto hl = m_history_list.find(name);
-  TimeHistoryValue2T<DataType>* th = nullptr;
-  // Trouvé, on le retourne.
-  if (hl!=m_history_list.end())
-    th = dynamic_cast< TimeHistoryValue2T<DataType>* >(hl->second);
-  else{
-    th = new TimeHistoryValue2T<DataType>(this,name,(Integer)m_history_list.size(),
-                                          values.size(),isShrinkActive());
-    m_history_list.insert(HistoryValueType(name,th));
-  }
-  if (!th)
-    return;
-  if (values.size()!=th->subSize()){
-    ARCANE_FATAL("Bad subsize for curve '{0}' current={1} old={2}",
-                 name,values.size(),th->subSize());
-  }
-  th->addValue(values,iteration);
+  m_internal->applyTransformation(v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1005,11 +756,7 @@ _addHistoryValue(const String& name,ConstArrayView<DataType> values,bool end_tim
 void TimeHistoryMng2::
 removeCurveWriter(const String& name)
 {
-  for ( auto& cw : m_curve_writers2)
-    if (cw->name()==name){
-      _removeCurveWriter(cw);
-      return;
-    }
+  m_internal->removeCurveWriter(name);
 }
 
 /*---------------------------------------------------------------------------*/
