@@ -108,7 +108,7 @@ MeshEnvironment::
 MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int16 env_id)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, m_data(this, name, env_id, mm->_internalApi()->componentItemSharedInfo(), false)
+, m_data(this, name, env_id, mm->_internalApi()->componentItemSharedInfo(LEVEL_ENVIRONMENT), false)
 , m_non_const_this(this)
 , m_internal_api(this)
 {

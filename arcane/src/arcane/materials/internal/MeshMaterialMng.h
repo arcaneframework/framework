@@ -103,9 +103,9 @@ class MeshMaterialMng
     {
       return m_material_mng->_allCellsEnvOnlySynchronizer();
     }
-    ComponentItemSharedInfo* componentItemSharedInfo() const override
+    ComponentItemSharedInfo* componentItemSharedInfo(Int32 level) const override
     {
-      return m_material_mng->componentItemSharedInfo();
+      return m_material_mng->componentItemSharedInfo(level);
     }
 
    private:
@@ -243,7 +243,7 @@ class MeshMaterialMng
  public:
 
   AllEnvData* allEnvData() { return m_all_env_data.get(); }
-  ComponentItemSharedInfo* componentItemSharedInfo() const;
+  ComponentItemSharedInfo* componentItemSharedInfo(Int32 level) const;
   void syncVariablesReferences();
 
   void incrementTimestamp() { ++m_timestamp; }

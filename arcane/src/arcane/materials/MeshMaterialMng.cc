@@ -1198,9 +1198,18 @@ _unregisterAllVariables()
 /*---------------------------------------------------------------------------*/
 
 ComponentItemSharedInfo* MeshMaterialMng::
-componentItemSharedInfo() const
+componentItemSharedInfo(Int32 level) const
 {
-  return m_all_env_data->componentItemInternalData()->allEnvSharedInfo();
+  ComponentItemInternalData* data = m_all_env_data->componentItemInternalData();
+  ComponentItemSharedInfo* shared_info = nullptr;
+  if (level == LEVEL_MATERIAL)
+    shared_info = data->matSharedInfo();
+  else if (level == LEVEL_ENVIRONMENT)
+    shared_info = data->envSharedInfo();
+  else
+    ARCANE_FATAL("Bad internal type of component");
+
+  return shared_info;
 }
 
 /*---------------------------------------------------------------------------*/
