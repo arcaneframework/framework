@@ -87,12 +87,10 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
   {
     return m_item_internal_local_id_list;
   }
-
-  ComponentItemInternal* itemInternal(Int32 index) const
+  matimpl::ConstituentItemBase itemBase(Int32 index) const
   {
-    return m_shared_info->_itemInternal(localId(index));
+    return m_shared_info->_item(localId(index));
   }
-
   ComponentItemInternalLocalId localId(Int32 index) const
   {
     return m_item_internal_local_id_list[index];

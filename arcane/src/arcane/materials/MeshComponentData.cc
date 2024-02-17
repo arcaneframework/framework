@@ -136,7 +136,7 @@ _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
     Int32 new_lid = old_to_new_ids[lid];
     if (new_lid != NULL_ITEM_LOCAL_ID) {
       new_internals.add(current_internals[i]);
-      m_constituent_local_id_list.itemInternal(i)->_setGlobalItem(ItemLocalId(new_lid));
+      m_constituent_local_id_list.itemBase(i)._setGlobalItem(ItemLocalId(new_lid));
     }
   }
 

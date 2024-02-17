@@ -77,10 +77,10 @@ class MeshComponentData
 
  private:
 
-  //! Retourne un pointeur vers la \a index-ème entité de la liste
-  ComponentItemInternal* _itemInternal(Int32 index) const
+  //! Retourne une instance vers la \a index-ème entité de la liste
+  matimpl::ConstituentItemBase _itemBase(Int32 index) const
   {
-    return m_constituent_local_id_list.itemInternal(index);
+    return m_constituent_local_id_list.itemBase(index);
   }
 
   void _setConstituentItem(Int32 index, ComponentItemInternalLocalId id)

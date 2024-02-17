@@ -23,6 +23,8 @@
 
 namespace Arcane::Materials
 {
+class MeshEnvironment;
+class MeshComponentData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -86,6 +88,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
  private:
 
   inline ComponentItemInternal* _itemInternal(ComponentItemInternalLocalId id);
+  inline matimpl::ConstituentItemBase _item(ComponentItemInternalLocalId id);
 
  private:
 
@@ -118,6 +121,9 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
   friend Arcane::Materials::AllEnvCell;
   friend Arcane::Materials::EnvCell;
   friend Arcane::Materials::MatCell;
+
+  friend Arcane::Materials::MeshEnvironment;
+  friend Arcane::Materials::MeshComponentData;
 
  public:
 
@@ -421,6 +427,12 @@ inline ComponentItemInternal* ComponentItemSharedInfo::
 _itemInternal(ComponentItemInternalLocalId id)
 {
   return m_component_item_internal_view.ptrAt(id.localId());
+}
+
+inline matimpl::ConstituentItemBase ComponentItemSharedInfo::
+_item(ComponentItemInternalLocalId id)
+{
+  return matimpl::ConstituentItemBase(m_component_item_internal_view.ptrAt(id.localId()));
 }
 
 /*---------------------------------------------------------------------------*/
