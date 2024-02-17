@@ -26,6 +26,7 @@ namespace Arcane::Materials
 class MeshEnvironment;
 class MeshComponentData;
 class AllEnvData;
+class MeshMaterialMng;
 namespace matimpl
 {
   class ConstituentItemBase;
@@ -104,7 +105,8 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
   Int16 m_level = (-1);
   ConstArrayView<IMeshComponent*> m_components;
-  ComponentItemSharedInfo* m_parent_component_item_shared_info = null_shared_info_pointer;
+  ComponentItemSharedInfo* m_super_component_item_shared_info = null_shared_info_pointer;
+  ComponentItemSharedInfo* m_sub_component_item_shared_info = null_shared_info_pointer;
   ArrayView<ComponentItemInternal> m_component_item_internal_view;
 };
 
@@ -128,6 +130,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
   friend Arcane::Materials::EnvCell;
   friend Arcane::Materials::MatCell;
   friend Arcane::Materials::AllEnvData;
+  friend Arcane::Materials::MeshMaterialMng;
 
   friend Arcane::Materials::MeshEnvironment;
   friend Arcane::Materials::MeshComponentData;
@@ -365,10 +368,10 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     return &nullComponentItemInternal;
   }
 
-  //! Composant supérieur (0 si aucun)
+  //! Composant supérieur (null si aucun)
   inline matimpl::ConstituentItemBase _superItemBase() const;
 
-  //! Première entité sous-composant.
+  //! Première entité du sous-constituant
   ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _firstSubItemLocalId() const
   {
     return m_first_sub_component_item_local_id;
@@ -425,14 +428,14 @@ inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase ComponentItemInternal::
 _subItemBase(Int32 i) const
 {
   ComponentItemInternalLocalId lid(m_first_sub_component_item_local_id.localId() + i);
-  return m_shared_info->_item(lid);
+  return m_shared_info->m_sub_component_item_shared_info->_item(lid);
 }
 
 matimpl::ConstituentItemBase ComponentItemInternal::
 _superItemBase() const
 {
   ComponentItemInternalLocalId lid(m_super_component_item_local_id.localId());
-  return m_shared_info->m_parent_component_item_shared_info->_item(lid);
+  return m_shared_info->m_super_component_item_shared_info->_item(lid);
 }
 
 /*---------------------------------------------------------------------------*/

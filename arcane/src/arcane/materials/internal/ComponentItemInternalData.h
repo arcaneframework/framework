@@ -179,7 +179,9 @@ class ComponentItemInternalData
 
   MeshMaterialMng* m_material_mng = nullptr;
 
-  UniqueArray<ComponentItemInternal> m_component_item_internal_storage;
+  UniqueArray<ComponentItemInternal> m_all_env_item_internal_storage;
+  UniqueArray<ComponentItemInternal> m_env_item_internal_storage;
+  UniqueArray<ComponentItemInternal> m_mat_item_internal_storage;
   /*!
    * \brief Liste des ComponentItemInternal pour les AllEnvcell.
    *
@@ -203,8 +205,7 @@ class ComponentItemInternalData
 
  private:
 
-  void
-  _initSharedInfos();
+  void _initSharedInfos();
   void _resetMatItemsInternal(Int32 env_index);
   //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
   void _resetItemsInternal();

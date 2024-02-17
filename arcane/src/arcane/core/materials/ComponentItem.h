@@ -117,18 +117,18 @@ class ARCANE_CORE_EXPORT ComponentCell
 
  protected:
 
-  static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] ComponentItemInternal* internal,
+  static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] ComponentItemInternal* item_internal,
                                               [[maybe_unused]] Int32 expected_level)
   {
 #if !defined(ARCCORE_DEVICE_CODE)
-    if (internal->null())
+    if (item_internal->null())
       return;
-    Int32 lvl = internal->level();
-    if (!internal->null() && lvl != expected_level)
-      _badConversion(lvl, expected_level);
+    Int32 lvl = item_internal->level();
+    if (lvl != expected_level)
+      _badConversion(item_internal, lvl, expected_level);
 #endif
   }
-  static void _badConversion(Int32 level, Int32 expected_level);
+  static void _badConversion(ComponentItemInternal* item_internal, Int32 level, Int32 expected_level);
 
  protected:
 

@@ -643,17 +643,16 @@ checkValid()
     if (cell_nb_env != nb_env_per_cell[cell.localId()])
       ARCANE_FATAL("Bad value for nb_env direct='{0}' var='{1}'",
                    cell_nb_env, nb_env_per_cell[cell.localId()]);
-
     for( Integer z=0; z<cell_nb_env; ++z ){
       EnvCell ec = all_env_cell.cell(z);
       Integer cell_nb_mat = ec.nbMaterial();
-      ComponentItemInternal* eii = ec._internal();
-      if (all_env_cell._internal()!=eii->_superItemBase())
+      matimpl::ConstituentItemBase eii = ec.constituentItemBase();
+      if (all_env_cell.constituentItemBase()!=eii._superItemBase())
         ARCANE_FATAL("Bad corresponding allEnvItem() in env_item uid={0}",cell_uid);
-      if (eii->globalItemBase()!=cell)
+      if (eii.globalItemBase()!=cell)
         ARCANE_FATAL("Bad corresponding globalItem() in env_item");
-      if (eii->level()!=LEVEL_ENVIRONMENT)
-        ARCANE_FATAL("Bad level '{0}' for in env_item",eii->level());
+      if (eii.level()!=LEVEL_ENVIRONMENT)
+        ARCANE_FATAL("Bad level '{0}' for in env_item",eii.level());
       // Si la maille n'est pas pure, la variable milieu ne peut être équivalente à
       // la variable globale.
       if (cell_nb_env>1 && ec._varIndex().arrayIndex()==0)
@@ -661,13 +660,13 @@ checkValid()
 
       for( Integer k=0; k<cell_nb_mat; ++k ){
         MatCell mc = ec.cell(k);
-        ComponentItemInternal* mci = mc._internal();
-        if (eii!=mci->_superItemBase())
+        matimpl::ConstituentItemBase mci = mc.constituentItemBase();
+        if (eii!=mci._superItemBase())
           ARCANE_FATAL("Bad corresponding env_item in mat_item");
-        if (mci->globalItemBase()!=cell)
+        if (mci.globalItemBase()!=cell)
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");
-        if (mci->level()!=LEVEL_MATERIAL)
-          ARCANE_FATAL("Bad level '{0}' for in mat_item",mci->level());
+        if (mci.level()!=LEVEL_MATERIAL)
+          ARCANE_FATAL("Bad level '{0}' for in mat_item",mci.level());
         // Si la maille n'est pas pure, la variable matériau ne peut être équivalente à
         // la variable globale.
         if ((cell_nb_env>1 || cell_nb_mat>1) && mc._varIndex().arrayIndex()==0){
