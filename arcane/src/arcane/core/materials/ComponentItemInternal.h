@@ -74,6 +74,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   friend class ComponentItemInternalData;
   friend class CellComponentCellEnumerator;
   friend class ConstituentItemLocalIdList;
+  friend class ConstituentItemLocalIdListView;
 
  private:
 
@@ -184,6 +185,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   friend class AllEnvData;
   friend class MeshMaterialMng;
   friend class ConstituentItemLocalIdList;
+  friend class ConstituentItemLocalIdListView;
 
  private:
 
@@ -387,11 +389,21 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
   , m_ids(ids)
   , m_items_internal(items_internal)
   {
+#ifdef ARCANE_CHECK
+    _checkCoherency();
+#endif
   }
 
  private:
 
-  matimpl::ConstituentItemBase _constituenItemBase(Int32 index) const { return matimpl::ConstituentItemBase(m_items_internal[index]); }
+  matimpl::ConstituentItemBase _constituenItemBase(Int32 index) const
+  {
+#ifdef ARCANE_CHECK
+    if (m_items_internal[index]->m_shared_info!=m_component_shared_info)
+      _throwIncoherentSharedInfo(index);
+#endif
+    return matimpl::ConstituentItemBase(m_items_internal[index]);
+  }
   MatVarIndex _matVarIndex(Int32 index) const { return m_items_internal[index]->variableIndex(); }
   ConstituentItemLocalIdListView _subView(Int32 begin, Int32 size) const
   {
@@ -424,6 +436,11 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
   ComponentItemSharedInfo* m_component_shared_info = nullptr;
   ConstArrayView<ComponentItemInternalLocalId> m_ids;
   ConstArrayView<ComponentItemInternal*> m_items_internal;
+
+ private:
+
+  void _checkCoherency() const;
+  void _throwIncoherentSharedInfo(Int32 index) const;
 };
 
 /*---------------------------------------------------------------------------*/
