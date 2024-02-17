@@ -71,7 +71,7 @@ class CellToAllEnvCellConverter
 {
  public:
 
-  explicit CellToAllEnvCellConverter(ArrayView<ComponentItemInternal> v)
+  explicit CellToAllEnvCellConverter(ConstArrayView<ComponentItemInternal> v)
   : m_all_env_items_internal(v){}
 
   explicit CellToAllEnvCellConverter(IMeshMaterialMng* mm)
@@ -84,7 +84,7 @@ class CellToAllEnvCellConverter
   //! Converti une maille \a Cell en maille \a AllEnvCell
   AllEnvCell operator[](Cell c)
   {
-    return AllEnvCell(matimpl::ConstituentItemBase(&m_all_env_items_internal[c.localId()]));
+    return operator[](CellLocalId(c));
   }
   //! Converti une maille \a CellLocalId en maille \a AllEnvCell
   ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
@@ -95,7 +95,7 @@ class CellToAllEnvCellConverter
 
  private:
 
-  ArrayView<ComponentItemInternal> m_all_env_items_internal;
+  ConstArrayView<ComponentItemInternal> m_all_env_items_internal;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -25,6 +25,7 @@ namespace Arcane::Materials
 {
 class MeshEnvironment;
 class MeshComponentData;
+class AllEnvData;
 namespace matimpl
 {
   class ConstituentItemBase;
@@ -126,6 +127,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
   friend Arcane::Materials::AllEnvCell;
   friend Arcane::Materials::EnvCell;
   friend Arcane::Materials::MatCell;
+  friend Arcane::Materials::AllEnvData;
 
   friend Arcane::Materials::MeshEnvironment;
   friend Arcane::Materials::MeshComponentData;
@@ -220,6 +222,15 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
  private:
 
   ComponentItemInternal* m_component_item = nullptr;
+
+ private:
+
+  void _checkIsInt16(Int32 v)
+  {
+    if (v < (-32768) || v > 32767)
+      _throwBadCast(v);
+  }
+  void _throwBadCast(Int32 v);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -354,28 +365,8 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     return &nullComponentItemInternal;
   }
 
-  //! Positionne l'indexeur dans les variables matériaux.
-  void _setVariableIndex(MatVarIndex index)
-  {
-    m_var_index = index;
-  }
-
   //! Composant supérieur (0 si aucun)
-  matimpl::ConstituentItemBase _superItemBase() const
-  {
-    return &m_shared_info->m_component_item_internal_view[m_super_component_item_local_id.localId()];
-  }
-
-  void _setSuperAndGlobalItem(ComponentItemInternalLocalId cii, ItemLocalId ii)
-  {
-    m_super_component_item_local_id = cii;
-    m_global_item_local_id = ii.localId();
-  }
-
-  void _setGlobalItem(ItemLocalId ii)
-  {
-    m_global_item_local_id = ii.localId();
-  }
+  inline matimpl::ConstituentItemBase _superItemBase() const;
 
   //! Première entité sous-composant.
   ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _firstSubItemLocalId() const
@@ -384,29 +375,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   }
 
   ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(Int32 i) const;
-
-  //! Positionne le nombre de sous-composants.
-  void _setNbSubItem(Int32 nb_sub_item)
-  {
-#ifdef ARCANE_CHECK
-    _checkIsInt16(nb_sub_item);
-#endif
-    m_nb_sub_component_item = static_cast<Int16>(nb_sub_item);
-  }
-
-  //! Positionne le premier sous-composant.
-  void _setFirstSubItem(ComponentItemInternalLocalId first_sub_item)
-  {
-    m_first_sub_component_item_local_id = first_sub_item;
-  }
-
-  void _setComponent(Int32 component_id)
-  {
-#ifdef ARCANE_CHECK
-    _checkIsInt16(component_id);
-#endif
-    m_component_id = static_cast<Int16>(component_id);
-  }
 
   ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _internalLocalId() const
   {
@@ -458,6 +426,13 @@ _subItemBase(Int32 i) const
 {
   ComponentItemInternalLocalId lid(m_first_sub_component_item_local_id.localId() + i);
   return m_shared_info->_item(lid);
+}
+
+matimpl::ConstituentItemBase ComponentItemInternal::
+_superItemBase() const
+{
+  ComponentItemInternalLocalId lid(m_super_component_item_local_id.localId());
+  return m_shared_info->m_parent_component_item_shared_info->_item(lid);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -514,7 +489,7 @@ componentUniqueId() const
 inline void matimpl::ConstituentItemBase::
 _setVariableIndex(MatVarIndex index)
 {
-  m_component_item->_setVariableIndex(index);
+  m_component_item->m_var_index = index;
 }
 
 inline matimpl::ConstituentItemBase matimpl::ConstituentItemBase::
@@ -526,13 +501,14 @@ _superItemBase() const
 inline void matimpl::ConstituentItemBase::
 _setSuperAndGlobalItem(ComponentItemInternalLocalId cii, ItemLocalId ii)
 {
-  m_component_item->_setSuperAndGlobalItem(cii, ii);
+  m_component_item->m_super_component_item_local_id = cii;
+  m_component_item->m_global_item_local_id = ii.localId();
 }
 
 inline void matimpl::ConstituentItemBase::
 _setGlobalItem(ItemLocalId ii)
 {
-  m_component_item->_setGlobalItem(ii);
+  m_component_item->m_global_item_local_id = ii.localId();
 }
 
 //! Première entité sous-composant.
@@ -552,26 +528,32 @@ _subItemBase(Int32 i) const
 inline void matimpl::ConstituentItemBase::
 _setNbSubItem(Int32 nb_sub_item)
 {
-  m_component_item->_setNbSubItem(nb_sub_item);
+#ifdef ARCANE_CHECK
+  _checkIsInt16(nb_sub_item);
+#endif
+  m_component_item->m_nb_sub_component_item = static_cast<Int16>(nb_sub_item);
 }
 
 //! Positionne le premier sous-composant.
 inline void matimpl::ConstituentItemBase::
 _setFirstSubItem(ComponentItemInternalLocalId first_sub_item)
 {
-  m_component_item->_setFirstSubItem(first_sub_item);
+  m_component_item->m_first_sub_component_item_local_id = first_sub_item;
 }
 
 inline void matimpl::ConstituentItemBase::
 _setComponent(Int32 component_id)
 {
-  m_component_item->_setComponent(component_id);
+#ifdef ARCANE_CHECK
+  _checkIsInt16(component_id);
+#endif
+  m_component_item->m_component_id = static_cast<Int16>(component_id);
 }
 
 inline ARCCORE_HOST_DEVICE ComponentItemInternalLocalId matimpl::ConstituentItemBase::
 _internalLocalId() const
 {
-  return m_component_item->_internalLocalId();
+  return m_component_item->m_component_item_internal_local_id;
 }
 
 inline void matimpl::ConstituentItemBase::

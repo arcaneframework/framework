@@ -76,7 +76,7 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
 
  protected:
 
-  AllEnvCellVectorView(Int32ConstArrayView local_ids,ArrayView<ComponentItemInternal> items_internal)
+  AllEnvCellVectorView(Int32ConstArrayView local_ids, ConstArrayView<ComponentItemInternal> items_internal)
   : m_local_ids(local_ids), m_items_internal(items_internal)
   {
   }
@@ -89,8 +89,8 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
   // \i ème maille du vecteur
   AllEnvCell operator[](Integer index)
   {
-    Int32 lid = m_local_ids[index];
-    return AllEnvCell(matimpl::ConstituentItemBase(&m_items_internal[lid]));
+    const ComponentItemInternal* c = &m_items_internal[m_local_ids[index]];
+    return AllEnvCell(matimpl::ConstituentItemBase(const_cast<ComponentItemInternal*>(c)));
   }
 
   // localId() de la \i ème maille du vecteur
@@ -102,7 +102,7 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
  private:
 
   Int32ConstArrayView m_local_ids;
-  ArrayView<ComponentItemInternal> m_items_internal;
+  ConstArrayView<ComponentItemInternal> m_items_internal;
 };
 
 /*---------------------------------------------------------------------------*/

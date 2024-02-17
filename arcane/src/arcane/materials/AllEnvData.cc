@@ -219,8 +219,6 @@ _computeInfosForEnvCells()
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
   ComponentItemInternalRange all_env_items_internal_range = m_item_internal_data.allEnvItemsInternalRange();
-  ArrayView<ComponentItemInternal> all_env_items_internal = m_item_internal_data.allEnvItemsInternal();
-  ArrayView<ComponentItemInternal> env_items_internal = m_item_internal_data.envItemsInternal();
   ComponentItemInternalRange env_items_internal_range = m_item_internal_data.envItemsInternalRange();
   ConstArrayView<Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
 
@@ -263,7 +261,7 @@ _computeInfosForEnvCells()
         Int32 pos = current_pos[lid];
         ++current_pos[lid];
         Int32 nb_mat = m_component_connectivity_list->cellNbMaterial(CellLocalId(lid), env_id);
-        ComponentItemInternal& ref_ii = env_items_internal[pos];
+        matimpl::ConstituentItemBase ref_ii = m_item_internal_data.envItemBase(pos);
         ComponentItemInternalLocalId cii_lid = all_env_items_internal_range[lid];
         env->setConstituentItem(z, ref_ii._internalLocalId());
         ref_ii._setSuperAndGlobalItem(cii_lid, ItemLocalId(lid));
@@ -283,7 +281,7 @@ _computeInfosForEnvCells()
       Cell c = *icell;
       Int32 lid = icell.itemLocalId();
       Int32 n = cells_nb_env[lid];
-      ComponentItemInternal& ref_ii = all_env_items_internal[lid];
+      matimpl::ConstituentItemBase ref_ii = m_item_internal_data.allEnvItemBase(c);
       ref_ii._setSuperAndGlobalItem({}, c);
       ref_ii._setVariableIndex(MatVarIndex(0, lid));
       ref_ii._setNbSubItem(n);
