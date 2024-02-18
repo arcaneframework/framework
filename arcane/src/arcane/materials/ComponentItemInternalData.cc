@@ -29,6 +29,60 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ComponentItemInternalData::Storage::
+Storage(const MemoryAllocationOptions& alloc_info)
+: m_first_sub_constituent_item_id_list(alloc_info)
+, m_super_component_item_local_id_list(alloc_info)
+, m_component_id_list(alloc_info)
+, m_nb_sub_constituent_item_list(alloc_info)
+, m_global_item_local_id_list(alloc_info)
+, m_var_index_list(alloc_info)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentItemInternalData::Storage::
+resize(Int32 new_size, ComponentItemSharedInfo* shared_info)
+{
+  // On dimensionne au nombre d'éléments + 1.
+  // On décale de 1 la vue pour qu'elle puisse être indexée avec l'entité
+  // nulle (d'indice (-1)).
+  Int32 true_size = new_size + 1;
+  m_first_sub_constituent_item_id_list.resize(true_size);
+  m_first_sub_constituent_item_id_list[0] = {};
+
+  m_super_component_item_local_id_list.resize(true_size);
+  m_super_component_item_local_id_list[0] = {};
+
+  m_component_id_list.resize(true_size);
+  m_component_id_list[0] = -1;
+
+  m_nb_sub_constituent_item_list.resize(true_size);
+  m_nb_sub_constituent_item_list[0] = 0;
+
+  m_global_item_local_id_list.resize(true_size);
+  m_global_item_local_id_list[0] = NULL_ITEM_LOCAL_ID;
+
+  m_var_index_list.resize(true_size);
+  m_var_index_list[0].reset();
+
+  shared_info->m_storage_size = new_size;
+  shared_info->m_first_sub_constituent_item_id_data = m_first_sub_constituent_item_id_list.data() + 1;
+  shared_info->m_super_component_item_local_id_data = m_super_component_item_local_id_list.data() + 1;
+  shared_info->m_component_id_data = m_component_id_list.data() + 1;
+  shared_info->m_nb_sub_constituent_item_data = m_nb_sub_constituent_item_list.data() + 1;
+  shared_info->m_global_item_local_id_data = m_global_item_local_id_list.data() + 1;
+  shared_info->m_var_index_data = m_var_index_list.data() + 1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ComponentItemInternalData::
 ComponentItemInternalData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
@@ -38,6 +92,9 @@ ComponentItemInternalData(MeshMaterialMng* mmg)
 , m_mat_item_internal_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_shared_infos(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_mat_items_internal_range(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_all_env_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_env_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_mat_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
   // Il y a une instance pour les MatCell, les EnvCell et les AllEnvCell
   // Il ne faut ensuite plus modifier ce tableau car on conserve des pointeurs
@@ -116,6 +173,10 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
       index_in_container += nb_cell_mat;
     }
   }
+
+  m_all_env_storage.resize(max_local_id, allEnvSharedInfo());
+  m_env_storage.resize(total_nb_env_cell, envSharedInfo());
+  m_mat_storage.resize(total_nb_mat_cell, matSharedInfo());
 
   _resetItemsInternal();
 
