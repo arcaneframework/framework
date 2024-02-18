@@ -67,6 +67,20 @@ class ARCANE_CORE_EXPORT ComponentItemInternalLocalId
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Conteneur pour les données des constituants.
+ */
+class ARCANE_CORE_EXPORT ComponentItemSharedInfoStorageView
+{
+ protected:
+
+  Int32 m_storage_size = 0;
+  // TODO: Utiliser stockage avec un seul élément pour le nullComponent
+  ComponentItemInternalLocalId* m_first_sub_constituent_list_ptr = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \internal
  * \brief Informations partagées sur les 'ComponentItemInternal'.
  *
@@ -77,6 +91,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternalLocalId
  * d'un MeshMaterialMng.
  */
 class ARCANE_CORE_EXPORT ComponentItemSharedInfo
+: ComponentItemSharedInfoStorageView
 {
   friend class ComponentItemInternal;
   friend class ComponentItemInternalData;
@@ -96,6 +111,23 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 
   inline constexpr ComponentItemInternal* _itemInternal(ComponentItemInternalLocalId id);
   inline constexpr matimpl::ConstituentItemBase _item(ComponentItemInternalLocalId id);
+  inline ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _firstSubConstituentLocalId(ComponentItemInternalLocalId id)
+  {
+    ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+    return m_first_sub_constituent_list_ptr[id.localId()];
+  }
+  inline ARCCORE_HOST_DEVICE void
+  _setFirstSubConstituentLocalId(ComponentItemInternalLocalId id, ComponentItemInternalLocalId first_id)
+  {
+    ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+    m_first_sub_constituent_list_ptr[id.localId()] = first_id;
+  }
+  inline void _reset(ComponentItemInternalLocalId id)
+  {
+    Int32 local_id = id.localId();
+    ARCCORE_CHECK_RANGE(local_id, -1, m_storage_size);
+    m_first_sub_constituent_list_ptr[local_id] = {};
+  }
 
  private:
 
@@ -348,7 +380,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   Int32 m_global_item_local_id = NULL_ITEM_LOCAL_ID;
   ComponentItemInternalLocalId m_component_item_internal_local_id;
   ComponentItemInternalLocalId m_super_component_item_local_id;
-  ComponentItemInternalLocalId m_first_sub_component_item_local_id;
   ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
@@ -374,7 +405,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Première entité du sous-constituant
   ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _firstSubItemLocalId() const
   {
-    return m_first_sub_component_item_local_id;
+    return m_shared_info->_firstSubConstituentLocalId(m_component_item_internal_local_id);
   }
 
   ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(Int32 i) const;
@@ -391,9 +422,9 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
     m_super_component_item_local_id = {};
     m_component_item_internal_local_id = id;
     m_nb_sub_component_item = 0;
-    m_first_sub_component_item_local_id = {};
     m_global_item_local_id = NULL_ITEM_LOCAL_ID;
     m_shared_info = shared_info;
+    m_shared_info->_reset(id);
   }
 };
 
@@ -427,7 +458,7 @@ ConstituentItemBase(ComponentItemSharedInfo* shared_info, ComponentItemInternalL
 inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase ComponentItemInternal::
 _subItemBase(Int32 i) const
 {
-  ComponentItemInternalLocalId lid(m_first_sub_component_item_local_id.localId() + i);
+  ComponentItemInternalLocalId lid(_firstSubItemLocalId().localId() + i);
   return m_shared_info->m_sub_component_item_shared_info->_item(lid);
 }
 
@@ -541,7 +572,7 @@ _setNbSubItem(Int32 nb_sub_item)
 inline void matimpl::ConstituentItemBase::
 _setFirstSubItem(ComponentItemInternalLocalId first_sub_item)
 {
-  m_component_item->m_first_sub_component_item_local_id = first_sub_item;
+  m_component_item->m_shared_info->_setFirstSubConstituentLocalId(m_component_item->m_component_item_internal_local_id, first_sub_item);
 }
 
 inline void matimpl::ConstituentItemBase::

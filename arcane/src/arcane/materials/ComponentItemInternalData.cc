@@ -29,6 +29,34 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ComponentItemInternalData::Storage::
+Storage(const MemoryAllocationOptions& alloc_info)
+: m_first_sub_constituent_list(alloc_info)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentItemInternalData::Storage::
+resize(Int32 new_size, ComponentItemSharedInfo* shared_info)
+{
+  // On dimensionne au nombre d'éléments + 1.
+  // On décale de 1 la vue pour qu'elle puisse être indexée avec l'entité
+  // nulle (d'indice (-1)).
+  m_first_sub_constituent_list.resize(new_size + 1);
+  m_first_sub_constituent_list[0] = {};
+
+  shared_info->m_storage_size = new_size;
+  shared_info->m_first_sub_constituent_list_ptr = m_first_sub_constituent_list.data() + 1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ComponentItemInternalData::
 ComponentItemInternalData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
@@ -38,6 +66,9 @@ ComponentItemInternalData(MeshMaterialMng* mmg)
 , m_mat_item_internal_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_shared_infos(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_mat_items_internal_range(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_all_env_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_env_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_mat_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
   // Il y a une instance pour les MatCell, les EnvCell et les AllEnvCell
   // Il ne faut ensuite plus modifier ce tableau car on conserve des pointeurs
@@ -116,6 +147,10 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
       index_in_container += nb_cell_mat;
     }
   }
+
+  m_all_env_storage.resize(max_local_id, allEnvSharedInfo());
+  m_env_storage.resize(total_nb_env_cell, envSharedInfo());
+  m_mat_storage.resize(total_nb_mat_cell, matSharedInfo());
 
   _resetItemsInternal();
 
