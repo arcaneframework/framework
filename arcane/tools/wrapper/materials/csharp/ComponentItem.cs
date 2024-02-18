@@ -23,9 +23,9 @@ namespace Arcane.Materials
     }
 
     public Cell GlobalCell { get { return m_internal->m_shared_info->GlobalCell(m_internal->m_component_item_internal_local_id); } }
-    public MatVarIndex MatVarIndex { get { return m_internal->m_var_index; } }
-    internal int _matvarArrayIndex { get { return m_internal->m_var_index.ArrayIndex; } }
-    internal int _matvarValueIndex { get { return m_internal->m_var_index.ValueIndex; } }
+    public MatVarIndex MatVarIndex { get { return m_internal->m_shared_info->VarIndex(m_internal->m_component_item_internal_local_id); } }
+    internal int _matvarArrayIndex { get { return MatVarIndex.ArrayIndex; } }
+    internal int _matvarValueIndex { get { return MatVarIndex.ValueIndex; } }
 
     [Obsolete("This method is internal to Arcane")]
     public ComponentItem(ComponentItemInternal* ci)
@@ -46,9 +46,9 @@ namespace Arcane.Materials
       set { m_internal = value; }
     }
     public Cell GlobalCell { get { return m_internal->m_shared_info->GlobalCell(m_internal->m_component_item_internal_local_id); } }
-    public MatVarIndex MatVarIndex { get { return m_internal->m_var_index; } }
-    internal int _matvarArrayIndex { get { return m_internal->m_var_index.ArrayIndex; } }
-    internal int _matvarValueIndex { get { return m_internal->m_var_index.ValueIndex; } }
+    public MatVarIndex MatVarIndex { get { return m_internal->m_shared_info->VarIndex(m_internal->m_component_item_internal_local_id); } }
+    internal int _matvarArrayIndex { get { return MatVarIndex.ArrayIndex; } }
+    internal int _matvarValueIndex { get { return MatVarIndex.ValueIndex; } }
     [Obsolete("This method is internal to Arcane")]
     public MatItem(ComponentItemInternal* ci)
     {
@@ -67,9 +67,9 @@ namespace Arcane.Materials
     }
 
     public Cell GlobalCell { get { return m_internal->m_shared_info->GlobalCell(m_internal->m_component_item_internal_local_id); } }
-    public MatVarIndex MatVarIndex { get { return m_internal->m_var_index; } }
-    internal int _matvarArrayIndex { get { return m_internal->m_var_index.ArrayIndex; } }
-    internal int _matvarValueIndex { get { return m_internal->m_var_index.ValueIndex; } }
+    public MatVarIndex MatVarIndex { get { return m_internal->m_shared_info->VarIndex(m_internal->m_component_item_internal_local_id); } }
+    internal int _matvarArrayIndex { get { return MatVarIndex.ArrayIndex; } }
+    internal int _matvarValueIndex { get { return MatVarIndex.ValueIndex; } }
 
     [Obsolete("This method is internal to Arcane")]
     public EnvItem(ComponentItemInternal* ci)

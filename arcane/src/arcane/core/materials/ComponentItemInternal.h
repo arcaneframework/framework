@@ -57,7 +57,9 @@ class ARCANE_CORE_EXPORT ComponentItemInternalLocalId
     return a.m_id != b.m_id;
   }
   ARCANE_CORE_EXPORT friend std::ostream&
-  operator<<(std::ostream& o,const ComponentItemInternalLocalId& id);
+  operator<<(std::ostream& o, const ComponentItemInternalLocalId& id);
+
+  ARCCORE_HOST_DEVICE constexpr bool isNull() const { return m_id == (-1); }
 
  private:
 
@@ -96,6 +98,8 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfoStorageView
   Int32* m_global_item_local_id_data = nullptr;
   //! Id de l'entité sous-constituant parente
   ComponentItemInternalLocalId* m_super_component_item_local_id_data = nullptr;
+  //! MatVarIndex de l'entité
+  MatVarIndex* m_var_index_data = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -119,6 +123,8 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   friend class ConstituentItemLocalIdList;
   friend class ConstituentItemLocalIdListView;
   friend class matimpl::ConstituentItemBase;
+
+  static const int MAT_INDEX_OFFSET = 10;
 
  private:
 
@@ -184,11 +190,31 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     m_super_component_item_local_id_data[id.localId()] = super_id;
   }
 
+  ARCCORE_HOST_DEVICE MatVarIndex _varIndex(ComponentItemInternalLocalId id)
+  {
+    ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+    return m_var_index_data[id.localId()];
+  }
+  ARCCORE_HOST_DEVICE void _setVarIndex(ComponentItemInternalLocalId id, MatVarIndex mv_index)
+  {
+    ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+    m_var_index_data[id.localId()] = mv_index;
+  }
+
+  //! Numéro unique de l'entité component
+  Int64 _componentUniqueId(ComponentItemInternalLocalId id) const
+  {
+    // TODO: Vérifier que arrayIndex() ne dépasse pas (1<<MAT_INDEX_OFFSET)
+    impl::ItemBase item_base(_globalItemBase(id));
+    return (Int64)m_var_index_data[id.localId()].arrayIndex() + ((Int64)item_base.uniqueId() << MAT_INDEX_OFFSET);
+  }
+
   inline void _reset(ComponentItemInternalLocalId id)
   {
     Int32 local_id = id.localId();
     ARCCORE_CHECK_RANGE(local_id, -1, m_storage_size);
 
+    m_var_index_data[local_id].reset();
     m_first_sub_constituent_item_id_data[local_id] = {};
     m_nb_sub_constituent_item_data[local_id] = 0;
     m_component_id_data[local_id] = -1;
@@ -248,7 +274,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
  public:
 
   //! Indexeur dans les variables matériaux
-  inline ARCCORE_HOST_DEVICE constexpr MatVarIndex variableIndex() const;
+  inline ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const;
 
   //! Identifiant du composant
   inline ARCCORE_HOST_DEVICE Int32 componentId() const;
@@ -327,8 +353,8 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 
  private:
 
-  inline ComponentItemSharedInfo* _sharedInfo() const;
-  inline ComponentItemInternalLocalId _localId() const;
+  inline ARCCORE_HOST_DEVICE ComponentItemSharedInfo* _sharedInfo() const;
+  inline ARCCORE_HOST_DEVICE ComponentItemInternalLocalId _localId() const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -376,31 +402,26 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
  private:
 
-  static const int MAT_INDEX_OFFSET = 10;
-
   //! Entité nulle
   static ComponentItemInternal nullComponentItemInternal;
 
  public:
 
-  ComponentItemInternal()
-  {
-    m_var_index.reset();
-  }
+  ComponentItemInternal() = default;
 
  public:
 
   //! Indexeur dans les variables matériaux
-  ARCCORE_HOST_DEVICE constexpr MatVarIndex variableIndex() const
+  ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const
   {
-    return m_var_index;
+    return m_shared_info->_varIndex(m_component_item_internal_local_id);
   }
 
   //! Identifiant du composant
   ARCCORE_HOST_DEVICE Int32 componentId() const { return m_shared_info->_componentId(m_component_item_internal_local_id); }
 
   //! Indique s'il s'agit de la maille nulle.
-  ARCCORE_HOST_DEVICE constexpr bool null() const { return m_var_index.null(); }
+  ARCCORE_HOST_DEVICE constexpr bool null() const { return m_component_item_internal_local_id.isNull(); }
 
   /*!
    * \brief Composant associé.
@@ -427,9 +448,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Numéro unique de l'entité component
   Int64 componentUniqueId() const
   {
-    // TODO: Vérifier que arrayIndex() ne dépasse pas (1<<MAT_INDEX_OFFSET)
-    impl::ItemBase item_base(globalItemBase());
-    return (Int64)m_var_index.arrayIndex() + ((Int64)item_base.uniqueId() << MAT_INDEX_OFFSET);
+    return m_shared_info->_componentUniqueId(m_component_item_internal_local_id);
   }
 
  protected:
@@ -437,7 +456,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   // NOTE : Cette classe est partagée avec le wrapper C#
   // Toute modification de la structure interne doit être reportée
   // dans la structure C# correspondante
-  MatVarIndex m_var_index;
+  //MatVarIndex m_var_index;
   ComponentItemInternalLocalId m_component_item_internal_local_id;
   ComponentItemSharedInfo* m_shared_info = nullptr;
 
@@ -469,8 +488,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   {
     m_component_item_internal_local_id = id;
     m_shared_info = shared_info;
-
-    m_var_index.reset();
     m_shared_info->_reset(id);
   }
 };
@@ -541,10 +558,10 @@ _superItemBase() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ARCCORE_HOST_DEVICE constexpr MatVarIndex matimpl::ConstituentItemBase::
+inline ARCCORE_HOST_DEVICE MatVarIndex matimpl::ConstituentItemBase::
 variableIndex() const
 {
-  return m_component_item->variableIndex();
+  return _sharedInfo()->_varIndex(_localId());
 }
 
 inline ARCCORE_HOST_DEVICE Int32 matimpl::ConstituentItemBase::
@@ -592,7 +609,7 @@ componentUniqueId() const
 inline void matimpl::ConstituentItemBase::
 _setVariableIndex(MatVarIndex index)
 {
-  m_component_item->m_var_index = index;
+  _sharedInfo()->_setVarIndex(_localId(), index);
 }
 
 inline matimpl::ConstituentItemBase matimpl::ConstituentItemBase::

@@ -36,6 +36,7 @@ Storage(const MemoryAllocationOptions& alloc_info)
 , m_component_id_list(alloc_info)
 , m_nb_sub_constituent_item_list(alloc_info)
 , m_global_item_local_id_list(alloc_info)
+, m_var_index_list(alloc_info)
 {
 }
 
@@ -64,12 +65,16 @@ resize(Int32 new_size, ComponentItemSharedInfo* shared_info)
   m_global_item_local_id_list.resize(true_size);
   m_global_item_local_id_list[0] = NULL_ITEM_LOCAL_ID;
 
+  m_var_index_list.resize(true_size);
+  m_var_index_list[0].reset();
+
   shared_info->m_storage_size = new_size;
   shared_info->m_first_sub_constituent_item_id_data = m_first_sub_constituent_item_id_list.data() + 1;
   shared_info->m_super_component_item_local_id_data = m_super_component_item_local_id_list.data() + 1;
   shared_info->m_component_id_data = m_component_id_list.data() + 1;
   shared_info->m_nb_sub_constituent_item_data = m_nb_sub_constituent_item_list.data() + 1;
   shared_info->m_global_item_local_id_data = m_global_item_local_id_list.data() + 1;
+  shared_info->m_var_index_data = m_var_index_list.data() + 1;
 }
 
 /*---------------------------------------------------------------------------*/

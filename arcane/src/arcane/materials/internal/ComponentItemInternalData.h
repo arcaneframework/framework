@@ -132,6 +132,7 @@ class ComponentItemInternalData
     UniqueArray<Int16> m_component_id_list;
     UniqueArray<Int16> m_nb_sub_constituent_item_list;
     UniqueArray<Int32> m_global_item_local_id_list;
+    UniqueArray<MatVarIndex> m_var_index_list;
   };
 
  public:
