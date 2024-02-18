@@ -128,8 +128,10 @@ class ComponentItemInternalData
    private:
 
     UniqueArray<ComponentItemInternalLocalId> m_first_sub_constituent_item_id_list;
+    UniqueArray<ComponentItemInternalLocalId> m_super_component_item_local_id_list;
     UniqueArray<Int16> m_component_id_list;
     UniqueArray<Int16> m_nb_sub_constituent_item_list;
+    UniqueArray<Int32> m_global_item_local_id_list;
   };
 
  public:

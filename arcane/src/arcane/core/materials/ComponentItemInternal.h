@@ -92,6 +92,10 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfoStorageView
   Int16* m_component_id_data = nullptr;
   //! Nombre d'entités sous-constituant
   Int16* m_nb_sub_constituent_item_data = nullptr;
+  //! localId() de l'entité globale associée
+  Int32* m_global_item_local_id_data = nullptr;
+  //! Id de l'entité sous-constituant parente
+  ComponentItemInternalLocalId* m_super_component_item_local_id_data = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -132,6 +136,12 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     return m_first_sub_constituent_item_id_data[id.localId()];
   }
+  inline ARCCORE_HOST_DEVICE void
+  _setFirstSubConstituentLocalId(ComponentItemInternalLocalId id, ComponentItemInternalLocalId first_id)
+  {
+    ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+    m_first_sub_constituent_item_id_data[id.localId()] = first_id;
+  }
   inline ARCCORE_HOST_DEVICE Int16 _nbSubConstituent(ComponentItemInternalLocalId id) const
   {
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
@@ -152,17 +162,26 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     m_component_id_data[id.localId()] = component_id;
   }
-
-  inline ARCCORE_HOST_DEVICE void
-  _setFirstSubConstituentLocalId(ComponentItemInternalLocalId id, ComponentItemInternalLocalId first_id)
-  {
-    ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
-    m_first_sub_constituent_item_id_data[id.localId()] = first_id;
-  }
-
   IMeshComponent* _component(ComponentItemInternalLocalId id) const
   {
     return m_components[_componentId(id)];
+  }
+  impl::ItemBase _globalItemBase(ComponentItemInternalLocalId id) const
+  {
+    ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+    return impl::ItemBase(m_global_item_local_id_data[id.localId()], m_item_shared_info);
+  }
+  void _setGlobalItem(ComponentItemInternalLocalId id, ItemLocalId global_item_lid)
+  {
+    ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+    m_global_item_local_id_data[id.localId()] = global_item_lid.localId();
+  }
+  matimpl::ConstituentItemBase _superItemBase(ComponentItemInternalLocalId id) const;
+
+  ARCCORE_HOST_DEVICE void _setSuperItem(ComponentItemInternalLocalId id, ComponentItemInternalLocalId super_id)
+  {
+    ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+    m_super_component_item_local_id_data[id.localId()] = super_id;
   }
 
   inline void _reset(ComponentItemInternalLocalId id)
@@ -173,6 +192,8 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     m_first_sub_constituent_item_id_data[local_id] = {};
     m_nb_sub_constituent_item_data[local_id] = 0;
     m_component_id_data[local_id] = -1;
+    m_global_item_local_id_data[local_id] = NULL_ITEM_LOCAL_ID;
+    m_super_component_item_local_id_data[local_id] = {};
   }
 
  private:
@@ -398,7 +419,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Entité globale correspondante.
   impl::ItemBase globalItemBase() const
   {
-    return impl::ItemBase(m_global_item_local_id, m_shared_info->m_item_shared_info);
+    return m_shared_info->_globalItemBase(m_component_item_internal_local_id);
   }
 
   ARCCORE_HOST_DEVICE constexpr Int32 level() const { return m_shared_info->m_level; }
@@ -417,9 +438,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   // Toute modification de la structure interne doit être reportée
   // dans la structure C# correspondante
   MatVarIndex m_var_index;
-  Int32 m_global_item_local_id = NULL_ITEM_LOCAL_ID;
   ComponentItemInternalLocalId m_component_item_internal_local_id;
-  ComponentItemInternalLocalId m_super_component_item_local_id;
   ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
@@ -448,11 +467,10 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
   void _reset(ComponentItemInternalLocalId id, ComponentItemSharedInfo* shared_info)
   {
-    m_var_index.reset();
-    m_super_component_item_local_id = {};
     m_component_item_internal_local_id = id;
-    m_global_item_local_id = NULL_ITEM_LOCAL_ID;
     m_shared_info = shared_info;
+
+    m_var_index.reset();
     m_shared_info->_reset(id);
   }
 };
@@ -464,12 +482,6 @@ inline constexpr ComponentItemInternal* ComponentItemSharedInfo::
 _itemInternal(ComponentItemInternalLocalId id)
 {
   return m_component_item_internal_view.ptrAt(id.localId());
-}
-
-inline constexpr matimpl::ConstituentItemBase ComponentItemSharedInfo::
-_item(ComponentItemInternalLocalId id)
-{
-  return matimpl::ConstituentItemBase(m_component_item_internal_view.ptrAt(id.localId()));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -496,6 +508,23 @@ _localId() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+inline constexpr matimpl::ConstituentItemBase ComponentItemSharedInfo::
+_item(ComponentItemInternalLocalId id)
+{
+  return matimpl::ConstituentItemBase(m_component_item_internal_view.ptrAt(id.localId()));
+}
+
+inline matimpl::ConstituentItemBase ComponentItemSharedInfo::
+_superItemBase(ComponentItemInternalLocalId id) const
+{
+  ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+  ComponentItemInternalLocalId super_local_id(m_super_component_item_local_id_data[id.localId()]);
+  return m_super_component_item_shared_info->_item(super_local_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase ComponentItemInternal::
 _subItemBase(Int32 i) const
 {
@@ -506,8 +535,7 @@ _subItemBase(Int32 i) const
 matimpl::ConstituentItemBase ComponentItemInternal::
 _superItemBase() const
 {
-  ComponentItemInternalLocalId lid(m_super_component_item_local_id.localId());
-  return m_shared_info->m_super_component_item_shared_info->_item(lid);
+  return m_shared_info->_superItemBase(m_component_item_internal_local_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -576,14 +604,14 @@ _superItemBase() const
 inline void matimpl::ConstituentItemBase::
 _setSuperAndGlobalItem(ComponentItemInternalLocalId cii, ItemLocalId ii)
 {
-  m_component_item->m_super_component_item_local_id = cii;
-  m_component_item->m_global_item_local_id = ii.localId();
+  _sharedInfo()->_setSuperItem(_localId(), cii);
+  _sharedInfo()->_setGlobalItem(_localId(), ii);
 }
 
 inline void matimpl::ConstituentItemBase::
 _setGlobalItem(ItemLocalId ii)
 {
-  m_component_item->m_global_item_local_id = ii.localId();
+  _sharedInfo()->_setGlobalItem(_localId(), ii);
 }
 
 //! Première entité sous-composant.
