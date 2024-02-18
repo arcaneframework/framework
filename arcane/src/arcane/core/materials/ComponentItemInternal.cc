@@ -33,18 +33,6 @@ ComponentItemSharedInfo* ComponentItemSharedInfo::null_shared_info_pointer = &Co
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentItemInternal::
-_throwBadCast(Int32 v)
-{
-  throw BadCastException(A_FUNCINFO,String::format("Can not cast v={0} to type 'Int16'",v));
-}
-
-void matimpl::ConstituentItemBase::
-_throwBadCast(Int32 v)
-{
-  throw BadCastException(A_FUNCINFO,String::format("Can not cast v={0} to type 'Int16'",v));
-}
-
 std::ostream&
 operator<<(std::ostream& o,const ComponentItemInternalLocalId& id)
 {

@@ -6,6 +6,13 @@ namespace Arcane.Materials
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ComponentItemSharedInfo
   {
+    // Structure de la classe C++ ComponentItemSharedInfoStorageView
+    Int32 m_storage_size;
+    Int32* m_first_sub_constituent_item_id_data;
+    Int16* m_component_id_data;
+    Int16* m_nb_sub_constituent_item_data;
+
+    // Structure de la classe C++ ComponentItemSharedInfo
     internal ItemSharedInfo* m_item_shared_info;
     internal Int16 m_level;
     internal MeshEnvironmentListView m_components;
@@ -18,12 +25,12 @@ namespace Arcane.Materials
   public unsafe struct ComponentItemInternal
   {
     internal MatVarIndex m_var_index;
-    internal Int16 m_component_id;
-    internal Int16 m_nb_sub_component_item;
+    //internal Int16 m_component_id;
+    //internal Int16 m_nb_sub_component_item;
     internal Int32 m_global_item_local_id;
     internal Int32 m_component_item_internal_local_id;
     internal Int32 m_super_component_item_local_id;
-    internal Int32 m_first_sub_component_item_local_id;
+    //internal Int32 m_first_sub_component_item_local_id;
     internal ComponentItemSharedInfo* m_shared_info;
   }
 

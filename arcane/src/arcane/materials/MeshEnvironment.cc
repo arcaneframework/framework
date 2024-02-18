@@ -233,7 +233,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
     Integer nb_mat = m_true_materials.size();
     for (Integer i = 0; i < nb_mat; ++i) {
       MeshMaterial* mat = m_true_materials[i];
-      Int32 mat_id = mat->id();
+      Int16 mat_id = mat->componentId();
       const MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
       CellGroup mat_cells = mat->cells();
       info(4) << "COMPUTE (V2) mat_cells mat=" << mat->name() << " nb_cell=" << mat_cells.size()

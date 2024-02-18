@@ -114,6 +114,7 @@ class ComponentItemInternalRange
 class ComponentItemInternalData
 : public TraceAccessor
 {
+  //! Conteneur pour les informations de ComponentItemSharedInfo
   class Storage
   {
    public:
@@ -126,7 +127,9 @@ class ComponentItemInternalData
 
    private:
 
-    UniqueArray<ComponentItemInternalLocalId> m_first_sub_constituent_list;
+    UniqueArray<ComponentItemInternalLocalId> m_first_sub_constituent_item_id_list;
+    UniqueArray<Int16> m_component_id_list;
+    UniqueArray<Int16> m_nb_sub_constituent_item_list;
   };
 
  public:

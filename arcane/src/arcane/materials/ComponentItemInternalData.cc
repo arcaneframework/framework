@@ -31,7 +31,9 @@ namespace Arcane::Materials
 
 ComponentItemInternalData::Storage::
 Storage(const MemoryAllocationOptions& alloc_info)
-: m_first_sub_constituent_list(alloc_info)
+: m_first_sub_constituent_item_id_list(alloc_info)
+, m_component_id_list(alloc_info)
+, m_nb_sub_constituent_item_list(alloc_info)
 {
 }
 
@@ -44,11 +46,20 @@ resize(Int32 new_size, ComponentItemSharedInfo* shared_info)
   // On dimensionne au nombre d'éléments + 1.
   // On décale de 1 la vue pour qu'elle puisse être indexée avec l'entité
   // nulle (d'indice (-1)).
-  m_first_sub_constituent_list.resize(new_size + 1);
-  m_first_sub_constituent_list[0] = {};
+  Int32 true_size = new_size + 1;
+  m_first_sub_constituent_item_id_list.resize(true_size);
+  m_first_sub_constituent_item_id_list[0] = {};
+
+  m_component_id_list.resize(true_size);
+  m_component_id_list[0] = -1;
+
+  m_nb_sub_constituent_item_list.resize(true_size);
+  m_nb_sub_constituent_item_list[0] = 0;
 
   shared_info->m_storage_size = new_size;
-  shared_info->m_first_sub_constituent_list_ptr = m_first_sub_constituent_list.data() + 1;
+  shared_info->m_first_sub_constituent_item_id_data = m_first_sub_constituent_item_id_list.data() + 1;
+  shared_info->m_component_id_data = m_component_id_list.data() + 1;
+  shared_info->m_nb_sub_constituent_item_data = m_nb_sub_constituent_item_list.data() + 1;
 }
 
 /*---------------------------------------------------------------------------*/

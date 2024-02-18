@@ -260,7 +260,7 @@ _computeInfosForEnvCells()
         Int32 lid = local_ids[z];
         Int32 pos = current_pos[lid];
         ++current_pos[lid];
-        Int32 nb_mat = m_component_connectivity_list->cellNbMaterial(CellLocalId(lid), env_id);
+        Int16 nb_mat = m_component_connectivity_list->cellNbMaterial(CellLocalId(lid), env_id);
         matimpl::ConstituentItemBase ref_ii = m_item_internal_data.envItemBase(pos);
         ComponentItemInternalLocalId cii_lid = all_env_items_internal_range[lid];
         env->setConstituentItem(z, ref_ii._internalLocalId());
@@ -280,7 +280,7 @@ _computeInfosForEnvCells()
     ENUMERATE_CELL (icell, all_cells) {
       Cell c = *icell;
       Int32 lid = icell.itemLocalId();
-      Int32 n = cells_nb_env[lid];
+      Int16 n = cells_nb_env[lid];
       matimpl::ConstituentItemBase ref_ii = m_item_internal_data.allEnvItemBase(c);
       ref_ii._setSuperAndGlobalItem({}, c);
       ref_ii._setVariableIndex(MatVarIndex(0, lid));
