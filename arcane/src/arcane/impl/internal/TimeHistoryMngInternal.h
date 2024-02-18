@@ -60,18 +60,18 @@ namespace Arcane
  * Un historique contient un ensemble de valeurs pour certaines itérations.
  * Il est caractérisé par un nom.
  */
-class TimeHistoryValue3
+class TimeHistoryValue2
 {
  public:
 
  public:
 
-  TimeHistoryValue3(const String& name,
+  TimeHistoryValue2(const String& name,
                     eDataType dt,
                     Integer index,
                     Integer sub_size)
   : m_name(name), m_data_type(dt), m_index(index), m_sub_size(sub_size) {}
-  virtual ~TimeHistoryValue3(){} //!< Libére les ressources
+  virtual ~TimeHistoryValue2(){} //!< Libére les ressources
 
  public:
 
@@ -125,8 +125,8 @@ class TimeHistoryValue3
  * Les historiques doivent être rangées par ordre croissant d'itération.
  */
 template<typename DataType>
-class TimeHistoryValue3T
-: public TimeHistoryValue3
+class TimeHistoryValue2T
+: public TimeHistoryValue2
 {
   /*
    * ATTENTION CE QUI EST DECRIT DANS CE COMMENTAIRE N'EST PAS ENCORE OPERATIONNEL
@@ -145,12 +145,13 @@ class TimeHistoryValue3T
  public:
   const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
  public:
-  TimeHistoryValue3T(ISubDomain* module,
+
+  TimeHistoryValue2T(ISubDomain* module,
                      const String& name,
                      Integer index,
                      Integer nb_element,
                      bool shrink=false)
-  : TimeHistoryValue3(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
+  : TimeHistoryValue2(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
   , m_values(VariableBuildInfo(module,String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
   , m_iterations(VariableBuildInfo(module,String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
@@ -272,78 +273,6 @@ class TimeHistoryValue3T
   bool m_shrink_history;
 };
 
-/*!
- * \brief Ecrivain au format GNUPLOT.
- */
-class GnuplotTimeHistoryCurveWriter3
-: public TraceAccessor
-, public ITimeHistoryCurveWriter2
-{
- public:
-  GnuplotTimeHistoryCurveWriter3(ITraceMng* tm)
-  : TraceAccessor(tm)
-  {
-  }
-  
- public:
-  void build() override {}
-  void beginWrite(const TimeHistoryCurveWriterInfo& infos) override
-  {
-    m_times = infos.times();
-    String path = infos.path();
-    // m_output_path surcharge les infos en argument si non vide.
-    if (m_output_path.empty())
-      m_output_path = path;
-
-    m_gnuplot_path = Directory(Directory(m_output_path),"gnuplot");
-    // Créé le répertoire de sortie.
-    if (m_gnuplot_path.createDirectory()){
-      warning() << "Can not create gnuplot curve directory '"
-                << m_gnuplot_path.path() << "'";
-    }
-  }
-  void writeCurve(const TimeHistoryCurveInfo& infos) override
-  {
-    String sname(m_gnuplot_path.file(infos.name()));
-    FILE* ofile = fopen(sname.localstr(),"w");
-    if (!ofile){
-      warning() << "Can not open gnuplot curve file '" << sname << "'";
-      return;
-    }
-    RealConstArrayView values = infos.values();
-    Int32ConstArrayView iterations = infos.iterations();
-    Integer nb_val = iterations.size();
-    Integer sub_size = infos.subSize();
-    for( Integer i=0; i<nb_val; ++i ){
-      fprintf(ofile,"%.16E",Convert::toDouble(m_times[iterations[i]]));
-      for( Integer z=0; z<sub_size; ++z )
-        fprintf(ofile," %.16E",Convert::toDouble(values[(i*sub_size)+z]));
-      fprintf(ofile,"\n");
-    }
-    fclose(ofile);
-  }
-
-  void endWrite() override {}
-
-  String name() const override { return "gnuplot"; }
-
-  void setOutputPath(const String& path) override
-  {
-    m_output_path = path;
-  }
-  String outputPath() const override
-  {
-    return m_output_path;
-  }
-
- private:
-
-  String m_output_path;
-  UniqueArray<Real> m_times;
-  Directory m_gnuplot_path;
-};
-
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -374,7 +303,7 @@ class TimeHistoryMngInternal
     m_history_list.clear();
   }
 
-  typedef std::map<String,TimeHistoryValue3*> HistoryList;
+  typedef std::map<String, TimeHistoryValue2*> HistoryList;
   typedef std::set<Ref<ITimeHistoryCurveWriter2>> CurveWriter2List;
   typedef HistoryList::value_type HistoryValueType;
 

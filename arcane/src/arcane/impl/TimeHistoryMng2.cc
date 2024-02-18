@@ -54,273 +54,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-namespace
-{
-/*!
- * \brief Classe pour encapsuler soit un pointeur, soit une référence sur
- * un service.
- *
- * Cela permet de gérer la destruction de manière homogène sans se
- * préoccuper du type sous-jacent.
- *
- * \todo Utiliser compteur de référence pour le pointeur pour ne pas avoir
- * à appeler explicitement destroy().
- */
-template<typename PointerType>
-class AnyRef
-{
-  typedef AnyRef<PointerType> ThatClass;
- public:
-  typedef PointerType* Value1;
-  typedef Ref<PointerType> Value2;
- public:
-  AnyRef(Value1 pt) : m_value(pt){}
-  AnyRef(Value2 pt) : m_value(pt){}
- public:
-  PointerType* get() const
-  {
-    if (std::holds_alternative<Value1>(m_value))
-      return std::get<Value1>(m_value);
-    if (std::holds_alternative<Value2>(m_value))
-      return std::get<Value2>(m_value).get();
-    ARCANE_FATAL("Bad get()");
-  }
-  PointerType* operator->() const { return get(); }
-  void destroy()
-  {
-    if (std::holds_alternative<Value1>(m_value)){
-      delete std::get<Value1>(m_value);
-      m_value = nullptr;
-    }
-  }
-  bool operator<(const ThatClass& ref) const { return get() < ref.get(); }
- private:
-  std::variant<Value1,Value2> m_value;
-};
-} // End anonymous namespace
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Classe de base d'un historique de valeurs.
- *
- * Un historique contient un ensemble de valeurs pour certaines itérations.
- * Il est caractérisé par un nom.
- */
-class TimeHistoryValue2
-{
- public:
-
- public:
-  
-  TimeHistoryValue2(const String& name,
-                    eDataType dt,
-                    Integer index,
-                    Integer sub_size)
-  : m_name(name), m_data_type(dt), m_index(index), m_sub_size(sub_size) {}
-  virtual ~TimeHistoryValue2(){} //!< Libére les ressources
-
- public:
- 
-  //! Imprime les valeurs de l'historique avec l'écrivain \a writer
-  virtual void dumpValues(ITraceMng* msg,
-                          ITimeHistoryCurveWriter2* writer,
-                          const TimeHistoryCurveWriterInfo& infos) const =0;
-
-  virtual void applyTransformation(ITraceMng* msg,
-                                   ITimeHistoryTransformer* v) =0;
-
-  //! Retourne le nombre d'éléments dans le tableau.
-  virtual Integer size() const =0;
-
-  /*!
-   * \brief Supprime les valeurs des historiques dont l'itération
-   * est supérieur ou égal à \a last_iteration.
-   */
-  virtual void removeAfterIteration(Integer last_iteration) =0;
-
-  //! Nom de l'historique
-  const String& name() const { return m_name; }
-
-  //! type de données de l'historique
-  eDataType dataType() const { return m_data_type; }
-
-  //! index de l'historique dans la liste
-  Integer index() const { return m_index; }
-
-  Integer subSize() const { return m_sub_size; }
-
-private:
-
-  String m_name; //!< Nom de l'historique
-  eDataType m_data_type; //!< Type de la donnée
-  Integer m_index; //!< Index de l'historique dans la liste
-  Integer m_sub_size;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Historique de valeurs du type \a T.
- *
- * Actuellement, on ne support que trois types de valeurs: Real, \a Int32
- * et \a Int64.
- * 
- * Un historique est composé d'un tableau de couples (x,y) avec \a x le
- * numéro de l'itération et \a y la valeur de l'historique.
- *
- * Les historiques doivent être rangées par ordre croissant d'itération. 
- */
-template<typename DataType>
-class TimeHistoryValue2T
-: public TimeHistoryValue2
-{
-  /*
-   * ATTENTION CE QUI EST DECRIT DANS CE COMMENTAIRE N'EST PAS ENCORE OPERATIONNEL
-   * Lorsqu'il y a beaucoup de courbes et que le nombre d'itérations
-   * devient important, le stockage consomme de la mémoire. Pour éviter
-   * cela, il est possible de compresser le tableau des itérations.
-   * Si c'est le cas et que les itérations sont consécutives, on
-   * conserve uniquement la première et la dernière. Dans ce cas,
-   * m_iterations à 3 valeurs: [0] = COMPRESSED_TAG, [1] = première
-   * et [2] = dernière.
-   */
- public:
-  typedef VariableRefArrayT<DataType> ValueList;
-  typedef VariableRefArrayT<Int32> IterationList;
-  static const Integer COMPRESSED_TAG = -15;
- public:
-  const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
- public:
-  TimeHistoryValue2T(IModule* module,
-                     const String& name,
-                     Integer index,
-                     Integer nb_element,
-                     bool shrink=false)
-  : TimeHistoryValue2(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
-  , m_values(VariableBuildInfo(module,String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(module,String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
-  , m_use_compression(false)
-  , m_shrink_history(shrink)
-  {
-  }
-
- public:
-
-  Integer size() const override
-  {
-    return m_iterations.size();
-  }
-
-  void addValue(ConstArrayView<DataType> values,Integer iteration)
-  {
-    Integer nb_iteration = m_iterations.size();
-    Integer nb_value = m_values.size();
-    Integer sub_size = values.size();
-    if (nb_iteration!=0)
-      if (m_iterations[nb_iteration-1]==iteration){
-        // Remplace la valeur
-        for( Integer i=0; i<sub_size; ++i )
-          m_values[nb_value-sub_size+i] = values[i];
-        return;
-      }
-    Integer add_nb_iter = math::max(128,nb_iteration/20);
-    Integer add_nb_value = math::max(1024,nb_value/20);
-    m_iterations.resizeWithReserve(nb_iteration+1,add_nb_iter);
-    m_values.resizeWithReserve(nb_value+sub_size,add_nb_value);
-    m_iterations[nb_iteration] = iteration;
-    for( Integer i=0; i<sub_size; ++i )
-      m_values[nb_value+i] = values[i];
-  }
-
-  void removeAfterIteration(Integer last_iteration) override
-  {
-    Integer size = m_iterations.size();
-    Integer last_elem = size;
-    for( Integer i=0; i<size; ++i )
-      if (m_iterations[i]>=last_iteration){
-        last_elem = i;
-        break;
-      }
-    if (last_elem!=size){
-      m_iterations.resize(last_elem);
-      m_values.resize(last_elem*subSize());
-    }
-  }
-  
-  // Ecriture d'une courbe pour les écrivains version 2.
-  void dumpValues(ITraceMng* msg,
-                  ITimeHistoryCurveWriter2* writer,
-                  const TimeHistoryCurveWriterInfo& infos) const override
-  {
-    ARCANE_UNUSED(msg);
- 
-    // Pour l'instant, on ne fait rien
-    if (m_shrink_history==true)
-      return;
-    // Pour vérifier qu'on ne sauve pas plus d'itérations qu'il y en
-    // a actuellement (ce qui peut arriver en cas de retour arrière).
-    Integer max_iter = infos.times().size();
-    RealUniqueArray values_to_write;
-    Int32UniqueArray iterations_to_write;
-    Integer nb_iteration = m_iterations.size();
-    iterations_to_write.reserve(nb_iteration);
-    Integer sub_size = subSize();
-    values_to_write.reserve(nb_iteration*sub_size);
-    for(Integer i=0, is=nb_iteration; i<is; ++i ){
-      Integer iter = m_iterations[i];
-      if (iter<max_iter){
-        for(Integer z=0; z<sub_size; ++z )
-          values_to_write.add(Convert::toReal(m_values[(i*sub_size)+ z]));
-        iterations_to_write.add(iter);
-      }
-    }
-    TimeHistoryCurveInfo curve_info(name(),iterations_to_write,values_to_write,sub_size);
-    writer->writeCurve(curve_info);
-  }
-
-  void applyTransformation(ITraceMng* msg,ITimeHistoryTransformer* v) override
-  {
-    ITimeHistoryTransformer::CommonInfo ci;
-    ci.name = name();
-    SharedArray<Int32> iterations(m_iterations.asArray());
-    ci.iterations = iterations;
-    Integer sub_size = subSize();
-    ci.sub_size = subSize();
-
-    SharedArray<DataType> values(m_values.asArray());
-
-    v->transform(ci,values);
-    
-    Integer nb_iteration = iterations.size();
-    Integer nb_value = values.size();
-    if (nb_iteration*sub_size!=nb_value){
-      msg->warning() << "Bad size after history transformation";
-      return;
-    }
-
-    m_iterations.resize(nb_iteration);
-    for( Integer i=0; i<nb_iteration; ++i )
-      m_iterations[i] = iterations[i];
-
-    m_values.resize(nb_value);
-    for( Integer i=0; i<nb_value; ++i )
-      m_values[i] = values[i];
-  }
-
-  const ValueList& values() const { return m_values; }
-  const IterationList& iterations() const { return m_iterations; }
-
- private:
-
-  ValueList m_values;
-  IterationList m_iterations;
-  bool m_use_compression;
-  bool m_shrink_history;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Ecrivain au format GNUPLOT.
  */
@@ -408,18 +142,11 @@ class TimeHistoryMng2
 , public CommonVariables
 , public ITimeHistoryMng
 {
- public:
-
-  typedef std::map<String,TimeHistoryValue2*> HistoryList;
-  typedef HistoryList::value_type HistoryValueType;
-  typedef HistoryList::iterator HistoryListIterator;
-  typedef HistoryList::const_iterator HistoryListConstIterator;
-  typedef std::set<AnyRef<ITimeHistoryCurveWriter2>> CurveWriter2List;
 
  public:
 	
   TimeHistoryMng2(const ModuleBuildInfo& cb, bool add_entry_points=true);
-  ~TimeHistoryMng2() override;
+  ~TimeHistoryMng2() override = default;
 
  public:
 	
@@ -470,7 +197,8 @@ class TimeHistoryMng2
   void addCurveWriter(ITimeHistoryCurveWriter2* writer) override;
   void removeCurveWriter(ITimeHistoryCurveWriter2* writer) override
   {
-    m_curve_writers2.erase(writer);
+    ARCANE_CHECK_POINTER(writer);
+    removeCurveWriter(writer->name());
   }
   void removeCurveWriter(const String& name) override;
 
@@ -498,16 +226,12 @@ class TimeHistoryMng2
   bool m_enable_non_io_master_curves; //!< Indique si l'ecriture  de courbes par des procs non io_master est possible
   String m_output_path;
   ObserverPool m_observer_pool;
-  HistoryList m_history_list; //!< Liste des historiques
-  RealUniqueArray m_global_times; //!< Liste des temps globaux
-  CurveWriter2List m_curve_writers2;
   Ref<ITimeHistoryMngInternal> m_internal;
 
  private:
 
   void _writeVariablesNotify();
   void _checkOutputPath();
-  void _destroyAll();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -536,35 +260,6 @@ TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
                   IEntryPoint::WStartInit,IEntryPoint::PAutoLoadEnd);
     addEntryPoint(this,"ArcaneTimeHistoryRestore",&TimeHistoryMng2::timeHistoryRestore,
                   IEntryPoint::WRestore,IEntryPoint::PAutoLoadBegin);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-TimeHistoryMng2::
-~TimeHistoryMng2()
-{
-  arcaneCallFunctionAndCatchException([&]() { _destroyAll(); });
-
-  m_curve_writers2.clear();
-  m_history_list.clear();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void TimeHistoryMng2::
-_destroyAll()
-{
-  for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-    TimeHistoryValue2* v = i->second;
-    delete v;
-  }
-
-  for( auto& c : m_curve_writers2 ) {
-    auto cw = c;
-    cw.destroy();
   }
 }
 
