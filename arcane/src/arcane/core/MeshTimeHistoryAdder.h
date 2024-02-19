@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshTimeHistoryAdder.cc                                     (C) 2000-2024 */
+/* MeshTimeHistoryAdder.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Classe permettant d'ajouter un historique de valeur lié à un maillage.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/impl/MeshTimeHistoryAdder.h"
-#include "arcane/core/internal/ITimeHistoryMngInternal.h"
+#include "arcane/core/ITimeHistoryAdder.h"
+#include "arcane/core/IMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -23,17 +23,20 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MeshTimeHistoryAdder::
-MeshTimeHistoryAdder(ITimeHistoryMng* thm, IMesh* mesh)
-: m_thm(thm)
-, m_mesh(mesh)
-{}
-
-void MeshTimeHistoryAdder::
-addValue(const String& name, Real value, bool end_time, bool is_local)
+class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
+: public ITimeHistoryAdder
 {
-  m_thm->_internalApi()->addValue(name, m_mesh->name(), value, end_time, is_local);
-}
+ public:
+  MeshTimeHistoryAdder(ITimeHistoryMng* thm, IMesh* mesh);
+  ~MeshTimeHistoryAdder() override = default;
+
+ public:
+  void addValue(const TimeHistoryAddValueArg& thp, Real value) override;
+
+ private:
+  ITimeHistoryMng* m_thm;
+  IMesh* m_mesh;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -134,8 +134,6 @@ set( ARCANE_SOURCES
   DataOperation.h
   DataOperation.cc
   SequentialParallelSuperMng.h
-  MeshTimeHistoryAdder.h
-  MeshTimeHistoryAdder.cc
 
   internal/ArcaneMainExecInfo.h
   internal/DataSynchronizeBuffer.h

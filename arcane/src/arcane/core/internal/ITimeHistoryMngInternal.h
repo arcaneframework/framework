@@ -19,6 +19,7 @@
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/core/ITimeHistoryMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,77 +35,60 @@ class ITimeHistoryTransformer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class TimeHistoryAddValueArgInternal
+{
+ public:
+  explicit TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp)
+  : m_thp(thp)
+  , m_metadata()
+  , m_has_metadata(false)
+  {}
+
+  TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp, const String& metadata)
+  : m_thp(thp)
+  , m_metadata(metadata)
+  , m_has_metadata(true)
+  {}
+
+  TimeHistoryAddValueArgInternal(const String& name, bool end_time, bool is_local)
+  : m_thp(name, end_time, is_local)
+  , m_metadata()
+  , m_has_metadata(false)
+  {}
+
+ public:
+  const TimeHistoryAddValueArg& thp() const { return m_thp; }
+  const String& metadata() const { return m_metadata; }
+  bool hasMetadata() const { return m_has_metadata; }
+
+ private:
+  TimeHistoryAddValueArg m_thp;
+  String m_metadata; //TODO tmp
+  bool m_has_metadata;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ITimeHistoryMngInternal
 {
  public:
   virtual ~ITimeHistoryMngInternal() = default; //!< Libère les ressources
 
  public:
-  /*! \brief Ajoute la valeur \a value à l'historique \a name.
-   *
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la varariable ARCANE_ENABLE_NON_IO_MASTER_CURVES
-   */
-  virtual void addValue(const String& name,Real value,bool end_time=true,bool is_local=false) =0;
 
-  /*! \brief Ajoute la valeur \a value à l'historique \a name.
-   *
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la varariable ARCANE_ENABLE_NON_IO_MASTER_CURVES
-   */
-  virtual void addValue(const String& name,Int32 value,bool end_time=true,bool is_local=false) =0;
+  // TODO com
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Real value) =0;
 
-  /*! Ajoute la valeur \a value à l'historique \a name.
-   *
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la varariable ARCANE_ENABLE_NON_IO_MASTER_CURVES
-   */
-  virtual void addValue(const String& name,Int64 value,bool end_time=true,bool is_local=false) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32 value) =0;
 
-  /*! \brief Ajoute la valeur \a value à l'historique \a name.
-   *
-   * Le nombre d'éléments de \a value doit être constant au cours du temps.
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la variable ARCANE_ENABLE_NON_IO_MASTER_CURVES
-   */
-  virtual void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64 value) =0;
 
-  /*! \brief Ajoute la valeur \a value à l'historique \a name.
-   *
-   * Le nombre d'éléments de \a value doit être constant au cours du temps.
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la variable ARCANE_ENABLE_NON_IO_MASTER_CURVES
-   */
-  virtual void addValue(const String& name,Int32ConstArrayView values,bool end_time,bool is_local) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, RealConstArrayView values) =0;
 
-  /*! Ajoute la valeur \a value à l'historique \a name.
-   *
-   * Le nombre d'éléments de \a value doit être constant au cours du temps.
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la variable ARCANE_ENABLE_NON_IO_MASTER_CURVES
-   */
-  virtual void addValue(const String& name,Int64ConstArrayView values,bool end_time,bool is_local) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32ConstArrayView values) =0;
 
-  /*! \brief Ajoute la valeur \a value à l'historique \a name.
-   *
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la variable ARCANE_ENABLE_NON_IO_MASTER_CURVES
-   */
-  virtual void addValue(const String& name, const String& metadata, Real value,bool end_time,bool is_local) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64ConstArrayView values) =0;
 
   /*!
    * \brief Méthode permettant d'ajouter le GlobalTime actuel au tableau des GlobalTimes.
@@ -143,10 +127,14 @@ class ITimeHistoryMngInternal
    */
   virtual void readVariables() =0;
 
-  //! Ajoute un écrivain
+  /*!
+   * Ajoute un écrivain
+   */
   virtual void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) =0;
 
-  //! Retire l'écrivain avec le nom name.
+  /*!
+   * Retire l'écrivain avec le nom name.
+   */
   virtual void removeCurveWriter(const String& name) =0;
 
   /*!

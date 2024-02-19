@@ -152,27 +152,52 @@ class TimeHistoryMng2
 
   void addValue(const String& name,Real value,bool end_time,bool is_local) override
   {
-    m_internal->addValue(name,value,end_time,is_local);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), value);
   }
   void addValue(const String& name,Int64 value,bool end_time,bool is_local) override
   {
-    m_internal->addValue(name,value,end_time,is_local);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), value);
   }
   void addValue(const String& name,Int32 value,bool end_time,bool is_local) override
   {
-    m_internal->addValue(name,value,end_time,is_local);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), value);
   }
   void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
   {
-    m_internal->addValue(name,values,end_time,is_local);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), values);
   }
   void addValue(const String& name,Int32ConstArrayView values,bool end_time,bool is_local) override
   {
-    m_internal->addValue(name,values,end_time,is_local);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), values);
   }
   void addValue(const String& name,Int64ConstArrayView values,bool end_time,bool is_local) override
   {
-    m_internal->addValue(name,values,end_time,is_local);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), values);
+  }
+
+  void addValue(const TimeHistoryAddValueArg& thp, Real value) override
+  {
+    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
+  }
+  void addValue(const TimeHistoryAddValueArg& thp, Int64 value) override
+  {
+    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
+  }
+  void addValue(const TimeHistoryAddValueArg& thp, Int32 value) override
+  {
+    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
+  }
+  void addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values) override
+  {
+    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
+  }
+  void addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values) override
+  {
+    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
+  }
+  void addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values) override
+  {
+    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
   }
 
  public:

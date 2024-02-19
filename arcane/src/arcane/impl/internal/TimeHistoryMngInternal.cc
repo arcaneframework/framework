@@ -81,7 +81,8 @@ void TimeHistoryMngInternal::
 addNowInGlobalTime()
 {
   m_global_times.add(m_sd->commonVariables().globalTime());
-  addValue(m_sd->commonVariables().m_global_time.name(), m_sd->commonVariables().globalTime(), true,false);
+  TimeHistoryAddValueArgInternal thpi(m_sd->commonVariables().m_global_time.name(), true, false);
+  addValue(thpi, m_sd->commonVariables().globalTime());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -323,18 +324,22 @@ _dumpSummaryOfCurves()
 
 template <class DataType>
 void TimeHistoryMngInternal::
-_addHistoryValue(const String& name, ConstArrayView<DataType> values, bool end_time, bool is_local)
+_addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<DataType> values)
 {
-  if (!m_is_master_io && !(m_enable_non_io_master_curves && is_local))
+  if (!m_is_master_io && !(m_enable_non_io_master_curves && thpi.thp().isLocal()))
     return;
 
   if (!m_is_active)
     return;
 
+  String name = thpi.thp().name().clone();
+  if(thpi.hasMetadata()){
+    name = name + "_" + thpi.metadata();
+  }
 
   Integer iteration = m_sd->commonVariables().globalIteration();
 
-  if (!end_time && iteration!=0)
+  if (!thpi.thp().endTime() && iteration!=0)
     --iteration;
 
   auto hl = m_history_list.find(name);

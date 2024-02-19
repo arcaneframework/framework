@@ -19,7 +19,6 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
 
-#include "arcane/ITimeHistoryMng.h"
 #include "arcane/IIOMng.h"
 #include "arcane/CommonVariables.h"
 #include "arcane/ISubDomain.h"
@@ -307,38 +306,32 @@ class TimeHistoryMngInternal
   typedef HistoryList::value_type HistoryValueType;
 
  public:
-  void addValue(const String& name,Real value,bool end_time,bool is_local) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi,Real value) override
   {
     RealConstArrayView values(1,&value);
-    _addHistoryValue(name,values,end_time,is_local);
+    _addHistoryValue(thpi,values);
   }
-  void addValue(const String& name,Int64 value,bool end_time,bool is_local) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi,Int64 value) override
   {
     Int64ConstArrayView values(1,&value);
-    _addHistoryValue(name,values,end_time,is_local);
+    _addHistoryValue(thpi,values);
   }
-  void addValue(const String& name,Int32 value,bool end_time,bool is_local) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi,Int32 value) override
   {
     Int32ConstArrayView values(1,&value);
-    _addHistoryValue(name,values,end_time,is_local);
+    _addHistoryValue(thpi,values);
   }
-  void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi,RealConstArrayView values) override
   {
-    _addHistoryValue(name,values,end_time,is_local);
+    _addHistoryValue(thpi,values);
   }
-  void addValue(const String& name,Int32ConstArrayView values,bool end_time,bool is_local) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi,Int32ConstArrayView values) override
   {
-    _addHistoryValue(name,values,end_time,is_local);
+    _addHistoryValue(thpi,values);
   }
-  void addValue(const String& name,Int64ConstArrayView values,bool end_time,bool is_local) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi,Int64ConstArrayView values) override
   {
-    _addHistoryValue(name,values,end_time,is_local);
-  }
-  void addValue(const String& name,const String& metadata,Real value,bool end_time,bool is_local) override
-  {
-    String concat = name.clone() + "_" + metadata.clone();
-    RealConstArrayView values(1,&value);
-    _addHistoryValue(concat,values,end_time,is_local);
+    _addHistoryValue(thpi,values);
   }
 
   void addNowInGlobalTime() override;
@@ -365,7 +358,7 @@ class TimeHistoryMngInternal
 
  private:
   template<class DataType> void
-  _addHistoryValue(const String& name,ConstArrayView<DataType> values,bool end_time,bool is_local);
+  _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<DataType> values);
   void _checkOutputPath();
   void _destroyAll();
   void _dumpCurvesAllWriters(bool is_verbose);

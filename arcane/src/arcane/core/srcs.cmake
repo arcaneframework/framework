@@ -500,6 +500,8 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshReaderMng.cc
   MeshStats.cc
   MeshStats.h
+  MeshTimeHistoryAdder.cc
+  MeshTimeHistoryAdder.h
   MeshToMeshTransposer.cc
   MeshToMeshTransposer.h
   MeshUtils.cc

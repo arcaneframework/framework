@@ -5,15 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshTimeHistoryAdder.h                                      (C) 2000-2024 */
+/* MeshTimeHistoryAdder.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Classe permettant d'ajouter un historique de valeur lié à un maillage.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ITimeHistoryAdder.h"
-#include "arcane/core/ITimeHistoryMng.h"
-#include "arcane/core/IMesh.h"
+#include "arcane/core/MeshTimeHistoryAdder.h"
+#include "arcane/core/internal/ITimeHistoryMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,20 +23,17 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_IMPL_EXPORT MeshTimeHistoryAdder
-: public ITimeHistoryAdder
+MeshTimeHistoryAdder::
+MeshTimeHistoryAdder(ITimeHistoryMng* thm, IMesh* mesh)
+: m_thm(thm)
+, m_mesh(mesh)
+{}
+
+void MeshTimeHistoryAdder::
+addValue(const TimeHistoryAddValueArg& thp, Real value)
 {
- public:
-  MeshTimeHistoryAdder(ITimeHistoryMng* thm, IMesh* mesh);
-  ~MeshTimeHistoryAdder() override = default;
-
- public:
-  void addValue(const String& name, Real value, bool end_time, bool is_local) override;
-
- private:
-  ITimeHistoryMng* m_thm;
-  IMesh* m_mesh;
-};
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh->name()), value);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
