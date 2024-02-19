@@ -46,8 +46,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 
   void setConstituentItem(Int32 index, ConstituentItemIndex id)
   {
-    m_item_internal_local_id_list[index] = id;
-    m_items_internal[index] = m_shared_info->_itemInternal(id);
+    m_constituent_item_index_list[index] = id;
   }
 
   void copy(ConstArrayView<ConstituentItemIndex> ids)
@@ -85,7 +84,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 
   ConstArrayView<ConstituentItemIndex> localIds() const
   {
-    return m_item_internal_local_id_list;
+    return m_constituent_item_index_list;
   }
   matimpl::ConstituentItemBase itemBase(Int32 index) const
   {
@@ -93,35 +92,25 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
   }
   ConstituentItemIndex localId(Int32 index) const
   {
-    return m_item_internal_local_id_list[index];
+    return m_constituent_item_index_list[index];
   }
 
   MatVarIndex variableIndex(Int32 index) const
   {
-    return _itemInternal(index)->variableIndex();
+    return m_shared_info->_varIndex(localId(index));
   }
 
   ConstituentItemLocalIdListView view() const
   {
-    return { m_shared_info, m_item_internal_local_id_list };
+    return { m_shared_info, m_constituent_item_index_list };
   }
 
  private:
-
-  //! Liste des ComponentItemInternal* pour ce constituant.
-  UniqueArray<ComponentItemInternal*> m_items_internal;
 
   //! Liste des ConstituentItemIndex pour ce constituant.
-  UniqueArray<ConstituentItemIndex> m_item_internal_local_id_list;
+  UniqueArray<ConstituentItemIndex> m_constituent_item_index_list;
 
   ComponentItemSharedInfo* m_shared_info = nullptr;
-
- private:
-
-  ComponentItemInternal* _itemInternal(Int32 index) const
-  {
-    return m_shared_info->_itemInternal(localId(index));
-  }
 };
 
 /*---------------------------------------------------------------------------*/
