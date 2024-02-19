@@ -62,8 +62,8 @@ class ARCANE_CORE_EXPORT ComponentCell
  public:
 
   ARCCORE_HOST_DEVICE ComponentCell(const matimpl::ConstituentItemBase& mii)
-  : m_constituent_item_index(mii._internal()->m_component_item_index)
-  , m_shared_info(mii._internal()->m_shared_info)
+  : m_constituent_item_index(mii.m_constituent_item_index)
+  , m_shared_info(mii.m_shared_info)
   {}
 
   ComponentCell() = default;
@@ -131,7 +131,7 @@ class ARCANE_CORE_EXPORT ComponentCell
 
   matimpl::ConstituentItemBase _subItemBase(Int32 index) const
   {
-    return m_shared_info->_subitemBase(m_constituent_item_index,index);
+    return m_shared_info->_subItemBase(m_constituent_item_index, index);
   }
   matimpl::ConstituentItemBase _superItemBase() const
   {
