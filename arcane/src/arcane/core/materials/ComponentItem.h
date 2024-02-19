@@ -84,7 +84,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   IMeshComponent* component() const { return m_shared_info->_component(m_constituent_item_index); }
 
   //! Identifiant du composant dans la liste des composants de ce type.
-  Int32 componentId() const { return m_shared_info->_componentId(m_constituent_item_index); }
+  ARCCORE_HOST_DEVICE Int32 componentId() const { return m_shared_info->_componentId(m_constituent_item_index); }
 
   //! Indique s'il s'agit de la maille nulle
   bool null() const { return m_constituent_item_index.isNull(); }
@@ -93,10 +93,10 @@ class ARCANE_CORE_EXPORT ComponentCell
   ComponentCell superCell() const { return ComponentCell(_superItemBase()); }
 
   //! Niveau hiérarchique de l'entité
-  Int32 level() const { return m_shared_info->m_level; }
+  ARCCORE_HOST_DEVICE Int32 level() const { return m_shared_info->m_level; }
 
   //! Nombre de sous-éléments
-  Int32 nbSubItem() const { return m_shared_info->_nbSubConstituent(m_constituent_item_index); }
+  ARCCORE_HOST_DEVICE Int32 nbSubItem() const { return m_shared_info->_nbSubConstituent(m_constituent_item_index); }
 
   //! Maille arcane
   Cell globalCell() const
@@ -137,7 +137,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   {
     return m_shared_info->_superItemBase(m_constituent_item_index);
   }
-  ConstituentItemIndex _firstSubConstituentLocalId() const
+  ARCCORE_HOST_DEVICE ConstituentItemIndex _firstSubConstituentLocalId() const
   {
     return m_shared_info->_firstSubConstituentLocalId(m_constituent_item_index);
   }
