@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TODO                                          (C) 2000-2024 */
+/* TimeHistoryMngInternal.h                                    (C) 2000-2024 */
 /*                                                                           */
-/*                        */
+/* Classe interne gérant un historique de valeurs.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -71,7 +71,7 @@ class TimeHistoryValue2
                     Integer index,
                     Integer sub_size)
   : m_name(name), m_data_type(dt), m_index(index), m_sub_size(sub_size) {}
-  virtual ~TimeHistoryValue2(){} //!< Libére les ressources
+  virtual ~TimeHistoryValue2()= default; //!< Libére les ressources
 
  public:
 
@@ -146,14 +146,14 @@ class TimeHistoryValue2T
   const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
  public:
 
-  TimeHistoryValue2T(ISubDomain* module,
+  TimeHistoryValue2T(ISubDomain* sd,
                      const String& name,
                      Integer index,
                      Integer nb_element,
                      bool shrink=false)
   : TimeHistoryValue2(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
-  , m_values(VariableBuildInfo(module,String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(module,String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
+  , m_values(VariableBuildInfo(sd,String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(sd,String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
@@ -280,7 +280,7 @@ class TimeHistoryMngInternal
 : public ITimeHistoryMngInternal
 {
  public:
-  TimeHistoryMngInternal(ISubDomain* sd)
+  explicit TimeHistoryMngInternal(ISubDomain* sd)
   : m_sd(sd)
   , m_tmng(sd->traceMng())
   , m_th_meta_data(VariableBuildInfo(m_sd,"TimeHistoryMetaData"))

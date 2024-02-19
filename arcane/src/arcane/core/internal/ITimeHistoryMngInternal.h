@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TODO                                          (C) 2000-2024 */
+/* ITimeHistoryMngInternal.h                                   (C) 2000-2024 */
 /*                                                                           */
-/*                        */
+/* Interface de classe interne gérant un historique de valeurs.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,26 +40,13 @@ class ITimeHistoryMngInternal
   virtual ~ITimeHistoryMngInternal() = default; //!< Libère les ressources
 
  public:
-  virtual void addNowInGlobalTime() = 0;
-  virtual void updateGlobalTimeCurve() = 0;
-  virtual void resizeArrayAfterRestore() = 0;
-
-  virtual void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) =0;
-  virtual bool isShrinkActive() const =0;
-  virtual void setShrinkActive(bool is_active) =0;
-  virtual bool active() const =0;
-  virtual void setActive(bool is_active) =0;
-  virtual void setDumpActive(bool is_active) =0;
-  virtual bool isDumpActive() const =0;
-  virtual void dumpHistory(bool is_verbose) =0;
-  virtual void dumpCurves(ITimeHistoryCurveWriter2* writer) =0;
-  virtual void applyTransformation(ITimeHistoryTransformer* v) =0;
-  virtual void removeCurveWriter(const String& name) =0;
-  virtual void updateMetaData() =0;
-  virtual void readVariables() =0;
-  virtual bool isMasterIO() = 0;
-  virtual bool isNonIOMasterCurvesEnabled() = 0;
-
+  /*! \brief Ajoute la valeur \a value à l'historique \a name.
+   *
+   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
+   * au début sinon.
+   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
+   * par des procs non io_master quand la variable ARCANE_ENABLE_NON_IO_MASTER_CURVES
+   */
   virtual void addValue(const String& name,Real value,bool end_time=true,bool is_local=false) =0;
 
   /*! \brief Ajoute la valeur \a value à l'historique \a name.
@@ -92,7 +79,41 @@ class ITimeHistoryMngInternal
    */
   virtual void addValue(const String& name,Int64ConstArrayView values,bool end_time=true,bool is_local=false) =0;
 
+  /*! \brief Ajoute la valeur \a value à l'historique \a name.
+   *
+   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
+   * au début sinon.
+   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
+   * par des procs non io_master quand la variable ARCANE_ENABLE_NON_IO_MASTER_CURVES
+   */
   virtual void addValue(const String& name, const String& metadata, Real value,bool end_time=true,bool is_local=false) =0;
+
+  virtual void addNowInGlobalTime() = 0;
+  virtual void updateGlobalTimeCurve() = 0;
+  virtual void resizeArrayAfterRestore() = 0;
+  virtual void dumpCurves(ITimeHistoryCurveWriter2* writer) =0;
+  virtual void dumpHistory(bool is_verbose) =0;
+  virtual void updateMetaData() =0;
+  virtual void readVariables() =0;
+
+  //! Ajoute un écrivain
+  virtual void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) =0;
+  virtual void removeCurveWriter(const String& name) =0;
+
+  /*!
+   * \brief Applique la transformation \a v à l'ensemble des courbes.
+   */
+  virtual void applyTransformation(ITimeHistoryTransformer* v) =0;
+
+  virtual bool isShrinkActive() const =0;
+  virtual void setShrinkActive(bool is_active) =0;
+  virtual bool active() const =0;
+  virtual void setActive(bool is_active) =0;
+  virtual bool isDumpActive() const =0;
+  virtual void setDumpActive(bool is_active) =0;
+  virtual bool isMasterIO() = 0;
+  virtual bool isNonIOMasterCurvesEnabled() = 0;
+
 };
 
 /*---------------------------------------------------------------------------*/
