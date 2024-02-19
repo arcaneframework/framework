@@ -296,7 +296,7 @@ class ARCANE_CORE_EXPORT ComponentPartCellEnumerator
   Integer m_base_index;
   Int32ConstArrayView m_value_indexes;
   Int32ConstArrayView m_item_indexes;
-  ConstituentItemLocalIdListView m_constituent_list_view; // ConstArrayView<ComponentItemInternal*> m_items_internal;
+  ConstituentItemLocalIdListView m_constituent_list_view;
   IMeshComponent* m_component;
 
  protected:
@@ -362,8 +362,8 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 
   ARCCORE_HOST_DEVICE explicit CellComponentCellEnumerator(ComponentCell super_item)
   : m_size(super_item.nbSubItem())
-  , m_items_begin(super_item._firstSubConstituentLocalId().localId())
-  , m_item_internal_list(super_item.m_shared_info->m_sub_component_item_shared_info->m_component_item_internal_view)
+  , m_first_sub_index(super_item._firstSubConstituentLocalId().localId())
+  , m_sub_constituent_shared_info(super_item.m_shared_info->m_sub_component_item_shared_info)
   {
   }
 
@@ -375,9 +375,12 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
   ARCCORE_HOST_DEVICE ComponentCell operator*() const
   {
     ARCANE_CHECK_AT(m_index,m_size);
-    return ComponentCell(_currentItemBase());
+    return ComponentCell(_currentSubItemBase());
   }
-  ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_item_internal_list[m_items_begin+m_index].variableIndex(); }
+  ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const
+  {
+    return m_sub_constituent_shared_info->_varIndex(ConstituentItemIndex(m_first_sub_index + m_index));
+  }
   ARCCORE_HOST_DEVICE Integer index() const { return m_index; }
   ARCCORE_HOST_DEVICE operator ComponentItemLocalId() const
   {
@@ -388,14 +391,14 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 
   Int32 m_index = 0;
   Int32 m_size = 0;
-  Int32 m_items_begin = -1;
-  ArrayView<ComponentItemInternal> m_item_internal_list;
+  Int32 m_first_sub_index = -1;
+  ComponentItemSharedInfo* m_sub_constituent_shared_info = nullptr;
 
  protected:
 
- ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _currentItemBase() const
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _currentSubItemBase() const
   {
-    return matimpl::ConstituentItemBase(const_cast<ComponentItemInternal*>(m_item_internal_list.ptrAt(m_items_begin+m_index)));
+    return m_sub_constituent_shared_info->_item(ConstituentItemIndex(m_first_sub_index+m_index));
   }
 };
 
@@ -417,7 +420,7 @@ template <typename ComponentCellType> class CellComponentCellEnumeratorT
   ARCCORE_HOST_DEVICE ComponentCellType operator*() const
   {
     ARCANE_CHECK_AT(m_index,m_size);
-    return ComponentCellType(_currentItemBase());
+    return ComponentCellType(_currentSubItemBase());
   }
 };
 
