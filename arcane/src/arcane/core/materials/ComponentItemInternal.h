@@ -140,7 +140,6 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 
  private:
 
-  inline constexpr ComponentItemInternal* _itemInternal(ConstituentItemIndex id);
   inline constexpr matimpl::ConstituentItemBase _item(ConstituentItemIndex id);
   inline ARCCORE_HOST_DEVICE ConstituentItemIndex _firstSubConstituentLocalId(ConstituentItemIndex id) const
   {
@@ -455,16 +454,11 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline constexpr ComponentItemInternal* ComponentItemSharedInfo::
-_itemInternal(ConstituentItemIndex id)
-{
-  return m_component_item_internal_view.ptrAt(id.localId());
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase::ConstituentItemBase(ComponentItemInternal* component_item)
+inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase::
+ConstituentItemBase(ComponentItemInternal* component_item)
 : m_constituent_item_index(component_item->m_component_item_index)
 , m_shared_info(component_item->m_shared_info)
 {
