@@ -35,6 +35,24 @@ namespace Arcane.Materials
   }
 
   [StructLayout(LayoutKind.Sequential)]
+  public unsafe struct ConstituentItemBase
+  {
+    internal Int32 m_component_item_index;
+    internal ComponentItemSharedInfo* m_shared_info;
+    internal ConstituentItemBase(Int32 component_item_index,ComponentItemSharedInfo* shared_info)
+    {
+      m_component_item_index = component_item_index;
+      m_shared_info = shared_info;
+    }
+    static internal ConstituentItemBase Null()
+    {
+      return new ConstituentItemBase(-1,null);
+    }
+    internal Cell GlobalCell { get { return m_shared_info->GlobalCell(m_component_item_index); } }
+    internal MatVarIndex MatVarIndex { get { return m_shared_info->VarIndex(m_component_item_index); } }
+}
+
+  [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ComponentItemInternal
   {
     internal Int32 m_component_item_index;

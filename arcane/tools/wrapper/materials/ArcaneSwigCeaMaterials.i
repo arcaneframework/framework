@@ -23,7 +23,6 @@ namespace Arcane::Materials
    public:
     ComponentItemSharedInfo* m_component_shared_info;
     ConstArrayView<Int32> m_ids;
-    ConstArrayView<ComponentItemInternal*> m_items_internal;
   };
 
   // Cette classe sert de type de retour pour wrapper la classe 'ComponentItemVectorView'

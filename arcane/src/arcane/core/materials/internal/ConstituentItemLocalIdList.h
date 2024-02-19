@@ -103,7 +103,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 
   ConstituentItemLocalIdListView view() const
   {
-    return { m_shared_info, m_item_internal_local_id_list, m_items_internal };
+    return { m_shared_info, m_item_internal_local_id_list };
   }
 
  private:

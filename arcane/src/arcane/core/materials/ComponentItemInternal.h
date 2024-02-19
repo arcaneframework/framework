@@ -660,11 +660,9 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
 
   ConstituentItemLocalIdListView() = default;
   ConstituentItemLocalIdListView(ComponentItemSharedInfo* shared_info,
-                                 ConstArrayView<ConstituentItemIndex> ids,
-                                 ConstArrayView<ComponentItemInternal*> items_internal)
+                                 ConstArrayView<ConstituentItemIndex> ids)
   : m_component_shared_info(shared_info)
   , m_ids(ids)
-  , m_items_internal(items_internal)
   {
 #ifdef ARCANE_CHECK
     _checkCoherency();
@@ -675,29 +673,27 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
 
   matimpl::ConstituentItemBase _constituenItemBase(Int32 index) const
   {
-#ifdef ARCANE_CHECK
-    if (m_items_internal[index]->m_shared_info != m_component_shared_info)
-      _throwIncoherentSharedInfo(index);
-#endif
-    return matimpl::ConstituentItemBase(m_items_internal[index]);
+    return m_component_shared_info->_item(m_ids[index]);
   }
-  MatVarIndex _matVarIndex(Int32 index) const { return m_items_internal[index]->variableIndex(); }
+  MatVarIndex _matVarIndex(Int32 index) const
+  {
+    return m_component_shared_info->_varIndex(m_ids[index]);
+  }
   ConstituentItemLocalIdListView _subView(Int32 begin, Int32 size) const
   {
-    return { m_component_shared_info, m_ids.subView(begin, size), m_items_internal.subView(begin, size) };
+    return { m_component_shared_info, m_ids.subView(begin, size) };
   }
   //! Pour les tests, vérifie que les vues pointent vers les mêmes données
   bool _isSamePointerData(const ConstituentItemLocalIdListView& rhs) const
   {
-    return (m_ids.data() == rhs.m_ids.data()) && (m_items_internal.data() == rhs.m_items_internal.data());
+    return (m_ids.data() == rhs.m_ids.data());
   }
   friend bool operator==(const ConstituentItemLocalIdListView& a,
                          const ConstituentItemLocalIdListView& b)
   {
     bool t1 = a.m_component_shared_info == b.m_component_shared_info;
     bool t2 = a.m_ids == b.m_ids;
-    bool t3 = a.m_items_internal == b.m_items_internal;
-    return (t1 && t2 && t3);
+    return (t1 && t2);
   }
   friend bool operator!=(const ConstituentItemLocalIdListView& a,
                          const ConstituentItemLocalIdListView& b)
@@ -712,12 +708,10 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
   // dans le wrappeur.
   ComponentItemSharedInfo* m_component_shared_info = nullptr;
   ConstArrayView<ConstituentItemIndex> m_ids;
-  ConstArrayView<ComponentItemInternal*> m_items_internal;
 
  private:
 
   void _checkCoherency() const;
-  void _throwIncoherentSharedInfo(Int32 index) const;
 };
 
 /*---------------------------------------------------------------------------*/
