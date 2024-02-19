@@ -46,19 +46,8 @@ operator<<(std::ostream& o,const ConstituentItemIndex& id)
 void ConstituentItemLocalIdListView::
 _checkCoherency() const
 {
-  Int32 nb_item = m_items_internal.size();
   if (!m_component_shared_info)
-    ARCANE_FATAL("Null ComponentItemSharedInfo nb_item={0}", nb_item);
-  return;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ConstituentItemLocalIdListView::
-_throwIncoherentSharedInfo(Int32 index) const
-{
-  ARCANE_FATAL("Incoherent ComponentItemSharedInfo for item index={0}", index);
+    ARCANE_FATAL("Null ComponentItemSharedInfo");
 }
 
 /*---------------------------------------------------------------------------*/

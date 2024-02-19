@@ -9,9 +9,9 @@ namespace Arcane.Materials
   {
     internal ComponentItemSharedInfo* m_component_shared_info;
     internal Int32ConstArrayView m_ids;
-    internal ComponentItemInternalPtrConstArrayView m_items_internal;
+    //internal ComponentItemInternalPtrConstArrayView m_items_internal;
   }
- 
+
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ComponentItemVectorView
   {
