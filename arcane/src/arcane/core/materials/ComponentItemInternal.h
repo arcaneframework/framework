@@ -128,6 +128,8 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   friend class ConstituentItemLocalIdListView;
   friend matimpl::ConstituentItemBase;
   friend class ComponentCell;
+  friend class CellToAllEnvCellConverter;
+  friend class AllEnvCellVectorView;
 
   static const int MAT_INDEX_OFFSET = 10;
 

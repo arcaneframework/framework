@@ -921,7 +921,7 @@ dumpCellInfos(Cell cell,std::ostream& o)
 CellToAllEnvCellConverter MeshMaterialMng::
 cellToAllEnvCellConverter()
 {
-  return CellToAllEnvCellConverter(m_all_env_data->allEnvItemsInternal());
+  return CellToAllEnvCellConverter(componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -940,7 +940,7 @@ _checkEndCreate()
 AllEnvCellVectorView MeshMaterialMng::
 view(Int32ConstArrayView local_ids)
 {
-  return AllEnvCellVectorView(local_ids,m_all_env_data->allEnvItemsInternal());
+  return AllEnvCellVectorView(local_ids, componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1205,6 +1205,8 @@ componentItemSharedInfo(Int32 level) const
     shared_info = data->matSharedInfo();
   else if (level == LEVEL_ENVIRONMENT)
     shared_info = data->envSharedInfo();
+  else if (level==LEVEL_ALLENVIRONMENT)
+    shared_info = data->allEnvSharedInfo();
   else
     ARCANE_FATAL("Bad internal type of component");
 

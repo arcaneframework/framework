@@ -76,8 +76,10 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
 
  protected:
 
-  AllEnvCellVectorView(Int32ConstArrayView local_ids, ConstArrayView<ComponentItemInternal> items_internal)
-  : m_local_ids(local_ids), m_items_internal(items_internal)
+  AllEnvCellVectorView(Int32ConstArrayView local_ids,
+                       ComponentItemSharedInfo* shared_info)
+  : m_local_ids(local_ids)
+  , m_shared_info(shared_info)
   {
   }
 
@@ -87,22 +89,18 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
   Integer size() const { return m_local_ids.size(); }
 
   // \i ème maille du vecteur
-  AllEnvCell operator[](Integer index)
+  AllEnvCell operator[](Integer index) const
   {
-    const ComponentItemInternal* c = &m_items_internal[m_local_ids[index]];
-    return AllEnvCell(matimpl::ConstituentItemBase(const_cast<ComponentItemInternal*>(c)));
+    return AllEnvCell(m_shared_info->_item(ConstituentItemIndex(m_local_ids[index])));
   }
 
   // localId() de la \i ème maille du vecteur
-  Int32 localId(Integer index)
-  {
-    return m_local_ids[index];
-  }
+  Int32 localId(Integer index) const { return m_local_ids[index]; }
 
  private:
 
   Int32ConstArrayView m_local_ids;
-  ConstArrayView<ComponentItemInternal> m_items_internal;
+  ComponentItemSharedInfo* m_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
