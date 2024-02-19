@@ -27,6 +27,8 @@ class MeshEnvironment;
 class MeshComponentData;
 class AllEnvData;
 class MeshMaterialMng;
+class ComponentItemInternalData;
+
 namespace matimpl
 {
   class ConstituentItemBase;
@@ -239,7 +241,6 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   ConstArrayView<IMeshComponent*> m_components;
   ComponentItemSharedInfo* m_super_component_item_shared_info = null_shared_info_pointer;
   ComponentItemSharedInfo* m_sub_component_item_shared_info = null_shared_info_pointer;
-  ArrayView<ComponentItemInternal> m_component_item_internal_view;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -267,10 +268,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 
   friend Arcane::Materials::MeshEnvironment;
   friend Arcane::Materials::MeshComponentData;
-
- public:
-
-  ARCCORE_HOST_DEVICE ConstituentItemBase(ComponentItemInternal* component_item);
+  friend Arcane::Materials::ComponentItemInternalData;
 
  private:
 
@@ -386,19 +384,7 @@ namespace Arcane::Materials
  */
 class ARCANE_CORE_EXPORT ComponentItemInternal
 {
-  friend class ComponentCell;
-  friend class MatCell;
-  friend class EnvCell;
-  friend class ComponentCell;
-  friend class AllEnvCell;
-  friend class CellComponentCellEnumerator;
   friend class ComponentItemInternalData;
-  friend class MeshComponentData;
-  friend class MeshEnvironment;
-  friend class AllEnvData;
-  friend class MeshMaterialMng;
-  friend class ConstituentItemLocalIdList;
-  friend class ConstituentItemLocalIdListView;
 
   friend matimpl::ConstituentItemBase;
 
@@ -410,30 +396,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
  public:
 
   ComponentItemInternal() = default;
-
- public:
-
-  //! Indexeur dans les variables matériaux
-  ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const
-  {
-    return m_shared_info->_varIndex(m_component_item_index);
-  }
-
-  //! Identifiant du composant
-  ARCCORE_HOST_DEVICE Int32 componentId() const { return m_shared_info->_componentId(m_component_item_index); }
-
-  //! Indique s'il s'agit de la maille nulle.
-  ARCCORE_HOST_DEVICE constexpr bool null() const { return m_component_item_index.isNull(); }
-
-  /*!
-   * \brief Composant associé.
-   *
-   * Cet appel n'est valide que pour les mailles matériaux ou milieux. Si on souhaite
-   * un appel valide pour toutes les 'ComponentItem', il faut utiliser componentId().
-   */
-  IMeshComponent* component() const { return m_shared_info->_component(m_component_item_index); }
-
-  ARCCORE_HOST_DEVICE constexpr Int32 level() const { return m_shared_info->m_level; }
 
  protected:
 
@@ -458,13 +420,6 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase::
-ConstituentItemBase(ComponentItemInternal* component_item)
-: m_constituent_item_index(component_item->m_component_item_index)
-, m_shared_info(component_item->m_shared_info)
-{
-}
 
 inline constexpr matimpl::ConstituentItemBase::
 ConstituentItemBase(ComponentItemSharedInfo* shared_info, ConstituentItemIndex id)

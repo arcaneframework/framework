@@ -179,11 +179,6 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
   m_mat_storage.resize(total_nb_mat_cell, matSharedInfo());
 
   _resetItemsInternal();
-
-  // Met à jour les vues sur m_component_item_internal_storage.
-  allEnvSharedInfo()->m_component_item_internal_view = m_all_env_item_internal_storage;
-  envSharedInfo()->m_component_item_internal_view = m_env_item_internal_storage;
-  matSharedInfo()->m_component_item_internal_view = m_mat_item_internal_storage;
 }
 
 /*---------------------------------------------------------------------------*/
