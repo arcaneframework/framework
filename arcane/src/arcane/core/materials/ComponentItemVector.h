@@ -133,8 +133,8 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 
  protected:
 
-  void _setItems(ConstArrayView<ComponentItemInternalLocalId> globals,
-                 ConstArrayView<ComponentItemInternalLocalId> multiples);
+  void _setItems(ConstArrayView<ConstituentItemIndex> globals,
+                 ConstArrayView<ConstituentItemIndex> multiples);
 
   void _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
                          ConstArrayView<MatVarIndex> multiples);

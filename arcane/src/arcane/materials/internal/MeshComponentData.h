@@ -83,7 +83,7 @@ class MeshComponentData
     return m_constituent_local_id_list.itemBase(index);
   }
 
-  void _setConstituentItem(Int32 index, ComponentItemInternalLocalId id)
+  void _setConstituentItem(Int32 index, ConstituentItemIndex id)
   {
     return m_constituent_local_id_list.setConstituentItem(index, id);
   }
@@ -135,7 +135,7 @@ class MeshComponentData
   //! Infos pour l'indexation des variables partielles.
   MeshMaterialVariableIndexer* m_variable_indexer = nullptr;
 
-  //! Liste des ComponentItemInternalLocalId pour ce constituant.
+  //! Liste des ConstituentItemIndex pour ce constituant.
   ConstituentItemLocalIdList m_constituent_local_id_list;
 
   MeshComponentPartData* m_part_data = nullptr;

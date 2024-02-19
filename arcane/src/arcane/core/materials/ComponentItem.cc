@@ -29,7 +29,7 @@ void ComponentCell::
 _badConversion(ComponentItemInternal* item_internal, Int32 level,Int32 expected_level)
 {
   ARCANE_FATAL("bad level for internal component cell level={0} expected={1} cid={2} component_id={3}",
-               level,expected_level,item_internal->_internalLocalId(),item_internal->componentId());
+               level,expected_level, item_internal->constituentItemIndex(),item_internal->componentId());
 }
 
 /*---------------------------------------------------------------------------*/

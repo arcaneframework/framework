@@ -103,8 +103,8 @@ ComponentItemVector(ComponentItemVectorView rhs)
 /*---------------------------------------------------------------------------*/
 
 void ComponentItemVector::
-_setItems(ConstArrayView<ComponentItemInternalLocalId> globals,
-          ConstArrayView<ComponentItemInternalLocalId> multiples)
+_setItems(ConstArrayView<ConstituentItemIndex> globals,
+          ConstArrayView<ConstituentItemIndex> multiples)
 {
   m_p->m_constituent_list->copyPureAndPartial(globals, multiples);
 }

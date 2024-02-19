@@ -126,8 +126,8 @@ _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 {
   // TODO: regarder s'il est possible de supprimer le tableau temporaire
   // new_internals (c'est à peu près sur que c'est possible).
-  ConstArrayView<ComponentItemInternalLocalId> current_internals(m_constituent_local_id_list.localIds());
-  UniqueArray<ComponentItemInternalLocalId> new_internals;
+  ConstArrayView<ConstituentItemIndex> current_internals(m_constituent_local_id_list.localIds());
+  UniqueArray<ConstituentItemIndex> new_internals;
 
   Int32ConstArrayView local_ids = variableIndexer()->localIds();
 

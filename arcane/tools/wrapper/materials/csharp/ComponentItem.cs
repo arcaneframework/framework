@@ -22,8 +22,8 @@ namespace Arcane.Materials
       set { m_internal = value; }
     }
 
-    public Cell GlobalCell { get { return m_internal->m_shared_info->GlobalCell(m_internal->m_component_item_internal_local_id); } }
-    public MatVarIndex MatVarIndex { get { return m_internal->m_shared_info->VarIndex(m_internal->m_component_item_internal_local_id); } }
+    public Cell GlobalCell { get { return m_internal->m_shared_info->GlobalCell(m_internal->m_component_item_index); } }
+    public MatVarIndex MatVarIndex { get { return m_internal->m_shared_info->VarIndex(m_internal->m_component_item_index); } }
     internal int _matvarArrayIndex { get { return MatVarIndex.ArrayIndex; } }
     internal int _matvarValueIndex { get { return MatVarIndex.ValueIndex; } }
 
@@ -45,8 +45,8 @@ namespace Arcane.Materials
       get { return m_internal; }
       set { m_internal = value; }
     }
-    public Cell GlobalCell { get { return m_internal->m_shared_info->GlobalCell(m_internal->m_component_item_internal_local_id); } }
-    public MatVarIndex MatVarIndex { get { return m_internal->m_shared_info->VarIndex(m_internal->m_component_item_internal_local_id); } }
+    public Cell GlobalCell { get { return m_internal->m_shared_info->GlobalCell(m_internal->m_component_item_index); } }
+    public MatVarIndex MatVarIndex { get { return m_internal->m_shared_info->VarIndex(m_internal->m_component_item_index); } }
     internal int _matvarArrayIndex { get { return MatVarIndex.ArrayIndex; } }
     internal int _matvarValueIndex { get { return MatVarIndex.ValueIndex; } }
     [Obsolete("This method is internal to Arcane")]
@@ -66,8 +66,8 @@ namespace Arcane.Materials
       set { m_internal = value; }
     }
 
-    public Cell GlobalCell { get { return m_internal->m_shared_info->GlobalCell(m_internal->m_component_item_internal_local_id); } }
-    public MatVarIndex MatVarIndex { get { return m_internal->m_shared_info->VarIndex(m_internal->m_component_item_internal_local_id); } }
+    public Cell GlobalCell { get { return m_internal->m_shared_info->GlobalCell(m_internal->m_component_item_index); } }
+    public MatVarIndex MatVarIndex { get { return m_internal->m_shared_info->VarIndex(m_internal->m_component_item_index); } }
     internal int _matvarArrayIndex { get { return MatVarIndex.ArrayIndex; } }
     internal int _matvarValueIndex { get { return MatVarIndex.ValueIndex; } }
 

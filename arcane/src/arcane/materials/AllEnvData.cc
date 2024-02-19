@@ -262,7 +262,7 @@ _computeInfosForEnvCells()
         ++current_pos[lid];
         Int16 nb_mat = m_component_connectivity_list->cellNbMaterial(CellLocalId(lid), env_id);
         matimpl::ConstituentItemBase ref_ii = m_item_internal_data.envItemBase(pos);
-        ComponentItemInternalLocalId cii_lid = all_env_items_internal_range[lid];
+        ConstituentItemIndex cii_lid = all_env_items_internal_range[lid];
         env->setConstituentItem(z, ref_ii._internalLocalId());
         ref_ii._setSuperAndGlobalItem(cii_lid, ItemLocalId(lid));
         ref_ii._setNbSubItem(nb_mat);

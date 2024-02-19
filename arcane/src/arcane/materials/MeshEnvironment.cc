@@ -209,7 +209,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
   Int32UniqueArray cells_pos(max_local_id);
   //TODO: regarder comment supprimer ce tableau cells_env qui n'est normalement pas utile
   // car on doit pouvoir directement utiliser les m_items_internal
-  UniqueArray<ComponentItemInternalLocalId> cells_env(max_local_id);
+  UniqueArray<ConstituentItemIndex> cells_env(max_local_id);
 
   {
     Integer cell_index = 0;

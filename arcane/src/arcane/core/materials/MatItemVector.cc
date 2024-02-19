@@ -50,7 +50,7 @@ MatCellVector(CellVectorView view,IMeshMaterial* material)
 void MatCellVector::
 _build(CellVectorView view)
 {
-  FixedArray<UniqueArray<ComponentItemInternalLocalId>,2> internals;
+  FixedArray<UniqueArray<ConstituentItemIndex>,2> internals;
   FixedArray<UniqueArray<MatVarIndex>,2> matvar_indexes;
   FixedArray<UniqueArray<Int32>,2> local_ids;
   IMeshComponent* my_component = _component();

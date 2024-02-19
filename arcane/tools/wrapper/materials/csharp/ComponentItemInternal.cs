@@ -37,7 +37,7 @@ namespace Arcane.Materials
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ComponentItemInternal
   {
-    internal Int32 m_component_item_internal_local_id;
+    internal Int32 m_component_item_index;
     internal ComponentItemSharedInfo* m_shared_info;
   }
 
