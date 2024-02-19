@@ -22,7 +22,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 void TimeHistoryMngInternal::
 _destroyAll()
 {
@@ -31,7 +30,6 @@ _destroyAll()
     delete v;
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,18 +82,21 @@ updateMetaData()
     //warning() << "TimeHistoryMng MetaData: size=" << ss.len() << " v=" << ss;
   }
 
-  updateThGlobalTime();
+  updateGlobalTimeCurve();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
-checkOutputPath()
+_checkOutputPath()
 {
   if (m_output_path.empty()){
-    Directory d(m_sd->exportDirectory(),"courbes");
-    m_output_path = d.path();
+    Directory out_dir(m_sd->exportDirectory(),"courbes");
+    m_output_path = out_dir.path();
+    if (out_dir.createDirectory()){
+      m_tmng->warning() << "Can't create the output directory '" << m_output_path << "'";
+    }
   }
 }
 
@@ -113,18 +114,22 @@ addNowInGlobalTime()
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
-updateThGlobalTime()
+updateGlobalTimeCurve()
 {
   m_th_global_time.resize(m_global_times.size());
   m_th_global_time.copy(m_global_times);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void TimeHistoryMngInternal::
-dumpValues(bool is_verbose)
+_dumpCurvesAllWriters(bool is_verbose)
 {
-  Directory out_dir(m_output_path);
-  if (is_verbose)
+  if (is_verbose) {
+    Directory out_dir(m_output_path);
     m_tmng->info() << "Writing of the history of values path=" << out_dir.path();
+  }
   if (m_is_master_io || m_enable_non_io_master_curves) {
     m_tmng->info() << "Begin output history: " << platform::getCurrentDateTime();
 
@@ -148,18 +153,21 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
 {
   if (!m_is_master_io && !m_enable_non_io_master_curves)
     return;
-  ITraceMng* tm = m_tmng;
-  TimeHistoryCurveWriterInfo infos(m_output_path,m_global_times.constView());
+
+  TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
   writer->beginWrite(infos);
   for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
     const TimeHistoryValue2& th = *(i->second);
-    th.dumpValues(tm,writer,infos);
+    th.dumpValues(m_tmng,writer,infos);
   }
   writer->endWrite();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void TimeHistoryMngInternal::
-writeSummary()
+_dumpSummaryOfCurves()
 {
   // Génère un fichier xml contenant la liste des courbes de l'historique
   Directory out_dir(m_output_path);
@@ -213,14 +221,12 @@ dumpHistory(bool is_verbose)
   if (!m_is_dump_active)
     return;
 
-  checkOutputPath();
-  dumpValues(is_verbose);
-  writeSummary();
+  _checkOutputPath();
+  _dumpCurvesAllWriters(is_verbose);
+  _dumpSummaryOfCurves();
 
   m_tmng->info() << "Fin sortie historique: " << platform::getCurrentDateTime();
 }
-
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -274,14 +280,13 @@ _addHistoryValue(const String& name, ConstArrayView<DataType> values, bool end_t
   th->addValue(values,iteration);
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
-_readVariables()
+readVariables()
 {
-  m_tmng->info(4) << "_readVariables resizes m_global_time to " << m_th_global_time.size();
+  m_tmng->info(4) << "readVariables resizes m_global_time to " << m_th_global_time.size();
   m_global_times.resize(m_th_global_time.size());
   m_global_times.copy(m_th_global_time);
 
@@ -312,7 +317,7 @@ _readVariables()
       ARCANE_FATAL("null name for curve");
     if (index<0)
       ARCANE_FATAL("Invalid index '{0}' for curve",index);
-    TimeHistoryValue2* val = 0;
+    TimeHistoryValue2* val = nullptr;
     switch(dt){
     case DT_Real:
       val = new TimeHistoryValue2T<Real>(m_sd,name,index,sub_size,isShrinkActive());
@@ -336,7 +341,7 @@ _readVariables()
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
-timeHistoryRestore()
+resizeArrayAfterRestore()
 {
   Integer current_iteration = m_sd->commonVariables().globalIteration();
   {

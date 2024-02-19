@@ -12,12 +12,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Iostream.h"
-#include "arcane/utils/Iterator.h"
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/OStringStream.h"
 
 #include "arcane/ITimeHistoryMng.h"
 #include "arcane/IIOMng.h"
@@ -42,8 +40,6 @@
 
 #include "arcane/impl/internal/TimeHistoryMngInternal.h"
 
-#include <map>
-#include <set>
 #include <variant>
 
 /*---------------------------------------------------------------------------*/
@@ -216,14 +212,12 @@ class TimeHistoryMng2
   bool isShrinkActive() const override { return m_internal->isShrinkActive(); }
   void setShrinkActive(bool is_active) override { m_internal->setShrinkActive(is_active); }
 
-  ITimeHistoryMngInternal* _internalApi() override {return m_internal.get();}
-
   void applyTransformation(ITimeHistoryTransformer* v) override;
+
+  ITimeHistoryMngInternal* _internalApi() override {return m_internal.get();}
 
  private:
 
-  bool m_is_master_io; //!< True si je suis le gestionnaire actif
-  bool m_enable_non_io_master_curves; //!< Indique si l'ecriture  de courbes par des procs non io_master est possible
   String m_output_path;
   ObserverPool m_observer_pool;
   Ref<ITimeHistoryMngInternal> m_internal;
@@ -231,7 +225,6 @@ class TimeHistoryMng2
  private:
 
   void _writeVariablesNotify();
-  void _checkOutputPath();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -241,8 +234,6 @@ TimeHistoryMng2::
 TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 : AbstractModule(mb)
 , CommonVariables(this)
-, m_is_master_io(true)
-, m_enable_non_io_master_curves(false)
 , m_internal(makeRef(new TimeHistoryMngInternal(subDomain())))
 {
   if (add_entry_points){
@@ -278,7 +269,7 @@ timeHistoryStartInit()
 void TimeHistoryMng2::
 timeHistoryStartInitEnd()
 {
-  m_internal->updateThGlobalTime();
+  m_internal->updateGlobalTimeCurve();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -303,7 +294,7 @@ timeHistoryBegin()
     int th_step = subDomain()->caseOptionsMain()->writeHistoryPeriod();
     if (th_step!=0){
       if ((globalIteration() % th_step)==0)
-        if (parallelMng()->isMasterIO() || m_enable_non_io_master_curves)
+        if (parallelMng()->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled())
           force_print_thm = true;
     }
     if (subDomain()->applicationInfo().isDebug())
@@ -319,7 +310,7 @@ timeHistoryBegin()
 void TimeHistoryMng2::
 timeHistoryEnd()
 {
-  m_internal->updateThGlobalTime();
+  m_internal->updateGlobalTimeCurve();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -332,19 +323,10 @@ timeHistoryInit()
   
   ISubDomain* sd = subDomain();
   IVariableMng* vm = sd->variableMng();
-  
-  // Seul le sous-domaine maître des IO rend actif les time history.
-  m_is_master_io = sd->allReplicaParallelMng()->isMasterIO();
-  info(4) << "TimeHistory is MasterIO ? " << m_is_master_io;
-  m_enable_non_io_master_curves = ! platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null() ;
-  if (!m_is_master_io && !m_enable_non_io_master_curves)
-    return;
 
-  _checkOutputPath();
-  Directory out_dir(m_output_path);
-  if (out_dir.createDirectory()){
-    warning() << "Can't create the output directory '" << m_output_path << "'";
-  }
+  info(4) << "TimeHistory is MasterIO ? " << m_internal->isMasterIO();
+  if (!m_internal->isMasterIO() && !m_internal->isNonIOMasterCurvesEnabled())
+    return;
 
   m_observer_pool.addObserver(this,
                               &TimeHistoryMng2::_writeVariablesNotify,
@@ -355,7 +337,7 @@ timeHistoryInit()
     m_internal->addCurveWriter(makeRef(gnuplot_curve_writer));
   }
 
-  if (m_is_master_io || m_enable_non_io_master_curves){
+  if (m_internal->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled()){
     ServiceBuilder<ITimeHistoryCurveWriter2> builder(subDomain());
     auto writers = builder.createAllInstances();
     for( auto& wr_ref : writers ){
@@ -374,7 +356,6 @@ timeHistoryInit()
 void TimeHistoryMng2::
 addCurveWriter(ITimeHistoryCurveWriter2* writer)
 {
-  // TODO bof
   m_internal->addCurveWriter(makeRef(writer));
 }
 
@@ -393,8 +374,8 @@ _writeVariablesNotify()
 void TimeHistoryMng2::
 timeHistoryContinueInit()
 {
-  if (m_is_master_io || m_enable_non_io_master_curves)
-    m_internal->_readVariables();
+  if (m_internal->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled())
+    m_internal->readVariables();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -403,19 +384,7 @@ timeHistoryContinueInit()
 void TimeHistoryMng2::
 timeHistoryRestore()
 {
-  m_internal->timeHistoryRestore();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void TimeHistoryMng2::
-_checkOutputPath()
-{
-  if (m_output_path.empty()){
-    Directory d(subDomain()->exportDirectory(),"courbes");
-    m_output_path = d.path();
-  }
+  m_internal->resizeArrayAfterRestore();
 }
 
 /*---------------------------------------------------------------------------*/

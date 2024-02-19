@@ -41,8 +41,8 @@ class ITimeHistoryMngInternal
 
  public:
   virtual void addNowInGlobalTime() = 0;
-  virtual void updateThGlobalTime() = 0;
-  virtual void timeHistoryRestore() = 0;
+  virtual void updateGlobalTimeCurve() = 0;
+  virtual void resizeArrayAfterRestore() = 0;
 
   virtual void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) =0;
   virtual bool isShrinkActive() const =0;
@@ -56,7 +56,9 @@ class ITimeHistoryMngInternal
   virtual void applyTransformation(ITimeHistoryTransformer* v) =0;
   virtual void removeCurveWriter(const String& name) =0;
   virtual void updateMetaData() =0;
-  virtual void _readVariables() =0;
+  virtual void readVariables() =0;
+  virtual bool isMasterIO() = 0;
+  virtual bool isNonIOMasterCurvesEnabled() = 0;
 
   virtual void addValue(const String& name,Real value,bool end_time=true,bool is_local=false) =0;
 

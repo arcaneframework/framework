@@ -283,16 +283,15 @@ class TimeHistoryMngInternal
   TimeHistoryMngInternal(ISubDomain* sd)
   : m_sd(sd)
   , m_tmng(sd->traceMng())
-  , m_is_master_io(true)
-  , m_enable_non_io_master_curves(false)
   , m_th_meta_data(VariableBuildInfo(m_sd,"TimeHistoryMetaData"))
   , m_th_global_time(VariableBuildInfo(m_sd,"TimeHistoryGlobalTime"))
   , m_is_active(true)
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
   {
-    m_enable_non_io_master_curves = ! platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null() ;
-
+    m_enable_non_io_master_curves = !platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null();
+    // Seul le sous-domaine maître des IO rend actif les time history.
+    m_is_master_io = sd->allReplicaParallelMng()->isMasterIO();
   }
 
   ~TimeHistoryMngInternal() override
@@ -308,22 +307,6 @@ class TimeHistoryMngInternal
   typedef HistoryList::value_type HistoryValueType;
 
  public:
-  void addNowInGlobalTime() override;
-  void updateThGlobalTime() override;
-  void timeHistoryRestore() override;
-  void dumpCurves(ITimeHistoryCurveWriter2* writer) override;
-  void applyTransformation(ITimeHistoryTransformer* v) override;
-  void removeCurveWriter(const String& name) override;
-
-  void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) override;
-  bool isShrinkActive() const override { return m_is_shrink_active; }
-  void setShrinkActive(bool is_active) override { m_is_shrink_active = is_active; }
-  bool active() const override { return m_is_active; }
-  void setActive(bool is_active) override { m_is_active = is_active; }
-  void dumpHistory(bool is_verbose) override;
-  bool isDumpActive() const override { return m_is_dump_active; }
-  void setDumpActive(bool is_active) override { m_is_dump_active = is_active; }
-
   void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
   {
     _addHistoryValue(name,values,end_time,is_local);
@@ -347,21 +330,40 @@ class TimeHistoryMngInternal
     RealConstArrayView values(1,&value);
     _addHistoryValue(concat,values,end_time,is_local);
   }
+
+  void addNowInGlobalTime() override;
+  void updateGlobalTimeCurve() override;
+  void resizeArrayAfterRestore() override;
+  void dumpCurves(ITimeHistoryCurveWriter2* writer) override;
+  void dumpHistory(bool is_verbose) override;
   void updateMetaData() override;
-  void _readVariables() override;
+  void readVariables() override;
+
+  void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) override;
+  void removeCurveWriter(const String& name) override;
+  void applyTransformation(ITimeHistoryTransformer* v) override;
+
+  bool isShrinkActive() const override { return m_is_shrink_active; }
+  void setShrinkActive(bool is_active) override { m_is_shrink_active = is_active; }
+  bool active() const override { return m_is_active; }
+  void setActive(bool is_active) override { m_is_active = is_active; }
+  bool isDumpActive() const override { return m_is_dump_active; }
+  void setDumpActive(bool is_active) override { m_is_dump_active = is_active; }
+  bool isMasterIO() override { return m_is_master_io; }
+  bool isNonIOMasterCurvesEnabled() override { return m_enable_non_io_master_curves; }
+
 
  private:
   template<class DataType> void
   _addHistoryValue(const String& name,ConstArrayView<DataType> values,bool end_time,bool is_local);
-  void checkOutputPath();
-  void _removeCurveWriter(Ref<ITimeHistoryCurveWriter2> writer)
+  void _checkOutputPath();
+  void _destroyAll();
+  void _dumpCurvesAllWriters(bool is_verbose);
+  void _dumpSummaryOfCurves();
+  void _removeCurveWriter(const Ref<ITimeHistoryCurveWriter2>& writer)
   {
     m_curve_writers2.erase(writer);
   }
-  void _destroyAll();
-
-  void dumpValues(bool is_verbose);
-  void writeSummary();
 
  private:
   ISubDomain* m_sd;
