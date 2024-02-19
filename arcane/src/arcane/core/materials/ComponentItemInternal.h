@@ -358,7 +358,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
  private:
 
   inline ARCCORE_HOST_DEVICE ComponentItemSharedInfo* _sharedInfo() const;
-  inline ARCCORE_HOST_DEVICE ConstituentItemIndex _localId() const;
+  inline ARCCORE_HOST_DEVICE ConstituentItemIndex _constituentItemIndex() const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -418,14 +418,14 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Indexeur dans les variables matériaux
   ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const
   {
-    return m_shared_info->_varIndex(m_component_item_internal_local_id);
+    return m_shared_info->_varIndex(m_component_item_index);
   }
 
   //! Identifiant du composant
-  ARCCORE_HOST_DEVICE Int32 componentId() const { return m_shared_info->_componentId(m_component_item_internal_local_id); }
+  ARCCORE_HOST_DEVICE Int32 componentId() const { return m_shared_info->_componentId(m_component_item_index); }
 
   //! Indique s'il s'agit de la maille nulle.
-  ARCCORE_HOST_DEVICE constexpr bool null() const { return m_component_item_internal_local_id.isNull(); }
+  ARCCORE_HOST_DEVICE constexpr bool null() const { return m_component_item_index.isNull(); }
 
   /*!
    * \brief Composant associé.
@@ -433,18 +433,18 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
    * Cet appel n'est valide que pour les mailles matériaux ou milieux. Si on souhaite
    * un appel valide pour toutes les 'ComponentItem', il faut utiliser componentId().
    */
-  IMeshComponent* component() const { return m_shared_info->_component(m_component_item_internal_local_id); }
+  IMeshComponent* component() const { return m_shared_info->_component(m_component_item_index); }
 
   //! Nombre de sous-composants.
   ARCCORE_HOST_DEVICE Int32 nbSubItem() const
   {
-    return m_shared_info->_nbSubConstituent(m_component_item_internal_local_id);
+    return m_shared_info->_nbSubConstituent(m_component_item_index);
   }
 
   //! Entité globale correspondante.
   impl::ItemBase globalItemBase() const
   {
-    return m_shared_info->_globalItemBase(m_component_item_internal_local_id);
+    return m_shared_info->_globalItemBase(m_component_item_index);
   }
 
   ARCCORE_HOST_DEVICE constexpr Int32 level() const { return m_shared_info->m_level; }
@@ -452,7 +452,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Numéro unique de l'entité component
   Int64 componentUniqueId() const
   {
-    return m_shared_info->_componentUniqueId(m_component_item_internal_local_id);
+    return m_shared_info->_componentUniqueId(m_component_item_index);
   }
 
  protected:
@@ -460,8 +460,7 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   // NOTE : Cette classe est partagée avec le wrapper C#
   // Toute modification de la structure interne doit être reportée
   // dans la structure C# correspondante
-  //MatVarIndex m_var_index;
-  ConstituentItemIndex m_component_item_internal_local_id;
+  ConstituentItemIndex m_component_item_index;
   ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
@@ -478,19 +477,19 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Première entité du sous-constituant
   ARCCORE_HOST_DEVICE ConstituentItemIndex _firstSubItemLocalId() const
   {
-    return m_shared_info->_firstSubConstituentLocalId(m_component_item_internal_local_id);
+    return m_shared_info->_firstSubConstituentLocalId(m_component_item_index);
   }
 
   ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(Int32 i) const;
 
-  ARCCORE_HOST_DEVICE ConstituentItemIndex _internalLocalId() const
+  ARCCORE_HOST_DEVICE ConstituentItemIndex constituentItemIndex() const
   {
-    return m_component_item_internal_local_id;
+    return m_component_item_index;
   }
 
   void _reset(ConstituentItemIndex id, ComponentItemSharedInfo* shared_info)
   {
-    m_component_item_internal_local_id = id;
+    m_component_item_index = id;
     m_shared_info = shared_info;
     m_shared_info->_reset(id);
   }
@@ -521,9 +520,9 @@ _sharedInfo() const
 }
 
 inline ConstituentItemIndex matimpl::ConstituentItemBase::
-_localId() const
+_constituentItemIndex() const
 {
-  return m_component_item->m_component_item_internal_local_id;
+  return m_component_item->m_component_item_index;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -556,7 +555,7 @@ _subItemBase(Int32 i) const
 matimpl::ConstituentItemBase ComponentItemInternal::
 _superItemBase() const
 {
-  return m_shared_info->_superItemBase(m_component_item_internal_local_id);
+  return m_shared_info->_superItemBase(m_component_item_index);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -565,7 +564,7 @@ _superItemBase() const
 inline ARCCORE_HOST_DEVICE MatVarIndex matimpl::ConstituentItemBase::
 variableIndex() const
 {
-  return _sharedInfo()->_varIndex(_localId());
+  return _sharedInfo()->_varIndex(_constituentItemIndex());
 }
 
 inline ARCCORE_HOST_DEVICE Int32 matimpl::ConstituentItemBase::
@@ -613,7 +612,7 @@ componentUniqueId() const
 inline void matimpl::ConstituentItemBase::
 _setVariableIndex(MatVarIndex index)
 {
-  _sharedInfo()->_setVarIndex(_localId(), index);
+  _sharedInfo()->_setVarIndex(_constituentItemIndex(), index);
 }
 
 inline matimpl::ConstituentItemBase matimpl::ConstituentItemBase::
@@ -625,14 +624,14 @@ _superItemBase() const
 inline void matimpl::ConstituentItemBase::
 _setSuperAndGlobalItem(ConstituentItemIndex cii, ItemLocalId ii)
 {
-  _sharedInfo()->_setSuperItem(_localId(), cii);
-  _sharedInfo()->_setGlobalItem(_localId(), ii);
+  _sharedInfo()->_setSuperItem(_constituentItemIndex(), cii);
+  _sharedInfo()->_setGlobalItem(_constituentItemIndex(), ii);
 }
 
 inline void matimpl::ConstituentItemBase::
 _setGlobalItem(ItemLocalId ii)
 {
-  _sharedInfo()->_setGlobalItem(_localId(), ii);
+  _sharedInfo()->_setGlobalItem(_constituentItemIndex(), ii);
 }
 
 //! Première entité sous-composant.
@@ -652,26 +651,26 @@ _subItemBase(Int32 i) const
 inline void matimpl::ConstituentItemBase::
 _setNbSubItem(Int16 nb_sub_item)
 {
-  _sharedInfo()->_setNbSubConstituent(_localId(), nb_sub_item);
+  _sharedInfo()->_setNbSubConstituent(_constituentItemIndex(), nb_sub_item);
 }
 
 //! Positionne le premier sous-composant.
 inline void matimpl::ConstituentItemBase::
 _setFirstSubItem(ConstituentItemIndex first_sub_item)
 {
-  _sharedInfo()->_setFirstSubConstituentLocalId(_localId(), first_sub_item);
+  _sharedInfo()->_setFirstSubConstituentLocalId(_constituentItemIndex(), first_sub_item);
 }
 
 inline void matimpl::ConstituentItemBase::
 _setComponent(Int16 component_id)
 {
-  _sharedInfo()->_setComponentId(_localId(), component_id);
+  _sharedInfo()->_setComponentId(_constituentItemIndex(), component_id);
 }
 
 inline ARCCORE_HOST_DEVICE ConstituentItemIndex matimpl::ConstituentItemBase::
 _internalLocalId() const
 {
-  return m_component_item->m_component_item_internal_local_id;
+  return m_component_item->m_component_item_index;
 }
 
 inline void matimpl::ConstituentItemBase::

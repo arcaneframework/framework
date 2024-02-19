@@ -146,7 +146,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   //! \internal
   ARCCORE_HOST_DEVICE ConstituentItemIndex _internalLocalId() const
   {
-    return m_internal->_internalLocalId();
+    return m_internal->constituentItemIndex();
   }
 };
 
