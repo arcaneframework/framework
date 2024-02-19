@@ -363,9 +363,9 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
  public:
 
   ARCCORE_HOST_DEVICE explicit CellComponentCellEnumerator(ComponentCell super_item)
-  : m_size(super_item._internal()->nbSubItem())
-  , m_items_begin(super_item._internal()->_firstSubItemLocalId().localId())
-  , m_item_internal_list(super_item._internal()->m_shared_info->m_sub_component_item_shared_info->m_component_item_internal_view)
+  : m_size(super_item.nbSubItem())
+  , m_items_begin(super_item._firstSubConstituentLocalId().localId())
+  , m_item_internal_list(super_item.m_shared_info->m_sub_component_item_shared_info->m_component_item_internal_view)
   {
   }
 

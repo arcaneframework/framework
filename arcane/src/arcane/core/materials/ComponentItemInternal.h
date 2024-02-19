@@ -127,7 +127,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   friend class ConstituentItemLocalIdList;
   friend class ConstituentItemLocalIdListView;
   friend class matimpl::ConstituentItemBase;
-
+  friend class ComponentCell;
   static const int MAT_INDEX_OFFSET = 10;
 
  private:
@@ -193,6 +193,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     m_super_component_item_local_id_data[id.localId()] = super_id;
   }
+  inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subitemBase(ConstituentItemIndex id,Int32 sub_index) const;
 
   ARCCORE_HOST_DEVICE MatVarIndex _varIndex(ConstituentItemIndex id)
   {
@@ -540,6 +541,14 @@ _superItemBase(ConstituentItemIndex id) const
   ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
   ConstituentItemIndex super_local_id(m_super_component_item_local_id_data[id.localId()]);
   return m_super_component_item_shared_info->_item(super_local_id);
+}
+
+inline matimpl::ConstituentItemBase ComponentItemSharedInfo::
+_subitemBase(ConstituentItemIndex id,Int32 sub_index) const
+{
+  ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
+  ConstituentItemIndex lid(m_first_sub_constituent_item_id_data[id.localId()].localId() + sub_index);
+  return m_sub_component_item_shared_info->_item(lid);
 }
 
 /*---------------------------------------------------------------------------*/
