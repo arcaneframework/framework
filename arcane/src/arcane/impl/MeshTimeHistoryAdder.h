@@ -32,7 +32,7 @@ class ARCANE_IMPL_EXPORT MeshTimeHistoryAdder
   ~MeshTimeHistoryAdder() override = default;
 
  public:
-  void addValue(const String& name, Real value, bool end_time = true, bool is_local = false) override;
+  void addValue(const String& name, Real value, bool end_time, bool is_local) override;
 
  private:
   ITimeHistoryMng* m_thm;

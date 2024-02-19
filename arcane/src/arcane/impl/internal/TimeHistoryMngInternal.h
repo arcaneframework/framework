@@ -307,6 +307,21 @@ class TimeHistoryMngInternal
   typedef HistoryList::value_type HistoryValueType;
 
  public:
+  void addValue(const String& name,Real value,bool end_time,bool is_local) override
+  {
+    RealConstArrayView values(1,&value);
+    _addHistoryValue(name,values,end_time,is_local);
+  }
+  void addValue(const String& name,Int64 value,bool end_time,bool is_local) override
+  {
+    Int64ConstArrayView values(1,&value);
+    _addHistoryValue(name,values,end_time,is_local);
+  }
+  void addValue(const String& name,Int32 value,bool end_time,bool is_local) override
+  {
+    Int32ConstArrayView values(1,&value);
+    _addHistoryValue(name,values,end_time,is_local);
+  }
   void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
   {
     _addHistoryValue(name,values,end_time,is_local);
@@ -317,11 +332,6 @@ class TimeHistoryMngInternal
   }
   void addValue(const String& name,Int64ConstArrayView values,bool end_time,bool is_local) override
   {
-    _addHistoryValue(name,values,end_time,is_local);
-  }
-  void addValue(const String& name,Real value,bool end_time,bool is_local) override
-  {
-    RealConstArrayView values(1,&value);
     _addHistoryValue(name,values,end_time,is_local);
   }
   void addValue(const String& name,const String& metadata,Real value,bool end_time,bool is_local) override

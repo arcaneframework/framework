@@ -152,18 +152,15 @@ class TimeHistoryMng2
 
   void addValue(const String& name,Real value,bool end_time,bool is_local) override
   {
-    RealConstArrayView values(1,&value);
-    m_internal->addValue(name,values,end_time,is_local);
+    m_internal->addValue(name,value,end_time,is_local);
   }
   void addValue(const String& name,Int64 value,bool end_time,bool is_local) override
   {
-    Int64ConstArrayView values(1,&value);
-    m_internal->addValue(name,values,end_time,is_local);
+    m_internal->addValue(name,value,end_time,is_local);
   }
   void addValue(const String& name,Int32 value,bool end_time,bool is_local) override
   {
-    Int32ConstArrayView values(1,&value);
-    m_internal->addValue(name,values,end_time,is_local);
+    m_internal->addValue(name,value,end_time,is_local);
   }
   void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
   {
@@ -214,11 +211,10 @@ class TimeHistoryMng2
 
   void applyTransformation(ITimeHistoryTransformer* v) override;
 
-  ITimeHistoryMngInternal* _internalApi() override {return m_internal.get();}
+  ITimeHistoryMngInternal* _internalApi() override { return m_internal.get(); }
 
  private:
 
-  String m_output_path;
   ObserverPool m_observer_pool;
   Ref<ITimeHistoryMngInternal> m_internal;
 
