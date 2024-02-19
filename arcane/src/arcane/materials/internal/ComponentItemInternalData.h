@@ -53,7 +53,7 @@ class ComponentItemInternalRange
 
    public:
 
-    ComponentItemInternalLocalId operator*() const { return ComponentItemInternalLocalId(m_current_value); }
+    ConstituentItemIndex operator*() const { return ConstituentItemIndex(m_current_value); }
     void operator++() { ++m_current_value; }
     bool operator==(const Sentinel&) const
     {
@@ -72,10 +72,10 @@ class ComponentItemInternalRange
 
  public:
 
-  ComponentItemInternalLocalId operator[](Int32 index) const
+  ConstituentItemIndex operator[](Int32 index) const
   {
     ARCANE_CHECK_AT(index, m_nb_value);
-    return ComponentItemInternalLocalId(m_first_index + index);
+    return ConstituentItemIndex(m_first_index + index);
   }
 
  public:
@@ -94,7 +94,7 @@ class ComponentItemInternalRange
     return {};
   }
   Int32 size() const { return m_nb_value; }
-  ComponentItemInternalLocalId firstValue() const { return ComponentItemInternalLocalId(m_first_index); }
+  ConstituentItemIndex firstValue() const { return ConstituentItemIndex(m_first_index); }
 
  private:
 
@@ -127,8 +127,8 @@ class ComponentItemInternalData
 
    private:
 
-    UniqueArray<ComponentItemInternalLocalId> m_first_sub_constituent_item_id_list;
-    UniqueArray<ComponentItemInternalLocalId> m_super_component_item_local_id_list;
+    UniqueArray<ConstituentItemIndex> m_first_sub_constituent_item_id_list;
+    UniqueArray<ConstituentItemIndex> m_super_component_item_local_id_list;
     UniqueArray<Int16> m_component_id_list;
     UniqueArray<Int16> m_nb_sub_constituent_item_list;
     UniqueArray<Int32> m_global_item_local_id_list;

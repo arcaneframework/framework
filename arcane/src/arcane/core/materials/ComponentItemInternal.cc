@@ -34,7 +34,7 @@ ComponentItemSharedInfo* ComponentItemSharedInfo::null_shared_info_pointer = &Co
 /*---------------------------------------------------------------------------*/
 
 std::ostream&
-operator<<(std::ostream& o,const ComponentItemInternalLocalId& id)
+operator<<(std::ostream& o,const ConstituentItemIndex& id)
 {
   o << id.localId();
   return o;

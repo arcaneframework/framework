@@ -122,22 +122,22 @@ endCreate()
 void ComponentItemInternalData::
 _resetItemsInternal()
 {
-  ComponentItemInternalLocalId internal_local_id;
+  ConstituentItemIndex internal_local_id;
   ArrayView<ComponentItemInternal> all_env_storage = m_all_env_item_internal_storage;
   ArrayView<ComponentItemInternal> env_storage = m_env_item_internal_storage;
   ArrayView<ComponentItemInternal> mat_storage = m_mat_item_internal_storage;
 
   ComponentItemSharedInfo* all_env_shared_info = allEnvSharedInfo();
-  for (ComponentItemInternalLocalId id : m_all_env_items_internal_range)
+  for (ConstituentItemIndex id : m_all_env_items_internal_range)
     all_env_storage[id.localId()]._reset(id, all_env_shared_info);
 
   ComponentItemSharedInfo* env_shared_info = envSharedInfo();
-  for (ComponentItemInternalLocalId id : m_env_items_internal_range)
+  for (ConstituentItemIndex id : m_env_items_internal_range)
     env_storage[id.localId()]._reset(id, env_shared_info);
 
   ComponentItemSharedInfo* mat_shared_info = matSharedInfo();
   for (ComponentItemInternalRange mat_range : m_mat_items_internal_range) {
-    for (ComponentItemInternalLocalId id : mat_range)
+    for (ConstituentItemIndex id : mat_range)
       mat_storage[id.localId()]._reset(id, mat_shared_info);
   }
 }

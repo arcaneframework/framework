@@ -128,7 +128,7 @@ class MeshMaterial
 
  public:
 
-  void setConstituentItem(Int32 index, ComponentItemInternalLocalId id)
+  void setConstituentItem(Int32 index, ConstituentItemIndex id)
   {
     m_data._setConstituentItem(index,id);
   }

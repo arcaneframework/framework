@@ -44,13 +44,13 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 
  public:
 
-  void setConstituentItem(Int32 index, ComponentItemInternalLocalId id)
+  void setConstituentItem(Int32 index, ConstituentItemIndex id)
   {
     m_item_internal_local_id_list[index] = id;
     m_items_internal[index] = m_shared_info->_itemInternal(id);
   }
 
-  void copy(ConstArrayView<ComponentItemInternalLocalId> ids)
+  void copy(ConstArrayView<ConstituentItemIndex> ids)
   {
     const Int32 size = ids.size();
     resize(size);
@@ -70,8 +70,8 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
   /*!
    * \brief Copie les constituents partitionnés en partie pure et partielle.
    */
-  void copyPureAndPartial(ConstArrayView<ComponentItemInternalLocalId> pure_ids,
-                          ConstArrayView<ComponentItemInternalLocalId> partial_ids)
+  void copyPureAndPartial(ConstArrayView<ConstituentItemIndex> pure_ids,
+                          ConstArrayView<ConstituentItemIndex> partial_ids)
   {
     Int32 nb_pure = pure_ids.size();
     Int32 nb_partial = partial_ids.size();
@@ -83,7 +83,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
       setConstituentItem(nb_pure + i, partial_ids[i]);
   }
 
-  ConstArrayView<ComponentItemInternalLocalId> localIds() const
+  ConstArrayView<ConstituentItemIndex> localIds() const
   {
     return m_item_internal_local_id_list;
   }
@@ -91,7 +91,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
   {
     return m_shared_info->_item(localId(index));
   }
-  ComponentItemInternalLocalId localId(Int32 index) const
+  ConstituentItemIndex localId(Int32 index) const
   {
     return m_item_internal_local_id_list[index];
   }
@@ -111,8 +111,8 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
   //! Liste des ComponentItemInternal* pour ce constituant.
   UniqueArray<ComponentItemInternal*> m_items_internal;
 
-  //! Liste des ComponentItemInternalLocalId pour ce constituant.
-  UniqueArray<ComponentItemInternalLocalId> m_item_internal_local_id_list;
+  //! Liste des ConstituentItemIndex pour ce constituant.
+  UniqueArray<ConstituentItemIndex> m_item_internal_local_id_list;
 
   ComponentItemSharedInfo* m_shared_info = nullptr;
 
