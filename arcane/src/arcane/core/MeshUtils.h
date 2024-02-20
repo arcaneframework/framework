@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FunctorUtils.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/Item.h"
 
@@ -335,9 +336,10 @@ visitGroups(IMesh* mesh, const LambdaType& f)
 
 namespace impl
 {
-  //! Calcule une capacité adaptée pour une taille de \a size
-  extern "C++" ARCANE_CORE_EXPORT Int64
-  computeCapacity(Int64 size);
+  inline Int64 computeCapacity(Int64 size)
+  {
+    return Arcane::MemoryUtils::impl::computeCapacity(size);
+  }
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/
@@ -361,15 +363,7 @@ namespace impl
 template <typename DataType> inline bool
 checkResizeArray(Array<DataType>& array, Int64 new_size, bool force_resize)
 {
-  Int64 s = array.largeSize();
-  if (new_size > s || force_resize) {
-    if (new_size > array.capacity()) {
-      array.reserve(impl::computeCapacity(new_size));
-    }
-    array.resize(new_size);
-    return true;
-  }
-  return false;
+  return Arcane::MemoryUtils::checkResizeArrayWithCapacity(array, new_size, force_resize);
 }
 
 /*---------------------------------------------------------------------------*/
