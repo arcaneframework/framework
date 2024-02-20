@@ -336,8 +336,8 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
     return;
 
   String name_to_find = thpi.thp().name().clone();
-  if(thpi.mesh() != nullptr){
-    name_to_find = name_to_find + "_" + thpi.mesh()->name();
+  if(!thpi.meshHandle().isNull()){
+    name_to_find = name_to_find + "_" + thpi.meshHandle().meshName();
   }
 
   Integer iteration = m_sd->commonVariables().globalIteration();
@@ -351,8 +351,8 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
   if (hl!=m_history_list.end())
     th = dynamic_cast<TimeHistoryValueT<DataType>* >(hl->second);
   else{
-    if(thpi.mesh() != nullptr) {
-      th = new TimeHistoryValueT<DataType>(thpi.mesh(), thpi.thp().name(), (Integer)m_history_list.size(), values.size(), isShrinkActive());
+    if(!thpi.meshHandle().isNull()) {
+      th = new TimeHistoryValueT<DataType>(thpi.meshHandle(), thpi.thp().name(), (Integer)m_history_list.size(), values.size(), isShrinkActive());
     }
     else{
       th = new TimeHistoryValueT<DataType>(m_sd, thpi.thp().name(), (Integer)m_history_list.size(), values.size(), isShrinkActive());

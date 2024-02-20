@@ -41,26 +41,26 @@ class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
  public:
   explicit TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp)
   : m_thp(thp)
-  , m_mesh(nullptr)
+  , m_mesh_handle()
   {}
 
-  TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp, IMesh* mesh)
+  TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp, const MeshHandle& mesh_handle)
   : m_thp(thp)
-  , m_mesh(mesh)
+  , m_mesh_handle(mesh_handle)
   {}
 
   TimeHistoryAddValueArgInternal(const String& name, bool end_time, bool is_local)
   : m_thp(name, end_time, is_local)
-  , m_mesh(nullptr)
+  , m_mesh_handle()
   {}
 
  public:
   const TimeHistoryAddValueArg& thp() const { return m_thp; }
-  IMesh* mesh() const { return m_mesh; }
+  const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
  private:
   TimeHistoryAddValueArg m_thp;
-  IMesh* m_mesh;
+  MeshHandle m_mesh_handle;
 };
 
 /*---------------------------------------------------------------------------*/

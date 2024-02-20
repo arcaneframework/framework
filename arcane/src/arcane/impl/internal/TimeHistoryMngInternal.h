@@ -73,6 +73,15 @@ class TimeHistoryValue
   , m_data_type(dt)
   , m_index(index)
   , m_sub_size(sub_size)
+  , m_mesh_handle()
+  {}
+
+  TimeHistoryValue(const String& name, const MeshHandle& mesh_handle, eDataType dt, Integer index, Integer sub_size)
+  : m_name(name)
+  , m_data_type(dt)
+  , m_index(index)
+  , m_sub_size(sub_size)
+  , m_mesh_handle(mesh_handle)
   {}
 
   virtual ~TimeHistoryValue() = default; //!< Libére les ressources
@@ -107,12 +116,15 @@ class TimeHistoryValue
 
   Integer subSize() const { return m_sub_size; }
 
+  const MeshHandle& meshHandle() const { return m_mesh_handle; }
+
  private:
 
   String m_name; //!< Nom de l'historique
   eDataType m_data_type; //!< Type de la donnée
   Integer m_index; //!< Index de l'historique dans la liste
   Integer m_sub_size;
+  MeshHandle m_mesh_handle;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -184,17 +196,15 @@ class TimeHistoryValueT
   , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMngIterations")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
-  , m_mesh_support(nullptr)
   {
   }
 
-  TimeHistoryValueT(IMesh* mesh, const String& name, Integer index, Integer nb_element, bool shrink=false)
-  : TimeHistoryValue(name, DataTypeTraitsT<DataType>::type(), index, nb_element)
-  , m_values(VariableBuildInfo(mesh,String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(mesh,String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
+  TimeHistoryValueT(const MeshHandle& mesh_handle, const String& name, Integer index, Integer nb_element, bool shrink=false)
+  : TimeHistoryValue(name, mesh_handle, DataTypeTraitsT<DataType>::type(), index, nb_element)
+  , m_values(VariableBuildInfo(mesh_handle, String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(mesh_handle, String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
-  , m_mesh_support(mesh)
   {
   }
 
@@ -310,7 +320,6 @@ class TimeHistoryValueT
   IterationList m_iterations;
   bool m_use_compression;
   bool m_shrink_history;
-  IMesh* m_mesh_support;
 };
 
 /*---------------------------------------------------------------------------*/
