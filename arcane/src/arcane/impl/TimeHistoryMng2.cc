@@ -83,7 +83,8 @@ class GnuplotTimeHistoryCurveWriter2
   }
   void writeCurve(const TimeHistoryCurveInfo& infos) override
   {
-    String sname(m_gnuplot_path.file(infos.name()));
+
+    String sname(m_gnuplot_path.file(infos.hasSupport() ? infos.name().clone() + "_" + infos.support() : infos.name()));
     FILE* ofile = fopen(sname.localstr(),"w");
     if (!ofile){
       warning() << "Can not open gnuplot curve file '" << sname << "'";
