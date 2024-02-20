@@ -88,6 +88,8 @@ class TimeHistoryValue
 
  public:
 
+  virtual void fromOldToNewVariables(ISubDomain* sd) = 0;
+
   //! Imprime les valeurs de l'historique avec l'écrivain \a writer
   virtual void dumpValues(ITraceMng* msg,
                           ITimeHistoryCurveWriter2* writer,
@@ -162,18 +164,31 @@ class TimeHistoryValueT
   const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
  public:
 
-  TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink, bool update_variables)
+  TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
   , m_values(VariableBuildInfo(sd,String("TimeHistoryMngValues")+index,VAR_BUILD_FLAGS))
   , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMngIterations")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
-    if(!update_variables) return;
+  }
 
+  TimeHistoryValueT(const MeshHandle& mesh_handle, const String& name, Integer index, Integer nb_element, bool shrink)
+  : TimeHistoryValue(name, mesh_handle, DataTypeTraitsT<DataType>::type(), index, nb_element)
+  , m_values(VariableBuildInfo(mesh_handle, String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(mesh_handle, String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
+  , m_use_compression(false)
+  , m_shrink_history(shrink)
+  {
+  }
+
+ public:
+
+  void fromOldToNewVariables(ISubDomain* sd) override
+  {
     IMesh* mesh0 = sd->defaultMesh();
-    IVariable* ptr_old_values = sd->variableMng()->findMeshVariable(mesh0, String("TimeHistory_Values_")+index);
-    IVariable* ptr_old_iterations = sd->variableMng()->findMeshVariable(mesh0, String("TimeHistory_Iterations_")+index);
+    IVariable* ptr_old_values = sd->variableMng()->findMeshVariable(mesh0, String("TimeHistory_Values_")+index());
+    IVariable* ptr_old_iterations = sd->variableMng()->findMeshVariable(mesh0, String("TimeHistory_Iterations_")+index());
     if(ptr_old_values == nullptr || ptr_old_iterations == nullptr)
       ARCANE_FATAL("Unknown old variable");
 
@@ -189,26 +204,6 @@ class TimeHistoryValueT
     old_values.resize(0);
     old_iterations.resize(0);
   }
-
-  TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink)
-  : TimeHistoryValue(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
-  , m_values(VariableBuildInfo(sd,String("TimeHistoryMngValues")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMngIterations")+index,VAR_BUILD_FLAGS))
-  , m_use_compression(false)
-  , m_shrink_history(shrink)
-  {
-  }
-
-  TimeHistoryValueT(const MeshHandle& mesh_handle, const String& name, Integer index, Integer nb_element, bool shrink=false)
-  : TimeHistoryValue(name, mesh_handle, DataTypeTraitsT<DataType>::type(), index, nb_element)
-  , m_values(VariableBuildInfo(mesh_handle, String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(mesh_handle, String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
-  , m_use_compression(false)
-  , m_shrink_history(shrink)
-  {
-  }
-
- public:
 
   Integer size() const override
   {

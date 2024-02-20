@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/impl/internal/TimeHistoryMngInternal.h"
+#include "arcane/core/IMeshMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,12 +56,23 @@ updateMetaData()
   meta_data_str() << "<curves version='1'>\n";
   for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
     TimeHistoryValue* val = i->second;
-    meta_data_str() << "<curve "
-                    << " name='" << val->name() << "'"
-                    << " index='" << val->index() << "'"
-                    << " data-type='" << dataTypeName(val->dataType()) << "'"
-                    << " sub-size='" << val->subSize() << "'"
-                    << "/>\n";
+    if(val->meshHandle().isNull()){
+      meta_data_str() << "<curve "
+                      << " name='" << val->name() << "'"
+                      << " index='" << val->index() << "'"
+                      << " data-type='" << dataTypeName(val->dataType()) << "'"
+                      << " sub-size='" << val->subSize() << "'"
+                      << "/>\n";
+    }
+    else{
+      meta_data_str() << "<curve "
+                      << " name='" << val->name() << "'"
+                      << " index='" << val->index() << "'"
+                      << " data-type='" << dataTypeName(val->dataType()) << "'"
+                      << " sub-size='" << val->subSize() << "'"
+                      << " support='" << val->meshHandle().meshName() << "'"
+                      << "/>\n";
+    }
   }
   meta_data_str() << "</curves>\n";
 
@@ -176,6 +188,7 @@ readVariables()
   String ustr_index("index");
   String ustr_sub_size("sub-size");
   String ustr_data_type("data-type");
+  String ustr_support("support");
 
   for( XmlNode curve : curves ){
     String name = curve.attrValue(ustr_name);
@@ -183,23 +196,47 @@ readVariables()
     Integer sub_size = curve.attr(ustr_sub_size).valueAsInteger();
     String data_type_str = curve.attrValue(ustr_data_type);
     eDataType dt = dataTypeFromName(data_type_str.localstr());
+    String support_str = curve.attrValue(ustr_support, false);
+
     if (name.null())
       ARCANE_FATAL("null name for curve");
     if (index<0)
       ARCANE_FATAL("Invalid index '{0}' for curve",index);
+
     TimeHistoryValue* val = nullptr;
-    switch(dt){
-    case DT_Real:
-      val = new TimeHistoryValueT<Real>(m_sd,name,index,sub_size,isShrinkActive(), need_update);
-      break;
-    case DT_Int32:
-      val = new TimeHistoryValueT<Int32>(m_sd,name,index,sub_size,isShrinkActive(), need_update);
-      break;
-    case DT_Int64:
-      val = new TimeHistoryValueT<Int64>(m_sd,name,index,sub_size,isShrinkActive(), need_update);
-      break;
-    default:
-      break;
+    if(support_str.null()){
+      switch(dt){
+      case DT_Real:
+        val = new TimeHistoryValueT<Real>(m_sd,name,index,sub_size,isShrinkActive());
+        break;
+      case DT_Int32:
+        val = new TimeHistoryValueT<Int32>(m_sd,name,index,sub_size,isShrinkActive());
+        break;
+      case DT_Int64:
+        val = new TimeHistoryValueT<Int64>(m_sd,name,index,sub_size,isShrinkActive());
+        break;
+      default:
+        break;
+      }
+    }
+    else{
+      MeshHandle mh = m_sd->meshMng()->findMeshHandle(support_str);
+      switch(dt){
+      case DT_Real:
+        val = new TimeHistoryValueT<Real>(mh,name,index,sub_size,isShrinkActive());
+        break;
+      case DT_Int32:
+        val = new TimeHistoryValueT<Int32>(mh,name,index,sub_size,isShrinkActive());
+        break;
+      case DT_Int64:
+        val = new TimeHistoryValueT<Int64>(mh,name,index,sub_size,isShrinkActive());
+        break;
+      default:
+        break;
+      }
+    }
+    if(need_update){
+      val->fromOldToNewVariables(m_sd);
     }
     if (!val)
       ARCANE_FATAL("Bad data-type");
