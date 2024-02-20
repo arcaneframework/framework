@@ -278,8 +278,14 @@ class TimeHistoryValueT
         iterations_to_write.add(iter);
       }
     }
-    TimeHistoryCurveInfo curve_info(name(),iterations_to_write,values_to_write,sub_size);
-    writer->writeCurve(curve_info);
+    if(!meshHandle().isNull()){
+      TimeHistoryCurveInfo curve_info(name(), meshHandle().meshName(), iterations_to_write, values_to_write, sub_size);
+      writer->writeCurve(curve_info);
+    }
+    else{
+      TimeHistoryCurveInfo curve_info(name(), iterations_to_write, values_to_write, sub_size);
+      writer->writeCurve(curve_info);
+    }
   }
 
   void applyTransformation(ITraceMng* msg,ITimeHistoryTransformer* v) override

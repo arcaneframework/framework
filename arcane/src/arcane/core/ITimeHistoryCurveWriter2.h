@@ -42,15 +42,32 @@ class TimeHistoryCurveInfo
 {
  public:
 
-  TimeHistoryCurveInfo(const String& aname,Int32ConstArrayView aiterations,
-                       RealConstArrayView avalues,Integer sub_size)
-  : m_name(aname), m_iterations(aiterations), m_values(avalues),
-    m_sub_size(sub_size){}
+  TimeHistoryCurveInfo(const String& aname, Int32ConstArrayView aiterations,
+                       RealConstArrayView avalues, Integer sub_size)
+  : m_name(aname)
+  , m_support()
+  , m_has_support(false)
+  , m_iterations(aiterations)
+  , m_values(avalues)
+  , m_sub_size(sub_size)
+  {}
+
+  TimeHistoryCurveInfo(const String& aname, const String& asupport, Int32ConstArrayView aiterations,
+                       RealConstArrayView avalues, Integer sub_size)
+  : m_name(aname)
+  , m_support(asupport)
+  , m_has_support(true)
+  , m_iterations(aiterations)
+  , m_values(avalues)
+  , m_sub_size(sub_size)
+  {}
 
  public:
 
   //! Nom de la courbe
   const String& name() const { return m_name; }
+  const String& support() const { return m_support; }
+  bool hasSupport() const { return m_has_support; }
   //! Liste des itérations
   Int32ConstArrayView iterations() const { return m_iterations; }
   //! Liste des valeurs de la courbe
@@ -64,6 +81,8 @@ class TimeHistoryCurveInfo
  private:
 #endif
   String m_name;
+  String m_support;
+  bool m_has_support;
   Int32ConstArrayView m_iterations;
   RealConstArrayView m_values;
   Integer m_sub_size;
