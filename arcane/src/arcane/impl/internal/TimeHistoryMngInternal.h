@@ -175,8 +175,8 @@ class TimeHistoryValueT
 
   TimeHistoryValueT(const MeshHandle& mesh_handle, const String& name, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(name, mesh_handle, DataTypeTraitsT<DataType>::type(), index, nb_element)
-  , m_values(VariableBuildInfo(mesh_handle, String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(mesh_handle, String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
+  , m_values(VariableBuildInfo(mesh_handle, String("TimeHistoryMngValues")+index,VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(mesh_handle, String("TimeHistoryMngIterations")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {

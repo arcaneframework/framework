@@ -331,7 +331,15 @@ _dumpSummaryOfCurves()
     ofile << "<curves>\n";
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
       const TimeHistoryValue& th = *(i->second);
-      ofile << "<curve name='" <<  th.name() << "'/>\n";
+      if(!th.meshHandle().isNull()){
+        ofile << "<curve name='" << th.name()
+              << "' support='" << th.meshHandle().meshName()
+              << "'/>\n"
+        ;
+      }
+      else{
+        ofile << "<curve name='" <<  th.name() << "'/>\n";
+      }
     }
     if (m_enable_non_io_master_curves) {
       for(Integer i=0;i<parallel_mng->commSize();++i)
@@ -339,11 +347,23 @@ _dumpSummaryOfCurves()
           Integer nb_curve = 0 ;
           parallel_mng->recv(ArrayView<Integer>(1,&nb_curve),i);
           for(Integer icurve=0;icurve<nb_curve;++icurve) {
-            Integer length = 0 ;
-            parallel_mng->recv(ArrayView<Integer>(1,&length),i) ;
-            UniqueArray<char> buf(length) ;
-            parallel_mng->recv(buf,i) ;
-            ofile << "<curve name='" <<  buf.unguardedBasePointer() << "'/>\n";
+            UniqueArray<Int32> length(2);
+            parallel_mng->recv(length,i);
+            if(length[1] == 0){
+              UniqueArray<char> buf(length[0]);
+              parallel_mng->recv(buf,i);
+              ofile << "<curve name='" << buf.unguardedBasePointer() << "'/>\n";
+            }
+            else{
+              UniqueArray<char> buf(length[0]);
+              UniqueArray<char> buf2(length[1]);
+              parallel_mng->recv(buf,i);
+              parallel_mng->recv(buf2,i);
+              ofile << "<curve name='" <<  buf.unguardedBasePointer()
+                    << "' support='" << buf2.unguardedBasePointer()
+                    << "'/>\n"
+              ;
+            }
           }
         }
     }
@@ -354,10 +374,21 @@ _dumpSummaryOfCurves()
     parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
       const TimeHistoryValue& th = *(i->second);
-      String name = th.name() ;
-      Integer length = arcaneCheckArraySize(name.length()+1);
-      parallel_mng->send(ArrayView<Integer>(1,&length),master_io_rank) ;
-      parallel_mng->send(ConstArrayView<char>(length, static_cast<const char*>(name.localstr())), master_io_rank);
+      String name = th.name();
+      UniqueArray<Int32> length(2);
+      length[0] = arcaneCheckArraySize(name.length()+1);
+      if(th.meshHandle().isNull()){
+        length[1] = 0;
+        parallel_mng->send(length, master_io_rank);
+        parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
+      }
+      else{
+        String mesh_name = th.meshHandle().meshName();
+        length[1] = arcaneCheckArraySize(mesh_name.length()+1);
+        parallel_mng->send(length, master_io_rank);
+        parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
+        parallel_mng->send(ConstArrayView<char>(length[1],static_cast<const char*>(mesh_name.localstr())), master_io_rank);
+      }
     }
   }
 }
