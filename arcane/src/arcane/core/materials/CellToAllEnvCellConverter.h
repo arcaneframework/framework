@@ -69,14 +69,20 @@ namespace Arcane::Materials
  */
 class CellToAllEnvCellConverter
 {
- public:
+  friend class MeshMaterialMng;
 
-  explicit CellToAllEnvCellConverter(ConstArrayView<ComponentItemInternal> v)
-  : m_all_env_items_internal(v){}
+ public:
 
   explicit CellToAllEnvCellConverter(IMeshMaterialMng* mm)
   {
     *this = mm->cellToAllEnvCellConverter();
+  }
+
+ private:
+
+  explicit CellToAllEnvCellConverter(ComponentItemSharedInfo* shared_info)
+  : m_shared_info(shared_info)
+  {
   }
 
  public:
@@ -89,13 +95,15 @@ class CellToAllEnvCellConverter
   //! Converti une maille \a CellLocalId en maille \a AllEnvCell
   ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
   {
-    const ComponentItemInternal* p = &m_all_env_items_internal[c.localId()];
-    return AllEnvCell(matimpl::ConstituentItemBase(const_cast<ComponentItemInternal*>(p)));
+    //const ComponentItemInternal* p = &m_all_env_items_internal[c.localId()];
+    // Pour les AllEnvCell, l'index dans la liste est le localid() de la maille.
+    return AllEnvCell(m_shared_info->_item(ConstituentItemIndex(c.localId())));
   }
 
  private:
 
   ConstArrayView<ComponentItemInternal> m_all_env_items_internal;
+  ComponentItemSharedInfo* m_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

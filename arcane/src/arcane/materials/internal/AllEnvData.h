@@ -55,11 +55,6 @@ class AllEnvData
 
  public:
 
-  ConstArrayView<ComponentItemInternal> allEnvItemsInternal()
-  {
-    return m_item_internal_data.allEnvItemsInternal();
-  }
-
   //! Notification de la fin de création des milieux/matériaux
   void endCreate(bool is_continue);
 

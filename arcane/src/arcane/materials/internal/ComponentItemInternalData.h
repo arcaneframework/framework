@@ -146,28 +146,22 @@ class ComponentItemInternalData
 
  public:
 
-  //! Liste des AllEnvCell. Uniquement pour les itérateurs.
-  ConstArrayView<ComponentItemInternal> allEnvItemsInternal() const
-  {
-    return m_all_env_items_internal;
-  }
-
   //! Retourne la AllEnvCell correspondant à la maille \a id
   matimpl::ConstituentItemBase allEnvItemBase(CellLocalId id)
   {
-    return matimpl::ConstituentItemBase(&m_all_env_items_internal[id.localId()]);
+    return matimpl::ConstituentItemBase(allEnvSharedInfo(),ConstituentItemIndex(id.localId()));
   }
 
   //! Retourne la EnvCell correspondant à l'indice \a index
   matimpl::ConstituentItemBase envItemBase(Int32 index)
   {
-    return matimpl::ConstituentItemBase(&m_env_items_internal[index]);
+    return matimpl::ConstituentItemBase(envSharedInfo(), ConstituentItemIndex(index));
   }
 
   //! Retourne la MatCell correspondant au milieu d'indice \a index du milieu \a env_index
   matimpl::ConstituentItemBase matItemBase(Int16 env_index,Int32 index)
   {
-    return matimpl::ConstituentItemBase(&m_mat_items_internal[env_index][index]);
+    return matimpl::ConstituentItemBase(matSharedInfo(), ConstituentItemIndex(matItemsInternalRange(env_index)[index]));
   }
 
   ComponentItemInternalRange allEnvItemsInternalRange() const
