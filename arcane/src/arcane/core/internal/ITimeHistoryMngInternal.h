@@ -20,6 +20,7 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/core/ITimeHistoryMng.h"
+#include "arcane/core/IMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,31 +41,26 @@ class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
  public:
   explicit TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp)
   : m_thp(thp)
-  , m_metadata()
-  , m_has_metadata(false)
+  , m_mesh(nullptr)
   {}
 
-  TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp, const String& metadata)
+  TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp, IMesh* mesh)
   : m_thp(thp)
-  , m_metadata(metadata)
-  , m_has_metadata(true)
+  , m_mesh(mesh)
   {}
 
   TimeHistoryAddValueArgInternal(const String& name, bool end_time, bool is_local)
   : m_thp(name, end_time, is_local)
-  , m_metadata()
-  , m_has_metadata(false)
+  , m_mesh(nullptr)
   {}
 
  public:
   const TimeHistoryAddValueArg& thp() const { return m_thp; }
-  const String& metadata() const { return m_metadata; }
-  bool hasMetadata() const { return m_has_metadata; }
+  IMesh* mesh() const { return m_mesh; }
 
  private:
   TimeHistoryAddValueArg m_thp;
-  String m_metadata; //TODO tmp
-  bool m_has_metadata;
+  IMesh* m_mesh;
 };
 
 /*---------------------------------------------------------------------------*/

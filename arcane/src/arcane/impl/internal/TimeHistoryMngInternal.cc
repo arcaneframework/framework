@@ -335,9 +335,9 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
   if (!m_is_active)
     return;
 
-  String name = thpi.thp().name().clone();
-  if(thpi.hasMetadata()){
-    name = name + "_" + thpi.metadata();
+  String name_to_find = thpi.thp().name().clone();
+  if(thpi.mesh() != nullptr){
+    name_to_find = name_to_find + "_" + thpi.mesh()->name();
   }
 
   Integer iteration = m_sd->commonVariables().globalIteration();
@@ -345,21 +345,25 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
   if (!thpi.thp().endTime() && iteration!=0)
     --iteration;
 
-  auto hl = m_history_list.find(name);
+  auto hl = m_history_list.find(name_to_find);
   TimeHistoryValueT<DataType>* th = nullptr;
   // Trouvé, on le retourne.
   if (hl!=m_history_list.end())
     th = dynamic_cast<TimeHistoryValueT<DataType>* >(hl->second);
   else{
-    th = new TimeHistoryValueT<DataType>(m_sd,name,(Integer)m_history_list.size(),
-                                          values.size(),isShrinkActive());
-    m_history_list.insert(HistoryValueType(name,th));
+    if(thpi.mesh() != nullptr) {
+      th = new TimeHistoryValueT<DataType>(thpi.mesh(), thpi.thp().name(), (Integer)m_history_list.size(), values.size(), isShrinkActive());
+    }
+    else{
+      th = new TimeHistoryValueT<DataType>(m_sd, thpi.thp().name(), (Integer)m_history_list.size(), values.size(), isShrinkActive());
+    }
+    m_history_list.insert(HistoryValueType(name_to_find, th));
   }
   if (!th)
     return;
   if (values.size()!=th->subSize()){
     ARCANE_FATAL("Bad subsize for curve '{0}' current={1} old={2}",
-                 name,values.size(),th->subSize());
+                 name_to_find, values.size(), th->subSize());
   }
   th->addValue(values,iteration);
 }

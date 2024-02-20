@@ -32,7 +32,7 @@ MeshTimeHistoryAdder(ITimeHistoryMng* thm, IMesh* mesh)
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Real value)
 {
-  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh->name()), value);
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh), value);
 }
 
 /*---------------------------------------------------------------------------*/

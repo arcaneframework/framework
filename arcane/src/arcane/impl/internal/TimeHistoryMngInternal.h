@@ -184,6 +184,17 @@ class TimeHistoryValueT
   , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMngIterations")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
+  , m_mesh_support(nullptr)
+  {
+  }
+
+  TimeHistoryValueT(IMesh* mesh, const String& name, Integer index, Integer nb_element, bool shrink=false)
+  : TimeHistoryValue(name, DataTypeTraitsT<DataType>::type(), index, nb_element)
+  , m_values(VariableBuildInfo(mesh,String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(mesh,String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
+  , m_use_compression(false)
+  , m_shrink_history(shrink)
+  , m_mesh_support(mesh)
   {
   }
 
@@ -299,6 +310,7 @@ class TimeHistoryValueT
   IterationList m_iterations;
   bool m_use_compression;
   bool m_shrink_history;
+  IMesh* m_mesh_support;
 };
 
 /*---------------------------------------------------------------------------*/
