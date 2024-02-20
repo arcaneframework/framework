@@ -194,23 +194,6 @@ class ComponentItemInternalData
 
   MeshMaterialMng* m_material_mng = nullptr;
 
-  UniqueArray<ComponentItemInternal> m_all_env_item_internal_storage;
-  UniqueArray<ComponentItemInternal> m_env_item_internal_storage;
-  UniqueArray<ComponentItemInternal> m_mat_item_internal_storage;
-  /*!
-   * \brief Liste des ComponentItemInternal pour les AllEnvcell.
-   *
-   * Les éléments de ce tableau peuvent être indexés directement avec
-   * le localId() de la maille.
-   */
-  ArrayView<ComponentItemInternal> m_all_env_items_internal;
-
-  //! Liste des ComponentItemInternal pour chaque milieu
-  ArrayView<ComponentItemInternal> m_env_items_internal;
-
-  //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
-  UniqueArray<ArrayView<ComponentItemInternal>> m_mat_items_internal;
-
   //! Liste des informations partagées
   UniqueArray<ComponentItemSharedInfo> m_shared_infos;
 
@@ -225,7 +208,6 @@ class ComponentItemInternalData
  private:
 
   void _initSharedInfos();
-  void _resetMatItemsInternal(Int32 env_index);
   //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
   void _resetItemsInternal();
 };

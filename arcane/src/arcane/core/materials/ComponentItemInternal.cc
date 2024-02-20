@@ -25,8 +25,6 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentItemInternal ComponentItemInternal::nullComponentItemInternal;
-
 ComponentItemSharedInfo ComponentItemSharedInfo::null_shared_info;
 ComponentItemSharedInfo* ComponentItemSharedInfo::null_shared_info_pointer = &ComponentItemSharedInfo::null_shared_info;
 

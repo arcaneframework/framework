@@ -21,7 +21,6 @@ namespace Arcane.Materials
     internal MeshEnvironmentListView m_components;
     internal ComponentItemSharedInfo* m_super_component_item_shared_info;
     internal ComponentItemSharedInfo* m_sub_component_item_shared_info;
-    internal ComponentItemInternalConstArrayView m_component_item_internal_view;
 
     internal Cell GlobalCell(Int32 constituent_local_id)
     {
@@ -50,29 +49,5 @@ namespace Arcane.Materials
     }
     internal Cell GlobalCell { get { return m_shared_info->GlobalCell(m_component_item_index); } }
     internal MatVarIndex MatVarIndex { get { return m_shared_info->VarIndex(m_component_item_index); } }
-}
-
-  [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct ComponentItemInternal
-  {
-    internal Int32 m_component_item_index;
-    internal ComponentItemSharedInfo* m_shared_info;
-  }
-
-  [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct ComponentItemInternalConstArrayView
-  {
-    internal Int32 m_size;
-    internal Arcane.Materials.ComponentItemInternal* m_ptr;
-  }
-}
-
-namespace Arcane
-{
-  [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct ComponentItemInternalPtrConstArrayView
-  {
-    internal Int32 m_size;
-    internal Arcane.Materials.ComponentItemInternal** m_ptr;
   }
 }

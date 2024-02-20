@@ -225,7 +225,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
       if (nb_mat != 0) {
         env_item._setFirstSubItem(mat_items_internal_range[cell_index]);
       }
-      cells_env[lid] = env_item._internalLocalId();
+      cells_env[lid] = env_item.constituentItemIndex();
       cell_index += nb_mat;
     }
   }
@@ -251,7 +251,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
         Int32 pos = cells_pos[lid];
         ++cells_pos[lid];
         matimpl::ConstituentItemBase ref_ii = item_internal_data->matItemBase(env_id,pos);
-        mat->setConstituentItem(z, ref_ii._internalLocalId());
+        mat->setConstituentItem(z, ref_ii.constituentItemIndex());
         ref_ii._setSuperAndGlobalItem(cells_env[lid], ItemLocalId(lid));
         ref_ii._setComponent(mat_id);
         ref_ii._setVariableIndex(mvi);

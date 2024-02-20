@@ -123,7 +123,6 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfoStorageView
 class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 : private ComponentItemSharedInfoStorageView
 {
-  friend class ComponentItemInternal;
   friend class ComponentItemInternalData;
   friend class CellComponentCellEnumerator;
   friend class ConstituentItemLocalIdList;
@@ -254,7 +253,13 @@ namespace Arcane::Materials::matimpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Informations générique sur une entité d'un constituant.
+ *
+ * Cette classe est le pendant de ItemInternal pour la gestion des matériaux
+ * et des milieux. Elle ne doit en principe pas être utilisée directement, sauf
+ * par les classes de Arcane. Il vaut mieux utiliser les
+ * classes ComponentCell,  MatCell, EnvCell ou AllEnvCell.
  */
 class ARCANE_CORE_EXPORT ConstituentItemBase
 {
@@ -272,18 +277,36 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 
  private:
 
-  inline constexpr ConstituentItemBase(ComponentItemSharedInfo* shared_info, ConstituentItemIndex id);
+  ARCCORE_HOST_DEVICE constexpr ConstituentItemBase(ComponentItemSharedInfo* shared_info, ConstituentItemIndex id)
+  : m_constituent_item_index(id)
+  , m_shared_info(shared_info)
+  {
+  }
 
  public:
 
   //! Indexeur dans les variables matériaux
-  inline ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const;
+  ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const
+  {
+    return m_shared_info->_varIndex(m_constituent_item_index);
+  }
+
+  ARCCORE_HOST_DEVICE ConstituentItemIndex constituentItemIndex() const
+  {
+    return m_constituent_item_index;
+  }
 
   //! Identifiant du composant
-  inline ARCCORE_HOST_DEVICE Int32 componentId() const;
+  ARCCORE_HOST_DEVICE Int32 componentId() const
+  {
+    return m_shared_info->_componentId(m_constituent_item_index);
+  }
 
   //! Indique s'il s'agit de la maille nulle.
-  inline ARCCORE_HOST_DEVICE constexpr bool null() const;
+  inline ARCCORE_HOST_DEVICE constexpr bool null() const
+  {
+    return m_constituent_item_index.isNull();
+  }
 
   /*!
    * \brief Composant associé.
@@ -291,18 +314,34 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
    * Cet appel n'est valide que pour les mailles matériaux ou milieux. Si on souhaite
    * un appel valide pour toutes les 'ComponentItem', il faut utiliser componentId().
    */
-  inline IMeshComponent* component() const;
+  inline IMeshComponent* component() const
+  {
+    return m_shared_info->_component(m_constituent_item_index);
+  }
 
   //! Nombre de sous-composants.
-  inline ARCCORE_HOST_DEVICE Int32 nbSubItem() const;
+  ARCCORE_HOST_DEVICE Int32 nbSubItem() const
+  {
+    return m_shared_info->_nbSubConstituent(m_constituent_item_index);
+  }
+
 
   //! Entité globale correspondante.
-  inline impl::ItemBase globalItemBase() const;
+  inline impl::ItemBase globalItemBase() const
+  {
+    return m_shared_info->_globalItemBase(m_constituent_item_index);
+  }
 
-  inline ARCCORE_HOST_DEVICE constexpr Int32 level() const;
+  inline ARCCORE_HOST_DEVICE constexpr Int32 level() const
+  {
+    return m_shared_info->m_level;
+  }
 
   //! Numéro unique de l'entité component
-  inline Int64 componentUniqueId() const;
+  inline Int64 componentUniqueId() const
+  {
+    return m_shared_info->_componentUniqueId(m_constituent_item_index);
+  }
 
  public:
 
@@ -320,41 +359,54 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
  private:
 
   //! Positionne l'indexeur dans les variables matériaux.
-  inline void _setVariableIndex(MatVarIndex index);
+  inline void _setVariableIndex(MatVarIndex index)
+{
+  m_shared_info->_setVarIndex(m_constituent_item_index, index);
+}
 
   //! Composant supérieur (0 si aucun)
   inline matimpl::ConstituentItemBase _superItemBase() const;
 
-  inline void _setSuperAndGlobalItem(ConstituentItemIndex cii, ItemLocalId ii);
+  inline void _setSuperAndGlobalItem(ConstituentItemIndex cii, ItemLocalId ii)
+  {
+    m_shared_info->_setSuperItem(m_constituent_item_index, cii);
+    m_shared_info->_setGlobalItem(m_constituent_item_index, ii);
+  }
 
-  inline void _setGlobalItem(ItemLocalId ii);
+  inline void _setGlobalItem(ItemLocalId ii)
+  {
+    m_shared_info->_setGlobalItem(m_constituent_item_index, ii);
+  }
 
   //! Première entité sous-composant.
-  inline ARCCORE_HOST_DEVICE ConstituentItemIndex _firstSubItemLocalId() const;
+  inline ARCCORE_HOST_DEVICE ConstituentItemIndex _firstSubItemLocalId() const
+  {
+    return m_shared_info->_firstSubConstituentLocalId(m_constituent_item_index);
+  }
 
   inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(Int32 i) const;
 
   //! Positionne le nombre de sous-composants.
-  inline void _setNbSubItem(Int16 nb_sub_item);
+  void _setNbSubItem(Int16 nb_sub_item)
+  {
+    m_shared_info->_setNbSubConstituent(m_constituent_item_index, nb_sub_item);
+  }
 
   //! Positionne le premier sous-composant.
-  inline void _setFirstSubItem(ConstituentItemIndex first_sub_item);
+  void _setFirstSubItem(ConstituentItemIndex first_sub_item)
+  {
+    m_shared_info->_setFirstSubConstituentLocalId(m_constituent_item_index, first_sub_item);
+  }
 
-  inline void _setComponent(Int16 component_id);
-
-  inline ARCCORE_HOST_DEVICE ConstituentItemIndex _internalLocalId() const;
-
-  inline void _reset(ConstituentItemIndex id, ComponentItemSharedInfo* shared_info);
+  void _setComponent(Int16 component_id)
+  {
+    m_shared_info->_setComponentId(m_constituent_item_index, component_id);
+  }
 
  private:
 
   ConstituentItemIndex m_constituent_item_index;
   ComponentItemSharedInfo* m_shared_info = ComponentItemSharedInfo::null_shared_info_pointer;
-
- private:
-
-  inline ARCCORE_HOST_DEVICE ComponentItemSharedInfo* _sharedInfo() const;
-  inline ARCCORE_HOST_DEVICE ConstituentItemIndex _constituentItemIndex() const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -367,78 +419,6 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 
 namespace Arcane::Materials
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Partie interne d'une maille matériau ou milieu.
- *
- * Cette classe est le pendant de ItemInternal pour la gestion des matériaux
- * et des milieux. Elle ne doit en principe pas être utilisée directement, sauf
- * par les classes de Arcane. Il vaut mieux utiliser les
- * classes ComponentCell,  MatCell, EnvCell ou AllEnvCell.
- *
- * \todo pour économiser la mémoire, utiliser un ComponentItemSharedInfo
- * pour stocker une fois les infos multiples.
- */
-class ARCANE_CORE_EXPORT ComponentItemInternal
-{
-  friend class ComponentItemInternalData;
-
-  friend matimpl::ConstituentItemBase;
-
- private:
-
-  //! Entité nulle
-  static ComponentItemInternal nullComponentItemInternal;
-
- public:
-
-  ComponentItemInternal() = default;
-
- protected:
-
-  // NOTE : Cette classe est partagée avec le wrapper C#
-  // Toute modification de la structure interne doit être reportée
-  // dans la structure C# correspondante
-  ConstituentItemIndex m_component_item_index;
-  ComponentItemSharedInfo* m_shared_info = nullptr;
-
- private:
-
-  void _reset(ConstituentItemIndex id, ComponentItemSharedInfo* shared_info)
-  {
-    m_component_item_index = id;
-    m_shared_info = shared_info;
-    m_shared_info->_reset(id);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline constexpr matimpl::ConstituentItemBase::
-ConstituentItemBase(ComponentItemSharedInfo* shared_info, ConstituentItemIndex id)
-: m_constituent_item_index(id)
-, m_shared_info(shared_info)
-{
-}
-
-inline ComponentItemSharedInfo* matimpl::ConstituentItemBase::
-_sharedInfo() const
-{
-  return m_shared_info;
-}
-
-inline ConstituentItemIndex matimpl::ConstituentItemBase::
-_constituentItemIndex() const
-{
-  return m_constituent_item_index;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -468,124 +448,16 @@ _subItemBase(ConstituentItemIndex id,Int32 sub_index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ARCCORE_HOST_DEVICE MatVarIndex matimpl::ConstituentItemBase::
-variableIndex() const
-{
-  return _sharedInfo()->_varIndex(_constituentItemIndex());
-}
-
-inline ARCCORE_HOST_DEVICE Int32 matimpl::ConstituentItemBase::
-componentId() const
-{
-  return m_shared_info->_componentId(m_constituent_item_index);
-}
-
-inline ARCCORE_HOST_DEVICE constexpr bool matimpl::ConstituentItemBase::
-null() const
-{
-  return m_constituent_item_index.isNull();
-}
-
-inline IMeshComponent* matimpl::ConstituentItemBase::
-component() const
-{
-  return m_shared_info->_component(m_constituent_item_index);
-}
-
-inline ARCCORE_HOST_DEVICE Int32 matimpl::ConstituentItemBase::
-nbSubItem() const
-{
-  return m_shared_info->_nbSubConstituent(m_constituent_item_index);
-}
-
-inline impl::ItemBase matimpl::ConstituentItemBase::
-globalItemBase() const
-{
-  return m_shared_info->_globalItemBase(m_constituent_item_index);
-}
-
-inline ARCCORE_HOST_DEVICE constexpr Int32 matimpl::ConstituentItemBase::
-level() const
-{
-  return m_shared_info->m_level;
-}
-
-inline Int64 matimpl::ConstituentItemBase::
-componentUniqueId() const
-{
-  return m_shared_info->_componentUniqueId(m_constituent_item_index);
-}
-
-inline void matimpl::ConstituentItemBase::
-_setVariableIndex(MatVarIndex index)
-{
-  _sharedInfo()->_setVarIndex(_constituentItemIndex(), index);
-}
-
 inline matimpl::ConstituentItemBase matimpl::ConstituentItemBase::
 _superItemBase() const
 {
   return m_shared_info->_superItemBase(m_constituent_item_index);
 }
 
-inline void matimpl::ConstituentItemBase::
-_setSuperAndGlobalItem(ConstituentItemIndex cii, ItemLocalId ii)
-{
-  _sharedInfo()->_setSuperItem(_constituentItemIndex(), cii);
-  _sharedInfo()->_setGlobalItem(_constituentItemIndex(), ii);
-}
-
-inline void matimpl::ConstituentItemBase::
-_setGlobalItem(ItemLocalId ii)
-{
-  _sharedInfo()->_setGlobalItem(_constituentItemIndex(), ii);
-}
-
-//! Première entité sous-composant.
-inline ARCCORE_HOST_DEVICE ConstituentItemIndex matimpl::ConstituentItemBase::
-_firstSubItemLocalId() const
-{
-  return m_shared_info->_firstSubConstituentLocalId(m_constituent_item_index);
-}
-
 inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase matimpl::ConstituentItemBase::
 _subItemBase(Int32 i) const
 {
   return m_shared_info->_subItemBase(m_constituent_item_index, i);
-}
-
-//! Positionne le nombre de sous-composants.
-inline void matimpl::ConstituentItemBase::
-_setNbSubItem(Int16 nb_sub_item)
-{
-  _sharedInfo()->_setNbSubConstituent(_constituentItemIndex(), nb_sub_item);
-}
-
-//! Positionne le premier sous-composant.
-inline void matimpl::ConstituentItemBase::
-_setFirstSubItem(ConstituentItemIndex first_sub_item)
-{
-  _sharedInfo()->_setFirstSubConstituentLocalId(_constituentItemIndex(), first_sub_item);
-}
-
-inline void matimpl::ConstituentItemBase::
-_setComponent(Int16 component_id)
-{
-  _sharedInfo()->_setComponentId(_constituentItemIndex(), component_id);
-}
-
-inline ARCCORE_HOST_DEVICE ConstituentItemIndex matimpl::ConstituentItemBase::
-_internalLocalId() const
-{
-  return m_constituent_item_index;
-}
-
-inline void matimpl::ConstituentItemBase::
-_reset(ConstituentItemIndex id, ComponentItemSharedInfo* shared_info)
-{
-  m_constituent_item_index = id;
-  m_shared_info = shared_info;
-  m_shared_info->_reset(id);
 }
 
 /*---------------------------------------------------------------------------*/
