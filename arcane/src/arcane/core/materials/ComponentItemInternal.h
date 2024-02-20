@@ -254,7 +254,13 @@ namespace Arcane::Materials::matimpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Informations générique sur une entité d'un constituant.
+ *
+ * Cette classe est le pendant de ItemInternal pour la gestion des matériaux
+ * et des milieux. Elle ne doit en principe pas être utilisée directement, sauf
+ * par les classes de Arcane. Il vaut mieux utiliser les
+ * classes ComponentCell,  MatCell, EnvCell ou AllEnvCell.
  */
 class ARCANE_CORE_EXPORT ConstituentItemBase
 {
@@ -344,8 +350,6 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 
   inline ARCCORE_HOST_DEVICE ConstituentItemIndex _internalLocalId() const;
 
-  inline void _reset(ConstituentItemIndex id, ComponentItemSharedInfo* shared_info);
-
  private:
 
   ConstituentItemIndex m_constituent_item_index;
@@ -367,56 +371,6 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 
 namespace Arcane::Materials
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Partie interne d'une maille matériau ou milieu.
- *
- * Cette classe est le pendant de ItemInternal pour la gestion des matériaux
- * et des milieux. Elle ne doit en principe pas être utilisée directement, sauf
- * par les classes de Arcane. Il vaut mieux utiliser les
- * classes ComponentCell,  MatCell, EnvCell ou AllEnvCell.
- *
- * \todo pour économiser la mémoire, utiliser un ComponentItemSharedInfo
- * pour stocker une fois les infos multiples.
- */
-class ARCANE_CORE_EXPORT ComponentItemInternal
-{
-  friend class ComponentItemInternalData;
-
-  friend matimpl::ConstituentItemBase;
-
- private:
-
-  //! Entité nulle
-  static ComponentItemInternal nullComponentItemInternal;
-
- public:
-
-  ComponentItemInternal() = default;
-
- protected:
-
-  // NOTE : Cette classe est partagée avec le wrapper C#
-  // Toute modification de la structure interne doit être reportée
-  // dans la structure C# correspondante
-  ConstituentItemIndex m_component_item_index;
-  ComponentItemSharedInfo* m_shared_info = nullptr;
-
- private:
-
-  void _reset(ConstituentItemIndex id, ComponentItemSharedInfo* shared_info)
-  {
-    m_component_item_index = id;
-    m_shared_info = shared_info;
-    m_shared_info->_reset(id);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -578,14 +532,6 @@ inline ARCCORE_HOST_DEVICE ConstituentItemIndex matimpl::ConstituentItemBase::
 _internalLocalId() const
 {
   return m_constituent_item_index;
-}
-
-inline void matimpl::ConstituentItemBase::
-_reset(ConstituentItemIndex id, ComponentItemSharedInfo* shared_info)
-{
-  m_constituent_item_index = id;
-  m_shared_info = shared_info;
-  m_shared_info->_reset(id);
 }
 
 /*---------------------------------------------------------------------------*/

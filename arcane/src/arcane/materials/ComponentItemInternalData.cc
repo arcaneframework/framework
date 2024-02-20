@@ -87,9 +87,6 @@ ComponentItemInternalData::
 ComponentItemInternalData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
 , m_material_mng(mmg)
-, m_all_env_item_internal_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
-, m_env_item_internal_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
-, m_mat_item_internal_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_shared_infos(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_mat_items_internal_range(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 , m_all_env_storage(MemoryUtils::getAllocatorForMostlyReadOnlyData())
@@ -109,7 +106,7 @@ void ComponentItemInternalData::
 endCreate()
 {
   const Int32 nb_env = m_material_mng->environments().size();
-  m_mat_items_internal.resize(nb_env);
+  //m_mat_items_internal.resize(nb_env);
   m_mat_items_internal_range.resize(nb_env);
   _initSharedInfos();
 }
@@ -122,23 +119,18 @@ endCreate()
 void ComponentItemInternalData::
 _resetItemsInternal()
 {
-  ConstituentItemIndex internal_local_id;
-  ArrayView<ComponentItemInternal> all_env_storage = m_all_env_item_internal_storage;
-  ArrayView<ComponentItemInternal> env_storage = m_env_item_internal_storage;
-  ArrayView<ComponentItemInternal> mat_storage = m_mat_item_internal_storage;
-
   ComponentItemSharedInfo* all_env_shared_info = allEnvSharedInfo();
   for (ConstituentItemIndex id : m_all_env_items_internal_range)
-    all_env_storage[id.localId()]._reset(id, all_env_shared_info);
+    all_env_shared_info->_reset(id);
 
   ComponentItemSharedInfo* env_shared_info = envSharedInfo();
   for (ConstituentItemIndex id : m_env_items_internal_range)
-    env_storage[id.localId()]._reset(id, env_shared_info);
+    env_shared_info->_reset(id);
 
   ComponentItemSharedInfo* mat_shared_info = matSharedInfo();
   for (ComponentItemInternalRange mat_range : m_mat_items_internal_range) {
     for (ConstituentItemIndex id : mat_range)
-      mat_storage[id.localId()]._reset(id, mat_shared_info);
+      mat_shared_info->_reset(id);
   }
 }
 
@@ -153,22 +145,19 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments())
     total_nb_mat_cell += env->totalNbCellMat();
 
-  // Redimensionne les conteneurs. Il ne fautdra plus les modifier par la suite
-  m_all_env_item_internal_storage.resize(max_local_id);
-  m_env_item_internal_storage.resize(total_nb_env_cell);
-  m_mat_item_internal_storage.resize(total_nb_mat_cell);
+  // Redimensionne les conteneurs. Il ne faudra plus les modifier par la suite
+  //m_all_env_item_internal_storage.resize(max_local_id);
+  //m_env_item_internal_storage.resize(total_nb_env_cell);
+  //m_mat_item_internal_storage.resize(total_nb_mat_cell);
 
   // Maintenant récupère les vues sur chaque partie du conteneur
   {
-    m_all_env_items_internal = m_all_env_item_internal_storage;
     m_all_env_items_internal_range.setRange(0, max_local_id);
-    m_env_items_internal = m_env_item_internal_storage;
     m_env_items_internal_range.setRange(0, total_nb_env_cell);
     Int32 index_in_container = 0;
     for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
       Int32 nb_cell_mat = env->totalNbCellMat();
       Int32 env_id = env->id();
-      m_mat_items_internal[env_id] = m_mat_item_internal_storage.subView(index_in_container, nb_cell_mat);
       m_mat_items_internal_range[env_id].setRange(index_in_container, nb_cell_mat);
       index_in_container += nb_cell_mat;
     }
