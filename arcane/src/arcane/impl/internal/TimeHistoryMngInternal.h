@@ -147,10 +147,38 @@ class TimeHistoryValueT
   const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
  public:
 
-  TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink=false)
+  TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink, bool update_variables)
   : TimeHistoryValue(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
-  , m_values(VariableBuildInfo(sd,String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(sd,String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
+  , m_values(VariableBuildInfo(sd,String("TimeHistoryMng_Values_")+index,VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMng_Iterations_")+index,VAR_BUILD_FLAGS))
+  , m_use_compression(false)
+  , m_shrink_history(shrink)
+  {
+    if(!update_variables) return;
+
+    IMesh* mesh0 = sd->defaultMesh();
+    IVariable* ptr_old_values = sd->variableMng()->findMeshVariable(mesh0, String("TimeHistory_Values_")+index);
+    IVariable* ptr_old_iterations = sd->variableMng()->findMeshVariable(mesh0, String("TimeHistory_Iterations_")+index);
+    if(ptr_old_values == nullptr || ptr_old_iterations == nullptr)
+      ARCANE_FATAL("Unknown old variable");
+
+    ValueList old_values(ptr_old_values);
+    IterationList old_iterations(ptr_old_iterations);
+
+    m_values.resize(old_values.size());
+    m_values.copy(old_values);
+
+    m_iterations.resize(old_iterations.size());
+    m_iterations.copy(old_iterations);
+
+    old_values.unregisterVariable();
+    old_iterations.unregisterVariable();
+  }
+
+  TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink)
+  : TimeHistoryValue(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
+  , m_values(VariableBuildInfo(sd,String("TimeHistoryMng_Values_")+index,VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMng_Iterations_")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
@@ -280,8 +308,8 @@ class TimeHistoryMngInternal
   explicit TimeHistoryMngInternal(ISubDomain* sd)
   : m_sd(sd)
   , m_tmng(sd->traceMng())
-  , m_th_meta_data(VariableBuildInfo(m_sd,"TimeHistoryMetaData"))
-  , m_th_global_time(VariableBuildInfo(m_sd,"TimeHistoryGlobalTime"))
+  , m_th_meta_data(VariableBuildInfo(m_sd,"TimeHistoryMng_MetaData"))
+  , m_th_global_time(VariableBuildInfo(m_sd,"TimeHistoryMng_GlobalTime"))
   , m_is_active(true)
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
@@ -365,6 +393,8 @@ class TimeHistoryMngInternal
   {
     m_curve_writers2.erase(writer);
   }
+
+  bool _fromOldFormat();
 
  private:
   ISubDomain* m_sd;

@@ -153,6 +153,8 @@ applyTransformation(ITimeHistoryTransformer* v)
 void TimeHistoryMngInternal::
 readVariables()
 {
+  bool need_update = _fromOldFormat();
+
   m_tmng->info(4) << "readVariables resizes m_global_time to " << m_th_global_time.size();
   m_global_times.resize(m_th_global_time.size());
   m_global_times.copy(m_th_global_time);
@@ -187,13 +189,13 @@ readVariables()
     TimeHistoryValue* val = nullptr;
     switch(dt){
     case DT_Real:
-      val = new TimeHistoryValueT<Real>(m_sd,name,index,sub_size,isShrinkActive());
+      val = new TimeHistoryValueT<Real>(m_sd,name,index,sub_size,isShrinkActive(), need_update);
       break;
     case DT_Int32:
-      val = new TimeHistoryValueT<Int32>(m_sd,name,index,sub_size,isShrinkActive());
+      val = new TimeHistoryValueT<Int32>(m_sd,name,index,sub_size,isShrinkActive(), need_update);
       break;
     case DT_Int64:
-      val = new TimeHistoryValueT<Int64>(m_sd,name,index,sub_size,isShrinkActive());
+      val = new TimeHistoryValueT<Int64>(m_sd,name,index,sub_size,isShrinkActive(), need_update);
       break;
     default:
       break;
@@ -371,6 +373,37 @@ _destroyAll()
     TimeHistoryValue* v = i->second;
     delete v;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool TimeHistoryMngInternal::
+_fromOldFormat()
+{
+  IMesh* mesh0 = m_sd->defaultMesh();
+
+  IVariable* ptr_old_global_time = m_sd->variableMng()->findMeshVariable(mesh0, "TimeHistoryGlobalTime");
+  if(ptr_old_global_time == nullptr)
+    return false;
+
+  IVariable* ptr_old_meta_data = m_sd->variableMng()->findMeshVariable(mesh0, "TimeHistoryMetaData");
+  if(ptr_old_meta_data == nullptr)
+    ARCANE_FATAL("TimeHistoryGlobalTime without TimeHistoryMetaData is not possible.");
+
+  m_tmng->warning() << "Old TimeHistory variables found (TimeHistoryGlobalTime and TimeHistoryMetaData). Copying in new variables...";
+
+  VariableArrayReal old_global_time(ptr_old_global_time);
+  VariableScalarString old_meta_data(ptr_old_meta_data);
+
+  m_th_global_time.resize(old_global_time.size());
+  m_th_global_time.copy(old_global_time);
+  m_th_meta_data.swapValues(old_meta_data);
+
+  old_global_time.unregisterVariable();
+  old_meta_data.unregisterVariable();
+
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
