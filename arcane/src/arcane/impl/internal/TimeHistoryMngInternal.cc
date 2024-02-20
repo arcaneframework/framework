@@ -234,6 +234,9 @@ readVariables()
       default:
         break;
       }
+      // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
+      // ou le même nom qu'un historique "globale".
+      name = name + "_" + mh.meshName();
     }
     if(need_update){
       val->fromOldToNewVariables(m_sd);
@@ -374,6 +377,8 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
 
   String name_to_find = thpi.thp().name().clone();
   if(!thpi.meshHandle().isNull()){
+    // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
+    // ou le même nom qu'un historique "globale".
     name_to_find = name_to_find + "_" + thpi.meshHandle().meshName();
   }
 
