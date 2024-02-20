@@ -59,18 +59,20 @@ namespace Arcane
  * Un historique contient un ensemble de valeurs pour certaines itérations.
  * Il est caractérisé par un nom.
  */
-class TimeHistoryValue2
+class TimeHistoryValue
 {
  public:
 
  public:
 
-  TimeHistoryValue2(const String& name,
-                    eDataType dt,
-                    Integer index,
-                    Integer sub_size)
-  : m_name(name), m_data_type(dt), m_index(index), m_sub_size(sub_size) {}
-  virtual ~TimeHistoryValue2()= default; //!< Libére les ressources
+  TimeHistoryValue(const String& name, eDataType dt, Integer index, Integer sub_size)
+  : m_name(name)
+  , m_data_type(dt)
+  , m_index(index)
+  , m_sub_size(sub_size)
+  {}
+
+  virtual ~TimeHistoryValue() = default; //!< Libére les ressources
 
  public:
 
@@ -124,8 +126,8 @@ class TimeHistoryValue2
  * Les historiques doivent être rangées par ordre croissant d'itération.
  */
 template<typename DataType>
-class TimeHistoryValue2T
-: public TimeHistoryValue2
+class TimeHistoryValueT
+: public TimeHistoryValue
 {
   /*
    * ATTENTION CE QUI EST DECRIT DANS CE COMMENTAIRE N'EST PAS ENCORE OPERATIONNEL
@@ -145,12 +147,8 @@ class TimeHistoryValue2T
   const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
  public:
 
-  TimeHistoryValue2T(ISubDomain* sd,
-                     const String& name,
-                     Integer index,
-                     Integer nb_element,
-                     bool shrink=false)
-  : TimeHistoryValue2(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
+  TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink=false)
+  : TimeHistoryValue(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
   , m_values(VariableBuildInfo(sd,String("TimeHistory_Values_")+index,VAR_BUILD_FLAGS))
   , m_iterations(VariableBuildInfo(sd,String("TimeHistory_Iterations_")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
@@ -301,7 +299,7 @@ class TimeHistoryMngInternal
     m_history_list.clear();
   }
 
-  typedef std::map<String, TimeHistoryValue2*> HistoryList;
+  typedef std::map<String, TimeHistoryValue*> HistoryList;
   typedef std::set<Ref<ITimeHistoryCurveWriter2>> CurveWriter2List;
   typedef HistoryList::value_type HistoryValueType;
 

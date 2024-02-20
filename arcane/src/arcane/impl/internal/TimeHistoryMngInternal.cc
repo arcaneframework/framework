@@ -54,7 +54,7 @@ updateMetaData()
   meta_data_str() << "<?xml version='1.0' ?>\n";
   meta_data_str() << "<curves>\n";
   for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-    TimeHistoryValue2* val = i->second;
+    TimeHistoryValue* val = i->second;
     meta_data_str() << "<curve "
                     << " name='" << val->name() << "'"
                     << " index='" << val->index() << "'"
@@ -107,7 +107,7 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
   TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
   writer->beginWrite(infos);
   for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-    const TimeHistoryValue2& th = *(i->second);
+    const TimeHistoryValue& th = *(i->second);
     th.dumpValues(m_tmng,writer,infos);
   }
   writer->endWrite();
@@ -141,7 +141,7 @@ applyTransformation(ITimeHistoryTransformer* v)
   if (!m_is_master_io && !m_enable_non_io_master_curves)
     return;
   for( IterT<HistoryList> i(m_history_list); i(); ++i ){
-    TimeHistoryValue2& th = *(i->second);
+    TimeHistoryValue& th = *(i->second);
     th.applyTransformation(m_tmng,v);
   }
 }
@@ -184,16 +184,16 @@ readVariables()
       ARCANE_FATAL("null name for curve");
     if (index<0)
       ARCANE_FATAL("Invalid index '{0}' for curve",index);
-    TimeHistoryValue2* val = nullptr;
+    TimeHistoryValue* val = nullptr;
     switch(dt){
     case DT_Real:
-      val = new TimeHistoryValue2T<Real>(m_sd,name,index,sub_size,isShrinkActive());
+      val = new TimeHistoryValueT<Real>(m_sd,name,index,sub_size,isShrinkActive());
       break;
     case DT_Int32:
-      val = new TimeHistoryValue2T<Int32>(m_sd,name,index,sub_size,isShrinkActive());
+      val = new TimeHistoryValueT<Int32>(m_sd,name,index,sub_size,isShrinkActive());
       break;
     case DT_Int64:
-      val = new TimeHistoryValue2T<Int64>(m_sd,name,index,sub_size,isShrinkActive());
+      val = new TimeHistoryValueT<Int64>(m_sd,name,index,sub_size,isShrinkActive());
       break;
     default:
       break;
@@ -287,7 +287,7 @@ _dumpSummaryOfCurves()
     ofile << "<?xml version='1.0' ?>\n";
     ofile << "<curves>\n";
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-      const TimeHistoryValue2& th = *(i->second);
+      const TimeHistoryValue& th = *(i->second);
       ofile << "<curve name='" <<  th.name() << "'/>\n";
     }
     if (m_enable_non_io_master_curves) {
@@ -310,7 +310,7 @@ _dumpSummaryOfCurves()
     Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
     parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-      const TimeHistoryValue2& th = *(i->second);
+      const TimeHistoryValue& th = *(i->second);
       String name = th.name() ;
       Integer length = arcaneCheckArraySize(name.length()+1);
       parallel_mng->send(ArrayView<Integer>(1,&length),master_io_rank) ;
@@ -343,12 +343,12 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
     --iteration;
 
   auto hl = m_history_list.find(name);
-  TimeHistoryValue2T<DataType>* th = nullptr;
+  TimeHistoryValueT<DataType>* th = nullptr;
   // Trouvé, on le retourne.
   if (hl!=m_history_list.end())
-    th = dynamic_cast<TimeHistoryValue2T<DataType>* >(hl->second);
+    th = dynamic_cast<TimeHistoryValueT<DataType>* >(hl->second);
   else{
-    th = new TimeHistoryValue2T<DataType>(m_sd,name,(Integer)m_history_list.size(),
+    th = new TimeHistoryValueT<DataType>(m_sd,name,(Integer)m_history_list.size(),
                                           values.size(),isShrinkActive());
     m_history_list.insert(HistoryValueType(name,th));
   }
@@ -368,7 +368,7 @@ void TimeHistoryMngInternal::
 _destroyAll()
 {
   for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-    TimeHistoryValue2* v = i->second;
+    TimeHistoryValue* v = i->second;
     delete v;
   }
 }
