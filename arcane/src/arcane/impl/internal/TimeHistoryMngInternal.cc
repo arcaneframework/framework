@@ -139,7 +139,7 @@ dumpHistory(bool is_verbose)
 
   _checkOutputPath();
   _dumpCurvesAllWriters(is_verbose);
-  _dumpSummaryOfCurves();
+  _dumpSummaryOfCurvesLegacy();
 
   m_tmng->info() << "Fin sortie historique: " << platform::getCurrentDateTime();
 }
@@ -319,7 +319,7 @@ _dumpCurvesAllWriters(bool is_verbose)
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
-_dumpSummaryOfCurves()
+_dumpSummaryOfCurvesLegacy()
 {
   // Génère un fichier xml contenant la liste des courbes de l'historique
   Directory out_dir(m_output_path);
@@ -332,10 +332,7 @@ _dumpSummaryOfCurves()
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
       const TimeHistoryValue& th = *(i->second);
       if(!th.meshHandle().isNull()){
-        ofile << "<curve name='" << th.name()
-              << "' support='" << th.meshHandle().meshName()
-              << "'/>\n"
-        ;
+        ofile << "<curve name='" <<  th.name() << "_" << th.meshHandle().meshName() << "'/>\n";
       }
       else{
         ofile << "<curve name='" <<  th.name() << "'/>\n";
@@ -359,10 +356,7 @@ _dumpSummaryOfCurves()
               UniqueArray<char> buf2(length[1]);
               parallel_mng->recv(buf,i);
               parallel_mng->recv(buf2,i);
-              ofile << "<curve name='" <<  buf.unguardedBasePointer()
-                    << "' support='" << buf2.unguardedBasePointer()
-                    << "'/>\n"
-              ;
+              ofile << "<curve name='" <<  buf.unguardedBasePointer() << "_" << buf2.unguardedBasePointer() << "'/>\n";
             }
           }
         }

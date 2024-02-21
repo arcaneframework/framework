@@ -413,7 +413,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void _checkOutputPath();
   void _destroyAll();
   void _dumpCurvesAllWriters(bool is_verbose);
-  void _dumpSummaryOfCurves();
+  void _dumpSummaryOfCurvesLegacy();
   void _removeCurveWriter(const Ref<ITimeHistoryCurveWriter2>& writer)
   {
     m_curve_writers2.erase(writer);
