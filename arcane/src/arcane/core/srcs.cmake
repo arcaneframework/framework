@@ -73,6 +73,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IVariableSynchronizerMngInternal.h
   internal/StringVariableReplace.h
   internal/StringVariableReplace.cc
+  internal/ITimeHistoryMngInternal.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -133,6 +134,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ITimeHistoryCurveWriter.h
   ITimeHistoryCurveWriter2.h
   ITimeHistoryMng.h
+  ITimeHistoryAdder.h
   ITimeLoopMng.h
   IUnitTest.h
   IVariable.h
@@ -498,6 +500,8 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshReaderMng.cc
   MeshStats.cc
   MeshStats.h
+  MeshTimeHistoryAdder.cc
+  MeshTimeHistoryAdder.h
   MeshToMeshTransposer.cc
   MeshToMeshTransposer.h
   MeshUtils.cc
