@@ -386,6 +386,14 @@ fillCommandLineArguments(StringList& arg_list);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Taille des pages du système hôte en octets
+ */
+extern "C++" ARCANE_UTILS_EXPORT Int64
+getPageSize();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Définition du pragma pour indiquer l'indépendance des itérations
 
