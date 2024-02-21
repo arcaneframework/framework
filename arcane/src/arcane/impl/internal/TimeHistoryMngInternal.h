@@ -40,6 +40,7 @@
 #include "arcane/ServiceFinder2.h"
 #include "arcane/ServiceBuilder.h"
 #include "arcane/core/CommonVariables.h"
+#include "arcane/core/Properties.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 
@@ -338,6 +339,8 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   , m_is_active(true)
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
+  , m_properties(new Properties(sd->propertyMng(), "ArcaneTimeHistoryProperties_"))
+  , m_version(2)
   {
     m_enable_non_io_master_curves = !platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null();
     // Seul le sous-domaine maître des IO rend actif les time history.
@@ -419,7 +422,8 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
     m_curve_writers2.erase(writer);
   }
 
-  bool _fromOldFormat();
+  void _fromLegacyFormat();
+  void _saveProperties();
 
  private:
   ISubDomain* m_sd;
@@ -437,7 +441,8 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   bool m_is_active; //!< Indique si le service est actif.
   bool m_is_shrink_active; //!< Indique si la compression de l'historique est active
   bool m_is_dump_active; //!< Indique si les dump sont actifs
-
+  Properties* m_properties;
+  Integer m_version;
 };
 
 /*---------------------------------------------------------------------------*/

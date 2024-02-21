@@ -53,7 +53,7 @@ updateMetaData()
   OStringStream meta_data_str;
 
   meta_data_str() << "<?xml version='1.0' ?>\n";
-  meta_data_str() << "<curves version='1'>\n";
+  meta_data_str() << "<curves>\n";
   for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
     TimeHistoryValue* val = i->second;
     if(val->meshHandle().isNull()){
@@ -83,8 +83,19 @@ updateMetaData()
   }
 
   updateGlobalTimeCurve();
+  _saveProperties();
+
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TimeHistoryMngInternal::
+_saveProperties()
+{
+  auto p = m_properties;
+  p->setInt32("version", m_version);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -165,7 +176,24 @@ applyTransformation(ITimeHistoryTransformer* v)
 void TimeHistoryMngInternal::
 readVariables()
 {
-  bool need_update = _fromOldFormat();
+  bool need_update = false;
+
+  auto p = m_properties;
+
+  Int32 version = 0;
+  if (!p->get("version", version)){
+    version = 1;
+    m_tmng->info() << "The checkpoint contains legacy format of TimeHistory variables, updating...";
+    _fromLegacyFormat();
+    need_update = true;
+  }
+  else if(version == 2){
+    m_tmng->info() << "TimeHistory Variables version 2";
+  }
+  else{
+    ARCANE_FATAL("Unknown TimeHistory Variables format -- Found version: {0}", version);
+  }
+
 
   m_tmng->info(4) << "readVariables resizes m_global_time to " << m_th_global_time.size();
   m_global_times.resize(m_th_global_time.size());
@@ -182,7 +210,6 @@ readVariables()
   }
   XmlNode root_node = doc->documentNode();
   XmlNode curves_node = root_node.child(String("curves"));
-  //Integer version = curves_node.attr("version").valueAsInteger();
   XmlNodeList curves = curves_node.children(String("curve"));
   String ustr_name("name");
   String ustr_index("index");
@@ -218,6 +245,9 @@ readVariables()
       default:
         break;
       }
+      if(need_update){
+        val->fromOldToNewVariables(m_sd);
+      }
     }
     else{
       MeshHandle mh = m_sd->meshMng()->findMeshHandle(support_str);
@@ -237,9 +267,6 @@ readVariables()
       // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
       // ou le même nom qu'un historique "globale".
       name = name + "_" + mh.meshName();
-    }
-    if(need_update){
-      val->fromOldToNewVariables(m_sd);
     }
     if (!val)
       ARCANE_FATAL("Bad data-type");
@@ -445,26 +472,22 @@ _destroyAll()
     TimeHistoryValue* v = i->second;
     delete v;
   }
+  m_properties->destroy();
+  delete m_properties;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool TimeHistoryMngInternal::
-_fromOldFormat()
+void TimeHistoryMngInternal::
+_fromLegacyFormat()
 {
-  if(!m_th_global_time.empty()) return false;
   IMesh* mesh0 = m_sd->defaultMesh();
 
   IVariable* ptr_old_global_time = m_sd->variableMng()->findMeshVariable(mesh0, "TimeHistoryGlobalTime");
-  if(ptr_old_global_time == nullptr)
-    return false;
-
   IVariable* ptr_old_meta_data = m_sd->variableMng()->findMeshVariable(mesh0, "TimeHistoryMetaData");
-  if(ptr_old_meta_data == nullptr)
-    ARCANE_FATAL("TimeHistoryGlobalTime without TimeHistoryMetaData is not possible.");
-
-  m_tmng->warning() << "Old TimeHistory variables found (TimeHistoryGlobalTime and TimeHistoryMetaData). Copying in new variables...";
+  if(ptr_old_global_time == nullptr || ptr_old_meta_data == nullptr)
+    ARCANE_FATAL("TimeHistoryGlobalTime or TimeHistoryMetaData is not found.");
 
   VariableArrayReal old_global_time(ptr_old_global_time);
   VariableScalarString old_meta_data(ptr_old_meta_data);
@@ -475,8 +498,6 @@ _fromOldFormat()
 
   old_global_time.resize(0);
   old_meta_data.reset();
-
-  return true;
 }
 
 /*---------------------------------------------------------------------------*/
