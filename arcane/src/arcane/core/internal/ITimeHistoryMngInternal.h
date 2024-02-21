@@ -35,7 +35,7 @@ class ITimeHistoryTransformer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class TimeHistoryAddValueArgInternal
+class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
 {
  public:
   explicit TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp)
@@ -70,7 +70,7 @@ class TimeHistoryAddValueArgInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ITimeHistoryMngInternal
+class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
 {
  public:
   virtual ~ITimeHistoryMngInternal() = default; //!< Libère les ressources
