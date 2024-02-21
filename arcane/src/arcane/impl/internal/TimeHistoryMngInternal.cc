@@ -52,7 +52,7 @@ updateMetaData()
   OStringStream meta_data_str;
 
   meta_data_str() << "<?xml version='1.0' ?>\n";
-  meta_data_str() << "<curves>\n";
+  meta_data_str() << "<curves version='1'>\n";
   for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
     TimeHistoryValue* val = i->second;
     meta_data_str() << "<curve "
@@ -170,6 +170,7 @@ readVariables()
   }
   XmlNode root_node = doc->documentNode();
   XmlNode curves_node = root_node.child(String("curves"));
+  //Integer version = curves_node.attr("version").valueAsInteger();
   XmlNodeList curves = curves_node.children(String("curve"));
   String ustr_name("name");
   String ustr_index("index");
@@ -381,6 +382,7 @@ _destroyAll()
 bool TimeHistoryMngInternal::
 _fromOldFormat()
 {
+  if(!m_th_global_time.empty()) return false;
   IMesh* mesh0 = m_sd->defaultMesh();
 
   IVariable* ptr_old_global_time = m_sd->variableMng()->findMeshVariable(mesh0, "TimeHistoryGlobalTime");
@@ -400,8 +402,8 @@ _fromOldFormat()
   m_th_global_time.copy(old_global_time);
   m_th_meta_data.swapValues(old_meta_data);
 
-  old_global_time.unregisterVariable();
-  old_meta_data.unregisterVariable();
+  old_global_time.resize(0);
+  old_meta_data.reset();
 
   return true;
 }

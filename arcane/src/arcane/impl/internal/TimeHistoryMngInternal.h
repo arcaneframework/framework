@@ -149,8 +149,8 @@ class TimeHistoryValueT
 
   TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink, bool update_variables)
   : TimeHistoryValue(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
-  , m_values(VariableBuildInfo(sd,String("TimeHistoryMng_Values_")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMng_Iterations_")+index,VAR_BUILD_FLAGS))
+  , m_values(VariableBuildInfo(sd,String("TimeHistoryMngValues")+index,VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMngIterations")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
@@ -171,14 +171,14 @@ class TimeHistoryValueT
     m_iterations.resize(old_iterations.size());
     m_iterations.copy(old_iterations);
 
-    old_values.unregisterVariable();
-    old_iterations.unregisterVariable();
+    old_values.resize(0);
+    old_iterations.resize(0);
   }
 
   TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
-  , m_values(VariableBuildInfo(sd,String("TimeHistoryMng_Values_")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMng_Iterations_")+index,VAR_BUILD_FLAGS))
+  , m_values(VariableBuildInfo(sd,String("TimeHistoryMngValues")+index,VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMngIterations")+index,VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
@@ -308,8 +308,8 @@ class TimeHistoryMngInternal
   explicit TimeHistoryMngInternal(ISubDomain* sd)
   : m_sd(sd)
   , m_tmng(sd->traceMng())
-  , m_th_meta_data(VariableBuildInfo(m_sd,"TimeHistoryMng_MetaData"))
-  , m_th_global_time(VariableBuildInfo(m_sd,"TimeHistoryMng_GlobalTime"))
+  , m_th_meta_data(VariableBuildInfo(m_sd,"TimeHistoryMngMetaData"))
+  , m_th_global_time(VariableBuildInfo(m_sd,"TimeHistoryMngGlobalTime"))
   , m_is_active(true)
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
