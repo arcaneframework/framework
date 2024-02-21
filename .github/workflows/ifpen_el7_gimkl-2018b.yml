@@ -57,7 +57,7 @@ jobs:
 
       - name: Restore cache
         id: restore-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ifpen-el7-gimkl-2018b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
@@ -69,7 +69,7 @@ jobs:
         id: checkout
         if: |
           (success() || failure())
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
@@ -130,7 +130,7 @@ jobs:
         run: tar czf build-artifact.tar.gz ${{ env.BUILD_DIR }}
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact
           path: build-artifact.tar.gz
@@ -141,7 +141,7 @@ jobs:
         if: |
           (success() || failure()) &&
           steps.build.outcome == 'success'
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
@@ -164,13 +164,13 @@ jobs:
         id: checkout
         if: |
           (success() || failure())
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
 
       - name: Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact
 
@@ -189,7 +189,7 @@ jobs:
 
       - name: Upload test artifact
         id: upload-test-artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: |
           (success() || failure()) &&
           steps.test.outcome == 'failure'
