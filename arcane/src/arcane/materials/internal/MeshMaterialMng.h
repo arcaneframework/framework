@@ -24,6 +24,8 @@
 #include "arcane/core/materials/MatItemEnumerator.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
+#include "arcane/accelerator/core/Runner.h"
+
 #include "arcane/materials/MeshBlock.h"
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
 #include "arcane/materials/internal/MeshMaterial.h"
@@ -261,6 +263,10 @@ class MeshMaterialMng
 
   IMeshMaterialMngInternal* _internalApi() const override { return m_internal_api.get(); }
 
+ public:
+
+  Runner runner() const { return m_runner; }
+
  private:
 
   AllCellToAllEnvCell* getAllCellToAllEnvCell() const { return m_allcell_2_allenvcell; }
@@ -328,6 +334,7 @@ class MeshMaterialMng
   AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
   bool m_is_allcell_2_allenvcell = false;
 
+  Runner m_runner;
 
  private:
 
