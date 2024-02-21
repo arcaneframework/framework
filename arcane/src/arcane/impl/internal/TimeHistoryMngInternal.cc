@@ -317,7 +317,7 @@ _dumpSummaryOfCurves()
       String name = th.name() ;
       Integer length = arcaneCheckArraySize(name.length()+1);
       parallel_mng->send(ArrayView<Integer>(1,&length),master_io_rank) ;
-      parallel_mng->send(ArrayView<char>(length,(char*)name.localstr()),master_io_rank) ;
+      parallel_mng->send(ConstArrayView<char>(length, static_cast<const char*>(name.localstr())), master_io_rank);
     }
   }
 }
