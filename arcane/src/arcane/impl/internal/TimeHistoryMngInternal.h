@@ -9,6 +9,9 @@
 /*                                                                           */
 /* Classe interne gérant un historique de valeurs.                           */
 /*---------------------------------------------------------------------------*/
+#ifndef ARCANE_IMPL_INTERNAL_TIMEHISTORYMNGINTERNAL_H
+#define ARCANE_IMPL_INTERNAL_TIMEHISTORYMNGINTERNAL_H
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Iostream.h"
@@ -301,7 +304,7 @@ class TimeHistoryValueT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class TimeHistoryMngInternal
+class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
 : public ITimeHistoryMngInternal
 {
  public:
@@ -422,3 +425,5 @@ class TimeHistoryMngInternal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif

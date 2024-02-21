@@ -9,6 +9,9 @@
 /*                                                                           */
 /* Classe permettant d'ajouter un historique de valeur lié à un maillage.    */
 /*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_MESHTIMEHISTORYADDER_H
+#define ARCANE_CORE_MESHTIMEHISTORYADDER_H
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ITimeHistoryAdder.h"
@@ -45,3 +48,5 @@ class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif
