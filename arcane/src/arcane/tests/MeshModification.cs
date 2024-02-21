@@ -207,7 +207,11 @@ public class MeshModificationService
         Real3 center = new Real3();
         foreach(Node n in c.Nodes){
           center += nodes_coords[n];
-          Trace.Info("ADD CENTER {0}",nodes_coords[n]);
+          Trace.Info("ADD CENTER {0} node_uid={1} cell={2}",nodes_coords[n],n.UniqueId,c.UniqueId);
+          Trace.Info("node_nb_cell={0}",n.NbCell);
+          foreach(Cell c2 in n.Cells){
+            Trace.Info("SUB NODE {0}",c2.UniqueId);
+          }
         }
         center /= (Real)c.NbNode;
         Int64 node_uid = max_node_uid + index;

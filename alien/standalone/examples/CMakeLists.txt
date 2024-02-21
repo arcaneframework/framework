@@ -18,9 +18,51 @@ find_package(MPI REQUIRED)
 find_package(Boost COMPONENTS program_options)
 
 if(ALIEN_USE_SYCL)
-add_executable(sycl_example.exe test_sycl.cpp)
+    IF(ALIEN_USE_HIPSYCL)
+      find_package(hipSYCL CONFIG REQUIRED)
+      message(status "HIPSYCL                : ${hipSYCL_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+    IF(ALIEN_USE_INTELDPCPP)
+      find_package(IntelDPCPP CONFIG REQUIRED)
+      message(status "IntelDPCPP : ${IntelDPCPP_FOUND}")
+      message(status "IntelDPCPP FOUND : ${IntelDPCPP_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+    IF(ALIEN_USE_INTELSYCL)
+      set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+      find_package(IntelSYCL REQUIRED)
+      message(status "IntelSYCL              : ${IntelSYCL_FOUND}")
+      message(status "IntelSYCL FOUND        : ${IntelSYCL_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+      message(status "      SYCL LINK FLAGS  : ${SYCL_LINK_FLAGS}")
+    ENDIF()
 
-target_link_libraries(sycl_example.exe PUBLIC
+    add_executable(sycl_example.exe test_sycl.cpp)
+    IF(ALIEN_USE_HIPSYCL)
+	add_sycl_to_target(TARGET  sycl_example.exe
+	                   SOURCES test_sycl.cpp)
+    ENDIF()
+    IF(ALIEN_USE_INTELSYCL)
+        IF(ALIEN_USE_CUDA)
+	  set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+	  target_compile_options(sycl_example.exe PRIVATE ${DPCPP_FLAGS})
+	  target_link_options(sycl_example.exe PRIVATE ${DPCPP_FLAGS})
+        ENDIF()
+	#set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+        #target_compile_options(sycl_example.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
+	add_sycl_to_target(TARGET  sycl_example.exe
+	                   SOURCES test_sycl.cpp)
+
+    ENDIF()
+    
+    target_link_libraries(sycl_example.exe PUBLIC
                       Alien::alien_core
                       Alien::alien_semantic_ref
                       arcconpkg_MPI
@@ -47,7 +89,20 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
 endif()
 
 if(ALIEN_USE_SYCL)
-  target_compile_definitions(krylov_example.exe PUBLIC -DALIEN_USE_SYCL)
+  target_compile_definitions(krylov_example.exe PUBLIC -DALIEN_USE_SYCL) 
+  IF(ALIEN_USE_HIPSYCL)
+    add_sycl_to_target(TARGET  krylov_example.exe
+                        SOURCES test_krylov.cpp)
+  ENDIF()
+  IF(ALIEN_USE_INTELSYCL)
+    #set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+    IF(ALIEN_USE_CUDA)
+      set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+      target_compile_options(krylov_example.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+    ENDIF()
+    add_sycl_to_target(TARGET  krylov_example.exe
+                        SOURCES test_krylov.cpp)
+  ENDIF()
 endif()
  
 target_link_libraries(krylov_example.exe PUBLIC

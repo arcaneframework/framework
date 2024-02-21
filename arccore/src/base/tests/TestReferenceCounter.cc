@@ -121,7 +121,7 @@ TEST(ReferenceCounter, Ref)
   }
   {
     StatInfo stat_info;
-    _doTest1(makeRef(new Simple2(&stat_info)));
+    _doTest1(createRef<Simple2>(&stat_info));
     ASSERT_TRUE(stat_info.checkValid(0)) << "Bad destroy3";
   }
 }
@@ -174,7 +174,7 @@ TEST(ReferenceCounter, RefWithDeleter)
     using namespace Test1;
     Ref<ITestClassWithDeleter> myx2;
     {
-      Ref<ITestClassWithDeleter> myx1 = makeRef<ITestClassWithDeleter>(new TestClassWithDeleter());
+      Ref<ITestClassWithDeleter> myx1 = makeRef<TestClassWithDeleter>(new TestClassWithDeleter());
       myx2 = myx1;
     }
     myx2.reset();
@@ -182,6 +182,23 @@ TEST(ReferenceCounter, RefWithDeleter)
     {
       auto* ptr1 = new TestClassWithDeleter();
       Ref<ITestClassWithDeleter> x4 = Ref<ITestClassWithDeleter>::createWithHandle(ptr1,external_ref);
+    }
+    {
+      Ref<ITestClassWithDeleter> myx3 = createRef<TestClassWithDeleter>();
+      myx2 = myx3;
+      bool is_ok = false;
+      if (myx3)
+        is_ok = true;
+      ASSERT_TRUE(is_ok);
+      ASSERT_FALSE(!myx3);
+    }
+    {
+      Ref<ITestClassWithDeleter> myx4;
+      bool is_null = true;
+      if (myx4)
+        is_null = false;
+      ASSERT_TRUE(is_null);
+      ASSERT_TRUE(!myx4);
     }
   }
   catch(const std::exception& ex){

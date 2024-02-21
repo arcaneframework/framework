@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshComponentInternal.h                                    (C) 2000-2023 */
+/* IMeshComponentInternal.h                                    (C) 2000-2024 */
 /*                                                                           */
 /* API interne Arcane de 'IMeshComponent'.                                   */
 /*---------------------------------------------------------------------------*/
@@ -39,8 +39,8 @@ class ARCANE_CORE_EXPORT IMeshComponentInternal
   //! Indexeur pour accéder aux variables partielles.
   virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
 
-  //! Vue sur les mailles du composant.
-  virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const = 0;
+  //! Vue sur les mailles du constituant.
+  virtual ConstituentItemLocalIdListView constituentItemListView() const =0;
 
   //! Index pour accéder aux variables partielles.
   virtual Int32 variableIndexerIndex() const =0;

@@ -3,11 +3,13 @@
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
     AdiProjectionModule.cc
+    ${ARCANE_MATERIAL_SOURCES}
   )
   set(ARCANE_ACCELERATOR_SOURCES
     AdiProjectionModule.cc
     CartesianMeshTestUtils.cc
     MeshMaterialSyncUnitTest.cc
+    MaterialHeatTestModule.cc
   )
   arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 endif()
@@ -21,7 +23,7 @@ arcane_add_library(arcane_cea_tests
 
 target_compile_definitions(arcane_cea_tests PRIVATE ARCANE_COMPONENT_arcane_cea_tests)
 
-target_link_libraries(arcane_cea_tests PUBLIC arcane_materials arcane_cea_geometric arcane_cea ${ARCANE_BASE_LIBRARIES})
+target_link_libraries(arcane_cea_tests PUBLIC $<TARGET_NAME_IF_EXISTS:arcane_materials> arcane_cea_geometric arcane_cea ${ARCANE_BASE_LIBRARIES})
 if(TARGET arcane_aleph)
   target_link_libraries(arcane_cea_tests PUBLIC arcane_aleph)
 endif()

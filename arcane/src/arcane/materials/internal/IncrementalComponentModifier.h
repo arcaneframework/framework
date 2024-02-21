@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalComponentModifier.h                              (C) 2000-2023 */
+/* IncrementalComponentModifier.h                              (C) 2000-2024 */
 /*                                                                           */
 /* Modification incrémentale des constituants.                               */
 /*---------------------------------------------------------------------------*/
@@ -57,10 +57,12 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
  private:
 
-  void _switchComponentItemsForEnvironments(const IMeshEnvironment* modified_env);
-  void _switchComponentItemsForMaterials(const MeshMaterial* modified_mat);
-  void _computeCellsToTransform(const MeshMaterial* mat);
-  void _computeCellsToTransform();
+  void _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
+                                   ConstArrayView<Int32> ids);
+  void _switchCellsForMaterials(const MeshMaterial* modified_mat,
+                                ConstArrayView<Int32> ids);
+  void _computeCellsToTransformForMaterial(const MeshMaterial* mat, ConstArrayView<Int32> ids);
+  void _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids);
   void _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                                    Int32ConstArrayView local_ids, bool update_env_indexer);
   void _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,

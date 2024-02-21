@@ -12,9 +12,14 @@ linkLibraries(alien_interface_c.exe
         Alien::alien_core
         Alien::alien_semantic_ref
         alien_interface_c
-        alien_external_packages
-        alien_ifpen_solvers
         )
+if (TARGET alien_external_packages)
+    linkLibraries(alien_interface_c.exe alien_external_packages)
+endif ()
+
+if (TARGET alien_ifpen_solvers)
+    linkLibraries(alien_interface_c.exe alien_ifpen_solvers)
+endif ()
 
 if (TARGET trilinos)
     linkLibraries(alien_interface_c.exe alien_trilinos)

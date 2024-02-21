@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialTesterModule.cc                                 (C) 2000-2023 */
+/* MeshMaterialTesterModule.cc                                 (C) 2000-2024 */
 /*                                                                           */
 /* Module de test du gestionnaire des matériaux.                             */
 /*---------------------------------------------------------------------------*/
@@ -1113,10 +1113,8 @@ _checkVectorCopy(VectorType& vec_cells)
   // Normalement il s'agit d'une copie par référence donc les vues associées
   // pointent vers la même zone mémoire.
   VectorType vec_cells_copy(vec_cells);
-  vc.areEqual(vec_cells_copy.view()._matvarIndexes().data(),
-              vec_cells.view()._matvarIndexes().data(),"bad copy 1");
-  vc.areEqual(vec_cells_copy.view()._itemsInternalView().data(),
-              vec_cells.view()._itemsInternalView().data(),"bad copy 1");
+  if (!vec_cells_copy.view()._isSamePointerData(vec_cells.view()))
+    ARCANE_FATAL("Bad copy");
 
   VectorType vec_cells_copy2(vec_cells);
   vc.areEqual(vec_cells_copy2.view()._matvarIndexes(),vec_cells.view()._matvarIndexes(),"bad copy 2");
@@ -1129,10 +1127,11 @@ _checkVectorCopy(VectorType& vec_cells)
     // A la sortie les valeurs des index doivent être les mêmes mais pas les pointeurs.
     VectorType clone_vec(vec_cells_copy.clone());
     vc.areEqual(clone_vec.view()._matvarIndexes(),vec_cells.view()._matvarIndexes(),"bad clone 1");
-    vc.areEqual(clone_vec.view()._itemsInternalView(),vec_cells.view()._itemsInternalView(),"bad clone 2");
+    if (clone_vec.view()._constituentItemListView() != vec_cells.view()._constituentItemListView())
+      ARCANE_FATAL("Bad clone 2");
     if (clone_vec.view()._matvarIndexes().data()==vec_cells.view()._matvarIndexes().data())
       ARCANE_FATAL("bad clone 3");
-    if (clone_vec.view()._itemsInternalView().data()==vec_cells.view()._itemsInternalView().data())
+    if (clone_vec.view()._isSamePointerData(vec_cells.view()))
       ARCANE_FATAL("bad clone 3");
   }
 }

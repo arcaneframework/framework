@@ -218,7 +218,7 @@ namespace ArrayScan
   /*---------------------------------------------------------------------------*/
 
   template <typename T>
-  Integer linearIntervalScan(const T& x, const Integer n, const T* vptr)
+  Integer linearIntervalScan(const T& x, [[maybe_unused]] const Integer n, const T* vptr)
   {
     // Prepare
     Integer index = 0;

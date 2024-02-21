@@ -11,47 +11,25 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Iostream.h"
-#include "arcane/utils/StdHeader.h"
-#include "arcane/utils/HashTableMap.h"
-#include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/String.h"
+#include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Array.h"
 #include "arcane/utils/IOException.h"
-#include "arcane/utils/Collection.h"
-#include "arcane/utils/Enumerator.h"
-#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/FixedArray.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/core/AbstractService.h"
-#include "arcane/core/FactoryService.h"
-#include "arcane/core/IMainFactory.h"
 #include "arcane/core/IMeshReader.h"
-#include "arcane/core/ISubDomain.h"
-#include "arcane/core/IMesh.h"
-#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/IItemFamily.h"
-#include "arcane/core/Item.h"
-#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemGroup.h"
 #include "arcane/core/VariableTypes.h"
-#include "arcane/core/IVariableAccessor.h"
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/IIOMng.h"
-#include "arcane/core/IXmlDocumentHolder.h"
-#include "arcane/core/XmlNodeList.h"
-#include "arcane/core/XmlNode.h"
-#include "arcane/core/IMeshUtilities.h"
-#include "arcane/core/IMeshWriter.h"
-#include "arcane/core/BasicService.h"
-#include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/MeshUtils.h"
-#include "arcane/core/ICaseMeshReader.h"
-#include "arcane/core/IMeshBuilder.h"
-#include "arcane/core/ItemPrinter.h"
 
 // Element types in .msh file format, found in gmsh-2.0.4/Common/GmshDefines.h
 #include "arcane/std/internal/IosFile.h"
@@ -68,11 +46,8 @@
  *   l'option '-save-all' pour sauver un fichier '.msh' à partir d'un '.geo'
  *
  * TODO:
- * - lire les tags des noeuds(uniqueId())
  * - supporter les partitions
  * - pouvoir utiliser la bibliothèque 'gmsh' directement.
- * - améliorer la lecture parallèle en évitant que tous les sous-domaines
- *   lisent le fichier (même si seul le sous-domaine 0 alloue les entités)
  */
 
 /*---------------------------------------------------------------------------*/
@@ -117,22 +92,21 @@ class MshParallelMeshReader
   struct MeshV4ElementsBlock
   {
     Int32 index = 0; //!< Index du bloc dans la liste
-    Int32 nb_entity = 0; //!< Nombre d'entités du bloc
+    Int64 nb_entity = 0; //!< Nombre d'entités du bloc
     Integer item_type = -1; //!< Type Arcane de l'entité
     Int32 dimension = -1; //!< Dimension de l'entité
     Int32 item_nb_node = 0; //!< Nombre de noeuds de l'entité.
-    Int32 entity_tag = -1;
-    UniqueArray<Int64> uids;
-    UniqueArray<Int64> connectivity;
+    Int64 entity_tag = -1;
+    UniqueArray<Int64> uids; //! < Liste des uniqueId() du bloc
+    UniqueArray<Int64> connectivities; //!< Liste des connectivités du bloc.
   };
 
   /*!
    * \brief Infos sur un nom physique.
-   *
    */
   struct MeshPhysicalName
   {
-    MeshPhysicalName(Int32 _dimension, Int32 _tag, const String& _name)
+    MeshPhysicalName(Int32 _dimension, Int64 _tag, const String& _name)
     : dimension(_dimension)
     , tag(_tag)
     , name(_name)
@@ -140,7 +114,7 @@ class MshParallelMeshReader
     MeshPhysicalName() = default;
     bool isNull() const { return dimension == (-1); }
     Int32 dimension = -1;
-    Int32 tag = -1;
+    Int64 tag = -1;
     String name;
   };
 
@@ -149,14 +123,11 @@ class MshParallelMeshReader
    */
   struct MeshPhysicalNameList
   {
-    MeshPhysicalNameList()
-    : m_physical_names(4)
-    {}
-    void add(Int32 dimension, Int32 tag, String name)
+    void add(Int32 dimension, Int64 tag, String name)
     {
       m_physical_names[dimension].add(MeshPhysicalName{ dimension, tag, name });
     }
-    MeshPhysicalName find(Int32 dimension, Int32 tag) const
+    MeshPhysicalName find(Int32 dimension, Int64 tag) const
     {
       for (auto& x : m_physical_names[dimension])
         if (x.tag == tag)
@@ -166,44 +137,39 @@ class MshParallelMeshReader
 
    private:
 
-    UniqueArray<UniqueArray<MeshPhysicalName>> m_physical_names;
+    FixedArray<UniqueArray<MeshPhysicalName>,4> m_physical_names;
   };
 
   //! Infos pour les entités 0D
   struct MeshV4EntitiesNodes
   {
-    MeshV4EntitiesNodes(Int32 _tag, Int32 _physical_tag)
+    MeshV4EntitiesNodes(Int64 _tag, Int64 _physical_tag)
     : tag(_tag)
     , physical_tag(_physical_tag)
     {}
-    Int32 tag;
-    Int32 physical_tag;
+    Int64 tag;
+    Int64 physical_tag;
   };
 
   //! Infos pour les entités 1D, 2D et 3D
   struct MeshV4EntitiesWithNodes
   {
-    MeshV4EntitiesWithNodes(Int32 _dim, Int32 _tag, Int32 _physical_tag)
+    MeshV4EntitiesWithNodes(Int32 _dim, Int64 _tag, Int64 _physical_tag)
     : dimension(_dim)
     , tag(_tag)
     , physical_tag(_physical_tag)
     {}
     Int32 dimension;
-    Int32 tag;
-    Int32 physical_tag;
+    Int64 tag;
+    Int64 physical_tag;
   };
 
-  struct MeshInfo
+  //! Informations sur le maillage créé
+  class MeshInfo
   {
    public:
 
-    MeshInfo()
-    : node_coords_map(5000, true)
-    {}
-
-   public:
-
-    MeshV4EntitiesWithNodes* findEntities(Int32 dimension, Int32 tag)
+    MeshV4EntitiesWithNodes* findEntities(Int32 dimension, Int64 tag)
     {
       for (auto& x : entities_with_nodes_list[dimension - 1])
         if (x.tag == tag)
@@ -211,7 +177,7 @@ class MshParallelMeshReader
       return nullptr;
     }
 
-    MeshV4EntitiesNodes* findNodeEntities(Int32 tag)
+    MeshV4EntitiesNodes* findNodeEntities(Int64 tag)
     {
       for (auto& x : entities_nodes_list)
         if (x.tag == tag)
@@ -221,17 +187,22 @@ class MshParallelMeshReader
 
    public:
 
-    Integer nb_elements = 0;
-    Integer nb_cell_node = 0;
     UniqueArray<Int32> cells_nb_node;
     UniqueArray<Int32> cells_type;
     UniqueArray<Int64> cells_uid;
     UniqueArray<Int64> cells_connectivity;
-    UniqueArray<Real3> node_coords;
-    HashTableMapT<Int64, Real3> node_coords_map;
+
+    //! Coordonnées des noeuds de ma partie
+    UniqueArray<Real3> nodes_coordinates;
+    //! UniqueId() des noeuds de ma partie.
+    UniqueArray<Int64> nodes_unique_id;
+    //! Tableau associatif (uniqueId(),rang) auquel le noeud appartiendra.
+    std::unordered_map<Int64, Int32> nodes_rank_map;
+    Real3 m_node_min_bounding_box;
+    Real3 m_node_max_bounding_box;
     MeshPhysicalNameList physical_name_list;
     UniqueArray<MeshV4EntitiesNodes> entities_nodes_list;
-    UniqueArray<MeshV4EntitiesWithNodes> entities_with_nodes_list[3];
+    FixedArray<UniqueArray<MeshV4EntitiesWithNodes>,3> entities_with_nodes_list;
     UniqueArray<MeshV4ElementsBlock> blocks;
   };
 
@@ -250,23 +221,39 @@ class MshParallelMeshReader
   Int32 m_master_io_rank = A_NULL_RANK;
   bool m_is_parallel = false;
   Ref<IosFile> m_ios_file; // nullptr sauf pour le rang maitre.
+  MeshInfo m_mesh_info;
+  //! Nombre de partitions pour la lecture des noeuds et blocs
+  Int32 m_nb_part = 4;
+  //! Liste des rangs qui participent à la conservation des données
+  UniqueArray<Int32> m_parts_rank;
 
  private:
 
-  eReturnType _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info);
-  Integer _readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info);
-  eReturnType _readMeshFromNewMshFile(IosFile* iso_file);
-  void _allocateCells(MeshInfo& mesh_info);
-  void _allocateGroups(MeshInfo& mesh_info);
+  void _readNodesFromFileAscii();
+  void _readNodesOneEntity(Int32 entity_index);
+  Integer _readElementsFromFileAscii();
+  void _readMeshFromFile();
+  void _setNodesCoordinates();
+  void _allocateCells();
+  void _allocateGroups();
   void _addFaceGroup(MeshV4ElementsBlock& block, const String& group_name);
-  void _addCellGroup(MeshV4ElementsBlock& block, const String& group_name);
-  void _addNodeGroup(MeshV4ElementsBlock& block, const String& group_name);
-  Integer _switchMshType(Integer, Integer&);
-  void _readPhysicalNames(IosFile* ios_file, MeshInfo& mesh_info);
-  void _readEntitiesV4(IosFile* ios_file, MeshInfo& mesh_info);
+  void _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
+                            const String& group_name, Int32 block_index);
+  void _addCellOrNodeGroup(MeshV4ElementsBlock& block, const String& group_name, IItemFamily* family);
+  void _addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
+                                  Int32 block_index, IItemFamily* family);
+  Int32 _switchMshType(Int64, Int32&) const;
+  void _readPhysicalNames();
+  void _readEntities();
+  void _readOneEntity(Int32 entity_dim);
   String _getNextLineAndBroadcast();
   Int32 _getIntegerAndBroadcast();
-  void _getIntegersAndBroadcast(ArrayView<Int32> values);
+  void _getInt64ArrayAndBroadcast(ArrayView<Int64> values);
+  void _readOneElementBlock(MeshV4ElementsBlock& block);
+  void _computeNodesPartition();
+  void _computeOwnCells(MeshV4ElementsBlock& block);
+  Real3 _getReal3();
+  void _goToNextLine();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -280,11 +267,11 @@ namespace
    * Calcul le début et le nombre d'éléments du index-ème interval
    * si le tableau contient \a size élément et qu'on veut \a nb_interval.
    */
-  inline std::pair<Int32, Int32>
-  _interval(Int32 index, Int32 nb_interval, Int32 size)
+  inline std::pair<Int64, Int64>
+  _interval(Int32 index, Int32 nb_interval, Int64 size)
   {
-    Int32 isize = size / nb_interval;
-    Int32 ibegin = index * isize;
+    Int64 isize = size / nb_interval;
+    Int64 ibegin = index * isize;
     // Pour le dernier interval, prend les elements restants
     if ((index + 1) == nb_interval)
       isize = size - ibegin;
@@ -294,7 +281,9 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Lis la valeur de la prochaine ligne et la broadcast aux autres rangs.
+ */
 String MshParallelMeshReader::
 _getNextLineAndBroadcast()
 {
@@ -331,12 +320,12 @@ _getIntegerAndBroadcast()
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
-_getIntegersAndBroadcast(ArrayView<Int32> values)
+_getInt64ArrayAndBroadcast(ArrayView<Int64> values)
 {
   IosFile* f = m_ios_file.get();
   if (f)
-    for (Int32& v : values)
-      v = f->getInteger();
+    for (Int64& v : values)
+      v = f->getInt64();
   if (m_is_parallel)
     m_parallel_mng->broadcast(values, m_master_io_rank);
 }
@@ -344,63 +333,86 @@ _getIntegersAndBroadcast(ArrayView<Int32> values)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer MshParallelMeshReader::
-_switchMshType(Integer mshElemType, Integer& nNodes)
+Real3 MshParallelMeshReader::
+_getReal3()
+{
+  IosFile* f = m_ios_file.get();
+  Real x = f->getReal();
+  Real y = f->getReal();
+  Real z = f->getReal();
+  return Real3(x,y,z);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_goToNextLine()
+{
+  if (m_ios_file.get())
+    m_ios_file->getNextLine();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 MshParallelMeshReader::
+_switchMshType(Int64 mshElemType, Int32& nNodes) const
 {
   switch (mshElemType) {
-  case (IT_NullType): // used to decode IT_NullType: IT_HemiHexa7|IT_Line9
+  case IT_NullType: // used to decode IT_NullType: IT_HemiHexa7|IT_Line9
     switch (nNodes) {
-    case (7):
+    case 7:
       return IT_HemiHexa7;
     default:
       info() << "Could not decode IT_NullType with nNodes=" << nNodes;
       throw IOException("_switchMshType", "Could not decode IT_NullType with nNodes");
     }
     break;
-  case (MSH_PNT):
+  case MSH_PNT:
     nNodes = 1;
-    return IT_Vertex; //printf("1-node point");
-  case (MSH_LIN_2):
+    return IT_Vertex;
+  case MSH_LIN_2:
     nNodes = 2;
-    return IT_Line2; //printf("2-node line");
-  case (MSH_TRI_3):
+    return IT_Line2;
+  case MSH_TRI_3:
     nNodes = 3;
-    return IT_Triangle3; //printf("3-node triangle");
-  case (MSH_QUA_4):
+    return IT_Triangle3;
+  case MSH_QUA_4:
     nNodes = 4;
-    return IT_Quad4; //printf("4-node quadrangle");
-  case (MSH_TET_4):
+    return IT_Quad4;
+  case MSH_TET_4:
     nNodes = 4;
-    return IT_Tetraedron4; //printf("4-node tetrahedron");
-  case (MSH_HEX_8):
+    return IT_Tetraedron4;
+  case MSH_HEX_8:
     nNodes = 8;
-    return IT_Hexaedron8; //printf("8-node hexahedron");
-  case (MSH_PRI_6):
+    return IT_Hexaedron8;
+  case MSH_PRI_6:
     nNodes = 6;
-    return IT_Pentaedron6; //printf("6-node prism");
-  case (MSH_PYR_5):
+    return IT_Pentaedron6;
+  case MSH_PYR_5:
     nNodes = 5;
-    return IT_Pyramid5; //printf("5-node pyramid");
-  case (MSH_TRI_10):
+    return IT_Pyramid5;
+  case MSH_TRI_10:
     nNodes = 10;
-    return IT_Heptaedron10; //printf("10-node second order tetrahedron")
-  case (MSH_TRI_12):
+    return IT_Heptaedron10;
+  case MSH_TRI_12:
     nNodes = 12;
-    return IT_Octaedron12; //printf("Unknown MSH_TRI_12");
+    return IT_Octaedron12;
 
-  case (MSH_TRI_6):
-  case (MSH_QUA_9):
-  case (MSH_HEX_27):
-  case (MSH_PRI_18):
-  case (MSH_PYR_14):
-  case (MSH_QUA_8):
-  case (MSH_HEX_20):
-  case (MSH_PRI_15):
-  case (MSH_PYR_13):
-  case (MSH_TRI_9):
-  case (MSH_TRI_15):
-  case (MSH_TRI_15I):
-  case (MSH_TRI_21):
+  case MSH_TRI_6:
+  case MSH_QUA_9:
+  case MSH_HEX_27:
+  case MSH_PRI_18:
+  case MSH_PYR_14:
+  case MSH_QUA_8:
+  case MSH_HEX_20:
+  case MSH_PRI_15:
+  case MSH_PYR_13:
+  case MSH_TRI_9:
+  case MSH_TRI_15:
+  case MSH_TRI_15I:
+  case MSH_TRI_21:
   default:
     ARCANE_THROW(NotSupportedException, "Unknown GMSH element type '{0}'", mshElemType);
   }
@@ -409,7 +421,69 @@ _switchMshType(Integer mshElemType, Integer& nNodes)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_computeNodesPartition()
+{
+  // Détermine la bounding box de la maille
+  Real max_value = FloatInfo<Real>::maxValue();
+  Real min_value = -max_value;
+  Real3 min_box(max_value, max_value, max_value);
+  Real3 max_box(min_value, min_value, min_value);
+  const Int64 nb_node = m_mesh_info.nodes_coordinates.largeSize();
+  for (Real3 pos : m_mesh_info.nodes_coordinates) {
+    min_box = math::min(min_box, pos);
+    max_box = math::max(max_box, pos);
+  }
+  m_mesh_info.m_node_min_bounding_box = min_box;
+  m_mesh_info.m_node_max_bounding_box = max_box;
+
+  //! Rank auquel appartient les noeuds de ma partie.
+  UniqueArray<Int32> nodes_part(nb_node, 0);
+
+  // Pour la partition, on ne prend en compte que la coordonnée X.
+  // On est sur qu'elle est valable pour toutes les dimensions du maillage.
+  // On partitionne avec des intervalles de même longueur.
+  // NOTE: Cela fonctionne bien si l'ensemble des noeuds est bien réparti.
+  // Si ce n'est pas le cas on pourrait utiliser une bisection en coupant
+  // à chaque fois sur la moyenne.
+  Real min_x = min_box.x;
+  Real max_x = max_box.x;
+  IParallelMng* pm = m_parallel_mng;
+  Real global_min_x = pm->reduce(Parallel::ReduceMin, min_x);
+  Real global_max_x = pm->reduce(Parallel::ReduceMax, max_x);
+  info() << "MIN_MAX_X=" << global_min_x << " " << global_max_x;
+
+  Real diff_v = (global_max_x - global_min_x) / static_cast<Real>(m_nb_part);
+  // Ne devrait pas arriver mais c'est nécessaire pour éviter d'éventuelles
+  // divisions par zéro.
+  if (!math::isNearlyEqual(global_min_x, global_max_x)) {
+    for (Int64 i = 0; i < nb_node; ++i) {
+      Int32 part = static_cast<Int32>((m_mesh_info.nodes_coordinates[i].x - global_min_x) / diff_v);
+      part = std::clamp(part, 0, m_nb_part - 1);
+      nodes_part[i] = part;
+    }
+  }
+  UniqueArray<Int32> nb_node_per_rank(m_nb_part, 0);
+  // Construit la table de hashage des rangs
+  for (Int64 i = 0; i < nb_node; ++i) {
+    Int32 rank = m_parts_rank[nodes_part[i]];
+    Int64 uid = m_mesh_info.nodes_unique_id[i];
+    ++nb_node_per_rank[rank];
+    m_mesh_info.nodes_rank_map.insert(std::make_pair(uid, rank));
+  }
+  pm->reduce(Parallel::ReduceSum, nb_node_per_rank);
+  info() << "NB_NODE_PER_RANK=" << nb_node_per_rank;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
+ * \brief Lecture des noeuds du maillage.
+ *
+ * Lit les uniqueId() des noeuds et les coordonnées associées.
+ *
+ * Le format est le suivant:
  *
  * \code
  $Nodes
@@ -428,58 +502,192 @@ _switchMshType(Integer mshElemType, Integer& nNodes)
  *$EndNodes
  * \endcode
  */
-IMeshReader::eReturnType MshParallelMeshReader::
-_readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
+void MshParallelMeshReader::
+_readNodesFromFileAscii()
 {
-  // Première ligne du fichier
-  Integer nb_entity = ios_file.getInteger();
-  Integer total_nb_node = ios_file.getInteger();
-  Integer min_node_tag = ios_file.getInteger();
-  Integer max_node_tag = ios_file.getInteger();
-  ios_file.getNextLine(); // Skip current \n\r
+  FixedArray<Int64, 4> nodes_info;
+  _getInt64ArrayAndBroadcast(nodes_info.view());
+
+  Int64 nb_entity = nodes_info[0];
+  Int64 total_nb_node = nodes_info[1];
+  Int64 min_node_tag = nodes_info[2];
+  Int64 max_node_tag = nodes_info[3];
+
+  _goToNextLine();
+
   if (total_nb_node < 0)
     ARCANE_THROW(IOException, "Invalid number of nodes : '{0}'", total_nb_node);
+
   info() << "[Nodes] nb_entity=" << nb_entity
          << " total_nb_node=" << total_nb_node
          << " min_tag=" << min_node_tag
-         << " max_tag=" << max_node_tag;
+         << " max_tag=" << max_node_tag
+         << " read_nb_part=" << m_nb_part;
 
-  UniqueArray<Int32> nodes_uids;
   for (Integer i_entity = 0; i_entity < nb_entity; ++i_entity) {
-    // Dimension de l'entité (pas utile)
-    [[maybe_unused]] Integer entity_dim = ios_file.getInteger();
-    // Tag de l'entité (pas utile)
-    [[maybe_unused]] Integer entity_tag = ios_file.getInteger();
-    Integer parametric_coordinates = ios_file.getInteger();
-    Integer nb_node2 = ios_file.getInteger();
-    ios_file.getNextLine();
-
-    info(4) << "[Nodes] index=" << i_entity << " entity_dim=" << entity_dim << " entity_tag=" << entity_tag
-            << " parametric=" << parametric_coordinates
-            << " nb_node2=" << nb_node2;
-    if (parametric_coordinates != 0)
-      ARCANE_THROW(NotSupportedException, "Only 'parametric coordinates' value of '0' is supported (current={0})", parametric_coordinates);
-    // Il est possible que le nombre de noeuds soit 0.
-    // Dans ce cas, il faut directement passer à la ligne suivante
-    if (nb_node2 == 0)
-      continue;
-    nodes_uids.resize(nb_node2);
-    for (Integer i = 0; i < nb_node2; ++i) {
-      // Conserve le uniqueId() du noeuds.
-      nodes_uids[i] = ios_file.getInteger();
-      //info() << "I=" << i << " ID=" << nodes_uids[i];
-    }
-    for (Integer i = 0; i < nb_node2; ++i) {
-      Real nx = ios_file.getReal();
-      Real ny = ios_file.getReal();
-      Real nz = ios_file.getReal();
-      Real3 xyz(nx, ny, nz);
-      mesh_info.node_coords_map.add(nodes_uids[i], xyz);
-      //info() << "I=" << i << " ID=" << nodes_uids[i] << " COORD=" << xyz;
-    }
-    ios_file.getNextLine(); // Skip current \n\r
+    _readNodesOneEntity(i_entity);
   }
-  return IMeshReader::RTOk;
+
+  _computeNodesPartition();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_readNodesOneEntity(Int32 entity_index)
+{
+  IosFile* ios_file = m_ios_file.get();
+  IParallelMng* pm = m_parallel_mng;
+  const Int32 my_rank = pm->commRank();
+
+  UniqueArray<Int64> nodes_uids;
+  UniqueArray<Real3> nodes_coordinates;
+
+  FixedArray<Int64, 4> entity_infos;
+  _getInt64ArrayAndBroadcast(entity_infos.view());
+
+  _goToNextLine();
+
+  // Dimension de l'entité (pas utile)
+  [[maybe_unused]] Int64 entity_dim = entity_infos[0];
+  // Tag de l'entité (pas utile)
+  [[maybe_unused]] Int64 entity_tag = entity_infos[1];
+  Int64 parametric_coordinates = entity_infos[2];
+  Int64 nb_node2 = entity_infos[3];
+
+  info() << "[Nodes] index=" << entity_index << " entity_dim=" << entity_dim << " entity_tag=" << entity_tag
+         << " parametric=" << parametric_coordinates
+         << " nb_node2=" << nb_node2;
+
+  if (parametric_coordinates != 0)
+    ARCANE_THROW(NotSupportedException, "Only 'parametric coordinates' value of '0' is supported (current={0})", parametric_coordinates);
+
+  // Il est possible que le nombre de noeuds soit 0.
+  // Dans ce cas, il faut directement passer à la ligne suivante
+  if (nb_node2 == 0)
+    return;
+
+  // Partitionne la lecture en \a m_nb_part
+  // Pour chaque i_entity , on a d'abord la liste des identifiants puis la liste des coordonnées
+
+  for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
+    Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
+    Int32 dest_rank = m_parts_rank[i_part];
+    info() << "Reading UIDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
+    if (my_rank == dest_rank || my_rank == m_master_io_rank) {
+      nodes_uids.resize(nb_to_read);
+    }
+
+    // Le rang maitre lit les informations des noeuds pour la partie concernée
+    // et les transfère au rang destination
+    if (ios_file) {
+      for (Integer i = 0; i < nb_to_read; ++i) {
+        // Conserve le uniqueId() du noeuds.
+        nodes_uids[i] = ios_file->getInt64();
+        //info() << "I=" << i << " ID=" << nodes_uids[i];
+      }
+      if (dest_rank != m_master_io_rank) {
+        pm->send(nodes_uids, dest_rank);
+      }
+    }
+    else if (my_rank == dest_rank) {
+      pm->recv(nodes_uids, m_master_io_rank);
+    }
+
+    // Conserve les informations de ma partie
+    if (my_rank == dest_rank) {
+      m_mesh_info.nodes_unique_id.addRange(nodes_uids);
+    }
+  }
+
+  // Lecture par partie des coordonnées
+  for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
+    Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
+    Int32 dest_rank = m_parts_rank[i_part];
+    info() << "Reading COORDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
+    if (my_rank == dest_rank || my_rank == m_master_io_rank) {
+      nodes_coordinates.resize(nb_to_read);
+    }
+
+    // Le rang maitre lit les informations des noeuds pour la partie concernée
+    // et les transfère au rang destination
+    if (ios_file) {
+      for (Integer i = 0; i < nb_to_read; ++i) {
+        nodes_coordinates[i] = _getReal3();
+        //info() << "I=" << i << " ID=" << nodes_uids[i] << " COORD=" << Real3(nx, ny, nz);
+      }
+      if (dest_rank != m_master_io_rank) {
+        pm->send(nodes_coordinates, dest_rank);
+      }
+    }
+    else if (my_rank == dest_rank) {
+      pm->recv(nodes_coordinates, m_master_io_rank);
+    }
+
+    // Conserve les informations de ma partie
+    if (my_rank == dest_rank) {
+      m_mesh_info.nodes_coordinates.addRange(nodes_coordinates);
+    }
+  }
+
+  _goToNextLine();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Lit un bloc d'entité de type 'Element'.
+ */
+void MshParallelMeshReader::
+_readOneElementBlock(MeshV4ElementsBlock& block)
+{
+  IosFile* ios_file = m_ios_file.get();
+  IParallelMng* pm = m_parallel_mng;
+  const Int32 my_rank = pm->commRank();
+  const Int64 nb_entity_in_block = block.nb_entity;
+  const Int32 item_nb_node = block.item_nb_node;
+
+  info() << "Reading block nb_entity=" << nb_entity_in_block << " item_nb_node=" << item_nb_node;
+
+  UniqueArray<Int64> uids;
+  UniqueArray<Int64> connectivities;
+
+  for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
+    const Int64 nb_to_read = _interval(i_part, m_nb_part, nb_entity_in_block).second;
+    const Int32 dest_rank = m_parts_rank[i_part];
+
+    info() << "Reading block part i_part=" << i_part
+           << " nb_to_read=" << nb_to_read << " dest_rank=" << dest_rank;
+
+    const Int64 nb_uid = nb_to_read;
+    const Int64 nb_connectivity = nb_uid * item_nb_node;
+    if (my_rank == dest_rank || my_rank == m_master_io_rank) {
+      uids.resize(nb_uid);
+      connectivities.resize(nb_connectivity);
+    }
+    if (ios_file) {
+      // Utilise des Int64 pour garantir qu'on ne déborde pas.
+      for (Int64 i = 0; i < nb_uid; ++i) {
+        Int64 item_unique_id = ios_file->getInt64();
+        uids[i] = item_unique_id;
+        for (Int32 j = 0; j < item_nb_node; ++j)
+          connectivities[(i * item_nb_node) + j] = ios_file->getInt64();
+      }
+      if (dest_rank != m_master_io_rank) {
+        pm->send(uids, dest_rank);
+        pm->send(connectivities, dest_rank);
+      }
+    }
+    else if (my_rank == dest_rank) {
+      pm->recv(uids, m_master_io_rank);
+      pm->recv(connectivities, m_master_io_rank);
+    }
+    if (my_rank == dest_rank) {
+      block.uids.addRange(uids);
+      block.connectivities.addRange(connectivities);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -487,7 +695,7 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
 /*!
  * \brief Lecture des éléments (mailles,faces,...)
  *
- * Dans la version 4, les éléments sont rangés par genre (eItemKind)
+ * Voici la description du format:
  *
  * \code
  *$Elements
@@ -500,22 +708,33 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
  *  ...
  *$EndElements
  * \endcode
+ *
+ * Dans la version 4, les éléments sont rangés par genre (eItemKind).
+ * Chaque bloc d'entité peut-être de dimension différente Il n'y a pas
+ * de dimension associé au maillage. On considère donc que la dimension
+ * du maillage est la dimension la plus élevée des blocs qu'on lit.
+ * Cela signifie aussi qu'on est obligé de lire tous les blocs avant de pouvoir
+ * connaitre la dimension du maillage.
+ *
+ * En parallèle, chaque bloc est distribué sur les rangs de \a m_parts_rank.
+ *
+ * \return la dimension du maillage.
  */
 Integer MshParallelMeshReader::
-_readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info)
+_readElementsFromFileAscii()
 {
+  IosFile* ios_file = m_ios_file.get();
   IParallelMng* pm = m_parallel_mng;
 
-  FixedArray<Int32, 4> elements_info;
-  _getIntegersAndBroadcast(elements_info.view());
+  FixedArray<Int64, 4> elements_info;
+  _getInt64ArrayAndBroadcast(elements_info.view());
 
-  Integer nb_block = elements_info[0];
-  Integer number_of_elements = elements_info[1];
-  Integer min_element_tag = elements_info[2];
-  Integer max_element_tag = elements_info[3];
+  Int64 nb_block = elements_info[0];
+  Int64 number_of_elements = elements_info[1];
+  Int64 min_element_tag = elements_info[2];
+  Int64 max_element_tag = elements_info[3];
 
-  if (ios_file)
-    ios_file->getNextLine(); // Skip current \n\r
+  _goToNextLine();
 
   info() << "[Elements] nb_block=" << nb_block
          << " nb_elements=" << number_of_elements
@@ -525,7 +744,7 @@ _readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info)
   if (number_of_elements < 0)
     ARCANE_THROW(IOException, "Invalid number of elements: {0}", number_of_elements);
 
-  UniqueArray<MeshV4ElementsBlock>& blocks = mesh_info.blocks;
+  UniqueArray<MeshV4ElementsBlock>& blocks = m_mesh_info.blocks;
   blocks.resize(nb_block);
 
   {
@@ -536,22 +755,24 @@ _readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info)
       ++index;
     }
   }
-  for (MeshV4ElementsBlock& block : blocks) {
-    FixedArray<Int32, 4> block_info;
-    _getIntegersAndBroadcast(block_info.view());
 
-    Integer entity_dim = block_info[0];
-    Integer entity_tag = block_info[1];
-    Integer entity_type = block_info[2];
-    Integer nb_entity_in_block = block_info[3];
+  for (MeshV4ElementsBlock& block : blocks) {
+
+    FixedArray<Int64, 4> block_info;
+    _getInt64ArrayAndBroadcast(block_info.view());
+
+    Int32 entity_dim = CheckedConvert::toInt32(block_info[0]);
+    Int64 entity_tag = block_info[1];
+    Int64 entity_type = block_info[2];
+    Int64 nb_entity_in_block = block_info[3];
 
     Integer item_nb_node = 0;
     Integer item_type = _switchMshType(entity_type, item_nb_node);
 
-    info(4) << "[Elements] index=" << block.index << " entity_dim=" << entity_dim
-            << " entity_tag=" << entity_tag
-            << " entity_type=" << entity_type << " nb_in_block=" << nb_entity_in_block
-            << " item_type=" << item_type << " item_nb_node=" << item_nb_node;
+    info() << "[Elements] index=" << block.index << " entity_dim=" << entity_dim
+           << " entity_tag=" << entity_tag
+           << " entity_type=" << entity_type << " nb_in_block=" << nb_entity_in_block
+           << " item_type=" << item_type << " item_nb_node=" << item_nb_node;
 
     block.nb_entity = nb_entity_in_block;
     block.item_type = item_type;
@@ -559,53 +780,31 @@ _readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info)
     block.dimension = entity_dim;
     block.entity_tag = entity_tag;
 
-    Int64 nb_uid = 0;
-    Int64 nb_connectivity = 0;
     if (entity_type == MSH_PNT) {
-      // Si le type est un point, le traitement semble
-      // un peu particulier. Il y a dans ce cas
-      // deux entiers dans la ligne suivante:
+      // Si le type est un point, le traitement semble un peu particulier.
+      // Il y a dans ce cas deux entiers dans la ligne suivante:
       // - un entier qui ne semble pas être utilisé
       // - le numéro unique du noeud qui nous intéresse
+      Int64 item_unique_id = NULL_ITEM_UNIQUE_ID;
       if (ios_file) {
         [[maybe_unused]] Int64 unused_id = ios_file->getInt64();
-        Int64 item_unique_id = ios_file->getInt64();
-        info(4) << "Adding unique node uid=" << item_unique_id;
-        block.uids.add(item_unique_id);
+        item_unique_id = ios_file->getInt64();
+        info() << "Adding unique node uid=" << item_unique_id;
       }
-      nb_uid = 1;
-      nb_connectivity = 0;
+      if (m_is_parallel)
+        pm->broadcast(ArrayView<Int64>(1, &item_unique_id), m_master_io_rank);
+      block.uids.add(item_unique_id);
     }
     else {
-      if (ios_file) {
-        info(4) << "Reading block nb_entity=" << nb_entity_in_block << " item_nb_node=" << item_nb_node;
-        for (Integer i = 0; i < nb_entity_in_block; ++i) {
-          Int64 item_unique_id = ios_file->getInt64();
-          block.uids.add(item_unique_id);
-          for (Integer j = 0; j < item_nb_node; ++j)
-            block.connectivity.add(ios_file->getInt64());
-        }
-      }
-      nb_uid = nb_entity_in_block;
-      nb_connectivity = nb_uid * item_nb_node;
+      _readOneElementBlock(block);
     }
-    // Envoie le tableau aux autres rangs
-    if (m_is_parallel) {
-      if (!pm->isMasterIO()) {
-        block.uids.resize(nb_uid);
-        block.connectivity.resize(nb_connectivity);
-      }
-      pm->broadcast(block.uids, m_master_io_rank);
-      pm->broadcast(block.connectivity, m_master_io_rank);
-    }
-    if (ios_file)
-      ios_file->getNextLine(); // Skip current \n\r
+    _goToNextLine();
   }
 
   // Maintenant qu'on a tout les blocs, la dimension du maillage est
   // la plus grande dimension des blocs
   Integer mesh_dimension = -1;
-  for (MeshV4ElementsBlock& block : blocks)
+  for (const MeshV4ElementsBlock& block : blocks)
     mesh_dimension = math::max(mesh_dimension, block.dimension);
   if (mesh_dimension < 0)
     ARCANE_FATAL("Invalid computed mesh dimension '{0}'", mesh_dimension);
@@ -613,42 +812,9 @@ _readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info)
     ARCANE_THROW(NotSupportedException, "mesh dimension '{0}'. Only 2D or 3D meshes are supported", mesh_dimension);
   info() << "Computed mesh dimension = " << mesh_dimension;
 
-  const Int32 my_rank = m_parallel_mng->commRank();
-  const Int32 nb_rank = m_parallel_mng->commSize();
-
-  // On ne conserve que les blocs de notre dimension
-  // pour créér les mailles. On divise chaque bloc
-  // en N partie (avec N le nombre de rangs MPI) et
-  // chaque rang ne conserve qu'une partie. Ainsi
-  // chaque sous-domaine aura une partie du maillage
-  // afin de garantir un équilibrage sur le nombre
-  // de mailles.
   for (MeshV4ElementsBlock& block : blocks) {
-    if (block.dimension != mesh_dimension)
-      continue;
-
-    Integer item_type = block.item_type;
-    Integer item_nb_node = block.item_nb_node;
-
-    auto [first_index, nb_item] = _interval(my_rank, nb_rank, block.nb_entity);
-    if (m_is_parallel) {
-      UniqueArray<Int64> new_uids(block.uids.span().subSpan(first_index, nb_item));
-      UniqueArray<Int64> new_connectivity(block.connectivity.span().subSpan(first_index * item_nb_node, nb_item * item_nb_node));
-      block.uids = new_uids;
-      block.connectivity = new_connectivity;
-      block.nb_entity = nb_item;
-    }
-
-    info(4) << "Keeping block index=" << block.index << " nb_entity=" << block.nb_entity
-            << " first_index=" << first_index << " nb_item=" << nb_item;
-
-    for (Integer i = 0; i < block.nb_entity; ++i) {
-      mesh_info.cells_type.add(item_type);
-      mesh_info.cells_nb_node.add(item_nb_node);
-      mesh_info.cells_uid.add(block.uids[i]);
-      auto v = block.connectivity.subView(i * item_nb_node, item_nb_node);
-      mesh_info.cells_connectivity.addRange(v);
-    }
+    if (block.dimension == mesh_dimension)
+      _computeOwnCells(block);
   }
 
   return mesh_dimension;
@@ -657,13 +823,155 @@ _readElementsFromAsciiMshV4File(IosFile* ios_file, MeshInfo& mesh_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+  template <typename DataType> inline ArrayView<DataType>
+  _broadcastArrayWithSize(IParallelMng* pm, UniqueArray<DataType>& values,
+                          UniqueArray<DataType>& work_values, Int32 dest_rank, Int64 size)
+  {
+    const Int32 my_rank = pm->commRank();
+    ArrayView<DataType> view = values.view();
+    if (my_rank != dest_rank) {
+      work_values.resize(size);
+      view = work_values.view();
+    }
+    pm->broadcast(view, dest_rank);
+    return view;
+  }
+  /*!
+   * \brief Broadcast un tableau et retourne une vue dessus.
+   *
+   * Si on est le rang \a dest_rank, alors on broadcast \a values.
+   * Les autres rangs récupèrent la valeur dans \a work_values et
+   * retournent une vue dessus.
+   */
+  template <typename DataType> inline ArrayView<DataType>
+  _broadcastArray(IParallelMng* pm, UniqueArray<DataType>& values,
+                  UniqueArray<DataType>& work_values, Int32 dest_rank)
+  {
+    const Int32 my_rank = pm->commRank();
+    Int64 size = 0;
+    // Envoie la taille
+    if (dest_rank == my_rank)
+      size = values.size();
+    pm->broadcast(ArrayView<Int64>(1, &size), dest_rank);
+    return _broadcastArrayWithSize(pm, values, work_values, dest_rank, size);
+  }
+
+} // namespace
+
 void MshParallelMeshReader::
-_allocateCells(MeshInfo& mesh_info)
+_computeOwnCells(MeshV4ElementsBlock& block)
+{
+  // On ne conserve que les mailles dont le premier noeud appartient à notre rang.
+
+  IParallelMng* pm = m_parallel_mng;
+  const Int32 my_rank = pm->commRank();
+
+  const Int32 item_type = block.item_type;
+  const Int32 item_nb_node = block.item_nb_node;
+
+  UniqueArray<Int64> connectivities;
+  UniqueArray<Int64> uids;
+  UniqueArray<Int32> nodes_rank;
+
+  const Int32 nb_part = m_parts_rank.size();
+  for (Int32 i_part = 0; i_part < nb_part; ++i_part) {
+    const Int32 dest_rank = m_parts_rank[i_part];
+    // Broadcast la i_part-ème partie des uids et connectivités des mailles
+    ArrayView<Int64> connectivities_view = _broadcastArray(pm, block.connectivities, connectivities, dest_rank);
+    ArrayView<Int64> uids_view = _broadcastArray(pm, block.uids, uids, dest_rank);
+
+    Int32 nb_item = uids_view.size();
+    nodes_rank.resize(nb_item);
+    nodes_rank.fill(-1);
+
+    // Parcours les mailles. Chaque maille appartiendra au rang
+    // de son premier noeud. Si cette partie correspond à mon rang, alors
+    // on conserve la maille.
+    for (Int32 i = 0; i < nb_item; ++i) {
+      Int64 first_node_uid = connectivities_view[i * item_nb_node];
+      auto x = m_mesh_info.nodes_rank_map.find(first_node_uid);
+      if (x == m_mesh_info.nodes_rank_map.end())
+        // Le noeud n'est pas dans ma liste
+        continue;
+      Int32 rank = x->second;
+      nodes_rank[i] = rank;
+    }
+    pm->reduce(Parallel::ReduceMax, nodes_rank);
+    for (Int32 i = 0; i < nb_item; ++i) {
+      const Int32 rank = nodes_rank[i];
+      if (rank != my_rank)
+        // Le noeud n'est pas dans ma partie
+        continue;
+      // Le noeud est chez moi, j'ajoute ma maille à la liste des
+      // mailles que je vais créer.
+      m_mesh_info.cells_type.add(item_type);
+      m_mesh_info.cells_nb_node.add(item_nb_node);
+      m_mesh_info.cells_uid.add(uids_view[i]);
+      auto v = connectivities_view.subView(i * item_nb_node, item_nb_node);
+      m_mesh_info.cells_connectivity.addRange(v);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Positionne les coordonnées des noeuds.
+ *
+ * La liste est répartie sur les processeurs des rangs de \a m_parts_rank.
+ * On boucle sur les rangs de cette liste et chaque rang envoie aux autres
+ * la liste des coordonnées des noeuds qu'il contient. Chaque rang regarde
+ * si des noeuds de cette liste lui appartiennent et si c'est le cas positionnent
+ * les coordonnées.
+ *
+ * \note Cet algorithme envoie par morceau tous les noeuds et n'est donc pas
+ * vraiement parallèle sur le temps d'exécution. On pourrait améliorer cela
+ * si on connaissait l'intervalle des uniqueId() de chaque partie et ainsi
+ * demander directement au rang concerné les coordonnées qu'on souhaite.
+ */
+void MshParallelMeshReader::
+_setNodesCoordinates()
+{
+  UniqueArray<Int64> uids_storage;
+  UniqueArray<Real3> coords_storage;
+  UniqueArray<Int32> local_ids;
+
+  IParallelMng* pm = m_parallel_mng;
+
+  const IItemFamily* node_family = m_mesh->nodeFamily();
+  VariableNodeReal3& nodes_coord_var(m_mesh->nodesCoordinates());
+
+  for (Int32 dest_rank : m_parts_rank) {
+    ConstArrayView<Int64> uids = _broadcastArray(pm, m_mesh_info.nodes_unique_id, uids_storage, dest_rank);
+    ConstArrayView<Real3> coords = _broadcastArray(pm, m_mesh_info.nodes_coordinates, coords_storage, dest_rank);
+
+    Int32 nb_item = uids.size();
+    local_ids.resize(nb_item);
+
+    // Converti les uniqueId() en localId(). S'ils sont non nuls
+    // c'est que l'entité est dans mon sous-domaine et donc on peut
+    // positionner sa coordonnée
+    node_family->itemsUniqueIdToLocalId(local_ids, uids, false);
+    for (Int32 i = 0; i < nb_item; ++i) {
+      NodeLocalId nid(local_ids[i]);
+      if (!nid.isNull())
+        nodes_coord_var[nid] = coords[i];
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_allocateCells()
 {
   IMesh* mesh = m_mesh;
-  Integer nb_elements = mesh_info.cells_type.size();
+  Integer nb_elements = m_mesh_info.cells_type.size();
   info() << "nb_of_elements=cells_type.size()=" << nb_elements;
-  Integer nb_cell_node = mesh_info.cells_connectivity.size();
+  Integer nb_cell_node = m_mesh_info.cells_connectivity.size();
   info() << "nb_cell_node=cells_connectivity.size()=" << nb_cell_node;
 
   // Création des mailles
@@ -673,16 +981,16 @@ _allocateCells(MeshInfo& mesh_info)
   //             1 pour son type,
   //             1 pour chaque noeud
   UniqueArray<Int64> cells_infos;
-  Integer connectivity_index = 0;
+  Int32 connectivity_index = 0;
   UniqueArray<Real3> local_coords;
   for (Integer i = 0; i < nb_elements; ++i) {
-    Integer current_cell_nb_node = mesh_info.cells_nb_node[i];
-    Integer cell_type = mesh_info.cells_type[i];
-    Int64 cell_uid = mesh_info.cells_uid[i];
+    Integer current_cell_nb_node = m_mesh_info.cells_nb_node[i];
+    Integer cell_type = m_mesh_info.cells_type[i];
+    Int64 cell_uid = m_mesh_info.cells_uid[i];
     cells_infos.add(cell_type);
     cells_infos.add(cell_uid); //cell_unique_id
 
-    ArrayView<Int64> local_info(current_cell_nb_node, &mesh_info.cells_connectivity[connectivity_index]);
+    ArrayView<Int64> local_info(current_cell_nb_node, &m_mesh_info.cells_connectivity[connectivity_index]);
     cells_infos.addRange(local_info);
     connectivity_index += current_cell_nb_node;
   }
@@ -694,66 +1002,49 @@ _allocateCells(MeshInfo& mesh_info)
   pmesh->endAllocate();
   info() << "## Done ##";
 
-  // Positionne les coordonnées
-  {
-    VariableNodeReal3& nodes_coord_var(pmesh->nodesCoordinates());
-    bool has_map = mesh_info.node_coords.empty();
-    if (has_map) {
-      ENUMERATE_NODE (i, mesh->ownNodes()) {
-        Node node = *i;
-        auto* data = mesh_info.node_coords_map.lookup(node.uniqueId().asInt64());
-        if (data)
-          nodes_coord_var[node] = data->value();
-      }
-      nodes_coord_var.synchronize();
-    }
-    else {
-      ENUMERATE_NODE (node, mesh->allNodes()) {
-        nodes_coord_var[node] = mesh_info.node_coords.item(node->uniqueId().asInt32());
-      }
-    }
-  }
+  // Positionne les coordonnées des noeuds
+  _setNodesCoordinates();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
-_allocateGroups(MeshInfo& mesh_info)
+_allocateGroups()
 {
   IMesh* mesh = m_mesh;
   Int32 mesh_dim = mesh->dimension();
   Int32 face_dim = mesh_dim - 1;
-  for (MeshV4ElementsBlock& block : mesh_info.blocks) {
+  for (MeshV4ElementsBlock& block : m_mesh_info.blocks) {
     Int32 block_index = block.index;
     Int32 block_dim = block.dimension;
     // On alloue un groupe s'il a un nom physique associé.
     // Pour cela, il faut déjà qu'il soit associé à une entité.
-    Int32 block_entity_tag = block.entity_tag;
+    Int64 block_entity_tag = block.entity_tag;
     if (block_entity_tag < 0) {
       info(5) << "[Groups] Skipping block index=" << block_index << " because it has no entity";
       continue;
     }
     MeshPhysicalName physical_name;
     if (block_dim == 0) {
-      MeshV4EntitiesNodes* entity = mesh_info.findNodeEntities(block_entity_tag);
+      const MeshV4EntitiesNodes* entity = m_mesh_info.findNodeEntities(block_entity_tag);
       if (!entity) {
         info(5) << "[Groups] Skipping block index=" << block_index
                 << " because entity tag is invalid";
         continue;
       }
-      Int32 entity_physical_tag = entity->physical_tag;
-      physical_name = mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
+      Int64 entity_physical_tag = entity->physical_tag;
+      physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
     }
     else {
-      MeshV4EntitiesWithNodes* entity = mesh_info.findEntities(block_dim, block_entity_tag);
+      const MeshV4EntitiesWithNodes* entity = m_mesh_info.findEntities(block_dim, block_entity_tag);
       if (!entity) {
         info(5) << "[Groups] Skipping block index=" << block_index
                 << " because entity tag is invalid";
         continue;
       }
-      Int32 entity_physical_tag = entity->physical_tag;
-      physical_name = mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
+      Int64 entity_physical_tag = entity->physical_tag;
+      physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
     }
     if (physical_name.isNull()) {
       info(5) << "[Groups] Skipping block index=" << block_index
@@ -763,14 +1054,32 @@ _allocateGroups(MeshInfo& mesh_info)
     info(4) << "[Groups] Block index=" << block_index << " dim=" << block_dim
             << " name='" << physical_name.name << "'";
     if (block_dim == mesh_dim) {
-      _addCellGroup(block, physical_name.name);
+      _addCellOrNodeGroup(block, physical_name.name, mesh->cellFamily());
     }
     else if (block_dim == face_dim) {
       _addFaceGroup(block, physical_name.name);
     }
     else {
-      _addNodeGroup(block, physical_name.name);
+      _addCellOrNodeGroup(block, physical_name.name, mesh->nodeFamily());
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ajoute des faces au groupe \a group_name.
+ */
+void MshParallelMeshReader::
+_addFaceGroup(MeshV4ElementsBlock& block, const String& group_name)
+{
+  IParallelMng* pm = m_parallel_mng;
+  const Int32 item_nb_node = block.item_nb_node;
+
+  UniqueArray<Int64> connectivities;
+  for (Int32 dest_rank : m_parts_rank) {
+    ArrayView<Int64> connectivities_view = _broadcastArray(pm, block.connectivities, connectivities, dest_rank);
+    _addFaceGroupOnePart(connectivities_view, item_nb_node, group_name, block.index);
   }
 }
 
@@ -778,10 +1087,11 @@ _allocateGroups(MeshInfo& mesh_info)
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
-_addFaceGroup(MeshV4ElementsBlock& block, const String& group_name)
+_addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
+                     const String& group_name, Int32 block_index)
 {
   IMesh* mesh = m_mesh;
-  const Int32 nb_entity = block.nb_entity;
+  const Int32 nb_entity = connectivities.size() / item_nb_node;
 
   // Il peut y avoir plusieurs blocs pour le même groupe.
   // On récupère le groupe s'il existe déjà.
@@ -790,7 +1100,6 @@ _addFaceGroup(MeshV4ElementsBlock& block, const String& group_name)
   UniqueArray<Int32> faces_id; // Numéro de la face dans le maillage \a mesh
   faces_id.reserve(nb_entity);
 
-  const Int32 item_nb_node = block.item_nb_node;
   const Int32 face_nb_node = nb_entity * item_nb_node;
 
   UniqueArray<Int64> faces_first_node_unique_id(nb_entity);
@@ -807,9 +1116,9 @@ _addFaceGroup(MeshV4ElementsBlock& block, const String& group_name)
   // Réordonne les identifiants des faces retrouver la face dans le maillage
   for (Integer i_face = 0; i_face < nb_entity; ++i_face) {
     for (Integer z = 0; z < item_nb_node; ++z)
-      orig_nodes_id[z] = block.connectivity[faces_nodes_unique_id_index + z];
+      orig_nodes_id[z] = connectivities[faces_nodes_unique_id_index + z];
 
-    mesh_utils::reorderNodesOfFace2(orig_nodes_id, face_nodes_index);
+    MeshUtils::reorderNodesOfFace2(orig_nodes_id, face_nodes_index);
     for (Integer z = 0; z < item_nb_node; ++z)
       faces_nodes_unique_id[faces_nodes_unique_id_index + z] = orig_nodes_id[face_nodes_index[z]];
     faces_first_node_unique_id[i_face] = orig_nodes_id[face_nodes_index[0]];
@@ -825,10 +1134,10 @@ _addFaceGroup(MeshV4ElementsBlock& block, const String& group_name)
     if (face_first_node_lid != NULL_ITEM_LOCAL_ID) {
       Int64ConstArrayView face_nodes_id(item_nb_node, &faces_nodes_unique_id[faces_nodes_unique_id_index]);
       Node current_node(mesh_nodes[faces_first_node_local_id[i_face]]);
-      Face face = mesh_utils::getFaceFromNodesUnique(current_node, face_nodes_id);
+      Face face = MeshUtils::getFaceFromNodesUnique(current_node, face_nodes_id);
 
       // En parallèle, il est possible que la face ne soit pas dans notre sous-domaine
-      // même si un de ses noeud l'est
+      // même si un de ses noeuds l'est
       if (face.null()) {
         if (!m_is_parallel) {
           OStringStream ostr;
@@ -846,75 +1155,57 @@ _addFaceGroup(MeshV4ElementsBlock& block, const String& group_name)
 
     faces_nodes_unique_id_index += n;
   }
-  info(4) << "Adding " << faces_id.size() << " faces from block index=" << block.index
+  info(4) << "Adding " << faces_id.size() << " faces from block index=" << block_index
           << " to group '" << face_group.name() << "'";
   face_group.addItems(faces_id);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Ajoute des faces au groupe \a group_name.
+ */
 void MshParallelMeshReader::
-_addCellGroup(MeshV4ElementsBlock& block, const String& group_name)
+_addCellOrNodeGroup(MeshV4ElementsBlock& block, const String& group_name, IItemFamily* family)
 {
-  IMesh* mesh = m_mesh;
-  const Int32 nb_entity = block.nb_entity;
+  IParallelMng* pm = m_parallel_mng;
 
-  // Il peut y avoir plusieurs blocs pour le même groupe.
-  // On récupère le groupe s'il existe déjà.
-  IItemFamily* cell_family = mesh->cellFamily();
-  CellGroup cell_group = cell_family->findGroup(group_name, true);
-
-  UniqueArray<Int32> cells_id(nb_entity); // Numéro de la face dans le maillage \a mesh
-
-  cell_family->itemsUniqueIdToLocalId(cells_id, block.uids);
-
-  info(4) << "Adding " << cells_id.size() << " cells from block index=" << block.index
-          << " to group '" << cell_group.name() << "'";
-  cell_group.addItems(cells_id);
+  UniqueArray<Int64> uids;
+  for (Int32 dest_rank : m_parts_rank) {
+    ArrayView<Int64> uids_view = _broadcastArray(pm, block.uids, uids, dest_rank);
+    _addCellOrNodeGroupOnePart(uids_view, group_name, block.index, family);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
-_addNodeGroup(MeshV4ElementsBlock& block, const String& group_name)
+_addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
+                           Int32 block_index, IItemFamily* family)
 {
-  IMesh* mesh = m_mesh;
-  const Int32 nb_entity = block.nb_entity;
+  const Int32 nb_entity = uids.size();
 
   // Il peut y avoir plusieurs blocs pour le même groupe.
   // On récupère le groupe s'il existe déjà.
-  IItemFamily* node_family = mesh->nodeFamily();
-  NodeGroup node_group = node_family->findGroup(group_name, true);
+  ItemGroup group = family->findGroup(group_name, true);
 
-  UniqueArray<Int32> nodes_id(nb_entity);
+  UniqueArray<Int32> items_lid(nb_entity);
 
-  node_family->itemsUniqueIdToLocalId(nodes_id, block.uids, false);
+  family->itemsUniqueIdToLocalId(items_lid, uids, false);
 
-  // En parallèle, il est possible que certains noeuds du groupe ne soient
+  // En parallèle, il est possible que certaines entités du groupe ne soient
   // pas dans notre sous-domaine. Il faut les filtrer.
   if (m_is_parallel) {
-    auto nodes_begin = nodes_id.begin();
-    Int64 new_size = std::remove(nodes_begin, nodes_id.end(), NULL_ITEM_LOCAL_ID) - nodes_begin;
-    nodes_id.resize(new_size);
+    auto items_begin = items_lid.begin();
+    Int64 new_size = std::remove(items_begin, items_lid.end(), NULL_ITEM_LOCAL_ID) - items_begin;
+    items_lid.resize(new_size);
   }
 
-  info(4) << "Adding " << nodes_id.size() << " nodes from block index=" << block.index
-          << " to group '" << node_group.name() << "'" << " nb_entity=" << nb_entity;
+  info() << "Adding " << items_lid.size() << " items from block index=" << block_index
+         << " to group '" << group_name << "' for family=" << family->name();
 
-  if (nb_entity < 10) {
-    info(4) << "Nodes UIDS=" << block.uids;
-    info(4) << "Nodes LIDS=" << nodes_id;
-  }
-  node_group.addItems(nodes_id);
-
-  if (nb_entity < 10) {
-    VariableNodeReal3& coords(mesh->nodesCoordinates());
-    ENUMERATE_ (Node, inode, node_group) {
-      info(4) << "Node id=" << ItemPrinter(*inode) << " coord=" << coords[inode];
-    }
-  }
+  group.addItems(items_lid);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -927,13 +1218,14 @@ _addNodeGroup(MeshV4ElementsBlock& block, const String& group_name)
  * $EndPhysicalNames
  */
 void MshParallelMeshReader::
-_readPhysicalNames(IosFile* ios_file, MeshInfo& mesh_info)
+_readPhysicalNames()
 {
   String quote_mark = "\"";
   Int32 nb_name = _getIntegerAndBroadcast();
   info() << "nb_physical_name=" << nb_name;
-  if (ios_file)
-    ios_file->getNextLine();
+
+  _goToNextLine();
+
   for (Int32 i = 0; i < nb_name; ++i) {
     Int32 dim = _getIntegerAndBroadcast();
     Int32 tag = _getIntegerAndBroadcast();
@@ -947,9 +1239,10 @@ _readPhysicalNames(IosFile* ios_file, MeshInfo& mesh_info)
       s = s.substring(1);
     if (s.endsWith(quote_mark))
       s = s.substring(0, s.length() - 1);
-    mesh_info.physical_name_list.add(dim, tag, s);
+    m_mesh_info.physical_name_list.add(dim, tag, s);
     info(4) << "[PhysicalName] index=" << i << " dim=" << dim << " tag=" << tag << " name='" << s << "'";
   }
+
   String s = _getNextLineAndBroadcast();
   if (s != "$EndPhysicalNames")
     ARCANE_FATAL("found '{0}' and expected '$EndPhysicalNames'", s);
@@ -989,87 +1282,45 @@ _readPhysicalNames(IosFile* ios_file, MeshInfo& mesh_info)
  * \endverbatim
  */
 void MshParallelMeshReader::
-_readEntitiesV4(IosFile* ios_file, MeshInfo& mesh_info)
+_readEntities()
 {
-  FixedArray<Int32, 4> nb_dim_item;
-  if (ios_file) {
-    nb_dim_item[0] = ios_file->getInteger();
-    nb_dim_item[1] = ios_file->getInteger();
-    nb_dim_item[2] = ios_file->getInteger();
-    nb_dim_item[3] = ios_file->getInteger();
-  }
-  m_parallel_mng->broadcast(nb_dim_item.view(), m_master_io_rank);
+  IosFile* ios_file = m_ios_file.get();
+
+  FixedArray<Int64, 4> nb_dim_item;
+  _getInt64ArrayAndBroadcast(nb_dim_item.view());
 
   info(4) << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
           << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
   // Après le format, on peut avoir les entités mais cela est optionnel
   // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
-  if (ios_file)
-    ios_file->getNextLine();
-  for (Int32 i = 0; i < nb_dim_item[0]; ++i) {
-    FixedArray<Int32, 2> tag_info;
+  _goToNextLine();
+
+  for (Int64 i = 0; i < nb_dim_item[0]; ++i) {
+    FixedArray<Int64, 2> tag_info;
     if (ios_file) {
-      Int32 tag = ios_file->getInteger();
-      Real x = ios_file->getReal();
-      Real y = ios_file->getReal();
-      Real z = ios_file->getReal();
-      Int32 num_physical_tag = ios_file->getInteger();
+      Int64 tag = ios_file->getInt64();
+      Real3 xyz = _getReal3();
+      Int64 num_physical_tag = ios_file->getInt64();
       if (num_physical_tag > 1)
         ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
+
       Int32 physical_tag = -1;
       if (num_physical_tag == 1)
         physical_tag = ios_file->getInteger();
-      info(4) << "[Entities] point tag=" << tag << " x=" << x << " y=" << y << " z=" << z << " phys_tag=" << physical_tag;
+      info(4) << "[Entities] point tag=" << tag << " pos=" << xyz << " phys_tag=" << physical_tag;
 
       tag_info[0] = tag;
       tag_info[1] = physical_tag;
     }
     m_parallel_mng->broadcast(tag_info.view(), m_master_io_rank);
-    mesh_info.entities_nodes_list.add(MeshV4EntitiesNodes(tag_info[0], tag_info[1]));
-    if (ios_file)
-      ios_file->getNextLine();
+    m_mesh_info.entities_nodes_list.add(MeshV4EntitiesNodes(tag_info[0], tag_info[1]));
+    _goToNextLine();
   }
 
-  for (Int32 dim = 1; dim <= 3; ++dim) {
-    for (Int32 i = 0; i < nb_dim_item[dim]; ++i) {
-      FixedArray<Int32, 3> dim_and_tag_info;
-      if (ios_file) {
-        Int32 tag = ios_file->getInteger();
-        Real min_x = ios_file->getReal();
-        Real min_y = ios_file->getReal();
-        Real min_z = ios_file->getReal();
-        Real max_x = ios_file->getReal();
-        Real max_y = ios_file->getReal();
-        Real max_z = ios_file->getReal();
-        Int32 num_physical_tag = ios_file->getInteger();
-        if (num_physical_tag > 1)
-          ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
-        Int32 physical_tag = -1;
-        if (num_physical_tag == 1)
-          physical_tag = ios_file->getInteger();
-        Int32 num_bounding_group = ios_file->getInteger();
-        for (Int32 k = 0; k < num_bounding_group; ++k) {
-          [[maybe_unused]] Int32 group_tag = ios_file->getInteger();
-        }
-        info(4) << "[Entities] dim=" << dim << " tag=" << tag
-                << " min_x=" << min_x << " min_y=" << min_y << " min_z=" << min_z
-                << " max_x=" << max_x << " max_y=" << max_y << " max_z=" << max_z
-                << " phys_tag=" << physical_tag;
-        dim_and_tag_info[0] = dim;
-        dim_and_tag_info[1] = tag;
-        dim_and_tag_info[2] = physical_tag;
-      }
-      m_parallel_mng->broadcast(dim_and_tag_info.view(), m_master_io_rank);
-      {
-        Int32 dim = dim_and_tag_info[0];
-        Int32 tag = dim_and_tag_info[1];
-        Int32 physical_tag = dim_and_tag_info[2];
-        mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
-      }
-      if (ios_file)
-        ios_file->getNextLine();
-    }
-  }
+  for (Int32 i_dim = 1; i_dim <= 3; ++i_dim)
+    for (Int32 i = 0; i < nb_dim_item[i_dim]; ++i)
+      _readOneEntity(i_dim);
+
   String s = _getNextLineAndBroadcast();
   if (s != "$EndEntities")
     ARCANE_FATAL("found '{0}' and expected '$EndEntities'", s);
@@ -1077,44 +1328,57 @@ _readEntitiesV4(IosFile* ios_file, MeshInfo& mesh_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- *
- The version 2.0 of the '.msh' file format is Gmsh's new native mesh file format. It is very
- similar to the old one (see Section 9.1.1 [Version 1.0], page 139), but is more general: it
- contains information about itself and allows to associate an arbitrary number of integer tags
- with each element. Ialso exists in both ASCII and binary form.
- The '.msh' file format, version 2.0, is divided in three main sections, defining the file
- format ($MeshFormat-$EndMeshFormat), the nodes ($Nodes-$EndNodes) and the elements
- ($Elements-$EndElements) in the mesh:
- /code
- * $MeshFormat
- * 2.0 file-type data-size
- *               (one-binary) is an integer of value 1 written in binary form.
- *               This integer is used for detecting if the computer
- *               on which the binary file was written and the computer
- *               on which the file is read are of the same type
- *               (little or big endian).
- *
- * $EndMeshFormat
- * $Nodes
- * number-of-nodes
- * node-number x-coord y-coord z-coord
- * ...
- * $EndNodes
- * $Elements
- * number-of-elements
- * elm-number elm-type number-of-tags < tag > ... node-number-list
- * ...	
- * $EndElements
- \endcode
-*/
-IMeshReader::eReturnType MshParallelMeshReader::
-_readMeshFromNewMshFile(IosFile* ios_file)
+
+void MshParallelMeshReader::
+_readOneEntity(Int32 entity_dim)
 {
+  IosFile* ios_file = m_ios_file.get();
+
+  FixedArray<Int64, 3> dim_and_tag_info;
+  if (ios_file) {
+    Int64 tag = ios_file->getInt64();
+    Real3 min_pos = _getReal3();
+    Real3 max_pos = _getReal3();
+    Int64 num_physical_tag = ios_file->getInt64();
+    if (num_physical_tag > 1)
+      ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
+    Int32 physical_tag = -1;
+    if (num_physical_tag == 1)
+      physical_tag = ios_file->getInteger();
+    Int32 num_bounding_group = ios_file->getInteger();
+    for (Int32 k = 0; k < num_bounding_group; ++k) {
+      [[maybe_unused]] Int32 group_tag = ios_file->getInteger();
+    }
+    info(4) << "[Entities] dim=" << entity_dim << " tag=" << tag
+            << " min_pos=" << min_pos << " max_pos=" << max_pos
+            << " phys_tag=" << physical_tag;
+    dim_and_tag_info[0] = entity_dim;
+    dim_and_tag_info[1] = tag;
+    dim_and_tag_info[2] = physical_tag;
+  }
+
+  m_parallel_mng->broadcast(dim_and_tag_info.view(), m_master_io_rank);
+
+  {
+    Int32 dim = CheckedConvert::toInt32(dim_and_tag_info[0]);
+    Int64 tag = dim_and_tag_info[1];
+    Int64 physical_tag = dim_and_tag_info[2];
+    m_mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
+  }
+
+  _goToNextLine();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ */
+void MshParallelMeshReader::
+_readMeshFromFile()
+{
+  IosFile* ios_file = m_ios_file.get();
   IMesh* mesh = m_mesh;
-  const char* func_name = "MshParallelMeshReader::_readMeshFromNewMshFile()";
-  info() << "[_readMeshFromNewMshFile] Reading 'msh' file in parallel";
-  MeshInfo mesh_info;
+  info() << "Reading 'msh' file in parallel";
   const int MSH_BINARY_TYPE = 1;
 
   if (ios_file) {
@@ -1142,53 +1406,44 @@ _readMeshFromNewMshFile(IosFile* ios_file)
   String next_line = _getNextLineAndBroadcast();
   // Noms des groupes
   if (next_line == "$PhysicalNames") {
-    _readPhysicalNames(ios_file, mesh_info);
+    _readPhysicalNames();
     next_line = _getNextLineAndBroadcast();
   }
 
   // Après le format, on peut avoir les entités mais cela est optionnel
   // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
   if (next_line == "$Entities") {
-    _readEntitiesV4(ios_file, mesh_info);
+    _readEntities();
     next_line = _getNextLineAndBroadcast();
   }
   // $Nodes
   if (next_line != "$Nodes")
     ARCANE_THROW(IOException, "Unexpected string '{0}'. Valid values are '$Nodes'", next_line);
 
-  if (ios_file) {
-    // Fetch nodes number and the coordinates
-    if (_readNodesFromAsciiMshV4File(*ios_file, mesh_info) != IMeshReader::RTOk)
-      ARCANE_THROW(IOException, "Ascii nodes coords error");
+  // Fetch nodes number and the coordinates
+  _readNodesFromFileAscii();
 
-    // $EndNodes
-    if (!ios_file->lookForString("$EndNodes"))
-      ARCANE_THROW(IOException, "$EndNodes not found");
-  }
+  // $EndNodes
+  if (ios_file && !ios_file->lookForString("$EndNodes"))
+    ARCANE_THROW(IOException, "$EndNodes not found");
 
   // $Elements
-  Integer mesh_dimension = -1;
-  {
-    if (ios_file)
-      if (!ios_file->lookForString("$Elements"))
-        ARCANE_THROW(IOException, "$Elements not found");
+  if (ios_file && !ios_file->lookForString("$Elements"))
+    ARCANE_THROW(IOException, "$Elements not found");
 
-    mesh_dimension = _readElementsFromAsciiMshV4File(ios_file, mesh_info);
+  Int32 mesh_dimension = _readElementsFromFileAscii();
 
-    // $EndElements
-    if (ios_file)
-      if (!ios_file->lookForString("$EndElements"))
-        throw IOException(func_name, "$EndElements not found");
-  }
+  // $EndElements
+  if (ios_file && !ios_file->lookForString("$EndElements"))
+    ARCANE_THROW(IOException, "$EndElements not found");
 
   info() << "Computed mesh dimension = " << mesh_dimension;
 
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   pmesh->setDimension(mesh_dimension);
 
-  _allocateCells(mesh_info);
-  _allocateGroups(mesh_info);
-  return IMeshReader::RTOk;
+  _allocateCells();
+  _allocateGroups();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1203,11 +1458,30 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
   m_mesh = mesh;
   IParallelMng* pm = mesh->parallelMng();
   m_parallel_mng = pm;
+  const Int32 nb_rank = pm->commSize();
+
+  // Détermine les rangs qui vont conserver les données
+  m_nb_part = nb_rank;
+  if (nb_rank > 64)
+    m_nb_part = nb_rank / 2;
+  if (nb_rank > 128)
+    m_nb_part = nb_rank / 4;
+  if (nb_rank > 512)
+    m_nb_part = nb_rank / 8;
+  if (nb_rank > 2048)
+    m_nb_part = nb_rank / 16;
+  m_parts_rank.resize(m_nb_part);
+  for (Int32 i = 0; i < m_nb_part; ++i) {
+    m_parts_rank[i] = i % nb_rank;
+  }
+
   bool is_master_io = pm->isMasterIO();
   Int32 master_io_rank = pm->masterIORank();
   m_is_parallel = pm->isParallel();
   m_master_io_rank = master_io_rank;
   FixedArray<Int32, 1> file_readable;
+  // Seul le rang maître va lire le fichier.
+  // On vérifie d'abord qu'il est lisible
   if (is_master_io) {
     bool is_readable = platform::isFileReadable(filename);
     info() << "Is file readable ?=" << is_readable;
@@ -1228,8 +1502,11 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
   }
   m_ios_file = ios_file;
   String mesh_format_str = _getNextLineAndBroadcast();
-  if (IosFile::isEqualString(mesh_format_str, "$MeshFormat"))
-    return _readMeshFromNewMshFile(ios_file.get());
+  if (IosFile::isEqualString(mesh_format_str, "$MeshFormat")) {
+    _readMeshFromFile();
+    return IMeshReader::RTOk;
+  }
+
   info() << "The file does not begin with '$MeshFormat' returning RTError";
   return IMeshReader::RTError;
 }

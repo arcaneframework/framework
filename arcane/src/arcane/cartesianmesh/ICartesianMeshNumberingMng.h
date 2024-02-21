@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshNumberingMng.h                                (C) 2000-2023 */
+/* ICartesianMeshNumberingMng.h                                (C) 2000-2024 */
 /*                                                                           */
 /* Interface de gestionnaire de numérotation pour maillage cartesian.        */
 /* Dans ces gestionnaires, on considère que l'on a un intervalle des         */
@@ -278,7 +278,18 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * @param cell_coord_i La position X de la maille.
    * @param cell_coord_j La position Y de la maille.
    */
-  virtual void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_cell_coord_i, Int64 cell_coord_j) =0;
+  virtual void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) =0;
+
+  /*!
+   * @brief Méthode permettant de récupérer les uniqueIds des mailles autour de la maille passée
+   * en paramètre.
+   *
+   * La vue passée en paramètre doit faire une taille de 9 en 2D et de 27 en 3D.
+   *
+   * @param uid [OUT] Les uniqueIds des mailles autour.
+   * @param cell La maille au centre.
+   */
+  virtual void getCellUidsAround(ArrayView<Int64> uid, Cell cell) =0;
 
 
   /*!

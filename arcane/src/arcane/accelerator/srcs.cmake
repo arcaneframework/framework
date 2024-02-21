@@ -33,6 +33,7 @@ set( ARCANE_SOURCES
   Scan.cc
   SpanViews.h
   VariableViews.h
+  VariableViews.cc
   Views.h
   ViewsCommon.h
 )

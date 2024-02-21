@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.h                                                  (C) 2000-2023 */
+/* RunQueue.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   void setAsync(bool v);
   //! Indique si la file d'exécution est asynchrone.
   bool isAsync() const;
-   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
+  //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
   void barrier();
 
   //! Copie des informations entre deux zones mémoires
@@ -127,6 +127,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl();
+
+  // Pour VariableViewBase
+  friend class VariableViewBase;
+  bool _isAutoPrefetchCommand() const;
 
  private:
 

@@ -16,6 +16,7 @@
 
 #include "arccore/concurrency/ConcurrencyGlobal.h"
 #include "arccore/base/BaseTypes.h"
+#include "arccore/base/RefDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,13 +35,13 @@ namespace Arccore
  */
 class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
 {
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+
+ private:
+
   friend class SpinLock;
   friend class ScopedLock;
   friend class ManualLock;
-
- public:
-
-  typedef ReferenceCounterTag ReferenceCounterTagType;
 
  protected:
 
@@ -48,7 +49,9 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
 
  public:
 
+  ARCCORE_DEPRECATED_REASON("Y2023: Use Ref<IThreadImplementation> to manage references")
   virtual void addReference() = 0;
+  ARCCORE_DEPRECATED_REASON("Y2023: Use Ref<IThreadImplementation> to manage references")
   virtual void removeReference() = 0;
 
  public:

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialHeatTestModule.cc                                   (C) 2000-2023 */
+/* MaterialHeatTestModule.cc                                   (C) 2000-2024 */
 /*                                                                           */
 /* Module de test des matériaux.                                             */
 /*---------------------------------------------------------------------------*/
@@ -29,6 +29,13 @@
 #include "arcane/materials/MeshMaterialModifier.h"
 #include "arcane/materials/ComponentItemVectorView.h"
 
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/VariableViews.h"
+#include "arcane/accelerator/MaterialVariableViews.h"
+#include "arcane/accelerator/RunCommandMaterialEnumerate.h"
+
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MaterialHeatTest_axl.h"
 
@@ -49,7 +56,7 @@ using namespace Arcane::Materials;
 class MaterialHeatTestModule
 : public ArcaneMaterialHeatTestObject
 {
- private:
+ public:
 
   //! Caractéristiques de l'objet qui chauffe (disque ou sphère)
   struct HeatObject
@@ -120,7 +127,9 @@ class MaterialHeatTestModule
   void _computeGlobalTemperature();
   void _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa);
+ public:
   void _addHeat(const HeatObject& heat_object);
+ private:
   void _addCold(const HeatObject& heat_object);
   void _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _compute();
@@ -157,9 +166,11 @@ MaterialHeatTestModule::
 void MaterialHeatTestModule::
 buildInit()
 {
+  ProfilingRegistry::setProfilingLevel(2);
+
   // La création des milieux et des matériaux doit se faire dans un point
   // d'entrée de type 'build' pour que la liste des variables créés par les
-  // milieux et les matériaux soit accessible dans le post-traitement.
+  // milieux et les matériaux soit accessibles dans le post-traitement.
   info() << "MaterialHeatTestModule::buildInit()";
 
   Materials::IMeshMaterialMng* mm = IMeshMaterialMng::getReference(defaultMesh());
@@ -378,18 +389,23 @@ _addHeat(const HeatObject& heat_object)
   const Real heat_radius_norm = heat_object.radius * heat_object.radius;
 
   IMeshMaterial* current_mat = heat_object.material;
+  RunQueue* queue = this->acceleratorMng()->defaultQueue();
+  auto command = makeCommand(queue);
+
+  auto in_cell_center = viewIn(command, m_cell_center);
+  auto inout_mat_temperature = viewInOut(command, m_mat_temperature);
 
   //! Chauffe les mailles déjà présentes dans le matériau
-  ENUMERATE_MATCELL (imatcell, current_mat) {
-    MatCell mc = *imatcell;
-    Cell cell = mc.globalCell();
-    Real3 center = m_cell_center[cell];
+  command << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, current_mat)
+  {
+    auto [matcell, cell] = iter();
+    Real3 center = in_cell_center[cell];
     Real distance2 = (center - heat_center).squareNormL2();
     if (distance2 < heat_radius_norm) {
       Real to_add = heat_value / (1.0 + distance2);
-      m_mat_temperature[mc] += to_add;
+      inout_mat_temperature[matcell] += to_add;
     }
-  }
+  };
 }
 
 /*---------------------------------------------------------------------------*/

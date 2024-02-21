@@ -273,7 +273,7 @@ class SendRecvOp : public IASynchOp
           m_recv_buffer[m_recv_info.m_ids[i]] = m_rbuffer[i];
       else
         for (int i = 0; i < size; ++i)
-          for (std::size_t ui = 0; ui < m_unknowns_num; ++ui)
+          for (int ui = 0; ui < m_unknowns_num; ++ui)
             m_recv_buffer[m_recv_info.m_ids[i] * m_unknowns_num + ui] = m_rbuffer[i * m_unknowns_num + ui];
     }
   }
@@ -303,7 +303,7 @@ class SendRecvOp : public IASynchOp
           m_recv_buffer[m_recv_info.m_ids[i]] = m_rbuffer[i];
       else
         for (int i = 0; i < size; ++i)
-          for (std::size_t ui = 0; ui < m_unknowns_num; ++ui)
+          for (int ui = 0; ui < m_unknowns_num; ++ui)
             m_recv_buffer[m_recv_info.m_ids[i] * m_unknowns_num + ui] = m_rbuffer[i * m_unknowns_num + ui];
     }
   }
@@ -376,7 +376,7 @@ class SendRecvOp : public IASynchOp
         }
       else
         for (int i = 0; i < size; ++i)
-          for (std::size_t ui = 0; ui < m_unknowns_num; ++ui)
+          for (int ui = 0; ui < m_unknowns_num; ++ui)
             m_sbuffer[i * m_unknowns_num + ui] = m_send_buffer[m_send_info.m_ids[offset + i] * m_unknowns_num + ui];
       sbuffer = &m_sbuffer[0];
     }

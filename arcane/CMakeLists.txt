@@ -356,7 +356,7 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.6.1")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.6.3")
 if (NOT Arccore_FOUND)
   find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 endif ()
@@ -1023,7 +1023,9 @@ add_subdirectory(samples_build)
 # Pour l'instant on le fait après les tests pour cohérence avec l'existant
 # car avant ces répertoires étaientt dans ceapart.
 add_subdirectory(src/arcane/cartesianmesh)
-add_subdirectory(src/arcane/materials)
+if (ARCANE_HAS_ACCELERATOR_API)
+  add_subdirectory(src/arcane/materials)
+endif()
 
 # ----------------------------------------------------------------------------
 # Ajoute les sources spécifiques CEA.

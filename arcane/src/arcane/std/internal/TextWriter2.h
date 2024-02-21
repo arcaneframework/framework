@@ -1,74 +1,76 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataReader.h                                        (C) 2000-2018 */
+/* TextWriter2.h                                               (C) 2000-2024 */
 /*                                                                           */
-/* Lecteur de IData en parallèle.                                            */
+/* Ecrivain de données.                                                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_PARALLELDATAREADER_H
-#define ARCANE_STD_PARALLELDATAREADER_H
+#ifndef ARCANE_STD_INTERNAL_TEXTWRITER2_H
+#define ARCANE_STD_INTERNAL_TEXTWRITER2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/String.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class IParallelMng;
-class IData;
+class IDataCompressor;
+}
+
+namespace Arcane::impl
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecture parallèle.
- *
- * Une instance de cette classe est associée à un groupe du maillage.
- *
- * Pour pouvoir l'utiliser, chaque rang du IParallelMng doit spécifier:
- * - la liste des uid qu'il souhaite, à remplir dans wantedUniqueIds()
- * - la liste triée par ordre croissant des uids qui sont gérés par ce rang, à remplir
- * dans writtenUniqueIds().
- * Une fois ceci fait, il faut appeler la méthode sort() pour calculer
- * les infos dont on a besoin pour l'envoie et la réception des valeurs.
- *
- * L'instance est alors utilisable pour toutes les variables qui reposent
- * sur ce groupe et il faut appeler getSortedValues() pour récupérer
- * les valeurs pour une variable.
- * 
+ * \internal
+ * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
  */
-class ParallelDataReader
+class TextWriter2
 {
   class Impl;
 
  public:
 
-  ParallelDataReader(IParallelMng* pm);
-  ParallelDataReader(const ParallelDataReader& rhs) = delete;
-  ~ParallelDataReader();
+  explicit TextWriter2(const String& filename);
+  TextWriter2(const TextWriter2& rhs) = delete;
+  ~TextWriter2();
+  TextWriter2& operator=(const TextWriter2& rhs) = delete;
 
  public:
 
-  Int64Array& writtenUniqueIds();
-  Int64Array& wantedUniqueIds();
-  void sort();
-  void getSortedValues(IData* written_data,IData* data);
+  void write(Span<const std::byte> values);
+
+ public:
+
+  String fileName() const;
+  void setDataCompressor(Ref<IDataCompressor> ds);
+  Ref<IDataCompressor> dataCompressor() const;
+  Int64 fileOffset();
+  std::ostream& stream();
 
  private:
 
   Impl* m_p;
+
+ private:
+
+  void _open(const String& filename);
+  void _binaryWrite(Span<const std::byte> values);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // End namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

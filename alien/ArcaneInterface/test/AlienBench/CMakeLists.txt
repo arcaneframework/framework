@@ -1,3 +1,33 @@
+
+
+
+if(ALIEN_USE_SYCL)
+    IF(ALIEN_USE_HIPSYCL)
+      find_package(hipSYCL CONFIG REQUIRED)
+      message(status "HIPSYCL                : ${hipSYCL_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+
+    IF(ALIEN_USE_INTELDPCPP)
+      find_package(IntelDPCPP CONFIG REQUIRED)
+      message(status "IntelDPCPP : ${IntelDPCPP_FOUND}")
+      message(status "IntelDPCPP FOUND : ${IntelDPCPP_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+    IF(ALIEN_USE_INTELSYCL)
+      find_package(IntelSYCL REQUIRED)
+      message(status "IntelSYCL : ${IntelDPCPP_FOUND}")
+      message(status "IntelSYCL FOUND : ${IntelDPCPP_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+ENDIF()
+
 createExecutable(alien_bench.exe)
 
 addSources(alien_bench.exe
@@ -11,7 +41,34 @@ generateAxl(alien_bench.exe
         AlienBench.axl
         AlienStokes.axl
         NO_COPY
+        USER_INSTALL_PREFIX ALIEN
         )
+
+if(ALIEN_USE_SYCL)
+    IF(ALIEN_USE_HIPSYCL)
+        add_sycl_to_target(TARGET  alien_bench.exe
+                           SOURCES AlienBenchModule.cc)
+    ENDIF()
+
+    IF(ALIEN_USE_INTELDPCPP)
+        #set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+	set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+        target_compile_options(alien_bench.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+    ENDIF()
+    IF(ALIEN_USE_INTELSYCL)
+        set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+        IF(ENABLE_HIP)
+          set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+          target_compile_options(alien_bench.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+        ENDIF()
+        IF(ENABLE_CUDA)
+          set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+          target_compile_options(alien_bench.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+        ENDIF()
+        add_sycl_to_target(TARGET  alien_bench.exe
+                           SOURCES AlienBenchModule.cc)
+    ENDIF()
+ENDIF()
 
 if (TARGET intel)
     linkLibraries(alien_bench.exe intel)

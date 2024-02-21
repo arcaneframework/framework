@@ -3,7 +3,8 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-﻿using System;
+using System;
+using System.Collections.Generic;
 using Arcane.VariableComparer;
 
 namespace Arcane.ExecDrivers.TestDriver
@@ -13,24 +14,52 @@ namespace Arcane.ExecDrivers.TestDriver
     string m_reference_path;
     string m_target_path;
 
-    internal void ParseArgs(string [] args)
+    bool m_is_compare_hash;
+    internal void ParseArgs(string [] main_args)
     {
-      int nb_arg = args.Length;
+      Mono.Options.OptionSet opt_set = new Mono.Options.OptionSet();
+
+      opt_set.Add("compare-hash", "compare uniquement les valeurs des hashs", (v) => m_is_compare_hash = v != null);
+      List<string> remaining_args = opt_set.Parse(main_args);
+      foreach (string s in remaining_args) {
+        Console.WriteLine("REMAINING ARG '{0}'", s);
+      }
+
+      int nb_arg = remaining_args.Count;
       if (nb_arg < 2) {
         Console.WriteLine("Bad number of args.");
-        Console.WriteLine("Usage: [exe] compare ref_path target_path");
+        Console.WriteLine("Usage: [exe] [options] ref_path target_path");
         throw new VariableComparerException("Bad number of arguments");
       }
-      m_reference_path = args [0];
-      m_target_path = args [1];
+      m_reference_path = remaining_args [0];
+      m_target_path = remaining_args [1];
+      Console.WriteLine("IsCompareHashValue?={0}",m_is_compare_hash);
       Console.WriteLine("REFERENCE_PATH='{0}'", m_reference_path);
       Console.WriteLine("TARGET_PATH='{0}'", m_target_path);
     }
-
     internal int Execute()
     {
       var vc = new Arcane.VariableComparer.VariableComparer(m_reference_path, m_target_path);
       vc.ReadDatabase();
+      if (m_is_compare_hash)
+        return _ExecuteCompareHash(vc);
+      return _ExecuteCompareValues(vc);
+    }
+    int _ExecuteCompareHash(Arcane.VariableComparer.VariableComparer vc)
+    {
+      int total_nb_diff = 0;
+      foreach (VariableMetaData v in vc.CommonVariables) {
+        (string ref_hash,string target_hash) = vc.GetComparisonHashValue(v);
+        bool is_different = ref_hash != target_hash;
+        System.Console.WriteLine("COMPARE_HASH var={0} ref={1} target={2} is_diff?={3}",v.FullName,ref_hash,target_hash,is_different);
+        if (is_different)
+          ++total_nb_diff;
+      }
+      Console.WriteLine($"TotalNbDiffHash={total_nb_diff}");
+      return total_nb_diff;
+    }
+    int _ExecuteCompareValues(Arcane.VariableComparer.VariableComparer vc)
+    {
       int total_nb_diff = 0;
       foreach (VariableMetaData v in vc.CommonVariables) {
         double [] v_ref;

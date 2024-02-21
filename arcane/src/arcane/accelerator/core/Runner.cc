@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.cc                                                   (C) 2000-2023 */
+/* Runner.cc                                                   (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/DeviceId.h"
@@ -165,6 +166,11 @@ class Runner::Impl
     m_device_id = device;
     m_runtime = _getRuntime(v);
     m_is_init = true;
+    m_is_auto_prefetch_command = false;
+
+    // Pour test
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PREFETCH_COMMAND", true))
+      m_is_auto_prefetch_command = (v.value() != 0);
 
     // Il faut initialiser le pool à la fin car il a besoin d'accéder à \a m_runtime
     m_run_queue_pool = new RunQueueImplStack(runner);
@@ -199,6 +205,7 @@ class Runner::Impl
   }
 
   impl::IRunnerRuntime* runtime() const { return m_runtime; }
+  bool isAutoPrefetchCommand() const { return m_is_auto_prefetch_command; }
 
  public:
 
@@ -219,6 +226,9 @@ class Runner::Impl
    * car les atomiques sur les flottants ne sont pas supportés partout.
    */
   std::atomic<Int64> m_cumulative_command_time = 0;
+
+  //! Indique si on pré-copie les données avant une commande de cette RunQueue
+  bool m_is_auto_prefetch_command = false;
 
  private:
 
@@ -538,6 +548,15 @@ stopAllProfiling()
   _stopProfiling(eExecutionPolicy::HIP);
   _stopProfiling(eExecutionPolicy::Sequential);
   _stopProfiling(eExecutionPolicy::Thread);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool Runner::
+_isAutoPrefetchCommand() const
+{
+  return m_p->isAutoPrefetchCommand();
 }
 
 /*---------------------------------------------------------------------------*/

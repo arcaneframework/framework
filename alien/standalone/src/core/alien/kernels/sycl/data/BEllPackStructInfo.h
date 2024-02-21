@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -121,10 +127,44 @@ class ALIEN_EXPORT BEllPackStructInfo
     return m_h_local_row_size;
   }
 
+  void computeUpperDiagOffset() const
+  {
+  }
+
+  Integer computeBandeSize() const
+  {
+    return 0 ;
+  }
+
+  Integer computeUpperBandeSize() const
+  {
+    return 0;
+  }
+
+  Integer computeLowerBandeSize() const
+  {
+    return 0;
+  }
+
+  Integer computeMaxRowSize() const
+  {
+    m_max_row_size = 0;
+    return m_max_row_size;
+  }
+
+  Integer getMaxRowSize() const
+  {
+    if (m_max_row_size == -1)
+      computeMaxRowSize();
+    return m_max_row_size;
+  }
+
+
  protected:
   // clang-format off
   std::size_t m_block_nrows         = 0 ;
   std::size_t m_block_nnz           = 0 ;
+  mutable Integer m_max_row_size    = -1 ;
 
   InternalType*  m_internal         = nullptr;
   int const*     m_h_local_row_size = nullptr ;

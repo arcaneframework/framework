@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConstituentConnectivityList.cc                              (C) 2000-2023 */
+/* ConstituentConnectivityList.cc                              (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des listes de connectivité des constituants.                      */
 /*---------------------------------------------------------------------------*/
@@ -223,6 +223,9 @@ ConstituentConnectivityList::
 void ConstituentConnectivityList::
 endCreate(bool is_continue)
 {
+  // Maintenant (février 2024) on construit toujours les connectivités incrémentales
+  const bool always_build_connectivity = true;
+
   // S'enregistre auprès la famille pour être notifié des évolutions
   // mais uniquement si on a demandé le support des modifications incrémentales
   // pour éviter de consommer inutilement de la mémoire.
@@ -231,9 +234,10 @@ endCreate(bool is_continue)
   {
     int opt_flag_value = m_material_mng->modificationFlags();
     bool use_incremental = (opt_flag_value & (int)eModificationFlags::IncrementalRecompute) != 0;
-    if (use_incremental) {
+    if (use_incremental || always_build_connectivity) {
       m_cell_family->_internalApi()->addSourceConnectivity(this);
       m_is_active = true;
+      info() << "Activating incremental material connectivities";
     }
   }
   if (!is_continue) {
@@ -366,7 +370,7 @@ cellsNbMaterial() const
 /*---------------------------------------------------------------------------*/
 
 Int16 ConstituentConnectivityList::
-cellNbMaterial(CellLocalId cell_id, Int16 env_id)
+cellNbMaterial(CellLocalId cell_id, Int16 env_id) const
 {
   Int16 nb_mat = 0;
   ArrayView<Int16> mats = m_container->m_material.components(cell_id);

@@ -13,8 +13,8 @@ string(REPLACE "_dev" "" ALIEN_VERSION ${ALIEN_VERSION_STR_FULL})
 string(STRIP "${ALIEN_VERSION}" ALIEN_VERSION)  # In case of \n
 message(STATUS "AlienLegacyVersion = ${ALIEN_VERSION}")
 
-project(ALIEN 
-        VERSION ${ALIEN_VERSION}) # Le nom est important car les axl sont générés dans <PROJECT_NAME>/axl
+project(AlienPlugins
+        VERSION ${ALIEN_VERSION})
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -138,6 +138,10 @@ enable_testing()
 
 message_separator()
 logStatus("Loading components...")
+
+IF(ALIEN_USE_INTELSYCL)
+  set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+ENDIF()
 
 add_subdirectory(modules/options)
 add_subdirectory(modules/external_packages)

@@ -17,6 +17,8 @@
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/concurrency/IThreadImplementation.h"
 
+#include "arccore/base/ReferenceCounterImpl.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,9 +33,9 @@ namespace Arccore
 class ARCCORE_CONCURRENCY_EXPORT NullThreadBarrier
 : public IThreadBarrier
 {
-  virtual void init(Integer nb_thread) { ARCCORE_UNUSED(nb_thread); }
-  virtual void destroy() { delete this; }
-  virtual bool wait() { return true; }
+  void init(Integer nb_thread) override { ARCCORE_UNUSED(nb_thread); }
+  void destroy() override { delete this; }
+  bool wait() override { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -43,12 +45,43 @@ class ARCCORE_CONCURRENCY_EXPORT NullThreadBarrier
  */
 class ARCCORE_CONCURRENCY_EXPORT NullThreadImplementation
 : public IThreadImplementation
+, public ReferenceCounterImpl
 {
+  // Pour créer dynamiquement les instances
+  friend class NullThreadImplementationFactory;
+
+ private:
+
+  // TODO Utiliser ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS()
+  // quand il n'y a aura plus d'instances statiques de cette classe.
+  ReferenceCounterImpl* _internalReferenceCounter() override { return this; }
+  void _internalAddReference() override
+  {
+    if (m_do_destroy)
+      Arccore::ReferenceCounterImpl::_internalAddReference();
+  }
+  bool _internalRemoveReference() override
+  {
+    if (m_do_destroy)
+      return Arccore::ReferenceCounterImpl::_internalRemoveReference();
+    return false;
+  }
+
+ public:
+
+  void addReference() override { _internalAddReference(); }
+  void removeReference() override { _internalRemoveReference(); }
+
+ public:
+
+  ARCCORE_DEPRECATED_REASON("Y2023: This constructor is internal to Arcane. Use Concurrency::createNullThreadImplementation() instead")
+  NullThreadImplementation()
+  : m_do_destroy(false)
+  {}
+
  public:
 
   void initialize() override {}
-  void addReference() override {}
-  void removeReference() override {}
   ThreadImpl* createThread(IFunctor*) override { return nullptr; }
   void joinThread(ThreadImpl*) override {}
   void destroyThread(ThreadImpl*) override {}
@@ -57,12 +90,12 @@ class ARCCORE_CONCURRENCY_EXPORT NullThreadImplementation
   {
     ARCCORE_UNUSED(spin_lock_addr);
   }
-  void lockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override
+  void lockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr) override
   {
     ARCCORE_UNUSED(spin_lock_addr);
     ARCCORE_UNUSED(scoped_spin_lock_addr);
   }
-  void unlockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override
+  void unlockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr) override
   {
     ARCCORE_UNUSED(spin_lock_addr);
     ARCCORE_UNUSED(scoped_spin_lock_addr);
@@ -78,6 +111,17 @@ class ARCCORE_CONCURRENCY_EXPORT NullThreadImplementation
   IThreadBarrier* createBarrier() override { return new NullThreadBarrier(); }
 
   bool isMultiThread() const override { return false; }
+
+ private:
+
+  // Constructeur utilisé par NullThreadImplementationFactory qui oblige à créer via 'new'
+  NullThreadImplementation(bool)
+  : m_do_destroy(true)
+  {}
+
+ private:
+
+  bool m_do_destroy = true;
 };
 
 /*---------------------------------------------------------------------------*/

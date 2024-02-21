@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.cc                                                 (C) 2000-2023 */
+/* RunQueue.cc                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -183,6 +183,15 @@ bool RunQueue::
 isAsync() const
 {
   return m_p->m_is_async;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RunQueue::
+_isAutoPrefetchCommand() const
+{
+  return m_p->m_runner->_isAutoPrefetchCommand();
 }
 
 /*---------------------------------------------------------------------------*/

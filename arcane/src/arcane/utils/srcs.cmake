@@ -202,6 +202,7 @@ set(ARCANE_SOURCES
   ArcanePrecomp.h
   ArgumentException.h
   Array2.h
+  ArrayUtils.h
   ArrayView.h
   Array2View.h
   Array3View.h

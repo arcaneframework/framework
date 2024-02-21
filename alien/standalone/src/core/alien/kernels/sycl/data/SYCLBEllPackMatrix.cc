@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -104,9 +110,9 @@ StructInfoInternal(std::size_t nrows,
 , m_h_kcol(h_kcol, h_kcol + nrows + 1)
 , m_h_cols(h_cols, h_cols + nnz)
 , m_h_block_cols(block_nnz * block_size)
-, m_block_row_offset(h_block_row_offset, cl::sycl::range<1>(m_block_nrows + 1))
-, m_block_cols(m_h_block_cols.data(), cl::sycl::range<1>(m_block_nnz * block_size))
-, m_kcol(m_h_kcol.data(), cl::sycl::range<1>(m_nrows + 1))
+, m_block_row_offset(h_block_row_offset, sycl::range<1>(m_block_nrows + 1))
+, m_block_cols(m_h_block_cols.data(), sycl::range<1>(m_block_nnz * block_size))
+, m_kcol(m_h_kcol.data(), sycl::range<1>(m_nrows + 1))
 {
   auto env = SYCLEnv::instance();
 
@@ -122,18 +128,18 @@ StructInfoInternal(std::size_t nrows,
   // clang-format off
   if(h_local_row_size==nullptr)
   {
-    IndexBufferType cols_buffer(m_h_cols.data(), cl::sycl::range<1>(m_nnz));
+    IndexBufferType cols_buffer(m_h_cols.data(), sycl::range<1>(m_nnz));
 
-    queue.submit([&](cl::sycl::handler& cgh)
+    queue.submit([&](sycl::handler& cgh)
                  {
-                   auto access_kcol_buffer      = m_kcol.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_block_row_offset = m_block_row_offset.template get_access<cl::sycl::access::mode::read>(cgh);
+                   auto access_kcol_buffer      = m_kcol.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_block_row_offset = m_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
 
-                   auto access_cols_buffer      = cols_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_block_cols       = m_block_cols.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                   auto access_cols_buffer      = cols_buffer.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_block_cols       = m_block_cols.template get_access<sycl::access::mode::read_write>(cgh);
 
-                   cgh.parallel_for<class vector_rs>(cl::sycl::range<1>{total_threads},
-                                                     [=] (cl::sycl::item<1> itemId)
+                   cgh.parallel_for<class struct_info_sycl>(sycl::range<1>{total_threads},
+                                                     [=] (sycl::item<1> itemId)
                                                      {
                                                          auto id = itemId.get_id(0);
 
@@ -171,20 +177,20 @@ StructInfoInternal(std::size_t nrows,
   }
   else
   {
-    IndexBufferType cols_buffer(m_h_cols.data(), cl::sycl::range<1>(m_nnz));
-    IndexBufferType lrowsize_buffer(h_local_row_size, cl::sycl::range<1>(nrows));
+    IndexBufferType cols_buffer(m_h_cols.data(), sycl::range<1>(m_nnz));
+    IndexBufferType lrowsize_buffer(h_local_row_size, sycl::range<1>(nrows));
     // clang-format off
-    queue.submit([&](cl::sycl::handler& cgh)
+    queue.submit([&](sycl::handler& cgh)
                  {
-                   auto access_kcol_buffer      = m_kcol.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_block_row_offset = m_block_row_offset.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_lrowsize_buffer  = lrowsize_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
+                   auto access_kcol_buffer      = m_kcol.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_block_row_offset = m_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_lrowsize_buffer  = lrowsize_buffer.template get_access<sycl::access::mode::read>(cgh);
 
-                   auto access_cols_buffer      = cols_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_block_cols       = m_block_cols.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                   auto access_cols_buffer      = cols_buffer.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_block_cols       = m_block_cols.template get_access<sycl::access::mode::read_write>(cgh);
 
-                   cgh.parallel_for<class vector_rs>(cl::sycl::range<1>{total_threads},
-                                                     [=] (cl::sycl::item<1> itemId)
+                   cgh.parallel_for<class struct_info_sycl2>(sycl::range<1>{total_threads},
+                                                     [=] (sycl::item<1> itemId)
                                                      {
                                                          auto id = itemId.get_id(0);
 
@@ -237,8 +243,8 @@ void SYCLInternal::StructInfoInternal<BlockSize, IndexT>::computeLowerUpperMask(
 {
 
   if (not m_lower_upper_mask_ready) {
-    m_lower_mask.reset(new MaskBufferType(cl::sycl::range<1>(m_block_nnz * block_size)));
-    m_upper_mask.reset(new MaskBufferType(cl::sycl::range<1>(m_block_nnz * block_size)));
+    m_lower_mask.reset(new MaskBufferType(sycl::range<1>(m_block_nnz * block_size)));
+    m_upper_mask.reset(new MaskBufferType(sycl::range<1>(m_block_nnz * block_size)));
 
     auto env = SYCLEnv::instance();
 
@@ -252,24 +258,24 @@ void SYCLInternal::StructInfoInternal<BlockSize, IndexT>::computeLowerUpperMask(
     auto total_threads = num_groups * block_size;
 
     {
-      IndexBufferType dcol_buffer(m_h_dcol.data(), cl::sycl::range<1>(m_nrows));
+      IndexBufferType dcol_buffer(m_h_dcol.data(), sycl::range<1>(m_nrows));
 
       auto nrows = m_nrows;
 
       // clang-format off
-      queue.submit([&](cl::sycl::handler& cgh)
+      queue.submit([&](sycl::handler& cgh)
                    {
-                     auto access_dcol_buffer      = dcol_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
+                     auto access_dcol_buffer      = dcol_buffer.template get_access<sycl::access::mode::read>(cgh);
 
-                     auto access_kcol_buffer      = m_kcol.template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_block_row_offset = m_block_row_offset.template get_access<cl::sycl::access::mode::read>(cgh);
+                     auto access_kcol_buffer      = m_kcol.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_block_row_offset = m_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
 
-                     auto access_lower_mask       = cl::sycl::accessor { *m_lower_mask, cgh, cl::sycl::write_only, cl::sycl::property::no_init{}};
-                     auto access_upper_mask       = cl::sycl::accessor { *m_upper_mask, cgh, cl::sycl::write_only, cl::sycl::property::no_init{}};
+                     auto access_lower_mask       = sycl::accessor { *m_lower_mask, cgh, sycl::write_only, sycl::property::no_init{}};
+                     auto access_upper_mask       = sycl::accessor { *m_upper_mask, cgh, sycl::write_only, sycl::property::no_init{}};
 
 
-                     cgh.parallel_for<class vector_rs>(cl::sycl::range<1>{total_threads},
-                                                       [=] (cl::sycl::item<1> itemId)
+                     cgh.parallel_for<class lower_upper_mask>(sycl::range<1>{total_threads},
+                                                       [=] (sycl::item<1> itemId)
                                                        {
                                                            auto id = itemId.get_id(0);
 
@@ -390,7 +396,7 @@ namespace SYCLInternal
   MatrixInternal<ValueT, BlockSize>::MatrixInternal(ProfileType const* profile)
   : m_profile(profile)
   , m_h_values(profile->getBlockNnz() * block_size)
-  , m_values(m_h_values.data(), cl::sycl::range<1>(profile->getBlockNnz() * block_size))
+  , m_values(m_h_values.data(), sycl::range<1>(profile->getBlockNnz() * block_size))
   {
     //m_values.set_final_data(nullptr);
     alien_debug([&] { cout() << "SYCL InternalMATRIX" << profile->getBlockNnz() * block_size; });
@@ -416,19 +422,19 @@ namespace SYCLInternal
 
     auto local_row_size = m_profile->localRowSize();
     if (local_row_size == nullptr) {
-      ValueBufferType values_buffer(m_h_csr_values.data(), cl::sycl::range<1>(nnz));
+      ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
       // COMPUTE COLS
       // clang-format off
-        queue.submit([&](cl::sycl::handler& cgh)
+        queue.submit([&](sycl::handler& cgh)
                      {
-                       auto access_kcol_buffer      = internal_profile->getKCol().template get_access<cl::sycl::access::mode::read>(cgh);
-                       auto access_block_row_offset = internal_profile->getBlockRowOffset().template get_access<cl::sycl::access::mode::read>(cgh);
-                       auto access_values_buffer    = values_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
-                       auto access_block_values     = m_values.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                       auto access_kcol_buffer      = internal_profile->getKCol().template get_access<sycl::access::mode::read>(cgh);
+                       auto access_block_row_offset = internal_profile->getBlockRowOffset().template get_access<sycl::access::mode::read>(cgh);
+                       auto access_values_buffer    = values_buffer.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_block_values     = m_values.template get_access<sycl::access::mode::read_write>(cgh);
 
-                       //cgh.parallel_for<class vector_axpy>(cl::sycl::nd_range<1>{cl::sycl::range<1>{total_threads},cl::sycl::range<1>{block_size}},[=](cl::sycl::nd_item<1> item_id)
-                       cgh.parallel_for<class vector_values>(cl::sycl::range<1>{total_threads},
-                                                             [=] (cl::sycl::item<1> item_id)
+                       //cgh.parallel_for<class vector_axpy>(sycl::nd_range<1>{sycl::range<1>{total_threads},sycl::range<1>{block_size}},[=](sycl::nd_item<1> item_id)
+                       cgh.parallel_for<class set_matrix_values>(sycl::range<1>{total_threads},
+                                                             [=] (sycl::item<1> item_id)
                                                              {
                                                                auto id = item_id.get_id(0);
                                                                //auto local_id  = item_id.get_local_id(0);
@@ -462,22 +468,22 @@ namespace SYCLInternal
       m_values_is_update = true;
     }
     else {
-      ValueBufferType values_buffer(m_h_csr_values.data(), cl::sycl::range<1>(nnz));
-      IndexBufferType lrowsize_buffer(local_row_size, cl::sycl::range<1>(nrows));
+      ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
+      IndexBufferType lrowsize_buffer(local_row_size, sycl::range<1>(nrows));
       // COMPUTE COLS
       // clang-format off
-      queue.submit([&](cl::sycl::handler& cgh)
+      queue.submit([&](sycl::handler& cgh)
                    {
-                     auto access_kcol_buffer      = internal_profile->getKCol().template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_lrowsize_buffer  = lrowsize_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
+                     auto access_kcol_buffer      = internal_profile->getKCol().template get_access<sycl::access::mode::read>(cgh);
+                     auto access_lrowsize_buffer  = lrowsize_buffer.template get_access<sycl::access::mode::read>(cgh);
 
-                     auto access_block_row_offset = internal_profile->getBlockRowOffset().template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_values_buffer    = values_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_block_values     = m_values.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                     auto access_block_row_offset = internal_profile->getBlockRowOffset().template get_access<sycl::access::mode::read>(cgh);
+                     auto access_values_buffer    = values_buffer.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_block_values     = m_values.template get_access<sycl::access::mode::read_write>(cgh);
 
-                     //cgh.parallel_for<class vector_axpy>(cl::sycl::nd_range<1>{cl::sycl::range<1>{total_threads},cl::sycl::range<1>{block_size}},[=](cl::sycl::nd_item<1> item_id)
-                     cgh.parallel_for<class vector_values>(cl::sycl::range<1>{total_threads},
-                                                           [=] (cl::sycl::item<1> item_id)
+                     //cgh.parallel_for<class vector_axpy>(sycl::nd_range<1>{sycl::range<1>{total_threads},sycl::range<1>{block_size}},[=](sycl::nd_item<1> item_id)
+                     cgh.parallel_for<class set_matrix_values2>(sycl::range<1>{total_threads},
+                                                           [=] (sycl::item<1> item_id)
                                                            {
                                                              auto id = item_id.get_id(0);
                                                              //auto local_id  = item_id.get_local_id(0);
@@ -518,17 +524,17 @@ namespace SYCLInternal
       //m_h_ext_values.resize(ext_block_nnz) ;
       m_ext_values.reset(new ValueBufferType(ext_block_nnz * block_size)) ;
       {
-        ValueBufferType ext_csr_values_buffer(m_h_csr_ext_values.data(), cl::sycl::range<1>(ext_nnz));
-        queue.submit([&](cl::sycl::handler& cgh)
+        ValueBufferType ext_csr_values_buffer(m_h_csr_ext_values.data(), sycl::range<1>(ext_nnz));
+        queue.submit([&](sycl::handler& cgh)
                      {
-                       auto access_kcol_buffer      = ext_kcol.template get_access<cl::sycl::access::mode::read>(cgh);
-                       auto access_block_row_offset = ext_block_row_offset.template get_access<cl::sycl::access::mode::read>(cgh);
-                       auto access_values_buffer    = ext_csr_values_buffer.template get_access<cl::sycl::access::mode::read>(cgh);
-                       //auto access_block_values     = m_ext_values->template get_access<cl::sycl::access::mode::read_write>(cgh);
-                       auto access_block_values     = cl::sycl::accessor { *m_ext_values, cgh, cl::sycl::write_only, cl::sycl::property::no_init{}};
+                       auto access_kcol_buffer      = ext_kcol.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_block_row_offset = ext_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_values_buffer    = ext_csr_values_buffer.template get_access<sycl::access::mode::read>(cgh);
+                       //auto access_block_values     = m_ext_values->template get_access<sycl::access::mode::read_write>(cgh);
+                       auto access_block_values     = sycl::accessor { *m_ext_values, cgh, sycl::write_only, sycl::property::no_init{}};
 
-                       cgh.parallel_for<class vector_ghost_values>(cl::sycl::range<1>{total_threads},
-                                                                   [=] (cl::sycl::item<1> item_id)
+                       cgh.parallel_for<class set_matrix_values3>(sycl::range<1>{total_threads},
+                                                                   [=] (sycl::item<1> item_id)
                                                                    {
                                                                      auto id = item_id.get_id(0);
 
@@ -621,14 +627,14 @@ namespace SYCLInternal
   }
 
   template <typename ValueT, int BlockSize>
-  void MatrixInternal<ValueT, BlockSize>::mult(ValueBufferType& x, ValueBufferType& y, cl::sycl::queue& queue) const
+  void MatrixInternal<ValueT, BlockSize>::mult(ValueBufferType& x, ValueBufferType& y, sycl::queue& queue) const
   {
 
     auto device = queue.get_device();
 
-    auto num_groups = queue.get_device().get_info<cl::sycl::info::device::max_compute_units>();
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
     // getting the maximum work group size per thread
-    auto max_work_group_size = queue.get_device().get_info<cl::sycl::info::device::max_work_group_size>();
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     // building the best number of global thread
     auto total_threads = num_groups * block_size;
 
@@ -644,21 +650,21 @@ namespace SYCLInternal
     {
       // COMPUTE VALUES
       // clang-format off
-        queue.submit([&](cl::sycl::handler& cgh)
+        queue.submit([&](sycl::handler& cgh)
                  {
-                   auto access_block_row_offset = block_row_offset.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_cols             = block_cols.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_values           = m_values.template get_access<cl::sycl::access::mode::read>(cgh);
+                   auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
 
 
-                   auto access_x                = x.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_y                = y.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                   auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
 
 
-                   //cl::sycl::nd_range<1> r{cl::sycl::range<1>{total_threads},cl::sycl::range<1>{block_size}};
-                   //cgh.parallel_for<class compute_mult>(r, [&](cl::sycl::nd_item<1> item_id)
-                   cgh.parallel_for<class compute_mult>(cl::sycl::range<1>{total_threads},
-                                                        [=] (cl::sycl::item<1> item_id)
+                   //sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{block_size}};
+                   //cgh.parallel_for<class compute_mult>(r, [&](sycl::nd_item<1> item_id)
+                   cgh.parallel_for<class compute_mult>(sycl::range<1>{total_threads},
+                                                        [=] (sycl::item<1> item_id)
                                                         {
                                                           auto id = item_id.get_id(0);
                                                           //auto local_id  = item_id.get_local_id(0);
@@ -696,16 +702,16 @@ namespace SYCLInternal
   template <typename ValueT, int BlockSize>
   void MatrixInternal<ValueT, BlockSize>::addExtMult(ValueBufferType& x,
                                                      ValueBufferType& y,
-                                                     cl::sycl::queue& queue) const
+                                                     sycl::queue& queue) const
   {
     //alien_debug([&] {cout() << "SYCL MatrixInternal::addExMult: ";});
     //Universe().traceMng()->flush() ;
 
     auto device = queue.get_device();
 
-    auto num_groups = queue.get_device().get_info<cl::sycl::info::device::max_compute_units>();
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
     // getting the maximum work group size per thread
-    auto max_work_group_size = queue.get_device().get_info<cl::sycl::info::device::max_work_group_size>();
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     // building the best number of global thread
     auto total_threads = num_groups * block_size;
 
@@ -722,19 +728,19 @@ namespace SYCLInternal
 
     {
       // clang-format off
-      queue.submit([&](cl::sycl::handler& cgh)
+      queue.submit([&](sycl::handler& cgh)
                    {
-                     auto access_block_row_offset = block_row_offset.template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_cols             = block_cols.template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_values           = m_ext_values->template get_access<cl::sycl::access::mode::read>(cgh);
+                     auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_values           = m_ext_values->template get_access<sycl::access::mode::read>(cgh);
 
-                     auto access_row_ids          = m_interface_row_ids->template get_access<cl::sycl::access::mode::read>(cgh);
+                     auto access_row_ids          = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
 
-                     auto access_x                = x.template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_y                = y.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                     auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
 
-                     cgh.parallel_for<class compute_ext_mult>(cl::sycl::range<1>{total_threads},
-                                                              [=] (cl::sycl::item<1> item_id)
+                     cgh.parallel_for<class compute_ext_mult>(sycl::range<1>{total_threads},
+                                                              [=] (sycl::item<1> item_id)
                                                               {
                                                                 auto id = item_id.get_id(0);
 
@@ -770,13 +776,13 @@ namespace SYCLInternal
   void MatrixInternal<ValueT, BlockSize>::addLMult(ValueType alpha,
                                                    ValueBufferType& x,
                                                    ValueBufferType& y,
-                                                   cl::sycl::queue& queue) const
+                                                   sycl::queue& queue) const
   {
     auto device = queue.get_device();
 
-    auto num_groups = queue.get_device().get_info<cl::sycl::info::device::max_compute_units>();
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
     // getting the maximum work group size per thread
-    auto max_work_group_size = queue.get_device().get_info<cl::sycl::info::device::max_work_group_size>();
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     // building the best number of global thread
     auto total_threads = num_groups * block_size;
 
@@ -793,22 +799,22 @@ namespace SYCLInternal
     // clang-format on
     {
       // clang-format off
-        queue.submit([&](cl::sycl::handler& cgh)
+        queue.submit([&](sycl::handler& cgh)
                  {
-                   auto access_block_row_offset = block_row_offset.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_cols             = block_cols.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_mask             = mask.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_values           = m_values.template get_access<cl::sycl::access::mode::read>(cgh);
+                   auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_mask             = mask.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
 
 
-                   auto access_x                = x.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_y                = y.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                   auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
 
 
-                   //cl::sycl::nd_range<1> r{cl::sycl::range<1>{total_threads},cl::sycl::range<1>{block_size}};
-                   //cgh.parallel_for<class compute_mult>(r, [&](cl::sycl::nd_item<1> item_id)
-                   cgh.parallel_for<class compute_mult>(cl::sycl::range<1>{total_threads},
-                                                        [=] (cl::sycl::item<1> item_id)
+                   //sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{block_size}};
+                   //cgh.parallel_for<class compute_mult>(r, [&](sycl::nd_item<1> item_id)
+                   cgh.parallel_for<class compute_lmult>(sycl::range<1>{total_threads},
+                                                        [=] (sycl::item<1> item_id)
                                                         {
                                                           auto id = item_id.get_id(0);
                                                           //auto local_id  = item_id.get_local_id(0);
@@ -847,14 +853,14 @@ namespace SYCLInternal
   void MatrixInternal<ValueT, BlockSize>::addUMult(ValueType alpha,
                                                    ValueBufferType& x,
                                                    ValueBufferType& y,
-                                                   cl::sycl::queue& queue) const
+                                                   sycl::queue& queue) const
   {
 
     auto device = queue.get_device();
 
-    auto num_groups = queue.get_device().get_info<cl::sycl::info::device::max_compute_units>();
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
     // getting the maximum work group size per thread
-    auto max_work_group_size = queue.get_device().get_info<cl::sycl::info::device::max_work_group_size>();
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     // building the best number of global thread
     auto total_threads = num_groups * block_size;
 
@@ -869,19 +875,19 @@ namespace SYCLInternal
       auto& mask             = internal_profile->getUpperMask() ;
       {
         // COMPUTE VALUES
-        queue.submit([&](cl::sycl::handler& cgh)
+        queue.submit([&](sycl::handler& cgh)
                  {
-                   auto access_block_row_offset = block_row_offset.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_cols             = block_cols.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_mask             = mask.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_values           = m_values.template get_access<cl::sycl::access::mode::read>(cgh);
+                   auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_mask             = mask.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
 
 
-                   auto access_x                = x.template get_access<cl::sycl::access::mode::read>(cgh);
-                   auto access_y                = y.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                   auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+                   auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
 
-                   cgh.parallel_for<class compute_mult>(cl::sycl::range<1>{total_threads},
-                                                        [=] (cl::sycl::item<1> item_id)
+                   cgh.parallel_for<class compute_umult>(sycl::range<1>{total_threads},
+                                                        [=] (sycl::item<1> item_id)
                                                         {
                                                           auto id = item_id.get_id(0);
                                                           //auto local_id  = item_id.get_local_id(0);
@@ -917,7 +923,7 @@ namespace SYCLInternal
   }
 
   template <typename ValueT, int BlockSize>
-  void MatrixInternal<ValueT, BlockSize>::multInvDiag(ValueBufferType& y, cl::sycl::queue& queue) const
+  void MatrixInternal<ValueT, BlockSize>::multInvDiag(ValueBufferType& y, sycl::queue& queue) const
   {
   }
 
@@ -928,14 +934,14 @@ namespace SYCLInternal
   }
 
   template <typename ValueT, int BlockSize>
-  void MatrixInternal<ValueT, BlockSize>::computeInvDiag(ValueBufferType& y, cl::sycl::queue& queue) const
+  void MatrixInternal<ValueT, BlockSize>::computeInvDiag(ValueBufferType& y, sycl::queue& queue) const
   {
 
     auto device = queue.get_device();
 
-    auto num_groups = queue.get_device().get_info<cl::sycl::info::device::max_compute_units>();
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
     // getting the maximum work group size per thread
-    auto max_work_group_size = queue.get_device().get_info<cl::sycl::info::device::max_work_group_size>();
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     // building the best number of global thread
     auto total_threads = num_groups * block_size;
 
@@ -949,16 +955,16 @@ namespace SYCLInternal
     auto& block_cols       = internal_profile->getBlockCols() ;
     {
       // COMPUTE VALUES
-      queue.submit([&](cl::sycl::handler& cgh)
+      queue.submit([&](sycl::handler& cgh)
                    {
-                     auto access_block_row_offset = block_row_offset.template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_cols             = block_cols.template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_values           = m_values.template get_access<cl::sycl::access::mode::read>(cgh);
-                     auto access_y                = y.template get_access<cl::sycl::access::mode::read_write>(cgh);
+                     auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_values           = m_values.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
 
 
-                     cgh.parallel_for<class compute_mult>(cl::sycl::range<1>{total_threads},
-                                                          [=] (cl::sycl::item<1> item_id)
+                     cgh.parallel_for<class compute_inv_diag>(sycl::range<1>{total_threads},
+                                                          [=] (sycl::item<1> item_id)
                                                           {
                                                             auto id = item_id.get_id(0);
                                                             //auto local_id  = item_id.get_local_id(0);

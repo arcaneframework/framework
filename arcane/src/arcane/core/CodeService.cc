@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CodeService.cc                                              (C) 2000-2023 */
+/* CodeService.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Service du code.                                                          */
 /*---------------------------------------------------------------------------*/
@@ -22,6 +22,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/JSONWriter.h"
 
 #include "arcane/core/IApplication.h"
 #include "arcane/core/ISession.h"
@@ -140,9 +141,11 @@ void CodeService::
 initCase(ISubDomain* sub_domain,bool is_continue)
 {
   IProfilingService* ps = nullptr;
+  bool is_profile_init = false;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PROFILE_INIT", true))
-    if (v.value()!=0)
-      ps = platform::getProfilingService();
+    is_profile_init = (v.value()!=0);
+  if (is_profile_init)
+    ps = platform::getProfilingService();
   {
     ProfilingSentryWithInitialize ps_sentry(ps);
     ps_sentry.setPrintAtEnd(true);
@@ -181,6 +184,18 @@ initCase(ISubDomain* sub_domain,bool is_continue)
     sub_domain->doInitMeshPartition();
     loop_mng->execInitEntryPoints(is_continue);
     sub_domain->setIsInitialized();
+  }
+
+  if (is_profile_init && ps){
+    // Génère un fichier JSON avec les informations de profiling
+    // de l'initialisation.
+    JSONWriter json_writer(JSONWriter::FormatFlags::None);
+    json_writer.beginObject();
+    ps->dumpJSON(json_writer);
+    json_writer.endObject();
+    String file_name = String("profiling_init-") + platform::getProcessId() + String(".json");
+    std::ofstream ofile(file_name.localstr());
+    ofile << json_writer.getBuffer();
   }
 }
 
