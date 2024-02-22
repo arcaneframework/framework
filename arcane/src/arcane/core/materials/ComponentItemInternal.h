@@ -437,7 +437,7 @@ _superItemBase(ConstituentItemIndex id) const
   return m_super_component_item_shared_info->_item(super_local_id);
 }
 
-inline matimpl::ConstituentItemBase ComponentItemSharedInfo::
+inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase ComponentItemSharedInfo::
 _subItemBase(ConstituentItemIndex id,Int32 sub_index) const
 {
   ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
