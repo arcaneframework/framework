@@ -15,6 +15,7 @@
 
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/IProfilingService.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
 
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IMesh.h"
@@ -22,6 +23,8 @@
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/VariableUtils.h"
+#include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
@@ -128,9 +131,13 @@ class MaterialHeatTestModule
   void _computeGlobalTemperature();
   void _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa);
+
  public:
+
   void _addHeat(const HeatObject& heat_object);
+
  private:
+
   void _addCold(const HeatObject& heat_object);
   void _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _compute();
@@ -235,6 +242,20 @@ startInit()
   _computeCellsCenter();
   VariableUtils::markVariableAsMostlyReadOnly(m_cell_center);
   VariableUtils::markVariableAsMostlyReadOnly(defaultMesh()->nodesCoordinates());
+
+  //eMemoryRessource mem_ressource = eMemoryRessource::Device;
+  eMemoryRessource mem_ressource = eMemoryRessource::UnifiedMemory; // Pour test
+  const bool do_change_allocator = true;
+  if (do_change_allocator) {
+    info() << "Changing allocator to use device memory";
+    IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_ressource);
+    MemoryAllocationOptions mem_opts(allocator);
+    IMeshMaterialVariableInternal* mat_var = m_mat_device_temperature.materialVariable()->_internalApi();
+    for (VariableRef* vref : mat_var->variableReferenceList()) {
+      IDataInternal* dx = vref->variable()->data()->_commonInternal();
+      dx->numericData()->changeAllocator(mem_opts);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -396,6 +417,7 @@ _addHeat(const HeatObject& heat_object)
 
   auto in_cell_center = viewIn(command, m_cell_center);
   auto inout_mat_temperature = viewInOut(command, m_mat_temperature);
+  auto out_mat_device_temperature = viewInOut(command, m_mat_device_temperature);
 
   //! Chauffe les mailles déjà présentes dans le matériau
   command << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, current_mat)
@@ -406,6 +428,7 @@ _addHeat(const HeatObject& heat_object)
     if (distance2 < heat_radius_norm) {
       Real to_add = heat_value / (1.0 + distance2);
       inout_mat_temperature[matcell] += to_add;
+      out_mat_device_temperature[matcell] = inout_mat_temperature[matcell];
     }
   };
 }
@@ -614,17 +637,17 @@ void MaterialHeatTestModule::
 _printCellsTemperature(Int32ConstArrayView ids)
 {
   CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
-  for( Int32 lid : ids ){
+  for (Int32 lid : ids) {
     CellLocalId cell_id(lid);
     AllEnvCell all_env_cell = all_env_cell_converter[cell_id];
     Cell global_cell = all_env_cell.globalCell();
     info() << "Cell=" << global_cell.uniqueId() << " v=" << m_mat_temperature[global_cell];
-    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+    ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
       EnvCell ec = *ienvcell;
       info() << " EnvCell " << m_mat_temperature[ec]
              << " mv=" << ec._varIndex()
              << " env=" << ec.component()->name();
-      ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
+      ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
         MatCell mc = *imatcell;
         info() << "  MatCell " << m_mat_temperature[mc]
                << " mv=" << mc._varIndex()
