@@ -244,7 +244,7 @@ startInit()
   VariableUtils::markVariableAsMostlyReadOnly(defaultMesh()->nodesCoordinates());
 
   //eMemoryRessource mem_ressource = eMemoryRessource::Device;
-  eMemoryRessource mem_ressource = eMemoryRessource::HostPinned; // Pour test
+  eMemoryRessource mem_ressource = eMemoryRessource::UnifiedMemory; // Pour test
   const bool do_change_allocator = true;
   if (do_change_allocator) {
     info() << "Changing allocator to use device memory";
