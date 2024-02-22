@@ -21,6 +21,7 @@
 #include "arcane/core/Item.h"
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/IParallelMng.h"
+#include "arcane/core/VariableUtils.h"
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
@@ -231,6 +232,9 @@ startInit()
   m_global_deltat.assign(1.0);
   m_mat_temperature.globalVariable().fill(0.0);
   m_material_mng->forceRecompute();
+  _computeCellsCenter();
+  VariableUtils::markVariableAsMostlyReadOnly(m_cell_center);
+  VariableUtils::markVariableAsMostlyReadOnly(defaultMesh()->nodesCoordinates());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -268,8 +272,6 @@ compute()
 void MaterialHeatTestModule::
 _compute()
 {
-  _computeCellsCenter();
-
   UniqueArray<MaterialWorkArray> work_arrays(m_heat_objects.size());
 
   // Ajoute de la chaleur à chaque matériau
