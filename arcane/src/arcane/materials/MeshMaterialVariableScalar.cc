@@ -54,9 +54,6 @@
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
 #include "arcane/core/VariableDataTypeTraits.h"
 
-#include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/RunCommandLoop.h"
-
 #include <vector>
 
 /*---------------------------------------------------------------------------*/

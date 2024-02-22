@@ -162,9 +162,9 @@ copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-initializeNewItems(const ComponentItemListBuilder& list_builder)
+initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue)
 {
-  m_variable->_initializeNewItems(list_builder);
+  m_variable->_initializeNewItems(list_builder, queue);
 }
 
 /*---------------------------------------------------------------------------*/

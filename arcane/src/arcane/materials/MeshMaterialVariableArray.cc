@@ -36,9 +36,6 @@
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
-#include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/RunCommandLoop.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -160,11 +157,11 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
   if (!family)
     return;
   IMeshMaterialMng* mat_mng = m_p->materialMng();
-  const Integer nb_count = DataTypeTraitsT<DataType>::nbBasicType();
+  const Int32 nb_count = DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
   const eDataType data_type = DataTypeTraitsT<BasicType>::type();
   ItemVectorView ids_view(family->view(ids));
-  Int64 dim2_size = m_global_variable->valueView().dim2Size();
+  Int32 dim2_size = m_global_variable->valueView().dim2Size();
   bool has_mat = this->space()!=MatVarSpace::Environment;
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
@@ -211,13 +208,13 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
       sbuf->get(ref_name);
       if (m_global_variable->fullName()!=ref_name)
         ARCANE_FATAL("Bad serialization expected={0} found={1}",m_global_variable->fullName(),ref_name);
-      Int64 nb_value = sbuf->getInt64();
-      Int64 nb_basic_value = nb_value * nb_count;
+      Int32 nb_value = CheckedConvert::toInt32(sbuf->getInt64());
+      Int32 nb_basic_value = nb_value * nb_count;
       basic_values.resize(nb_basic_value);
       sbuf->getSpan(basic_values);
       if (dim2_size!=0){
-        Span2<DataType> data_values(reinterpret_cast<DataType*>(basic_values.data()),nb_value,dim2_size);
-        Int64 index = 0;
+        SmallSpan2<DataType> data_values(reinterpret_cast<DataType*>(basic_values.data()),nb_value,dim2_size);
+        Int32 index = 0;
         ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
           ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){
             EnvCell envcell = *ienvcell;

@@ -152,7 +152,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
                             Int32ConstArrayView ids,bool allow_null_id) =0;
   virtual void _copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
   virtual void _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
-  virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder) =0;
+  virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
 
  private:
 
@@ -191,7 +191,7 @@ class MaterialVariableScalarTraits
   ARCANE_MATERIALS_EXPORT static void
   resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer dim1_size);
 
-  static void setValue(DataType& view,const DataType& v)
+  static ARCCORE_HOST_DEVICE void setValue(DataType& view,const DataType& v)
   {
     view = v;
   }
@@ -218,7 +218,7 @@ class MaterialVariableArrayTraits
 
   typedef ArrayView<DataType> SubViewType;
   typedef ConstArrayView<DataType> SubConstViewType;
-  typedef Span<const DataType> SubInputViewType;
+  typedef SmallSpan<const DataType> SubInputViewType;
   typedef Array2View<DataType> ContainerViewType;
   typedef ConstArray2View<DataType> ContainerConstViewType;
   typedef Array2VariableT<DataType> PrivatePartType;
@@ -239,11 +239,11 @@ class MaterialVariableArrayTraits
   ARCANE_MATERIALS_EXPORT
   static void resizeAndFillWithDefault(ValueDataType* data, ContainerType& container,
                                        Integer dim1_size);
-  static void setValue(ArrayView<DataType> view, const DataType& v)
+  static ARCCORE_HOST_DEVICE void setValue(SmallSpan<DataType> view, const DataType& v)
   {
     view.fill(v);
   }
-  static void setValue(ArrayView<DataType> view, Span<const DataType> v)
+  static ARCCORE_HOST_DEVICE void setValue(SmallSpan<DataType> view, SmallSpan<const DataType> v)
   {
     view.copy(v);
   }
@@ -313,7 +313,7 @@ class ItemMaterialVariableBase
   ARCANE_MATERIALS_EXPORT
   void _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
   ARCANE_MATERIALS_EXPORT
-  void _initializeNewItems(const ComponentItemListBuilder& list_builder) override;
+  void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
 
   ARCANE_MATERIALS_EXPORT void fillPartialValuesWithGlobalValues() override;
   ARCANE_MATERIALS_EXPORT void

@@ -66,15 +66,15 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
 
  private:
 
-  Integer m_component_index;
-  Integer m_index_in_partial;
+  Integer m_component_index = -1;
+  Integer m_index_in_partial = -1;
 
   UniqueArray<MatVarIndex> m_pure_matvar_indexes;
 
   UniqueArray<MatVarIndex> m_partial_matvar_indexes;
   UniqueArray<Int32> m_partial_local_ids;
 
-  MeshMaterialVariableIndexer* m_indexer;
+  MeshMaterialVariableIndexer* m_indexer = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

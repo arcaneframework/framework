@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemMaterialVariableBaseT.h                                 (C) 2000-2023 */
+/* ItemMaterialVariableBaseT.h                                 (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de la classe de base des variables matériaux.              */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,9 @@
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 #include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
+
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -381,7 +384,7 @@ _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 
 template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_initializeNewItems(const ComponentItemListBuilder& list_builder)
+_initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue)
 {
   MeshMaterialVariableIndexer* indexer = list_builder.indexer();
   Integer var_index = indexer->index();
@@ -406,15 +409,31 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder)
   // (sauf lors de l'init).
   DataType zero = DataType();
 
+  auto command = makeCommand(queue);
+  SmallSpan<ContainerViewType> views = m_views.view();
+
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, views.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, global_view.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_matvar.data());
+
   if (init_with_zero){
-    for( Integer i=0; i<nb_partial; ++i )
-      this->setFillValue(partial_matvar[i],zero);
+    command << RUNCOMMAND_LOOP1(iter, nb_partial)
+    {
+      auto [i] = iter();
+      MatVarIndex mvi = partial_matvar[i];
+      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],zero);
+    };
   }
   else{
     Int32ConstArrayView partial_local_ids = list_builder.partialLocalIds();
-    for( Integer i=0; i<nb_partial; ++i ){
-      setValue(partial_matvar[i], global_view[partial_local_ids[i]]);
-    }
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_local_ids.data());
+    command << RUNCOMMAND_LOOP1(iter, nb_partial)
+    {
+      auto [i] = iter();
+      const auto& v = global_view[partial_local_ids[i]];
+      MatVarIndex mvi = partial_matvar[i];
+      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],v);
+    };
   }
 }
 

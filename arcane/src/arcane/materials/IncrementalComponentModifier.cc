@@ -457,8 +457,10 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
   // initialiser avec les bonnes valeurs.
   {
     IMeshMaterialMng* mm = m_material_mng;
-    functor::apply(mm, &IMeshMaterialMng::visitVariables,
-                   [&](IMeshMaterialVariable* mv) { mv->_internalApi()->initializeNewItems(list_builder); });
+    auto func = [&](IMeshMaterialVariable* mv) {
+      mv->_internalApi()->initializeNewItems(list_builder, m_copy_queue);
+    };
+    functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
   }
 }
 

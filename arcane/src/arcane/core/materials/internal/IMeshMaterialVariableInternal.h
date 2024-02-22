@@ -106,7 +106,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
   virtual void copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
 
   //! \internal
-  virtual void initializeNewItems(const ComponentItemListBuilder& list_builder) = 0;
+  virtual void initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -76,7 +76,7 @@ class MeshMaterialVariablePrivate
 
   void copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
 
-  void initializeNewItems(const ComponentItemListBuilder& list_builder) override;
+  void initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
 
  public:
 
