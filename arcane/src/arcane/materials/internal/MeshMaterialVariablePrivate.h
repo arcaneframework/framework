@@ -78,6 +78,11 @@ class MeshMaterialVariablePrivate
 
   void initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
 
+  ConstArrayView<VariableRef*> variableReferenceList() const override
+  {
+    return m_refs.view();
+  }
+
  public:
 
   Int32 m_nb_reference;
