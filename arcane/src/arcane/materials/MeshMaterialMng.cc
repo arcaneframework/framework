@@ -190,6 +190,7 @@ build()
     // Si pas de runner enregistré, utiliser un runner séquentiel.
     if (!m_runner.isInitialized())
       m_runner.initialize(Accelerator::eExecutionPolicy::Sequential);
+    m_runner_ptr = &m_runner;
     info() << "Use runner '" << m_runner.executionPolicy() << "' for MeshMaterialMng name=" << name();
   }
 

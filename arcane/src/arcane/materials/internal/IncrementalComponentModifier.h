@@ -20,6 +20,8 @@
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/internal/ConstituentModifierWorkInfo.h"
 
+#include "arcane/accelerator/core/RunQueue.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,6 +56,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   AllEnvData* m_all_env_data = nullptr;
   MeshMaterialMng* m_material_mng = nullptr;
   ConstituentModifierWorkInfo m_work_info;
+  RunQueue m_copy_queue;
 
  private:
 

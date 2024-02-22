@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariable.h                                      (C) 2000-2023 */
+/* MeshMaterialVariable.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Variable sur un matériau du maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,7 @@ namespace Arcane::Materials
 class MaterialVariableBuildInfo;
 class MeshMaterialVariablePrivate;
 class MeshMaterialVariableSynchronizerList;
+class MeshVariableCopyBetweenPartialAndGlobalArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -149,10 +150,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   virtual void _saveData(IMeshComponent* component,IData* data) =0;
   virtual void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                             Int32ConstArrayView ids,bool allow_null_id) =0;
-  virtual void _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
-                                    Int32ConstArrayView indexes_in_multiple) =0;
-  virtual void _copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
-                                    Int32ConstArrayView indexes_in_multiple) =0;
+  virtual void _copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
+  virtual void _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
   virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder) =0;
 
  private:
@@ -187,8 +186,8 @@ class MaterialVariableScalarTraits
   ARCANE_MATERIALS_EXPORT static void
   saveData(IMeshComponent* component,IData* data,Array<ContainerViewType>& cviews);
   ARCANE_MATERIALS_EXPORT static void
-  copyTo(ConstArrayView<DataType> input,Int32ConstArrayView input_indexes,
-         ArrayView<DataType> output,Int32ConstArrayView output_indexes);
+  copyTo(SmallSpan<const DataType> input, SmallSpan<const Int32> input_indexes,
+         SmallSpan<DataType> output, SmallSpan<const Int32> output_indexes, RunQueue& queue);
   ARCANE_MATERIALS_EXPORT static void
   resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer dim1_size);
 
@@ -234,8 +233,9 @@ class MaterialVariableArrayTraits
   static void saveData(IMeshComponent* component, IData* data,
                        Array<ContainerViewType>& cviews);
   ARCANE_MATERIALS_EXPORT
-  static void copyTo(ConstArray2View<DataType> input, Int32ConstArrayView input_indexes,
-                     Array2View<DataType> output, Int32ConstArrayView output_indexes);
+  static void copyTo(SmallSpan2<const DataType> input, SmallSpan<const Int32> input_indexes,
+                     SmallSpan2<DataType> output, SmallSpan<const Int32> output_indexes,
+                     RunQueue& queue);
   ARCANE_MATERIALS_EXPORT
   static void resizeAndFillWithDefault(ValueDataType* data, ContainerType& container,
                                        Integer dim1_size);
@@ -309,11 +309,9 @@ class ItemMaterialVariableBase
   void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                     Int32ConstArrayView ids,bool allow_null_id) override;
   ARCANE_MATERIALS_EXPORT
-  void _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
-                            Int32ConstArrayView indexes_in_multiple) override;
+  void _copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
   ARCANE_MATERIALS_EXPORT
-  void _copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
-                            Int32ConstArrayView indexes_in_multiple) override;
+  void _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
   ARCANE_MATERIALS_EXPORT
   void _initializeNewItems(const ComponentItemListBuilder& list_builder) override;
 

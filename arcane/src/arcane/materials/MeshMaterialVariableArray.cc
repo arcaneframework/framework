@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableArray.cc                                (C) 2000-2023 */
+/* MeshMaterialVariableArray.cc                                (C) 2000-2024 */
 /*                                                                           */
 /* Variable tableau sur un matériau du maillage.                             */
 /*---------------------------------------------------------------------------*/
@@ -36,6 +36,9 @@
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/RunCommandLoop.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -47,18 +50,23 @@ namespace Arcane::Materials
 
 template<typename DataType> void
 MaterialVariableArrayTraits<DataType>::
-copyTo(ConstArray2View<DataType> input,Int32ConstArrayView input_indexes,
-       Array2View<DataType> output,Int32ConstArrayView output_indexes)
+copyTo(SmallSpan2<const DataType> input, SmallSpan<const Int32> input_indexes,
+       SmallSpan2<DataType> output, SmallSpan<const Int32> output_indexes,
+       RunQueue& queue)
 {
   // TODO: vérifier tailles des indexes et des dim2Size() identiques
   Integer nb_value = input_indexes.size();
   Integer dim2_size = input.dim2Size();
-  for( Integer i=0; i<nb_value; ++i ){
-    auto xo = output[ output_indexes[i] ];
+
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP1(iter, nb_value)
+  {
+    auto [i] = iter();
+    auto xo = output[output_indexes[i]];
     auto xi = input[ input_indexes[i] ];
     for( Integer j=0; j<dim2_size; ++j )
       xo[j] = xi[j];
-  }
+  };
 }
 
 /*---------------------------------------------------------------------------*/

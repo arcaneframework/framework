@@ -144,20 +144,18 @@ restoreData(IMeshComponent* component,IData* data,Integer data_index,
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
-                    Int32ConstArrayView indexes_in_multiple)
+copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
-  m_variable->_copyGlobalToPartial(var_index,local_ids,indexes_in_multiple);
+  m_variable->_copyGlobalToPartial(args);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
-                    Int32ConstArrayView indexes_in_multiple)
+copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
-  m_variable->_copyPartialToGlobal(var_index,local_ids,indexes_in_multiple);
+  m_variable->_copyPartialToGlobal(args);
 }
 
 /*---------------------------------------------------------------------------*/

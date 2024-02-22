@@ -42,6 +42,10 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 {
  public:
 
+  ConstituentModifierWorkInfo();
+
+ public:
+
   UniqueArray<Int32> pure_local_ids;
   UniqueArray<Int32> partial_indexes;
   bool is_verbose = false;
@@ -73,7 +77,7 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   //! Positionne l'état de transformation de la maille \a local_id pour l'opération courante
   void resetTransformedCells(ConstArrayView<Int32> local_ids)
   {
-    for( Int32 x : local_ids )
+    for (Int32 x : local_ids)
       m_cells_to_transform[x] = false;
   }
   //! Indique si la maille \a local_id est supprimée du matériaux pour l'opération courante.

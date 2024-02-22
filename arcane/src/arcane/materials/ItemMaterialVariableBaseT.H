@@ -335,9 +335,9 @@ _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var)
 
 template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
-                     Int32ConstArrayView indexes_in_multiple)
+_copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
+  Int32 var_index = args.m_var_index;
   PrivatePartType* partial_var = m_vars[var_index+1];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
@@ -353,7 +353,8 @@ _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
   ContainerConstViewType global_view = m_vars[0]->constValueView();
   ContainerViewType partial_view = partial_var->valueView();
 
-  Traits::copyTo(global_view,local_ids,partial_view,indexes_in_multiple);
+  Traits::copyTo(global_view, args.m_local_ids, partial_view,
+                 args.m_indexes_in_multiple, *args.m_queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -361,9 +362,9 @@ _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
 
 template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
-                     Int32ConstArrayView indexes_in_multiple)
+_copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
+  Int32 var_index = args.m_var_index;
   PrivatePartType* partial_var = m_vars[var_index+1];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
@@ -371,7 +372,8 @@ _copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
   ContainerViewType global_view = m_vars[0]->valueView();
   ContainerConstViewType partial_view = partial_var->constValueView();
 
-  Traits::copyTo(partial_view,indexes_in_multiple,global_view,local_ids);
+  Traits::copyTo(partial_view, args.m_indexes_in_multiple,
+                 global_view, args.m_local_ids, *args.m_queue);
 }
 
 /*---------------------------------------------------------------------------*/

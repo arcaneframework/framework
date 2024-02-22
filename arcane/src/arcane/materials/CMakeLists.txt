@@ -8,7 +8,11 @@ arcane_add_library(arcane_materials
   FILES ${ARCANE_SOURCES}
   )
 
-arcane_accelerator_add_source_files(AllEnvData.cc)
+arcane_accelerator_add_source_files(
+  AllEnvData.cc
+  MeshMaterialVariableScalar
+  MeshMaterialVariableArray
+)
 
 target_compile_definitions(arcane_materials PRIVATE ARCANE_COMPONENT_arcane_materials)
 target_include_directories(arcane_materials PUBLIC $<BUILD_INTERFACE:${Arcane_SOURCE_DIR}/src> $<INSTALL_INTERFACE:include>)

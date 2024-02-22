@@ -40,6 +40,7 @@ IncrementalComponentModifier(AllEnvData* all_env_data)
 : TraceAccessor(all_env_data->traceMng())
 , m_all_env_data(all_env_data)
 , m_material_mng(all_env_data->m_material_mng)
+, m_copy_queue(makeQueue(m_material_mng->runner()))
 {
 }
 
@@ -219,9 +220,9 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
 
       info(4) << "NB_MAT_TRANSFORM=" << m_work_info.pure_local_ids.size() << " name=" << mat->name();
 
-      m_all_env_data->_copyBetweenPartialsAndGlobals(m_work_info.pure_local_ids,
-                                                     m_work_info.partial_indexes,
-                                                     indexer->index(), is_add);
+      MeshVariableCopyBetweenPartialAndGlobalArgs args(indexer->index(), m_work_info.pure_local_ids.view(),
+                                                       m_work_info.partial_indexes.view(), &m_copy_queue);
+      m_all_env_data->_copyBetweenPartialsAndGlobals(args, is_add);
     }
   }
 }
@@ -271,10 +272,11 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
             << " name=" << env->name();
 
-    if (is_copy)
-      m_all_env_data->_copyBetweenPartialsAndGlobals(m_work_info.pure_local_ids,
-                                                     m_work_info.partial_indexes,
-                                                     indexer->index(), is_add);
+    if (is_copy) {
+      MeshVariableCopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), m_work_info.pure_local_ids.view(),
+                                                            m_work_info.partial_indexes.view(), &m_copy_queue);
+      m_all_env_data->_copyBetweenPartialsAndGlobals(copy_args, is_add);
+    }
   }
 }
 

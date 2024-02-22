@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialVariableInternal.h                             (C) 2000-2023 */
+/* IMeshMaterialVariableInternal.h                             (C) 2000-2024 */
 /*                                                                           */
 /* API interne Arcane de 'IMeshMaterialVariable'.                            */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,30 @@ class ComponentItemListBuilder;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments des méthodes de copie entre valeurs partielles et globales
+ */
+class ARCANE_CORE_EXPORT MeshVariableCopyBetweenPartialAndGlobalArgs
+{
+ public:
+
+  MeshVariableCopyBetweenPartialAndGlobalArgs(Int32 var_index,
+                                              SmallSpan<const Int32> local_ids,
+                                              SmallSpan<const Int32> indexes_in_multiple,
+                                              RunQueue* queue)
+  : m_var_index(var_index)
+  , m_local_ids(local_ids)
+  , m_indexes_in_multiple(indexes_in_multiple)
+  , m_queue(queue)
+  {}
+
+ public:
+
+  Int32 m_var_index = -1;
+  SmallSpan<const Int32> m_local_ids;
+  SmallSpan<const Int32> m_indexes_in_multiple;
+  RunQueue* m_queue = nullptr;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,24 +89,24 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
   virtual void copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
                               Span<const std::byte> bytes, RunQueue* queue) = 0;
 
+  //! \internal
+  virtual Ref<IData> internalCreateSaveDataRef(Integer nb_value) = 0;
 
   //! \internal
-  virtual Ref<IData> internalCreateSaveDataRef(Integer nb_value) =0;
+  virtual void saveData(IMeshComponent* component, IData* data) = 0;
 
   //! \internal
-  virtual void saveData(IMeshComponent* component,IData* data) =0;
+  virtual void restoreData(IMeshComponent* component, IData* data,
+                           Integer data_index, Int32ConstArrayView ids, bool allow_null_id) = 0;
 
   //! \internal
-  virtual void restoreData(IMeshComponent* component,IData* data,Integer data_index,Int32ConstArrayView ids,bool allow_null_id) =0;
+  virtual void copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
 
   //! \internal
-  virtual void copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) =0;
+  virtual void copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
 
   //! \internal
-  virtual void copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) =0;
-
-  //! \internal
-  virtual void initializeNewItems(const ComponentItemListBuilder& list_builder) =0;
+  virtual void initializeNewItems(const ComponentItemListBuilder& list_builder) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -69,11 +69,12 @@ class MeshMaterialVariablePrivate
 
   void saveData(IMeshComponent* component,IData* data) override;
 
-  void restoreData(IMeshComponent* component,IData* data,Integer data_index,Int32ConstArrayView ids,bool allow_null_id) override;
+  void restoreData(IMeshComponent* component, IData* data, Integer data_index,
+                   Int32ConstArrayView ids, bool allow_null_id) override;
 
-  void copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) override;
+  void copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
 
-  void copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) override;
+  void copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
 
   void initializeNewItems(const ComponentItemListBuilder& list_builder) override;
 
