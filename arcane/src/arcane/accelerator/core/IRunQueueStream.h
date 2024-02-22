@@ -65,6 +65,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
 
   //! Pointeur sur la structure interne dépendante de l'implémentation
   virtual void* _internalImpl() = 0;
+
+  //! Barrière sans exception. Retourne \a true en cas d'erreur
+  virtual bool _barrierNoException() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -53,6 +53,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
   }
   void prefetchMemory(const MemoryPrefetchArgs&) override {}
   void* _internalImpl() override { return nullptr; }
+  bool _barrierNoException() override { return false; }
 
  private:
 

@@ -68,8 +68,13 @@ _release()
   // les commandes ne seront pas désallouées.
   // TODO: Regarder s'il ne faudrait pas plutôt indiquer cela à l'utilisateur
   // ou faire une erreur fatale.
-  if (!m_active_run_command_list.empty())
-    _internalBarrier();
+  if (!m_active_run_command_list.empty()){
+    if (!_internalStream()->_barrierNoException()){
+      _internalFreeRunningCommands();
+    }
+    else
+      std::cerr << "WARNING: Error in internal accelerator barrier\n";
+  }
   if (_isInPool())
     m_runner->_internalPutRunQueueImplInPool(this);
   else
