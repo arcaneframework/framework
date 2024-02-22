@@ -184,12 +184,15 @@ build()
     IAcceleratorMng* acc_mng = m_variable_mng->_internalApi()->acceleratorMng();
     if (acc_mng){
       Runner* default_runner = acc_mng->defaultRunner();
-      if (default_runner)
+      // Indique si on active la file accélérateur
+      const bool use_accelerator_runner = false;
+      if (use_accelerator_runner && default_runner)
         m_runner = *default_runner;
     }
     // Si pas de runner enregistré, utiliser un runner séquentiel.
     if (!m_runner.isInitialized())
       m_runner.initialize(Accelerator::eExecutionPolicy::Sequential);
+    m_runner_ptr = &m_runner;
     info() << "Use runner '" << m_runner.executionPolicy() << "' for MeshMaterialMng name=" << name();
   }
 

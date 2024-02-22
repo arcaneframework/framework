@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariablePrivate.h                               (C) 2000-2023 */
+/* MeshMaterialVariablePrivate.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Partie privée d'une variable sur un matériau du maillage.                 */
 /*---------------------------------------------------------------------------*/
@@ -69,13 +69,14 @@ class MeshMaterialVariablePrivate
 
   void saveData(IMeshComponent* component,IData* data) override;
 
-  void restoreData(IMeshComponent* component,IData* data,Integer data_index,Int32ConstArrayView ids,bool allow_null_id) override;
+  void restoreData(IMeshComponent* component, IData* data, Integer data_index,
+                   Int32ConstArrayView ids, bool allow_null_id) override;
 
-  void copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) override;
+  void copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
 
-  void copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,Int32ConstArrayView indexes_in_multiple) override;
+  void copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
 
-  void initializeNewItems(const ComponentItemListBuilder& list_builder) override;
+  void initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
 
  public:
 

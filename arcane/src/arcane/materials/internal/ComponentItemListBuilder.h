@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemListBuilder.h                                  (C) 2000-2023 */
+/* ComponentItemListBuilder.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Classe d'aide à la construction d'une liste de ComponentItem.             */
 /*---------------------------------------------------------------------------*/
@@ -66,15 +66,15 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
 
  private:
 
-  Integer m_component_index;
-  Integer m_index_in_partial;
+  Integer m_component_index = -1;
+  Integer m_index_in_partial = -1;
 
   UniqueArray<MatVarIndex> m_pure_matvar_indexes;
 
   UniqueArray<MatVarIndex> m_partial_matvar_indexes;
   UniqueArray<Int32> m_partial_local_ids;
 
-  MeshMaterialVariableIndexer* m_indexer;
+  MeshMaterialVariableIndexer* m_indexer = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

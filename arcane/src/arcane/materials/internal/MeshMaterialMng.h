@@ -265,7 +265,7 @@ class MeshMaterialMng
 
  public:
 
-  Runner runner() const { return m_runner; }
+  Runner& runner() const { return *m_runner_ptr; }
 
  private:
 
@@ -335,6 +335,7 @@ class MeshMaterialMng
   bool m_is_allcell_2_allenvcell = false;
 
   Runner m_runner;
+  Runner* m_runner_ptr = nullptr;
 
  private:
 
