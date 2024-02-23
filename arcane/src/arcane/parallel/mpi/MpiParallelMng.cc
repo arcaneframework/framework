@@ -891,7 +891,7 @@ _internalUtilsFactory() const
 bool MpiParallelMng::
 _isAcceleratorAware() const
 {
-  return arcaneIsCudaAwareMPI();
+  return arcaneIsAcceleratorAwareMPI();
 }
 
 /*---------------------------------------------------------------------------*/
