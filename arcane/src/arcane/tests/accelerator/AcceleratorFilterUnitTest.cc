@@ -113,7 +113,7 @@ initializeTest()
 void AcceleratorFilterUnitTest::
 executeTest()
 {
-  for (Int32 i = 0; i < 5; ++i) {
+  for (Int32 i = 0; i < 6; ++i) {
     executeTest2(400, i);
     executeTest2(1000000, i);
   }
@@ -208,7 +208,8 @@ _executeTestDataType(Int32 size, Int32 test_id)
   } break;
   case 2: // Mode avec lambda de filtrage
   case 3:
-  case 4: {
+  case 4:
+  case 5: {
     auto filter_lambda = [] ARCCORE_HOST_DEVICE(const DataType& x) -> bool {
       return (x > static_cast<DataType>(569));
     };
@@ -216,11 +217,21 @@ _executeTestDataType(Int32 size, Int32 test_id)
     NumArray<DataType, MDDim1> t2_bis(t2);
     //FilterLambda filter_lambda;
     Arcane::Accelerator::Filterer<DataType> filterer(m_queue);
-    if (test_id == 2)
+    Arcane::Accelerator::GenericFilterer generic_filterer(m_queue);
+    Int32 nb_out = 0;
+    if (test_id == 2) {
       filterer.applyIf(t1, t2, filter_lambda);
-    if (test_id == 3)
-      filterer.applyIfGeneric(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
+      nb_out = filterer.nbOutputElement();
+    }
+    if (test_id == 3) {
+      generic_filterer.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
+      nb_out = generic_filterer.nbOutputElement();
+    }
     if (test_id == 4) {
+      generic_filterer.applyIf<DataType>(t1, t2, filter_lambda);
+      nb_out = generic_filterer.nbOutputElement();
+    }
+    if (test_id == 5) {
       SmallSpan<const DataType> input_view = t1;
       SmallSpan<DataType> output_view = t2;
       auto filter_lambda_index = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
@@ -229,9 +240,9 @@ _executeTestDataType(Int32 size, Int32 test_id)
       auto setter_lambda_index = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
         output_view[output_index] = input_view[input_index];
       };
-      filterer.applyIfIndex(input_view.size(), filter_lambda_index, setter_lambda_index);
+      generic_filterer.applyWithIndex(input_view.size(), filter_lambda_index, setter_lambda_index);
+      nb_out = generic_filterer.nbOutputElement();
     }
-    Int32 nb_out = filterer.nbOutputElement();
     info() << "NB_OUT_accelerator1=" << nb_out;
     vc.areEqual(nb_filter, nb_out, "Filter");
     t2.resize(nb_out);
@@ -248,8 +259,8 @@ _executeTestDataType(Int32 size, Int32 test_id)
   }
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // End namespace ArcaneTest
 
