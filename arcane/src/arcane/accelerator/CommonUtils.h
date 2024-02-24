@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonUtils.h                                               (C) 2000-2023 */
+/* CommonUtils.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions/Classes utilitaires communes à tout les runtimes.               */
 /*---------------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ class GenericDeviceStorage
   size_t size() const { return m_size; }
   void allocate(size_t new_size)
   {
-    if (new_size<m_size)
+    if (new_size < m_size)
       return;
     deallocate();
 #if defined(ARCANE_COMPILING_CUDA)
@@ -130,6 +130,52 @@ class DeviceStorage
  private:
 
   GenericDeviceStorage m_storage;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Itérateur sur un index.
+ *
+ * Permet d'itérer entre deux entiers.
+ */
+class IndexIterator
+{
+ public:
+
+  using value_type = Int32;
+  using iterator_category = std::random_access_iterator_tag;
+  using reference = value_type&;
+  using difference_type = ptrdiff_t;
+
+ public:
+
+  IndexIterator() = default;
+  ARCCORE_HOST_DEVICE explicit IndexIterator(Int32 v)
+  : m_value(v)
+  {}
+
+ public:
+
+  ARCCORE_HOST_DEVICE IndexIterator& operator++()
+  {
+    ++m_value;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE IndexIterator operator+(Int32 x) const
+  {
+    return IndexIterator(m_value + x);
+  }
+  ARCCORE_HOST_DEVICE IndexIterator operator-(Int32 x) const
+  {
+    return IndexIterator(m_value - x);
+  }
+  ARCCORE_HOST_DEVICE Int32 operator*() const { return m_value; }
+  ARCCORE_HOST_DEVICE Int32 operator[](Int32 x) const { return m_value + x; }
+
+ private:
+
+  Int32 m_value = 0;
 };
 
 /*---------------------------------------------------------------------------*/
