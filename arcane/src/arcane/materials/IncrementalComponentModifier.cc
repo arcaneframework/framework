@@ -215,7 +215,7 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
       info(4) << "TransformCells (V3) is_add?=" << is_add << " indexer=" << indexer->name();
 
       _computeCellsToTransformForMaterial(mat, ids);
-      indexer->transformCellsV2(m_work_info);
+      indexer->transformCellsV2(m_work_info,m_copy_queue);
       m_work_info.resetTransformedCells(ids);
 
       info(4) << "NB_MAT_TRANSFORM=" << m_work_info.pure_local_ids.size() << " name=" << mat->name();
@@ -266,7 +266,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     info(4) << "TransformCells (V2) is_add?=" << is_add << " indexer=" << indexer->name();
 
     _computeCellsToTransformForEnvironments(ids);
-    indexer->transformCellsV2(m_work_info);
+    indexer->transformCellsV2(m_work_info, m_copy_queue);
     m_work_info.resetTransformedCells(ids);
 
     info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()

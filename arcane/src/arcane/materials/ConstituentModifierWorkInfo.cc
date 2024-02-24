@@ -30,6 +30,7 @@ ConstituentModifierWorkInfo::
 ConstituentModifierWorkInfo()
 : pure_local_ids(platform::getDefaultDataAllocator())
 , partial_indexes(platform::getDefaultDataAllocator())
+, m_cells_to_transform(platform::getDefaultDataAllocator())
 {
 }
 
