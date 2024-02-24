@@ -92,6 +92,8 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   //! Indique si l'opération courante est un ajout (true) ou une suppression (false) de mailles
   bool isAdd() const { return m_is_add; }
 
+  SmallSpan<const bool> transformedCells() const { return m_cells_to_transform.view(); }
+
  private:
 
   // Filtre indiquant les mailles qui sont supprimées du constituant

@@ -56,11 +56,11 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   friend class MeshComponentData;
   friend class MeshMaterialMng;
   friend class IncrementalComponentModifier;
-  template<typename DataType> friend class ItemMaterialVariableScalar;
+  template <typename DataType> friend class ItemMaterialVariableScalar;
 
  public:
 
-  MeshMaterialVariableIndexer(ITraceMng* tm,const String& name);
+  MeshMaterialVariableIndexer(ITraceMng* tm, const String& name);
   MeshMaterialVariableIndexer(const MeshMaterialVariableIndexer& rhs);
 
  public:
@@ -73,7 +73,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
    *
    * Il s'agit du maximum de l'indice maximal plus 1.
    */
-  Integer maxIndexInMultipleArray() const { return m_max_index_in_multiple_array+1; }
+  Integer maxIndexInMultipleArray() const { return m_max_index_in_multiple_array + 1; }
 
   Integer index() const { return m_index; }
   ConstArrayView<MatVarIndex> matvarIndexes() const { return m_matvar_indexes; }
@@ -83,7 +83,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   bool isEnvironment() const { return m_is_environment; }
 
  private:
-  
+
   //! Fonctions publiques mais réservées aux classes de Arcane.
   //@{
   void endUpdate(const ComponentItemListBuilder& builder);
@@ -96,20 +96,20 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 
   void changeLocalIds(Int32ConstArrayView old_to_new_ids);
   void endUpdateAdd(const ComponentItemListBuilder& builder);
-  void endUpdateRemove(const ConstituentModifierWorkInfo& args,Integer nb_remove);
+  void endUpdateRemove(const ConstituentModifierWorkInfo& args, Integer nb_remove);
   //@}
 
  private:
 
-  void transformCellsV2(ConstituentModifierWorkInfo& args);
+  void transformCellsV2(ConstituentModifierWorkInfo& args, RunQueue& queue);
 
  private:
 
   //! Index de cette instance dans la liste des indexeurs.
-  Integer m_index;
+  Integer m_index = -1;
 
   //! Indice max plus 1 dans le tableau des valeurs multiples
-  Integer m_max_index_in_multiple_array;
+  Integer m_max_index_in_multiple_array = -1;
 
   //! Nom du matériau ou milieu
   String m_name;
@@ -131,7 +131,10 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   UniqueArray<Int32> m_local_ids;
 
   //! Vrai si l'indexeur est associé à un milieu.
-  bool m_is_environment;
+  bool m_is_environment = false;
+
+  //! Vrai si on utilise l'ancienne version de gestion de la transformation
+  bool m_use_transform_no_filter = false;
 
  private:
 
@@ -139,6 +142,13 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
                                 Int32ConstArrayView old_to_new_ids);
   void _transformPureToPartialV2(ConstituentModifierWorkInfo& args);
   void _transformPartialToPureV2(ConstituentModifierWorkInfo& args);
+  void _init();
+
+ public:
+
+  void _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
+                                    RunQueue& queue,
+                                    bool is_pure_to_partial);
 };
 
 /*---------------------------------------------------------------------------*/
