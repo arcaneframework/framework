@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorFilterUnitTest.cc                                (C) 2000-2023 */
+/* AcceleratorFilterUnitTest.cc                                (C) 2000-2024 */
 /*                                                                           */
 /* Service de test des algorithmes de 'Filtrage' sur accélérateur.           */
 /*---------------------------------------------------------------------------*/
@@ -113,8 +113,8 @@ initializeTest()
 void AcceleratorFilterUnitTest::
 executeTest()
 {
-  for( Int32 i=0; i<3; ++i ){
-    executeTest2(15, i);
+  for (Int32 i = 0; i < 5; ++i) {
+    executeTest2(400, i);
     executeTest2(1000000, i);
   }
 }
@@ -207,7 +207,8 @@ _executeTestDataType(Int32 size, Int32 test_id)
     vc.areEqualArray(t2_bis.to1DSpan(), expected_t2.to1DSpan(), "OutputArray2");
   } break;
   case 2: // Mode avec lambda de filtrage
-  {
+  case 3:
+  case 4: {
     auto filter_lambda = [] ARCCORE_HOST_DEVICE(const DataType& x) -> bool {
       return (x > static_cast<DataType>(569));
     };
@@ -215,18 +216,34 @@ _executeTestDataType(Int32 size, Int32 test_id)
     NumArray<DataType, MDDim1> t2_bis(t2);
     //FilterLambda filter_lambda;
     Arcane::Accelerator::Filterer<DataType> filterer(m_queue);
-    filterer.applyIf(t1, t2, filter_lambda);
+    if (test_id == 2)
+      filterer.applyIf(t1, t2, filter_lambda);
+    if (test_id == 3)
+      filterer.applyIfGeneric(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
+    if (test_id == 4) {
+      SmallSpan<const DataType> input_view = t1;
+      SmallSpan<DataType> output_view = t2;
+      auto filter_lambda_index = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+        return (input_view[index] > static_cast<DataType>(569));
+      };
+      auto setter_lambda_index = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+        output_view[output_index] = input_view[input_index];
+      };
+      filterer.applyIfIndex(input_view.size(), filter_lambda_index, setter_lambda_index);
+    }
     Int32 nb_out = filterer.nbOutputElement();
     info() << "NB_OUT_accelerator1=" << nb_out;
     vc.areEqual(nb_filter, nb_out, "Filter");
     t2.resize(nb_out);
     vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArray1");
-    // Appelle une deuxième fois l'instance
-    filterer.applyIf(t1_bis, t2_bis, filter_lambda);
-    Int32 nb_out2 = filterer.nbOutputElement();
-    info() << "NB_OUT_accelerator2=" << nb_out2;
-    t2_bis.resize(nb_out2);
-    vc.areEqualArray(t2_bis.to1DSpan(), expected_t2.to1DSpan(), "OutputArray2");
+    if (test_id == 2) {
+      // Appelle une deuxième fois l'instance
+      filterer.applyIf(t1_bis, t2_bis, filter_lambda);
+      Int32 nb_out2 = filterer.nbOutputElement();
+      info() << "NB_OUT_accelerator2=" << nb_out2;
+      t2_bis.resize(nb_out2);
+      vc.areEqualArray(t2_bis.to1DSpan(), expected_t2.to1DSpan(), "OutputArray2");
+    }
   } break;
   }
 }
