@@ -184,6 +184,8 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    */
   virtual bool isNonIOMasterCurvesEnabled() = 0;
 
+  virtual void addObservers() = 0;
+
 };
 
 /*---------------------------------------------------------------------------*/

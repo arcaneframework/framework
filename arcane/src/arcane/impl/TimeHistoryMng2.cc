@@ -241,12 +241,7 @@ class TimeHistoryMng2
 
  private:
 
-  ObserverPool m_observer_pool;
   Ref<ITimeHistoryMngInternal> m_internal;
-
- private:
-
-  void _writeVariablesNotify();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -342,18 +337,13 @@ void TimeHistoryMng2::
 timeHistoryInit()
 {
   //warning() << "timeHistoryInit " << m_global_time() << " " << m_global_times.size();
-  
-  ISubDomain* sd = subDomain();
-  IVariableMng* vm = sd->variableMng();
 
   info(4) << "TimeHistory is MasterIO ? " << m_internal->isMasterIO();
   if (!m_internal->isMasterIO() && !m_internal->isNonIOMasterCurvesEnabled())
     return;
 
-  m_observer_pool.addObserver(this,
-                              &TimeHistoryMng2::_writeVariablesNotify,
-                              vm->writeObservable());
-  
+  m_internal->addObservers();
+
   if (platform::getEnvironmentVariable("ARCANE_DISABLE_GNUPLOT_CURVES").null()){
     ITimeHistoryCurveWriter2* gnuplot_curve_writer = new GnuplotTimeHistoryCurveWriter2(traceMng());
     m_internal->addCurveWriter(makeRef(gnuplot_curve_writer));
@@ -379,15 +369,6 @@ void TimeHistoryMng2::
 addCurveWriter(ITimeHistoryCurveWriter2* writer)
 {
   m_internal->addCurveWriter(makeRef(writer));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void TimeHistoryMng2::
-_writeVariablesNotify()
-{
-  m_internal->updateMetaData();
 }
 
 /*---------------------------------------------------------------------------*/

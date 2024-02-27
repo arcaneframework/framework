@@ -13,6 +13,7 @@
 
 #include "arcane/impl/internal/TimeHistoryMngInternal.h"
 #include "arcane/core/IMeshMng.h"
+#include "arcane/core/IPropertyMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -83,8 +84,24 @@ updateMetaData()
   }
 
   updateGlobalTimeCurve();
-  _saveProperties();
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TimeHistoryMngInternal::
+addObservers()
+{
+  IVariableMng* vm = m_sd->variableMng();
+  IPropertyMng* prop_mng = m_sd->propertyMng();
+
+  m_observer_pool.addObserver(this,
+                              &TimeHistoryMngInternal::_saveProperties,
+                              prop_mng->writeObservable());
+
+  m_observer_pool.addObserver(this,
+                              &TimeHistoryMngInternal::updateMetaData,
+                              vm->writeObservable());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -193,7 +210,6 @@ readVariables()
   else{
     ARCANE_FATAL("Unknown TimeHistory Variables format -- Found version: {0}", version);
   }
-
 
   m_tmng->info(4) << "readVariables resizes m_global_time to " << m_th_global_time.size();
   m_global_times.resize(m_th_global_time.size());

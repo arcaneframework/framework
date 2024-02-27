@@ -339,7 +339,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   , m_is_active(true)
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
-  , m_properties(new Properties(sd->propertyMng(), "ArcaneTimeHistoryProperties_"))
+  , m_properties(new Properties(sd->propertyMng(), "ArcaneTimeHistoryProperties"))
   , m_version(2)
   {
     m_enable_non_io_master_curves = !platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null();
@@ -408,6 +408,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void setDumpActive(bool is_active) override { m_is_dump_active = is_active; }
   bool isMasterIO() override { return m_is_master_io; }
   bool isNonIOMasterCurvesEnabled() override { return m_enable_non_io_master_curves; }
+  void addObservers() override;
 
 
  private:
