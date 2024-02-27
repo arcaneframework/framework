@@ -14,6 +14,7 @@
 #include "arcane/impl/internal/TimeHistoryMngInternal.h"
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IPropertyMng.h"
+#include "arcane/utils/JSONWriter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -168,6 +169,7 @@ dumpHistory(bool is_verbose)
   _checkOutputPath();
   _dumpCurvesAllWriters(is_verbose);
   _dumpSummaryOfCurvesLegacy();
+  _dumpSummaryOfCurves();
 
   m_tmng->info() << "Fin sortie historique: " << platform::getCurrentDateTime();
 }
@@ -407,6 +409,108 @@ _dumpSummaryOfCurvesLegacy()
     ofile << "</curves>\n";
   }
   else if(m_enable_non_io_master_curves) {
+    Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
+    parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
+    for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+      const TimeHistoryValue& th = *(i->second);
+      String name = th.name();
+      UniqueArray<Int32> length(2);
+      length[0] = arcaneCheckArraySize(name.length()+1);
+      if(th.meshHandle().isNull()){
+        length[1] = 0;
+        parallel_mng->send(length, master_io_rank);
+        parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
+      }
+      else{
+        String mesh_name = th.meshHandle().meshName();
+        length[1] = arcaneCheckArraySize(mesh_name.length()+1);
+        parallel_mng->send(length, master_io_rank);
+        parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
+        parallel_mng->send(ConstArrayView<char>(length[1],static_cast<const char*>(mesh_name.localstr())), master_io_rank);
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TimeHistoryMngInternal::
+_dumpSummaryOfCurves()
+{
+  if (m_is_master_io) {
+
+    JSONWriter json_writer(JSONWriter::FormatFlags::None);
+    {
+      JSONWriter::Object o1(json_writer);
+      {
+        JSONWriter::Object o2(json_writer, "arcane-curves");
+        json_writer.write("version", 1);
+        {
+          json_writer.writeKey("curves");
+          json_writer.beginArray();
+
+          for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+            JSONWriter::Object o4(json_writer);
+            const TimeHistoryValue& th = *(i->second);
+            if(!th.meshHandle().isNull()){
+              json_writer.write("name", th.name());
+              json_writer.write("support", th.meshHandle().meshName());
+            }
+            else{
+              json_writer.write("name", th.name());
+            }
+          }
+
+          if (m_enable_non_io_master_curves) {
+
+            IParallelMng* parallel_mng = m_sd->parallelMng();
+            Integer master_io_rank = parallel_mng->masterIORank();
+
+            for(Integer i=0;i<parallel_mng->commSize();++i) {
+              if (i != master_io_rank) {
+                Integer nb_curve = 0;
+                parallel_mng->recv(ArrayView<Integer>(1, &nb_curve), i);
+                for (Integer icurve = 0; icurve < nb_curve; ++icurve) {
+                  JSONWriter::Object o4(json_writer);
+                  UniqueArray<Int32> length(2);
+                  parallel_mng->recv(length, i);
+                  if (length[1] == 0) {
+                    UniqueArray<char> buf(length[0]);
+                    parallel_mng->recv(buf, i);
+                    json_writer.write("name", buf.unguardedBasePointer());
+                  }
+                  else {
+                    UniqueArray<char> buf(length[0]);
+                    UniqueArray<char> buf2(length[1]);
+                    parallel_mng->recv(buf, i);
+                    parallel_mng->recv(buf2, i);
+                    json_writer.write("name", buf.unguardedBasePointer() );
+                    json_writer.write("support", buf2.unguardedBasePointer());
+                  }
+                  json_writer.write("sub-domain", i);
+
+                }
+              }
+            }
+          }
+          json_writer.endArray();
+        }
+      }
+    }
+
+
+    Directory out_dir(m_output_path);
+    std::ofstream ofile(out_dir.file("time_history.json").localstr());
+    ofile << json_writer.getBuffer();
+    ofile.close();
+  }
+
+  else if(m_enable_non_io_master_curves) {
+
+    IParallelMng* parallel_mng = m_sd->parallelMng();
+    Integer master_io_rank = parallel_mng->masterIORank();
+
     Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
     parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
