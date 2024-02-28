@@ -67,22 +67,11 @@ class TimeHistoryValue
 {
  public:
 
- public:
-
-  TimeHistoryValue(const String& name, eDataType dt, Integer index, Integer sub_size)
-  : m_name(name)
-  , m_data_type(dt)
+  TimeHistoryValue(const TimeHistoryAddValueArgInternal& thpi, eDataType dt, Integer index, Integer sub_size)
+  : m_data_type(dt)
   , m_index(index)
   , m_sub_size(sub_size)
-  , m_mesh_handle()
-  {}
-
-  TimeHistoryValue(const String& name, const MeshHandle& mesh_handle, eDataType dt, Integer index, Integer sub_size)
-  : m_name(name)
-  , m_data_type(dt)
-  , m_index(index)
-  , m_sub_size(sub_size)
-  , m_mesh_handle(mesh_handle)
+  , m_thpi(thpi)
   {}
 
   virtual ~TimeHistoryValue() = default; //!< Libére les ressources
@@ -109,7 +98,7 @@ class TimeHistoryValue
   virtual void removeAfterIteration(Integer last_iteration) =0;
 
   //! Nom de l'historique
-  const String& name() const { return m_name; }
+  const String& name() const { return m_thpi.thp().name(); }
 
   //! type de données de l'historique
   eDataType dataType() const { return m_data_type; }
@@ -119,15 +108,18 @@ class TimeHistoryValue
 
   Integer subSize() const { return m_sub_size; }
 
-  const MeshHandle& meshHandle() const { return m_mesh_handle; }
+  const MeshHandle& meshHandle() const { return m_thpi.meshHandle(); }
+
+  bool isLocal() const { return m_thpi.thp().isLocal(); }
+
+  Integer localProcId() const { return m_thpi.thp().localProcId(); }
 
  private:
 
-  String m_name; //!< Nom de l'historique
   eDataType m_data_type; //!< Type de la donnée
   Integer m_index; //!< Index de l'historique dans la liste
   Integer m_sub_size;
-  MeshHandle m_mesh_handle;
+  TimeHistoryAddValueArgInternal m_thpi;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -165,19 +157,19 @@ class TimeHistoryValueT
   const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
  public:
 
-  TimeHistoryValueT(ISubDomain* sd, const String& name, Integer index, Integer nb_element, bool shrink)
-  : TimeHistoryValue(name,DataTypeTraitsT<DataType>::type(),index,nb_element)
-  , m_values(VariableBuildInfo(sd,String("TimeHistoryMngValues")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(sd,String("TimeHistoryMngIterations")+index,VAR_BUILD_FLAGS))
+  TimeHistoryValueT(ISubDomain* sd, const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
+  : TimeHistoryValue(thpi, DataTypeTraitsT<DataType>::type(), index, nb_element)
+  , m_values(VariableBuildInfo(sd, String("TimeHistoryMngValues")+index, VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(sd, String("TimeHistoryMngIterations")+index, VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
   }
 
-  TimeHistoryValueT(const MeshHandle& mesh_handle, const String& name, Integer index, Integer nb_element, bool shrink)
-  : TimeHistoryValue(name, mesh_handle, DataTypeTraitsT<DataType>::type(), index, nb_element)
-  , m_values(VariableBuildInfo(mesh_handle, String("TimeHistoryMngValues")+index,VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(mesh_handle, String("TimeHistoryMngIterations")+index,VAR_BUILD_FLAGS))
+  TimeHistoryValueT(const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
+  : TimeHistoryValue(thpi, DataTypeTraitsT<DataType>::type(), index, nb_element)
+  , m_values(VariableBuildInfo(thpi.meshHandle(), String("TimeHistoryMngValues")+index, VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(thpi.meshHandle(), String("TimeHistoryMngIterations")+index, VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
@@ -274,12 +266,13 @@ class TimeHistoryValueT
         iterations_to_write.add(iter);
       }
     }
+    Integer sd = localProcId();
     if(!meshHandle().isNull()){
-      TimeHistoryCurveInfo curve_info(name(), meshHandle().meshName(), iterations_to_write, values_to_write, sub_size);
+      TimeHistoryCurveInfo curve_info(name(), meshHandle().meshName(), iterations_to_write, values_to_write, sub_size, sd);
       writer->writeCurve(curve_info);
     }
     else{
-      TimeHistoryCurveInfo curve_info(name(), iterations_to_write, values_to_write, sub_size);
+      TimeHistoryCurveInfo curve_info(name(), iterations_to_write, values_to_write, sub_size, sd);
       writer->writeCurve(curve_info);
     }
   }

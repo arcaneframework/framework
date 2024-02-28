@@ -58,23 +58,21 @@ updateMetaData()
   meta_data_str() << "<curves>\n";
   for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
     TimeHistoryValue* val = i->second;
-    if(val->meshHandle().isNull()){
-      meta_data_str() << "<curve "
-                      << " name='" << val->name() << "'"
-                      << " index='" << val->index() << "'"
-                      << " data-type='" << dataTypeName(val->dataType()) << "'"
-                      << " sub-size='" << val->subSize() << "'"
-                      << "/>\n";
+    meta_data_str() << "<curve "
+                    << " name='" << val->name() << "'"
+                    << " index='" << val->index() << "'"
+                    << " data-type='" << dataTypeName(val->dataType()) << "'"
+                    << " sub-size='" << val->subSize() << "'"
+    ;
+
+    if(!val->meshHandle().isNull()){
+      meta_data_str() << " support='" << val->meshHandle().meshName() << "'";
     }
-    else{
-      meta_data_str() << "<curve "
-                      << " name='" << val->name() << "'"
-                      << " index='" << val->index() << "'"
-                      << " data-type='" << dataTypeName(val->dataType()) << "'"
-                      << " sub-size='" << val->subSize() << "'"
-                      << " support='" << val->meshHandle().meshName() << "'"
-                      << "/>\n";
+    if(val->isLocal()){
+      meta_data_str() << " sub-domain='" << val->localProcId() << "'";
     }
+
+    meta_data_str() << "/>\n";
   }
   meta_data_str() << "</curves>\n";
 
@@ -122,7 +120,7 @@ void TimeHistoryMngInternal::
 addNowInGlobalTime()
 {
   m_global_times.add(m_sd->commonVariables().globalTime());
-  TimeHistoryAddValueArgInternal thpi(m_sd->commonVariables().m_global_time.name(), true, false);
+  TimeHistoryAddValueArgInternal thpi(m_sd->commonVariables().m_global_time.name(), -1, true);
   addValue(thpi, m_sd->commonVariables().globalTime());
 }
 
@@ -229,11 +227,16 @@ readVariables()
   XmlNode root_node = doc->documentNode();
   XmlNode curves_node = root_node.child(String("curves"));
   XmlNodeList curves = curves_node.children(String("curve"));
+
+  // v1
   String ustr_name("name");
   String ustr_index("index");
   String ustr_sub_size("sub-size");
   String ustr_data_type("data-type");
+
+  // v2
   String ustr_support("support");
+  String ustr_sub_domain("sub-domain");
 
   for( XmlNode curve : curves ){
     String name = curve.attrValue(ustr_name);
@@ -243,6 +246,16 @@ readVariables()
     eDataType dt = dataTypeFromName(data_type_str.localstr());
     String support_str = curve.attrValue(ustr_support, false);
 
+    XmlNode sub_domain_node = curve.attr(ustr_sub_domain);
+    Integer sub_domain = -1;
+    if(!sub_domain_node.null()){
+      sub_domain = sub_domain_node.valueAsInteger();
+    }
+
+    if(sub_domain != -1 && m_sd->parallelMng()->commRank() != sub_domain){
+      continue;
+    }
+
     if (name.null())
       ARCANE_FATAL("null name for curve");
     if (index<0)
@@ -250,15 +263,16 @@ readVariables()
 
     TimeHistoryValue* val = nullptr;
     if(support_str.null()){
+      TimeHistoryAddValueArgInternal thpi(name, sub_domain, true);
       switch(dt){
       case DT_Real:
-        val = new TimeHistoryValueT<Real>(m_sd,name,index,sub_size,isShrinkActive());
+        val = new TimeHistoryValueT<Real>(m_sd, thpi, index, sub_size, isShrinkActive());
         break;
       case DT_Int32:
-        val = new TimeHistoryValueT<Int32>(m_sd,name,index,sub_size,isShrinkActive());
+        val = new TimeHistoryValueT<Int32>(m_sd, thpi, index, sub_size, isShrinkActive());
         break;
       case DT_Int64:
-        val = new TimeHistoryValueT<Int64>(m_sd,name,index,sub_size,isShrinkActive());
+        val = new TimeHistoryValueT<Int64>(m_sd, thpi, index, sub_size, isShrinkActive());
         break;
       default:
         break;
@@ -269,15 +283,16 @@ readVariables()
     }
     else{
       MeshHandle mh = m_sd->meshMng()->findMeshHandle(support_str);
+      TimeHistoryAddValueArgInternal thpi(TimeHistoryAddValueArg(name, sub_domain, true), mh);
       switch(dt){
       case DT_Real:
-        val = new TimeHistoryValueT<Real>(mh,name,index,sub_size,isShrinkActive());
+        val = new TimeHistoryValueT<Real>(thpi, index, sub_size, isShrinkActive());
         break;
       case DT_Int32:
-        val = new TimeHistoryValueT<Int32>(mh,name,index,sub_size,isShrinkActive());
+        val = new TimeHistoryValueT<Int32>(thpi, index, sub_size, isShrinkActive());
         break;
       case DT_Int64:
-        val = new TimeHistoryValueT<Int64>(mh,name,index,sub_size,isShrinkActive());
+        val = new TimeHistoryValueT<Int64>(thpi, index, sub_size, isShrinkActive());
         break;
       default:
         break;
@@ -285,6 +300,9 @@ readVariables()
       // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
       // ou le même nom qu'un historique "globale".
       name = name + "_" + mh.meshName();
+    }
+    if(sub_domain){
+      name = name + "_Local";
     }
     if (!val)
       ARCANE_FATAL("Bad data-type");
@@ -376,12 +394,12 @@ _dumpSummaryOfCurvesLegacy()
     ofile << "<curves>\n";
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
       const TimeHistoryValue& th = *(i->second);
+      ofile << "<curve name='" <<  th.name();
       if(!th.meshHandle().isNull()){
-        ofile << "<curve name='" <<  th.name() << "_" << th.meshHandle().meshName() << "'/>\n";
+        ofile << "_" << th.meshHandle().meshName();
       }
-      else{
-        ofile << "<curve name='" <<  th.name() << "'/>\n";
-      }
+      //TODO : subDomain
+      ofile << "'/>\n";
     }
     if (m_enable_non_io_master_curves) {
       for(Integer i=0;i<parallel_mng->commSize();++i)
@@ -391,18 +409,18 @@ _dumpSummaryOfCurvesLegacy()
           for(Integer icurve=0;icurve<nb_curve;++icurve) {
             UniqueArray<Int32> length(2);
             parallel_mng->recv(length,i);
-            if(length[1] == 0){
-              UniqueArray<char> buf(length[0]);
-              parallel_mng->recv(buf,i);
-              ofile << "<curve name='" << buf.unguardedBasePointer() << "'/>\n";
-            }
-            else{
-              UniqueArray<char> buf(length[0]);
+
+            UniqueArray<char> buf(length[0]);
+            parallel_mng->recv(buf,i);
+            ofile << "<curve name='" << buf.unguardedBasePointer();
+
+            if(length[1] != 0){
               UniqueArray<char> buf2(length[1]);
-              parallel_mng->recv(buf,i);
               parallel_mng->recv(buf2,i);
-              ofile << "<curve name='" <<  buf.unguardedBasePointer() << "_" << buf2.unguardedBasePointer() << "'/>\n";
+              ofile << "_" << buf2.unguardedBasePointer();
             }
+            //TODO : subDomain
+            ofile << "'/>\n";
           }
         }
     }
@@ -447,26 +465,24 @@ _dumpSummaryOfCurves()
         JSONWriter::Object o2(json_writer, "arcane-curves");
         json_writer.write("version", 1);
         {
+          IParallelMng* parallel_mng = m_sd->parallelMng();
+          Integer master_io_rank = parallel_mng->masterIORank();
           json_writer.writeKey("curves");
           json_writer.beginArray();
 
           for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
             JSONWriter::Object o4(json_writer);
             const TimeHistoryValue& th = *(i->second);
+            json_writer.write("name", th.name());
             if(!th.meshHandle().isNull()){
-              json_writer.write("name", th.name());
               json_writer.write("support", th.meshHandle().meshName());
             }
-            else{
-              json_writer.write("name", th.name());
+            if(th.isLocal()){
+              json_writer.write("sub-domain", master_io_rank);
             }
           }
 
           if (m_enable_non_io_master_curves) {
-
-            IParallelMng* parallel_mng = m_sd->parallelMng();
-            Integer master_io_rank = parallel_mng->masterIORank();
-
             for(Integer i=0;i<parallel_mng->commSize();++i) {
               if (i != master_io_rank) {
                 Integer nb_curve = 0;
@@ -475,17 +491,14 @@ _dumpSummaryOfCurves()
                   JSONWriter::Object o4(json_writer);
                   UniqueArray<Int32> length(2);
                   parallel_mng->recv(length, i);
-                  if (length[1] == 0) {
-                    UniqueArray<char> buf(length[0]);
-                    parallel_mng->recv(buf, i);
-                    json_writer.write("name", buf.unguardedBasePointer());
-                  }
-                  else {
-                    UniqueArray<char> buf(length[0]);
+
+                  UniqueArray<char> buf(length[0]);
+                  parallel_mng->recv(buf, i);
+                  json_writer.write("name", buf.unguardedBasePointer());
+
+                  if (length[1] != 0) {
                     UniqueArray<char> buf2(length[1]);
-                    parallel_mng->recv(buf, i);
                     parallel_mng->recv(buf2, i);
-                    json_writer.write("name", buf.unguardedBasePointer() );
                     json_writer.write("support", buf2.unguardedBasePointer());
                   }
                   json_writer.write("sub-domain", i);
@@ -553,6 +566,9 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
     // ou le même nom qu'un historique "globale".
     name_to_find = name_to_find + "_" + thpi.meshHandle().meshName();
   }
+  if(thpi.thp().isLocal()){
+    name_to_find = name_to_find + "_Local";
+  }
 
   Integer iteration = m_sd->commonVariables().globalIteration();
 
@@ -566,10 +582,10 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
     th = dynamic_cast<TimeHistoryValueT<DataType>* >(hl->second);
   else{
     if(!thpi.meshHandle().isNull()) {
-      th = new TimeHistoryValueT<DataType>(thpi.meshHandle(), thpi.thp().name(), (Integer)m_history_list.size(), values.size(), isShrinkActive());
+      th = new TimeHistoryValueT<DataType>(thpi, (Integer)m_history_list.size(), values.size(), isShrinkActive());
     }
     else{
-      th = new TimeHistoryValueT<DataType>(m_sd, thpi.thp().name(), (Integer)m_history_list.size(), values.size(), isShrinkActive());
+      th = new TimeHistoryValueT<DataType>(m_sd, thpi, (Integer)m_history_list.size(), values.size(), isShrinkActive());
     }
     m_history_list.insert(HistoryValueType(name_to_find, th));
   }

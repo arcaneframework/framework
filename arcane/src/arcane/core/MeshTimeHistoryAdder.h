@@ -17,6 +17,7 @@
 #include "arcane/core/ITimeHistoryAdder.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/MeshHandle.h"
+#include "arcane/core/IParallelMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,7 +32,7 @@ class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
 : public ITimeHistoryAdder
 {
  public:
-  MeshTimeHistoryAdder(ITimeHistoryMng* thm, const MeshHandle& mesh_handle);
+  MeshTimeHistoryAdder(ITimeHistoryMng* thm, const MeshHandle& mesh_handle, IParallelMng* pm);
   ~MeshTimeHistoryAdder() override = default;
 
  public:
@@ -40,6 +41,7 @@ class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
  private:
   ITimeHistoryMng* m_thm;
   MeshHandle m_mesh_handle;
+  IParallelMng* m_pm;
 };
 
 /*---------------------------------------------------------------------------*/

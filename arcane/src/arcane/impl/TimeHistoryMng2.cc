@@ -83,8 +83,15 @@ class GnuplotTimeHistoryCurveWriter2
   }
   void writeCurve(const TimeHistoryCurveInfo& infos) override
   {
+    String name(infos.name().clone());
+    if(infos.hasSupport()){
+      name = name + "_" + infos.support();
+    }
+    if(infos.subDomain() != -1){
+      name = name + "_SubDomain" + infos.subDomain();
+    }
 
-    String sname(m_gnuplot_path.file(infos.hasSupport() ? infos.name().clone() + "_" + infos.support() : infos.name()));
+    String sname(m_gnuplot_path.file(name));
     FILE* ofile = fopen(sname.localstr(),"w");
     if (!ofile){
       warning() << "Can not open gnuplot curve file '" << sname << "'";
@@ -153,52 +160,64 @@ class TimeHistoryMng2
 
   void addValue(const String& name,Real value,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), value);
   }
   void addValue(const String& name,Int64 value,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), value);
   }
   void addValue(const String& name,Int32 value,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), value);
   }
   void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), values);
   }
   void addValue(const String& name,Int32ConstArrayView values,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), values);
   }
   void addValue(const String& name,Int64ConstArrayView values,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), values);
   }
 
   void addValue(const TimeHistoryAddValueArg& thp, Real value) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
+    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
+      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
+    }
   }
   void addValue(const TimeHistoryAddValueArg& thp, Int64 value) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
+    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
+      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
+    }
   }
   void addValue(const TimeHistoryAddValueArg& thp, Int32 value) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
+    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
+      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
+    }
   }
   void addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
+    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
+      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
+    }
   }
   void addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
+    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
+      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
+    }
   }
   void addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
+    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
+      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
+    }
   }
 
  public:

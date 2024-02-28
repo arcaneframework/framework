@@ -50,6 +50,18 @@ class TimeHistoryCurveInfo
   , m_iterations(aiterations)
   , m_values(avalues)
   , m_sub_size(sub_size)
+  , m_sub_domain(-1)
+  {}
+
+  TimeHistoryCurveInfo(const String& aname, Int32ConstArrayView aiterations,
+                       RealConstArrayView avalues, Integer sub_size, Integer sub_domain)
+  : m_name(aname)
+  , m_support()
+  , m_has_support(false)
+  , m_iterations(aiterations)
+  , m_values(avalues)
+  , m_sub_size(sub_size)
+  , m_sub_domain(sub_domain)
   {}
 
   TimeHistoryCurveInfo(const String& aname, const String& asupport, Int32ConstArrayView aiterations,
@@ -60,6 +72,18 @@ class TimeHistoryCurveInfo
   , m_iterations(aiterations)
   , m_values(avalues)
   , m_sub_size(sub_size)
+  , m_sub_domain(-1)
+  {}
+
+  TimeHistoryCurveInfo(const String& aname, const String& asupport, Int32ConstArrayView aiterations,
+                       RealConstArrayView avalues, Integer sub_size, Integer sub_domain)
+  : m_name(aname)
+  , m_support(asupport)
+  , m_has_support(true)
+  , m_iterations(aiterations)
+  , m_values(avalues)
+  , m_sub_size(sub_size)
+  , m_sub_domain(sub_domain)
   {}
 
  public:
@@ -74,6 +98,8 @@ class TimeHistoryCurveInfo
   RealConstArrayView values() const { return m_values; }
   //! Nombre de valeur par temps
   Integer subSize() const { return m_sub_size; }
+  // TODO nom pas terrible
+  Integer subDomain() const { return m_sub_domain; }
 
 #if ARCANE_ALLOW_CURVE_WRITER_PRIVATE_ACCESS
  public:
@@ -86,6 +112,7 @@ class TimeHistoryCurveInfo
   Int32ConstArrayView m_iterations;
   RealConstArrayView m_values;
   Integer m_sub_size;
+  Integer m_sub_domain;
 };
 
 /*---------------------------------------------------------------------------*/

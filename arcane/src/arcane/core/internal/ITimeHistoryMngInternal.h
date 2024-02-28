@@ -39,7 +39,7 @@ class ITimeHistoryTransformer;
 class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
 {
  public:
-  explicit TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp)
+  TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp)
   : m_thp(thp)
   , m_mesh_handle()
   {}
@@ -49,8 +49,8 @@ class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
   , m_mesh_handle(mesh_handle)
   {}
 
-  TimeHistoryAddValueArgInternal(const String& name, bool end_time, bool is_local)
-  : m_thp(name, end_time, is_local)
+  TimeHistoryAddValueArgInternal(const String& name, Integer local_proc_id, bool end_time)
+  : m_thp(name, local_proc_id, end_time)
   , m_mesh_handle()
   {}
 

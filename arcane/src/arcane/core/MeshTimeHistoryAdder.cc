@@ -24,15 +24,18 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 MeshTimeHistoryAdder::
-MeshTimeHistoryAdder(ITimeHistoryMng* thm, const MeshHandle& mesh_handle)
+MeshTimeHistoryAdder(ITimeHistoryMng* thm, const MeshHandle& mesh_handle, IParallelMng* pm)
 : m_thm(thm)
 , m_mesh_handle(mesh_handle)
+, m_pm(pm)
 {}
 
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Real value)
 {
-  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
+  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
+    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
