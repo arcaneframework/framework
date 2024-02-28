@@ -473,24 +473,26 @@ _printAllEnvCells(CellVectorView ids)
  * de suppression d'un matériau)
  */
 void AllEnvData::
-_copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
-                               Int32ConstArrayView partial_indexes,
-                               Int32 indexer_index, bool is_add_operation)
+_copyBetweenPartialsAndGlobals(const MeshVariableCopyBetweenPartialAndGlobalArgs& args,
+                               bool is_add_operation)
 {
-  if (pure_local_ids.empty())
+  if (args.m_local_ids.empty())
     return;
 
+  RunQueue::ScopedAsync sc(args.m_queue);
   // Comme on a modifié des mailles, il faut mettre à jour les valeurs
   // correspondantes pour chaque variable.
   //info(4) << "NB_TRANSFORM=" << nb_transform << " name=" << e->name();
   //Integer indexer_index = indexer->index();
-  auto func = [=](IMeshMaterialVariable* mv) {
+  auto func = [&](IMeshMaterialVariable* mv) {
+    auto* mvi = mv->_internalApi();
     if (is_add_operation)
-      mv->_internalApi()->copyGlobalToPartial(indexer_index, pure_local_ids, partial_indexes);
+      mvi->copyGlobalToPartial(args);
     else
-      mv->_internalApi()->copyPartialToGlobal(indexer_index, pure_local_ids, partial_indexes);
+      mvi->copyPartialToGlobal(args);
   };
   functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func);
+  args.m_queue->barrier();
 }
 
 /*---------------------------------------------------------------------------*/

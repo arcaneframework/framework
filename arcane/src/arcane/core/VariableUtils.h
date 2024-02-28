@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,6 +44,29 @@ void prefetchVariableAsync(IVariable* var, RunQueue* queue_or_null);
  */
 extern "C++" ARCANE_CORE_EXPORT
 void prefetchVariableAsync(VariableRef& var, RunQueue* queue_or_null);
+
+/*!
+ * \brief Indique que la variable est essentiellement en lecture.
+ *
+ * Cela est utilisé uniquement avec les accélérateurs et permet d'éviter
+ * des transferts mémoire en l'accélérateur et le CPU.
+ */
+extern "C++" ARCANE_CORE_EXPORT
+void markVariableAsMostlyReadOnly(IVariable* var);
+
+/*!
+ * \brief Indique que la variable est essentiellement en lecture.
+ * \a void markVariableAsMostlyReadOnly(IVariableRef* var);
+ */
+extern "C++" ARCANE_CORE_EXPORT
+void markVariableAsMostlyReadOnly(VariableRef& var);
+
+/*!
+ * \brief Indique que la variable est essentiellement en lecture.
+ * \a void markVariableAsMostlyReadOnly(IVariableRef* var);
+ */
+extern "C++" ARCANE_CORE_EXPORT
+void markVariableAsMostlyReadOnly(::Arcane::Materials::MeshMaterialVariableRef& var);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

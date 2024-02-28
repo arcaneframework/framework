@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExtraGhostParticlesBuilder.cc                               (C) 2000-2023 */
+/* ExtraGhostParticlesBuilder.cc                               (C) 2000-2024 */
 /*                                                                           */
 /* Construction des mailles fantômes supplémentaires.                        */
 /*---------------------------------------------------------------------------*/
@@ -47,9 +47,9 @@ ExtraGhostParticlesBuilder(DynamicMesh* mesh)
 void ExtraGhostParticlesBuilder::
 addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 {
-  if (m_builders.find(builder)!=m_builders.end())
+  if (m_builders.contains(builder))
     ARCANE_FATAL("Instance {0} is already registered",builder);
-  m_builders.insert(builder);
+  m_builders.add(builder);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -58,10 +58,12 @@ addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 void ExtraGhostParticlesBuilder::
 removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 {
-  auto x = m_builders.find(builder);
-  if (x==m_builders.end())
+  auto iter_begin = m_builders.begin();
+  auto iter_end = m_builders.end();
+  auto x = std::find(iter_begin,iter_end,builder);
+  if (x==iter_end)
     ARCANE_FATAL("Instance {0} is not registered",builder);
-  m_builders.erase(x);
+  m_builders.remove(x - iter_begin);
 }
 
 /*---------------------------------------------------------------------------*/

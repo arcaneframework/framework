@@ -40,6 +40,7 @@ IncrementalComponentModifier(AllEnvData* all_env_data)
 : TraceAccessor(all_env_data->traceMng())
 , m_all_env_data(all_env_data)
 , m_material_mng(all_env_data->m_material_mng)
+, m_copy_queue(makeQueue(m_material_mng->runner()))
 {
 }
 
@@ -214,14 +215,14 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
       info(4) << "TransformCells (V3) is_add?=" << is_add << " indexer=" << indexer->name();
 
       _computeCellsToTransformForMaterial(mat, ids);
-      indexer->transformCellsV2(m_work_info);
+      indexer->transformCellsV2(m_work_info,m_copy_queue);
       m_work_info.resetTransformedCells(ids);
 
       info(4) << "NB_MAT_TRANSFORM=" << m_work_info.pure_local_ids.size() << " name=" << mat->name();
 
-      m_all_env_data->_copyBetweenPartialsAndGlobals(m_work_info.pure_local_ids,
-                                                     m_work_info.partial_indexes,
-                                                     indexer->index(), is_add);
+      MeshVariableCopyBetweenPartialAndGlobalArgs args(indexer->index(), m_work_info.pure_local_ids.view(),
+                                                       m_work_info.partial_indexes.view(), &m_copy_queue);
+      m_all_env_data->_copyBetweenPartialsAndGlobals(args, is_add);
     }
   }
 }
@@ -265,16 +266,17 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     info(4) << "TransformCells (V2) is_add?=" << is_add << " indexer=" << indexer->name();
 
     _computeCellsToTransformForEnvironments(ids);
-    indexer->transformCellsV2(m_work_info);
+    indexer->transformCellsV2(m_work_info, m_copy_queue);
     m_work_info.resetTransformedCells(ids);
 
     info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
             << " name=" << env->name();
 
-    if (is_copy)
-      m_all_env_data->_copyBetweenPartialsAndGlobals(m_work_info.pure_local_ids,
-                                                     m_work_info.partial_indexes,
-                                                     indexer->index(), is_add);
+    if (is_copy) {
+      MeshVariableCopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), m_work_info.pure_local_ids.view(),
+                                                            m_work_info.partial_indexes.view(), &m_copy_queue);
+      m_all_env_data->_copyBetweenPartialsAndGlobals(copy_args, is_add);
+    }
   }
 }
 
@@ -455,8 +457,10 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
   // initialiser avec les bonnes valeurs.
   {
     IMeshMaterialMng* mm = m_material_mng;
-    functor::apply(mm, &IMeshMaterialMng::visitVariables,
-                   [&](IMeshMaterialVariable* mv) { mv->_internalApi()->initializeNewItems(list_builder); });
+    auto func = [&](IMeshMaterialVariable* mv) {
+      mv->_internalApi()->initializeNewItems(list_builder, m_copy_queue);
+    };
+    functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
   }
 }
 

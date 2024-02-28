@@ -5,46 +5,40 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemListBuilder.cc                                 (C) 2000-2024 */
+/* MeshTimeHistoryAdder.cc                                     (C) 2000-2024 */
 /*                                                                           */
-/* Classe d'aide à la construction d'une liste de ComponentItem.             */
+/* Classe permettant d'ajouter un historique de valeur lié à un maillage.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/internal/ComponentItemListBuilder.h"
-#include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
-
-#include "arcane/utils/PlatformUtils.h"
+#include "arcane/core/MeshTimeHistoryAdder.h"
+#include "arcane/core/internal/ITimeHistoryMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Materials
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentItemListBuilder::
-ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer,
-                         Integer begin_index_in_partial)
-: m_component_index(var_indexer->index() + 1)
-, m_index_in_partial(begin_index_in_partial)
-, m_pure_matvar_indexes(platform::getDefaultDataAllocator())
-, m_partial_matvar_indexes(platform::getDefaultDataAllocator())
-, m_partial_local_ids(platform::getDefaultDataAllocator())
-, m_indexer(var_indexer)
+MeshTimeHistoryAdder::
+MeshTimeHistoryAdder(ITimeHistoryMng* thm, IMesh* mesh)
+: m_thm(thm)
+, m_mesh(mesh)
+{}
+
+void MeshTimeHistoryAdder::
+addValue(const TimeHistoryAddValueArg& thp, Real value)
 {
-  Integer reserve_size = 4000;
-  m_pure_matvar_indexes.reserve(reserve_size);
-  m_partial_matvar_indexes.reserve(reserve_size);
-  m_partial_local_ids.reserve(reserve_size);
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh->name()), value);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Materials
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

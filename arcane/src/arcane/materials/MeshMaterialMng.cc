@@ -32,6 +32,9 @@
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
+
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
@@ -167,12 +170,30 @@ MeshMaterialMng::
 void MeshMaterialMng::
 build()
 {
+  // Enregistre les fabriques des variables
   {
     auto* x = MeshMaterialVariableFactoryRegisterer::firstRegisterer();
     while (x){
       m_variable_factory_mng->registerFactory(x->createFactory());
       x = x->nextRegisterer();
     }
+  }
+
+  // Positionne le runner par défaut
+  {
+    IAcceleratorMng* acc_mng = m_variable_mng->_internalApi()->acceleratorMng();
+    if (acc_mng){
+      Runner* default_runner = acc_mng->defaultRunner();
+      // Indique si on active la file accélérateur
+      const bool use_accelerator_runner = false;
+      if (use_accelerator_runner && default_runner)
+        m_runner = *default_runner;
+    }
+    // Si pas de runner enregistré, utiliser un runner séquentiel.
+    if (!m_runner.isInitialized())
+      m_runner.initialize(Accelerator::eExecutionPolicy::Sequential);
+    m_runner_ptr = &m_runner;
+    info() << "Use runner '" << m_runner.executionPolicy() << "' for MeshMaterialMng name=" << name();
   }
 
   // Choix des optimisations.
@@ -224,7 +245,7 @@ build()
     String env_name = "ARCANE_MATERIAL_DATA_COMPRESSOR_NAME";
     String env_value = platform::getEnvironmentVariable(env_name);
     if (!env_value.null()){
-      info() << "Use serivice '" << env_value << "' for material data compression";
+      info() << "Use service '" << env_value << "' for material data compression";
       m_data_compressor_service_name = env_value;
     }
   }

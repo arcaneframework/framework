@@ -239,7 +239,7 @@ build()
   if (rank==0){
     tm->info() << "MPI has non blocking collective";
     tm->info() << "MPI: sizeof(MPI_Count)=" << sizeof(MPI_Count);
-    tm->info() << "MPI: is Cuda Aware?=" << arcaneIsCudaAwareMPI();
+    tm->info() << "MPI: is GPU Aware?=" << arcaneIsAcceleratorAwareMPI();
     tm->info() << "MPI: init_time (seconds)=" << (end_time-start_time);
   }
 

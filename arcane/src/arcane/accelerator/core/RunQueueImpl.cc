@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.cc                                             (C) 2000-2023 */
+/* RunQueueImpl.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -68,8 +68,13 @@ _release()
   // les commandes ne seront pas désallouées.
   // TODO: Regarder s'il ne faudrait pas plutôt indiquer cela à l'utilisateur
   // ou faire une erreur fatale.
-  if (!m_active_run_command_list.empty())
-    _internalBarrier();
+  if (!m_active_run_command_list.empty()){
+    if (!_internalStream()->_barrierNoException()){
+      _internalFreeRunningCommands();
+    }
+    else
+      std::cerr << "WARNING: Error in internal accelerator barrier\n";
+  }
   if (_isInPool())
     m_runner->_internalPutRunQueueImplInPool(this);
   else

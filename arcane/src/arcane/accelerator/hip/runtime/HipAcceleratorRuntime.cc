@@ -90,6 +90,10 @@ class HipRunQueueStream
   {
     ARCANE_CHECK_HIP(hipStreamSynchronize(m_hip_stream));
   }
+  bool _barrierNoException() override
+  {
+    return hipStreamSynchronize(m_hip_stream) != HIP_SUCCESS;
+  }
   void copyMemory(const MemoryCopyArgs& args) override
   {
     auto r = hipMemcpyAsync(args.destination().data(), args.source().data(),

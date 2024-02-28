@@ -5,46 +5,48 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemListBuilder.cc                                 (C) 2000-2024 */
+/* MeshTimeHistoryAdder.h                                      (C) 2000-2024 */
 /*                                                                           */
-/* Classe d'aide à la construction d'une liste de ComponentItem.             */
+/* Classe permettant d'ajouter un historique de valeur lié à un maillage.    */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_MESHTIMEHISTORYADDER_H
+#define ARCANE_CORE_MESHTIMEHISTORYADDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/internal/ComponentItemListBuilder.h"
-#include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
-
-#include "arcane/utils/PlatformUtils.h"
+#include "arcane/core/ITimeHistoryAdder.h"
+#include "arcane/core/IMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Materials
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentItemListBuilder::
-ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer,
-                         Integer begin_index_in_partial)
-: m_component_index(var_indexer->index() + 1)
-, m_index_in_partial(begin_index_in_partial)
-, m_pure_matvar_indexes(platform::getDefaultDataAllocator())
-, m_partial_matvar_indexes(platform::getDefaultDataAllocator())
-, m_partial_local_ids(platform::getDefaultDataAllocator())
-, m_indexer(var_indexer)
+class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
+: public ITimeHistoryAdder
 {
-  Integer reserve_size = 4000;
-  m_pure_matvar_indexes.reserve(reserve_size);
-  m_partial_matvar_indexes.reserve(reserve_size);
-  m_partial_local_ids.reserve(reserve_size);
-}
+ public:
+  MeshTimeHistoryAdder(ITimeHistoryMng* thm, IMesh* mesh);
+  ~MeshTimeHistoryAdder() override = default;
+
+ public:
+  void addValue(const TimeHistoryAddValueArg& thp, Real value) override;
+
+ private:
+  ITimeHistoryMng* m_thm;
+  IMesh* m_mesh;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Materials
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif
