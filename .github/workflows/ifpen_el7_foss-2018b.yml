@@ -1,43 +1,24 @@
 name: IFPEN el7 foss/2018b
 
 on:
-  push:
-    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  #push:
+  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   #pull_request:
   #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   workflow_dispatch:
+    inputs:
+      ctest_options:
+        description: 'CTest options'
+        required: false
+        default: ''
 
 env:
-  # Alien
-  ALIEN_BUILD_DIR: /__w/framework/framework/alien_build
-  ALIEN_INSTALL_DIR: /__w/framework/framework/alien_install
-  ALIEN_SOURCE_DIR: /__w/framework/framework/alien
-  # AlienLegacy
-  ALIENLEGACY_BUILD_DIR: /__w/framework/framework/alienlegacy_build
-  ALIENLEGACY_INSTALL_DIR: /__w/framework/framework/alienlegacy_install
-  ALIENLEGACY_SOURCE_DIR: /__w/framework/framework/alienlegacy
-  # Arcane
-  ARCANE_BUILD_DIR: /__w/framework/framework/arcane_build
-  ARCANE_INSTALL_DIR: /__w/framework/framework/arcane_install
-  ARCANE_SOURCE_DIR: /__w/framework/framework/arcane
-  # Arccon
-  ARCCON_BUILD_DIR: /__w/framework/framework/arccon_build
-  ARCCON_INSTALL_DIR: /__w/framework/framework/arccon_install
-  ARCCON_SOURCE_DIR: /__w/framework/framework/arccon
-  # Arccore
-  ARCCORE_BUILD_DIR: /__w/framework/framework/arccore_build
-  ARCCORE_INSTALL_DIR: /__w/framework/framework/arccore_install
-  ARCCORE_SOURCE_DIR: /__w/framework/framework/arccore
-  # Dependencies
-  DEPENDENCIES_BUILD_DIR: /__w/framework/framework/dependencies_build
-  DEPENDENCIES_INSTALL_DIR: /__w/framework/framework/dependencies_install
-  DEPENDENCIES_SOURCE_DIR: /__w/framework/framework/dependencies
-  # Axlstar
-  AXLSTAR_BUILD_DIR: /__w/framework/framework/axlstar_build
-  AXLSTAR_INSTALL_DIR: /__w/framework/framework/axlstar_install
-  AXLSTAR_SOURCE_DIR: /__w/framework/framework/axlstar
+  # Framework directories
+  BUILD_DIR: /__w/framework/framework/build
+  INSTALL_DIR: /__w/framework/framework/install
+  SOURCE_DIR: /__w/framework/framework/source
+  EXT_LIB_SUBDIR: extlib # /__w/framework/framework/build/dependencies
   # ccache
-  CC_KEY_PREFIX: ifpen-el7-foss-2018b
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
   CCACHE_DIR: '/__w/framework/framework/ccache'
@@ -47,659 +28,169 @@ env:
   CM_BUILD_TYPE: Release
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
-  CT_OPTS: "--timeout 300 --output-on-failure"
+  CT_OPTS: "--timeout 300 --output-on-failure ${{ github.event.inputs.ctest_options }}"
   # OpenMPI
   OMPI_MCA_rmaps_base_oversubscribe : true
+  # To remove test output directory to reduce disk usage
+  ARCANE_TEST_CLEANUP_AFTER_RUN : 1
 
 jobs:
-  arccon-install:
-    name: arccon-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.ARCCON_SOURCE_DIR }}
-      - name: Configure
-        shell: bash
-        run: cmake -S ${{ env.ARCCON_SOURCE_DIR }}/arccon -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }}
-      - name: Build
-        shell: bash
-        run: cmake --build ${{ env.ARCCON_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
-      - name: Install
-        shell: bash
-        run: cmake --install ${{ env.ARCCON_BUILD_DIR }}
-      - name: Tar install artifact
-        shell: bash
-        run: tar cf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
-      - name: Upload install artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: arccon-install-artifact
-          path: arccon-install-artifact.tar
-          retention-days: 1
 
-  arccore-install:
-    name: arccore-install
-    needs:
-      - arccon-install
+  build:
+    name: build
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 120
     container:
       image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
+      #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.ARCCORE_SOURCE_DIR }}
-      - name: Download arccon install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccon-install-artifact
-      - name: Untar arccon install artifact
-        shell: bash
-        run: tar xf arccon-install-artifact.tar -C /
-      - name: Remove arccon install artifact tar
-        shell: bash
-        run: rm arccon-install-artifact.tar
+
+      # ccache
+
       - name: Get date
         id: get-date
         shell: bash
         run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      - name: Get cache for ccache tool
-        uses: actions/cache@v3
-        with:
-          path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-
-      - name: Configure
-        shell: bash
-        run: cmake -S ${{ env.ARCCORE_SOURCE_DIR }}/arccore -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON ${{ env.CM_CCACHE_OPTS }}
-      - name: Build
-        shell: bash
-        run: cmake --build ${{ env.ARCCORE_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
-      - name: Install
-        shell: bash
-        run: cmake --install ${{ env.ARCCORE_BUILD_DIR }}
-      - name: Tar build artifact
-        shell: bash
-        run: tar cf arccore-build-artifact.tar ${{ env.ARCCORE_BUILD_DIR }}
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: arccore-build-artifact
-          path: arccore-build-artifact.tar
-          retention-days: 1
-      - name: Tar install artifact
-        shell: bash
-        run: tar cf arccore-install-artifact.tar ${{ env.ARCCORE_INSTALL_DIR }}
-      - name: Upload install artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: arccore-install-artifact
-          path: arccore-install-artifact.tar
-          retention-days: 1
 
-  dependencies-install:
-    name: dependencies-install
-    needs:
-      - arccon-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
-    strategy:
-      fail-fast: false
-    steps:
+      - name: Restore cache
+        id: restore-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ifpen-el7-foss-2018b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
+          restore-keys: ifpen-el7-foss-2018b-${{ env.CM_BUILD_TYPE }}-
+
+      # Installation
+
       - name: Checkout
+        id: checkout
+        if: |
+          (success() || failure())
         uses: actions/checkout@v3
         with:
-          repository: arcaneframework/dependencies
-          path: ${{ env.DEPENDENCIES_SOURCE_DIR }}
-          ref: main
-      - name: Download arccon install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccon-install-artifact
-      - name: Untar arccon install artifact
-        shell: bash
-        run: tar xf arccon-install-artifact.tar -C /
-      - name: Remove arccon install artifact tar
-        shell: bash
-        run: rm arccon-install-artifact.tar
-      - name: Configure
-        shell: bash
-        run: cmake -S ${{ env.DEPENDENCIES_SOURCE_DIR }} -B ${{ env.DEPENDENCIES_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.DEPENDENCIES_INSTALL_DIR }} -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }}
-      - name: Build
-        shell: bash
-        run: cmake --build ${{ env.DEPENDENCIES_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
-      - name: Install
-        shell: bash
-        run: cmake --install ${{ env.DEPENDENCIES_BUILD_DIR }}
-      - name: Tar install ariftact
-        shell: bash
-        run: tar cf dependencies-install-artifact.tar ${{ env.DEPENDENCIES_INSTALL_DIR }}
-      - name: Upload install artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: dependencies-install-artifact
-          path: dependencies-install-artifact.tar
-          retention-days: 1
-
-  axlstar-install:
-    name: axlstar-install
-    needs:
-      - arccon-install
-      - dependencies-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.AXLSTAR_SOURCE_DIR }}
-      - name: Download arccon install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccon-install-artifact
-      - name: Untar arccon install artifact
-        shell: bash
-        run: tar xf arccon-install-artifact.tar -C /
-      - name: Remove arccon install artifact tar
-        shell: bash
-        run: rm arccon-install-artifact.tar
-      - name: Download dependencies install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: dependencies-install-artifact
-      - name: Untar dependencies install artifact
-        shell: bash
-        run: tar xf dependencies-install-artifact.tar -C /
-      - name: Remove dependencies install artifact tar
-        shell: bash
-        run: rm dependencies-install-artifact.tar
-      - name: Configure
-        shell: bash
-        run: cmake -S ${{ env.AXLSTAR_SOURCE_DIR }}/axlstar -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }} -DArcDependencies_ROOT=${{ env.DEPENDENCIES_INSTALL_DIR }}
-      - name: Build
-        shell: bash
-        run: cmake --build ${{ env.AXLSTAR_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
-      - name: Install
-        shell: bash
-        run: cmake --install ${{ env.AXLSTAR_BUILD_DIR }}
-      - name: Tar install artifact
-        shell: bash
-        run: tar cf axlstar-install-artifact.tar ${{ env.AXLSTAR_INSTALL_DIR }}
-      - name: Upload install artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: axlstar-install-artifact
-          path: axlstar-install-artifact.tar
-          retention-days: 1
-
-  arcane-install:
-    name: arcane-install
-    needs:
-      - arccon-install
-      - arccore-install
-      - dependencies-install
-      - axlstar-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.ARCANE_SOURCE_DIR }}
-      - name: Download arccon install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccon-install-artifact
-      - name: Untar arccon install artifact
-        shell: bash
-        run: tar xf arccon-install-artifact.tar -C /
-      - name: Remove arccon install artifact tar
-        shell: bash
-        run: rm arccon-install-artifact.tar
-      - name: Download arccore install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccore-install-artifact
-      - name: Untar arccore install artifact
-        shell: bash
-        run: tar xf arccore-install-artifact.tar -C /
-      - name: Remove arccore install artifact tar
-        shell: bash
-        run: rm arccore-install-artifact.tar
-      - name: Download dependencies install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: dependencies-install-artifact
-      - name: Untar dependencies install artifact
-        shell: bash
-        run: tar xf dependencies-install-artifact.tar -C /
-      - name: Remove dependencies install artifact tar
-        shell: bash
-        run: rm dependencies-install-artifact.tar
-      - name: Download axlstar install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: axlstar-install-artifact
-      - name: Untar axlstar install artifact
-        shell: bash
-        run: tar xf axlstar-install-artifact.tar -C /
-      - name: Remove axlstar install artifact tar
-        shell: bash
-        run: rm axlstar-install-artifact.tar
-      - name: Get date
-        id: get-date
-        shell: bash
-        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      - name: Get cache for ccache tool
-        uses: actions/cache@v3
-        with:
-          path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-
-      - name: Configure
-        shell: bash
-        run: cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }} -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_ROOT=${{ env.DEPENDENCIES_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON ${{ env.CM_CCACHE_OPTS }}
-      - name: Build
-        shell: bash
-        run: cmake --build ${{ env.ARCANE_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
-      - name: Install
-        shell: bash
-        run: cmake --install ${{ env.ARCANE_BUILD_DIR }}
-      - name: Tar build artifact
-        shell: bash
-        run: tar cf arcane-build-artifact.tar ${{ env.ARCANE_BUILD_DIR }}
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: arcane-build-artifact
-          path: arcane-build-artifact.tar
-          retention-days: 1
-      - name: Tar install artifact
-        shell: bash
-        run: tar cf arcane-install-artifact.tar ${{ env.ARCANE_INSTALL_DIR }}
-      - name: Upload install artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: arcane-install-artifact
-          path: arcane-install-artifact.tar
-          retention-days: 1
-
-  alien-install:
-    name: alien-install
-    needs:
-      - arccon-install
-      - arccore-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: arcaneframework/alien
-          path: ${{ env.ALIEN_SOURCE_DIR }}
-          ref: main
-      - name: Download arccon install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccon-install-artifact
-      - name: Untar arccon install artifact
-        shell: bash
-        run: tar xf arccon-install-artifact.tar -C /
-      - name: Remove arccon install artifact tar
-        shell: bash
-        run: rm arccon-install-artifact.tar
-      - name: Download arccore install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccore-install-artifact
-      - name: Untar arccore install artifact
-        shell: bash
-        run: tar xf arccore-install-artifact.tar -C /
-      - name: Remove arccore install artifact tar
-        shell: bash
-        run: rm arccore-install-artifact.tar
-      - name: Get date
-        id: get-date
-        shell: bash
-        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      - name: Get cache for ccache tool
-        uses: actions/cache@v3
-        with:
-          path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-alien-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ${{ env.CC_KEY_PREFIX }}-alien-${{ env.CM_BUILD_TYPE }}-
-      - name: Configure
-        shell: bash
-        run: cmake -S ${{ env.ALIEN_SOURCE_DIR }} -B ${{ env.ALIEN_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIEN_INSTALL_DIR }} -DALIENDEV_EMBEDDED=OFF -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }} -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DCMAKE_FIND_DEBUG_MODE=1 -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON ${{ env.CM_CCACHE_OPTS }}
-      - name: Build
-        shell: bash
-        run: cmake --build ${{ env.ALIEN_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
-      - name: Install
-        shell: bash
-        run: cmake --install ${{ env.ALIEN_BUILD_DIR }}
-      - name: Tar build artifact
-        shell: bash
-        run: tar cf alien-build-artifact.tar ${{ env.ALIEN_BUILD_DIR }}
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: alien-build-artifact
-          path: alien-build-artifact.tar
-          retention-days: 1
-      - name: Tar install artifact
-        shell: bash
-        run: tar cf alien-install-artifact.tar ${{ env.ALIEN_INSTALL_DIR }}
-      - name: Upload install artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: alien-install-artifact
-          path: alien-install-artifact.tar
-          retention-days: 1
-
-  alienlegacy-install:
-    name: alienlegacy-install
-    needs:
-      - alien-install
-      - arcane-install
-      - arccon-install
-      - arccore-install
-      - axlstar-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: arcaneframework/alien_legacy_plugins
-          path: ${{ env.ALIENLEGACY_SOURCE_DIR }}
-          ref: main
+          path: ${{ env.SOURCE_DIR }}
           submodules: true
-      - name: Download arcane install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arcane-install-artifact
-      - name: Untar arcane install artifact
-        shell: bash
-        run: tar xf arcane-install-artifact.tar -C /
-      - name: Remove arcane install artifact tar
-        shell: bash
-        run: rm arcane-install-artifact.tar
-      - name: Download arccon install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccon-install-artifact
-      - name: Untar arccon install artifact
-        shell: bash
-        run: tar xf arccon-install-artifact.tar -C /
-      - name: Remove arccon install artifact tar
-        shell: bash
-        run: rm arccon-install-artifact.tar
-      - name: Download arccore install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccore-install-artifact
-      - name: Untar arccore install artifact
-        shell: bash
-        run: tar xf arccore-install-artifact.tar -C /
-      - name: Remove arccore install artifact tar
-        shell: bash
-        run: rm arccore-install-artifact.tar
-      - name: Download alien install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: alien-install-artifact
-      - name: Untar alien install artifact
-        shell: bash
-        run: tar xf alien-install-artifact.tar -C /
-      - name: Remove alien install artifact tar
-        shell: bash
-        run: rm alien-install-artifact.tar
-      - name: Download axlstar install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: axlstar-install-artifact
-      - name: Untar axlstar install artifact
-        shell: bash
-        run: tar xf axlstar-install-artifact.tar -C /
-      - name: Remove axlstar install artifact tar
-        shell: bash
-        run: rm axlstar-install-artifact.tar
-      - name: Get date
-        id: get-date
-        shell: bash
-        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      - name: Get cache for ccache tool
-        uses: actions/cache@v3
-        with:
-          path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-
+
       - name: Configure
+        id: configure
+        if: |
+          (success() || failure()) &&
+          steps.checkout.outcome == 'success'
         shell: bash
-        run: cmake -S ${{ env.ALIENLEGACY_SOURCE_DIR }} -B ${{ env.ALIENLEGACY_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIENLEGACY_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }} -DArccore_ROOT=${{ env.ARCCORE_INSTALL_DIR }} -DAxlstar_ROOT=${{ env.AXLSTAR_INSTALL_DIR }} -DArcane_ROOT=${{ env.ARCANE_INSTALL_DIR }} -DAlien_ROOT=${{ env.ALIEN_INSTALL_DIR }} -DUSE_BUILDSYSTEM_GIT_SUBMODULE=ON ${{ env.CM_CCACHE_OPTS }}
+        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DARCANE_WANT_CHECK=ON -DARCANE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all
+
       - name: Build
+        id: build
+        if: |
+          (success() || failure()) &&
+          steps.configure.outcome == 'success'
         shell: bash
-        run: cmake --build ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
+        run: cmake --build ${{ env.BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
+
+      - name: Clean
+        id: clean
+        if: |
+          (success() || failure()) &&
+          steps.build.outcome == 'success'
+        shell: bash
+        run: find ${{ env.BUILD_DIR }} -type f -name '*.o' -exec rm -f '{}' \;
+
       - name: Install
+        id: install
+        if: |
+          (success() || failure()) &&
+          steps.build.outcome == 'success'
         shell: bash
-        run: cmake --install ${{ env.ALIENLEGACY_BUILD_DIR }}
+        run: cmake --install ${{ env.BUILD_DIR }}
+
+      - name: Copy external libraries
+        id: copy-external-libraries
+        if: |
+          (success() || failure()) &&
+          steps.install.outcome == 'success'
+        shell: bash
+        run: |
+           osdir=centos_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`
+           mkdir -p ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}
+           export LD_LIBRARY_PATH="${{ env.INSTALL_DIR }}/lib:${LD_LIBRARY_PATH}"
+           # Copy libraries
+           while read line; do \cp -avn ${line} ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; if [ -L ${line} ]; then \cp -avn `readlink -f ${line}` ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; fi; done < <(ldd ${{ env.INSTALL_DIR }}/bin/alien* ${{ env.INSTALL_DIR }}/bin/gtest* ${{ env.INSTALL_DIR }}/lib/*.so ${{ env.INSTALL_DIR }}/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^${EBROOTOPENMPI}" -e "^${EBROOTUDUNITS}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "^/__w/")
+           # Copy googletest
+           \rm -vf ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}//libgtest.so
+           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/Compiler/GCCcore/7.3.0/googletest/1.10.0/lib64/*.so ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
+
       - name: Tar build artifact
         shell: bash
-        run: tar cf alienlegacy-build-artifact.tar ${{ env.ALIENLEGACY_BUILD_DIR }}
+        run: tar czf build-artifact.tar.gz ${{ env.BUILD_DIR }}
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
-          name: alienlegacy-build-artifact
-          path: alienlegacy-build-artifact.tar
+          name: build-artifact
+          path: build-artifact.tar.gz
           retention-days: 1
 
-  arccore-test:
-    name: arccore-test
+      - name: Save cache
+        id: save-cache
+        if: |
+          (success() || failure()) &&
+          steps.build.outcome == 'success'
+        uses: actions/cache/save@v3
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
+
+  test:
+    name: test
     needs:
-      - arccore-install
+      - build
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7-rt
+      #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
+
     steps:
-      - name: Download arccore build artifact
+
+      - name: Checkout
+        id: checkout
+        if: |
+          (success() || failure())
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.SOURCE_DIR }}
+          submodules: true
+
+      - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: arccore-build-artifact
-      - name: Untar arccore build artifact
+          name: build-artifact
+
+      - name: Untar build artifact
         shell: bash
-        run: tar xf arccore-build-artifact.tar -C /
-      - name: Remove arccore build artifact tar
+        run: tar xf build-artifact.tar.gz -C /
+
+      - name: Remove build artifact tar
         shell: bash
-        run: rm arccore-build-artifact.tar
+        run: rm -f build-artifact.tar.gz
+
       - name: Test
+        id: test
         shell: bash
-        run: ctest --test-dir ${{ env.ARCCORE_BUILD_DIR }} ${{ env.CT_OPTS }}
+        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+
       - name: Upload test artifact
+        id: upload-test-artifact
         uses: actions/upload-artifact@v3
-        if: failure()
+        if: |
+          (success() || failure()) &&
+          steps.test.outcome == 'failure'
         with:
-          name: arccore-test-artifact
-          path: ${{ env.ARCCORE_BUILD_DIR }}/Testing
+          name: test-artifact
+          path: ${{ env.BUILD_DIR }}/Testing
           retention-days: 1
-
-  #arcane-test:
-  #  name: arcane-test
-  #  needs:
-  #    - arccore-install
-  #    - dependencies-install
-  #    - axlstar-install
-  #    - arcane-install
-  #  runs-on: ubuntu-latest
-  #  timeout-minutes: 180
-  #  container:
-  #    image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
-  #  strategy:
-  #    fail-fast: false
-  #  steps:
-  #    - name: Checkout
-  #      uses: actions/checkout@v3
-  #      with:
-  #        path: ${{ env.ARCANE_SOURCE_DIR }}
-  #    - name: Download arcane build artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: arcane-build-artifact
-  #    - name: Untar arcane build artifact
-  #      shell: bash
-  #      run: tar xf arcane-build-artifact.tar -C /
-  #    - name: Download arccore install artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: arccore-install-artifact
-  #    - name: Untar arccore install artifact
-  #      shell: bash
-  #      run: tar xf arccore-install-artifact.tar -C /
-  #    - name: Download axlstar install artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: axlstar-install-artifact
-  #    - name: Untar axlstar install artifact
-  #      shell: bash
-  #      run: tar xf axlstar-install-artifact.tar -C /
-  #    - name: Test
-  #      shell: bash
-  #      run: ctest --test-dir ${{ env.ARCANE_BUILD_DIR }} ${{ env.CT_OPTS }} -E '^hydro5_4proc_3sd_4proc$'
-  #    - name: Upload test artifact
-  #      uses: actions/upload-artifact@v3
-  #      if: failure()
-  #      with:
-  #        name: arcane-test-artifact
-  #        path: ${{ env.ARCANE_BUILD_DIR }}/Testing
-  #        retention-days: 1
-
-  #alien-test:
-  #  name: alien-test
-  #  needs:
-  #    - arccore-install
-  #    - alien-install
-  #  runs-on: ubuntu-latest
-  #  timeout-minutes: 180
-  #  container:
-  #    image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
-  #  strategy:
-  #    fail-fast: false
-  #  steps:
-  #    - name: Checkout
-  #      uses: actions/checkout@v3
-  #      with:
-  #        path: ${{ env.ALIEN_SOURCE_DIR }}
-  #    - name: Download alien build artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: alien-build-artifact
-  #    - name: Untar alien build artifact
-  #      shell: bash
-  #      run: tar xf alien-build-artifact.tar -C /
-  #    - name: Download arccore install artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: arccore-install-artifact
-  #    - name: Untar arccore install artifact
-  #      shell: bash
-  #      run: tar xf arccore-install-artifact.tar -C /
-  #    - name: Test
-  #      shell: bash
-  #      run: ctest --test-dir ${{ env.ALIEN_BUILD_DIR }} ${{ env.CT_OPTS }}
-  #    - name: Upload test artifact
-  #      uses: actions/upload-artifact@v3
-  #      if: failure()
-  #      with:
-  #        name: alien-test-artifact
-  #        path: ${{ env.ALIEN_BUILD_DIR }}/Testing
-  #        retention-days: 1
-
-  #alienlegacy-test:
-  #  name: alienlegacy-test
-  #  needs:
-  #    - arccore-install
-  #    - arcane-install
-  #    - alien-install
-  #    - alienlegacy-install
-  #  runs-on: ubuntu-22.04
-  #  timeout-minutes: 180
-  #  container:
-  #    image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
-  #  strategy:
-  #    fail-fast: false
-  #  steps:
-  #    - name: Checkout
-  #      uses: actions/checkout@v3
-  #      with:
-  #        repository: arcaneframework/alien_legacy_plugins
-  #        path: ${{ env.ALIENLEGACY_SOURCE_DIR }}
-  #        ref: main
-  #        submodules: true
-  #    - name: Download alienlegacy build artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: alienlegacy-build-artifact
-  #    - name: Untar alienlegacy build artifact
-  #      shell: bash
-  #      run: tar xf alienlegacy-build-artifact.tar -C /
-  #    - name: Download alien install artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: alien-install-artifact
-  #    - name: Untar alien install artifact
-  #      shell: bash
-  #      run: tar xf alien-install-artifact.tar -C /
-  #    - name: Download arcane install artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: arcane-install-artifact
-  #    - name: Untar arcane install artifact
-  #      shell: bash
-  #      run: tar xf arcane-install-artifact.tar -C /
-  #    - name: Download arccore install artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: arccore-install-artifact
-  #    - name: Untar arccore install artifact
-  #      shell: bash
-  #      run: tar xf arccore-install-artifact.tar -C /
-  #    - name: Test
-  #      shell: bash
-  #      run: ctest --test-dir ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CT_OPTS }}
-  #    - name: Upload test artifact
-  #      uses: actions/upload-artifact@v3
-  #      if: failure()
-  #      with:
-  #        name: alienlegacy-test-artifact
-  #        path: ${{ env.ALIENLEGACY_BUILD_DIR }}/Testing
-  #        retention-days: 1
