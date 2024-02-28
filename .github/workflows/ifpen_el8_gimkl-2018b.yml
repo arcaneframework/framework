@@ -185,7 +185,7 @@ jobs:
       - name: Test
         id: test
         shell: bash
-        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '^(hydro5_4proc_3sd_4proc|alien.interface.c.seq.mpi-1|alien.interface.fortran.seq.mpi-1)$'
+        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
       - name: Upload test artifact
         id: upload-test-artifact
