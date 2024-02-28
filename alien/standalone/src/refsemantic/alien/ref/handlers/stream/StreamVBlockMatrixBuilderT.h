@@ -201,7 +201,7 @@ void StreamVBlockMatrixBuilderT<ValueT>::start()
 template <typename ValueT>
 void StreamVBlockMatrixBuilderT<ValueT>::fillZero()
 {
-  m_matrix_impl->internal().getValues().fill(0.);
+  m_matrix_impl->internal()->getValues().fill(0.);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -275,7 +275,7 @@ void StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
     const Integer m_myrank;
   } isLocal(m_offset, m_myrank);
 
-  SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal().getCSRProfile();
+  SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal()->getCSRProfile();
   profile.init(m_local_size);
 
   m_row_size.resize(m_local_size);
@@ -366,9 +366,9 @@ void StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
   }
 
   ArrayView<Integer> m_row_offsets =
-  m_matrix_impl->internal().getCSRProfile().getRowOffset();
+  m_matrix_impl->internal()->getCSRProfile().getRowOffset();
   ArrayView<Integer> m_block_row_offsets =
-  m_matrix_impl->internal().getCSRProfile().getBlockRowOffset();
+  m_matrix_impl->internal()->getCSRProfile().getBlockRowOffset();
   m_matrix_size = 0;
   m_block_matrix_size = 0;
   for (Integer row = 0; row < m_local_size; ++row) {
@@ -420,7 +420,7 @@ void StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
   }
 
   m_matrix_impl->allocate();
-  m_matrix_impl->internal().getValues().fill(0.);
+  m_matrix_impl->internal()->getValues().fill(0.);
 
   nb_ins = 0;
   for (auto iter = m_inserters.begin(); iter != m_inserters.end(); ++iter) {
@@ -440,7 +440,7 @@ void StreamVBlockMatrixBuilderT<ValueT>::computeProfile()
       }
     }
     nb_ins++;
-    ins->setMatrixValues(m_matrix_impl->internal().getDataPtr());
+    ins->setMatrixValues(m_matrix_impl->internal()->getDataPtr());
     ins->m_col_index.dispose();
     ins->m_row_index.dispose();
   }

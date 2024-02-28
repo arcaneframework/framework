@@ -146,6 +146,9 @@ set(alien_core_list
         alien/handlers/scalar/BaseVectorWriter.h
         alien/handlers/scalar/VectorReaderT.h
         alien/handlers/scalar/VectorWriterT.h
+        alien/handlers/scalar/sycl/VectorAccessor.h
+        alien/handlers/scalar/sycl/VectorAccessorT.h
+        alien/handlers/scalar/sycl/VectorAccessor.cc
         alien/import_export/MatrixMarketSystemReader.h
         alien/import_export/MatrixMarketSystemReader.cc
         alien/import_export/Reader.h

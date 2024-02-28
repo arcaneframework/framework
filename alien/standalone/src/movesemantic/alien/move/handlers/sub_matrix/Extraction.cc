@@ -79,7 +79,7 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
   MatrixData subMatrix(subMatrixDistribution);
   DirectMatrixBuilder builder(std::move(subMatrix), DirectMatrixOptions::eResetValues,
                               DirectMatrixOptions::eUnSymmetric);
-  const Integer nnzMatrix = matrix_impl->internal().getValues().size();
+  const Integer nnzMatrix = matrix_impl->internal()->getValues().size();
   const Integer nrowsMatrix = matrix_impl->distribution().localRowSize();
   const Integer averageEntriesByRow = nnzMatrix / nrowsMatrix;
   builder.reserve(averageEntriesByRow);
@@ -90,8 +90,8 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
   ConstArrayView<Integer> rowsOffset = matrixProfile.getRowOffset();
   // UniqueArray<Integer>& cols = matrixProfile.getCols();
   ConstArrayView<Integer> cols = matrixProfile.getCols();
-  // UniqueArray<Real>& values = matrix_impl->internal().getValues();
-  ConstArrayView<Real> values = matrix_impl->internal().getValues();
+  // UniqueArray<Real>& values = matrix_impl->internal()->getValues();
+  ConstArrayView<Real> values = matrix_impl->internal()->getValues();
 
   ALIEN_ASSERT(
   (startingRow >= 0 && startingRow < matrix_impl->distribution().globalRowSize()),

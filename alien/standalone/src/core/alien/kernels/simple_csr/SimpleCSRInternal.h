@@ -43,6 +43,11 @@ class MatrixInternal
 
   ~MatrixInternal() {}
 
+  void setValues(ValueT value)
+  {
+    m_values.fill(value) ;
+
+  }
   ConstArrayView<ValueType> getValues() const { return m_values; }
 
   UniqueArray<ValueType>& getValues() { return m_values; }

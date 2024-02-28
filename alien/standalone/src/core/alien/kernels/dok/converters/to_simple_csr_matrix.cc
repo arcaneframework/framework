@@ -100,7 +100,7 @@ void DoKtoSimpleCSRMatrixConverter::_buildProfile(const SrcMatrix& src, TgtMatri
   }
   offsets[nproc] = global_size;
 
-  SimpleCSRInternal::CSRStructInfo& profile = tgt.internal().getCSRProfile();
+  SimpleCSRInternal::CSRStructInfo& profile = tgt.internal()->getCSRProfile();
   profile.init(local_size);
 
   ArrayView<Integer> row_offsets = profile.getRowOffset();
@@ -117,7 +117,7 @@ void DoKtoSimpleCSRMatrixConverter::_buildProfile(const SrcMatrix& src, TgtMatri
   ArrayView<Integer> cols = profile.getCols();
 
   tgt.allocate();
-  ArrayView<Real> values = tgt.internal().getValues();
+  ArrayView<Real> values = tgt.internal()->getValues();
   values.fill(0);
 
   for (Integer i = 0; i < dokMatrixRIndexer->size(); ++i) {
@@ -131,7 +131,7 @@ void DoKtoSimpleCSRMatrixConverter::_buildProfile(const SrcMatrix& src, TgtMatri
   }
 
   ConstArrayView<Real> dokValues = dokMatrix.getValues();
-  UniqueArray<Real>& csrValues = tgt.internal().getValues();
+  UniqueArray<Real>& csrValues = tgt.internal()->getValues();
   for (Integer i = 0; i < dokMatrixRIndexer->size(); ++i) {
     csrValues[i] = dokValues[i];
   }

@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -16,45 +22,48 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#pragma once
+#include <cassert>
 
-#include <alien/utils/Precomp.h>
-#include <arccore/base/String.h>
+#include <alien/kernels/sycl/SYCLBackEnd.h>
+#include <alien/kernels/sycl/SYCLPrecomp.h>
+
+#include "SYCLEnv.h"
+#include "SYCLParallelEngine.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+using namespace Arccore;
 
 namespace Alien
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-typedef String BackEndId;
-
-template <typename Tag>
-struct AlgebraTraits;
-
-template <typename Tag>
-class LUSendRecvTraits;
-
-namespace BackEnd
-{
-  namespace tag
+  namespace SYCLInternal
   {
-  } // namespace tag
-
-  namespace Memory
-  {
-    typedef enum {
-      Host,
-      Device,
-      Shared
-    } eType;
+    struct EngineInternal
+    {
+      EngineInternal()
+      {
+        m_env = SYCLEnv::instance() ;
+      }
+      SYCLEnv* m_env = nullptr ;
+    };
   }
-} // namespace BackEnd
 
-/*---------------------------------------------------------------------------*/
+  SYCLParallelEngine::SYCLParallelEngine()
+  {
+    m_internal = new SYCLInternal::EngineInternal() ;
+  }
+
+  SYCLParallelEngine::~SYCLParallelEngine()
+  {
+    delete m_internal ;
+  }
+
+  std::size_t  SYCLParallelEngine::maxNumThreads() const {
+    return m_internal->m_env->maxNumThreads() ;
+  }
+
 /*---------------------------------------------------------------------------*/
 
 } // namespace Alien

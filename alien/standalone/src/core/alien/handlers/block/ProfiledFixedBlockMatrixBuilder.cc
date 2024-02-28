@@ -69,11 +69,11 @@ namespace Common
     m_next_offset = m_local_offset + m_local_size;
 
     SimpleCSRInternal::CSRStructInfo const& profile =
-    m_matrix_impl->internal().getCSRProfile();
+    m_matrix_impl->internal()->getCSRProfile();
     m_row_starts = profile.getRowOffset();
     m_cols = profile.getCols();
     m_local_row_size = m_matrix_impl->getDistStructInfo().m_local_row_size;
-    m_values = m_matrix_impl->internal().getValues();
+    m_values = m_matrix_impl->internal()->getValues();
 
     if (reset_values == ProfiledBlockMatrixBuilderOptions::eResetValues)
       m_values.fill(0.);

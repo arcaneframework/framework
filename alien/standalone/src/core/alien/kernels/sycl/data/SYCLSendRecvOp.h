@@ -35,6 +35,9 @@
 
 #include <alien/kernels/simple_csr/SendRecvOp.h>
 
+#include <alien/kernels/sycl/data/SYCLEnv.h>
+#include <alien/kernels/sycl/data/SYCLEnvInternal.h>
+
 
 namespace Arccore
 {

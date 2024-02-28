@@ -69,7 +69,7 @@ void SimpleCSRtoDoKMatrixConverter::_build(const SrcMatrix& src, TgtMatrix& tgt)
   const Integer localSize = profile.getNRow();
   const Integer localOffset = dist.rowOffset();
 
-  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = src.internal();
+  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = *src.internal();
 
   alien_debug([&] {
     cout() << "Matrix range : [" << localOffset << ":" << localOffset + localSize - 1

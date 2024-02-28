@@ -243,7 +243,7 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
   if (dst_me.has_value()) {
     // I am in the target parallel manager
     // fill dst profile with a copy of m_dst_profile
-    auto& profile = dst.internal().getCSRProfile();
+    auto& profile = dst.internal()->getCSRProfile();
     profile.init(m_dst_profile->getNRows(), m_dst_profile->getNElems());
     dst.allocate();
 

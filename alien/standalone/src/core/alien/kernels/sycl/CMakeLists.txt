@@ -55,6 +55,8 @@ add_library(alien_kernel_sycl OBJECT
         converters/SimpleCSRtoSYCLMatrixConverter.cc
         converters/SimpleCSRtoSYCLVectorConverter.cc
         converters/SYCLtoSimpleCSRVectorConverter.cc
+        converters/HCSRtoSYCLMatrixConverter.cc
+        converters/HCSRtoSYCLVectorConverter.cc
         data/BEllPackStructInfo.h
         data/SYCLSendRecvOp.h
         data/SYCLLUSendRecvOp.h
@@ -63,6 +65,14 @@ add_library(alien_kernel_sycl OBJECT
         data/SYCLBEllPackMatrix.h
         data/SYCLVector.cc
         data/SYCLVector.h
+        data/HCSRVector.cc
+        data/HCSRVector.h
+        data/HCSRVectorInternal.h
+        data/HCSRMatrix.cc
+        data/HCSRMatrix.h
+        data/HCSRMatrixInternal.h
+        data/SYCLParallelEngine.h
+        data/SYCLParallelEngine.cc
         SYCLBackEnd.h
         SYCLPrecomp.h
         )
@@ -78,30 +88,23 @@ IF(ALIEN_USE_HIPSYCL)
   add_sycl_to_target(TARGET alien_kernel_sycl 
                      SOURCES data/SYCLVector.cc 
                              data/SYCLBEllPackMatrix.cc
+                             data/HCSRVector.cc
+                             data/HCSRMatrix.cc
+                             data/SYCLParallelEngine.cc
                              algebra/SYCLInternalLinearAlgebra.cc)
 ENDIF()
-IF(ALIEN_USE_INTELDPCPP)
-   message(status "SYCL FLAGS : ${SYCL_INCLUDE_DIR} ${SYCL_FLAGS}")
-   set(DPCPP_FLAGS -fsycl --amdgpu-target=gfx90a --offload-arch=gfx90a -Wno-linker-warnings)
-   target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
-   target_include_directories(alien_kernel_sycl PRIVATE ${SYCL_INCLUDE_DIR_HINT} ${SYCL_INCLUDE_DIR_HINT}/..)
-   #target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda)
-   #add_sycl_to_target(TARGET  alien_kernel_sycl 
-   #                   SOURCES data/SYCLVector.cc 
-   #                           data/SYCLBEllPackMatrix.cc
-   #                           algebra/SYCLInternalLinearAlgebra.cc)
-ENDIF()
 IF(ALIEN_USE_INTELSYCL)
-   #set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
    IF(ALIEN_USE_CUDA)
      set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
      target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
      target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS})
    ENDIF()
-   #target_include_directories(alien_kernel_sycl PRIVATE ${SYCL_INCLUDE_DIR_HINT})
-   #target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
-
-   #target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda)
+   IF(ALIEN_USE_HIP)
+     set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+     #set(DPCPP_FLAGS -fsycl --amdgpu-target=gfx90a --offload-arch=gfx90a -Wno-linker-warnings)
+     target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+     target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS})
+   ENDIF()  
    add_sycl_to_target(TARGET  alien_kernel_sycl 
                       SOURCES data/SYCLVector.cc 
                               data/SYCLBEllPackMatrix.cc

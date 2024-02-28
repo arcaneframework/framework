@@ -52,10 +52,11 @@ namespace Common
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT = Real>
+  template <typename ValueT = Real, typename MatrixImplT = SimpleCSRMatrix<ValueT>>
   class MatrixProfilerT
   {
    public:
+    typedef MatrixImplT MatrixImplType ;
     explicit MatrixProfilerT(IMatrix& matrix);
 
     virtual ~MatrixProfilerT();
@@ -67,7 +68,7 @@ namespace Common
    private:
     IMatrix& m_matrix;
 
-    SimpleCSRMatrix<ValueT>* m_matrix_impl;
+    MatrixImplType* m_matrix_impl = nullptr;
 
     //! @internal data structure for a vector.
     typedef std::vector<Integer> VectorDefinition;
