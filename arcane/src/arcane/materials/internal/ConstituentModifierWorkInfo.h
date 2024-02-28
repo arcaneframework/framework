@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/utils/Array.h"
+#include "arcane/utils/DualUniqueArray.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
@@ -46,8 +46,8 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 
  public:
 
-  UniqueArray<Int32> pure_local_ids;
-  UniqueArray<Int32> partial_indexes;
+  DualUniqueArray<Int32> pure_local_ids;
+  DualUniqueArray<Int32> partial_indexes;
   bool is_verbose = false;
 
   //! Liste des mailles d'un milieu qui vont être ajoutées ou supprimées lors d'une opération
