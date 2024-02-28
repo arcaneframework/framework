@@ -18,6 +18,7 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
@@ -295,8 +296,8 @@ transformCellsV2(ConstituentModifierWorkInfo& work_info, RunQueue& queue)
 void MeshMaterialVariableIndexer::
 _transformPureToPartialV2(ConstituentModifierWorkInfo& work_info)
 {
-  Int32Array& pure_local_ids = work_info.pure_local_ids;
-  Int32Array& partial_indexes = work_info.partial_indexes;
+  Int32Array& pure_local_ids = work_info.pure_local_ids.hostArray();
+  Int32Array& partial_indexes = work_info.partial_indexes.hostArray();
   bool is_verbose = work_info.is_verbose;
 
   Integer nb = nbItem();
@@ -321,6 +322,8 @@ _transformPureToPartialV2(ConstituentModifierWorkInfo& work_info)
                << " var_index =" << m_matvar_indexes[i].valueIndex();
     }
   }
+  work_info.pure_local_ids.endUpdateHost();
+  work_info.partial_indexes.endUpdateHost();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -329,8 +332,8 @@ _transformPureToPartialV2(ConstituentModifierWorkInfo& work_info)
 void MeshMaterialVariableIndexer::
 _transformPartialToPureV2(ConstituentModifierWorkInfo& work_info)
 {
-  Int32Array& pure_local_ids = work_info.pure_local_ids;
-  Int32Array& partial_indexes = work_info.partial_indexes;
+  Int32Array& pure_local_ids = work_info.pure_local_ids.hostArray();
+  Int32Array& partial_indexes = work_info.partial_indexes.hostArray();
   bool is_verbose = work_info.is_verbose;
 
   Integer nb = nbItem();
@@ -358,6 +361,8 @@ _transformPartialToPureV2(ConstituentModifierWorkInfo& work_info)
                << " var_index =" << var_index;
     }
   }
+  work_info.pure_local_ids.endUpdateHost();
+  work_info.partial_indexes.endUpdateHost();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -370,12 +375,16 @@ _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
                              RunQueue& queue,
                              bool is_pure_to_partial)
 {
-  Integer nb = nbItem();
-  work_info.pure_local_ids.resize(nb);
-  work_info.partial_indexes.resize(nb);
+  bool is_device = isAcceleratorPolicy(queue.executionPolicy());
 
-  SmallSpan<Int32> pure_local_ids = work_info.pure_local_ids.view();
-  SmallSpan<Int32> partial_indexes = work_info.partial_indexes.view();
+  Integer nb = nbItem();
+  auto pure_local_ids_modifier = work_info.pure_local_ids.modifier(is_device);
+  auto partial_indexes_modifier = work_info.partial_indexes.modifier(is_device);
+  pure_local_ids_modifier->resize(nb);
+  partial_indexes_modifier->resize(nb);
+
+  SmallSpan<Int32> pure_local_ids = pure_local_ids_modifier->view();
+  SmallSpan<Int32> partial_indexes = partial_indexes_modifier->view();
   SmallSpan<MatVarIndex> matvar_indexes = m_matvar_indexes.view();
   SmallSpan<Int32> local_ids = m_local_ids.view();
   SmallSpan<const bool> transformed_cells = work_info.transformedCells();
@@ -426,8 +435,11 @@ _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
   }
 
   Int32 nb_out = filterer.nbOutputElement();
-  work_info.pure_local_ids.resize(nb_out);
-  work_info.partial_indexes.resize(nb_out);
+  pure_local_ids_modifier->resize(nb_out);
+  partial_indexes_modifier->resize(nb_out);
+
+  work_info.pure_local_ids.endUpdate(is_device);
+  work_info.partial_indexes.endUpdate(is_device);
 
   if (is_pure_to_partial)
     m_max_index_in_multiple_array += nb_out;

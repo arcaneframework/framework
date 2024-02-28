@@ -200,6 +200,7 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
                          ConstArrayView<Int32> ids)
 {
   const bool is_add = m_work_info.isAdd();
+  const bool is_device = isAcceleratorPolicy(m_copy_queue.executionPolicy());
 
   for (MeshEnvironment* true_env : m_material_mng->trueEnvironments()) {
     for (MeshMaterial* mat : true_env->trueMaterials()) {
@@ -207,21 +208,27 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
       if (mat == modified_mat)
         continue;
 
-      m_work_info.pure_local_ids.clear();
-      m_work_info.partial_indexes.clear();
+      m_work_info.pure_local_ids.clearHost();
+      m_work_info.partial_indexes.clearHost();
 
       MeshMaterialVariableIndexer* indexer = mat->variableIndexer();
 
       info(4) << "TransformCells (V3) is_add?=" << is_add << " indexer=" << indexer->name();
 
       _computeCellsToTransformForMaterial(mat, ids);
-      indexer->transformCellsV2(m_work_info,m_copy_queue);
+      indexer->transformCellsV2(m_work_info, m_copy_queue);
       m_work_info.resetTransformedCells(ids);
 
-      info(4) << "NB_MAT_TRANSFORM=" << m_work_info.pure_local_ids.size() << " name=" << mat->name();
+      info(4) << "NB_MAT_TRANSFORM=" << m_work_info.pure_local_ids.size() << " name=" << mat->name()
+              << " is_device" << is_device;
 
-      MeshVariableCopyBetweenPartialAndGlobalArgs args(indexer->index(), m_work_info.pure_local_ids.view(),
-                                                       m_work_info.partial_indexes.view(), &m_copy_queue);
+      auto pure_local_ids = m_work_info.pure_local_ids.view(is_device);
+      auto partial_indexes = m_work_info.partial_indexes.view(is_device);
+
+      MeshVariableCopyBetweenPartialAndGlobalArgs args(indexer->index(),
+                                                       pure_local_ids,
+                                                       partial_indexes,
+                                                       &m_copy_queue);
       m_all_env_data->_copyBetweenPartialsAndGlobals(args, is_add);
     }
   }
@@ -246,6 +253,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
                             ConstArrayView<Int32> ids)
 {
   const bool is_add = m_work_info.isAdd();
+  const bool is_device = isAcceleratorPolicy(m_copy_queue.executionPolicy());
 
   // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
   // en cas de suppression de mailles car cela sera fait avec la valeur matériau
@@ -258,8 +266,8 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     if (env == modified_env)
       continue;
 
-    m_work_info.pure_local_ids.clear();
-    m_work_info.partial_indexes.clear();
+    m_work_info.pure_local_ids.clearHost();
+    m_work_info.partial_indexes.clearHost();
 
     MeshMaterialVariableIndexer* indexer = env->variableIndexer();
 
@@ -272,9 +280,12 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
             << " name=" << env->name();
 
+    SmallSpan<const Int32> pure_local_ids = m_work_info.pure_local_ids.view(is_device);
+    SmallSpan<const Int32> partial_indexes = m_work_info.partial_indexes.view(is_device);
+
     if (is_copy) {
-      MeshVariableCopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), m_work_info.pure_local_ids.view(),
-                                                            m_work_info.partial_indexes.view(), &m_copy_queue);
+      MeshVariableCopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), pure_local_ids,
+                                                            partial_indexes, &m_copy_queue);
       m_all_env_data->_copyBetweenPartialsAndGlobals(copy_args, is_add);
     }
   }

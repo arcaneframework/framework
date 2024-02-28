@@ -32,6 +32,7 @@ set(ARCANE_SOURCES
   CStringUtils.h
   DependencyInjection.h
   DependencyInjection.cc
+  DualUniqueArray.h
   Enumerator.cc
   Enumerator.h
   ExternalRef.h
@@ -344,6 +345,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
     MDSpan.cc
     NumArray.cc
+    DualUniqueArray.cc
     NumArrayUtils.cc
   )
 endif()
