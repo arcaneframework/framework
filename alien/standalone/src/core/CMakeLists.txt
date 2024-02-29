@@ -146,9 +146,6 @@ set(alien_core_list
         alien/handlers/scalar/BaseVectorWriter.h
         alien/handlers/scalar/VectorReaderT.h
         alien/handlers/scalar/VectorWriterT.h
-        alien/handlers/scalar/sycl/VectorAccessor.h
-        alien/handlers/scalar/sycl/VectorAccessorT.h
-        alien/handlers/scalar/sycl/VectorAccessor.cc
         alien/import_export/MatrixMarketSystemReader.h
         alien/import_export/MatrixMarketSystemReader.cc
         alien/import_export/Reader.h
@@ -166,6 +163,13 @@ if (Eigen3_FOUND)
         alien/expression/schur/SchurOp.h
         alien/expression/schur/SchurBlock.h)
 endif()
+
+IF(ALIEN_USE_SYCL)
+   list(APPEND alien_core_list
+        alien/handlers/scalar/sycl/VectorAccessor.h
+        alien/handlers/scalar/sycl/VectorAccessorT.h
+        alien/handlers/scalar/sycl/VectorAccessor.cc)
+ENDIF()
 
 add_library(alien_core ${alien_core_list})
 
@@ -225,9 +229,10 @@ IF(ALIEN_USE_SYCL)
       target_compile_options(alien_core PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
       target_link_options(alien_core PRIVATE ${DPCPP_FLAGS})
     ENDIF()
-    #set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
-    #target_link_options(alien_core PRIVATE ${DPCPP_FLAGS})
-    #add_sycl_to_target(TARGET alien_core)
+    IF(ALIEN_USE_HIP)
+      set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+      target_link_options(alien_core PRIVATE ${DPCPP_FLAGS})
+    ENDIF()
   ENDIF()
   target_link_libraries(alien_core PUBLIC alien_kernel_sycl)
 ENDIF()
