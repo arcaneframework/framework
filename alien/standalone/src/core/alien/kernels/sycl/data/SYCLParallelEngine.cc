@@ -52,12 +52,12 @@ namespace Alien
 
   SYCLParallelEngine::SYCLParallelEngine()
   {
-    m_internal = new SYCLInternal::EngineInternal() ;
+    m_internal.reset(new SYCLInternal::EngineInternal()) ;
   }
 
   SYCLParallelEngine::~SYCLParallelEngine()
   {
-    delete m_internal ;
+    //delete m_internal ;
   }
 
   std::size_t  SYCLParallelEngine::maxNumThreads() const {

@@ -37,8 +37,8 @@ class ALIEN_EXPORT SYCLParallelEngine
   void submit(LambdaT lambda) ;
 
  private :
-  //std::unique_ptr<InternalType> m_internal ;
-  InternalType* m_internal = nullptr ;
+  std::unique_ptr<InternalType> m_internal ;
+  //InternalType* m_internal = nullptr ;
 
 } ;
 

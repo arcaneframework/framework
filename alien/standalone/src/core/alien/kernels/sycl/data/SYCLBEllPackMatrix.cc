@@ -1472,9 +1472,8 @@ template class ALIEN_EXPORT BEllPackStructInfo<1024, Integer>;
 void force_int_instance()
 {
   SYCLBEllPackMatrix<double> matrix ;
-  SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType* buffer = nullptr ;
-  if(buffer)
-    matrix.internal()->setMatrixValues(*buffer) ;
+  SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType buffer (sycl::range<1>(10)) ;
+  matrix.internal()->setMatrixValues(buffer) ;
 }
 /*---------------------------------------------------------------------------*/
 
