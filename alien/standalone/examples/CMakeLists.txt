@@ -61,7 +61,7 @@ if(ALIEN_USE_SYCL)
          target_link_options(test_mvhandler_sycl.exe PRIVATE ${DPCPP_FLAGS})
        ENDIF()
        #set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
-       #target_compile_options(sycl_example.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
+       #target_compile_options(test_sycl.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
        add_sycl_to_target(TARGET  test_sycl.exe
                           SOURCES test_sycl.cpp)
        add_sycl_to_target(TARGET  test_mvhandler_sycl.exe
@@ -204,12 +204,12 @@ if(ALIEN_USE_SYCL)
 
 alien_test( BENCH sycl
             NAME default
-            COMMAND sycl_example.exe)
+            COMMAND test_sycl.exe)
 
 alien_test( BENCH sycl
             NAME default-mpi
             PROCS 4
-            COMMAND sycl_example.exe)
+            COMMAND test_sycl.exe)
         
 alien_test( BENCH krylov-sycl
             NAME diag-bicgs
