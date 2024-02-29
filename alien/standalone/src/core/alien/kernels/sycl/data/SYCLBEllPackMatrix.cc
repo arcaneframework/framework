@@ -1466,12 +1466,16 @@ void SYCLBEllPackMatrix<ValueT>::computeInvDiag(SYCLVector<ValueType>& y) const
 template class ALIEN_EXPORT SYCLBEllPackMatrix<double>;
 template class ALIEN_EXPORT BEllPackStructInfo<1024, Integer>;
 
+template void
+SYCLBEllPackMatrix<double>::MatrixInternal1024::setMatrixValues(SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType& buffer) ;
+
+/*
 void toto()
 {
   SYCLBEllPackMatrix<double>* ptr = nullptr ;
   SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType* buffer = nullptr ;
   ptr->internal()->setMatrixValues(*buffer) ;
-}
+}*/
 /*---------------------------------------------------------------------------*/
 
 } // namespace Alien

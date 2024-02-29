@@ -1,3 +1,9 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <iostream>
 
 #include <alien/core/backend/IMatrixConverter.h>
@@ -66,7 +72,7 @@ SimpleCSR_to_MCG_MatrixConverter::_build(
   ConstArrayView<Integer> row_offset = profile.getRowOffset();
   ConstArrayView<Integer> cols = profile.getCols();
 
-  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = sourceImpl.internal();
+  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = *sourceImpl.internal();
   ConstArrayView<Real> values = matrixInternal.getValues();
   int block_size = 1;
   int block_size2 = 1;
