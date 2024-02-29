@@ -30,6 +30,8 @@ set( ARCANE_SOURCES
   Scan.h
   Filter.h
   Filterer.cc
+  Partitioner.h
+  Partitioner.cc
   Scan.cc
   SpanViews.h
   VariableViews.h
