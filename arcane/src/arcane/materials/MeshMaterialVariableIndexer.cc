@@ -25,6 +25,8 @@
 #include "arcane/materials/internal/ConstituentModifierWorkInfo.h"
 
 #include "arcane/accelerator/Filter.h"
+#include "arcane/accelerator/Reduce.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -125,7 +127,7 @@ endUpdate(const ComponentItemListBuilder& builder)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdateAdd(const ComponentItemListBuilder& builder)
+endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
 {
   ConstArrayView<MatVarIndex> pure_matvar = builder.pureMatVarIndexes();
   ConstArrayView<MatVarIndex> partial_matvar = builder.partialMatVarIndexes();
@@ -134,35 +136,50 @@ endUpdateAdd(const ComponentItemListBuilder& builder)
   Integer nb_partial_to_add = partial_matvar.size();
   Integer total_to_add = nb_pure_to_add + nb_partial_to_add;
   Integer current_nb_item = nbItem();
+  const Int32 new_size = current_nb_item + total_to_add;
 
-  m_matvar_indexes.resize(current_nb_item + total_to_add);
+  MemoryUtils::checkResizeArrayWithCapacity(m_matvar_indexes, new_size, false);
+  MemoryUtils::checkResizeArrayWithCapacity(m_local_ids, new_size, false);
 
-  m_matvar_indexes.subView(current_nb_item, nb_pure_to_add).copy(pure_matvar);
-  m_matvar_indexes.subView(current_nb_item + nb_pure_to_add, nb_partial_to_add).copy(partial_matvar);
+  SmallSpan<const Int32> local_ids_in_multiple = builder.partialLocalIds();
+  SmallSpan<Int32> local_ids_view = m_local_ids.subView(current_nb_item, total_to_add);
+  SmallSpan<MatVarIndex> matvar_indexes = m_matvar_indexes.subView(current_nb_item, total_to_add);
 
-  Int32ConstArrayView local_ids_in_multiple = builder.partialLocalIds();
-
-  {
-    m_local_ids.resize(current_nb_item + total_to_add);
-    Int32ArrayView local_ids_view = m_local_ids.subView(current_nb_item, total_to_add);
-    Integer index = 0;
-    for (Integer i = 0, n = nb_pure_to_add; i < n; ++i) {
-      local_ids_view[index] = pure_matvar[i].valueIndex();
-      ++index;
-    }
-    for (Integer i = 0, n = nb_partial_to_add; i < n; ++i) {
-      local_ids_view[index] = local_ids_in_multiple[i];
-      ++index;
-    }
+  const bool use_v2 = m_use_transform_no_filter;
+  Int32 max_index_in_multiple = m_max_index_in_multiple_array;
+  if (use_v2) {
+    auto command = makeCommand(queue);
+    Arcane::Accelerator::ReducerMax<Int32> max_index_reducer(command);
+    Int32 max_to_add = math::max(nb_pure_to_add, nb_partial_to_add);
+    command << RUNCOMMAND_LOOP1(iter, max_to_add)
+    {
+      auto [i] = iter();
+      if (i < nb_pure_to_add) {
+        local_ids_view[i] = pure_matvar[i].valueIndex();
+        matvar_indexes[i] = pure_matvar[i];
+      }
+      if (i < nb_partial_to_add) {
+        local_ids_view[nb_pure_to_add + i] = local_ids_in_multiple[i];
+        matvar_indexes[nb_pure_to_add + i] = partial_matvar[i];
+        max_index_reducer.max(partial_matvar[i].valueIndex());
+      }
+    };
+    max_index_in_multiple = math::max(max_index_reducer.reduce(), m_max_index_in_multiple_array);
   }
-
-  {
-    Int32 max_index_in_multiple = m_max_index_in_multiple_array;
-    for (Integer i = 0; i < nb_partial_to_add; ++i) {
+  else {
+    for (Integer i = 0, n = nb_pure_to_add; i < n; ++i) {
+      local_ids_view[i] = pure_matvar[i].valueIndex();
+      matvar_indexes[i] = pure_matvar[i];
+    }
+    Int32 base_index = nb_pure_to_add;
+    for (Integer i = 0, n = nb_partial_to_add; i < n; ++i) {
+      local_ids_view[base_index + i] = local_ids_in_multiple[i];
+      matvar_indexes[base_index + i] = partial_matvar[i];
       max_index_in_multiple = math::max(partial_matvar[i].valueIndex(), max_index_in_multiple);
     }
-    m_max_index_in_multiple_array = max_index_in_multiple;
   }
+  m_max_index_in_multiple_array = max_index_in_multiple;
+
   info(4) << "END_UPDATE_ADD max_index=" << m_max_index_in_multiple_array
           << " nb_partial_to_add=" << nb_partial_to_add;
 }

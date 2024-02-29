@@ -462,7 +462,7 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
            << "\n pure=(" << list_builder.pureMatVarIndexes() << ")"
            << "\n partial=(" << list_builder.partialMatVarIndexes() << ")";
 
-  var_indexer->endUpdateAdd(list_builder);
+  var_indexer->endUpdateAdd(list_builder, m_copy_queue);
 
   // Maintenant que les nouveaux MatVar sont créés, il faut les
   // initialiser avec les bonnes valeurs.
