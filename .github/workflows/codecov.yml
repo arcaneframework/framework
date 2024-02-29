@@ -60,7 +60,7 @@ jobs:
         run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Checkout framework
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
@@ -108,7 +108,7 @@ jobs:
           rm -v -f *_axl.h.gcov *_wrap.*.gcov
 
       - name: Upload coverage files to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           verbose: true
           fail_ci_if_error: true

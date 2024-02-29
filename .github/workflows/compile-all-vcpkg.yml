@@ -111,12 +111,12 @@ jobs:
 
     steps:
       - name: Checkout actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Checkout framework-ci
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/framework-ci
           path: framework-ci
@@ -144,12 +144,12 @@ jobs:
           cp "${{ github.workspace }}/.github/compile-vcpkg-global.json" "${{ github.workspace }}/global.json"
       
       - name: Setup .Net
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6.0.x'
 
       - name: Get cache for 'ccache' tool
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{env.CCACHE_DIR}}
           key: framework-ccache1-${{matrix.full_name}}-${{ github.run_number }}
