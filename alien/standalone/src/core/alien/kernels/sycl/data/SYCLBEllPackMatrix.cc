@@ -1466,16 +1466,16 @@ void SYCLBEllPackMatrix<ValueT>::computeInvDiag(SYCLVector<ValueType>& y) const
 template class ALIEN_EXPORT SYCLBEllPackMatrix<double>;
 template class ALIEN_EXPORT BEllPackStructInfo<1024, Integer>;
 
-template void
-SYCLBEllPackMatrix<double>::MatrixInternal1024::setMatrixValues(SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType& buffer) ;
 
-/*
-void toto()
+//template bool Alien::SYCLInternal::MatrixInternal<double,1014>::setMatrixValues(Alien::SYCLInternal::MatrixInternal<double,1014>::ValueBufferType& buffer) ;
+// to force instanciation may be there is a better way to do it
+void force_int_instance()
 {
-  SYCLBEllPackMatrix<double>* ptr = nullptr ;
+  SYCLBEllPackMatrix<double> matrix ;
   SYCLBEllPackMatrix<double>::MatrixInternal1024::ValueBufferType* buffer = nullptr ;
-  ptr->internal()->setMatrixValues(*buffer) ;
-}*/
+  if(buffer)
+    matrix.internal()->setMatrixValues(*buffer) ;
+}
 /*---------------------------------------------------------------------------*/
 
 } // namespace Alien
