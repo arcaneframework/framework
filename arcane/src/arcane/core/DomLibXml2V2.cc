@@ -367,11 +367,50 @@ class LibXml2_MemoryReader
   {
     const char* encoding = nullptr;
     int options = parser.options();
+
+    Int64 pos_close = m_buffer.size() - 1;
+
+    // Les versions de la LibXML2 >= 2.12.0 n'apprécient pas trop les caractères après la fermeture de la
+    // dernière balise.
+    // Donc on recherche le '>' final et on réduit la taille du buffer pour retirer tous les
+    // caractères après.
+    // Comme on ne sait pas s'il l'on est en UTF8 ou en UTF16, on recherche le caractère '<'
+    // qui précède le '>' (une balise donc) et on regarde s'il y a un 'NUL' après.
+    // Si oui, UTF16, sinon UTF8.
+    {
+      const auto char_close = static_cast<std::byte>('>');
+      const auto char_open = static_cast<std::byte>('<');
+      const auto char_nul = static_cast<std::byte>('\0');
+
+      // On trouve le '>' à la fin.
+      while (pos_close >= 0 && m_buffer[pos_close] != char_close) {
+        pos_close--;
+      }
+      if(pos_close <= 0){
+        ARCANE_THROW(XmlException, "Could not parse document -- First location of the last '>': {0}", pos_close);
+      }
+
+      Int64 pos_open = pos_close;
+
+      // On trouve le '<' à la fin.
+      while (pos_open >= 0 && m_buffer[pos_open] != char_open) {
+        pos_open--;
+      }
+      if(pos_open < 0){
+        ARCANE_THROW(XmlException, "Could not parse document -- '<' not found");
+      }
+
+      // S'il y a un 'NUL' après, on est sur de l'UTF16, sinon sur de l'UTF8.
+      if (pos_open + 1 < m_buffer.size() && m_buffer[pos_open + 1] == char_nul) {
+        pos_close++;
+      }
+    }
+
     const char* buf_base = (const char*)m_buffer.data();
     // TODO: regarder s'il n'y a pas une version 64 bits de lecture
     // qui fonctionne aussi sur les anciennes versions de LibXml2
     // (pour le support RHEL6)
-    int buf_size = CheckedConvert::toInt32(m_buffer.size());
+    int buf_size = CheckedConvert::toInt32(pos_close+1);
     const String& name = parser.fileName();
     ::xmlParserCtxtPtr ctxt = ::xmlNewParserCtxt();
     ::xmlDocPtr doc = ::xmlCtxtReadMemory(ctxt,buf_base,buf_size,
