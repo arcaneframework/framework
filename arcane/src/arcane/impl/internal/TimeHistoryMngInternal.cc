@@ -387,7 +387,7 @@ _dumpSummaryOfCurvesLegacy()
   // Génère un fichier xml contenant la liste des courbes de l'historique
   Directory out_dir(m_output_path);
   IParallelMng* parallel_mng = m_sd->parallelMng();
-  Integer master_io_rank = parallel_mng->masterIORank() ;
+  Integer master_io_rank = parallel_mng->masterIORank();
   if (m_is_master_io) {
     std::ofstream ofile(out_dir.file("time_history.xml").localstr());
     ofile << "<?xml version='1.0' ?>\n";
@@ -398,7 +398,9 @@ _dumpSummaryOfCurvesLegacy()
       if(!th.meshHandle().isNull()){
         ofile << "_" << th.meshHandle().meshName();
       }
-      //TODO : subDomain
+      if(th.isLocal()){
+        ofile << "_SubDomain" << master_io_rank;
+      }
       ofile << "'/>\n";
     }
     if (m_enable_non_io_master_curves) {
@@ -419,7 +421,7 @@ _dumpSummaryOfCurvesLegacy()
               parallel_mng->recv(buf2,i);
               ofile << "_" << buf2.unguardedBasePointer();
             }
-            //TODO : subDomain
+            ofile << "_SubDomain" << i;
             ofile << "'/>\n";
           }
         }
@@ -502,7 +504,6 @@ _dumpSummaryOfCurves()
                     json_writer.write("support", buf2.unguardedBasePointer());
                   }
                   json_writer.write("sub-domain", i);
-
                 }
               }
             }
@@ -511,7 +512,6 @@ _dumpSummaryOfCurves()
         }
       }
     }
-
 
     Directory out_dir(m_output_path);
     std::ofstream ofile(out_dir.file("time_history.json").localstr());
