@@ -301,7 +301,7 @@ readVariables()
       // ou le même nom qu'un historique "globale".
       name = name + "_" + mh.meshName();
     }
-    if(sub_domain){
+    if(sub_domain != -1){
       name = name + "_Local";
     }
     if (!val)
