@@ -51,30 +51,81 @@ class DualUniqueArray
   using NumArrayType = NumArray<DataType, MDDim1>;
   using ThatClass = DualUniqueArray<DataType>;
 
- public:
+ private:
 
-  class IModifier
+  class IModifierImpl
   {
    protected:
 
-    virtual ~IModifier() = default;
+    virtual ~IModifierImpl() = default;
 
    public:
 
     virtual SmallSpan<DataType> view() = 0;
     virtual void resize(Int32 new_size) = 0;
+    virtual void endUpdate() = 0;
   };
 
- private:
+ public:
 
-  class NumArrayModifier
-  : public IModifier
+  class Modifier
   {
     friend class DualUniqueArray<DataType>;
 
    private:
 
-    NumArrayModifier(ThatClass* v)
+    explicit Modifier(IModifierImpl* p)
+    : m_p(p)
+    {}
+
+   public:
+
+    ~Modifier()
+    {
+      m_p->endUpdate();
+    }
+
+   public:
+
+    SmallSpan<DataType> view() { return m_p->view(); }
+    void resize(Int32 new_size) { m_p->resize(new_size); }
+
+   private:
+
+    IModifierImpl* m_p = nullptr;
+  };
+
+  class HostModifier
+  : public Modifier
+  {
+    friend class DualUniqueArray<DataType>;
+
+   private:
+
+    explicit HostModifier(ThatClass* data)
+    : Modifier(&data->m_array_modifier)
+    , m_data(data)
+    {}
+
+   public:
+
+    Array<DataType>& container() { return m_data->m_array; }
+
+   private:
+
+    ThatClass* m_data = nullptr;
+  };
+
+ private:
+
+  class NumArrayModifierImpl
+  : public IModifierImpl
+  {
+    friend class DualUniqueArray<DataType>;
+
+   private:
+
+    NumArrayModifierImpl(ThatClass* v)
     : m_data(v)
     {}
     SmallSpan<DataType> view() override
@@ -86,20 +137,24 @@ class DualUniqueArray
     {
       m_data->m_device_array->resize(new_size);
     }
+    void endUpdate() override
+    {
+      m_data->endUpdate(true);
+    }
 
    private:
 
     ThatClass* m_data = nullptr;
   };
 
-  class UniqueArrayModifier
-  : public IModifier
+  class UniqueArrayModifierImpl
+  : public IModifierImpl
   {
     friend class DualUniqueArray<DataType>;
 
    public:
 
-    UniqueArrayModifier(ThatClass* v)
+    UniqueArrayModifierImpl(ThatClass* v)
     : m_data(v)
     {}
     SmallSpan<DataType> view() override
@@ -109,6 +164,10 @@ class DualUniqueArray
     void resize(Int32 new_size) override
     {
       m_data->m_array.resize(new_size);
+    }
+    void endUpdate() override
+    {
+      m_data->endUpdate(false);
     }
 
    private:
@@ -132,10 +191,7 @@ class DualUniqueArray
  public:
 
   SmallSpan<const DataType> hostSmallSpan() const { return m_array.view(); }
-  SmallSpan<DataType> hostSmallSpan() { return m_array.view(); }
   ConstArrayView<DataType> hostView() const { return m_array.view(); }
-  Array<DataType>& hostArray() { return m_array; }
-  const Array<DataType>& hostArray() const { return m_array; }
 
   void reserve(Int64 capacity)
   {
@@ -174,14 +230,17 @@ class DualUniqueArray
     m_is_valid_array = !is_device;
     m_is_valid_numarray = is_device;
   }
-  NumArrayType* deviceArray() { return m_device_array.get(); }
-  IModifier* modifier(bool is_device)
+  Modifier modifier(bool is_device)
   {
     if (is_device) {
       _checkCreateNumArray();
-      return &m_numarray_modifier;
+      return Modifier(&m_numarray_modifier);
     }
-    return &m_array_modifier;
+    return Modifier(&m_array_modifier);
+  }
+  HostModifier hostModifier()
+  {
+    return HostModifier(this);
   }
 
  private:
@@ -189,8 +248,8 @@ class DualUniqueArray
   UniqueArray<DataType> m_array;
   std::unique_ptr<NumArrayType> m_device_array;
   SmallSpan<DataType> m_device_view;
-  NumArrayModifier m_numarray_modifier;
-  UniqueArrayModifier m_array_modifier;
+  NumArrayModifierImpl m_numarray_modifier;
+  UniqueArrayModifierImpl m_array_modifier;
   bool m_is_valid_array = true;
   bool m_is_valid_numarray = false;
 

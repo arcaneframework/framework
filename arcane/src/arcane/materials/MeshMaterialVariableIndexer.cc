@@ -25,6 +25,8 @@
 #include "arcane/materials/internal/ConstituentModifierWorkInfo.h"
 
 #include "arcane/accelerator/Filter.h"
+#include "arcane/accelerator/Reduce.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -125,7 +127,7 @@ endUpdate(const ComponentItemListBuilder& builder)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdateAdd(const ComponentItemListBuilder& builder)
+endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
 {
   ConstArrayView<MatVarIndex> pure_matvar = builder.pureMatVarIndexes();
   ConstArrayView<MatVarIndex> partial_matvar = builder.partialMatVarIndexes();
@@ -134,35 +136,50 @@ endUpdateAdd(const ComponentItemListBuilder& builder)
   Integer nb_partial_to_add = partial_matvar.size();
   Integer total_to_add = nb_pure_to_add + nb_partial_to_add;
   Integer current_nb_item = nbItem();
+  const Int32 new_size = current_nb_item + total_to_add;
 
-  m_matvar_indexes.resize(current_nb_item + total_to_add);
+  MemoryUtils::checkResizeArrayWithCapacity(m_matvar_indexes, new_size, false);
+  MemoryUtils::checkResizeArrayWithCapacity(m_local_ids, new_size, false);
 
-  m_matvar_indexes.subView(current_nb_item, nb_pure_to_add).copy(pure_matvar);
-  m_matvar_indexes.subView(current_nb_item + nb_pure_to_add, nb_partial_to_add).copy(partial_matvar);
+  SmallSpan<const Int32> local_ids_in_multiple = builder.partialLocalIds();
+  SmallSpan<Int32> local_ids_view = m_local_ids.subView(current_nb_item, total_to_add);
+  SmallSpan<MatVarIndex> matvar_indexes = m_matvar_indexes.subView(current_nb_item, total_to_add);
 
-  Int32ConstArrayView local_ids_in_multiple = builder.partialLocalIds();
-
-  {
-    m_local_ids.resize(current_nb_item + total_to_add);
-    Int32ArrayView local_ids_view = m_local_ids.subView(current_nb_item, total_to_add);
-    Integer index = 0;
-    for (Integer i = 0, n = nb_pure_to_add; i < n; ++i) {
-      local_ids_view[index] = pure_matvar[i].valueIndex();
-      ++index;
-    }
-    for (Integer i = 0, n = nb_partial_to_add; i < n; ++i) {
-      local_ids_view[index] = local_ids_in_multiple[i];
-      ++index;
-    }
+  const bool use_v2 = m_use_transform_no_filter;
+  Int32 max_index_in_multiple = m_max_index_in_multiple_array;
+  if (use_v2) {
+    auto command = makeCommand(queue);
+    Arcane::Accelerator::ReducerMax<Int32> max_index_reducer(command);
+    Int32 max_to_add = math::max(nb_pure_to_add, nb_partial_to_add);
+    command << RUNCOMMAND_LOOP1(iter, max_to_add)
+    {
+      auto [i] = iter();
+      if (i < nb_pure_to_add) {
+        local_ids_view[i] = pure_matvar[i].valueIndex();
+        matvar_indexes[i] = pure_matvar[i];
+      }
+      if (i < nb_partial_to_add) {
+        local_ids_view[nb_pure_to_add + i] = local_ids_in_multiple[i];
+        matvar_indexes[nb_pure_to_add + i] = partial_matvar[i];
+        max_index_reducer.max(partial_matvar[i].valueIndex());
+      }
+    };
+    max_index_in_multiple = math::max(max_index_reducer.reduce(), m_max_index_in_multiple_array);
   }
-
-  {
-    Int32 max_index_in_multiple = m_max_index_in_multiple_array;
-    for (Integer i = 0; i < nb_partial_to_add; ++i) {
+  else {
+    for (Integer i = 0, n = nb_pure_to_add; i < n; ++i) {
+      local_ids_view[i] = pure_matvar[i].valueIndex();
+      matvar_indexes[i] = pure_matvar[i];
+    }
+    Int32 base_index = nb_pure_to_add;
+    for (Integer i = 0, n = nb_partial_to_add; i < n; ++i) {
+      local_ids_view[base_index + i] = local_ids_in_multiple[i];
+      matvar_indexes[base_index + i] = partial_matvar[i];
       max_index_in_multiple = math::max(partial_matvar[i].valueIndex(), max_index_in_multiple);
     }
-    m_max_index_in_multiple_array = max_index_in_multiple;
   }
+  m_max_index_in_multiple_array = max_index_in_multiple;
+
   info(4) << "END_UPDATE_ADD max_index=" << m_max_index_in_multiple_array
           << " nb_partial_to_add=" << nb_partial_to_add;
 }
@@ -171,8 +188,13 @@ endUpdateAdd(const ComponentItemListBuilder& builder)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdateRemove(const ConstituentModifierWorkInfo& work_info, Integer nb_remove)
+endUpdateRemove(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue)
 {
+  const bool use_v2 = m_use_transform_no_filter;
+  if (use_v2) {
+    endUpdateRemoveV2(work_info, nb_remove, queue);
+    return;
+  }
   Integer nb_item = nbItem();
   Integer orig_nb_item = nb_item;
 
@@ -184,7 +206,7 @@ endUpdateRemove(const ConstituentModifierWorkInfo& work_info, Integer nb_remove)
       Int32 last = nb_item - 1;
       m_matvar_indexes[i] = m_matvar_indexes[last];
       m_local_ids[i] = m_local_ids[last];
-      //info() << "REMOVE ITEM lid=" << lid << " i=" << i;
+      //info() << "REMOVE ITEM lid=" << lid << " i=" << i << " new=" << m_matvar_indexes[i] << " " << m_local_ids[i] << " last=" << last;
       --nb_item;
       --i; // Il faut refaire l'itération courante.
     }
@@ -197,7 +219,83 @@ endUpdateRemove(const ConstituentModifierWorkInfo& work_info, Integer nb_remove)
   if (nb_remove_computed != nb_remove)
     ARCANE_FATAL("Bad number of removed material items expected={0} v={1} name={2}",
                  nb_remove, nb_remove_computed, name());
-  info(4) << "END_UPDATE_REMOVE nb_removed=" << nb_remove_computed;
+  info() << "END_UPDATE_REMOVE nb_removed=" << nb_remove_computed;
+
+  // TODO: il faut recalculer m_max_index_in_multiple_array
+  // et compacter éventuellement les variables. (pas indispensable)
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableIndexer::
+endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue)
+{
+  if (nb_remove == 0)
+    return;
+
+  Integer nb_item = nbItem();
+  Integer orig_nb_item = nb_item;
+
+  info(4) << "EndUpdateRemove nb_remove=" << nb_remove << " nb_item=" << nb_item;
+
+  if (nb_remove == nb_item) {
+    m_matvar_indexes.clear();
+    m_local_ids.clear();
+    return;
+  }
+
+  work_info.m_saved_matvar_indexes.resize(nb_remove);
+  work_info.m_saved_local_ids.resize(nb_remove);
+
+  Accelerator::GenericFilterer filterer(&queue);
+  Span<const bool> removed_cells = work_info.removedCells();
+  Span<MatVarIndex> last_matvar_indexes(work_info.m_saved_matvar_indexes);
+  Span<Int32> last_local_ids(work_info.m_saved_local_ids);
+  Span<Int32> local_ids(m_local_ids);
+  Span<MatVarIndex> matvar_indexes(m_matvar_indexes);
+
+  // Conserve \a nb_remove valeurs en partant de la fin de la liste
+  {
+    Int32 last_index = nb_item - 1;
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      Int32 lid = local_ids[last_index - index];
+      return !removed_cells[lid];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      Int32 true_index = (last_index - input_index);
+      if (output_index < nb_remove) {
+        last_matvar_indexes[output_index] = matvar_indexes[true_index];
+        last_local_ids[output_index] = local_ids[true_index];
+      }
+    };
+    filterer.applyWithIndex(orig_nb_item, select_lambda, setter_lambda);
+    filterer.nbOutputElement();
+  }
+
+  // Remplit les trous des mailles supprimées avec les derniers éléments de la liste
+  {
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      Int32 lid = local_ids[index];
+      return removed_cells[lid];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      matvar_indexes[input_index] = last_matvar_indexes[output_index];
+      local_ids[input_index] = last_local_ids[output_index];
+    };
+    filterer.applyWithIndex(orig_nb_item - nb_remove, select_lambda, setter_lambda);
+    filterer.nbOutputElement();
+  }
+  nb_item -= nb_remove;
+  m_matvar_indexes.resize(nb_item);
+  m_local_ids.resize(nb_item);
+
+  // Vérifie qu'on a bien supprimé autant d'entité que prévu.
+  Integer nb_remove_computed = (orig_nb_item - nb_item);
+  if (nb_remove_computed != nb_remove)
+    ARCANE_FATAL("Bad number of removed material items expected={0} v={1} name={2}",
+                 nb_remove, nb_remove_computed, name());
+  info(4) << "END_UPDATE_REMOVE nb_removed=" << nb_remove;
 
   // TODO: il faut recalculer m_max_index_in_multiple_array
   // et compacter éventuellement les variables. (pas indispensable)
@@ -296,8 +394,11 @@ transformCellsV2(ConstituentModifierWorkInfo& work_info, RunQueue& queue)
 void MeshMaterialVariableIndexer::
 _transformPureToPartialV2(ConstituentModifierWorkInfo& work_info)
 {
-  Int32Array& pure_local_ids = work_info.pure_local_ids.hostArray();
-  Int32Array& partial_indexes = work_info.partial_indexes.hostArray();
+  auto pure_local_ids_modifier = work_info.pure_local_ids.hostModifier();
+  auto partial_indexes_modifier = work_info.partial_indexes.hostModifier();
+
+  Int32Array& pure_local_ids = pure_local_ids_modifier.container();
+  Int32Array& partial_indexes = partial_indexes_modifier.container();
   bool is_verbose = work_info.is_verbose;
 
   Integer nb = nbItem();
@@ -322,8 +423,6 @@ _transformPureToPartialV2(ConstituentModifierWorkInfo& work_info)
                << " var_index =" << m_matvar_indexes[i].valueIndex();
     }
   }
-  work_info.pure_local_ids.endUpdateHost();
-  work_info.partial_indexes.endUpdateHost();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -332,8 +431,11 @@ _transformPureToPartialV2(ConstituentModifierWorkInfo& work_info)
 void MeshMaterialVariableIndexer::
 _transformPartialToPureV2(ConstituentModifierWorkInfo& work_info)
 {
-  Int32Array& pure_local_ids = work_info.pure_local_ids.hostArray();
-  Int32Array& partial_indexes = work_info.partial_indexes.hostArray();
+  auto pure_local_ids_modifier = work_info.pure_local_ids.hostModifier();
+  auto partial_indexes_modifier = work_info.partial_indexes.hostModifier();
+
+  Int32Array& pure_local_ids = pure_local_ids_modifier.container();
+  Int32Array& partial_indexes = partial_indexes_modifier.container();
   bool is_verbose = work_info.is_verbose;
 
   Integer nb = nbItem();
@@ -361,8 +463,6 @@ _transformPartialToPureV2(ConstituentModifierWorkInfo& work_info)
                << " var_index =" << var_index;
     }
   }
-  work_info.pure_local_ids.endUpdateHost();
-  work_info.partial_indexes.endUpdateHost();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -380,11 +480,11 @@ _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
   Integer nb = nbItem();
   auto pure_local_ids_modifier = work_info.pure_local_ids.modifier(is_device);
   auto partial_indexes_modifier = work_info.partial_indexes.modifier(is_device);
-  pure_local_ids_modifier->resize(nb);
-  partial_indexes_modifier->resize(nb);
+  pure_local_ids_modifier.resize(nb);
+  partial_indexes_modifier.resize(nb);
 
-  SmallSpan<Int32> pure_local_ids = pure_local_ids_modifier->view();
-  SmallSpan<Int32> partial_indexes = partial_indexes_modifier->view();
+  SmallSpan<Int32> pure_local_ids = pure_local_ids_modifier.view();
+  SmallSpan<Int32> partial_indexes = partial_indexes_modifier.view();
   SmallSpan<MatVarIndex> matvar_indexes = m_matvar_indexes.view();
   SmallSpan<Int32> local_ids = m_local_ids.view();
   SmallSpan<const bool> transformed_cells = work_info.transformedCells();
@@ -435,11 +535,8 @@ _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
   }
 
   Int32 nb_out = filterer.nbOutputElement();
-  pure_local_ids_modifier->resize(nb_out);
-  partial_indexes_modifier->resize(nb_out);
-
-  work_info.pure_local_ids.endUpdate(is_device);
-  work_info.partial_indexes.endUpdate(is_device);
+  pure_local_ids_modifier.resize(nb_out);
+  partial_indexes_modifier.resize(nb_out);
 
   if (is_pure_to_partial)
     m_max_index_in_multiple_array += nb_out;
