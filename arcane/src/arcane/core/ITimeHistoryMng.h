@@ -32,18 +32,19 @@ namespace Arcane
 class TimeHistoryAddValueArg
 {
  public:
-  TimeHistoryAddValueArg(const String& name, Integer local_proc_id, bool end_time)
+
+  TimeHistoryAddValueArg(const String& name, bool end_time, Integer local_proc_id)
   : m_name(name)
   , m_end_time(end_time)
   , m_local_proc_id(local_proc_id)
   {}
 
-  TimeHistoryAddValueArg(const String& name, Integer local_proc_id)
-  : TimeHistoryAddValueArg(name, local_proc_id, true)
+  TimeHistoryAddValueArg(const String& name, bool end_time)
+  : TimeHistoryAddValueArg(name, end_time, -1)
   {}
 
   explicit TimeHistoryAddValueArg(const String& name)
-  : TimeHistoryAddValueArg(name, -1)
+  : TimeHistoryAddValueArg(name, true)
   {}
 
  public:

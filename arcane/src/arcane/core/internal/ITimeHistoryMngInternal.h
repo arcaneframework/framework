@@ -49,8 +49,8 @@ class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
   , m_mesh_handle(mesh_handle)
   {}
 
-  TimeHistoryAddValueArgInternal(const String& name, Integer local_proc_id, bool end_time)
-  : m_thp(name, local_proc_id, end_time)
+  TimeHistoryAddValueArgInternal(const String& name, bool end_time, Integer local_proc_id)
+  : m_thp(name, end_time, local_proc_id)
   , m_mesh_handle()
   {}
 

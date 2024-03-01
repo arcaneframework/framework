@@ -160,27 +160,27 @@ class TimeHistoryMng2
 
   void addValue(const String& name,Real value,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), value);
   }
   void addValue(const String& name,Int64 value,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), value);
   }
   void addValue(const String& name,Int32 value,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), value);
   }
   void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
   }
   void addValue(const String& name,Int32ConstArrayView values,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
   }
   void addValue(const String& name,Int64ConstArrayView values,bool end_time,bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, (is_local ? parallelMng()->commRank() : -1), end_time), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
   }
 
   void addValue(const TimeHistoryAddValueArg& thp, Real value) override

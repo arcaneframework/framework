@@ -120,7 +120,7 @@ void TimeHistoryMngInternal::
 addNowInGlobalTime()
 {
   m_global_times.add(m_sd->commonVariables().globalTime());
-  TimeHistoryAddValueArgInternal thpi(m_sd->commonVariables().m_global_time.name(), -1, true);
+  TimeHistoryAddValueArgInternal thpi(m_sd->commonVariables().m_global_time.name(), true, -1);
   addValue(thpi, m_sd->commonVariables().globalTime());
 }
 
@@ -263,7 +263,7 @@ readVariables()
 
     TimeHistoryValue* val = nullptr;
     if(support_str.null()){
-      TimeHistoryAddValueArgInternal thpi(name, sub_domain, true);
+      TimeHistoryAddValueArgInternal thpi(name, true, sub_domain);
       switch(dt){
       case DT_Real:
         val = new TimeHistoryValueT<Real>(m_sd, thpi, index, sub_size, isShrinkActive());
@@ -283,7 +283,7 @@ readVariables()
     }
     else{
       MeshHandle mh = m_sd->meshMng()->findMeshHandle(support_str);
-      TimeHistoryAddValueArgInternal thpi(TimeHistoryAddValueArg(name, sub_domain, true), mh);
+      TimeHistoryAddValueArgInternal thpi(TimeHistoryAddValueArg(name, true, sub_domain), mh);
       switch(dt){
       case DT_Real:
         val = new TimeHistoryValueT<Real>(thpi, index, sub_size, isShrinkActive());
