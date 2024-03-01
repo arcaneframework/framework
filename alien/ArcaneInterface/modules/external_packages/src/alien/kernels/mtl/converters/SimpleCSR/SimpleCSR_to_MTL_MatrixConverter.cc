@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <alien/core/backend/IMatrixConverter.h>
 #include <alien/core/backend/MatrixConverterRegisterer.h>
 
@@ -73,7 +79,7 @@ SimpleCSR_to_MTL_MatrixConverter::_build(
   const Arccore::Integer localSize = profile.getNRow();
   const Arccore::Integer localOffset = dist.rowOffset();
   const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
-      sourceImpl.internal();
+      *sourceImpl.internal();
   const Arccore::Integer myRank = dist.parallelMng()->commRank();
   const Arccore::Integer nProc = dist.parallelMng()->commSize();
 
@@ -116,7 +122,7 @@ SimpleCSR_to_MTL_MatrixConverter::_buildBlock(
   const Arccore::Integer localSize = profile.getNRow();
   const Arccore::Integer localOffset = dist.rowOffset();
   const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
-      sourceImpl.internal();
+      *sourceImpl.internal();
   const Arccore::Integer myRank = dist.parallelMng()->commRank();
   const Arccore::Integer nProc = dist.parallelMng()->commSize();
   const Block& block = *targetImpl.block();

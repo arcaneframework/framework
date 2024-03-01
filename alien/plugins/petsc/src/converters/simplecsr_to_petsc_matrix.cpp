@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -97,7 +103,7 @@ void SimpleCSR_to_Petsc_MatrixConverter::_build(const Alien::SimpleCSRMatrix<Arc
 
   targetImpl.setProfile(ilower, iupper, jlower, jupper, sizes);
 
-  auto values = sourceImpl.internal().getValues();
+  auto values = sourceImpl.internal()->getValues();
   auto cols = profile.getCols();
   auto icount = 0;
   for (auto irow = 0; irow < localSize; ++irow) {
@@ -118,7 +124,7 @@ void SimpleCSR_to_Petsc_MatrixConverter::_buildBlock(const Alien::SimpleCSRMatri
   const auto localSize = profile.getNRow();
   const auto block_size = targetImpl.block()->size();
   const auto localOffset = dist.rowOffset();
-  const auto& matrixInternal = sourceImpl.internal();
+  const auto& matrixInternal = *sourceImpl.internal();
 
   auto max_line_size = localSize * block_size;
   auto pos = 0;

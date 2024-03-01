@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <iostream>
 
 #include <alien/utils/Precomp.h>
@@ -77,7 +83,7 @@ SimpleCSR_to_Hypre_MatrixConverter::_build(
   const Arccore::Integer localSize = profile.getNRow();
   const Arccore::Integer localOffset = dist.rowOffset();
   const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
-      sourceImpl.internal();
+      *sourceImpl.internal();
 
   Arccore::Integer data_count = 0;
   Arccore::Integer pos = 0;
@@ -152,7 +158,7 @@ SimpleCSR_to_Hypre_MatrixConverter::_buildBlock(
   const Arccore::Integer block_size = targetImpl.block()->size();
   const Arccore::Integer localOffset = dist.rowOffset();
   const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
-      sourceImpl.internal();
+      *sourceImpl.internal();
 
   Arccore::Integer max_line_size = localSize * block_size;
   Arccore::Integer data_count = 0;

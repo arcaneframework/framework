@@ -77,6 +77,23 @@ extern SYCLBEllPackTraits<Real>::AlgebraType* SYCLInternalLinearAlgebraFactory()
 extern SYCLBEllPackTraits<Real>::AlgebraExprType*
 SYCLInternalLinearAlgebraExprFactory();
 
+
+template <typename T>
+class HCSRMatrix;
+
+template <typename T>
+class HCSRVector;
+
+
+template <typename T>
+struct HCSRTraits
+{
+  // clang-format off
+  typedef HCSRMatrix<T>                              MatrixType;
+  typedef HCSRVector<T>                              VectorType;
+  // clang-format on
+};
+
 /*---------------------------------------------------------------------------*/
 
 namespace BackEnd
@@ -84,6 +101,9 @@ namespace BackEnd
   namespace tag
   {
     struct sycl
+    {};
+
+    struct hcsr
     {};
   } // namespace tag
 } // namespace BackEnd
@@ -113,6 +133,18 @@ struct AlgebraTraits<BackEnd::tag::sycl>
   static BackEndId name() { return "sycl"; }
 };
 
+
+template <>
+struct AlgebraTraits<BackEnd::tag::hcsr>
+{
+  // clang-format off
+  typedef Real                              value_type;
+  typedef HCSRTraits<Real>::MatrixType      matrix_type;
+  typedef HCSRTraits<Real>::VectorType      vector_type;
+  // clang-format on
+
+  static BackEndId name() { return "hcsr"; }
+};
 
 template <>
 struct LUSendRecvTraits<BackEnd::tag::sycl>

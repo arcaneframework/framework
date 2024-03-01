@@ -5,10 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
-#pragma once
 
-#include <alien/utils/Precomp.h>
-#include <arccore/base/String.h>
+#include "VectorAccessor.h"
+#include "VectorAccessorT.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -19,29 +18,7 @@ namespace Alien
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-typedef String BackEndId;
-
-template <typename Tag>
-struct AlgebraTraits;
-
-template <typename Tag>
-class LUSendRecvTraits;
-
-namespace BackEnd
-{
-  namespace tag
-  {
-  } // namespace tag
-
-  namespace Memory
-  {
-    typedef enum {
-      Host,
-      Device,
-      Shared
-    } eType;
-  }
-} // namespace BackEnd
+template class ALIEN_EXPORT SYCL::VectorAccessorT<double>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

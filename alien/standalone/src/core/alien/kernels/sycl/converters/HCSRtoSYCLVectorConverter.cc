@@ -11,25 +11,28 @@
 #include <alien/core/backend/IVectorConverter.h>
 #include <alien/core/backend/VectorConverterRegisterer.h>
 
-#include <alien/kernels/sycl/data/SYCLVector.h>
-
 #include <alien/kernels/sycl/SYCLBackEnd.h>
-#include <alien/kernels/simple_csr/SimpleCSRVector.h>
-#include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+
+#include <alien/kernels/sycl/data/SYCLVector.h>
+#include <alien/kernels/sycl/data/HCSRVector.h>
+
+#include "alien/kernels/sycl/data/SYCLVectorInternal.h"
+#include "alien/kernels/sycl/data/HCSRVectorInternal.h"
+
 using namespace Alien;
 
 /*---------------------------------------------------------------------------*/
 
-class SimpleCSRtoSYCLVectorConverter : public IVectorConverter
+class HCSRtoSYCLVectorConverter : public IVectorConverter
 {
  public:
-  SimpleCSRtoSYCLVectorConverter();
-  virtual ~SimpleCSRtoSYCLVectorConverter() {}
+  HCSRtoSYCLVectorConverter();
+  virtual ~HCSRtoSYCLVectorConverter() {}
 
  public:
   Alien::BackEndId sourceBackend() const
   {
-    return AlgebraTraits<BackEnd::tag::simplecsr>::name();
+    return AlgebraTraits<BackEnd::tag::hcsr>::name();
   }
   Alien::BackEndId targetBackend() const
   {
@@ -40,28 +43,27 @@ class SimpleCSRtoSYCLVectorConverter : public IVectorConverter
 
 /*---------------------------------------------------------------------------*/
 
-SimpleCSRtoSYCLVectorConverter::SimpleCSRtoSYCLVectorConverter()
+HCSRtoSYCLVectorConverter::HCSRtoSYCLVectorConverter()
 {
   ;
 }
 
 /*---------------------------------------------------------------------------*/
 
-void SimpleCSRtoSYCLVectorConverter::convert(
+void HCSRtoSYCLVectorConverter::convert(
 const IVectorImpl* sourceImpl, IVectorImpl* targetImpl) const
 {
-  const SimpleCSRVector<double>& v =
-  cast<SimpleCSRVector<double>>(sourceImpl, sourceBackend());
+  const HCSRVector<double>& v =
+  cast<HCSRVector<double>>(sourceImpl, sourceBackend());
   SYCLVector<double>& v2 =
   cast<SYCLVector<double>>(targetImpl, targetBackend());
 
   alien_debug(
-  [&] { cout() << "Converting SimpleCSRVector: " << &v << " to SYCLVector " << &v2; });
+  [&] { cout() << "Converting HCSRVector: " << &v << " to SYCLVector " << &v2; });
 
-  ConstArrayView<Real> values = v.values();
-  v2.setValues(v.scalarizedLocalSize(), values.data());
+  v2.internal()->copy(v.internal()->values());
 }
 
 /*---------------------------------------------------------------------------*/
 
-REGISTER_VECTOR_CONVERTER(SimpleCSRtoSYCLVectorConverter);
+REGISTER_VECTOR_CONVERTER(HCSRtoSYCLVectorConverter);

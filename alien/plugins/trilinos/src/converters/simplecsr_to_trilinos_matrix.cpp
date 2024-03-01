@@ -1,3 +1,9 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2022 IFPEN-CEA
  * 
@@ -78,7 +84,7 @@ void SimpleCSR_to_Trilinos_MatrixConverter::_build(const Alien::SimpleCSRMatrix<
 
   targetImpl.setProfile(localSize, globalSize, sizes);
 
-  auto values = sourceImpl.internal().getValues();
+  auto values = sourceImpl.internal()->getValues();
   auto cols = profile.getCols();
   for (auto irow = 0; irow < localSize; ++irow) {
     const auto row = localOffset + irow;

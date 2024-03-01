@@ -5,10 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
+
 #pragma once
 
-#include <alien/utils/Precomp.h>
-#include <arccore/base/String.h>
+#include <alien/handlers/profiler/BaseMatrixProfiler.h>
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -19,29 +20,22 @@ namespace Alien
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-typedef String BackEndId;
+  template <typename Scalar>
+  class HCSRMatrix;
 
-template <typename Tag>
-struct AlgebraTraits;
 
-template <typename Tag>
-class LUSendRecvTraits;
-
-namespace BackEnd
-{
-  namespace tag
+  namespace SYCL
   {
-  } // namespace tag
+    class MatrixProfiler
+        : public Common::MatrixProfilerT<Arccore::Real,HCSRMatrix<Arccore::Real>>
+    {
+     public:
+      MatrixProfiler(IMatrix& matrix)
+      : Common::MatrixProfilerT<Arccore::Real,HCSRMatrix<Arccore::Real>>(matrix)
+      {}
 
-  namespace Memory
-  {
-    typedef enum {
-      Host,
-      Device,
-      Shared
-    } eType;
+    };
   }
-} // namespace BackEnd
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
