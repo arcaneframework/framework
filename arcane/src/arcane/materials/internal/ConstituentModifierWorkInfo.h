@@ -55,6 +55,10 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   //! Liste des mailles d'un milieu qui sont déjà présentes dans un milieu lors d'une opération
   UniqueArray<Int32> cells_unchanged_in_env;
 
+  //! Liste des MatVarIndex et LocalId à sauvegarder lors de la suppression de mailles matériaux
+  UniqueArray<MatVarIndex> m_saved_matvar_indexes;
+  UniqueArray<Int32> m_saved_local_ids;
+
  public:
 
   //! Initialise l'instance.
@@ -93,6 +97,7 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   bool isAdd() const { return m_is_add; }
 
   SmallSpan<const bool> transformedCells() const { return m_cells_to_transform.view(); }
+  SmallSpan<const bool> removedCells() const { return m_removed_local_ids_filter.view(); }
 
  private:
 

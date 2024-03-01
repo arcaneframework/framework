@@ -384,14 +384,14 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   // TODO: à faire dans finialize()
   env->addToTotalNbCellMat(-nb_to_remove);
 
-  mat->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove);
+  mat->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_copy_queue);
 
   if (update_env_indexer) {
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
     // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
-    env->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove);
+    env->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_copy_queue);
   }
 
   // Remet \a removed_local_ids_filter à la valeur initiale pour

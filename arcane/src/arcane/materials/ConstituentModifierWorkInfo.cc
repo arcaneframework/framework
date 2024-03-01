@@ -30,6 +30,9 @@ ConstituentModifierWorkInfo::
 ConstituentModifierWorkInfo()
 : pure_local_ids(platform::getDefaultDataAllocator())
 , partial_indexes(platform::getDefaultDataAllocator())
+, m_saved_matvar_indexes(platform::getDefaultDataAllocator())
+, m_saved_local_ids(platform::getDefaultDataAllocator())
+, m_removed_local_ids_filter(platform::getDefaultDataAllocator())
 , m_cells_to_transform(platform::getDefaultDataAllocator())
 {
 }
@@ -44,6 +47,9 @@ initialize(Int32 max_local_id)
   m_cells_to_transform.fill(false);
   m_removed_local_ids_filter.resize(max_local_id);
   m_removed_local_ids_filter.fill(false);
+
+  m_saved_matvar_indexes.resize(max_local_id);
+  m_saved_local_ids.resize(max_local_id);
 }
 
 /*---------------------------------------------------------------------------*/

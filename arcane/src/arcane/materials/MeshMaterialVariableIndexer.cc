@@ -188,8 +188,13 @@ endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdateRemove(const ConstituentModifierWorkInfo& work_info, Integer nb_remove)
+endUpdateRemove(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue)
 {
+  const bool use_v2 = m_use_transform_no_filter;
+  if (use_v2) {
+    endUpdateRemoveV2(work_info, nb_remove, queue);
+    return;
+  }
   Integer nb_item = nbItem();
   Integer orig_nb_item = nb_item;
 
@@ -201,7 +206,7 @@ endUpdateRemove(const ConstituentModifierWorkInfo& work_info, Integer nb_remove)
       Int32 last = nb_item - 1;
       m_matvar_indexes[i] = m_matvar_indexes[last];
       m_local_ids[i] = m_local_ids[last];
-      //info() << "REMOVE ITEM lid=" << lid << " i=" << i;
+      //info() << "REMOVE ITEM lid=" << lid << " i=" << i << " new=" << m_matvar_indexes[i] << " " << m_local_ids[i] << " last=" << last;
       --nb_item;
       --i; // Il faut refaire l'itération courante.
     }
@@ -214,7 +219,83 @@ endUpdateRemove(const ConstituentModifierWorkInfo& work_info, Integer nb_remove)
   if (nb_remove_computed != nb_remove)
     ARCANE_FATAL("Bad number of removed material items expected={0} v={1} name={2}",
                  nb_remove, nb_remove_computed, name());
-  info(4) << "END_UPDATE_REMOVE nb_removed=" << nb_remove_computed;
+  info() << "END_UPDATE_REMOVE nb_removed=" << nb_remove_computed;
+
+  // TODO: il faut recalculer m_max_index_in_multiple_array
+  // et compacter éventuellement les variables. (pas indispensable)
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableIndexer::
+endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue)
+{
+  if (nb_remove == 0)
+    return;
+
+  Integer nb_item = nbItem();
+  Integer orig_nb_item = nb_item;
+
+  info(4) << "EndUpdateRemove nb_remove=" << nb_remove << " nb_item=" << nb_item;
+
+  if (nb_remove == nb_item) {
+    m_matvar_indexes.clear();
+    m_local_ids.clear();
+    return;
+  }
+
+  work_info.m_saved_matvar_indexes.resize(nb_remove);
+  work_info.m_saved_local_ids.resize(nb_remove);
+
+  Accelerator::GenericFilterer filterer(&queue);
+  Span<const bool> removed_cells = work_info.removedCells();
+  Span<MatVarIndex> last_matvar_indexes(work_info.m_saved_matvar_indexes);
+  Span<Int32> last_local_ids(work_info.m_saved_local_ids);
+  Span<Int32> local_ids(m_local_ids);
+  Span<MatVarIndex> matvar_indexes(m_matvar_indexes);
+
+  // Conserve \a nb_remove valeurs en partant de la fin de la liste
+  {
+    Int32 last_index = nb_item - 1;
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      Int32 lid = local_ids[last_index - index];
+      return !removed_cells[lid];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      Int32 true_index = (last_index - input_index);
+      if (output_index < nb_remove) {
+        last_matvar_indexes[output_index] = matvar_indexes[true_index];
+        last_local_ids[output_index] = local_ids[true_index];
+      }
+    };
+    filterer.applyWithIndex(orig_nb_item, select_lambda, setter_lambda);
+    filterer.nbOutputElement();
+  }
+
+  // Remplit les trous des mailles supprimées avec les derniers éléments de la liste
+  {
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      Int32 lid = local_ids[index];
+      return removed_cells[lid];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      matvar_indexes[input_index] = last_matvar_indexes[output_index];
+      local_ids[input_index] = last_local_ids[output_index];
+    };
+    filterer.applyWithIndex(orig_nb_item - nb_remove, select_lambda, setter_lambda);
+    filterer.nbOutputElement();
+  }
+  nb_item -= nb_remove;
+  m_matvar_indexes.resize(nb_item);
+  m_local_ids.resize(nb_item);
+
+  // Vérifie qu'on a bien supprimé autant d'entité que prévu.
+  Integer nb_remove_computed = (orig_nb_item - nb_item);
+  if (nb_remove_computed != nb_remove)
+    ARCANE_FATAL("Bad number of removed material items expected={0} v={1} name={2}",
+                 nb_remove, nb_remove_computed, name());
+  info(4) << "END_UPDATE_REMOVE nb_removed=" << nb_remove;
 
   // TODO: il faut recalculer m_max_index_in_multiple_array
   // et compacter éventuellement les variables. (pas indispensable)
