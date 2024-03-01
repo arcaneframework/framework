@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.h                                                     (C) 2000-2023 */
+/* Array.h                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Tableau 1D.                                                               */
 /*---------------------------------------------------------------------------*/
@@ -566,7 +566,8 @@ class AbstractArray
    *
    * Si la nouvelle capacité est inférieure à l'ancienne, rien ne se passe.
    */
-  void _internalRealloc(Int64 new_capacity,bool compute_capacity)
+  template<typename PodType>
+  void _internalRealloc(Int64 new_capacity,bool compute_capacity,PodType pod_type)
   {
     if (_isSharedNull()){
       if (new_capacity!=0)
@@ -585,7 +586,12 @@ class AbstractArray
     // Si la nouvelle capacité est inférieure à la courante,ne fait rien.
     if (acapacity <= m_md->capacity)
       return;
-    _internalReallocate(acapacity,IsPODType());
+    _internalReallocate(acapacity,pod_type);
+  }
+
+  void _internalRealloc(Int64 new_capacity,bool compute_capacity)
+  {
+    _internalRealloc(new_capacity,compute_capacity,IsPODType());
   }
 
   //! Réallocation pour un type POD
@@ -797,7 +803,7 @@ class AbstractArray
     if (s<0)
       s = 0;
     if (s>m_md->size) {
-      this->_internalRealloc(s,false);
+      this->_internalRealloc(s,false,pod_type);
       this->_createRangeDefault(m_md->size,s,pod_type);
     }
     else{
