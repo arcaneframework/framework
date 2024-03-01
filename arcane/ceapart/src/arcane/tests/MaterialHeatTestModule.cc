@@ -25,6 +25,7 @@
 #include "arcane/core/VariableUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
+#include "arcane/core/MeshUtils.h"
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
@@ -135,10 +136,10 @@ class MaterialHeatTestModule
  public:
 
   void _addHeat(const HeatObject& heat_object);
+  void _addCold(const HeatObject& heat_object);
 
  private:
 
-  void _addCold(const HeatObject& heat_object);
   void _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _compute();
   void _printCellsTemperature(Int32ConstArrayView ids);
@@ -240,6 +241,7 @@ startInit()
   m_mat_temperature.globalVariable().fill(0.0);
   m_material_mng->forceRecompute();
   _computeCellsCenter();
+  MeshUtils::markMeshConnectivitiesAsMostlyReadOnly(defaultMesh(), acceleratorMng()->defaultQueue(), true);
   VariableUtils::markVariableAsMostlyReadOnly(m_cell_center);
   VariableUtils::markVariableAsMostlyReadOnly(defaultMesh()->nodesCoordinates());
 
@@ -391,12 +393,26 @@ _addCold(const HeatObject& heat_object)
   IMeshMaterial* current_mat = heat_object.material;
   const Real cold_value = heat_object.cold_value;
 
-  ENUMERATE_MATCELL (imatcell, current_mat) {
-    Real t = m_mat_temperature[imatcell];
-    t -= cold_value;
-    if (t <= 0)
-      ARCANE_FATAL("Invalid negative temperature '{0}' cell_lid={1}", t, (*imatcell).globalCell().localId());
-    m_mat_temperature[imatcell] = t;
+  RunQueue* queue = this->acceleratorMng()->defaultQueue();
+
+  {
+    auto command = makeCommand(queue);
+    auto inout_mat_temperature = viewInOut(command, m_mat_temperature);
+    command << RUNCOMMAND_MAT_ENUMERATE(MatCell, matcell, current_mat)
+    {
+      //auto [matcell] = iter();
+      Real t = inout_mat_temperature[matcell];
+      t -= cold_value;
+      inout_mat_temperature[matcell] = t;
+    };
+  }
+
+  if (arcaneIsCheck()) {
+    ENUMERATE_MATCELL (imatcell, current_mat) {
+      Real t = m_mat_temperature[imatcell];
+      if (t <= 0)
+        ARCANE_FATAL("Invalid negative temperature '{0}' cell_lid={1}", t, (*imatcell).globalCell().localId());
+    }
   }
 }
 
