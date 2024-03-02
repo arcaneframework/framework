@@ -51,7 +51,6 @@ RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
 RunQueue::
 ~RunQueue()
 {
-  m_p->removeReference();
 }
 
 /*---------------------------------------------------------------------------*/
