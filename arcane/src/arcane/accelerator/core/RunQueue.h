@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/AutoRef.h"
+
 #include "arcane/accelerator/core/RunCommand.h"
 
 /*---------------------------------------------------------------------------*/
@@ -74,10 +76,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  public:
 
-  RunQueue(const RunQueue&) = delete;
-  RunQueue(RunQueue&&) = delete;
-  RunQueue& operator=(const RunQueue&) = delete;
-  RunQueue& operator=(RunQueue&&) = delete;
+  RunQueue(const RunQueue&);
+  RunQueue& operator=(const RunQueue&);
+  RunQueue(RunQueue&&);
+  RunQueue& operator=(RunQueue&&);
 
  public:
 
@@ -134,7 +136,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  private:
 
-  impl::RunQueueImpl* m_p;
+  AutoRef2<impl::RunQueueImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/

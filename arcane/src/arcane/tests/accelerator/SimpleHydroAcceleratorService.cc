@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -110,11 +110,20 @@ class SimpleHydroAcceleratorService
 
   struct BoundaryCondition
   {
+   public:
+
+    explicit BoundaryCondition(const RunQueue& queue)
+    : queue_ref(queue)
+    {
+    }
+
+   public:
+
     NodeGroup nodes;
     NodeVectorView view;
-    Real value;
-    TypesSimpleHydro::eBoundaryCondition type;
-    Ref<ax::RunQueue> queue_ref;
+    Real value = 0.0;
+    TypesSimpleHydro::eBoundaryCondition type = TypesSimpleHydro::Unknown;
+    ax::RunQueue queue_ref;
   };
 
   // Note: il faut mettre ce champs statique si on veut que sa valeur
@@ -379,14 +388,13 @@ hydroStartInit()
       FaceGroup face_group = bc->getSurface();
       Real value = bc->getValue();
       TypesSimpleHydro::eBoundaryCondition type = bc->getType();
-      BoundaryCondition bcn;
+      RunQueue q = (use_multiple_queue) ? makeQueue(m_runner) : *m_default_queue;
+      BoundaryCondition bcn(makeQueue(m_runner));
       bcn.nodes = face_group.nodeGroup();
       bcn.value = value;
       bcn.type = type;
-      if (use_multiple_queue){
-        bcn.queue_ref = makeQueueRef(m_runner);
-        bcn.queue_ref->setAsync(true);
-      }
+      if (use_multiple_queue)
+        bcn.queue_ref.setAsync(true);
       m_boundary_conditions.add(bcn);
     }
   }
@@ -584,7 +592,9 @@ applyBoundaryCondition()
     TypesSimpleHydro::eBoundaryCondition type = bc.type;
     NodeVectorView view = bc.view;
 
-    ax::RunQueue& used_queue = (use_one_queue) ? queue : *(bc.queue_ref.get());
+    ax::RunQueue used_queue = bc.queue_ref;
+    if (use_one_queue)
+      used_queue = queue;
     auto command = makeCommand(used_queue);
     auto in_out_velocity = ax::viewInOut(command,m_velocity);
     // boucle sur les faces de la surface
@@ -603,7 +613,7 @@ applyBoundaryCondition()
     queue.barrier();
   else
     for( auto bc : m_boundary_conditions ){
-      bc.queue_ref->barrier();
+      bc.queue_ref.barrier();
     }
 }
 

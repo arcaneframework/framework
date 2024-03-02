@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.h                                              (C) 2000-2023 */
+/* RunQueueImpl.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'une 'RunQueue'.                                          */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
  private:
 
   RunQueueImpl(Runner* runner, Int32 id, const RunQueueBuildInfo& bi);
+
+ public:
+
   ~RunQueueImpl();
 
  public:
@@ -63,14 +66,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
  public:
 
-  void addReference()
+  void addRef()
   {
     ++m_nb_ref;
   }
-  void removeReference()
+  void removeRef()
   {
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
+    Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+    if (v == 1)
       _release();
   }
 

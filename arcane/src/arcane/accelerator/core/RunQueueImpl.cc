@@ -77,8 +77,9 @@ _release()
   }
   if (_isInPool())
     m_runner->_internalPutRunQueueImplInPool(this);
-  else
+  else{
     delete this;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -156,13 +157,12 @@ _internalBarrier()
  * \brief Réinitialise l'implémentation
  *
  * Cette méthode est appelée lorsqu'on va initialiser une RunQueue avec
- * cette instance. Il faut dans ce car réinitialiser les valeurs de l'instance
+ * cette instance. Il faut dans ce cas réinitialiser les valeurs de l'instance
  * qui dépendent de l'état actuel.
  */
 RunQueueImpl* RunQueueImpl::
 _reset(RunQueueImpl* p)
 {
-  p->m_nb_ref = 1;
   p->m_is_async = false;
   return p;
 }
