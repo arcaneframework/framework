@@ -48,8 +48,8 @@ initialize(Int32 max_local_id)
   m_removed_local_ids_filter.resize(max_local_id);
   m_removed_local_ids_filter.fill(false);
 
-  m_saved_matvar_indexes.resize(max_local_id);
-  m_saved_local_ids.resize(max_local_id);
+  m_saved_matvar_indexes.resizeHost(max_local_id);
+  m_saved_local_ids.resizeHost(max_local_id);
 }
 
 /*---------------------------------------------------------------------------*/

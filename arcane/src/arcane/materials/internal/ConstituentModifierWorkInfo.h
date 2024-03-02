@@ -56,8 +56,8 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   UniqueArray<Int32> cells_unchanged_in_env;
 
   //! Liste des MatVarIndex et LocalId à sauvegarder lors de la suppression de mailles matériaux
-  UniqueArray<MatVarIndex> m_saved_matvar_indexes;
-  UniqueArray<Int32> m_saved_local_ids;
+  DualUniqueArray<MatVarIndex> m_saved_matvar_indexes;
+  DualUniqueArray<Int32> m_saved_local_ids;
 
  public:
 
