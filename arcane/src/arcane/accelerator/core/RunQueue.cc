@@ -235,6 +235,15 @@ _isAutoPrefetchCommand() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool RunQueue::
+isAcceleratorPolicy() const
+{
+  return Arcane::Accelerator::isAcceleratorPolicy(executionPolicy());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ePointerAccessibility
 getPointerAccessibility(RunQueue* queue, const void* ptr, PointerAttribute* ptr_attr)
 {
