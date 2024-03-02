@@ -10,9 +10,11 @@ arcane_add_library(arcane_materials
 
 arcane_accelerator_add_source_files(
   AllEnvData.cc
-  MeshMaterialVariableScalar
-  MeshMaterialVariableArray
-  MeshMaterialVariableIndexer
+  ConstituentConnectivityList.cc
+  IncrementalComponentModifier.cc
+  MeshMaterialVariableScalar.cc
+  MeshMaterialVariableArray.cc
+  MeshMaterialVariableIndexer.cc
 )
 
 target_compile_definitions(arcane_materials PRIVATE ARCANE_COMPONENT_arcane_materials)

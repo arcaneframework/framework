@@ -58,6 +58,10 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   ConstituentModifierWorkInfo m_work_info;
   RunQueue m_copy_queue;
 
+ public:
+
+  void setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set);
+
  private:
 
   void _switchCellsForEnvironments(const IMeshEnvironment* modified_env,

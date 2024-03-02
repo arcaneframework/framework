@@ -253,7 +253,7 @@ endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, Run
   saved_local_ids_modifier.resize(nb_remove);
 
   Accelerator::GenericFilterer filterer(&queue);
-  Span<const bool> removed_cells = work_info.removedCells();
+  SmallSpan<const bool> removed_cells = work_info.removedCells();
   Span<MatVarIndex> last_matvar_indexes(saved_matvar_indexes_modifier.view());
   Span<Int32> last_local_ids(saved_local_ids_modifier.view());
   Span<Int32> local_ids(m_local_ids);

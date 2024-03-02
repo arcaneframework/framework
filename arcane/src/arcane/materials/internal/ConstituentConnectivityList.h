@@ -17,6 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/DualUniqueArray.h"
 
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IIncrementalItemConnectivity.h"
@@ -79,6 +80,12 @@ class ConstituentConnectivityList
   void removeAllConnectivities();
 
   /*!
+   * \brief Remplit \a cells_nb_material avec le nombre de matériaux du milieu \a env_id
+   */
+  void fillCellsNbMaterial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
+                           SmallSpan<Int16> cells_nb_material, RunQueue& queue);
+
+  /*!
    * \brief Indique si l'instance est activée.
    *
    * Valide uniquement après appel à endCreate().
@@ -106,7 +113,7 @@ class ConstituentConnectivityList
   Container* m_container = nullptr;
 
   //! Indice du milieu auquel appartient un matériau
-  UniqueArray<Int16> m_environment_for_materials;
+  DualUniqueArray<Int16> m_environment_for_materials;
   bool m_is_active = false;
 
  private:
