@@ -135,7 +135,7 @@ class DualUniqueArray
     }
     void resize(Int32 new_size) override
     {
-      m_data->m_device_array->resize(new_size);
+      m_data->resizeDevice(new_size);
     }
     void endUpdate() override
     {
@@ -201,6 +201,12 @@ class DualUniqueArray
   {
     m_array.resize(new_size);
     m_is_valid_numarray = false;
+  }
+  void resizeDevice(Int32 new_size)
+  {
+    _checkCreateNumArray();
+    m_device_array->resize(new_size);
+    m_is_valid_array = false;
   }
   void clearHost()
   {

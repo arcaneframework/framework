@@ -145,7 +145,7 @@ endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
   SmallSpan<Int32> local_ids_view = m_local_ids.subView(current_nb_item, total_to_add);
   SmallSpan<MatVarIndex> matvar_indexes = m_matvar_indexes.subView(current_nb_item, total_to_add);
 
-  const bool use_v2 = m_use_transform_no_filter;
+  const bool use_v2 = !m_use_transform_no_filter;
   Int32 max_index_in_multiple = m_max_index_in_multiple_array;
   if (use_v2) {
     auto command = makeCommand(queue);
@@ -190,7 +190,7 @@ endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
 void MeshMaterialVariableIndexer::
 endUpdateRemove(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue)
 {
-  const bool use_v2 = m_use_transform_no_filter;
+  const bool use_v2 = !m_use_transform_no_filter;
   if (use_v2) {
     endUpdateRemoveV2(work_info, nb_remove, queue);
     return;
@@ -219,7 +219,7 @@ endUpdateRemove(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQu
   if (nb_remove_computed != nb_remove)
     ARCANE_FATAL("Bad number of removed material items expected={0} v={1} name={2}",
                  nb_remove, nb_remove_computed, name());
-  info() << "END_UPDATE_REMOVE nb_removed=" << nb_remove_computed;
+  info(4) << "END_UPDATE_REMOVE nb_removed=" << nb_remove_computed;
 
   // TODO: il faut recalculer m_max_index_in_multiple_array
   // et compacter éventuellement les variables. (pas indispensable)
@@ -237,7 +237,7 @@ endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, Run
   Integer nb_item = nbItem();
   Integer orig_nb_item = nb_item;
 
-  info(4) << "EndUpdateRemove nb_remove=" << nb_remove << " nb_item=" << nb_item;
+  info(4) << "EndUpdateRemoveV2 nb_remove=" << nb_remove << " nb_item=" << nb_item;
 
   if (nb_remove == nb_item) {
     m_matvar_indexes.clear();
@@ -245,13 +245,17 @@ endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, Run
     return;
   }
 
-  work_info.m_saved_matvar_indexes.resize(nb_remove);
-  work_info.m_saved_local_ids.resize(nb_remove);
+  bool is_device = isAcceleratorPolicy(queue.executionPolicy());
+  auto saved_matvar_indexes_modifier = work_info.m_saved_matvar_indexes.modifier(is_device);
+  auto saved_local_ids_modifier = work_info.m_saved_local_ids.modifier(is_device);
+
+  saved_matvar_indexes_modifier.resize(nb_remove);
+  saved_local_ids_modifier.resize(nb_remove);
 
   Accelerator::GenericFilterer filterer(&queue);
   Span<const bool> removed_cells = work_info.removedCells();
-  Span<MatVarIndex> last_matvar_indexes(work_info.m_saved_matvar_indexes);
-  Span<Int32> last_local_ids(work_info.m_saved_local_ids);
+  Span<MatVarIndex> last_matvar_indexes(saved_matvar_indexes_modifier.view());
+  Span<Int32> last_local_ids(saved_local_ids_modifier.view());
   Span<Int32> local_ids(m_local_ids);
   Span<MatVarIndex> matvar_indexes(m_matvar_indexes);
 
