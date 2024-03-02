@@ -30,8 +30,11 @@ ConstituentModifierWorkInfo::
 ConstituentModifierWorkInfo()
 : pure_local_ids(platform::getDefaultDataAllocator())
 , partial_indexes(platform::getDefaultDataAllocator())
+, cells_changed_in_env(platform::getDefaultDataAllocator())
+, cells_unchanged_in_env(platform::getDefaultDataAllocator())
 , m_saved_matvar_indexes(platform::getDefaultDataAllocator())
 , m_saved_local_ids(platform::getDefaultDataAllocator())
+, m_cells_current_nb_material(platform::getDefaultDataAllocator())
 , m_removed_local_ids_filter(platform::getDefaultDataAllocator())
 , m_cells_to_transform(platform::getDefaultDataAllocator())
 {

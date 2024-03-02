@@ -20,6 +20,9 @@
 
 #include "arcane/materials/internal/MeshMaterialMng.h"
 
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/RunCommandLoop.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -70,6 +73,35 @@ namespace
 
 class ConstituentConnectivityList::ConstituentContainer
 {
+ public:
+
+  class View
+  {
+   public:
+
+    View(ConstituentContainer& c)
+    : nb_components_view(c.m_nb_component_as_array.view())
+    , component_indexes_view(c.m_component_index_as_array.view())
+    , component_list_view(c.m_component_list_as_array.view())
+    {
+    }
+
+   public:
+
+    ARCCORE_HOST_DEVICE SmallSpan<const Int16> components(Int32 item_lid) const
+    {
+      Int16 n = nb_components_view[item_lid];
+      Int32 index = component_indexes_view[item_lid];
+      return component_list_view.subPart(index, n);
+    }
+
+   private:
+
+    SmallSpan<Int16> nb_components_view;
+    SmallSpan<Int32> component_indexes_view;
+    SmallSpan<Int16> component_list_view;
+  };
+
  public:
 
   ConstituentContainer(const MeshHandle& mesh, const String& var_base_name)
@@ -155,6 +187,39 @@ class ConstituentConnectivityList::ConstituentContainer
     m_component_list.resize(1);
     m_component_list[0] = 0;
   }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour calculer le nombre de matériaux d'un milieu.
+ */
+class ConstituentConnectivityList::NumberOfMaterialComputer
+{
+ public:
+
+  NumberOfMaterialComputer(ConstituentConnectivityList::ConstituentContainer::View view,
+                           SmallSpan<const Int16> environment_for_materials)
+  : m_view(view)
+  , m_environment_for_materials(environment_for_materials)
+  {
+  }
+  ARCCORE_HOST_DEVICE Int16 cellNbMaterial(Int32 cell_local_id, Int16 env_id) const
+  {
+    auto mats = m_view.components(cell_local_id);
+    Int16 nb_mat = 0;
+    for (Int16 mat_id : mats) {
+      Int16 current_id = m_environment_for_materials[mat_id];
+      if (current_id == env_id)
+        ++nb_mat;
+    }
+    return nb_mat;
+  }
+
+ private:
+
+  ConstituentConnectivityList::ConstituentContainer::View m_view;
+  SmallSpan<const Int16> m_environment_for_materials;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -247,11 +312,17 @@ endCreate(bool is_continue)
     m_container->m_material.endCreate(is_continue);
   }
 
-  ConstArrayView<MeshMaterial*> materials = m_material_mng->trueMaterials();
-  const Int32 nb_mat = materials.size();
-  m_environment_for_materials.resize(nb_mat);
-  for (Int32 i = 0; i < nb_mat; ++i)
-    m_environment_for_materials[i] = materials[i]->trueEnvironment()->componentId();
+  // Remplit un tableau indiquant pour chaque index de matériau l'index
+  // du milieu correspondant.
+  {
+    ConstArrayView<MeshMaterial*> materials = m_material_mng->trueMaterials();
+    const Int32 nb_mat = materials.size();
+    auto environment_for_materials = m_environment_for_materials.hostModifier();
+    environment_for_materials.resize(nb_mat);
+    auto local_view = environment_for_materials.view();
+    for (Int32 i = 0; i < nb_mat; ++i)
+      local_view[i] = materials[i]->trueEnvironment()->componentId();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -273,7 +344,7 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentContain
       component_list.add(component_id);
     }
     else {
-      // Alloue de la place pour 1 milieu suppl'émentaire et recopie les
+      // Alloue de la place pour un milieu supplémentaire et recopie les
       // anciennes valeurs.
       // TODO: cela laisse des trous dans la liste qu'il faudra supprimer
       // via un compactage.
@@ -369,17 +440,89 @@ cellsNbMaterial() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Int16 ConstituentConnectivityList::
 cellNbMaterial(CellLocalId cell_id, Int16 env_id) const
 {
+  auto environment_for_materials = m_environment_for_materials.hostView();
   Int16 nb_mat = 0;
   ArrayView<Int16> mats = m_container->m_material.components(cell_id);
   for (Int16 mat_id : mats) {
-    Int16 current_id = m_environment_for_materials[mat_id];
+    Int16 current_id = environment_for_materials[mat_id];
     if (current_id == env_id)
       ++nb_mat;
   }
   return nb_mat;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ConstituentConnectivityList::
+fillCellsNbMaterial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
+                    SmallSpan<Int16> cells_nb_material, RunQueue& queue)
+{
+  ConstituentContainer::View materials_container_view(m_container->m_material);
+  bool is_device = isAcceleratorPolicy(queue.executionPolicy());
+  auto environment_for_materials = m_environment_for_materials.view(is_device);
+  const Int32 n = cells_local_id.size();
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP1(iter, n)
+  {
+    auto [i] = iter();
+    Int32 cell_id = cells_local_id[i];
+    Int16 nb_mat = 0;
+    SmallSpan<const Int16> mats = materials_container_view.components(cell_id);
+    for (Int16 mat_id : mats) {
+      Int16 current_id = environment_for_materials[mat_id];
+      if (current_id == env_id)
+        ++nb_mat;
+    }
+    cells_nb_material[i] = nb_mat;
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ConstituentConnectivityList::
+fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
+                     SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue)
+{
+  ConstituentContainer::View materials_container_view(m_container->m_material);
+  bool is_device = isAcceleratorPolicy(queue.executionPolicy());
+  auto environment_for_materials = m_environment_for_materials.view(is_device);
+
+  NumberOfMaterialComputer nb_mat_computer(materials_container_view, environment_for_materials);
+
+  SmallSpan<const Int16> cells_nb_env = cellsNbEnvironment();
+  const Int32 n = cells_local_id.size();
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP1(iter, n)
+  {
+    auto [i] = iter();
+    Int32 local_id = cells_local_id[i];
+    bool do_transform = false;
+    CellLocalId cell_id(local_id);
+    // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
+    // plusieurs matériaux dans le milieu.
+    // En cas de supression, on passe de partiel à pure si on est le seul matériau
+    // et le seul milieu.
+    const Int16 nb_env = cells_nb_env[local_id];
+    if (is_add) {
+      do_transform = (nb_env > 1);
+      if (!do_transform)
+        do_transform = nb_mat_computer.cellNbMaterial(cell_id, env_id) > 1;
+    }
+    else {
+      do_transform = (nb_env == 1);
+      if (do_transform)
+        do_transform = nb_mat_computer.cellNbMaterial(cell_id, env_id) == 1;
+    }
+    cells_do_transform[cell_id] = do_transform;
+  };
 }
 
 /*---------------------------------------------------------------------------*/

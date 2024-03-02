@@ -26,6 +26,8 @@
 #include "arcane/materials/internal/AllEnvData.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 
+#include "arcane/accelerator/RunCommandLoop.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -76,7 +78,8 @@ apply(MaterialModifierOperation* operation)
 
   auto* true_mat = ARCANE_CHECK_POINTER(dynamic_cast<MeshMaterial*>(mat));
 
-  info(4) << "Using optimisation updateMaterialDirect operation=" << operation;
+  info(4) << "Using optimisation updateMaterialDirect is_add=" << is_add
+          << " mat=" << mat->name() << " nb_item=" << orig_ids.size();
 
   const IMeshEnvironment* env = mat->environment();
   MeshEnvironment* true_env = true_mat->trueEnvironment();
@@ -96,20 +99,23 @@ apply(MaterialModifierOperation* operation)
 
     UniqueArray<Int32>& cells_changed_in_env = m_work_info.cells_changed_in_env;
     UniqueArray<Int32>& cells_unchanged_in_env = m_work_info.cells_unchanged_in_env;
+    UniqueArray<Int16>& cells_current_nb_material = m_work_info.m_cells_current_nb_material;
     const Int32 nb_id = ids.size();
     cells_unchanged_in_env.clear();
     cells_unchanged_in_env.reserve(nb_id);
     cells_changed_in_env.clear();
     cells_changed_in_env.reserve(nb_id);
+    cells_current_nb_material.resize(nb_id);
     const Int32 ref_nb_mat = is_add ? 0 : 1;
     const Int16 env_id = true_env->componentId();
     info(4) << "Using optimisation updateMaterialDirect is_add?=" << is_add;
 
+    connectivity->fillCellsNbMaterial(ids, env_id, cells_current_nb_material.view(), m_copy_queue);
+
     for (Integer i = 0; i < nb_id; ++i) {
       Int32 lid = ids[i];
-      Int32 current_cell_nb_mat = connectivity->cellNbMaterial(CellLocalId(lid), env_id);
+      Int16 current_cell_nb_mat = cells_current_nb_material[i];
       if (current_cell_nb_mat != ref_nb_mat) {
-        info(5) << "CELL i=" << i << " lid=" << lid << " unchanged in environment nb_mat=" << current_cell_nb_mat;
         cells_unchanged_in_env.add(lid);
       }
       else {
@@ -208,8 +214,10 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
       if (mat == modified_mat)
         continue;
 
-      m_work_info.pure_local_ids.clearHost();
-      m_work_info.partial_indexes.clearHost();
+      if (!is_device) {
+        m_work_info.pure_local_ids.clearHost();
+        m_work_info.partial_indexes.clearHost();
+      }
 
       MeshMaterialVariableIndexer* indexer = mat->variableIndexer();
 
@@ -217,13 +225,14 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
 
       _computeCellsToTransformForMaterial(mat, ids);
       indexer->transformCellsV2(m_work_info, m_copy_queue);
-      m_work_info.resetTransformedCells(ids);
-
-      info(4) << "NB_MAT_TRANSFORM=" << m_work_info.pure_local_ids.size() << " name=" << mat->name()
-              << " is_device" << is_device;
+      _resetTransformedCells(ids);
 
       auto pure_local_ids = m_work_info.pure_local_ids.view(is_device);
       auto partial_indexes = m_work_info.partial_indexes.view(is_device);
+
+      info(4) << "NB_MAT_TRANSFORM pure=" << pure_local_ids.size()
+              << " partial=" << partial_indexes.size() << " name=" << mat->name()
+              << " is_device?=" << is_device;
 
       MeshVariableCopyBetweenPartialAndGlobalArgs args(indexer->index(),
                                                        pure_local_ids,
@@ -266,8 +275,10 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     if (env == modified_env)
       continue;
 
-    m_work_info.pure_local_ids.clearHost();
-    m_work_info.partial_indexes.clearHost();
+    if (!is_device) {
+      m_work_info.pure_local_ids.clearHost();
+      m_work_info.partial_indexes.clearHost();
+    }
 
     MeshMaterialVariableIndexer* indexer = env->variableIndexer();
 
@@ -275,7 +286,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
 
     _computeCellsToTransformForEnvironments(ids);
     indexer->transformCellsV2(m_work_info, m_copy_queue);
-    m_work_info.resetTransformedCells(ids);
+    _resetTransformedCells(ids);
 
     info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
             << " name=" << env->name();
@@ -301,31 +312,36 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, ConstArrayView<Int3
 {
   const MeshEnvironment* env = mat->trueEnvironment();
   const Int16 env_id = env->componentId();
-  CellGroup all_cells = m_material_mng->mesh()->allCells();
   bool is_add = m_work_info.isAdd();
 
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
+  SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
+  const bool do_new = true;
+  if (do_new)
+    connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_copy_queue);
+  else {
+    ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
 
-  for (Int32 local_id : ids) {
-    bool do_transform = false;
-    CellLocalId cell_id(local_id);
-    // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
-    // plusieurs matériaux dans le milieu.
-    // En cas de supression, on passe de partiel à pure si on est le seul matériau
-    // et le seul milieu.
-    const Int16 nb_env = cells_nb_env[local_id];
-    if (is_add) {
-      do_transform = (nb_env > 1);
-      if (!do_transform)
-        do_transform = connectivity->cellNbMaterial(cell_id, env_id) > 1;
+    for (Int32 local_id : ids) {
+      bool do_transform = false;
+      CellLocalId cell_id(local_id);
+      // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
+      // plusieurs matériaux dans le milieu.
+      // En cas de supression, on passe de partiel à pure si on est le seul matériau
+      // et le seul milieu.
+      const Int16 nb_env = cells_nb_env[local_id];
+      if (is_add) {
+        do_transform = (nb_env > 1);
+        if (!do_transform)
+          do_transform = connectivity->cellNbMaterial(cell_id, env_id) > 1;
+      }
+      else {
+        do_transform = (nb_env == 1);
+        if (do_transform)
+          do_transform = connectivity->cellNbMaterial(cell_id, env_id) == 1;
+      }
+      m_work_info.setTransformedCell(cell_id, do_transform);
     }
-    else {
-      do_transform = (nb_env == 1);
-      if (do_transform)
-        do_transform = connectivity->cellNbMaterial(cell_id, env_id) == 1;
-    }
-    m_work_info.setTransformedCell(cell_id, do_transform);
   }
 }
 
@@ -340,10 +356,15 @@ _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids)
 {
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
-  CellGroup all_cells = m_material_mng->mesh()->allCells();
   const bool is_add = m_work_info.isAdd();
+  SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
 
-  for (Int32 lid : ids) {
+  const Int32 n = ids.size();
+  auto command = makeCommand(m_copy_queue);
+  command << RUNCOMMAND_LOOP1(iter, n)
+  {
+    auto [i] = iter();
+    Int32 lid = ids[i];
     bool do_transform = false;
     // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux.
     // En cas de supression, on passe de partiel à pure si on est le seul milieu.
@@ -351,8 +372,8 @@ _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids)
       do_transform = cells_nb_env[lid] > 1;
     else
       do_transform = cells_nb_env[lid] == 1;
-    m_work_info.setTransformedCell(CellLocalId(lid), do_transform);
-  }
+    transformed_cells[lid] = do_transform;
+  };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -379,7 +400,7 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   Int32 nb_to_remove = local_ids.size();
 
   // Positionne le filtre des mailles supprimées.
-  m_work_info.setRemovedCells(local_ids, true);
+  setRemovedCells(local_ids, true);
 
   // TODO: à faire dans finialize()
   env->addToTotalNbCellMat(-nb_to_remove);
@@ -396,7 +417,7 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 
   // Remet \a removed_local_ids_filter à la valeur initiale pour
   // les prochaines opérations
-  m_work_info.setRemovedCells(local_ids, false);
+  setRemovedCells(local_ids, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -473,6 +494,43 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
     };
     functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set)
+{
+  const Int32 nb_item = local_ids.size();
+  SmallSpan<bool> removed_cells = m_work_info.removedCells();
+  auto command = makeCommand(m_copy_queue);
+
+  ARCANE_CHECK_ACCESSIBLE_POINTER(m_copy_queue, local_ids.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(m_copy_queue, removed_cells.data());
+
+  command << RUNCOMMAND_LOOP1(iter, nb_item)
+  {
+    auto [i] = iter();
+    removed_cells[local_ids[i]] = value_to_set;
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+_resetTransformedCells(ConstArrayView<Int32> local_ids)
+{
+  const Int32 nb_item = local_ids.size();
+  auto command = makeCommand(m_copy_queue);
+  SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
+  command << RUNCOMMAND_LOOP1(iter, nb_item)
+  {
+    auto [i] = iter();
+    Int32 lid = local_ids[i];
+    transformed_cells[lid] = false;
+  };
 }
 
 /*---------------------------------------------------------------------------*/

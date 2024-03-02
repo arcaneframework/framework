@@ -59,6 +59,9 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   DualUniqueArray<MatVarIndex> m_saved_matvar_indexes;
   DualUniqueArray<Int32> m_saved_local_ids;
 
+  //! Nombre de matériaux pour le milieu en cours d'évaluation
+  UniqueArray<Int16> m_cells_current_nb_material;
+
  public:
 
   //! Initialise l'instance.
@@ -97,7 +100,9 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   bool isAdd() const { return m_is_add; }
 
   SmallSpan<const bool> transformedCells() const { return m_cells_to_transform.view(); }
+  SmallSpan<bool> transformedCells() { return m_cells_to_transform.view(); }
   SmallSpan<const bool> removedCells() const { return m_removed_local_ids_filter.view(); }
+  SmallSpan<bool> removedCells() { return m_removed_local_ids_filter.view(); }
 
  private:
 
