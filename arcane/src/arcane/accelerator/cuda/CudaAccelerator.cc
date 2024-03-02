@@ -83,7 +83,7 @@ class CudaMemoryAllocatorBase
   }
   void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo mem_info) final
   {
-    ARCANE_CHECK_CUDA(_deallocate(mem_info, args));
+    ARCANE_CHECK_CUDA_NOTHROW(_deallocate(mem_info, args));
   }
 
  protected:
