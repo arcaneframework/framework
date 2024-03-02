@@ -76,9 +76,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  public:
 
-  RunQueue(const RunQueue&) = delete;
+  RunQueue(const RunQueue&);
+  RunQueue& operator=(const RunQueue&);
+
+ public:
+
   RunQueue(RunQueue&&) = delete;
-  RunQueue& operator=(const RunQueue&) = delete;
   RunQueue& operator=(RunQueue&&) = delete;
 
  public:
