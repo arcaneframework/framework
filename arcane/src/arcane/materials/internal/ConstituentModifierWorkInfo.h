@@ -100,6 +100,7 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   bool isAdd() const { return m_is_add; }
 
   SmallSpan<const bool> transformedCells() const { return m_cells_to_transform.view(); }
+  SmallSpan<bool> transformedCells() { return m_cells_to_transform.view(); }
   SmallSpan<const bool> removedCells() const { return m_removed_local_ids_filter.view(); }
   SmallSpan<bool> removedCells() { return m_removed_local_ids_filter.view(); }
 

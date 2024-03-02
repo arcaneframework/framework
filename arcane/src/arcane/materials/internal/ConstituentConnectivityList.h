@@ -45,6 +45,7 @@ class ConstituentConnectivityList
 
   class ConstituentContainer;
   class Container;
+  class NumberOfMaterialComputer;
 
  public:
 
@@ -85,6 +86,8 @@ class ConstituentConnectivityList
   void fillCellsNbMaterial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
                            SmallSpan<Int16> cells_nb_material, RunQueue& queue);
 
+  void fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
+                            SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue);
   /*!
    * \brief Indique si l'instance est activée.
    *

@@ -214,8 +214,10 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
       if (mat == modified_mat)
         continue;
 
-      m_work_info.pure_local_ids.clearHost();
-      m_work_info.partial_indexes.clearHost();
+      if (!is_device) {
+        m_work_info.pure_local_ids.clearHost();
+        m_work_info.partial_indexes.clearHost();
+      }
 
       MeshMaterialVariableIndexer* indexer = mat->variableIndexer();
 
@@ -223,7 +225,7 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
 
       _computeCellsToTransformForMaterial(mat, ids);
       indexer->transformCellsV2(m_work_info, m_copy_queue);
-      m_work_info.resetTransformedCells(ids);
+      _resetTransformedCells(ids);
 
       auto pure_local_ids = m_work_info.pure_local_ids.view(is_device);
       auto partial_indexes = m_work_info.partial_indexes.view(is_device);
@@ -273,8 +275,10 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     if (env == modified_env)
       continue;
 
-    m_work_info.pure_local_ids.clearHost();
-    m_work_info.partial_indexes.clearHost();
+    if (!is_device) {
+      m_work_info.pure_local_ids.clearHost();
+      m_work_info.partial_indexes.clearHost();
+    }
 
     MeshMaterialVariableIndexer* indexer = env->variableIndexer();
 
@@ -282,7 +286,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
 
     _computeCellsToTransformForEnvironments(ids);
     indexer->transformCellsV2(m_work_info, m_copy_queue);
-    m_work_info.resetTransformedCells(ids);
+    _resetTransformedCells(ids);
 
     info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
             << " name=" << env->name();
@@ -311,27 +315,33 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, ConstArrayView<Int3
   bool is_add = m_work_info.isAdd();
 
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
+  SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
+  const bool do_new = true;
+  if (do_new)
+    connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_copy_queue);
+  else {
+    ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
 
-  for (Int32 local_id : ids) {
-    bool do_transform = false;
-    CellLocalId cell_id(local_id);
-    // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
-    // plusieurs matériaux dans le milieu.
-    // En cas de supression, on passe de partiel à pure si on est le seul matériau
-    // et le seul milieu.
-    const Int16 nb_env = cells_nb_env[local_id];
-    if (is_add) {
-      do_transform = (nb_env > 1);
-      if (!do_transform)
-        do_transform = connectivity->cellNbMaterial(cell_id, env_id) > 1;
+    for (Int32 local_id : ids) {
+      bool do_transform = false;
+      CellLocalId cell_id(local_id);
+      // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
+      // plusieurs matériaux dans le milieu.
+      // En cas de supression, on passe de partiel à pure si on est le seul matériau
+      // et le seul milieu.
+      const Int16 nb_env = cells_nb_env[local_id];
+      if (is_add) {
+        do_transform = (nb_env > 1);
+        if (!do_transform)
+          do_transform = connectivity->cellNbMaterial(cell_id, env_id) > 1;
+      }
+      else {
+        do_transform = (nb_env == 1);
+        if (do_transform)
+          do_transform = connectivity->cellNbMaterial(cell_id, env_id) == 1;
+      }
+      m_work_info.setTransformedCell(cell_id, do_transform);
     }
-    else {
-      do_transform = (nb_env == 1);
-      if (do_transform)
-        do_transform = connectivity->cellNbMaterial(cell_id, env_id) == 1;
-    }
-    m_work_info.setTransformedCell(cell_id, do_transform);
   }
 }
 
@@ -347,8 +357,14 @@ _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids)
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
   const bool is_add = m_work_info.isAdd();
+  SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
 
-  for (Int32 lid : ids) {
+  const Int32 n = ids.size();
+  auto command = makeCommand(m_copy_queue);
+  command << RUNCOMMAND_LOOP1(iter, n)
+  {
+    auto [i] = iter();
+    Int32 lid = ids[i];
     bool do_transform = false;
     // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux.
     // En cas de supression, on passe de partiel à pure si on est le seul milieu.
@@ -356,8 +372,8 @@ _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids)
       do_transform = cells_nb_env[lid] > 1;
     else
       do_transform = cells_nb_env[lid] == 1;
-    m_work_info.setTransformedCell(CellLocalId(lid), do_transform);
-  }
+    transformed_cells[lid] = do_transform;
+  };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -486,7 +502,7 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
 void IncrementalComponentModifier::
 setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set)
 {
-  Int32 nb_item = local_ids.size();
+  const Int32 nb_item = local_ids.size();
   SmallSpan<bool> removed_cells = m_work_info.removedCells();
   auto command = makeCommand(m_copy_queue);
 
@@ -497,6 +513,23 @@ setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set)
   {
     auto [i] = iter();
     removed_cells[local_ids[i]] = value_to_set;
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+_resetTransformedCells(ConstArrayView<Int32> local_ids)
+{
+  const Int32 nb_item = local_ids.size();
+  auto command = makeCommand(m_copy_queue);
+  SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
+  command << RUNCOMMAND_LOOP1(iter, nb_item)
+  {
+    auto [i] = iter();
+    Int32 lid = local_ids[i];
+    transformed_cells[lid] = false;
   };
 }
 

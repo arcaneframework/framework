@@ -191,6 +191,39 @@ class ConstituentConnectivityList::ConstituentContainer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour calculer le nombre de matériaux d'un milieu.
+ */
+class ConstituentConnectivityList::NumberOfMaterialComputer
+{
+ public:
+
+  NumberOfMaterialComputer(ConstituentConnectivityList::ConstituentContainer::View view,
+                           SmallSpan<const Int16> environment_for_materials)
+  : m_view(view)
+  , m_environment_for_materials(environment_for_materials)
+  {
+  }
+  ARCCORE_HOST_DEVICE Int16 cellNbMaterial(Int32 cell_local_id, Int16 env_id) const
+  {
+    auto mats = m_view.components(cell_local_id);
+    Int16 nb_mat = 0;
+    for (Int16 mat_id : mats) {
+      Int16 current_id = m_environment_for_materials[mat_id];
+      if (current_id == env_id)
+        ++nb_mat;
+    }
+    return nb_mat;
+  }
+
+ private:
+
+  ConstituentConnectivityList::ConstituentContainer::View m_view;
+  SmallSpan<const Int16> m_environment_for_materials;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class ConstituentConnectivityList::Container
 {
@@ -434,7 +467,7 @@ fillCellsNbMaterial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
   ConstituentContainer::View materials_container_view(m_container->m_material);
   bool is_device = isAcceleratorPolicy(queue.executionPolicy());
   auto environment_for_materials = m_environment_for_materials.view(is_device);
-  Int32 n = cells_local_id.size();
+  const Int32 n = cells_local_id.size();
   auto command = makeCommand(queue);
   command << RUNCOMMAND_LOOP1(iter, n)
   {
@@ -448,6 +481,47 @@ fillCellsNbMaterial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
         ++nb_mat;
     }
     cells_nb_material[i] = nb_mat;
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ConstituentConnectivityList::
+fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
+                     SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue)
+{
+  ConstituentContainer::View materials_container_view(m_container->m_material);
+  bool is_device = isAcceleratorPolicy(queue.executionPolicy());
+  auto environment_for_materials = m_environment_for_materials.view(is_device);
+
+  NumberOfMaterialComputer nb_mat_computer(materials_container_view, environment_for_materials);
+
+  SmallSpan<const Int16> cells_nb_env = cellsNbEnvironment();
+  const Int32 n = cells_local_id.size();
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP1(iter, n)
+  {
+    auto [i] = iter();
+    Int32 local_id = cells_local_id[i];
+    bool do_transform = false;
+    CellLocalId cell_id(local_id);
+    // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
+    // plusieurs matériaux dans le milieu.
+    // En cas de supression, on passe de partiel à pure si on est le seul matériau
+    // et le seul milieu.
+    const Int16 nb_env = cells_nb_env[local_id];
+    if (is_add) {
+      do_transform = (nb_env > 1);
+      if (!do_transform)
+        do_transform = nb_mat_computer.cellNbMaterial(cell_id, env_id) > 1;
+    }
+    else {
+      do_transform = (nb_env == 1);
+      if (do_transform)
+        do_transform = nb_mat_computer.cellNbMaterial(cell_id, env_id) == 1;
+    }
+    cells_do_transform[cell_id] = do_transform;
   };
 }
 
