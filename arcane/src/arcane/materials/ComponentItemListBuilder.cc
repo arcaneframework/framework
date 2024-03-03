@@ -26,8 +26,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 ComponentItemListBuilder::
-ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer)
-: m_indexer(var_indexer)
+ComponentItemListBuilder()
 {
 }
 

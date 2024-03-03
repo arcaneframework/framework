@@ -37,7 +37,7 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
 {
  public:
 
-  ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer);
+  ComponentItemListBuilder();
 
  public:
 
@@ -66,6 +66,7 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
   SmallSpan<const Int32> partialLocalIds() const { return m_partial_local_ids; }
 
   MeshMaterialVariableIndexer* indexer() const { return m_indexer; }
+  void setIndexer(MeshMaterialVariableIndexer* indexer) { m_indexer = indexer; }
 
  private:
 

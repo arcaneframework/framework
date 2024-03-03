@@ -467,7 +467,9 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                    SmallSpan<const Int32> local_ids)
 {
   // TODO Conserver l'instance au cours de toutes modifications
-  ComponentItemListBuilder list_builder(var_indexer);
+  ComponentItemListBuilder& list_builder = m_work_info.list_builder;
+  list_builder.setIndexer(var_indexer);
+
   const Int32 n = local_ids.size();
   list_builder.preAllocate(n);
 

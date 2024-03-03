@@ -19,6 +19,7 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
+#include "arcane/materials/internal/ComponentItemListBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,6 +66,8 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   // Filtre indiquant si une maille sera partielle après l'ajout.
   // Ce tableau est dimensionné au nombre de mailles ajoutées lors de la tranformation courante.
   UniqueArray<bool> m_cells_is_partial;
+
+  ComponentItemListBuilder list_builder;
 
  public:
 
