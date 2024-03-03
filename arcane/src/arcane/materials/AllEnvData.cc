@@ -158,13 +158,14 @@ _computeAndResizeEnvItemsInternal()
 void AllEnvData::
 _rebuildIncrementalConnectivitiesFromGroups()
 {
+  RunQueue queue(makeQueue(m_material_mng->runner()));
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
   auto clist = m_component_connectivity_list;
   clist->removeAllConnectivities();
   for (MeshEnvironment* env : true_environments) {
-    clist->addCellsToEnvironment(env->componentId(), env->cells().view().localIds());
+    clist->addCellsToEnvironment(env->componentId(), env->cells().view().localIds(), queue);
     for (MeshMaterial* mat : env->trueMaterials())
-      clist->addCellsToMaterial(mat->componentId(), mat->cells().view().localIds());
+      clist->addCellsToMaterial(mat->componentId(), mat->cells().view().localIds(), queue);
   }
 }
 

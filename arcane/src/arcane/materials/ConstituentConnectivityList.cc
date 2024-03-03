@@ -40,12 +40,13 @@ namespace
   // utiliser std::erase()
 
   template <typename DataType>
-  void _removeValueAndKeepOrder(ArrayView<DataType> values, DataType value_to_remove)
+  ARCCORE_HOST_DEVICE void _removeValueAndKeepOrder(ArrayView<DataType> values, DataType value_to_remove)
   {
     Integer n = values.size();
+#ifndef ARCCORE_DEVICE_CODE
     if (n <= 0)
       ARCANE_FATAL("Can not remove item lid={0} because list is empty", value_to_remove);
-
+#endif
     --n;
     if (n == 0) {
       if (values[0] == value_to_remove)
@@ -63,7 +64,11 @@ namespace
         }
       }
     }
+#ifdef ARCCORE_DEVICE_CODE
+    assert(false);
+#else
     ARCANE_FATAL("No value to remove '{0}' found in list {1}", value_to_remove, values);
+#endif
   }
 
 } // namespace
@@ -329,7 +334,8 @@ endCreate(bool is_continue)
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-_addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component)
+_addCells(Int16 component_id, ConstArrayView<Int32> cell_ids,
+          ConstituentContainer& component, RunQueue& queue)
 {
   Array<Int16>& nb_component = component.m_nb_component_as_array;
   Array<Int32>& component_index = component.m_component_index_as_array;
@@ -365,12 +371,20 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentContain
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-_removeCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component)
+_removeCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
+             ConstituentContainer& component, RunQueue& queue)
 {
-  Array<Int16>& nb_component = component.m_nb_component_as_array;
-  Array<Int32>& component_index = component.m_component_index_as_array;
-  Array<Int16>& component_list = component.m_component_list_as_array;
-  for (Int32 id : cell_ids) {
+  SmallSpan<Int16> nb_component = component.m_nb_component_as_array.view();
+  SmallSpan<Int32> component_index = component.m_component_index_as_array.view();
+  SmallSpan<Int16> component_list = component.m_component_list_as_array.view();
+
+  const Int32 n = cells_local_id.size();
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP1(iter, n)
+  {
+    auto [i] = iter();
+    Int32 id = cells_local_id[i];
+    //for (Int32 id : cell_ids) {
     CellLocalId cell_id(id);
     const Int32 current_pos = component_index[cell_id];
     const Int32 n = nb_component[cell_id];
@@ -380,43 +394,43 @@ _removeCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentCont
     // Met une valeur invalide pour indiquer que l'emplacement est libre
     current_values[n - 1] = (-1);
     --nb_component[cell_id];
-  }
+  };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
+addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
 {
-  _addCells(env_id, cell_ids, m_container->m_environment);
+  _addCells(env_id, cell_ids, m_container->m_environment, queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
+removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
 {
-  _removeCells(env_id, cell_ids, m_container->m_environment);
+  _removeCells(env_id, cell_ids, m_container->m_environment, queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
+addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
 {
-  _addCells(mat_id, cell_ids, m_container->m_material);
+  _addCells(mat_id, cell_ids, m_container->m_material, queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
+removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
 {
-  _removeCells(mat_id, cell_ids, m_container->m_material);
+  _removeCells(mat_id, cell_ids, m_container->m_material, queue);
 }
 
 /*---------------------------------------------------------------------------*/

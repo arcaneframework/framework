@@ -63,11 +63,11 @@ class ConstituentConnectivityList
 
   void endCreate(bool is_continue);
 
-  void addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids);
-  void removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids);
+  void addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue);
+  void removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue);
 
-  void addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids);
-  void removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids);
+  void addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue);
+  void removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue);
 
   //! Tableaux du nombre total de milieux par maille (indexé par localId())
   ConstArrayView<Int16> cellsNbEnvironment() const;
@@ -129,10 +129,12 @@ class ConstituentConnectivityList
   DualUniqueArray<Int16> m_environment_for_materials;
   bool m_is_active = false;
 
- private:
+ public:
 
-  void _addCells(Int16 env_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component);
-  void _removeCells(Int16 env_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component);
+  void _addCells(Int16 env_id, ConstArrayView<Int32> cell_ids,
+                 ConstituentContainer& component, RunQueue& queue);
+  void _removeCells(Int16 env_id, ConstArrayView<Int32> cell_ids,
+                    ConstituentContainer& component, RunQueue& queue);
 };
 
 /*---------------------------------------------------------------------------*/
