@@ -465,18 +465,35 @@ void IncrementalComponentModifier::
 _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                    Int32ConstArrayView local_ids)
 {
-  ComponentItemListBuilder list_builder(var_indexer, var_indexer->maxIndexInMultipleArray());
+  ComponentItemListBuilder list_builder(var_indexer);
+  const Int32 n = local_ids.size();
+  list_builder.preAllocate(n);
+
+  SmallSpan<MatVarIndex> pure_matvar_indexes = list_builder.pureMatVarIndexes();
+  SmallSpan<MatVarIndex> partial_matvar_indexes = list_builder.partialMatVarIndexes();
+  SmallSpan<Int32> partial_local_ids = list_builder.partialLocalIds();
+  Int32 nb_pure_added = 0;
+  Int32 nb_partial_added = 0;
+  Int32 index_in_partial = var_indexer->maxIndexInMultipleArray();
+
+  const Int32 component_index = var_indexer->index() + 1;
 
   SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial.view();
-  const Int32 n = local_ids.size();
   for (Int32 i = 0; i < n; ++i) {
     Int32 local_id = local_ids[i];
     CellLocalId cell_id(local_id);
-    if (cells_is_partial[i])
-      list_builder.addPartialItem(local_id);
-    else
-      list_builder.addPureItem(local_id);
+    if (cells_is_partial[i]) {
+      partial_matvar_indexes[nb_partial_added] = MatVarIndex(component_index, index_in_partial);
+      partial_local_ids[nb_partial_added] = local_id;
+      ++index_in_partial;
+      ++nb_partial_added;
+    }
+    else {
+      pure_matvar_indexes[nb_pure_added] = MatVarIndex(0, local_id);
+      ++nb_pure_added;
+    }
   }
+  list_builder.resize(nb_pure_added, nb_partial_added);
 
   if (traceMng()->verbosityLevel() >= 5)
     info() << "ADD_MATITEM_TO_INDEXER component=" << var_indexer->name()

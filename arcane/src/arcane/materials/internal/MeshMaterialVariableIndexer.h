@@ -36,6 +36,7 @@ namespace Arcane::Materials
 class MeshMaterialInfo;
 class IMeshEnvironment;
 class ComponentItemListBuilder;
+class ComponentItemListBuilderOld;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -92,7 +93,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 
   //! Fonctions publiques mais réservées aux classes de Arcane.
   //@{
-  void endUpdate(const ComponentItemListBuilder& builder);
+  void endUpdate(const ComponentItemListBuilderOld& builder);
   Array<MatVarIndex>& matvarIndexesArray() { return m_matvar_indexes; }
   void setCells(const CellGroup& cells) { m_cells = cells; }
   void setIsEnvironment(bool is_environment) { m_is_environment = is_environment; }

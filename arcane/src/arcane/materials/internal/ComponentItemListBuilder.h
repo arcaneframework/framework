@@ -36,7 +36,56 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
 {
  public:
 
-  ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer,
+  ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer);
+
+ public:
+
+  void preAllocate(Int32 nb_item)
+  {
+    m_pure_matvar_indexes.resize(nb_item);
+    m_partial_matvar_indexes.resize(nb_item);
+    m_partial_local_ids.resize(nb_item);
+  }
+
+  void resize(Int32 nb_pure, Int32 nb_partial)
+  {
+    m_pure_matvar_indexes.resize(nb_pure);
+    m_partial_matvar_indexes.resize(nb_partial);
+    m_partial_local_ids.resize(nb_partial);
+  }
+
+ public:
+
+  SmallSpan<MatVarIndex> pureMatVarIndexes() { return m_pure_matvar_indexes.view(); }
+  SmallSpan<MatVarIndex> partialMatVarIndexes() { return m_partial_matvar_indexes.view(); }
+  SmallSpan<Int32> partialLocalIds() { return m_partial_local_ids.view(); }
+
+  SmallSpan<const MatVarIndex> pureMatVarIndexes() const { return m_pure_matvar_indexes.view(); }
+  SmallSpan<const MatVarIndex> partialMatVarIndexes() const { return m_partial_matvar_indexes.view(); }
+  SmallSpan<const Int32> partialLocalIds() const { return m_partial_local_ids.view(); }
+
+  MeshMaterialVariableIndexer* indexer() const { return m_indexer; }
+
+ private:
+
+  UniqueArray<MatVarIndex> m_pure_matvar_indexes;
+  UniqueArray<MatVarIndex> m_partial_matvar_indexes;
+  UniqueArray<Int32> m_partial_local_ids;
+
+  MeshMaterialVariableIndexer* m_indexer = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe d'aide à la construction d'une liste de ComponentItem
+ * pour un MeshMaterialVariableIndexer.
+ */
+class ARCANE_MATERIALS_EXPORT ComponentItemListBuilderOld
+{
+ public:
+
+  ComponentItemListBuilderOld(MeshMaterialVariableIndexer* var_indexer,
                            Integer begin_index_in_partial);
 
  public:

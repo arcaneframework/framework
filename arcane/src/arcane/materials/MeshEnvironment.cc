@@ -279,7 +279,7 @@ computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list
     CellGroup cells = var_indexer->cells();
     Integer var_nb_cell = cells.size();
 
-    ComponentItemListBuilder list_builder(var_indexer, 0);
+    ComponentItemListBuilderOld list_builder(var_indexer, 0);
 
     info(4) << "MAT_INDEXER mat=" << mat->name() << " NB_CELL=" << var_nb_cell << " name=" << cells.name();
     ENUMERATE_CELL (icell, cells) {

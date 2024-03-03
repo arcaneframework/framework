@@ -400,7 +400,7 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
 
   ContainerConstViewType global_view = m_vars[0]->valueView();
 
-  ConstArrayView<MatVarIndex> partial_matvar = list_builder.partialMatVarIndexes();
+  SmallSpan<const MatVarIndex> partial_matvar = list_builder.partialMatVarIndexes();
 
   Integer nb_partial = partial_matvar.size();
 
@@ -425,7 +425,7 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
     };
   }
   else{
-    Int32ConstArrayView partial_local_ids = list_builder.partialLocalIds();
+    SmallSpan<const Int32> partial_local_ids = list_builder.partialLocalIds();
     ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_local_ids.data());
     command << RUNCOMMAND_LOOP1(iter, nb_partial)
     {

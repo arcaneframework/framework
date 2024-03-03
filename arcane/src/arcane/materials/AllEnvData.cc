@@ -179,7 +179,7 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
   ConstArrayView<Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
   for (const MeshEnvironment* env : true_environments) {
     MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
-    ComponentItemListBuilder list_builder(var_indexer, 0);
+    ComponentItemListBuilderOld list_builder(var_indexer, 0);
     CellGroup cells = var_indexer->cells();
     Integer var_nb_cell = cells.size();
     info(4) << "ENV_INDEXER (V2) i=" << var_indexer->index() << " NB_CELL=" << var_nb_cell << " name=" << cells.name()
