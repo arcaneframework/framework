@@ -273,7 +273,7 @@ endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, Run
         last_local_ids[output_index] = local_ids[true_index];
       }
     };
-    filterer.applyWithIndex(orig_nb_item, select_lambda, setter_lambda);
+    filterer.applyWithIndex(orig_nb_item, select_lambda, setter_lambda, A_FUNCINFO);
     filterer.nbOutputElement();
   }
 
@@ -287,7 +287,7 @@ endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, Run
       matvar_indexes[input_index] = last_matvar_indexes[output_index];
       local_ids[input_index] = last_local_ids[output_index];
     };
-    filterer.applyWithIndex(orig_nb_item - nb_remove, select_lambda, setter_lambda);
+    filterer.applyWithIndex(orig_nb_item - nb_remove, select_lambda, setter_lambda, A_FUNCINFO);
     filterer.nbOutputElement();
   }
   nb_item -= nb_remove;
@@ -515,7 +515,7 @@ _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
       partial_indexes[output_index] = current_index;
       matvar_indexes[input_index] = MatVarIndex(var_index, current_index);
     };
-    filterer.applyWithIndex(nb, select_lambda, setter_lambda);
+    filterer.applyWithIndex(nb, select_lambda, setter_lambda, A_FUNCINFO);
   }
   else {
     // Transformation Partial -> Pure
@@ -535,7 +535,7 @@ _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
       partial_indexes[output_index] = var_index;
       matvar_indexes[input_index] = MatVarIndex(0, local_id);
     };
-    filterer.applyWithIndex(nb, select_lambda, setter_lambda);
+    filterer.applyWithIndex(nb, select_lambda, setter_lambda, A_FUNCINFO);
   }
 
   Int32 nb_out = filterer.nbOutputElement();
