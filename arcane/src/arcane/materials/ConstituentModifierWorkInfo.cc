@@ -35,6 +35,7 @@ ConstituentModifierWorkInfo()
 , m_saved_matvar_indexes(platform::getDefaultDataAllocator())
 , m_saved_local_ids(platform::getDefaultDataAllocator())
 , m_cells_current_nb_material(platform::getDefaultDataAllocator())
+, m_cells_is_partial(platform::getDefaultDataAllocator())
 , m_removed_local_ids_filter(platform::getDefaultDataAllocator())
 , m_cells_to_transform(platform::getDefaultDataAllocator())
 {

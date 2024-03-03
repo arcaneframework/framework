@@ -78,7 +78,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
                                    Int32ConstArrayView local_ids, bool update_env_indexer);
   void _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                               Int32ConstArrayView local_ids, bool update_env_indexer);
-  void _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexer,
+  void _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                           Int32ConstArrayView local_ids);
 };
 

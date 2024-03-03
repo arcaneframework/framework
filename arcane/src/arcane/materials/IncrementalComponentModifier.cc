@@ -434,23 +434,27 @@ void IncrementalComponentModifier::
 _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                        Int32ConstArrayView local_ids, bool update_env_indexer)
 {
-  info(4) << "MeshEnvironment::addItemsDirect"
-          << " mat=" << mat->name();
+  info(4) << "MeshEnvironment::addItemsDirect" << " mat=" << mat->name();
 
   MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
-  Int32 nb_to_add = local_ids.size();
+  const Int32 nb_to_add = local_ids.size();
 
   // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
   env->addToTotalNbCellMat(nb_to_add);
 
-  _addItemsToIndexer(env, var_indexer, local_ids);
+  const Int16 env_id = env->componentId();
+  m_work_info.m_cells_is_partial.resize(nb_to_add);
+  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  connectivity->fillCellsIsPartial(local_ids, env_id, m_work_info.m_cells_is_partial.view(), m_copy_queue);
+
+  _addItemsToIndexer(var_indexer, local_ids);
 
   if (update_env_indexer) {
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
     // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
-    _addItemsToIndexer(env, env->variableIndexer(), local_ids);
+    _addItemsToIndexer(env->variableIndexer(), local_ids);
   }
 }
 
@@ -458,22 +462,20 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 /*---------------------------------------------------------------------------*/
 
 void IncrementalComponentModifier::
-_addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexer,
+_addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                    Int32ConstArrayView local_ids)
 {
   ComponentItemListBuilder list_builder(var_indexer, var_indexer->maxIndexInMultipleArray());
-  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  ConstArrayView<Int16> nb_env_per_cell = connectivity->cellsNbEnvironment();
-  Int16 env_id = env->componentId();
 
-  for (Int32 lid : local_ids) {
-    CellLocalId cell_id(lid);
-    // On ne prend l'indice global que si on est le seul matériau et le seul
-    // milieu de la maille. Sinon, on prend un indice multiple
-    if (nb_env_per_cell[cell_id] > 1 || connectivity->cellNbMaterial(cell_id, env_id) > 1)
-      list_builder.addPartialItem(lid);
+  SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial.view();
+  const Int32 n = local_ids.size();
+  for (Int32 i = 0; i < n; ++i) {
+    Int32 local_id = local_ids[i];
+    CellLocalId cell_id(local_id);
+    if (cells_is_partial[i])
+      list_builder.addPartialItem(local_id);
     else
-      list_builder.addPureItem(lid);
+      list_builder.addPureItem(local_id);
   }
 
   if (traceMng()->verbosityLevel() >= 5)
