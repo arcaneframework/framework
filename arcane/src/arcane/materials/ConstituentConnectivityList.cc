@@ -22,6 +22,7 @@
 
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/Scan.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,12 +41,13 @@ namespace
   // utiliser std::erase()
 
   template <typename DataType>
-  void _removeValueAndKeepOrder(ArrayView<DataType> values, DataType value_to_remove)
+  ARCCORE_HOST_DEVICE void _removeValueAndKeepOrder(ArrayView<DataType> values, DataType value_to_remove)
   {
     Integer n = values.size();
+#ifndef ARCCORE_DEVICE_CODE
     if (n <= 0)
       ARCANE_FATAL("Can not remove item lid={0} because list is empty", value_to_remove);
-
+#endif
     --n;
     if (n == 0) {
       if (values[0] == value_to_remove)
@@ -63,7 +65,11 @@ namespace
         }
       }
     }
+#ifdef ARCCORE_DEVICE_CODE
+    assert(false);
+#else
     ARCANE_FATAL("No value to remove '{0}' found in list {1}", value_to_remove, values);
+#endif
   }
 
 } // namespace
@@ -329,35 +335,74 @@ endCreate(bool is_continue)
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-_addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component)
+_addCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
+          ConstituentContainer& component, RunQueue& queue)
 {
+  const Int32 nb_item = cells_local_id.size();
+  if (nb_item == 0)
+    return;
   Array<Int16>& nb_component = component.m_nb_component_as_array;
   Array<Int32>& component_index = component.m_component_index_as_array;
   Array<Int16>& component_list = component.m_component_list_as_array;
-  for (Int32 id : cell_ids) {
-    CellLocalId cell_id(id);
-    const Int16 n = nb_component[cell_id];
-    if (n == 0) {
-      // Pas encore de milieu. On ajoute juste le nouveau milieu
-      Int32 pos = component_list.size();
-      component_index[cell_id] = pos;
-      component_list.add(component_id);
-    }
-    else {
-      // Alloue de la place pour un milieu supplémentaire et recopie les
-      // anciennes valeurs.
-      // TODO: cela laisse des trous dans la liste qu'il faudra supprimer
-      // via un compactage.
-      Int32 current_pos = component_index[cell_id];
-      Int32 pos = component_list.size();
-      component_index[cell_id] = pos;
-      component_list.addRange(component_id, n + 1);
-      ArrayView<Int16> current_values(n, &component_list[current_pos]);
-      ArrayView<Int16> new_values(n, &component_list[pos]);
-      new_values.copy(current_values);
-    }
-    ++nb_component[cell_id];
+
+  SmallSpan<Int16> nb_component_view = component.m_nb_component_as_array.view();
+
+  NumArray<Int32, MDDim1> new_indexes(nb_item);
+  NumArray<Int32, MDDim1> nb_component_after(nb_item);
+  {
+    auto command = makeCommand(queue);
+    SmallSpan<Int32> nb_component_after_view = nb_component_after;
+    command << RUNCOMMAND_LOOP1(iter, nb_item)
+    {
+      auto [i] = iter();
+      nb_component_after_view[i] = 1 + nb_component_view[cells_local_id[i]];
+    };
   }
+
+  // Calcul l'index des nouveaux éléments
+  {
+    Accelerator::Scanner<Int32> scanner;
+    SmallSpan<Int32> new_indexes_view = new_indexes;
+    SmallSpan<const Int32> nb_component_after_view = nb_component_after;
+    scanner.exclusiveSum(&queue, nb_component_after_view, new_indexes_view);
+  }
+  queue.barrier();
+
+  // TODO: Utiliser une copie depuis le device pour ces deux valeurs.
+  const Int32 nb_indexes_to_add = new_indexes[nb_item - 1] + nb_component_after[nb_item - 1];
+  const Int32 current_list_index = component_list.size();
+
+  MemoryUtils::checkResizeArrayWithCapacity(component_list, current_list_index + nb_indexes_to_add, false);
+
+  {
+    auto command = makeCommand(queue);
+    SmallSpan<Int16> nb_component_view = nb_component.view();
+    SmallSpan<Int32> component_index_view = component_index.view();
+    SmallSpan<Int16> component_list_view = component_list.view();
+    SmallSpan<const Int32> new_indexes_view = new_indexes;
+    command << RUNCOMMAND_LOOP1(iter, nb_item)
+    {
+      auto [i] = iter();
+      Int32 cell_id = cells_local_id[i];
+      const Int16 n = nb_component_view[cell_id];
+      Int32 new_pos = current_list_index + new_indexes_view[i];
+      if (n != 0) {
+        // Recopie les anciennes valeurs.
+        // TODO: cela laisse des trous dans la liste qu'il faudra supprimer
+        // via un compactage.
+        Int32 current_pos = component_index_view[cell_id];
+        component_index_view[cell_id] = new_pos;
+
+        SmallSpan<const Int16> current_values(&component_list_view[current_pos], n);
+        SmallSpan<Int16> new_values(&component_list_view[new_pos], n);
+        new_values.copy(current_values);
+      }
+      component_index_view[cell_id] = new_pos;
+      component_list_view[new_pos + n] = component_id;
+      ++nb_component_view[cell_id];
+    };
+  }
+
   component.notifyUpdateConnectivityList();
 }
 
@@ -365,12 +410,20 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentContain
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-_removeCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentContainer& component)
+_removeCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
+             ConstituentContainer& component, RunQueue& queue)
 {
-  Array<Int16>& nb_component = component.m_nb_component_as_array;
-  Array<Int32>& component_index = component.m_component_index_as_array;
-  Array<Int16>& component_list = component.m_component_list_as_array;
-  for (Int32 id : cell_ids) {
+  SmallSpan<Int16> nb_component = component.m_nb_component_as_array.view();
+  SmallSpan<Int32> component_index = component.m_component_index_as_array.view();
+  SmallSpan<Int16> component_list = component.m_component_list_as_array.view();
+
+  const Int32 n = cells_local_id.size();
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP1(iter, n)
+  {
+    auto [i] = iter();
+    Int32 id = cells_local_id[i];
+    //for (Int32 id : cell_ids) {
     CellLocalId cell_id(id);
     const Int32 current_pos = component_index[cell_id];
     const Int32 n = nb_component[cell_id];
@@ -380,43 +433,43 @@ _removeCells(Int16 component_id, ConstArrayView<Int32> cell_ids, ConstituentCont
     // Met une valeur invalide pour indiquer que l'emplacement est libre
     current_values[n - 1] = (-1);
     --nb_component[cell_id];
-  }
+  };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
+addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
 {
-  _addCells(env_id, cell_ids, m_container->m_environment);
+  _addCells(env_id, cell_ids, m_container->m_environment, queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids)
+removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
 {
-  _removeCells(env_id, cell_ids, m_container->m_environment);
+  _removeCells(env_id, cell_ids, m_container->m_environment, queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
+addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
 {
-  _addCells(mat_id, cell_ids, m_container->m_material);
+  _addCells(mat_id, cell_ids, m_container->m_material, queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids)
+removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
 {
-  _removeCells(mat_id, cell_ids, m_container->m_material);
+  _removeCells(mat_id, cell_ids, m_container->m_material, queue);
 }
 
 /*---------------------------------------------------------------------------*/

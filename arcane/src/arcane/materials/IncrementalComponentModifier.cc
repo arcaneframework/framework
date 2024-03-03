@@ -130,12 +130,12 @@ apply(MaterialModifierOperation* operation)
     Int16 mat_id = true_mat->componentId();
     if (is_add) {
       mat->cells().addItems(cells_unchanged_in_env);
-      connectivity->addCellsToMaterial(mat_id, cells_unchanged_in_env);
+      connectivity->addCellsToMaterial(mat_id, cells_unchanged_in_env, m_copy_queue);
       _addItemsToEnvironment(true_env, true_mat, cells_unchanged_in_env, false);
     }
     else {
       mat->cells().removeItems(cells_unchanged_in_env);
-      connectivity->removeCellsToMaterial(mat_id, cells_unchanged_in_env);
+      connectivity->removeCellsToMaterial(mat_id, cells_unchanged_in_env, m_copy_queue);
       _removeItemsFromEnvironment(true_env, true_mat, cells_unchanged_in_env, false);
     }
 
@@ -152,12 +152,12 @@ apply(MaterialModifierOperation* operation)
     Int16 env_id = true_env->componentId();
     Int16 mat_id = true_mat->componentId();
     if (is_add) {
-      connectivity->addCellsToEnvironment(env_id, ids);
-      connectivity->addCellsToMaterial(mat_id, ids);
+      connectivity->addCellsToEnvironment(env_id, ids, m_copy_queue);
+      connectivity->addCellsToMaterial(mat_id, ids, m_copy_queue);
     }
     else {
-      connectivity->removeCellsToEnvironment(env_id, ids);
-      connectivity->removeCellsToMaterial(mat_id, ids);
+      connectivity->removeCellsToEnvironment(env_id, ids, m_copy_queue);
+      connectivity->removeCellsToMaterial(mat_id, ids, m_copy_queue);
     }
   }
 
