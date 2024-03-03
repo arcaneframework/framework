@@ -66,6 +66,8 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
   void _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids);
   void _resetTransformedCells(ConstArrayView<Int32> ids);
+  void _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
+                          SmallSpan<const Int32> local_ids);
 
  private:
 
@@ -78,8 +80,6 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
                                    Int32ConstArrayView local_ids, bool update_env_indexer);
   void _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                               Int32ConstArrayView local_ids, bool update_env_indexer);
-  void _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexer,
-                          Int32ConstArrayView local_ids);
 };
 
 /*---------------------------------------------------------------------------*/

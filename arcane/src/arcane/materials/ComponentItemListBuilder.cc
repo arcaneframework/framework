@@ -26,7 +26,15 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 ComponentItemListBuilder::
-ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer,
+ComponentItemListBuilder()
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentItemListBuilderOld::
+ComponentItemListBuilderOld(MeshMaterialVariableIndexer* var_indexer,
                          Integer begin_index_in_partial)
 : m_component_index(var_indexer->index() + 1)
 , m_index_in_partial(begin_index_in_partial)

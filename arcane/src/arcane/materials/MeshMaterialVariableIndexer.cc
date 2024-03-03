@@ -83,7 +83,7 @@ _init()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdate(const ComponentItemListBuilder& builder)
+endUpdate(const ComponentItemListBuilderOld& builder)
 {
   ConstArrayView<MatVarIndex> pure_matvar = builder.pureMatVarIndexes();
   ConstArrayView<MatVarIndex> partial_matvar = builder.partialMatVarIndexes();
@@ -129,8 +129,8 @@ endUpdate(const ComponentItemListBuilder& builder)
 void MeshMaterialVariableIndexer::
 endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
 {
-  ConstArrayView<MatVarIndex> pure_matvar = builder.pureMatVarIndexes();
-  ConstArrayView<MatVarIndex> partial_matvar = builder.partialMatVarIndexes();
+  SmallSpan<const MatVarIndex> pure_matvar = builder.pureMatVarIndexes();
+  SmallSpan<const MatVarIndex> partial_matvar = builder.partialMatVarIndexes();
 
   Integer nb_pure_to_add = pure_matvar.size();
   Integer nb_partial_to_add = partial_matvar.size();

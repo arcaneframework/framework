@@ -492,7 +492,7 @@ fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
                      SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue)
 {
   ConstituentContainer::View materials_container_view(m_container->m_material);
-  bool is_device = isAcceleratorPolicy(queue.executionPolicy());
+  bool is_device = queue.isAcceleratorPolicy();
   auto environment_for_materials = m_environment_for_materials.view(is_device);
 
   NumberOfMaterialComputer nb_mat_computer(materials_container_view, environment_for_materials);
@@ -505,7 +505,6 @@ fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
     auto [i] = iter();
     Int32 local_id = cells_local_id[i];
     bool do_transform = false;
-    CellLocalId cell_id(local_id);
     // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
     // plusieurs matériaux dans le milieu.
     // En cas de supression, on passe de partiel à pure si on est le seul matériau
@@ -514,14 +513,40 @@ fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
     if (is_add) {
       do_transform = (nb_env > 1);
       if (!do_transform)
-        do_transform = nb_mat_computer.cellNbMaterial(cell_id, env_id) > 1;
+        do_transform = nb_mat_computer.cellNbMaterial(local_id, env_id) > 1;
     }
     else {
       do_transform = (nb_env == 1);
       if (do_transform)
-        do_transform = nb_mat_computer.cellNbMaterial(cell_id, env_id) == 1;
+        do_transform = nb_mat_computer.cellNbMaterial(local_id, env_id) == 1;
     }
-    cells_do_transform[cell_id] = do_transform;
+    cells_do_transform[local_id] = do_transform;
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ConstituentConnectivityList::
+fillCellsIsPartial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
+                   SmallSpan<bool> cells_is_partial, RunQueue& queue)
+{
+  ConstituentContainer::View materials_container_view(m_container->m_material);
+  bool is_device = queue.isAcceleratorPolicy();
+  auto environment_for_materials = m_environment_for_materials.view(is_device);
+  NumberOfMaterialComputer nb_mat_computer(materials_container_view, environment_for_materials);
+  SmallSpan<const Int16> cells_nb_env = cellsNbEnvironment();
+  const Int32 n = cells_local_id.size();
+  auto command = makeCommand(queue);
+
+  command << RUNCOMMAND_LOOP1(iter, n)
+  {
+    auto [i] = iter();
+    Int32 local_id = cells_local_id[i];
+    // On ne prend l'indice global que si on est le seul matériau et le seul
+    // milieu de la maille. Sinon, on prend un indice multiple
+    bool is_partial = (cells_nb_env[local_id] > 1 || nb_mat_computer.cellNbMaterial(local_id, env_id) > 1);
+    cells_is_partial[i] = is_partial;
   };
 }
 

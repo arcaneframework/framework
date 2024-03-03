@@ -27,6 +27,7 @@
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 
 #include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/Filter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -434,23 +435,27 @@ void IncrementalComponentModifier::
 _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                        Int32ConstArrayView local_ids, bool update_env_indexer)
 {
-  info(4) << "MeshEnvironment::addItemsDirect"
-          << " mat=" << mat->name();
+  info(4) << "MeshEnvironment::addItemsDirect" << " mat=" << mat->name();
 
   MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
-  Int32 nb_to_add = local_ids.size();
+  const Int32 nb_to_add = local_ids.size();
 
   // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
   env->addToTotalNbCellMat(nb_to_add);
 
-  _addItemsToIndexer(env, var_indexer, local_ids);
+  const Int16 env_id = env->componentId();
+  m_work_info.m_cells_is_partial.resize(nb_to_add);
+  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  connectivity->fillCellsIsPartial(local_ids, env_id, m_work_info.m_cells_is_partial.view(), m_copy_queue);
+
+  _addItemsToIndexer(var_indexer, local_ids);
 
   if (update_env_indexer) {
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
     // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
-    _addItemsToIndexer(env, env->variableIndexer(), local_ids);
+    _addItemsToIndexer(env->variableIndexer(), local_ids);
   }
 }
 
@@ -458,23 +463,61 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 /*---------------------------------------------------------------------------*/
 
 void IncrementalComponentModifier::
-_addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexer,
-                   Int32ConstArrayView local_ids)
+_addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
+                   SmallSpan<const Int32> local_ids)
 {
-  ComponentItemListBuilder list_builder(var_indexer, var_indexer->maxIndexInMultipleArray());
-  ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  ConstArrayView<Int16> nb_env_per_cell = connectivity->cellsNbEnvironment();
-  Int16 env_id = env->componentId();
+  // TODO Conserver l'instance au cours de toutes modifications
+  ComponentItemListBuilder& list_builder = m_work_info.list_builder;
+  list_builder.setIndexer(var_indexer);
 
-  for (Int32 lid : local_ids) {
-    CellLocalId cell_id(lid);
-    // On ne prend l'indice global que si on est le seul matériau et le seul
-    // milieu de la maille. Sinon, on prend un indice multiple
-    if (nb_env_per_cell[cell_id] > 1 || connectivity->cellNbMaterial(cell_id, env_id) > 1)
-      list_builder.addPartialItem(lid);
-    else
-      list_builder.addPureItem(lid);
+  const Int32 n = local_ids.size();
+  list_builder.preAllocate(n);
+
+  SmallSpan<MatVarIndex> pure_matvar_indexes = list_builder.pureMatVarIndexes();
+  SmallSpan<MatVarIndex> partial_matvar_indexes = list_builder.partialMatVarIndexes();
+  SmallSpan<Int32> partial_local_ids = list_builder.partialLocalIds();
+  Int32 nb_pure_added = 0;
+  Int32 nb_partial_added = 0;
+  Int32 index_in_partial = var_indexer->maxIndexInMultipleArray();
+
+  const Int32 component_index = var_indexer->index() + 1;
+
+  SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial.view();
+
+  Accelerator::GenericFilterer filterer(&m_copy_queue);
+
+  // TODO: pour l'instant on remplit en deux fois mais il serait
+  // possible de le faire en une seule fois en utilisation l'algorithme de Partition.
+  // Il faudrait alors inverser les éléments de la deuxième liste pour avoir
+  // le même ordre de parcours qu'avant le passage sur accélérateur.
+
+  // Remplit la liste des mailles pures
+  {
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      return !cells_is_partial[index];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      Int32 local_id = local_ids[input_index];
+      pure_matvar_indexes[output_index] = MatVarIndex(0, local_id);
+    };
+    filterer.applyWithIndex(n, select_lambda, setter_lambda, A_FUNCINFO);
+    nb_pure_added = filterer.nbOutputElement();
   }
+  // Remplit la liste des mailles partielles
+  {
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      return cells_is_partial[index];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      Int32 local_id = local_ids[input_index];
+      partial_matvar_indexes[output_index] = MatVarIndex(component_index, index_in_partial + output_index);
+      partial_local_ids[output_index] = local_id;
+    };
+    filterer.applyWithIndex(n, select_lambda, setter_lambda, A_FUNCINFO);
+    nb_partial_added = filterer.nbOutputElement();
+  }
+
+  list_builder.resize(nb_pure_added, nb_partial_added);
 
   if (traceMng()->verbosityLevel() >= 5)
     info() << "ADD_MATITEM_TO_INDEXER component=" << var_indexer->name()
@@ -482,6 +525,9 @@ _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexe
            << " nb_partial=" << list_builder.partialMatVarIndexes().size()
            << "\n pure=(" << list_builder.pureMatVarIndexes() << ")"
            << "\n partial=(" << list_builder.partialMatVarIndexes() << ")";
+
+  // TODO: lors de cet appel, on connait le max de \a index_in_partial donc
+  // on peut éviter de faire une réduction pour le recalculer.
 
   var_indexer->endUpdateAdd(list_builder, m_copy_queue);
 

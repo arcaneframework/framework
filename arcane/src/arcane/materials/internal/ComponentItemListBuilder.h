@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
+#include "arcane/utils/NumArray.h"
 
 #include "arcane/core/materials/MatVarIndex.h"
 
@@ -36,15 +37,65 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
 {
  public:
 
-  ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer,
-                           Integer begin_index_in_partial);
+  ComponentItemListBuilder();
+
+ public:
+
+  void preAllocate(Int32 nb_item)
+  {
+    m_pure_matvar_indexes.resize(nb_item);
+    m_partial_matvar_indexes.resize(nb_item);
+    m_partial_local_ids.resize(nb_item);
+  }
+
+  void resize(Int32 nb_pure, Int32 nb_partial)
+  {
+    m_pure_matvar_indexes.resize(nb_pure);
+    m_partial_matvar_indexes.resize(nb_partial);
+    m_partial_local_ids.resize(nb_partial);
+  }
+
+ public:
+
+  SmallSpan<MatVarIndex> pureMatVarIndexes() { return m_pure_matvar_indexes; }
+  SmallSpan<MatVarIndex> partialMatVarIndexes() { return m_partial_matvar_indexes; }
+  SmallSpan<Int32> partialLocalIds() { return m_partial_local_ids; }
+
+  SmallSpan<const MatVarIndex> pureMatVarIndexes() const { return m_pure_matvar_indexes; }
+  SmallSpan<const MatVarIndex> partialMatVarIndexes() const { return m_partial_matvar_indexes; }
+  SmallSpan<const Int32> partialLocalIds() const { return m_partial_local_ids; }
+
+  MeshMaterialVariableIndexer* indexer() const { return m_indexer; }
+  void setIndexer(MeshMaterialVariableIndexer* indexer) { m_indexer = indexer; }
+
+ private:
+
+  NumArray<MatVarIndex, MDDim1> m_pure_matvar_indexes;
+  NumArray<MatVarIndex, MDDim1> m_partial_matvar_indexes;
+  NumArray<Int32, MDDim1> m_partial_local_ids;
+
+  MeshMaterialVariableIndexer* m_indexer = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe d'aide à la construction d'une liste de ComponentItem
+ * pour un MeshMaterialVariableIndexer.
+ */
+class ARCANE_MATERIALS_EXPORT ComponentItemListBuilderOld
+{
+ public:
+
+  ComponentItemListBuilderOld(MeshMaterialVariableIndexer* var_indexer,
+                              Integer begin_index_in_partial);
 
  public:
 
   //! Ajoute l'entité de localId() \a local_id à la liste des entités pure
   void addPureItem(Int32 local_id)
   {
-    m_pure_matvar_indexes.add(MatVarIndex(0,local_id));
+    m_pure_matvar_indexes.add(MatVarIndex(0, local_id));
   }
 
   //! Ajoute l'entité de localId() \a local_id à la liste des entités partielles
@@ -52,13 +103,13 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
   {
     //TODO: lorsqu'il y aura la suppression incrémentalle, il faudra
     // aller chercher le bon index dans la liste des index libres de l'indexeur.
-    m_partial_matvar_indexes.add(MatVarIndex(m_component_index,m_index_in_partial));
+    m_partial_matvar_indexes.add(MatVarIndex(m_component_index, m_index_in_partial));
     m_partial_local_ids.add(local_id);
     ++m_index_in_partial;
   }
 
  public:
-  
+
   ConstArrayView<MatVarIndex> pureMatVarIndexes() const { return m_pure_matvar_indexes; }
   ConstArrayView<MatVarIndex> partialMatVarIndexes() const { return m_partial_matvar_indexes; }
   ConstArrayView<Int32> partialLocalIds() const { return m_partial_local_ids; }
