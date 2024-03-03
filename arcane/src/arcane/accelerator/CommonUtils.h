@@ -92,10 +92,10 @@ class GenericDeviceStorage
     if (!m_ptr)
       return;
 #if defined(ARCANE_COMPILING_CUDA)
-    ARCANE_CHECK_CUDA(::cudaFree(m_ptr));
+    ARCANE_CHECK_CUDA_NOTHROW(::cudaFree(m_ptr));
 #endif
 #if defined(ARCANE_COMPILING_HIP)
-    ARCANE_CHECK_HIP(::hipFree(m_ptr));
+    ARCANE_CHECK_HIP_NOTHROW(::hipFree(m_ptr));
 #endif
     m_ptr = nullptr;
     m_size = 0;

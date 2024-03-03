@@ -85,6 +85,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   //! Politique d'exécution de la file.
   eExecutionPolicy executionPolicy() const;
+  //! Indique si l'instance est associée à un accélérateur
+  bool isAcceleratorPolicy() const;
   /*!
    * \brief Positionne l'asynchronisme de l'instance.
    *

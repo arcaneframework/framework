@@ -262,7 +262,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
                             ConstArrayView<Int32> ids)
 {
   const bool is_add = m_work_info.isAdd();
-  const bool is_device = isAcceleratorPolicy(m_copy_queue.executionPolicy());
+  const bool is_device = m_copy_queue.isAcceleratorPolicy();
 
   // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
   // en cas de suppression de mailles car cela sera fait avec la valeur matériau

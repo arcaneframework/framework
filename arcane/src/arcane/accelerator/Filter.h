@@ -17,10 +17,13 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NumArray.h"
+#include "arcane/utils/TraceInfo.h"
+
+#include "arcane/accelerator/core/RunQueue.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/CommonUtils.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -71,9 +74,6 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 template <typename DataType, typename FlagType>
 class GenericFilteringFlag
 {
-  // TODO: Faire le malloc sur le device associé à la queue.
-  //       et aussi regarder si on peut utiliser mallocAsync().
-
  public:
 
   void apply(GenericFilteringBase& s, SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
@@ -154,19 +154,26 @@ class GenericFilteringFlag
  */
 class GenericFilteringIf
 {
-  // TODO: Faire le malloc sur le device associé à la queue.
-  //       et aussi regarder si on peut utiliser mallocAsync().
+ public:
+
+  explicit GenericFilteringIf(RunQueue* q)
+  : m_queue(q)
+  {
+  }
 
  public:
 
   template <typename SelectLambda, typename InputIterator, typename OutputIterator>
   void apply(GenericFilteringBase& s, Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
-             const SelectLambda& select_lambda)
+             const SelectLambda& select_lambda, const TraceInfo& trace_info)
   {
     eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
     RunQueue* queue = s.m_queue;
-    if (queue)
-      exec_policy = queue->executionPolicy();
+    exec_policy = queue->executionPolicy();
+    RunCommand command = makeCommand(*queue);
+    command << trace_info;
+    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    launch_info.beginExecute();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
@@ -223,7 +230,12 @@ class GenericFilteringIf
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
     }
+    launch_info.endExecute();
   }
+
+ private:
+
+  RunQueue* m_queue = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -311,8 +323,8 @@ class Filterer
 
     _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf;
-    gf.apply(*base_ptr, nb_item, input.data(), output.data(), select_lambda);
+    impl::GenericFilteringIf gf(m_queue);
+    gf.apply(*base_ptr, nb_item, input.data(), output.data(), select_lambda, TraceInfo());
   }
 
   template <typename FlagType>
@@ -359,9 +371,6 @@ class Filterer
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Algorithme générique de filtrage sur accélérateur.
- *
- * Dans les méthodes suivantes, l'argument \a queue peut être nul auquel cas
- * l'algorithme s'applique sur l'hôte en séquentiel.
  */
 class GenericFilterer
 : private impl::GenericFilteringBase
@@ -428,8 +437,14 @@ class GenericFilterer
 
  public:
 
+  /*!
+   * \brief Créé une instance.
+   *
+   * \pre queue!=nullptr
+   */
   explicit GenericFilterer(RunQueue* queue)
   {
+    ARCANE_CHECK_POINTER(queue);
     m_queue = queue;
     _allocate();
   }
@@ -472,7 +487,7 @@ class GenericFilterer
    */
   template <typename DataType, typename SelectLambda>
   void applyIf(SmallSpan<const DataType> input, SmallSpan<DataType> output,
-               const SelectLambda& select_lambda)
+               const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
     const Int32 nb_item = input.size();
     if (output.size() != nb_item)
@@ -480,8 +495,8 @@ class GenericFilterer
 
     _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf;
-    gf.apply(*base_ptr, nb_item, input.data(), output.data(), select_lambda);
+    impl::GenericFilteringIf gf(m_queue);
+    gf.apply(*base_ptr, nb_item, input.data(), output.data(), select_lambda, trace_info);
   }
 
   /*!
@@ -494,12 +509,12 @@ class GenericFilterer
    */
   template <typename InputIterator, typename OutputIterator, typename SelectLambda>
   void applyIf(Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
-               const SelectLambda& select_lambda)
+               const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
     _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf;
-    gf.apply(*base_ptr, nb_item, input_iter, output_iter, select_lambda);
+    impl::GenericFilteringIf gf(m_queue);
+    gf.apply(*base_ptr, nb_item, input_iter, output_iter, select_lambda, trace_info);
   }
 
   /*!
@@ -534,14 +549,15 @@ class GenericFilterer
    * \endcode
    */
   template <typename SelectLambda, typename SetterLambda>
-  void applyWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const SetterLambda& setter_lambda)
+  void applyWithIndex(Int32 nb_value, const SelectLambda& select_lambda,
+                      const SetterLambda& setter_lambda, const TraceInfo& trace_info = TraceInfo())
   {
     _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf;
+    impl::GenericFilteringIf gf(m_queue);
     impl::IndexIterator input_iter;
     SetterLambdaIterator<SetterLambda> out(setter_lambda);
-    gf.apply(*base_ptr, nb_value, input_iter, out, select_lambda);
+    gf.apply(*base_ptr, nb_value, input_iter, out, select_lambda, trace_info);
   }
 
   //! Nombre d'éléments en sortie.
