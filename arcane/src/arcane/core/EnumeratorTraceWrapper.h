@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EnumeratorTraceWrapper.h                                    (C) 2000-2022 */
+/* EnumeratorTraceWrapper.h                                    (C) 2000-2024 */
 /*                                                                           */
 /* Enumérateur sur des groupes d'entités du maillage.                        */
 /*---------------------------------------------------------------------------*/
@@ -94,31 +94,37 @@ class EnumeratorTraceWrapper
 {
  public:
 
-  EnumeratorTraceWrapper(TrueEnumerator&& tenum)
+  ARCCORE_HOST_DEVICE EnumeratorTraceWrapper(TrueEnumerator&& tenum)
   : TrueEnumerator(tenum)
-  , m_tracer(TracerInterface::singleton())
   {
+#ifndef ARCCORE_DEVICE_CODE
+    m_tracer = TracerInterface::singleton();
     if (m_tracer)
       m_tracer->enterEnumerator(*this, m_infos);
+#endif
   }
-  EnumeratorTraceWrapper(TrueEnumerator&& tenum, const TraceInfo& ti)
+  ARCCORE_HOST_DEVICE EnumeratorTraceWrapper(TrueEnumerator&& tenum, [[maybe_unused]] const TraceInfo& ti)
   : TrueEnumerator(tenum)
-  , m_tracer(TracerInterface::singleton())
   {
+#ifndef ARCCORE_DEVICE_CODE
+    m_tracer = TracerInterface::singleton();
     if (m_tracer) {
       m_infos.setTraceInfo(&ti);
       m_tracer->enterEnumerator(*this, m_infos);
     }
+#endif
   }
-  ~EnumeratorTraceWrapper() ARCANE_NOEXCEPT_FALSE
+  ARCCORE_HOST_DEVICE ~EnumeratorTraceWrapper() ARCANE_NOEXCEPT_FALSE
   {
+#ifndef ARCCORE_DEVICE_CODE
     if (m_tracer)
       m_tracer->exitEnumerator(*this, m_infos);
+#endif
   }
 
  private:
 
-  TracerInterface* m_tracer;
+  TracerInterface* m_tracer = nullptr;
   EnumeratorTraceInfo m_infos;
 };
 
