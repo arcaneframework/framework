@@ -27,6 +27,7 @@
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 
 #include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/Filter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -463,8 +464,9 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 
 void IncrementalComponentModifier::
 _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
-                   Int32ConstArrayView local_ids)
+                   SmallSpan<const Int32> local_ids)
 {
+  // TODO Conserver l'instance au cours de toutes modifications
   ComponentItemListBuilder list_builder(var_indexer);
   const Int32 n = local_ids.size();
   list_builder.preAllocate(n);
@@ -479,20 +481,40 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
   const Int32 component_index = var_indexer->index() + 1;
 
   SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial.view();
-  for (Int32 i = 0; i < n; ++i) {
-    Int32 local_id = local_ids[i];
-    CellLocalId cell_id(local_id);
-    if (cells_is_partial[i]) {
-      partial_matvar_indexes[nb_partial_added] = MatVarIndex(component_index, index_in_partial);
-      partial_local_ids[nb_partial_added] = local_id;
-      ++index_in_partial;
-      ++nb_partial_added;
-    }
-    else {
-      pure_matvar_indexes[nb_pure_added] = MatVarIndex(0, local_id);
-      ++nb_pure_added;
-    }
+
+  Accelerator::GenericFilterer filterer(&m_copy_queue);
+
+  // TODO: pour l'instant on remplit en deux fois mais il serait
+  // possible de le faire en une seule fois en utilisation l'algorithme de Partition.
+  // Il faudrait alors inverser les éléments de la deuxième liste pour avoir
+  // le même ordre de parcours qu'avant le passage sur accélérateur.
+
+  // Remplit la liste des mailles pures
+  {
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      return !cells_is_partial[index];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      Int32 local_id = local_ids[input_index];
+      pure_matvar_indexes[output_index] = MatVarIndex(0, local_id);
+    };
+    filterer.applyWithIndex(n, select_lambda, setter_lambda, A_FUNCINFO);
+    nb_pure_added = filterer.nbOutputElement();
   }
+  // Remplit la liste des mailles partielles
+  {
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      return cells_is_partial[index];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      Int32 local_id = local_ids[input_index];
+      partial_matvar_indexes[output_index] = MatVarIndex(component_index, index_in_partial + output_index);
+      partial_local_ids[output_index] = local_id;
+    };
+    filterer.applyWithIndex(n, select_lambda, setter_lambda, A_FUNCINFO);
+    nb_partial_added = filterer.nbOutputElement();
+  }
+
   list_builder.resize(nb_pure_added, nb_partial_added);
 
   if (traceMng()->verbosityLevel() >= 5)
@@ -501,6 +523,9 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
            << " nb_partial=" << list_builder.partialMatVarIndexes().size()
            << "\n pure=(" << list_builder.pureMatVarIndexes() << ")"
            << "\n partial=(" << list_builder.partialMatVarIndexes() << ")";
+
+  // TODO: lors de cet appel, on connait le max de \a index_in_partial donc
+  // on peut éviter de faire une réduction pour le recalculer.
 
   var_indexer->endUpdateAdd(list_builder, m_copy_queue);
 

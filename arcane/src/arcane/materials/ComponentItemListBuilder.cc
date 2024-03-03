@@ -27,10 +27,7 @@ namespace Arcane::Materials
 
 ComponentItemListBuilder::
 ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer)
-: m_pure_matvar_indexes(platform::getDefaultDataAllocator())
-, m_partial_matvar_indexes(platform::getDefaultDataAllocator())
-, m_partial_local_ids(platform::getDefaultDataAllocator())
-, m_indexer(var_indexer)
+: m_indexer(var_indexer)
 {
 }
 
