@@ -102,25 +102,54 @@ apply(MaterialModifierOperation* operation)
     UniqueArray<Int32>& cells_unchanged_in_env = m_work_info.cells_unchanged_in_env;
     UniqueArray<Int16>& cells_current_nb_material = m_work_info.m_cells_current_nb_material;
     const Int32 nb_id = ids.size();
-    cells_unchanged_in_env.clear();
-    cells_unchanged_in_env.reserve(nb_id);
-    cells_changed_in_env.clear();
-    cells_changed_in_env.reserve(nb_id);
+    cells_unchanged_in_env.resize(nb_id);
+    cells_changed_in_env.resize(nb_id);
     cells_current_nb_material.resize(nb_id);
     const Int32 ref_nb_mat = is_add ? 0 : 1;
     const Int16 env_id = true_env->componentId();
     info(4) << "Using optimisation updateMaterialDirect is_add?=" << is_add;
 
     connectivity->fillCellsNbMaterial(ids, env_id, cells_current_nb_material.view(), m_copy_queue);
+    Accelerator::GenericFilterer filterer(&m_copy_queue);
+    SmallSpan<Int32> cells_unchanged_in_env_view = cells_unchanged_in_env.view();
+    SmallSpan<Int32> cells_changed_in_env_view = cells_changed_in_env.view();
+    SmallSpan<const Int16> cells_current_nb_material_view = m_work_info.m_cells_current_nb_material.view();
+    {
+      auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+        Int16 current_cell_nb_mat = cells_current_nb_material_view[index];
+        return current_cell_nb_mat != ref_nb_mat;
+      };
+      auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+        cells_unchanged_in_env_view[output_index] = ids[input_index];
+      };
+      filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
+      cells_unchanged_in_env.resize(filterer.nbOutputElement());
+    }
+    {
+      auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+        Int16 current_cell_nb_mat = cells_current_nb_material_view[index];
+        return current_cell_nb_mat == ref_nb_mat;
+      };
+      auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+        cells_changed_in_env_view[output_index] = ids[input_index];
+      };
+      filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
+      cells_changed_in_env.resize(filterer.nbOutputElement());
+    }
 
-    for (Integer i = 0; i < nb_id; ++i) {
-      Int32 lid = ids[i];
-      Int16 current_cell_nb_mat = cells_current_nb_material[i];
-      if (current_cell_nb_mat != ref_nb_mat) {
-        cells_unchanged_in_env.add(lid);
-      }
-      else {
-        cells_changed_in_env.add(lid);
+    const bool do_old = false;
+    if (do_old) {
+      cells_unchanged_in_env.clear();
+      cells_changed_in_env.clear();
+      for (Integer i = 0; i < nb_id; ++i) {
+        Int32 lid = ids[i];
+        Int16 current_cell_nb_mat = cells_current_nb_material[i];
+        if (current_cell_nb_mat != ref_nb_mat) {
+          cells_unchanged_in_env.add(lid);
+        }
+        else {
+          cells_changed_in_env.add(lid);
+        }
       }
     }
 
