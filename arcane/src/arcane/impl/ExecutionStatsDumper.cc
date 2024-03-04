@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExecutionStatsDumper.cc                                     (C) 2000-2023 */
+/* ExecutionStatsDumper.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Ecriture des statistiques d'exécution.                                    */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/utils/Profiling.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/JSONWriter.h"
+#include "arcane/utils/FloatingPointExceptionSentry.h"
 
 #include "arcane/utils/internal/ProfilingInternal.h"
 
@@ -239,6 +240,7 @@ _dumpOneAcceleratorListStat(std::ostream& o, const impl::AcceleratorStatInfoList
 void ExecutionStatsDumper::
 dumpStats(ISubDomain* sd, ITimeStats* time_stat)
 {
+  FloatingPointExceptionSentry fp_sentry(false);
   {
     // Statistiques sur la mémoire
     double mem = platform::getMemoryUsed();
