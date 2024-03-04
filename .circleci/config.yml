@@ -34,6 +34,12 @@ parameters:
     type: string
     default: "~/workspace/test"
 
+  CT_OPTS:
+    type: string
+    default: "--timeout 300 --output-on-failure --exclude-regex '(^hydro5_4proc_3sd_4proc$|^alien.interface.c.seq.mpi-1$|^alien.interface.fortran.seq.mpi-1$|.petsc.mumps)'"
+
+
+
 
 # Les jobs.
 jobs:
@@ -202,6 +208,105 @@ jobs:
 
       - store_test_results:
           path: <<pipeline.parameters.CT_RESULT_DIR>>
+
+  build-and-test-ifpen:
+    executor: amd64
+    docker:
+      - image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el8-rt
+
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule update --init
+
+      - restore_cache:
+          keys:
+            - amd64-arcane-Release-ifpen-
+
+      - run:
+          name: Create ccache directory and ccache environment variables
+          command: |
+            echo 'export CCACHE_COMPRESS=true' >> $BASH_ENV
+            echo 'export CCACHE_COMPRESSLEVEL=6' >> $BASH_ENV
+            echo 'export CCACHE_DIR=<<pipeline.parameters.CC_DIR>>' >> $BASH_ENV
+            echo 'export CCACHE_MAXSIZE=500M' >> $BASH_ENV
+            mkdir -p <<pipeline.parameters.CC_DIR>>
+
+      - run:
+          name: Configure 'framework'
+          command: |
+            cmake \
+            -S <<pipeline.parameters.SOURCE_DIR>> \
+            -B <<pipeline.parameters.BUILD_DIR>> \
+            -GNinja \
+            -DARCANE_WANT_CHECK=ON \
+            -DCMAKE_CXX_FLAGS_RELEASE="-O2" \
+            -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+            -DBUILD_SHARED_LIBS=TRUE \
+            -DARCANE_DEFAULT_PARTITIONER=Metis \
+            -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
+            -DARCCON_REGISTER_PACKAGE_VERSION=2 \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DARCANE_BUILD_TYPE=Release \
+            -DARCCORE_BUILD_MODE=Check \
+            -DREMOVE_UID_ON_DETACH=ON \
+            -DUSE_GTEST_DEATH_TEST=ON \
+            -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON \
+            -DALIEN_BUILD_COMPONENT=all \
+            -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+            -DCMAKE_INSTALL_PREFIX=<<pipeline.parameters.INSTALL_DIR>>
+
+      - run:
+          name: Build 'framework'
+          command: cmake --build <<pipeline.parameters.BUILD_DIR>> -- -j4
+
+      - run:
+          name: Clean
+          command: find <<pipeline.parameters.BUILD_DIR>> -type f -name '*.o' -exec rm -f '{}' \;
+
+      - run:
+          name: Install 'framework'
+          command: cmake --install <<pipeline.parameters.BUILD_DIR>>
+
+      - run:
+          name: Install 'framework'
+          command: |
+            osdir=centos_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`
+            mkdir -p <<pipeline.parameters.BUILD_DIR>>/extlib
+            export LD_LIBRARY_PATH="<<pipeline.parameters.INSTALL_DIR>>/lib:${LD_LIBRARY_PATH}"
+            # Copy libraries
+            while read line; do \cp -avn ${line} <<pipeline.parameters.BUILD_DIR>>/extlib/.; if [ -L ${line} ]; then \cp -avn `readlink -f ${line}` <<pipeline.parameters.BUILD_DIR>>/extlib/.; fi; done < <(ldd <<pipeline.parameters.INSTALL_DIR>>/bin/alien* <<pipeline.parameters.INSTALL_DIR>>/bin/gtest* <<pipeline.parameters.INSTALL_DIR>>/lib/*.so <<pipeline.parameters.INSTALL_DIR>>/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^${EBROOTIMPI}" -e "^${EBROOTUDUNITS}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "^/__w/")
+            # Copy imkl libaries
+            \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/MPI/GCC/7.3.0-2.30/impi/2018.3.222/imkl/2018.3.222/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/libmkl_avx512.so <<pipeline.parameters.BUILD_DIR>>/extlib/.
+            \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/MPI/GCC/7.3.0-2.30/impi/2018.3.222/imkl/2018.3.222/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/libmkl_def.so <<pipeline.parameters.BUILD_DIR>>/extlib/.
+            # Copy googletest
+            \rm -vf <<pipeline.parameters.BUILD_DIR>>/extlib//libgtest.so
+            \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/Compiler/GCCcore/7.3.0/googletest/1.10.0/lib64/*.so <<pipeline.parameters.BUILD_DIR>>/extlib/.
+
+      - run:
+          name: Get 'ccache' status
+          command: |
+            ccache -s
+
+      - save_cache:
+          key: <<parameters.arch>>-arcane-<<parameters.type_build>>-{{ .BuildNum }}
+          paths:
+            - ~/workspace/ccache
+
+      - run:
+          name: Force execution of MPI in root session
+          command: |
+            echo 'export OMPI_ALLOW_RUN_AS_ROOT=1' >> $BASH_ENV
+            echo 'export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1' >> $BASH_ENV
+
+      # On ne lance pas les tests qui utilisent 'mpithread' car ils ont besoin de 12 coeurs
+      # sur les machines à 4 coeurs cela pose problème.
+      - run:
+          name: Test 'framework'
+          command: |
+            env LD_LIBRARY_PATH=<<pipeline.parameters.BUILD_DIR>>/extlib:${LD_LIBRARY_PATH} ctest --test-dir <<pipeline.parameters.BUILD_DIR>> <<pipeline.parameters.CT_OPTS>>
 
 workflows:
   # WF exécuté si push dans main ou dans
