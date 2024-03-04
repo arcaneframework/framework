@@ -241,14 +241,8 @@ jobs:
             cmake \
             -S <<pipeline.parameters.SOURCE_DIR>> \
             -B <<pipeline.parameters.BUILD_DIR>> \
-            -GNinja \
             -DARCANE_WANT_CHECK=ON \
-            -DCMAKE_CXX_FLAGS_RELEASE="-O2" \
-            -DCMAKE_VERBOSE_MAKEFILE=TRUE \
-            -DBUILD_SHARED_LIBS=TRUE \
-            -DARCANE_DEFAULT_PARTITIONER=Metis \
             -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
-            -DARCCON_REGISTER_PACKAGE_VERSION=2 \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DARCANE_BUILD_TYPE=Release \
             -DARCCORE_BUILD_MODE=Check \
@@ -256,7 +250,6 @@ jobs:
             -DUSE_GTEST_DEATH_TEST=ON \
             -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON \
             -DALIEN_BUILD_COMPONENT=all \
-            -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
             -DCMAKE_INSTALL_PREFIX=<<pipeline.parameters.INSTALL_DIR>>
 
       - run:
