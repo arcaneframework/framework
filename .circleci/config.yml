@@ -359,3 +359,7 @@ workflows:
               image_version: [minimal, full]
               exec_type: [normal]
               type_build: [Check]
+
+  every-push-ifpen:
+    jobs:
+      - build-and-test-ifpen
