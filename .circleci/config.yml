@@ -291,7 +291,7 @@ jobs:
             ccache -s
 
       - save_cache:
-          key: <<parameters.arch>>-arcane-<<parameters.type_build>>-{{ .BuildNum }}
+          key: amd64-arcane-Release-ifpen-{{ .BuildNum }}
           paths:
             - ~/workspace/ccache
 
