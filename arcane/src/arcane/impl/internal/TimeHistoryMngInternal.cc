@@ -138,18 +138,111 @@ updateGlobalTimeCurve()
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
-dumpCurves(ITimeHistoryCurveWriter2* writer)
+dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only)
 {
   if (!m_is_master_io && !m_enable_non_io_master_curves)
     return;
 
-  TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
-  writer->beginWrite(infos);
-  for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
-    const TimeHistoryValue& th = *(i->second);
-    th.dumpValues(m_tmng,writer,infos);
+  if(!master_only){
+    TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
+    writer->beginWrite(infos);
+    for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+      const TimeHistoryValue& th = *(i->second);
+      th.dumpValues(m_tmng,writer,infos);
+    }
+    writer->endWrite();
   }
-  writer->endWrite();
+  else{
+    if(m_is_master_io){
+      TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
+      writer->beginWrite(infos);
+      // Nos courbes
+      for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+        const TimeHistoryValue& th = *(i->second);
+        th.dumpValues(m_tmng,writer,infos);
+      }
+
+
+
+      // Les courbes reçus.
+      if (m_enable_non_io_master_curves) {
+        IParallelMng* parallel_mng = m_sd->parallelMng();
+        Integer master_io_rank = parallel_mng->masterIORank();
+        UniqueArray<Int32> length(5);
+
+        for(Integer i=0;i<parallel_mng->commSize();++i) {
+          if (i != master_io_rank) {
+            Integer nb_curve = 0;
+            parallel_mng->recv(ArrayView<Integer>(1, &nb_curve), i);
+            for (Integer icurve = 0; icurve < nb_curve; ++icurve) {
+              parallel_mng->recv(length, i);
+
+              UniqueArray<char> buf(length[0]);
+              UniqueArray<Int32> iterations_to_write(length[1]);
+              UniqueArray<Real> values_to_write(length[2]);
+
+              parallel_mng->recv(buf, i);
+              parallel_mng->recv(iterations_to_write, i);
+              parallel_mng->recv(values_to_write, i);
+
+              String name = String(buf.unguardedBasePointer());
+
+              if(length[4] != 0){
+                UniqueArray<char> buf2(length[4]);
+                parallel_mng->recv(buf2, i);
+                String name_mesh = String(buf2.unguardedBasePointer());
+
+                TimeHistoryCurveInfo curve_info(name, name_mesh, iterations_to_write, values_to_write, length[3], i);
+                writer->writeCurve(curve_info);
+              }
+              else{
+                TimeHistoryCurveInfo curve_info(name, iterations_to_write, values_to_write, length[3], i);
+                writer->writeCurve(curve_info);
+              }
+
+            }
+          }
+        }
+      }
+
+      writer->endWrite();
+    }
+    else if(m_enable_non_io_master_curves){
+      TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
+      IParallelMng* parallel_mng = m_sd->parallelMng();
+      Integer master_io_rank = parallel_mng->masterIORank();
+      Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
+      UniqueArray<Int32> length(5);
+      parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
+      for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ) {
+        const TimeHistoryValue& th = *(i->second);
+        String name = th.name();
+        UniqueArray<Int32> iterations_to_write;
+        UniqueArray<Real> values_to_write;
+        th.arrayToWrite(iterations_to_write, values_to_write, infos);
+
+        length[0] = arcaneCheckArraySize(name.length()+1);
+        length[1] = iterations_to_write.size();
+        length[2] = values_to_write.size();
+        length[3] = th.subSize();
+        if(!th.meshHandle().isNull()){
+          length[4] = arcaneCheckArraySize(th.meshHandle().meshName().length() + 1);
+        }
+        else{
+          length[4] = 0;
+        }
+
+        parallel_mng->send(length, master_io_rank);
+        parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
+        parallel_mng->send(iterations_to_write, master_io_rank);
+        parallel_mng->send(values_to_write, master_io_rank);
+        if(!th.meshHandle().isNull()){
+          parallel_mng->send(ConstArrayView<char>(length[4],static_cast<const char*>(th.meshHandle().meshName().localstr())), master_io_rank);
+        }
+
+      }
+    }
+  }
 }
 
 
@@ -373,7 +466,7 @@ _dumpCurvesAllWriters(bool is_verbose)
         m_tmng->info() << "Writing curves with '" << writer->name()
                        << "' date=" << platform::getCurrentDateTime();
       }
-      dumpCurves(writer);
+      dumpCurves(writer, true);
     }
   }
 }

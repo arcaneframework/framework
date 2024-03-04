@@ -105,7 +105,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * Méthode permettant d"écrire les courbes à l'aide du writer fourni.
    * @param writer Le writer avec lequel les courbes doivent être écrites.
    */
-  virtual void dumpCurves(ITimeHistoryCurveWriter2* writer) =0;
+  virtual void dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only) =0;
 
   /*!
    * Méthode permettant d'écrire toutes les courbes à l'aide de tous les writers enregistrés

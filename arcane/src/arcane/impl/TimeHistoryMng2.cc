@@ -424,7 +424,7 @@ dumpHistory(bool is_verbose)
 void TimeHistoryMng2::
 dumpCurves(ITimeHistoryCurveWriter2* writer)
 {
-  m_internal->dumpCurves(writer);
+  m_internal->dumpCurves(writer, true);//todo
 }
 
 /*---------------------------------------------------------------------------*/

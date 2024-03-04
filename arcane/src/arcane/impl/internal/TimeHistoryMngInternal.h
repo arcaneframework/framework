@@ -85,6 +85,10 @@ class TimeHistoryValue
                           ITimeHistoryCurveWriter2* writer,
                           const TimeHistoryCurveWriterInfo& infos) const =0;
 
+  virtual void arrayToWrite(UniqueArray<Int32>& iterations,
+                            UniqueArray<Real>& values,
+                            const TimeHistoryCurveWriterInfo& infos) const =0;
+
   virtual void applyTransformation(ITraceMng* msg,
                                    ITimeHistoryTransformer* v) =0;
 
@@ -261,8 +265,9 @@ class TimeHistoryValueT
     for(Integer i=0, is=nb_iteration; i<is; ++i ){
       Integer iter = m_iterations[i];
       if (iter<max_iter){
-        for(Integer z=0; z<sub_size; ++z )
-          values_to_write.add(Convert::toReal(m_values[(i*sub_size)+ z]));
+        for(Integer z=0; z<sub_size; ++z ) {
+          values_to_write.add(Convert::toReal(m_values[(i * sub_size) + z]));
+        }
         iterations_to_write.add(iter);
       }
     }
@@ -304,6 +309,24 @@ class TimeHistoryValueT
     m_values.resize(nb_value);
     for( Integer i=0; i<nb_value; ++i )
       m_values[i] = values[i];
+  }
+
+  void arrayToWrite(UniqueArray<Int32>& iterations, UniqueArray<Real>& values, const TimeHistoryCurveWriterInfo& infos) const override {
+
+    Integer max_iter = infos.times().size();
+    Integer nb_iteration = m_iterations.size();
+    iterations.reserve(nb_iteration);
+    Integer sub_size = subSize();
+    values.reserve(nb_iteration*sub_size);
+    for(Integer i=0, is=nb_iteration; i<is; ++i ){
+      Integer iter = m_iterations[i];
+      if (iter<max_iter){
+        for(Integer z=0; z<sub_size; ++z ) {
+          values.add(Convert::toReal(m_values[(i * sub_size) + z]));
+        }
+        iterations.add(iter);
+      }
+    }
   }
 
   const ValueList& values() const { return m_values; }
@@ -384,7 +407,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void addNowInGlobalTime() override;
   void updateGlobalTimeCurve() override;
   void resizeArrayAfterRestore() override;
-  void dumpCurves(ITimeHistoryCurveWriter2* writer) override;
+  void dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only) override;
   void dumpHistory(bool is_verbose) override;
   void updateMetaData() override;
   void readVariables() override;

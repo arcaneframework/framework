@@ -230,6 +230,12 @@ writeCurve(const TimeHistoryCurveInfo& infos)
   node.setAttrValue("values-offset",String::fromNumber(values_offset));
   node.setAttrValue("values-size",String::fromNumber(infos.values().size()));
   node.setAttrValue("sub-size",String::fromNumber(infos.subSize()));
+  if(infos.hasSupport()){
+    node.setAttrValue("support",infos.support());
+  }
+  if(infos.subDomain() != -1){
+    node.setAttrValue("sub-domain",String::fromNumber(infos.subDomain()));
+  }
 }
 
 /*---------------------------------------------------------------------------*/
