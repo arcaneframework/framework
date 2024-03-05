@@ -12,8 +12,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/impl/internal/TimeHistoryMngInternal.h"
+
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IPropertyMng.h"
+
 #include "arcane/utils/JSONWriter.h"
 
 /*---------------------------------------------------------------------------*/

@@ -16,29 +16,23 @@
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/Iterator.h"
-#include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
 
-#include "arcane/IIOMng.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/Directory.h"
-#include "arcane/AbstractModule.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/ObserverPool.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/CaseOptionsMain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ITimeHistoryCurveWriter2.h"
-#include "arcane/ITimeHistoryTransformer.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/ServiceFinder2.h"
-#include "arcane/ServiceBuilder.h"
+#include "arcane/core/IIOMng.h"
 #include "arcane/core/CommonVariables.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ITimeHistoryCurveWriter2.h"
+#include "arcane/core/ITimeHistoryTransformer.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/Properties.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
@@ -47,7 +41,6 @@
 
 #include <map>
 #include <set>
-#include <variant>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

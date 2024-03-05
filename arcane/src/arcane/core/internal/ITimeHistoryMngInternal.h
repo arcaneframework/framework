@@ -18,7 +18,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/ITimeHistoryMng.h"
 #include "arcane/core/IMesh.h"
