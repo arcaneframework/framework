@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arccore/collections/ArrayTraits.h"
 
 #include <iosfwd>
 
@@ -90,6 +91,7 @@ class IMeshMaterialModifierImpl;
 class CellToAllEnvCellConverter;
 class IMeshMaterialVariableSynchronizer;
 class AllCellToAllEnvCell;
+class ConstituentItemIndex;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -170,6 +172,15 @@ enum class eMatPart
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::Materials
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Materials::MatVarIndex);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Materials::ConstituentItemIndex);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
