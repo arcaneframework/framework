@@ -86,8 +86,8 @@ class GenericFilteringFlag
     [[maybe_unused]] const FlagType* flag_data = flag.data();
     eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
     RunQueue* queue = s.m_queue;
-    if (queue)
-      exec_policy = queue->executionPolicy();
+    ARCANE_CHECK_POINTER(queue);
+    exec_policy = queue->executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
@@ -99,11 +99,10 @@ class GenericFilteringFlag
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
-      s.m_device_nb_out_storage.allocate();
-      nb_out_ptr = s.m_device_nb_out_storage.address();
+      nb_out_ptr = s.m_device_nb_out_storage.allocate();
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(s.m_algo_storage.address(), temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
-      ARCANE_CHECK_CUDA(::cudaMemcpyAsync(s.m_host_nb_out_storage.bytes().data(), nb_out_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
+      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
@@ -116,12 +115,11 @@ class GenericFilteringFlag
                                        nb_out_ptr, nb_item, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
-      s.m_device_nb_out_storage.allocate();
-      nb_out_ptr = s.m_device_nb_out_storage.address();
+      nb_out_ptr = s.m_device_nb_out_storage.allocate();
 
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
-      ARCANE_CHECK_HIP(::hipMemcpyAsync(s.m_host_nb_out_storage.bytes().data(), nb_out_ptr, sizeof(int), hipMemcpyDeviceToHost, stream));
+      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
     }
 #endif
     case eExecutionPolicy::Thread:
@@ -156,19 +154,13 @@ class GenericFilteringIf
 {
  public:
 
-  explicit GenericFilteringIf(RunQueue* q)
-  : m_queue(q)
-  {
-  }
-
- public:
-
   template <typename SelectLambda, typename InputIterator, typename OutputIterator>
   void apply(GenericFilteringBase& s, Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
              const SelectLambda& select_lambda, const TraceInfo& trace_info)
   {
     eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
     RunQueue* queue = s.m_queue;
+    ARCANE_CHECK_POINTER(queue);
     exec_policy = queue->executionPolicy();
     RunCommand command = makeCommand(*queue);
     command << trace_info;
@@ -191,11 +183,12 @@ class GenericFilteringIf
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::If(s.m_algo_storage.address(), temp_storage_size,
                                                 input_iter, output_iter, nb_out_ptr, nb_item,
                                                 select_lambda, stream));
-      ARCANE_CHECK_CUDA(::cudaMemcpyAsync(s.m_host_nb_out_storage.bytes().data(), nb_out_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
+      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
+      ARCANE_CHECK_POINTER(queue);
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
       hipStream_t stream = impl::HipUtils::toNativeStream(queue);
@@ -204,12 +197,10 @@ class GenericFilteringIf
                                        nb_out_ptr, nb_item, select_lambda, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
-      s.m_device_nb_out_storage.allocate();
-      nb_out_ptr = s.m_device_nb_out_storage.address();
-
+      nb_out_ptr = s.m_device_nb_out_storage.allocate();
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
-                                       nb_out_ptr, nb_item, select_lambda, stream));
-      ARCANE_CHECK_HIP(::hipMemcpyAsync(s.m_host_nb_out_storage.bytes().data(), nb_out_ptr, sizeof(int), hipMemcpyDeviceToHost, stream));
+                                       nb_out_ptr, nb_item, select_lambda, 0));
+      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
     }
 #endif
     case eExecutionPolicy::Thread:
@@ -232,10 +223,6 @@ class GenericFilteringIf
     }
     launch_info.endExecute();
   }
-
- private:
-
-  RunQueue* m_queue = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -323,7 +310,7 @@ class Filterer
 
     _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf(m_queue);
+    impl::GenericFilteringIf gf;
     gf.apply(*base_ptr, nb_item, input.data(), output.data(), select_lambda, TraceInfo());
   }
 
@@ -489,14 +476,16 @@ class GenericFilterer
   void applyIf(SmallSpan<const DataType> input, SmallSpan<DataType> output,
                const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    const Int32 nb_item = input.size();
-    if (output.size() != nb_item)
-      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
+    const Int32 nb_value = input.size();
+    if (output.size() != nb_value)
+      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_value, output.size());
 
     _setCalled();
+    if (_checkEmpty(nb_value))
+      return;
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf(m_queue);
-    gf.apply(*base_ptr, nb_item, input.data(), output.data(), select_lambda, trace_info);
+    impl::GenericFilteringIf gf;
+    gf.apply(*base_ptr, nb_value, input.data(), output.data(), select_lambda, trace_info);
   }
 
   /*!
@@ -505,16 +494,18 @@ class GenericFilterer
    * Cette méthode est identique à Filterer::applyIf(SmallSpan<const DataType> input,
    * SmallSpan<DataType> output, const SelectLambda& select_lambda) mais permet de spécifier un
    * itérateur \a input_iter pour l'entrée et \a output_iter pour la sortie.
-   * Le nombre d'entité en entrée est donné par \a nb_item.
+   * Le nombre d'entité en entrée est donné par \a nb_value.
    */
   template <typename InputIterator, typename OutputIterator, typename SelectLambda>
-  void applyIf(Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
+  void applyIf(Int32 nb_value, InputIterator input_iter, OutputIterator output_iter,
                const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
     _setCalled();
+    if (_checkEmpty(nb_value))
+      return;
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf(m_queue);
-    gf.apply(*base_ptr, nb_item, input_iter, output_iter, select_lambda, trace_info);
+    impl::GenericFilteringIf gf;
+    gf.apply(*base_ptr, nb_value, input_iter, output_iter, select_lambda, trace_info);
   }
 
   /*!
@@ -553,8 +544,10 @@ class GenericFilterer
                       const SetterLambda& setter_lambda, const TraceInfo& trace_info = TraceInfo())
   {
     _setCalled();
+    if (_checkEmpty(nb_value))
+      return;
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf(m_queue);
+    impl::GenericFilteringIf gf;
     impl::IndexIterator input_iter;
     SetterLambdaIterator<SetterLambda> out(setter_lambda);
     gf.apply(*base_ptr, nb_value, input_iter, out, select_lambda, trace_info);
@@ -578,6 +571,14 @@ class GenericFilterer
     if (m_is_already_called)
       ARCANE_FATAL("apply() has already been called for this instance");
     m_is_already_called = true;
+  }
+  bool _checkEmpty(Int32 nb_value)
+  {
+    if (nb_value == 0) {
+      m_host_nb_out_storage[0] = 0;
+      return true;
+    }
+    return false;
   }
 };
 

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Scan.h                                                      (C) 2000-2023 */
+/* Scan.h                                                      (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des opérations de scan pour les accélérateurs.                    */
 /*---------------------------------------------------------------------------*/
@@ -116,9 +116,7 @@ class GenericScanner
       else
         ARCANE_CHECK_CUDA(::cub::DeviceScan::InclusiveScan(nullptr, temp_storage_size,
                                                            input_data, output_data, op, nb_item, stream));
-
-      m_storage.allocate(temp_storage_size);
-      void* temp_storage = m_storage.address();
+      void* temp_storage = m_storage.allocate(temp_storage_size);
       if constexpr (IsExclusive)
         ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(temp_storage, temp_storage_size,
                                                            input_data, output_data, op, init_value, nb_item, stream));
@@ -139,10 +137,7 @@ class GenericScanner
       else
         ARCANE_CHECK_HIP(rocprim::inclusive_scan(nullptr, temp_storage_size, input_data, output_data,
                                                  nb_item, op, stream));
-
-      m_storage.allocate(temp_storage_size);
-      void* temp_storage = m_storage.address();
-
+      void* temp_storage = m_storage.allocate(temp_storage_size);
       if constexpr (IsExclusive)
         ARCANE_CHECK_HIP(rocprim::exclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
                                                  init_value, nb_item, op, stream));
