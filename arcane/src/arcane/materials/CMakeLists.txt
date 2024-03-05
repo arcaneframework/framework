@@ -11,6 +11,7 @@ arcane_add_library(arcane_materials
 arcane_accelerator_add_source_files(
   AllEnvData.cc
   ConstituentConnectivityList.cc
+  ComponentItemInternalData.cc
   IncrementalComponentModifier.cc
   MeshMaterialVariableScalar.cc
   MeshMaterialVariableArray.cc

@@ -124,9 +124,11 @@ class ComponentItemInternalData
    public:
 
     void resize(Int32 new_size, ComponentItemSharedInfo* shared_info);
+    Int32 size() const { return m_size; }
 
    private:
 
+    Int32 m_size = 0;
     UniqueArray<ConstituentItemIndex> m_first_sub_constituent_item_id_list;
     UniqueArray<ConstituentItemIndex> m_super_component_item_local_id_list;
     UniqueArray<Int16> m_component_id_list;
@@ -208,6 +210,10 @@ class ComponentItemInternalData
  private:
 
   void _initSharedInfos();
+  static MemoryAllocationOptions _allocOptions();
+
+ public:
+
   //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
   void _resetItemsInternal();
 };
