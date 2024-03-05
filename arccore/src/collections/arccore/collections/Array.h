@@ -17,6 +17,7 @@
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/Span.h"
 #include "arccore/collections/MemoryAllocationOptions.h"
+#include "arccore/collections/ArrayTraits.h"
 
 #include <memory>
 #include <initializer_list>
@@ -129,68 +130,6 @@ class ArrayImplT
 : public ArrayImplBase
 {
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- *
- * \brief Caractéristiques pour un tableau
- */
-template<typename T>
-class ArrayTraits
-{
- public:
-
-  typedef const T& ConstReferenceType;
-  typedef FalseType IsPODType;
-};
-
-#define ARCCORE_DEFINE_ARRAY_PODTYPE(datatype)\
-template<>\
-class ArrayTraits<datatype>\
-{\
- public:\
-  typedef datatype ConstReferenceType;\
-  typedef TrueType IsPODType;\
-}
-
-template<typename T>
-class ArrayTraits<T*>
-{
- public:
-  typedef T* Ptr;
-  typedef const Ptr& ConstReferenceType;
-  typedef FalseType IsPODType;
-};
-
-template<typename T>
-class ArrayTraits<const T*>
-{
- public:
-  typedef T* Ptr;
-  typedef const T* ConstReferenceType;
-  typedef FalseType IsPODType;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCCORE_DEFINE_ARRAY_PODTYPE(char);
-ARCCORE_DEFINE_ARRAY_PODTYPE(signed char);
-ARCCORE_DEFINE_ARRAY_PODTYPE(unsigned char);
-ARCCORE_DEFINE_ARRAY_PODTYPE(short);
-ARCCORE_DEFINE_ARRAY_PODTYPE(int);
-ARCCORE_DEFINE_ARRAY_PODTYPE(long);
-ARCCORE_DEFINE_ARRAY_PODTYPE(unsigned short);
-ARCCORE_DEFINE_ARRAY_PODTYPE(unsigned int);
-ARCCORE_DEFINE_ARRAY_PODTYPE(unsigned long);
-ARCCORE_DEFINE_ARRAY_PODTYPE(float);
-ARCCORE_DEFINE_ARRAY_PODTYPE(double);
-ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
-ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
-ARCCORE_DEFINE_ARRAY_PODTYPE(Float16);
-ARCCORE_DEFINE_ARRAY_PODTYPE(BFloat16);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

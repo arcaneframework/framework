@@ -3,6 +3,7 @@ set(SOURCES
   Array.cc
   Array2.h
   Array2.cc
+  ArrayTraits.h
   ArrayDebugInfo.h
   CollectionsGlobal.h
   IMemoryAllocator.h
