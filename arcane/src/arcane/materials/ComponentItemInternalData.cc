@@ -50,22 +50,23 @@ resize(Int32 new_size, ComponentItemSharedInfo* shared_info)
   // On décale de 1 la vue pour qu'elle puisse être indexée avec l'entité
   // nulle (d'indice (-1)).
   Int32 true_size = new_size + 1;
-  m_first_sub_constituent_item_id_list.resize(true_size);
+  const bool force_resize = false;
+  MemoryUtils::checkResizeArrayWithCapacity(m_first_sub_constituent_item_id_list, true_size, force_resize);
   m_first_sub_constituent_item_id_list[0] = {};
 
-  m_super_component_item_local_id_list.resize(true_size);
+  MemoryUtils::checkResizeArrayWithCapacity(m_super_component_item_local_id_list, true_size, force_resize);
   m_super_component_item_local_id_list[0] = {};
 
-  m_component_id_list.resize(true_size);
+  MemoryUtils::checkResizeArrayWithCapacity(m_component_id_list, true_size, force_resize);
   m_component_id_list[0] = -1;
 
-  m_nb_sub_constituent_item_list.resize(true_size);
+  MemoryUtils::checkResizeArrayWithCapacity(m_nb_sub_constituent_item_list, true_size, force_resize);
   m_nb_sub_constituent_item_list[0] = 0;
 
-  m_global_item_local_id_list.resize(true_size);
+  MemoryUtils::checkResizeArrayWithCapacity(m_global_item_local_id_list, true_size, force_resize);
   m_global_item_local_id_list[0] = NULL_ITEM_LOCAL_ID;
 
-  m_var_index_list.resize(true_size);
+  MemoryUtils::checkResizeArrayWithCapacity(m_var_index_list, true_size, force_resize);
   m_var_index_list[0].reset();
 
   shared_info->m_storage_size = new_size;
