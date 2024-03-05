@@ -198,10 +198,6 @@ endif()
 
 # Autorise les tests
 enable_testing()
-find_package(GTest)
-if (GTEST_FOUND)
-  include(GoogleTest)
-endif()
 
 # autorise d'ajouter une cible à une autre définie dans un autre répertoire
 if(POLICY CMP0079)
@@ -685,6 +681,13 @@ macro(ARCANE_EXEC_CLR exe_name)
     endif()
   endif()
 endmacro()
+
+# ----------------------------------------------------------------------------
+# Recherche 'googletest' pour les tests unitaires
+find_package(GTest)
+if (GTEST_FOUND)
+  include(GoogleTest)
+endif()
 
 # ----------------------------------------------------------------------------
 # Disabled in arcane.pc (check it if useful)
