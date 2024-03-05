@@ -97,12 +97,11 @@ class GenericPartitionerIf
                                                    select_lambda, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
-      s.m_device_nb_list1_storage.allocate();
-      nb_list1_ptr = s.m_device_nb_list1_storage.address();
+      nb_list1_ptr = s.m_device_nb_list1_storage.allocate();
       ARCANE_CHECK_CUDA(::cub::DevicePartition::If(s.m_algo_storage.address(), temp_storage_size,
                                                    input_iter, output_iter, nb_list1_ptr, nb_item,
                                                    select_lambda, stream));
-      ARCANE_CHECK_CUDA(::cudaMemcpyAsync(s.m_host_nb_list1_storage.bytes().data(), nb_list1_ptr, sizeof(int), cudaMemcpyDeviceToHost, stream));
+      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
@@ -115,13 +114,11 @@ class GenericPartitionerIf
                                           nb_list1_ptr, nb_item, select_lambda, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
-      s.m_device_nb_list1_storage.allocate();
-      nb_list1_ptr = s.m_device_nb_list1_storage.address();
+      nb_list1_ptr = s.m_device_nb_list1_storage.allocate();
 
       ARCANE_CHECK_HIP(rocprim::partition(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
                                           nb_list1_ptr, nb_item, select_lambda, stream));
-      ARCANE_CHECK_HIP(::hipMemcpyAsync(s.m_host_nb_list1_storage.bytes().data(), nb_list1_ptr,
-                                        sizeof(int), hipMemcpyDeviceToHost, stream));
+      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
     }
 #endif
     case eExecutionPolicy::Thread:
