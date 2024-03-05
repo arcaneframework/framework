@@ -15,6 +15,7 @@
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FunctorUtils.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/materials/IMeshMaterialVariable.h"
@@ -45,6 +46,8 @@ IncrementalComponentModifier(AllEnvData* all_env_data)
 , m_material_mng(all_env_data->m_material_mng)
 , m_copy_queue(makeQueue(m_material_mng->runner()))
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_TRANSFORM_NO_FILTER", true))
+    m_do_old_implementation = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -102,10 +105,8 @@ apply(MaterialModifierOperation* operation)
     UniqueArray<Int32>& cells_unchanged_in_env = m_work_info.cells_unchanged_in_env;
     UniqueArray<Int16>& cells_current_nb_material = m_work_info.m_cells_current_nb_material;
     const Int32 nb_id = ids.size();
-    cells_unchanged_in_env.clear();
-    cells_unchanged_in_env.reserve(nb_id);
-    cells_changed_in_env.clear();
-    cells_changed_in_env.reserve(nb_id);
+    cells_unchanged_in_env.resize(nb_id);
+    cells_changed_in_env.resize(nb_id);
     cells_current_nb_material.resize(nb_id);
     const Int32 ref_nb_mat = is_add ? 0 : 1;
     const Int16 env_id = true_env->componentId();
@@ -113,14 +114,47 @@ apply(MaterialModifierOperation* operation)
 
     connectivity->fillCellsNbMaterial(ids, env_id, cells_current_nb_material.view(), m_copy_queue);
 
-    for (Integer i = 0; i < nb_id; ++i) {
-      Int32 lid = ids[i];
-      Int16 current_cell_nb_mat = cells_current_nb_material[i];
-      if (current_cell_nb_mat != ref_nb_mat) {
-        cells_unchanged_in_env.add(lid);
+    const bool do_new = !m_do_old_implementation;
+    if (do_new){
+      Accelerator::GenericFilterer filterer(&m_copy_queue);
+      SmallSpan<Int32> cells_unchanged_in_env_view = cells_unchanged_in_env.view();
+      SmallSpan<Int32> cells_changed_in_env_view = cells_changed_in_env.view();
+      SmallSpan<const Int16> cells_current_nb_material_view = m_work_info.m_cells_current_nb_material.view();
+      {
+        auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+          Int16 current_cell_nb_mat = cells_current_nb_material_view[index];
+          return current_cell_nb_mat != ref_nb_mat;
+        };
+        auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+          cells_unchanged_in_env_view[output_index] = ids[input_index];
+        };
+        filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
+        cells_unchanged_in_env.resize(filterer.nbOutputElement());
       }
-      else {
-        cells_changed_in_env.add(lid);
+      {
+        auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+          Int16 current_cell_nb_mat = cells_current_nb_material_view[index];
+          return current_cell_nb_mat == ref_nb_mat;
+        };
+        auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+          cells_changed_in_env_view[output_index] = ids[input_index];
+        };
+        filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
+        cells_changed_in_env.resize(filterer.nbOutputElement());
+      }
+    }
+    else{
+      cells_unchanged_in_env.clear();
+      cells_changed_in_env.clear();
+      for (Integer i = 0; i < nb_id; ++i) {
+        Int32 lid = ids[i];
+        Int16 current_cell_nb_mat = cells_current_nb_material[i];
+        if (current_cell_nb_mat != ref_nb_mat) {
+          cells_unchanged_in_env.add(lid);
+        }
+        else {
+          cells_changed_in_env.add(lid);
+        }
       }
     }
 
@@ -317,7 +351,7 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, ConstArrayView<Int3
 
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
-  const bool do_new = true;
+  const bool do_new = !m_do_old_implementation;
   if (do_new)
     connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_copy_queue);
   else {

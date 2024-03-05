@@ -57,6 +57,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   MeshMaterialMng* m_material_mng = nullptr;
   ConstituentModifierWorkInfo m_work_info;
   RunQueue m_copy_queue;
+  bool m_do_old_implementation = false;
 
  public:
 
