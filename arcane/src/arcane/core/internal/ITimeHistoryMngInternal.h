@@ -19,8 +19,11 @@
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/core/ITimeHistoryMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/IPropertyMng.h"
+#include "arcane/core/Directory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +42,7 @@ class ITimeHistoryTransformer;
 class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
 {
  public:
-  TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp)
+  explicit TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp)
   : m_thp(thp)
   , m_mesh_handle()
   {}
@@ -121,7 +124,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
   /*!
    * Méthode permettant de récupérer les courbes lors d'une reprise.
    */
-  virtual void readVariables() =0;
+  virtual void readVariables(IMeshMng* mesh_mng, IMesh* default_mesh) =0;
 
   /*!
    * Ajoute un écrivain
@@ -184,7 +187,9 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    */
   virtual bool isNonIOMasterCurvesEnabled() = 0;
 
-  virtual void addObservers() = 0;
+  virtual void addObservers(IPropertyMng* prop_mng) = 0;
+
+  virtual void editOutputPath(const Directory& directory) = 0;
 
 };
 

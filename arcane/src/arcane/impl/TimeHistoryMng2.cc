@@ -35,6 +35,7 @@
 #include "arcane/IXmlDocumentHolder.h"
 #include "arcane/ServiceFinder2.h"
 #include "arcane/ServiceBuilder.h"
+#include "arcane/core/IMeshMng.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 
@@ -270,7 +271,8 @@ TimeHistoryMng2::
 TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 : AbstractModule(mb)
 , CommonVariables(this)
-, m_internal(makeRef(new TimeHistoryMngInternal(subDomain())))
+, m_internal(makeRef(new TimeHistoryMngInternal(subDomain()->variableMng(),
+                                                makeRef(new Properties(subDomain()->propertyMng(), "ArcaneTimeHistoryProperties")))))
 {
   if (add_entry_points){
     addEntryPoint(this,"ArcaneTimeHistoryBegin",&TimeHistoryMng2::timeHistoryBegin,
@@ -360,8 +362,8 @@ timeHistoryInit()
   info(4) << "TimeHistory is MasterIO ? " << m_internal->isMasterIO();
   if (!m_internal->isMasterIO() && !m_internal->isNonIOMasterCurvesEnabled())
     return;
-
-  m_internal->addObservers();
+  m_internal->editOutputPath(Directory(subDomain()->exportDirectory(), "courbes"));
+  m_internal->addObservers(subDomain()->propertyMng());
 
   if (platform::getEnvironmentVariable("ARCANE_DISABLE_GNUPLOT_CURVES").null()){
     ITimeHistoryCurveWriter2* gnuplot_curve_writer = new GnuplotTimeHistoryCurveWriter2(traceMng());
@@ -397,7 +399,7 @@ void TimeHistoryMng2::
 timeHistoryContinueInit()
 {
   if (m_internal->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled())
-    m_internal->readVariables();
+    m_internal->readVariables(subDomain()->meshMng(), subDomain()->defaultMesh());
 }
 
 /*---------------------------------------------------------------------------*/

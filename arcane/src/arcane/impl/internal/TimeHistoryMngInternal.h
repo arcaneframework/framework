@@ -24,7 +24,6 @@
 
 #include "arcane/IIOMng.h"
 #include "arcane/CommonVariables.h"
-#include "arcane/ISubDomain.h"
 #include "arcane/Directory.h"
 #include "arcane/AbstractModule.h"
 #include "arcane/EntryPoint.h"
@@ -78,7 +77,7 @@ class TimeHistoryValue
 
  public:
 
-  virtual void fromOldToNewVariables(ISubDomain* sd) = 0;
+  virtual void fromOldToNewVariables(IVariableMng* vm, IMesh* default_mesh) = 0;
 
   //! Imprime les valeurs de l'historique avec l'écrivain \a writer
   virtual void dumpValues(ITraceMng* msg,
@@ -161,10 +160,10 @@ class TimeHistoryValueT
   const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
  public:
 
-  TimeHistoryValueT(ISubDomain* sd, const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
+  TimeHistoryValueT(IVariableMng* vm, const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(thpi, DataTypeTraitsT<DataType>::type(), index, nb_element)
-  , m_values(VariableBuildInfo(sd, String("TimeHistoryMngValues")+index, VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(sd, String("TimeHistoryMngIterations")+index, VAR_BUILD_FLAGS))
+  , m_values(VariableBuildInfo(vm, String("TimeHistoryMngValues")+index, VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(vm, String("TimeHistoryMngIterations")+index, VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
@@ -181,11 +180,10 @@ class TimeHistoryValueT
 
  public:
 
-  void fromOldToNewVariables(ISubDomain* sd) override
+  void fromOldToNewVariables(IVariableMng* vm, IMesh* default_mesh) override
   {
-    IMesh* mesh0 = sd->defaultMesh();
-    IVariable* ptr_old_values = sd->variableMng()->findMeshVariable(mesh0, String("TimeHistory_Values_")+index());
-    IVariable* ptr_old_iterations = sd->variableMng()->findMeshVariable(mesh0, String("TimeHistory_Iterations_")+index());
+    IVariable* ptr_old_values = vm->findMeshVariable(default_mesh, String("TimeHistory_Values_")+index());
+    IVariable* ptr_old_iterations = vm->findMeshVariable(default_mesh, String("TimeHistory_Iterations_")+index());
     if(ptr_old_values == nullptr || ptr_old_iterations == nullptr)
       ARCANE_FATAL("Unknown old variable");
 
@@ -347,20 +345,23 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
 : public ITimeHistoryMngInternal
 {
  public:
-  explicit TimeHistoryMngInternal(ISubDomain* sd)
-  : m_sd(sd)
-  , m_tmng(sd->traceMng())
-  , m_th_meta_data(VariableBuildInfo(m_sd,"TimeHistoryMngMetaData"))
-  , m_th_global_time(VariableBuildInfo(m_sd,"TimeHistoryMngGlobalTime"))
+  explicit TimeHistoryMngInternal(IVariableMng* vm, const Ref<Properties>& properties)
+  : m_variable_mng(vm)
+  , m_trace_mng(m_variable_mng->traceMng())
+  , m_parallel_mng(m_variable_mng->parallelMng())
+  , m_common_variables(m_variable_mng)
+  , m_th_meta_data(VariableBuildInfo(m_variable_mng,"TimeHistoryMngMetaData"))
+  , m_th_global_time(VariableBuildInfo(m_variable_mng,"TimeHistoryMngGlobalTime"))
   , m_is_active(true)
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
-  , m_properties(new Properties(sd->propertyMng(), "ArcaneTimeHistoryProperties"))
+  , m_properties(properties)
   , m_version(2)
   {
     m_enable_non_io_master_curves = !platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null();
     // Seul le sous-domaine maître des IO rend actif les time history.
-    m_is_master_io = sd->allReplicaParallelMng()->isMasterIO();
+    // TODO : utilisation du allReplicaParallelMng ?
+    m_is_master_io = m_parallel_mng->isMasterIO();
   }
 
   ~TimeHistoryMngInternal() override
@@ -410,7 +411,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only) override;
   void dumpHistory(bool is_verbose) override;
   void updateMetaData() override;
-  void readVariables() override;
+  void readVariables(IMeshMng* mesh_mng, IMesh* default_mesh) override;
 
   void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) override;
   void removeCurveWriter(const String& name) override;
@@ -424,13 +425,13 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void setDumpActive(bool is_active) override { m_is_dump_active = is_active; }
   bool isMasterIO() override { return m_is_master_io; }
   bool isNonIOMasterCurvesEnabled() override { return m_enable_non_io_master_curves; }
-  void addObservers() override;
+  void addObservers(IPropertyMng* prop_mng) override;
+  void editOutputPath(const Directory& directory);
 
 
  private:
   template<class DataType> void
   _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<DataType> values);
-  void _checkOutputPath();
   void _destroyAll();
   void _dumpCurvesAllWriters(bool is_verbose);
   void _dumpSummaryOfCurvesLegacy();
@@ -440,12 +441,15 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
     m_curve_writers2.erase(writer);
   }
 
-  void _fromLegacyFormat();
+  void _fromLegacyFormat(IMesh* default_mesh);
   void _saveProperties();
 
  private:
-  ISubDomain* m_sd;
-  ITraceMng* m_tmng;
+  IVariableMng* m_variable_mng;
+  ITraceMng* m_trace_mng;
+  IParallelMng* m_parallel_mng;
+  CommonVariables m_common_variables;
+  Directory m_directory;
 
   bool m_is_master_io; //!< True si je suis le gestionnaire actif
   bool m_enable_non_io_master_curves; //!< Indique si l'ecriture  de courbes par des procs non io_master est possible
@@ -459,7 +463,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   bool m_is_active; //!< Indique si le service est actif.
   bool m_is_shrink_active; //!< Indique si la compression de l'historique est active
   bool m_is_dump_active; //!< Indique si les dump sont actifs
-  Properties* m_properties;
+  Ref<Properties> m_properties;
   Integer m_version;
 };
 
