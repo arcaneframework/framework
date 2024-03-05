@@ -624,7 +624,7 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
   for( A_TRACE_COMPONENT(_EnumeratorClassName) iname((::Arcane::Materials::_EnumeratorClassName)(container) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
 
 #define A_ENUMERATE_CELL_COMPONENTCELL(_EnumeratorClassName,iname,component_cell) \
-  for( _EnumeratorClassName iname((::Arcane::Materials::_EnumeratorClassName)(component_cell)); iname.hasNext(); ++iname )
+  for( ::Arcane::Materials::_EnumeratorClassName iname((::Arcane::Materials::_EnumeratorClassName)(component_cell)); iname.hasNext(); ++iname )
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

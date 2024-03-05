@@ -217,7 +217,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     return (Int64)m_var_index_data[id.localId()].arrayIndex() + ((Int64)item_base.uniqueId() << MAT_INDEX_OFFSET);
   }
 
-  inline void _reset(ConstituentItemIndex id)
+  ARCCORE_HOST_DEVICE void _reset(ConstituentItemIndex id)
   {
     Int32 local_id = id.localId();
     ARCCORE_CHECK_RANGE(local_id, -1, m_storage_size);
