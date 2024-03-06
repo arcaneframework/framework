@@ -66,6 +66,7 @@ class ITimeHistoryCurveWriter;
 class ITimeHistoryCurveWriter2;
 class ITimeHistoryTransformer;
 class ITimeHistoryMngInternal;
+class ITimeHistoryAdder;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -165,12 +166,7 @@ class ITimeHistoryMng
 
  public:
 
-  virtual void addValue(const TimeHistoryAddValueArg& thp, Real value) = 0;
-  virtual void addValue(const TimeHistoryAddValueArg& thp, Int32 value) = 0;
-  virtual void addValue(const TimeHistoryAddValueArg& thp, Int64 value) = 0;
-  virtual void addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values) = 0;
-  virtual void addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values) = 0;
-  virtual void addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values) = 0;
+  virtual ITimeHistoryAdder* adder() = 0;
 
  public:
 

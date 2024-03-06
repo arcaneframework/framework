@@ -20,9 +20,9 @@
 #include "arcane/utils/UtilsTypes.h"
 
 #include "arcane/core/ITimeHistoryMng.h"
-#include "arcane/core/IMesh.h"
 #include "arcane/core/IPropertyMng.h"
 #include "arcane/core/Directory.h"
+#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

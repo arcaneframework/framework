@@ -40,6 +40,7 @@
 #include "arcane/datatype/DataTypeTraits.h"
 
 #include "arcane/impl/internal/TimeHistoryMngInternal.h"
+#include "arcane/core/GlobalTimeHistoryAdder.h"
 
 #include <variant>
 
@@ -184,42 +185,7 @@ class TimeHistoryMng2
     m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
   }
 
-  void addValue(const TimeHistoryAddValueArg& thp, Real value) override
-  {
-    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
-      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
-    }
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, Int64 value) override
-  {
-    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
-      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
-    }
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, Int32 value) override
-  {
-    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
-      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
-    }
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values) override
-  {
-    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
-      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
-    }
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values) override
-  {
-    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
-      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
-    }
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values) override
-  {
-    if(!thp.isLocal() || thp.localProcId() == parallelMng()->commRank()) {
-      m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
-    }
-  }
+  ITimeHistoryAdder* adder() override { return m_adder.get(); }
 
  public:
 
@@ -262,6 +228,7 @@ class TimeHistoryMng2
  private:
 
   Ref<ITimeHistoryMngInternal> m_internal;
+  Ref<ITimeHistoryAdder> m_adder;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -273,6 +240,7 @@ TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 , CommonVariables(this)
 , m_internal(makeRef(new TimeHistoryMngInternal(subDomain()->variableMng(),
                                                 makeRef(new Properties(subDomain()->propertyMng(), "ArcaneTimeHistoryProperties")))))
+, m_adder(makeRef(new GlobalTimeHistoryAdder(this, subDomain()->parallelMng())))
 {
   if (add_entry_points){
     addEntryPoint(this,"ArcaneTimeHistoryBegin",&TimeHistoryMng2::timeHistoryBegin,

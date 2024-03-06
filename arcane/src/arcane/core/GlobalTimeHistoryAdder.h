@@ -5,18 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshTimeHistoryAdder.h                                      (C) 2000-2024 */
+/* GlobalTimeHistoryAdder.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Classe permettant d'ajouter un historique de valeur lié à un maillage.    */
+/* Classe permettant d'ajouter un historique de valeur global.               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_MESHTIMEHISTORYADDER_H
-#define ARCANE_CORE_MESHTIMEHISTORYADDER_H
+#ifndef ARCANE_CORE_GLOBALTIMEHISTORYADDER_H
+#define ARCANE_CORE_GLOBALTIMEHISTORYADDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ITimeHistoryAdder.h"
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,12 +26,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
+class ARCANE_CORE_EXPORT GlobalTimeHistoryAdder
 : public ITimeHistoryAdder
 {
  public:
-  MeshTimeHistoryAdder(ITimeHistoryMng* thm, IParallelMng* pm, const MeshHandle& mesh_handle);
-  ~MeshTimeHistoryAdder() override = default;
+  GlobalTimeHistoryAdder(ITimeHistoryMng* thm, IParallelMng* pm);
+  ~GlobalTimeHistoryAdder() override = default;
 
  public:
   void addValue(const TimeHistoryAddValueArg& thp, Real value) override;
@@ -45,7 +44,6 @@ class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
  private:
   ITimeHistoryMng* m_thm;
   IParallelMng* m_pm;
-  MeshHandle m_mesh_handle;
 };
 
 /*---------------------------------------------------------------------------*/
