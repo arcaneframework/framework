@@ -89,7 +89,8 @@ namespace Alien
     /*---------------------------------------------------------------------------*/
     /*---------------------------------------------------------------------------*/
 
-    typedef CombineProfiledMatrixBuilderT<Real,Integer> CombineProfiledMatrixBuilder ;
+    typedef CombineProfiledMatrixBuilderT<Real,Integer,CombineAdd<Real>> CombineAddProfiledMatrixBuilder ;
+    typedef CombineProfiledMatrixBuilderT<Real,Integer,CombineMult<Real>> CombineMultProfiledMatrixBuilder ;
 
   } // namespace SYCL
 

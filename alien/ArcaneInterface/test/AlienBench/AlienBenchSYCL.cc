@@ -377,9 +377,9 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
       }
 
       {
-        Alien::SYCL::ProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
-        //Alien::SYCL::CombineProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
-        //builder.setParallelAssembleStencil(1,m_cell_cell_connection_offset.view(),m_cell_cell_connection_index.view()) ;
+        //Alien::SYCL::ProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+        Alien::SYCL::CombineMultProfiledMatrixBuilder builder(matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+        builder.setParallelAssembleStencil(1,m_cell_cell_connection_offset.view(),m_cell_cell_connection_index.view()) ;
 
         Alien::ParallelEngine engine(*m_default_queue) ;
         engine.submit([&](ControlGroupHandler& handler)
@@ -515,9 +515,9 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
                                                         auto svi = in_conn_index[k] ;
                                                         if(in_is_own[svi]==1) {
                                                             Integer j = in_allUIndex[svi];
-                                                            //auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
+                                                            auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
                                                             //matrix_acc[eji] = 0.;
-                                                            //matrix_acc.combine(ejik,0.) ;
+                                                            matrix_acc.combine(ejik,0.) ;
                                                         }
                                                       }
                                                     }
@@ -532,16 +532,16 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
                                                         auto svi = in_conn_index[k] ;
                                                         if(in_is_own[svi]==1) {
                                                             Integer j = in_allUIndex[svi];
-                                                            //auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
+                                                            auto ejik = matrix_acc.combineEntryIndex(i, j, i) ;
                                                             //matrix_acc[eji] = 0.;
-                                                            //matrix_acc.combine(ejik,0.) ;
+                                                            matrix_acc.combine(ejik,0.) ;
                                                         }
                                                       }
                                                     }
                                                   } ;
                                                }) ;
                         }) ;
-            //builder.combine() ;
+            builder.combine() ;
           }
         builder.finalize() ;
       }
