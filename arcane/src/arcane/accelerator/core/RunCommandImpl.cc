@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandImpl.cc                                           (C) 2000-2023 */
+/* RunCommandImpl.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de la gestion d'une commande sur accélérateur.             */
 /*---------------------------------------------------------------------------*/
@@ -24,6 +24,7 @@
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
 #include "arcane/accelerator/core/internal/ReduceMemoryImpl.h"
+#include "arcane/accelerator/core/internal/RunnerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -163,7 +164,7 @@ notifyEndExecuteKernel()
 
   Int64 diff_time_ns = m_stop_event->elapsedTime(m_start_event);
 
-  runner()->_addCommandTime((double)diff_time_ns / 1.0e9);
+  runner()->addTime((double)diff_time_ns / 1.0e9);
 
   ForLoopOneExecStat* exec_info = m_loop_one_exec_stat_ptr;
   if (exec_info) {
@@ -230,7 +231,7 @@ internalStream() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Runner* RunCommandImpl::
+RunnerImpl* RunCommandImpl::
 runner() const
 {
   return m_queue->runner();

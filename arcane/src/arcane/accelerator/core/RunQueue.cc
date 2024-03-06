@@ -20,6 +20,7 @@
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
+#include "arcane/accelerator/core/internal/RunnerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +33,7 @@ namespace Arcane::Accelerator
 
 RunQueue::
 RunQueue(Runner& runner)
-: m_p(impl::RunQueueImpl::create(&runner))
+: m_p(impl::RunQueueImpl::create(runner._impl()))
 {
 }
 
@@ -41,7 +42,7 @@ RunQueue(Runner& runner)
 
 RunQueue::
 RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
-: m_p(impl::RunQueueImpl::create(&runner, bi))
+: m_p(impl::RunQueueImpl::create(runner._impl(), bi))
 {
 }
 
@@ -229,7 +230,7 @@ isAsync() const
 bool RunQueue::
 _isAutoPrefetchCommand() const
 {
-  return m_p->m_runner->_isAutoPrefetchCommand();
+  return m_p->m_runner_impl->isAutoPrefetchCommand();
 }
 
 /*---------------------------------------------------------------------------*/

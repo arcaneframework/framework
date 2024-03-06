@@ -38,10 +38,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   friend class Arcane::Accelerator::Runner;
   friend class Arcane::Accelerator::RunQueue;
   friend class RunCommandImpl;
+  friend class RunQueueImplStack;
+  friend class RunnerImpl;
 
  private:
 
-  RunQueueImpl(Runner* runner, Int32 id, const RunQueueBuildInfo& bi);
+  RunQueueImpl(RunnerImpl* runner_impl, Int32 id, const RunQueueBuildInfo& bi);
 
  public:
 
@@ -56,13 +58,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
  public:
 
-  static RunQueueImpl* create(Runner* r, const RunQueueBuildInfo& bi);
-  static RunQueueImpl* create(Runner* r);
+  static RunQueueImpl* create(RunnerImpl* r, const RunQueueBuildInfo& bi);
+  static RunQueueImpl* create(RunnerImpl* r);
 
  public:
 
   eExecutionPolicy executionPolicy() const { return m_execution_policy; }
-  Runner* runner() const { return m_runner; }
+  RunnerImpl* runner() const { return m_runner_impl; }
 
  public:
 
@@ -90,10 +92,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
  private:
 
-  Runner* m_runner;
+  RunnerImpl* m_runner_impl = nullptr;
   eExecutionPolicy m_execution_policy;
-  IRunnerRuntime* m_runtime;
-  IRunQueueStream* m_queue_stream;
+  IRunnerRuntime* m_runtime = nullptr;
+  IRunQueueStream* m_queue_stream = nullptr;
   //! Pool de commandes
   std::stack<RunCommandImpl*> m_run_command_pool;
   //! Liste des commandes en cours d'exécution
