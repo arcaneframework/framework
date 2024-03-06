@@ -82,8 +82,6 @@ class MeshComponentPartData
     m_constituent_list_view = v;
   }
 
-  void _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queue);
-
   //! Il faut appeler notifyValueIndexesChanged() après modification du tableau.
   Int32Array& _mutableValueIndexes(eMatPart k)
   {
@@ -91,6 +89,10 @@ class MeshComponentPartData
   }
 
   void _notifyValueIndexesChanged();
+
+ public:
+
+  void _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queue);
 
  private:
 
