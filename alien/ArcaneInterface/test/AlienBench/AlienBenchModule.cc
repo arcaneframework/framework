@@ -928,10 +928,6 @@ AlienBenchModule::_test(Timer& pbuild_timer,
         m_cell_center[icell] = x;
         m_u[icell] = funcn(x);
         m_k[icell] = funck(x);
-        if(icell->isOwn())
-          m_cell_is_own[icell] = 1 ;
-        else
-          m_cell_is_own[icell] = 0 ;
       }
   }
 
