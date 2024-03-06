@@ -33,7 +33,6 @@ createExecutable(alien_bench.exe)
 addSources(alien_bench.exe
         main.cc
         AlienBenchModule.cc
-        AlienBenchSYCL.cc
         AlienStokesModule.cc
         ArcaneCodeService.cc
         )
