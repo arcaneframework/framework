@@ -392,7 +392,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
   }
 
   //! Positionne le premier sous-composant.
-  void _setFirstSubItem(ConstituentItemIndex first_sub_item)
+  ARCCORE_HOST_DEVICE void _setFirstSubItem(ConstituentItemIndex first_sub_item)
   {
     m_shared_info->_setFirstSubConstituentLocalId(m_constituent_item_index, first_sub_item);
   }

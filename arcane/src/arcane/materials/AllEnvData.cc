@@ -36,6 +36,7 @@
 
 #include "arcane/accelerator/Scan.h"
 #include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/RunCommandEnumerate.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -219,11 +220,10 @@ _computeInfosForEnvCells()
 {
   IMesh* mesh = m_material_mng->mesh();
   IItemFamily* cell_family = mesh->cellFamily();
-  ItemGroup all_cells = cell_family->allItems();
+  CellGroup all_cells = cell_family->allItems();
   const Int32 nb_cell = all_cells.size();
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
-  ComponentItemInternalRange env_items_internal_range = m_item_internal_data.envItemsInternalRange();
   SmallSpan<const Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
 
   // Calcule pour chaque maille sa position dans le tableau des milieux
@@ -327,17 +327,20 @@ _computeInfosForEnvCells()
 
   // Positionne les infos pour les AllEnvCell.
   {
-    ENUMERATE_CELL (icell, all_cells) {
-      Cell c = *icell;
-      Int32 lid = icell.itemLocalId();
+    ComponentItemSharedInfo* all_env_shared_info = m_item_internal_data.allEnvSharedInfo();
+    auto command = makeCommand(queue);
+    SmallSpan<Int32> env_cell_indexes_view(env_cell_indexes);
+    command << RUNCOMMAND_ENUMERATE (Cell, cell_id, all_cells)
+    {
+      Int32 lid = cell_id;
       Int16 n = cells_nb_env[lid];
-      matimpl::ConstituentItemBase ref_ii = m_item_internal_data.allEnvItemBase(c);
-      ref_ii._setSuperAndGlobalItem({}, c);
+      matimpl::ConstituentItemBase ref_ii(all_env_shared_info, ConstituentItemIndex(lid));
+      ref_ii._setSuperAndGlobalItem({}, cell_id);
       ref_ii._setVariableIndex(MatVarIndex(0, lid));
       ref_ii._setNbSubItem(n);
       if (n != 0)
-        ref_ii._setFirstSubItem(env_items_internal_range[env_cell_indexes[lid]]);
-    }
+        ref_ii._setFirstSubItem(ConstituentItemIndex(env_cell_indexes_view[lid]));
+    };
   }
 }
 
