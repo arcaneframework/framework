@@ -34,6 +34,9 @@
 #include "arcane/materials/internal/ConstituentConnectivityList.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 
+#include "arcane/accelerator/Scan.h"
+#include "arcane/accelerator/RunCommandLoop.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -77,7 +80,7 @@ endCreate(bool is_continue)
 bool AllEnvData::
 _isFullVerbose() const
 {
-  return (m_verbose_debug_level >1 || traceMng()->verbosityLevel()>=5);
+  return (m_verbose_debug_level > 1 || traceMng()->verbosityLevel() >= 5);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -90,7 +93,7 @@ _computeNbEnvAndNbMatPerCell()
 
   // Calcule le nombre de milieux par maille, et pour chaque
   // milieu le nombre de matériaux par maille
-  for( MeshEnvironment* env : true_environments ){
+  for (MeshEnvironment* env : true_environments) {
     env->computeNbMatPerCell();
   }
 }
@@ -217,17 +220,28 @@ _computeInfosForEnvCells()
   IMesh* mesh = m_material_mng->mesh();
   IItemFamily* cell_family = mesh->cellFamily();
   ItemGroup all_cells = cell_family->allItems();
+  const Int32 nb_cell = all_cells.size();
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
   ComponentItemInternalRange all_env_items_internal_range = m_item_internal_data.allEnvItemsInternalRange();
   ComponentItemInternalRange env_items_internal_range = m_item_internal_data.envItemsInternalRange();
-  ConstArrayView<Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
+  SmallSpan<const Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
 
   // Calcule pour chaque maille sa position dans le tableau des milieux
   // en considérant que les milieux de chaque maille sont rangés consécutivement
   // dans m_env_items_internal.
-  Int32UniqueArray env_cell_indexes(cell_family->maxLocalId());
-  {
+  const Int32 max_local_id = cell_family->maxLocalId();
+  UniqueArray<Int32> env_cell_indexes(platform::getDefaultDataAllocator());
+  env_cell_indexes.resize(max_local_id);
+
+  // TODO: temporaire car 'Scan' ne supporte pas des tableaux de types différents
+  UniqueArray<Int32> cells_nb_env_int32(platform::getDefaultDataAllocator());
+  cells_nb_env_int32.resize(max_local_id);
+
+  RunQueue& queue(m_material_mng->runQueue());
+
+  bool do_old = (max_local_id != nb_cell);
+  if (do_old) {
     Integer env_cell_index = 0;
     ENUMERATE_CELL (icell, all_cells) {
       Int32 lid = icell.itemLocalId();
@@ -235,6 +249,20 @@ _computeInfosForEnvCells()
       env_cell_indexes[lid] = env_cell_index;
       env_cell_index += nb_env;
     }
+  }
+  else {
+    // TODO: Cela ne fonctionne que si all_cells est compacté et queue
+    // local_id[i] <=> i.
+    auto command = makeCommand(queue);
+    SmallSpan<Int32> cells_nb_env_int32_view(cells_nb_env_int32.view());
+    command << RUNCOMMAND_LOOP1(iter, nb_cell)
+    {
+      auto [i] = iter();
+      cells_nb_env_int32_view[i] = cells_nb_env[i];
+    };
+    Accelerator::Scanner<Int32> scanner;
+    SmallSpan<Int32> env_cell_indexes_view(env_cell_indexes);
+    scanner.exclusiveSum(&queue, cells_nb_env_int32_view, env_cell_indexes_view);
   }
 
   // Positionne les infos pour les EnvCell
