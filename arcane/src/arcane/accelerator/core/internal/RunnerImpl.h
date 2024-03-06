@@ -16,6 +16,10 @@
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
+#include "arcane/accelerator/core/DeviceId.h"
+
+#include <stack>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,8 +33,8 @@ class RunQueueImplStack
 {
  public:
 
-  explicit RunQueueImplStack(Runner* runner)
-  : m_runner(runner)
+  explicit RunQueueImplStack(RunnerImpl* runner_impl)
+  : m_runner_impl(runner_impl)
   {}
 
  public:
@@ -42,19 +46,13 @@ class RunQueueImplStack
 
  public:
 
-  impl::RunQueueImpl* createRunQueue(const RunQueueBuildInfo& bi)
-  {
-    Int32 x = ++m_nb_created;
-    auto* q = new impl::RunQueueImpl(m_runner, x, bi);
-    q->m_is_in_pool = true;
-    return q;
-  }
+  RunQueueImpl* createRunQueue(const RunQueueBuildInfo& bi);
 
  private:
 
   std::stack<impl::RunQueueImpl*> m_stack;
   std::atomic<Int32> m_nb_created = -1;
-  Runner* m_runner;
+  RunnerImpl* m_runner_impl = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -114,12 +112,7 @@ class RunnerImpl
 
  public:
 
-  RunQueueImplStack* getPool()
-  {
-    if (!m_run_queue_pool)
-      ARCANE_FATAL("Runner is not initialized");
-    return m_run_queue_pool;
-  }
+  RunQueueImplStack* getPool();
   void addTime(double v)
   {
     // 'v' est en seconde. On le convertit en nanosecond.
@@ -139,6 +132,14 @@ class RunnerImpl
   bool isInit() const { return m_is_init; }
   eDeviceReducePolicy reducePolicy() const { return m_reduce_policy; }
   DeviceId deviceId() const { return m_device_id; }
+
+ public:
+
+  void _internalPutRunQueueImplInPool(RunQueueImpl* p);
+  RunQueueImpl* _internalCreateOrGetRunQueueImpl();
+  RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
+  IRunQueueEventImpl* _createEvent();
+  IRunQueueEventImpl* _createEventWithTimer();
 
  private:
 
@@ -162,6 +163,7 @@ class RunnerImpl
  private:
 
   void _freePool(RunQueueImplStack* s);
+  void _checkIsInit() const;
 };
 
 /*---------------------------------------------------------------------------*/

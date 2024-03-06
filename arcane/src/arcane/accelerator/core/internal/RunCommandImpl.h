@@ -64,7 +64,7 @@ class RunCommandImpl
 
   void releaseReduceMemoryImpl(ReduceMemoryImpl* p);
   IRunQueueStream* internalStream() const;
-  Runner* runner() const;
+  RunnerImpl* runner() const;
 
  private:
 
