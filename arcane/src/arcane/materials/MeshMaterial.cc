@@ -23,12 +23,12 @@
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/ComponentItemVectorView.h"
-#include "arcane/materials/MeshComponentPartData.h"
 #include "arcane/materials/ComponentPartItemVectorView.h"
 
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/MeshEnvironment.h"
 #include "arcane/materials/internal/ConstituentItemVectorImpl.h"
+#include "arcane/materials/internal/MeshComponentPartData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

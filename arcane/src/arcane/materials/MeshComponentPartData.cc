@@ -19,10 +19,11 @@
 #include "arcane/core/ItemPrinter.h"
 
 #include "arcane/core/materials/IMeshComponent.h"
-#include "arcane/core/materials/MeshComponentPartData.h"
 #include "arcane/core/materials/ComponentItemInternal.h"
 #include "arcane/core/materials/ComponentPartItemVectorView.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
+
+#include "arcane/materials/internal/MeshComponentPartData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

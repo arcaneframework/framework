@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Données séparées en parties pures et impures d'un constituant.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_MATERIALS_MESHCOMPONENTPARTDATA_H
-#define ARCANE_CORE_MATERIALS_MESHCOMPONENTPARTDATA_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHCOMPONENTPARTDATA_H
+#define ARCANE_MATERIALS_INTERNAL_MESHCOMPONENTPARTDATA_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,7 +35,7 @@ namespace Arcane::Materials
  *
  * Cette classe est interne à Arcane.
  */
-class ARCANE_CORE_EXPORT MeshComponentPartData
+class MeshComponentPartData
 : public TraceAccessor
 {
   friend class MeshComponentData;

@@ -72,6 +72,7 @@ set(ARCANE_SOURCES
   ComponentPartItemVectorView.h
   ComponentItemVectorView.h
   ComponentSimd.h
+  MeshComponentPartData.cc
   EnumeratorTracer.h
   MaterialsGlobal.h
   MatItemVector.h
@@ -124,6 +125,7 @@ set(ARCANE_SOURCES
   internal/IncrementalComponentModifier.h
   internal/IMeshMaterialModifierImpl.h
   internal/MaterialModifierOperation.h
+  internal/MeshComponentPartData.h
   internal/MeshEnvironment.h
   internal/MeshMaterial.h
   internal/MeshMaterialMng.h

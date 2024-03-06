@@ -16,9 +16,11 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arccore/base/ReferenceCounterImpl.h"
+
 #include "arcane/core/materials/ComponentItemVector.h"
-#include "arcane/core/materials/MeshComponentPartData.h"
 #include "arcane/core/materials/internal/ConstituentItemLocalIdList.h"
+
+#include "arcane/materials/internal/MeshComponentPartData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
