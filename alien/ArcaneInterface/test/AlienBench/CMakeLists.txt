@@ -45,10 +45,10 @@ generateAxl(alien_bench.exe
         USER_INSTALL_PREFIX ALIEN
         )
 
-message(status "ALIENBENCH ALIEN_USE_SYCL      : ${ALIEN_USE_SYCL}")
-message(status "ALIENBENCH ALIEN_USE_INTELSYCL : ${ALIEN_USE_INTELSYCL}")
-message(status "ALIENBENCH ALIEN_USE_CUDA      : ${ALIEN_USE_CUDA}")
 if(ALIEN_USE_SYCL)
+    addSources(alien_bench.exe
+               AlienBenchSYCL.cc
+              )
     IF(ALIEN_USE_HIPSYCL)
         add_sycl_to_target(TARGET  alien_bench.exe
                            SOURCES AlienBenchSYCL.cc)

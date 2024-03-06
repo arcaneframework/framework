@@ -64,6 +64,7 @@ class AlienBenchModule : public ArcaneAlienBenchObject
              Alien::Vector& coordY,
              Alien::Vector& coordZ,
              Alien::Matrix& matrixA);
+#ifdef ALIEN_USE_SYCL
   void _testSYCL(Timer& pbuild_timer,
                  CellGroup& areaU,
                  CellCellGroup& cell_cell_connection,
@@ -76,6 +77,7 @@ class AlienBenchModule : public ArcaneAlienBenchObject
                  Alien::Vector& coordY,
                  Alien::Vector& coordZ,
                  Alien::Matrix& matrixA);
+#endif
  private:
   ARCCORE_HOST_DEVICE Real funcn(Real3 x) const;
   ARCCORE_HOST_DEVICE Real funck(Real3 x) const;

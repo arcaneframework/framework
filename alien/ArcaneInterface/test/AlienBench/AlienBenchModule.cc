@@ -222,6 +222,7 @@ AlienBenchModule::test()
                                   // (however, you can reuse a matrix with several
                                   // builder)
 
+#ifdef ALIEN_USE_SYCL
   if(m_use_accelerator)
     _testSYCL(pbuild_timer,
               areaU,
@@ -236,6 +237,7 @@ AlienBenchModule::test()
               coordZ,
               matrixA) ;
   else
+#endif
     _test(pbuild_timer,
           areaU,
           cell_cell_connection,
@@ -293,7 +295,7 @@ AlienBenchModule::test()
   //
   if(options()->alienCoreSolver.size()>0)
   {
-
+#ifdef ALIEN_USE_SYCL
     if(m_use_accelerator)
     {
         Alien::SYCLInternalLinearAlgebra syclAlg;
@@ -304,6 +306,7 @@ AlienBenchModule::test()
         syclAlg.assign(true_x,0.) ;
     }
     else
+#endif
     {
       Alien::LocalVectorReader reader(vectorBB);
       Alien::LocalVectorWriter vb(vectorB);
