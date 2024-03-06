@@ -37,6 +37,7 @@
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 #include "arcane/materials/internal/ComponentItemInternalData.h"
 #include "arcane/materials/internal/ConstituentConnectivityList.h"
+#include "arcane/materials/internal/ConstituentItemVectorImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -250,7 +251,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
         Int32 lid = local_ids[z];
         Int32 pos = cells_pos[lid];
         ++cells_pos[lid];
-        matimpl::ConstituentItemBase ref_ii = item_internal_data->matItemBase(env_id,pos);
+        matimpl::ConstituentItemBase ref_ii = item_internal_data->matItemBase(env_id, pos);
         mat->setConstituentItem(z, ref_ii.constituentItemIndex());
         ref_ii._setSuperAndGlobalItem(cells_env[lid], ItemLocalId(lid));
         ref_ii._setComponent(mat_id);
@@ -510,6 +511,26 @@ Int32 MeshEnvironment::InternalApi::
 variableIndexerIndex() const
 {
   return variableIndexer()->index();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IConstituentItemVectorImpl> MeshEnvironment::InternalApi::
+createItemVectorImpl() const
+{
+  auto* x = new ConstituentItemVectorImpl(m_environment->m_non_const_this);
+  return makeRef<IConstituentItemVectorImpl>(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IConstituentItemVectorImpl> MeshEnvironment::InternalApi::
+createItemVectorImpl(ComponentItemVectorView rhs) const
+{
+  auto* x = new ConstituentItemVectorImpl(rhs);
+  return makeRef<IConstituentItemVectorImpl>(x);
 }
 
 /*---------------------------------------------------------------------------*/

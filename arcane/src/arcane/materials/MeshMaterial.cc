@@ -13,6 +13,7 @@
 
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IItemFamily.h"
@@ -27,6 +28,7 @@
 
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/MeshEnvironment.h"
+#include "arcane/materials/internal/ConstituentItemVectorImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,7 +52,7 @@ MeshMaterial(MeshMaterialInfo* infos, MeshEnvironment* env,
 , m_internal_api(this)
 {
   if (!env)
-    ARCANE_THROW(ArgumentException,"null environement for material '{0}'", name);
+    ARCANE_THROW(ArgumentException, "null environement for material '{0}'", name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -217,7 +219,27 @@ variableIndexerIndex() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Ref<IConstituentItemVectorImpl> MeshMaterial::InternalApi::
+createItemVectorImpl() const
+{
+  auto* x = new ConstituentItemVectorImpl(m_material->m_non_const_this);
+  return makeRef<IConstituentItemVectorImpl>(x);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IConstituentItemVectorImpl> MeshMaterial::InternalApi::
+createItemVectorImpl(ComponentItemVectorView rhs) const
+{
+  auto* x = new ConstituentItemVectorImpl(rhs);
+  return makeRef<IConstituentItemVectorImpl>(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
