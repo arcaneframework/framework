@@ -396,10 +396,13 @@ forceRecompute(bool compute_all)
     }
   }
 
-  for (MeshEnvironment* env : true_environments) {
-    env->componentData()->_rebuildPartData();
-    for (MeshMaterial* mat : env->trueMaterials())
-      mat->componentData()->_rebuildPartData();
+  {
+    RunQueue& queue(m_material_mng->runQueue());
+    for (MeshEnvironment* env : true_environments) {
+      env->componentData()->_rebuildPartData(queue);
+      for (MeshMaterial* mat : env->trueMaterials())
+        mat->componentData()->_rebuildPartData(queue);
+    }
   }
 
   m_material_mng->checkValid();

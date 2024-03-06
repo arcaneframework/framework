@@ -67,7 +67,7 @@ _notifyValueIndexesChanged()
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentPartData::
-_setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes)
+_setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queue)
 {
   Int32Array& pure_indexes = m_value_indexes[(Int32)eMatPart::Pure];
   Int32Array& impure_indexes = m_value_indexes[(Int32)eMatPart::Impure];
@@ -83,13 +83,13 @@ _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes)
 
   info(4) << "BEGIN_BUILD_PART_DATA_FOR_COMPONENT c=" << m_component->name();
 
-  for( Integer i=0, n=matvar_indexes.size(); i<n; ++i ){
+  for (Integer i = 0, n = matvar_indexes.size(); i < n; ++i) {
     MatVarIndex mvi = matvar_indexes[i];
-    if (mvi.arrayIndex()==0){
+    if (mvi.arrayIndex() == 0) {
       pure_indexes.add(mvi.valueIndex());
       pure_internal_indexes.add(i);
     }
-    else{
+    else {
       impure_indexes.add(mvi.valueIndex());
       impure_internal_indexes.add(i);
     }
