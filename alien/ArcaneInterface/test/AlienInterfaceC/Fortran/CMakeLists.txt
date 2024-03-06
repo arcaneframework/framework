@@ -20,7 +20,7 @@ linkLibraries(alien_interface_fortran.exe
         )
 
 if (TARGET intel)
-    linkLibraries(gtest.refmvhandlers intel)
+    linkLibraries(alien_interface_fortran.exe intel)
 endif ()
 
 if (TARGET trilinos)

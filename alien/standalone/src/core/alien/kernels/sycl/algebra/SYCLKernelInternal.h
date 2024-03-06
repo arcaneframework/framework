@@ -1134,22 +1134,6 @@ class KernelInternal
   mutable sycl::buffer<double>* m_double_work = nullptr;
 };
 
-template <>
-sycl::buffer<double>& KernelInternal::getWorkBuffer(std::size_t size)
-{
-  if (m_double_work == nullptr) {
-    m_double_work = new sycl::buffer<double>(size);
-    m_double_work->set_final_data(nullptr);
-  }
-  else {
-    if (size > m_double_work->size()) {
-      delete m_double_work;
-      m_double_work = new sycl::buffer<double>(size);
-      m_double_work->set_final_data(nullptr);
-    }
-  }
-  return *m_double_work;
-}
 
 /*---------------------------------------------------------------------------*/
 

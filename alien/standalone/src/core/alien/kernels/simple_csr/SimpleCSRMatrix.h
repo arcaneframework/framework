@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -104,6 +104,8 @@ class SimpleCSRMatrix : public IMatrixImpl
     }
   }
 
+  CSRStructInfo& getCSRProfile() { return m_matrix.getCSRProfile(); }
+
   const CSRStructInfo& getCSRProfile() const { return m_matrix.getCSRProfile(); }
 
   const CSRStructInfo& getProfile() const { return m_matrix.getCSRProfile(); }
@@ -126,9 +128,9 @@ class SimpleCSRMatrix : public IMatrixImpl
   ValueType const* getAddressData() const { return m_matrix.getDataPtr(); }
   ValueType const* data() const { return m_matrix.getDataPtr(); }
 
-  MatrixInternal& internal() { return m_matrix; }
+  MatrixInternal* internal() { return &m_matrix; }
 
-  MatrixInternal const& internal() const { return m_matrix; }
+  MatrixInternal const* internal() const { return &m_matrix; }
 
   bool isParallel() const { return m_is_parallel; }
 
@@ -166,7 +168,7 @@ class SimpleCSRMatrix : public IMatrixImpl
     m_nproc = 1;
     m_is_parallel = false;
     m_matrix_dist_info.m_local_row_size.resize(m_local_size);
-    auto& profile = internal().getCSRProfile();
+    auto& profile = internal()->getCSRProfile();
     ConstArrayView<Integer> offset = profile.getRowOffset();
     for (Integer i = 0; i < m_local_size; ++i)
       m_matrix_dist_info.m_local_row_size[i] = offset[i + 1] - offset[i];

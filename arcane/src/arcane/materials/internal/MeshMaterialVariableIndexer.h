@@ -36,6 +36,7 @@ namespace Arcane::Materials
 class MeshMaterialInfo;
 class IMeshEnvironment;
 class ComponentItemListBuilder;
+class ComponentItemListBuilderOld;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -82,11 +83,17 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //! Vrai si cet indexeur est celui d'un milieu.
   bool isEnvironment() const { return m_is_environment; }
 
+ public:
+
+  // Méthodes publiques car utilisées sur accélérateurs
+  void endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue);
+  void endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue);
+
  private:
 
   //! Fonctions publiques mais réservées aux classes de Arcane.
   //@{
-  void endUpdate(const ComponentItemListBuilder& builder);
+  void endUpdate(const ComponentItemListBuilderOld& builder);
   Array<MatVarIndex>& matvarIndexesArray() { return m_matvar_indexes; }
   void setCells(const CellGroup& cells) { m_cells = cells; }
   void setIsEnvironment(bool is_environment) { m_is_environment = is_environment; }
@@ -95,8 +102,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   ConstArrayView<Int32> localIds() const { return m_local_ids; }
 
   void changeLocalIds(Int32ConstArrayView old_to_new_ids);
-  void endUpdateAdd(const ComponentItemListBuilder& builder);
-  void endUpdateRemove(const ConstituentModifierWorkInfo& args, Integer nb_remove);
+  void endUpdateRemove(ConstituentModifierWorkInfo& args, Integer nb_remove, RunQueue& queue);
   //@}
 
  private:

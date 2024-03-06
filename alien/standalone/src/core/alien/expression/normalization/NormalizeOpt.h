@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -331,7 +331,7 @@ class NormalizeOpt::Op
   , m_local_offset(m.getLocalOffset())
   , m_cols(m.getCSRProfile().getCols())
   , m_row_offset(m.getCSRProfile().getRowOffset())
-  , m_matrix(m.internal().getDataPtr())
+  , m_matrix(m.internal()->getDataPtr())
   , m_rhs(x.getDataPtr())
   , m_sum_first_eq(sum_first_eq)
   , m_algo(algo)
@@ -345,7 +345,7 @@ class NormalizeOpt::Op
     m_block_size = m_equations_num * m_unknowns_num;
     m_diag_first = m.getCSRProfile().getDiagFirstOpt();
     if (!m_diag_first)
-      m_upper_diag_offset = m.getCSRProfile().getUpperDiagOffset();
+      m_upper_diag_offset = m.getCSRProfile().getUpperDiagOffset().constView();
     m_keep_diag = true;
     if (m_sum_first_eq) {
       if (m_diag_first)
@@ -614,7 +614,7 @@ class NormalizeOpt::Op2 : public NormalizeOpt::Op
   , m_nuk2(0)
   , m_extra_eq_cols(m2.getCSRProfile().getCols())
   , m_extra_eq_row_offset(m2.getCSRProfile().getRowOffset())
-  , m_extra_eq_matrix(m2.internal().getDataPtr())
+  , m_extra_eq_matrix(m2.internal()->getDataPtr())
   {
     if (m_sum_first_eq) {
       if (m_trans) {
@@ -675,7 +675,7 @@ class NormalizeOpt::Op2 : public NormalizeOpt::Op
   , m_nuk2(0)
   , m_extra_eq_cols(m2.getCSRProfile().getCols())
   , m_extra_eq_row_offset(m2.getCSRProfile().getRowOffset())
-  , m_extra_eq_matrix(m2.internal().getDataPtr())
+  , m_extra_eq_matrix(m2.internal()->getDataPtr())
   {
     if (m_trans)
       // TOCHECK : to be removed

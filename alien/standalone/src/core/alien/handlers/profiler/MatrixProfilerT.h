@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -34,11 +34,11 @@ namespace Common
   /*---------------------------------------------------------------------------*/
 
   //! Scalar matrix builder
-  template <typename ValueT>
-  MatrixProfilerT<ValueT>::MatrixProfilerT(IMatrix& matrix)
+  template <typename ValueT, typename MatrixImplT>
+  MatrixProfilerT<ValueT,MatrixImplT>::MatrixProfilerT(IMatrix& matrix)
   : m_matrix(matrix)
   {
-    m_matrix_impl = &m_matrix.impl()->template get<BackEnd::tag::simplecsr>(false);
+    m_matrix_impl = &m_matrix.impl()->template get<typename MatrixImplType::TagType>(false);
 
     const ISpace& space = m_matrix_impl->rowSpace();
 
@@ -69,8 +69,8 @@ namespace Common
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT>
-  MatrixProfilerT<ValueT>::~MatrixProfilerT()
+  template <typename ValueT, typename MatrixImplT>
+  MatrixProfilerT<ValueT,MatrixImplT>::~MatrixProfilerT()
   {
     if (!m_allocated) {
       allocate();
@@ -79,8 +79,8 @@ namespace Common
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT>
-  void MatrixProfilerT<ValueT>::addMatrixEntry(Integer iIndex, Integer jIndex)
+  template <typename ValueT, typename MatrixImplT>
+  void MatrixProfilerT<ValueT,MatrixImplT>::addMatrixEntry(Integer iIndex, Integer jIndex)
   {
     const Integer local_row = iIndex - m_local_offset;
     // ALIEN_ASSERT((local_row >= 0 and local_row < m_local_size),("Cannot manage not
@@ -103,8 +103,8 @@ namespace Common
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT>
-  void MatrixProfilerT<ValueT>::allocate()
+  template <typename ValueT, typename MatrixImplT>
+  void MatrixProfilerT<ValueT,MatrixImplT>::allocate()
   {
     if (m_allocated)
       return;
@@ -117,8 +117,8 @@ namespace Common
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT>
-  void MatrixProfilerT<ValueT>::computeProfile()
+  template <typename ValueT, typename MatrixImplT>
+  void MatrixProfilerT<ValueT,MatrixImplT>::computeProfile()
   {
     UniqueArray<Integer> m_offset;
     m_offset.resize(m_nproc + 1);
@@ -128,7 +128,7 @@ namespace Common
     }
     m_offset[m_nproc] = m_global_size;
 
-    SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal().getCSRProfile();
+    auto& profile = m_matrix_impl->getCSRProfile();
     profile.init(m_local_size);
 
     {
@@ -175,8 +175,9 @@ namespace Common
     }
 
     m_matrix_impl->allocate();
-    ArrayView<ValueT> values = m_matrix_impl->internal().getValues();
-    values.fill(0);
+    m_matrix_impl->internal()->setValues(0) ;
+    //ArrayView<ValueT> values = m_matrix_impl->internal()->getValues();
+    //values.fill(0);
 
     if (m_nproc > 1)
       m_matrix_impl->parallelStart(m_offset, m_parallel_mng, true);

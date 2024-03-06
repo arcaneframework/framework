@@ -1,20 +1,9 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 
 #include <alien/ref/AlienRefSemantic.h>
 #include <alien/utils/Precomp.h>
@@ -25,13 +14,27 @@
 //#include <alien/ref/mv_expr/MVExpr.h>
 
 #include <alien/kernels/sycl/SYCLPrecomp.h>
+#include <alien/kernels/sycl/data/SYCLParallelEngine.h>
 #include <alien/kernels/sycl/data/SYCLBEllPackMatrix.h>
 #include <alien/kernels/sycl/data/SYCLVector.h>
+
+#include <alien/kernels/sycl/data/HCSRMatrix.h>
+#include <alien/kernels/sycl/data/HCSRVector.h>
+
+#include <alien/handlers/scalar/sycl/VectorAccessor.h>
+#include <alien/handlers/scalar/sycl/MatrixProfiler.h>
+#include <alien/handlers/scalar/sycl/MatrixAccessor.h>
+
 
 #include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 
 #include <Environment.h>
+
+
+#include <alien/kernels/sycl/data/SYCLParallelEngineImplT.h>
+#include <alien/handlers/scalar/sycl/VectorAccessorT.h>
+#include <alien/handlers/scalar/sycl/MatrixAccessorT.h>
 
 // Tests the default c'tor.
 TEST(TestSYCLMV, SYCLExpr)
@@ -146,5 +149,222 @@ TEST(TestSYCLMV, SYCLExpr)
         trace_mng->info() << "Y[" << i << "]=" << reader[i];
       }
     }
+  }
+}
+
+
+// Tests the default c'tor.
+TEST(TestSYCLMV, HCSRVector)
+{
+  using namespace Alien;
+  Alien::ITraceMng* trace_mng = AlienTest::Environment::traceMng();
+  Integer global_size = 1050;
+  const Alien::Space s(global_size, "MySpace");
+  Alien::MatrixDistribution mdist(s, s, AlienTest::Environment::parallelMng());
+  Alien::VectorDistribution vdist(s, AlienTest::Environment::parallelMng());
+  Alien::Vector x(vdist);
+  Alien::Vector y(vdist);
+  std::size_t local_size = vdist.localSize();
+  auto offset = vdist.offset();
+
+
+  Alien::SYCLParallelEngine engine;
+  {
+    auto x_acc = Alien::SYCL::VectorAccessorT<Real>(x);
+    engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
+                  {
+                     auto xv = x_acc.view(cgh) ;
+                     cgh.parallel_for(engine.maxNumThreads(),
+                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         {
+                                            auto index = item.get_id(0) ;
+                                            auto id = item.get_id(0);
+                                            for (std::size_t index = id; id < local_size; id += item.get_range()[0])
+                                               xv[index] = 1.*index;
+                                         });
+
+                  }) ;
+
+    auto y_acc = Alien::SYCL::VectorAccessorT<Real>(y);
+    engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
+                  {
+                    auto yv = y_acc.view(cgh) ;
+                    auto xcv = x_acc.constView(cgh) ;
+                    cgh.parallel_for(engine.maxNumThreads(),
+                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         {
+                                            auto index = item.get_id(0) ;
+                                            auto id = item.get_id(0);
+                                            for (std::size_t index = id; id < local_size; id += item.get_range()[0])
+                                              yv[index] = 2*xcv[index] ;
+                                         });
+                  }) ;
+
+    Real norme_x = 0. ;
+    Real norme_y = 0. ;
+    auto xhv = x_acc.hostView() ;
+    auto yhv = y_acc.hostView() ;
+    for (std::size_t i = 0; i < local_size; ++i)
+    {
+      norme_x +=  xhv[i]* xhv[i] ;
+      norme_y +=  yhv[i]* yhv[i] ;
+    }
+    trace_mng->info() << "NORME2 X : "<<norme_x ;
+    trace_mng->info() << "NORME2 Y : "<<norme_y ;
+    ASSERT_EQ(385323925, norme_x);
+    ASSERT_EQ(1541295700, norme_y);
+  }
+}
+
+
+// Tests the default c'tor.
+TEST(TestSYCLMV, HCSRMatrix)
+{
+  using namespace Alien;
+  Alien::ITraceMng* trace_mng = AlienTest::Environment::traceMng();
+  Integer global_size = 1050;
+  const Alien::Space s(global_size, "MySpace");
+  Alien::MatrixDistribution mdist(s, s, AlienTest::Environment::parallelMng());
+  Alien::VectorDistribution vdist(s, AlienTest::Environment::parallelMng());
+  Alien::Matrix A(mdist); // A.setName("A") ;
+
+  std::size_t local_size = vdist.localSize();
+  auto offset = vdist.offset();
+
+  Alien::SYCLParallelEngine engine;
+  {
+    Alien::SYCL::MatrixProfiler profiler(A);
+    for (Integer i = 0; i < local_size; ++i) {
+      Integer row = offset + i;
+      profiler.addMatrixEntry(row, row);
+      if (row + 1 < global_size)
+        profiler.addMatrixEntry(row, row + 1);
+      if (row - 1 >= 0)
+        profiler.addMatrixEntry(row, row - 1);
+    }
+  }
+  {
+    Alien::SYCL::ProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
+    engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
+                  {
+                    auto matrix_acc = builder.view(cgh) ;
+                    cgh.parallel_for(engine.maxNumThreads(),
+                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         {
+                                            auto index = item.get_id(0) ;
+                                            auto id = item.get_id(0);
+                                            for (auto index = id; id < local_size; id += item.get_range()[0])
+                                            {
+                                              Integer row = offset + index;
+                                              matrix_acc[matrix_acc.entryIndex(row,row)] = 2.;
+                                              if (row + 1 < global_size)
+                                                matrix_acc[matrix_acc.entryIndex(row, row + 1)] = -1.;
+                                              if (row - 1 >= 0)
+                                                matrix_acc[matrix_acc.entryIndex(row, row - 1)] = -1.;
+                                            }
+                                         });
+                  }) ;
+
+    {
+      Real norme_A = 0. ;
+      auto hview = builder.hostView();
+      for(std::size_t irow=0;irow<local_size;++irow)
+      {
+          for(auto k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
+          {
+            norme_A += hview[k]*hview[k] ;
+          }
+      }
+      trace_mng->info() << "NORME2 A : "<<norme_A ;
+      ASSERT_EQ(6298, norme_A);
+    }
+  }
+}
+
+TEST(TestSYCLMV, HCSR2SYCLConverter)
+{
+  using namespace Alien;
+  Alien::ITraceMng* trace_mng = AlienTest::Environment::traceMng();
+  Integer global_size = 1050;
+  const Alien::Space s(global_size, "MySpace");
+  Alien::MatrixDistribution mdist(s, s, AlienTest::Environment::parallelMng());
+  Alien::VectorDistribution vdist(s, AlienTest::Environment::parallelMng());
+  Alien::Matrix A(mdist);
+  Alien::Vector x(vdist);
+  Alien::Vector y(vdist);
+
+  auto local_size = vdist.localSize();
+  auto offset = vdist.offset();
+
+  Alien::SYCLParallelEngine engine;
+  {
+    Alien::SYCL::MatrixProfiler profiler(A);
+    for (Integer i = 0; i < local_size; ++i) {
+      Integer row = offset + i;
+      profiler.addMatrixEntry(row, row);
+      if (row + 1 < global_size)
+        profiler.addMatrixEntry(row, row + 1);
+      if (row - 1 >= 0)
+        profiler.addMatrixEntry(row, row - 1);
+    }
+  }
+  {
+    Alien::SYCL::ProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
+    engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
+                  {
+                    auto matrix_acc = builder.view(cgh) ;
+                    cgh.parallel_for(engine.maxNumThreads(),
+                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         {
+                                            auto index = item.get_id(0) ;
+                                            auto id = item.get_id(0);
+                                            for (auto index = id; id < local_size; id += item.get_range()[0])
+                                            {
+                                              Integer row = offset + index;
+                                              matrix_acc[matrix_acc.entryIndex(row,row)] = 2.;
+                                              if (row + 1 < global_size)
+                                                matrix_acc[matrix_acc.entryIndex(row, row + 1)] = -1.;
+                                              if (row - 1 >= 0)
+                                                matrix_acc[matrix_acc.entryIndex(row, row - 1)] = -1.;
+                                            }
+                                         });
+                  }) ;
+  }
+  {
+      auto x_acc = Alien::SYCL::VectorAccessorT<Real>(x);
+      engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
+                    {
+                       auto xv = x_acc.view(cgh) ;
+                       cgh.parallel_for(engine.maxNumThreads(),
+                                           [=](Alien::SYCLParallelEngine::Item<1> item)
+                                           {
+                                              auto index = item.get_id(0) ;
+                                              auto id = item.get_id(0);
+                                              for (auto index = id; id < local_size; id += item.get_range()[0])
+                                                 xv[index] = 1.*index;
+                                           });
+
+                    }) ;
+  }
+
+  {
+    Alien::SYCLLinearAlgebra sycl_alg;
+
+    trace_mng->info() << "TEST SPMV : y = A*x ";
+    const auto& ma = A.impl()->get<Alien::BackEnd::tag::sycl>();
+
+    const auto& vx = x.impl()->get<Alien::BackEnd::tag::sycl>();
+    auto& vy = y.impl()->get<Alien::BackEnd::tag::sycl>(true);
+
+    sycl_alg.mult(A, x, y);
+    {
+      Real norme_y = 0. ;
+      Alien::LocalVectorReader reader(y);
+      for (Integer i = 0; i < local_size; ++i) {
+        norme_y += reader[i]*reader[i] ;
+      }
+      trace_mng->info() << "NORME2 Y=A*X : "<<norme_y ;
+      ASSERT_EQ(1102501, norme_y);
+     }
   }
 }

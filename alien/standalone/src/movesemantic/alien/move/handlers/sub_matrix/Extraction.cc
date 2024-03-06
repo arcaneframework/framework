@@ -1,20 +1,10 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+
 
 #include "Extraction.h"
 
@@ -79,7 +69,7 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
   MatrixData subMatrix(subMatrixDistribution);
   DirectMatrixBuilder builder(std::move(subMatrix), DirectMatrixOptions::eResetValues,
                               DirectMatrixOptions::eUnSymmetric);
-  const Integer nnzMatrix = matrix_impl->internal().getValues().size();
+  const Integer nnzMatrix = matrix_impl->internal()->getValues().size();
   const Integer nrowsMatrix = matrix_impl->distribution().localRowSize();
   const Integer averageEntriesByRow = nnzMatrix / nrowsMatrix;
   builder.reserve(averageEntriesByRow);
@@ -90,8 +80,8 @@ SubMatrix::extractRange(const IMatrix& matrix, const ExtractionIndices& indices)
   ConstArrayView<Integer> rowsOffset = matrixProfile.getRowOffset();
   // UniqueArray<Integer>& cols = matrixProfile.getCols();
   ConstArrayView<Integer> cols = matrixProfile.getCols();
-  // UniqueArray<Real>& values = matrix_impl->internal().getValues();
-  ConstArrayView<Real> values = matrix_impl->internal().getValues();
+  // UniqueArray<Real>& values = matrix_impl->internal()->getValues();
+  ConstArrayView<Real> values = matrix_impl->internal()->getValues();
 
   ALIEN_ASSERT(
   (startingRow >= 0 && startingRow < matrix_impl->distribution().globalRowSize()),

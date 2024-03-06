@@ -17,10 +17,10 @@
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemPrinter.h"
-#include "arcane/core/materials/MeshComponentPartData.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
+#include "arcane/materials/internal/MeshComponentPartData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

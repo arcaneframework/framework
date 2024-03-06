@@ -57,6 +57,18 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   MeshMaterialMng* m_material_mng = nullptr;
   ConstituentModifierWorkInfo m_work_info;
   RunQueue m_copy_queue;
+  bool m_do_old_implementation = false;
+
+ public:
+
+  void setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set);
+
+ public:
+
+  void _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids);
+  void _resetTransformedCells(ConstArrayView<Int32> ids);
+  void _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
+                          SmallSpan<const Int32> local_ids);
 
  private:
 
@@ -65,13 +77,10 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void _switchCellsForMaterials(const MeshMaterial* modified_mat,
                                 ConstArrayView<Int32> ids);
   void _computeCellsToTransformForMaterial(const MeshMaterial* mat, ConstArrayView<Int32> ids);
-  void _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids);
   void _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                                    Int32ConstArrayView local_ids, bool update_env_indexer);
   void _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                               Int32ConstArrayView local_ids, bool update_env_indexer);
-  void _addItemsToIndexer(MeshEnvironment* env, MeshMaterialVariableIndexer* var_indexer,
-                          Int32ConstArrayView local_ids);
 };
 
 /*---------------------------------------------------------------------------*/

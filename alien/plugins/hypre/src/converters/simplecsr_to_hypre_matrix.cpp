@@ -1,3 +1,9 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  * 
@@ -86,7 +92,7 @@ void SimpleCSR_to_Hypre_MatrixConverter::_build(const Alien::SimpleCSRMatrix<Arc
 
   targetImpl.setProfile(ncols);
 
-  auto values = sourceImpl.internal().getValues();
+  auto values = sourceImpl.internal()->getValues();
   auto cols = profile.getCols();
 
   // understand why values and cols can have different sizes !

@@ -15,14 +15,18 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arccore/base/RefDeclarations.h"
+#include "arccore/collections/ArrayTraits.h"
 
 #include <iosfwd>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define MATERIALS_BEGIN_NAMESPACE  namespace Materials {
-#define MATERIALS_END_NAMESPACE    }
+#define MATERIALS_BEGIN_NAMESPACE \
+  namespace Materials \
+  {
+#define MATERIALS_END_NAMESPACE }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -80,8 +84,10 @@ class IMeshMaterialVariable;
 class MaterialVariableBuildInfo;
 class MaterialVariableTypeInfo;
 class MeshMaterialVariableRef;
-class EnvAndGlobalCell {};
-class MatAndGlobalCell {};
+class EnvAndGlobalCell
+{};
+class MatAndGlobalCell
+{};
 class IMeshMaterialMngInternal;
 class MeshEnvironmentBuildInfo;
 class MeshBlockBuildInfo;
@@ -90,6 +96,8 @@ class IMeshMaterialModifierImpl;
 class CellToAllEnvCellConverter;
 class IMeshMaterialVariableSynchronizer;
 class AllCellToAllEnvCell;
+class ConstituentItemIndex;
+class IConstituentItemVectorImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -129,11 +137,11 @@ using ComponentCellVectorView = ComponentItemVectorView;
 //! Liste de composants multi-matériaux du maillage.
 using MeshComponentList = ConstArrayView<IMeshComponent*>;
 
-template<typename DataType> class CellMaterialVariableScalarRef;
+template <typename DataType> class CellMaterialVariableScalarRef;
 
-template<typename ItemType,typename DataType>
+template <typename ItemType, typename DataType>
 class IScalarMeshMaterialVariable;
-template<typename ItemType,typename DataType>
+template <typename ItemType, typename DataType>
 class IArrayMeshMaterialVariable;
 
 /*---------------------------------------------------------------------------*/
@@ -163,13 +171,27 @@ enum class MatVarSpace
 enum class eMatPart
 {
   Pure = 0,
-  Impure =1
+  Impure = 1
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Materials
+} // namespace Arcane::Materials
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Materials::MatVarIndex);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Materials::ConstituentItemIndex);
+} // namespace Arccore
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::Materials::IConstituentItemVectorImpl);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

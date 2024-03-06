@@ -1,2 +1,1 @@
-﻿#include "arcane/materials/MaterialsGlobal.h"
-#include "arcane/core/materials/MeshComponentPartData.h"
+﻿#error "Do not include this file"

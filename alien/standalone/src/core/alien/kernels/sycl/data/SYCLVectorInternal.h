@@ -32,6 +32,8 @@
 #include <CL/sycl.hpp>
 #endif
 
+#include "SYCLEnv.h"
+#include "SYCLEnvInternal.h"
 /*---------------------------------------------------------------------------*/
 
 namespace Alien::SYCLInternal
@@ -50,7 +52,7 @@ class VectorInternal
   // clang-format off
   typedef ValueT                           ValueType;
   typedef VectorInternal<ValueType>        ThisType;
-  typedef sycl::buffer<ValueType, 1>   ValueBufferType;
+  typedef sycl::buffer<ValueType, 1>       ValueBufferType;
   typedef std::unique_ptr<ValueBufferType> ValueBufferPtrType;
   // clang-format on
 
@@ -84,9 +86,20 @@ class VectorInternal
 
   void copyValuesToHost(std::size_t size, ValueT* ptr)
   {
-    auto h_values = m_values.template get_access<sycl::access::mode::read>();
+    auto h_values = m_values.get_host_access();
     for (std::size_t i = 0; i < size; ++i)
       ptr[i] = h_values[i];
+  }
+
+  void copy(ValueBufferType& src)
+  {
+    auto env = SYCLEnv::instance() ;
+    env->internal()->queue().submit([&](sycl::handler& cgh)
+                                     {
+                                       auto access_x = m_values.template get_access<sycl::access::mode::read_write>(cgh);
+                                       auto access_src = src.template get_access<sycl::access::mode::read>(cgh);
+                                       cgh.copy(access_src,access_x) ;
+                                     }) ;
   }
 
   //VectorInternal<ValueT>* clone() const { return new VectorInternal<ValueT>(*this); }

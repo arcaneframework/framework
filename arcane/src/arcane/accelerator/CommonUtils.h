@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ArrayView.h"
+
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
 
@@ -64,7 +66,7 @@ class GenericDeviceStorage
 {
  public:
 
-  ~GenericDeviceStorage() ARCANE_NOEXCEPT_FALSE
+  ~GenericDeviceStorage()
   {
     deallocate();
   }
@@ -73,18 +75,20 @@ class GenericDeviceStorage
 
   void* address() { return m_ptr; }
   size_t size() const { return m_size; }
-  void allocate(size_t new_size)
+  void* allocate(size_t new_size)
   {
     if (new_size < m_size)
-      return;
+      return m_ptr;
     deallocate();
 #if defined(ARCANE_COMPILING_CUDA)
     ARCANE_CHECK_CUDA(::cudaMalloc(&m_ptr, new_size));
 #endif
 #if defined(ARCANE_COMPILING_HIP)
-    ARCANE_CHECK_HIP(::hipMalloc(&m_ptr, new_size));
+    ARCANE_CHECK_HIP(::hipMallocManaged(&m_ptr, new_size, hipMemAttachGlobal));
 #endif
+    ARCANE_CHECK_PTR(m_ptr);
     m_size = new_size;
+    return m_ptr;
   }
 
   void deallocate()
@@ -92,13 +96,18 @@ class GenericDeviceStorage
     if (!m_ptr)
       return;
 #if defined(ARCANE_COMPILING_CUDA)
-    ARCANE_CHECK_CUDA(::cudaFree(m_ptr));
+    ARCANE_CHECK_CUDA_NOTHROW(::cudaFree(m_ptr));
 #endif
 #if defined(ARCANE_COMPILING_HIP)
-    ARCANE_CHECK_HIP(::hipFree(m_ptr));
+    ARCANE_CHECK_HIP_NOTHROW(::hipFree(m_ptr));
 #endif
     m_ptr = nullptr;
     m_size = 0;
+  }
+
+  Span<const std::byte> bytes() const
+  {
+    return { reinterpret_cast<const std::byte*>(m_ptr), static_cast<Int64>(m_size) };
   }
 
  private:
@@ -111,25 +120,50 @@ class GenericDeviceStorage
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Gère l'allocation interne sur le device.
+ */
+class ARCANE_ACCELERATOR_EXPORT DeviceStorageBase
+{
+ protected:
+
+  GenericDeviceStorage m_storage;
+
+ protected:
+
+  //! Copie l'instance dans \a dest_ptr
+  void _copyToAsync(Span<std::byte> destination, Span<const std::byte> source, RunQueue* queue);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
  * \brief Gère l'allocation interne sur le device pour un type donné.
  */
 template <typename DataType>
 class DeviceStorage
+: public DeviceStorageBase
 {
  public:
 
-  ~DeviceStorage() ARCANE_NOEXCEPT_FALSE
+  ~DeviceStorage()
   {
   }
 
   DataType* address() { return reinterpret_cast<DataType*>(m_storage.address()); }
   size_t size() const { return m_storage.size(); }
-  void allocate() { m_storage.allocate(sizeof(DataType)); }
+  DataType* allocate()
+  {
+    m_storage.allocate(sizeof(DataType));
+    return address();
+  }
   void deallocate() { m_storage.deallocate(); }
 
- private:
-
-  GenericDeviceStorage m_storage;
+  //! Copie l'instance dans \a dest_ptr
+  void copyToAsync(SmallSpan<DataType> dest_ptr, RunQueue* queue)
+  {
+    _copyToAsync(asWritableBytes(dest_ptr), m_storage.bytes(), queue);
+  }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -158,13 +158,14 @@ _computeAndResizeEnvItemsInternal()
 void AllEnvData::
 _rebuildIncrementalConnectivitiesFromGroups()
 {
+  RunQueue queue(makeQueue(m_material_mng->runner()));
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
   auto clist = m_component_connectivity_list;
   clist->removeAllConnectivities();
   for (MeshEnvironment* env : true_environments) {
-    clist->addCellsToEnvironment(env->componentId(), env->cells().view().localIds());
+    clist->addCellsToEnvironment(env->componentId(), env->cells().view().localIds(), queue);
     for (MeshMaterial* mat : env->trueMaterials())
-      clist->addCellsToMaterial(mat->componentId(), mat->cells().view().localIds());
+      clist->addCellsToMaterial(mat->componentId(), mat->cells().view().localIds(), queue);
   }
 }
 
@@ -179,7 +180,7 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
   ConstArrayView<Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
   for (const MeshEnvironment* env : true_environments) {
     MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
-    ComponentItemListBuilder list_builder(var_indexer, 0);
+    ComponentItemListBuilderOld list_builder(var_indexer, 0);
     CellGroup cells = var_indexer->cells();
     Integer var_nb_cell = cells.size();
     info(4) << "ENV_INDEXER (V2) i=" << var_indexer->index() << " NB_CELL=" << var_nb_cell << " name=" << cells.name()

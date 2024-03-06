@@ -150,7 +150,7 @@ class CudaRunQueueStream
   }
   bool _barrierNoException() override
   {
-    return (cudaStreamSynchronize(m_cuda_stream)!=CUDA_SUCCESS);
+    return (cudaStreamSynchronize(m_cuda_stream) != cudaSuccess);
   }
   void copyMemory(const MemoryCopyArgs& args) override
   {

@@ -44,10 +44,8 @@ namespace Alien
 
 namespace SYCLInternal
 {
-
   template <typename ValueT>
   class VectorInternal;
-
 }
 
 template <typename ValueT>

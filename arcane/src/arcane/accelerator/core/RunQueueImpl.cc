@@ -21,6 +21,7 @@
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/DeviceId.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
+#include "arcane/accelerator/core/internal/RunnerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,10 +33,10 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl::
-RunQueueImpl(Runner* runner, Int32 id, const RunQueueBuildInfo& bi)
-: m_runner(runner)
-, m_execution_policy(runner->executionPolicy())
-, m_runtime(runner->_internalRuntime())
+RunQueueImpl(RunnerImpl* runner_impl, Int32 id, const RunQueueBuildInfo& bi)
+: m_runner_impl(runner_impl)
+, m_execution_policy(runner_impl->executionPolicy())
+, m_runtime(runner_impl->runtime())
 , m_queue_stream(m_runtime->createStream(bi))
 , m_id(id)
 {
@@ -76,16 +77,17 @@ _release()
       std::cerr << "WARNING: Error in internal accelerator barrier\n";
   }
   if (_isInPool())
-    m_runner->_internalPutRunQueueImplInPool(this);
-  else
+    m_runner_impl->_internalPutRunQueueImplInPool(this);
+  else{
     delete this;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl* RunQueueImpl::
-create(Runner* r)
+create(RunnerImpl* r)
 {
   return _reset(r->_internalCreateOrGetRunQueueImpl());
 }
@@ -94,7 +96,7 @@ create(Runner* r)
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl* RunQueueImpl::
-create(Runner* r, const RunQueueBuildInfo& bi)
+create(RunnerImpl* r, const RunQueueBuildInfo& bi)
 {
   return _reset(r->_internalCreateOrGetRunQueueImpl(bi));
 }
@@ -156,13 +158,12 @@ _internalBarrier()
  * \brief Réinitialise l'implémentation
  *
  * Cette méthode est appelée lorsqu'on va initialiser une RunQueue avec
- * cette instance. Il faut dans ce car réinitialiser les valeurs de l'instance
+ * cette instance. Il faut dans ce cas réinitialiser les valeurs de l'instance
  * qui dépendent de l'état actuel.
  */
 RunQueueImpl* RunQueueImpl::
 _reset(RunQueueImpl* p)
 {
-  p->m_nb_ref = 1;
   p->m_is_async = false;
   return p;
 }

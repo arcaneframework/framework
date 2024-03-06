@@ -15,10 +15,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/utils/Array.h"
+#include "arcane/utils/DualUniqueArray.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
+#include "arcane/materials/internal/ComponentItemListBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,14 +47,27 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 
  public:
 
-  UniqueArray<Int32> pure_local_ids;
-  UniqueArray<Int32> partial_indexes;
+  DualUniqueArray<Int32> pure_local_ids;
+  DualUniqueArray<Int32> partial_indexes;
   bool is_verbose = false;
 
   //! Liste des mailles d'un milieu qui vont être ajoutées ou supprimées lors d'une opération
   UniqueArray<Int32> cells_changed_in_env;
   //! Liste des mailles d'un milieu qui sont déjà présentes dans un milieu lors d'une opération
   UniqueArray<Int32> cells_unchanged_in_env;
+
+  //! Liste des MatVarIndex et LocalId à sauvegarder lors de la suppression de mailles matériaux
+  DualUniqueArray<MatVarIndex> m_saved_matvar_indexes;
+  DualUniqueArray<Int32> m_saved_local_ids;
+
+  //! Nombre de matériaux pour le milieu en cours d'évaluation
+  UniqueArray<Int16> m_cells_current_nb_material;
+
+  // Filtre indiquant si une maille sera partielle après l'ajout.
+  // Ce tableau est dimensionné au nombre de mailles ajoutées lors de la tranformation courante.
+  UniqueArray<bool> m_cells_is_partial;
+
+  ComponentItemListBuilder list_builder;
 
  public:
 
@@ -93,6 +107,9 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   bool isAdd() const { return m_is_add; }
 
   SmallSpan<const bool> transformedCells() const { return m_cells_to_transform.view(); }
+  SmallSpan<bool> transformedCells() { return m_cells_to_transform.view(); }
+  SmallSpan<const bool> removedCells() const { return m_removed_local_ids_filter.view(); }
+  SmallSpan<bool> removedCells() { return m_removed_local_ids_filter.view(); }
 
  private:
 

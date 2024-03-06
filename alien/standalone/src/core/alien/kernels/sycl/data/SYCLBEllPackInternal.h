@@ -4,23 +4,7 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+
 
 #pragma once
 
@@ -50,8 +34,9 @@ template <int BlockSize, typename IndexT>
 struct ALIEN_EXPORT StructInfoInternal
 {
   // clang-format off
-  static const int                        block_size = BlockSize ;
-  typedef IndexT                          index_type ;
+  static const int                    block_size = BlockSize ;
+  typedef IndexT                      index_type ;
+  typedef IndexT                      IndexType ;
   typedef sycl::buffer<index_type, 1> index_buffer_type ;
   typedef sycl::buffer<index_type, 1> IndexBufferType ;
   typedef sycl::buffer<uint8_t, 1>    MaskBufferType ;
@@ -122,23 +107,25 @@ class MatrixInternal
 {
  public:
   // clang-format off
-  typedef ValueT   ValueType;
-  typedef ValueT   value_type;
-  static const int block_size = BlockSize ;
+  typedef MatrixInternal<ValueT,BlockSize>        ThisType;
 
-  typedef MatrixInternal<ValueType,BlockSize>   ThisType;
-  typedef BEllPackStructInfo<BlockSize,int>     ProfileType;
-  typedef typename ProfileType::InternalType    InternalProfileType ;
+  typedef ValueT                                  ValueType;
+  typedef ValueT                                  value_type;
+  static const int                                block_size = BlockSize ;
+
+  typedef BEllPackStructInfo<BlockSize,int>       ProfileType;
+  typedef typename ProfileType::InternalType      InternalProfileType ;
+  typedef typename InternalProfileType::IndexType IndexType ;
   typedef typename
-      InternalProfileType::IndexBufferType      IndexBufferType ;
-  typedef std::unique_ptr<IndexBufferType>      IndexBufferPtrType ;
+      InternalProfileType::IndexBufferType        IndexBufferType ;
+  typedef std::unique_ptr<IndexBufferType>        IndexBufferPtrType ;
 
-  typedef sycl::buffer<value_type, 1>       value_buffer_type ;
+  typedef sycl::buffer<value_type, 1>             value_buffer_type ;
 
-  typedef sycl::buffer<value_type, 1>       ValueBufferType ;
-  typedef std::unique_ptr<ValueBufferType>      ValueBufferPtrType ;
+  typedef sycl::buffer<value_type, 1>             ValueBufferType ;
+  typedef std::unique_ptr<ValueBufferType>        ValueBufferPtrType ;
 
-  typedef sycl::queue                       QueueType ;
+  typedef sycl::queue                             QueueType ;
   // clang-format on
 
  public:
@@ -148,6 +135,8 @@ class MatrixInternal
 
   bool setMatrixValues(ValueType const* values, bool only_host);
   bool setMatrixValuesFromHost();
+
+  bool setMatrixValues(ValueBufferType& values);
 
   bool needUpdate();
   void notifyChanges();

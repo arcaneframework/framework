@@ -27,11 +27,7 @@
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
-
-#include <stack>
-#include <map>
-#include <atomic>
-#include <mutex>
+#include "arcane/accelerator/core/internal/RunnerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,170 +74,167 @@ namespace
   }
 } // namespace
 
+} // namespace Arcane::Accelerator
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class Runner::Impl
+namespace Arcane::Accelerator::impl
 {
-  class RunQueueImplStack
-  {
-   public:
 
-    explicit RunQueueImplStack(Runner* runner)
-    : m_runner(runner)
-    {}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-   public:
+void RunnerImpl::
+initialize(Runner* runner, eExecutionPolicy v, DeviceId device)
+{
+  if (m_is_init)
+    ARCANE_FATAL("Runner is already initialized");
+  if (v == eExecutionPolicy::None)
+    ARCANE_THROW(ArgumentException, "executionPolicy should not be eExecutionPolicy::None");
+  if (device.isHost() || device.isNull())
+    ARCANE_THROW(ArgumentException, "device should not be Device::hostDevice() or Device::nullDevice()");
 
-    bool empty() const { return m_stack.empty(); }
-    void pop() { m_stack.pop(); }
-    impl::RunQueueImpl* top() { return m_stack.top(); }
-    void push(impl::RunQueueImpl* v) { m_stack.push(v); }
+  m_execution_policy = v;
+  m_device_id = device;
+  m_runtime = _getRuntime(v);
+  m_is_init = true;
+  m_is_auto_prefetch_command = false;
 
-   public:
+  // Pour test
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PREFETCH_COMMAND", true))
+    m_is_auto_prefetch_command = (v.value() != 0);
 
-    impl::RunQueueImpl* createRunQueue(const RunQueueBuildInfo& bi)
-    {
-      Int32 x = ++m_nb_created;
-      auto* q = new impl::RunQueueImpl(m_runner, x, bi);
-      q->m_is_in_pool = true;
-      return q;
-    }
+  // Il faut initialiser le pool à la fin car il a besoin d'accéder à \a m_runtime
+  m_run_queue_pool = new RunQueueImplStack(runner->_impl());
+}
 
-   private:
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-    std::stack<impl::RunQueueImpl*> m_stack;
-    std::atomic<Int32> m_nb_created = -1;
-    Runner* m_runner;
-  };
+void RunnerImpl::
+_checkIsInit() const
+{
+  if (!m_is_init)
+    ARCANE_FATAL("Runner is not initialized. Call method initialize() before");
+}
 
- public:
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  //! Verrou pour le pool de RunQueue en multi-thread.
-  class Lock
-  {
-   public:
-
-    explicit Lock(Impl* p)
-    {
-      if (p->m_use_pool_mutex) {
-        m_mutex = p->m_pool_mutex.get();
-        if (m_mutex)
-          m_mutex->lock();
-      }
-    }
-    ~Lock()
-    {
-      if (m_mutex)
-        m_mutex->unlock();
-    }
-    Lock(const Lock&) = delete;
-    Lock& operator=(const Lock&) = delete;
-
-   private:
-
-    std::mutex* m_mutex = nullptr;
-  };
-
- public:
-
-  ~Impl()
-  {
-    _freePool(m_run_queue_pool);
-    delete m_run_queue_pool;
+void RunnerImpl::
+_freePool(RunQueueImplStack* s)
+{
+  if (!s)
+    return;
+  while (!s->empty()) {
+    delete s->top();
+    s->pop();
   }
+}
 
- public:
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  void initialize(Runner* runner, eExecutionPolicy v, DeviceId device)
+RunQueueImplStack* RunnerImpl::
+getPool()
+{
+  if (!m_run_queue_pool)
+    ARCANE_FATAL("Runner is not initialized");
+  return m_run_queue_pool;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunnerImpl::
+_internalPutRunQueueImplInPool(RunQueueImpl* p)
+{
+  RunnerImpl::Lock my_lock(this);
+  getPool()->push(p);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::RunQueueImpl* RunnerImpl::
+_internalCreateOrGetRunQueueImpl()
+{
+  _checkIsInit();
+
+  auto pool = getPool();
+
   {
-    if (m_is_init)
-      ARCANE_FATAL("Runner is already initialized");
-    if (v == eExecutionPolicy::None)
-      ARCANE_THROW(ArgumentException, "executionPolicy should not be eExecutionPolicy::None");
-    if (device.isHost() || device.isNull())
-      ARCANE_THROW(ArgumentException, "device should not be Device::hostDevice() or Device::nullDevice()");
-
-    m_execution_policy = v;
-    m_device_id = device;
-    m_runtime = _getRuntime(v);
-    m_is_init = true;
-    m_is_auto_prefetch_command = false;
-
-    // Pour test
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PREFETCH_COMMAND", true))
-      m_is_auto_prefetch_command = (v.value() != 0);
-
-    // Il faut initialiser le pool à la fin car il a besoin d'accéder à \a m_runtime
-    m_run_queue_pool = new RunQueueImplStack(runner);
-  }
-
-  void setConcurrentQueueCreation(bool v)
-  {
-    m_use_pool_mutex = v;
-    if (!m_pool_mutex.get())
-      m_pool_mutex = std::make_unique<std::mutex>();
-  }
-  bool isConcurrentQueueCreation() const { return m_use_pool_mutex; }
-
- public:
-
-  RunQueueImplStack* getPool()
-  {
-    if (!m_run_queue_pool)
-      ARCANE_FATAL("Runner is not initialized");
-    return m_run_queue_pool;
-  }
-  void addTime(double v)
-  {
-    // 'v' est en seconde. On le convertit en nanosecond.
-    Int64 x = static_cast<Int64>(v * 1.0e9);
-    m_cumulative_command_time += x;
-  }
-  double cumulativeCommandTime() const
-  {
-    Int64 x = m_cumulative_command_time;
-    return static_cast<double>(x) / 1.0e9;
-  }
-
-  impl::IRunnerRuntime* runtime() const { return m_runtime; }
-  bool isAutoPrefetchCommand() const { return m_is_auto_prefetch_command; }
-
- public:
-
-  //TODO: mettre à None lorsqu'on aura supprimé Runner::setExecutionPolicy()
-  eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
-  bool m_is_init = false;
-  eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
-  DeviceId m_device_id;
-
- private:
-
-  impl::IRunnerRuntime* m_runtime = nullptr;
-  RunQueueImplStack* m_run_queue_pool = nullptr;
-  std::unique_ptr<std::mutex> m_pool_mutex;
-  bool m_use_pool_mutex = false;
-  /*!
-   * \brief Temps passé dans le noyau en nano-seconde. On utilise un 'Int64'
-   * car les atomiques sur les flottants ne sont pas supportés partout.
-   */
-  std::atomic<Int64> m_cumulative_command_time = 0;
-
-  //! Indique si on pré-copie les données avant une commande de cette RunQueue
-  bool m_is_auto_prefetch_command = false;
-
- private:
-
-  void _freePool(RunQueueImplStack* s)
-  {
-    if (!s)
-      return;
-    while (!s->empty()) {
-      delete s->top();
-      s->pop();
+    impl::RunnerImpl::Lock my_lock(this);
+    if (!pool->empty()) {
+      impl::RunQueueImpl* p = pool->top();
+      pool->pop();
+      return p;
     }
   }
-};
+
+  return pool->createRunQueue(RunQueueBuildInfo{});
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::RunQueueImpl* RunnerImpl::
+_internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
+{
+  _checkIsInit();
+  // Si on utilise les paramètres par défaut, on peut utilier une RunQueueImpl
+  // issue du pool.
+  if (bi.isDefault())
+    return _internalCreateOrGetRunQueueImpl();
+  impl::IRunnerRuntime* runtime = m_runtime;
+  ARCANE_CHECK_POINTER(runtime);
+  auto* queue = new impl::RunQueueImpl(this, 0, bi);
+  return queue;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueueImpl* RunQueueImplStack::
+createRunQueue(const RunQueueBuildInfo& bi)
+{
+  Int32 x = ++m_nb_created;
+  auto* q = new impl::RunQueueImpl(m_runner_impl, x, bi);
+  q->m_is_in_pool = true;
+  return q;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IRunQueueEventImpl* RunnerImpl::
+_createEvent()
+{
+  _checkIsInit();
+  return m_runtime->createEventImpl();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IRunQueueEventImpl* RunnerImpl::
+_createEventWithTimer()
+{
+  _checkIsInit();
+  return m_runtime->createEventImplWithTimer();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -251,7 +244,7 @@ class Runner::Impl
 
 Runner::
 Runner()
-: m_p(std::make_shared<Impl>())
+: m_p(std::make_shared<impl::RunnerImpl>())
 {
 }
 
@@ -284,56 +277,8 @@ Runner(eExecutionPolicy p, DeviceId device_id)
 impl::IRunnerRuntime* Runner::
 _internalRuntime() const
 {
+  _checkIsInit();
   return m_p->runtime();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-impl::RunQueueImpl* Runner::
-_internalCreateOrGetRunQueueImpl()
-{
-  _checkIsInit();
-
-  auto pool = m_p->getPool();
-
-  {
-    Impl::Lock my_lock(m_p.get());
-    if (!pool->empty()) {
-      impl::RunQueueImpl* p = pool->top();
-      pool->pop();
-      return p;
-    }
-  }
-
-  return pool->createRunQueue(RunQueueBuildInfo{});
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-impl::RunQueueImpl* Runner::
-_internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
-{
-  _checkIsInit();
-  // Si on utilise les paramètres par défaut, on peut utilier une RunQueueImpl
-  // issue du pool.
-  if (bi.isDefault())
-    return _internalCreateOrGetRunQueueImpl();
-  impl::IRunnerRuntime* runtime = m_p->runtime();
-  ARCANE_CHECK_POINTER(runtime);
-  auto* queue = new impl::RunQueueImpl(this, 0, bi);
-  return queue;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void Runner::
-_internalPutRunQueueImplInPool(impl::RunQueueImpl* p)
-{
-  Impl::Lock my_lock(m_p.get());
-  m_p->getPool()->push(p);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -342,7 +287,7 @@ _internalPutRunQueueImplInPool(impl::RunQueueImpl* p)
 eExecutionPolicy Runner::
 executionPolicy() const
 {
-  return m_p->m_execution_policy;
+  return m_p->executionPolicy();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -351,7 +296,7 @@ executionPolicy() const
 bool Runner::
 isInitialized() const
 {
-  return m_p->m_is_init;
+  return m_p->isInit();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -393,26 +338,6 @@ deviceReducePolicy() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::IRunQueueEventImpl* Runner::
-_createEvent()
-{
-  _checkIsInit();
-  return m_p->runtime()->createEventImpl();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-impl::IRunQueueEventImpl* Runner::
-_createEventWithTimer()
-{
-  _checkIsInit();
-  return m_p->runtime()->createEventImplWithTimer();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void Runner::
 initialize(eExecutionPolicy v)
 {
@@ -436,15 +361,6 @@ _checkIsInit() const
 {
   if (!m_p->m_is_init)
     ARCANE_FATAL("Runner is not initialized. Call method initialize() before");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void Runner::
-_addCommandTime(double v)
-{
-  m_p->addTime(v);
 }
 
 /*---------------------------------------------------------------------------*/

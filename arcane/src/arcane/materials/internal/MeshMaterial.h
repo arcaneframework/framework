@@ -66,6 +66,8 @@ class MeshMaterial
       return m_material->constituentItemListView();
     }
     Int32 variableIndexerIndex() const override;
+    Ref<IConstituentItemVectorImpl> createItemVectorImpl() const override;
+    Ref<IConstituentItemVectorImpl> createItemVectorImpl(ComponentItemVectorView rhs) const override;
 
    private:
     MeshMaterial* m_material;

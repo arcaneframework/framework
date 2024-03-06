@@ -1,6 +1,6 @@
 ﻿/// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -243,7 +243,7 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
   if (dst_me.has_value()) {
     // I am in the target parallel manager
     // fill dst profile with a copy of m_dst_profile
-    auto& profile = dst.internal().getCSRProfile();
+    auto& profile = dst.internal()->getCSRProfile();
     profile.init(m_dst_profile->getNRows(), m_dst_profile->getNElems());
     dst.allocate();
 

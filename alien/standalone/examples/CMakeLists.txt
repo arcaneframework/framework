@@ -44,29 +44,42 @@ if(ALIEN_USE_SYCL)
       message(status "      SYCL LINK FLAGS  : ${SYCL_LINK_FLAGS}")
     ENDIF()
 
-    add_executable(sycl_example.exe test_sycl.cpp)
+    add_executable(test_sycl.exe test_sycl.cpp)
+    add_executable(test_mvhandler_sycl.exe test_mvhandler_sycl.cpp)
     IF(ALIEN_USE_HIPSYCL)
-	add_sycl_to_target(TARGET  sycl_example.exe
-	                   SOURCES test_sycl.cpp)
+      add_sycl_to_target(TARGET  test_sycl.exe
+                         SOURCES test_sycl.cpp)
+      add_sycl_to_target(TARGET  test_mvhandler_sycl.exe
+                         SOURCES test_mvhandler_sycl.cpp)
     ENDIF()
     IF(ALIEN_USE_INTELSYCL)
-        IF(ALIEN_USE_CUDA)
-	  set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
-	  target_compile_options(sycl_example.exe PRIVATE ${DPCPP_FLAGS})
-	  target_link_options(sycl_example.exe PRIVATE ${DPCPP_FLAGS})
-        ENDIF()
-	#set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
-        #target_compile_options(sycl_example.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
-	add_sycl_to_target(TARGET  sycl_example.exe
-	                   SOURCES test_sycl.cpp)
-
+       IF(ALIEN_USE_CUDA)
+         set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+         target_compile_options(test_sycl.exe PRIVATE ${DPCPP_FLAGS})
+         target_link_options(test_sycl.exe PRIVATE ${DPCPP_FLAGS})
+         target_compile_options(test_mvhandler_sycl.exe PRIVATE ${DPCPP_FLAGS})
+         target_link_options(test_mvhandler_sycl.exe PRIVATE ${DPCPP_FLAGS})
+       ENDIF()
+       #set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+       #target_compile_options(test_sycl.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
+       add_sycl_to_target(TARGET  test_sycl.exe
+                          SOURCES test_sycl.cpp)
+       add_sycl_to_target(TARGET  test_mvhandler_sycl.exe
+                          SOURCES test_mvhandler_sycl.cpp)
     ENDIF()
     
-    target_link_libraries(sycl_example.exe PUBLIC
+    target_link_libraries(test_sycl.exe PUBLIC
                       Alien::alien_core
                       Alien::alien_semantic_ref
                       arcconpkg_MPI
                       ${Boost_LIBRARIES})
+                      
+    target_link_libraries(test_mvhandler_sycl.exe PUBLIC
+                      Alien::alien_core
+                      Alien::alien_semantic_ref
+                      arcconpkg_MPI
+                      ${Boost_LIBRARIES})
+    
 endif()
 
 
@@ -191,12 +204,12 @@ if(ALIEN_USE_SYCL)
 
 alien_test( BENCH sycl
             NAME default
-            COMMAND sycl_example.exe)
+            COMMAND test_sycl.exe)
 
 alien_test( BENCH sycl
             NAME default-mpi
             PROCS 4
-            COMMAND sycl_example.exe)
+            COMMAND test_sycl.exe)
         
 alien_test( BENCH krylov-sycl
             NAME diag-bicgs

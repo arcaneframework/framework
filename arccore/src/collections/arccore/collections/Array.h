@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.h                                                     (C) 2000-2023 */
+/* Array.h                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Tableau 1D.                                                               */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/Span.h"
 #include "arccore/collections/MemoryAllocationOptions.h"
+#include "arccore/collections/ArrayTraits.h"
 
 #include <memory>
 #include <initializer_list>
@@ -129,68 +130,6 @@ class ArrayImplT
 : public ArrayImplBase
 {
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- *
- * \brief Caractéristiques pour un tableau
- */
-template<typename T>
-class ArrayTraits
-{
- public:
-
-  typedef const T& ConstReferenceType;
-  typedef FalseType IsPODType;
-};
-
-#define ARCCORE_DEFINE_ARRAY_PODTYPE(datatype)\
-template<>\
-class ArrayTraits<datatype>\
-{\
- public:\
-  typedef datatype ConstReferenceType;\
-  typedef TrueType IsPODType;\
-}
-
-template<typename T>
-class ArrayTraits<T*>
-{
- public:
-  typedef T* Ptr;
-  typedef const Ptr& ConstReferenceType;
-  typedef FalseType IsPODType;
-};
-
-template<typename T>
-class ArrayTraits<const T*>
-{
- public:
-  typedef T* Ptr;
-  typedef const T* ConstReferenceType;
-  typedef FalseType IsPODType;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCCORE_DEFINE_ARRAY_PODTYPE(char);
-ARCCORE_DEFINE_ARRAY_PODTYPE(signed char);
-ARCCORE_DEFINE_ARRAY_PODTYPE(unsigned char);
-ARCCORE_DEFINE_ARRAY_PODTYPE(short);
-ARCCORE_DEFINE_ARRAY_PODTYPE(int);
-ARCCORE_DEFINE_ARRAY_PODTYPE(long);
-ARCCORE_DEFINE_ARRAY_PODTYPE(unsigned short);
-ARCCORE_DEFINE_ARRAY_PODTYPE(unsigned int);
-ARCCORE_DEFINE_ARRAY_PODTYPE(unsigned long);
-ARCCORE_DEFINE_ARRAY_PODTYPE(float);
-ARCCORE_DEFINE_ARRAY_PODTYPE(double);
-ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
-ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
-ARCCORE_DEFINE_ARRAY_PODTYPE(Float16);
-ARCCORE_DEFINE_ARRAY_PODTYPE(BFloat16);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -566,7 +505,8 @@ class AbstractArray
    *
    * Si la nouvelle capacité est inférieure à l'ancienne, rien ne se passe.
    */
-  void _internalRealloc(Int64 new_capacity,bool compute_capacity)
+  template<typename PodType>
+  void _internalRealloc(Int64 new_capacity,bool compute_capacity,PodType pod_type)
   {
     if (_isSharedNull()){
       if (new_capacity!=0)
@@ -585,7 +525,12 @@ class AbstractArray
     // Si la nouvelle capacité est inférieure à la courante,ne fait rien.
     if (acapacity <= m_md->capacity)
       return;
-    _internalReallocate(acapacity,IsPODType());
+    _internalReallocate(acapacity,pod_type);
+  }
+
+  void _internalRealloc(Int64 new_capacity,bool compute_capacity)
+  {
+    _internalRealloc(new_capacity,compute_capacity,IsPODType());
   }
 
   //! Réallocation pour un type POD
@@ -797,7 +742,7 @@ class AbstractArray
     if (s<0)
       s = 0;
     if (s>m_md->size) {
-      this->_internalRealloc(s,false);
+      this->_internalRealloc(s,false,pod_type);
       this->_createRangeDefault(m_md->size,s,pod_type);
     }
     else{
