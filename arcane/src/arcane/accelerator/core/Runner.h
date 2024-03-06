@@ -55,7 +55,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   friend impl::RunCommandImpl;
   friend RunQueue;
   friend RunQueueEvent;
-  class Impl;
+  friend impl::RunnerImpl;
 
  public:
 
@@ -157,7 +157,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 
  private:
 
-  std::shared_ptr<Impl> m_p;
+  std::shared_ptr<impl::RunnerImpl> m_p;
 
  private:
 

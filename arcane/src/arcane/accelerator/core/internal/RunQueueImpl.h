@@ -38,6 +38,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   friend class Arcane::Accelerator::Runner;
   friend class Arcane::Accelerator::RunQueue;
   friend class RunCommandImpl;
+  friend class RunQueueImplStack;
 
  private:
 

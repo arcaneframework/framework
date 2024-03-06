@@ -70,6 +70,8 @@ namespace impl
   class RunQueueImpl;
   class IRunQueueEventImpl;
   class RunCommandLaunchInfo;
+  class RunnerImpl;
+  class RunQueueImplStack;
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/
