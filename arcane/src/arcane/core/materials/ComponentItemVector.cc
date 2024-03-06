@@ -34,7 +34,7 @@ namespace Arcane::Materials
 /*!
  * \brief Implémentation de ComponentItemVector.
  */
-class ComponentItemVector::Impl
+class ConstituentItemVectorImpl
 : public IConstituentItemVectorImpl
 , public ReferenceCounterImpl
 {
@@ -42,15 +42,15 @@ class ComponentItemVector::Impl
 
  public:
 
-  explicit Impl(IMeshComponent* component);
-  Impl(IMeshComponent* component, const ConstituentItemLocalIdListView& constituent_list_view,
-       ConstArrayView<MatVarIndex> matvar_indexes, ConstArrayView<Int32> items_local_id);
+  explicit ConstituentItemVectorImpl(IMeshComponent* component);
+  ConstituentItemVectorImpl(IMeshComponent* component, const ConstituentItemLocalIdListView& constituent_list_view,
+                            ConstArrayView<MatVarIndex> matvar_indexes, ConstArrayView<Int32> items_local_id);
 
- private:
+ public:
 
-  Impl(const Impl& rhs) = delete;
-  Impl(Impl&& rhs) = delete;
-  Impl& operator=(const Impl& rhs) = delete;
+  ConstituentItemVectorImpl(const ConstituentItemVectorImpl& rhs) = delete;
+  ConstituentItemVectorImpl(ConstituentItemVectorImpl&& rhs) = delete;
+  ConstituentItemVectorImpl& operator=(const ConstituentItemVectorImpl& rhs) = delete;
 
  private:
 
@@ -98,8 +98,8 @@ class ComponentItemVector::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentItemVector::Impl::
-Impl(IMeshComponent* component)
+ConstituentItemVectorImpl::
+ConstituentItemVectorImpl(IMeshComponent* component)
 : m_material_mng(component->materialMng())
 , m_component(component)
 , m_matvar_indexes(platform::getDefaultDataAllocator())
@@ -120,10 +120,10 @@ Impl(IMeshComponent* component)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentItemVector::Impl::
-Impl(IMeshComponent* component, const ConstituentItemLocalIdListView& constituent_list_view,
-     ConstArrayView<MatVarIndex> matvar_indexes, ConstArrayView<Int32> items_local_id)
-: Impl(component)
+ConstituentItemVectorImpl::
+ConstituentItemVectorImpl(IMeshComponent* component, const ConstituentItemLocalIdListView& constituent_list_view,
+                          ConstArrayView<MatVarIndex> matvar_indexes, ConstArrayView<Int32> items_local_id)
+: ConstituentItemVectorImpl(component)
 {
   m_constituent_list->copy(constituent_list_view);
   m_matvar_indexes.copy(matvar_indexes);
@@ -134,7 +134,7 @@ Impl(IMeshComponent* component, const ConstituentItemLocalIdListView& constituen
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentItemVector::Impl::
+void ConstituentItemVectorImpl::
 _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
                   ConstArrayView<MatVarIndex> multiples)
 {
@@ -166,7 +166,7 @@ _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentItemVector::Impl::
+void ConstituentItemVectorImpl::
 _setLocalIds(ConstArrayView<Int32> globals, ConstArrayView<Int32> multiples)
 {
   Integer nb_global = globals.size();
@@ -181,7 +181,7 @@ _setLocalIds(ConstArrayView<Int32> globals, ConstArrayView<Int32> multiples)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentItemVectorView ComponentItemVector::Impl::
+ComponentItemVectorView ConstituentItemVectorImpl::
 _view() const
 {
   return ComponentItemVectorView(m_component, m_matvar_indexes,
@@ -196,7 +196,7 @@ _view() const
 
 ComponentItemVector::
 ComponentItemVector(IMeshComponent* component)
-: m_p(makeRef<IConstituentItemVectorImpl>(new Impl(component)))
+: m_p(makeRef<IConstituentItemVectorImpl>(new ConstituentItemVectorImpl(component)))
 {
 }
 
@@ -205,8 +205,8 @@ ComponentItemVector(IMeshComponent* component)
 
 ComponentItemVector::
 ComponentItemVector(ComponentItemVectorView rhs)
-: m_p(makeRef<IConstituentItemVectorImpl>(new Impl(rhs.component(), rhs._constituentItemListView(),
-                                                   rhs._matvarIndexes(), rhs._internalLocalIds())))
+: m_p(makeRef<IConstituentItemVectorImpl>(new ConstituentItemVectorImpl(rhs.component(), rhs._constituentItemListView(),
+                                                                        rhs._matvarIndexes(), rhs._internalLocalIds())))
 {
 }
 

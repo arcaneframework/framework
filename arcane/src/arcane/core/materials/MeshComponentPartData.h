@@ -40,6 +40,7 @@ class ARCANE_CORE_EXPORT MeshComponentPartData
 {
   friend class MeshComponentData;
   friend class ComponentItemVector;
+  friend class ConstituentItemVectorImpl;
 
  public:
 

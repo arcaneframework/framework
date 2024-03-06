@@ -89,7 +89,6 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 {
   friend class EnvCellVector;
   friend class MatCellVector;
-  class Impl;
 
  public:
 
