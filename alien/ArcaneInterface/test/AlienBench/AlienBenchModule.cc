@@ -136,28 +136,6 @@ AlienBenchModule::test()
   CellCellGroup cell_cell_connection(areaU.own(), areaU, m_stencil_kind);
   CellCellGroup all_cell_cell_connection(areaU, areaU, m_stencil_kind);
 
-
-  {
-    m_cell_cell_connection_offset.resize(areaU.own().size()+1) ;
-    Integer offset = 0 ;
-    Integer index = 0 ;
-    ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
-    {
-      m_cell_cell_connection_offset[index++] = offset ;
-      offset += icell.subItems().count() ;
-    }
-    m_cell_cell_connection_offset[index] = offset ;
-    m_cell_cell_connection_index.resize(offset) ;
-    offset = 0 ;
-    ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
-    {
-      ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
-      {
-        m_cell_cell_connection_index[offset++] = isubcell->localId() ;
-      }
-    }
-  }
-
   Alien::ArcaneTools::BasicIndexManager index_manager(m_parallel_mng);
   index_manager.setTraceMng(traceMng());
 

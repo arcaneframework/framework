@@ -197,6 +197,26 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
                             Alien::Matrix& matrixA)
 {
 
+  {
+    m_cell_cell_connection_offset.resize(areaU.own().size()+1) ;
+    Integer offset = 0 ;
+    Integer index = 0 ;
+    ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
+    {
+      m_cell_cell_connection_offset[index++] = offset ;
+      offset += icell.subItems().count() ;
+    }
+    m_cell_cell_connection_offset[index] = offset ;
+    m_cell_cell_connection_index.resize(offset) ;
+    offset = 0 ;
+    ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
+    {
+      ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+      {
+        m_cell_cell_connection_index[offset++] = isubcell->localId() ;
+      }
+    }
+  }
 
   Arcane::NumArray<Arccore::Integer,MDDim1> accAllUIndex(allUIndex) ;
   //Arccore::SmallSpan<const Int32> accAllUIndex = index_manager.getIndexes(indexSetU);
