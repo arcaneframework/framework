@@ -75,7 +75,15 @@ namespace Alien
       void _startTimer() {}
       void _stopTimer() {}
 
-     private:
+     protected:
+
+      IndexT entryIndex(IndexT row, IndexT col) const {
+        for(auto k=m_row_starts[row];k<m_row_starts[row+1];++k)
+          if(m_cols[k]==col)
+            return k ;
+        return -1 ;
+      }
+
       IMatrix& m_matrix;
       HCSRMatrix<ValueType>* m_matrix_impl;
       std::unique_ptr<Impl> m_impl;

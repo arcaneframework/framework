@@ -81,8 +81,8 @@ class FLUFactorisationAlgo
     if (MatrixType::on_host_only) {
       if (this->m_is_parallel) {
         // Need to manage ghost and communications
-        this->m_x.resize(this->m_alloc_size);
-        m_xk.resize(this->m_alloc_size);
+        this->m_x.resize((Integer)this->m_alloc_size);
+        m_xk.resize((Integer)this->m_alloc_size);
       }
     }
   }

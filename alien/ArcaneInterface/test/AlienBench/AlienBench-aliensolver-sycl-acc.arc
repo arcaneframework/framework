@@ -27,9 +27,8 @@
     </meshgenerator>
   </mesh>
 
-
   <alien-bench>
-    <use-accelerator>false</use-accelerator>
+    <use-accelerator>true</use-accelerator>
     <!-- big diagonal-coefficient keep diagonal dominant matrix -->
     <diagonal-coefficient>1.</diagonal-coefficient>
     <!--lambdax>0.125</lambdax>

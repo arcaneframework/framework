@@ -48,13 +48,13 @@
 #include <alien/kernels/sycl/data/HCSRMatrix.h>
 #include <alien/kernels/sycl/data/HCSRVector.h>
 
-#include <alien/handlers/scalar/sycl/VectorAccessor.h>
+#include <alien/handlers/scalar/sycl/VectorAccessorT.h>
 #include <alien/handlers/scalar/sycl/MatrixProfiler.h>
-#include <alien/handlers/scalar/sycl/MatrixAccessor.h>
+#include <alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h>
 
 #include <alien/kernels/sycl/data/SYCLParallelEngineImplT.h>
-#include <alien/handlers/scalar/sycl/VectorAccessorT.h>
-#include <alien/handlers/scalar/sycl/MatrixAccessorT.h>
+#include <alien/handlers/scalar/sycl/VectorAccessorImplT.h>
+#include <alien/handlers/scalar/sycl/ProfiledMatrixBuilderImplT.h>
 
 #include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
@@ -139,7 +139,6 @@ int main(int argc, char** argv)
                      cgh.parallel_for(engine.maxNumThreads(),
                                          [=](Alien::SYCLParallelEngine::Item<1> item)
                                          {
-                                            auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
                                             for (std::size_t index = id; id < local_size; id += item.get_range()[0])
                                                xv[index] = 1.*index;

@@ -21,9 +21,9 @@
 #include <alien/kernels/sycl/data/HCSRMatrix.h>
 #include <alien/kernels/sycl/data/HCSRVector.h>
 
-#include <alien/handlers/scalar/sycl/VectorAccessor.h>
+#include <alien/handlers/scalar/sycl/VectorAccessorT.h>
 #include <alien/handlers/scalar/sycl/MatrixProfiler.h>
-#include <alien/handlers/scalar/sycl/MatrixAccessor.h>
+#include <alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h>
 
 
 #include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
@@ -33,8 +33,8 @@
 
 
 #include <alien/kernels/sycl/data/SYCLParallelEngineImplT.h>
-#include <alien/handlers/scalar/sycl/VectorAccessorT.h>
-#include <alien/handlers/scalar/sycl/MatrixAccessorT.h>
+#include <alien/handlers/scalar/sycl/VectorAccessorImplT.h>
+#include <alien/handlers/scalar/sycl/ProfiledMatrixBuilderImplT.h>
 
 // Tests the default c'tor.
 TEST(TestSYCLMV, SYCLExpr)

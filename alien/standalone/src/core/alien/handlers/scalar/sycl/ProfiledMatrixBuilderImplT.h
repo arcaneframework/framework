@@ -18,7 +18,7 @@
 #include <alien/kernels/sycl/data/SYCLParallelEngine.h>
 #include <alien/kernels/sycl/data/SYCLParallelEngineImplT.h>
 
-#include <alien/handlers/scalar/sycl/MatrixAccessor.h>
+#include <alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h>
 
 #include <span>
 
@@ -54,8 +54,6 @@ namespace SYCL
   : m_matrix(matrix)
   , m_finalized(false)
   {
-
-
     m_matrix.impl()->lock();
     m_matrix_impl = &m_matrix.impl()->get<BackEnd::tag::hcsr>(true);
 
@@ -172,18 +170,28 @@ namespace SYCL
   {
   public :
     sycl::buffer<ValueT,1>* m_b = nullptr ;
-    using AccessorType = decltype(m_b->get_host_access());
+    using ValueAccessorType = decltype(m_b->get_host_access());
 
-    HostView(AccessorType values,
-             ConstArrayView<Integer> kcol,
-             ConstArrayView<Integer> cols)
+    sycl::buffer<IndexT,1>* m_ib = nullptr ;
+    using IndexAccessorType = decltype(m_ib->get_host_access());
+
+    HostView(ValueAccessorType values,
+             IndexAccessorType cols,
+             IndexAccessorType kcol)
     : m_values(values)
-    , m_kcol(kcol)
     , m_cols(cols)
+    , m_kcol(kcol)
     {}
 
     ValueType operator[](IndexT index) const {
       return m_values[index] ;
+    }
+
+    IndexT entryIndex(IndexT row,IndexT col) const {
+      for(auto k=m_kcol[row];k<m_kcol[row+1];++k)
+        if(m_cols[k]==col)
+          return k ;
+      return -1 ;
     }
 
     IndexT kcol(IndexT row) const {
@@ -196,9 +204,9 @@ namespace SYCL
 
 
   private:
-    AccessorType m_values ;
-    ConstArrayView<Integer> m_kcol;
-    ConstArrayView<Integer> m_cols;
+    ValueAccessorType m_values ;
+    IndexAccessorType m_cols;
+    IndexAccessorType m_kcol;
     //std::span<IndexT> m_kcol ;
     //std::span<IndexT> m_cols ;
   };
@@ -223,7 +231,9 @@ namespace SYCL
   template <typename ValueT,typename IndexT>
   ProfiledMatrixBuilderT<ValueT,IndexT>::HostView ProfiledMatrixBuilderT<ValueT,IndexT>::hostView() const
   {
-    return HostView(m_impl->m_values_buffer.get_host_access(),m_row_starts,m_cols) ;
+    return HostView(m_impl->m_values_buffer.get_host_access(),
+                    m_impl->m_cols_buffer.get_host_access(),
+                    m_impl->m_kcol_buffer.get_host_access()) ;
   }
 
   /*---------------------------------------------------------------------------*/
