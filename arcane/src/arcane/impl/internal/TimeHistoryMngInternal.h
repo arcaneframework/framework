@@ -306,8 +306,10 @@ class TimeHistoryValueT
 
     Integer max_iter = infos.times().size();
     Integer nb_iteration = m_iterations.size();
-    iterations.reserve(nb_iteration);
     Integer sub_size = subSize();
+    iterations.clear();
+    iterations.reserve(nb_iteration);
+    values.clear();
     values.reserve(nb_iteration*sub_size);
     for(Integer i=0, is=nb_iteration; i<is; ++i ){
       Integer iter = m_iterations[i];

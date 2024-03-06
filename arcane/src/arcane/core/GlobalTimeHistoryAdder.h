@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ITimeHistoryAdder.h"
-#include "arcane/core/IParallelMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,7 +29,7 @@ class ARCANE_CORE_EXPORT GlobalTimeHistoryAdder
 : public ITimeHistoryAdder
 {
  public:
-  GlobalTimeHistoryAdder(ITimeHistoryMng* thm, IParallelMng* pm);
+  explicit GlobalTimeHistoryAdder(ITimeHistoryMng* thm);
   ~GlobalTimeHistoryAdder() override = default;
 
  public:
@@ -43,7 +42,6 @@ class ARCANE_CORE_EXPORT GlobalTimeHistoryAdder
 
  private:
   ITimeHistoryMng* m_thm;
-  IParallelMng* m_pm;
 };
 
 /*---------------------------------------------------------------------------*/

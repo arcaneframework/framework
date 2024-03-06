@@ -635,11 +635,17 @@ template <class DataType>
 void TimeHistoryMngInternal::
 _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<DataType> values)
 {
-  if (!m_is_master_io && !(m_enable_non_io_master_curves && thpi.thp().isLocal()))
+  if(!m_is_master_io && (!thpi.thp().isLocal() || !m_enable_non_io_master_curves)) {
     return;
+  }
 
-  if (!m_is_active)
+  if(thpi.thp().isLocal() && thpi.thp().localProcId() != m_parallel_mng->commRank()) {
     return;
+  }
+
+  if (!m_is_active) {
+    return;
+  }
 
   String name_to_find = thpi.thp().name().clone();
   if(!thpi.meshHandle().isNull()){

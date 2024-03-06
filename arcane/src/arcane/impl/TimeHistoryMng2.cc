@@ -240,7 +240,7 @@ TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 , CommonVariables(this)
 , m_internal(makeRef(new TimeHistoryMngInternal(subDomain()->variableMng(),
                                                 makeRef(new Properties(subDomain()->propertyMng(), "ArcaneTimeHistoryProperties")))))
-, m_adder(makeRef(new GlobalTimeHistoryAdder(this, subDomain()->parallelMng())))
+, m_adder(makeRef(new GlobalTimeHistoryAdder(this)))
 {
   if (add_entry_points){
     addEntryPoint(this,"ArcaneTimeHistoryBegin",&TimeHistoryMng2::timeHistoryBegin,
@@ -266,7 +266,6 @@ TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 void TimeHistoryMng2::
 timeHistoryStartInit()
 {
-  //warning() << "timeHistoryStartInit " << m_global_time() << " " << m_global_times.size();
   m_internal->addNowInGlobalTime();
 }
 

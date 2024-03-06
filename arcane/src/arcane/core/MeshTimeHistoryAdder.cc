@@ -24,58 +24,45 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 MeshTimeHistoryAdder::
-MeshTimeHistoryAdder(ITimeHistoryMng* thm, IParallelMng* pm, const MeshHandle& mesh_handle)
+MeshTimeHistoryAdder(ITimeHistoryMng* thm, const MeshHandle& mesh_handle)
 : m_thm(thm)
-, m_pm(pm)
 , m_mesh_handle(mesh_handle)
 {}
 
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Real value)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
 }
 
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int64 value)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
 }
 
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int32 value)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
 }
 
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
 }
 
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
 }
 
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
 }
 
 /*---------------------------------------------------------------------------*/

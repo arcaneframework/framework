@@ -107,7 +107,7 @@ class ITimeHistoryMng
 {
  public:
 
-  virtual ~ITimeHistoryMng() {} //!< Libère les ressources
+  virtual ~ITimeHistoryMng() = default; //!< Libère les ressources
 
  public:
 

@@ -24,57 +24,44 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 GlobalTimeHistoryAdder::
-GlobalTimeHistoryAdder(ITimeHistoryMng* thm, IParallelMng* pm)
+GlobalTimeHistoryAdder(ITimeHistoryMng* thm)
 : m_thm(thm)
-, m_pm(pm)
 {}
 
 void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Real value)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), value);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), value);
 }
 
 void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int64 value)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), value);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), value);
 }
 
 void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int32 value)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), value);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), value);
 }
 
 void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), values);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), values);
 }
 
 void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), values);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), values);
 }
 
 void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values)
 {
-  if(!thp.isLocal() || thp.localProcId() == m_pm->commRank()) {
-    m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), values);
-  }
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), values);
 }
 
 /*---------------------------------------------------------------------------*/
