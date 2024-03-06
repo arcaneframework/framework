@@ -1,15 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConstituentModifierWorkInfo.h                               (C) 2000-2023 */
+/* ConstituentModifierWorkInfo.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Structure de travail utilisée lors de la modification des constituants.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/materials/internal/ConstituentModifierWorkInfo.h"
 
@@ -24,6 +26,24 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ConstituentModifierWorkInfo::
+ConstituentModifierWorkInfo()
+: pure_local_ids(platform::getDefaultDataAllocator())
+, partial_indexes(platform::getDefaultDataAllocator())
+, cells_changed_in_env(platform::getDefaultDataAllocator())
+, cells_unchanged_in_env(platform::getDefaultDataAllocator())
+, m_saved_matvar_indexes(platform::getDefaultDataAllocator())
+, m_saved_local_ids(platform::getDefaultDataAllocator())
+, m_cells_current_nb_material(platform::getDefaultDataAllocator())
+, m_cells_is_partial(platform::getDefaultDataAllocator())
+, m_removed_local_ids_filter(platform::getDefaultDataAllocator())
+, m_cells_to_transform(platform::getDefaultDataAllocator())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ConstituentModifierWorkInfo::
 initialize(Int32 max_local_id)
 {
@@ -31,6 +51,9 @@ initialize(Int32 max_local_id)
   m_cells_to_transform.fill(false);
   m_removed_local_ids_filter.resize(max_local_id);
   m_removed_local_ids_filter.fill(false);
+
+  m_saved_matvar_indexes.resizeHost(max_local_id);
+  m_saved_local_ids.resizeHost(max_local_id);
 }
 
 /*---------------------------------------------------------------------------*/

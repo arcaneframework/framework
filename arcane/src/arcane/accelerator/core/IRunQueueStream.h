@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunQueueStream.h                                           (C) 2000-2022 */
+/* IRunQueueStream.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'un flux d'exécution pour une RunQueue.                        */
 /*---------------------------------------------------------------------------*/
@@ -65,6 +65,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
 
   //! Pointeur sur la structure interne dépendante de l'implémentation
   virtual void* _internalImpl() = 0;
+
+  //! Barrière sans exception. Retourne \a true en cas d'erreur
+  virtual bool _barrierNoException() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

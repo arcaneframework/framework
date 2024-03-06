@@ -53,7 +53,7 @@ class ComponentItemInternalRange
 
    public:
 
-    ComponentItemInternalLocalId operator*() const { return ComponentItemInternalLocalId(m_current_value); }
+    ConstituentItemIndex operator*() const { return ConstituentItemIndex(m_current_value); }
     void operator++() { ++m_current_value; }
     bool operator==(const Sentinel&) const
     {
@@ -72,10 +72,10 @@ class ComponentItemInternalRange
 
  public:
 
-  ComponentItemInternalLocalId operator[](Int32 index) const
+  ConstituentItemIndex operator[](Int32 index) const
   {
     ARCANE_CHECK_AT(index, m_nb_value);
-    return ComponentItemInternalLocalId(m_first_index + index);
+    return ConstituentItemIndex(m_first_index + index);
   }
 
  public:
@@ -94,7 +94,7 @@ class ComponentItemInternalRange
     return {};
   }
   Int32 size() const { return m_nb_value; }
-  ComponentItemInternalLocalId firstValue() const { return ComponentItemInternalLocalId(m_first_index); }
+  ConstituentItemIndex firstValue() const { return ConstituentItemIndex(m_first_index); }
 
  private:
 
@@ -114,6 +114,29 @@ class ComponentItemInternalRange
 class ComponentItemInternalData
 : public TraceAccessor
 {
+  //! Conteneur pour les informations de ComponentItemSharedInfo
+  class Storage
+  {
+   public:
+
+    explicit Storage(const MemoryAllocationOptions& alloc_info);
+
+   public:
+
+    void resize(Int32 new_size, ComponentItemSharedInfo* shared_info);
+    Int32 size() const { return m_size; }
+
+   private:
+
+    Int32 m_size = 0;
+    UniqueArray<ConstituentItemIndex> m_first_sub_constituent_item_id_list;
+    UniqueArray<ConstituentItemIndex> m_super_component_item_local_id_list;
+    UniqueArray<Int16> m_component_id_list;
+    UniqueArray<Int16> m_nb_sub_constituent_item_list;
+    UniqueArray<Int32> m_global_item_local_id_list;
+    UniqueArray<MatVarIndex> m_var_index_list;
+  };
+
  public:
 
   explicit ComponentItemInternalData(MeshMaterialMng* mm);
@@ -125,28 +148,22 @@ class ComponentItemInternalData
 
  public:
 
-  //! Liste des AllEnvCell
-  ConstArrayView<ComponentItemInternal> allEnvItemsInternal() const
+  //! Retourne la AllEnvCell correspondant à la maille \a id
+  matimpl::ConstituentItemBase allEnvItemBase(CellLocalId id)
   {
-    return m_all_env_items_internal;
+    return matimpl::ConstituentItemBase(allEnvSharedInfo(),ConstituentItemIndex(id.localId()));
   }
 
-  //! Liste des AllEnvCell
-  ArrayView<ComponentItemInternal> allEnvItemsInternal()
+  //! Retourne la EnvCell correspondant à l'indice \a index
+  matimpl::ConstituentItemBase envItemBase(Int32 index)
   {
-    return m_all_env_items_internal;
+    return matimpl::ConstituentItemBase(envSharedInfo(), ConstituentItemIndex(index));
   }
 
-  //! Liste des mailles milieux.
-  ArrayView<ComponentItemInternal> envItemsInternal()
+  //! Retourne la MatCell correspondant au milieu d'indice \a index du milieu \a env_index
+  matimpl::ConstituentItemBase matItemBase(Int16 env_index,Int32 index)
   {
-    return m_env_items_internal;
-  }
-
-  //! Liste des mailles matériaux pour le \a env_index ème milieu
-  ArrayView<ComponentItemInternal> matItemsInternal(Int32 env_index)
-  {
-    return m_mat_items_internal[env_index];
+    return matimpl::ConstituentItemBase(matSharedInfo(), ConstituentItemIndex(matItemsInternalRange(env_index)[index]));
   }
 
   ComponentItemInternalRange allEnvItemsInternalRange() const
@@ -158,6 +175,12 @@ class ComponentItemInternalData
   ComponentItemInternalRange envItemsInternalRange() const
   {
     return m_env_items_internal_range;
+  }
+
+  //! Liste des mailles matériaux pour le \a env_index ème milieu
+  ComponentItemInternalRange matItemsInternalRange(Int32 env_index)
+  {
+    return m_mat_items_internal_range[env_index];
   }
 
   //! Redimensionne les structures allouant les 'ComponentItemInternal'
@@ -173,21 +196,6 @@ class ComponentItemInternalData
 
   MeshMaterialMng* m_material_mng = nullptr;
 
-  UniqueArray<ComponentItemInternal> m_component_item_internal_storage;
-  /*!
-   * \brief Liste des ComponentItemInternal pour les AllEnvcell.
-   *
-   * Les éléments de ce tableau peuvent être indexés directement avec
-   * le localId() de la maille.
-   */
-  ArrayView<ComponentItemInternal> m_all_env_items_internal;
-
-  //! Liste des ComponentItemInternal pour chaque milieu
-  ArrayView<ComponentItemInternal> m_env_items_internal;
-
-  //! Liste des ComponentItemInternal pour les matériaux de chaque milieu
-  UniqueArray<ArrayView<ComponentItemInternal>> m_mat_items_internal;
-
   //! Liste des informations partagées
   UniqueArray<ComponentItemSharedInfo> m_shared_infos;
 
@@ -195,11 +203,17 @@ class ComponentItemInternalData
   ComponentItemInternalRange m_env_items_internal_range;
   UniqueArray<ComponentItemInternalRange> m_mat_items_internal_range;
 
+  Storage m_all_env_storage;
+  Storage m_env_storage;
+  Storage m_mat_storage;
+
  private:
 
-  void
-  _initSharedInfos();
-  void _resetMatItemsInternal(Int32 env_index);
+  void _initSharedInfos();
+  static MemoryAllocationOptions _allocOptions();
+
+ public:
+
   //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
   void _resetItemsInternal();
 };

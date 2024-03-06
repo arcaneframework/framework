@@ -151,6 +151,8 @@ set( ARCANE_SOURCES
   internal/VariableSynchronizer.h
   internal/VariableSynchronizerMng.h
   internal/VariableSynchronizerComputeList.h
+  internal/TimeHistoryMngInternal.h
+  internal/TimeHistoryMngInternal.cc
   )
 
 if (ARCANE_HAS_ACCELERATOR_API)

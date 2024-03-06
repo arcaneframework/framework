@@ -62,19 +62,11 @@ class ARCANE_CORE_EXPORT ComponentCell
  public:
 
   ARCCORE_HOST_DEVICE ComponentCell(const matimpl::ConstituentItemBase& mii)
-  : m_internal(mii._internal())
+  : m_constituent_item_index(mii.m_constituent_item_index)
+  , m_shared_info(mii.m_shared_info)
   {}
 
-  ComponentCell()
-  : m_internal(ComponentItemInternal::_nullItem())
-  {}
-
- protected:
-
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use overload with ConstituentItemBase instead")
-  ARCCORE_HOST_DEVICE ComponentCell(ComponentItemInternal* mii)
-  : m_internal(mii)
-  {}
+  ComponentCell() = default;
 
  public:
 
@@ -84,32 +76,32 @@ class ARCANE_CORE_EXPORT ComponentCell
  public:
 
   //! \internal
-  ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_internal->variableIndex(); }
+  ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_shared_info->_varIndex(m_constituent_item_index); }
 
-  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase constituentItemBase() const { return m_internal; }
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase constituentItemBase() const { return { m_shared_info, m_constituent_item_index}; }
 
   //! Composant associé
-  IMeshComponent* component() const { return m_internal->component(); }
+  IMeshComponent* component() const { return m_shared_info->_component(m_constituent_item_index); }
 
   //! Identifiant du composant dans la liste des composants de ce type.
-  Int32 componentId() const { return m_internal->componentId(); }
+  ARCCORE_HOST_DEVICE Int32 componentId() const { return m_shared_info->_componentId(m_constituent_item_index); }
 
   //! Indique s'il s'agit de la maille nulle
-  bool null() const { return m_internal->null(); }
+  bool null() const { return m_constituent_item_index.isNull(); }
 
   //! Maille de niveau supérieur dans la hiérarchie
-  ComponentCell superCell() const { return ComponentCell(m_internal->_superItemBase()); }
+  ComponentCell superCell() const { return ComponentCell(_superItemBase()); }
 
   //! Niveau hiérarchique de l'entité
-  Int32 level() const { return m_internal->level(); }
+  ARCCORE_HOST_DEVICE Int32 level() const { return m_shared_info->m_level; }
 
   //! Nombre de sous-éléments
-  Int32 nbSubItem() const { return m_internal->nbSubItem(); }
+  ARCCORE_HOST_DEVICE Int32 nbSubItem() const { return m_shared_info->_nbSubConstituent(m_constituent_item_index); }
 
   //! Maille arcane
   Cell globalCell() const
   {
-    return Cell(m_internal->globalItemBase());
+    return Cell(m_shared_info->_globalItemBase(m_constituent_item_index));
   }
 
   /*!
@@ -120,39 +112,47 @@ class ARCANE_CORE_EXPORT ComponentCell
    * \warning Ce numéro unique n'est pas le même que celui de la maille globale
    * associée.
    */
-  Int64 componentUniqueId() const { return m_internal->componentUniqueId(); }
-
- public:
-
-  //! \internal
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane. Use constituentItemBase() instead")
-  ARCCORE_HOST_DEVICE ComponentItemInternal* internal() const { return m_internal; }
+  Int64 componentUniqueId() const { return m_shared_info->_componentUniqueId(m_constituent_item_index); }
 
  protected:
 
-  static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] ComponentItemInternal* internal,
+  static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] matimpl::ConstituentItemBase item_base,
                                               [[maybe_unused]] Int32 expected_level)
   {
 #if !defined(ARCCORE_DEVICE_CODE)
-    if (internal->null())
+    if (item_base.null())
       return;
-    Int32 lvl = internal->level();
-    if (!internal->null() && lvl != expected_level)
-      _badConversion(lvl, expected_level);
+    Int32 lvl = item_base.level();
+    if (lvl != expected_level)
+      _badConversion(item_base, lvl, expected_level);
 #endif
   }
-  static void _badConversion(Int32 level, Int32 expected_level);
+  static void _badConversion(matimpl::ConstituentItemBase item_base, Int32 level, Int32 expected_level);
+
+  matimpl::ConstituentItemBase _subItemBase(Int32 index) const
+  {
+    return m_shared_info->_subItemBase(m_constituent_item_index, index);
+  }
+  matimpl::ConstituentItemBase _superItemBase() const
+  {
+    return m_shared_info->_superItemBase(m_constituent_item_index);
+  }
+  ARCCORE_HOST_DEVICE ConstituentItemIndex _firstSubConstituentLocalId() const
+  {
+    return m_shared_info->_firstSubConstituentLocalId(m_constituent_item_index);
+  }
 
  protected:
 
-  ComponentItemInternal* m_internal;
+  ConstituentItemIndex m_constituent_item_index;
+  ComponentItemSharedInfo* m_shared_info = ComponentItemSharedInfo::_nullInstance();
 
  private:
 
   //! \internal
-  ARCCORE_HOST_DEVICE ComponentItemInternal* _internal() const
+  ARCCORE_HOST_DEVICE ConstituentItemIndex _constituentItemIndex() const
   {
-    return m_internal;
+    return m_constituent_item_index;
   }
 };
 

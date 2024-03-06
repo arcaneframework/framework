@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAccelerator.cc                                          (C) 2000-2023 */
+/* CudaAccelerator.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Backend 'CUDA' pour les accélérateurs.                                    */
 /*---------------------------------------------------------------------------*/
@@ -83,7 +83,7 @@ class CudaMemoryAllocatorBase
   }
   void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo mem_info) final
   {
-    ARCANE_CHECK_CUDA(_deallocate(mem_info, args));
+    ARCANE_CHECK_CUDA_NOTHROW(_deallocate(mem_info, args));
   }
 
  protected:
@@ -100,7 +100,7 @@ class UnifiedMemoryCudaMemoryAllocator
 {
  public:
 
-  static constexpr Int64 page_size = 4096;
+  Int64 page_size = platform::getPageSize();
 
   void initialize()
   {
@@ -121,7 +121,7 @@ class UnifiedMemoryCudaMemoryAllocator
       _applyHint(ptr.baseAddress(), ptr.size(), new_args);
   }
 
-  Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const
+  Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const override
   {
     wanted_capacity = AlignedMemoryAllocator3::adjustedCapacity(args, wanted_capacity, element_size);
     const bool do_page = m_page_allocate_level > 0;
@@ -173,7 +173,7 @@ class UnifiedMemoryCudaMemoryAllocator
     return ::cudaFree(ptr);
   }
 
-  cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs args)
+  cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs args) override
   {
     auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
     void* p = *ptr;

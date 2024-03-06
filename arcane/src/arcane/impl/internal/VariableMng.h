@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableMng.h                                               (C) 2000-2023 */
+/* VariableMng.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant la liste des maillages.                                     */
 /*---------------------------------------------------------------------------*/
@@ -18,12 +18,14 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/List.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/core/IVariableMng.h"
 #include "arcane/core/IVariableFilter.h"
 #include "arcane/core/VariableCollection.h"
-
 #include "arcane/core/internal/IVariableMngInternal.h"
+
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include <map>
 
@@ -133,6 +135,8 @@ class VariableMng
     void removeVariable(IVariable* var) override { m_variable_mng->removeVariable(var); }
     void initializeVariables(bool is_continue) override { m_variable_mng->initializeVariables(is_continue); }
     ISubDomain* internalSubDomain() const override { return m_variable_mng->_internalSubDomain(); }
+    IAcceleratorMng* acceleratorMng() const override { return m_variable_mng->m_accelerator_mng.get(); }
+    void setAcceleratorMng(Ref<IAcceleratorMng> v) { m_variable_mng->m_accelerator_mng = v; }
 
    private:
 
@@ -256,6 +260,8 @@ class VariableMng
   VariableIOReaderMng* m_variable_io_reader_mng = nullptr;
   VariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
 
+  Ref<IAcceleratorMng> m_accelerator_mng;
+
  private:
 
   //! Ecrit la valeur de la variable \a v sur le flot \a o
@@ -295,8 +301,8 @@ class VariableIOWriterMng
 
   void writeCheckpoint(ICheckpointWriter* service);
   void writePostProcessing(IPostProcessorWriter* post_processor);
-  void writeVariables(IDataWriter* writer,const VariableCollection& vars, bool use_hash);
-  void writeVariables(IDataWriter* writer,IVariableFilter* filter, bool use_hash);
+  void writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash);
+  void writeVariables(IDataWriter* writer, IVariableFilter* filter, bool use_hash);
 
  private:
 

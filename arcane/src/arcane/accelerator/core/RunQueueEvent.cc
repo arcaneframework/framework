@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueEvent.cc                                            (C) 2000-2022 */
+/* RunQueueEvent.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Evènement sur une file d'exécution.                                       */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/internal/RunnerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,7 +29,7 @@ namespace Arcane::Accelerator
 RunQueueEvent::
 RunQueueEvent(Runner& runner)
 {
-  m_p = runner._createEvent();
+  m_p = runner._impl()->_createEvent();
 }
 
 /*---------------------------------------------------------------------------*/

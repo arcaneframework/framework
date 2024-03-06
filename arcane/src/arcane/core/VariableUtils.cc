@@ -20,6 +20,9 @@
 #include "arcane/core/IVariable.h"
 #include "arcane/core/VariableRef.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/datatype/DataAllocationInfo.h"
+#include "arcane/core/materials/MeshMaterialVariableRef.h"
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,6 +64,36 @@ void VariableUtils::
 prefetchVariableAsync(VariableRef& var, RunQueue* queue_or_null)
 {
   return prefetchVariableAsync(var.variable(), queue_or_null);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableUtils::
+markVariableAsMostlyReadOnly(IVariable* var)
+{
+  DataAllocationInfo alloc_info(eMemoryLocationHint::HostAndDeviceMostlyRead);
+  var->setAllocationInfo(alloc_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableUtils::
+markVariableAsMostlyReadOnly(VariableRef& var)
+{
+  return markVariableAsMostlyReadOnly(var.variable());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableUtils::
+markVariableAsMostlyReadOnly(::Arcane::Materials::MeshMaterialVariableRef& var)
+{
+  auto vars = var.materialVariable()->_internalApi()->variableReferenceList();
+  for (VariableRef* v : vars)
+    markVariableAsMostlyReadOnly(v->variable());
 }
 
 /*---------------------------------------------------------------------------*/

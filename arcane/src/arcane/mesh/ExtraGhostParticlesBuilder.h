@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExtraGhostParticlesBuilder.h                                (C) 2000-2022 */
+/* ExtraGhostParticlesBuilder.h                                (C) 2000-2024 */
 /*                                                                           */
 /* Construction des mailles fantômes supplémentaires.                        */
 /*---------------------------------------------------------------------------*/
@@ -18,8 +18,6 @@
 #include "arcane/utils/Array.h"
 
 #include "arcane/mesh/MeshGlobal.h"
-
-#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,7 +49,7 @@ class ExtraGhostParticlesBuilder
 {
  public:
 
-  ExtraGhostParticlesBuilder(DynamicMesh* mesh);
+  explicit ExtraGhostParticlesBuilder(DynamicMesh* mesh);
   
  public:
 
@@ -62,8 +60,8 @@ class ExtraGhostParticlesBuilder
 
  private:
   
-  DynamicMesh* m_mesh;
-  std::set<IExtraGhostParticlesBuilder*> m_builders;
+  DynamicMesh* m_mesh = nullptr;
+  UniqueArray<IExtraGhostParticlesBuilder*> m_builders;
 
  private:
 

@@ -18,12 +18,19 @@
 
 namespace Arcane::Materials
 {
+  class ConstituentItemLocalIdListViewPOD
+  {
+   public:
+    ComponentItemSharedInfo* m_component_shared_info;
+    ConstArrayView<Int32> m_ids;
+  };
+
   // Cette classe sert de type de retour pour wrapper la classe 'ComponentItemVectorView'
   class ComponentItemVectorViewPOD
   {
    public:
     ConstArrayView<MatVarIndex> m_matvar_indexes_view;
-    ConstArrayView<ComponentItemInternal*> m_items_internal_main_view;
+    ConstituentItemLocalIdListViewPOD m_items_internal_main_view;
     ConstArrayView<Int32> m_items_local_id_view;
     IMeshComponent* m_component;
   };

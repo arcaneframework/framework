@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentData.h                                         (C) 2000-2023 */
+/* MeshComponentData.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Données d'un constituant (matériau ou milieu) d'un maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/MatItem.h"
+#include "arcane/core/materials/internal/ConstituentItemLocalIdList.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
 
@@ -55,7 +56,8 @@ class MeshComponentData
 
  public:
 
-  MeshComponentData(IMeshComponent* component,const String& name,Int16 component_id,
+  MeshComponentData(IMeshComponent* component, const String& name,
+                    Int16 component_id, ComponentItemSharedInfo* shared_info,
                     bool create_indexer);
   ~MeshComponentData() override;
 
@@ -68,16 +70,22 @@ class MeshComponentData
     return m_variable_indexer;
   }
 
- private:
-
-  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const
+  ConstituentItemLocalIdListView constituentItemListView() const
   {
-    return m_items_internal;
+    return m_constituent_local_id_list.view();
   }
 
-  ArrayView<ComponentItemInternal*> _itemsInternalView()
+ private:
+
+  //! Retourne une instance vers la \a index-ème entité de la liste
+  matimpl::ConstituentItemBase _itemBase(Int32 index) const
   {
-    return m_items_internal;
+    return m_constituent_local_id_list.itemBase(index);
+  }
+
+  void _setConstituentItem(Int32 index, ConstituentItemIndex id)
+  {
+    return m_constituent_local_id_list.setConstituentItem(index, id);
   }
 
   void checkValid();
@@ -96,7 +104,7 @@ class MeshComponentData
 
  private:
 
-  void _resizeItemsInternal(Integer nb_item);
+  void _resizeItemsInternal(Int32 nb_item);
   void _setVariableIndexer(MeshMaterialVariableIndexer* indexer);
   void _setItems(const ItemGroup& group);
   void _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids);
@@ -107,13 +115,13 @@ class MeshComponentData
  private:
 
   //! Constituant dont on gère les données.
-  IMeshComponent* m_component;
+  IMeshComponent* m_component = nullptr;
 
   /*!
    * \brief Indice du constituant (dans la liste des constituants de ce type).
    * \sa IMeshMaterialMng.
    */
-  Int16 m_component_id;
+  Int16 m_component_id = -1;
 
   //! Nom du constituant
   String m_name;
@@ -122,15 +130,19 @@ class MeshComponentData
   ItemGroup m_items;
 
   //! Indique si on est propriétaire de l'indexeur (dans ce cas on le détruira avec l'instance)
-  bool m_is_indexer_owner;
+  bool m_is_indexer_owner = false;
 
   //! Infos pour l'indexation des variables partielles.
-  MeshMaterialVariableIndexer* m_variable_indexer;
+  MeshMaterialVariableIndexer* m_variable_indexer = nullptr;
 
-  //! Liste des ComponentItemInternal* pour ce constituant.
-  UniqueArray<ComponentItemInternal*> m_items_internal;
+  //! Liste des ConstituentItemIndex pour ce constituant.
+  ConstituentItemLocalIdList m_constituent_local_id_list;
 
-  MeshComponentPartData* m_part_data;
+  MeshComponentPartData* m_part_data = nullptr;
+
+ private:
+
+  void _setPartInfo();
 };
 
 /*---------------------------------------------------------------------------*/

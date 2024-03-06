@@ -61,12 +61,16 @@ class MeshEnvironment
     {
       return m_environment->variableIndexer();
     }
-    ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
+    ConstituentItemLocalIdListView constituentItemListView() const override
     {
-      return m_environment->itemsInternalView();
+      return m_environment->constituentItemListView();
     }
     Int32 variableIndexerIndex() const override;
+    Ref<IConstituentItemVectorImpl> createItemVectorImpl() const override;
+    Ref<IConstituentItemVectorImpl> createItemVectorImpl(ComponentItemVectorView rhs) const override;
+
    private:
+
     MeshEnvironment* m_environment;
   };
 
@@ -92,9 +96,9 @@ class MeshEnvironment
   {
     return m_data.variableIndexer();
   }
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
+  ConstituentItemLocalIdListView constituentItemListView() const
   {
-    return m_data._itemsInternalView();
+    return m_data.constituentItemListView();
   }
   Int32 id() const override
   {
@@ -135,9 +139,9 @@ class MeshEnvironment
 
  public:
 
-  ArrayView<ComponentItemInternal*> itemsInternalView()
+  void setConstituentItem(Int32 index, ConstituentItemIndex id)
   {
-    return m_data._itemsInternalView();
+    m_data._setConstituentItem(index,id);
   }
   Int16 componentId() const { return m_data.componentId(); }
 
@@ -158,7 +162,7 @@ class MeshEnvironment
   void addToTotalNbCellMat(Int32 v) { m_total_nb_cell_mat += v; }
 
   void resizeItemsInternal(Integer nb_item);
-  void computeMaterialIndexes(const ConstituentConnectivityList& connectivity_list, ComponentItemInternalData* item_internal_data);
+  void computeMaterialIndexes(ComponentItemInternalData* item_internal_data);
   void notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids);
   MeshComponentData* componentData() { return &m_data; }
 

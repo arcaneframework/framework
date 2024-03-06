@@ -55,7 +55,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   friend impl::RunCommandImpl;
   friend RunQueue;
   friend RunQueueEvent;
-  class Impl;
+  friend impl::RunnerImpl;
 
  public:
 
@@ -143,21 +143,16 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
    * \internal
    * \brief Stoppe toutes les activités de profiling.
    */
-   static void stopAllProfiling();
+  static void stopAllProfiling();
 
  private:
 
-  impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl();
-  impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
-  void _internalPutRunQueueImplInPool(impl::RunQueueImpl*);
-  impl::IRunQueueEventImpl* _createEvent();
-  impl::IRunQueueEventImpl* _createEventWithTimer();
-  void _addCommandTime(double v);
   impl::IRunnerRuntime* _internalRuntime() const;
+  impl::RunnerImpl* _impl() const { return m_p.get(); }
 
  private:
 
-  std::shared_ptr<Impl> m_p;
+  std::shared_ptr<impl::RunnerImpl> m_p;
 
  private:
 

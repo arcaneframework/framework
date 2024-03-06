@@ -23,7 +23,10 @@ arcane_add_library(arcane_cea_tests
 
 target_compile_definitions(arcane_cea_tests PRIVATE ARCANE_COMPONENT_arcane_cea_tests)
 
-target_link_libraries(arcane_cea_tests PUBLIC $<TARGET_NAME_IF_EXISTS:arcane_materials> arcane_cea_geometric arcane_cea ${ARCANE_BASE_LIBRARIES})
+if (TARGET arcane_materials)
+  target_link_libraries(arcane_cea_tests PUBLIC arcane_materials)
+endif()
+target_link_libraries(arcane_cea_tests PUBLIC arcane_cea_geometric arcane_cea ${ARCANE_BASE_LIBRARIES})
 if(TARGET arcane_aleph)
   target_link_libraries(arcane_cea_tests PUBLIC arcane_aleph)
 endif()

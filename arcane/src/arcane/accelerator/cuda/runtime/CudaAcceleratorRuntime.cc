@@ -148,6 +148,10 @@ class CudaRunQueueStream
     if (global_cupti_flush > 0)
       flushCupti();
   }
+  bool _barrierNoException() override
+  {
+    return (cudaStreamSynchronize(m_cuda_stream) != cudaSuccess);
+  }
   void copyMemory(const MemoryCopyArgs& args) override
   {
     auto source_bytes = args.source().bytes();

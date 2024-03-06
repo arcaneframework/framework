@@ -65,12 +65,14 @@ set(ARCANE_SOURCES
   MeshMaterialVariableSynchronizerList.h
   MeshMaterialSynchronizeBuffer.cc
   MeshMaterialVariableFactoryMng.cc
+  ConstituentItemVectorImpl.cc
   ComponentItemInternal.h
   ComponentItem.h
   ComponentItemVector.h
   ComponentPartItemVectorView.h
   ComponentItemVectorView.h
   ComponentSimd.h
+  MeshComponentPartData.cc
   EnumeratorTracer.h
   MaterialsGlobal.h
   MatItemVector.h
@@ -117,11 +119,13 @@ set(ARCANE_SOURCES
   internal/ConstituentConnectivityList.h
   internal/ComponentItemInternalData.h
   internal/ComponentItemListBuilder.h
+  internal/ConstituentItemVectorImpl.h
   internal/ConstituentListPrinter.h
   internal/ConstituentModifierWorkInfo.h
   internal/IncrementalComponentModifier.h
   internal/IMeshMaterialModifierImpl.h
   internal/MaterialModifierOperation.h
+  internal/MeshComponentPartData.h
   internal/MeshEnvironment.h
   internal/MeshMaterial.h
   internal/MeshMaterialMng.h

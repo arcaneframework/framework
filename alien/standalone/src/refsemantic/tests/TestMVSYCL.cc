@@ -25,7 +25,6 @@
 #include <alien/handlers/scalar/sycl/MatrixProfiler.h>
 #include <alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h>
 
-
 #include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 

@@ -30,14 +30,13 @@ set(ARCANE_MATERIALS_SOURCES
   materials/ComponentItemVectorView.h
   materials/ComponentPartItemVectorView.cc
   materials/ComponentPartItemVectorView.h
+  materials/ConstituentItemLocalIdList.cc
   materials/EnvItemVector.cc
   materials/EnvItemVector.h
   materials/MatItemVector.cc
   materials/MatItemVector.h
   materials/MatItemEnumerator.cc
   materials/MatItemEnumerator.h
-  materials/MeshComponentPartData.cc
-  materials/MeshComponentPartData.h
   materials/MaterialVariableBuildInfo.cc
   materials/MaterialVariableBuildInfo.h
   materials/MaterialVariableTypeInfo.cc
@@ -51,6 +50,7 @@ set(ARCANE_MATERIALS_SOURCES
   materials/internal/IMeshMaterialVariableInternal.h
   materials/internal/IMeshComponentInternal.h
   materials/internal/IMeshMaterialMngInternal.h
+  materials/internal/ConstituentItemLocalIdList.h
   )
 
 set(ARCANE_INTERNAL_SOURCES
@@ -71,6 +71,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IVariableSynchronizerMngInternal.h
   internal/StringVariableReplace.h
   internal/StringVariableReplace.cc
+  internal/ITimeHistoryMngInternal.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -131,6 +132,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ITimeHistoryCurveWriter.h
   ITimeHistoryCurveWriter2.h
   ITimeHistoryMng.h
+  ITimeHistoryAdder.h
   ITimeLoopMng.h
   IUnitTest.h
   IVariable.h
@@ -496,6 +498,8 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshReaderMng.cc
   MeshStats.cc
   MeshStats.h
+  MeshTimeHistoryAdder.cc
+  MeshTimeHistoryAdder.h
   MeshToMeshTransposer.cc
   MeshToMeshTransposer.h
   MeshUtils.cc

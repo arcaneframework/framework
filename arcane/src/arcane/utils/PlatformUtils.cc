@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.cc                                            (C) 2000-2023 */
+/* PlatformUtils.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -520,6 +520,25 @@ getRealTimeNS()
   auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
   // Retourne le temps en nano-secondes.
   return static_cast<Int64>(y.time_since_epoch().count());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT Int64 platform::
+getPageSize()
+{
+#if defined(ARCCORE_OS_WIN32)
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  return si.dwPageSize;
+#elif defined(ARCANE_OS_LINUX)
+  return ::sysconf(_SC_PAGESIZE);
+#else
+#warning "getPageSize() not implemented for your platform. Default is 4096"
+  Int64 page_size = 4096;
+  return page_size;
+#endif
 }
 
 /*---------------------------------------------------------------------------*/

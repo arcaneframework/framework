@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariable.cc                                     (C) 2000-2023 */
+/* MeshMaterialVariable.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Variable sur un matériau du maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -144,29 +144,27 @@ restoreData(IMeshComponent* component,IData* data,Integer data_index,
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
-                    Int32ConstArrayView indexes_in_multiple)
+copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
-  m_variable->_copyGlobalToPartial(var_index,local_ids,indexes_in_multiple);
+  m_variable->_copyGlobalToPartial(args);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
-                    Int32ConstArrayView indexes_in_multiple)
+copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
-  m_variable->_copyPartialToGlobal(var_index,local_ids,indexes_in_multiple);
+  m_variable->_copyPartialToGlobal(args);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-initializeNewItems(const ComponentItemListBuilder& list_builder)
+initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue)
 {
-  m_variable->_initializeNewItems(list_builder);
+  m_variable->_initializeNewItems(list_builder, queue);
 }
 
 /*---------------------------------------------------------------------------*/

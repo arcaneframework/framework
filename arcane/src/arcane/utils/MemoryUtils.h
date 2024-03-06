@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryUtils.h                                               (C) 2000-2023 */
+/* MemoryUtils.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires de gestion mémoire.                                 */
 /*---------------------------------------------------------------------------*/
@@ -63,6 +63,44 @@ getDefaultDataAllocator(eMemoryLocationHint hint);
  */
 extern "C++" ARCANE_UTILS_EXPORT MemoryAllocationOptions
 getAllocatorForMostlyReadOnlyData();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace impl
+{
+  //! Calcule une capacité adaptée pour une taille de \a size
+  extern "C++" ARCANE_UTILS_EXPORT Int64
+  computeCapacity(Int64 size);
+} // namespace impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Redimensionne un tableau en ajoutant une réserve de mémoire.
+ *
+ * Le tableau \a array est redimensionné uniquement si \a new_size est
+ * supérieure à la taille actuelle du tableau ou si \a force_resize est vrai.
+ *
+ * Si le tableau est redimensionné, on réserve une capacité supplémentaire
+ * pour éviter de réallouer à chaque fois.
+ *
+ * \retval true si un redimensionnement a eu lieu
+ * \retval false sinon
+ */
+template <typename DataType> inline bool
+checkResizeArrayWithCapacity(Array<DataType>& array, Int64 new_size, bool force_resize)
+{
+  Int64 s = array.largeSize();
+  if (new_size > s || force_resize) {
+    if (new_size > array.capacity()) {
+      array.reserve(impl::computeCapacity(new_size));
+    }
+    array.resize(new_size);
+    return true;
+  }
+  return false;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

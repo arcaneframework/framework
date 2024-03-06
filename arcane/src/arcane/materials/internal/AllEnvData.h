@@ -32,6 +32,7 @@
 
 namespace Arcane::Materials
 {
+class MeshVariableCopyBetweenPartialAndGlobalArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,17 +56,16 @@ class AllEnvData
 
  public:
 
-  ArrayView<ComponentItemInternal> allEnvItemsInternal()
-  {
-    return m_item_internal_data.allEnvItemsInternal();
-  }
-
   //! Notification de la fin de création des milieux/matériaux
   void endCreate(bool is_continue);
 
   ConstituentConnectivityList* componentConnectivityList()
   {
     return m_component_connectivity_list;
+  }
+  ComponentItemInternalData* componentItemInternalData()
+  {
+    return &m_item_internal_data;
   }
 
  private:
@@ -78,13 +78,13 @@ class AllEnvData
   Int32 m_verbose_debug_level = 0;
 
   ComponentItemInternalData m_item_internal_data;
+  Int64 m_current_mesh_timestamp = -1;
 
  private:
 
   void _computeNbEnvAndNbMatPerCell();
-  void _copyBetweenPartialsAndGlobals(Int32ConstArrayView pure_local_ids,
-                                      Int32ConstArrayView partial_indexes,
-                                      Int32 indexer_index, bool is_add_operation);
+  void _copyBetweenPartialsAndGlobals(const MeshVariableCopyBetweenPartialAndGlobalArgs& args,
+                                      bool is_add_operation);
   void _computeAndResizeEnvItemsInternal();
   bool _isFullVerbose() const;
   void _rebuildMaterialsAndEnvironmentsFromGroups();

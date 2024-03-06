@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Data.cc                                               (C) 2000-2023 */
+/* Array2Data.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Donnée du type 'Array2'.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -143,6 +143,7 @@ class Array2DataT
  public:
 
   void swapValuesDirect(ThatClass* true_data);
+  void changeAllocator(const MemoryAllocationOptions& alloc_info);
 
  public:
 
@@ -237,6 +238,7 @@ class Array2DataT<DataType>::Impl
     return makeMutableMemoryView(value.data(), datatype_size * dim2_size, dim1_size);
   }
   INumericDataInternal* numericData() override { return this; }
+  void changeAllocator(const MemoryAllocationOptions& v) override { m_p->changeAllocator(v); }
   void computeHash(DataHashInfo& hash_info) override
   {
     m_p->computeHash(hash_info);
@@ -716,6 +718,16 @@ setAllocationInfo(const DataAllocationInfo& v)
     return;
   m_allocation_info = v;
   m_value.setMemoryLocationHint(v.memoryLocationHint());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void Array2DataT<DataType>::
+changeAllocator(const MemoryAllocationOptions& alloc_info)
+{
+  ARCANE_UNUSED(alloc_info);
+  ARCANE_THROW(NotImplementedException,"changeAllocator for 2D Array");
 }
 
 /*---------------------------------------------------------------------------*/

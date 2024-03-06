@@ -32,6 +32,9 @@
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
+
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
@@ -98,13 +101,13 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 // TODO: utiliser le ITraceMng du maillage. Le faire lors de l'init
 : TraceAccessor(mesh_handle.traceMng())
 , m_mesh_handle(mesh_handle)
-, m_internal_api(new InternalApi(this))
+, m_internal_api(std::make_unique<InternalApi>(this))
 , m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
 {
-  m_modifier = new MeshMaterialModifierImpl(this);
-  m_all_env_data = new AllEnvData(this);
-  m_exchange_mng = new MeshMaterialExchangeMng(this);
+  m_modifier = std::make_unique<MeshMaterialModifierImpl>(this);
+  m_all_env_data = std::make_unique<AllEnvData>(this);
+  m_exchange_mng = std::make_unique<MeshMaterialExchangeMng>(this);
   m_variable_factory_mng = arcaneCreateMeshMaterialVariableFactoryMng(this);
   m_observer_pool = std::make_unique<ObserverPool>();
   m_observer_pool->addObserver(this,&MeshMaterialMng::_onMeshDestroyed,mesh_handle.onDestroyObservable());
@@ -126,11 +129,11 @@ MeshMaterialMng::
     tracer->dumpStats();
 
   delete m_variable_factory_mng;
-  delete m_exchange_mng;
-  delete m_all_cells_env_only_synchronizer;
-  delete m_all_cells_mat_env_synchronizer;
-  delete m_all_env_data;
-  delete m_properties;
+  m_exchange_mng.reset();
+  m_all_cells_env_only_synchronizer.reset();
+  m_all_cells_mat_env_synchronizer.reset();
+  m_all_env_data.reset();
+  m_properties.reset();
 
   for( MeshMaterial* m : m_true_materials )
     delete m;
@@ -150,9 +153,9 @@ MeshMaterialMng::
     delete mvi;
 
   m_modifier->dumpStats();
-  delete m_modifier;
+  m_modifier.reset();
 
-  delete m_internal_api;
+  m_internal_api.reset();
 
   if (m_allcell_2_allenvcell)
     AllCellToAllEnvCell::destroy(m_allcell_2_allenvcell);
@@ -167,12 +170,32 @@ MeshMaterialMng::
 void MeshMaterialMng::
 build()
 {
+  // Enregistre les fabriques des variables
   {
     auto* x = MeshMaterialVariableFactoryRegisterer::firstRegisterer();
     while (x){
       m_variable_factory_mng->registerFactory(x->createFactory());
       x = x->nextRegisterer();
     }
+  }
+
+  // Positionne le runner par défaut
+  {
+    IAcceleratorMng* acc_mng = m_variable_mng->_internalApi()->acceleratorMng();
+    if (acc_mng){
+      Runner* default_runner = acc_mng->defaultRunner();
+      // Indique si on active la file accélérateur
+      bool use_accelerator_runner = false;
+      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_QUEUE", true))
+        use_accelerator_runner = (v.value()!=0);
+      if (use_accelerator_runner && default_runner)
+        m_runner = *default_runner;
+    }
+    // Si pas de runner enregistré, utiliser un runner séquentiel.
+    if (!m_runner.isInitialized())
+      m_runner.initialize(Accelerator::eExecutionPolicy::Sequential);
+    m_runner_ptr = &m_runner;
+    info() << "Use runner '" << m_runner.executionPolicy() << "' for MeshMaterialMng name=" << name();
   }
 
   // Choix des optimisations.
@@ -224,7 +247,7 @@ build()
     String env_name = "ARCANE_MATERIAL_DATA_COMPRESSOR_NAME";
     String env_value = platform::getEnvironmentVariable(env_name);
     if (!env_value.null()){
-      info() << "Use serivice '" << env_value << "' for material data compression";
+      info() << "Use service '" << env_value << "' for material data compression";
       m_data_compressor_service_name = env_value;
     }
   }
@@ -426,8 +449,8 @@ endCreate(bool is_continue)
   m_all_env_data->endCreate(is_continue);
 
   auto synchronizer = mesh()->cellFamily()->allItemsSynchronizer();
-  m_all_cells_mat_env_synchronizer = new MeshMaterialVariableSynchronizer(this,synchronizer,MatVarSpace::MaterialAndEnvironment);
-  m_all_cells_env_only_synchronizer = new MeshMaterialVariableSynchronizer(this,synchronizer,MatVarSpace::Environment);
+  m_all_cells_mat_env_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this,synchronizer,MatVarSpace::MaterialAndEnvironment);
+  m_all_cells_env_only_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this,synchronizer,MatVarSpace::Environment);
 
   // Détermine la liste de tous les composants.
   {
@@ -500,7 +523,7 @@ setDataCompressorServiceName(const String& name)
 IMeshMaterialModifierImpl* MeshMaterialMng::
 _modifier()
 {
-  return m_modifier;
+  return m_modifier.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -643,17 +666,16 @@ checkValid()
     if (cell_nb_env != nb_env_per_cell[cell.localId()])
       ARCANE_FATAL("Bad value for nb_env direct='{0}' var='{1}'",
                    cell_nb_env, nb_env_per_cell[cell.localId()]);
-
     for( Integer z=0; z<cell_nb_env; ++z ){
       EnvCell ec = all_env_cell.cell(z);
       Integer cell_nb_mat = ec.nbMaterial();
-      ComponentItemInternal* eii = ec._internal();
-      if (all_env_cell._internal()!=eii->_superItemBase())
+      matimpl::ConstituentItemBase eii = ec.constituentItemBase();
+      if (all_env_cell.constituentItemBase()!=eii._superItemBase())
         ARCANE_FATAL("Bad corresponding allEnvItem() in env_item uid={0}",cell_uid);
-      if (eii->globalItemBase()!=cell)
+      if (eii.globalItemBase()!=cell)
         ARCANE_FATAL("Bad corresponding globalItem() in env_item");
-      if (eii->level()!=LEVEL_ENVIRONMENT)
-        ARCANE_FATAL("Bad level '{0}' for in env_item",eii->level());
+      if (eii.level()!=LEVEL_ENVIRONMENT)
+        ARCANE_FATAL("Bad level '{0}' for in env_item",eii.level());
       // Si la maille n'est pas pure, la variable milieu ne peut être équivalente à
       // la variable globale.
       if (cell_nb_env>1 && ec._varIndex().arrayIndex()==0)
@@ -661,13 +683,13 @@ checkValid()
 
       for( Integer k=0; k<cell_nb_mat; ++k ){
         MatCell mc = ec.cell(k);
-        ComponentItemInternal* mci = mc._internal();
-        if (eii!=mci->_superItemBase())
+        matimpl::ConstituentItemBase mci = mc.constituentItemBase();
+        if (eii!=mci._superItemBase())
           ARCANE_FATAL("Bad corresponding env_item in mat_item");
-        if (mci->globalItemBase()!=cell)
+        if (mci.globalItemBase()!=cell)
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");
-        if (mci->level()!=LEVEL_MATERIAL)
-          ARCANE_FATAL("Bad level '{0}' for in mat_item",mci->level());
+        if (mci.level()!=LEVEL_MATERIAL)
+          ARCANE_FATAL("Bad level '{0}' for in mat_item",mci.level());
         // Si la maille n'est pas pure, la variable matériau ne peut être équivalente à
         // la variable globale.
         if ((cell_nb_env>1 || cell_nb_mat>1) && mc._varIndex().arrayIndex()==0){
@@ -922,7 +944,7 @@ dumpCellInfos(Cell cell,std::ostream& o)
 CellToAllEnvCellConverter MeshMaterialMng::
 cellToAllEnvCellConverter()
 {
-  return CellToAllEnvCellConverter(m_all_env_data->allEnvItemsInternal());
+  return CellToAllEnvCellConverter(componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -941,7 +963,7 @@ _checkEndCreate()
 AllEnvCellVectorView MeshMaterialMng::
 view(Int32ConstArrayView local_ids)
 {
-  return AllEnvCellVectorView(local_ids,m_all_env_data->allEnvItemsInternal());
+  return AllEnvCellVectorView(local_ids, componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1011,7 +1033,7 @@ _checkCreateProperties()
 {
   if (m_properties)
     return;
-  m_properties = new Properties(*(mesh()->properties()),String("MeshMaterialMng_")+name());
+  m_properties = std::make_unique<Properties>(*(mesh()->properties()),String("MeshMaterialMng_")+name());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1165,8 +1187,7 @@ _onMeshDestroyed()
   // dans son destructeur et il est possible qu'il n'y ait plus de famille
   // si le destructeur de IMeshMaterialMng est appelé après la destruction
   // du maillage (ce qui peut arriver en C# par exemple).
-  delete m_exchange_mng;
-  m_exchange_mng = nullptr;
+  m_exchange_mng.reset();
 
   _unregisterAllVariables();
 }
@@ -1193,6 +1214,26 @@ _unregisterAllVariables()
 
   for( MeshMaterialVariableRef* ref : m_all_refs )
     ref->unregisterVariable();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentItemSharedInfo* MeshMaterialMng::
+componentItemSharedInfo(Int32 level) const
+{
+  ComponentItemInternalData* data = m_all_env_data->componentItemInternalData();
+  ComponentItemSharedInfo* shared_info = nullptr;
+  if (level == LEVEL_MATERIAL)
+    shared_info = data->matSharedInfo();
+  else if (level == LEVEL_ENVIRONMENT)
+    shared_info = data->envSharedInfo();
+  else if (level==LEVEL_ALLENVIRONMENT)
+    shared_info = data->allEnvSharedInfo();
+  else
+    ARCANE_FATAL("Bad internal type of component");
+
+  return shared_info;
 }
 
 /*---------------------------------------------------------------------------*/

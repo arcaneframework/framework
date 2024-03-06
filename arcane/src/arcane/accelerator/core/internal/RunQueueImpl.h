@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.h                                              (C) 2000-2023 */
+/* RunQueueImpl.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'une 'RunQueue'.                                          */
 /*---------------------------------------------------------------------------*/
@@ -38,10 +38,15 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   friend class Arcane::Accelerator::Runner;
   friend class Arcane::Accelerator::RunQueue;
   friend class RunCommandImpl;
+  friend class RunQueueImplStack;
+  friend class RunnerImpl;
 
  private:
 
-  RunQueueImpl(Runner* runner, Int32 id, const RunQueueBuildInfo& bi);
+  RunQueueImpl(RunnerImpl* runner_impl, Int32 id, const RunQueueBuildInfo& bi);
+
+ public:
+
   ~RunQueueImpl();
 
  public:
@@ -53,24 +58,24 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
  public:
 
-  static RunQueueImpl* create(Runner* r, const RunQueueBuildInfo& bi);
-  static RunQueueImpl* create(Runner* r);
+  static RunQueueImpl* create(RunnerImpl* r, const RunQueueBuildInfo& bi);
+  static RunQueueImpl* create(RunnerImpl* r);
 
  public:
 
   eExecutionPolicy executionPolicy() const { return m_execution_policy; }
-  Runner* runner() const { return m_runner; }
+  RunnerImpl* runner() const { return m_runner_impl; }
 
  public:
 
-  void addReference()
+  void addRef()
   {
     ++m_nb_ref;
   }
-  void removeReference()
+  void removeRef()
   {
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
+    Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+    if (v == 1)
       _release();
   }
 
@@ -87,10 +92,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
  private:
 
-  Runner* m_runner;
+  RunnerImpl* m_runner_impl = nullptr;
   eExecutionPolicy m_execution_policy;
-  IRunnerRuntime* m_runtime;
-  IRunQueueStream* m_queue_stream;
+  IRunnerRuntime* m_runtime = nullptr;
+  IRunQueueStream* m_queue_stream = nullptr;
   //! Pool de commandes
   std::stack<RunCommandImpl*> m_run_command_pool;
   //! Liste des commandes en cours d'exécution

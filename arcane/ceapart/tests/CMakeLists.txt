@@ -103,10 +103,10 @@ if (ARCANE_HAS_ACCELERATOR_API)
   ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
   # NOTE Ajoute test optmisation uniquement en sequentiel car pour l'instant cela
   # ne marche pas en parallele a cause de la suppression de mailles.
-  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt1 testMaterial-3-opt1.arc "-m 20")
-  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt3 testMaterial-3-opt3.arc "-m 20")
-  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt5 testMaterial-3-opt5.arc "-m 20")
-  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt7 testMaterial-3-opt7.arc "-m 20")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt1 testMaterial-3-opt1.arc "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt3 testMaterial-3-opt3.arc "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt5 testMaterial-3-opt5.arc "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt7 testMaterial-3-opt7.arc "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
   if(NOT ARCANE_DISABLE_PERFCOUNTER_TESTS)
     arcane_add_test_sequential(material3_opt7_trace testMaterial-3-opt7.arc "-m 20" "-We,ARCANE_TRACE_ENUMERATOR,1")
   endif()
@@ -320,7 +320,12 @@ foreach(test_index 1 2 3)
 endforeach()
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(material_heat_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
+  arcane_add_test_sequential(material_heat_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
+  arcane_add_test_sequential(material_heat_accelerator_old
+    "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
   arcane_add_accelerator_test_sequential(material_heat_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
+  arcane_add_accelerator_test_sequential(material_heat_accelerator_queue
+    "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_MATERIALMNG_USE_QUEUE,1")
 endif()
 
 ###################
