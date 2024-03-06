@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <cmath>
+
 #include <arccore/message_passing/Messages.h>
 
 #include <alien/utils/Precomp.h>
