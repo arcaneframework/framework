@@ -20,17 +20,11 @@
 #include <arcane/utils/IMemoryInfo.h>
 #include <arcane/utils/OStringStream.h>
 #include <arcane/ITimeLoopMng.h>
-#include <arccore/base/Span.h>
 
 
-#include <alien/arcane_tools/accessors/ItemVectorAccessor.h>#include <alien/core/block/VBlock.h>
 
-#include "arcane/accelerator/core/IAcceleratorMng.h"
-#include "arcane/accelerator/Reduce.h"
-#include "arcane/accelerator/Accelerator.h"
-#include "arcane/accelerator/RunCommandEnumerate.h"
-#include "arcane/accelerator/NumArrayViews.h"
-#include "arcane/accelerator/SpanViews.h"
+#include <alien/arcane_tools/accessors/ItemVectorAccessor.h>
+#include <alien/core/block/VBlock.h>
 
 #include <alien/arcane_tools/IIndexManager.h>
 #include <alien/arcane_tools/indexManager/BasicIndexManager.h>
@@ -38,15 +32,6 @@
 #include <alien/arcane_tools/distribution/DistributionFabric.h>
 #include <alien/arcane_tools/indexSet/IndexSetFabric.h>
 #include <alien/arcane_tools/data/Space.h>
-
-//#include <alien/handlers/scalar/sycl/VectorAccessorT.h>
-//#include <alien/handlers/scalar/sycl/MatrixProfiler.h>
-//#include <alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h>
-//#include <alien/handlers/scalar/sycl/CombineProfiledMatrixBuilderT.h>
-
-//#include <alien/handlers/scalar/sycl/CombineProfiledMatrixBuilderImplT.h>
-//#include <alien/handlers/scalar/sycl/VectorAccessorT.h>
-//#include <alien/handlers/scalar/sycl/MatrixAccessorT.h>
 
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRInternalLinearAlgebra.h>
@@ -60,8 +45,6 @@
 
 #include <alien/expression/solver/SolverStater.h>
 
-//#include <alien/arcane_tools/accelerator/ArcaneParallelEngine.h>
-//#include <alien/arcane_tools/accelerator/ArcaneParallelEngineImplT.h>
 
 #ifdef ALIEN_USE_PETSC
 #include <alien/kernels/petsc/io/AsciiDumper.h>
@@ -83,6 +66,7 @@
 #endif
 
 #ifdef ALIEN_USE_SYCL
+#include <arccore/base/Span.h>
 #include <alien/kernels/sycl/SYCLPrecomp.h>
 
 #include "alien/kernels/sycl/data/SYCLEnv.h"
@@ -94,7 +78,6 @@
 #include <alien/kernels/sycl/algebra/SYCLInternalLinearAlgebra.h>
 
 #include "alien/kernels/sycl/data/SYCLSendRecvOp.h"
-//#include "alien/kernels/sycl/data/SYCLLUSendRecvOp.h"
 #include <alien/kernels/sycl/algebra/SYCLKernelInternal.h>
 #endif
 
@@ -114,7 +97,6 @@
 using namespace Arcane;
 using namespace Alien;
 
-namespace ax = Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

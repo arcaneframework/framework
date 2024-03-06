@@ -16,11 +16,13 @@
 #include "arcane/core/ItemGenericInfoListView.h"
 #include "arcane/core/MeshUtils.h"
 
+#ifdef ALIEN_USE_SYCL
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/Accelerator.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
+#endif
 
 class MemoryAllocationTracker;
 
@@ -33,12 +35,14 @@ class AlienBenchModule : public ArcaneAlienBenchObject
   AlienBenchModule(const Arcane::ModuleBuildInfo& mbi)
   : ArcaneAlienBenchObject(mbi)
   , m_uniform(m_generator)
+#ifdef ALIEN_USE_SYCL
   , m_node_index_in_cells(platform::getAcceleratorHostMemoryAllocator())
   , m_runner(mbi.subDomain()->acceleratorMng()->defaultRunner())
   , m_default_queue(mbi.subDomain()->acceleratorMng()->defaultQueue())
   , m_cell_is_own (VariableBuildInfo(mbi.mesh(),"CellIsOwn"))
   , m_cell_cell_connection_index(platform::getDefaultDataAllocator())
   , m_cell_cell_connection_offset(platform::getDefaultDataAllocator())
+#endif
   {
   }
 
@@ -106,15 +110,18 @@ class AlienBenchModule : public ArcaneAlienBenchObject
   Alien::MatrixDistribution m_mdist;
   Alien::VectorDistribution m_vdist;
 
-  bool m_use_accelerator = true ;
+  bool m_use_accelerator = false ;
+#ifdef ALIEN_USE_SYCL
   UniqueArray<Int16> m_node_index_in_cells;
   Arcane::Accelerator::Runner* m_runner = nullptr;
   Arcane::Accelerator::RunQueue* m_default_queue = nullptr;
+
 
   UnstructuredMeshConnectivityView m_connectivity_view;
   UniqueArray<Integer> m_cell_cell_connection_index;
   UniqueArray<Integer> m_cell_cell_connection_offset;
   VariableCellInt16 m_cell_is_own; //!< Numéro du sous-domaine associé à la maille
+#endif
 };
 
 #endif
