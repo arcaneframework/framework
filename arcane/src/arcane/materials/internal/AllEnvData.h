@@ -88,11 +88,14 @@ class AllEnvData
   void _computeAndResizeEnvItemsInternal();
   bool _isFullVerbose() const;
   void _rebuildMaterialsAndEnvironmentsFromGroups();
-  void _computeInfosForEnvCells();
   void _checkLocalIdsCoherency() const;
   void _printAllEnvCells(CellVectorView ids);
   void _checkConnectivityCoherency();
   void _rebuildIncrementalConnectivitiesFromGroups();
+
+ public:
+
+  void _computeInfosForEnvCells();
 };
 
 /*---------------------------------------------------------------------------*/

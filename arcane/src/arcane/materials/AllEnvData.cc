@@ -223,7 +223,6 @@ _computeInfosForEnvCells()
   const Int32 nb_cell = all_cells.size();
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
-  ComponentItemInternalRange all_env_items_internal_range = m_item_internal_data.allEnvItemsInternalRange();
   ComponentItemInternalRange env_items_internal_range = m_item_internal_data.envItemsInternalRange();
   SmallSpan<const Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
 
@@ -237,6 +236,10 @@ _computeInfosForEnvCells()
   // TODO: temporaire car 'Scan' ne supporte pas des tableaux de types différents
   UniqueArray<Int32> cells_nb_env_int32(platform::getDefaultDataAllocator());
   cells_nb_env_int32.resize(max_local_id);
+
+  //! Tableau de travail pour le nombre de matériaux par milieu
+  UniqueArray<Int16> cells_nb_material(platform::getDefaultDataAllocator());
+  cells_nb_material.resize(max_local_id);
 
   RunQueue& queue(m_material_mng->runQueue());
 
@@ -267,7 +270,11 @@ _computeInfosForEnvCells()
 
   // Positionne les infos pour les EnvCell
   {
-    Int32UniqueArray current_pos(env_cell_indexes);
+    NumArray<Int32, MDDim1> current_pos;
+    {
+      MDSpan<Int32, MDDim1> s(env_cell_indexes.data(), ArrayIndex<1>{ env_cell_indexes.size() });
+      current_pos.copy(s);
+    }
     for (MeshEnvironment* env : true_environments) {
       const Int16 env_id = env->componentId();
       const MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
@@ -279,25 +286,39 @@ _computeInfosForEnvCells()
               << " index=" << var_indexer->index()
               << " max_multiple_index=" << var_indexer->maxIndexInMultipleArray();
 
-      ConstArrayView<MatVarIndex> matvar_indexes = var_indexer->matvarIndexes();
+      SmallSpan<const MatVarIndex> matvar_indexes(var_indexer->matvarIndexes());
 
       Int32ConstArrayView local_ids = var_indexer->localIds();
 
-      for (Integer z = 0, nb_id = matvar_indexes.size(); z < nb_id; ++z) {
+      SmallSpan<Int16> cells_nb_mat_view = cells_nb_material.view();
+      m_component_connectivity_list->fillCellsNbMaterial(local_ids, env_id, cells_nb_mat_view, queue);
+
+      auto command = makeCommand(queue);
+      SmallSpan<Int32> current_pos_view(current_pos);
+      const Int32 nb_id = matvar_indexes.size();
+      ComponentItemSharedInfo* env_shared_info = m_item_internal_data.envSharedInfo();
+
+      SmallSpan<ConstituentItemIndex> env_id_list = env->componentData()->m_constituent_local_id_list.mutableLocalIds();
+      command << RUNCOMMAND_LOOP1(iter, nb_id)
+      {
+        auto [z] = iter();
         MatVarIndex mvi = matvar_indexes[z];
 
         Int32 lid = local_ids[z];
-        Int32 pos = current_pos[lid];
-        ++current_pos[lid];
-        Int16 nb_mat = m_component_connectivity_list->cellNbMaterial(CellLocalId(lid), env_id);
-        matimpl::ConstituentItemBase ref_ii = m_item_internal_data.envItemBase(pos);
-        ConstituentItemIndex cii_lid = all_env_items_internal_range[lid];
-        env->setConstituentItem(z, ref_ii.constituentItemIndex());
+        Int32 pos = current_pos_view[lid];
+        ++current_pos_view[lid];
+        Int16 nb_mat = cells_nb_mat_view[z];
+
+        ConstituentItemIndex cii_pos(pos);
+        matimpl::ConstituentItemBase ref_ii(env_shared_info, cii_pos);
+        ConstituentItemIndex cii_lid(lid);
+        env_id_list[z] = cii_pos;
+
         ref_ii._setSuperAndGlobalItem(cii_lid, ItemLocalId(lid));
         ref_ii._setNbSubItem(nb_mat);
         ref_ii._setVariableIndex(mvi);
         ref_ii._setComponent(env_id);
-      }
+      };
     }
     for (MeshEnvironment* env : true_environments) {
       env->computeMaterialIndexes(&m_item_internal_data);
