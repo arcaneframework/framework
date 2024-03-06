@@ -358,11 +358,12 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
   // Reconstruit les infos sur les mailles pures et mixtes.
   // Il faut le faire une fois que tous les valeurs sont à jour.
   {
+    RunQueue& queue = m_material_mng->_internalApi()->runQueue();
     for (Integer i = 0; i < nb_mat; ++i) {
       MeshMaterial* true_mat = m_true_materials[i];
-      true_mat->componentData()->_rebuildPartData();
+      true_mat->componentData()->_rebuildPartData(queue);
     }
-    componentData()->_rebuildPartData();
+    componentData()->_rebuildPartData(queue);
   }
 
   checkValid();

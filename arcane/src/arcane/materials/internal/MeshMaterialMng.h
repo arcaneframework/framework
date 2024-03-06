@@ -60,16 +60,32 @@ class MeshMaterialMng
 , public IMeshMaterialMng
 {
  public:
-  
+
   friend class MeshMaterialBackup;
 
  private:
+
+  //! Informations sur la file d'exécution utilisée
+  class RunnerInfo
+  {
+   public:
+
+    RunnerInfo(Runner& runner);
+
+   public:
+
+    Runner m_runner;
+    RunQueue m_run_queue;
+  };
+
   class InternalApi
   : public IMeshMaterialMngInternal
   {
    public:
 
-    explicit InternalApi(MeshMaterialMng* mm) : m_material_mng(mm){}
+    explicit InternalApi(MeshMaterialMng* mm)
+    : m_material_mng(mm)
+    {}
 
    public:
 
@@ -108,6 +124,10 @@ class MeshMaterialMng
     ComponentItemSharedInfo* componentItemSharedInfo(Int32 level) const override
     {
       return m_material_mng->componentItemSharedInfo(level);
+    }
+    RunQueue& runQueue() const override
+    {
+      return m_material_mng->runQueue();
     }
 
    private:
@@ -265,7 +285,8 @@ class MeshMaterialMng
 
  public:
 
-  Runner& runner() const { return *m_runner_ptr; }
+  Runner& runner() const { return m_runner_info->m_runner; }
+  RunQueue& runQueue() const { return m_runner_info->m_run_queue; }
 
  private:
 
@@ -334,8 +355,7 @@ class MeshMaterialMng
   AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
   bool m_is_allcell_2_allenvcell = false;
 
-  Runner m_runner;
-  Runner* m_runner_ptr = nullptr;
+  std::unique_ptr<RunnerInfo> m_runner_info;
 
  private:
 

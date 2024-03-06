@@ -151,12 +151,12 @@ _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentData::
-_rebuildPartData()
+_rebuildPartData(RunQueue& queue)
 {
   if (!m_part_data)
     _buildPartData();
   _setPartInfo();
-  m_part_data->_setFromMatVarIndexes(m_variable_indexer->matvarIndexes());
+  m_part_data->_setFromMatVarIndexes(m_variable_indexer->matvarIndexes(), queue);
 }
 
 /*---------------------------------------------------------------------------*/
