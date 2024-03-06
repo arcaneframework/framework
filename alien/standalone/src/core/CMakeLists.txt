@@ -166,8 +166,10 @@ endif()
 
 IF(ALIEN_USE_SYCL)
    list(APPEND alien_core_list
-        alien/handlers/scalar/sycl/VectorAccessor.h
         alien/handlers/scalar/sycl/VectorAccessorT.h
+        alien/handlers/scalar/sycl/VectorAccessorImplT.h
+        alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h
+        alien/handlers/scalar/sycl/ProfiledMatrixBuilderImplT.h
         alien/handlers/scalar/sycl/VectorAccessor.cc)
 ENDIF()
 
