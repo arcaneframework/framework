@@ -66,7 +66,11 @@ class MeshEnvironment
       return m_environment->constituentItemListView();
     }
     Int32 variableIndexerIndex() const override;
+    Ref<IConstituentItemVectorImpl> createItemVectorImpl() const override;
+    Ref<IConstituentItemVectorImpl> createItemVectorImpl(ComponentItemVectorView rhs) const override;
+
    private:
+
     MeshEnvironment* m_environment;
   };
 

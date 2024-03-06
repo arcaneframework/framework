@@ -15,9 +15,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/utils/AutoRef.h"
+#include "arcane/utils/Ref.h"
+#include "arccore/base/ReferenceCounterImpl.h"
 
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ItemGroup.h"
 
 #include "arcane/core/materials/IMeshComponent.h"
 #include "arcane/core/materials/ComponentItemVectorView.h"
@@ -29,6 +30,39 @@
 namespace Arcane::Materials
 {
 class ConstituentItemLocalIdList;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Interface pour l'implémentation de ComponentItemVector.
+ */
+class IConstituentItemVectorImpl
+{
+  friend class ComponentItemVector;
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+
+ public:
+
+  virtual ~IConstituentItemVectorImpl() = default;
+
+ protected:
+
+  virtual void _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
+                                 ConstArrayView<MatVarIndex> multiples) = 0;
+  virtual void _setLocalIds(ConstArrayView<Int32> globals,
+                            ConstArrayView<Int32> multiples) = 0;
+  virtual ComponentItemVectorView _view() const = 0;
+  virtual ComponentPurePartItemVectorView _pureItems() const = 0;
+  virtual ComponentImpurePartItemVectorView _impureItems() const = 0;
+  virtual ConstArrayView<Int32> _localIds() const = 0;
+  virtual IMeshMaterialMng* _materialMng() const = 0;
+  virtual IMeshComponent* _component() const = 0;
+  virtual ConstArrayView<MatVarIndex> _matvarIndexes() const = 0;
+  virtual ConstituentItemLocalIdListView _constituentItemListView() const = 0;
+  virtual void _setItems(ConstArrayView<ConstituentItemIndex> globals,
+                         ConstArrayView<ConstituentItemIndex> multiples) = 0;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -55,37 +89,6 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 {
   friend class EnvCellVector;
   friend class MatCellVector;
-
-  /*!
-   * \brief Implémentation de ComponentItemVector.
-   */
-  class Impl : public SharedReference
-  {
-   public:
-
-    Impl(IMeshComponent* component);
-    Impl(IMeshComponent* component, const ConstituentItemLocalIdListView& constituent_list_view,
-         ConstArrayView<MatVarIndex> matvar_indexes, ConstArrayView<Int32> items_local_id);
-
-   private:
-
-    Impl(const Impl& rhs) = delete;
-    Impl(Impl&& rhs) = delete;
-    Impl& operator=(const Impl& rhs) = delete;
-
-   public:
-
-    void deleteMe() override;
-
-   public:
-
-    IMeshMaterialMng* m_material_mng = nullptr;
-    IMeshComponent* m_component = nullptr;
-    UniqueArray<MatVarIndex> m_matvar_indexes;
-    UniqueArray<Int32> m_items_local_id;
-    std::unique_ptr<MeshComponentPartData> m_part_data;
-    std::unique_ptr<ConstituentItemLocalIdList> m_constituent_list;
-  };
 
  public:
 
@@ -114,7 +117,7 @@ class ARCANE_CORE_EXPORT ComponentItemVector
   ComponentItemVectorView view() const;
 
   //! Composant associé
-  IMeshComponent* component() const { return m_p->m_component; }
+  IMeshComponent* component() const { return _component(); }
 
   //! Clone ce vecteur
   ComponentItemVector clone() const { return ComponentItemVector(view()); }
@@ -128,28 +131,23 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 
  private:
 
-  ConstArrayView<MatVarIndex> _matvarIndexes() const { return m_p->m_matvar_indexes; }
+  ConstArrayView<MatVarIndex> _matvarIndexes() const;
   ConstituentItemLocalIdListView _constituentItemListView() const;
 
  protected:
 
   void _setItems(ConstArrayView<ConstituentItemIndex> globals,
                  ConstArrayView<ConstituentItemIndex> multiples);
-
   void _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
                          ConstArrayView<MatVarIndex> multiples);
   void _setLocalIds(ConstArrayView<Int32> globals, ConstArrayView<Int32> multiples);
-  ConstArrayView<Int32> _localIds() const
-  {
-    return m_p->m_items_local_id.constView();
-  }
-
-  IMeshMaterialMng* _materialMng() const { return m_p->m_material_mng; }
-  IMeshComponent* _component() const { return m_p->m_component; }
+  ConstArrayView<Int32> _localIds() const;
+  IMeshMaterialMng* _materialMng() const;
+  IMeshComponent* _component() const;
 
  private:
 
-  AutoRefT<Impl> m_p;
+  Ref<IConstituentItemVectorImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -44,6 +44,12 @@ class ARCANE_CORE_EXPORT IMeshComponentInternal
 
   //! Index pour accéder aux variables partielles.
   virtual Int32 variableIndexerIndex() const =0;
+
+  //! Créé une instance de l'implémentation de 'ConstituentItemVectorImpl'
+  virtual Ref<IConstituentItemVectorImpl> createItemVectorImpl() const =0;
+
+  //! Créé une instance de l'implémentation de 'ConstituentItemVectorImpl'
+  virtual Ref<IConstituentItemVectorImpl> createItemVectorImpl(ComponentItemVectorView rhs) const =0;
 };
 
 /*---------------------------------------------------------------------------*/

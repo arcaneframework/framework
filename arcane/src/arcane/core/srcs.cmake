@@ -37,8 +37,6 @@ set(ARCANE_MATERIALS_SOURCES
   materials/MatItemVector.h
   materials/MatItemEnumerator.cc
   materials/MatItemEnumerator.h
-  materials/MeshComponentPartData.cc
-  materials/MeshComponentPartData.h
   materials/MaterialVariableBuildInfo.cc
   materials/MaterialVariableBuildInfo.h
   materials/MaterialVariableTypeInfo.cc

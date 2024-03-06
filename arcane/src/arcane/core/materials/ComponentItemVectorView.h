@@ -49,6 +49,7 @@ namespace Arcane::Materials
 class ARCANE_CORE_EXPORT ComponentItemVectorView
 {
   friend class ComponentItemVector;
+  friend class ConstituentItemVectorImpl;
   friend class MatItemVectorView;
   friend class EnvItemVectorView;
   friend class MatCellEnumerator;
