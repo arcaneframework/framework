@@ -88,18 +88,18 @@ namespace SYCL
     m_contributor_indexes.assign(size,-1) ;
     for(int irow=0;irow<this->m_local_size;++irow)
     {
-      for(auto k=stencil_indexes[irow];k<stencil_indexes[irow+1];++k)
+      for(auto k=stencil_offsets[irow];k<stencil_offsets[irow+1];++k)
       {
         auto col = stencil_indexes[k] ;
-        auto eij = this->entryIndex(col,irow) ;
+        auto eij = this->entryIndex(irow,col) ;
         auto offset = eij*m_max_nb_contributors ;
         for(int c=0;c<m_max_nb_contributors;++c)
         {
-          if(m_contributor_indexes[offset+c]==irow)
+          if(m_contributor_indexes[offset+c]==col)
             break ;
           if(m_contributor_indexes[offset+c]==-1)
           {
-            m_contributor_indexes[offset+c] = irow ;
+            m_contributor_indexes[offset+c] = col ;
             break ;
           }
         }

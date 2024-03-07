@@ -86,6 +86,13 @@ struct Mesh
   int cellLid(int i, int j) const {
     return j*(m_nx-1)+i ;
   }
+  int nbNodes() const {
+    return m_nx*m_ny ;
+  }
+  int nbCells() const {
+    return (m_nx-1)*(m_ny-1) ;
+  }
+
 };
 
 template<>
@@ -315,6 +322,8 @@ int main(int argc, char** argv)
 
     auto allUIndex_buffer = sycl::buffer<Integer,1>{allUIndex.data(),sycl::range(allUIndex.size())} ;
     auto allVIndex_buffer = sycl::buffer<Integer,1>{allVIndex.data(),sycl::range(allVIndex.size())} ;
+
+
     engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
                   {
                     auto matrix_acc = builder.view(cgh) ;
@@ -415,6 +424,7 @@ int main(int argc, char** argv)
       }
       trace_mng->info() << "NORME2 A : "<<norme_A ;
     }
+
   }
 
 
