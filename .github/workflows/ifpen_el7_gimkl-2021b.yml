@@ -113,17 +113,17 @@ jobs:
           steps.install.outcome == 'success'
         shell: bash
         run: |
-           osdir=centos_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`
+           osdir=el_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`-x86_64
            mkdir -p ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}
            export LD_LIBRARY_PATH="${{ env.INSTALL_DIR }}/lib:${LD_LIBRARY_PATH}"
            # Copy libraries
            while read line; do \cp -avn ${line} ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; if [ -L ${line} ]; then \cp -avn `readlink -f ${line}` ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; fi; done < <(ldd ${{ env.INSTALL_DIR }}/bin/alien* ${{ env.INSTALL_DIR }}/bin/gtest* ${{ env.INSTALL_DIR }}/lib/*.so ${{ env.INSTALL_DIR }}/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^${EBROOTIMPI}" -e "^${EBROOTUDUNITS}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "^/__w/")
            # Copy imkl libaries
-           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/MPI/GCC/7.3.0-2.30/impi/2018.3.222/imkl/2018.3.222/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/libmkl_avx512.so ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
-           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/MPI/GCC/7.3.0-2.30/impi/2018.3.222/imkl/2018.3.222/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/libmkl_def.so ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
+           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/imkl/2021.4.0/mkl/2021.4.0/lib/intel64/libmkl_avx512.so.1 ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
+           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/imkl/2021.4.0/mkl/2021.4.0/lib/intel64/ibmkl_def.so.1 ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
            # Copy googletest
-           \rm -vf ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}//libgtest.so
-           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/Compiler/GCCcore/7.3.0/googletest/1.10.0/lib64/*.so ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
+           \rm -vf ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/libgtest.so
+           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/googletest/1.11.0-GCCcore-11.2.0/lib/*.so ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
 
       - name: Tar build artifact
         shell: bash
