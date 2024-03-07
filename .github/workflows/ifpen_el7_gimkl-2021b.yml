@@ -123,7 +123,7 @@ jobs:
            \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/imkl/2021.4.0/mkl/2021.4.0/lib/intel64/libmkl_def.so.1 ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
            # Copy googletest
            \rm -vf ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/libgtest.so
-           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/googletest/1.11.0-GCCcore-11.2.0/lib/*.so ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
+           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/googletest/1.11.0-GCCcore-11.2.0/lib/*.so* ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
 
       - name: Tar build artifact
         shell: bash
