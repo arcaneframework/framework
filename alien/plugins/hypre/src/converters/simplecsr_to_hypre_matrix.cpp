@@ -144,7 +144,7 @@ void SimpleCSR_to_Hypre_MatrixConverter::_buildBlock(const Alien::SimpleCSRMatri
   targetImpl.setProfile(sizes);
 
   auto cols = profile.getCols();
-  auto m_values = matrixInternal.getValues();
+  auto m_values = matrixInternal->getValues();
   auto col_count = 0;
   auto mat_count = 0;
   for (auto irow = 0; irow < localSize; ++irow) {
