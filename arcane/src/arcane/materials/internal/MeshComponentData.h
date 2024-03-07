@@ -108,7 +108,7 @@ class MeshComponentData
   void _setVariableIndexer(MeshMaterialVariableIndexer* indexer);
   void _setItems(const ItemGroup& group);
   void _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids);
-  void _rebuildPartData();
+  void _rebuildPartData(RunQueue& queue);
   void _buildPartData();
   MeshComponentPartData* _partData() const { return m_part_data; }
 

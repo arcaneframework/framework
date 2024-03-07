@@ -160,7 +160,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     return m_nb_sub_constituent_item_data[id.localId()];
   }
-  inline void _setNbSubConstituent(ConstituentItemIndex id, Int16 n)
+  ARCCORE_HOST_DEVICE inline void _setNbSubConstituent(ConstituentItemIndex id, Int16 n)
   {
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     m_nb_sub_constituent_item_data[id.localId()] = n;
@@ -170,7 +170,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     return m_component_id_data[id.localId()];
   }
-  inline void _setComponentId(ConstituentItemIndex id, Int16 component_id)
+  ARCCORE_HOST_DEVICE inline void _setComponentId(ConstituentItemIndex id, Int16 component_id)
   {
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     m_component_id_data[id.localId()] = component_id;
@@ -184,7 +184,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     return impl::ItemBase(m_global_item_local_id_data[id.localId()], m_item_shared_info);
   }
-  void _setGlobalItem(ConstituentItemIndex id, ItemLocalId global_item_lid)
+  ARCCORE_HOST_DEVICE void _setGlobalItem(ConstituentItemIndex id, ItemLocalId global_item_lid)
   {
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     m_global_item_local_id_data[id.localId()] = global_item_lid.localId();
@@ -325,7 +325,6 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
     return m_shared_info->_nbSubConstituent(m_constituent_item_index);
   }
 
-
   //! Entité globale correspondante.
   inline impl::ItemBase globalItemBase() const
   {
@@ -348,32 +347,32 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
   ARCCORE_HOST_DEVICE constexpr friend bool
   operator==(const ConstituentItemBase& a, const ConstituentItemBase& b)
   {
-    return ((a.m_constituent_item_index==b.m_constituent_item_index) && (a.m_shared_info==b.m_shared_info));
+    return ((a.m_constituent_item_index == b.m_constituent_item_index) && (a.m_shared_info == b.m_shared_info));
   }
   ARCCORE_HOST_DEVICE constexpr friend bool
   operator!=(const ConstituentItemBase& a, const ConstituentItemBase& b)
   {
-    return !(a==b);
+    return !(a == b);
   }
 
  private:
 
   //! Positionne l'indexeur dans les variables matériaux.
-  inline void _setVariableIndex(MatVarIndex index)
-{
-  m_shared_info->_setVarIndex(m_constituent_item_index, index);
-}
+  ARCCORE_HOST_DEVICE inline void _setVariableIndex(MatVarIndex index)
+  {
+    m_shared_info->_setVarIndex(m_constituent_item_index, index);
+  }
 
   //! Composant supérieur (0 si aucun)
   inline matimpl::ConstituentItemBase _superItemBase() const;
 
-  inline void _setSuperAndGlobalItem(ConstituentItemIndex cii, ItemLocalId ii)
+  ARCCORE_HOST_DEVICE inline void _setSuperAndGlobalItem(ConstituentItemIndex cii, ItemLocalId ii)
   {
     m_shared_info->_setSuperItem(m_constituent_item_index, cii);
     m_shared_info->_setGlobalItem(m_constituent_item_index, ii);
   }
 
-  inline void _setGlobalItem(ItemLocalId ii)
+  ARCCORE_HOST_DEVICE inline void _setGlobalItem(ItemLocalId ii)
   {
     m_shared_info->_setGlobalItem(m_constituent_item_index, ii);
   }
@@ -387,18 +386,18 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
   inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(Int32 i) const;
 
   //! Positionne le nombre de sous-composants.
-  void _setNbSubItem(Int16 nb_sub_item)
+  ARCCORE_HOST_DEVICE void _setNbSubItem(Int16 nb_sub_item)
   {
     m_shared_info->_setNbSubConstituent(m_constituent_item_index, nb_sub_item);
   }
 
   //! Positionne le premier sous-composant.
-  void _setFirstSubItem(ConstituentItemIndex first_sub_item)
+  ARCCORE_HOST_DEVICE void _setFirstSubItem(ConstituentItemIndex first_sub_item)
   {
     m_shared_info->_setFirstSubConstituentLocalId(m_constituent_item_index, first_sub_item);
   }
 
-  void _setComponent(Int16 component_id)
+  ARCCORE_HOST_DEVICE void _setComponent(Int16 component_id)
   {
     m_shared_info->_setComponentId(m_constituent_item_index, component_id);
   }

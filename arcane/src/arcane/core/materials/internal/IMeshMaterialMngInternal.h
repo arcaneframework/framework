@@ -106,6 +106,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    * La valeur de \a level doit être LEVEL_MATERIAL ou LEVEL_ENVIRONMENT
    */
   virtual ComponentItemSharedInfo* componentItemSharedInfo(Int32 level) const = 0;
+
+  //! File d'exécution associée
+  virtual RunQueue& runQueue() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
