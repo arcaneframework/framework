@@ -254,7 +254,7 @@ _computeInfosForEnvCells()
     }
   }
   else {
-    // TODO: Cela ne fonctionne que si all_cells est compacté et queue
+    // TODO: Cela ne fonctionne que si all_cells est compacté et
     // local_id[i] <=> i.
     auto command = makeCommand(queue);
     SmallSpan<Int32> cells_nb_env_int32_view(cells_nb_env_int32.view());
@@ -321,7 +321,7 @@ _computeInfosForEnvCells()
       };
     }
     for (MeshEnvironment* env : true_environments) {
-      env->computeMaterialIndexes(&m_item_internal_data);
+      env->computeMaterialIndexes(&m_item_internal_data, queue);
     }
   }
 

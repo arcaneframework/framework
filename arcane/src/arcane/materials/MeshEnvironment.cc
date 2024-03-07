@@ -39,6 +39,9 @@
 #include "arcane/materials/internal/ConstituentItemVectorImpl.h"
 #include "arcane/materials/internal/MeshComponentPartData.h"
 
+#include "arcane/accelerator/RunQueue.h"
+#include "arcane/accelerator/RunCommandLoop.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -196,21 +199,25 @@ computeNbMatPerCell()
  * computeNbMatPerCell() et computeItemListForMaterials() ont été appelées
  */
 void MeshEnvironment::
-computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
+computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& queue)
 {
   info(4) << "Compute (V2) indexes for environment name=" << name();
 
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
   const Int16 env_id = componentId();
-  //ArrayView<ComponentItemInternal> mat_items_internal = item_internal_data->matItemsInternal(id());
+
   ComponentItemInternalRange mat_items_internal_range = item_internal_data->matItemsInternalRange(id());
 
-  Int32UniqueArray cells_index(max_local_id);
-  Int32UniqueArray cells_pos(max_local_id);
-  //TODO: regarder comment supprimer ce tableau cells_env qui n'est normalement pas utile
+  UniqueArray<Int32> cells_index(platform::getDefaultDataAllocator());
+  cells_index.resize(max_local_id);
+  UniqueArray<Int32> cells_pos(platform::getDefaultDataAllocator());
+  cells_pos.resize(max_local_id);
+
+  // TODO: regarder comment supprimer ce tableau cells_env qui n'est normalement pas utile
   // car on doit pouvoir directement utiliser les m_items_internal
-  UniqueArray<ConstituentItemIndex> cells_env(max_local_id);
+  UniqueArray<ConstituentItemIndex> cells_env(platform::getDefaultDataAllocator());
+  cells_env.resize(max_local_id);
 
   {
     Integer cell_index = 0;
@@ -222,7 +229,6 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
       Int32 nb_mat = env_item.nbSubItem();
       cells_index[lid] = cell_index;
       cells_pos[lid] = cell_index;
-      //info(4) << "XZ=" << z << " LID=" << lid << " POS=" << cell_index;
       if (nb_mat != 0) {
         env_item._setFirstSubItem(mat_items_internal_range[cell_index]);
       }
@@ -242,21 +248,29 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data)
 
       mat->resizeItemsInternal(var_indexer->nbItem());
 
-      ConstArrayView<MatVarIndex> matvar_indexes = var_indexer->matvarIndexes();
-
-      Int32ConstArrayView local_ids = var_indexer->localIds();
-
-      for (Integer z = 0, nb_id = matvar_indexes.size(); z < nb_id; ++z) {
+      SmallSpan<const MatVarIndex> matvar_indexes = var_indexer->matvarIndexes();
+      SmallSpan<const Int32> local_ids = var_indexer->localIds();
+      SmallSpan<Int32> cells_pos_view(cells_pos);
+      SmallSpan<const ConstituentItemIndex> cells_env_view(cells_env);
+      ComponentItemSharedInfo* mat_shared_info = item_internal_data->matSharedInfo();
+      ComponentItemInternalRange mat_item_internal_range(item_internal_data->matItemsInternalRange(env_id));
+      SmallSpan<ConstituentItemIndex> mat_id_list = mat->componentData()->m_constituent_local_id_list.mutableLocalIds();
+      const Int32 nb_id = local_ids.size();
+      auto command = makeCommand(queue);
+      command << RUNCOMMAND_LOOP1(iter, nb_id)
+      {
+        auto [z] = iter();
         MatVarIndex mvi = matvar_indexes[z];
         Int32 lid = local_ids[z];
-        Int32 pos = cells_pos[lid];
-        ++cells_pos[lid];
-        matimpl::ConstituentItemBase ref_ii = item_internal_data->matItemBase(env_id, pos);
-        mat->setConstituentItem(z, ref_ii.constituentItemIndex());
-        ref_ii._setSuperAndGlobalItem(cells_env[lid], ItemLocalId(lid));
+        Int32 pos = cells_pos_view[lid];
+        ++cells_pos_view[lid];
+        ConstituentItemIndex cii = mat_item_internal_range[pos];
+        matimpl::ConstituentItemBase ref_ii(mat_shared_info, cii);
+        mat_id_list[z] = cii;
+        ref_ii._setSuperAndGlobalItem(cells_env_view[lid], ItemLocalId(lid));
         ref_ii._setComponent(mat_id);
         ref_ii._setVariableIndex(mvi);
-      }
+      };
     }
   }
 }
