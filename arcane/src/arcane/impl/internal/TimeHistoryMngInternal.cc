@@ -443,6 +443,46 @@ editOutputPath(const Directory& directory)
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
+iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values)
+{
+  if(!m_is_master_io && (!thpi.thp().isLocal() || !m_enable_non_io_master_curves)) {
+    return;
+  }
+
+  if(thpi.thp().isLocal() && thpi.thp().localProcId() != m_parallel_mng->commRank()) {
+    return;
+  }
+
+  if (!m_is_active) {
+    return;
+  }
+
+  String name_to_find = thpi.thp().name().clone();
+  if (!thpi.meshHandle().isNull()) {
+    // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
+    // ou le même nom qu'un historique "globale".
+    name_to_find = name_to_find + "_" + thpi.meshHandle().meshName();
+  }
+  if (thpi.thp().isLocal()) {
+    name_to_find = name_to_find + "_Local";
+  }
+
+  auto hl = m_history_list.find(name_to_find);
+
+  if (hl != m_history_list.end()) {
+    TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
+    hl->second->arrayToWrite(iterations, values, infos);
+  }
+  else{
+    iterations.clear();
+    values.clear();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TimeHistoryMngInternal::
 _dumpCurvesAllWriters(bool is_verbose)
 {
   if (is_verbose) {

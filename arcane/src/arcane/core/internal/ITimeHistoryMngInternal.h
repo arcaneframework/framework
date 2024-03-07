@@ -190,6 +190,8 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
 
   virtual void editOutputPath(const Directory& directory) = 0;
 
+  virtual void iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values) = 0;
+
 };
 
 /*---------------------------------------------------------------------------*/

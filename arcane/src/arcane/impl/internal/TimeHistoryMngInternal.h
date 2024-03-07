@@ -421,7 +421,8 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   bool isMasterIO() override { return m_is_master_io; }
   bool isNonIOMasterCurvesEnabled() override { return m_enable_non_io_master_curves; }
   void addObservers(IPropertyMng* prop_mng) override;
-  void editOutputPath(const Directory& directory);
+  void editOutputPath(const Directory& directory) override;
+  void iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values) override;
 
 
  private:
