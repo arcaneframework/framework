@@ -30,7 +30,7 @@ namespace ArcaneTools {
   class ALIEN_ARCANE_TOOLS_EXPORT BasicIndexManager : public IItemIndexManager
   {
    public:
-    class ItemAbstractFamily : public IAbstractFamily
+    class ALIEN_ARCANE_TOOLS_EXPORT ItemAbstractFamily : public IAbstractFamily
     {
      public:
       ItemAbstractFamily(const Arcane::IItemFamily* family);
