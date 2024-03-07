@@ -72,7 +72,7 @@ class ComponentItemInternalRange
 
  public:
 
-  ConstituentItemIndex operator[](Int32 index) const
+  ARCCORE_HOST_DEVICE ConstituentItemIndex operator[](Int32 index) const
   {
     ARCANE_CHECK_AT(index, m_nb_value);
     return ConstituentItemIndex(m_first_index + index);
