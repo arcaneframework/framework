@@ -46,7 +46,7 @@ if(ALIEN_USE_SYCL)
 
     add_executable(test_sycl.exe test_sycl.cpp)
     add_executable(test_mvhandler_sycl.exe test_mvhandler_sycl.cpp)
-    add_executable(test_combine_mvhandler_sycl.exe test_combined_mvhandler_sycl.cpp)
+    add_executable(test_combine_mvhandler_sycl.exe test_combine_mvhandler_sycl.cpp)
     IF(ALIEN_USE_HIPSYCL)
       add_sycl_to_target(TARGET  test_sycl.exe
                          SOURCES test_sycl.cpp)
