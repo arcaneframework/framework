@@ -43,6 +43,26 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename T>
+class GraphConnectivityObserverT
+: public IGraphConnectivityObserver
+{
+ public:
+  GraphConnectivityObserverT(T* parent)
+  : m_parent(parent)
+  {}
+
+  virtual ~GraphConnectivityObserverT() {}
+
+  void notifyUpdateConnectivity()
+  {
+    m_parent->updateGraphConnectivity() ;
+  }
+
+ private :
+  T* m_parent = nullptr;
+};
+
 class GraphDoFs;
 
 class ARCANE_MESH_EXPORT GraphIncrementalConnectivity

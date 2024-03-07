@@ -72,25 +72,6 @@ public:
 
 };
 
-template<typename T>
-class ARCANE_CORE_EXPORT GraphConnectivityObserverT
-: public IGraphConnectivityObserver
-{
-public:
-  GraphConnectivityObserverT(T* parent)
-  : m_parent(parent)
-  {}
-
-  virtual ~GraphConnectivityObserverT() {}
-
-  void notifyUpdateConnectivity()
-  {
-    m_parent->updateGraphConnectivity() ;
-  }
-
-private :
-  T* m_parent = nullptr;
-};
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
