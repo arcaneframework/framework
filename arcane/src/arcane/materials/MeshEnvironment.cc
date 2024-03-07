@@ -41,6 +41,7 @@
 
 #include "arcane/accelerator/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/Scan.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -219,22 +220,73 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& 
   UniqueArray<ConstituentItemIndex> cells_env(platform::getDefaultDataAllocator());
   cells_env.resize(max_local_id);
 
-  {
+  Int32ConstArrayView local_ids = variableIndexer()->localIds();
+  ConstituentItemLocalIdListView constituent_item_list_view = m_data.constituentItemListView();
+  const bool do_old = false;
+  if (do_old) {
     Integer cell_index = 0;
-    Int32ConstArrayView local_ids = variableIndexer()->localIds();
-
     for (Integer z = 0, nb = local_ids.size(); z < nb; ++z) {
       Int32 lid = local_ids[z];
-      matimpl::ConstituentItemBase env_item = m_data._itemBase(z);
+      matimpl::ConstituentItemBase env_item = constituent_item_list_view._constituenItemBase(z);
       Int32 nb_mat = env_item.nbSubItem();
       cells_index[lid] = cell_index;
-      cells_pos[lid] = cell_index;
+      cell_index += nb_mat;
+    }
+  }
+  else {
+    // Calcul l'indice de la première MatCell pour chaque Cell.
+    Int32 nb_id = local_ids.size();
+    UniqueArray<Int32> cells_local_index(platform::getDefaultDataAllocator());
+    cells_local_index.resize(nb_id);
+    UniqueArray<Int32> cells_nb_mat(platform::getDefaultDataAllocator());
+    cells_nb_mat.resize(nb_id);
+    {
+      auto command = makeCommand(queue);
+      SmallSpan<Int32> cells_nb_mat_view(cells_nb_mat.view());
+      command << RUNCOMMAND_LOOP1(iter, nb_id)
+      {
+        auto [i] = iter();
+        matimpl::ConstituentItemBase env_item = constituent_item_list_view._constituenItemBase(i);
+        cells_nb_mat_view[i] = env_item.nbSubItem();
+      };
+
+      Accelerator::Scanner<Int32> scanner;
+      SmallSpan<Int32> cells_local_index_view(cells_local_index);
+      scanner.exclusiveSum(&queue, cells_nb_mat_view, cells_local_index_view);
+    }
+
+    {
+      auto command = makeCommand(queue);
+      SmallSpan<Int32> cells_index_view(cells_index);
+      SmallSpan<const Int32> cells_local_index_view(cells_local_index);
+      command << RUNCOMMAND_LOOP1(iter, nb_id)
+      {
+        auto [i] = iter();
+        Int32 lid = local_ids[i];
+        cells_index_view[lid] = cells_local_index_view[i];
+      };
+    }
+  }
+  {
+    SmallSpan<ConstituentItemIndex> cells_env_view(cells_env);
+    SmallSpan<const Int32> cells_index_view(cells_index);
+    SmallSpan<Int32> cells_pos_view(cells_pos);
+    Int32 nb_id = local_ids.size();
+
+    auto command = makeCommand(queue);
+    command << RUNCOMMAND_LOOP1(iter, nb_id)
+    {
+      auto [z] = iter();
+      Int32 lid = local_ids[z];
+      matimpl::ConstituentItemBase env_item = constituent_item_list_view._constituenItemBase(z);
+      Int32 nb_mat = env_item.nbSubItem();
+      Int32 cell_index = cells_index_view[lid];
+      cells_pos_view[lid] = cell_index;
       if (nb_mat != 0) {
         env_item._setFirstSubItem(mat_items_internal_range[cell_index]);
       }
-      cells_env[lid] = env_item.constituentItemIndex();
-      cell_index += nb_mat;
-    }
+      cells_env_view[lid] = env_item.constituentItemIndex();
+    };
   }
   {
     Integer nb_mat = m_true_materials.size();
