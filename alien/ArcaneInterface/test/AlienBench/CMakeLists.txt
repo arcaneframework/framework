@@ -104,18 +104,32 @@ install(
         RUNTIME DESTINATION bin
 )
 
-if (TARGET petsc)
+configure_file(AlienBench.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.config COPYONLY)
+configure_file(AlienBench-aliensolver.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver.arc COPYONLY)
 
-    configure_file(AlienBench.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.config COPYONLY)
+list(APPEND ALIEN_EXAMPLE_FILES
+            AlienBench.config
+            AlienBench-aliensolver.arc
+            )
+
+if (TARGET petsc)
     configure_file(AlienBench.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.arc COPYONLY)
     configure_file(AlienBench-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-4P.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
-            AlienBench.config
             AlienBench.arc
             AlienBench-4P.arc
             )
+endif ()
 
+if (TARGET hypre)
+    configure_file(AlienBench-hypre.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hypre.arc COPYONLY)
+    configure_file(AlienBench-hypre-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hypre-2P.arc COPYONLY)
+
+    list(APPEND ALIEN_EXAMPLE_FILES
+            AlienBench-hypre.arc
+            AlienBench-hypre-2P.arc
+            )
 endif ()
 
 #Examples !
@@ -139,9 +153,15 @@ install(FILES
         RENAME Makefile
         )
 
+alien_test(
+            BENCH alien.bench.aliensolver
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
 if (TARGET petsc)
-
     set(ENV (ARCANE_PARALLEL_SERVICE) "Mpi")
 
     alien_test(
@@ -160,4 +180,24 @@ if (TARGET petsc)
             OPTIONS AlienBench-4P.arc
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
+endif ()
+
+if (TARGET hypre)
+    set(ENV (ARCANE_PARALLEL_SERVICE) "Mpi")
+
+    alien_test(
+            BENCH alien.bench.hypre
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hypre.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.hypre
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hypre-2P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()

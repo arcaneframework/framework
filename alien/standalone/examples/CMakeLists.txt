@@ -46,11 +46,14 @@ if(ALIEN_USE_SYCL)
 
     add_executable(test_sycl.exe test_sycl.cpp)
     add_executable(test_mvhandler_sycl.exe test_mvhandler_sycl.cpp)
+    add_executable(test_combine_mvhandler_sycl.exe test_combine_mvhandler_sycl.cpp)
     IF(ALIEN_USE_HIPSYCL)
       add_sycl_to_target(TARGET  test_sycl.exe
                          SOURCES test_sycl.cpp)
       add_sycl_to_target(TARGET  test_mvhandler_sycl.exe
                          SOURCES test_mvhandler_sycl.cpp)
+      add_sycl_to_target(TARGET  test_combine_mvhandler_sycl.exe
+                         SOURCES test_combine_mvhandler_sycl.cpp)
     ENDIF()
     IF(ALIEN_USE_INTELSYCL)
        IF(ALIEN_USE_CUDA)
@@ -59,6 +62,8 @@ if(ALIEN_USE_SYCL)
          target_link_options(test_sycl.exe PRIVATE ${DPCPP_FLAGS})
          target_compile_options(test_mvhandler_sycl.exe PRIVATE ${DPCPP_FLAGS})
          target_link_options(test_mvhandler_sycl.exe PRIVATE ${DPCPP_FLAGS})
+         target_compile_options(test_combine_mvhandler_sycl.exe PRIVATE ${DPCPP_FLAGS})
+         target_link_options(test_combine_mvhandler_sycl.exe PRIVATE ${DPCPP_FLAGS})
        ENDIF()
        #set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
        #target_compile_options(test_sycl.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda -DUSE_SYCL2020>)
@@ -66,6 +71,8 @@ if(ALIEN_USE_SYCL)
                           SOURCES test_sycl.cpp)
        add_sycl_to_target(TARGET  test_mvhandler_sycl.exe
                           SOURCES test_mvhandler_sycl.cpp)
+       add_sycl_to_target(TARGET  test_combine_mvhandler_sycl.exe
+                          SOURCES test_combine_mvhandler_sycl.cpp)
     ENDIF()
     
     target_link_libraries(test_sycl.exe PUBLIC
@@ -75,6 +82,12 @@ if(ALIEN_USE_SYCL)
                       ${Boost_LIBRARIES})
                       
     target_link_libraries(test_mvhandler_sycl.exe PUBLIC
+                      Alien::alien_core
+                      Alien::alien_semantic_ref
+                      arcconpkg_MPI
+                      ${Boost_LIBRARIES})
+                      
+    target_link_libraries(test_combine_mvhandler_sycl.exe PUBLIC
                       Alien::alien_core
                       Alien::alien_semantic_ref
                       arcconpkg_MPI
