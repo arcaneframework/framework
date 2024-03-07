@@ -120,7 +120,7 @@ jobs:
            while read line; do \cp -avn ${line} ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; if [ -L ${line} ]; then \cp -avn `readlink -f ${line}` ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; fi; done < <(ldd ${{ env.INSTALL_DIR }}/bin/alien* ${{ env.INSTALL_DIR }}/bin/gtest* ${{ env.INSTALL_DIR }}/lib/*.so ${{ env.INSTALL_DIR }}/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^${EBROOTIMPI}" -e "^${EBROOTUDUNITS}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "^/__w/")
            # Copy imkl libaries
            \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/imkl/2021.4.0/mkl/2021.4.0/lib/intel64/libmkl_avx512.so.1 ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
-           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/imkl/2021.4.0/mkl/2021.4.0/lib/intel64/ibmkl_def.so.1 ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
+           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/imkl/2021.4.0/mkl/2021.4.0/lib/intel64/libmkl_def.so.1 ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
            # Copy googletest
            \rm -vf ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/libgtest.so
            \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/googletest/1.11.0-GCCcore-11.2.0/lib/*.so ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
