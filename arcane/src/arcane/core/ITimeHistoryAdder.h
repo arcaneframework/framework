@@ -31,17 +31,62 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Interface de classe permettant d'ajouter une ou plusieurs valeurs
+ * à un historique de valeurs.
+ */
 class ITimeHistoryAdder
 {
  public:
   virtual ~ITimeHistoryAdder() = default; //!< Libère les ressources
 
  public:
+  /*!
+   * \brief Méthode permettant d'ajouter une valeur à un historique.
+   *
+   * \param thpi Les paramètres de la valeur.
+   * \param value La valeur à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Real value) = 0;
+
+  /*!
+   * \brief Méthode permettant d'ajouter une valeur à un historique.
+   *
+   * \param thpi Les paramètres de la valeur.
+   * \param value La valeur à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Int32 value) = 0;
+
+  /*!
+   * \brief Méthode permettant d'ajouter une valeur à un historique.
+   *
+   * \param thpi Les paramètres de la valeur.
+   * \param value La valeur à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Int64 value) = 0;
+
+  /*!
+   * \brief Méthode permettant d'ajouter des valeurs à un historique.
+   *
+   * \param thpi Les paramètres des valeurs.
+   * \param value Les valeurs à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values) = 0;
+
+  /*!
+   * \brief Méthode permettant d'ajouter des valeurs à un historique.
+   *
+   * \param thpi Les paramètres des valeurs.
+   * \param value Les valeurs à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values) = 0;
+
+  /*!
+   * \brief Méthode permettant d'ajouter des valeurs à un historique.
+   *
+   * \param thpi Les paramètres des valeurs.
+   * \param value Les valeurs à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values) = 0;
 };
 

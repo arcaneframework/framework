@@ -243,14 +243,14 @@ dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only)
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
-dumpHistory(bool is_verbose)
+dumpHistory()
 {
   if (!m_is_master_io && !m_enable_non_io_master_curves)
     return;
   if (!m_is_dump_active)
     return;
 
-  _dumpCurvesAllWriters(is_verbose);
+  _dumpCurvesAllWriters();
   _dumpSummaryOfCurvesLegacy();
   _dumpSummaryOfCurves();
 
@@ -445,11 +445,11 @@ editOutputPath(const Directory& directory)
 void TimeHistoryMngInternal::
 iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values)
 {
-  if(!m_is_master_io && (!thpi.thp().isLocal() || !m_enable_non_io_master_curves)) {
+  if(!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves)) {
     return;
   }
 
-  if(thpi.thp().isLocal() && thpi.thp().localProcId() != m_parallel_mng->commRank()) {
+  if(thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localProcId() != m_parallel_mng->commRank()) {
     return;
   }
 
@@ -457,13 +457,13 @@ iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int3
     return;
   }
 
-  String name_to_find = thpi.thp().name().clone();
+  String name_to_find = thpi.timeHistoryAddValueArg().name().clone();
   if (!thpi.meshHandle().isNull()) {
     // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
     // ou le même nom qu'un historique "globale".
     name_to_find = name_to_find + "_" + thpi.meshHandle().meshName();
   }
-  if (thpi.thp().isLocal()) {
+  if (thpi.timeHistoryAddValueArg().isLocal()) {
     name_to_find = name_to_find + "_Local";
   }
 
@@ -483,21 +483,18 @@ iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int3
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
-_dumpCurvesAllWriters(bool is_verbose)
+_dumpCurvesAllWriters()
 {
-  if (is_verbose) {
-    m_trace_mng->info() << "Writing of the history of values path=" << m_output_path;
-  }
+  m_trace_mng->debug() << "Writing of the history of values path=" << m_output_path;
+
   if (m_is_master_io || m_enable_non_io_master_curves) {
     m_trace_mng->info() << "Begin output history: " << platform::getCurrentDateTime();
 
     // Ecriture via version 2 des curve writers
     for( auto& cw_ref : m_curve_writers2 ){
       ITimeHistoryCurveWriter2* writer = cw_ref.get();
-      if (is_verbose){
-        m_trace_mng->info() << "Writing curves with '" << writer->name()
-                       << "' date=" << platform::getCurrentDateTime();
-      }
+      m_trace_mng->debug() << "Writing curves with '" << writer->name()
+                     << "' date=" << platform::getCurrentDateTime();
       dumpCurves(writer, true);
     }
   }
@@ -509,12 +506,14 @@ _dumpCurvesAllWriters(bool is_verbose)
 void TimeHistoryMngInternal::
 _dumpSummaryOfCurvesLegacy()
 {
-  // Génère un fichier xml contenant la liste des courbes de l'historique
+  // Seul le processus master écrit.
   Integer master_io_rank = m_parallel_mng->masterIORank();
   if (m_is_master_io) {
     std::ofstream ofile(m_directory.file("time_history.xml").localstr());
     ofile << "<?xml version='1.0' ?>\n";
     ofile << "<curves>\n";
+
+    // On écrit d'abord le nom de nos courbes.
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
       const TimeHistoryValue& th = *(i->second);
       ofile << "<curve name='" <<  th.name();
@@ -526,6 +525,8 @@ _dumpSummaryOfCurvesLegacy()
       }
       ofile << "'/>\n";
     }
+    // Puis, si les autres processus peuvent aussi avoir des courbes, on
+    // écrit aussi leurs noms.
     if (m_enable_non_io_master_curves) {
       for(Integer i=0;i< m_parallel_mng->commSize();++i)
         if(i!=master_io_rank) {
@@ -551,6 +552,8 @@ _dumpSummaryOfCurvesLegacy()
     }
     ofile << "</curves>\n";
   }
+
+  // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
   else if(m_enable_non_io_master_curves) {
     Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
     m_parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
@@ -581,6 +584,7 @@ _dumpSummaryOfCurvesLegacy()
 void TimeHistoryMngInternal::
 _dumpSummaryOfCurves()
 {
+  // Seul le processus master écrit.
   if (m_is_master_io) {
 
     JSONWriter json_writer(JSONWriter::FormatFlags::None);
@@ -594,6 +598,7 @@ _dumpSummaryOfCurves()
           json_writer.writeKey("curves");
           json_writer.beginArray();
 
+          // On écrit d'abord le nom de nos courbes.
           for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
             JSONWriter::Object o4(json_writer);
             const TimeHistoryValue& th = *(i->second);
@@ -606,6 +611,8 @@ _dumpSummaryOfCurves()
             }
           }
 
+          // Puis, si les autres processus peuvent aussi avoir des courbes, on
+          // écrit aussi leurs noms.
           if (m_enable_non_io_master_curves) {
             for(Integer i=0;i< m_parallel_mng->commSize();++i) {
               if (i != master_io_rank) {
@@ -641,6 +648,7 @@ _dumpSummaryOfCurves()
     ofile.close();
   }
 
+  // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
   else if(m_enable_non_io_master_curves) {
 
     Integer master_io_rank = m_parallel_mng->masterIORank();
@@ -675,31 +683,31 @@ template <class DataType>
 void TimeHistoryMngInternal::
 _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<DataType> values)
 {
-  if(!m_is_master_io && (!thpi.thp().isLocal() || !m_enable_non_io_master_curves)) {
-    return;
-  }
-
-  if(thpi.thp().isLocal() && thpi.thp().localProcId() != m_parallel_mng->commRank()) {
-    return;
-  }
-
   if (!m_is_active) {
     return;
   }
 
-  String name_to_find = thpi.thp().name().clone();
+  if(!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves)) {
+    return;
+  }
+
+  if(thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localProcId() != m_parallel_mng->commRank()) {
+    return;
+  }
+
+  String name_to_find = thpi.timeHistoryAddValueArg().name().clone();
   if(!thpi.meshHandle().isNull()){
     // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
     // ou le même nom qu'un historique "globale".
     name_to_find = name_to_find + "_" + thpi.meshHandle().meshName();
   }
-  if(thpi.thp().isLocal()){
+  if(thpi.timeHistoryAddValueArg().isLocal()){
     name_to_find = name_to_find + "_Local";
   }
 
   Integer iteration = m_common_variables.globalIteration();
 
-  if (!thpi.thp().endTime() && iteration!=0)
+  if (!thpi.timeHistoryAddValueArg().endTime() && iteration!=0)
     --iteration;
 
   auto hl = m_history_list.find(name_to_find);
@@ -757,6 +765,15 @@ _fromLegacyFormat(IMesh* default_mesh)
 
   old_global_time.resize(0);
   old_meta_data.reset();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TimeHistoryMngInternal::
+_removeCurveWriter(const Ref<ITimeHistoryCurveWriter2>& writer)
+{
+  m_curve_writers2.erase(writer);
 }
 
 /*---------------------------------------------------------------------------*/

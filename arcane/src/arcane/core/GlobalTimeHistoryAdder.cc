@@ -24,8 +24,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 GlobalTimeHistoryAdder::
-GlobalTimeHistoryAdder(ITimeHistoryMng* thm)
-: m_thm(thm)
+GlobalTimeHistoryAdder(ITimeHistoryMng* time_history_mng)
+: m_thm(time_history_mng)
 {}
 
 void GlobalTimeHistoryAdder::

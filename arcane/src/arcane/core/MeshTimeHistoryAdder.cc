@@ -24,8 +24,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 MeshTimeHistoryAdder::
-MeshTimeHistoryAdder(ITimeHistoryMng* thm, const MeshHandle& mesh_handle)
-: m_thm(thm)
+MeshTimeHistoryAdder(ITimeHistoryMng* time_history_mng, const MeshHandle& mesh_handle)
+: m_thm(time_history_mng)
 , m_mesh_handle(mesh_handle)
 {}
 

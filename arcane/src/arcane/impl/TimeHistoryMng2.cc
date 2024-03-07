@@ -305,7 +305,7 @@ timeHistoryBegin()
     if (subDomain()->applicationInfo().isDebug())
       force_print_thm = true;
     if (force_print_thm)
-      m_internal->dumpHistory(false);
+      m_internal->dumpHistory();
   }
 }
 
@@ -384,7 +384,8 @@ timeHistoryRestore()
 void TimeHistoryMng2::
 dumpHistory(bool is_verbose)
 {
-  m_internal->dumpHistory(is_verbose);
+  ARCANE_UNUSED(is_verbose);
+  m_internal->dumpHistory();
 }
 
 /*---------------------------------------------------------------------------*/

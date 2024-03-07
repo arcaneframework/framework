@@ -38,6 +38,10 @@ class ITimeHistoryTransformer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Classe étendant les arguments lors d'un ajout de valeur
+ * dans un historique de valeur.
+ */
 class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
 {
  public:
@@ -57,7 +61,7 @@ class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
   {}
 
  public:
-  const TimeHistoryAddValueArg& thp() const { return m_thp; }
+  const TimeHistoryAddValueArg& timeHistoryAddValueArg() const { return m_thp; }
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
  private:
@@ -68,6 +72,9 @@ class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Interface de la partie interne d'un gestionnaire d'historique de valeur.
+ */
 class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
 {
  public:
@@ -75,17 +82,52 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
 
  public:
 
-  // TODO com
+  /*!
+   * \brief Méthode permettant d'ajouter une valeur à un historique.
+   *
+   * \param thpi Les paramètres de historique.
+   * \param value La valeur à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Real value) =0;
 
+  /*!
+   * \brief Méthode permettant d'ajouter une valeur à un historique.
+   *
+   * \param thpi Les paramètres de historique.
+   * \param value La valeur à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32 value) =0;
 
+  /*!
+   * \brief Méthode permettant d'ajouter une valeur à un historique.
+   *
+   * \param thpi Les paramètres de historique.
+   * \param value La valeur à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64 value) =0;
 
+  /*!
+   * \brief Méthode permettant d'ajouter des valeurs à un historique.
+   *
+   * \param thpi Les paramètres de historique.
+   * \param value Les valeurs à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, RealConstArrayView values) =0;
 
+  /*!
+   * \brief Méthode permettant d'ajouter des valeurs à un historique.
+   *
+   * \param thpi Les paramètres de historique.
+   * \param value Les valeurs à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32ConstArrayView values) =0;
 
+  /*!
+   * \brief Méthode permettant d'ajouter des valeurs à un historique.
+   *
+   * \param thpi Les paramètres de historique.
+   * \param value Les valeurs à ajouter.
+   */
   virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64ConstArrayView values) =0;
 
   /*!
@@ -94,49 +136,61 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
   virtual void addNowInGlobalTime() = 0;
 
   /*!
-   * Méthode permettant de copier le tableau de GlobalTime dans la variable globale GlobalTime.
+   * \brief Méthode permettant de copier le tableau de GlobalTime dans la variable globale GlobalTime.
    */
   virtual void updateGlobalTimeCurve() = 0;
 
   /*!
-   * Méthode permettant de redimensionner les tableaux de valeurs après une reprise.
+   * \brief Méthode permettant de redimensionner les tableaux de valeurs après une reprise.
    */
   virtual void resizeArrayAfterRestore() = 0;
 
   /*!
-   * Méthode permettant d"écrire les courbes à l'aide du writer fourni.
-   * @param writer Le writer avec lequel les courbes doivent être écrites.
+   * \brief Méthode permettant d"écrire les courbes à l'aide du writer fourni.
+   *
+   * \param writer Le writer avec lequel les courbes doivent être écrites.
+   * \param master_only Si tous les historiques doivent être transférés sur
+   *                    le masterIO avant la copie.
    */
   virtual void dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only) =0;
 
   /*!
-   * Méthode permettant d'écrire toutes les courbes à l'aide de tous les writers enregistrés
-   * @param is_verbose Active ou non les messages supplémentaires.
+   * \brief Méthode permettant d'écrire toutes les courbes à l'aide de tous les writers enregistrés.
    */
-  virtual void dumpHistory(bool is_verbose) =0;
+  virtual void dumpHistory() =0;
 
   /*!
-   * Méthode permettant de mettre à jour les méta-données des courbes.
+   * \brief Méthode permettant de mettre à jour les méta-données des courbes.
    */
   virtual void updateMetaData() =0;
 
   /*!
-   * Méthode permettant de récupérer les courbes lors d'une reprise.
+   * \brief Méthode permettant de récupérer les courbes précédemment écrites lors d'une reprise.
+   *
+   * \param mesh_mng Un pointeur vers un meshMng.
+   * \param default_mesh Un pointeur vers le maillage par défaut (nécessaire uniquement pour
+   *                     la récupération d'anciens checkpoints).
    */
   virtual void readVariables(IMeshMng* mesh_mng, IMesh* default_mesh) =0;
 
   /*!
-   * Ajoute un écrivain
+   * \brief Méthode permettant d'ajouter un écrivain pour la sortie des courbes.
+   *
+   * \param writer Une ref vers l'écrivain.
    */
   virtual void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) =0;
 
   /*!
-   * Retire l'écrivain avec le nom name.
+   * \brief Méthode permettant de retirer un écrivain.
+   *
+   * \param writer Le nom de l'écrivain.
    */
   virtual void removeCurveWriter(const String& name) =0;
 
   /*!
    * \brief Applique la transformation \a v à l'ensemble des courbes.
+   *
+   * \param v La transformation à appliquer.
    */
   virtual void applyTransformation(ITimeHistoryTransformer* v) =0;
 
@@ -176,20 +230,40 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
   virtual void setDumpActive(bool is_active) =0;
 
   /*!
-   * Méthode permettant de savoir si notre processus est l'écrivain.
+   * \brief Méthode permettant de savoir si notre processus est l'écrivain.
    * @return True si nous sommes l'écrivain.
    */
   virtual bool isMasterIO() = 0;
-
   /*!
-   * Méthode permettant de savoir si tous les processus peuvent avoir un historique de valeurs.
+   * \brief Méthode permettant de savoir si tous les processus peuvent avoir un historique de valeurs.
    */
   virtual bool isNonIOMasterCurvesEnabled() = 0;
 
+  /*!
+   * \brief Méthode permettant de rajouter les observers sauvegardant l'historique avant une protection.
+   *
+   * \param prop_mng Un pointeur vers un IPropertyMng.
+   */
   virtual void addObservers(IPropertyMng* prop_mng) = 0;
 
+  /*!
+   * \brief Méthode permettant de changer le répertoire de sortie des courbes.
+   *
+   * À noter que le répertoire sera créé s'il n'existe pas.
+   *
+   * \param directory Le nouveau répertoire de sortie.
+   */
   virtual void editOutputPath(const Directory& directory) = 0;
 
+  /*!
+   * \brief Méthode permettant de sortir les itérations et les valeurs d'un historique.
+   *
+   * Méthode utile pour du débug/test.
+   *
+   * \param thpi Les informations nécessaire à la récupération de l'historique.
+   * \param iterations [OUT] Les itérations où ont été récupéré chaque valeur.
+   * \param values [OUT] Les valeurs récupérées.
+   */
   virtual void iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values) = 0;
 
 };
@@ -197,7 +271,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

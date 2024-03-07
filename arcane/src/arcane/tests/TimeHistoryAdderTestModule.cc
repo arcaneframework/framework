@@ -11,9 +11,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <arcane/core/ITimeHistoryMng.h>
-#include <arcane/core/MeshTimeHistoryAdder.h>
-#include <arcane/core/GlobalTimeHistoryAdder.h>
+#include "arcane/core/ITimeHistoryMng.h"
+#include "arcane/core/MeshTimeHistoryAdder.h"
+#include "arcane/core/GlobalTimeHistoryAdder.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/internal/ITimeHistoryMngInternal.h"
@@ -25,7 +25,12 @@
 
 namespace ArcaneTest
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 using namespace Arcane;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -74,25 +79,44 @@ loop()
   _checker();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void TimeHistoryAdderTestModule::
 _writer()
 {
   ISubDomain* sd = subDomain();
   Integer iteration = globalIteration();
 
+  // TODO : Conserve-t-on la méthode adder ?
   sd->timeHistoryMng()->adder()->addValue(TimeHistoryAddValueArg("AAA"), iteration++);
-  sd->timeHistoryMng()->adder()->addValue(TimeHistoryAddValueArg("AAA", true, 0), iteration++); // Pas de ++ : normal.
+  sd->timeHistoryMng()->adder()->addValue(TimeHistoryAddValueArg("AAA", true, 0), iteration++);
   sd->timeHistoryMng()->adder()->addValue(TimeHistoryAddValueArg("AAA", true, 1), iteration++);
 
+  // Création d'un adder global.
   GlobalTimeHistoryAdder global_adder(sd->timeHistoryMng());
+
+  // On ajoute une valeur à l'historique "BBB" commun à tous les sous-domaines.
   global_adder.addValue(TimeHistoryAddValueArg("BBB"), iteration++);
+
+  // On ajoute une valeur à l'historique "BBB" spécifique au sous-domaine 0.
   global_adder.addValue(TimeHistoryAddValueArg("BBB", true, 0), iteration++);
+
+  // On ajoute une valeur à l'historique "BBB" spécifique au sous-domaine 1.
   global_adder.addValue(TimeHistoryAddValueArg("BBB", true, 1), iteration++);
 
   for(auto mesh : sd->meshes()){
+
+    // Création d'un adder spécifique au maillage mesh.
     MeshTimeHistoryAdder mesh_adder(sd->timeHistoryMng(), mesh->handle());
+
+    // On ajoute une valeur à l'historique "BBB" spécifique au maillage mesh et commun à tous les sous-domaines.
     mesh_adder.addValue(TimeHistoryAddValueArg("BBB"), iteration++);
+
+    // On ajoute une valeur à l'historique "BBB" spécifique au maillage mesh et au sous-domaine 0.
     mesh_adder.addValue(TimeHistoryAddValueArg("BBB", true, 0), iteration++);
+
+    // On ajoute une valeur à l'historique "BBB" spécifique au maillage mesh et au sous-domaine 1.
     mesh_adder.addValue(TimeHistoryAddValueArg("BBB", true, 1), iteration++);
   }
 }

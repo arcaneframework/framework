@@ -70,6 +70,13 @@ class TimeHistoryValue
 
  public:
 
+  /*!
+   * \brief Méthode permettant de convertir les variables d'anciennes sauvegardes
+   * vers le nouveau format.
+   *
+   * \param vm Le VariableMng.
+   * \param default_mesh Le maillage par défaut.
+   */
   virtual void fromOldToNewVariables(IVariableMng* vm, IMesh* default_mesh) = 0;
 
   //! Imprime les valeurs de l'historique avec l'écrivain \a writer
@@ -77,38 +84,75 @@ class TimeHistoryValue
                           ITimeHistoryCurveWriter2* writer,
                           const TimeHistoryCurveWriterInfo& infos) const =0;
 
+  /*!
+   * \brief Méthode permettant de récupérer les itérations et les valeurs d'un historique de valeur.
+   *
+   * \param iterations [OUT] Les itérations où ont été récupérer chaque valeur.
+   * \param values [OUT] Les valeurs récupérées.
+   * \param infos Les informations nécessaire à la récupération de l'historique.
+   */
   virtual void arrayToWrite(UniqueArray<Int32>& iterations,
                             UniqueArray<Real>& values,
                             const TimeHistoryCurveWriterInfo& infos) const =0;
 
+  /*!
+   * \brief Méthode permettant d'appliquer une transformation sur les valeurs
+   * de l'historique de valeur.
+   *
+   * \param msg Le traceMng où écrire les messages.
+   * \param v Le transformer.
+   */
   virtual void applyTransformation(ITraceMng* msg,
                                    ITimeHistoryTransformer* v) =0;
 
-  //! Retourne le nombre d'éléments dans le tableau.
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de valeurs enregistrées.
+   *
+   * \return Le nombre de valeurs enregistrées.
+   */
   virtual Integer size() const =0;
 
   /*!
-   * \brief Supprime les valeurs des historiques dont l'itération
-   * est supérieur ou égal à \a last_iteration.
+   * \brief Méthode permettant de retirer toutes les valeurs après une certaine itération.
+   *
+   * \param last_iteration La dernière itération voulu.
    */
   virtual void removeAfterIteration(Integer last_iteration) =0;
 
   //! Nom de l'historique
-  const String& name() const { return m_thpi.thp().name(); }
+  const String& name() const { return m_thpi.timeHistoryAddValueArg().name(); }
 
-  //! type de données de l'historique
+  //! Type de données de l'historique
   eDataType dataType() const { return m_data_type; }
 
-  //! index de l'historique dans la liste
+  //! Index de l'historique dans la liste
   Integer index() const { return m_index; }
 
   Integer subSize() const { return m_sub_size; }
 
+  /*!
+   * \brief Méthode permettant de récupérer le MeshHandle enregistré.
+   *
+   * Attention, pour les historiques globaux, ce MeshHandle est null !
+   *
+   * \return Le MeshHandle.
+   */
   const MeshHandle& meshHandle() const { return m_thpi.meshHandle(); }
 
-  bool isLocal() const { return m_thpi.thp().isLocal(); }
+  /*!
+   * \brief Méthode permettant de savoir si c'est un historique global ou local à un sous-domaine.
+   *
+   * \sa localProcId()
+   * \return true si c'est un historique local.
+   */
+  bool isLocal() const { return m_thpi.timeHistoryAddValueArg().isLocal(); }
 
-  Integer localProcId() const { return m_thpi.thp().localProcId(); }
+  /*!
+   * \brief Méthode permettant de récupérer l'id du sous-domaine à qui appartient cet historique.
+   *
+   * \return L'in du sous-domaine.
+   */
+  Integer localProcId() const { return m_thpi.timeHistoryAddValueArg().localProcId(); }
 
  private:
 
@@ -153,6 +197,15 @@ class TimeHistoryValueT
   const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
  public:
 
+  /*!
+   * \brief Constructeur permettant de construire un historique de valeur non lié à un maillage.
+   *
+   * \param vm Le variableMng pour créer les variables.
+   * \param thpi Les arguments pour créer l'historique.
+   * \param index L'index des variables globales.
+   * \param nb_element Le nombre de valeurs par itération.
+   * \param shrink S'il y a compression.
+   */
   TimeHistoryValueT(IVariableMng* vm, const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(thpi, DataTypeTraitsT<DataType>::type(), index, nb_element)
   , m_values(VariableBuildInfo(vm, String("TimeHistoryMngValues")+index, VAR_BUILD_FLAGS))
@@ -162,6 +215,14 @@ class TimeHistoryValueT
   {
   }
 
+  /*!
+   * \brief Constructeur permettant de construire un historique de valeur lié à un maillage.
+   *
+   * \param thpi Les arguments pour créer l'historique.
+   * \param index L'index des variables globales.
+   * \param nb_element Le nombre de valeurs par itération.
+   * \param shrink S'il y a compression.
+   */
   TimeHistoryValueT(const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(thpi, DataTypeTraitsT<DataType>::type(), index, nb_element)
   , m_values(VariableBuildInfo(thpi.meshHandle(), String("TimeHistoryMngValues")+index, VAR_BUILD_FLAGS))
@@ -172,7 +233,6 @@ class TimeHistoryValueT
   }
 
  public:
-
   void fromOldToNewVariables(IVariableMng* vm, IMesh* default_mesh) override
   {
     IVariable* ptr_old_values = vm->findMeshVariable(default_mesh, String("TimeHistory_Values_")+index());
@@ -198,6 +258,12 @@ class TimeHistoryValueT
     return m_iterations.size();
   }
 
+  /*!
+   * \brief Méthode permettant d'ajouter des valeurs à une itération.
+   *
+   * \param values Les valeurs à ajouter.
+   * \param iteration L'itération liée aux valeurs.
+   */
   void addValue(ConstArrayView<DataType> values,Integer iteration)
   {
     Integer nb_iteration = m_iterations.size();
@@ -242,33 +308,21 @@ class TimeHistoryValueT
     ARCANE_UNUSED(msg);
 
     // Pour l'instant, on ne fait rien
-    if (m_shrink_history==true)
+    if (m_shrink_history)
       return;
-    // Pour vérifier qu'on ne sauve pas plus d'itérations qu'il y en
-    // a actuellement (ce qui peut arriver en cas de retour arrière).
-    Integer max_iter = infos.times().size();
-    RealUniqueArray values_to_write;
-    Int32UniqueArray iterations_to_write;
-    Integer nb_iteration = m_iterations.size();
-    iterations_to_write.reserve(nb_iteration);
-    Integer sub_size = subSize();
-    values_to_write.reserve(nb_iteration*sub_size);
-    for(Integer i=0, is=nb_iteration; i<is; ++i ){
-      Integer iter = m_iterations[i];
-      if (iter<max_iter){
-        for(Integer z=0; z<sub_size; ++z ) {
-          values_to_write.add(Convert::toReal(m_values[(i * sub_size) + z]));
-        }
-        iterations_to_write.add(iter);
-      }
-    }
+
+    UniqueArray<Real> values_to_write;
+    UniqueArray<Int32> iterations_to_write;
+
+    arrayToWrite(iterations_to_write, values_to_write, infos);
+
     Integer sd = localProcId();
     if(!meshHandle().isNull()){
-      TimeHistoryCurveInfo curve_info(name(), meshHandle().meshName(), iterations_to_write, values_to_write, sub_size, sd);
+      TimeHistoryCurveInfo curve_info(name(), meshHandle().meshName(), iterations_to_write, values_to_write, subSize(), sd);
       writer->writeCurve(curve_info);
     }
     else{
-      TimeHistoryCurveInfo curve_info(name(), iterations_to_write, values_to_write, sub_size, sd);
+      TimeHistoryCurveInfo curve_info(name(), iterations_to_write, values_to_write, subSize(), sd);
       writer->writeCurve(curve_info);
     }
   }
@@ -302,8 +356,10 @@ class TimeHistoryValueT
       m_values[i] = values[i];
   }
 
-  void arrayToWrite(UniqueArray<Int32>& iterations, UniqueArray<Real>& values, const TimeHistoryCurveWriterInfo& infos) const override {
-
+  void arrayToWrite(UniqueArray<Int32>& iterations, UniqueArray<Real>& values, const TimeHistoryCurveWriterInfo& infos) const override
+  {
+    // Pour vérifier qu'on ne sauve pas plus d'itérations qu'il y en
+    // a actuellement (ce qui peut arriver en cas de retour arrière).
     Integer max_iter = infos.times().size();
     Integer nb_iteration = m_iterations.size();
     Integer sub_size = subSize();
@@ -400,11 +456,12 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
     _addHistoryValue(thpi,values);
   }
 
+ public:
   void addNowInGlobalTime() override;
   void updateGlobalTimeCurve() override;
   void resizeArrayAfterRestore() override;
   void dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only) override;
-  void dumpHistory(bool is_verbose) override;
+  void dumpHistory() override;
   void updateMetaData() override;
   void readVariables(IMeshMng* mesh_mng, IMesh* default_mesh) override;
 
@@ -412,6 +469,11 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void removeCurveWriter(const String& name) override;
   void applyTransformation(ITimeHistoryTransformer* v) override;
 
+  void addObservers(IPropertyMng* prop_mng) override;
+  void editOutputPath(const Directory& directory) override;
+  void iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values) override;
+
+ public:
   bool isShrinkActive() const override { return m_is_shrink_active; }
   void setShrinkActive(bool is_active) override { m_is_shrink_active = is_active; }
   bool active() const override { return m_is_active; }
@@ -420,25 +482,59 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void setDumpActive(bool is_active) override { m_is_dump_active = is_active; }
   bool isMasterIO() override { return m_is_master_io; }
   bool isNonIOMasterCurvesEnabled() override { return m_enable_non_io_master_curves; }
-  void addObservers(IPropertyMng* prop_mng) override;
-  void editOutputPath(const Directory& directory) override;
-  void iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values) override;
-
 
  private:
-  template<class DataType> void
-  _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<DataType> values);
-  void _destroyAll();
-  void _dumpCurvesAllWriters(bool is_verbose);
-  void _dumpSummaryOfCurvesLegacy();
-  void _dumpSummaryOfCurves();
-  void _removeCurveWriter(const Ref<ITimeHistoryCurveWriter2>& writer)
-  {
-    m_curve_writers2.erase(writer);
-  }
 
+  /*!
+ * \brief Méthode permettant d'ajouter des valeurs à un historique de valeurs.
+ *
+ * \tparam DataType Les valeurs à ajouter.
+ * \param thpi Les paramètres pour ajouter les valeurs.
+ * \param values Les valeurs à ajouter.
+ */
+  template<class DataType>
+  void _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<DataType> values);
+
+  /*!
+   * \brief Destructeur.
+   */
+  void _destroyAll();
+
+  /*!
+   * \brief Méthode permettant de sortir toutes les courbes avec tous les writers.
+   */
+  void _dumpCurvesAllWriters();
+
+  /*!
+   * \brief Méthode permettant de sortir un fichier XML avec le nom de
+   * chaque courbe sortie en format GNUPLOT.
+   */
+  void _dumpSummaryOfCurvesLegacy();
+
+  /*!
+ * \brief Méthode permettant de sortir un fichier JSON avec le nom de
+   * chaque courbe sortie en format GNUPLOT ainsi que plusieurs autres
+   * informations.
+   */
+  void _dumpSummaryOfCurves();
+
+  /*!
+   * \brief Méthode permettant de convertir l'ancien format vers le nouveau.
+   *
+   * \param default_mesh Le maillage par défaut sur lequel les anciennes valeurs sont liées.
+   */
   void _fromLegacyFormat(IMesh* default_mesh);
+
+  /*!
+   * \brief Méthode permettant de sauver les propriétés des metadatas.
+   */
   void _saveProperties();
+
+  /*!
+   * \brief Méthode permettant de retirer un écrivain.
+   * \param writer La reference de l'écrivain.
+   */
+  void _removeCurveWriter(const Ref<ITimeHistoryCurveWriter2>& writer);
 
  private:
   IVariableMng* m_variable_mng;
