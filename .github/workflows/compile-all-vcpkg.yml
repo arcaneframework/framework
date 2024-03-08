@@ -29,6 +29,10 @@ on:
       - '**.webp'
       - '**.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   job:
     name: ${{ matrix.full_name }}-ci-direct
