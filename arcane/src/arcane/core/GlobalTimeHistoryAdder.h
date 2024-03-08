@@ -55,6 +55,7 @@ class ARCANE_CORE_EXPORT GlobalTimeHistoryAdder
 : public ITimeHistoryAdder
 {
  public:
+
   /*!
    * \brief Constructeur.
    *
@@ -64,6 +65,7 @@ class ARCANE_CORE_EXPORT GlobalTimeHistoryAdder
   ~GlobalTimeHistoryAdder() override = default;
 
  public:
+
   void addValue(const TimeHistoryAddValueArg& thp, Real value) override;
   void addValue(const TimeHistoryAddValueArg& thp, Int32 value) override;
   void addValue(const TimeHistoryAddValueArg& thp, Int64 value) override;
@@ -72,6 +74,7 @@ class ARCANE_CORE_EXPORT GlobalTimeHistoryAdder
   void addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values) override;
 
  private:
+
   ITimeHistoryMng* m_thm;
 };
 

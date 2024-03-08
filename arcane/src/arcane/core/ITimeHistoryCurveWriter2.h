@@ -103,6 +103,7 @@ class TimeHistoryCurveInfo
 
 #if ARCANE_ALLOW_CURVE_WRITER_PRIVATE_ACCESS
  public:
+
 #else
  private:
 #endif
@@ -124,8 +125,10 @@ class TimeHistoryCurveWriterInfo
 {
  public:
 
-  TimeHistoryCurveWriterInfo(const String& apath,RealConstArrayView atimes)
-  : m_path(apath), m_times(atimes){}
+  TimeHistoryCurveWriterInfo(const String& apath, RealConstArrayView atimes)
+  : m_path(apath)
+  , m_times(atimes)
+  {}
 
  public:
 
@@ -139,6 +142,7 @@ class TimeHistoryCurveWriterInfo
 
 #if ARCANE_ALLOW_CURVE_WRITER_PRIVATE_ACCESS
  public:
+
 #else
  private:
 #endif
@@ -166,22 +170,22 @@ class ITimeHistoryCurveWriter2
  public:
 
   //! Libère les ressources
-  virtual ~ITimeHistoryCurveWriter2(){}
+  virtual ~ITimeHistoryCurveWriter2() {}
 
  public:
-	
-  virtual void build() =0;
-  
+
+  virtual void build() = 0;
+
   /*!
    * \brief Notifie un début d'écriture.
    */
-  virtual void beginWrite(const TimeHistoryCurveWriterInfo& infos) =0;
+  virtual void beginWrite(const TimeHistoryCurveWriterInfo& infos) = 0;
 
   /*!
    * \brief Notifie la fin de l'écriture.
    */
-  virtual void endWrite() =0;
-  
+  virtual void endWrite() = 0;
+
   /*!
    * \brief Ecrit une courbe.
    *
@@ -191,10 +195,10 @@ class ITimeHistoryCurveWriter2
    * chaque valeur.
    * \a path contient le répertoire où seront écrites les courbes
    */
-  virtual void writeCurve(const TimeHistoryCurveInfo& infos) =0;
+  virtual void writeCurve(const TimeHistoryCurveInfo& infos) = 0;
 
   //! Nom de l'écrivain
-  virtual String name() const =0;
+  virtual String name() const = 0;
 
   /*!
    * \brief Répertoire de base où seront écrites les courbes.
@@ -202,10 +206,10 @@ class ITimeHistoryCurveWriter2
    * Si nul, c'est le répertoire spécifié lors de beginWrite()
    * qui est utilisé.
    */
-  virtual void setOutputPath(const String& path) =0;
+  virtual void setOutputPath(const String& path) = 0;
 
   //! Répertoire de base où seront écrites les courbes.
-  virtual String outputPath() const =0;
+  virtual String outputPath() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -216,5 +220,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

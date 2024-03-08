@@ -43,14 +43,13 @@ class TimeHistoryAdderTestModule
 
  public:
 
-  VersionInfo versionInfo() const override { return {1, 0, 0}; }
+  VersionInfo versionInfo() const override { return { 1, 0, 0 }; }
   void init() override;
   void loop() override;
   void _writer();
   void _checker();
   void exit() override;
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -100,7 +99,7 @@ _writer()
   // On ajoute une valeur à l'historique "BBB" spécifique au sous-domaine 1.
   global_adder.addValue(TimeHistoryAddValueArg("BBB", true, 1), iteration++);
 
-  for(auto mesh : sd->meshes()){
+  for (auto mesh : sd->meshes()) {
 
     // Création d'un adder spécifique au maillage mesh.
     MeshTimeHistoryAdder mesh_adder(sd->timeHistoryMng(), mesh->handle());
@@ -133,32 +132,30 @@ _checker()
   iterations.clear();
   values.clear();
   sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB")), iterations, values);
-  for(Integer i = 0; i < iteration; ++i){
+  for (Integer i = 0; i < iteration; ++i) {
     debug() << "iteration[" << i << "] = " << iterations[i]
-            << " == i+1 = " << i+1
+            << " == i+1 = " << i + 1
             << " -- values[" << i << "] = " << values[i]
-            << " == i+(adder++) = " << i+adder
-    ;
-    ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
-    ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
+            << " == i+(adder++) = " << i + adder;
+    ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
+    ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
   }
   adder++;
 
   iterations.clear();
   values.clear();
   sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB", true, 0)), iterations, values);
-  if(pm->commRank() == 0) {
+  if (pm->commRank() == 0) {
     for (Integer i = 0; i < iteration; ++i) {
       debug() << "iteration[" << i << "] = " << iterations[i]
-              << " == i+1 = " << i+1
+              << " == i+1 = " << i + 1
               << " -- values[" << i << "] = " << values[i]
-              << " == i+(adder++) = " << i+adder
-      ;
-      ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
-      ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
+              << " == i+(adder++) = " << i + adder;
+      ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
+      ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
     }
   }
-  else{
+  else {
     ARCANE_ASSERT((iterations.empty()), ("Iterations not empty"));
     ARCANE_ASSERT((values.empty()), ("Values not empty"));
   }
@@ -167,53 +164,50 @@ _checker()
   iterations.clear();
   values.clear();
   sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB", true, 1)), iterations, values);
-  if(pm->commRank() == 1) {
-    for(Integer i = 0; i < iteration; ++i){
+  if (pm->commRank() == 1) {
+    for (Integer i = 0; i < iteration; ++i) {
       debug() << "iteration[" << i << "] = " << iterations[i]
-              << " == i+1 = " << i+1
+              << " == i+1 = " << i + 1
               << " -- values[" << i << "] = " << values[i]
-              << " == i+(adder++) = " << i+adder
-      ;
-      ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
-      ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
+              << " == i+(adder++) = " << i + adder;
+      ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
+      ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
     }
   }
-  else{
+  else {
     ARCANE_ASSERT((iterations.empty()), ("Iterations not empty"));
     ARCANE_ASSERT((values.empty()), ("Values not empty"));
   }
   adder++;
 
-  for(auto mesh : sd->meshes()){
+  for (auto mesh : sd->meshes()) {
     iterations.clear();
     values.clear();
     sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB"), mesh->handle()), iterations, values);
-    for(Integer i = 0; i < iteration; ++i){
+    for (Integer i = 0; i < iteration; ++i) {
       debug() << "iteration[" << i << "] = " << iterations[i]
-              << " == i+1 = " << i+1
+              << " == i+1 = " << i + 1
               << " -- values[" << i << "] = " << values[i]
-              << " == i+(adder++) = " << i+adder
-      ;
-      ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
-      ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
+              << " == i+(adder++) = " << i + adder;
+      ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
+      ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
     }
     adder++;
 
     iterations.clear();
     values.clear();
     sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB", true, 0), mesh->handle()), iterations, values);
-    if(pm->commRank() == 0) {
+    if (pm->commRank() == 0) {
       for (Integer i = 0; i < iteration; ++i) {
         debug() << "iteration[" << i << "] = " << iterations[i]
-                << " == i+1 = " << i+1
+                << " == i+1 = " << i + 1
                 << " -- values[" << i << "] = " << values[i]
-                << " == i+(adder++) = " << i+adder
-        ;
-        ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
-        ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
+                << " == i+(adder++) = " << i + adder;
+        ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
+        ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
       }
     }
-    else{
+    else {
       ARCANE_ASSERT((iterations.empty()), ("Iterations not empty"));
       ARCANE_ASSERT((values.empty()), ("Values not empty"));
     }
@@ -222,18 +216,17 @@ _checker()
     iterations.clear();
     values.clear();
     sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB", true, 1), mesh->handle()), iterations, values);
-    if(pm->commRank() == 1) {
-      for(Integer i = 0; i < iteration; ++i){
+    if (pm->commRank() == 1) {
+      for (Integer i = 0; i < iteration; ++i) {
         debug() << "iteration[" << i << "] = " << iterations[i]
-                << " == i+1 = " << i+1
+                << " == i+1 = " << i + 1
                 << " -- values[" << i << "] = " << values[i]
-                << " == i+(adder++) = " << i+adder
-        ;
-        ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
-        ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
+                << " == i+(adder++) = " << i + adder;
+        ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
+        ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
       }
     }
-    else{
+    else {
       ARCANE_ASSERT((iterations.empty()), ("Iterations not empty"));
       ARCANE_ASSERT((values.empty()), ("Values not empty"));
     }

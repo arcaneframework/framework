@@ -45,8 +45,11 @@ class ArcaneCurveWriter
   class Impl : TraceAccessor
   {
    public:
-    Impl(IApplication* app,ITraceMng* tm,const String& path);
+
+    Impl(IApplication* app, ITraceMng* tm, const String& path);
+
    public:
+
     String m_file_name;
     std::ofstream m_stream;
     ScopedPtrT<IXmlDocumentHolder> m_curves_doc;
@@ -56,20 +59,21 @@ class ArcaneCurveWriter
  public:
 
   ArcaneCurveWriter(const ServiceBuildInfo& sbi)
-  : BasicService(sbi), m_version(2)
+  : BasicService(sbi)
+  , m_version(2)
   {}
   ~ArcaneCurveWriter() {}
 
  public:
 
-  virtual void build(){}
+  virtual void build() {}
   virtual void beginWrite(const TimeHistoryCurveWriterInfo& infos);
   virtual void endWrite();
   virtual void writeCurve(const TimeHistoryCurveInfo& infos);
   virtual String name() const { return "ArcaneCurveWriter"; }
   virtual void setOutputPath(const String& path) { m_output_path = path; }
   virtual String outputPath() const { return m_output_path; }
-  
+
  private:
 
   ScopedPtrT<Impl> m_p;
@@ -79,33 +83,32 @@ class ArcaneCurveWriter
  private:
 
   void _writeHeader();
-  template<typename T>
+  template <typename T>
   Int64 _write(ConstArrayView<T> values)
   {
     Int64 offset = m_p->m_stream.tellp();
-    m_p->m_stream.write((const char*)values.data(),values.size()*sizeof(T));
+    m_p->m_stream.write((const char*)values.data(), values.size() * sizeof(T));
     //info() << "OFFSET offset=" << offset;
     return offset;
   }
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ArcaneCurveWriter::Impl::
-Impl(IApplication* app,ITraceMng* tm,const String& path)
+Impl(IApplication* app, ITraceMng* tm, const String& path)
 : TraceAccessor(tm)
 , m_file_name("curves")
 {
   String full_path = path + "/" + m_file_name + ".acv";
   info() << "Begin write curves full_path=" << full_path;
-  m_stream.open(full_path.localstr(),std::ios::trunc);
+  m_stream.open(full_path.localstr(), std::ios::trunc);
   if (!m_stream)
     warning() << "Can not open file '" << full_path << "' for writing curves";
   m_curves_doc = app->ressourceMng()->createXmlDocument();
   XmlNode doc = m_curves_doc->documentNode();
-  m_root_element = XmlElement(doc,"curves");
+  m_root_element = XmlElement(doc, "curves");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -124,13 +127,13 @@ beginWrite(const TimeHistoryCurveWriterInfo& infos)
     m_output_path = path;
 
   info() << A_FUNCNAME << "Begin write curves path=" << path;
-  m_p = new Impl(subDomain()->application(),traceMng(),path);
+  m_p = new Impl(subDomain()->application(), traceMng(), path);
 
   _writeHeader();
   Int64 time_offset = _write(infos.times());
-  m_p->m_root_element.setAttrValue("times-offset",String::fromNumber(time_offset));
-  m_p->m_root_element.setAttrValue("times-size",String::fromNumber(infos.times().size()));
-  m_p->m_root_element.setAttrValue("x","iteration");
+  m_p->m_root_element.setAttrValue("times-offset", String::fromNumber(time_offset));
+  m_p->m_root_element.setAttrValue("times-size", String::fromNumber(infos.times().size()));
+  m_p->m_root_element.setAttrValue("x", "iteration");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -158,9 +161,9 @@ _writeHeader()
   // 4 octets suivant pour indiquer l'indianness.
   Int32 v = 0x01020304;
   Byte* ptr = (Byte*)(&v);
-  for( Integer i=0; i<4; ++i )
-    header[8+i] = ptr[i];
-  m_p->m_stream.write((const char*)header,12);
+  for (Integer i = 0; i < 4; ++i)
+    header[8 + i] = ptr[i];
+  m_p->m_stream.write((const char*)header, 12);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -171,22 +174,22 @@ endWrite()
 {
   ByteUniqueArray bytes;
   m_p->m_curves_doc->save(bytes);
-  if (m_version==2){
+  if (m_version == 2) {
     Int64 write_info[2];
     write_info[0] = _write(bytes.constView());
     write_info[1] = bytes.largeSize();
     // Doit toujours être la dernière écriture du fichier
-    _write(Int64ConstArrayView(2,write_info));
+    _write(Int64ConstArrayView(2, write_info));
   }
-  else if (m_version==1){
+  else if (m_version == 1) {
     Int32 write_info[2];
     write_info[0] = CheckedConvert::toInt32(_write(bytes.constView()));
     write_info[1] = bytes.size();
     // Doit toujours être la dernière écriture du fichier
-    _write(Int32ConstArrayView(2,write_info));
+    _write(Int32ConstArrayView(2, write_info));
   }
   else
-    ARCANE_FATAL("Invalid version {0} (valid values are '1' or '2')",m_version);
+    ARCANE_FATAL("Invalid version {0} (valid values are '1' or '2')", m_version);
 
   info(4) << "End writing curves";
 
@@ -209,16 +212,16 @@ writeCurve(const TimeHistoryCurveInfo& infos)
   // Regarde si les itérations sont contigues auquel cas
   // on ne sauvegarde que la première et la dernière pour
   // gagner de la place.
-  if (nb_val>3){
+  if (nb_val > 3) {
     Int32 first_iter = iterations[0];
-    Int32 last_iter = iterations[nb_val-1];
+    Int32 last_iter = iterations[nb_val - 1];
     Int32 diff = 1 + last_iter - first_iter;
     //info() << "NB_VAL=" << nb_val << " first=" << first_iter
     //       << " last=" << last_iter << " diff=" << diff << " IS_CONTIGOUS=" << (diff==nb_val);
-    if (diff==nb_val){
+    if (diff == nb_val) {
       range_iterations[0] = first_iter;
       range_iterations[1] = last_iter;
-      iterations = Int32ConstArrayView(2,range_iterations);
+      iterations = Int32ConstArrayView(2, range_iterations);
     }
   }
   Int64 iteration_offset = _write(iterations);
@@ -227,25 +230,25 @@ writeCurve(const TimeHistoryCurveInfo& infos)
 
   String name(infos.name().clone());
 
-  if(infos.subDomain() != NULL_SUB_DOMAIN_ID){
+  if (infos.subDomain() != NULL_SUB_DOMAIN_ID) {
     name = "SD" + String::fromNumber(infos.subDomain()) + "_" + name;
   }
-  if(infos.hasSupport()){
+  if (infos.hasSupport()) {
     name = infos.support() + "_" + name;
   }
 
-  node.setAttrValue("name",name);
-  node.setAttrValue("iterations-offset",String::fromNumber(iteration_offset));
-  node.setAttrValue("iterations-size",String::fromNumber(iterations.size()));
-  node.setAttrValue("values-offset",String::fromNumber(values_offset));
-  node.setAttrValue("values-size",String::fromNumber(infos.values().size()));
-  node.setAttrValue("sub-size",String::fromNumber(infos.subSize()));
-  node.setAttrValue("base-name",infos.name());
-  if(infos.hasSupport()){
-    node.setAttrValue("support",infos.support());
+  node.setAttrValue("name", name);
+  node.setAttrValue("iterations-offset", String::fromNumber(iteration_offset));
+  node.setAttrValue("iterations-size", String::fromNumber(iterations.size()));
+  node.setAttrValue("values-offset", String::fromNumber(values_offset));
+  node.setAttrValue("values-size", String::fromNumber(infos.values().size()));
+  node.setAttrValue("sub-size", String::fromNumber(infos.subSize()));
+  node.setAttrValue("base-name", infos.name());
+  if (infos.hasSupport()) {
+    node.setAttrValue("support", infos.support());
   }
-  if(infos.subDomain() != NULL_SUB_DOMAIN_ID){
-    node.setAttrValue("sub-domain",String::fromNumber(infos.subDomain()));
+  if (infos.subDomain() != NULL_SUB_DOMAIN_ID) {
+    node.setAttrValue("sub-domain", String::fromNumber(infos.subDomain()));
   }
 }
 

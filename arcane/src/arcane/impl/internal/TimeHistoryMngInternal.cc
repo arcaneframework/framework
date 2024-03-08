@@ -31,7 +31,7 @@ void TimeHistoryMngInternal::
 addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer)
 {
   m_trace_mng->info() << "Add CurveWriter2 name=" << writer->name();
-  if(m_is_master_io || m_enable_non_io_master_curves)
+  if (m_is_master_io || m_enable_non_io_master_curves)
     m_curve_writers2.insert(writer);
 }
 
@@ -41,8 +41,8 @@ addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer)
 void TimeHistoryMngInternal::
 removeCurveWriter(const String& name)
 {
-  for ( auto& cw : m_curve_writers2)
-    if (cw->name()==name){
+  for (auto& cw : m_curve_writers2)
+    if (cw->name() == name) {
       _removeCurveWriter(cw);
       return;
     }
@@ -58,19 +58,18 @@ updateMetaData()
 
   meta_data_str() << "<?xml version='1.0' ?>\n";
   meta_data_str() << "<curves>\n";
-  for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+  for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
     TimeHistoryValue* val = i->second;
     meta_data_str() << "<curve "
                     << " name='" << val->name() << "'"
                     << " index='" << val->index() << "'"
                     << " data-type='" << dataTypeName(val->dataType()) << "'"
-                    << " sub-size='" << val->subSize() << "'"
-    ;
+                    << " sub-size='" << val->subSize() << "'";
 
-    if(!val->meshHandle().isNull()){
+    if (!val->meshHandle().isNull()) {
       meta_data_str() << " support='" << val->meshHandle().meshName() << "'";
     }
-    if(val->isLocal()){
+    if (val->isLocal()) {
       meta_data_str() << " sub-domain='" << val->localProcId() << "'";
     }
 
@@ -142,23 +141,23 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
   if (!m_is_master_io && !m_enable_non_io_master_curves)
     return;
 
-  if(!m_io_master_write_only){
+  if (!m_io_master_write_only) {
     TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
     writer->beginWrite(infos);
-    for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+    for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
       const TimeHistoryValue& th = *(i->second);
-      th.dumpValues(m_trace_mng,writer,infos);
+      th.dumpValues(m_trace_mng, writer, infos);
     }
     writer->endWrite();
   }
-  else{
-    if(m_is_master_io){
+  else {
+    if (m_is_master_io) {
       TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
       writer->beginWrite(infos);
       // Nos courbes
-      for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+      for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
         const TimeHistoryValue& th = *(i->second);
-        th.dumpValues(m_trace_mng,writer,infos);
+        th.dumpValues(m_trace_mng, writer, infos);
       }
 
       // Les courbes reçues.
@@ -166,7 +165,7 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
         Integer master_io_rank = m_parallel_mng->masterIORank();
         UniqueArray<Int32> length(5);
 
-        for(Integer i=0;i< m_parallel_mng->commSize();++i) {
+        for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
           if (i != master_io_rank) {
             Integer nb_curve = 0;
             m_parallel_mng->recv(ArrayView<Integer>(1, &nb_curve), i);
@@ -183,7 +182,7 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
 
               String name = String(buf.unguardedBasePointer());
 
-              if(length[4] != 0){
+              if (length[4] != 0) {
                 UniqueArray<char> buf2(length[4]);
                 m_parallel_mng->recv(buf2, i);
                 String name_mesh = String(buf2.unguardedBasePointer());
@@ -191,7 +190,7 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
                 TimeHistoryCurveInfo curve_info(name, name_mesh, iterations_to_write, values_to_write, length[3], i);
                 writer->writeCurve(curve_info);
               }
-              else{
+              else {
                 TimeHistoryCurveInfo curve_info(name, iterations_to_write, values_to_write, length[3], i);
                 writer->writeCurve(curve_info);
               }
@@ -202,42 +201,41 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
 
       writer->endWrite();
     }
-    else if(m_enable_non_io_master_curves){
+    else if (m_enable_non_io_master_curves) {
       TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
       Integer master_io_rank = m_parallel_mng->masterIORank();
       Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
       UniqueArray<Int32> length(5);
-      m_parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
-      for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ) {
+      m_parallel_mng->send(ArrayView<Integer>(1, &nb_curve), master_io_rank);
+      for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
         const TimeHistoryValue& th = *(i->second);
         String name = th.name();
         UniqueArray<Int32> iterations_to_write;
         UniqueArray<Real> values_to_write;
         th.arrayToWrite(iterations_to_write, values_to_write, infos);
 
-        length[0] = arcaneCheckArraySize(name.length()+1);
+        length[0] = arcaneCheckArraySize(name.length() + 1);
         length[1] = iterations_to_write.size();
         length[2] = values_to_write.size();
         length[3] = th.subSize();
-        if(!th.meshHandle().isNull()){
+        if (!th.meshHandle().isNull()) {
           length[4] = arcaneCheckArraySize(th.meshHandle().meshName().length() + 1);
         }
-        else{
+        else {
           length[4] = 0;
         }
 
         m_parallel_mng->send(length, master_io_rank);
-        m_parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
+        m_parallel_mng->send(ConstArrayView<char>(length[0], static_cast<const char*>(name.localstr())), master_io_rank);
         m_parallel_mng->send(iterations_to_write, master_io_rank);
         m_parallel_mng->send(values_to_write, master_io_rank);
-        if(!th.meshHandle().isNull()){
-          m_parallel_mng->send(ConstArrayView<char>(length[4],static_cast<const char*>(th.meshHandle().meshName().localstr())), master_io_rank);
+        if (!th.meshHandle().isNull()) {
+          m_parallel_mng->send(ConstArrayView<char>(length[4], static_cast<const char*>(th.meshHandle().meshName().localstr())), master_io_rank);
         }
       }
     }
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -265,12 +263,11 @@ applyTransformation(ITimeHistoryTransformer* v)
 {
   if (!m_is_master_io && !m_enable_non_io_master_curves)
     return;
-  for( IterT<HistoryList> i(m_history_list); i(); ++i ){
+  for (IterT<HistoryList> i(m_history_list); i(); ++i) {
     TimeHistoryValue& th = *(i->second);
-    th.applyTransformation(m_trace_mng,v);
+    th.applyTransformation(m_trace_mng, v);
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -283,16 +280,16 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
   auto p = m_properties;
 
   Int32 version = 0;
-  if (!p->get("version", version)){
+  if (!p->get("version", version)) {
     version = 1;
     m_trace_mng->info() << "The checkpoint contains legacy format of TimeHistory variables, updating...";
     _fromLegacyFormat(default_mesh);
     need_update = true;
   }
-  else if(version == 2){
+  else if (version == 2) {
     m_trace_mng->info() << "TimeHistory Variables version 2";
   }
-  else{
+  else {
     ARCANE_FATAL("Unknown TimeHistory Variables format -- Found version: {0}", version);
   }
 
@@ -302,12 +299,11 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
 
   m_trace_mng->info() << "Reading the values history";
 
-
   IIOMng* io_mng = m_parallel_mng->ioMng();
-  ScopedPtrT<IXmlDocumentHolder> doc(io_mng->parseXmlString(m_th_meta_data(),"meta_data"));
-  if (!doc.get()){
+  ScopedPtrT<IXmlDocumentHolder> doc(io_mng->parseXmlString(m_th_meta_data(), "meta_data"));
+  if (!doc.get()) {
     m_trace_mng->error() << " METADATA len=" << m_th_meta_data().length()
-                    << " str='" << m_th_meta_data() << "'";
+                         << " str='" << m_th_meta_data() << "'";
     ARCANE_FATAL("The meta-data of TimeHistoryMng2 are invalid.");
   }
   XmlNode root_node = doc->documentNode();
@@ -324,7 +320,7 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
   String ustr_support("support");
   String ustr_sub_domain("sub-domain");
 
-  for( XmlNode curve : curves ){
+  for (XmlNode curve : curves) {
     String name = curve.attrValue(ustr_name);
     Integer index = curve.attr(ustr_index).valueAsInteger();
     Integer sub_size = curve.attr(ustr_sub_size).valueAsInteger();
@@ -334,23 +330,23 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
 
     XmlNode sub_domain_node = curve.attr(ustr_sub_domain);
     Integer sub_domain = NULL_SUB_DOMAIN_ID;
-    if(!sub_domain_node.null()){
+    if (!sub_domain_node.null()) {
       sub_domain = sub_domain_node.valueAsInteger();
     }
 
-    if(sub_domain != NULL_SUB_DOMAIN_ID && m_parallel_mng->commRank() != sub_domain){
+    if (sub_domain != NULL_SUB_DOMAIN_ID && m_parallel_mng->commRank() != sub_domain) {
       continue;
     }
 
     if (name.null())
       ARCANE_FATAL("null name for curve");
-    if (index<0)
-      ARCANE_FATAL("Invalid index '{0}' for curve",index);
+    if (index < 0)
+      ARCANE_FATAL("Invalid index '{0}' for curve", index);
 
     TimeHistoryValue* val = nullptr;
-    if(support_str.null()){
+    if (support_str.null()) {
       TimeHistoryAddValueArgInternal thpi(name, true, sub_domain);
-      switch(dt){
+      switch (dt) {
       case DT_Real:
         val = new TimeHistoryValueT<Real>(m_variable_mng, thpi, index, sub_size, isShrinkActive());
         break;
@@ -363,14 +359,14 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
       default:
         break;
       }
-      if(need_update){
+      if (need_update) {
         val->fromOldToNewVariables(m_variable_mng, default_mesh);
       }
     }
-    else{
+    else {
       MeshHandle mh = mesh_mng->findMeshHandle(support_str);
       TimeHistoryAddValueArgInternal thpi(TimeHistoryAddValueArg(name, true, sub_domain), mh);
-      switch(dt){
+      switch (dt) {
       case DT_Real:
         val = new TimeHistoryValueT<Real>(thpi, index, sub_size, isShrinkActive());
         break;
@@ -387,12 +383,12 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
       // ou le même nom qu'un historique "globale".
       name = name + "_" + mh.meshName();
     }
-    if(sub_domain != NULL_SUB_DOMAIN_ID){
+    if (sub_domain != NULL_SUB_DOMAIN_ID) {
       name = name + "_Local";
     }
     if (!val)
       ARCANE_FATAL("Bad data-type");
-    m_history_list.insert(HistoryValueType(name,val));
+    m_history_list.insert(HistoryValueType(name, val));
   }
 }
 
@@ -410,7 +406,7 @@ resizeArrayAfterRestore()
     // au cours du pas de temps.
     // TODO: ce test ne fonctionne pas si isShrinkActive() est vrai.
     Integer n = m_th_global_time.size();
-    if (n>current_iteration){
+    if (n > current_iteration) {
       n = current_iteration;
       m_th_global_time.resize(n);
       m_trace_mng->info() << "TimeHistoryRestore: truncating TimeHistoryGlobalTime array to size n=" << n << "\n";
@@ -419,7 +415,7 @@ resizeArrayAfterRestore()
   m_global_times.resize(m_th_global_time.size());
   m_global_times.copy(m_th_global_time);
 
-  for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+  for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
     i->second->removeAfterIteration(current_iteration);
   }
 }
@@ -431,9 +427,9 @@ void TimeHistoryMngInternal::
 editOutputPath(const Directory& directory)
 {
   m_directory = directory;
-  if (m_output_path.empty()){
+  if (m_output_path.empty()) {
     m_output_path = m_directory.path();
-    if (m_directory.createDirectory()){
+    if (m_directory.createDirectory()) {
       m_trace_mng->warning() << "Can't create the output directory '" << m_output_path << "'";
     }
   }
@@ -445,11 +441,11 @@ editOutputPath(const Directory& directory)
 void TimeHistoryMngInternal::
 iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values)
 {
-  if(!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves)) {
+  if (!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves)) {
     return;
   }
 
-  if(thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localProcId() != m_parallel_mng->commRank()) {
+  if (thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localProcId() != m_parallel_mng->commRank()) {
     return;
   }
 
@@ -473,7 +469,7 @@ iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int3
     TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
     hl->second->arrayToWrite(iterations, values, infos);
   }
-  else{
+  else {
     iterations.clear();
     values.clear();
   }
@@ -491,10 +487,10 @@ _dumpCurvesAllWriters()
     m_trace_mng->info() << "Begin output history: " << platform::getCurrentDateTime();
 
     // Ecriture via version 2 des curve writers
-    for( auto& cw_ref : m_curve_writers2 ){
+    for (auto& cw_ref : m_curve_writers2) {
       ITimeHistoryCurveWriter2* writer = cw_ref.get();
       m_trace_mng->debug() << "Writing curves with '" << writer->name()
-                     << "' date=" << platform::getCurrentDateTime();
+                           << "' date=" << platform::getCurrentDateTime();
       dumpCurves(writer);
     }
   }
@@ -514,13 +510,13 @@ _dumpSummaryOfCurvesLegacy()
     ofile << "<curves>\n";
 
     // On écrit d'abord le nom de nos courbes.
-    for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+    for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
       const TimeHistoryValue& th = *(i->second);
       ofile << "<curve name='";
-      if(!th.meshHandle().isNull()){
+      if (!th.meshHandle().isNull()) {
         ofile << th.meshHandle().meshName() << "_";
       }
-      if(th.isLocal()){
+      if (th.isLocal()) {
         ofile << "SD" << master_io_rank << "_";
       }
       ofile << th.name() << "'/>\n";
@@ -528,21 +524,21 @@ _dumpSummaryOfCurvesLegacy()
     // Puis, si les autres processus peuvent aussi avoir des courbes, on
     // écrit aussi leurs noms.
     if (m_enable_non_io_master_curves) {
-      for(Integer i=0;i< m_parallel_mng->commSize();++i)
-        if(i!=master_io_rank) {
-          Integer nb_curve = 0 ;
-          m_parallel_mng->recv(ArrayView<Integer>(1,&nb_curve),i);
-          for(Integer icurve=0;icurve<nb_curve;++icurve) {
+      for (Integer i = 0; i < m_parallel_mng->commSize(); ++i)
+        if (i != master_io_rank) {
+          Integer nb_curve = 0;
+          m_parallel_mng->recv(ArrayView<Integer>(1, &nb_curve), i);
+          for (Integer icurve = 0; icurve < nb_curve; ++icurve) {
             UniqueArray<Int32> length(2);
-            m_parallel_mng->recv(length,i);
+            m_parallel_mng->recv(length, i);
 
             UniqueArray<char> buf(length[0]);
-            m_parallel_mng->recv(buf,i);
+            m_parallel_mng->recv(buf, i);
             ofile << "<curve name='";
 
-            if(length[1] != 0){
+            if (length[1] != 0) {
               UniqueArray<char> buf2(length[1]);
-              m_parallel_mng->recv(buf2,i);
+              m_parallel_mng->recv(buf2, i);
               ofile << buf2.unguardedBasePointer() << "_";
             }
             ofile << "SD" << i << "_";
@@ -554,25 +550,25 @@ _dumpSummaryOfCurvesLegacy()
   }
 
   // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
-  else if(m_enable_non_io_master_curves) {
+  else if (m_enable_non_io_master_curves) {
     Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
-    m_parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
-    for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+    m_parallel_mng->send(ArrayView<Integer>(1, &nb_curve), master_io_rank);
+    for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
       const TimeHistoryValue& th = *(i->second);
       String name = th.name();
       UniqueArray<Int32> length(2);
-      length[0] = arcaneCheckArraySize(name.length()+1);
-      if(th.meshHandle().isNull()){
+      length[0] = arcaneCheckArraySize(name.length() + 1);
+      if (th.meshHandle().isNull()) {
         length[1] = 0;
         m_parallel_mng->send(length, master_io_rank);
-        m_parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
+        m_parallel_mng->send(ConstArrayView<char>(length[0], static_cast<const char*>(name.localstr())), master_io_rank);
       }
-      else{
+      else {
         String mesh_name = th.meshHandle().meshName();
-        length[1] = arcaneCheckArraySize(mesh_name.length()+1);
+        length[1] = arcaneCheckArraySize(mesh_name.length() + 1);
         m_parallel_mng->send(length, master_io_rank);
-        m_parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
-        m_parallel_mng->send(ConstArrayView<char>(length[1],static_cast<const char*>(mesh_name.localstr())), master_io_rank);
+        m_parallel_mng->send(ConstArrayView<char>(length[0], static_cast<const char*>(name.localstr())), master_io_rank);
+        m_parallel_mng->send(ConstArrayView<char>(length[1], static_cast<const char*>(mesh_name.localstr())), master_io_rank);
       }
     }
   }
@@ -599,31 +595,30 @@ _dumpSummaryOfCurves()
           json_writer.beginArray();
 
           // On écrit d'abord le nom de nos courbes.
-          for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+          for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
             JSONWriter::Object o4(json_writer);
             const TimeHistoryValue& th = *(i->second);
             json_writer.write("name", th.name());
 
             String name("");
 
-            if(!th.meshHandle().isNull()){
+            if (!th.meshHandle().isNull()) {
               json_writer.write("support", th.meshHandle().meshName());
               name = name + th.meshHandle().meshName() + "_";
             }
 
-            if(th.isLocal()){
+            if (th.isLocal()) {
               json_writer.write("sub-domain", master_io_rank);
               name = name + "SD" + String::fromNumber(master_io_rank) + "_";
             }
 
-
-            json_writer.write("unique-name", name+th.name());
+            json_writer.write("unique-name", name + th.name());
           }
 
           // Puis, si les autres processus peuvent aussi avoir des courbes, on
           // écrit aussi leurs noms.
           if (m_enable_non_io_master_curves) {
-            for(Integer i=0;i< m_parallel_mng->commSize();++i) {
+            for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
               if (i != master_io_rank) {
                 Integer nb_curve = 0;
                 m_parallel_mng->recv(ArrayView<Integer>(1, &nb_curve), i);
@@ -648,7 +643,7 @@ _dumpSummaryOfCurves()
                   name = name + "SD" + String::fromNumber(i) + "_";
 
                   json_writer.write("sub-domain", i);
-                  json_writer.write("unique-name", name+buf.unguardedBasePointer());
+                  json_writer.write("unique-name", name + buf.unguardedBasePointer());
                 }
               }
             }
@@ -665,28 +660,28 @@ _dumpSummaryOfCurves()
   }
 
   // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
-  else if(m_enable_non_io_master_curves) {
+  else if (m_enable_non_io_master_curves) {
 
     Integer master_io_rank = m_parallel_mng->masterIORank();
 
     Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
-    m_parallel_mng->send(ArrayView<Integer>(1,&nb_curve),master_io_rank);
-    for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+    m_parallel_mng->send(ArrayView<Integer>(1, &nb_curve), master_io_rank);
+    for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
       const TimeHistoryValue& th = *(i->second);
       String name = th.name();
       UniqueArray<Int32> length(2);
-      length[0] = arcaneCheckArraySize(name.length()+1);
-      if(th.meshHandle().isNull()){
+      length[0] = arcaneCheckArraySize(name.length() + 1);
+      if (th.meshHandle().isNull()) {
         length[1] = 0;
         m_parallel_mng->send(length, master_io_rank);
-        m_parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
+        m_parallel_mng->send(ConstArrayView<char>(length[0], static_cast<const char*>(name.localstr())), master_io_rank);
       }
-      else{
+      else {
         String mesh_name = th.meshHandle().meshName();
-        length[1] = arcaneCheckArraySize(mesh_name.length()+1);
+        length[1] = arcaneCheckArraySize(mesh_name.length() + 1);
         m_parallel_mng->send(length, master_io_rank);
-        m_parallel_mng->send(ConstArrayView<char>(length[0],static_cast<const char*>(name.localstr())), master_io_rank);
-        m_parallel_mng->send(ConstArrayView<char>(length[1],static_cast<const char*>(mesh_name.localstr())), master_io_rank);
+        m_parallel_mng->send(ConstArrayView<char>(length[0], static_cast<const char*>(name.localstr())), master_io_rank);
+        m_parallel_mng->send(ConstArrayView<char>(length[1], static_cast<const char*>(mesh_name.localstr())), master_io_rank);
       }
     }
   }
@@ -703,50 +698,50 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
     return;
   }
 
-  if(!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves)) {
+  if (!m_is_master_io && (!thpi.timeHistoryAddValueArg().isLocal() || !m_enable_non_io_master_curves)) {
     return;
   }
 
-  if(thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localProcId() != m_parallel_mng->commRank()) {
+  if (thpi.timeHistoryAddValueArg().isLocal() && thpi.timeHistoryAddValueArg().localProcId() != m_parallel_mng->commRank()) {
     return;
   }
 
   String name_to_find = thpi.timeHistoryAddValueArg().name().clone();
-  if(!thpi.meshHandle().isNull()){
+  if (!thpi.meshHandle().isNull()) {
     // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
     // ou le même nom qu'un historique "globale".
     name_to_find = name_to_find + "_" + thpi.meshHandle().meshName();
   }
-  if(thpi.timeHistoryAddValueArg().isLocal()){
+  if (thpi.timeHistoryAddValueArg().isLocal()) {
     name_to_find = name_to_find + "_Local";
   }
 
   Integer iteration = m_common_variables.globalIteration();
 
-  if (!thpi.timeHistoryAddValueArg().endTime() && iteration!=0)
+  if (!thpi.timeHistoryAddValueArg().endTime() && iteration != 0)
     --iteration;
 
   auto hl = m_history_list.find(name_to_find);
   TimeHistoryValueT<DataType>* th = nullptr;
   // Trouvé, on le retourne.
-  if (hl!=m_history_list.end())
-    th = dynamic_cast<TimeHistoryValueT<DataType>* >(hl->second);
-  else{
-    if(!thpi.meshHandle().isNull()) {
+  if (hl != m_history_list.end())
+    th = dynamic_cast<TimeHistoryValueT<DataType>*>(hl->second);
+  else {
+    if (!thpi.meshHandle().isNull()) {
       th = new TimeHistoryValueT<DataType>(thpi, (Integer)m_history_list.size(), values.size(), isShrinkActive());
     }
-    else{
+    else {
       th = new TimeHistoryValueT<DataType>(m_variable_mng, thpi, (Integer)m_history_list.size(), values.size(), isShrinkActive());
     }
     m_history_list.insert(HistoryValueType(name_to_find, th));
   }
   if (!th)
     return;
-  if (values.size()!=th->subSize()){
+  if (values.size() != th->subSize()) {
     ARCANE_FATAL("Bad subsize for curve '{0}' current={1} old={2}",
                  name_to_find, values.size(), th->subSize());
   }
-  th->addValue(values,iteration);
+  th->addValue(values, iteration);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -755,7 +750,7 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
 void TimeHistoryMngInternal::
 _destroyAll()
 {
-  for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
+  for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
     TimeHistoryValue* v = i->second;
     delete v;
   }
@@ -769,7 +764,7 @@ _fromLegacyFormat(IMesh* default_mesh)
 {
   IVariable* ptr_old_global_time = m_variable_mng->findMeshVariable(default_mesh, "TimeHistoryGlobalTime");
   IVariable* ptr_old_meta_data = m_variable_mng->findMeshVariable(default_mesh, "TimeHistoryMetaData");
-  if(ptr_old_global_time == nullptr || ptr_old_meta_data == nullptr)
+  if (ptr_old_global_time == nullptr || ptr_old_meta_data == nullptr)
     ARCANE_FATAL("TimeHistoryGlobalTime or TimeHistoryMetaData is not found.");
 
   VariableArrayReal old_global_time(ptr_old_global_time);

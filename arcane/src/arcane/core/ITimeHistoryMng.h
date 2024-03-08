@@ -72,12 +72,14 @@ class TimeHistoryAddValueArg
   {}
 
  public:
+
   const String& name() const { return m_name; }
   bool endTime() const { return m_end_time; }
-  bool isLocal() const { return m_local_proc_id!=NULL_SUB_DOMAIN_ID; }
+  bool isLocal() const { return m_local_proc_id != NULL_SUB_DOMAIN_ID; }
   Integer localProcId() const { return m_local_proc_id; }
 
  private:
+
   String m_name;
   bool m_end_time;
   Integer m_local_proc_id;
@@ -303,10 +305,9 @@ class ITimeHistoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

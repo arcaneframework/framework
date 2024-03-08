@@ -48,7 +48,6 @@
 namespace Arcane
 {
 
-
 /*!
  * \brief Classe de base d'un historique de valeurs.
  *
@@ -82,7 +81,7 @@ class TimeHistoryValue
   //! Imprime les valeurs de l'historique avec l'écrivain \a writer
   virtual void dumpValues(ITraceMng* msg,
                           ITimeHistoryCurveWriter2* writer,
-                          const TimeHistoryCurveWriterInfo& infos) const =0;
+                          const TimeHistoryCurveWriterInfo& infos) const = 0;
 
   /*!
    * \brief Méthode permettant de récupérer les itérations et les valeurs d'un historique de valeur.
@@ -93,7 +92,7 @@ class TimeHistoryValue
    */
   virtual void arrayToWrite(UniqueArray<Int32>& iterations,
                             UniqueArray<Real>& values,
-                            const TimeHistoryCurveWriterInfo& infos) const =0;
+                            const TimeHistoryCurveWriterInfo& infos) const = 0;
 
   /*!
    * \brief Méthode permettant d'appliquer une transformation sur les valeurs
@@ -103,21 +102,21 @@ class TimeHistoryValue
    * \param v Le transformer.
    */
   virtual void applyTransformation(ITraceMng* msg,
-                                   ITimeHistoryTransformer* v) =0;
+                                   ITimeHistoryTransformer* v) = 0;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de valeurs enregistrées.
    *
    * \return Le nombre de valeurs enregistrées.
    */
-  virtual Integer size() const =0;
+  virtual Integer size() const = 0;
 
   /*!
    * \brief Méthode permettant de retirer toutes les valeurs après une certaine itération.
    *
    * \param last_iteration La dernière itération voulu.
    */
-  virtual void removeAfterIteration(Integer last_iteration) =0;
+  virtual void removeAfterIteration(Integer last_iteration) = 0;
 
   //! Nom de l'historique
   const String& name() const { return m_thpi.timeHistoryAddValueArg().name(); }
@@ -175,7 +174,7 @@ class TimeHistoryValue
  *
  * Les historiques doivent être rangées par ordre croissant d'itération.
  */
-template<typename DataType>
+template <typename DataType>
 class TimeHistoryValueT
 : public TimeHistoryValue
 {
@@ -190,11 +189,15 @@ class TimeHistoryValueT
    * et [2] = dernière.
    */
  public:
+
   typedef VariableRefArrayT<DataType> ValueList;
   typedef VariableRefArrayT<Int32> IterationList;
   static const Integer COMPRESSED_TAG = -15;
+
  public:
-  const int VAR_BUILD_FLAGS = IVariable::PNoRestore|IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
+
+  const int VAR_BUILD_FLAGS = IVariable::PNoRestore | IVariable::PExecutionDepend | IVariable::PNoReplicaSync;
+
  public:
 
   /*!
@@ -208,8 +211,8 @@ class TimeHistoryValueT
    */
   TimeHistoryValueT(IVariableMng* vm, const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(thpi, DataTypeTraitsT<DataType>::type(), index, nb_element)
-  , m_values(VariableBuildInfo(vm, String("TimeHistoryMngValues")+index, VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(vm, String("TimeHistoryMngIterations")+index, VAR_BUILD_FLAGS))
+  , m_values(VariableBuildInfo(vm, String("TimeHistoryMngValues") + index, VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(vm, String("TimeHistoryMngIterations") + index, VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
@@ -225,19 +228,20 @@ class TimeHistoryValueT
    */
   TimeHistoryValueT(const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(thpi, DataTypeTraitsT<DataType>::type(), index, nb_element)
-  , m_values(VariableBuildInfo(thpi.meshHandle(), String("TimeHistoryMngValues")+index, VAR_BUILD_FLAGS))
-  , m_iterations(VariableBuildInfo(thpi.meshHandle(), String("TimeHistoryMngIterations")+index, VAR_BUILD_FLAGS))
+  , m_values(VariableBuildInfo(thpi.meshHandle(), String("TimeHistoryMngValues") + index, VAR_BUILD_FLAGS))
+  , m_iterations(VariableBuildInfo(thpi.meshHandle(), String("TimeHistoryMngIterations") + index, VAR_BUILD_FLAGS))
   , m_use_compression(false)
   , m_shrink_history(shrink)
   {
   }
 
  public:
+
   void fromOldToNewVariables(IVariableMng* vm, IMesh* default_mesh) override
   {
-    IVariable* ptr_old_values = vm->findMeshVariable(default_mesh, String("TimeHistory_Values_")+index());
-    IVariable* ptr_old_iterations = vm->findMeshVariable(default_mesh, String("TimeHistory_Iterations_")+index());
-    if(ptr_old_values == nullptr || ptr_old_iterations == nullptr)
+    IVariable* ptr_old_values = vm->findMeshVariable(default_mesh, String("TimeHistory_Values_") + index());
+    IVariable* ptr_old_iterations = vm->findMeshVariable(default_mesh, String("TimeHistory_Iterations_") + index());
+    if (ptr_old_values == nullptr || ptr_old_iterations == nullptr)
       ARCANE_FATAL("Unknown old variable");
 
     ValueList old_values(ptr_old_values);
@@ -264,39 +268,39 @@ class TimeHistoryValueT
    * \param values Les valeurs à ajouter.
    * \param iteration L'itération liée aux valeurs.
    */
-  void addValue(ConstArrayView<DataType> values,Integer iteration)
+  void addValue(ConstArrayView<DataType> values, Integer iteration)
   {
     Integer nb_iteration = m_iterations.size();
     Integer nb_value = m_values.size();
     Integer sub_size = values.size();
-    if (nb_iteration!=0)
-      if (m_iterations[nb_iteration-1]==iteration){
+    if (nb_iteration != 0)
+      if (m_iterations[nb_iteration - 1] == iteration) {
         // Remplace la valeur
-        for( Integer i=0; i<sub_size; ++i )
-          m_values[nb_value-sub_size+i] = values[i];
+        for (Integer i = 0; i < sub_size; ++i)
+          m_values[nb_value - sub_size + i] = values[i];
         return;
       }
-    Integer add_nb_iter = math::max(128,nb_iteration/20);
-    Integer add_nb_value = math::max(1024,nb_value/20);
-    m_iterations.resizeWithReserve(nb_iteration+1,add_nb_iter);
-    m_values.resizeWithReserve(nb_value+sub_size,add_nb_value);
+    Integer add_nb_iter = math::max(128, nb_iteration / 20);
+    Integer add_nb_value = math::max(1024, nb_value / 20);
+    m_iterations.resizeWithReserve(nb_iteration + 1, add_nb_iter);
+    m_values.resizeWithReserve(nb_value + sub_size, add_nb_value);
     m_iterations[nb_iteration] = iteration;
-    for( Integer i=0; i<sub_size; ++i )
-      m_values[nb_value+i] = values[i];
+    for (Integer i = 0; i < sub_size; ++i)
+      m_values[nb_value + i] = values[i];
   }
 
   void removeAfterIteration(Integer last_iteration) override
   {
     Integer size = m_iterations.size();
     Integer last_elem = size;
-    for( Integer i=0; i<size; ++i )
-      if (m_iterations[i]>=last_iteration){
+    for (Integer i = 0; i < size; ++i)
+      if (m_iterations[i] >= last_iteration) {
         last_elem = i;
         break;
       }
-    if (last_elem!=size){
+    if (last_elem != size) {
       m_iterations.resize(last_elem);
-      m_values.resize(last_elem*subSize());
+      m_values.resize(last_elem * subSize());
     }
   }
 
@@ -317,17 +321,17 @@ class TimeHistoryValueT
     arrayToWrite(iterations_to_write, values_to_write, infos);
 
     Integer sd = localProcId();
-    if(!meshHandle().isNull()){
+    if (!meshHandle().isNull()) {
       TimeHistoryCurveInfo curve_info(name(), meshHandle().meshName(), iterations_to_write, values_to_write, subSize(), sd);
       writer->writeCurve(curve_info);
     }
-    else{
+    else {
       TimeHistoryCurveInfo curve_info(name(), iterations_to_write, values_to_write, subSize(), sd);
       writer->writeCurve(curve_info);
     }
   }
 
-  void applyTransformation(ITraceMng* msg,ITimeHistoryTransformer* v) override
+  void applyTransformation(ITraceMng* msg, ITimeHistoryTransformer* v) override
   {
     ITimeHistoryTransformer::CommonInfo ci;
     ci.name = name();
@@ -338,21 +342,21 @@ class TimeHistoryValueT
 
     SharedArray<DataType> values(m_values.asArray());
 
-    v->transform(ci,values);
+    v->transform(ci, values);
 
     Integer nb_iteration = iterations.size();
     Integer nb_value = values.size();
-    if (nb_iteration*sub_size!=nb_value){
+    if (nb_iteration * sub_size != nb_value) {
       msg->warning() << "Bad size after history transformation";
       return;
     }
 
     m_iterations.resize(nb_iteration);
-    for( Integer i=0; i<nb_iteration; ++i )
+    for (Integer i = 0; i < nb_iteration; ++i)
       m_iterations[i] = iterations[i];
 
     m_values.resize(nb_value);
-    for( Integer i=0; i<nb_value; ++i )
+    for (Integer i = 0; i < nb_value; ++i)
       m_values[i] = values[i];
   }
 
@@ -366,11 +370,11 @@ class TimeHistoryValueT
     iterations.clear();
     iterations.reserve(nb_iteration);
     values.clear();
-    values.reserve(nb_iteration*sub_size);
-    for(Integer i=0, is=nb_iteration; i<is; ++i ){
+    values.reserve(nb_iteration * sub_size);
+    for (Integer i = 0, is = nb_iteration; i < is; ++i) {
       Integer iter = m_iterations[i];
-      if (iter<max_iter){
-        for(Integer z=0; z<sub_size; ++z ) {
+      if (iter < max_iter) {
+        for (Integer z = 0; z < sub_size; ++z) {
           values.add(Convert::toReal(m_values[(i * sub_size) + z]));
         }
         iterations.add(iter);
@@ -396,6 +400,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
 : public ITimeHistoryMngInternal
 {
  public:
+
   explicit TimeHistoryMngInternal(IVariableMng* vm, const Ref<Properties>& properties)
   : m_variable_mng(vm)
   , m_trace_mng(m_variable_mng->traceMng())
@@ -405,8 +410,8 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
   , m_io_master_write_only(false)
-  , m_th_meta_data(VariableBuildInfo(m_variable_mng,"TimeHistoryMngMetaData"))
-  , m_th_global_time(VariableBuildInfo(m_variable_mng,"TimeHistoryMngGlobalTime"))
+  , m_th_meta_data(VariableBuildInfo(m_variable_mng, "TimeHistoryMngMetaData"))
+  , m_th_global_time(VariableBuildInfo(m_variable_mng, "TimeHistoryMngGlobalTime"))
   , m_properties(properties)
   , m_version(2)
   {
@@ -429,35 +434,37 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   typedef HistoryList::value_type HistoryValueType;
 
  public:
-  void addValue(const TimeHistoryAddValueArgInternal& thpi,Real value) override
+
+  void addValue(const TimeHistoryAddValueArgInternal& thpi, Real value) override
   {
-    RealConstArrayView values(1,&value);
-    _addHistoryValue(thpi,values);
+    RealConstArrayView values(1, &value);
+    _addHistoryValue(thpi, values);
   }
-  void addValue(const TimeHistoryAddValueArgInternal& thpi,Int64 value) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64 value) override
   {
-    Int64ConstArrayView values(1,&value);
-    _addHistoryValue(thpi,values);
+    Int64ConstArrayView values(1, &value);
+    _addHistoryValue(thpi, values);
   }
-  void addValue(const TimeHistoryAddValueArgInternal& thpi,Int32 value) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32 value) override
   {
-    Int32ConstArrayView values(1,&value);
-    _addHistoryValue(thpi,values);
+    Int32ConstArrayView values(1, &value);
+    _addHistoryValue(thpi, values);
   }
-  void addValue(const TimeHistoryAddValueArgInternal& thpi,RealConstArrayView values) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi, RealConstArrayView values) override
   {
-    _addHistoryValue(thpi,values);
+    _addHistoryValue(thpi, values);
   }
-  void addValue(const TimeHistoryAddValueArgInternal& thpi,Int32ConstArrayView values) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32ConstArrayView values) override
   {
-    _addHistoryValue(thpi,values);
+    _addHistoryValue(thpi, values);
   }
-  void addValue(const TimeHistoryAddValueArgInternal& thpi,Int64ConstArrayView values) override
+  void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64ConstArrayView values) override
   {
-    _addHistoryValue(thpi,values);
+    _addHistoryValue(thpi, values);
   }
 
  public:
+
   void addNowInGlobalTime() override;
   void updateGlobalTimeCurve() override;
   void resizeArrayAfterRestore() override;
@@ -475,6 +482,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values) override;
 
  public:
+
   bool isShrinkActive() const override { return m_is_shrink_active; }
   void setShrinkActive(bool is_active) override { m_is_shrink_active = is_active; }
   bool active() const override { return m_is_active; }
@@ -495,7 +503,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
  * \param thpi Les paramètres pour ajouter les valeurs.
  * \param values Les valeurs à ajouter.
  */
-  template<class DataType>
+  template <class DataType>
   void _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<DataType> values);
 
   /*!
@@ -540,6 +548,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void _removeCurveWriter(const Ref<ITimeHistoryCurveWriter2>& writer);
 
  private:
+
   IVariableMng* m_variable_mng;
   ITraceMng* m_trace_mng;
   IParallelMng* m_parallel_mng;

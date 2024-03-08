@@ -45,6 +45,7 @@ class ITimeHistoryTransformer;
 class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
 {
  public:
+
   explicit TimeHistoryAddValueArgInternal(const TimeHistoryAddValueArg& thp)
   : m_thp(thp)
   , m_mesh_handle()
@@ -61,10 +62,12 @@ class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
   {}
 
  public:
+
   const TimeHistoryAddValueArg& timeHistoryAddValueArg() const { return m_thp; }
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
  private:
+
   TimeHistoryAddValueArg m_thp;
   MeshHandle m_mesh_handle;
 };
@@ -78,6 +81,7 @@ class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
 class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
 {
  public:
+
   virtual ~ITimeHistoryMngInternal() = default; //!< Libère les ressources
 
  public:
@@ -88,7 +92,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param thpi Les paramètres de historique.
    * \param value La valeur à ajouter.
    */
-  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Real value) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Real value) = 0;
 
   /*!
    * \brief Méthode permettant d'ajouter une valeur à un historique.
@@ -96,7 +100,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param thpi Les paramètres de historique.
    * \param value La valeur à ajouter.
    */
-  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32 value) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32 value) = 0;
 
   /*!
    * \brief Méthode permettant d'ajouter une valeur à un historique.
@@ -104,7 +108,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param thpi Les paramètres de historique.
    * \param value La valeur à ajouter.
    */
-  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64 value) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64 value) = 0;
 
   /*!
    * \brief Méthode permettant d'ajouter des valeurs à un historique.
@@ -112,7 +116,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param thpi Les paramètres de historique.
    * \param value Les valeurs à ajouter.
    */
-  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, RealConstArrayView values) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, RealConstArrayView values) = 0;
 
   /*!
    * \brief Méthode permettant d'ajouter des valeurs à un historique.
@@ -120,7 +124,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param thpi Les paramètres de historique.
    * \param value Les valeurs à ajouter.
    */
-  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32ConstArrayView values) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int32ConstArrayView values) = 0;
 
   /*!
    * \brief Méthode permettant d'ajouter des valeurs à un historique.
@@ -128,7 +132,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param thpi Les paramètres de historique.
    * \param value Les valeurs à ajouter.
    */
-  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64ConstArrayView values) =0;
+  virtual void addValue(const TimeHistoryAddValueArgInternal& thpi, Int64ConstArrayView values) = 0;
 
   /*!
    * \brief Méthode permettant d'ajouter le GlobalTime actuel au tableau des GlobalTimes.
@@ -152,17 +156,17 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param master_only Si tous les historiques doivent être transférés sur
    *                    le masterIO avant la copie.
    */
-  virtual void dumpCurves(ITimeHistoryCurveWriter2* writer) =0;
+  virtual void dumpCurves(ITimeHistoryCurveWriter2* writer) = 0;
 
   /*!
    * \brief Méthode permettant d'écrire toutes les courbes à l'aide de tous les writers enregistrés.
    */
-  virtual void dumpHistory() =0;
+  virtual void dumpHistory() = 0;
 
   /*!
    * \brief Méthode permettant de mettre à jour les méta-données des courbes.
    */
-  virtual void updateMetaData() =0;
+  virtual void updateMetaData() = 0;
 
   /*!
    * \brief Méthode permettant de récupérer les courbes précédemment écrites lors d'une reprise.
@@ -171,37 +175,37 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param default_mesh Un pointeur vers le maillage par défaut (nécessaire uniquement pour
    *                     la récupération d'anciens checkpoints).
    */
-  virtual void readVariables(IMeshMng* mesh_mng, IMesh* default_mesh) =0;
+  virtual void readVariables(IMeshMng* mesh_mng, IMesh* default_mesh) = 0;
 
   /*!
    * \brief Méthode permettant d'ajouter un écrivain pour la sortie des courbes.
    *
    * \param writer Une ref vers l'écrivain.
    */
-  virtual void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) =0;
+  virtual void addCurveWriter(Ref<ITimeHistoryCurveWriter2> writer) = 0;
 
   /*!
    * \brief Méthode permettant de retirer un écrivain.
    *
    * \param writer Le nom de l'écrivain.
    */
-  virtual void removeCurveWriter(const String& name) =0;
+  virtual void removeCurveWriter(const String& name) = 0;
 
   /*!
    * \brief Applique la transformation \a v à l'ensemble des courbes.
    *
    * \param v La transformation à appliquer.
    */
-  virtual void applyTransformation(ITimeHistoryTransformer* v) =0;
+  virtual void applyTransformation(ITimeHistoryTransformer* v) = 0;
 
   /*!
    * \brief Retourne un booléen indiquant si l'historique est compressé
    */
-  virtual bool isShrinkActive() const =0;
+  virtual bool isShrinkActive() const = 0;
   /*!
    * \brief Positionne le booléen indiquant si l'historique est compressé
    */
-  virtual void setShrinkActive(bool is_active) =0;
+  virtual void setShrinkActive(bool is_active) = 0;
 
   /*!
    * \brief Indique l'état d'activation.
@@ -210,12 +214,12 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * est active. Dans le cas contraire, les appels à addValue() sont
    * ignorés.
    */
-  virtual bool active() const =0;
+  virtual bool active() const = 0;
   /*!
    * \brief Positionne l'état d'activation.
    * \sa active().
    */
-  virtual void setActive(bool is_active) =0;
+  virtual void setActive(bool is_active) = 0;
 
   /*!
    * \brief Indique l'état d'activation des sorties.
@@ -223,11 +227,11 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * La fonction dumpHistory() est inactives
    * si isDumpActive() est faux.
    */
-  virtual bool isDumpActive() const =0;
+  virtual bool isDumpActive() const = 0;
   /*!
    * \brief Positionne l'état d'activation des sorties.
    */
-  virtual void setDumpActive(bool is_active) =0;
+  virtual void setDumpActive(bool is_active) = 0;
 
   /*!
    * \brief Méthode permettant de savoir si notre processus est l'écrivain.
@@ -278,8 +282,6 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param values [OUT] Les valeurs récupérées.
    */
   virtual void iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values) = 0;
-
-
 };
 
 /*---------------------------------------------------------------------------*/
@@ -290,5 +292,4 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

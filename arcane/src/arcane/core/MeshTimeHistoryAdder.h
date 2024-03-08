@@ -75,6 +75,7 @@ class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
 : public ITimeHistoryAdder
 {
  public:
+
   /*!
    * \brief Constructeur.
    *
@@ -85,6 +86,7 @@ class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
   ~MeshTimeHistoryAdder() override = default;
 
  public:
+
   void addValue(const TimeHistoryAddValueArg& thp, Real value) override;
   void addValue(const TimeHistoryAddValueArg& thp, Int32 value) override;
   void addValue(const TimeHistoryAddValueArg& thp, Int64 value) override;
@@ -93,6 +95,7 @@ class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
   void addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values) override;
 
  private:
+
   ITimeHistoryMng* m_thm;
   MeshHandle m_mesh_handle;
 };

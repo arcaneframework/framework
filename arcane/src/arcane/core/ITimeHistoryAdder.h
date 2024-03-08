@@ -38,9 +38,11 @@ namespace Arcane
 class ITimeHistoryAdder
 {
  public:
+
   virtual ~ITimeHistoryAdder() = default; //!< Libère les ressources
 
  public:
+
   /*!
    * \brief Méthode permettant d'ajouter une valeur à un historique.
    *
@@ -93,10 +95,9 @@ class ITimeHistoryAdder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
