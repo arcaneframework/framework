@@ -681,14 +681,14 @@ TEST(TestSYCLMV, CombineAddBuilder)
       auto hview = builder.hostView();
       for(std::size_t irow=0;irow<local_size;++irow)
       {
-          for(std::size_t k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
+          for(auto k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
           {
             norme_A += hview[k]*hview[k] ;
           }
       }
       trace_mng->info() << "NORME2 A : "<<norme_A ;
 
-      ASSERT_EQ(106.9212, norme_A);
+      ASSERT_DOUBLE_EQ(106.9212, norme_A);
     }
   }
 }

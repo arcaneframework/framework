@@ -91,14 +91,13 @@ namespace SYCL
               {
                 auto eij = this->entryIndex(row_index,col_index) ;
                 auto offset = eij*m_max_nb_contributors ;
-                for(int c=0;c<m_max_nb_contributors;++c)
+                for(std::size_t c=0;c<m_max_nb_contributors;++c)
                 {
                   if(m_contributor_indexes[offset+c]==contrib_index)
                     break ;
                   if(m_contributor_indexes[offset+c]==-1)
                   {
                     m_contributor_indexes[offset+c] = contrib_index ;
-                    std::cout<<"CONTRIB("<<contrib_index<<","<<row_index<<","<<col_index<<")"<<eij<<","<<c<<","<<offset+c<<std::endl ;
                     break ;
                   }
                 }
@@ -112,7 +111,6 @@ namespace SYCL
         f(col,irow,col) ;
       }
     }
-    std::cout<<"NNZ : "<<m_nnz<<" "<<m_combine_size<<std::endl ;
     m_impl.reset(new Impl{m_combine_size,m_contributor_indexes.data()}) ;
   }
 
@@ -136,7 +134,7 @@ namespace SYCL
                   IndexAccessorType kcol_accessor,
                   ValueAccessorType combine_values_accessor,
                   IndexAccessorType prow_cols_accessor,
-                  int nb_contributor)
+                  std::size_t nb_contributor)
     : BaseType(values_accessor,cols_accessor,kcol_accessor)
     , m_combine_values_accessor(combine_values_accessor)
     , m_prow_cols_accessor(prow_cols_accessor)
@@ -149,10 +147,10 @@ namespace SYCL
       for(auto k=this->m_kcol_accessor[row];k<this->m_kcol_accessor[row+1];++k)
         if(this->m_cols_accessor[k]==col)
         {
-          for(int j=0;j<m_nb_contributor;++j)
+          for(std::size_t j=0;j<m_nb_contributor;++j)
           {
             if(m_prow_cols_accessor[m_nb_contributor*k+j]==prow)
-              return m_nb_contributor*k+j ;
+              return (IndexT)m_nb_contributor*k+j ;
           }
         }
       return -1 ;
@@ -166,7 +164,7 @@ namespace SYCL
   private :
     ValueAccessorType m_combine_values_accessor ;
     IndexAccessorType m_prow_cols_accessor ;
-    int m_nb_contributor = 0 ;
+    std::size_t m_nb_contributor = 0 ;
   } ;
 
   /*---------------------------------------------------------------------------*/
@@ -233,7 +231,7 @@ namespace SYCL
              IndexAccessorType kcol,
              ValueAccessorType combine_values,
              IndexAccessorType prow_cols,
-             int nb_contributor)
+             std::size_t nb_contributor)
     : BaseType(values,cols,kcol)
     , m_combine_values(combine_values)
     , m_prow_cols(prow_cols)
@@ -245,7 +243,7 @@ namespace SYCL
       for(auto k=this->m_kcol[row];k<this->m_kcol[row+1];++k)
         if(this->m_cols[k]==col)
         {
-          for(int j=0;j<m_nb_contributor;++j)
+          for(std::size_t j=0;j<m_nb_contributor;++j)
           {
             if(m_prow_cols[m_nb_contributor*k+j]==prow)
               return m_nb_contributor*k+j ;
@@ -257,7 +255,7 @@ namespace SYCL
   private:
     ValueAccessorType m_combine_values ;
     IndexAccessorType m_prow_cols;
-    int m_nb_contributor = 0 ;
+    std::size_t m_nb_contributor = 0 ;
   };
 
 

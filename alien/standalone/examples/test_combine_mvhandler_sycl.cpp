@@ -428,7 +428,7 @@ int main(int argc, char** argv)
       for(std::size_t irow=0;irow<local_size;++irow)
       {
           trace_mng->info() <<" ROW ["<<irow<<"]:";
-          for(std::size_t k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
+          for(auto k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
           {
             norme_A += hview[k]*hview[k] ;
             trace_mng->info() <<"\t("<<irow<<","<<hview.col(k)<<","<<hview[k]<<")";
@@ -442,7 +442,7 @@ int main(int argc, char** argv)
       auto hview = builder.hostView();
       for(std::size_t irow=0;irow<local_size;++irow)
       {
-          for(std::size_t k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
+          for(auto k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
           {
             norme_A += hview[k]*hview[k] ;
           }
