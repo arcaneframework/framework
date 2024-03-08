@@ -80,7 +80,7 @@ _checkReference()
 inline void StringImpl::
 _finalizeUtf8Creation()
 {
-  m_flags = eValidUtf8;
+  m_flags |= eValidUtf8;
   // \a m_utf8_array doit toujours avoir un zéro terminal.
   if (m_utf8_array.empty())
     m_utf8_array.add('\0');
@@ -445,6 +445,7 @@ _createUtf16()
     return;
 
   if (m_flags & eValidUtf8){
+    ARCCORE_ASSERT(m_utf16_array.empty(),("Not empty utf16_array"));
     BasicTranscoder::transcodeFromUtf8ToUtf16(m_utf8_array,m_utf16_array);
     m_flags |= eValidUtf16;
     return;
@@ -463,6 +464,7 @@ _createUtf8()
     return;
 
   if (m_flags & eValidUtf16){
+    ARCCORE_ASSERT(m_utf8_array.empty(),("Not empty utf8_array"));
     BasicTranscoder::transcodeFromUtf16ToUtf8(m_utf16_array,m_utf8_array);
     _finalizeUtf8Creation();
     return;
@@ -480,7 +482,7 @@ _setUtf16(Span<const UChar> src)
   m_utf16_array = src;
   if (m_utf16_array.empty())
     m_utf16_array.add(0);
-  else if (m_utf16_array.back()!='0')
+  else if (m_utf16_array.back()!='\0')
     m_utf16_array.add(0);
 }
 
@@ -525,10 +527,10 @@ void StringImpl::
 _printStrUtf8(std::ostream& o,Span<const Byte> str)
 {
   Int64 buf_size = str.size();
-  o << "(bufsize=" << buf_size
-    << " - "
-    << (const char*)str.data()
-    << ")";
+  o << "(bufsize=" << buf_size << " - ";
+  for( Int64 i=0; i<buf_size; ++i )
+    o << (int)str[i] << ' ';
+  o << ")";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -537,12 +539,12 @@ _printStrUtf8(std::ostream& o,Span<const Byte> str)
 void StringImpl::
 internalDump(std::ostream& ostr)
 {
-  ostr << "(utf8=valid=" << (m_flags & eValidUtf8)
+  ostr << "(utf8=valid=" << ((m_flags & eValidUtf8)!=0)
        << ",len=" << m_utf8_array.size() << ",val=";
   _printStrUtf8(ostr,m_utf8_array);
   ostr << ")";
 
-  ostr << "(utf16=valid" << (m_flags & eValidUtf16)
+  ostr << "(utf16=valid=" << ((m_flags & eValidUtf16)!=0)
        << ",len=" << m_utf16_array.size() << ",val=";
   _printStrUtf16(ostr,m_utf16_array);
   ostr << ")";
