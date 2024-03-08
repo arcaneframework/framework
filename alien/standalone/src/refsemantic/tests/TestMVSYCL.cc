@@ -10,6 +10,14 @@
 #include <cmath>
 #include <gtest/gtest.h>
 
+#include <alien/distribution/MatrixDistribution.h>
+#include <alien/distribution/VectorDistribution.h>
+#include <alien/index_manager/IIndexManager.h>
+#include <alien/index_manager/IndexManager.h>
+#include <alien/index_manager/functional/AbstractItemFamily.h>
+#include <alien/index_manager/functional/BasicIndexManager.h>
+#include <alien/index_manager/functional/DefaultAbstractFamily.h>
+
 #include <alien/ref/AlienImportExport.h>
 //#include <alien/ref/mv_expr/MVExpr.h>
 
@@ -24,6 +32,7 @@
 #include <alien/handlers/scalar/sycl/VectorAccessorT.h>
 #include <alien/handlers/scalar/sycl/MatrixProfiler.h>
 #include <alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h>
+#include <alien/handlers/scalar/sycl/CombineProfiledMatrixBuilderT.h>
 
 #include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
@@ -34,6 +43,7 @@
 #include <alien/kernels/sycl/data/SYCLParallelEngineImplT.h>
 #include <alien/handlers/scalar/sycl/VectorAccessorImplT.h>
 #include <alien/handlers/scalar/sycl/ProfiledMatrixBuilderImplT.h>
+#include <alien/handlers/scalar/sycl/CombineProfiledMatrixBuilderImplT.h>
 
 // Tests the default c'tor.
 TEST(TestSYCLMV, SYCLExpr)
@@ -365,5 +375,320 @@ TEST(TestSYCLMV, HCSR2SYCLConverter)
       trace_mng->info() << "NORME2 Y=A*X : "<<norme_y ;
       ASSERT_EQ(1102501, norme_y);
      }
+  }
+}
+
+struct Mesh
+{
+  int m_nx;
+  int m_ny;
+  int nodeLid(int i, int j) const {
+    return j*m_nx+i ;
+  }
+  int cellLid(int i, int j) const {
+    return j*(m_nx-1)+i ;
+  }
+  int nbNodes() const {
+    return m_nx*m_ny ;
+  }
+  int nbCells() const {
+    return (m_nx-1)*(m_ny-1) ;
+  }
+};
+
+template<>
+struct sycl::is_device_copyable<Mesh> : std::true_type {};
+
+TEST(TestSYCLMV, CombineAddBuilder)
+{
+  using namespace Alien;
+  Alien::ITraceMng* trace_mng = AlienTest::Environment::traceMng();
+  auto pm = AlienTest::Environment::parallelMng() ;
+
+  auto comm_size = pm->commSize();
+  auto comm_rank = pm->commRank();
+
+  int ny       = 3 ;
+  int local_nx = 3 ;
+  int nx = local_nx * comm_size ;
+
+  auto node_global_size = nx * ny;
+  auto cell_global_size = (nx - 1) * (ny - 1);
+
+  auto mesh = Mesh{nx,ny} ;
+
+  Alien::UniqueArray<Alien::Int64> node_uid;
+  Alien::UniqueArray<Alien::Integer> node_lid;
+  Alien::UniqueArray<Alien::Int64> cell_uid;
+  Alien::UniqueArray<Alien::Integer> cell_lid;
+
+  auto node_local_size = local_nx * ny;
+  node_uid.reserve(node_local_size);
+  node_lid.reserve(node_local_size);
+  for (int i = 0; i < node_local_size; ++i) {
+    node_uid.add(comm_rank * node_local_size + i);
+    node_lid.add(i);
+  }
+
+  auto node_family = Alien::DefaultAbstractFamily(node_uid, pm);
+
+  auto cell_local_size = local_nx * (ny - 1);
+  if (comm_rank == comm_size - 1)
+    cell_local_size = (local_nx-1) * (ny - 1);
+
+  cell_uid.reserve(cell_local_size);
+  cell_lid.reserve(cell_local_size);
+  for (int i = 0; i < cell_local_size; ++i) {
+    cell_uid.add(comm_rank * cell_local_size + i);
+    cell_lid.add(i);
+  }
+
+  Alien::DefaultAbstractFamily cell_family(cell_uid, pm);
+
+  Alien::IndexManager index_manager(pm);
+
+  auto indexSetU = index_manager.buildScalarIndexSet("U", node_lid, node_family, 0);
+  auto indexSetV = index_manager.buildScalarIndexSet("V", cell_lid, cell_family, 1);
+
+  index_manager.prepare();
+
+  auto allUIndex = index_manager.getIndexes(indexSetU) ;
+  auto allVIndex = index_manager.getIndexes(indexSetV) ;
+
+  auto space = Alien::Space(index_manager.globalSize(), "MySpace");
+
+  auto mdist = Alien::MatrixDistribution(space, space, pm);
+  auto vdist = Alien::VectorDistribution(space, pm);
+  auto A = Alien::Matrix(mdist); // A.setName("A") ;
+
+  auto local_size = vdist.localSize();
+  auto offset = vdist.offset();
+
+  {
+    Alien::SYCL::MatrixProfiler profiler(A);
+    for (Integer i = 0; i < nx; ++i) {
+        for (Integer j = 0; j< ny; ++j) {
+            Integer node_lid = mesh.nodeLid(i,j) ;
+            Integer row = allUIndex[node_lid];
+            profiler.addMatrixEntry(row, row);
+            if(j<ny-1)
+            {
+              if(i<nx-1)
+              {
+                Integer cell_lid = mesh.cellLid(i,j) ;
+                Integer col = allVIndex[cell_lid] ;
+                profiler.addMatrixEntry(row, col);
+              }
+              if(i>0)
+              {
+                Integer cell_lid =  mesh.cellLid(i-1,j) ;
+                Integer col = allVIndex[cell_lid] ;
+                profiler.addMatrixEntry(row, col);
+              }
+            }
+            if(j>0)
+            {
+              if(i<nx-1)
+              {
+                Integer cell_lid =  mesh.cellLid(i,j-1) ;
+                Integer col = allVIndex[cell_lid] ;
+                profiler.addMatrixEntry(row, col);
+              }
+              if(i>0)
+              {
+                Integer cell_lid =  mesh.cellLid(i-1,j-1) ;
+                Integer col = allVIndex[cell_lid] ;
+                profiler.addMatrixEntry(row, col);
+              }
+            }
+        }
+    }
+    for (Integer i = 0; i < nx-1; ++i) {
+        for (Integer j = 0; j< ny-1; ++j) {
+            Integer cell_lid = mesh.cellLid(i,j) ;
+            Integer row = allVIndex[cell_lid] ;
+            profiler.addMatrixEntry(row, row);
+            Integer col0 = allUIndex[mesh.nodeLid(i,j)] ;
+            profiler.addMatrixEntry(row, col0);
+            Integer col1 = allUIndex[mesh.nodeLid(i+1,j)] ;
+            profiler.addMatrixEntry(row, col1);
+            Integer col2 = allUIndex[mesh.nodeLid(i+1,j+1)] ;
+            profiler.addMatrixEntry(row, col2);
+            Integer col3 = allUIndex[mesh.nodeLid(i+1,j)] ;
+            profiler.addMatrixEntry(row, col3);
+        }
+    }
+  }
+
+  Alien::UniqueArray<Alien::Integer> connection_offset(local_size+1);
+  connection_offset.fill(0) ;
+  for(int i=0;i<nx-1;++i)
+    for(int j=0;j<ny-1;++j)
+      {
+        auto cell_id = mesh.cellLid(i,j) ;
+        connection_offset[allVIndex[cell_id]] = 4 ;
+      }
+  {
+    int offset = 0 ;
+    for(int index=0;index<local_size;++index)
+      {
+        auto size = connection_offset[index] ;
+        connection_offset[index] = offset ;
+        offset += size ;
+      }
+    connection_offset[local_size] = offset ;
+  }
+  Alien::UniqueArray<Alien::Integer> connection_index(connection_offset[local_size]);
+  {
+    for(int i=0;i<nx-1;++i)
+      for(int j=0;j<ny-1;++j)
+        {
+          auto cell_id = mesh.cellLid(i,j) ;
+          auto offset =  connection_offset[allVIndex[cell_id]] ;
+          {
+            auto node_id = mesh.nodeLid(i,j) ;
+            auto u_index = allUIndex[node_id] ;
+            connection_index[offset+0] = u_index ;
+          }
+          {
+            auto node_id = mesh.nodeLid(i+1,j) ;
+            auto u_index = allUIndex[node_id] ;
+            connection_index[offset+1] = u_index ;
+          }
+          {
+            auto node_id = mesh.nodeLid(i+1,j+1) ;
+            auto u_index = allUIndex[node_id] ;
+            connection_index[offset+2] = u_index ;
+          }
+          {
+            auto node_id = mesh.nodeLid(i,j+1) ;
+            auto u_index = allUIndex[node_id] ;
+            connection_index[offset+3] = u_index ;
+          }
+        }
+  }
+  Real cell_diag = 1. ;
+  Real node_diag = 2. ;
+  Real node_cell_off_diag = 0.1 ;
+  Real cell_node_off_diag = 0.01 ;
+
+  Alien::SYCLParallelEngine engine;
+  {
+    Alien::SYCL::CombineAddProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
+    builder.setParallelAssembleStencil(4,connection_offset.view(),connection_index.view()) ;
+    {
+      auto hview = builder.hostView();
+
+      for(int i=0;i<nx;++i)
+        for(int j=0;j<ny;++j)
+        {
+          auto node_id = mesh.nodeLid(i,j) ;
+          auto row = allUIndex[node_id] ;
+          if(j<ny-1)
+          {
+            if(i<nx-1)
+            {
+              Integer cell_lid = mesh.cellLid(i,j) ;
+              Integer col = allVIndex[cell_lid] ;
+              auto eij = hview.entryIndex(row,col) ;
+              auto ejjk = hview.combineEntryIndex(row,col,col) ;
+              auto ejik = hview.combineEntryIndex(row,col,row) ;
+            }
+          }
+        }
+    }
+    auto allUIndex_buffer = sycl::buffer<Integer,1>{allUIndex.data(),sycl::range(allUIndex.size())} ;
+    auto allVIndex_buffer = sycl::buffer<Integer,1>{allVIndex.data(),sycl::range(allVIndex.size())} ;
+
+    engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
+                  {
+                    auto matrix_acc = builder.view(cgh) ;
+                    auto allUIndex_acc = allUIndex_buffer.get_access<sycl::access::mode::read>(cgh.m_internal) ;
+                    auto allVIndex_acc = allVIndex_buffer.get_access<sycl::access::mode::read>(cgh.m_internal) ;
+                    cgh.parallel_for(nx,
+                                     ny,
+                                     [=](Alien::SYCLParallelEngine::Item<2> item)
+                                     {
+                                        auto i = item.get_id(0);
+                                        auto j = item.get_id(1);
+                                        auto node_id = mesh.nodeLid(i,j) ;
+                                        auto row = allUIndex_acc[node_id] ;
+                                        auto eii = matrix_acc.entryIndex(row,row) ;
+                                        matrix_acc[eii] = node_diag ;
+
+                                        if(j<ny-1)
+                                        {
+                                          if(i<nx-1)
+                                          {
+                                            Integer cell_lid = mesh.cellLid(i,j) ;
+                                            Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
+                                            auto eij = matrix_acc.entryIndex(row,col) ;
+                                            matrix_acc[eij] = - node_cell_off_diag ;
+                                            auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
+                                            matrix_acc.combine(ejjk, cell_diag) ;
+                                            auto ejik = matrix_acc.combineEntryIndex(row,col,row) ;
+                                            matrix_acc.combine(ejik, -cell_node_off_diag) ;
+                                          }
+
+                                          if(i>0)
+                                          {
+                                            Integer cell_lid =  mesh.cellLid(i-1,j) ;
+                                            Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
+                                            auto eij = matrix_acc.entryIndex(row,col) ;
+                                            matrix_acc[eij] = - node_cell_off_diag ;
+                                            auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
+                                            matrix_acc.combine(ejjk, cell_diag) ;
+                                            auto ejik = matrix_acc.combineEntryIndex(row,col,row) ;
+                                            matrix_acc.combine(ejik,- cell_node_off_diag) ;
+                                          }
+                                        }
+
+                                        if(j>0)
+                                        {
+                                          if(i<nx-1)
+                                          {
+                                            Integer cell_lid =  mesh.cellLid(i,j-1) ;
+                                            Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
+                                            auto eij = matrix_acc.entryIndex(row,col) ;
+                                            matrix_acc[eij] = - node_cell_off_diag ;
+                                            auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
+                                            matrix_acc.combine(ejjk, cell_diag) ;
+                                            auto ejik = matrix_acc.combineEntryIndex(row,col,row) ;
+                                            matrix_acc.combine(ejik,- cell_node_off_diag) ;
+                                          }
+                                          if(i>0)
+                                          {
+                                            Integer cell_lid =  mesh.cellLid(i-1,j-1) ;
+                                            Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
+                                            auto eij = matrix_acc.entryIndex(row,col) ;
+                                            matrix_acc[eij] = - node_cell_off_diag ;
+                                            auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
+                                            matrix_acc.combine(ejjk, cell_diag) ;
+                                            auto ejik = matrix_acc.combineEntryIndex(row,col,row) ;
+                                            matrix_acc.combine(ejik,- cell_node_off_diag) ;
+                                          }
+                                        }
+                                     });
+                  }) ;
+    builder.combine() ;
+
+    {
+      Real norme_A = 0. ;
+      auto hview = builder.hostView();
+      for(std::size_t irow=0;irow<local_size;++irow)
+      {
+          for(std::size_t k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
+          {
+            norme_A += hview[k]*hview[k] ;
+          }
+      }
+      trace_mng->info() << "NORME2 A : "<<norme_A ;
+
+      ASSERT_EQ(106.9212, norme_A);
+    }
   }
 }

@@ -71,14 +71,25 @@ namespace Alien
       void setParallelAssembleStencil(std::size_t max_nb_contributors,
                                       Arccore::ConstArrayView<IndexT> stencil_offsets,
                                       Arccore::ConstArrayView<IndexT> stencil_indexes) ;
+
+      std::size_t combineSize() const {
+        return m_combine_size ;
+      }
+
       class View ;
 
       View view(SYCLControlGroupHandler& cgh) ;
+
+      class HostView ;
+
+      HostView hostView() ;
 
       void combine();
 
      private:
       std::unique_ptr<Impl> m_impl;
+      std::size_t m_nnz = 0 ;
+      std::size_t m_combine_size = 0 ;
 
       std::size_t m_max_nb_contributors = 0 ;
       std::vector<IndexT> m_contributor_indexes ;

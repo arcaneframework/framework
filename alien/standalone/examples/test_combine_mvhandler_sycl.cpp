@@ -251,6 +251,7 @@ int main(int argc, char** argv)
         for (Integer j = 0; j< ny-1; ++j) {
             Integer cell_lid = mesh.cellLid(i,j) ;
             Integer row = allVIndex[cell_lid] ;
+            profiler.addMatrixEntry(row, row);
             Integer col0 = allUIndex[mesh.nodeLid(i,j)] ;
             profiler.addMatrixEntry(row, col0);
             Integer col1 = allUIndex[mesh.nodeLid(i+1,j)] ;
@@ -319,10 +320,30 @@ int main(int argc, char** argv)
   {
     Alien::SYCL::CombineAddProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
     builder.setParallelAssembleStencil(4,connection_offset.view(),connection_index.view()) ;
+    {
+      auto hview = builder.hostView();
 
+      for(int i=0;i<nx;++i)
+        for(int j=0;j<ny;++j)
+        {
+          auto node_id = mesh.nodeLid(i,j) ;
+          auto row = allUIndex[node_id] ;
+          if(j<ny-1)
+          {
+            if(i<nx-1)
+            {
+              Integer cell_lid = mesh.cellLid(i,j) ;
+              Integer col = allVIndex[cell_lid] ;
+              auto eij = hview.entryIndex(row,col) ;
+              auto ejjk = hview.combineEntryIndex(row,col,col) ;
+              auto ejik = hview.combineEntryIndex(row,col,row) ;
+              std::cout<<"("<<i<<","<<j<<") COMBINE ENTRY INDEX("<<row<<","<<col<<")"<<eij<<","<<ejjk<<","<<ejik<<std::endl ;
+            }
+          }
+        }
+    }
     auto allUIndex_buffer = sycl::buffer<Integer,1>{allUIndex.data(),sycl::range(allUIndex.size())} ;
     auto allVIndex_buffer = sycl::buffer<Integer,1>{allVIndex.data(),sycl::range(allVIndex.size())} ;
-
 
     engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
                   {
@@ -346,17 +367,20 @@ int main(int argc, char** argv)
                                           {
                                             Integer cell_lid = mesh.cellLid(i,j) ;
                                             Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
                                             auto eij = matrix_acc.entryIndex(row,col) ;
                                             matrix_acc[eij] = - node_cell_off_diag ;
                                             auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
                                             matrix_acc.combine(ejjk, cell_diag) ;
                                             auto ejik = matrix_acc.combineEntryIndex(row,col,row) ;
-                                            matrix_acc.combine(ejik,- cell_node_off_diag) ;
+                                            matrix_acc.combine(ejik, -cell_node_off_diag) ;
                                           }
+
                                           if(i>0)
                                           {
                                             Integer cell_lid =  mesh.cellLid(i-1,j) ;
                                             Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
                                             auto eij = matrix_acc.entryIndex(row,col) ;
                                             matrix_acc[eij] = - node_cell_off_diag ;
                                             auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
@@ -372,6 +396,7 @@ int main(int argc, char** argv)
                                           {
                                             Integer cell_lid =  mesh.cellLid(i,j-1) ;
                                             Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
                                             auto eij = matrix_acc.entryIndex(row,col) ;
                                             matrix_acc[eij] = - node_cell_off_diag ;
                                             auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
@@ -383,6 +408,7 @@ int main(int argc, char** argv)
                                           {
                                             Integer cell_lid =  mesh.cellLid(i-1,j-1) ;
                                             Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
                                             auto eij = matrix_acc.entryIndex(row,col) ;
                                             matrix_acc[eij] = - node_cell_off_diag ;
                                             auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
@@ -391,7 +417,6 @@ int main(int argc, char** argv)
                                             matrix_acc.combine(ejik,- cell_node_off_diag) ;
                                           }
                                         }
-
                                      });
                   }) ;
     builder.combine() ;

@@ -121,7 +121,7 @@ namespace SYCL
       return -1 ;
     }
 
-  private :
+  protected :
     ValueAccessorType m_values_accessor ;
     IndexAccessorType m_cols_accessor ;
     IndexAccessorType m_kcol_accessor ;
@@ -157,7 +157,7 @@ namespace SYCL
       return -1 ;
     }
 
-  private :
+  protected :
     ValueAccessorType m_values_accessor ;
     IndexAccessorType m_cols_accessor ;
     IndexAccessorType m_kcol_accessor ;
@@ -203,7 +203,7 @@ namespace SYCL
     }
 
 
-  private:
+  protected:
     ValueAccessorType m_values ;
     IndexAccessorType m_cols;
     IndexAccessorType m_kcol;
