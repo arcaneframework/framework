@@ -477,6 +477,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
   friend class ComponentPartItemVectorView;
   friend class ComponentPartCellEnumerator;
   friend class ComponentCellEnumerator;
+  friend class MeshEnvironment;
 
  private:
 
@@ -493,7 +494,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
 
  private:
 
-  matimpl::ConstituentItemBase _constituenItemBase(Int32 index) const
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _constituenItemBase(Int32 index) const
   {
     return m_component_shared_info->_item(m_ids[index]);
   }

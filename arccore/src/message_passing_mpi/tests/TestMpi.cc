@@ -12,6 +12,7 @@
 #include "arccore/base/Float16.h"
 #include "arccore/collections/Array.h"
 #include "arccore/message_passing/Messages.h"
+#include "arccore/message_passing/Communicator.h"
 #include "arccore/serialize/ISerializer.h"
 
 #include "TestMain.h"
@@ -42,7 +43,14 @@ TEST(MessagePassingMpi, Simple)
       ASSERT_EQ(receive_buf[2], -4);
     }
   }
+  Communicator c(pm->communicator());
+  ASSERT_TRUE(c.isValid());
+  MPI_Comm comm = c;
+  std::cout << "Communicator=" << comm << "\n";
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 TEST(MessagePassingMpi, SerializeGather)
 {

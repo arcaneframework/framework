@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMessagePassingMng.h                                        (C) 2000-2023 */
+/* IMessagePassingMng.h                                        (C) 2000-2024 */
 /*                                                                           */
 /* Interface du gestionnaire des échanges de messages.                       */
 /*---------------------------------------------------------------------------*/
@@ -56,19 +56,25 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
  public:
 
   //! Rang de cette instance dans le communicateur
-  virtual Int32 commRank() const =0;
+  virtual Int32 commRank() const = 0;
 
   //! Nombre d'instance dans le communicateur
-  virtual Int32 commSize() const =0;
+  virtual Int32 commSize() const = 0;
 
   //! Interface pour collecter les temps d'exécution (peut être nul)
-  virtual ITimeMetricCollector* timeMetricCollector() const =0;
+  virtual ITimeMetricCollector* timeMetricCollector() const = 0;
+
+  /*!
+   * \brief Communicateur MPI associé à cette instance.
+   *
+   * Le communicateur n'est valide que si l'instance est associée à une
+   * implémentation MPI.
+   */
+  virtual Communicator communicator() const;
 
  public:
 
-  virtual IDispatchers* dispatchers() =0;
-
- public:
+  virtual IDispatchers* dispatchers() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

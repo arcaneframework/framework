@@ -320,28 +320,7 @@ int main(int argc, char** argv)
   {
     Alien::SYCL::CombineAddProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
     builder.setParallelAssembleStencil(4,connection_offset.view(),connection_index.view()) ;
-    {
-      auto hview = builder.hostView();
 
-      for(int i=0;i<nx;++i)
-        for(int j=0;j<ny;++j)
-        {
-          auto node_id = mesh.nodeLid(i,j) ;
-          auto row = allUIndex[node_id] ;
-          if(j<ny-1)
-          {
-            if(i<nx-1)
-            {
-              Integer cell_lid = mesh.cellLid(i,j) ;
-              Integer col = allVIndex[cell_lid] ;
-              auto eij = hview.entryIndex(row,col) ;
-              auto ejjk = hview.combineEntryIndex(row,col,col) ;
-              auto ejik = hview.combineEntryIndex(row,col,row) ;
-              std::cout<<"("<<i<<","<<j<<") COMBINE ENTRY INDEX("<<row<<","<<col<<")"<<eij<<","<<ejjk<<","<<ejik<<std::endl ;
-            }
-          }
-        }
-    }
     auto allUIndex_buffer = sycl::buffer<Integer,1>{allUIndex.data(),sycl::range(allUIndex.size())} ;
     auto allVIndex_buffer = sycl::buffer<Integer,1>{allVIndex.data(),sycl::range(allVIndex.size())} ;
 
@@ -375,7 +354,6 @@ int main(int argc, char** argv)
                                             auto ejik = matrix_acc.combineEntryIndex(row,col,row) ;
                                             matrix_acc.combine(ejik, -cell_node_off_diag) ;
                                           }
-
                                           if(i>0)
                                           {
                                             Integer cell_lid =  mesh.cellLid(i-1,j) ;
@@ -417,6 +395,7 @@ int main(int argc, char** argv)
                                             matrix_acc.combine(ejik,- cell_node_off_diag) ;
                                           }
                                         }
+
                                      });
                   }) ;
     builder.combine() ;
