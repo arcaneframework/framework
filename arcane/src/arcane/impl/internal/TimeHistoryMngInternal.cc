@@ -119,7 +119,7 @@ void TimeHistoryMngInternal::
 addNowInGlobalTime()
 {
   m_global_times.add(m_common_variables.globalTime());
-  TimeHistoryAddValueArgInternal thpi(m_common_variables.m_global_time.name(), true, -1);
+  TimeHistoryAddValueArgInternal thpi(m_common_variables.m_global_time.name(), true, NULL_SUB_DOMAIN_ID);
   addValue(thpi, m_common_variables.globalTime());
 }
 
@@ -137,12 +137,12 @@ updateGlobalTimeCurve()
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMngInternal::
-dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only)
+dumpCurves(ITimeHistoryCurveWriter2* writer)
 {
   if (!m_is_master_io && !m_enable_non_io_master_curves)
     return;
 
-  if(!master_only){
+  if(!m_io_master_write_only){
     TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
     writer->beginWrite(infos);
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
@@ -333,12 +333,12 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
     String support_str = curve.attrValue(ustr_support, false);
 
     XmlNode sub_domain_node = curve.attr(ustr_sub_domain);
-    Integer sub_domain = -1;
+    Integer sub_domain = NULL_SUB_DOMAIN_ID;
     if(!sub_domain_node.null()){
       sub_domain = sub_domain_node.valueAsInteger();
     }
 
-    if(sub_domain != -1 && m_parallel_mng->commRank() != sub_domain){
+    if(sub_domain != NULL_SUB_DOMAIN_ID && m_parallel_mng->commRank() != sub_domain){
       continue;
     }
 
@@ -387,7 +387,7 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
       // ou le même nom qu'un historique "globale".
       name = name + "_" + mh.meshName();
     }
-    if(sub_domain != -1){
+    if(sub_domain != NULL_SUB_DOMAIN_ID){
       name = name + "_Local";
     }
     if (!val)
@@ -495,7 +495,7 @@ _dumpCurvesAllWriters()
       ITimeHistoryCurveWriter2* writer = cw_ref.get();
       m_trace_mng->debug() << "Writing curves with '" << writer->name()
                      << "' date=" << platform::getCurrentDateTime();
-      dumpCurves(writer, true);
+      dumpCurves(writer);
     }
   }
 }
@@ -516,14 +516,14 @@ _dumpSummaryOfCurvesLegacy()
     // On écrit d'abord le nom de nos courbes.
     for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
       const TimeHistoryValue& th = *(i->second);
-      ofile << "<curve name='" <<  th.name();
+      ofile << "<curve name='";
       if(!th.meshHandle().isNull()){
-        ofile << "_" << th.meshHandle().meshName();
+        ofile << th.meshHandle().meshName() << "_";
       }
       if(th.isLocal()){
-        ofile << "_SubDomain" << master_io_rank;
+        ofile << "SD" << master_io_rank << "_";
       }
-      ofile << "'/>\n";
+      ofile << th.name() << "'/>\n";
     }
     // Puis, si les autres processus peuvent aussi avoir des courbes, on
     // écrit aussi leurs noms.
@@ -538,15 +538,15 @@ _dumpSummaryOfCurvesLegacy()
 
             UniqueArray<char> buf(length[0]);
             m_parallel_mng->recv(buf,i);
-            ofile << "<curve name='" << buf.unguardedBasePointer();
+            ofile << "<curve name='";
 
             if(length[1] != 0){
               UniqueArray<char> buf2(length[1]);
               m_parallel_mng->recv(buf2,i);
-              ofile << "_" << buf2.unguardedBasePointer();
+              ofile << buf2.unguardedBasePointer() << "_";
             }
-            ofile << "_SubDomain" << i;
-            ofile << "'/>\n";
+            ofile << "SD" << i << "_";
+            ofile << buf.unguardedBasePointer() << "'/>\n";
           }
         }
     }
@@ -603,12 +603,21 @@ _dumpSummaryOfCurves()
             JSONWriter::Object o4(json_writer);
             const TimeHistoryValue& th = *(i->second);
             json_writer.write("name", th.name());
+
+            String name("");
+
             if(!th.meshHandle().isNull()){
               json_writer.write("support", th.meshHandle().meshName());
+              name = name + th.meshHandle().meshName() + "_";
             }
+
             if(th.isLocal()){
               json_writer.write("sub-domain", master_io_rank);
+              name = name + "SD" + String::fromNumber(master_io_rank) + "_";
             }
+
+
+            json_writer.write("unique-name", name+th.name());
           }
 
           // Puis, si les autres processus peuvent aussi avoir des courbes, on
@@ -627,12 +636,19 @@ _dumpSummaryOfCurves()
                   m_parallel_mng->recv(buf, i);
                   json_writer.write("name", buf.unguardedBasePointer());
 
+                  String name("");
+
                   if (length[1] != 0) {
                     UniqueArray<char> buf2(length[1]);
                     m_parallel_mng->recv(buf2, i);
                     json_writer.write("support", buf2.unguardedBasePointer());
+                    name = name + buf2.unguardedBasePointer() + "_";
                   }
+
+                  name = name + "SD" + String::fromNumber(i) + "_";
+
                   json_writer.write("sub-domain", i);
+                  json_writer.write("unique-name", name+buf.unguardedBasePointer());
                 }
               }
             }

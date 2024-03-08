@@ -26,7 +26,9 @@ namespace Arcane
 GlobalTimeHistoryAdder::
 GlobalTimeHistoryAdder(ITimeHistoryMng* time_history_mng)
 : m_thm(time_history_mng)
-{}
+{
+  m_thm->_internalApi()->setIOMasterWriteOnly(true);
+}
 
 void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Real value)

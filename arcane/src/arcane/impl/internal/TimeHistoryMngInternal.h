@@ -401,11 +401,12 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   , m_trace_mng(m_variable_mng->traceMng())
   , m_parallel_mng(m_variable_mng->parallelMng())
   , m_common_variables(m_variable_mng)
-  , m_th_meta_data(VariableBuildInfo(m_variable_mng,"TimeHistoryMngMetaData"))
-  , m_th_global_time(VariableBuildInfo(m_variable_mng,"TimeHistoryMngGlobalTime"))
   , m_is_active(true)
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
+  , m_io_master_write_only(false)
+  , m_th_meta_data(VariableBuildInfo(m_variable_mng,"TimeHistoryMngMetaData"))
+  , m_th_global_time(VariableBuildInfo(m_variable_mng,"TimeHistoryMngGlobalTime"))
   , m_properties(properties)
   , m_version(2)
   {
@@ -460,7 +461,7 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void addNowInGlobalTime() override;
   void updateGlobalTimeCurve() override;
   void resizeArrayAfterRestore() override;
-  void dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only) override;
+  void dumpCurves(ITimeHistoryCurveWriter2* writer) override;
   void dumpHistory() override;
   void updateMetaData() override;
   void readVariables(IMeshMng* mesh_mng, IMesh* default_mesh) override;
@@ -482,6 +483,8 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   void setDumpActive(bool is_active) override { m_is_dump_active = is_active; }
   bool isMasterIO() override { return m_is_master_io; }
   bool isNonIOMasterCurvesEnabled() override { return m_enable_non_io_master_curves; }
+  bool isIOMasterWriteOnly() override { return m_io_master_write_only; }
+  void setIOMasterWriteOnly(bool is_active) override { m_io_master_write_only = is_active; }
 
  private:
 
@@ -545,6 +548,11 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
 
   bool m_is_master_io; //!< True si je suis le gestionnaire actif
   bool m_enable_non_io_master_curves; //!< Indique si l'ecriture  de courbes par des procs non io_master est possible
+  bool m_is_active; //!< Indique si le service est actif.
+  bool m_is_shrink_active; //!< Indique si la compression de l'historique est active
+  bool m_is_dump_active; //!< Indique si les dump sont actifs
+  bool m_io_master_write_only; //!< Indique si les writers doivent être appelé par tous les processus.
+
   String m_output_path;
   ObserverPool m_observer_pool;
   HistoryList m_history_list; //!< Liste des historiques
@@ -552,9 +560,6 @@ class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
   VariableArrayReal m_th_global_time; //!< Tableau des instants de temps
   RealUniqueArray m_global_times; //!< Liste des temps globaux
   CurveWriter2List m_curve_writers2;
-  bool m_is_active; //!< Indique si le service est actif.
-  bool m_is_shrink_active; //!< Indique si la compression de l'historique est active
-  bool m_is_dump_active; //!< Indique si les dump sont actifs
   Ref<Properties> m_properties;
   Integer m_version;
 };

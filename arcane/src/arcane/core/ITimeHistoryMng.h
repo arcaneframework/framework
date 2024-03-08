@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/FatalErrorException.h"
 
@@ -55,7 +56,7 @@ class TimeHistoryAddValueArg
    * \param end_time Doit-on écrire la valeur à notre itération ou à notre itération-1 ?
    */
   TimeHistoryAddValueArg(const String& name, bool end_time)
-  : TimeHistoryAddValueArg(name, end_time, -1)
+  : TimeHistoryAddValueArg(name, end_time, NULL_SUB_DOMAIN_ID)
   {}
 
   /*!
@@ -73,7 +74,7 @@ class TimeHistoryAddValueArg
  public:
   const String& name() const { return m_name; }
   bool endTime() const { return m_end_time; }
-  bool isLocal() const { return m_local_proc_id!=-1; }
+  bool isLocal() const { return m_local_proc_id!=NULL_SUB_DOMAIN_ID; }
   Integer localProcId() const { return m_local_proc_id; }
 
  private:
@@ -201,15 +202,6 @@ class ITimeHistoryMng
 
  public:
 
-  /*!
-   * \brief Méthode permettant de récupérer un pointeur vers un objet de type GlobalTimeHistoryAdder.
-   *
-   * \return Le pointeur.
-   */
-  virtual ITimeHistoryAdder* adder() = 0;
-
- public:
-
   virtual void timeHistoryBegin() = 0;
   virtual void timeHistoryEnd() = 0;
   virtual void timeHistoryInit() = 0;
@@ -305,7 +297,7 @@ class ITimeHistoryMng
  public:
 
   //! API interne à Arcane
-  virtual ITimeHistoryMngInternal* _internalApi() = 0;
+  virtual ITimeHistoryMngInternal* _internalApi() { ARCANE_FATAL("Invalid usage"); };
 };
 
 /*---------------------------------------------------------------------------*/

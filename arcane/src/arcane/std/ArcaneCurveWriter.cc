@@ -224,16 +224,27 @@ writeCurve(const TimeHistoryCurveInfo& infos)
   Int64 iteration_offset = _write(iterations);
 
   XmlNode node = m_p->m_root_element.createAndAppendElement("curve");
-  node.setAttrValue("name",infos.name());
+
+  String name(infos.name().clone());
+
+  if(infos.subDomain() != NULL_SUB_DOMAIN_ID){
+    name = "SD" + String::fromNumber(infos.subDomain()) + "_" + name;
+  }
+  if(infos.hasSupport()){
+    name = infos.support() + "_" + name;
+  }
+
+  node.setAttrValue("name",name);
   node.setAttrValue("iterations-offset",String::fromNumber(iteration_offset));
   node.setAttrValue("iterations-size",String::fromNumber(iterations.size()));
   node.setAttrValue("values-offset",String::fromNumber(values_offset));
   node.setAttrValue("values-size",String::fromNumber(infos.values().size()));
   node.setAttrValue("sub-size",String::fromNumber(infos.subSize()));
+  node.setAttrValue("base-name",infos.name());
   if(infos.hasSupport()){
     node.setAttrValue("support",infos.support());
   }
-  if(infos.subDomain() != -1){
+  if(infos.subDomain() != NULL_SUB_DOMAIN_ID){
     node.setAttrValue("sub-domain",String::fromNumber(infos.subDomain()));
   }
 }

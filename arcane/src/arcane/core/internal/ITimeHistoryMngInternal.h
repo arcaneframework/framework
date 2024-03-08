@@ -152,7 +152,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \param master_only Si tous les historiques doivent être transférés sur
    *                    le masterIO avant la copie.
    */
-  virtual void dumpCurves(ITimeHistoryCurveWriter2* writer, bool master_only) =0;
+  virtual void dumpCurves(ITimeHistoryCurveWriter2* writer) =0;
 
   /*!
    * \brief Méthode permettant d'écrire toutes les courbes à l'aide de tous les writers enregistrés.
@@ -240,6 +240,19 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
   virtual bool isNonIOMasterCurvesEnabled() = 0;
 
   /*!
+   * \brief Méthode permettant de savoir s'il n'y a que le processus maitre qui appelle les écrivains.
+   *
+   * \return true si oui
+   */
+  virtual bool isIOMasterWriteOnly() = 0;
+  /*!
+   * \brief Méthode permettant de définir si seul le processus maitre appelle les écrivains.
+   *
+   * \param is_active true si oui
+   */
+  virtual void setIOMasterWriteOnly(bool is_active) = 0;
+
+  /*!
    * \brief Méthode permettant de rajouter les observers sauvegardant l'historique avant une protection.
    *
    * \param prop_mng Un pointeur vers un IPropertyMng.
@@ -258,13 +271,14 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
   /*!
    * \brief Méthode permettant de sortir les itérations et les valeurs d'un historique.
    *
-   * Méthode utile pour du débug/test.
+   * Méthode utile pour du debug/test.
    *
    * \param thpi Les informations nécessaire à la récupération de l'historique.
    * \param iterations [OUT] Les itérations où ont été récupéré chaque valeur.
    * \param values [OUT] Les valeurs récupérées.
    */
   virtual void iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int32>& iterations, UniqueArray<Real>& values) = 0;
+
 
 };
 

@@ -88,11 +88,6 @@ _writer()
   ISubDomain* sd = subDomain();
   Integer iteration = globalIteration();
 
-  // TODO : Conserve-t-on la méthode adder ?
-  sd->timeHistoryMng()->adder()->addValue(TimeHistoryAddValueArg("AAA"), iteration++);
-  sd->timeHistoryMng()->adder()->addValue(TimeHistoryAddValueArg("AAA", true, 0), iteration++);
-  sd->timeHistoryMng()->adder()->addValue(TimeHistoryAddValueArg("AAA", true, 1), iteration++);
-
   // Création d'un adder global.
   GlobalTimeHistoryAdder global_adder(sd->timeHistoryMng());
 
@@ -135,58 +130,6 @@ _checker()
 
   Integer adder = 1;
 
-  sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("AAA")), iterations, values);
-  for(Integer i = 0; i < iteration; ++i){
-    debug() << "iteration[" << i << "] = " << iterations[i]
-            << " == i+1 = " << i+1
-            << " -- values[" << i << "] = " << values[i]
-            << " == i+(adder++) = " << i+(adder)
-    ;
-    ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
-    ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
-  }
-  adder++;
-
-  iterations.clear();
-  values.clear();
-  sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("AAA", true, 0)), iterations, values);
-  if(pm->commRank() == 0) {
-    for (Integer i = 0; i < iteration; ++i) {
-      debug() << "iteration[" << i << "] = " << iterations[i]
-              << " == i+1 = " << i+1
-              << " -- values[" << i << "] = " << values[i]
-              << " == i+(adder++) = " << i+(adder)
-      ;
-      ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
-      ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
-    }
-  }
-  else{
-    ARCANE_ASSERT((iterations.empty()), ("Iterations not empty"));
-    ARCANE_ASSERT((values.empty()), ("Values not empty"));
-  }
-  adder++;
-
-  iterations.clear();
-  values.clear();
-  sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("AAA", true, 1)), iterations, values);
-  if(pm->commRank() == 1) {
-    for(Integer i = 0; i < iteration; ++i){
-      debug() << "iteration[" << i << "] = " << iterations[i]
-              << " == i+1 = " << i+1
-              << " -- values[" << i << "] = " << values[i]
-              << " == i+(adder++) = " << i+(adder)
-      ;
-      ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
-      ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
-    }
-  }
-  else{
-    ARCANE_ASSERT((iterations.empty()), ("Iterations not empty"));
-    ARCANE_ASSERT((values.empty()), ("Values not empty"));
-  }
-  adder++;
-
   iterations.clear();
   values.clear();
   sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB")), iterations, values);
@@ -194,7 +137,7 @@ _checker()
     debug() << "iteration[" << i << "] = " << iterations[i]
             << " == i+1 = " << i+1
             << " -- values[" << i << "] = " << values[i]
-            << " == i+(adder++) = " << i+(adder)
+            << " == i+(adder++) = " << i+adder
     ;
     ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
     ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
@@ -209,7 +152,7 @@ _checker()
       debug() << "iteration[" << i << "] = " << iterations[i]
               << " == i+1 = " << i+1
               << " -- values[" << i << "] = " << values[i]
-              << " == i+(adder++) = " << i+(adder)
+              << " == i+(adder++) = " << i+adder
       ;
       ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
       ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
@@ -229,7 +172,7 @@ _checker()
       debug() << "iteration[" << i << "] = " << iterations[i]
               << " == i+1 = " << i+1
               << " -- values[" << i << "] = " << values[i]
-              << " == i+(adder++) = " << i+(adder)
+              << " == i+(adder++) = " << i+adder
       ;
       ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
       ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
@@ -249,7 +192,7 @@ _checker()
       debug() << "iteration[" << i << "] = " << iterations[i]
               << " == i+1 = " << i+1
               << " -- values[" << i << "] = " << values[i]
-              << " == i+(adder++) = " << i+(adder)
+              << " == i+(adder++) = " << i+adder
       ;
       ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
       ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
@@ -264,7 +207,7 @@ _checker()
         debug() << "iteration[" << i << "] = " << iterations[i]
                 << " == i+1 = " << i+1
                 << " -- values[" << i << "] = " << values[i]
-                << " == i+(adder++) = " << i+(adder)
+                << " == i+(adder++) = " << i+adder
         ;
         ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
         ARCANE_ASSERT((values[i] == i+adder), ("Error values"));
@@ -284,7 +227,7 @@ _checker()
         debug() << "iteration[" << i << "] = " << iterations[i]
                 << " == i+1 = " << i+1
                 << " -- values[" << i << "] = " << values[i]
-                << " == i+(adder++) = " << i+(adder)
+                << " == i+(adder++) = " << i+adder
         ;
         ARCANE_ASSERT((iterations[i] == i+1), ("Error iterations"));
         ARCANE_ASSERT((values[i] == i+adder), ("Error values"));

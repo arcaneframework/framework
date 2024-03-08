@@ -27,7 +27,9 @@ MeshTimeHistoryAdder::
 MeshTimeHistoryAdder(ITimeHistoryMng* time_history_mng, const MeshHandle& mesh_handle)
 : m_thm(time_history_mng)
 , m_mesh_handle(mesh_handle)
-{}
+{
+  m_thm->_internalApi()->setIOMasterWriteOnly(true);
+}
 
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Real value)

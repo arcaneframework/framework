@@ -86,11 +86,12 @@ class GnuplotTimeHistoryCurveWriter2
   void writeCurve(const TimeHistoryCurveInfo& infos) override
   {
     String name(infos.name().clone());
-    if(infos.hasSupport()){
-      name = name + "_" + infos.support();
+
+    if(infos.subDomain() != NULL_SUB_DOMAIN_ID){
+      name = "SD" + String::fromNumber(infos.subDomain()) + "_" + name;
     }
-    if(infos.subDomain() != -1){
-      name = name + "_SubDomain" + infos.subDomain();
+    if(infos.hasSupport()){
+      name = infos.support() + "_" + name;
     }
 
     String sname(m_gnuplot_path.file(name));
@@ -184,8 +185,6 @@ class TimeHistoryMng2
   {
     m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
   }
-
-  ITimeHistoryAdder* adder() override { return m_adder.get(); }
 
  public:
 
@@ -394,7 +393,7 @@ dumpHistory(bool is_verbose)
 void TimeHistoryMng2::
 dumpCurves(ITimeHistoryCurveWriter2* writer)
 {
-  m_internal->dumpCurves(writer, true);//todo
+  m_internal->dumpCurves(writer);
 }
 
 /*---------------------------------------------------------------------------*/
