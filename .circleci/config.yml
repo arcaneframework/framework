@@ -212,7 +212,7 @@ jobs:
   build-and-test-ifpen:
     executor: amd64
     docker:
-      - image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el8-rt
+      - image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el8
         user: root
 
     steps:
