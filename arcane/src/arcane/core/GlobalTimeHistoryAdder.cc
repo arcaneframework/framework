@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshTimeHistoryAdder.cc                                     (C) 2000-2024 */
+/* GlobalTimeHistoryAdder.cc                                   (C) 2000-2024 */
 /*                                                                           */
-/* Classe permettant d'ajouter un historique de valeur lié à un maillage.    */
+/* Classe permettant d'ajouter un historique de valeur global.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/MeshTimeHistoryAdder.h"
+#include "arcane/core/GlobalTimeHistoryAdder.h"
 #include "arcane/core/internal/ITimeHistoryMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -23,48 +23,47 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MeshTimeHistoryAdder::
-MeshTimeHistoryAdder(ITimeHistoryMng* time_history_mng, const MeshHandle& mesh_handle)
+GlobalTimeHistoryAdder::
+GlobalTimeHistoryAdder(ITimeHistoryMng* time_history_mng)
 : m_thm(time_history_mng)
-, m_mesh_handle(mesh_handle)
 {
   m_thm->_internalApi()->setIOMasterWriteOnly(true);
 }
 
-void MeshTimeHistoryAdder::
+void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Real value)
 {
-  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), value);
 }
 
-void MeshTimeHistoryAdder::
+void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int64 value)
 {
-  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), value);
 }
 
-void MeshTimeHistoryAdder::
+void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int32 value)
 {
-  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), value);
 }
 
-void MeshTimeHistoryAdder::
+void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values)
 {
-  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), values);
 }
 
-void MeshTimeHistoryAdder::
+void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values)
 {
-  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), values);
 }
 
-void MeshTimeHistoryAdder::
+void GlobalTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values)
 {
-  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp), values);
 }
 
 /*---------------------------------------------------------------------------*/

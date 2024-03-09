@@ -471,6 +471,8 @@ set(ARCANE_ORIGINAL_SOURCES
   FactoryService.h
   GeometricUtilities.cc
   GeometricUtilities.h
+  GlobalTimeHistoryAdder.cc
+  GlobalTimeHistoryAdder.h
   GroupIndexTable.cc
   GroupIndexTable.h
   MathUtils.cc

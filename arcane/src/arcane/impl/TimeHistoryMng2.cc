@@ -35,10 +35,12 @@
 #include "arcane/IXmlDocumentHolder.h"
 #include "arcane/ServiceFinder2.h"
 #include "arcane/ServiceBuilder.h"
+#include "arcane/core/IMeshMng.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 
 #include "arcane/impl/internal/TimeHistoryMngInternal.h"
+#include "arcane/core/GlobalTimeHistoryAdder.h"
 
 #include <variant>
 
@@ -59,12 +61,14 @@ class GnuplotTimeHistoryCurveWriter2
 , public ITimeHistoryCurveWriter2
 {
  public:
+
   GnuplotTimeHistoryCurveWriter2(ITraceMng* tm)
   : TraceAccessor(tm)
   {
   }
 
  public:
+
   void build() override {}
   void beginWrite(const TimeHistoryCurveWriterInfo& infos) override
   {
@@ -74,18 +78,27 @@ class GnuplotTimeHistoryCurveWriter2
     if (m_output_path.empty())
       m_output_path = path;
 
-    m_gnuplot_path = Directory(Directory(m_output_path),"gnuplot");
+    m_gnuplot_path = Directory(Directory(m_output_path), "gnuplot");
     // Créé le répertoire de sortie.
-    if (m_gnuplot_path.createDirectory()){
+    if (m_gnuplot_path.createDirectory()) {
       warning() << "Can not create gnuplot curve directory '"
                 << m_gnuplot_path.path() << "'";
     }
   }
   void writeCurve(const TimeHistoryCurveInfo& infos) override
   {
-    String sname(m_gnuplot_path.file(infos.name()));
-    FILE* ofile = fopen(sname.localstr(),"w");
-    if (!ofile){
+    String name(infos.name().clone());
+
+    if (infos.subDomain() != NULL_SUB_DOMAIN_ID) {
+      name = "SD" + String::fromNumber(infos.subDomain()) + "_" + name;
+    }
+    if (infos.hasSupport()) {
+      name = infos.support() + "_" + name;
+    }
+
+    String sname(m_gnuplot_path.file(name));
+    FILE* ofile = fopen(sname.localstr(), "w");
+    if (!ofile) {
       warning() << "Can not open gnuplot curve file '" << sname << "'";
       return;
     }
@@ -93,11 +106,11 @@ class GnuplotTimeHistoryCurveWriter2
     Int32ConstArrayView iterations = infos.iterations();
     Integer nb_val = iterations.size();
     Integer sub_size = infos.subSize();
-    for( Integer i=0; i<nb_val; ++i ){
-      fprintf(ofile,"%.16E",Convert::toDouble(m_times[iterations[i]]));
-      for( Integer z=0; z<sub_size; ++z )
-        fprintf(ofile," %.16E",Convert::toDouble(values[(i*sub_size)+z]));
-      fprintf(ofile,"\n");
+    for (Integer i = 0; i < nb_val; ++i) {
+      fprintf(ofile, "%.16E", Convert::toDouble(m_times[iterations[i]]));
+      for (Integer z = 0; z < sub_size; ++z)
+        fprintf(ofile, " %.16E", Convert::toDouble(values[(i * sub_size) + z]));
+      fprintf(ofile, "\n");
     }
     fclose(ofile);
   }
@@ -140,64 +153,39 @@ class TimeHistoryMng2
 {
 
  public:
-	
-  TimeHistoryMng2(const ModuleBuildInfo& cb, bool add_entry_points=true);
+
+  TimeHistoryMng2(const ModuleBuildInfo& cb, bool add_entry_points = true);
   ~TimeHistoryMng2() override = default;
 
  public:
-	
-  VersionInfo versionInfo() const override { return VersionInfo(1,0,0); }
+
+  VersionInfo versionInfo() const override { return VersionInfo(1, 0, 0); }
 
  public:
 
-  void addValue(const String& name,Real value,bool end_time,bool is_local) override
+  void addValue(const String& name, Real value, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), value);
   }
-  void addValue(const String& name,Int64 value,bool end_time,bool is_local) override
+  void addValue(const String& name, Int64 value, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), value);
   }
-  void addValue(const String& name,Int32 value,bool end_time,bool is_local) override
+  void addValue(const String& name, Int32 value, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), value);
   }
-  void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
+  void addValue(const String& name, RealConstArrayView values, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
   }
-  void addValue(const String& name,Int32ConstArrayView values,bool end_time,bool is_local) override
+  void addValue(const String& name, Int32ConstArrayView values, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
   }
-  void addValue(const String& name,Int64ConstArrayView values,bool end_time,bool is_local) override
+  void addValue(const String& name, Int64ConstArrayView values, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, is_local), values);
-  }
-
-  void addValue(const TimeHistoryAddValueArg& thp, Real value) override
-  {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, Int64 value) override
-  {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, Int32 value) override
-  {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), value);
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values) override
-  {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values) override
-  {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
-  }
-  void addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values) override
-  {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(thp), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
   }
 
  public:
@@ -240,12 +228,8 @@ class TimeHistoryMng2
 
  private:
 
-  ObserverPool m_observer_pool;
   Ref<ITimeHistoryMngInternal> m_internal;
-
- private:
-
-  void _writeVariablesNotify();
+  Ref<ITimeHistoryAdder> m_adder;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -255,23 +239,25 @@ TimeHistoryMng2::
 TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 : AbstractModule(mb)
 , CommonVariables(this)
-, m_internal(makeRef(new TimeHistoryMngInternal(subDomain())))
+, m_internal(makeRef(new TimeHistoryMngInternal(subDomain()->variableMng(),
+                                                makeRef(new Properties(subDomain()->propertyMng(), "ArcaneTimeHistoryProperties")))))
+, m_adder(makeRef(new GlobalTimeHistoryAdder(this)))
 {
-  if (add_entry_points){
-    addEntryPoint(this,"ArcaneTimeHistoryBegin",&TimeHistoryMng2::timeHistoryBegin,
-                  IEntryPoint::WComputeLoop,IEntryPoint::PAutoLoadBegin);
-    addEntryPoint(this,"ArcaneTimeHistoryEnd",&TimeHistoryMng2::timeHistoryEnd,
-                  IEntryPoint::WComputeLoop,IEntryPoint::PAutoLoadEnd);
-    addEntryPoint(this,"ArcaneTimeHistoryInit",&TimeHistoryMng2::timeHistoryInit,
-                  IEntryPoint::WInit,IEntryPoint::PAutoLoadBegin);
-    addEntryPoint(this,"ArcaneTimeHistoryStartInit",&TimeHistoryMng2::timeHistoryStartInit,
-                  IEntryPoint::WStartInit,IEntryPoint::PAutoLoadBegin);
-    addEntryPoint(this,"ArcaneTimeHistoryContinueInit",&TimeHistoryMng2::timeHistoryContinueInit,
-                  IEntryPoint::WContinueInit,IEntryPoint::PAutoLoadBegin);
-    addEntryPoint(this,"ArcaneTimeHistoryStartInitEnd",&TimeHistoryMng2::timeHistoryStartInitEnd,
-                  IEntryPoint::WStartInit,IEntryPoint::PAutoLoadEnd);
-    addEntryPoint(this,"ArcaneTimeHistoryRestore",&TimeHistoryMng2::timeHistoryRestore,
-                  IEntryPoint::WRestore,IEntryPoint::PAutoLoadBegin);
+  if (add_entry_points) {
+    addEntryPoint(this, "ArcaneTimeHistoryBegin", &TimeHistoryMng2::timeHistoryBegin,
+                  IEntryPoint::WComputeLoop, IEntryPoint::PAutoLoadBegin);
+    addEntryPoint(this, "ArcaneTimeHistoryEnd", &TimeHistoryMng2::timeHistoryEnd,
+                  IEntryPoint::WComputeLoop, IEntryPoint::PAutoLoadEnd);
+    addEntryPoint(this, "ArcaneTimeHistoryInit", &TimeHistoryMng2::timeHistoryInit,
+                  IEntryPoint::WInit, IEntryPoint::PAutoLoadBegin);
+    addEntryPoint(this, "ArcaneTimeHistoryStartInit", &TimeHistoryMng2::timeHistoryStartInit,
+                  IEntryPoint::WStartInit, IEntryPoint::PAutoLoadBegin);
+    addEntryPoint(this, "ArcaneTimeHistoryContinueInit", &TimeHistoryMng2::timeHistoryContinueInit,
+                  IEntryPoint::WContinueInit, IEntryPoint::PAutoLoadBegin);
+    addEntryPoint(this, "ArcaneTimeHistoryStartInitEnd", &TimeHistoryMng2::timeHistoryStartInitEnd,
+                  IEntryPoint::WStartInit, IEntryPoint::PAutoLoadEnd);
+    addEntryPoint(this, "ArcaneTimeHistoryRestore", &TimeHistoryMng2::timeHistoryRestore,
+                  IEntryPoint::WRestore, IEntryPoint::PAutoLoadBegin);
   }
 }
 
@@ -281,7 +267,6 @@ TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 void TimeHistoryMng2::
 timeHistoryStartInit()
 {
-  //warning() << "timeHistoryStartInit " << m_global_time() << " " << m_global_times.size();
   m_internal->addNowInGlobalTime();
 }
 
@@ -301,27 +286,27 @@ timeHistoryBegin()
 {
   // Si on n'est pas actif, on ne grossit pas inutilement le m_global_times
   // qui sera copié dans la variable backupée 'm_th_global_time'
-  if (isShrinkActive() && !active()){
+  if (isShrinkActive() && !active()) {
     // On ne fait rien
   }
-  else{
+  else {
     //warning() << "timeHistoryBegin " << m_global_time() << " " << m_global_times.size();
     m_internal->addNowInGlobalTime();
   }
-  
+
   // Regarde s'il faut imprimer les sorties temporelles
   {
     bool force_print_thm = false;
     int th_step = subDomain()->caseOptionsMain()->writeHistoryPeriod();
-    if (th_step!=0){
-      if ((globalIteration() % th_step)==0)
+    if (th_step != 0) {
+      if ((globalIteration() % th_step) == 0)
         if (parallelMng()->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled())
           force_print_thm = true;
     }
     if (subDomain()->applicationInfo().isDebug())
       force_print_thm = true;
     if (force_print_thm)
-      m_internal->dumpHistory(false);
+      m_internal->dumpHistory();
   }
 }
 
@@ -341,29 +326,24 @@ void TimeHistoryMng2::
 timeHistoryInit()
 {
   //warning() << "timeHistoryInit " << m_global_time() << " " << m_global_times.size();
-  
-  ISubDomain* sd = subDomain();
-  IVariableMng* vm = sd->variableMng();
 
   info(4) << "TimeHistory is MasterIO ? " << m_internal->isMasterIO();
   if (!m_internal->isMasterIO() && !m_internal->isNonIOMasterCurvesEnabled())
     return;
+  m_internal->editOutputPath(Directory(subDomain()->exportDirectory(), "courbes"));
+  m_internal->addObservers(subDomain()->propertyMng());
 
-  m_observer_pool.addObserver(this,
-                              &TimeHistoryMng2::_writeVariablesNotify,
-                              vm->writeObservable());
-  
-  if (platform::getEnvironmentVariable("ARCANE_DISABLE_GNUPLOT_CURVES").null()){
+  if (platform::getEnvironmentVariable("ARCANE_DISABLE_GNUPLOT_CURVES").null()) {
     ITimeHistoryCurveWriter2* gnuplot_curve_writer = new GnuplotTimeHistoryCurveWriter2(traceMng());
     m_internal->addCurveWriter(makeRef(gnuplot_curve_writer));
   }
 
-  if (m_internal->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled()){
+  if (m_internal->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled()) {
     ServiceBuilder<ITimeHistoryCurveWriter2> builder(subDomain());
     auto writers = builder.createAllInstances();
-    for( auto& wr_ref : writers ){
+    for (auto& wr_ref : writers) {
       ITimeHistoryCurveWriter2* cw = wr_ref.get();
-      if (cw){
+      if (cw) {
         info() << "FOUND CURVE SERVICE (V2)!";
         m_internal->addCurveWriter(wr_ref);
       }
@@ -384,19 +364,10 @@ addCurveWriter(ITimeHistoryCurveWriter2* writer)
 /*---------------------------------------------------------------------------*/
 
 void TimeHistoryMng2::
-_writeVariablesNotify()
-{
-  m_internal->updateMetaData();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void TimeHistoryMng2::
 timeHistoryContinueInit()
 {
   if (m_internal->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled())
-    m_internal->readVariables();
+    m_internal->readVariables(subDomain()->meshMng(), subDomain()->defaultMesh());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -414,7 +385,8 @@ timeHistoryRestore()
 void TimeHistoryMng2::
 dumpHistory(bool is_verbose)
 {
-  m_internal->dumpHistory(is_verbose);
+  ARCANE_UNUSED(is_verbose);
+  m_internal->dumpHistory();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -453,12 +425,12 @@ removeCurveWriter(const String& name)
 extern "C++" ARCANE_IMPL_EXPORT ITimeHistoryMng*
 arcaneCreateTimeHistoryMng2(ISubDomain* mng)
 {
-  return new TimeHistoryMng2(ModuleBuildInfo(mng,"TimeHistoryMng"));
+  return new TimeHistoryMng2(ModuleBuildInfo(mng, "TimeHistoryMng"));
 }
 extern "C++" ARCANE_IMPL_EXPORT ITimeHistoryMng*
 arcaneCreateTimeHistoryMng2(ISubDomain* mng, bool add_entry_points)
 {
-  return new TimeHistoryMng2(ModuleBuildInfo(mng,"TimeHistoryMng"), add_entry_points);
+  return new TimeHistoryMng2(ModuleBuildInfo(mng, "TimeHistoryMng"), add_entry_points);
 }
 
 /*---------------------------------------------------------------------------*/
