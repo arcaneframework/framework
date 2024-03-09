@@ -117,7 +117,7 @@ jobs:
            mkdir -p ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}
            export LD_LIBRARY_PATH="${{ env.INSTALL_DIR }}/lib:${LD_LIBRARY_PATH}"
            # Copy libraries
-           while read line; do \cp -avn ${line} ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; if [ -L ${line} ]; then \cp -avn `readlink -f ${line}` ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; fi; done < <(ldd ${{ env.INSTALL_DIR }}/bin/alien* ${{ env.INSTALL_DIR }}/bin/gtest* ${{ env.INSTALL_DIR }}/lib/*.so ${{ env.INSTALL_DIR }}/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^${EBROOTOPENMPI}" -e "^${EBROOTUDUNITS}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "${EBROOTFLEXIBLAS}" -e "${EBROOTOPENBLAS}" -e "^/__w/")
+           while read line; do \cp -avn ${line} ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; if [ -L ${line} ]; then \cp -avn `readlink -f ${line}` ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; fi; done < <(ldd ${{ env.INSTALL_DIR }}/bin/alien* ${{ env.INSTALL_DIR }}/bin/gtest* ${{ env.INSTALL_DIR }}/lib/*.so ${{ env.INSTALL_DIR }}/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^${EBROOTOPENMPI}" -e "^${EBROOTUDUNITS}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "${EBROOTFLEXIBLAS}" -e "${EBROOTOPENBLAS}" -e "${EBROOTUCX}" -e "${EBROOTLIBFABRIC}" -e "${EBROOTPMIX}" -e "^/__w/")
            # Copy googletest
            \rm -vf ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/libgtest.so
            \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/googletest/1.11.0-GCCcore-11.2.0/lib/*.so* ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
