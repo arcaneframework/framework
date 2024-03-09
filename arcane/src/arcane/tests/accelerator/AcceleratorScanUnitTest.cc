@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorScanUnitTest.cc                                  (C) 2000-2023 */
+/* AcceleratorScanUnitTest.cc                                  (C) 2000-2024 */
 /*                                                                           */
 /* Service de test des algorithmes de 'Scan' sur accélérateur.               */
 /*---------------------------------------------------------------------------*/
@@ -261,6 +261,31 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
       info() << "T2=" << t2.to1DSpan();
     }
     vc.areEqualArray(t2.to1DSpan(), expected_inclusive_max.to1DSpan(), "InclusiveScan Max");
+  }
+
+  {
+    info() << "Check inclusive sum with index";
+    SmallSpan<const DataType> t1_view(t1);
+    SmallSpan<DataType> t2_view(t2);
+    auto getter = [=] ARCCORE_HOST_DEVICE(Int32 index) -> DataType {
+      return t1_view[index];
+    };
+    auto setter = [=] ARCCORE_HOST_DEVICE(Int32 index, const DataType& value) {
+      t2_view[index] = value;
+    };
+    ax::GenericScanner scanner(*m_queue);
+    ax::impl::ScannerSumOperator<DataType> op{};
+    DataType init_value = op.initialValue();
+
+    // Test Exclusive
+    t2.fill(init_value, m_queue);
+    scanner.applyWithIndexExclusive(n1, init_value, getter, setter, op);
+    vc.areEqualArray(t2.to1DSpan(), expected_exclusive_sum.to1DSpan(), "ExclusiveScan Sum WithIndex");
+
+    // Test Inclusive
+    t2.fill(init_value, m_queue);
+    scanner.applyWithIndexInclusive(n1, init_value, getter, setter, op);
+    vc.areEqualArray(t2.to1DSpan(), expected_inclusive_sum.to1DSpan(), "InclusiveScan Sum WithIndex");
   }
 }
 
