@@ -216,14 +216,22 @@ alien_test( BENCH krylov-simplecsr
 if(ALIEN_USE_SYCL)
 
 alien_test( BENCH sycl
-            NAME default
+            NAME sycl
             COMMAND test_sycl.exe)
 
 alien_test( BENCH sycl
-            NAME default-mpi
+            NAME sycl-mpi
             PROCS 4
             COMMAND test_sycl.exe)
         
+alien_test( BENCH sycl-mvhandler
+            NAME sycl-mvhandler
+            COMMAND test_mvhandler_sycl.exe)
+            
+alien_test( BENCH sycl-combine-mvhandler
+            NAME sycl-combine-mvhandler
+            COMMAND test_combine_mvhandler_sycl.exe)
+            
 alien_test( BENCH krylov-sycl
             NAME diag-bicgs
             COMMAND krylov_example.exe

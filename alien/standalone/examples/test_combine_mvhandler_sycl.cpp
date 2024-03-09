@@ -251,6 +251,7 @@ int main(int argc, char** argv)
         for (Integer j = 0; j< ny-1; ++j) {
             Integer cell_lid = mesh.cellLid(i,j) ;
             Integer row = allVIndex[cell_lid] ;
+            profiler.addMatrixEntry(row, row);
             Integer col0 = allUIndex[mesh.nodeLid(i,j)] ;
             profiler.addMatrixEntry(row, col0);
             Integer col1 = allUIndex[mesh.nodeLid(i+1,j)] ;
@@ -323,7 +324,6 @@ int main(int argc, char** argv)
     auto allUIndex_buffer = sycl::buffer<Integer,1>{allUIndex.data(),sycl::range(allUIndex.size())} ;
     auto allVIndex_buffer = sycl::buffer<Integer,1>{allVIndex.data(),sycl::range(allVIndex.size())} ;
 
-
     engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
                   {
                     auto matrix_acc = builder.view(cgh) ;
@@ -346,17 +346,19 @@ int main(int argc, char** argv)
                                           {
                                             Integer cell_lid = mesh.cellLid(i,j) ;
                                             Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
                                             auto eij = matrix_acc.entryIndex(row,col) ;
                                             matrix_acc[eij] = - node_cell_off_diag ;
                                             auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
                                             matrix_acc.combine(ejjk, cell_diag) ;
                                             auto ejik = matrix_acc.combineEntryIndex(row,col,row) ;
-                                            matrix_acc.combine(ejik,- cell_node_off_diag) ;
+                                            matrix_acc.combine(ejik, -cell_node_off_diag) ;
                                           }
                                           if(i>0)
                                           {
                                             Integer cell_lid =  mesh.cellLid(i-1,j) ;
                                             Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
                                             auto eij = matrix_acc.entryIndex(row,col) ;
                                             matrix_acc[eij] = - node_cell_off_diag ;
                                             auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
@@ -372,6 +374,7 @@ int main(int argc, char** argv)
                                           {
                                             Integer cell_lid =  mesh.cellLid(i,j-1) ;
                                             Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
                                             auto eij = matrix_acc.entryIndex(row,col) ;
                                             matrix_acc[eij] = - node_cell_off_diag ;
                                             auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
@@ -383,6 +386,7 @@ int main(int argc, char** argv)
                                           {
                                             Integer cell_lid =  mesh.cellLid(i-1,j-1) ;
                                             Integer col = allVIndex_acc[cell_lid] ;
+                                            matrix_acc[eii] += node_cell_off_diag ;
                                             auto eij = matrix_acc.entryIndex(row,col) ;
                                             matrix_acc[eij] = - node_cell_off_diag ;
                                             auto ejjk = matrix_acc.combineEntryIndex(row,col,col) ;
@@ -403,7 +407,7 @@ int main(int argc, char** argv)
       for(std::size_t irow=0;irow<local_size;++irow)
       {
           trace_mng->info() <<" ROW ["<<irow<<"]:";
-          for(std::size_t k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
+          for(auto k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
           {
             norme_A += hview[k]*hview[k] ;
             trace_mng->info() <<"\t("<<irow<<","<<hview.col(k)<<","<<hview[k]<<")";
@@ -417,7 +421,7 @@ int main(int argc, char** argv)
       auto hview = builder.hostView();
       for(std::size_t irow=0;irow<local_size;++irow)
       {
-          for(std::size_t k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
+          for(auto k=hview.kcol(irow);k<hview.kcol(irow+1);++k)
           {
             norme_A += hview[k]*hview[k] ;
           }

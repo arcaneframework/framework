@@ -82,30 +82,36 @@ namespace SYCL
                              Arccore::ConstArrayView<IndexT> stencil_indexes)
   {
     m_max_nb_contributors = max_nb_contributors ;
-    std::size_t nnz = this->m_row_starts[this->m_local_size] ;
-    std::size_t size = m_max_nb_contributors*nnz ;
-    m_contributor_indexes.resize(size) ;
-    m_contributor_indexes.assign(size,-1) ;
+    m_nnz = this->m_row_starts[this->m_local_size] ;
+    m_combine_size = m_max_nb_contributors*m_nnz ;
+    m_contributor_indexes.resize(m_combine_size) ;
+    m_contributor_indexes.assign(m_combine_size,-1) ;
+
+    auto f =  [&](int contrib_index, int row_index, int col_index)
+              {
+                auto eij = this->entryIndex(row_index,col_index) ;
+                auto offset = eij*m_max_nb_contributors ;
+                for(std::size_t c=0;c<m_max_nb_contributors;++c)
+                {
+                  if(m_contributor_indexes[offset+c]==contrib_index)
+                    break ;
+                  if(m_contributor_indexes[offset+c]==-1)
+                  {
+                    m_contributor_indexes[offset+c] = contrib_index ;
+                    break ;
+                  }
+                }
+              } ;
     for(int irow=0;irow<this->m_local_size;++irow)
     {
       for(auto k=stencil_offsets[irow];k<stencil_offsets[irow+1];++k)
       {
         auto col = stencil_indexes[k] ;
-        auto eij = this->entryIndex(irow,col) ;
-        auto offset = eij*m_max_nb_contributors ;
-        for(int c=0;c<m_max_nb_contributors;++c)
-        {
-          if(m_contributor_indexes[offset+c]==col)
-            break ;
-          if(m_contributor_indexes[offset+c]==-1)
-          {
-            m_contributor_indexes[offset+c] = col ;
-            break ;
-          }
-        }
+        f(col,irow,irow) ;
+        f(col,irow,col) ;
       }
     }
-    m_impl.reset(new Impl{size,m_contributor_indexes.data()}) ;
+    m_impl.reset(new Impl{m_combine_size,m_contributor_indexes.data()}) ;
   }
 
   /*---------------------------------------------------------------------------*/
@@ -127,20 +133,24 @@ namespace SYCL
                   IndexAccessorType cols_accessor,
                   IndexAccessorType kcol_accessor,
                   ValueAccessorType combine_values_accessor,
-                  IndexAccessorType prow_cols_accessor)
+                  IndexAccessorType prow_cols_accessor,
+                  std::size_t nb_contributor)
     : BaseType(values_accessor,cols_accessor,kcol_accessor)
     , m_combine_values_accessor(combine_values_accessor)
     , m_prow_cols_accessor(prow_cols_accessor)
-    {}
+    , m_nb_contributor(nb_contributor)
+    {
+
+    }
 
     IndexT combineEntryIndex(IndexT prow, IndexT row, IndexT col) const {
-      for(auto k=m_kcol_accessor[row];k<m_kcol_accessor[row+1];++k)
-        if(m_cols_accessor[k]==col)
+      for(auto k=this->m_kcol_accessor[row];k<this->m_kcol_accessor[row+1];++k)
+        if(this->m_cols_accessor[k]==col)
         {
-          for(int j=0;j<m_nb_contributor;++j)
+          for(std::size_t j=0;j<m_nb_contributor;++j)
           {
             if(m_prow_cols_accessor[m_nb_contributor*k+j]==prow)
-              return m_nb_contributor*k+j ;
+              return (IndexT)m_nb_contributor*k+j ;
           }
         }
       return -1 ;
@@ -152,14 +162,9 @@ namespace SYCL
     }
 
   private :
-    ValueAccessorType m_values_accessor ;
-    IndexAccessorType m_cols_accessor ;
-    IndexAccessorType m_kcol_accessor ;
-
     ValueAccessorType m_combine_values_accessor ;
     IndexAccessorType m_prow_cols_accessor ;
-    int m_nb_contributor = 0 ;
-
+    std::size_t m_nb_contributor = 0 ;
   } ;
 
   /*---------------------------------------------------------------------------*/
@@ -170,7 +175,8 @@ namespace SYCL
                 BaseType::m_impl->m_cols_buffer.template get_access<sycl::access::mode::read>(cgh.m_internal),
                 BaseType::m_impl->m_kcol_buffer.template get_access<sycl::access::mode::read>(cgh.m_internal),
                 m_impl->m_combine_values_buffer.template get_access<sycl::access::mode::read_write>(cgh.m_internal),
-                m_impl->m_contributor_indexes_buffer.template get_access<sycl::access::mode::read>(cgh.m_internal)) ;
+                m_impl->m_contributor_indexes_buffer.template get_access<sycl::access::mode::read>(cgh.m_internal),
+                m_max_nb_contributors) ;
   }
 
   /*---------------------------------------------------------------------------*/
@@ -179,9 +185,91 @@ namespace SYCL
   void CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::
   combine()
   {
-
+    auto env = SYCLEnv::instance() ;
+    auto nnz = m_nnz ;
+    auto nb_contributors = m_max_nb_contributors ;
+    auto total_threads = env->maxNumThreads() ;
+    env->internal()->queue().submit([&](sycl::handler& cgh)
+                                    {
+                                       auto values_acc = BaseType::m_impl->m_values_buffer.template get_access<sycl::access::mode::read_write>(cgh);
+                                       auto combine_values_acc = m_impl->m_combine_values_buffer.template get_access<sycl::access::mode::read>(cgh);
+                                       cgh.parallel_for<class class_combine>( sycl::range<1>{total_threads},
+                                                                              [=] (sycl::item<1> itemId)
+                                                                              {
+                                                                                  auto id = itemId.get_id(0);
+                                                                                  for (auto k = id; k < nnz; k += itemId.get_range()[0])
+                                                                                  {
+                                                                                     auto value = values_acc[k] ;
+                                                                                     for(std::size_t c=0;c<nb_contributors;++c)
+                                                                                     {
+                                                                                       value = CombineOpT::apply(value,combine_values_acc[nb_contributors*k+c]) ;
+                                                                                     }
+                                                                                     values_acc[k] = value ;
+                                                                                  }
+                                                                              }) ;
+                                     }) ;
   }
   /*---------------------------------------------------------------------------*/
+
+
+  template <typename ValueT,typename IndexT, typename CombineOpT>
+  class CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::HostView
+  : public ProfiledMatrixBuilderT<ValueT,IndexT>::HostView
+  {
+  public :
+    sycl::buffer<ValueT,1>* m_b = nullptr ;
+    using ValueAccessorType = decltype(m_b->get_host_access());
+
+    sycl::buffer<IndexT,1>* m_ib = nullptr ;
+    using IndexAccessorType = decltype(m_ib->get_host_access());
+
+
+    typedef ProfiledMatrixBuilderT<ValueT,IndexT>::HostView BaseType ;
+
+    HostView(ValueAccessorType values,
+             IndexAccessorType cols,
+             IndexAccessorType kcol,
+             ValueAccessorType combine_values,
+             IndexAccessorType prow_cols,
+             std::size_t nb_contributor)
+    : BaseType(values,cols,kcol)
+    , m_combine_values(combine_values)
+    , m_prow_cols(prow_cols)
+    , m_nb_contributor(nb_contributor)
+    {}
+
+
+    IndexT combineEntryIndex(IndexT prow, IndexT row, IndexT col) const {
+      for(auto k=this->m_kcol[row];k<this->m_kcol[row+1];++k)
+        if(this->m_cols[k]==col)
+        {
+          for(std::size_t j=0;j<m_nb_contributor;++j)
+          {
+            if(m_prow_cols[m_nb_contributor*k+j]==prow)
+              return m_nb_contributor*k+j ;
+          }
+        }
+      return -1 ;
+    }
+
+  private:
+    ValueAccessorType m_combine_values ;
+    IndexAccessorType m_prow_cols;
+    std::size_t m_nb_contributor = 0 ;
+  };
+
+
+  template <typename ValueT,typename IndexT, typename CombineOpT>
+  CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::HostView
+  CombineProfiledMatrixBuilderT<ValueT,IndexT,CombineOpT>::hostView()
+  {
+    return HostView(BaseType::m_impl->m_values_buffer.get_host_access(),
+                    BaseType::m_impl->m_cols_buffer.get_host_access(),
+                    BaseType::m_impl->m_kcol_buffer.get_host_access(),
+                    m_impl->m_combine_values_buffer.get_host_access(),
+                    m_impl->m_contributor_indexes_buffer.get_host_access(),
+                    m_max_nb_contributors) ;
+  }
   /*---------------------------------------------------------------------------*/
 
 } // namespace SYCL
