@@ -74,39 +74,35 @@ class ScannerMaxOperator
 /*!
  * \internal
  * \brief Classe pour effectuer un scan exlusif ou inclusif avec un opérateur spécifique.
- *
- * \a DataType est le type de donnée.
  */
-template <typename DataType, typename Operator, bool IsExclusive>
-class GenericScanner
+class ScannerImpl
 {
   // TODO: Faire le malloc sur le device associé à la queue.
   //       et aussi regarder si on peut utiliser mallocAsync().
 
  public:
 
-  explicit GenericScanner(RunQueue* queue)
+  explicit ScannerImpl(RunQueue* queue)
   : m_queue(queue)
   {}
 
  public:
 
-  void apply(SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  template <bool IsExclusive, typename DataType, typename Operator>
+  void apply(SmallSpan<const DataType> input, SmallSpan<DataType> output, Operator op)
   {
+    ARCANE_CHECK_POINTER(m_queue);
     const Int32 nb_item = input.size();
     if (output.size() != nb_item)
       ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
     [[maybe_unused]] const DataType* input_data = input.data();
     [[maybe_unused]] DataType* output_data = output.data();
-    eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
-    if (m_queue)
-      exec_policy = m_queue->executionPolicy();
-    Operator op;
+    eExecutionPolicy exec_policy = m_queue->executionPolicy();
+    //Operator op;
     DataType init_value = op.initialValue();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
-    case eExecutionPolicy::CUDA:
-    {
+    case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
       cudaStream_t stream = impl::CudaUtils::toNativeStream(m_queue);
       // Premier appel pour connaitre la taille pour l'allocation
@@ -126,8 +122,7 @@ class GenericScanner
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
-    case eExecutionPolicy::HIP:
-    {
+    case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
       hipStream_t stream = impl::HipUtils::toNativeStream(m_queue);
@@ -188,8 +183,7 @@ namespace Arcane::Accelerator
  *
  * Voir https://en.wikipedia.org/wiki/Prefix_sum.
  *
- * Dans les méthodes suivantes, l'argument \a queue peut être nul auquel cas
- * l'algorithme s'applique sur l'hôte en séquentiel.
+ * Dans les méthodes suivantes, l'argument \a queue ne doit pas être nul.
  */
 template <typename DataType>
 class Scanner
@@ -199,44 +193,38 @@ class Scanner
   //! Somme exclusive
   void exclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    using ScannerType = impl::GenericScanner<DataType, impl::ScannerSumOperator<DataType>, true>;
-    ScannerType scanner(queue);
-    scanner.apply(input, output);
+    impl::ScannerImpl scanner(queue);
+    scanner.apply<true>(input, output, impl::ScannerSumOperator<DataType>{});
   }
   //! Minimum exclusif
   void exclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    using ScannerType = impl::GenericScanner<DataType, impl::ScannerMinOperator<DataType>, true>;
-    ScannerType scanner(queue);
-    scanner.apply(input, output);
+    impl::ScannerImpl scanner(queue);
+    scanner.apply<true>(input, output, impl::ScannerMinOperator<DataType>{});
   }
   //! Maximum exclusif
   void exclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    using ScannerType = impl::GenericScanner<DataType, impl::ScannerMaxOperator<DataType>, true>;
-    ScannerType scanner(queue);
-    scanner.apply(input, output);
+    impl::ScannerImpl scanner(queue);
+    scanner.apply<true>(input, output, impl::ScannerMaxOperator<DataType>{});
   }
   //! Somme inclusive
   void inclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    using ScannerType = impl::GenericScanner<DataType, impl::ScannerSumOperator<DataType>, false>;
-    ScannerType scanner(queue);
-    scanner.apply(input, output);
+    impl::ScannerImpl scanner(queue);
+    scanner.apply<false>(input, output, impl::ScannerSumOperator<DataType>{});
   }
   //! Minimum inclusif
   void inclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    using ScannerType = impl::GenericScanner<DataType, impl::ScannerMinOperator<DataType>, false>;
-    ScannerType scanner(queue);
-    scanner.apply(input, output);
+    impl::ScannerImpl scanner(queue);
+    scanner.apply<false>(input, output, impl::ScannerMinOperator<DataType>{});
   }
   //! Maximum inclusif
   void inclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    using ScannerType = impl::GenericScanner<DataType, impl::ScannerMaxOperator<DataType>, false>;
-    ScannerType scanner(queue);
-    scanner.apply(input, output);
+    impl::ScannerImpl scanner(queue);
+    scanner.apply<false>(input, output, impl::ScannerMaxOperator<DataType>{});
   }
 
  private:
