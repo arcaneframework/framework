@@ -82,29 +82,21 @@ class ScannerImpl
 
  public:
 
-  explicit ScannerImpl(RunQueue* queue)
+  explicit ScannerImpl(const RunQueue& queue)
   : m_queue(queue)
   {}
 
  public:
 
-  template <bool IsExclusive, typename DataType, typename Operator>
-  void apply(SmallSpan<const DataType> input, SmallSpan<DataType> output, Operator op)
+  template <bool IsExclusive, typename InputIterator, typename OutputIterator, typename Operator, typename DataType>
+  void apply(Int32 nb_item, InputIterator input_data, OutputIterator output_data, DataType init_value, Operator op)
   {
-    ARCANE_CHECK_POINTER(m_queue);
-    const Int32 nb_item = input.size();
-    if (output.size() != nb_item)
-      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
-    [[maybe_unused]] const DataType* input_data = input.data();
-    [[maybe_unused]] DataType* output_data = output.data();
-    eExecutionPolicy exec_policy = m_queue->executionPolicy();
-    //Operator op;
-    DataType init_value = op.initialValue();
+    eExecutionPolicy exec_policy = m_queue.executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(m_queue);
+      cudaStream_t stream = impl::CudaUtils::toNativeStream(&m_queue);
       // Premier appel pour connaitre la taille pour l'allocation
       if constexpr (IsExclusive)
         ARCANE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(nullptr, temp_storage_size,
@@ -125,7 +117,7 @@ class ScannerImpl
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
-      hipStream_t stream = impl::HipUtils::toNativeStream(m_queue);
+      hipStream_t stream = impl::HipUtils::toNativeStream(&m_queue);
       if constexpr (IsExclusive)
         ARCANE_CHECK_HIP(rocprim::exclusive_scan(nullptr, temp_storage_size, input_data, output_data,
                                                  init_value, nb_item, op, stream));
@@ -147,14 +139,17 @@ class ScannerImpl
     case eExecutionPolicy::Sequential: {
       DataType sum = init_value;
       for (Int32 i = 0; i < nb_item; ++i) {
+        DataType v = *input_data;
         if constexpr (IsExclusive) {
-          output[i] = sum;
-          sum = op(input[i], sum);
+          *output_data = sum;
+          sum = op(v, sum);
         }
         else {
-          sum = op(input[i], sum);
-          output[i] = sum;
+          sum = op(v, sum);
+          *output_data = sum;
         }
+        ++input_data;
+        ++output_data;
       }
     } break;
     default:
@@ -164,7 +159,7 @@ class ScannerImpl
 
  private:
 
-  RunQueue* m_queue = nullptr;
+  RunQueue m_queue;
   GenericDeviceStorage m_storage;
 };
 
@@ -191,43 +186,51 @@ class Scanner
  public:
 
   //! Somme exclusive
-  void exclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  static void exclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    impl::ScannerImpl scanner(queue);
-    scanner.apply<true>(input, output, impl::ScannerSumOperator<DataType>{});
+    _applyArray<true>(queue, input, output, impl::ScannerSumOperator<DataType>{});
   }
   //! Minimum exclusif
-  void exclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  static void exclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    impl::ScannerImpl scanner(queue);
-    scanner.apply<true>(input, output, impl::ScannerMinOperator<DataType>{});
+    _applyArray<true>(queue, input, output, impl::ScannerMinOperator<DataType>{});
   }
   //! Maximum exclusif
-  void exclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  static void exclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    impl::ScannerImpl scanner(queue);
-    scanner.apply<true>(input, output, impl::ScannerMaxOperator<DataType>{});
+    _applyArray<true>(queue, input, output, impl::ScannerMaxOperator<DataType>{});
   }
   //! Somme inclusive
-  void inclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  static void inclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    impl::ScannerImpl scanner(queue);
-    scanner.apply<false>(input, output, impl::ScannerSumOperator<DataType>{});
+    _applyArray<false>(queue, input, output, impl::ScannerSumOperator<DataType>{});
   }
   //! Minimum inclusif
-  void inclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  static void inclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    impl::ScannerImpl scanner(queue);
-    scanner.apply<false>(input, output, impl::ScannerMinOperator<DataType>{});
+    _applyArray<false>(queue, input, output, impl::ScannerMinOperator<DataType>{});
   }
   //! Maximum inclusif
-  void inclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
+  static void inclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    impl::ScannerImpl scanner(queue);
-    scanner.apply<false>(input, output, impl::ScannerMaxOperator<DataType>{});
+    _applyArray<false>(queue, input, output, impl::ScannerMaxOperator<DataType>{});
   }
 
  private:
+
+  template <bool IsExclusive, typename Operator>
+  static void _applyArray(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output, const Operator& op)
+  {
+    ARCANE_CHECK_POINTER(queue);
+    impl::ScannerImpl scanner(*queue);
+    const Int32 nb_item = input.size();
+    if (output.size() != nb_item)
+      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
+    const DataType* input_data = input.data();
+    DataType* output_data = output.data();
+    DataType init_value = op.initialValue();
+    scanner.apply<IsExclusive>(nb_item, input_data, output_data, init_value, op);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
