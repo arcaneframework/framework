@@ -274,8 +274,8 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
       t2_view[index] = value;
     };
     ax::GenericScanner scanner(*m_queue);
-    ax::impl::ScannerSumOperator<DataType> op{};
-    DataType init_value = op.initialValue();
+    ax::ScannerSumOperator<DataType> op;
+    DataType init_value = op.defaultValue();
 
     // Test Exclusive
     t2.fill(init_value, m_queue);

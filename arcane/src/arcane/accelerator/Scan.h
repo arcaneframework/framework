@@ -25,7 +25,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ class ScannerSumOperator
   {
     return a + b;
   }
-  static DataType initialValue() { return {}; }
+  static DataType defaultValue() { return {}; }
 };
 
 //! Opérateur de Scan pour le minimum
@@ -54,7 +54,7 @@ class ScannerMinOperator
   {
     return (a < b) ? a : b;
   }
-  static DataType initialValue() { return std::numeric_limits<DataType>::max(); }
+  static DataType defaultValue() { return std::numeric_limits<DataType>::max(); }
 };
 
 //! Opérateur de Scan pour le maximum
@@ -67,8 +67,19 @@ class ScannerMaxOperator
   {
     return (a < b) ? b : a;
   }
-  static DataType initialValue() { return std::numeric_limits<DataType>::lowest(); }
+  static DataType defaultValue() { return std::numeric_limits<DataType>::lowest(); }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -193,32 +204,32 @@ class Scanner
   //! Somme exclusive
   static void exclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<true>(queue, input, output, impl::ScannerSumOperator<DataType>{});
+    _applyArray<true>(queue, input, output, ScannerSumOperator<DataType>{});
   }
   //! Minimum exclusif
   static void exclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<true>(queue, input, output, impl::ScannerMinOperator<DataType>{});
+    _applyArray<true>(queue, input, output, ScannerMinOperator<DataType>{});
   }
   //! Maximum exclusif
   static void exclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<true>(queue, input, output, impl::ScannerMaxOperator<DataType>{});
+    _applyArray<true>(queue, input, output, ScannerMaxOperator<DataType>{});
   }
   //! Somme inclusive
   static void inclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<false>(queue, input, output, impl::ScannerSumOperator<DataType>{});
+    _applyArray<false>(queue, input, output, ScannerSumOperator<DataType>{});
   }
   //! Minimum inclusif
   static void inclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<false>(queue, input, output, impl::ScannerMinOperator<DataType>{});
+    _applyArray<false>(queue, input, output, ScannerMinOperator<DataType>{});
   }
   //! Maximum inclusif
   static void inclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<false>(queue, input, output, impl::ScannerMaxOperator<DataType>{});
+    _applyArray<false>(queue, input, output, ScannerMaxOperator<DataType>{});
   }
 
  private:
@@ -233,7 +244,7 @@ class Scanner
       ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
     const DataType* input_data = input.data();
     DataType* output_data = output.data();
-    DataType init_value = op.initialValue();
+    DataType init_value = op.defaultValue();
     scanner.apply<IsExclusive>(nb_item, input_data, output_data, init_value, op, TraceInfo{});
   }
 };
