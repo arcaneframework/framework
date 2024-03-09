@@ -20,6 +20,7 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/CommonUtils.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,9 +78,6 @@ class ScannerMaxOperator
  */
 class ScannerImpl
 {
-  // TODO: Faire le malloc sur le device associé à la queue.
-  //       et aussi regarder si on peut utiliser mallocAsync().
-
  public:
 
   explicit ScannerImpl(const RunQueue& queue)
@@ -88,9 +86,15 @@ class ScannerImpl
 
  public:
 
-  template <bool IsExclusive, typename InputIterator, typename OutputIterator, typename Operator, typename DataType>
-  void apply(Int32 nb_item, InputIterator input_data, OutputIterator output_data, DataType init_value, Operator op)
+  template <bool IsExclusive, typename InputIterator, typename OutputIterator,
+            typename Operator, typename DataType>
+  void apply(Int32 nb_item, InputIterator input_data, OutputIterator output_data,
+             DataType init_value, Operator op, const TraceInfo& trace_info)
   {
+    RunCommand command = makeCommand(m_queue);
+    command << trace_info;
+    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    launch_info.beginExecute();
     eExecutionPolicy exec_policy = m_queue.executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
@@ -155,6 +159,7 @@ class ScannerImpl
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
     }
+    launch_info.endExecute();
   }
 
  private:
@@ -229,7 +234,7 @@ class Scanner
     const DataType* input_data = input.data();
     DataType* output_data = output.data();
     DataType init_value = op.initialValue();
-    scanner.apply<IsExclusive>(nb_item, input_data, output_data, init_value, op);
+    scanner.apply<IsExclusive>(nb_item, input_data, output_data, init_value, op, TraceInfo{});
   }
 };
 
@@ -378,18 +383,20 @@ class GenericScanner
   void applyWithIndexExclusive(Int32 nb_value, const DataType& initial_value,
                                const GetterLambda& getter_lambda,
                                const SetterLambda& setter_lambda,
-                               const Operator& op_lambda)
+                               const Operator& op_lambda,
+                               const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex<true>(nb_value, initial_value, getter_lambda, setter_lambda, op_lambda);
+    _applyWithIndex<true>(nb_value, initial_value, getter_lambda, setter_lambda, op_lambda, trace_info);
   }
 
   template <typename DataType, typename GetterLambda, typename SetterLambda, typename Operator>
   void applyWithIndexInclusive(Int32 nb_value, const DataType& initial_value,
                                const GetterLambda& getter_lambda,
                                const SetterLambda& setter_lambda,
-                               const Operator& op_lambda)
+                               const Operator& op_lambda,
+                               const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex<false>(nb_value, initial_value, getter_lambda, setter_lambda, op_lambda);
+    _applyWithIndex<false>(nb_value, initial_value, getter_lambda, setter_lambda, op_lambda, trace_info);
   }
 
  private:
@@ -398,12 +405,13 @@ class GenericScanner
   void _applyWithIndex(Int32 nb_value, const DataType& initial_value,
                        const GetterLambda& getter_lambda,
                        const SetterLambda& setter_lambda,
-                       const Operator& op_lambda)
+                       const Operator& op_lambda,
+                       const TraceInfo& trace_info)
   {
     GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
     SetterLambdaIterator<DataType, SetterLambda> output_iter(setter_lambda);
     impl::ScannerImpl gf(m_queue);
-    gf.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda);
+    gf.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda, trace_info);
   }
 
  private:
