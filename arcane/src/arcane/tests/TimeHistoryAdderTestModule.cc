@@ -132,13 +132,19 @@ _checker()
   iterations.clear();
   values.clear();
   sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB")), iterations, values);
-  for (Integer i = 0; i < iteration; ++i) {
-    debug() << "iteration[" << i << "] = " << iterations[i]
-            << " == i+1 = " << i + 1
-            << " -- values[" << i << "] = " << values[i]
-            << " == i+(adder++) = " << i + adder;
-    ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
-    ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
+  if (pm->commRank() == pm->masterIORank()) {
+    for (Integer i = 0; i < iteration; ++i) {
+      debug() << "iteration[" << i << "] = " << iterations[i]
+              << " == i+1 = " << i + 1
+              << " -- values[" << i << "] = " << values[i]
+              << " == i+(adder++) = " << i + adder;
+      ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
+      ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
+    }
+  }
+  else {
+    ARCANE_ASSERT((iterations.empty()), ("Iterations not empty"));
+    ARCANE_ASSERT((values.empty()), ("Values not empty"));
   }
   adder++;
 
@@ -184,13 +190,19 @@ _checker()
     iterations.clear();
     values.clear();
     sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB"), mesh->handle()), iterations, values);
-    for (Integer i = 0; i < iteration; ++i) {
-      debug() << "iteration[" << i << "] = " << iterations[i]
-              << " == i+1 = " << i + 1
-              << " -- values[" << i << "] = " << values[i]
-              << " == i+(adder++) = " << i + adder;
-      ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
-      ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
+    if (pm->commRank() == pm->masterIORank()) {
+      for (Integer i = 0; i < iteration; ++i) {
+        debug() << "iteration[" << i << "] = " << iterations[i]
+                << " == i+1 = " << i + 1
+                << " -- values[" << i << "] = " << values[i]
+                << " == i+(adder++) = " << i + adder;
+        ARCANE_ASSERT((iterations[i] == i + 1), ("Error iterations"));
+        ARCANE_ASSERT((values[i] == i + adder), ("Error values"));
+      }
+    }
+    else {
+      ARCANE_ASSERT((iterations.empty()), ("Iterations not empty"));
+      ARCANE_ASSERT((values.empty()), ("Values not empty"));
     }
     adder++;
 
