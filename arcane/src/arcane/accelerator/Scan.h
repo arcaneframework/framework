@@ -20,11 +20,12 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/CommonUtils.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
@@ -40,7 +41,7 @@ class ScannerSumOperator
   {
     return a + b;
   }
-  static DataType initialValue() { return {}; }
+  static DataType defaultValue() { return {}; }
 };
 
 //! Opérateur de Scan pour le minimum
@@ -53,7 +54,7 @@ class ScannerMinOperator
   {
     return (a < b) ? a : b;
   }
-  static DataType initialValue() { return std::numeric_limits<DataType>::max(); }
+  static DataType defaultValue() { return std::numeric_limits<DataType>::max(); }
 };
 
 //! Opérateur de Scan pour le maximum
@@ -66,8 +67,19 @@ class ScannerMaxOperator
   {
     return (a < b) ? b : a;
   }
-  static DataType initialValue() { return std::numeric_limits<DataType>::lowest(); }
+  static DataType defaultValue() { return std::numeric_limits<DataType>::lowest(); }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,9 +89,6 @@ class ScannerMaxOperator
  */
 class ScannerImpl
 {
-  // TODO: Faire le malloc sur le device associé à la queue.
-  //       et aussi regarder si on peut utiliser mallocAsync().
-
  public:
 
   explicit ScannerImpl(const RunQueue& queue)
@@ -88,9 +97,15 @@ class ScannerImpl
 
  public:
 
-  template <bool IsExclusive, typename InputIterator, typename OutputIterator, typename Operator, typename DataType>
-  void apply(Int32 nb_item, InputIterator input_data, OutputIterator output_data, DataType init_value, Operator op)
+  template <bool IsExclusive, typename InputIterator, typename OutputIterator,
+            typename Operator, typename DataType>
+  void apply(Int32 nb_item, InputIterator input_data, OutputIterator output_data,
+             DataType init_value, Operator op, const TraceInfo& trace_info)
   {
+    RunCommand command = makeCommand(m_queue);
+    command << trace_info;
+    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    launch_info.beginExecute();
     eExecutionPolicy exec_policy = m_queue.executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
@@ -155,6 +170,7 @@ class ScannerImpl
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
     }
+    launch_info.endExecute();
   }
 
  private:
@@ -188,32 +204,32 @@ class Scanner
   //! Somme exclusive
   static void exclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<true>(queue, input, output, impl::ScannerSumOperator<DataType>{});
+    _applyArray<true>(queue, input, output, ScannerSumOperator<DataType>{});
   }
   //! Minimum exclusif
   static void exclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<true>(queue, input, output, impl::ScannerMinOperator<DataType>{});
+    _applyArray<true>(queue, input, output, ScannerMinOperator<DataType>{});
   }
   //! Maximum exclusif
   static void exclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<true>(queue, input, output, impl::ScannerMaxOperator<DataType>{});
+    _applyArray<true>(queue, input, output, ScannerMaxOperator<DataType>{});
   }
   //! Somme inclusive
   static void inclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<false>(queue, input, output, impl::ScannerSumOperator<DataType>{});
+    _applyArray<false>(queue, input, output, ScannerSumOperator<DataType>{});
   }
   //! Minimum inclusif
   static void inclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<false>(queue, input, output, impl::ScannerMinOperator<DataType>{});
+    _applyArray<false>(queue, input, output, ScannerMinOperator<DataType>{});
   }
   //! Maximum inclusif
   static void inclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
-    _applyArray<false>(queue, input, output, impl::ScannerMaxOperator<DataType>{});
+    _applyArray<false>(queue, input, output, ScannerMaxOperator<DataType>{});
   }
 
  private:
@@ -228,8 +244,8 @@ class Scanner
       ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
     const DataType* input_data = input.data();
     DataType* output_data = output.data();
-    DataType init_value = op.initialValue();
-    scanner.apply<IsExclusive>(nb_item, input_data, output_data, init_value, op);
+    DataType init_value = op.defaultValue();
+    scanner.apply<IsExclusive>(nb_item, input_data, output_data, init_value, op, TraceInfo{});
   }
 };
 
@@ -378,18 +394,40 @@ class GenericScanner
   void applyWithIndexExclusive(Int32 nb_value, const DataType& initial_value,
                                const GetterLambda& getter_lambda,
                                const SetterLambda& setter_lambda,
-                               const Operator& op_lambda)
+                               const Operator& op_lambda,
+                               const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex<true>(nb_value, initial_value, getter_lambda, setter_lambda, op_lambda);
+    _applyWithIndex<true>(nb_value, initial_value, getter_lambda, setter_lambda, op_lambda, trace_info);
   }
 
   template <typename DataType, typename GetterLambda, typename SetterLambda, typename Operator>
   void applyWithIndexInclusive(Int32 nb_value, const DataType& initial_value,
                                const GetterLambda& getter_lambda,
                                const SetterLambda& setter_lambda,
-                               const Operator& op_lambda)
+                               const Operator& op_lambda,
+                               const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex<false>(nb_value, initial_value, getter_lambda, setter_lambda, op_lambda);
+    _applyWithIndex<false>(nb_value, initial_value, getter_lambda, setter_lambda, op_lambda, trace_info);
+  }
+
+  template <typename InputDataType, typename OutputDataType, typename Operator>
+  void applyExclusive(const InputDataType& initial_value,
+                      SmallSpan<const std::remove_cvref_t<InputDataType>> input,
+                      SmallSpan<OutputDataType> output,
+                      const Operator& op_lambda,
+                      const TraceInfo& trace_info = TraceInfo())
+  {
+    _apply<true>(initial_value, input, output, op_lambda, trace_info);
+  }
+
+  template <typename InputDataType, typename OutputDataType, typename Operator>
+  void applyInclusive(const InputDataType& initial_value,
+                      SmallSpan<const std::remove_cvref_t<InputDataType>> input,
+                      SmallSpan<OutputDataType> output,
+                      const Operator& op_lambda,
+                      const TraceInfo& trace_info = TraceInfo())
+  {
+    _apply<false>(initial_value, input, output, op_lambda, trace_info);
   }
 
  private:
@@ -398,12 +436,29 @@ class GenericScanner
   void _applyWithIndex(Int32 nb_value, const DataType& initial_value,
                        const GetterLambda& getter_lambda,
                        const SetterLambda& setter_lambda,
-                       const Operator& op_lambda)
+                       const Operator& op_lambda,
+                       const TraceInfo& trace_info)
   {
     GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
     SetterLambdaIterator<DataType, SetterLambda> output_iter(setter_lambda);
-    impl::ScannerImpl gf(m_queue);
-    gf.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda);
+    impl::ScannerImpl scanner(m_queue);
+    scanner.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda, trace_info);
+  }
+
+  template <bool IsExclusive, typename InputDataType, typename OutputDataType, typename Operator>
+  void _apply(const InputDataType& initial_value,
+              SmallSpan<const InputDataType> input,
+              SmallSpan<OutputDataType> output,
+              const Operator& op,
+              const TraceInfo& trace_info = TraceInfo())
+  {
+    const Int32 nb_item = input.size();
+    if (output.size() != nb_item)
+      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
+    auto* input_data = input.data();
+    auto* output_data = output.data();
+    impl::ScannerImpl scanner(m_queue);
+    scanner.apply<IsExclusive>(nb_item, input_data, output_data, initial_value, op, trace_info);
   }
 
  private:
