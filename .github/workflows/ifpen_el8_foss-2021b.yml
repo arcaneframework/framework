@@ -1,4 +1,4 @@
-name: IFPEN el7 foss/2021b
+name: IFPEN el8 foss/2021b
 
 on:
   #push:
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el7
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el8
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -60,8 +60,8 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ifpen-el7-foss-2021b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ifpen-el7-foss-2021b-${{ env.CM_BUILD_TYPE }}-
+          key: ifpen-el8-foss-2021b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
+          restore-keys: ifpen-el8-foss-2021b-${{ env.CM_BUILD_TYPE }}-
 
       # Installation
 
@@ -150,7 +150,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el7-rt
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el8-rt
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
