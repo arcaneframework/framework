@@ -410,6 +410,26 @@ class GenericScanner
     _applyWithIndex<false>(nb_value, initial_value, getter_lambda, setter_lambda, op_lambda, trace_info);
   }
 
+  template <typename InputDataType, typename OutputDataType, typename Operator>
+  void applyExclusive(const InputDataType& initial_value,
+                      SmallSpan<const std::remove_cvref_t<InputDataType>> input,
+                      SmallSpan<OutputDataType> output,
+                      const Operator& op_lambda,
+                      const TraceInfo& trace_info = TraceInfo())
+  {
+    _apply<true>(initial_value, input, output, op_lambda, trace_info);
+  }
+
+  template <typename InputDataType, typename OutputDataType, typename Operator>
+  void applyInclusive(const InputDataType& initial_value,
+                      SmallSpan<const std::remove_cvref_t<InputDataType>> input,
+                      SmallSpan<OutputDataType> output,
+                      const Operator& op_lambda,
+                      const TraceInfo& trace_info = TraceInfo())
+  {
+    _apply<false>(initial_value, input, output, op_lambda, trace_info);
+  }
+
  private:
 
   template <bool IsExclusive, typename DataType, typename GetterLambda, typename SetterLambda, typename Operator>
@@ -421,8 +441,24 @@ class GenericScanner
   {
     GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
     SetterLambdaIterator<DataType, SetterLambda> output_iter(setter_lambda);
-    impl::ScannerImpl gf(m_queue);
-    gf.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda, trace_info);
+    impl::ScannerImpl scanner(m_queue);
+    scanner.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda, trace_info);
+  }
+
+  template <bool IsExclusive, typename InputDataType, typename OutputDataType, typename Operator>
+  void _apply(const InputDataType& initial_value,
+              SmallSpan<const InputDataType> input,
+              SmallSpan<OutputDataType> output,
+              const Operator& op,
+              const TraceInfo& trace_info = TraceInfo())
+  {
+    const Int32 nb_item = input.size();
+    if (output.size() != nb_item)
+      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
+    auto* input_data = input.data();
+    auto* output_data = output.data();
+    impl::ScannerImpl scanner(m_queue);
+    scanner.apply<IsExclusive>(nb_item, input_data, output_data, initial_value, op, trace_info);
   }
 
  private:
