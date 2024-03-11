@@ -58,6 +58,9 @@ Les chapitres disponibles sont :
 - \subpage arcanedoc_materials <br>
   Présente la partie matériau de %Arcane.
 
+- \subpage arcanedoc_io <br>
+  Présente les différents moyens d'entrer et de sortir des données.
+
 - \subpage arcanedoc_debug_perf <br>
   Présente les divers méthodes permettant d'aider au débuggage, à l'analyse des
   performances, au tests unitaires et à la validation de code.
