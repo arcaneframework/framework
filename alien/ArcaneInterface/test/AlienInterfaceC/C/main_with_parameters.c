@@ -17,17 +17,16 @@ int main(int argc, char** argv)
 {
   typedef long int uid_type ;
   int i,k, r;
-  int system_id, solver_id, error;
+  int system_id, param_system_id, solver_id, error;
   int global_nrows, local_nrows, nb_ghosts ;
-  int row_size, local_nnz ;
+  int local_nnz ;
   int* row_offset, *ghost_owners;
   uid_type *row_uids, *col_uids, *ghost_uids ;
-  double diag_values, offdiag_values, rhs_value, norm2, err, err2, gnorm2, gerr2 ;
+  double diag_values, offdiag_values, gnorm2, gerr2 ;
   double *matrix_values, *rhs_values, *solution_values, *ref_solution_values ;
   int nprocs, my_rank, domain_offset ;
   MPI_Comm comm;
   struct ALIEN_Solver_Status solver_status ;
-
 
   MPI_Init(&argc,&argv) ;
   comm = MPI_COMM_WORLD ;
@@ -71,7 +70,7 @@ int main(int argc, char** argv)
   for(i=0;i<local_nrows;++i)
   {
     row_uids[i] = domain_offset+i ;
-    row_size = 3 ;
+    int row_size = 3 ;
     if((domain_offset+i == 0 ) || (domain_offset+i == global_nrows -1)) row_size = 2 ;
     row_offset[i+1] = row_offset[i] + row_size ;
   }
@@ -108,7 +107,7 @@ int main(int argc, char** argv)
   {
     col_uids[k] = domain_offset+i ;
     matrix_values[k] = diag_values ;
-    rhs_value = diag_values*(domain_offset+i) ;
+    double rhs_value = diag_values*(domain_offset+i) ;
     ++k ;
     if(domain_offset+i != 0 )
     {
@@ -148,14 +147,29 @@ int main(int argc, char** argv)
   printf("SET RHS VALUES %d: gsize=%d lsize=%d\n",system_id,global_nrows,local_nrows);
   error += ALIEN_set_rhs_values(system_id,local_nrows,row_uids,rhs_values) ;
 
+  if(error!=0)
+    printf("ERRORS while setting the Linear System") ;
+
+  /*
+   * CREATE PARAMETER SYSTEM
+   */
+  printf("CREATE PARAMETER SYSTEM \n") ;
+  param_system_id = ALIEN_create_parameter_system() ;
+
+  ALIEN_set_parameter_string_value(param_system_id,"solver-package","petsc") ;
+  ALIEN_set_parameter_double_value(param_system_id,"tol",1.0e-10) ;
+  ALIEN_set_parameter_integer_value(param_system_id,"max-iter",1000) ;
+  ALIEN_set_parameter_string_value(param_system_id,"petsc-solver","bicgs") ;
+  ALIEN_set_parameter_string_value(param_system_id,"petsc-precond" ,"bjacobi") ;
+
   /*
    * CREATE SOLVER
    */
   printf("CREATE SOLVER \n") ;
-  solver_id = ALIEN_create_solver(comm,"./solver_config.xml") ;
+  solver_id = ALIEN_create_solver(comm,NULL) ;
 
   printf("INIT SOLVER \n") ;
-  ALIEN_init_solver(solver_id,argc,argv) ;
+  ALIEN_init_solver_with_parameters(solver_id,param_system_id) ;
 
   /*
    * LINEAR SYSTEM RESOLUTION
@@ -169,17 +183,21 @@ int main(int argc, char** argv)
    */
   error += ALIEN_get_solution_values(system_id,local_nrows,row_uids,solution_values) ;
 
+  if(error!=0)
+    printf("ERRORS while solving the Linear System") ;
+
   ALIEN_get_solver_status(solver_id,&solver_status) ;
   if(solver_status.code == 0)
   {
     /*
      * COMPUTE ERROR TO REF SOLUTION
      */
-    norm2 = 0. ;
+    double norm2 = 0. ;
+    double err2 = 0. ;
     for(i = 0;i<local_nrows;++i)
     {
       norm2 += rhs_values[i]*rhs_values[i] ;
-      err = solution_values[i] - ref_solution_values[i] ;
+      double err = solution_values[i] - ref_solution_values[i] ;
       err2 += err*err ;
     }
 
@@ -192,12 +210,21 @@ int main(int argc, char** argv)
   /*
    * DESTROY SOLVER AND LINEAR SYSTEM
    */
+  printf("DESTROY Linear Solver\n") ;
   ALIEN_destroy_solver(solver_id) ;
+
+  printf("DESTROY Parameter System\n") ;
+  ALIEN_destroy_parameter_system(param_system_id) ;
+
+  printf("DESTROY Linear System\n") ;
   ALIEN_destroy_linear_system(system_id) ;
 
+  printf("FREE ARRAYS\n") ;
   free(row_uids) ;
   free(col_uids) ;
   free(row_offset) ;
+  free(ghost_uids) ;
+  free(ghost_owners) ;
   free(matrix_values) ;
   free(rhs_values) ;
   free(solution_values) ;
@@ -206,7 +233,9 @@ int main(int argc, char** argv)
   /*
    * FINALYZE ALIEN
    */
+  printf("FINALIZE ALIEN\n") ;
   ALIEN_finalize() ;
+
 
   MPI_Finalize() ;
 
