@@ -357,7 +357,7 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
         val = new TimeHistoryValueT<Int64>(m_variable_mng, thpi, index, sub_size, isShrinkActive());
         break;
       default:
-        break;
+        ARCANE_FATAL("Unsupported type");
       }
       if (need_update) {
         val->fromOldToNewVariables(m_variable_mng, default_mesh);
@@ -377,7 +377,7 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
         val = new TimeHistoryValueT<Int64>(thpi, index, sub_size, isShrinkActive());
         break;
       default:
-        break;
+        ARCANE_FATAL("Unsupported type");
       }
       // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
       // ou le même nom qu'un historique "globale".
