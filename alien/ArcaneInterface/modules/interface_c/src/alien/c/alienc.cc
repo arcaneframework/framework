@@ -187,17 +187,15 @@ public :
         std::stringstream token;
         token<<"--"<<key;
         m_command_line.push_back(token.str());
-        std::cout<<"ADD COMMAND LINE : "<<token.str()<<std::endl ;
       }
       {
         std::stringstream token;
         token<<value;
         m_command_line.push_back(token.str());
-        std::cout<<"ADD COMMAND LINE : "<<token.str()<<std::endl ;
       }
     }
 
-    void setParam(std::string const& key,std::string value)
+    void setParam(std::string const& key,std::string const& value)
     {
       m_string_params[key] = value ;
       addToCommandLine(key,value) ;
@@ -217,13 +215,10 @@ public :
 
     std::vector<const char *> commandLine() const {
       std::vector<const char *> command_line(m_command_line.size()) ;
-      std::cout<<"COMMAND LINE : ";
       for(std::size_t i=0;i<m_command_line.size();++i)
       {
         command_line[i] = m_command_line[i].c_str() ;
-        std::cout<<command_line[i]<<" ";
       }
-      std::cout<<std::endl ;
       return command_line ;
     }
 
