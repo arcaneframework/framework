@@ -198,7 +198,7 @@ build()
     if (acc_mng){
       Runner* default_runner = acc_mng->defaultRunner();
       // Indique si on active la file accélérateur
-      bool use_accelerator_runner = false;
+      bool use_accelerator_runner = true;
       if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_QUEUE", true))
         use_accelerator_runner = (v.value()!=0);
       if (use_accelerator_runner && default_runner)
