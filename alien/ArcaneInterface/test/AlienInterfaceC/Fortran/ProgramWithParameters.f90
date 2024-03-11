@@ -17,17 +17,12 @@
   character(len=80) :: config_file
   integer :: alloc_stat
 
-  !
-  ! MPI INITIALIZATION
-  !
+
   call MPI_Init(ierr)
   comm = MPI_COMM_WORLD
   call MPI_Comm_size(comm,nprocs,ierr)
   call MPI_Comm_rank(comm,my_rank,ierr)
 
-  !
-  ! ALIEN INITIALIZATION
-  !
   print*, "NPROCS RANK",nprocs,my_rank
   call ALIEN_init()
 
@@ -120,21 +115,29 @@
 
   call ALIEN_SetRhsValues(system_id,local_nrows,row_uids,rhs_values)
 
-
-  !
-  ! CREATE LINEAR SOLVER 
-  !
   solver_id = ALIEN_CreateSolver(comm)
 
-  !
-  ! LINEAR SOLVER SET UP WITH CONFIG FILE 
-  !
-  config_file = "solver.json"
-  call ALIEN_InitSolver(solver_id,config_file)
+  !config_file = "solver.json"
+  !{
+  !      "solver-package" : "petsc",
+  !      "config" : 
+  !      {
+  !         "tol" : 1.0e-10,
+  !         "max-iter" : 1000,
+  !         "petsc-solver" : "bicgs",
+  !         "petsc-precond" : "bjacobi"
+  !      }
+  !}
+  param_system_id = ALIEN_CreateParameterSystem()
+  ALIEN_SetParameterStringValue (param_system_id,"solver-package","petsc")
+  ALIEN_SetParameterDoubleValue (param_system_id,"tol",1.0e-10)
+  ALIEN_SetParameterIntegerValue(param_system_id,"max-iter",1000)
+  ALIEN_SetParameterStringValue (param_system_id,"petsc-solver","bicgs")
+  ALIEN_SetParameterStringValue (param_system_id,"petsc-precond","bjacobi")
+  
+  call ALIEN_InitSolverWithParameters(solver_id,param_system_id)
 
-  !
-  ! LINEAR SYSTEM RESOLUTION
-  !
+
   call ALIEN_Solve(solver_id,system_id)
 
   call ALIEN_GetSolutionValues(system_id,local_nrows,row_uids,solution_values)
@@ -153,15 +156,8 @@
     print*,"REL ERROR2 : ",gerr2/gnorm2 ;
   endif
 
-  !
-  ! LINEAR SYSTEM DESTRUCTION
-  !
   call ALIEN_DestroySolver(solver_id)
   call ALIEN_DestroyLinearSystem(system_id)
-
-  ! 
-  ! ALIEN FINALIZE
-  !
   call ALIEN_finalize()
 
 

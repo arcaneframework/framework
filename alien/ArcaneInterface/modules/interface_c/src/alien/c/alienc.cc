@@ -177,6 +177,77 @@ public :
     return m_linear_systems[system_id].get() ;
   }
 
+  class ParamSystem
+  {
+  public :
+    template<typename T>
+    void addToCommandLine(std::string key, T value)
+    {
+      {
+        std::stringstream token;
+        token<<"--"<<key;
+        m_command_line.push_back(token.str());
+      }
+      {
+        std::stringstream token;
+        token<<value;
+        m_command_line.push_back(token.str());
+      }
+    }
+
+    void setParam(std::string key,string value)
+    {
+      m_string_params[key] = value ;
+      addToCommandLine(key,value) ;
+    }
+
+    void setParam(std::string key,int value)
+    {
+      m_integer_params[key] = value ;
+      addToCommandLine(key,value) ;
+    }
+
+    void setParam(std::string key,double value)
+    {
+      m_double_params[key] = value ;
+      addToCommandLine(key,value) ;
+    }
+
+    std::vector<char *> commandLine() const {
+      std::vector<char *> command_line(m_command_line.size()) ;
+      for(std::size_t i=0;i<m_command_line.size();++i)
+        command_line[i] = m_command_line[i].c_str() ;
+    }
+
+  public:
+    std::map<std::string,std::string> m_string_params ;
+    std::map<std::string,int>         m_integer_params ;
+    std::map<std::string,double>      m_double_params ;
+    std::vector<std::string>          m_command_line = {"ALIENCommndLine"} ;
+  };
+
+
+  int createNewParamSystem()
+  {
+    int id = m_param_systems.size() ;
+    m_param_systems.push_back(std::make_unique<ParamSystem>()) ;
+
+    return id ;
+  }
+
+  int destroyLinearSystem(int system_id)
+  {
+    assert((std::size_t)system_id < m_param_systems.size()) ;
+    m_param_systems[system_id].reset() ;
+    return 0 ;
+  }
+
+  ParamSystem* getParamSystem(int system_id)
+  {
+    assert((std::size_t)system_id < m_param_systems.size()) ;
+    return m_param_systems[system_id].get() ;
+  }
+
 
   class LinearSolver
   {
@@ -191,6 +262,8 @@ public :
     void init(int argc, char** argv);
 
     void init(std::string const& configfile);
+
+    void init(ParamSystem const& param_system);
 
     int solve(Alien::Matrix const& A, Alien::Vector const& B, Alien::Vector& X);
 
@@ -229,6 +302,8 @@ public :
 private :
 
   std::vector<std::unique_ptr<LinearSystem> > m_linear_systems ;
+
+  std::vector<std::unique_ptr<ParamSystem> >  m_param_systems ;
 
   std::vector<std::unique_ptr<LinearSolver> > m_linear_solvers ;
 
@@ -650,6 +725,47 @@ extern "C" {
     return 0 ;
   }
 
+
+  int ALIEN_create_parameter_system()
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    return alien_mng->createNewParamSystem() ;
+  }
+
+  void ALIEN_set_parameter_string_value(int param_system_id,
+                                        const char* key,
+                                        const char* value)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    auto* param_system = alien_mng->getParamSystem(param_system_id) ;
+    assert(param_system!=nullptr) ;
+    param_system->setParam(std::string(key),std::string(value)) ;
+  }
+
+  void ALIEN_set_parameter_integer_value(int param_system_id,
+                                         const char* key,
+                                         int value)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    auto* param_system = alien_mng->getParamSystem(param_system_id) ;
+    assert(param_system!=nullptr) ;
+    param_system->setParam(std::string(key),value) ;
+  }
+
+  void ALIEN_set_parameter_double_value(int param_system_id,
+                                        const char* key,
+                                        double value)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    auto* param_system = alien_mng->getParamSystem(param_system_id) ;
+    assert(param_system!=nullptr) ;
+    param_system->setParam(std::string(key),value) ;
+  }
+
   int ALIEN_create_solver(MPI_Comm comm,const char* config_file)
   {
     auto* alien_mng = AlienManager::instance() ;
@@ -675,6 +791,20 @@ extern "C" {
     auto* solver = alien_mng->getLinearSolver(solver_id) ;
     std::string configfile(path) ;
     solver->init(configfile) ;
+    return 0 ;
+  }
+
+  int ALIEN_init_solver_with_parameters(int solver_id,int param_system_id)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    auto* solver = alien_mng->getLinearSolver(solver_id) ;
+    assert(solver!=nullptr) ;
+
+    auto* param_system = alien_mng->getparamSystem(param_system_id) ;
+    assert(param_system!=nullptr) ;
+    auto command_line = param_system->commandLine() ;
+    solver->init(command_line.size(),command_line.data()) ;
     return 0 ;
   }
 
