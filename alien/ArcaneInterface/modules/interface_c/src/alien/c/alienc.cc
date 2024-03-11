@@ -181,7 +181,7 @@ public :
   {
   public :
     template<typename T>
-    void addToCommandLine(std::string key, T value)
+    void addToCommandLine(std::string const& key, T value)
     {
       {
         std::stringstream token;
@@ -197,19 +197,19 @@ public :
       }
     }
 
-    void setParam(std::string key,std::string value)
+    void setParam(std::string const& key,std::string value)
     {
       m_string_params[key] = value ;
       addToCommandLine(key,value) ;
     }
 
-    void setParam(std::string key,int value)
+    void setParam(std::string const& key,int value)
     {
       m_integer_params[key] = value ;
       addToCommandLine(key,value) ;
     }
 
-    void setParam(std::string key,double value)
+    void setParam(std::string const& key,double value)
     {
       m_double_params[key] = value ;
       addToCommandLine(key,value) ;
