@@ -457,7 +457,8 @@ forceRecompute(bool compute_all)
     }
   }
 
-  m_material_mng->checkValid();
+  if (arcaneIsCheck())
+    m_material_mng->checkValid();
 
   m_material_mng->syncVariablesReferences();
 
