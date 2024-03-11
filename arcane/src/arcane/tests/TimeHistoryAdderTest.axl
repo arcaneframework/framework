@@ -3,6 +3,18 @@
   <description>
   </description>
 
+  <variables>
+    <variable
+        field-name="pressure"
+        name="Pressure"
+        data-type="real"
+        item-kind="cell"
+        dim="0"
+        dump="true"
+        need-sync="true"
+    />
+  </variables>
+
   <entry-points>
     <entry-point method-name="init" name="Init" where="init" property="none" />
     <entry-point method-name="loop" name="Loop" where="compute-loop" property="none" />
