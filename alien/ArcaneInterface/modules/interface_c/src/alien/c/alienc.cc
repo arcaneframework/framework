@@ -736,6 +736,15 @@ extern "C" {
     return alien_mng->createNewParamSystem() ;
   }
 
+
+  int ALIEN_destroy_parameter_system(int param_system_id)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    alien_mng->destroyParamSystem(param_system_id) ;
+    return 0 ;
+  }
+
   void ALIEN_set_parameter_string_value(int param_system_id,
                                         const char* key,
                                         const char* value)

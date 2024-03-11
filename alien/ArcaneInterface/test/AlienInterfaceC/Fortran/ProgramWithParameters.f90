@@ -177,8 +177,16 @@
     print*,"REL ERROR2 : ",gerr2/gnorm2 ;
   endif
 
+  !
+  ! LINEAR SOLVER AND SYSTEM DESTRUCTION
+  !
   call ALIEN_DestroySolver(solver_id)
+  call ALIEN_DestroyParameterSystem(param_system_id)
   call ALIEN_DestroyLinearSystem(system_id)
+
+  ! 
+  ! ALIEN FINALIZE
+  !
   call ALIEN_finalize()
 
 

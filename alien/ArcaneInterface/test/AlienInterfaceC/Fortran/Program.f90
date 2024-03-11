@@ -3,7 +3,7 @@
     implicit none
 
   integer :: i,k, r
-  integer :: system_id, solver_id, error
+  integer :: system_id, solver_id
   integer :: global_nrows, local_nrows, nb_ghosts
   integer :: row_size, local_nnz
   integer, allocatable, dimension(:) :: row_offset, ghost_owners
@@ -154,7 +154,7 @@
   endif
 
   !
-  ! LINEAR SYSTEM DESTRUCTION
+  ! LINEAR SOLVER AND SYSTEM DESTRUCTION
   !
   call ALIEN_DestroySolver(solver_id)
   call ALIEN_DestroyLinearSystem(system_id)

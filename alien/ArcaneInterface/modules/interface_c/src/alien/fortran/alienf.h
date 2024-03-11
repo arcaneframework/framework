@@ -58,6 +58,8 @@ void F2C(alien_get_solution_values_f)(int* system_id,
 
 int F2C(alien_create_parameter_system_f)() ;
 
+void F2C(alien_destroy_parameter_system_f)(int* param_system_id) ;
+
 void F2C(alien_set_parameter_string_value_f)(int* param_system_id,
                                              const char* key, int* key_length,
                                              const char* value, int* value_length) ;

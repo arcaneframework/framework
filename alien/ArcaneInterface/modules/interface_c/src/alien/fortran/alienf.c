@@ -111,6 +111,11 @@ int F2C(alien_create_parameter_system_f)()
   return ALIEN_create_parameter_system() ;
 }
 
+void F2C(alien_destroy_parameter_system_f)(int* param_system_id)
+{
+  ALIEN_destroy_parameter_system(*param_system_id) ;
+}
+
 void F2C(alien_set_parameter_string_value_f)(int* param_system_id,
                                              const char* key, int* key_length,
                                              const char* value, int* value_length)

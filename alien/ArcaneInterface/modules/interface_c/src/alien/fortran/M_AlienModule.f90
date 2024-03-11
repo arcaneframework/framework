@@ -126,6 +126,13 @@
         ALIEN_CreateParameterSystem = alien_create_parameter_system_f()
     end function
     
+
+    subroutine ALIEN_DestroyParameterSystem(param_system_id)
+        integer, intent(in) :: param_system_id
+
+        call alien_destroy_parameter_system_f(param_system_id)
+    end subroutine
+    
     subroutine ALIEN_SetParameterStringValue(param_system_id,key,value)
         integer          , intent(in) :: param_system_id
         character(len=80), intent(in) :: key

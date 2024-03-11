@@ -57,6 +57,8 @@ ALIEN_INTERFACE_C_EXPORT int ALIEN_get_solution_values(int system_id,
 
 ALIEN_INTERFACE_C_EXPORT int ALIEN_create_parameter_system() ;
 
+ALIEN_INTERFACE_C_EXPORT int ALIEN_destroy_parameter_system(int param_system_id) ;
+
 ALIEN_INTERFACE_C_EXPORT void ALIEN_set_parameter_string_value(int param_system_id,
                                                                const char* key,
                                                                const char* value) ;

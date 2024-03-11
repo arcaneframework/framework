@@ -93,3 +93,10 @@ alien_test( BENCH alien.interface.fortran.param
             PROCS 1
             COMMAND alien_interface_fortran_param.exe
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran)
+            
+alien_test( BENCH alien.interface.fortran.param
+            NAME parallel
+            PROCS 4
+            COMMAND alien_interface_fortran_param.exe
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran)
+            
