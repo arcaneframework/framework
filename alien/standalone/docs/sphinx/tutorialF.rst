@@ -155,6 +155,68 @@ A linear system is a set of a Matrix A, two vectors B the right hand side and X 
     call ALIEN_SetRhsValues(system_id,local_nrows,row_uids,rhs_values)
 
 
+
+Linear Solver Set Up
+--------------------
+
+Linear Solver can be set up :
+
+- with a json config file:
+
+Example of config file "solver.json"
+{
+  "solver-package" : "petsc",
+  "config" :
+  {
+     "tol" : 1.0e-10,
+     "max-iter" : 1000,
+     "petsc-solver" : "bicgs",
+     "petsc-precond" : "bjacobi"
+  }
+}
+
+.. code-block:: bash
+
+    !
+    ! CREATE LINEAR SOLVER 
+    !
+    solver_id = ALIEN_CreateSolver(comm)
+  
+    !
+    ! LINEAR SOLVER SET UP WITH CONFIG FILE 
+    !
+    config_file = "solver.json"
+    call ALIEN_InitSolver(solver_id,config_file)
+
+- with a parameter system:
+
+.. code-block:: bash
+
+    param_system_id = ALIEN_CreateParameterSystem()
+  
+    param_key   = "solver-package"
+    param_value = "petsc"
+    call ALIEN_SetParameterStringValue (param_system_id,param_key,param_value)
+    
+    param_key   = "tol"
+    tol = 1.0e-10
+    call ALIEN_SetParameterDoubleValue (param_system_id,param_key,tol)
+    
+    param_key   = "max-iter"
+    max_iter = 1000
+    call ALIEN_SetParameterIntegerValue(param_system_id,param_key,max_iter)
+    
+    param_key   = "petsc-solver"
+    param_value = "bicgs"
+    call ALIEN_SetParameterStringValue (param_system_id,param_key,param_value)
+    
+    param_key   = "petsc-precond"
+    param_value = "bjacobi"
+    call ALIEN_SetParameterStringValue (param_system_id,param_key,param_value)
+    
+    call ALIEN_InitSolverWithParameters(solver_id,param_system_id)
+
+
 Linear Systems resolution
 -------------------------
 

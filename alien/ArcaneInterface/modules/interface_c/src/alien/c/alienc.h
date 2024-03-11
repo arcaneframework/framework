@@ -71,7 +71,7 @@ ALIEN_INTERFACE_C_EXPORT void ALIEN_set_parameter_double_value(int param_system_
 
 ALIEN_INTERFACE_C_EXPORT int ALIEN_create_solver(MPI_Comm comm, const char* config_file) ;
 
-ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver(int solver_id,int argc, char** argv) ;
+ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver(int solver_id,int argc, const char** argv) ;
 
 ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver_with_parameters(int solver_id,int param_system_id) ;
 

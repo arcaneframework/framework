@@ -3,7 +3,7 @@
     implicit none
 
   integer :: i,k, r
-  integer :: system_id, solver_id, error
+  integer :: system_id, param_system_id, solver_id
   integer :: global_nrows, local_nrows, nb_ghosts
   integer :: row_size, local_nnz
   integer, allocatable, dimension(:) :: row_offset, ghost_owners
@@ -15,6 +15,9 @@
   integer :: code, num_iterations
   real(8) ::residual
   character(len=80) :: config_file
+  character(len=80) :: param_key, param_value
+  real(8) :: tol
+  integer :: max_iter
   integer :: alloc_stat
 
 
@@ -128,12 +131,30 @@
   !         "petsc-precond" : "bjacobi"
   !      }
   !}
+  !
+  ! LINEAR SOLVER SET UP WITH A PARAMETER SYSTEM 
+  !
   param_system_id = ALIEN_CreateParameterSystem()
-  ALIEN_SetParameterStringValue (param_system_id,"solver-package","petsc")
-  ALIEN_SetParameterDoubleValue (param_system_id,"tol",1.0e-10)
-  ALIEN_SetParameterIntegerValue(param_system_id,"max-iter",1000)
-  ALIEN_SetParameterStringValue (param_system_id,"petsc-solver","bicgs")
-  ALIEN_SetParameterStringValue (param_system_id,"petsc-precond","bjacobi")
+
+  param_key   = "solver-package"
+  param_value = "petsc"
+  call ALIEN_SetParameterStringValue (param_system_id,param_key,param_value)
+  
+  param_key   = "tol"
+  tol = 1.0e-10
+  call ALIEN_SetParameterDoubleValue (param_system_id,param_key,tol)
+  
+  param_key   = "max-iter"
+  max_iter = 1000
+  call ALIEN_SetParameterIntegerValue(param_system_id,param_key,max_iter)
+  
+  param_key   = "petsc-solver"
+  param_value = "bicgs"
+  call ALIEN_SetParameterStringValue (param_system_id,param_key,param_value)
+  
+  param_key   = "petsc-precond"
+  param_value = "bjacobi"
+  call ALIEN_SetParameterStringValue (param_system_id,param_key,param_value)
   
   call ALIEN_InitSolverWithParameters(solver_id,param_system_id)
 

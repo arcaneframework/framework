@@ -74,6 +74,8 @@ int F2C(alien_create_solver_f)(MPI_Fint* comm) ;
 
 void F2C(alien_init_solver_f)(int* solver_id, const char* config_file, int* length) ;
 
+void F2C(alien_init_solver_with_parameters_f)(int* solver_id, int* param_system_id) ;
+
 void F2C(alien_destroy_solver_f)(int* solver_id) ;
 
 void F2C(alien_solve_f)(int* solver_id, int* system_id) ;

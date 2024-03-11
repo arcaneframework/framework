@@ -116,9 +116,9 @@ void F2C(alien_set_parameter_string_value_f)(int* param_system_id,
                                              const char* value, int* value_length)
 {
   char* key_string = (char*) key ;
-  key_string[*length] = 0 ;
+  key_string[*key_length] = 0 ;
   char* value_string = (char*) value ;
-  value_string[*length] = 0 ;
+  value_string[*value_length] = 0 ;
   ALIEN_set_parameter_string_value(*param_system_id,key_string,value_string) ;
 }
 
@@ -127,7 +127,7 @@ void F2C(alien_set_parameter_integer_value_f)(int* param_system_id,
                                               int* value)
 {
   char* key_string = (char*) key ;
-  key_string[*length] = 0 ;
+  key_string[*key_length] = 0 ;
   ALIEN_set_parameter_integer_value(*param_system_id,key_string,*value) ;
 }
 
@@ -136,7 +136,7 @@ void F2C(alien_set_parameter_double_value_f)(int* param_system_id,
                                               double* value)
 {
   char* key_string = (char*) key ;
-  key_string[*length] = 0 ;
+  key_string[*key_length] = 0 ;
   ALIEN_set_parameter_double_value(*param_system_id,key_string,*value) ;
 }
 
@@ -153,6 +153,12 @@ void F2C(alien_init_solver_f)(int* solver_id,
   char* string = (char*) config_file ;
   string[*length] = 0 ;
   ALIEN_init_solver_with_configfile(*solver_id,config_file) ;
+}
+
+void F2C(alien_init_solver_with_parameters_f)(int* solver_id,
+                                              int* param_system_id)
+{
+  ALIEN_init_solver_with_parameters(*solver_id,*param_system_id) ;
 }
 
 void F2C(alien_destroy_solver_f)(int* solver_id)

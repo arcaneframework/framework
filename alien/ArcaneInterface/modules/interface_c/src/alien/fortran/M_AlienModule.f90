@@ -130,21 +130,21 @@
         integer          , intent(in) :: param_system_id
         character(len=80), intent(in) :: key
         character(len=80), intent(in) :: value
-        call alien_set_parameter_string_value(system_id,trim(key),len(trim(key),trim(value),len(trim(value))
+        call alien_set_parameter_string_value_f(param_system_id,trim(key),len(trim(key)),trim(value),len(trim(value)))
     end subroutine
     
-    subroutine ALIEN_SetParameterIntegerValue(system_id,key,value)
+    subroutine ALIEN_SetParameterIntegerValue(param_system_id,key,value)
         integer          , intent(in) :: param_system_id
         character(len=80), intent(in) :: key
         integer          , intent(in) :: value
-        call alien_set_parameter_integer_value(system_id,trim(key),len(trim(key),value)
+        call alien_set_parameter_integer_value_f(param_system_id,trim(key),len(trim(key)),value)
     end subroutine
     
-    subroutine ALIEN_SetParameterDoubleValue(system_id,key,value)
+    subroutine ALIEN_SetParameterDoubleValue(param_system_id,key,value)
         integer          , intent(in) :: param_system_id
         character(len=80), intent(in) :: key
         double precision , intent(in) :: value
-        call alien_set_parameter_double_value(system_id,trim(key),len(trim(key),value))
+        call alien_set_parameter_double_value_f(param_system_id,trim(key),len(trim(key)),value)
     end subroutine
     
     integer function ALIEN_CreateSolver(comm)
@@ -162,7 +162,7 @@
     subroutine ALIEN_InitSolverWithParameters(solver_id,param_system_id)
         integer, intent(in) :: solver_id
         integer, intent(in) :: param_system_id
-        call alien_init_solver_with_parameters_f(solver_id,param_system_id))
+        call alien_init_solver_with_parameters_f(solver_id,param_system_id)
     end subroutine
 
     subroutine ALIEN_DestroySolver(solver_id)
