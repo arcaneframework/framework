@@ -210,12 +210,21 @@ int main(int argc, char** argv)
   /*
    * DESTROY SOLVER AND LINEAR SYSTEM
    */
+  printf("DESTROY Linear Solver\n") ;
   ALIEN_destroy_solver(solver_id) ;
+
+  printf("DESTROY Parameter System\n") ;
+  ALIEN_destroy_parameter_system(param_system_id) ;
+
+  printf("DESTROY Linear System\n") ;
   ALIEN_destroy_linear_system(system_id) ;
 
+  printf("FREE ARRAYS\n") ;
   free(row_uids) ;
   free(col_uids) ;
   free(row_offset) ;
+  free(ghost_uids) ;
+  free(ghost_owners) ;
   free(matrix_values) ;
   free(rhs_values) ;
   free(solution_values) ;
@@ -224,7 +233,11 @@ int main(int argc, char** argv)
   /*
    * FINALYZE ALIEN
    */
+  printf("FINALIZE ALIEN\n") ;
   ALIEN_finalize() ;
+
+
+  MPI_Finalize() ;
 
   return 0 ;
 }

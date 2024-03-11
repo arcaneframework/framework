@@ -753,7 +753,6 @@ extern "C" {
     assert(alien_mng!=nullptr) ;
     auto* param_system = alien_mng->getParamSystem(param_system_id) ;
     assert(param_system!=nullptr) ;
-    std::cout<<"ALIEN_set_parameter_string_value"<<key<<","<<value<<std::endl ;
     param_system->setParam(std::string(key),std::string(value)) ;
   }
 
@@ -765,7 +764,6 @@ extern "C" {
     assert(alien_mng!=nullptr) ;
     auto* param_system = alien_mng->getParamSystem(param_system_id) ;
     assert(param_system!=nullptr) ;
-    std::cout<<"ALIEN_set_parameter_integer_value"<<key<<","<<value<<std::endl ;
     param_system->setParam(std::string(key),value) ;
   }
 
@@ -777,7 +775,6 @@ extern "C" {
     assert(alien_mng!=nullptr) ;
     auto* param_system = alien_mng->getParamSystem(param_system_id) ;
     assert(param_system!=nullptr) ;
-    std::cout<<"ALIEN_set_parameter_double_value"<<key<<","<<value<<std::endl ;
     param_system->setParam(std::string(key),value) ;
   }
 
