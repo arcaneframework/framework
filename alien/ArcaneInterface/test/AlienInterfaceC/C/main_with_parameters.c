@@ -28,6 +28,9 @@ int main(int argc, char** argv)
   MPI_Comm comm;
   struct ALIEN_Solver_Status solver_status ;
 
+  row_size = 0 ;
+  local_nnz = 0 ;
+  rhs_value = 0. ,
 
   MPI_Init(&argc,&argv) ;
   comm = MPI_COMM_WORLD ;
@@ -148,6 +151,9 @@ int main(int argc, char** argv)
   printf("SET RHS VALUES %d: gsize=%d lsize=%d\n",system_id,global_nrows,local_nrows);
   error += ALIEN_set_rhs_values(system_id,local_nrows,row_uids,rhs_values) ;
 
+  if(error!=0)
+    printf("ERRORS while setting the Linear System") ;
+
   /*
    * CREATE PARAMETER SYSTEM
    */
@@ -180,6 +186,9 @@ int main(int argc, char** argv)
    * GET SOLUTION VALUES
    */
   error += ALIEN_get_solution_values(system_id,local_nrows,row_uids,solution_values) ;
+
+  if(error!=0)
+    printf("ERRORS while solving the Linear System") ;
 
   ALIEN_get_solver_status(solver_id,&solver_status) ;
   if(solver_status.code == 0)
