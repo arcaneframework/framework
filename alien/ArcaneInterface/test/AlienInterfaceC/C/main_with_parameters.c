@@ -19,18 +19,14 @@ int main(int argc, char** argv)
   int i,k, r;
   int system_id, param_system_id, solver_id, error;
   int global_nrows, local_nrows, nb_ghosts ;
-  int row_size, local_nnz ;
+  int local_nnz ;
   int* row_offset, *ghost_owners;
   uid_type *row_uids, *col_uids, *ghost_uids ;
-  double diag_values, offdiag_values, rhs_value, norm2, err, err2, gnorm2, gerr2 ;
+  double diag_values, offdiag_values, norm2, err, err2, gnorm2, gerr2 ;
   double *matrix_values, *rhs_values, *solution_values, *ref_solution_values ;
   int nprocs, my_rank, domain_offset ;
   MPI_Comm comm;
   struct ALIEN_Solver_Status solver_status ;
-
-  row_size = 0 ;
-  local_nnz = 0 ;
-  rhs_value = 0. ,
 
   MPI_Init(&argc,&argv) ;
   comm = MPI_COMM_WORLD ;
@@ -74,7 +70,7 @@ int main(int argc, char** argv)
   for(i=0;i<local_nrows;++i)
   {
     row_uids[i] = domain_offset+i ;
-    row_size = 3 ;
+    int row_size = 3 ;
     if((domain_offset+i == 0 ) || (domain_offset+i == global_nrows -1)) row_size = 2 ;
     row_offset[i+1] = row_offset[i] + row_size ;
   }
@@ -111,7 +107,7 @@ int main(int argc, char** argv)
   {
     col_uids[k] = domain_offset+i ;
     matrix_values[k] = diag_values ;
-    rhs_value = diag_values*(domain_offset+i) ;
+    double rhs_value = diag_values*(domain_offset+i) ;
     ++k ;
     if(domain_offset+i != 0 )
     {
