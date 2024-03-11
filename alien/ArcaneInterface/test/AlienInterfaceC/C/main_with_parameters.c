@@ -22,7 +22,7 @@ int main(int argc, char** argv)
   int local_nnz ;
   int* row_offset, *ghost_owners;
   uid_type *row_uids, *col_uids, *ghost_uids ;
-  double diag_values, offdiag_values, norm2, err, err2, gnorm2, gerr2 ;
+  double diag_values, offdiag_values, gnorm2, gerr2 ;
   double *matrix_values, *rhs_values, *solution_values, *ref_solution_values ;
   int nprocs, my_rank, domain_offset ;
   MPI_Comm comm;
@@ -192,11 +192,12 @@ int main(int argc, char** argv)
     /*
      * COMPUTE ERROR TO REF SOLUTION
      */
-    norm2 = 0. ;
+    double norm2 = 0. ;
+    double err2 = 0. ;
     for(i = 0;i<local_nrows;++i)
     {
       norm2 += rhs_values[i]*rhs_values[i] ;
-      err = solution_values[i] - ref_solution_values[i] ;
+      double err = solution_values[i] - ref_solution_values[i] ;
       err2 += err*err ;
     }
 
