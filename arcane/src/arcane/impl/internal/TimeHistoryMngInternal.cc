@@ -386,8 +386,6 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
     if (sub_domain != NULL_SUB_DOMAIN_ID) {
       name = name + "_Local";
     }
-    if (!val)
-      ARCANE_FATAL("Bad data-type");
     m_history_list.insert(HistoryValueType(name, val));
   }
 }
