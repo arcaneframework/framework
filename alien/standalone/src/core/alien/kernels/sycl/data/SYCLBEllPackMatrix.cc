@@ -419,7 +419,6 @@ namespace SYCLInternal
     auto internal_profile = m_profile->internal();
     auto& kcol = internal_profile->getKCol();
     auto& block_row_offset = internal_profile->getBlockRowOffset();
-
     auto local_row_size = m_profile->localRowSize();
     if (local_row_size == nullptr) {
       ValueBufferType values_buffer(m_h_csr_values.data(), sycl::range<1>(nnz));
@@ -908,9 +907,6 @@ namespace SYCLInternal
                                                      ValueBufferType& y,
                                                      sycl::queue& queue) const
   {
-    //alien_debug([&] {cout() << "SYCL MatrixInternal::addExMult: ";});
-    //Universe().traceMng()->flush() ;
-
     auto device = queue.get_device();
 
     auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
@@ -1223,7 +1219,6 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
            int const* cols,
            SimpleCSRInternal::DistStructInfo const& matrix_dist_info)
 {
-  alien_debug([&] { cout() << "INIT SYCL MATRIX " << parallel_mng; });
   m_nproc = 1;
   m_myrank = 0;
   m_parallel_mng = parallel_mng;

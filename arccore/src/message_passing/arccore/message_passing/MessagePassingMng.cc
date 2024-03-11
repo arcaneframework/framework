@@ -5,13 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MessagePassingMng.cc                                        (C) 2000-2023 */
+/* MessagePassingMng.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire des échanges de messages.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing/MessagePassingMng.h"
+#include "arccore/message_passing/Communicator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -23,7 +24,7 @@ namespace Arccore::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 MessagePassingMng::
-MessagePassingMng(Int32 comm_rank,Int32 comm_size,IDispatchers* d)
+MessagePassingMng(Int32 comm_rank, Int32 comm_size, IDispatchers* d)
 : m_comm_rank(comm_rank)
 , m_comm_size(comm_size)
 , m_dispatchers(d)
@@ -69,6 +70,15 @@ extern "C++" void ARCCORE_MESSAGEPASSING_EXPORT
 mpDelete(IMessagePassingMng* p)
 {
   delete p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Communicator IMessagePassingMng::
+communicator() const
+{
+  return {};
 }
 
 /*---------------------------------------------------------------------------*/

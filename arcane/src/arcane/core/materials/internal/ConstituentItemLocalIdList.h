@@ -86,6 +86,10 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
   {
     return m_constituent_item_index_list;
   }
+  SmallSpan<ConstituentItemIndex> mutableLocalIds()
+  {
+    return m_constituent_item_index_list.view();
+  }
   matimpl::ConstituentItemBase itemBase(Int32 index) const
   {
     return m_shared_info->_item(localId(index));

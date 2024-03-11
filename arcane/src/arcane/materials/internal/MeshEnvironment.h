@@ -162,7 +162,7 @@ class MeshEnvironment
   void addToTotalNbCellMat(Int32 v) { m_total_nb_cell_mat += v; }
 
   void resizeItemsInternal(Integer nb_item);
-  void computeMaterialIndexes(ComponentItemInternalData* item_internal_data);
+  void computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& queue);
   void notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids);
   MeshComponentData* componentData() { return &m_data; }
 

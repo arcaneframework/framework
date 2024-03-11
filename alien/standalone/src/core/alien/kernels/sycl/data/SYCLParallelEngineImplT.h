@@ -27,8 +27,13 @@ namespace Alien
     template<typename LambdaT>
     void parallel_for(std::size_t range, LambdaT lambda)
     {
-      m_internal.parallel_for<LambdaT>(sycl::range<1>{range},
-                                            lambda) ;
+      m_internal.parallel_for<LambdaT>(sycl::range<1>{range},lambda) ;
+    }
+
+    template<typename LambdaT>
+    void parallel_for(std::size_t range1, std::size_t range2, LambdaT lambda)
+    {
+      m_internal.parallel_for<LambdaT>(sycl::range<2>{range1,range2},lambda) ;
     }
 
     sycl::handler& m_internal ;

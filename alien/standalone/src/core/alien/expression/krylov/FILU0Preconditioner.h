@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -81,8 +87,8 @@ class FLUFactorisationAlgo
     if (MatrixType::on_host_only) {
       if (this->m_is_parallel) {
         // Need to manage ghost and communications
-        this->m_x.resize(this->m_alloc_size);
-        m_xk.resize(this->m_alloc_size);
+        this->m_x.resize((Integer)this->m_alloc_size);
+        m_xk.resize((Integer)this->m_alloc_size);
       }
     }
   }

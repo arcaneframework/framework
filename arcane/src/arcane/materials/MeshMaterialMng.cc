@@ -93,6 +93,16 @@ arcaneCreateMeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MeshMaterialMng::RunnerInfo::
+RunnerInfo(Runner& runner)
+: m_runner(runner)
+, m_run_queue(makeQueue(m_runner))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -123,6 +133,8 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 MeshMaterialMng::
 ~MeshMaterialMng()
 {
+  m_runner_info.reset();
+
   //std::cout << "DESTROY MESH MATERIAL MNG this=" << this << '\n';
   IEnumeratorTracer* tracer = IEnumeratorTracer::singleton();
   if (tracer)
@@ -182,6 +194,7 @@ build()
   // Positionne le runner par défaut
   {
     IAcceleratorMng* acc_mng = m_variable_mng->_internalApi()->acceleratorMng();
+    Runner runner;
     if (acc_mng){
       Runner* default_runner = acc_mng->defaultRunner();
       // Indique si on active la file accélérateur
@@ -189,13 +202,13 @@ build()
       if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_QUEUE", true))
         use_accelerator_runner = (v.value()!=0);
       if (use_accelerator_runner && default_runner)
-        m_runner = *default_runner;
+        runner = *default_runner;
     }
     // Si pas de runner enregistré, utiliser un runner séquentiel.
-    if (!m_runner.isInitialized())
-      m_runner.initialize(Accelerator::eExecutionPolicy::Sequential);
-    m_runner_ptr = &m_runner;
-    info() << "Use runner '" << m_runner.executionPolicy() << "' for MeshMaterialMng name=" << name();
+    if (!runner.isInitialized())
+      runner.initialize(Accelerator::eExecutionPolicy::Sequential);
+    m_runner_info = std::make_unique<RunnerInfo>(runner);
+    info() << "Use runner '" << this->runner().executionPolicy() << "' for MeshMaterialMng name=" << name();
   }
 
   // Choix des optimisations.

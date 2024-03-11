@@ -25,7 +25,11 @@ on:
       - '**.webp'
       - '**.yml'
   workflow_dispatch:
-  
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 env:
   # CTest
   CT_OPTS: "--timeout 300 --output-on-failure"

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITimeHistoryCurveWriter2.h                                  (C) 2000-2018 */
+/* ITimeHistoryCurveWriter2.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'un écrivain d'une courbe d'un historique (Version 2).         */
 /*---------------------------------------------------------------------------*/
@@ -42,31 +42,78 @@ class TimeHistoryCurveInfo
 {
  public:
 
-  TimeHistoryCurveInfo(const String& aname,Int32ConstArrayView aiterations,
-                       RealConstArrayView avalues,Integer sub_size)
-  : m_name(aname), m_iterations(aiterations), m_values(avalues),
-    m_sub_size(sub_size){}
+  TimeHistoryCurveInfo(const String& aname, Int32ConstArrayView aiterations,
+                       RealConstArrayView avalues, Integer sub_size)
+  : m_name(aname)
+  , m_support()
+  , m_has_support(false)
+  , m_iterations(aiterations)
+  , m_values(avalues)
+  , m_sub_size(sub_size)
+  , m_sub_domain(-1)
+  {}
+
+  TimeHistoryCurveInfo(const String& aname, Int32ConstArrayView aiterations,
+                       RealConstArrayView avalues, Integer sub_size, Integer sub_domain)
+  : m_name(aname)
+  , m_support()
+  , m_has_support(false)
+  , m_iterations(aiterations)
+  , m_values(avalues)
+  , m_sub_size(sub_size)
+  , m_sub_domain(sub_domain)
+  {}
+
+  TimeHistoryCurveInfo(const String& aname, const String& asupport, Int32ConstArrayView aiterations,
+                       RealConstArrayView avalues, Integer sub_size)
+  : m_name(aname)
+  , m_support(asupport)
+  , m_has_support(true)
+  , m_iterations(aiterations)
+  , m_values(avalues)
+  , m_sub_size(sub_size)
+  , m_sub_domain(-1)
+  {}
+
+  TimeHistoryCurveInfo(const String& aname, const String& asupport, Int32ConstArrayView aiterations,
+                       RealConstArrayView avalues, Integer sub_size, Integer sub_domain)
+  : m_name(aname)
+  , m_support(asupport)
+  , m_has_support(true)
+  , m_iterations(aiterations)
+  , m_values(avalues)
+  , m_sub_size(sub_size)
+  , m_sub_domain(sub_domain)
+  {}
 
  public:
 
   //! Nom de la courbe
   const String& name() const { return m_name; }
+  const String& support() const { return m_support; }
+  bool hasSupport() const { return m_has_support; }
   //! Liste des itérations
   Int32ConstArrayView iterations() const { return m_iterations; }
   //! Liste des valeurs de la courbe
   RealConstArrayView values() const { return m_values; }
   //! Nombre de valeur par temps
   Integer subSize() const { return m_sub_size; }
+  // TODO nom pas terrible
+  Integer subDomain() const { return m_sub_domain; }
 
 #if ARCANE_ALLOW_CURVE_WRITER_PRIVATE_ACCESS
  public:
+
 #else
  private:
 #endif
   String m_name;
+  String m_support;
+  bool m_has_support;
   Int32ConstArrayView m_iterations;
   RealConstArrayView m_values;
   Integer m_sub_size;
+  Integer m_sub_domain;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -78,8 +125,10 @@ class TimeHistoryCurveWriterInfo
 {
  public:
 
-  TimeHistoryCurveWriterInfo(const String& apath,RealConstArrayView atimes)
-  : m_path(apath), m_times(atimes){}
+  TimeHistoryCurveWriterInfo(const String& apath, RealConstArrayView atimes)
+  : m_path(apath)
+  , m_times(atimes)
+  {}
 
  public:
 
@@ -93,6 +142,7 @@ class TimeHistoryCurveWriterInfo
 
 #if ARCANE_ALLOW_CURVE_WRITER_PRIVATE_ACCESS
  public:
+
 #else
  private:
 #endif
@@ -120,22 +170,22 @@ class ITimeHistoryCurveWriter2
  public:
 
   //! Libère les ressources
-  virtual ~ITimeHistoryCurveWriter2(){}
+  virtual ~ITimeHistoryCurveWriter2() {}
 
  public:
-	
-  virtual void build() =0;
-  
+
+  virtual void build() = 0;
+
   /*!
    * \brief Notifie un début d'écriture.
    */
-  virtual void beginWrite(const TimeHistoryCurveWriterInfo& infos) =0;
+  virtual void beginWrite(const TimeHistoryCurveWriterInfo& infos) = 0;
 
   /*!
    * \brief Notifie la fin de l'écriture.
    */
-  virtual void endWrite() =0;
-  
+  virtual void endWrite() = 0;
+
   /*!
    * \brief Ecrit une courbe.
    *
@@ -145,10 +195,10 @@ class ITimeHistoryCurveWriter2
    * chaque valeur.
    * \a path contient le répertoire où seront écrites les courbes
    */
-  virtual void writeCurve(const TimeHistoryCurveInfo& infos) =0;
+  virtual void writeCurve(const TimeHistoryCurveInfo& infos) = 0;
 
   //! Nom de l'écrivain
-  virtual String name() const =0;
+  virtual String name() const = 0;
 
   /*!
    * \brief Répertoire de base où seront écrites les courbes.
@@ -156,10 +206,10 @@ class ITimeHistoryCurveWriter2
    * Si nul, c'est le répertoire spécifié lors de beginWrite()
    * qui est utilisé.
    */
-  virtual void setOutputPath(const String& path) =0;
+  virtual void setOutputPath(const String& path) = 0;
 
   //! Répertoire de base où seront écrites les courbes.
-  virtual String outputPath() const =0;
+  virtual String outputPath() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -170,5 +220,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

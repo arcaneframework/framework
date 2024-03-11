@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVector.cc                                      (C) 2000-2024 */
+/* ConstituentItemVectorImpl.cc                                (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de 'IConstituentItemVectorImpl'.                           */
 /*---------------------------------------------------------------------------*/
@@ -55,10 +55,11 @@ ConstituentItemVectorImpl::
 ConstituentItemVectorImpl(const ComponentItemVectorView& rhs)
 : ConstituentItemVectorImpl(rhs.component())
 {
+  RunQueue& queue = m_material_mng->_internalApi()->runQueue();
   m_constituent_list->copy(rhs._constituentItemListView());
   m_matvar_indexes.copy(rhs._matvarIndexes());
   m_items_local_id.copy(rhs._internalLocalIds());
-  m_part_data->_setFromMatVarIndexes(rhs._matvarIndexes());
+  m_part_data->_setFromMatVarIndexes(rhs._matvarIndexes(), queue);
 }
 
 /*---------------------------------------------------------------------------*/

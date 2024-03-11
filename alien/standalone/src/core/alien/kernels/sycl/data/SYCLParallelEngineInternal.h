@@ -26,7 +26,7 @@ namespace Alien
   template<int dim>
   struct SYCLParallelEngine::Item : public sycl::item<dim>
   {
-    Item(sycl::item<1> const& item)
+    Item(sycl::item<dim> const& item)
     : sycl::item<dim>(item)
     {}
 
@@ -34,7 +34,7 @@ namespace Alien
     : sycl::item<dim>(item.base())
     {}
 
-    sycl::item<1> const& base() const {
+    sycl::item<dim> const& base() const {
       return *this ;
     }
   } ;
