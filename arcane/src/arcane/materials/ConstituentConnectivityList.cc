@@ -348,28 +348,23 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
   SmallSpan<Int16> nb_component_view = component.m_nb_component_as_array.view();
 
   NumArray<Int32, MDDim1> new_indexes(nb_item);
-  NumArray<Int32, MDDim1> nb_component_after(nb_item);
-  {
-    auto command = makeCommand(queue);
-    SmallSpan<Int32> nb_component_after_view = nb_component_after;
-    command << RUNCOMMAND_LOOP1(iter, nb_item)
-    {
-      auto [i] = iter();
-      nb_component_after_view[i] = 1 + nb_component_view[cells_local_id[i]];
-    };
-  }
-
   // Calcul l'index des nouveaux éléments
   {
-    Accelerator::Scanner<Int32> scanner;
+    Accelerator::GenericScanner scanner(queue);
     SmallSpan<Int32> new_indexes_view = new_indexes;
-    SmallSpan<const Int32> nb_component_after_view = nb_component_after;
-    scanner.exclusiveSum(&queue, nb_component_after_view, new_indexes_view);
+    auto getter = [=] ARCCORE_HOST_DEVICE(Int32 index) -> Int32 {
+      return 1 + nb_component_view[cells_local_id[index]];
+    };
+    auto setter = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 value) {
+      new_indexes_view[index] = value;
+    };
+    Accelerator::ScannerSumOperator<Int32> op;
+    scanner.applyWithIndexExclusive(nb_item, 0, getter, setter, op, A_FUNCINFO);
   }
   queue.barrier();
 
   // TODO: Utiliser une copie depuis le device pour ces deux valeurs.
-  const Int32 nb_indexes_to_add = new_indexes[nb_item - 1] + nb_component_after[nb_item - 1];
+  const Int32 nb_indexes_to_add = new_indexes[nb_item - 1] + nb_component_view[cells_local_id[nb_item - 1]] + 1;
   const Int32 current_list_index = component_list.size();
 
   MemoryUtils::checkResizeArrayWithCapacity(component_list, current_list_index + nb_indexes_to_add, false);
@@ -391,8 +386,6 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
         // TODO: cela laisse des trous dans la liste qu'il faudra supprimer
         // via un compactage.
         Int32 current_pos = component_index_view[cell_id];
-        component_index_view[cell_id] = new_pos;
-
         SmallSpan<const Int16> current_values(&component_list_view[current_pos], n);
         SmallSpan<Int16> new_values(&component_list_view[new_pos], n);
         new_values.copy(current_values);
