@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.h                                                  (C) 2000-2023 */
+/* NumArray.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Tableaux multi-dimensionnel pour les types numériques.                    */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,7 @@ namespace Arcane
  * aux éléments se fait via l'opérateur 'operator()'.
  *
  * \warning Le redimensionnement via resize() ne conserve pas les valeurs existantes
+ * sauf pour les tableaux de rang 1.
  *
  * \warning Cette classe utilise par défaut un allocateur spécifique qui permet de
  * rendre accessible ces valeurs à la fois sur l'hôte (CPU) et l'accélérateur.
@@ -53,12 +54,15 @@ class NumArray
   using ExtentsType = Extents;
   using ThatClass = NumArray<DataType, Extents, LayoutPolicy>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
-  using ConstSpanType = MDSpan<const DataType, ExtentsType, LayoutPolicy>;
-  using SpanType = MDSpan<DataType, ExtentsType, LayoutPolicy>;
+  using ConstMDSpanType = MDSpan<const DataType, ExtentsType, LayoutPolicy>;
+  using MDSpanType = MDSpan<DataType, ExtentsType, LayoutPolicy>;
   using ArrayWrapper = impl::NumArrayContainer<DataType>;
-  using ArrayBoundsIndexType = typename SpanType::ArrayBoundsIndexType;
+  using ArrayBoundsIndexType = typename MDSpanType::ArrayBoundsIndexType;
   using value_type = DataType;
   using LayoutPolicyType = LayoutPolicy;
+
+  using ConstSpanType ARCANE_DEPRECATED_REASON("Use 'ConstMDSpanType' instead") = ConstMDSpanType;
+  using SpanType ARCANE_DEPRECATED_REASON("Use 'MDSpanType' instead") = MDSpanType;
 
  public:
 
@@ -343,7 +347,7 @@ class NumArray
    * Cette opération est valide quelle que soit la mêmoire associée
    * associée à l'instance.
    */
-  void copy(ConstSpanType rhs) { copy(rhs, nullptr); }
+  void copy(ConstMDSpanType rhs) { copy(rhs, nullptr); }
 
   /*!
    * \brief Copie dans l'instance les valeurs de \a rhs.
@@ -361,7 +365,7 @@ class NumArray
    * \a queue peut être nul. Si la file est asynchrone, il faudra la
    * synchroniser avant de pouvoir utiliser l'instance.
    */
-  void copy(ConstSpanType rhs, RunQueue* queue)
+  void copy(ConstMDSpanType rhs, RunQueue* queue)
   {
     _resizeAndCopy(rhs, eMemoryRessource::Unknown, queue);
   }
@@ -472,16 +476,25 @@ class NumArray
 
  public:
 
-  SpanType span() { return m_span; }
-  ConstSpanType span() const { return m_span.constSpan(); }
-  ConstSpanType constSpan() const { return m_span.constSpan(); }
+  MDSpanType span() { return m_span; }
+  ConstMDSpanType span() const { return m_span.constMDSpan(); }
+  ConstMDSpanType constSpan() const { return m_span.constMDSpan(); }
+
+  MDSpanType mdspan() { return m_span; }
+  ConstMDSpanType mdspan() const { return m_span.constMDSpan(); }
+  ConstMDSpanType constMDSpan() const { return m_span.constMDSpan(); }
+
   Span<const DataType> to1DSpan() const { return m_span.to1DSpan(); }
   Span<DataType> to1DSpan() { return m_span.to1DSpan(); }
 
-  constexpr operator SpanType() { return this->span(); }
-  constexpr operator ConstSpanType() const { return this->constSpan(); }
+  constexpr operator MDSpanType() { return this->span(); }
+  constexpr operator ConstMDSpanType() const { return this->constSpan(); }
   constexpr operator SmallSpan<DataType>() requires(Extents::rank() == 1) { return this->to1DSpan().smallView(); }
   constexpr operator SmallSpan<const DataType>() const requires(Extents::rank() == 1) { return this->to1DSpan().constSmallView(); }
+
+  constexpr SmallSpan<DataType> to1DSmallSpan() requires(Extents::rank() == 1) { return m_span.to1DSmallSpan(); }
+  constexpr SmallSpan<const DataType> to1DSmallSpan() const requires(Extents::rank() == 1) { return m_span.to1DSmallSpan(); }
+  constexpr SmallSpan<const DataType> to1DConstSmallSpan() const requires(Extents::rank() == 1) { return m_span.to1DConstSmallSpan(); }
 
  public:
 
@@ -490,7 +503,7 @@ class NumArray
 
  private:
 
-  SpanType m_span;
+  MDSpanType m_span;
   ArrayWrapper m_data;
   Int64 m_total_nb_element = 0;
 
@@ -501,7 +514,7 @@ class NumArray
     m_span.m_ptr = m_data.to1DSpan().data();
   }
 
-  void _resizeAndCopy(ConstSpanType rhs, eMemoryRessource input_ressource, RunQueue* queue)
+  void _resizeAndCopy(ConstMDSpanType rhs, eMemoryRessource input_ressource, RunQueue* queue)
   {
     this->resize(rhs.extents().dynamicExtents());
     m_data.copyOnly(rhs.to1DSpan(), input_ressource, queue);
