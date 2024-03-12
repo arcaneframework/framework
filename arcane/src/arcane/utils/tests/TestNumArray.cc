@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,6 +17,11 @@
 #include "arcane/utils/NumArrayUtils.h"
 
 #include <vector>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,7 +55,12 @@ TEST(NumArray, Basic)
   ASSERT_EQ(array3.totalNbElement(), (12 * 4 * 6));
 
   {
-    MDSpan<Real, MDDim3> span_array3(array3.span());
+    MDSpan<Real, MDDim3> span_array3(array3.mdspan());
+    ASSERT_EQ(array3.extent0(), span_array3.extent0());
+
+    MDSpan<const Real, MDDim3> const_span_array3(array3.constMDSpan());
+    ASSERT_EQ(const_span_array3.to1DSpan(), span_array3.to1DSpan());
+
     ASSERT_EQ(array3.extent0(), span_array3.extent0());
     std::cout << "Array3: extents=" << array3.extent0()
               << "," << array3.extent1() << "," << array3.extent2() << "\n";
@@ -67,7 +77,7 @@ TEST(NumArray, Basic)
     }
   }
   {
-    MDSpan<Real, MDDim2> span_array2(array2.span());
+    MDSpan<Real, MDDim2> span_array2(array2.mdspan());
     std::cout << "Array2: extents=" << array2.extent0() << "," << array2.extent1() << "\n";
     for (Int32 i = 0; i < array2.extent0(); ++i) {
       MDSpan<Real, MDDim1> span_array1 = array2.span().slice(i);
@@ -245,35 +255,45 @@ NumArray<int,MDDim1> _createNumArray(Int32 size)
   return a;
 }
 }
-TEST(NumArray3,Copy)
+TEST(NumArray3, Copy)
 {
   int nb_x = 3;
   int nb_y = 4;
   int nb_z = 5;
-  NumArray<Real,MDDim3> v(nb_x,nb_y,nb_z);
+  NumArray<Real, MDDim3> v(nb_x, nb_y, nb_z);
   v.fill(3.2);
-  NumArray<Real,MDDim3> v2(nb_x*2,nb_y/2,nb_z*3);
+  NumArray<Real, MDDim3> v2(nb_x * 2, nb_y / 2, nb_z * 3);
 
   v.copy(v2.span());
 
   {
-    NumArray<int,MDDim1> vi0(4,{1,3,5,7});
-    NumArray<int,MDDim1> vi1(vi0);
-    NumArray<int,MDDim1> vi2;
+    NumArray<int, MDDim1> vi0(4, { 1, 3, 5, 7 });
+    NumArray<int, MDDim1> vi1(vi0);
+    NumArray<int, MDDim1> vi2;
     vi2 = vi1;
-    ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
-    ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
-    NumArray<int,MDDim1> vi3(vi0.to1DSpan());
-    ASSERT_EQ(vi3.to1DSpan(),vi0.to1DSpan());
+    ASSERT_EQ(vi1.to1DSpan(), vi0.to1DSpan());
+    ASSERT_EQ(vi2.to1DSpan(), vi1.to1DSpan());
+    NumArray<int, MDDim1> vi3(vi0.to1DSpan());
+    ASSERT_EQ(vi3.to1DSpan(), vi0.to1DSpan());
+
+    Span<const int> vi0_span(vi0.to1DSmallSpan());
+    Span<const int> vi1_span(vi1.to1DSmallSpan());
+    ASSERT_EQ(vi0.to1DSpan(), vi0_span);
+    ASSERT_EQ(vi1_span, vi1.to1DSpan());
+    ASSERT_EQ(vi1.to1DSmallSpan(), vi0.to1DSmallSpan());
+    ASSERT_EQ(vi1.to1DConstSmallSpan(), vi0.to1DConstSmallSpan());
+    const NumArray<int, MDDim1>& v1_ref = vi1;
+    Span<const int> vi1_ref_span(v1_ref.to1DSmallSpan());
+    ASSERT_EQ(vi1_ref_span, vi1.to1DSpan());
   }
 
   {
-    NumArray<int,MDDim1> vi0(4,{1,3,5,7});
-    NumArray<int,MDDim1> vi1(vi0);
-    NumArray<int,MDDim1> vi2;
+    NumArray<int, MDDim1> vi0(4, { 1, 3, 5, 7 });
+    NumArray<int, MDDim1> vi1(vi0);
+    NumArray<int, MDDim1> vi2;
     vi2 = vi1;
-    ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
-    ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
+    ASSERT_EQ(vi1.to1DSpan(), vi0.to1DSpan());
+    ASSERT_EQ(vi2.to1DSpan(), vi1.to1DSpan());
   }
 }
 
