@@ -1,26 +1,9 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/*!
- * \file NormalizeOpt.h
- * \brief NormalizeOpt.h
- */
-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #pragma once
 
 #include <alien/data/CompositeMatrix.h>
@@ -348,7 +331,7 @@ class NormalizeOpt::Op
   , m_local_offset(m.getLocalOffset())
   , m_cols(m.getCSRProfile().getCols())
   , m_row_offset(m.getCSRProfile().getRowOffset())
-  , m_matrix(m.internal().getDataPtr())
+  , m_matrix(m.internal()->getDataPtr())
   , m_rhs(x.getDataPtr())
   , m_sum_first_eq(sum_first_eq)
   , m_algo(algo)
@@ -362,7 +345,7 @@ class NormalizeOpt::Op
     m_block_size = m_equations_num * m_unknowns_num;
     m_diag_first = m.getCSRProfile().getDiagFirstOpt();
     if (!m_diag_first)
-      m_upper_diag_offset = m.getCSRProfile().getUpperDiagOffset();
+      m_upper_diag_offset = m.getCSRProfile().getUpperDiagOffset().constView();
     m_keep_diag = true;
     if (m_sum_first_eq) {
       if (m_diag_first)
@@ -631,7 +614,7 @@ class NormalizeOpt::Op2 : public NormalizeOpt::Op
   , m_nuk2(0)
   , m_extra_eq_cols(m2.getCSRProfile().getCols())
   , m_extra_eq_row_offset(m2.getCSRProfile().getRowOffset())
-  , m_extra_eq_matrix(m2.internal().getDataPtr())
+  , m_extra_eq_matrix(m2.internal()->getDataPtr())
   {
     if (m_sum_first_eq) {
       if (m_trans) {
@@ -692,7 +675,7 @@ class NormalizeOpt::Op2 : public NormalizeOpt::Op
   , m_nuk2(0)
   , m_extra_eq_cols(m2.getCSRProfile().getCols())
   , m_extra_eq_row_offset(m2.getCSRProfile().getRowOffset())
-  , m_extra_eq_matrix(m2.internal().getDataPtr())
+  , m_extra_eq_matrix(m2.internal()->getDataPtr())
   {
     if (m_trans)
       // TOCHECK : to be removed

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.cc                                                 (C) 2000-2023 */
+/* RunQueue.cc                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -14,12 +14,13 @@
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Runner.h"
-#include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
+#include "arcane/accelerator/core/internal/RunnerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +33,7 @@ namespace Arcane::Accelerator
 
 RunQueue::
 RunQueue(Runner& runner)
-: m_p(impl::RunQueueImpl::create(&runner))
+: m_p(impl::RunQueueImpl::create(runner._impl()))
 {
 }
 
@@ -41,8 +42,47 @@ RunQueue(Runner& runner)
 
 RunQueue::
 RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
-: m_p(impl::RunQueueImpl::create(&runner, bi))
+: m_p(impl::RunQueueImpl::create(runner._impl(), bi))
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
+RunQueue(const RunQueue& x)
+: m_p(x.m_p)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
+RunQueue(RunQueue&& x)
+: m_p(std::move(x.m_p))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue& RunQueue::
+operator=(const RunQueue& x)
+{
+  if (&x != this)
+    m_p = x.m_p;
+  return (*this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue& RunQueue::
+operator=(RunQueue&& x)
+{
+  m_p = std::move(x.m_p);
+  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -51,7 +91,6 @@ RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
 RunQueue::
 ~RunQueue()
 {
-  m_p->release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -165,6 +204,42 @@ void RunQueue::
 recordEvent(Ref<RunQueueEvent>& event)
 {
   recordEvent(*event.get());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueue::
+setAsync(bool v)
+{
+  m_p->m_is_async = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RunQueue::
+isAsync() const
+{
+  return m_p->m_is_async;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RunQueue::
+_isAutoPrefetchCommand() const
+{
+  return m_p->m_runner_impl->isAutoPrefetchCommand();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RunQueue::
+isAcceleratorPolicy() const
+{
+  return Arcane::Accelerator::isAcceleratorPolicy(executionPolicy());
 }
 
 /*---------------------------------------------------------------------------*/

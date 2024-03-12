@@ -1,20 +1,10 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+﻿/// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+
 
 #include "BaseDirectMatrixBuilder.h"
 
@@ -107,7 +97,7 @@ namespace Common
     else {
       m_row_sizes.resize(m_local_size);
       SimpleCSRInternal::CSRStructInfo& profile =
-      m_matrix_impl->internal().getCSRProfile();
+      m_matrix_impl->internal()->getCSRProfile();
       ConstArrayView<Integer> row_starts = profile.getRowOffset();
       for (Integer i = 0; i < m_local_size; ++i) {
         const Integer row_capacity = row_starts[i + 1] - row_starts[i];
@@ -174,13 +164,13 @@ namespace Common
     if (m_reset_flag == DirectMatrixOptions::eResetAllocation) {
       computeProfile(m_row_sizes);
     }
-    SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal().getCSRProfile();
+    SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal()->getCSRProfile();
 
     profile.setSymmetric(m_symmetric_profile);
 
     m_row_starts = profile.getRowOffset();
     m_cols = profile.getCols();
-    m_values = m_matrix_impl->internal().getValues();
+    m_values = m_matrix_impl->internal()->getValues();
 
     if (m_reset_flag == DirectMatrixOptions::eResetAllocation or m_reset_flag == DirectMatrixOptions::eResetProfile or profile.getColOrdering() != SimpleCSRInternal::CSRStructInfo::eFull) {
       profile.getColOrdering() = SimpleCSRInternal::CSRStructInfo::eUndef;
@@ -592,7 +582,7 @@ namespace Common
     }
     m_offset[m_nproc] = m_global_size;
 
-    SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal().getCSRProfile();
+    SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal()->getCSRProfile();
     profile.init(m_local_size);
 
     m_row_starts = profile.getRowOffset();
@@ -611,7 +601,7 @@ namespace Common
     profile.getColOrdering() = SimpleCSRInternal::CSRStructInfo::eUndef;
 
     m_matrix_impl->allocate();
-    m_values = m_matrix_impl->internal().getValues();
+    m_values = m_matrix_impl->internal()->getValues();
 
 #ifndef NDEBUG
     m_values.fill(0.);
@@ -624,7 +614,7 @@ namespace Common
   void DirectMatrixBuilder::updateProfile(UniqueArray<Integer>& row_starts,
                                           UniqueArray<Integer>& cols, UniqueArray<Real>& values)
   {
-    SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal().getCSRProfile();
+    SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal()->getCSRProfile();
     profile.getRowOffset().copy(row_starts);
     m_row_starts = profile.getRowOffset();
     profile.getCols() = cols;
@@ -640,14 +630,14 @@ namespace Common
     offset[m_nproc] = m_global_size;
 
     m_matrix_impl->allocate();
-    m_matrix_impl->internal().getValues() = values; // copy values dans Matrix.getValues()
+    m_matrix_impl->internal()->getValues() = values; // copy values dans Matrix.getValues()
 
     if (m_nproc > 1) {
       m_matrix_impl->parallelStart(offset, m_parallel_mng, true);
     }
     else
       m_matrix_impl->sequentialStart();
-    m_values = m_matrix_impl->internal().getValues();
+    m_values = m_matrix_impl->internal()->getValues();
   }
 
   /*---------------------------------------------------------------------------*/

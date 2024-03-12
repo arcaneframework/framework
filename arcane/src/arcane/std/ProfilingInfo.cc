@@ -323,14 +323,15 @@ class MonoFuncAddrGetter
   }
 
  private:
-  bool m_is_valid;
-  mono_jit_info_get_code_start_func m_mono_jit_info_get_code_start_ptr;
-	mono_domain_get_func m_mono_domain_get_ptr;
-	mono_jit_info_table_find_func m_mono_jit_info_table_find_ptr;
-	mono_pmip_func m_mono_pmip_ptr;
-  mono_jit_info_get_method_func m_mono_jit_info_get_method_ptr;
-  mono_method_full_name_func m_mono_method_full_name_ptr;
-  void* m_handle;
+
+  bool m_is_valid = false;
+  mono_jit_info_get_code_start_func m_mono_jit_info_get_code_start_ptr = nullptr;
+	mono_domain_get_func m_mono_domain_get_ptr = nullptr;
+	mono_jit_info_table_find_func m_mono_jit_info_table_find_ptr = nullptr;
+	mono_pmip_func m_mono_pmip_ptr = nullptr;
+  mono_jit_info_get_method_func m_mono_jit_info_get_method_ptr = nullptr;
+  mono_method_full_name_func m_mono_method_full_name_ptr = nullptr;
+  void* m_handle = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -460,19 +461,7 @@ _getDemangledName(const char* true_func_name,char* demangled_buf,size_t demangle
 ProfInfos::
 ProfInfos(ITraceMng* tm)
 : TraceAccessor(tm)
-, m_total_event(0)
-, m_total_stack(0)
-, m_current_func_info(0)
-, m_period(0)
-, m_nb_event_before_getting_stack(5000)
-, m_function_depth(3)
-, m_use_backtrace(false)
-, m_use_libunwind(false)
-, m_mono_func_getter(nullptr)
-, m_is_started(false)
 , m_default_func_info_provider(new NullFuncInfoProvider())
-, m_libunwind_func_info_provider(nullptr)
-, m_backtrace_func_info_provider(nullptr)
 , m_func_info_provider(m_default_func_info_provider)
 {
   for( Integer i=0; i<MAX_COUNTER; ++i )

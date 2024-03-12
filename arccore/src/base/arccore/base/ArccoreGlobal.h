@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.h                                             (C) 2000-2023 */
+/* ArccoreGlobal.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -18,8 +18,8 @@
 
 #include "arccore/arccore_config.h"
 
-#ifdef ARCANE_VALID_TARGET
-#  undef ARCANE_VALID_TARGET
+#ifdef ARCCORE_VALID_TARGET
+#  undef ARCCORE_VALID_TARGET
 #endif
 
 // Determine le type de l'os.
@@ -264,6 +264,18 @@ using Integer = Int32;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Brain Float16
+class BFloat16;
+
+//! Float16
+class Float16;
+
+//! Type flottant IEEE-753 simple précision
+using Float32 = float;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \brief Structure équivalente à la valeur booléenne \a vrai
@@ -450,7 +462,7 @@ arccoreSetPauseOnError(bool v);
  * \brief Signalue l'utilisation d'un pointeur nul.
  *
  * Signale une tentative d'utilisation d'un pointeur nul.
- * Affiche un message, appelle arcaneDebugPause() et lance une exception
+ * Affiche un message, appelle arccoreDebugPause() et lance une exception
  * de type FatalErrorException.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
@@ -459,10 +471,28 @@ arccoreNullPointerError ARCCORE_NORETURN ();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Signale une erreur de débordement.
+ * \brief Signale qu'une valeur n'est pas dans l'intervalle souhaité.
  *
- * Signale un débordement de tableau. Affiche un message et appelle
- * arcaneDebugPause().
+ * Indique que l'assertion `min_value_inclusive <= i < max_value_exclusive`
+ * est fausse.
+ * Appelle arccoreDebugPause() puis lève une exception de type
+ * IndexOutOfRangeException.
+ *
+ * \param i valeur invalide.
+ * \param min_value_inclusive valeur minimale inclusive autorisée.
+ * \param max_value_exclusive valeur maximale exclusive autorisée.
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 min_value_inclusive,
+                                    Int64 max_value_exclusive);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Signale qu'une valeur n'est pas dans l'intervalle souhaité.
+ *
+ * Indique que l'assertion `0 <= i < max_value est fausse`.
+ * Lance une execption IndexOutOfRangeException.
  *
  * \param i indice invalide
  * \param max_size nombre d'éléments du tableau
@@ -470,32 +500,48 @@ arccoreNullPointerError ARCCORE_NORETURN ();
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 max_size);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie que `min_value_inclusive <= i < max_value_exclusive`.
+ *
+ * Si ce n'est pas le cas, appelle arccoreRangeError() pour lancer une
+ * exception.
+ */
+inline ARCCORE_HOST_DEVICE void
+arccoreCheckRange(Int64 i,Int64 min_value_inclusive,Int64 max_value_exclusive)
+{
+  if (i>=min_value_inclusive && i<max_value_exclusive)
+    return;
+#ifndef ARCCORE_DEVICE_CODE
+  arccoreRangeError(i,min_value_inclusive,max_value_exclusive);
+#elif defined(ARCCORE_DEVICE_TARGET_CUDA)
+  // Code pour le device.
+  // assert() est disponible pour CUDA.
+  // TODO: regarder si une fonction similaire existe pour HIP
+  assert(false);
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
+ *
+ * Appelle arccoreCheckRange(i,0,max_size).
  */
 inline ARCCORE_HOST_DEVICE void
 arccoreCheckAt(Int64 i,Int64 max_size)
 {
-#ifndef ARCCORE_DEVICE_CODE
-  if (i<0 || i>=max_size)
-    arccoreRangeError(i,max_size);
-#else
-  // Code pour le device.
-  // assert() est disponible pour CUDA.
-  // TODO: regarder si une fonction similaire existe pour HIP
-#ifdef ARCCORE_DEVICE_TARGET_CUDA
-  assert(i>=0 && i<max_size);
-#else
-  ARCCORE_UNUSED(i);
-  ARCCORE_UNUSED(max_size);
-#endif
-#endif
+  arccoreCheckRange(i,0,max_size);
 }
 
 #if defined(ARCCORE_CHECK) || defined(ARCCORE_DEBUG)
 #define ARCCORE_CHECK_AT(a,b) ::Arccore::arccoreCheckAt((a),(b))
+#define ARCCORE_CHECK_RANGE(a,b,c) ::Arccore::arccoreCheckRange((a),(b),(c))
 #else
 #define ARCCORE_CHECK_AT(a,b)
+#define ARCCORE_CHECK_RANGE(a,b,c)
 #endif
 
 #define ARCCORE_CHECK_AT2(a0,a1,b0,b1) \
@@ -547,6 +593,58 @@ _checkPointer(T* t,const char* file,const char* func,int line)
 #  define ARCCORE_WARNING(a)
 #  define ARCCORE_DCHECK_POINTER(a) (a);
 #endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Signalee l'utilisation d'un pointeur nul en envoyant une exception
+ *
+ * Signale une tentative d'utilisation d'un pointeur nul.
+ * Lance une exception de type FatalErrorException.
+ *
+ * Dans l'exception, affiche \a text si non nul, sinon affiche \a ptr_name.
+ *
+ * Normalement cette méthode ne doit pas être appelée directement mais
+ * via la macro ARCCORE_CHECK_POINTER.
+ */
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreThrowNullPointerError [[noreturn]] (const char* ptr_name,const char* text);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie qu'un pointeur n'est pas nul.
+ *
+ * Si le pointeur est nul, appelle arccoreThrowNullPointerError().
+ * Sinon, retourne le pointeur.
+ */
+inline void*
+arccoreThrowIfNull(void* ptr,const char* ptr_name,const char* text)
+{
+  if (!ptr)
+    arccoreThrowNullPointerError(ptr_name,text);
+  return ptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Macro retournant le pointeur \a ptr s'il est non nul
+ * ou lancant une exception s'il est nul.
+ *
+ * \sa arccoreThrowIfNull().
+ */
+#define ARCCORE_CHECK_POINTER(ptr) \
+  arccoreThrowIfNull(ptr,#ptr,nullptr)
+
+/*!
+ * \brief Macro retournant le pointeur \a ptr s'il est non nul
+ * ou lancant une exception s'il est nul.
+ *
+ * \sa arccoreThrowIfNull().
+ */
+#define ARCCORE_CHECK_POINTER2(ptr,text)\
+  arccoreThrowIfNull(ptr,#ptr,text)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

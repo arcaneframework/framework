@@ -3,7 +3,7 @@
  <arcane>
   <titre>Test CartesianMesh 2D Cell Renumbering V1 (Variant 1)</titre>
 
-  <description>Test du raffinement d'un maillage cartesian 2D avec le type d'AMR Cell et la renumérotation V1</description>
+  <description>Test du raffinement d'un maillage cartesian 2D avec le type d'AMR Cell et la renumerotation V1</description>
 
   <boucle-en-temps>AMRCartesianMeshTestLoop</boucle-en-temps>
 

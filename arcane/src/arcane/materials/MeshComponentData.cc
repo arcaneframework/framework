@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentData.cc                                        (C) 2000-2023 */
+/* MeshComponentData.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Données d'un constituant (matériau ou milieu) d'un maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -17,10 +17,10 @@
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemPrinter.h"
-#include "arcane/core/materials/MeshComponentPartData.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
+#include "arcane/materials/internal/MeshComponentPartData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,18 +32,17 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshComponentData::
-MeshComponentData(IMeshComponent* component,const String& name,
-                  Int16 component_id,bool create_indexer)
+MeshComponentData(IMeshComponent* component, const String& name,
+                  Int16 component_id, ComponentItemSharedInfo* shared_info,
+                  bool create_indexer)
 : TraceAccessor(component->traceMng())
 , m_component(component)
 , m_component_id(component_id)
 , m_name(name)
-, m_is_indexer_owner(false)
-, m_variable_indexer(nullptr)
-, m_part_data(nullptr)
+, m_constituent_local_id_list(shared_info)
 {
-  if (create_indexer){
-    m_variable_indexer = new MeshMaterialVariableIndexer(traceMng(),name);
+  if (create_indexer) {
+    m_variable_indexer = new MeshMaterialVariableIndexer(traceMng(), name);
     m_is_indexer_owner = true;
   }
 }
@@ -66,11 +65,20 @@ MeshComponentData::
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentData::
+_setPartInfo()
+{
+  if (m_part_data)
+    m_part_data->_setConstituentListView(m_constituent_local_id_list.view());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshComponentData::
 _resizeItemsInternal(Integer nb_item)
 {
-  m_items_internal.resize(nb_item);
-  if (m_part_data)
-    m_part_data->_setComponentItemInternalView(m_items_internal);
+  m_constituent_local_id_list.resize(nb_item);
+  _setPartInfo();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -101,7 +109,7 @@ void MeshComponentData::
 _buildPartData()
 {
   m_part_data = new MeshComponentPartData(m_component);
-  m_part_data->_setComponentItemInternalView(m_items_internal);
+  _setPartInfo();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -116,28 +124,26 @@ _buildPartData()
 void MeshComponentData::
 _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 {
-  ItemInfoListView global_item_list = items().itemFamily()->itemInfoListView();
-
   // TODO: regarder s'il est possible de supprimer le tableau temporaire
   // new_internals (c'est à peu près sur que c'est possible).
-  ConstArrayView<ComponentItemInternal*> current_internals(_itemsInternalView());
-  UniqueArray<ComponentItemInternal*> new_internals;
+  ConstArrayView<ConstituentItemIndex> current_internals(m_constituent_local_id_list.localIds());
+  UniqueArray<ConstituentItemIndex> new_internals;
 
   Int32ConstArrayView local_ids = variableIndexer()->localIds();
 
-  for( Integer i=0, nb=current_internals.size(); i<nb; ++i ){
+  for (Integer i = 0, nb = current_internals.size(); i < nb; ++i) {
     Int32 lid = local_ids[i];
     Int32 new_lid = old_to_new_ids[lid];
-    if (new_lid!=NULL_ITEM_LOCAL_ID){
+    if (new_lid != NULL_ITEM_LOCAL_ID) {
       new_internals.add(current_internals[i]);
-      current_internals[i]->setGlobalItem(global_item_list[new_lid]);
+      m_constituent_local_id_list.itemBase(i)._setGlobalItem(ItemLocalId(new_lid));
     }
   }
 
   // TODO: regarder supprimer cette copie aussi.
   {
     _resizeItemsInternal(new_internals.size());
-    _itemsInternalView().copy(new_internals);
+    m_constituent_local_id_list.copy(new_internals);
   }
 }
 
@@ -145,12 +151,12 @@ _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentData::
-_rebuildPartData()
+_rebuildPartData(RunQueue& queue)
 {
   if (!m_part_data)
     _buildPartData();
-  m_part_data->_setComponentItemInternalView(m_items_internal);
-  m_part_data->_setFromMatVarIndexes(m_variable_indexer->matvarIndexes());
+  _setPartInfo();
+  m_part_data->_setFromMatVarIndexes(m_variable_indexer->matvarIndexes(), queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -213,7 +219,7 @@ checkValid()
          << " matvar_indexes=" << mat_var_indexes;
   info(4) << "Cells=" << m_variable_indexer->cells().view().localIds();
   for( Integer i=0; i<nb_val; ++ i){
-    MatVarIndex component_mvi = m_items_internal[i]->variableIndex();
+    MatVarIndex component_mvi = m_constituent_local_id_list.variableIndex(i);
     MatVarIndex mvi = mat_var_indexes[i];
     if (component_mvi!=mvi)
       ARCANE_FATAL("Bad 'var_index' environment={3} component='{0}' direct='{1}' i={2}",

@@ -14,13 +14,17 @@ cmake_policy(SET CMP0079 NEW)
 #   'axlstar_generate_from_axl'
 function(generateAxl target)
 
-  set(options        INSTALL_GENERATED_FILES NO_COPY NO_ARCANE NO_MESH)
-  set(oneValueArgs   AXL_OPTION_GENERATION_MODE NAMESPACE)
+  set(options        INSTALL_GENERATED_FILES NO_COPY NO_ARCANE NO_MESH USER_INSTALL_PREFIX)
+  set(oneValueArgs   AXL_OPTION_GENERATION_MODE NAMESPACE )
   set(multiValueArgs)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  set(axl_path ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/axl)
+  if (ARGS_USER_INSTALL_PREFIX)
+    set(axl_path ${CMAKE_BINARY_DIR}/${ARGS_USER_INSTALL_PREFIX}/axl)
+  else ()
+    set(axl_path ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/axl)
+  endif ()
 
   if(NOT EXISTS ${axl_path})
     file(MAKE_DIRECTORY ${axl_path})
@@ -134,7 +138,11 @@ function(generateAxl target)
     set_property(GLOBAL APPEND PROPERTY AXL_DB ${file})
 
     if(ARGS_INSTALL_GENERATED_FILES)
-      install(FILES ${generated_files} DESTINATION include/${PROJECT_NAME}/axl)
+        if (ARGS_USER_INSTALL_PREFIX)
+            install(FILES ${generated_files} DESTINATION include/${ARGS_USER_INSTALL_PREFIX}/axl)
+        else ()
+            install(FILES ${generated_files} DESTINATION include/${PROJECT_NAME}/axl)
+        endif ()
     endif()
 
   endforeach()

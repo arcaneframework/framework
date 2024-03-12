@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemMaterialVariableBaseT.h                                 (C) 2000-2023 */
+/* ItemMaterialVariableBaseT.h                                 (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de la classe de base des variables matériaux.              */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,9 @@
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 #include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
+
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -137,6 +140,9 @@ buildFromManager(bool is_continue)
   UniqueArray<PrivatePartType*> all_vars(nb_indexer+1);
   all_vars[0] = m_global_variable;
   IMesh* mesh = m_global_variable->mesh();
+
+  if (!m_global_variable->isUsed())
+    m_global_variable->setUsed(true);
 
   // Il faut attacher un observer sur la variable globale pour savoir quand elle change.
   // Pour les variables partielles, cela se fait automatiquement lorsque le matériau associé change.
@@ -332,9 +338,9 @@ _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var)
 
 template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
-                     Int32ConstArrayView indexes_in_multiple)
+_copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
+  Int32 var_index = args.m_var_index;
   PrivatePartType* partial_var = m_vars[var_index+1];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
@@ -350,7 +356,8 @@ _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
   ContainerConstViewType global_view = m_vars[0]->constValueView();
   ContainerViewType partial_view = partial_var->valueView();
 
-  Traits::copyTo(global_view,local_ids,partial_view,indexes_in_multiple);
+  Traits::copyTo(global_view, args.m_local_ids, partial_view,
+                 args.m_indexes_in_multiple, *args.m_queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -358,9 +365,9 @@ _copyGlobalToPartial(Int32 var_index,Int32ConstArrayView local_ids,
 
 template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
-                     Int32ConstArrayView indexes_in_multiple)
+_copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
+  Int32 var_index = args.m_var_index;
   PrivatePartType* partial_var = m_vars[var_index+1];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
@@ -368,7 +375,8 @@ _copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
   ContainerViewType global_view = m_vars[0]->valueView();
   ContainerConstViewType partial_view = partial_var->constValueView();
 
-  Traits::copyTo(partial_view,indexes_in_multiple,global_view,local_ids);
+  Traits::copyTo(partial_view, args.m_indexes_in_multiple,
+                 global_view, args.m_local_ids, *args.m_queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -376,7 +384,7 @@ _copyPartialToGlobal(Int32 var_index,Int32ConstArrayView local_ids,
 
 template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_initializeNewItems(const ComponentItemListBuilder& list_builder)
+_initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue)
 {
   MeshMaterialVariableIndexer* indexer = list_builder.indexer();
   Integer var_index = indexer->index();
@@ -392,7 +400,7 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder)
 
   ContainerConstViewType global_view = m_vars[0]->valueView();
 
-  ConstArrayView<MatVarIndex> partial_matvar = list_builder.partialMatVarIndexes();
+  SmallSpan<const MatVarIndex> partial_matvar = list_builder.partialMatVarIndexes();
 
   Integer nb_partial = partial_matvar.size();
 
@@ -401,15 +409,31 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder)
   // (sauf lors de l'init).
   DataType zero = DataType();
 
+  auto command = makeCommand(queue);
+  SmallSpan<ContainerViewType> views = m_views.view();
+
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, views.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, global_view.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_matvar.data());
+
   if (init_with_zero){
-    for( Integer i=0; i<nb_partial; ++i )
-      this->setFillValue(partial_matvar[i],zero);
+    command << RUNCOMMAND_LOOP1(iter, nb_partial)
+    {
+      auto [i] = iter();
+      MatVarIndex mvi = partial_matvar[i];
+      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],zero);
+    };
   }
   else{
-    Int32ConstArrayView partial_local_ids = list_builder.partialLocalIds();
-    for( Integer i=0; i<nb_partial; ++i ){
-      setValue(partial_matvar[i], global_view[partial_local_ids[i]]);
-    }
+    SmallSpan<const Int32> partial_local_ids = list_builder.partialLocalIds();
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_local_ids.data());
+    command << RUNCOMMAND_LOOP1(iter, nb_partial)
+    {
+      auto [i] = iter();
+      const auto& v = global_view[partial_local_ids[i]];
+      MatVarIndex mvi = partial_matvar[i];
+      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],v);
+    };
   }
 }
 
@@ -529,7 +553,7 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
     if (mat_var)
       true_mat_var = dynamic_cast<VariableTrueType*>(mat_var);
     else{
-      VariableRefType* var_ref = new VariableRefType(true_ptr);
+      VariableRefType* var_ref = new VariableRefType(gvar_bi);
       MaterialVariableBuildInfo mvbi(mat_mng,v);
       true_mat_var = new VariableTrueType(mvbi,true_ptr,var_ref,mvs);
       mat_mng->_internalApi()->addVariable(true_mat_var);

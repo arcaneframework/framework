@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentConnectivityList.h                                 (C) 2000-2023 */
+/* ConstituentConnectivityList.h                               (C) 2000-2023 */
 /*                                                                           */
-/* Gestion des listes de connectivité des milieux et matériaux.              */
+/* Gestion des listes de connectivité des constituants.                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_INTERNAL_COMPONENTCONNECTIVITYLIST_H
-#define ARCANE_MATERIALS_INTERNAL_COMPONENTCONNECTIVITYLIST_H
+#ifndef ARCANE_MATERIALS_INTERNAL_CONSTITUENTCONNECTIVITYLIST_H
+#define ARCANE_MATERIALS_INTERNAL_CONSTITUENTCONNECTIVITYLIST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,29 +33,29 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Gestion des listes de connectivité des milieux et matériaux.
+ * \brief Gestion des listes de connectivité des constituants.
  */
-class ComponentConnectivityList
+class ConstituentConnectivityList
 : public TraceAccessor
 , public ReferenceCounterImpl
 , public IIncrementalItemSourceConnectivity
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 
-  class ComponentContainer;
+  class ConstituantContainer;
   class Container;
 
  public:
 
-  explicit ComponentConnectivityList(MeshMaterialMng* mm);
-  ~ComponentConnectivityList();
+  explicit ConstituentConnectivityList(MeshMaterialMng* mm);
+  ~ConstituentConnectivityList();
 
  public:
 
-  ComponentConnectivityList(ComponentConnectivityList&&) = delete;
-  ComponentConnectivityList(const ComponentConnectivityList&) = delete;
-  ComponentConnectivityList& operator=(ComponentConnectivityList&&) = delete;
-  ComponentConnectivityList& operator=(const ComponentConnectivityList&) = delete;
+  ConstituentConnectivityList(ConstituentConnectivityList&&) = delete;
+  ConstituentConnectivityList(const ConstituentConnectivityList&) = delete;
+  ConstituentConnectivityList& operator=(ConstituentConnectivityList&&) = delete;
+  ConstituentConnectivityList& operator=(const ConstituentConnectivityList&) = delete;
 
  public:
 

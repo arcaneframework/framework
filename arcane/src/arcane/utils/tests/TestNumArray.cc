@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -23,12 +23,17 @@
 
 using namespace Arcane;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using namespace Arcane;
+
 TEST(NumArray, Basic)
 {
   std::cout << "TEST_NUMARRAY Basic\n";
 
   NumArray<Real, MDDim1> array1(3);
-  array1.s(1) = 5.0;
+  array1(1) = 5.0;
   ASSERT_EQ(array1(1), 5.0);
   std::cout << " V=" << array1(1) << "\n";
   array1[2] = 3.0;
@@ -38,19 +43,24 @@ TEST(NumArray, Basic)
   ASSERT_EQ(array1.totalNbElement(), 7);
 
   NumArray<Real, MDDim2> array2(2, 3);
-  array2.s(1, 2) = 5.0;
+  array2(1, 2) = 5.0;
   std::cout << " V=" << array2(1, 2) << "\n";
   array2.resize(7, 5);
   ASSERT_EQ(array2.totalNbElement(), (7 * 5));
 
   NumArray<Real, MDDim3> array3(2, 3, 4);
-  array3.s(1, 2, 3) = 5.0;
+  array3(1, 2, 3) = 5.0;
   std::cout << " V=" << array3(1, 2, 3) << "\n";
   array3.resize(12, 4, 6);
   ASSERT_EQ(array3.totalNbElement(), (12 * 4 * 6));
 
   {
-    MDSpan<Real, MDDim3> span_array3(array3.span());
+    MDSpan<Real, MDDim3> span_array3(array3.mdspan());
+    ASSERT_EQ(array3.extent0(), span_array3.extent0());
+
+    MDSpan<const Real, MDDim3> const_span_array3(array3.constMDSpan());
+    ASSERT_EQ(const_span_array3.to1DSpan(), span_array3.to1DSpan());
+
     ASSERT_EQ(array3.extent0(), span_array3.extent0());
     std::cout << "Array3: extents=" << array3.extent0()
               << "," << array3.extent1() << "," << array3.extent2() << "\n";
@@ -67,7 +77,7 @@ TEST(NumArray, Basic)
     }
   }
   {
-    MDSpan<Real, MDDim2> span_array2(array2.span());
+    MDSpan<Real, MDDim2> span_array2(array2.mdspan());
     std::cout << "Array2: extents=" << array2.extent0() << "," << array2.extent1() << "\n";
     for (Int32 i = 0; i < array2.extent0(); ++i) {
       MDSpan<Real, MDDim1> span_array1 = array2.span().slice(i);
@@ -79,7 +89,7 @@ TEST(NumArray, Basic)
     }
   }
   NumArray<Real, MDDim4> array4(2, 3, 4, 5);
-  array4.s(1, 2, 3, 4) = 5.0;
+  array4(1, 2, 3, 4) = 5.0;
   std::cout << " V=" << array4(1, 2, 3, 4) << "\n";
   array4.resize(8, 3, 7, 5);
   ASSERT_EQ(array4.totalNbElement(), (8 * 3 * 7 * 5));
@@ -108,22 +118,22 @@ TEST(NumArray,Basic2)
 
   NumArray<Real,MDDim1> array1;
   array1.resize(2);
-  array1.s(1) = 5.0;
+  array1(1) = 5.0;
   std::cout << " V=" << array1(1) << "\n";
 
   NumArray<Real,MDDim2> array2;
   array2.resize(2,3);
-  array2.s(1,2) = 5.0;
+  array2(1,2) = 5.0;
   std::cout << " V=" << array2(1,2) << "\n";
 
   NumArray<Real,MDDim3> array3(2,3,4);
   array3.resize(2,3,4);
-  array3.s(1,2,3) = 5.0;
+  array3(1,2,3) = 5.0;
   std::cout << " V=" << array3(1,2,3) << "\n";
 
   NumArray<Real,MDDim4> array4(2,3,4,5);
   array4.resize(2,3,4,5);
-  array4.s(1,2,3,4) = 5.0;
+  array4(1,2,3,4) = 5.0;
   std::cout << " V=" << array4(1,2,3,4) << "\n";
 }
 
@@ -180,9 +190,9 @@ TEST(NumArray3,Misc)
         for( Int32 z=0, zn=v.dim3Size(); z<zn; ++z ){
           ArrayIndex<3> idx{x,y,z};
           Int64 offset = v_extents.offset(idx);
-          v.s(x,y,z) = offset;
-          v.s({x,y,z}) = offset;
-          v.s(idx) = offset;
+          v(x,y,z) = offset;
+          v({x,y,z}) = offset;
+          v(idx) = offset;
         }
       }
     }
@@ -245,35 +255,45 @@ NumArray<int,MDDim1> _createNumArray(Int32 size)
   return a;
 }
 }
-TEST(NumArray3,Copy)
+TEST(NumArray3, Copy)
 {
   int nb_x = 3;
   int nb_y = 4;
   int nb_z = 5;
-  NumArray<Real,MDDim3> v(nb_x,nb_y,nb_z);
+  NumArray<Real, MDDim3> v(nb_x, nb_y, nb_z);
   v.fill(3.2);
-  NumArray<Real,MDDim3> v2(nb_x*2,nb_y/2,nb_z*3);
+  NumArray<Real, MDDim3> v2(nb_x * 2, nb_y / 2, nb_z * 3);
 
   v.copy(v2.span());
 
   {
-    NumArray<int,MDDim1> vi0(4,{1,3,5,7});
-    NumArray<int,MDDim1> vi1(vi0);
-    NumArray<int,MDDim1> vi2;
+    NumArray<int, MDDim1> vi0(4, { 1, 3, 5, 7 });
+    NumArray<int, MDDim1> vi1(vi0);
+    NumArray<int, MDDim1> vi2;
     vi2 = vi1;
-    ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
-    ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
-    NumArray<int,MDDim1> vi3(vi0.to1DSpan());
-    ASSERT_EQ(vi3.to1DSpan(),vi0.to1DSpan());
+    ASSERT_EQ(vi1.to1DSpan(), vi0.to1DSpan());
+    ASSERT_EQ(vi2.to1DSpan(), vi1.to1DSpan());
+    NumArray<int, MDDim1> vi3(vi0.to1DSpan());
+    ASSERT_EQ(vi3.to1DSpan(), vi0.to1DSpan());
+
+    Span<const int> vi0_span(vi0.to1DSmallSpan());
+    Span<const int> vi1_span(vi1.to1DSmallSpan());
+    ASSERT_EQ(vi0.to1DSpan(), vi0_span);
+    ASSERT_EQ(vi1_span, vi1.to1DSpan());
+    ASSERT_EQ(vi1.to1DSmallSpan(), vi0.to1DSmallSpan());
+    ASSERT_EQ(vi1.to1DConstSmallSpan(), vi0.to1DConstSmallSpan());
+    const NumArray<int, MDDim1>& v1_ref = vi1;
+    Span<const int> vi1_ref_span(v1_ref.to1DSmallSpan());
+    ASSERT_EQ(vi1_ref_span, vi1.to1DSpan());
   }
 
   {
-    NumArray<int,MDDim1> vi0(4,{1,3,5,7});
-    NumArray<int,MDDim1> vi1(vi0);
-    NumArray<int,MDDim1> vi2;
+    NumArray<int, MDDim1> vi0(4, { 1, 3, 5, 7 });
+    NumArray<int, MDDim1> vi1(vi0);
+    NumArray<int, MDDim1> vi2;
     vi2 = vi1;
-    ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
-    ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
+    ASSERT_EQ(vi1.to1DSpan(), vi0.to1DSpan());
+    ASSERT_EQ(vi2.to1DSpan(), vi1.to1DSpan());
   }
 }
 
@@ -326,7 +346,7 @@ void _setNumArray2Values(T& a)
 {
   for( Int32 i=0; i<a.dim1Size(); ++i ){
     for( Int32 j=0; j<a.dim2Size(); ++j ){
-      a.s(i,j) = (i*253) + j;
+      a(i,j) = (i*253) + j;
     }
   }
 }
@@ -336,7 +356,7 @@ void _setNumArray3Values(T& a)
   for( Int32 i=0; i<a.dim1Size(); ++i ){
     for( Int32 j=0; j<a.dim2Size(); ++j ){
       for( Int32 k=0; k<a.dim3Size(); ++k ){
-        a.s(i,j,k) = (i*253) + (j*27) + k;
+        a(i,j,k) = (i*253) + (j*27) + k;
       }
     }
   }

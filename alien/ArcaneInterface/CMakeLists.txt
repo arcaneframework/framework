@@ -13,8 +13,8 @@ string(REPLACE "_dev" "" ALIEN_VERSION ${ALIEN_VERSION_STR_FULL})
 string(STRIP "${ALIEN_VERSION}" ALIEN_VERSION)  # In case of \n
 message(STATUS "AlienLegacyVersion = ${ALIEN_VERSION}")
 
-project(ALIEN 
-        VERSION ${ALIEN_VERSION}) # Le nom est important car les axl sont générés dans <PROJECT_NAME>/axl
+project(AlienPlugins
+        VERSION ${ALIEN_VERSION})
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -103,6 +103,18 @@ include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienPackages.cmake)
 # Include Arcane cmake functions
 include(${ARCANE_CMAKE_COMMANDS})
 
+if (ENABLE_CUDA)
+  # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+  message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
+  cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
+
+  # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
+  if (NOT CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+  endif()
+  enable_language(CUDA)
+endif()
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
@@ -138,6 +150,10 @@ enable_testing()
 
 message_separator()
 logStatus("Loading components...")
+
+#IF(ALIEN_USE_INTELSYCL)
+#  set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+#ENDIF()
 
 add_subdirectory(modules/options)
 add_subdirectory(modules/external_packages)

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.cc                                            (C) 2000-2020 */
+/* ArccoreGlobal.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,11 @@
 #include "arccore/base/IndexOutOfRangeException.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/Ref.h"
+
+// Nécessaire pour les exports de symboles
+#include "arccore/base/ReferenceCounterImpl.h"
+#include "arccore/base/Float16.h"
+#include "arccore/base/BFloat16.h"
 
 #include <iostream>
 #include <cstring>
@@ -99,6 +104,19 @@ arccoreDebugPause(const char* msg)
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreRangeError(Int64 i,Int64 min_value_inclusive,Int64 max_value_exclusive)
+{
+  arccoreDebugPause("arccoreRangeError");
+  throw IndexOutOfRangeException(A_FUNCINFO,String(),i,min_value_inclusive,max_value_exclusive);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreRangeError(Int32 i,Int32 max_size)
 {
@@ -126,6 +144,15 @@ arccoreNullPointerError()
   std::cerr << "** FATAL: Trying to dereference a null pointer.\n";
   arccoreDebugPause("arcaneNullPointerPtr");
   throw FatalErrorException(A_FUNCINFO,"null pointer");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_BASE_EXPORT void
+arccoreThrowNullPointerError(const char* ptr_name,const char* text)
+{
+  throw FatalErrorException(A_FUNCINFO,text ? text : ptr_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -184,12 +211,15 @@ operator<<(std::ostream& o,const TraceInfo& t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
 /// Fonction appelée lorsqu'une assertion échoue.
 typedef void (*fDoAssert)(const char*,const char*,const char*,size_t);
 /// Fonction appelée pour indiquer s'il faut afficher l'information de débug
 typedef bool (*fCheckDebug)(unsigned int);
 
-static fDoAssert g_do_assert_func = 0;
+fDoAssert g_do_assert_func = 0;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.cc                                              (C) 2000-2023 */
+/* DynamicMesh.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Classe de gestion d'un maillage non structuré évolutif.                   */
 /*---------------------------------------------------------------------------*/
@@ -58,6 +58,8 @@
 #include "arcane/core/internal/UnstructuredMeshAllocateBuildInfoInternal.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
+#include "arcane/core/internal/IMeshInternal.h"
+#include "arcane/core/internal/IMeshModifierInternal.h"
 
 #include "arcane/mesh/ExtraGhostCellsBuilder.h"
 #include "arcane/mesh/ExtraGhostParticlesBuilder.h"
@@ -148,6 +150,26 @@ const std::string DynamicMesh::PerfCounter::m_names[] = {
     "UPGHOSTLAYER7"
 } ;
 #endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DynamicMesh::InternalApi
+: public IMeshInternal
+, public IMeshModifierInternal
+{
+ public:
+
+  InternalApi(DynamicMesh* mesh)
+  : m_mesh(mesh)
+  {
+  }
+
+ private:
+
+  DynamicMesh* m_mesh = nullptr;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -183,6 +205,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 , m_extra_ghost_cells_builder(nullptr)
 , m_extra_ghost_particles_builder(nullptr)
 , m_initial_allocator(this)
+, m_internal_api(std::make_unique<InternalApi>(this))
 , m_is_amr_activated(mbi.meshKind().meshAMRKind()!=eMeshAMRKind::None)
 , m_amr_type(mbi.meshKind().meshAMRKind())
 , m_is_dynamic(false)
@@ -257,7 +280,10 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 
   {
     String s = platform::getEnvironmentVariable("ARCANE_GRAPH_CONNECTIVITY_POLICY");
-    if (s=="1"){
+#ifdef USE_GRAPH_CONNECTIVITY_POLICY
+    s = "1";
+#endif
+    if (s == "1") {
       m_item_family_network = new ItemFamilyNetwork(traceMng());
       info()<<"Graph connectivity is activated";
       m_family_modifiers.add(m_cell_family);
@@ -445,7 +471,7 @@ reloadMesh()
   Timer timer(subDomain(),"DynamicMesh::reloadMesh",Timer::TimerReal);
   {
     Timer::Sentry sentry(&timer);
-    _computeSynchronizeInfos();
+    computeSynchronizeInfos();
     m_mesh_checker->checkMeshFromReferenceFile();
   }
   info() << "Time to reallocate the mesh structures (direct method) (unit: second): "
@@ -780,7 +806,7 @@ endAllocate()
   }
 #endif
 
-  _computeSynchronizeInfos();
+  computeSynchronizeInfos();
   m_mesh_checker->checkMeshFromReferenceFile();
 
   // Positionne les proprietaires pour que cela soit comme apres
@@ -835,6 +861,21 @@ addCells(Integer nb_cell,
 {
   const bool allow_build_face = (m_parallel_mng->commSize() == 1);
   _allocateCells(nb_cell,cells_infos,cells,allow_build_face);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addCells(const MeshModifierAddCellsArgs& args)
+{
+  bool allow_build_face = args.isAllowBuildFaces();
+  // En parallèle, on ne peut pas construire à la volée les faces
+  // (car il faut générer un uniqueId() et ce dernier ne serait pas cohérent
+  // entre les sous-domaines)
+  if (m_parallel_mng->commSize() > 1)
+    allow_build_face = false;
+  _allocateCells(args.nbCell(),args.cellInfos(),args.cellLocalIds(),allow_build_face);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1054,6 +1095,15 @@ addFaces(Integer nb_face,Int64ConstArrayView face_infos,Int32ArrayView faces)
     m_mesh_builder->addFaces3(nb_face,face_infos,rank,faces);
   else
     m_mesh_builder->addFaces(nb_face,face_infos,rank,faces);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addFaces(const MeshModifierAddFacesArgs& args)
+{
+  addFaces(args.nbFace(),args.faceInfos(),args.faceLocalIds());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2157,7 +2207,6 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
   CHECKPERF( m_perf_counter.start(PerfCounter::UPGHOSTLAYER1) ) ;
   
   m_need_compact = true;
-  
   //Integer current_iteration = subDomain()->commonVariables().globalIteration();
   if (!m_is_dynamic)
     ARCANE_FATAL("Property isDynamic() has to be 'true'");
@@ -2203,7 +2252,7 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
   // des entités
   //pm->computeSynchronizeInfos();
   CHECKPERF( m_perf_counter.start(PerfCounter::UPGHOSTLAYER4) )
-  _computeSynchronizeInfos();
+  computeSynchronizeInfos();
   _synchronizeGroupsAndVariables();
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPGHOSTLAYER4) )
 
@@ -3342,7 +3391,25 @@ _updateItemFamilyDependencies(VariableScalarInteger connectivity)
 IMeshInternal* DynamicMesh::
 _internalApi()
 {
-  ARCANE_FATAL("NotImplemented");
+  return m_internal_api.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshModifierInternal* DynamicMesh::
+_modifierInternalApi()
+{
+  return m_internal_api.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+computeSynchronizeInfos()
+{
+  _computeSynchronizeInfos();
 }
 
 /*---------------------------------------------------------------------------*/

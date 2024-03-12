@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialsCoreGlobal.h                                       (C) 2000-2023 */
+/* MaterialsCoreGlobal.h                                       (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales des matériaux de Arcane.                           */
 /*---------------------------------------------------------------------------*/
@@ -15,17 +15,32 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arccore/base/RefDeclarations.h"
+#include "arccore/collections/ArrayTraits.h"
 
 #include <iosfwd>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define MATERIALS_BEGIN_NAMESPACE  namespace Materials {
-#define MATERIALS_END_NAMESPACE    }
+#define MATERIALS_BEGIN_NAMESPACE \
+  namespace Materials \
+  {
+#define MATERIALS_END_NAMESPACE }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane::impl
+{
+class ItemBase;
+}
+
+namespace Arcane::Materials::matimpl
+{
+using Arcane::impl::ItemBase;
+class ConstituentItemBase;
+}
 
 namespace Arcane::Materials
 {
@@ -59,6 +74,7 @@ class ComponentItemVectorView;
 class ComponentPartItemVectorView;
 class ComponentPurePartItemVectorView;
 class ComponentImpurePartItemVectorView;
+class ConstituentItemLocalIdListView;
 class MeshComponentPartData;
 class MatCellEnumerator;
 class ComponentItemVector;
@@ -68,7 +84,10 @@ class IMeshMaterialVariable;
 class MaterialVariableBuildInfo;
 class MaterialVariableTypeInfo;
 class MeshMaterialVariableRef;
-class EnvAndGlobalCell {};
+class EnvAndGlobalCell
+{};
+class MatAndGlobalCell
+{};
 class IMeshMaterialMngInternal;
 class MeshEnvironmentBuildInfo;
 class MeshBlockBuildInfo;
@@ -77,6 +96,8 @@ class IMeshMaterialModifierImpl;
 class CellToAllEnvCellConverter;
 class IMeshMaterialVariableSynchronizer;
 class AllCellToAllEnvCell;
+class ConstituentItemIndex;
+class IConstituentItemVectorImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -116,11 +137,11 @@ using ComponentCellVectorView = ComponentItemVectorView;
 //! Liste de composants multi-matériaux du maillage.
 using MeshComponentList = ConstArrayView<IMeshComponent*>;
 
-template<typename DataType> class CellMaterialVariableScalarRef;
+template <typename DataType> class CellMaterialVariableScalarRef;
 
-template<typename ItemType,typename DataType>
+template <typename ItemType, typename DataType>
 class IScalarMeshMaterialVariable;
-template<typename ItemType,typename DataType>
+template <typename ItemType, typename DataType>
 class IArrayMeshMaterialVariable;
 
 /*---------------------------------------------------------------------------*/
@@ -150,33 +171,27 @@ enum class MatVarSpace
 enum class eMatPart
 {
   Pure = 0,
-  Impure =1
+  Impure = 1
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Opération de mise à jour des milieux/matériaux.
- */
-enum class eOperation
+
+} // namespace Arcane::Materials
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
 {
-  //! Ajoute des entités
-  Add
-  ARCANE_DEPRECATED_REASON("Y2023: This enum is internal to Arcane"),
-  //! Supprime des entités
-  Remove
-  ARCANE_DEPRECATED_REASON("Y2023: This enum is internal to Arcane")
-};
-
-//! Opérateur de sortie sur un flot
-extern "C++" ARCANE_DEPRECATED_REASON("Y2023: This enum is internal to Arcane")
-std::ostream&
-operator<< (std::ostream& ostr,eOperation operation);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Materials::MatVarIndex);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Materials::ConstituentItemIndex);
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Materials
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::Materials::IConstituentItemVectorImpl);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

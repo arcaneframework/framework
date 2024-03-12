@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriterDatabase.cc                                (C) 2000-2023 */
+/* BasicReaderWriterDatabase.cc                                (C) 2000-2024 */
 /*                                                                           */
 /* Base de donnée pour le service 'BasicReaderWriter'.                       */
 /*---------------------------------------------------------------------------*/
@@ -27,8 +27,8 @@
 
 #include "arcane/ArcaneException.h"
 
-#include "arcane/std/TextReader.h"
-#include "arcane/std/TextWriter.h"
+#include "arcane/std/internal/TextReader2.h"
+#include "arcane/std/internal/TextWriter2.h"
 #include "arcane/std/internal/IHashDatabase.h"
 
 #include <fstream>
@@ -333,7 +333,7 @@ class KeyValueTextWriter::Impl
 
  public:
 
-  TextWriter m_writer;
+  TextWriter2 m_writer;
   Int32 m_version;
   Hasher m_hasher;
 
@@ -640,7 +640,7 @@ class KeyValueTextReader::Impl
 
  public:
 
-  TextReader m_reader;
+  TextReader2 m_reader;
   Int32 m_version;
 };
 
@@ -670,7 +670,7 @@ void KeyValueTextReader::Impl::
 _readDirect(Int64 offset, Span<std::byte> bytes)
 {
   m_reader.setFileOffset(offset);
-  std::ifstream& s = m_reader.stream();
+  std::istream& s = m_reader.stream();
   binaryRead(s, bytes);
   if (s.fail())
     ARCANE_FATAL("Can not read file part offset={0} length={1}", offset, bytes.length());

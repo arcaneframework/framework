@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Variable.cc                                                 (C) 2000-2023 */
+/* Variable.cc                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant une variable.                                               */
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/ItemGroupObserver.h"
 #include "arcane/core/expr/Expression.h"
@@ -57,6 +58,8 @@
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include <map>
 #include <set>
@@ -73,11 +76,11 @@ namespace Arcane
  * \brief Partie privée d'une variable.
  */
 class VariablePrivate
+: public IVariableInternal
 {
  public:
 
   VariablePrivate(const VariableBuildInfo& v,const VariableInfo& vi);
-  ~VariablePrivate(){}
 
  public:
 
@@ -92,25 +95,26 @@ class VariablePrivate
   ItemGroup m_item_group; //!< Groupe d'entité sur lequel est associé la variable
   IItemFamily* m_item_family = nullptr; //!< Familly d'entité (peut être nul)
   VariableInfo m_infos; //!< Infos caractéristiques de la variable
-  int m_property; //!< Propriétés de la variable
-  bool m_is_partial; //!< Vrai si la variable est partielle
-  bool m_need_property_update;
-  bool m_is_used; //!< Etat d'utilisation de la variable
-  bool m_has_valid_data; //!< Vrai si les données sont valide
-  Real m_last_update_time; //!< Temps physique de la dernière mise à jour
+  int m_property = 0; //!< Propriétés de la variable
+  bool m_is_partial = false; //!< Vrai si la variable est partielle
+  bool m_need_property_update = false;
+  bool m_is_used = false; //!< Etat d'utilisation de la variable
+  bool m_has_valid_data = false; //!< Vrai si les données sont valide
+  Real m_last_update_time = 0.0; //!< Temps physique de la dernière mise à jour
   VariableRef* m_first_reference = nullptr; //! Première référence sur la variable
-  Integer m_nb_reference;
+  Integer m_nb_reference = 0;
   UniqueArray<VariableDependInfo> m_depends; //!< Liste des dépendances de cette variable
-  Int64 m_modified_time; //!< Tag de la dernière modification
+  Int64 m_modified_time = 0; //!< Tag de la dernière modification
   ScopedPtrT<IVariableComputeFunction> m_compute_function; //!< Fonction de calcul
   AutoDetachObservable m_write_observable; //!< Observable en écriture
   AutoDetachObservable m_read_observable; //!< Observable en lecture
   AutoDetachObservable m_on_size_changed_observable; //!< Observable en redimensionnement
   std::map<String,String> m_tags; //!< Liste des tags
-  bool m_has_recursive_depend; //!< Vrai si les dépendances sont récursives
+  bool m_has_recursive_depend = true; //!< Vrai si les dépendances sont récursives
   bool m_want_shrink = false;
 
  public:
+
   /*!
    * \brief Sérialise le `hashid`.
    *
@@ -143,6 +147,12 @@ class VariablePrivate
       break;
     }
   }
+
+ public:
+
+  //@{ Implémentation de IVariableInternal
+  String computeComparisonHashCollective(IHashAlgorithm* hash_algo, IData* sorted_data) override;
+  //@}
 
  private:
 
@@ -198,18 +208,9 @@ VariablePrivate(const VariableBuildInfo& v,const VariableInfo& vi)
 : m_sub_domain(v._subDomain())
 , m_data_factory_mng(v.dataFactoryMng())
 , m_mesh_handle(v.meshHandle())
-, m_item_family(nullptr)
 , m_infos(vi)
 , m_property(v.property())
 , m_is_partial(vi.isPartial())
-, m_need_property_update(false)
-, m_is_used(false)
-, m_has_valid_data(false)
-, m_last_update_time(0.0)
-, m_first_reference(nullptr)
-, m_nb_reference(0)
-, m_modified_time(0)
-, m_has_recursive_depend(true)
 {
   _setHashId();
   m_infos.setDefaultItemGroupName();
@@ -275,8 +276,9 @@ public:
 
     if (group_size != (old_size-removed_lids.size()))
       ARCANE_FATAL("Inconsitent reduced size {0} vs {1}",group_size,old_size);
-    ItemVectorView view = group.view();
-    Int32UniqueArray source, destination;
+    [[maybe_unused]] ItemVectorView view = group.view();
+    Int32UniqueArray source;
+    Int32UniqueArray destination;
     source.reserve(group_size);
     destination.reserve(group_size);
     for(Integer i=0,index=0,removed_index=0; i<old_size ;++i) {
@@ -465,7 +467,7 @@ variableMng() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& Variable::
+String Variable::
 name() const
 {
   return m_p->m_infos.localName();
@@ -474,7 +476,7 @@ name() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& Variable::
+String Variable::
 fullName() const
 {
   return m_p->m_infos.fullName();
@@ -483,7 +485,7 @@ fullName() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& Variable::
+String Variable::
 itemFamilyName() const
 {
   return m_p->m_infos.itemFamilyName();
@@ -492,7 +494,7 @@ itemFamilyName() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& Variable::
+String Variable::
 itemGroupName() const
 {
   return m_p->m_infos.itemGroupName();
@@ -501,7 +503,7 @@ itemGroupName() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& Variable::
+String Variable::
 meshName() const
 {
   return m_p->m_infos.meshName();
@@ -865,6 +867,15 @@ void Variable::
 _setValidData(bool valid_data)
 {
   m_p->m_has_valid_data = valid_data;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool Variable::
+_hasValidData() const
+{
+  return m_p->m_has_valid_data;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1344,6 +1355,52 @@ DataAllocationInfo Variable::
 allocationInfo() const
 {
   return data()->allocationInfo();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IVariableInternal* Variable::
+_internalApi()
+{
+  return m_p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String VariablePrivate::
+computeComparisonHashCollective(IHashAlgorithm* hash_algo,
+                                IData* sorted_data)
+{
+  ARCANE_CHECK_POINTER(hash_algo);
+  ARCANE_CHECK_POINTER(sorted_data);
+
+  INumericDataInternal* num_data = sorted_data->_commonInternal()->numericData();
+  if (!num_data)
+    return {};
+  if (!m_item_family)
+    return {};
+
+  IParallelMng* pm = m_item_family->parallelMng();
+  Int32 my_rank = pm->commRank();
+  Int32 master_rank = pm->masterIORank();
+  ConstMemoryView memory_view = num_data->memoryView();
+
+  UniqueArray<Byte> bytes;
+
+  pm->gatherVariable(Arccore::asSpan<Byte>(memory_view.bytes()).smallView(), bytes, master_rank);
+
+  String hash_string;
+  if (my_rank == master_rank) {
+    HashAlgorithmValue hash_value;
+    hash_algo->computeHash(asBytes(bytes), hash_value);
+    hash_string = Convert::toHexaString(asBytes(hash_value.bytes()));
+  }
+  return hash_string;
 }
 
 /*---------------------------------------------------------------------------*/

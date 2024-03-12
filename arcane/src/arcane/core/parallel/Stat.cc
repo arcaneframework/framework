@@ -315,7 +315,7 @@ _printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm)
   MessagePassing::filterCommonStrings(pm, input_strings, common_strings);
   Int32 nb_rank = pm->commSize();
   ITraceMng* tm = pm->traceMng();
-  tm->info() << "Message passing Stats (unit is second) "
+  tm->info() << "Message Passing Stats (unit is second) "
              << Trace::Width(48) << "min"
              << Trace::Width(7) << "max";
   tm->info() << Trace::Width(55) << "average"
@@ -323,7 +323,7 @@ _printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm)
              << Trace::Width(12) << "max"
              << Trace::Width(10) << "rank"
              << Trace::Width(7) << "rank"
-             << Trace::Width(7) << "nb";
+             << Trace::Width(10) << "nb";
   for (const String& name : common_strings) {
     auto i = stat_map.find(name);
     if (i == stat_map.end())
@@ -342,7 +342,7 @@ _printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm)
                << " " << _formatToString(max_time)
                << " " << Trace::Width(6) << min_time_rank
                << " " << Trace::Width(6) << max_time_rank
-               << " " << Trace::Width(6) << i->second.m_nb_message;
+               << " " << Trace::Width(9) << i->second.m_nb_message;
   }
 }
 

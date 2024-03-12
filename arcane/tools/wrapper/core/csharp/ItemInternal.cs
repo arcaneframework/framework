@@ -108,7 +108,7 @@ namespace Arcane
     }
     public ItemList<Cell> Cells(Int32 local_id)
     {
-      int nb_cell = m_container_node.m_nb_item[local_id];
+      int nb_cell = m_container_cell.m_nb_item[local_id];
       return new ItemList<Cell>(m_items->cells.m_ptr,m_container_cell.m_list._InternalData()+m_container_cell.m_indexes[local_id],nb_cell);
     }
     public Int32 NbCell(Int32 local_id)
@@ -389,6 +389,7 @@ namespace Arcane
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
+  [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ItemBase
   {
     internal ItemBase(ItemInternal* v)

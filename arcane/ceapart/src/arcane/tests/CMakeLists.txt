@@ -1,34 +1,39 @@
 ﻿include(srcs.cmake)
 
-set(ARCANE_ACCELERATOR_SOURCES
-  AdiProjectionModule.cc
-  CartesianMeshTestUtils.cc
-  MeshMaterialSyncUnitTest.cc
-)
-arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
+if (ARCANE_HAS_ACCELERATOR_API)
+  list(APPEND ARCANE_SOURCES
+    AdiProjectionModule.cc
+    ${ARCANE_MATERIAL_SOURCES}
+  )
+  set(ARCANE_ACCELERATOR_SOURCES
+    AdiProjectionModule.cc
+    CartesianMeshTestUtils.cc
+    MeshMaterialSyncUnitTest.cc
+    MaterialHeatTestModule.cc
+  )
+  arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
+endif()
 
 arcane_add_library(arcane_cea_tests
   INPUT_PATH ${ARCANECEA_SRC_PATH}
   RELATIVE_PATH arcane/tests
   FILES ${ARCANE_SOURCES}
+  AXL_FILES ${AXL_FILES}
 )
 
 target_compile_definitions(arcane_cea_tests PRIVATE ARCANE_COMPONENT_arcane_cea_tests)
 
-arcane_add_axl_files(arcane_cea_tests
-  INPUT_PATH ${ARCANECEA_SRC_PATH}
-  RELATIVE_PATH arcane/tests
-  FILES ${AXL_FILES}
-)
-
-target_link_libraries(arcane_cea_tests PUBLIC arcane_materials arcane_cea_geometric arcane_cea ${ARCANE_BASE_LIBRARIES})
+if (TARGET arcane_materials)
+  target_link_libraries(arcane_cea_tests PUBLIC arcane_materials)
+endif()
+target_link_libraries(arcane_cea_tests PUBLIC arcane_cea_geometric arcane_cea ${ARCANE_BASE_LIBRARIES})
 if(TARGET arcane_aleph)
   target_link_libraries(arcane_cea_tests PUBLIC arcane_aleph)
 endif()
 if(TARGET arcane_aleph_sloop)
   target_link_libraries(arcane_cea_tests PUBLIC arcane_aleph_sloop)
 endif()
-target_link_libraries(arcane_cea_tests PRIVATE arcane_accelerator)
+target_link_libraries(arcane_cea_tests PRIVATE $<TARGET_NAME_IF_EXISTS:arcane_accelerator>)
 
 # ----------------------------------------------------------------------------
 # Test wrapping C#

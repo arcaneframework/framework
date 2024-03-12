@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -10,6 +10,8 @@
 #include "arccore/base/TraceInfo.h"
 #include "arccore/base/StringView.h"
 #include "arccore/base/StringUtils.h"
+#include "arccore/base/CoreArray.h"
+#include "arccore/base/BasicTranscoder.h"
 
 #include <vector>
 
@@ -21,13 +23,46 @@ namespace
 class IosFlagsWrapper
 {
  public:
-  explicit IosFlagsWrapper(std::ostream* o) : m_stream(o), m_flags(o->flags()) {}
+
+  explicit IosFlagsWrapper(std::ostream* o)
+  : m_stream(o)
+  , m_flags(o->flags())
+  {}
   ~IosFlagsWrapper() { m_stream->flags(m_flags); }
+
  private:
+
   std::ostream* m_stream;
   std::ios_base::fmtflags m_flags;
 };
+
+void _doConvertTest(const char* name, const String& str)
+{
+  std::cout << "Name=" << name << "\n";
+  std::cout << "OrigUtf8 size=" << str.utf8() << "\n";
+  {
+    CoreArray<Byte> utf8_orig_bytes(str.bytes());
+    CoreArray<Byte> utf8_final_bytes;
+    CoreArray<UChar> utf16_bytes;
+    BasicTranscoder::transcodeFromUtf8ToUtf16(utf8_orig_bytes, utf16_bytes);
+    BasicTranscoder::transcodeFromUtf16ToUtf8(utf16_bytes, utf8_final_bytes);
+    std::cout << "OrigBytes=" << utf8_orig_bytes.constView() << "\n";
+    std::cout << "FinalTranscoderUtf16=" << utf16_bytes.constView() << "\n";
+    std::cout << "FinalTranscoderUtf8=" << utf8_final_bytes.constView() << "\n";
+    ASSERT_EQ(utf8_orig_bytes.constView(), utf8_final_bytes.constView());
+  }
+  String str2 = String::collapseWhiteSpace(str);
+  ASSERT_EQ(str, str2);
+
+  std::vector<UChar> utf16_vector{ StringUtils::asUtf16BE(str) };
+  Span<const UChar> utf16_bytes(utf16_vector.data(), utf16_vector.size());
+  std::cout << "Utf16 bytes = " << utf16_bytes << "\n";
+  String str3(utf16_bytes.smallView());
+  std::cout << "ToUtf8 size=" << str3.bytes() << "\n";
+  ASSERT_EQ(str, str3);
 }
+
+} // namespace
 
 #ifndef ARCCORE_OS_WIN32
 // TODO: Regarder pourquoi le test ne passe pas sous windows sur le CI de github
@@ -38,42 +73,72 @@ TEST(String, Utf8AndUtf16)
   IosFlagsWrapper io_wrapper(&std::cout);
   {
     String str1("▲▼●■◆");
-    std::vector<UChar> utf16_vector { StringUtils::asUtf16BE(str1) };
-    std::vector<UChar> big_endian_ref_vector { 0x25b2, 0x25bc, 0x25cf, 0x25a0, 0x25c6 };
-    for( int x : utf16_vector )
+    std::vector<UChar> utf16_vector{ StringUtils::asUtf16BE(str1) };
+    std::vector<UChar> big_endian_ref_vector{ 0x25b2, 0x25bc, 0x25cf, 0x25a0, 0x25c6 };
+    for (int x : utf16_vector)
       std::cout << "Utf16: " << std::hex << x << "\n";
-    ASSERT_EQ(big_endian_ref_vector,utf16_vector);
+    ASSERT_EQ(big_endian_ref_vector, utf16_vector);
+    Span<const UChar> utf16_bytes(utf16_vector.data(), utf16_vector.size());
+    std::cout << "Utf16_size=" << utf16_bytes.smallView() << "\n";
+
+    std::cout << "BEFORE_CREATE_STR2\n";
+    String str2(utf16_bytes.smallView());
+    std::cout << "str1.utf16=" << str1.utf16() << "\n";
+    std::cout << "str2.utf16=" << str2.utf16() << "\n";
+
+    bool is_same = (str1 == str2);
+
+    std::cout << "is_same=" << is_same << "\n";
+    ASSERT_EQ(str1, str2);
+
+    std::cout << "str1.utf16=" << str1.utf16() << "\n";
+    std::cout << "str2.utf16=" << str2.utf16() << "\n";
+    std::cout.flush();
+
+    ASSERT_EQ(str1.utf16().size(), 6);
+    ASSERT_EQ(str2.utf16().size(), 6);
+
+    ASSERT_EQ(str1.utf8().size(), str2.utf8().size());
+    ASSERT_EQ(str1.utf16().size(), str2.utf16().size());
   }
   {
     String str2;
     Span<const Byte> b = str2.bytes();
-    ASSERT_EQ(b.size(),0);
+    ASSERT_EQ(b.size(), 0);
     ByteConstArrayView u = str2.utf8();
-    ASSERT_EQ(u.size(),0);
+    ASSERT_EQ(u.size(), 0);
   }
 
   {
     String str3("TX");
     Span<const Byte> b = str3.bytes();
-    ASSERT_EQ(b.size(),2);
+    ASSERT_EQ(b.size(), 2);
     ByteConstArrayView u = str3.utf8();
-    ASSERT_EQ(u.size(),3);
-    ASSERT_EQ(u[2],0);
+    ASSERT_EQ(u.size(), 3);
+    ASSERT_EQ(u[2], 0);
   }
   {
     String str4("€");
-    std::array<Byte,3> ref_a { 0xe2, 0x82, 0xac };
-    Span<const Byte> ref_a_view{ref_a};
+    std::array<Byte, 3> ref_a{ 0xe2, 0x82, 0xac };
+    Span<const Byte> ref_a_view{ ref_a };
     Span<const Byte> b = str4.bytes();
-    ASSERT_EQ(b.size(),3);
-    ASSERT_EQ(b,ref_a_view);
+    ASSERT_EQ(b.size(), 3);
+    ASSERT_EQ(b, ref_a_view);
     ByteConstArrayView u = str4.utf8();
-    ASSERT_EQ(u.size(),4);
-    ASSERT_EQ(u[3],0);
-    for( Integer i=0; i<3; ++i ){
-      ASSERT_EQ(u[i],ref_a[i]);
-      ASSERT_EQ(b[i],ref_a[i]);
+    ASSERT_EQ(u.size(), 4);
+    ASSERT_EQ(u[3], 0);
+    for (Integer i = 0; i < 3; ++i) {
+      ASSERT_EQ(u[i], ref_a[i]);
+      ASSERT_EQ(b[i], ref_a[i]);
     }
+  }
+  {
+    String x2 = "\xc3\xb1";
+    _doConvertTest("X2", x2);
+    String x3 = "\xe2\x82\xa1";
+    _doConvertTest("X3", x3);
+    String x4 = "\xf0\x90\x8c\xbc";
+    _doConvertTest("X4", x4);
   }
 }
 #endif

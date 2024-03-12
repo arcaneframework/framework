@@ -1,21 +1,9 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #pragma once
 
 #include <alien/core/impl/IMatrixImpl.h>
@@ -23,6 +11,7 @@
 
 #include <alien/core/block/Block.h>
 #include <alien/core/block/VBlock.h>
+#include <alien/core/block/VBlockOffsets.h>
 #include <alien/data/ISpace.h>
 #include <alien/kernels/simple_csr/CSRStructInfo.h>
 #include <alien/kernels/simple_csr/DistStructInfo.h>
@@ -115,6 +104,8 @@ class SimpleCSRMatrix : public IMatrixImpl
     }
   }
 
+  CSRStructInfo& getCSRProfile() { return m_matrix.getCSRProfile(); }
+
   const CSRStructInfo& getCSRProfile() const { return m_matrix.getCSRProfile(); }
 
   const CSRStructInfo& getProfile() const { return m_matrix.getCSRProfile(); }
@@ -137,9 +128,9 @@ class SimpleCSRMatrix : public IMatrixImpl
   ValueType const* getAddressData() const { return m_matrix.getDataPtr(); }
   ValueType const* data() const { return m_matrix.getDataPtr(); }
 
-  MatrixInternal& internal() { return m_matrix; }
+  MatrixInternal* internal() { return &m_matrix; }
 
-  MatrixInternal const& internal() const { return m_matrix; }
+  MatrixInternal const* internal() const { return &m_matrix; }
 
   bool isParallel() const { return m_is_parallel; }
 
@@ -151,7 +142,17 @@ class SimpleCSRMatrix : public IMatrixImpl
 
   Integer getGhostSize() const { return m_ghost_size; }
 
-  Integer getAllocSize() const { return m_local_size + m_ghost_size; }
+  Integer getAllocSize() const
+  {
+    auto total_size = m_local_size + m_ghost_size;
+    if (block())
+      return total_size * block()->size();
+    else if (vblock()) {
+      return m_matrix_dist_info.m_block_offsets[total_size];
+    }
+    else
+      return total_size;
+  }
 
   IMessagePassingMng* getParallelMng()
   {
@@ -167,7 +168,7 @@ class SimpleCSRMatrix : public IMatrixImpl
     m_nproc = 1;
     m_is_parallel = false;
     m_matrix_dist_info.m_local_row_size.resize(m_local_size);
-    auto& profile = internal().getCSRProfile();
+    auto& profile = internal()->getCSRProfile();
     ConstArrayView<Integer> offset = profile.getRowOffset();
     for (Integer i = 0; i < m_local_size; ++i)
       m_matrix_dist_info.m_local_row_size[i] = offset[i + 1] - offset[i];
@@ -298,6 +299,64 @@ class SimpleCSRMatrix : public IMatrixImpl
     m_trace = matrix.m_trace;
     m_matrix.copy(matrix.m_matrix);
     m_matrix_dist_info.copy(matrix.m_matrix_dist_info);
+  }
+
+  void copyProfile(SimpleCSRMatrix const& matrix)
+  {
+    m_is_parallel = matrix.m_is_parallel;
+    m_local_size = matrix.m_local_size;
+    m_local_offset = matrix.m_local_offset;
+    m_global_size = matrix.m_global_size;
+    m_ghost_size = matrix.m_ghost_size;
+    m_send_policy = matrix.m_send_policy;
+    m_recv_policy = matrix.m_recv_policy;
+    m_nproc = matrix.m_nproc;
+    m_myrank = matrix.m_myrank;
+    m_parallel_mng = matrix.m_parallel_mng;
+    m_trace = matrix.m_trace;
+    m_matrix.getCSRProfile().copy(matrix.m_matrix.getCSRProfile());
+    m_matrix_dist_info.copy(matrix.m_matrix_dist_info);
+    if (vblock()) {
+      auto& profile = m_matrix.getCSRProfile();
+      const VBlock* block_sizes = vblock();
+      auto& block_row_offset = profile.getBlockRowOffset();
+      auto& block_cols = profile.getBlockCols();
+      auto kcol = profile.kcol();
+      auto cols = profile.cols();
+      Integer offset = 0;
+      for (Integer irow = 0; irow < m_local_size; ++irow) {
+        block_row_offset[irow] = offset;
+        auto row_blk_size = block_sizes->size(m_local_offset + irow);
+        for (auto k = kcol[irow]; k < kcol[irow + 1]; ++k) {
+          block_cols[k] = offset;
+          auto jcol = cols[k];
+          auto col_blk_size = block_sizes->size(jcol);
+          offset += row_blk_size * col_blk_size;
+        }
+      }
+      block_row_offset[m_local_size] = offset;
+      block_cols[kcol[m_local_size]] = offset;
+
+      const Integer total_size = m_local_size + m_ghost_size;
+
+      m_matrix_dist_info.m_block_sizes.resize(total_size);
+      m_matrix_dist_info.m_block_offsets.resize(total_size + 1);
+
+      offset = 0;
+      for (Integer i = 0; i < m_local_size; ++i) {
+        auto blk_size = block_sizes->size(m_local_offset + i);
+        m_matrix_dist_info.m_block_sizes[i] = blk_size;
+        m_matrix_dist_info.m_block_offsets[i] = offset;
+        offset += blk_size;
+      }
+      for (Integer i = m_local_size; i < total_size; ++i) {
+        auto blk_size = block_sizes->size(m_matrix_dist_info.m_recv_info.m_uids[i - m_local_size]);
+        m_matrix_dist_info.m_block_sizes[i] = blk_size;
+        m_matrix_dist_info.m_block_offsets[i] = offset;
+        offset += blk_size;
+      }
+      m_matrix_dist_info.m_block_offsets[total_size] = offset;
+    }
   }
 
   void notifyChanges()

@@ -185,8 +185,8 @@ createCoarseCells()
   UniqueArray<Int32> faces_local_ids;
   cells_local_ids.resize(nb_coarse_cell);
   faces_local_ids.resize(nb_coarse_face);
-  mesh->modifier()->addFaces(nb_coarse_face, faces_infos, faces_local_ids);
-  mesh->modifier()->addCells(nb_coarse_cell, cells_infos, cells_local_ids);
+  mesh->modifier()->addFaces(MeshModifierAddFacesArgs(nb_coarse_face, faces_infos, faces_local_ids));
+  mesh->modifier()->addCells(MeshModifierAddCellsArgs(nb_coarse_cell, cells_infos, cells_local_ids));
 
   // Maintenant que les mailles grossières sont créées, il faut indiquer
   // qu'elles sont parentes.

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HipAcceleratorRuntime.cc                                    (C) 2000-2023 */
+/* HipAcceleratorRuntime.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Runtime pour 'HIP'.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -28,9 +28,9 @@
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/internal/RunCommandImpl.h"
 
 #include <iostream>
 
@@ -90,6 +90,10 @@ class HipRunQueueStream
   {
     ARCANE_CHECK_HIP(hipStreamSynchronize(m_hip_stream));
   }
+  bool _barrierNoException() override
+  {
+    return hipStreamSynchronize(m_hip_stream) != HIP_SUCCESS;
+  }
   void copyMemory(const MemoryCopyArgs& args) override
   {
     auto r = hipMemcpyAsync(args.destination().data(), args.source().data(),
@@ -100,11 +104,13 @@ class HipRunQueueStream
   }
   void prefetchMemory(const MemoryPrefetchArgs& args) override
   {
+    auto src = args.source().bytes();
+    if (src.size()==0)
+      return;
     DeviceId d = args.deviceId();
     int device = hipCpuDeviceId;
     if (!d.isHost())
       device = d.asInt32();
-    auto src = args.source().bytes();
     auto r = hipMemPrefetchAsync(src.data(), src.size(), device, m_hip_stream);
     ARCANE_CHECK_HIP(r);
     if (!args.isAsync())
@@ -300,18 +306,23 @@ class HipRunnerRuntime
     // hipPointerGetAttribute() retourne une erreur. Dans ce cas on considère
     // la mémoire comme non enregistrée.
     if (ret_value==hipSuccess){
+#if HIP_VERSION_MAJOR >= 6
+      auto rocm_memory_type = pa.type;
+#else
+      auto rocm_memory_type = pa.memoryType;
+#endif
       if (pa.isManaged)
         mem_type = ePointerMemoryType::Managed;
-      else if (pa.memoryType == hipMemoryTypeHost)
+      else if (rocm_memory_type == hipMemoryTypeHost)
         mem_type = ePointerMemoryType::Host;
-      else if (pa.memoryType == hipMemoryTypeDevice)
+      else if (rocm_memory_type == hipMemoryTypeDevice)
         mem_type = ePointerMemoryType::Device;
     }
 
-    std::cout << "HIP Info: hip_memory_type=" << (int)pa.memoryType << " is_managed?=" << pa.isManaged
-              << " flags=" << pa.allocationFlags
-              << " my_memory_type=" << (int)mem_type
-              << "\n";
+    //std::cout << "HIP Info: hip_memory_type=" << (int)pa.memoryType << " is_managed?=" << pa.isManaged
+    //          << " flags=" << pa.allocationFlags
+    //          << " my_memory_type=" << (int)mem_type
+    //          << "\n";
     _fillPointerAttribute(attribute, mem_type, pa.device,
                           ptr, pa.devicePointer, pa.hostPointer);
   }

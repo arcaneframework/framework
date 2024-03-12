@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GlibThreadImplementation.h                                  (C) 2000-2019 */
+/* GlibThreadImplementation.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de ITreadImplementation avec la 'Glib'.                    */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/concurrency/IThreadImplementation.h"
+
+#include "arccore/base/ReferenceCounterImpl.h"
+
 #include <atomic>
 
 /*---------------------------------------------------------------------------*/
@@ -30,28 +33,28 @@ namespace Arccore
  */
 class ARCCORE_CONCURRENCY_EXPORT GlibThreadImplementation
 : public IThreadImplementation
+, public ReferenceCounterImpl
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
+
   GlibThreadImplementation();
   ~GlibThreadImplementation() override;
+
  public:
-  void addReference() override { ++m_nb_ref; }
-  void removeReference() override
-  {
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
-      delete this;
-  }
- public:
+
   void initialize() override;
+
  public:
+
   ThreadImpl* createThread(IFunctor* f) override;
   void joinThread(ThreadImpl* t) override;
   void destroyThread(ThreadImpl* t) override;
 
   void createSpinLock(Int64* spin_lock_addr) override;
-  void lockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override;
-  void unlockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr) override;
+  void lockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr) override;
+  void unlockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr) override;
 
   MutexImpl* createMutex() override;
   void destroyMutex(MutexImpl*) override;
@@ -61,9 +64,15 @@ class ARCCORE_CONCURRENCY_EXPORT GlibThreadImplementation
   Int64 currentThread() override;
 
   IThreadBarrier* createBarrier() override;
+
+ public:
+
+  void addReference() override { ReferenceCounterImpl::addReference(); }
+  void removeReference() override { ReferenceCounterImpl::removeReference(); }
+
  private:
+
   MutexImpl* m_global_mutex_impl;
-  std::atomic<int> m_nb_ref = 0;
 };
 
 /*---------------------------------------------------------------------------*/

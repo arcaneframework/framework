@@ -1,17 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemVector.cc                                            (C) 2000-2023 */
+/* MatItemVector.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Vecteur sur les entités d'un matériau.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/materials/MatItemVector.h"
+
+#include "arcane/utils/FixedArray.h"
+
 #include "arcane/core/materials/MatItemEnumerator.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 
@@ -47,9 +50,9 @@ MatCellVector(CellVectorView view,IMeshMaterial* material)
 void MatCellVector::
 _build(CellVectorView view)
 {
-  UniqueArray<ComponentItemInternal*> internals[2];
-  UniqueArray<MatVarIndex> matvar_indexes[2];
-  UniqueArray<Int32> local_ids[2];
+  FixedArray<UniqueArray<ConstituentItemIndex>,2> internals;
+  FixedArray<UniqueArray<MatVarIndex>,2> matvar_indexes;
+  FixedArray<UniqueArray<Int32>,2> local_ids;
   IMeshComponent* my_component = _component();
 
   ENUMERATE_ALLENVCELL(iallenvcell,_materialMng()->view(view)){
@@ -60,12 +63,12 @@ _build(CellVectorView view)
         if (mc.component()==my_component){
           MatVarIndex idx = mc._varIndex();
           if (idx.arrayIndex()==0){
-            internals[0].add(mc.internal());
+            internals[0].add(mc._constituentItemIndex());
             matvar_indexes[0].add(idx);
             local_ids[0].add(mc.globalCell().localId());
           }
           else{
-            internals[1].add(mc.internal());
+            internals[1].add(mc._constituentItemIndex());
             matvar_indexes[1].add(idx);
             local_ids[1].add(mc.globalCell().localId());
           }
@@ -73,7 +76,7 @@ _build(CellVectorView view)
       }
     }
   }
-  this->_setItemsInternal(internals[0],internals[1]);
+  this->_setItems(internals[0],internals[1]);
   this->_setMatVarIndexes(matvar_indexes[0],matvar_indexes[1]);
   this->_setLocalIds(local_ids[0],local_ids[1]);
 }

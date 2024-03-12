@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Variable.h                                                  (C) 2000-2023 */
+/* Variable.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant la partie privée d'une variable.                            */
 /*---------------------------------------------------------------------------*/
@@ -98,11 +98,11 @@ class ARCANE_CORE_EXPORT Variable
 
   ISubDomain* subDomain() override;
   IVariableMng* variableMng() const override;
-  const String& fullName() const override;
-  const String& name() const override;
-  const String& itemFamilyName() const override;
-  const String& meshName() const override;
-  const String& itemGroupName() const override;
+  String fullName() const final;
+  String name() const final;
+  String itemFamilyName() const final;
+  String meshName() const final;
+  String itemGroupName() const final;
   int property() const override;
   void notifyReferencePropertyChanged() override;
 
@@ -194,6 +194,8 @@ class ARCANE_CORE_EXPORT Variable
 
   void changeGroupIds(Int32ConstArrayView old_to_new_ids) override;
 
+  IVariableInternal* _internalApi() override;
+
  public:
   
   IMemoryAccessTrace* memoryAccessTrace() const override { return nullptr; }
@@ -211,6 +213,12 @@ class ARCANE_CORE_EXPORT Variable
 
   //! Indique si les données de la variable sont valides
   void _setValidData(bool valid_data);
+  /*!
+   * \brief Indique si les données de la variable sont valides.
+   *
+   * Les données sont valides à la fin d'un appel à setUsed().
+   */
+  bool _hasValidData() const;
 
  protected:
 
@@ -231,6 +239,7 @@ class ARCANE_CORE_EXPORT Variable
   void _checkSetProperty(VariableRef*);
   bool _hasReference() const;
   void _removeMeshReference();
+  String _computeComparisonHashCollective(IData* sorted_data);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -32,6 +32,9 @@ Pour configurer la documentation, c'est ici : \subpage arcanedoc_doc_config
 
 Les chapitres disponibles sont :
 
+- \subpage arcanedoc_build_install <br>
+  Présente comment compiler et installer le framework %Arcane.
+
 - \subpage arcanedoc_getting_started <br>
   Présente brièvement les principes et les types de base de %Arcane.
 
@@ -54,6 +57,9 @@ Les chapitres disponibles sont :
 
 - \subpage arcanedoc_materials <br>
   Présente la partie matériau de %Arcane.
+
+- \subpage arcanedoc_io <br>
+  Présente les différents moyens d'entrer et de sortir des données.
 
 - \subpage arcanedoc_debug_perf <br>
   Présente les divers méthodes permettant d'aider au débuggage, à l'analyse des

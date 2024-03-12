@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableIOMng.cc                                            (C) 2000-2023 */
+/* VariableIOMng.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant les entrées/sorties pour les variables.                     */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/MD5HashAlgorithm.h"
+#include "arcane/utils/SHA1HashAlgorithm.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/JSONReader.h"
@@ -40,6 +41,7 @@
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IMeshFactoryMng.h"
 #include "arcane/core/MeshBuildInfo.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/core/ICheckpointReader.h"
 #include "arcane/core/IDataReader.h"
@@ -234,10 +236,13 @@ class VariableMetaDataList
   }
   VMDMap::const_iterator begin() const { return m_vmd_map.begin(); }
   VMDMap::const_iterator end() const { return m_vmd_map.end(); }
+  void setHashAlgorithmName(const String& v) { m_hash_algorithm = v; }
+  const String& hashAlgorithmName() const { return m_hash_algorithm; }
 
  public:
 
   std::map<String, VariableMetaData*> m_vmd_map;
+  String m_hash_algorithm;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -369,10 +374,10 @@ VariableIOReaderMng::
 VariableIOReaderMng(VariableMng* vm)
 : TraceAccessor(vm->traceMng())
 , m_variable_mng(vm)
-, m_is_use_json_metadata(false)
+, m_is_use_json_metadata(true)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_JSON_METADATA", true))
-    m_is_use_json_metadata = (v.value()!=0);
+    m_is_use_json_metadata = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -487,6 +492,7 @@ _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
   ScopedPtrT<IXmlDocumentHolder> doc(IXmlDocumentHolder::loadFromBuffer(bytes, "meta_data", traceMng()));
   if (!doc.get())
     ARCANE_FATAL("The meta-data are invalid");
+  String hash_service_name;
   JSONDocument json_reader;
 
   XmlNode root_node = doc->documentNode().documentElement();
@@ -497,18 +503,26 @@ _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
   // si 'm_is_use_json_metadata' est vrai.
   JSONValue json_variables;
   JSONValue json_meshes;
-  if (m_is_use_json_metadata && !json_node.null()) {
+  if (!json_node.null()) {
     String json_meta_data = json_node.value();
     info(6) << "READER_JSON=" << json_meta_data;
     json_reader.parse(json_meta_data.bytes());
-    //json_reader_ptr = &json_reader;
+
     JSONValue json_meta_data_object = json_reader.root().expectedChild("arcane-checkpoint-metadata");
-    JSONValue json_version = json_meta_data_object.expectedChild("version");
-    Int32 v = json_version.valueAsInt32();
-    if (v != 1)
-      ARCANE_FATAL("Bad version for JSON Meta Data (v={0}). Only version '1' is supported", v);
-    json_variables = json_meta_data_object.expectedChild("variables");
-    json_meshes = json_meta_data_object.expectedChild("meshes");
+
+    // Lit toujours le nom de l'algorithme même si on n'utilise pas les meta-données
+    // car on s'en sert pour les comparaisons de la valeur du hash.
+    String hash_algo_name = json_meta_data_object.child("hash-algorithm-name").value();
+    vmd_list.setHashAlgorithmName(hash_algo_name);
+
+    if (m_is_use_json_metadata) {
+      JSONValue json_version = json_meta_data_object.expectedChild("version");
+      Int32 v = json_version.valueAsInt32();
+      if (v != 1)
+        ARCANE_FATAL("Bad version for JSON Meta Data (v={0}). Only version '1' is supported", v);
+      json_variables = json_meta_data_object.expectedChild("variables");
+      json_meshes = json_meta_data_object.expectedChild("meshes");
+    }
   }
   XmlNode variables_node = root_node.child("variables");
   _readVariablesMetaData(vmd_list, json_variables, variables_node);
@@ -531,14 +545,32 @@ void VariableIOReaderMng::
 _checkHashFunction(const VariableMetaDataList& vmd_list)
 {
   ByteUniqueArray hash_values;
-  MD5HashAlgorithm hash_algo;
+  MD5HashAlgorithm md5_hash_algorithm;
+  SHA1HashAlgorithm sha1_hash_algorithm;
+  // Par défaut si rien n'est spécifié, il s'agit d'une protection issue
+  // d'une version antérieure à la 3.12 de Arcane. Dans ce cas l'algorithme
+  // utilisé est 'MD5'.
+  IHashAlgorithm* hash_algo = &md5_hash_algorithm;
+  Ref<IHashAlgorithmContext> hash_context;
+  String hash_service_name = vmd_list.hashAlgorithmName();
+  if (!hash_service_name.empty()) {
+    if (hash_service_name == "MD5")
+      hash_algo = &md5_hash_algorithm;
+    else if (hash_service_name == "SHA1") {
+      hash_algo = &sha1_hash_algorithm;
+      hash_context = sha1_hash_algorithm.createContext();
+    }
+    else
+      ARCANE_FATAL("Not supported hash algorithm '{0}'. Valid values are 'SHA1' or 'MD5'");
+  }
   Integer nb_error = 0;
   IParallelMng* pm = m_variable_mng->m_parallel_mng;
   Int32 sid = pm->commRank();
   Directory listing_dir = m_variable_mng->subDomain()->listingDirectory();
-
   for (const auto& i : vmd_list) {
-    String reference_hash = i.second->hash();
+    const VariableMetaData* vmd = i.second;
+    Int32 hash_version = vmd->hashVersion();
+    String reference_hash = (hash_version > 0) ? vmd->hash2() : vmd->hash();
     // Teste si la valeur de hashage est présente. C'est normalement
     // toujours le cas, sauf si la protection vient d'une ancienne
     // version de Arcane qui ne sauvait pas cette information.
@@ -552,9 +584,25 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
       continue;
     hash_values.clear();
     IData* data = var->data();
-    data->computeHash(&hash_algo, hash_values);
-    String hash_str = Convert::toHexaString(hash_values);
-    if (hash_str != reference_hash) {
+    String hash_str;
+    bool do_compare = true;
+    if (hash_version > 0) {
+      ARCANE_CHECK_POINTER(hash_context.get());
+      hash_context->reset();
+      DataHashInfo hash_info(hash_context.get());
+      data->_commonInternal()->computeHash(hash_info);
+      HashAlgorithmValue hash_value;
+      hash_context->computeHashValue(hash_value);
+      hash_str = Convert::toHexaString(asBytes(hash_value.bytes()));
+      // Ne compare si les versions de hash associées à la variable différent
+      if (hash_version != hash_info.version())
+        do_compare = false;
+    }
+    else {
+      data->computeHash(hash_algo, hash_values);
+      hash_str = Convert::toHexaString(hash_values);
+    }
+    if (do_compare && (hash_str != reference_hash)) {
       ++nb_error;
       error() << "Hash values are different. Corrumpted values."
               << " name=" << var->fullName()
@@ -610,7 +658,8 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
 /*---------------------------------------------------------------------------*/
 
 void VariableIOReaderMng::
-_readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json, const XmlNode& variables_node)
+_readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
+                       const XmlNode& variables_node)
 {
   String ustr_base_name("base-name");
   String ustr_family_name("item-family-name");
@@ -619,6 +668,8 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
   String ustr_full_type("full-type");
   String ustr_data_type("data-type");
   String ustr_hash("hash");
+  String ustr_hash2("hash2");
+  String ustr_hash_version("hash-version");
   String ustr_property("property");
   String ustr_multitag("multi-tag");
   vmd_list.clear();
@@ -631,9 +682,11 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
     String family_name;
     String group_name;
     String hash_value;
+    String hash2_value;
+    Int32 hash_version = 0;
     String multi_tag;
     String data_type;
-    Int32 property;
+    Int32 property = 0;
   };
   UniqueArray<VariableReadInfo> variables_info;
 
@@ -652,6 +705,8 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
       r.family_name = var.child(ustr_family_name).value();
       r.group_name = var.child(ustr_group_name).value();
       r.hash_value = var.child(ustr_hash).value();
+      r.hash2_value = var.child(ustr_hash2).value();
+      r.hash_version = var.child(ustr_hash_version).valueAsInt32();
       r.multi_tag = var.child(ustr_multitag).value();
       r.property = var.child(ustr_property).valueAsInt32();
       variables_info.add(r);
@@ -680,8 +735,8 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
     VariableDataTypeInfo vdti(full_type);
 
     // Vérifie que 'data-type' est cohérent avec la valeur dans 'full_type'
-    if (vdti.dataTypeName()!=r.data_type)
-      ARCANE_FATAL("Incoherent value for 'data-type' name v='{0}' expected='{1}'",r.data_type,vdti.dataTypeName());
+    if (vdti.dataTypeName() != r.data_type)
+      ARCANE_FATAL("Incoherent value for 'data-type' name v='{0}' expected='{1}'", r.data_type, vdti.dataTypeName());
 
     String family_name = r.family_name;
     // Actuellement, si la variable n'est pas partielle alors son groupe
@@ -698,6 +753,8 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
 
     vmd->setFullType(full_type);
     vmd->setHash(r.hash_value);
+    vmd->setHash2(r.hash2_value);
+    vmd->setHashVersion(r.hash_version);
     vmd->setMultiTag(r.multi_tag);
     vmd->setProperty(r.property);
 

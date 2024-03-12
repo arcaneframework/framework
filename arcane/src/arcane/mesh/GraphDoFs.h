@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,6 +42,26 @@ namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+template<typename T>
+class GraphConnectivityObserverT
+: public IGraphConnectivityObserver
+{
+ public:
+  GraphConnectivityObserverT(T* parent)
+  : m_parent(parent)
+  {}
+
+  virtual ~GraphConnectivityObserverT() {}
+
+  void notifyUpdateConnectivity()
+  {
+    m_parent->updateGraphConnectivity() ;
+  }
+
+ private :
+  T* m_parent = nullptr;
+};
 
 class GraphDoFs;
 

@@ -1,4 +1,4 @@
-Welcome to Alien's documentation!
+﻿Welcome to Alien's documentation!
 =================================
 
 .. toctree::
@@ -8,6 +8,10 @@ Welcome to Alien's documentation!
    user/index
 
    tutorial
+   
+   tutorialC
+   
+   tutorialF
 
    developer/index
    

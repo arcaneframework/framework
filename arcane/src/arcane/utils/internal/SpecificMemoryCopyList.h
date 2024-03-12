@@ -421,7 +421,7 @@ class SpecificMemoryCopy
     // Si \a indexes est vide, cela signifie qu'on copie toutes les valeurs
     Int32 nb_index = indexes.size();
     if (nb_index == 0) {
-      Int64 nb_value = destination.size();
+      Int64 nb_value = destination.size() / m_extent.v;
       for (Int64 i = 0; i < nb_value; ++i) {
         Int64 zci = i * m_extent.v;
         for (Int32 z = 0, n = m_extent.v; z < n; ++z)
@@ -450,7 +450,7 @@ class SpecificMemoryCopy
       const Int32 nb_dim1 = multi_views.size();
       for (Int32 zz = 0; zz < nb_dim1; ++zz) {
         Span<std::byte> orig_view_bytes = multi_views[zz];
-        Int64 nb_value = orig_view_bytes.size() / (Int64)sizeof(DataType);
+        Int64 nb_value = orig_view_bytes.size() / ((Int64)sizeof(DataType) * m_extent.v);
         auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
         Span<DataType> orig_view = { orig_view_data, nb_value };
         for (Int64 i = 0; i < nb_value; i += m_extent.v) {

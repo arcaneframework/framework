@@ -16,11 +16,13 @@ set( ARCANE_SOURCES
   Memory.cc
   MemoryTracer.cc
   PointerAttribute.h
+  ReduceMemoryImpl.cc
   Runner.h
   Runner.cc
   RunCommand.h
   RunCommandImpl.h
   RunCommand.cc
+  RunCommandImpl.cc
   RunQueue.h
   RunQueue.cc
   RunQueueBuildInfo.h
@@ -32,4 +34,8 @@ set( ARCANE_SOURCES
   internal/IRunnerRuntime.h
   internal/AcceleratorCoreGlobalInternal.h
   internal/MemoryTracer.h
+  internal/RunCommandImpl.h
+  internal/RunQueueImpl.h
+  internal/ReduceMemoryImpl.h
+  internal/RunnerImpl.h
 )

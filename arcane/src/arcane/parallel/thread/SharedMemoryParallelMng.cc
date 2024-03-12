@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelMng.cc                                  (C) 2000-2021 */
+/* SharedMemoryParallelMng.cc                                  (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des messages en mode mémoire partagé.                      */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,6 @@
 #include "arcane/utils/Real3x3.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Array.h"
 #include "arcane/utils/ITraceMng.h"
 
 #include "arcane/parallel/IStat.h"
@@ -31,21 +30,19 @@
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
 
-#include "arcane/SerializeMessage.h"
-#include "arcane/Timer.h"
-#include "arcane/IIOMng.h"
-#include "arcane/ISerializeMessageList.h"
+#include "arcane/core/SerializeMessage.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/ISerializeMessageList.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/impl/TimerMng.h"
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/ParallelMngUtilsFactoryBase.h"
 
-#include "arcane/IItemFamily.h"
-
 #include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing/SerializeMessageList.h"
 
-#include <algorithm>
 #include <map>
 
 /*---------------------------------------------------------------------------*/
@@ -70,7 +67,8 @@ class SharedMemoryParallelMng::RequestList
 {
   using Base = Arccore::MessagePassing::internal::RequestListBase;
  public:
-  RequestList(SharedMemoryParallelMng* pm)
+
+  explicit RequestList(SharedMemoryParallelMng* pm)
   : m_parallel_mng(pm), m_message_queue(pm->m_message_queue),
     m_local_rank(m_parallel_mng->commRank()){}
  public:
@@ -115,7 +113,7 @@ SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 , m_sub_builder_factory(build_info.sub_builder_factory)
 , m_parent_container_ref(build_info.container)
 , m_mpi_communicator(build_info.communicator)
-, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new ParallelMngUtilsFactoryBase()))
+, m_utils_factory(createRef<ParallelMngUtilsFactoryBase>())
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
@@ -198,18 +196,6 @@ initialize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SerializeBuffer* SharedMemoryParallelMng::
-_castSerializer(ISerializer* serializer)
-{
-  SerializeBuffer* sbuf = dynamic_cast<SerializeBuffer*>(serializer);
-  if (!sbuf)
-    ARCANE_THROW(ArgumentException,"can not cast 'ISerializer' to 'SerializeBuffer'");
-  return sbuf;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 IGetVariablesValuesParallelOperation* SharedMemoryParallelMng::
 createGetVariablesValuesOperation()
 {
@@ -259,18 +245,6 @@ ISerializeMessage* SharedMemoryParallelMng::
 createSendSerializer(Int32 rank)
 {
   return new SerializeMessage(m_rank,rank,ISerializeMessage::MT_Send);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void SharedMemoryParallelMng::
-allGatherSerializer(ISerializer* send_serializer,ISerializer* recv_serializer)
-{
-  Timer::Phase tphase(timeStats(),TP_Communication);
-  SerializeBuffer* sbuf = _castSerializer(send_serializer);
-  SerializeBuffer* recv_buf = _castSerializer(recv_serializer);
-  recv_buf->allGather(this,*sbuf);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -59,12 +59,36 @@ class StringScalarData
   typedef IScalarDataT<String> DataInterfaceType;
 
  public:
+
+  class Internal
+  : public IDataInternal
+  {
+   public:
+
+    explicit Internal(StringScalarData* p) : m_p(p){}
+
+   public:
+
+    void computeHash(DataHashInfo& hash_info) override
+    {
+      m_p->computeHash(hash_info);
+    }
+
+   private:
+
+    StringScalarData* m_p = nullptr;
+  };
+
+ public:
+
   explicit StringScalarData(ITraceMng* trace)
-  : m_trace(trace) {}
+  : m_trace(trace)
+  , m_internal(this) {}
   explicit StringScalarData(const DataStorageBuildInfo& dsbi);
   StringScalarData(const StringScalarData& rhs)
   : m_value(rhs.m_value)
   , m_trace(rhs.m_trace)
+  , m_internal(this)
   , m_allocation_info(rhs.m_allocation_info)
   {}
 
@@ -98,6 +122,7 @@ class StringScalarData
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  void computeHash(DataHashInfo& hash_info) const;
   ArrayShape shape() const override { return {}; }
   void setShape(const ArrayShape&) override { }
   void setAllocationInfo(const DataAllocationInfo& v) override { m_allocation_info = v; }
@@ -123,7 +148,7 @@ class StringScalarData
 
   DataType m_value; //!< Donnée
   ITraceMng* m_trace;
-  NullDataInternal m_internal;
+  Internal m_internal;
   DataAllocationInfo m_allocation_info;
 };
 
@@ -133,6 +158,7 @@ class StringScalarData
 StringScalarData::
 StringScalarData(const DataStorageBuildInfo& dsbi)
 : m_trace(dsbi.traceMng())
+, m_internal(this)
 {
 }
 
@@ -269,6 +295,16 @@ computeHash(IHashAlgorithm* algo, ByteArray& output) const
 {
   ByteConstArrayView input = m_value.utf8();
   algo->computeHash64(input, output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void StringScalarData::
+computeHash(DataHashInfo& hash_info) const
+{
+  hash_info.setVersion(2);
+  hash_info.context()->updateHash(asBytes(m_value.bytes()));
 }
 
 /*---------------------------------------------------------------------------*/

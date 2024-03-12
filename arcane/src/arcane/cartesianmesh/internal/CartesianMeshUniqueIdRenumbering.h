@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Renumérotation des uniqueId() pour les maillages cartésiens.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_CARTESIANMESHUNIQUEIDRENUMBERING_H
-#define ARCANE_CARTESIANMESH_CARTESIANMESHUNIQUEIDRENUMBERING_H
+#ifndef ARCANE_CARTESIANMESH_INTERNAL_CARTESIANMESHUNIQUEIDRENUMBERING_H
+#define ARCANE_CARTESIANMESH_INTERNAL_CARTESIANMESHUNIQUEIDRENUMBERING_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@
 #include "arcane/core/ItemTypes.h"
 #include "arcane/core/VariableTypedef.h"
 
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/cartesianmesh/CartesianPatch.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,26 +40,41 @@ class ICartesianMeshGenerationInfo;
 class CartesianMeshUniqueIdRenumbering
 : public TraceAccessor
 {
+  class NewUniqueIdList;
+
  public:
-  CartesianMeshUniqueIdRenumbering(ICartesianMesh* cmesh,ICartesianMeshGenerationInfo* gen_info);
+
+  CartesianMeshUniqueIdRenumbering(ICartesianMesh* cmesh, ICartesianMeshGenerationInfo* gen_info,
+                                   CartesianPatch parent_patch, Int32 patch_method);
   ~CartesianMeshUniqueIdRenumbering() = default;
+
  public:
+
   void renumber();
+
  private:
+
   ICartesianMesh* m_cartesian_mesh = nullptr;
   ICartesianMeshGenerationInfo* m_generation_info = nullptr;
+  CartesianPatch m_parent_patch;
   bool m_is_verbose = false;
+  Int32 m_patch_method = 1;
+
  private:
-  void _applyChildrenCell2D(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
-                            VariableCellInt64& cells_new_uid,
-                            Int64 coord_i,Int64 coord_j,
-                            Int64 nb_cell_x,Int64 nb_cell_y,Int32 level);
-  void _applyChildrenCell3D(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
-                            VariableCellInt64& cells_new_uid,
-                            Int64 coord_i,Int64 coord_j,Int64 coord_k,
+
+  void _applyChildrenCell2D(Cell cell, NewUniqueIdList& new_uids,
+                            Int64 coord_i, Int64 coord_j,
+                            Int64 nb_cell_x, Int64 nb_cell_y, Int32 level, Int64 base_adder);
+  void _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
+                            Int64 coord_i, Int64 coord_j, Int64 coord_k,
                             Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y, Int64 current_level_nb_cell_z,
                             Int32 current_level, Int64 cell_adder, Int64 node_adder, Int64 face_adder);
-  void _applyFamilyRenumbering(IItemFamily* family,VariableItemInt64& items_new_uid);
+  void _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
+                              Int64 coord_i, Int64 coord_j, Int64 coord_k,
+                              Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y, Int64 current_level_nb_cell_z,
+                              Int32 current_level, Int64 cell_adder, Int64 node_adder, Int64 face_adder);
+  void _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid);
+  void _markItemsToKeepCurrentNumbering(ICartesianMeshPatch* patch);
 };
 
 /*---------------------------------------------------------------------------*/

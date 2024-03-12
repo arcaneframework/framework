@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.h                                                 (C) 2000-2023 */
+/* MeshUtils.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires diverses sur le maillage.                           */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FunctorUtils.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/Item.h"
 
@@ -238,9 +239,14 @@ computeConnectivityPatternOccurence(IMesh* mesh);
  * En cas d'utilisation sur accélérateur, cela permet de dupliquer les
  * informations entre l'accélérateur et l'hôte pour éviter des aller-retour
  * multiples si les connectivités sont utilisées sur les deux à la fois.
+ *
+ * Si \a q est non nul et que \a do_prefetch vaut \a true, alors
+ * VariableUtils::prefetchVariableAsync() est appelé pour chaque variable
+ * gérant la connectivité.
  */
 extern "C++" ARCANE_CORE_EXPORT void
-markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh);
+markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh,RunQueue* q = nullptr,
+                                       bool do_prefetch = false);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -330,9 +336,10 @@ visitGroups(IMesh* mesh, const LambdaType& f)
 
 namespace impl
 {
-  //! Calcule une capacité adaptée pour une taille de \a size
-  extern "C++" ARCANE_CORE_EXPORT Int64
-  computeCapacity(Int64 size);
+  inline Int64 computeCapacity(Int64 size)
+  {
+    return Arcane::MemoryUtils::impl::computeCapacity(size);
+  }
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/
@@ -356,16 +363,52 @@ namespace impl
 template <typename DataType> inline bool
 checkResizeArray(Array<DataType>& array, Int64 new_size, bool force_resize)
 {
-  Int64 s = array.largeSize();
-  if (new_size > s || force_resize) {
-    if (new_size > array.capacity()) {
-      array.reserve(impl::computeCapacity(new_size));
-    }
-    array.resize(new_size);
-    return true;
-  }
-  return false;
+  return Arcane::MemoryUtils::checkResizeArrayWithCapacity(array, new_size, force_resize);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne le maximum des uniqueId() des entités standards du maillage.
+ *
+ * Les entités standards sont les noeuds, mailles, faces et arêtes.
+ * L'opération est collective sur mesh->parallelMng().
+ */
+extern "C++" ARCANE_CORE_EXPORT ItemUniqueId
+getMaxItemUniqueIdCollective(IMesh* mesh);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie le hash des uniqueId() des entités d'une famille.
+ *
+ * Calcule via l'algo \a hash_algo un hash des uniqueId() des entités
+ * d'une famille. Pour ce calcul, le rang 0 récupère l'ensemble des uniqueId()
+ * des entités propres de chaque sous-domaine, les trie et calcul le hash
+ * sur le tableau trié.
+ *
+ * Comme la majorité du travail est effectuée par le rang 0, cette méthode
+ * n'est pas très extensible et ne doit donc être utilisée qu'à des fins
+ * de test.
+ *
+ * \a expected_hash est la valeur attendue du hash sous forme de caractères
+ * hexadécimaux (obtenu via Convert::toHexaString()). Si \a expected_hash
+ * est non nul, compare le résultat avec cette valeur et si elle est différente,
+ * lance une exception FatalErrorException.
+ *
+ * Cette opération est collective.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
+                             const String& expected_hash, bool print_hash_value);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Rempli \a uids avec les uniqueId() des entités de \a view.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+fillUniqueIds(ItemVectorView items,Array<Int64>& uids);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

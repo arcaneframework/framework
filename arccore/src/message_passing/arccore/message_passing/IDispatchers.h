@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDispatchers.h                                              (C) 2000-2018 */
+/* IDispatchers.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Interface du conteneur des dispatchers.                                   */
 /*---------------------------------------------------------------------------*/
@@ -50,6 +50,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDispatchers
   virtual ITypeDispatcher<float>* dispatcher(float*) = 0;
   virtual ITypeDispatcher<double>* dispatcher(double*) = 0;
   virtual ITypeDispatcher<long double>* dispatcher(long double*) = 0;
+  virtual ITypeDispatcher<BFloat16>* dispatcher(BFloat16*) = 0;
+  virtual ITypeDispatcher<Float16>* dispatcher(Float16*) = 0;
 
   virtual IControlDispatcher* controlDispatcher() = 0;
   virtual ISerializeDispatcher* serializeDispatcher() = 0;

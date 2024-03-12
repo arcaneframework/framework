@@ -118,22 +118,6 @@ class ARCANE_CORE_EXPORT IMeshComponent
 
  public:
 
-  /*!
-   * \internal
-   * Indexeur pour accéder aux variables partielles.
-   */
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
-
-  /*!
-   * \internal
-   * Vue sur les mailles du composant.
-   */
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual ConstArrayView<ComponentItemInternal*> itemsInternalView() const =0;
-
- public:
-
   //! API interne
   virtual IMeshComponentInternal* _internalApi() =0;
 };

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -121,6 +121,13 @@ class TestRefSharedPtr
  public:
   TestRefSharedPtr(int a,const std::string& b) : TestBaseTypeNoRef(a,b){}
 };
+
+class TestRefMacroInternal
+: public ReferenceCounterImpl
+{
+  ARCCORE_INTERNAL_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+};
+
 }
 
 using namespace MyTest;
@@ -172,6 +179,20 @@ _doTest1Helper()
       ASSERT_EQ(ct2,nullptr);
     }
   }
+  std::cout << "DoTestRelease\n";
+  {
+    RefType ref_ct(makeRef(new ClassType(a,b)));
+    ASSERT_NE(ref_ct.get(),nullptr);
+    ASSERT_EQ(ref_ct->pa(),a);
+    ASSERT_EQ(ref_ct->pb(),b);
+    if constexpr (id==0){
+      ClassType* ct2 = ref_ct._release();
+      ASSERT_NE(ct2,nullptr);
+      ASSERT_EQ(ct2->pa(),a);
+      ASSERT_EQ(ct2->pb(),b);
+      delete ct2;
+    }
+  }
   std::cout << "** ** END_TEST\n";
 }
 
@@ -180,7 +201,7 @@ _doTest1()
 {
   global_nb_create = global_nb_destroy = 0;
   _doTest1Helper<ClassType,id>();
-  ASSERT_EQ(global_nb_create,2);
+  ASSERT_EQ(global_nb_create,3);
   ASSERT_EQ(global_nb_create,global_nb_destroy);
 }
 
@@ -189,6 +210,34 @@ _doTest2()
 {
   TestRefOwn* x1 = new TestRefOwn(1,"ZXB");
   delete x1;
+
+  {
+    auto x2 = makeRef<TestRefMacroInternal>(new TestRefMacroInternal());
+  }
+}
+
+void _doTest3()
+{
+  Ref<TestBaseType> t0;
+  {
+    auto myx3 = createRef<TestRefOwn>(23, "abc");
+    t0 = myx3;
+    bool is_ok = false;
+    if (myx3)
+      is_ok = true;
+    ASSERT_TRUE(is_ok);
+    ASSERT_FALSE(!myx3);
+    ASSERT_EQ(t0->pa(), 23);
+    ASSERT_EQ(t0->pb(), "abc");
+  }
+  {
+    Ref<TestBaseType> myx4;
+    bool is_null = true;
+    if (myx4)
+      is_null = false;
+    ASSERT_TRUE(is_null);
+    ASSERT_TRUE(!myx4);
+  }
 }
 
 namespace Arccore
@@ -205,4 +254,5 @@ TEST(Ref, Misc)
   _doTest1<TestRefOwn,1>();
   _doTest1<TestRefSharedPtr,0>();
   _doTest2();
+  _doTest3();
 }

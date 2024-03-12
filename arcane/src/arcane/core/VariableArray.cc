@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableArray.cc                                            (C) 2000-2023 */
+/* VariableArray.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Variable tableau 1D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -562,9 +562,13 @@ _internalResize(Integer new_size,Integer nb_additional_element)
       for(Integer i=current_size; i<new_size; ++i)
         values[i] = T();
     }
-    else if (init_policy==DIP_InitWithNan){
-      ArrayView<T> view = this->valueView();
-      DataTypeTraitsT<T>::fillNan(view.subView(current_size,new_size-current_size));
+    else{
+      bool use_nan = (init_policy==DIP_InitWithNan);
+      bool use_nan2 = (init_policy==DIP_InitInitialWithNanResizeWithDefault) && !_hasValidData();
+      if (use_nan || use_nan2){
+        ArrayView<T> view = this->valueView();
+        DataTypeTraitsT<T>::fillNan(view.subView(current_size,new_size-current_size));
+      }
     }
   }
 
@@ -582,8 +586,8 @@ _internalResize(Integer new_size,Integer nb_additional_element)
   // élément si on utilise un allocateur spécifique ce qui est le cas
   // pour les variables.
   Int64 capacity = value_internal->capacity();
-  ARCANE_ASSERT((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment()),
-                ("Wrong unused data size %d",capacity));
+  if ( !((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment())) )
+    ARCANE_FATAL("Wrong unused data size {0}",capacity);
 }
 
 /*---------------------------------------------------------------------------*/

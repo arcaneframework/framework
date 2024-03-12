@@ -1,67 +1,37 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IosUnitTest.cc                                              (C) 2000-2014 */
+/* IosUnitTest.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Service du test des formats d'entrée/sortie du maillage.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/utils/Array.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/List.h"
-#include "arcane/utils/MD5HashAlgorithm.h"
-#include "arcane/utils/ArithmeticException.h"
-#include "arcane/utils/ITraceMng.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/AbstractItemOperationByBasicType.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/IMeshReader.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/ITiedInterface.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/Directory.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/IMeshPartitioner.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/Properties.h"
-#include "arcane/IInitialPartitioner.h"
-#include "arcane/Timer.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNode.h"
-#include "arcane/ItemArrayEnumerator.h"
-#include "arcane/ItemPairGroup.h"
-#include "arcane/ItemPairEnumerator.h"
-#include "arcane/IPostProcessorWriter.h"
-#include "arcane/ItemVectorView.h"
-#include "arcane/GeometricUtilities.h"
-#include "arcane/BasicUnitTest.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/DomUtils.h"
 
-#include "arcane/tests/ArcaneTestGlobal.h"
-#include "arcane/tests/MeshUnitTest_axl.h"
 #include "arcane/tests/IosUnitTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,13 +43,21 @@ using namespace Arcane;
 /*!
  * \brief Module de test des Ios
  */
-class IosUnitTest: public ArcaneIosUnitTestObject{
-	public:
-		IosUnitTest(const ServiceBuildInfo& sbi);
-		~IosUnitTest();
-		virtual void initializeTest();
-		virtual void executeTest();
-	private:
+class IosUnitTest
+: public ArcaneIosUnitTestObject
+{
+ public:
+
+  explicit IosUnitTest(const ServiceBuildInfo& sbi);
+  ~IosUnitTest() override;
+
+ public:
+
+  void initializeTest() override;
+  void executeTest() override;
+
+ private:
+
 	bool _testIosWriterReader(IMesh* mesh, bool option, String ext, Integer);
 };
 
@@ -92,7 +70,10 @@ ARCANE_REGISTER_SERVICE_IOSUNITTEST(IosUnitTest,IosUnitTest);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IosUnitTest::IosUnitTest(const ServiceBuildInfo& mb): ArcaneIosUnitTestObject(mb){
+IosUnitTest::
+IosUnitTest(const ServiceBuildInfo& mb)
+: ArcaneIosUnitTestObject(mb)
+{
 }
 
 /*---------------------------------------------------------------------------*/
@@ -101,29 +82,34 @@ IosUnitTest::IosUnitTest(const ServiceBuildInfo& mb): ArcaneIosUnitTestObject(mb
 /*****************************************************************\
  * IosUnitTest
 \*****************************************************************/
-IosUnitTest::~IosUnitTest(){}
+
+IosUnitTest::
+~IosUnitTest()
+{
+}
 
 
 /*****************************************************************\
  * _testIosWriterReader
 \*****************************************************************/
 bool IosUnitTest::
-_testIosWriterReader(IMesh* this_mesh, bool option, String Ext, Integer z){
-
+_testIosWriterReader(IMesh* this_mesh, bool option, String Ext, Integer z)
+{
 	// If we aren't to be there, just tell it
-   if (option != true) return false;
+  if (option != true)
+    return false;
 	
 	info() << "\t[_testIosWriterReader] " << Ext;
 
 	// Otherwise, prepare to do the test
 	String this_directory(".");
-	ISubDomain* sd = this_mesh->subDomain();
-//	IServiceMng* sm = sd->serviceMng();
+	ISubDomain* sd = subDomain();
+  //	IServiceMng* sm = sd->serviceMng();
 	IParallelMng* pm = sd->parallelMng();
 	IApplication* app = sd->application();
 	IMainFactory* main_factory = app->mainFactory();
 	
-	ScopedPtrT<IXmlDocumentHolder> xdoc(app->ressourceMng()->createXmlDocument());
+	ScopedPtrT<IXmlDocumentHolder> xdoc(domutils::createXmlDocument());
 	XmlNode dummyXmlNode = xdoc->documentNode();
 
 	StringBuilder outputFileName(options()->outputFileName());
@@ -194,28 +180,45 @@ executeTest()
 		info() << "NodeFamily2=" << current_mesh->nodeFamily();
 	
 		if ((options()->writeVtu()) && (!_testIosWriterReader(current_mesh, options()->writeVtu(), "Vtu", z)))
-			throw FatalErrorException(A_FUNCINFO, "Error in >vtu< test");
+			ARCANE_FATAL("Error in >vtu< test");
 
 		if ((options()->writeXmf()) && (!_testIosWriterReader(current_mesh, options()->writeXmf(), "Xmf", z)))
-      throw FatalErrorException(A_FUNCINFO, "Error in >xmf< test");
+      ARCANE_FATAL("Error in >xmf< test");
 
 		if ((options()->writeMsh()) && (!_testIosWriterReader(current_mesh, options()->writeMsh(), "Msh", z)))
-      throw FatalErrorException(A_FUNCINFO, "Error in >msh< test");
-	}		
+      ARCANE_FATAL("Error in >msh< test");
+	}
+
+  // Pour test, affiche les coordonnées des noeuds des 10 premières mailles
+  {
+    VariableNodeReal3& nodes_coord_var(mesh()->nodesCoordinates());
+    ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
+      if (cell.localId()>10)
+        break;
+      info() << "Cell uid=" << ItemPrinter(cell);
+      for(Node node : cell.nodes()){
+        info() << "Node uid=" << ItemPrinter(node) << " pos=" << nodes_coord_var[node];
+      }
+    }
+  }
 	info() << "[IosUnitTest] done";
 }
 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-void IosUnitTest::initializeTest(){
+
+void IosUnitTest::
+initializeTest()
+{
   info() << "[IosUnitTest] initializeTest";
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

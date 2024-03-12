@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2020 */
+/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation MPI du gestionnaire des échanges de messages.              */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,8 @@
 #include "arccore/message_passing/Stat.h"
 #include "arccore/trace/ITraceMng.h"
 #include "arccore/base/ReferenceCounter.h"
+#include "arccore/base/BFloat16.h"
+#include "arccore/base/Float16.h"
 
 #include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiDatatype.h"
@@ -50,10 +52,10 @@ class StandaloneMpiMessagePassingMng::Impl
 
   ~Impl()
   {
-    try{
+    try {
       m_adapter->destroy();
     }
-    catch(const Exception& ex){
+    catch (const Exception& ex) {
       std::cerr << "ERROR: msg=" << ex << "\n";
     }
 
@@ -64,9 +66,10 @@ class StandaloneMpiMessagePassingMng::Impl
       MPI_Comm_free(&m_communicator);
   }
 
-  MpiMessagePassingMng::BuildInfo buildInfo() const
+  MpiMessagePassingMng::BuildInfo
+  buildInfo() const
   {
-    return MpiMessagePassingMng::BuildInfo(m_comm_rank,m_comm_size,m_dispatchers,m_communicator);
+    return MpiMessagePassingMng::BuildInfo(m_comm_rank, m_comm_size, m_dispatchers, m_communicator);
   }
 
  public:
@@ -100,16 +103,27 @@ StandaloneMpiMessagePassingMng::
   delete m_p;
 }
 
-namespace{
-template<typename DataType> void
-_createAndSetDispatcher(Dispatchers* dispatchers,IMessagePassingMng* mpm,MpiAdapter* adapter)
+namespace
 {
-  // TODO: gérer la destruction de ces objets.
-  MPI_Datatype mpi_dt = MpiBuiltIn::datatype(DataType());
-  auto dt = new MpiDatatype(mpi_dt);
-  dispatchers->setDispatcher(new MpiTypeDispatcher<DataType>(mpm,adapter,dt));
-}
-}
+  template <typename DataType> void
+  _createAndSetCustomDispatcher(Dispatchers* dispatchers, IMessagePassingMng* mpm,
+                                MpiAdapter* adapter, MpiDatatype* datatype)
+  {
+    auto* x = new MpiTypeDispatcher<DataType>(mpm, adapter, datatype);
+    x->setDestroyDatatype(true);
+    dispatchers->setDispatcher(x);
+  }
+
+  template <typename DataType> void
+  _createAndSetDispatcher(Dispatchers* dispatchers, IMessagePassingMng* mpm,
+                          MpiAdapter* adapter)
+  {
+    MPI_Datatype mpi_dt = MpiBuiltIn::datatype(DataType());
+    auto dt = new MpiDatatype(mpi_dt);
+    _createAndSetCustomDispatcher<DataType>(dispatchers, mpm, adapter, dt);
+  }
+
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -122,25 +136,52 @@ create(MPI_Comm mpi_comm, bool clean_comm)
   auto adapter = p->m_adapter;
   auto dsp = p->m_dispatchers;
 
-  _createAndSetDispatcher<char>(dsp,mpm,adapter);
-  _createAndSetDispatcher<signed char>(dsp,mpm,adapter);
-  _createAndSetDispatcher<unsigned char>(dsp,mpm,adapter);
-  _createAndSetDispatcher<short>(dsp,mpm,adapter);
-  _createAndSetDispatcher<unsigned short>(dsp,mpm,adapter);
-  _createAndSetDispatcher<int>(dsp,mpm,adapter);
-  _createAndSetDispatcher<unsigned int>(dsp,mpm,adapter);
-  _createAndSetDispatcher<long>(dsp,mpm,adapter);
-  _createAndSetDispatcher<unsigned long>(dsp,mpm,adapter);
-  _createAndSetDispatcher<long long>(dsp,mpm,adapter);
-  _createAndSetDispatcher<unsigned long long>(dsp,mpm,adapter);
-  _createAndSetDispatcher<float>(dsp,mpm,adapter);
-  _createAndSetDispatcher<double>(dsp,mpm,adapter);
-  _createAndSetDispatcher<long double>(dsp,mpm,adapter);
+  _createAndSetDispatcher<char>(dsp, mpm, adapter);
+  _createAndSetDispatcher<signed char>(dsp, mpm, adapter);
+  _createAndSetDispatcher<unsigned char>(dsp, mpm, adapter);
+  _createAndSetDispatcher<short>(dsp, mpm, adapter);
+  _createAndSetDispatcher<unsigned short>(dsp, mpm, adapter);
+  _createAndSetDispatcher<int>(dsp, mpm, adapter);
+  _createAndSetDispatcher<unsigned int>(dsp, mpm, adapter);
+  _createAndSetDispatcher<long>(dsp, mpm, adapter);
+  _createAndSetDispatcher<unsigned long>(dsp, mpm, adapter);
+  _createAndSetDispatcher<long long>(dsp, mpm, adapter);
+  _createAndSetDispatcher<unsigned long long>(dsp, mpm, adapter);
+  _createAndSetDispatcher<float>(dsp, mpm, adapter);
+  _createAndSetDispatcher<double>(dsp, mpm, adapter);
+  _createAndSetDispatcher<long double>(dsp, mpm, adapter);
 
   dsp->setDispatcher(new MpiControlDispatcher(adapter));
   dsp->setDispatcher(new MpiSerializeDispatcher(adapter));
 
+  MPI_Datatype uint8_datatype = MpiBuiltIn::datatype(uint8_t{});
+  {
+    // BFloat16
+    MPI_Datatype mpi_datatype;
+    MPI_Type_contiguous(2, uint8_datatype, &mpi_datatype);
+    MPI_Type_commit(&mpi_datatype);
+    auto* x = new MpiDatatype(mpi_datatype, false, new StdMpiReduceOperator<BFloat16>(true));
+    _createAndSetCustomDispatcher<BFloat16>(dsp, mpm, adapter, x);
+  }
+  {
+    // Float16
+    MPI_Datatype mpi_datatype;
+    MPI_Type_contiguous(2, uint8_datatype, &mpi_datatype);
+    MPI_Type_commit(&mpi_datatype);
+    auto* x = new MpiDatatype(mpi_datatype, false, new StdMpiReduceOperator<Float16>(true));
+    _createAndSetCustomDispatcher<Float16>(dsp, mpm, adapter, x);
+  }
   return mpm;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng::
+createRef(MPI_Comm mpi_comm, bool clean_comm)
+{
+  MpiMessagePassingMng* v = create(mpi_comm, clean_comm);
+  return makeRef<IMessagePassingMng>(v);
 }
 
 /*---------------------------------------------------------------------------*/

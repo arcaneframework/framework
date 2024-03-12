@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -46,6 +52,16 @@ class SYCLBEllPackMatrix;
 template <typename T>
 class SYCLVector;
 
+namespace SYCLInternal
+{
+
+  template <typename MatrixT>
+  class SYCLSendRecvOp ;
+
+  template <typename MatrixT>
+  class SYCLLUSendRecvOp ;
+}
+
 template <typename T>
 struct SYCLBEllPackTraits
 {
@@ -61,6 +77,23 @@ extern SYCLBEllPackTraits<Real>::AlgebraType* SYCLInternalLinearAlgebraFactory()
 extern SYCLBEllPackTraits<Real>::AlgebraExprType*
 SYCLInternalLinearAlgebraExprFactory();
 
+
+template <typename T>
+class HCSRMatrix;
+
+template <typename T>
+class HCSRVector;
+
+
+template <typename T>
+struct HCSRTraits
+{
+  // clang-format off
+  typedef HCSRMatrix<T>                              MatrixType;
+  typedef HCSRVector<T>                              VectorType;
+  // clang-format on
+};
+
 /*---------------------------------------------------------------------------*/
 
 namespace BackEnd
@@ -69,6 +102,9 @@ namespace BackEnd
   {
     struct sycl
     {};
+
+    struct hcsr
+    {};
   } // namespace tag
 } // namespace BackEnd
 
@@ -76,6 +112,7 @@ template <>
 struct AlgebraTraits<BackEnd::tag::sycl>
 {
   // clang-format off
+  typedef Real                                      value_type;
   typedef SYCLBEllPackTraits<Real>::MatrixType      matrix_type;
   typedef SYCLBEllPackTraits<Real>::VectorType      vector_type;
   typedef SYCLBEllPackTraits<Real>::AlgebraType     algebra_type;
@@ -94,6 +131,31 @@ struct AlgebraTraits<BackEnd::tag::sycl>
   }
 
   static BackEndId name() { return "sycl"; }
+};
+
+
+template <>
+struct AlgebraTraits<BackEnd::tag::hcsr>
+{
+  // clang-format off
+  typedef Real                              value_type;
+  typedef HCSRTraits<Real>::MatrixType      matrix_type;
+  typedef HCSRTraits<Real>::VectorType      vector_type;
+  // clang-format on
+
+  static BackEndId name() { return "hcsr"; }
+};
+
+template <>
+struct LUSendRecvTraits<BackEnd::tag::sycl>
+{
+  // clang-format off
+  typedef AlgebraTraits<BackEnd::tag::sycl>::matrix_type      matrix_type ;
+  typedef AlgebraTraits<BackEnd::tag::sycl>::vector_type      vector_type ;
+  typedef AlgebraTraits<BackEnd::tag::sycl>::value_type       value_type ;
+  typedef SYCLInternal::SYCLLUSendRecvOp<matrix_type>         matrix_op_type ;
+  typedef SYCLInternal::SYCLSendRecvOp<value_type>            vector_op_type ;
+  // clang-format on
 };
 
 /*---------------------------------------------------------------------------*/

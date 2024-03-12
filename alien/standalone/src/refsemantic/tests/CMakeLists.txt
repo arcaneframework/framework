@@ -17,6 +17,35 @@
 find_package(MPI REQUIRED)
 find_package(GTest REQUIRED)
 
+IF(ALIEN_USE_HIPSYCL)
+  find_package(hipSYCL CONFIG REQUIRED)
+  message(status "hipSYCL FOUND          : ${IntelDPCPP_FOUND}")
+  message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+  message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+  message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+ENDIF()
+
+IF(ALIEN_USE_INTELDPCPP)
+  find_package(IntelDPCPP CONFIG REQUIRED)
+  message(status "IntelDPCPP             : ${IntelDPCPP_FOUND}")
+  message(status "IntelDPCPP FOUND       : ${IntelDPCPP_FOUND}")
+  message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+  message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+  message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+ENDIF()
+IF(ALIEN_USE_INTELSYCL)
+  set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+  find_package(IntelSYCL REQUIRED)
+  message(status "IntelSYCL              : ${IntelSYCL_FOUND}")
+  message(status "IntelSYCL FOUND        : ${IntelSYCL_FOUND}")
+  message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+  message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+  message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+  message(status "      SYCL LINK FLAGS  : ${SYCL_LINK_FLAGS}")
+
+ENDIF()
+
+
 add_executable(ref.gtest.mpi
         main.cpp
         TestIndexManager.cc
@@ -25,6 +54,11 @@ add_executable(ref.gtest.mpi
 
 if (ALIEN_USE_LIBXML2)
     target_sources(ref.gtest.mpi PRIVATE TestImportExport.cc)
+endif ()
+
+
+if (ALIEN_USE_EIGEN3)
+    target_sources(ref.gtest.mpi PRIVATE TestSchur.cc)
 endif ()
 
 add_executable(ref.gtest.seq main.cpp
@@ -37,11 +71,35 @@ add_executable(ref.gtest.seq main.cpp
         TestBlockMatrix.cc
         TestVBlockMatrix.cc
         TestRedistributor.cc
-        TestMVExpr.cc
-        TestSchur.cc)
+        TestMVExpr.cc)
+
+if (ALIEN_USE_EIGEN3)
+    target_sources(ref.gtest.seq PRIVATE TestSchur.cc)
+endif ()
 
 IF (ALIEN_USE_SYCL)
     target_sources(ref.gtest.seq PRIVATE TestMVSYCL.cc)
+    
+    IF(ALIEN_USE_HIPSYCL)
+      IF(CMAKE_COMPILER_IS_GNUCXX)
+        target_compile_options(alien_kernel_sycl PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
+      ENDIF()
+      set(DPCPP_FLAGS --hipsycl-gpu-arch=gfx90a --hipsycl-platform=rocm)
+      target_compile_options(ref.gtest.seq PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+      target_compile_definitions(ref.gtest.seq PRIVATE USE_HIPSYCL)
+      add_sycl_to_target(TARGET ref.gtest.seq 
+                         SOURCES TestMVSYCL.cc)
+    ENDIF()
+    IF(ALIEN_USE_INTELSYCL)
+       #set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+       IF(ALIEN_USE_CUDA)
+         set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+         target_compile_options(ref.gtest.seq PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+         target_link_options(ref.gtest.seq PRIVATE ${DPCPP_FLAGS})
+       ENDIF()
+       add_sycl_to_target(TARGET ref.gtest.seq  
+                          SOURCES TestMVSYCL.cc)
+    ENDIF()
 ENDIF ()
 
 target_link_libraries(ref.gtest.mpi PRIVATE

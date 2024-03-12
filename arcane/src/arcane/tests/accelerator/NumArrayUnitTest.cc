@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayUnitTest.cc                                         (C) 2000-2023 */
+/* NumArrayUnitTest.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Service de test des 'NumArray'.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/NumArray.h"
-
+#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 
@@ -31,11 +31,11 @@
 
 namespace Arcane
 {
-extern "C++" ARCANE_CORE_EXPORT
-void _arcaneTestRealArrayVariant();
+extern "C++" ARCANE_CORE_EXPORT void
+_arcaneTestRealArrayVariant();
 extern "C++" ARCANE_CORE_EXPORT void
 _arcaneTestRealArray2Variant();
-}
+} // namespace Arcane
 
 namespace ArcaneTest
 {
@@ -299,7 +299,7 @@ _executeTest1(eMemoryRessource mem_kind)
   {
     NumArray<double, MDDim1> t1(mem_kind);
     t1.resize(n1);
-    _checkPointerAttribute(mem_kind,t1.bytes().data());
+    _checkPointerAttribute(mem_kind, t1.bytes().data());
 
     NumArray<double, MDDim1> t2(mem_kind);
     t2.resize(n1);
@@ -309,16 +309,16 @@ _executeTest1(eMemoryRessource mem_kind)
 
     {
       [[maybe_unused]] auto span_value = t1.span();
-      using ValueType1 = NumArray<double,MDDim1>::value_type;
+      using ValueType1 = NumArray<double, MDDim1>::value_type;
       using ValueType2 = decltype(span_value)::value_type;
-      bool is_same_type = std::is_same_v<ValueType1,ValueType2>;
+      bool is_same_type = std::is_same_v<ValueType1, ValueType2>;
       std::cout << "IS_SAME: " << is_same_type << "\n";
       if (!is_same_type)
         ARCANE_FATAL("Not same value type");
 
-      using LayoutType1 = NumArray<double,MDDim1>::LayoutPolicyType;
+      using LayoutType1 = NumArray<double, MDDim1>::LayoutPolicyType;
       using LayoutType2 = decltype(span_value)::LayoutPolicyType;
-      bool is_same_policy = std::is_same_v<LayoutType1,LayoutType2>;
+      bool is_same_policy = std::is_same_v<LayoutType1, LayoutType2>;
       if (!is_same_policy)
         ARCANE_FATAL("Not same policy");
     }
@@ -326,13 +326,13 @@ _executeTest1(eMemoryRessource mem_kind)
       auto command = makeCommand(queue);
       auto out_t1 = viewOut(command, t1);
       command.addNbThreadPerBlock(128);
-      if (command.nbThreadPerBlock()!=128)
-        ARCANE_FATAL("Bad number of thread per block (v={0} expected=128)",command.nbThreadPerBlock());
+      if (command.nbThreadPerBlock() != 128)
+        ARCANE_FATAL("Bad number of thread per block (v={0} expected=128)", command.nbThreadPerBlock());
 
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
         auto [i] = iter();
-        if ((i%2)==0)
+        if ((i % 2) == 0)
           out_t1(i) = _getValue(i);
         else
           out_t1[i] = _getValue(i);
@@ -346,7 +346,7 @@ _executeTest1(eMemoryRessource mem_kind)
     {
       auto command = makeCommand(queue);
       auto in_t1 = t1.constSpan();
-      MDSpan<double,MDDim1> out_t2 = t2.span();
+      MDSpan<double, MDDim1> out_t2 = t2.span();
 
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
@@ -364,8 +364,8 @@ _executeTest1(eMemoryRessource mem_kind)
     }
     {
       auto command = makeCommand(queue);
-      auto in_t1 = viewIn(command,t1);
-      auto out_t3 = viewOut(command,t3);
+      ax::NumArrayInView<double, MDDim1> in_t1 = viewIn(command, t1);
+      ax::NumArrayOutView<double, MDDim1> out_t3 = viewOut(command, t3);
 
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
@@ -385,68 +385,68 @@ _executeTest1(eMemoryRessource mem_kind)
   {
     NumArray<double, MDDim2> t1(mem_kind);
     t1.resize(n1, n2);
-    _doRank2(queue,t1,expected_sum2);
+    _doRank2(queue, t1, expected_sum2);
   }
   {
-    NumArray<double, ExtentsV<n1,n2>> t1(mem_kind);
-    _doRank2(queue,t1,expected_sum2);
+    NumArray<double, ExtentsV<n1, n2>> t1(mem_kind);
+    _doRank2(queue, t1, expected_sum2);
   }
   {
-    NumArray<double, ExtentsV<DynExtent,n2>> t1(mem_kind);
+    NumArray<double, ExtentsV<DynExtent, n2>> t1(mem_kind);
     t1.resize(n1);
-    _doRank2(queue,t1,expected_sum2);
+    _doRank2(queue, t1, expected_sum2);
   }
   {
-    NumArray<double, ExtentsV<n1,DynExtent>> t1(mem_kind);
+    NumArray<double, ExtentsV<n1, DynExtent>> t1(mem_kind);
     t1.resize(n2);
-    _doRank2(queue,t1,expected_sum2);
+    _doRank2(queue, t1, expected_sum2);
   }
 
   // Tableaux 3D
   {
     NumArray<double, MDDim3, LeftLayout> t1(mem_kind);
     t1.resize(n1, n2, n3);
-    _doRank3(queue,t1,expected_sum3);
+    _doRank3(queue, t1, expected_sum3);
   }
   {
     NumArray<double, MDDim3, RightLayout> t1(mem_kind);
     t1.resize(n1, n2, n3);
-    _doRank3(queue,t1,expected_sum3);
+    _doRank3(queue, t1, expected_sum3);
   }
   {
-    NumArray<double, ExtentsV<DynExtent,n2,n3>, LeftLayout> t1(mem_kind);
+    NumArray<double, ExtentsV<DynExtent, n2, n3>, LeftLayout> t1(mem_kind);
     t1.resize(n1);
-    _doRank3(queue,t1,expected_sum3);
+    _doRank3(queue, t1, expected_sum3);
   }
   {
-    NumArray<double, ExtentsV<n1,n2,n3>, LeftLayout> t1(mem_kind);
-    _doRank3(queue,t1,expected_sum3);
+    NumArray<double, ExtentsV<n1, n2, n3>, LeftLayout> t1(mem_kind);
+    _doRank3(queue, t1, expected_sum3);
   }
   {
-    NumArray<double, ExtentsV<DynExtent,n2,DynExtent>, LeftLayout> t1(mem_kind);
-    t1.resize(n1,n3);
-    _doRank3(queue,t1,expected_sum3);
+    NumArray<double, ExtentsV<DynExtent, n2, DynExtent>, LeftLayout> t1(mem_kind);
+    t1.resize(n1, n3);
+    _doRank3(queue, t1, expected_sum3);
   }
 
   // Tableaux 4D
   {
     NumArray<double, MDDim4> t1(mem_kind);
     t1.resize(n1, n2, n3, n4);
-    _doRank4(queue,t1,expected_sum4);
+    _doRank4(queue, t1, expected_sum4);
   }
   {
-    NumArray<double, ExtentsV<n1,DynExtent,DynExtent,n4>> t1(mem_kind);
-    t1.resize(n2,n3);
-    _doRank4(queue,t1,expected_sum4);
+    NumArray<double, ExtentsV<n1, DynExtent, DynExtent, n4>> t1(mem_kind);
+    t1.resize(n2, n3);
+    _doRank4(queue, t1, expected_sum4);
   }
   {
-    NumArray<double, ExtentsV<DynExtent,DynExtent,n3,n4>, LeftLayout> t1(mem_kind);
+    NumArray<double, ExtentsV<DynExtent, DynExtent, n3, n4>, LeftLayout> t1(mem_kind);
     t1.resize(n1, n2);
-    _doRank4(queue,t1,expected_sum4);
+    _doRank4(queue, t1, expected_sum4);
   }
   {
-    NumArray<double, ExtentsV<n1,n2,n3,n4>> t1(mem_kind);
-    _doRank4(queue,t1,expected_sum4);
+    NumArray<double, ExtentsV<n1, n2, n3, n4>> t1(mem_kind);
+    _doRank4(queue, t1, expected_sum4);
   }
 
   {
@@ -456,7 +456,7 @@ _executeTest1(eMemoryRessource mem_kind)
     t1.resize(n1);
     {
       auto command = makeCommand(queue);
-      auto out_t1 = viewOut(command,t1);
+      ax::NumArrayInOutView<double, MDDim1> out_t1 = viewInOut(command, t1);
 
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
@@ -466,9 +466,9 @@ _executeTest1(eMemoryRessource mem_kind)
     }
     info() << "CHECK ALLOCATOR";
     NumArray<double, MDDim1> t2(t1);
-    if (t1.memoryRessource()!=t2.memoryRessource())
+    if (t1.memoryRessource() != t2.memoryRessource())
       ARCANE_FATAL("Bad memory ressource 1");
-    if (t1.memoryAllocator()!=t2.memoryAllocator())
+    if (t1.memoryAllocator() != t2.memoryAllocator())
       ARCANE_FATAL("Bad allocator 1");
 
     NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
@@ -480,9 +480,9 @@ _executeTest1(eMemoryRessource mem_kind)
     NumArray<double, MDDim1> t3;
     t3.resize(25);
     t3 = t1;
-    if (t1.memoryRessource()!=t3.memoryRessource())
-      ARCANE_FATAL("Bad memory ressource 2 t1={0} t3={1}",t1.memoryRessource(),t3.memoryRessource());
-    if (t1.memoryAllocator()!=t3.memoryAllocator())
+    if (t1.memoryRessource() != t3.memoryRessource())
+      ARCANE_FATAL("Bad memory ressource 2 t1={0} t3={1}", t1.memoryRessource(), t3.memoryRessource());
+    if (t1.memoryAllocator() != t3.memoryAllocator())
       ARCANE_FATAL("Bad allocator 2");
     NumArray<double, MDDim1> host_t3(eMemoryRessource::Host);
     host_t3.copy(t3);
@@ -656,7 +656,7 @@ _executeTest4(eMemoryRessource mem_kind)
     {
       auto command = makeCommand(queue);
       auto in_t1 = viewIn(command, t1);
-      auto out_t3 = viewOut(command, t3);
+      auto out_t3 = viewInOut(command, t3);
 
       command << RUNCOMMAND_LOOP1(iter, n1)
       {

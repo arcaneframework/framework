@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Data.cc                                               (C) 2000-2023 */
+/* Array2Data.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Donnée du type 'Array2'.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -113,6 +113,7 @@ class Array2DataT
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  void computeHash(DataHashInfo& hash_algo) const;
   ArrayShape shape() const override { return m_shape; }
   void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
   void setAllocationInfo(const DataAllocationInfo& v) override;
@@ -142,6 +143,7 @@ class Array2DataT
  public:
 
   void swapValuesDirect(ThatClass* true_data);
+  void changeAllocator(const MemoryAllocationOptions& alloc_info);
 
  public:
 
@@ -236,6 +238,11 @@ class Array2DataT<DataType>::Impl
     return makeMutableMemoryView(value.data(), datatype_size * dim2_size, dim1_size);
   }
   INumericDataInternal* numericData() override { return this; }
+  void changeAllocator(const MemoryAllocationOptions& v) override { m_p->changeAllocator(v); }
+  void computeHash(DataHashInfo& hash_info) override
+  {
+    m_p->computeHash(hash_info);
+  }
 
  private:
 
@@ -652,6 +659,26 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
 /*---------------------------------------------------------------------------*/
 
 template<typename DataType> void Array2DataT<DataType>::
+computeHash(DataHashInfo& hash_info) const
+{
+  hash_info.setVersion(2);
+  IHashAlgorithmContext* context = hash_info.context();
+
+  // Calcule la fonction de hashage pour les tailles
+  Int64 dimensions[2];
+  dimensions[0] = m_value.dim1Size();
+  dimensions[1] = m_value.dim2Size();
+  Span<const Int64> dimension_span(dimensions,2);
+  context->updateHash(asBytes(dimension_span));
+
+  // Calcule la fonction de hashage pour les valeurs
+  context->updateHash(asBytes(m_value.to1DSpan()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void Array2DataT<DataType>::
 copy(const IData* data)
 {
   auto* true_data = dynamic_cast< const DataInterfaceType* >(data);
@@ -691,6 +718,16 @@ setAllocationInfo(const DataAllocationInfo& v)
     return;
   m_allocation_info = v;
   m_value.setMemoryLocationHint(v.memoryLocationHint());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void Array2DataT<DataType>::
+changeAllocator(const MemoryAllocationOptions& alloc_info)
+{
+  ARCANE_UNUSED(alloc_info);
+  ARCANE_THROW(NotImplementedException,"changeAllocator for 2D Array");
 }
 
 /*---------------------------------------------------------------------------*/

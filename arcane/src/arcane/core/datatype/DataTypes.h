@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataTypes.h                                                 (C) 2000-2018 */
+/* DataTypes.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Définition des types liées aux données.                                   */
 /*---------------------------------------------------------------------------*/
@@ -26,26 +26,58 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Type d'une donnée.
- *
  */
-enum eDataType
+enum eDataType : uint8_t
 {
-  // NOTE: ne pas changer ces valeurs car elles sont utilisées dans Arccore
   DT_Byte = 0, //!< Donnée de type octet
   DT_Real, //!< Donnée de type réel
   DT_Int16, //!< Donnée de type entier 16 bits
   DT_Int32, //!< Donnée de type entier 32 bits
   DT_Int64, //!< Donnée de type entier 64 bits
-  DT_String, //!< Donnée de type chaîne de caractère unicode
+  DT_String, //!< Donnée de type chaîne de caractère UTF-8
   DT_Real2, //!< Donnée de type vecteur 2
   DT_Real3, //!< Donnée de type vecteur 3
   DT_Real2x2, //!< Donnée de type tenseur 3x3
   DT_Real3x3, //!< Donnée de type tenseur 3x3
-  DT_Unknown  //!< Donnée de type inconnu ou non initilialisé
+  DT_BFloat16, //!< Donnée de type 'BFloat16'
+  DT_Float16, //!< Donnée de type 'Float16'
+  DT_Float32, //!< Donnée de type 'Float32'
+  DT_Int8, //!< Donnée de type entier sur 8 bits
+  DT_Unknown  //!< Donnée de type inconnue ou non initialisée
 };
+
+//! Nombre de valeurs de eDataType
+static constexpr uint8_t NB_ARCANE_DATA_TYPE = 15;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Liste des noms pour eDataType.
+ */
+class DataTypeNames
+{
+ public:
+  static constexpr const char* N_BYTE = "Byte";
+  static constexpr const char* N_REAL = "Real";
+  static constexpr const char* N_INT16 = "Int16";
+  static constexpr const char* N_INT32 = "Int32";
+  static constexpr const char* N_INT64 = "Int64";
+  static constexpr const char* N_STRING = "String";
+  static constexpr const char* N_REAL2 = "Real2";
+  static constexpr const char* N_REAL3 = "Real3";
+  static constexpr const char* N_REAL2x2 = "Real2x2";
+  static constexpr const char* N_REAL3x3 = "Real3x3";
+  static constexpr const char* N_BFLOAT16 = "BFloat16";
+  static constexpr const char* N_FLOAT16 = "Float16";
+  static constexpr const char* N_FLOAT32 = "Float32";
+  static constexpr const char* N_INT8 = "Int8";
+  static constexpr const char* N_UNKNOWN = "Unknown";
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Nom du type de donnée.
 extern "C++" ARCANE_CORE_EXPORT const char*
@@ -116,7 +148,16 @@ enum eDataInitialisationPolicy
    * prise en compte que lors d'un changement du nomnbre d'éléments (resize())
    * où pour les variables qui n'étaient pas des variables du maillage.
    */
-  DIP_Legacy = 3
+  DIP_Legacy = 3,
+  /*!
+   * \brief Initialisation avec des NaN pour à la création et le constructeur
+   * par défaut ensuite.
+   *
+   * Ce mode est identique à DIP_InitWithNan pour la création des variables
+   * et à DIP_InitWithDefault lorsqu'on la taille de la variable évolue
+   * (en géneral via un appel à IVariable::resize() ou IVariable::resizeFromGroup()).
+   */
+  DIP_InitInitialWithNanResizeWithDefault = 4
 };
 
 /*---------------------------------------------------------------------------*/

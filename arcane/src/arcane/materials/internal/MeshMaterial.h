@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterial.h                                              (C) 2000-2023 */
+/* MeshMaterial.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Matériau d'un maillage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -61,11 +61,14 @@ class MeshMaterial
     {
       return m_material->variableIndexer();
     }
-    ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
+    ConstituentItemLocalIdListView constituentItemListView() const override
     {
-      return m_material->itemsInternalView();
+      return m_material->constituentItemListView();
     }
     Int32 variableIndexerIndex() const override;
+    Ref<IConstituentItemVectorImpl> createItemVectorImpl() const override;
+    Ref<IConstituentItemVectorImpl> createItemVectorImpl(ComponentItemVectorView rhs) const override;
+
    private:
     MeshMaterial* m_material;
   };
@@ -74,7 +77,6 @@ class MeshMaterial
 
   MeshMaterial(MeshMaterialInfo* infos,MeshEnvironment* env,
                const String& name,Int16 mat_id);
-  ~MeshMaterial() override;
 
  public:
 
@@ -85,14 +87,14 @@ class MeshMaterial
   IMeshEnvironment* environment() const override;
   CellGroup cells() const override;
 
-  MeshMaterialVariableIndexer* variableIndexer() const override
+  MeshMaterialVariableIndexer* variableIndexer() const
   {
     return m_data.variableIndexer();
   }
 
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const override
+  ConstituentItemLocalIdListView constituentItemListView() const
   {
-    return m_data._itemsInternalView();
+    return m_data.constituentItemListView();
   }
 
   Int32 id() const override { return m_data.componentId(); }
@@ -128,9 +130,9 @@ class MeshMaterial
 
  public:
 
-  ArrayView<ComponentItemInternal*> itemsInternalView()
+  void setConstituentItem(Int32 index, ConstituentItemIndex id)
   {
-    return m_data._itemsInternalView();
+    m_data._setConstituentItem(index,id);
   }
   Int16 componentId() const { return m_data.componentId(); }
 

@@ -37,7 +37,8 @@ namespace Arcane.VariableComparer
     Integer m_memory_size;
     Int64 m_file_offset;
     string m_item_group_name;
-    
+    string m_comparison_hash_value;
+
     public String FullName { get { return m_full_name; }}
     public Integer NbDimension { get { return m_nb_dimension; }}
     public Integer Dim1Size { get { return m_dim1_size; }}
@@ -50,7 +51,8 @@ namespace Arcane.VariableComparer
     public Integer MemorySize { get { return m_memory_size; }}
     public Int64 FileOffset { get { return m_file_offset; }}
     public string ItemGroupName { get { return m_item_group_name; } }
-    
+    public string ComparisonHashValue { get { return m_comparison_hash_value; } }
+
     public VariableDataInfo(string full_name,XmlElement element)
     {
       m_full_name = full_name;
@@ -64,9 +66,13 @@ namespace Arcane.VariableComparer
       m_base_data_type = (eDataType)_readInteger(element,"base-data-type");
       m_memory_size = _readInteger(element,"memory-size");
       m_file_offset = _readInt64(element,"file-offset");
-      
+
       // Peut etre nul si la variable est sur toute la famille
       m_item_group_name = element.GetAttribute("item-group-name");
+
+      // A partir de Arcane 3.12
+      // Peut etre nul si le calcul du hash n'est pas activé
+      m_comparison_hash_value = element.GetAttribute("comparison-hash");
     }
 
     private Integer _readInteger(XmlElement node,string attr_name)

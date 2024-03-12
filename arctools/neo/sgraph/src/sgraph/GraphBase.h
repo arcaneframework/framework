@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GrapheBase                                     (C) 2000-2022              */
+/* GrapheBase                                     (C) 2000-2024              */
 /*                                                                           */
 /* Base class for a simple template graph                                    */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,7 @@
 #include <vector>
 #include <numeric>
 #include <sstream>
+#include <type_traits>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -133,22 +134,53 @@ class GraphBase
   using VertexTypeConstRefArray = std::vector<VertexTypeConstRef>;
   using EdgeTypeRefArray = std::vector<EdgeTypeRef>;
   using EdgeTypeConstRefArray = std::vector<EdgeTypeConstRef>;
-  static inline auto m_vertex_less_comparator = [](VertexTypeConstRef const& a, VertexTypeConstRef const& b) {
-    if constexpr (utils::has_less_v<VertexType>)
-      return a.get() < b.get();
-    else
-      return &(a.get()) < &(b.get());
-  };
-  using VertexLessComparator = decltype(m_vertex_less_comparator);
+#ifndef _MSC_VER // Visual 2017 doesn't support if constexpr
+    static inline auto m_vertex_less_comparator = [](VertexTypeConstRef const& a, VertexTypeConstRef const& b) {
+        if constexpr (utils::has_less_v<VertexType>)
+          return a.get() < b.get();
+        else
+          return &(a.get()) < &(b.get());
+        };
+    using VertexLessComparator = decltype(m_vertex_less_comparator);
+#else
+    struct VertexLessComparator {
+        template<typename Vertex = VertexType , std::enable_if_t<utils::has_less_v<Vertex>,bool> = true>
+        bool operator() (VertexTypeConstRef const &a, VertexTypeConstRef const &b) const{
+            return a.get() < b.get();
+        }
+        template<typename Vertex = VertexType , std::enable_if_t<!utils::has_less_v<Vertex>,bool> = true>
+        bool operator() (VertexTypeConstRef const &a, VertexTypeConstRef const &b) const{
+            return &a.get() < &b.get();
+        }
+    };
+    static inline VertexLessComparator m_vertex_less_comparator;
+#endif
+
+
   using AdjacencyListType = std::map<VertexTypeConstRef, std::pair<VertexTypeRefArray, EdgeTypeRefArray>, VertexLessComparator>;
   using VertexPair = std::pair<VertexTypeRef, VertexTypeRef>;
-  static inline auto m_edge_less_comparator = [](EdgeTypeConstRef const& a, EdgeTypeConstRef const& b) {
-    if constexpr (utils::has_less_v<EdgeType>)
+#ifndef _MSC_VER // Visual 2017 doesn't support if constexpr
+    static inline auto m_edge_less_comparator = [](EdgeTypeConstRef const& a, EdgeTypeConstRef const& b) {
+        if constexpr (utils::has_less_v<EdgeType>)
+          return a.get() < b.get();
+        else
+          return &(a.get()) < &(b.get());
+    };
+    using EdgeLessComparator = decltype(m_edge_less_comparator);
+#else
+  struct EdgeLessComparator {
+    template<typename Edge = EdgeType, std::enable_if_t<utils::has_less_v<Edge>,bool> = true >
+    bool operator() (EdgeTypeConstRef const &a, EdgeTypeConstRef const &b) const {
       return a.get() < b.get();
-    else
-      return &(a.get()) < &(b.get());
+    }
+    template<typename Edge = EdgeType, std::enable_if_t<!utils::has_less_v<Edge>,bool> = true>
+    bool operator() (EdgeTypeConstRef const &a, EdgeTypeConstRef const &b) const{
+      return &a.get() < &b.get();
+    }
   };
-  using EdgeLessComparator = decltype(m_edge_less_comparator);
+  static inline EdgeLessComparator m_edge_less_comparator;
+#endif
+
   using EdgeToVertexMap = std::map<EdgeTypeConstRef, VertexPair, EdgeLessComparator>;
 
   using VertexSet = IterableEnsembleT<VertexList>;
@@ -163,15 +195,34 @@ class GraphBase
   using EdgeRef = EdgeType;
 
  public:
+#ifndef _MSC_VER // Visual 2017 doesn't support if constexpr
   static inline auto m_vertex_stream_converter = [](VertexType const& vertex) {
-    std::ostringstream oss;
+      std::ostringstream oss;
     if constexpr (utils::is_stream_convertible_v<VertexType>)
       oss << vertex;
     else
       oss << &vertex;
     return oss.str();
   };
+#else
+  struct VertexStreamConverter {
+    template <typename Vertex = VertexType, std::enable_if_t<utils::is_stream_convertible_v<Vertex>,bool> = true>
+    std::string operator() (VertexType const& vertex) const {
+      std::ostringstream oss;
+      oss << vertex;
+      return oss.str();
+    }
+    template <typename Vertex = VertexType, std::enable_if_t<!utils::is_stream_convertible_v<Vertex>,bool> = true>
+    std::string operator() (VertexType const& vertex) const {
+      std::ostringstream oss;
+      oss << &vertex;
+      return oss.str();
+    }
+  };
+  static inline VertexStreamConverter m_vertex_stream_converter;
+#endif
 
+#ifndef _MSC_VER // Visual 2017 doesn't support if constexpr
   static inline auto m_edge_stream_converter = [](EdgeType const& edge) {
     std::ostringstream oss;
     if constexpr (utils::is_stream_convertible_v<EdgeType>)
@@ -180,6 +231,24 @@ class GraphBase
       oss << &edge;
     return oss.str();
   };
+#else
+  struct EdgeStreamConverter {
+    template <typename Edge = EdgeType, std::enable_if_t<utils::is_stream_convertible_v<Edge>,bool> = true>
+    std::string operator() (EdgeType const& edge) const {
+      std::ostringstream oss;
+      oss << edge;
+      return oss.str();
+    }
+    template <typename Edge = EdgeType, std::enable_if_t<!utils::is_stream_convertible_v<Edge>,bool> = true>
+    std::string operator() (EdgeType const& edge) const {
+      std::ostringstream oss;
+      oss << &edge;
+      return oss.str();
+    }
+  };
+  static inline EdgeStreamConverter m_edge_stream_converter;
+#endif
+
 
   /*---------------------------------------------------------------------------*/
 

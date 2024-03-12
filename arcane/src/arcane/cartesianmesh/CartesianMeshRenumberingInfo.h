@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshRenumberingInfo.h                              (C) 2000-2021 */
+/* CartesianMeshRenumberingInfo.h                              (C) 2000-2024 */
 /*                                                                           */
 /* Informations pour la renumérotation.                                      */
 /*---------------------------------------------------------------------------*/
@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/cartesianmesh/CartesianPatch.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,15 +31,24 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT CartesianMeshRenumberingInfo
 {
  public:
+
   /*!
    * \brief Méthode pour renuméroter les patchs.
    *
-   * Si 0, il n'y a pas de renumérotation. La seule autre valeur valide est 1. Dans ce
-   * cas, les uniqueId() des entités (Node,Face,Cell) des patches sont renumérotées
-   * pour avoir la même numérotation
-   * quel que soit le découpage. La numérotation n'est pas contigue. Seules
-   * les entités des patchs sont renumérotées. Les entités issues du maillage initial
-   * ne sont pas renumérotées.
+   * Les valeurs possibles sont les suivantes:
+   * - 0 pas de renumérotation.
+   * - 1 renumérotation par défaut.
+   * - 2 version expérimentale de la renumérotation
+   * - 3 comme la version 1 mais avec une implémentation différente
+   *   pour les maillages 2D.
+   * - 4 comme 1, mais utilise la même numérotation avec ou sans dé-raffinement
+   *   du maillage initial.
+   *
+   * En cas de renumérotation, les uniqueId() des entités (Node,Face,Cell)
+   * des patches sont renumérotées pour avoir la même numérotation quel
+   * que soit le découpage.
+   * La numérotation n'est pas contigue. Seules les entités filles
+   * des entités du patch parentPatch() sont renumérotées.
    */
   void setRenumberPatchMethod(Int32 v) { m_renumber_patch_method = v; }
   Int32 renumberPatchMethod() const { return m_renumber_patch_method; }
@@ -63,9 +72,27 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshRenumberingInfo
   void setSortAfterRenumbering(bool v) { m_is_sort = v; }
   bool isSortAfterRenumbering() const { return m_is_sort; }
 
+  /*!
+   * \brief Numéro du patch parent pour la renumérotation.
+   *
+   * Patch parent pour la renumérotation. Pour la renumérotation, on parcourt
+   * récursivement les mailles filles de ce patch et on les renumérote ainsi
+   * que les entités liées à ces mailles (noeuds et faces).
+   *
+   * Les entités de ce patch (mailles, noeuds et faces) ne sont pas renumérotées.
+   *
+   * Si non spécifié, l'implémentation utilisera le patch 0 comme patch parent.
+   *
+   * \note Cette propriété n'est prise en compte que si renumberPatchMethod()==1.
+   */
+  void setParentPatch(CartesianPatch patch) { m_parent_patch = patch; }
+  CartesianPatch parentPatch() const { return m_parent_patch; }
+
  private:
+
   Int32 m_renumber_patch_method = 0;
   Int32 m_renumber_faces_method = 0;
+  CartesianPatch m_parent_patch;
   bool m_is_sort = false;
 };
 

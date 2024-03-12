@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemEnumerator.cc                                        (C) 2000-2023 */
+/* MatItemEnumerator.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Enumérateurs sur les mailles materiaux.                                   */
 /*---------------------------------------------------------------------------*/
@@ -33,39 +33,17 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 ComponentCellEnumerator::
-ComponentCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                        ConstArrayView<MatVarIndex> matvar_indexes,
-                        IMeshComponent* component)
+ComponentCellEnumerator(const ComponentItemVectorView& v)
 : m_index(0)
-, m_size(items.size())
-, m_items(items)
-, m_matvar_indexes(matvar_indexes)
-, m_component(component)
+, m_size(v._matvarIndexes().size())
+, m_constituent_list_view(v._constituentItemListView())
+, m_matvar_indexes(v._matvarIndexes())
+, m_component(v.component())
 {
 #ifdef ARCANE_CHECK
   if (m_index<m_size)
     _check();
 #endif
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ComponentCellEnumerator::
-ComponentCellEnumerator(const ComponentItemVectorView& v)
-: ComponentCellEnumerator(v._itemsInternalView(),v._matvarIndexes(),v.component())
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MatCellEnumerator::
-MatCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                  ConstArrayView<MatVarIndex> matvar_indexes,
-                  IMeshComponent* component)
-: ComponentCellEnumerator(items,matvar_indexes,component)
-{
 }
 
 /*---------------------------------------------------------------------------*/
@@ -97,17 +75,6 @@ create(MatCellVectorView v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-EnvCellEnumerator::
-EnvCellEnumerator(ConstArrayView<ComponentItemInternal*> items,
-                  ConstArrayView<MatVarIndex> matvar_indexes,
-                  IMeshComponent* component)
-: ComponentCellEnumerator(items,matvar_indexes,component)
-{
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -375,9 +342,7 @@ create(IMeshBlock* block)
 ComponentPartCellEnumerator ComponentPartCellEnumerator::
 create(ComponentPartItemVectorView v)
 {
-  return ComponentPartCellEnumerator(v.component(),v.componentPartIndex(),
-                                     v.valueIndexes(),v.itemIndexes(),
-                                     v.itemsInternal(),0);
+  return ComponentPartCellEnumerator(v,0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -400,7 +365,7 @@ ComponentPartCellEnumerator(const ComponentPartItemVectorView& v,Integer base_in
 , m_base_index(base_index)
 , m_value_indexes(v.valueIndexes())
 , m_item_indexes(v.itemIndexes())
-, m_items_internal(v.itemsInternal())
+, m_constituent_list_view(v.constituentItemListView())
 , m_component(v.component())
 {
 }

@@ -1,15 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialAcceleratorUnitTest.cc                          (C) 2000-2023 */
+/* MeshMaterialAcceleratorUnitTest.cc                          (C) 2000-2024 */
 /*                                                                           */
 /* Service de test unitaire du support accelerateurs des matériaux/milieux.  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/IMeshModifier.h"
 
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -25,6 +27,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/materials/ComponentSimd.h"
 #include "arcane/materials/IMeshMaterialMng.h"
@@ -74,7 +77,7 @@ class MeshMaterialAcceleratorUnitTest
 : public BasicUnitTest
 {
  public:
-
+ 
   explicit MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& cb);
   ~MeshMaterialAcceleratorUnitTest() override;
 
@@ -110,7 +113,7 @@ class MeshMaterialAcceleratorUnitTest
   UniqueArray<Int32> m_env1_partial_value_index;
   CellGroup m_sub_env_group1;
 
-  void _initializeVariables();
+  void _initializeVariables(ComponentItemVectorView component);
 
  public:
 
@@ -121,7 +124,9 @@ class MeshMaterialAcceleratorUnitTest
   void _executeTest2(Integer nb_z);
   void _executeTest3(Integer nb_z);
   void _executeTest4(Integer nb_z);
-  void _checkValues();
+  void _executeTest5(Integer nb_z,MatCellVectorView mat);
+  void _checkEnvValues1();
+  void _checkMatValues1();
   void _checkEnvironmentValues();
 };
 
@@ -174,7 +179,7 @@ initializeTest()
   m_mm_mng = IMeshMaterialMng::getReference(mesh());
 
   // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
-  UniqueArray<String> mat_names = { "MAT1", "MAT2", "MAT3" };
+  UniqueArray<String> mat_names = { "MAT1", "MAT2", "MAT3", "MAT4" };
   for( String v : mat_names ){
     m_mm_mng->registerMaterialInfo(v);
   }
@@ -189,6 +194,11 @@ initializeTest()
     Materials::MeshEnvironmentBuildInfo env_build("ENV2");
     env_build.addMaterial("MAT2");
     env_build.addMaterial("MAT3");
+    m_mm_mng->createEnvironment(env_build);
+  }
+  {
+    Materials::MeshEnvironmentBuildInfo env_build("ENV3");
+    env_build.addMaterial("MAT1");
     m_mm_mng->createEnvironment(env_build);
   }
 
@@ -206,19 +216,21 @@ initializeTest()
     Int32UniqueArray env1_indexes;
     Int32UniqueArray mat2_indexes;
     Int32UniqueArray sub_group_indexes;
-    Integer nb_cell = ownCells().size();
+    Integer nb_cell = allCells().size();
     Int64 total_nb_cell = nb_cell;
     ENUMERATE_CELL(icell,allCells()){
-      Cell cell = *icell;
-      Int64 cell_index = cell.uniqueId();
-      if (cell_index<((2*total_nb_cell)/3)){
-        env1_indexes.add(icell.itemLocalId());
+      if (icell.itemLocalId() != 0) {  // on ne veut pas de la première maille pour tester un cas tordu en //
+        Cell cell = *icell;
+        Int64 cell_index = cell.uniqueId();
+        if (cell_index<((2*total_nb_cell)/3)){
+          env1_indexes.add(icell.itemLocalId());
+        }
+        if (cell_index<(total_nb_cell/2) && cell_index>(total_nb_cell/3)){
+          mat2_indexes.add(icell.itemLocalId());
+        }
+        if ((cell_index%2)==0)
+          sub_group_indexes.add(icell.itemLocalId());
       }
-      if (cell_index<(total_nb_cell/2) && cell_index>(total_nb_cell/3)){
-        mat2_indexes.add(icell.itemLocalId());
-      }
-      if ((cell_index%2)==0)
-        sub_group_indexes.add(icell.itemLocalId());
     }
 
     // Ajoute les mailles du milieu 1
@@ -312,7 +324,7 @@ executeTest()
          << " nb_unknown=" << nb_unknown
          << " nb_z=" << nb_z << " nb_z2=" << nb_z2;
 
-  _initializeVariables();
+  _initializeVariables(m_env1->envView());
   EnvCellVector sub_ev1(m_sub_env_group1,m_env1);
   {
     _executeTest1(nb_z,m_env1->envView());
@@ -327,13 +339,18 @@ executeTest()
   {
     _executeTest4(nb_z);
   }
+  {
+    IMeshEnvironment* env2 = m_mm_mng->environments()[1];
+    IMeshMaterial* mat2 = env2->materials()[1];
+    _executeTest5(nb_z,mat2->matView());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialAcceleratorUnitTest::
-_initializeVariables()
+_initializeVariables(ComponentItemVectorView component)
 {
   MaterialVariableCellReal& a_ref(m_mat_a_ref);
   MaterialVariableCellReal& b_ref(m_mat_b_ref);
@@ -346,8 +363,9 @@ _initializeVariables()
   MaterialVariableCellReal& c(m_mat_c);
   MaterialVariableCellReal& d(m_mat_d);
   MaterialVariableCellReal& e(m_mat_e);
+  bool is_env = component.component()->isEnvironment();
 
-  ENUMERATE_ENVCELL(i,m_env1){
+  ENUMERATE_COMPONENTCELL(i,component){
     Real z = (Real)i.index();
     b_ref[i] = z*2.3;
     c_ref[i] = z*3.1;
@@ -359,23 +377,25 @@ _initializeVariables()
     c[i] = c_ref[i];
     d[i] = d_ref[i];
     e[i] = e_ref[i];
-    m_env_a[i] = a_ref[i];
-    m_env_b[i] = b_ref[i];
-    m_env_c[i] = c_ref[i];
+    if (is_env){
+      m_env_a[i] = a_ref[i];
+      m_env_b[i] = b_ref[i];
+      m_env_c[i] = c_ref[i];
+    }
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Test du RUNCOMMAND_ENUMERATE(EnvCell, ...
+ * \brief Test du RUNCOMMAND_MAT_ENUMERATE(EnvCell, ...
  * avec en paramètres l'environnement et cherchant à accèder
  * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
  */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest1(Integer nb_z,EnvCellVectorView env1)
 {
-  _initializeVariables();
+  _initializeVariables(m_env1->envView());
 
   // Ref CPU
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
@@ -402,7 +422,48 @@ _executeTest1(Integer nb_z,EnvCellVectorView env1)
     }
   }
 
-  _checkValues();
+  _checkEnvValues1();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Test du RUNCOMMAND_MAT_ENUMERATE(MatCell, ...
+ * avec en paramètres l'environnement et cherchant à accèder
+ * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
+ */
+void MeshMaterialAcceleratorUnitTest::
+_executeTest5(Integer nb_z,MatCellVectorView mat1)
+{
+  info() << "Execute Test 5";
+  _initializeVariables(mat1);
+
+  // Ref CPU
+  for (Integer z=0, iz=nb_z; z<iz; ++z) {
+    ENUMERATE_MATCELL(i,mat1){
+      m_mat_a_ref[i] = m_mat_b_ref[i] + m_mat_c_ref[i] * m_mat_d_ref[i] + m_mat_e_ref[i];
+    }
+  }
+
+  // GPU
+  {
+    auto queue = makeQueue(m_runner);
+    auto cmd = makeCommand(queue);
+
+    auto out_a = ax::viewOut(cmd, m_mat_a);
+    auto in_b = ax::viewIn(cmd, m_mat_b);
+    auto in_c = ax::viewIn(cmd, m_mat_c);
+    auto in_d = ax::viewIn(cmd, m_mat_d);
+    auto in_e = ax::viewIn(cmd, m_mat_e);  
+
+    for (Integer z=0, iz=nb_z; z<iz; ++z) {
+      cmd << RUNCOMMAND_MAT_ENUMERATE(MatCell, evi, mat1) {
+        out_a[evi] = in_b[evi] + in_c[evi] * in_d[evi] + in_e[evi];
+      };
+    }
+  }
+
+  _checkMatValues1();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -491,7 +552,7 @@ _executeTest2(Integer nb_z)
     }
   }
 
-  _checkValues();
+  _checkEnvValues1();
   _checkEnvironmentValues();
 }
 
@@ -563,7 +624,7 @@ _executeTest3(Integer nb_z)
     }
   }
 
-  _checkValues();
+  _checkEnvValues1();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -580,10 +641,9 @@ _executeTest4(Integer nb_z)
   MaterialVariableCellReal& b_ref(m_mat_b_ref);
   MaterialVariableCellReal& c_ref(m_mat_c_ref);
 
-  CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
-
   // Ref CPU
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
+    CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
     ENUMERATE_CELL(icell, allCells()) {
       Cell cell = * icell;
       AllEnvCell all_env_cell = allenvcell_converter[cell];
@@ -605,11 +665,6 @@ _executeTest4(Integer nb_z)
     }
   }
 
-  // Some further functions testing, not really usefull here, but it improves cover
-  AllCellToAllEnvCell *useless(nullptr);
-  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
-  AllCellToAllEnvCell::destroy(useless);
-
   // GPU
   {
     auto queue = makeQueue(m_runner);
@@ -618,7 +673,7 @@ _executeTest4(Integer nb_z)
     auto in_b    = ax::viewIn(cmd, m_mat_b);
     auto out_c   = ax::viewOut(cmd, m_mat_c);
     auto in_c_g  = ax::viewIn(cmd, m_mat_c.globalVariable());
-    auto out_a_g = ax::viewOut(cmd, m_mat_a.globalVariable());
+    auto out_a_g = ax::viewOut(cmd, m_mat_a);
 
     m_mm_mng->enableCellToAllEnvCellForRunCommand(true,true);
     CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
@@ -644,7 +699,105 @@ _executeTest4(Integer nb_z)
     }
   }
 
-  _checkValues();
+  _checkEnvValues1();
+
+    // Some further functions testing, not really usefull here, but it improves cover
+  AllCellToAllEnvCell *useless(nullptr);
+  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
+  AllCellToAllEnvCell::destroy(useless);
+
+  // Call to forceRecompute to test bruteForceUpdate
+  m_mm_mng->forceRecompute();
+
+  // Remove one cell to test other branch of bruteForceUpdate
+  Int32UniqueArray lid(1);
+  lid[0] = 1;
+  mesh()->modifier()->removeCells(lid);
+  mesh()->modifier()->endUpdate();
+  m_mm_mng->forceRecompute();
+
+  // Force last path of bruteForceUpdate testing
+  Int32UniqueArray env3_indexes;
+  ENUMERATE_CELL(icell,allCells()){
+    env3_indexes.add(icell.itemLocalId());
+  }
+
+  IMeshEnvironment* env3 = m_mm_mng->environments()[2];
+  {
+    Materials::MeshMaterialModifier modifier(m_mm_mng);
+    modifier.addCells(env3->materials()[0],env3_indexes);
+  }
+  m_mm_mng->forceRecompute();
+  ENUMERATE_ENVCELL(i,env3){
+    Real z = (Real)i.index();
+    m_mat_a_ref[i] = z*3.6;
+    m_mat_b_ref[i] = z*1.8;
+    m_mat_c_ref[i] = z*1.1;
+    m_mat_a[i] = m_mat_a_ref[i];
+    m_mat_b[i] = m_mat_b_ref[i];
+    m_mat_c[i] = m_mat_c_ref[i];
+  }
+
+  // Another round to test numerical pbs
+  // Ref CPU
+  for (Integer z=0, iz=nb_z; z<iz; ++z) {
+    CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
+    ENUMERATE_CELL(icell, allCells()) {
+      Cell cell = * icell;
+      AllEnvCell all_env_cell = allenvcell_converter[cell];
+
+      Real sum2=0.;
+      ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
+        sum2 += b_ref[iev] + b_ref[icell];
+      }
+
+      Real sum3=0.;
+      if (all_env_cell.nbEnvironment() > 1) {
+        ENUMERATE_CELL_ENVCELL(iev,all_env_cell) {
+          Real contrib2 = (b_ref[iev] + b_ref[icell]) - (sum2+1.);
+          c_ref[iev] = contrib2 * c_ref[icell];
+          sum3 += contrib2;
+        }
+      }
+      a_ref[icell] = sum3;
+    }
+  }
+
+  // GPU
+  {
+    auto queue = makeQueue(m_runner);
+    auto cmd = makeCommand(queue);
+
+    auto in_b    = ax::viewIn(cmd, m_mat_b);
+    auto out_c   = ax::viewOut(cmd, m_mat_c);
+    auto in_c_g  = ax::viewIn(cmd, m_mat_c.globalVariable());
+    auto out_a_g = ax::viewOut(cmd, m_mat_a);
+
+    m_mm_mng->enableCellToAllEnvCellForRunCommand(true,true);
+    CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
+
+    for (Integer z=0, iz=nb_z; z<iz; ++z) {
+      cmd << RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcell, cid, allCells()) {
+
+        Real sum2=0.;
+        ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
+          sum2 += in_b[*iev] + in_b[cid];
+        }
+
+        Real sum3=0.;
+        if (cell2allenvcell.nbEnvironment(cid) > 1) {
+          ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell) {
+            Real contrib2 = (in_b[*iev] + in_b[cid]) - (sum2+1.);
+            out_c[*iev] = contrib2 * in_c_g[cid];
+            sum3 += contrib2;
+          }
+        }
+        out_a_g[cid] = sum3;
+      };
+    }
+  }
+
+  _checkEnvValues1();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -670,7 +823,7 @@ void _checkOneValue(Real value,Real ref_value,const char* var_name)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialAcceleratorUnitTest::
-_checkValues()
+_checkEnvValues1()
 {
   ValueChecker vc(A_FUNCINFO);
   ENUMERATE_ENV(ienv, m_mm_mng) {
@@ -681,6 +834,25 @@ _checkValues()
       _checkOneValue(m_mat_c[iev], m_mat_c_ref[iev],"Test1_mat_c");
       _checkOneValue(m_mat_d[iev], m_mat_d_ref[iev],"Test1_mat_d");
       _checkOneValue(m_mat_e[iev], m_mat_e_ref[iev],"Test1_mat_e");
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialAcceleratorUnitTest::
+_checkMatValues1()
+{
+  ValueChecker vc(A_FUNCINFO);
+  ENUMERATE_MAT(imat, m_mm_mng) {
+    IMeshMaterial* mat = *imat;
+    ENUMERATE_MATCELL(imat,mat) {
+      _checkOneValue(m_mat_a[imat], m_mat_a_ref[imat],"Test1_mat_a");
+      _checkOneValue(m_mat_b[imat], m_mat_b_ref[imat],"Test1_mat_b");
+      _checkOneValue(m_mat_c[imat], m_mat_c_ref[imat],"Test1_mat_c");
+      _checkOneValue(m_mat_d[imat], m_mat_d_ref[imat],"Test1_mat_d");
+      _checkOneValue(m_mat_e[imat], m_mat_e_ref[imat],"Test1_mat_e");
     }
   }
 }

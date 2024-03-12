@@ -49,7 +49,13 @@ option(ALIEN_EXPAND_TESTS "Run unit tests one by one" OFF)
 
 option(ALIEN_USE_HDF5 "Enable HDF5 export" OFF)
 option(ALIEN_USE_LIBXML2 "Enable xml export" OFF)
+option(ALIEN_USE_EIGEN3  "USE EIGEN3 FOR NORMALISATION" OFF)
 option(ALIEN_USE_SYCL "Whether or not to compile SYCL backend" OFF)
+option(ALIEN_USE_CUDA "Whether or not to compile SYCL backend with CUDA" OFF)
+option(ALIEN_USE_HIP "Whether or not to compile SYCL backend with HIP" OFF)
+option(ALIEN_USE_HIPSYCL "Whether or not use HIPSYCL to compile SYCL backend" OFF)
+option(ALIEN_USE_INTELDPCPP "Whether or not to compile DPCPP backend" OFF)
+option(ALIEN_USE_INTELSYCL "Whether or not use OneAPI dcpx sycl-2020 to compile SYCL backend" OFF)
 option(ALIEN_USE_PERF_TIMER "Whether or not to enable perf timer" OFF)
 option(ALIEN_WANT_AVX "Whether or not to enable avx flags" OFF)
 option(ALIEN_WANT_AVX2 "Whether or not to enable avx2 flags" OFF)
@@ -129,6 +135,8 @@ if (LibArchive_FOUND)
     add_definitions(-DALIEN_USE_LIBARCHIVE)
 endif ()
 
+find_package(Boost COMPONENTS program_options)
+
 include(GNUInstallDirs)
 
 if (ALIEN_DEFAULT_OPTIONS)
@@ -137,6 +145,9 @@ if (ALIEN_DEFAULT_OPTIONS)
 
     find_package(LibXml2 QUIET)
     set(ALIEN_USE_LIBXML2 ${LibXml2_FOUND})
+    
+    find_package(Eigen3 QUIET)
+    set(ALIEN_USE_EIGEN3 ${Eigen3_FOUND})
 
     find_package(GTest QUIET)
     set(ALIEN_UNIT_TESTS ${GTest_FOUND})

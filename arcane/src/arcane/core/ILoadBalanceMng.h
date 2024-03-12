@@ -1,21 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ILoadBalanceMng.h                                           (C) 2000-2023 */
+/* ILoadBalanceMng.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Interface de description des caracteristiques du probleme pour le module  */
 /* d'equilibrage de charge.                                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ILOADBALANCEMNG_H
-#define ARCANE_ILOADBALANCEMNG_H
+#ifndef ARCANE_CORE_ILOADBALANCEMNG_H
+#define ARCANE_CORE_ILOADBALANCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/VariableTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

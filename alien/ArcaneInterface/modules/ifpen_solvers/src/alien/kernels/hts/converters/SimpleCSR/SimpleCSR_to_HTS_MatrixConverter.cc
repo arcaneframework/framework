@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <alien/core/backend/IMatrixConverter.h>
 #include <alien/core/backend/MatrixConverterRegisterer.h>
 
@@ -71,13 +77,13 @@ SimpleCSR_to_HTS_MatrixConverter::_build(
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
   const Integer localSize = profile.getNRow();
   const Integer localOffset = dist.rowOffset();
-  auto const& matrixInternal = sourceImpl.internal();
+  auto const& matrixInternal = *sourceImpl.internal();
   const Integer myRank = dist.parallelMng()->commRank();
   const Integer nProc = dist.parallelMng()->commSize();
 
   {
 
-    auto const& matrix_profile = sourceImpl.internal().getCSRProfile();
+    auto const& matrix_profile = sourceImpl.internal()->getCSRProfile();
     int nrows = matrix_profile.getNRow();
     int const* kcol = matrix_profile.getRowOffset().unguardedBasePointer();
     int const* cols = matrix_profile.getCols().unguardedBasePointer();

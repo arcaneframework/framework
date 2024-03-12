@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariableMngInternal.h                                      (C) 2000-2023 */
+/* IVariableMngInternal.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Partie interne à Arcane de IVariableMng.                                  */
 /*---------------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    * appelée. Cette méthode doit être appelée avant initialize().
    * \warning Cette méthode ne doit être appelée qu'une seule fois.
    */
-  virtual void build() =0;
+  virtual void build() = 0;
 
   /*!
    * \brief Initialise l'instance.
@@ -57,13 +57,13 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    * appelée.
    * \warning Cette méthode ne doit être appelée qu'une seule fois.
    */
-  virtual void initialize() =0;
+  virtual void initialize() = 0;
 
   //! Supprime et détruit les variables gérées par ce gestionnaire
-  virtual void removeAllVariables() =0;
+  virtual void removeAllVariables() = 0;
 
   //! Détache les variables associées au maillage \a mesh.
-  virtual void detachMeshVariables(IMesh* mesh) =0;
+  virtual void detachMeshVariables(IMesh* mesh) = 0;
 
  public:
 
@@ -76,7 +76,7 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    * \pre var ne doit pas déjà être référencée.
    * \return l'implémentation associée à \a var.
    */
-  virtual void addVariableRef(VariableRef* var) =0;
+  virtual void addVariableRef(VariableRef* var) = 0;
 
   /*!
    * \brief Supprime une référence à une variable.
@@ -86,7 +86,7 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    * Si \a var n'est pas référencée par le gestionnaire, rien n'est effectué.
    * \pre var != 0
    */
-  virtual void removeVariableRef(VariableRef* var) =0;
+  virtual void removeVariableRef(VariableRef* var) = 0;
 
   /*!
    * \brief Ajoute une variable.
@@ -99,7 +99,7 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    * \pre var ne doit pas déjà être référencée.
    * \return l'implémentation associée à \a var.
    */
-  virtual void addVariable(IVariable* var) =0;
+  virtual void addVariable(IVariable* var) = 0;
 
   /*!
    * \brief Supprime une variable.
@@ -111,8 +111,8 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    * \pre var != 0
    * \pre var doit avoir une seule référence.
    */
-  virtual void removeVariable(IVariable* var) =0;
-	
+  virtual void removeVariable(IVariable* var) = 0;
+
   /*!
    * \brief Initialise les variables.
    *
@@ -121,12 +121,18 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    *
    * \param is_continue \a true vrai si on est en reprise.
    */
-  virtual void initializeVariables(bool is_continue) =0;
+  virtual void initializeVariables(bool is_continue) = 0;
 
  public:
 
   //! Fonction interne temporaire pour récupérer le sous-domaine.
-  virtual ISubDomain* internalSubDomain() const =0;
+  virtual ISubDomain* internalSubDomain() const = 0;
+
+  //! Gestionnaire pour les accélérateurs
+  virtual IAcceleratorMng* acceleratorMng() const = 0;
+
+  //! Positionne le gestionnaire des accélérateurs
+  virtual void setAcceleratorMng(Ref<IAcceleratorMng> v) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

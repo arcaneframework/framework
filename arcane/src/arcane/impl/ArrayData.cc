@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayData.cc                                                (C) 2000-2023 */
+/* ArrayData.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Donnée du type 'Array'.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,9 @@
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MemoryAllocator.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
@@ -112,6 +115,7 @@ class ArrayDataT
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo,ByteArray& output) const override;
+  void computeHash(DataHashInfo& hash_info) const;
   ArrayShape shape() const override { return m_shape; }
   void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
   void setAllocationInfo(const DataAllocationInfo& v) override;
@@ -140,6 +144,7 @@ class ArrayDataT
  public:
 
   void swapValuesDirect(ThatClass* true_data);
+  void changeAllocator(const MemoryAllocationOptions& alloc_info);
 
  public:
 
@@ -217,6 +222,11 @@ class ArrayDataT<DataType>::Impl
     return makeMutableMemoryView<DataType>(m_p->view());
   }
   INumericDataInternal* numericData() override { return this; }
+  void changeAllocator(const MemoryAllocationOptions& v) override { m_p->changeAllocator(v); }
+  void computeHash(DataHashInfo& hash_info) override
+  {
+    m_p->computeHash(hash_info);
+  }
 
  private:
 
@@ -626,6 +636,16 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
 /*---------------------------------------------------------------------------*/
 
 template<typename DataType> void ArrayDataT<DataType>::
+computeHash(DataHashInfo& hash_info) const
+{
+  hash_info.setVersion(2);
+  hash_info.context()->updateHash(asBytes(m_value.span()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void ArrayDataT<DataType>::
 copy(const IData* data)
 {
   auto* true_data = dynamic_cast< const DataInterfaceType* >(data);
@@ -675,6 +695,28 @@ setAllocationInfo(const DataAllocationInfo& v)
     return;
   m_allocation_info = v;
   m_value.setMemoryLocationHint(v.memoryLocationHint());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void ArrayDataT<DataType>::
+changeAllocator(const MemoryAllocationOptions& alloc_info)
+{
+  UniqueArray<DataType> new_value(alloc_info,m_value.size());
+
+  // Copie \a m_value dans \a new_value
+  // Tant qu'il n'y a pas l'API dans Arccore, il faut faire la copie à la
+  // main pour ne pas avoir de plantage si l'allocateur est uniquement sur
+  // un accélérateur
+  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+  eMemoryRessource mem_type = eMemoryRessource::Unknown;
+  ConstMemoryView input_view(asBytes(m_value));
+  MutableMemoryView output_view(asWritableBytes(new_value));
+  mrm->_internal()->copy(input_view, mem_type, output_view, mem_type, nullptr);
+
+  std::swap(m_value,new_value);
+  m_allocation_info.setMemoryLocationHint(alloc_info.memoryLocationHint());
 }
 
 /*---------------------------------------------------------------------------*/

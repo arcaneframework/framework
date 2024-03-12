@@ -201,6 +201,32 @@ if(NOT WIN32)
                MESSAGE     "ENABLE CUDA " 
                DEFAULT     OFF)
   
+  # HIP
+  createOption(COMMANDLINE EnableHIP
+               NAME        ENABLE_HIP
+               MESSAGE     "ENABLE HIP" 
+               DEFAULT     OFF)
+               
+  # SYCL
+  createOption(COMMANDLINE ALIEN_USE_SYCL
+               NAME        ENABLE_SYCL
+               MESSAGE     "ENABLE SYCL " 
+               DEFAULT     OFF)
+               
+  createOption(COMMANDLINE ALIEN_USE_HIPSYCL
+               NAME        ENABLE_SYCL
+               MESSAGE     "ENABLE SYCL " 
+               DEFAULT     OFF)
+               
+  createOption(COMMANDLINE ALIEN_USE_DPCPPSYCL
+               NAME        ENABLE_SYCL
+               MESSAGE     "ENABLE SYCL " 
+               DEFAULT     OFF)
+               
+  createOption(COMMANDLINE ALIEN_USE_INTELSYCL
+               NAME        ENABLE_SYCL
+               MESSAGE     "ENABLE SYCL " 
+               DEFAULT     OFF)
 endif()
 
 # ---------------------------------------------------------------------------

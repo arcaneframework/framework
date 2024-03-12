@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandEnumerate.h                                       (C) 2000-2022 */
+/* RunCommandEnumerate.h                                       (C) 2000-2023 */
 /*                                                                           */
 /* Macros pour exécuter une boucle sur une liste d'entités.                  */
 /*---------------------------------------------------------------------------*/
@@ -17,9 +17,11 @@
 #include "arcane/accelerator/RunCommand.h"
 #include "arcane/accelerator/RunQueueInternal.h"
 
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/Concurrency.h"
+#include "arcane/utils/ArcaneCxx20.h"
+
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/Concurrency.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

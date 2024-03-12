@@ -1,6 +1,7 @@
 set(ARCANE_SOURCES
   ApplicationInfo.cc
   ApplicationInfo.h
+  ArcaneCxx20.h
   ArcaneGlobal.cc
   ArcaneGlobal.h
   ArithmeticException.cc
@@ -18,6 +19,7 @@ set(ARCANE_SOURCES
   BadAlignmentException.h
   BadCastException.cc
   BadCastException.h
+  BFloat16.h
   Collection.cc
   Collection.h
   CommandLineArguments.h
@@ -30,6 +32,7 @@ set(ARCANE_SOURCES
   CStringUtils.h
   DependencyInjection.h
   DependencyInjection.cc
+  DualUniqueArray.h
   Enumerator.cc
   Enumerator.h
   ExternalRef.h
@@ -37,6 +40,8 @@ set(ARCANE_SOURCES
   Exception.cc
   Event.cc
   Event.h
+  FixedArray.h
+  Float16.h
   FloatingPointExceptionSentry.cc
   FloatingPointExceptionSentry.h
   FileContent.cc
@@ -57,6 +62,7 @@ set(ARCANE_SOURCES
   JSONReader.h
   JSONWriter.cc
   JSONWriter.h
+  HashAlgorithm.cc
   HashTable.cc
   HashTable.h
   HPReal.cc
@@ -66,6 +72,7 @@ set(ARCANE_SOURCES
   IMessagePassingProfilingService.h
   ISO88591Transcoder.cc
   ISO88591Transcoder.h
+  MDSpan.h
   MemoryAllocator.h
   MemoryView.h
   MemoryView.cc
@@ -73,8 +80,6 @@ set(ARCANE_SOURCES
   MD5HashAlgorithm.cc
   MD5HashAlgorithm.h
   MDDim.h
-  MDSpan.cc
-  MDSpan.h
   Math.cc
   Math.h
   MemoryAccessInfo.cc
@@ -88,13 +93,13 @@ set(ARCANE_SOURCES
   MemoryUtils.cc
   Numeric.cc
   Numeric.h
-  NumericTraits.h
+  NumericTypes.h
   NumArray.h
-  NumArray.cc
+  NumArrayContainer.h
+  NumArrayUtils.h
+  NumericTraits.h
   NumMatrix.h
   NumVector.h
-  NumArrayUtils.h
-  NumArrayUtils.cc
   Observable.cc
   Observer.cc
   Observable.h
@@ -142,6 +147,7 @@ set(ARCANE_SOURCES
   UserDataList.h
   ValueChecker.cc
   ValueChecker.h
+  Vector2.h
   Vector3.h
   VersionInfo.cc
   VersionInfo.h
@@ -197,6 +203,7 @@ set(ARCANE_SOURCES
   ArcanePrecomp.h
   ArgumentException.h
   Array2.h
+  ArrayUtils.h
   ArrayView.h
   Array2View.h
   Array3View.h
@@ -295,6 +302,8 @@ set(ARCANE_SOURCES
   StringDictionary.h
   StringDictionary.cc
   StringList.h
+  SHA1HashAlgorithm.h
+  SHA1HashAlgorithm.cc
   SHA3HashAlgorithm.h
   SHA3HashAlgorithm.cc
   ValueConvert.h
@@ -325,3 +334,18 @@ set(ARCANE_SOURCES
   internal/SpecificMemoryCopyList.h
   internal/MemoryBuffer.h
   )
+
+if (ARCANE_HAS_CXX20)
+  list(APPEND ARCANE_SOURCES
+    ArcaneCxx20.cc
+    )
+endif()
+
+if (ARCANE_HAS_ACCELERATOR_API)
+  list(APPEND ARCANE_SOURCES
+    MDSpan.cc
+    NumArray.cc
+    DualUniqueArray.cc
+    NumArrayUtils.cc
+  )
+endif()

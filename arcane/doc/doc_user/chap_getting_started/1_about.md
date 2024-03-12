@@ -8,6 +8,57 @@ de calcul comme les structures de données pour le maillage, le
 parallélisme mais aussi des aspects plus liés à
 l'environnement comme la configuration du jeu de données.
 
+%Arcane peut s'utiliser de deux manières:
+
+- le mode code de calcul. Il s'agit du mode classique dans lequel
+  %Arcane gère l'ensemble des éléments d'un code de calcul. Ce mode
+  est décrit dans le chapître \ref
+  arcanedoc_getting_started_mode_full. Dans ce mode %Arcane gère
+  automatiquement l'initialisation du calcul, la boucle en temps, les
+  dépouillements et les protections/reprises.
+- le mode autonome. Dans ce mode %Arcane s'utilise sous la forme d'une
+  simple bibliothèque offrant des fonctionnalités pour le
+  parallélisme, la gestion des maillages ou la gestion des
+  accélérateurs. Ce mode est décrit dans le chapître
+  \ref arcanedoc_execution_direct_execution
+
+## Installation
+
+La procédure d'installation est décrite [ici](https://github.com/arcaneframework/framework)
+
+## API Publique
+
+L'API publique d'%Arcane contient les répertoires d'en-tête suivants:
+
+```
+arcane/utils
+arcane/core/*
+arcane/geometry
+arcane/accelerator/core
+arcane/accelerator
+arcane/launcher
+arcane/materials
+arcane/hdf5
+arcane/cartesianmesh
+```
+
+%Arcane utilise les composantes suivantes de %Arccore. Elle n'ont
+normalement pas besoin d'être incluses directement par l'utilisateur:
+
+```
+arccore/base
+arccore/collections
+arccore/concurrency
+arccore/message_passing
+arccore/serialize
+arccore/trace
+```
+
+Les autres répertoires sont considérés comme internes à %Arcane et ne
+doivent pas être utilisés.
+
+## Utilisation dans un code de calcul {#arcanedoc_getting_started_mode_full}
+
 Un code de calcul, quel qu'il soit, peut être vu comme un système
 prenant certaines valeurs en entrée et fournissant des valeurs en
 sortie en effectuant des *opérations*. Comme il est impossible
@@ -27,7 +78,7 @@ Chacun des termes décrit précédemment possède une terminologie propre
 à %Arcane :
 
 - une opération du code est appelée un [point d'entrée](\ref arcanedoc_core_types_axl_entrypoint).
-  La description de la suite d'opération s'appelle
+- La description de la suite d'opération s'appelle
   la [boucle en temps](\ref arcanedoc_core_types_timeloop)
 - les valeurs manipulées sont appelées des [variables](\ref arcanedoc_core_types_axl_variable).
   Par exemple, la température, la pression sont des variables.
@@ -52,13 +103,6 @@ détail dans le document \ref arcanedoc_core_types. Néanmoins, avant
 de voir plus en détail le fonctionnement de ces trois objets,
 il faut connaître les notions de base présentées dans les chapitres
 de ce document.
-
-\note %Arcane est implémenté en utilisant le langage C++ norme 2020.
-Même si des fonctionnalités avancées du C++ sont utilisés en
-interne, les types et opérations mises à la disposition du développeur
-numéricien ont soigneusement été étudiées pour rester le plus simple
-possible.
-
 
 ____
 

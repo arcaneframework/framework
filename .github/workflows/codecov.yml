@@ -25,7 +25,11 @@ on:
       - '**.webp'
       - '**.yml'
   workflow_dispatch:
-  
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 env:
   # CTest
   CT_OPTS: "--timeout 300 --output-on-failure"
@@ -35,6 +39,7 @@ env:
   # OpenMPI
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+  OMPI_MCA_rmaps_base_oversubscribe : true
 
 jobs:
   build:
@@ -59,7 +64,7 @@ jobs:
         run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Checkout framework
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
@@ -70,6 +75,7 @@ jobs:
           source_dir: ${{ env.SOURCE_DIR }}
           build_dir: ${{ env.BUILD_DIR }}
           cmake_additionnal_args: '-DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path -ftest-coverage"
+            -DARCCORE_CXX_STANDARD=20
             -DARCANE_DEFAULT_PARTITIONER=Metis
             -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
             -DARCANE_DISABLE_HYODA=TRUE
@@ -82,7 +88,7 @@ jobs:
 
       - name: Upload failure artifact
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: codecov-failure_config_build-artifact
           path: ${{ env.LOG_DIR }}
@@ -106,13 +112,15 @@ jobs:
           rm -v -f *_axl.h.gcov *_wrap.*.gcov
 
       - name: Upload coverage files to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN : ${{ secrets.CODECOV_TOKEN }}
         with:
           verbose: true
           fail_ci_if_error: true
 
       - name: Upload test artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: codecov-test-artifact

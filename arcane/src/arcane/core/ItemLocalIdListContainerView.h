@@ -37,7 +37,7 @@ namespace Arcane::impl
  */
 class ARCANE_CORE_EXPORT ItemLocalIdListContainerView
 {
-  template <typename ItemType> friend class ::Arcane::ItemLocalIdViewT;
+  template <typename ItemType> friend class ::Arcane::ItemLocalIdListViewT;
   template <int Extent> friend class ::Arcane::impl::ItemIndexedListView;
   friend ItemVectorView;
   friend ItemLocalIdListView;

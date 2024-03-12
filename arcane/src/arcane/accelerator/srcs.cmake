@@ -3,7 +3,9 @@ set( ARCANE_SOURCES
   Accelerator.h
   AcceleratorGlobal.h
   AsyncRunQueuePool.h
+  Atomic.h
   CommonCudaHipReduceImpl.h
+  CommonCudaHipAtomicImpl.h
   CommonUtils.h
   CommonUtils.cc
   IReduceMemoryImpl.h
@@ -27,9 +29,13 @@ set( ARCANE_SOURCES
   RunQueueInternal.h
   Scan.h
   Filter.h
+  Filterer.cc
+  Partitioner.h
+  Partitioner.cc
   Scan.cc
   SpanViews.h
   VariableViews.h
+  VariableViews.cc
   Views.h
   ViewsCommon.h
 )

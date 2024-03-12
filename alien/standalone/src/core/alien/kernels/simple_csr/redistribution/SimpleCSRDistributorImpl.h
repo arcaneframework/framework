@@ -1,20 +1,11 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+﻿/// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+
 #include <mpi.h>
 
 #include <arccore/base/Span.h>
@@ -34,19 +25,19 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
 
   // build target_offset from comm_plan tgtdist
   const auto tgt_dist = m_comm_plan->tgtDist();
-  int n_offset = 0;
-  for (int i = 1; i < tgt_dist.size(); ++i) {
+  Integer n_offset = 0;
+  for (Integer i = 1; i < tgt_dist.size(); ++i) {
     if (tgt_dist[i] != tgt_dist[i - 1])
       n_offset++;
   }
   if (dst_me.has_value()) {
     assert(n_offset == m_comm_plan->tgtParallelMng()->commSize());
   }
-  std::vector<int> target_offset(n_offset + 1);
+  std::vector<Integer> target_offset(n_offset + 1);
 
   target_offset[0] = 0;
-  int tgt_i = 1;
-  for (int i = 1; i < tgt_dist.size(); ++i) {
+  Integer tgt_i = 1;
+  for (Integer i = 1; i < tgt_dist.size(); ++i) {
     if (tgt_dist[i] != tgt_dist[i - 1]) {
       target_offset[tgt_i] = tgt_dist[i];
       tgt_i++;
@@ -135,24 +126,24 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
 
   // build destination kcol
   // exchange row sizes
-  _resizeBuffers<int>(1); // comm_info.m_n_item are already computed so buffer sizes are sufficient for row size exchange
+  _resizeBuffers<Integer>(1); // comm_info.m_n_item are already computed so buffer sizes are sufficient for row size exchange
 
   for (auto& [recv_id, comm_info] : m_recv_comm_info) {
-    comm_info.m_request = Arccore::MessagePassing::mpReceive(pm, Arccore::Span<int>((int*)comm_info.m_buffer.data(), comm_info.m_row_list.size()), comm_info.m_message_info);
+    comm_info.m_request = Arccore::MessagePassing::mpReceive(pm, Arccore::Span<Integer>((Integer*)comm_info.m_buffer.data(), comm_info.m_row_list.size()), comm_info.m_message_info);
   }
 
   for (auto& [send_id, comm_info] : m_send_comm_info) {
-    auto* buffer = (int*)(comm_info.m_buffer.data());
+    auto* buffer = (Integer*)(comm_info.m_buffer.data());
     std::size_t buffer_idx = 0;
     assert(comm_info.m_row_list.size() <= comm_info.m_n_item); // check that buffer is large enough
     for (const auto& src_row : comm_info.m_row_list) {
       buffer[buffer_idx] = m_src_profile->getRowSize(src_row);
       buffer_idx++;
     }
-    comm_info.m_request = Arccore::MessagePassing::mpSend(pm, Arccore::Span<int>((int*)comm_info.m_buffer.data(), comm_info.m_row_list.size()), comm_info.m_message_info);
+    comm_info.m_request = Arccore::MessagePassing::mpSend(pm, Arccore::Span<Integer>((Integer*)comm_info.m_buffer.data(), comm_info.m_row_list.size()), comm_info.m_message_info);
   }
 
-  std::vector<int> row_size(ext_dst_n_rows + m_src2dst_row_list.size(), 0);
+  std::vector<Integer> row_size(ext_dst_n_rows + m_src2dst_row_list.size(), 0);
 
   // self rows (if exist)
   for (const auto& [src_row, dst_row] : m_src2dst_row_list) {
@@ -163,7 +154,7 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
   for (auto const& [recv_id, comm_info] : m_recv_comm_info) {
     Arccore::MessagePassing::mpWait(pm, comm_info.m_request);
 
-    const auto* buffer = (const int*)(comm_info.m_buffer.data());
+    const auto* buffer = (const Integer*)(comm_info.m_buffer.data());
     std::size_t buffer_idx = 0;
     for (const auto& dst_row : m_recv_comm_info[recv_id].m_row_list) {
       row_size[dst_row] = buffer[buffer_idx];
@@ -175,13 +166,13 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
   if (dst_me.has_value()) {
     auto* kcol = m_dst_profile->kcol();
     kcol[0] = 0;
-    for (int i = 1; i < m_dst_profile->getNRows() + 1; ++i) {
+    for (Integer i = 1; i < m_dst_profile->getNRows() + 1; ++i) {
       kcol[i] = kcol[i - 1] + row_size[i - 1];
     }
   }
 
   // distribute profile cols
-  _distribute<int>(1, m_src_profile->cols(), dst_me.has_value() ? m_dst_profile->cols() : nullptr);
+  _distribute<Integer>(1, m_src_profile->cols(), dst_me.has_value() ? m_dst_profile->cols() : nullptr);
 }
 
 template <typename T>
@@ -252,14 +243,14 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
   if (dst_me.has_value()) {
     // I am in the target parallel manager
     // fill dst profile with a copy of m_dst_profile
-    auto& profile = dst.internal().getCSRProfile();
+    auto& profile = dst.internal()->getCSRProfile();
     profile.init(m_dst_profile->getNRows(), m_dst_profile->getNElems());
     dst.allocate();
 
-    for (int i = 0; i < profile.getNRows() + 1; ++i) {
+    for (Integer i = 0; i < profile.getNRows() + 1; ++i) {
       profile.kcol()[i] = m_dst_profile->kcol()[i];
     }
-    for (int k = 0; k < profile.getNElems(); ++k) {
+    for (Integer k = 0; k < profile.getNElems(); ++k) {
       profile.cols()[k] = m_dst_profile->cols()[k];
     }
   }
@@ -287,10 +278,10 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
   if(dst_me.value_or(1) == 0)
   {
     const auto& profile = dst.internal().getCSRProfile();
-    for (int i = 0; i < profile.getNRows(); ++i)
+    for (Integer i = 0; i < profile.getNRows(); ++i)
     {
       std::cout << i ;
-      for (int k = profile.kcol()[i]; k < profile.kcol()[i+1]; ++k)
+      for (Integer k = profile.kcol()[i]; k < profile.kcol()[i+1]; ++k)
       {
         std::cout << " [" << profile.cols()[k] << " " << dst.data()[k] << "]";
       }

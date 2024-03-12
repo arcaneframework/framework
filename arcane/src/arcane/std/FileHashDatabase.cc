@@ -111,7 +111,7 @@ class FileHashDatabase
     }
   }
 
-  void readValues(const HashDatabaseReadArgs& args)
+  void readValues(const HashDatabaseReadArgs& args) override
   {
     const String& hash_value = args.hashValueAsString();
     Span<std::byte> bytes = args.values();

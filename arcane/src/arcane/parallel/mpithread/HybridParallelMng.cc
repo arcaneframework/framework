@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelMng.cc                                        (C) 2000-2021 */
+/* HybridParallelMng.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant un mixte MPI/Threads.              */
 /*---------------------------------------------------------------------------*/
@@ -16,17 +16,12 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/IThreadBarrier.h"
-#include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/parallel/IStat.h"
+#include "arcane/core/parallel/IStat.h"
 
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
@@ -178,11 +173,9 @@ HybridParallelMng(const HybridParallelMngBuildInfo& bi)
 , m_thread_barrier(bi.thread_barrier)
 , m_mpi_parallel_mng(bi.mpi_parallel_mng)
 , m_all_dispatchers(bi.all_dispatchers)
-// TODO: a supprimer
-//, m_parallel_mng_list(bi.parallel_mng_list)
 , m_sub_builder_factory(bi.sub_builder_factory)
 , m_parent_container_ref(bi.container)
-, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new ParallelMngUtilsFactoryBase()))
+, m_utils_factory(createRef<ParallelMngUtilsFactoryBase>())
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
@@ -355,18 +348,6 @@ ISerializeMessage* HybridParallelMng::
 createSendSerializer(Int32 rank)
 {
   return new SerializeMessage(m_global_rank,rank,ISerializeMessage::MT_Send);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void HybridParallelMng::
-allGatherSerializer(ISerializer* send_serializer,ISerializer* recv_serializer)
-{
-  Timer::Phase tphase(timeStats(),TP_Communication);
-  SerializeBuffer* sbuf = _castSerializer(send_serializer);
-  SerializeBuffer* recv_buf = _castSerializer(recv_serializer);
-  recv_buf->allGather(this,*sbuf);
 }
 
 /*---------------------------------------------------------------------------*/

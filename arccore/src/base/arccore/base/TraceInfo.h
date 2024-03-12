@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceInfo.h                                                 (C) 2000-2022 */
+/* TraceInfo.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Informations de trace.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -32,18 +32,35 @@ namespace Arccore
 class TraceInfo
 {
  public:
-  TraceInfo()
-  : m_file("(None)"), m_name("(None)"), m_line(-1), m_print_signature(true) {}
-  TraceInfo(const char* afile,const char* func_name,int aline)
-  : m_file(afile), m_name(func_name), m_line(aline), m_print_signature(true) {}
-  TraceInfo(const char* afile,const char* func_name,int aline,bool print_signature)
-  : m_file(afile), m_name(func_name), m_line(aline), m_print_signature(print_signature) {}
+
+  constexpr TraceInfo()
+  : m_file("(None)")
+  , m_name("(None)")
+  , m_line(-1)
+  , m_print_signature(true)
+  {}
+  constexpr TraceInfo(const char* afile, const char* func_name, int aline)
+  : m_file(afile)
+  , m_name(func_name)
+  , m_line(aline)
+  , m_print_signature(true)
+  {}
+  constexpr TraceInfo(const char* afile, const char* func_name, int aline, bool print_signature)
+  : m_file(afile)
+  , m_name(func_name)
+  , m_line(aline)
+  , m_print_signature(print_signature)
+  {}
+
  public:
-  const char* file() const { return m_file; }
-  int line() const { return m_line; }
-  const char* name() const { return m_name; }
-  bool printSignature() const { return m_print_signature; }
+
+  constexpr const char* file() const { return m_file; }
+  constexpr int line() const { return m_line; }
+  constexpr const char* name() const { return m_name; }
+  constexpr bool printSignature() const { return m_print_signature; }
+
  private:
+
   const char* m_file;
   const char* m_name;
   int m_line;

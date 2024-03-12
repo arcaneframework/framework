@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LoadBalanceMng.h                                            (C) 2000-2020 */
+/* LoadBalanceMng.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Module standard de description du probleme pour l'equilibrage de charge.  */
 /*---------------------------------------------------------------------------*/
@@ -36,14 +36,12 @@ class CriteriaMng;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// MeshVariableScalarRefT<Cell,Int32> == VariableCellInt32
-
 /*!
- *  @brief Interface proxy pour acceder aux variables definissant les poids.
+ * \brief Interface proxy pour acceder aux variables definissant les poids.
  *
- *  Est indépendante du type de variable (Integer, Real).
- *  Est à libération automatique de mémoire (via ObjectImpl).
- *  Permet de noter à quelle famille d'objets est associée la variable.
+ * Est indépendante du type de variable (Integer, Real).
+ * Est à libération automatique de mémoire (via ObjectImpl).
+ * Permet de noter à quelle famille d'objets est associée la variable.
  */
 class ARCANE_IMPL_EXPORT IProxyItemVariable
 : public ObjectImpl
@@ -118,7 +116,6 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
  public:
 
   explicit LoadBalanceMng(ISubDomain* sd, bool massAsCriterion = true);
-  ~LoadBalanceMng(); //!< Libère les ressources.
 
  public:
   /*!
@@ -162,10 +159,10 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
   UniqueArray<StoreIProxyItemVariable> m_mass_vars;
   UniqueArray<StoreIProxyItemVariable> m_event_vars;
   UniqueArray<StoreIProxyItemVariable> m_comm_vars;
-  bool m_mass_criterion;
-  bool m_nb_criterion;
-  bool m_cell_comm;
-  bool m_compute_comm;
+  bool m_mass_criterion = false;
+  bool m_nb_criterion = false;
+  bool m_cell_comm = true;
+  bool m_compute_comm = true;
 
   ScopedPtrT<VariableFaceReal> m_comm_costs;
   ScopedPtrT<VariableCellReal> m_mass_over_weigth;

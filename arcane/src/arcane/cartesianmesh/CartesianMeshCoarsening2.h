@@ -99,6 +99,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening2
   void _recomputeMeshGenerationInfo();
   void _writeMeshSVG(const String& name);
   void _doDoubleGhostLayers();
+  void _createCoarseCells2D();
+  void _createCoarseCells3D();
 };
 
 /*---------------------------------------------------------------------------*/

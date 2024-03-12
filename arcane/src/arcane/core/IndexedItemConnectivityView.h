@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexedItemConnectivityView.h                               (C) 2000-2022 */
+/* IndexedItemConnectivityView.h                               (C) 2000-2023 */
 /*                                                                           */
 /* Vues sur les connectivités utilisant des index.                           */
 /*---------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
   //! Nombre d'entités connectées à l'entité \a lid
   ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
   //! Liste des entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewT<Item> items(ItemLocalId lid) const
+  ARCCORE_HOST_DEVICE ItemLocalIdListViewT<Item> items(ItemLocalId lid) const
   {
     return m_container_view.itemsIds<Item>(lid);
   }
@@ -126,7 +126,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase2
   //! Nombre d'entités connectées à l'entité \a lid
   ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
   //! Liste des entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewT<Item> items(ItemLocalId lid) const
+  ARCCORE_HOST_DEVICE ItemLocalIdListViewT<Item> items(ItemLocalId lid) const
   {
     return m_container_view.itemsIds<Item>(lid);
   }
@@ -151,7 +151,7 @@ class IndexedItemConnectivityGenericViewT
   using ItemType2Type = ItemType2;
   using ItemLocalId1 = typename ItemType1::LocalIdType;
   using ItemLocalId2 = typename ItemType2::LocalIdType;
-  using ItemLocalIdViewType = ItemLocalIdViewT<ItemType2>;
+  using ItemLocalIdViewType = ItemLocalIdListViewT<ItemType2>;
 
  public:
 

@@ -287,7 +287,9 @@ install(FILES ${CMAKE_BINARY_DIR}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR}_install/
 # ----------------------------------------------------------------------------
 # Gestion du wrapper 'Swig'.
 
-add_subdirectory(wrapper)
+if (ARCANE_ENABLE_DOTNET_WRAPPER)
+  add_subdirectory(wrapper)
+endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

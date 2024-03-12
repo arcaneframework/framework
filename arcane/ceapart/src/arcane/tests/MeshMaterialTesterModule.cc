@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialTesterModule.cc                                 (C) 2000-2023 */
+/* MeshMaterialTesterModule.cc                                 (C) 2000-2024 */
 /*                                                                           */
 /* Module de test du gestionnaire des matériaux.                             */
 /*---------------------------------------------------------------------------*/
@@ -180,6 +180,7 @@ class MeshMaterialTesterModule
   void _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env);
   void _initUnitTest();
   void _applyEos(bool is_init);
+  void _testDumpProperties();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -541,6 +542,12 @@ startInit()
         //info() << "Cell name=" << mmcell._varIndex();
         m_mat_density[mmcell] = 200.0;
         m_mat_nodump_real[mmcell] = 1.2;
+        ComponentCell x1(mmcell);
+        if (x1._varIndex()!=mmcell._varIndex())
+          ARCANE_FATAL("Bad convertsion MatCell -> ComponentCell");
+        MatCell x2(x1);
+        if (x1._varIndex()!=x2._varIndex())
+          ARCANE_FATAL("Bad convertsion ComponentCell -> MatCell");
       }
     }
   }
@@ -600,6 +607,12 @@ startInit()
       if (!back_cell.null()){
         AllEnvCell all_env_back_cell = all_env_cell_converter[back_cell];
         info() << "NB_ENV=" << all_env_back_cell.nbEnvironment();
+        ComponentCell x1 = all_env_back_cell;
+        AllEnvCell x2(x1);
+        if (x1._varIndex()!=all_env_back_cell._varIndex())
+          ARCANE_FATAL("Bad convertsion AllEnvCell -> ComponentCell");
+        if (x1._varIndex()!=x2._varIndex())
+          ARCANE_FATAL("Bad convertsion ComponentCell -> EnvCell");
       }
     }
   }
@@ -703,6 +716,41 @@ startInit()
   _initUnitTest();
 
   _applyEos(true);
+  _testDumpProperties();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialTesterModule::
+_testDumpProperties()
+{
+  IMesh* mesh = defaultMesh();
+  VariableCellReal v0(VariableBuildInfo(mesh,"VarTestDump0",IVariable::PNoDump));
+  MaterialVariableCellReal v1(VariableBuildInfo(mesh,"VarTestDump0"));
+  Int32 p0 = v0.variable()->property();
+  Int32 p1 = v1.globalVariable().variable()->property();
+  info() << "PROP1 = " << p0 << " " << p1;
+
+  MaterialVariableCellReal v2(VariableBuildInfo(mesh,"VarTestDump1"));
+  VariableCellReal v3(VariableBuildInfo(mesh,"VarTestDump1",IVariable::PNoDump));
+  Int32 p2 = v2.globalVariable().variable()->property();
+  Int32 p3 = v3.variable()->property();
+  info() << "PROP2 = " << p2 << " " << p3;
+
+  MaterialVariableCellReal v4(VariableBuildInfo(mesh,"VarTestDump2",IVariable::PNoDump));
+  Int32 p4 = v4.globalVariable().variable()->property();
+  info() << "PROP4 = " << p4;
+
+  if (p0!=p1)
+    ARCANE_FATAL("Bad property value p0={0} p1={1}",p0,p1);
+  if (p2!=p3)
+    ARCANE_FATAL("Bad property value p2={0} p3={1}",p2,p3);
+
+  if ((p0 & IVariable::PNoDump)!=0)
+    ARCANE_FATAL("Bad property value p0={0}. Should be Dump",p0);
+  if ((p2 & IVariable::PNoDump)!=0)
+    ARCANE_FATAL("Bad property value p2={0}. Should be Dump",p2);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -863,7 +911,7 @@ _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env)
     {
       Int32 total = 0;
       using MyEnvCell = EnvCell;
-      ENUMERATE_COMPONENTITEM(EnvCell,imc,env){
+      ENUMERATE_COMPONENTITEM(MyEnvCell,imc,env){
         total += test_var[imc];
       }
       vc.areEqual(total,total_full,"TotalFull1");
@@ -1065,26 +1113,25 @@ _checkVectorCopy(VectorType& vec_cells)
   // Normalement il s'agit d'une copie par référence donc les vues associées
   // pointent vers la même zone mémoire.
   VectorType vec_cells_copy(vec_cells);
-  vc.areEqual(vec_cells_copy.view().matvarIndexes().data(),
-              vec_cells.view().matvarIndexes().data(),"bad copy 1");
-  vc.areEqual(vec_cells_copy.view().itemsInternalView().data(),
-              vec_cells.view().itemsInternalView().data(),"bad copy 1");
+  if (!vec_cells_copy.view()._isSamePointerData(vec_cells.view()))
+    ARCANE_FATAL("Bad copy");
 
   VectorType vec_cells_copy2(vec_cells);
-  vc.areEqual(vec_cells_copy2.view().matvarIndexes(),vec_cells.view().matvarIndexes(),"bad copy 2");
+  vc.areEqual(vec_cells_copy2.view()._matvarIndexes(),vec_cells.view()._matvarIndexes(),"bad copy 2");
 
   VectorType move_vec_cells(std::move(vec_cells_copy2));
-  vc.areEqual(move_vec_cells.view().matvarIndexes().data(),vec_cells.view().matvarIndexes().data(),"bad move 1");
+  vc.areEqual(move_vec_cells.view()._matvarIndexes().data(),vec_cells.view()._matvarIndexes().data(),"bad move 1");
 
   {
     // Teste le clone.
     // A la sortie les valeurs des index doivent être les mêmes mais pas les pointeurs.
     VectorType clone_vec(vec_cells_copy.clone());
-    vc.areEqual(clone_vec.view().matvarIndexes(),vec_cells.view().matvarIndexes(),"bad clone 1");
-    vc.areEqual(clone_vec.view().itemsInternalView(),vec_cells.view().itemsInternalView(),"bad clone 2");
-    if (clone_vec.view().matvarIndexes().data()==vec_cells.view().matvarIndexes().data())
+    vc.areEqual(clone_vec.view()._matvarIndexes(),vec_cells.view()._matvarIndexes(),"bad clone 1");
+    if (clone_vec.view()._constituentItemListView() != vec_cells.view()._constituentItemListView())
+      ARCANE_FATAL("Bad clone 2");
+    if (clone_vec.view()._matvarIndexes().data()==vec_cells.view()._matvarIndexes().data())
       ARCANE_FATAL("bad clone 3");
-    if (clone_vec.view().itemsInternalView().data()==vec_cells.view().itemsInternalView().data())
+    if (clone_vec.view()._isSamePointerData(vec_cells.view()))
       ARCANE_FATAL("bad clone 3");
   }
 }
@@ -1628,6 +1675,9 @@ compute()
       MatVarIndex mvi = cv._varIndex();
       info() << "CELL IN ENV WITH COMPONENT vindex=" << mvi.arrayIndex() << " i=" << mvi.valueIndex();
       mat_pressure[cv] += 3.0;
+      EnvCell env_cell(cv);
+      if (env_cell._varIndex()!=cv._varIndex())
+        ARCANE_FATAL("Bad cell");
     }
   }
   _computeDensity();

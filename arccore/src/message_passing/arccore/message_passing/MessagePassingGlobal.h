@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MessagePassingGlobal.h                                      (C) 2000-2022 */
+/* MessagePassingGlobal.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Définitions globales de la composante 'MessagePassing' de 'Arccore'.      */
 /*---------------------------------------------------------------------------*/
@@ -57,6 +57,7 @@ static const Int32 A_ANY_SOURCE_RANK = static_cast<Int32>(-2);
 static const Int32 A_PROC_NULL_RANK = static_cast<Int32>(-3);
 
 class Communicator;
+class SubRequestCompletionInfo;
 class IRequestCreator;
 class IRequestList;
 class ISerializeMessage;
@@ -74,6 +75,7 @@ class MessagePassingMng;
 class IDispatchers;
 class Dispatchers;
 class IProfiler;
+class ISubRequest;
 class IControlDispatcher;
 template<typename DataType> class ITypeDispatcher;
 class GatherMessageInfoBase;

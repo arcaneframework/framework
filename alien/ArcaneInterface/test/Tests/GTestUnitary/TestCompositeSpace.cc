@@ -12,20 +12,22 @@ TEST(TestCompositeSpace, DefaultConstructor)
 TEST(TestCompositeSpace, SpaceEquality)
 {
   const Alien::CompositeKernel::Space s1;
-  ASSERT_TRUE(s1 == s1);
+  const Alien::ISpace& is1 = s1;;
+  ASSERT_TRUE(is1 == s1);
   const Alien::CompositeKernel::Space s2;
-  ASSERT_TRUE(s1 == s2);
+  ASSERT_TRUE(is1 == s2);
   const Alien::Space s3;
-  ASSERT_TRUE(s1 == s3);
+  ASSERT_TRUE(is1 == s3);
   const Alien::Space s4(1);
-  ASSERT_FALSE(s1 == s4);
+  ASSERT_FALSE(is1 == s4);
   const Alien::Space s5(0, "Named");
-  ASSERT_FALSE(s1 == s5);
+  ASSERT_FALSE(is1 == s5);
 }
 
 TEST(TestCompositeSpace, SubSpaceResize)
 {
   Alien::CompositeKernel::Space s;
+  Alien::ISpace& s_as_ispace = s;
   s.resizeSubSpace(3);
   ASSERT_EQ(0, s.size());
   ASSERT_EQ(3, s.subSpaceSize());
@@ -38,7 +40,7 @@ TEST(TestCompositeSpace, SubSpaceResize)
   s[2].reset(new Alien::Space(3));
   ASSERT_EQ(10, s.size());
   const Alien::Space s1(10);
-  ASSERT_TRUE(s1 == s);
+  ASSERT_TRUE(s1 == s_as_ispace);
 }
 
 TEST(TestCompositeSpace, SubSpaceMultipleResize)

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MshMeshReader.cc                                            (C) 2000-2023 */
+/* MshMeshReader.cc                                            (C) 2000-2024 */
 /*                                                                           */
-/* Lecture/Ecriture d'un fichier au format MSH.				                       */
+/* Lecture/Ecriture d'un fichier au format MSH.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -97,6 +97,7 @@ namespace Arcane
  */
 class MshMeshReader
 : public TraceAccessor
+, public IMshMeshReader
 {
  public:
 
@@ -235,7 +236,7 @@ class MshMeshReader
   : TraceAccessor(tm)
   {}
 
-  eReturnType readMeshFromMshFile(IMesh* mesh, const String& file_name);
+  eReturnType readMeshFromMshFile(IMesh* mesh, const String& file_name) override;
 
  private:
 
@@ -256,6 +257,15 @@ class MshMeshReader
   void _readPhysicalNames(IosFile& ios_file, MeshInfo& mesh_info);
   void _readEntitiesV4(IosFile& ios_file, MeshInfo& mesh_info);
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Ref<IMshMeshReader>
+createMshMeshReader(ITraceMng* tm)
+{
+  return makeRef<IMshMeshReader>(new MshMeshReader(tm));
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1174,6 +1184,31 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" Ref<IMshMeshReader>
+createMshParallelMeshReader(ITraceMng* tm);
+
+namespace
+{
+
+Ref<IMshMeshReader>
+_internalCreateReader(ITraceMng* tm)
+{
+  bool use_new_reader = false;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_PARALLEL_MSH_READER", true))
+    use_new_reader = v.value();
+  Ref<IMshMeshReader> reader;
+  if (use_new_reader)
+    reader = createMshParallelMeshReader(tm);
+  else
+    reader = createMshMeshReader(tm);
+  return reader;
+}
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class MshMeshReaderService
 : public AbstractService
 , public IMeshReader
@@ -1198,8 +1233,9 @@ class MshMeshReaderService
     ARCANE_UNUSED(dir_name);
     ARCANE_UNUSED(use_internal_partition);
     ARCANE_UNUSED(mesh_node);
-    MshMeshReader reader(traceMng());
-    return reader.readMeshFromMshFile(mesh, file_name);
+
+    Ref<IMshMeshReader> reader = _internalCreateReader(traceMng());
+    return reader->readMeshFromMshFile(mesh, file_name);
   }
 };
 
@@ -1237,10 +1273,10 @@ class MshCaseMeshReader
     }
     void allocateMeshItems(IPrimaryMesh* pm) override
     {
-      MshMeshReader reader(m_trace_mng);
+      Ref<IMshMeshReader> reader = _internalCreateReader(m_trace_mng);
       String fname = m_read_info.fileName();
       m_trace_mng->info() << "Msh Reader (ICaseMeshReader) file_name=" << fname;
-      IMeshReader::eReturnType ret = reader.readMeshFromMshFile(pm, fname);
+      IMeshReader::eReturnType ret = reader->readMeshFromMshFile(pm, fname);
       if (ret != IMeshReader::RTOk)
         ARCANE_FATAL("Can not read MSH File");
     }

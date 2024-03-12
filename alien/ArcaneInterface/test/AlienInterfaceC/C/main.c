@@ -208,5 +208,7 @@ int main(int argc, char** argv)
    */
   ALIEN_finalize() ;
 
+  MPI_Finalize() ;
+
   return 0 ;
 }

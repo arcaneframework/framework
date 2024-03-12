@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryView.h                                                (C) 2000-2023 */
+/* MemoryView.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Vues constantes ou modifiables sur une zone mémoire.                      */
 /*---------------------------------------------------------------------------*/
@@ -61,7 +61,13 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
   template <typename DataType> explicit constexpr ConstMemoryView(ConstArrayView<DataType> v)
   : ConstMemoryView(Span<const DataType>(v), 1)
   {}
+  template <typename DataType> explicit constexpr ConstMemoryView(ArrayView<DataType> v)
+  : ConstMemoryView(Span<const DataType>(v), 1)
+  {}
   template <typename DataType> constexpr ConstMemoryView(ConstArrayView<DataType> v, Int32 nb_component)
+  : ConstMemoryView(Span<const DataType>(v), nb_component)
+  {}
+  template <typename DataType> constexpr ConstMemoryView(ArrayView<DataType> v, Int32 nb_component)
   : ConstMemoryView(Span<const DataType>(v), nb_component)
   {}
   template <typename DataType> constexpr ConstMemoryView(Span<DataType> v, Int32 nb_component)

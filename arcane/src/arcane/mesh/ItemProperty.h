@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemProperty.h                                             (C) 2000-2023  */
+/* ItemProperty.h                                             (C) 2000-2024  */
 /*                                                                           */
 /* Property on item to handle new connectivities and future mesh properties  */
 /*---------------------------------------------------------------------------*/
@@ -188,7 +188,9 @@ class ItemMultiArrayProperty
 
   // nb_element per item est de taille IItemFamily::maxLocalId
   template <class AbstractFamily>
-  void resize(AbstractFamily* item_family, const Arcane::IntegerConstArrayView nb_element_per_item, const DataType default_value) // SDC Template AbstractFamily necessaire pour applications IFPEN
+  void resize([[maybe_unused]] AbstractFamily* item_family,
+              const Arcane::IntegerConstArrayView nb_element_per_item,
+              const DataType default_value) // SDC Template AbstractFamily necessaire pour applications IFPEN
   {
     ARCANE_ASSERT((nb_element_per_item.size() == item_family->maxLocalId()),
                   ("In item property resize : nb_element_per_item must have size IItemFamilyy::maxLocalId"))

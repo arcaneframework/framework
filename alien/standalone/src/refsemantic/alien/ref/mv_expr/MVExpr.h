@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MVExpr.h                                                    (C) 2000-2023 */
+/* MVExpr.h                                                    (C) 2000-2024 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,7 +77,6 @@ namespace MVExpr
   {
     return [=](auto visitor) { return visitor(lazy::div_tag{}, a(visitor), b(visitor)); };
   }
-
 
   struct distribution_evaluator
   {
@@ -433,9 +432,6 @@ namespace MVExpr
     template <typename T>
     T const& operator()(lazy::ref_tag, T const& r)
     {
-#ifdef DEBUG
-      std::cout << "\t return ref : " << r.name() << std::endl;
-#endif
       return r;
     }
 
@@ -471,9 +467,6 @@ namespace MVExpr
 
     auto operator()(lazy::mult_tag, Real lambda, Matrix const& a)
     {
-#ifdef DEBUG
-      std::cout << "\t visit lambda*b : " << b.name() << std::endl;
-#endif
       return matrixScal(lambda, a);
     }
 
@@ -743,6 +736,7 @@ namespace MVExpr
       return allocSize(r);
     }
   };
+
 
   template <class E>
   auto base_eval(E const& expr) { return expr(cpu_evaluator()); }

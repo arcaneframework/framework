@@ -49,12 +49,11 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ env.COMPONENT_NAME_UPPER }} Version ${{ env.FRAMEWORK_TAG_VERSION }}
+          name: ${{ env.COMPONENT_NAME_UPPER }} Version ${{ env.FRAMEWORK_TAG_VERSION }}
           body: |
             Release ${{ env.FRAMEWORK_TAG_VERSION }}
           draft: false

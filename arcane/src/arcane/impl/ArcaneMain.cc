@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.cc                                               (C) 2000-2023 */
+/* ArcaneMain.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,6 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ParallelFatalErrorException.h"
-#include "arcane/utils/StringImpl.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/ValueConvert.h"
@@ -469,6 +468,9 @@ execute()
 void ArcaneMainExecInfo::
 finalize()
 {
+  // Désactive les exceptions flottantes
+  platform::enableFloatingException(false);
+
   // Si l'exécution s'est bien déroulée mais que l'utilisateur a spécifié un
   // code d'erreur, on le récupère.
   int exe_error_code = m_exec_main->errorCode();
@@ -1062,8 +1064,12 @@ _runDotNet()
 void ArcaneMain::
 _checkAutoDetectMPI()
 {
-  auto si = _staticInfo();
+  // N'active pas MPI si on utilise le service de parallélisme 'Sequential'
+  String mp_service = defaultApplicationInfo().commandLineArguments().getParameter("MessagePassingService");
+  if (mp_service=="Sequential")
+    return;
 
+  auto si = _staticInfo();
   // Pour pouvoir automatiquement enregisrer MPI, il faut
   // appeler la méthode 'arcaneAutoDetectMessagePassingServiceMPI' qui se trouve
   // dans la bibliothèque dynamique 'arcane_mpi'.

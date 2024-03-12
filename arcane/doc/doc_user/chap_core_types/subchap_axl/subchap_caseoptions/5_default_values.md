@@ -107,6 +107,6 @@ ____
 \ref arcanedoc_core_types_axl_caseoptions_usage
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_casefile
+\ref arcanedoc_core_types_axl_others
 </span>
 </div>

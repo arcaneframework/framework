@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivityContainerView.h                             (C) 2000-2022 */
+/* ItemConnectivityContainerView.h                             (C) 2000-2023 */
 /*                                                                           */
 /* Vues sur les conteneurs contenant les connectivités.                      */
 /*---------------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
 
   //! Liste des entités connectées à l'entité de localId() \a lid
   template <typename ItemType> constexpr ARCCORE_HOST_DEVICE
-  ItemLocalIdViewT<ItemType>
+  ItemLocalIdListViewT<ItemType>
   itemsIds(ItemLocalId lid) const
   {
     ARCANE_CHECK_AT(lid.localId(), m_nb_item);

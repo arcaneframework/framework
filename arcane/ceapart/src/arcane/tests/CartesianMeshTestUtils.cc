@@ -16,31 +16,31 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Real2.h"
+#include "arcane/utils/ValueChecker.h"
 
-#include "arcane/MeshUtils.h"
+#include "arcane/core/MeshUtils.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/SimpleSVGMeshExporter.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/SimpleSVGMeshExporter.h"
-#include "arcane/UnstructuredMeshConnectivity.h"
-
+#if defined(ARCANE_HAS_ACCELERATOR_API)
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
 #include "arcane/accelerator/VariableViews.h"
+#endif
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
-#include "arcane/cea/ICartesianMesh.h"
-#include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/FaceDirectionMng.h"
-#include "arcane/cea/NodeDirectionMng.h"
-#include "arcane/cea/CartesianConnectivity.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/FaceDirectionMng.h"
+#include "arcane/cartesianmesh/NodeDirectionMng.h"
+#include "arcane/cartesianmesh/CartesianConnectivity.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,6 +102,7 @@ testAll(bool is_amr)
     _testCellToNodeConnectivity2D();
     _saveSVG();
   }
+  _testConnectivityByDirection();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -236,6 +237,7 @@ _testDirCell()
 void CartesianMeshTestUtils::
 _testDirCellAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   info() << "TEST_DIR_CELL_ACCELERATOR";
 
   IMesh* mesh = m_mesh;
@@ -296,6 +298,7 @@ _testDirCellAccelerator()
         ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*icell), dummy_var[icell]);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -408,6 +411,7 @@ _testDirFace(int idir)
 void CartesianMeshTestUtils::
 _testDirFaceAccelerator(int idir)
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   // Teste l'utilisation de DirFace et vérifie que
   // les valeurs sont correctes: pour une face donnée,
   // il faut que selon la direction choisie, la coordonnée du centre
@@ -480,6 +484,7 @@ _testDirFaceAccelerator(int idir)
     if (dummy_var[iface] < 0)
       ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*iface), dummy_var[iface]);
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -633,6 +638,7 @@ _testDirNode()
 void CartesianMeshTestUtils::
 _testDirNodeAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   info() << "TEST_DIR_NODE Accelerator";
   m_node_density.fill(0.0);
 
@@ -752,6 +758,7 @@ _testDirNodeAccelerator()
         ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*inode), dummy_var[inode]);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -802,6 +809,7 @@ _testDirCellNode()
 void CartesianMeshTestUtils::
 _testDirCellNodeAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   IMesh* mesh = m_mesh;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   Integer nb_dir = mesh->dimension();
@@ -858,6 +866,7 @@ _testDirCellNodeAccelerator()
                      ItemPrinter(*icell), c1, c2);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -899,6 +908,7 @@ _testDirCellFace()
 void CartesianMeshTestUtils::
 _testDirCellFaceAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   IMesh* mesh = m_mesh;
   //VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   Integer nb_dir = mesh->dimension();
@@ -950,6 +960,7 @@ _testDirCellFaceAccelerator()
       }
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1047,6 +1058,7 @@ _testNodeToCellConnectivity3D()
 void CartesianMeshTestUtils::
 _testNodeToCellConnectivity3DAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   info() << "Test NodeToCell Connectivity3D";
   IMesh* mesh = m_mesh;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
@@ -1132,6 +1144,7 @@ _testNodeToCellConnectivity3DAccelerator()
       ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*inode), dummy_var[inode]);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1291,6 +1304,7 @@ _testCellToNodeConnectivity3D()
 void CartesianMeshTestUtils::
 _testCellToNodeConnectivity3DAccelerator()
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   info() << "Test CellToNode Connectivity3D Accelerator";
   IMesh* mesh = m_mesh;
   VariableCellInt32 dummy_var(VariableBuildInfo(mesh, "DummyCellVariable"));
@@ -1387,6 +1401,7 @@ _testCellToNodeConnectivity3DAccelerator()
       ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*icell), dummy_var[icell]);
     }
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1445,6 +1460,56 @@ _testCellToNodeConnectivity2D()
         ARCANE_FATAL("Bad correspondance LL -> UR cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType> void CartesianMeshTestUtils::
+_testConnectivityByDirectionHelper(const ItemGroup& group)
+{
+  ValueChecker vc(A_FUNCINFO);
+  Int32 nb_dim = m_mesh->dimension();
+
+  info() << "Test ConnectivityByDirection 2D";
+  CartesianConnectivity cc = m_cartesian_mesh->connectivity();
+  ENUMERATE_ (ItemType, iitem, group) {
+    vc.areEqual(cc.upperLeftId(iitem),cc.upperLeftId(iitem,0),"Item0 dir0");
+    vc.areEqual(cc.upperRightId(iitem),cc.upperRightId(iitem,0),"Item1 dir0");
+    vc.areEqual(cc.lowerRightId(iitem),cc.lowerRightId(iitem,0),"Item2 dir0");
+    vc.areEqual(cc.lowerLeftId(iitem),cc.lowerLeftId(iitem,0),"Item3 dir0");
+
+    if (nb_dim>1){
+      vc.areEqual(cc.lowerLeftId(iitem),cc.upperLeftId(iitem,1),"Item0 dir1");
+      vc.areEqual(cc.upperLeftId(iitem),cc.upperRightId(iitem,1),"Item1 dir1");
+      vc.areEqual(cc.upperRightId(iitem),cc.lowerRightId(iitem,1),"Item2 dir1");
+      vc.areEqual(cc.lowerRightId(iitem),cc.lowerLeftId(iitem,1),"Item3 dir1");
+    }
+
+    if (nb_dim>2){
+      vc.areEqual(cc.upperRightId(iitem),cc.upperLeftId(iitem,2),"Item0 dir2");
+      vc.areEqual(cc.topZUpperRightId(iitem),cc.upperRightId(iitem,2),"Item1 dir2");
+      vc.areEqual(cc.topZLowerRightId(iitem),cc.lowerRightId(iitem,2),"Item2 dir2");
+      vc.areEqual(cc.lowerRightId(iitem),cc.lowerLeftId(iitem,2),"Item3 dir2");
+
+      vc.areEqual(cc.upperLeftId(iitem),cc.topZUpperLeftId(iitem,2),"Item4 dir2");
+      vc.areEqual(cc.topZUpperLeftId(iitem),cc.topZUpperRightId(iitem,2),"Item5 dir2");
+      vc.areEqual(cc.topZLowerLeftId(iitem),cc.topZLowerRightId(iitem,2),"Item6 dir2");
+      vc.areEqual(cc.lowerLeftId(iitem),cc.topZLowerLeftId(iitem,2),"Item7 dir2");
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
+_testConnectivityByDirection()
+{
+  info() << "Test Node ConnectivityByDirection";
+  _testConnectivityByDirectionHelper<Node>(m_mesh->allNodes());
+  info() << "Test Cell ConnectivityByDirection";
+  _testConnectivityByDirectionHelper<Cell>(m_mesh->allCells());
 }
 
 /*---------------------------------------------------------------------------*/

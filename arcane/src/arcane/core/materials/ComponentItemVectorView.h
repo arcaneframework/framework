@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVectorView.h                                   (C) 2000-2023 */
+/* ComponentItemVectorView.h                                   (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur un vecteur sur des entités composants.                            */
+/* Vue sur un vecteur sur des entités de constituants.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_COMPONENTITEMVECTORVIEW_H
 #define ARCANE_CORE_MATERIALS_COMPONENTITEMVECTORVIEW_H
@@ -21,6 +21,7 @@
 
 #include "arcane/core/materials/MatVarIndex.h"
 #include "arcane/core/materials/IMeshComponent.h"
+#include "arcane/core/materials/ComponentItemInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,6 +49,7 @@ namespace Arcane::Materials
 class ARCANE_CORE_EXPORT ComponentItemVectorView
 {
   friend class ComponentItemVector;
+  friend class ConstituentItemVectorImpl;
   friend class MatItemVectorView;
   friend class EnvItemVectorView;
   friend class MatCellEnumerator;
@@ -56,9 +58,9 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   friend Arcane::Accelerator::impl::MatCommandContainerBase;
   friend ArcaneTest::MeshMaterialTesterModule;
   friend ArcaneTest::MaterialHeatTestModule;
-  template<typename ViewType,typename LambdaType>
+  template <typename ViewType, typename LambdaType>
   friend class LambdaMatItemRangeFunctorT;
-  template<typename DataType> friend class
+  template <typename DataType> friend class
   MaterialVariableArrayTraits;
 
  public:
@@ -70,9 +72,12 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   ComponentItemVectorView(IMeshComponent* component,
                           ConstArrayView<MatVarIndex> mvi,
-                          ConstArrayView<ComponentItemInternal*> mv,
+                          ConstituentItemLocalIdListView constituent_local_ids,
                           ConstArrayView<Int32> local_ids)
-  : m_matvar_indexes_view(mvi), m_items_internal_main_view(mv), m_items_local_id_view(local_ids), m_component(component)
+  : m_matvar_indexes_view(mvi)
+  , m_constituent_list_view(constituent_local_ids)
+  , m_items_local_id_view(local_ids)
+  , m_component(component)
   {
   }
 
@@ -83,9 +88,9 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   }
 
   //! Construit une vue à partir d'une autre vue.
-  ComponentItemVectorView(IMeshComponent* component,ComponentItemVectorView rhs_view)
+  ComponentItemVectorView(IMeshComponent* component, ComponentItemVectorView rhs_view)
   : m_matvar_indexes_view(rhs_view.m_matvar_indexes_view)
-  , m_items_internal_main_view(rhs_view.m_items_internal_main_view)
+  , m_constituent_list_view(rhs_view.m_constituent_list_view)
   , m_items_local_id_view(rhs_view.m_items_local_id_view)
   , m_component(component)
   {
@@ -99,24 +104,7 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   //! Composant associé
   IMeshComponent* component() const { return m_component; }
 
- public:
-
-  //! Interne à Arcane
-  //@{
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ConstArrayView<ComponentItemInternal*> itemsInternalView() const
-  { return m_items_internal_main_view; }
-
-  // Tableau des MatVarIndex de cette vue.
-  ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  ConstArrayView<MatVarIndex> matvarIndexes() const { return m_matvar_indexes_view; }
-
-  //@}
-
  private:
-
-  ConstArrayView<ComponentItemInternal*> _itemsInternalView() const
-  { return m_items_internal_main_view; }
 
   // Tableau des MatVarIndex de cette vue.
   ConstArrayView<MatVarIndex> _matvarIndexes() const { return m_matvar_indexes_view; }
@@ -124,21 +112,29 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   //! Tableau des localId() des entités associées
   ConstArrayView<Int32> _internalLocalIds() const { return m_items_local_id_view; }
 
+  ConstituentItemLocalIdListView _constituentItemListView() const { return m_constituent_list_view; }
   /*!
    * \internal
    * \brief Créé une sous-vue de cette vue.
    * 
    * Cette méthode est interne à Arcane et ne doit pas être utilisée.
    */
-  ComponentItemVectorView _subView(Integer begin,Integer size);
+  ComponentItemVectorView _subView(Integer begin, Integer size);
+
+  //! Pour les tests vérifie que \a rhs et l'instance pointent sur les même données
+  bool _isSamePointerData(const ComponentItemVectorView& rhs) const
+  {
+    bool test1 = m_constituent_list_view._isSamePointerData(rhs.m_constituent_list_view);
+    return test1 && (m_matvar_indexes_view.data() == rhs.m_matvar_indexes_view.data());
+  }
 
  private:
 
-  // NOTE: Cette classe est wrappé directement en C#.
+  // NOTE: Cette classe est wrappée directement en C#.
   // Si on modifie les champs de cette classe il faut modifier le type correspondant
   // dans le wrappeur.
   ConstArrayView<MatVarIndex> m_matvar_indexes_view;
-  ConstArrayView<ComponentItemInternal*> m_items_internal_main_view;
+  ConstituentItemLocalIdListView m_constituent_list_view;
   ConstArrayView<Int32> m_items_local_id_view;
   IMeshComponent* m_component = nullptr;
 };
@@ -155,7 +151,7 @@ class ARCANE_CORE_EXPORT MatItemVectorView
 {
   friend class MatCellVector;
   friend class MeshMaterial;
-  template<typename ViewType,typename LambdaType>
+  template <typename ViewType, typename LambdaType>
   friend class LambdaMatItemRangeFunctorT;
 
  public:
@@ -164,16 +160,16 @@ class ARCANE_CORE_EXPORT MatItemVectorView
 
  private:
 
-  //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   MatItemVectorView(IMeshComponent* component,
-                    ConstArrayView<MatVarIndex> mv_indexes, 
-                    ConstArrayView<ComponentItemInternal*> mv,
-                    ConstArrayView<Int32> local_ids
-                    )
-  : ComponentItemVectorView(component,mv_indexes,mv,local_ids){}
+                    ConstArrayView<MatVarIndex> mv_indexes,
+                    ConstituentItemLocalIdListView constituent_local_ids,
+                    ConstArrayView<Int32> local_ids)
+  : ComponentItemVectorView(component, mv_indexes, constituent_local_ids, local_ids)
+  {}
 
-  MatItemVectorView(IMeshComponent* component,ComponentItemVectorView v)
-  : ComponentItemVectorView(component,v){}
+  MatItemVectorView(IMeshComponent* component, ComponentItemVectorView v)
+  : ComponentItemVectorView(component, v)
+  {}
 
  private:
 
@@ -183,7 +179,7 @@ class ARCANE_CORE_EXPORT MatItemVectorView
    * 
    * Cette méthode est interne à Arcane et ne doit pas être utilisée.
    */
-  MatItemVectorView _subView(Integer begin,Integer size);
+  MatItemVectorView _subView(Integer begin, Integer size);
 
  public:
 
@@ -191,9 +187,9 @@ class ARCANE_CORE_EXPORT MatItemVectorView
   IMeshMaterial* material() const;
 
   // Temporaire: à conserver pour compatibilité
-  ARCANE_DEPRECATED_240 MatItemVectorView subView(Integer begin,Integer size)
+  ARCANE_DEPRECATED_240 MatItemVectorView subView(Integer begin, Integer size)
   {
-    return _subView(begin,size);
+    return _subView(begin, size);
   }
 };
 
@@ -209,7 +205,7 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
 {
   friend class EnvCellVector;
   friend class MeshEnvironment;
-  template<typename ViewType,typename LambdaType>
+  template <typename ViewType, typename LambdaType>
   friend class LambdaMatItemRangeFunctorT;
 
  public:
@@ -218,15 +214,16 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
 
  private:
 
-  //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   EnvItemVectorView(IMeshComponent* component,
                     ConstArrayView<MatVarIndex> mv_indexes,
-                    ConstArrayView<ComponentItemInternal*> mv,
+                    ConstituentItemLocalIdListView constituent_local_ids,
                     ConstArrayView<Int32> local_ids)
-  : ComponentItemVectorView(component,mv_indexes,mv,local_ids){}
+  : ComponentItemVectorView(component, mv_indexes, constituent_local_ids, local_ids)
+  {}
 
-  EnvItemVectorView(IMeshComponent* component,ComponentItemVectorView v)
-  : ComponentItemVectorView(component,v){}
+  EnvItemVectorView(IMeshComponent* component, ComponentItemVectorView v)
+  : ComponentItemVectorView(component, v)
+  {}
 
  private:
 
@@ -236,7 +233,7 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
    * 
    * Cette méthode est interne à Arcane et ne doit pas être utilisée.
    */
-  EnvItemVectorView _subView(Integer begin,Integer size);
+  EnvItemVectorView _subView(Integer begin, Integer size);
 
  public:
 

@@ -6,77 +6,72 @@ namespace Arcane.Materials
 {
   public unsafe interface IComponentItem
   {
-    [Obsolete("This method is internal to Arcane")]
-    ComponentItemInternal* Internal { get; set; }
+    ConstituentItemBase ItemBase { get; set; }
   }
 
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ComponentItem : IComponentItem
   {
-    internal ComponentItemInternal* m_internal;
+    internal ConstituentItemBase m_item_base;
 
-    [Obsolete("This method is internal to Arcane")]
-    public ComponentItemInternal* Internal
+    public ConstituentItemBase ItemBase
     {
-      get { return m_internal; }
-      set { m_internal = value; }
+      get { return m_item_base; }
+      set { m_item_base = value; }
     }
 
-    public Cell GlobalCell { get { return new Cell(m_internal->m_global_item); } }
-    public MatVarIndex MatVarIndex { get { return m_internal->m_var_index; } }
-    internal int _matvarArrayIndex { get { return m_internal->m_var_index.ArrayIndex; } }
-    internal int _matvarValueIndex { get { return m_internal->m_var_index.ValueIndex; } }
+    public Cell GlobalCell { get { return m_item_base.GlobalCell; } }
+    public MatVarIndex MatVarIndex { get { return m_item_base.MatVarIndex; } }
+    internal int _matvarArrayIndex { get { return MatVarIndex.ArrayIndex; } }
+    internal int _matvarValueIndex { get { return MatVarIndex.ValueIndex; } }
 
-    [Obsolete("This method is internal to Arcane")]
-    public ComponentItem(ComponentItemInternal* ci)
+    public ComponentItem(ConstituentItemBase ci)
     {
-      m_internal = ci;
+      m_item_base = ci;
     }
   }
 
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct MatItem : IComponentItem
   {
-    internal ComponentItemInternal* m_internal;
+    internal ConstituentItemBase m_item_base;
 
-    [Obsolete("This method is internal to Arcane")]
-    public ComponentItemInternal* Internal
+    public ConstituentItemBase ItemBase
     {
-      get { return m_internal; }
-      set { m_internal = value; }
+      get { return m_item_base; }
+      set { m_item_base = value; }
     }
-    public Cell GlobalCell { get { return new Cell(m_internal->m_global_item); } }
-    public MatVarIndex MatVarIndex { get { return m_internal->m_var_index; } }
-    internal int _matvarArrayIndex { get { return m_internal->m_var_index.ArrayIndex; } }
-    internal int _matvarValueIndex { get { return m_internal->m_var_index.ValueIndex; } }
-    [Obsolete("This method is internal to Arcane")]
-    public MatItem(ComponentItemInternal* ci)
+    public Cell GlobalCell { get { return m_item_base.GlobalCell; } }
+    public MatVarIndex MatVarIndex { get { return m_item_base.MatVarIndex; } }
+    internal int _matvarArrayIndex { get { return MatVarIndex.ArrayIndex; } }
+    internal int _matvarValueIndex { get { return MatVarIndex.ValueIndex; } }
+    public MatItem(ConstituentItemBase ci)
     {
-      m_internal = ci;
+      m_item_base = ci;
     }
-    public static implicit operator ComponentItem(MatItem c) => new ComponentItem(c.m_internal);
+    public static implicit operator ComponentItem(MatItem c) => new ComponentItem(c.m_item_base);
   }
+
+  [StructLayout(LayoutKind.Sequential)]
   public unsafe struct EnvItem : IComponentItem
   {
-    internal ComponentItemInternal* m_internal;
-    [Obsolete("This method is internal to Arcane")]
-    public ComponentItemInternal* Internal
+    internal ConstituentItemBase m_item_base;
+
+    public ConstituentItemBase ItemBase
     {
-      get { return m_internal; }
-      set { m_internal = value; }
+      get { return m_item_base; }
+      set { m_item_base = value; }
+    }
+    public Cell GlobalCell { get { return m_item_base.GlobalCell; } }
+    public MatVarIndex MatVarIndex { get { return m_item_base.MatVarIndex; } }
+    internal int _matvarArrayIndex { get { return MatVarIndex.ArrayIndex; } }
+    internal int _matvarValueIndex { get { return MatVarIndex.ValueIndex; } }
+
+    public EnvItem(ConstituentItemBase ci)
+    {
+      m_item_base = ci;
     }
 
-    public Cell GlobalCell { get { return new Cell(m_internal->m_global_item); } }
-    public MatVarIndex MatVarIndex { get { return m_internal->m_var_index; } }
-    internal int _matvarArrayIndex { get { return m_internal->m_var_index.ArrayIndex; } }
-    internal int _matvarValueIndex { get { return m_internal->m_var_index.ValueIndex; } }
-
-    [Obsolete("This method is internal to Arcane")]
-    public EnvItem(ComponentItemInternal* ci)
-    {
-      m_internal = ci;
-    }
-
-    public static implicit operator ComponentItem(EnvItem c) => new ComponentItem(c.m_internal);
+    public static implicit operator ComponentItem(EnvItem c) => new ComponentItem(c.m_item_base);
   }
 }

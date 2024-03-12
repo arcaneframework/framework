@@ -23,7 +23,6 @@ set(ARCANE_SOURCES
   ThreadUnitTest.cc
   TaskUnitTestCS.cc
   IosUnitTest.cc
-  MDVariableUnitTest.cc
   VariableUnitTest.cc
   VariableSimdUnitTest.cc
   AMRTestModule.cc
@@ -70,14 +69,14 @@ set(ARCANE_SOURCES
   ArcaneTestInit.cc
   ArcaneTestDirectExecution.cc
   ArcaneTestStandaloneSubDomain.cc
-  accelerator/MiniWeatherOriginalSequential.cc
-  accelerator/MiniWeatherArraySequential.cc
   CustomMeshTestModule.cc
   TaskUnitTest.cc
   PDESRandomNumberGeneratorUnitTest.cc
   RandomNumberGeneratorUnitTest.cc
   SimpleTableOutputUnitTest.cc
   SimpleTableComparatorUnitTest.cc
+  StringVariableReplaceTest.cc
+  TimeHistoryAdderTestModule.cc
 )
 
 set(AXL_FILES
@@ -126,5 +125,7 @@ set(AXL_FILES
   SimpleTableOutputUnitTest
   SimpleTableComparatorUnitTest
   SimpleTableOutputUnitTest
+  StringVariableReplaceTest
+  TimeHistoryAdderTest
 )
 

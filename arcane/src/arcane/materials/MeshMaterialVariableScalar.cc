@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableScalar.cc                               (C) 2000-2023 */
+/* MeshMaterialVariableScalar.cc                               (C) 2000-2024 */
 /*                                                                           */
 /* Variable scalaire sur un matériau du maillage.                            */
 /*---------------------------------------------------------------------------*/
@@ -85,14 +85,22 @@ saveData(IMeshComponent* component,IData* data,
 
 template<typename DataType> void
 MaterialVariableScalarTraits<DataType>::
-copyTo(ConstArrayView<DataType> input,Int32ConstArrayView input_indexes,
-       ArrayView<DataType> output,Int32ConstArrayView output_indexes)
+copyTo(SmallSpan<const DataType> input, SmallSpan<const Int32> input_indexes,
+       SmallSpan<DataType> output, SmallSpan<const Int32> output_indexes,
+       RunQueue& queue)
 {
   // TODO: vérifier tailles des indexes identiques
   Integer nb_value = input_indexes.size();
-  for( Integer i=0; i<nb_value; ++i ){
-    output[ output_indexes[i] ] = input[ input_indexes[i] ];
-  }
+  auto command = makeCommand(queue);
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, input.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, input_indexes.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output_indexes.data());
+  command << RUNCOMMAND_LOOP1(iter, nb_value)
+  {
+    auto [i] = iter();
+    output[output_indexes[i]] = input[input_indexes[i]];
+  };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -665,10 +673,10 @@ dumpValues(std::ostream& ostr,AllEnvCellVectorView view)
   ENUMERATE_ALLENVCELL(iallenvcell,view){
     AllEnvCell all_env_cell = *iallenvcell;
     ostr << "Cell uid=" << ItemPrinter(all_env_cell.globalCell()) << " v=" << value(all_env_cell._varIndex()) << '\n';
-    for( CellComponentCellEnumerator ienvcell(all_env_cell.internal()); ienvcell.hasNext(); ++ienvcell ){
+    for( CellComponentCellEnumerator ienvcell(all_env_cell); ienvcell.hasNext(); ++ienvcell ){
       MatVarIndex evi = ienvcell._varIndex();
       ostr << "env_value=" << value(evi) << ", mvi=" << evi << '\n';
-      for( CellComponentCellEnumerator imatcell((*ienvcell).internal()); imatcell.hasNext(); ++imatcell ){
+      for( CellComponentCellEnumerator imatcell(*ienvcell); imatcell.hasNext(); ++imatcell ){
         MatVarIndex mvi = imatcell._varIndex();
         ostr << "mat_value=" << value(mvi) << ", mvi=" << mvi << '\n';
       }

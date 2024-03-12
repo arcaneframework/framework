@@ -28,6 +28,10 @@ foreach(file ${ARCANE_ORIGINAL_SOURCES})
   endif()
 endforeach()
 
+if (GTEST_FOUND)
+  add_subdirectory(tests)
+endif()
+
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2

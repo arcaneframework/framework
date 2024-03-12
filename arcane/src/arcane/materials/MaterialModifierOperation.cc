@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialModifierOperation.cc                                (C) 2000-2023 */
+/* MaterialModifierOperation.cc                                (C) 2000-2024 */
 /*                                                                           */
 /* Opération d'ajout/suppression de mailles d'un matériau.                   */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/ItemGroup.h"
@@ -29,6 +30,15 @@
 
 namespace Arcane::Materials
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MaterialModifierOperation::
+MaterialModifierOperation()
+: m_ids(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

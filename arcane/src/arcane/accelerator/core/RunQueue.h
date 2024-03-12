@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.h                                                  (C) 2000-2023 */
+/* RunQueue.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,8 @@
 #define ARCANE_ACCELERATOR_CORE_RUNQUEUE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/AutoRef.h"
 
 #include "arcane/accelerator/core/RunCommand.h"
 
@@ -25,8 +27,10 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief File d'exécution  pour accélérateur.
- * \warning API en cours de définition.
+ * \brief File d'exécution pour un accélérateur.
+ *
+ * Une file est attachée à une politique d'exécution et permet d'exécuter
+ * des commandes (RunCommand) sur un accélérateur ou sur le CPU.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
@@ -35,29 +39,63 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  public:
 
+  //! Permet de modifier l'asynchronisme de la file pendant la durée de vie de l'instance
+  class ScopedAsync
+  {
+   public:
+
+    explicit ScopedAsync(RunQueue* queue)
+    : m_queue(queue)
+    {
+      // Rend la file asynchrone
+      if (m_queue) {
+        m_is_async = m_queue->isAsync();
+        m_queue->setAsync(true);
+      }
+    }
+    ~ScopedAsync() noexcept(false)
+    {
+      // Remet la file dans l'état d'origine lors de l'appel au constructeur
+      if (m_queue)
+        m_queue->setAsync(m_is_async);
+    }
+
+   private:
+
+    RunQueue* m_queue = nullptr;
+    bool m_is_async = false;
+  };
+
+ public:
+
+  //! Créé une file associée à \a runner avec les paramètres par défaut
   explicit RunQueue(Runner& runner);
+  //! Créé une file associée à \a runner avec les paramètres \a bi
   RunQueue(Runner& runner, const RunQueueBuildInfo& bi);
   ~RunQueue();
 
  public:
 
-  RunQueue(const RunQueue&) = delete;
-  RunQueue(RunQueue&&) = delete;
-  RunQueue& operator=(const RunQueue&) = delete;
-  RunQueue& operator=(RunQueue&&) = delete;
+  RunQueue(const RunQueue&);
+  RunQueue& operator=(const RunQueue&);
+  RunQueue(RunQueue&&);
+  RunQueue& operator=(RunQueue&&);
 
  public:
 
+  //! Politique d'exécution de la file.
   eExecutionPolicy executionPolicy() const;
+  //! Indique si l'instance est associée à un accélérateur
+  bool isAcceleratorPolicy() const;
   /*!
    * \brief Positionne l'asynchronisme de l'instance.
    *
    * Si l'instance est asynchrone, il faut appeler explicitement barrier()
    * pour attendre la fin de l'exécution des commandes.
    */
-  void setAsync(bool v) { m_is_async = v; }
+  void setAsync(bool v);
   //! Indique si la file d'exécution est asynchrone.
-  bool isAsync() const { return m_is_async; }
+  bool isAsync() const;
   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
   void barrier();
 
@@ -94,10 +132,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl();
 
+  // Pour VariableViewBase
+  friend class VariableViewBase;
+  bool _isAutoPrefetchCommand() const;
+
  private:
 
-  impl::RunQueueImpl* m_p;
-  bool m_is_async = false;
+  AutoRef2<impl::RunQueueImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/

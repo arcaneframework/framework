@@ -1,21 +1,9 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #pragma once
 
 #include <vector>
@@ -46,11 +34,11 @@ namespace Common
   /*---------------------------------------------------------------------------*/
 
   //! Scalar matrix builder
-  template <typename ValueT>
-  MatrixProfilerT<ValueT>::MatrixProfilerT(IMatrix& matrix)
+  template <typename ValueT, typename MatrixImplT>
+  MatrixProfilerT<ValueT,MatrixImplT>::MatrixProfilerT(IMatrix& matrix)
   : m_matrix(matrix)
   {
-    m_matrix_impl = &m_matrix.impl()->template get<BackEnd::tag::simplecsr>(false);
+    m_matrix_impl = &m_matrix.impl()->template get<typename MatrixImplType::TagType>(false);
 
     const ISpace& space = m_matrix_impl->rowSpace();
 
@@ -81,8 +69,8 @@ namespace Common
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT>
-  MatrixProfilerT<ValueT>::~MatrixProfilerT()
+  template <typename ValueT, typename MatrixImplT>
+  MatrixProfilerT<ValueT,MatrixImplT>::~MatrixProfilerT()
   {
     if (!m_allocated) {
       allocate();
@@ -91,8 +79,8 @@ namespace Common
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT>
-  void MatrixProfilerT<ValueT>::addMatrixEntry(Integer iIndex, Integer jIndex)
+  template <typename ValueT, typename MatrixImplT>
+  void MatrixProfilerT<ValueT,MatrixImplT>::addMatrixEntry(Integer iIndex, Integer jIndex)
   {
     const Integer local_row = iIndex - m_local_offset;
     // ALIEN_ASSERT((local_row >= 0 and local_row < m_local_size),("Cannot manage not
@@ -115,8 +103,8 @@ namespace Common
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT>
-  void MatrixProfilerT<ValueT>::allocate()
+  template <typename ValueT, typename MatrixImplT>
+  void MatrixProfilerT<ValueT,MatrixImplT>::allocate()
   {
     if (m_allocated)
       return;
@@ -129,8 +117,8 @@ namespace Common
 
   /*---------------------------------------------------------------------------*/
 
-  template <typename ValueT>
-  void MatrixProfilerT<ValueT>::computeProfile()
+  template <typename ValueT, typename MatrixImplT>
+  void MatrixProfilerT<ValueT,MatrixImplT>::computeProfile()
   {
     UniqueArray<Integer> m_offset;
     m_offset.resize(m_nproc + 1);
@@ -140,25 +128,29 @@ namespace Common
     }
     m_offset[m_nproc] = m_global_size;
 
-    SimpleCSRInternal::CSRStructInfo& profile = m_matrix_impl->internal().getCSRProfile();
+    auto& profile = m_matrix_impl->getCSRProfile();
     profile.init(m_local_size);
 
-    ArrayView<Integer> row_offsets = profile.getRowOffset();
-    Integer offset = 0;
-    for (Integer i = 0; i < m_local_size; ++i) {
-      row_offsets[i] = offset;
-      offset += static_cast<Integer>(m_def_matrix[i].size());
+    {
+      ArrayView<Integer> row_offsets = profile.getRowOffset();
+      Integer offset = 0;
+      for (Integer i = 0; i < m_local_size; ++i) {
+        row_offsets[i] = offset;
+        offset += static_cast<Integer>(m_def_matrix[i].size());
+      }
+      row_offsets[m_local_size] = offset;
     }
-    row_offsets[m_local_size] = offset;
 
     profile.allocate();
-    ArrayView<Integer> cols = profile.getCols();
+    {
+      ArrayView<Integer> cols = profile.getCols();
 
-    for (Integer i = 0, pos = 0; i < m_local_size; ++i) {
-      const VectorDefinition& vdef = m_def_matrix[i];
-      for (VectorDefinition::const_iterator iterJ = vdef.begin(); iterJ != vdef.end();
-           ++iterJ)
-        cols[pos++] = *iterJ;
+      for (Integer i = 0, pos = 0; i < m_local_size; ++i) {
+        const VectorDefinition& vdef = m_def_matrix[i];
+        for (VectorDefinition::const_iterator iterJ = vdef.begin(); iterJ != vdef.end();
+             ++iterJ)
+          cols[pos++] = *iterJ;
+      }
     }
 
     if (m_matrix_impl->vblock()) {
@@ -167,14 +159,15 @@ namespace Common
       auto& block_cols = profile.getBlockCols();
       auto kcol = profile.kcol();
       auto cols = profile.cols();
+      Integer offset = 0;
       for (Integer irow = 0; irow < m_local_size; ++irow) {
         block_row_offset[irow] = offset;
         auto row_blk_size = block_sizes->size(m_local_offset + irow);
         for (auto k = kcol[irow]; k < kcol[irow + 1]; ++k) {
+          block_cols[k] = offset;
           auto jcol = cols[k];
           auto col_blk_size = block_sizes->size(jcol);
           offset += row_blk_size * col_blk_size;
-          block_cols[k] = offset;
         }
       }
       block_row_offset[m_local_size] = offset;
@@ -182,8 +175,9 @@ namespace Common
     }
 
     m_matrix_impl->allocate();
-    ArrayView<ValueT> values = m_matrix_impl->internal().getValues();
-    values.fill(0);
+    m_matrix_impl->internal()->setValues(0) ;
+    //ArrayView<ValueT> values = m_matrix_impl->internal()->getValues();
+    //values.fill(0);
 
     if (m_nproc > 1)
       m_matrix_impl->parallelStart(m_offset, m_parallel_mng, true);

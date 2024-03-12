@@ -156,6 +156,8 @@ class ItemVariableScalarRefT
   {
     ItemNumericOperation<DataTypeT>::power(*this,v,group);
   }
+
+  //! Copie pour les entités de \a group, les valeurs de \a v dans cette variable.
   ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group);
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value);
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value,const ItemGroup& group);
@@ -166,6 +168,12 @@ class ItemVariableScalarRefT
    * \a queue peut être nul.
    */
   ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v,RunQueue* queue);
+  /*!
+   * \brief Remplit les valeurs de l'instance par \a value via la file \a queue.
+   *
+   * \a queue peut être nul.
+   */
+  ARCANE_CORE_EXPORT void fill(const DataTypeT& value,RunQueue* queue);
 
  public:
 
@@ -242,7 +250,7 @@ class MeshVariableScalarRefT
  public:
 
   void fill(const DataTypeT& value) { BaseClass::fill(value); }
-  
+  void fill(const DataTypeT& value,RunQueue* queue) { BaseClass::fill(value,queue); }
   void fill(const DataTypeT& value,const GroupType& group) { BaseClass::fill(value,group); }
 
   ARCANE_CORE_EXPORT void swapValues(MeshVariableScalarRefT<ItemType,DataType>& rhs);

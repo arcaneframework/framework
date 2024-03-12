@@ -1,20 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInfoListView.cc                                         (C) 2000-2023 */
+/* ItemInfoListView.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Vue sur une liste pour obtenir des informations sur les entités.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInfoListView.h"
+#include "arcane/core/ItemInfoListView.h"
 
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/internal/IItemFamilyInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,9 +28,8 @@ namespace Arcane
 
 ItemInfoListView::
 ItemInfoListView(IItemFamily* family)
+: ItemInfoListView(family ? family->_internalApi()->commonItemSharedInfo() : ItemSharedInfo::nullInstance())
 {
-  if (family)
-    *this = family->itemInfoListView();
 }
 
 /*---------------------------------------------------------------------------*/
