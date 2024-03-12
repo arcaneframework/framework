@@ -411,8 +411,8 @@ class GenericScanner
   }
 
   template <typename InputDataType, typename OutputDataType, typename Operator>
-  void applyExclusive(const InputDataType& initial_value,
-                      SmallSpan<const std::remove_cvref_t<InputDataType>> input,
+  void applyExclusive(const OutputDataType& initial_value,
+                      SmallSpan<const InputDataType> input,
                       SmallSpan<OutputDataType> output,
                       const Operator& op_lambda,
                       const TraceInfo& trace_info = TraceInfo())
@@ -421,8 +421,8 @@ class GenericScanner
   }
 
   template <typename InputDataType, typename OutputDataType, typename Operator>
-  void applyInclusive(const InputDataType& initial_value,
-                      SmallSpan<const std::remove_cvref_t<InputDataType>> input,
+  void applyInclusive(const OutputDataType& initial_value,
+                      SmallSpan<const InputDataType> input,
                       SmallSpan<OutputDataType> output,
                       const Operator& op_lambda,
                       const TraceInfo& trace_info = TraceInfo())
@@ -446,7 +446,7 @@ class GenericScanner
   }
 
   template <bool IsExclusive, typename InputDataType, typename OutputDataType, typename Operator>
-  void _apply(const InputDataType& initial_value,
+  void _apply(const OutputDataType& initial_value,
               SmallSpan<const InputDataType> input,
               SmallSpan<OutputDataType> output,
               const Operator& op,
