@@ -216,6 +216,12 @@ class MDSpan
   {
     return MDSpan<const DataType, Extents, LayoutPolicy>(m_ptr, m_extents);
   }
+
+  constexpr ARCCORE_HOST_DEVICE MDSpan<const DataType, Extents, LayoutPolicy> constMDSpan() const
+  {
+    return MDSpan<const DataType, Extents, LayoutPolicy>(m_ptr, m_extents);
+  }
+
   constexpr ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
   {
     return { m_ptr, m_extents.totalNbElement() };
