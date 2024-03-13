@@ -10,7 +10,8 @@
 #include <Tpetra_HashTable.hpp>
 #include <Tpetra_Import.hpp>
 #include <Tpetra_Import_Util.hpp>
-
+#define HAVE_MUELU
+#ifdef HAVE_MUELU
 #include <MueLu.hpp>
 #ifdef HAVE_MUELU_AMGX
 //#define USE_DYNAMIC_AMGXLIB
@@ -18,6 +19,7 @@
 #include <amgx_capi.h>
 #endif
 #include <MueLu_AMGX_Setup.hpp>
+#endif
 #endif
 
 #include <alien/kernels/trilinos/data_structure/TrilinosInternal.h>
