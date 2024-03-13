@@ -142,6 +142,8 @@ subroutine test
   call ALIEN_DestroySolver(solver_id)
   call ALIEN_DestroyLinearSystem(system_id)
   call ALIEN_finalize()
+  
+  call MPI_Finalize(ierr)
 
 
 end subroutine test

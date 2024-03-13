@@ -85,6 +85,10 @@
       <description>activate accelerator support</description>
     </simple>
     
+    <simple name="use-usm" type="bool" default="false">
+      <description>use unified share memory support</description>
+    </simple>
+    
     <simple name="unit-rhs" type="bool" default="false">
       <description>to initialize the right hand side vector to 1</description>
     </simple>
