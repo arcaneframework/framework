@@ -15,7 +15,7 @@ if (ALIEN_GENERATE_DOCUMENTATION)
     SET(ALIEN_OUTPUT_DIR ${CMAKE_BINARY_DIR}/share/aliendoc/html)
 
     sphinx_add_docs(
-            alien_doc
+            aliendoc
             BREATHE_PROJECTS doxygen_api_docs_movesemantic doxygen_api_docs_refsemantic doxygen_api_docs_core_data
             BUILDER html
             SOURCE_DIRECTORY sphinx
