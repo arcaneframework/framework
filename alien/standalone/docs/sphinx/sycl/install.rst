@@ -4,8 +4,23 @@
 How to install SYCL
 ===================
 
-Installing SYCL
-===============
+Installing OneAPI 2024.0 with CUDA Support
+==========================================
+
+.. code-block:: bash
+    //Download oneapi offline 
+    wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/163da6e4-56eb-4948-aba3-debcec61c064/l_BaseKit_p_2024.0.1.46_offline.sh 
+    //Install in silent mode in a non-standard folder
+    chmod +x l_BaseKit_p_2024.0.1.46_offline.sh
+    ./l_BaseKit_p_2024.0.1.46_offline.sh  -a -s --eula accept --download-cache /temp_path --install-dir /path/to/intel/oneapi 
+    //Download plugin for nvidia
+    curl -LOJ "https://developer.codeplay.com/api/v1/products/download?product=oneapi&variant=nvidia&version=2024.0.1&filters[]=12.0&filters[]=linux"
+    //Install in the oneapi folder
+    ./oneapi-for-nvidia-gpus-2024.0.1-cuda-12.0-linux.sh -y --extract-folder --install-dir /path/to/intel/oneapi
+
+
+Installing hipSYCL v0.9.4 with CUDA or ROCM Support
+===================================================
 
 Alien's build system is based on CMake.
 
@@ -17,8 +32,8 @@ Getting the sources
 
     git clone --recurse-submodules -b stable https://github.com/illuhad/hipSYCL
 
-Configuring
------------
+Example of configuration hipSYCL with GCC 10.2 and CUDA 10
+----------------------------------------------------------
 
 .. code-block:: bash
 
@@ -49,6 +64,45 @@ Configuring
           -DCLANG_INCLUDE_PATH=$LLVM_INCLUDE_PATH \
           -DCMAKE_INSTALL_PREFIX=$HIPSYCL_INSTALL_PREFIX \
           -DROCM_LINK_LINE='-rpath $HIPSYCL_ROCM_LIB_PATH -rpath $HIPSYCL_ROCM_PATH/hsa/lib -L$HIPSYCL_ROCM_LIB_PATH -lhip_hcc -lamd_comgr -lamd_hostcall -lhsa-runtime64 -latmi_runtime -rpath $HIPSYCL_ROCM_PATH/hcc/lib -L$HIPSYCL_ROCM_PATH/hcc/lib -lmcwamp -lhc_am' \
+
+
+Example of configuration hipSYCL with Clang and ROCM 5.5.1
+----------------------------------------------------------
+
+.. code-block:: bash
+ 
+    export ROCM_ROOT=/opt/rocm-5.5.1
+    export LLVM_DIR=/opt/rocm-5.5.1/llvm/lib/cmake/llvm
+    export CC=$ROCM_ROOT/llvm/bin/clang
+    export CXX=$ROCM_ROOT/llvm/bin/clang++
+    export BOOST_ROOT=/opt/software/gaia/prod/1.1.1/__spack_path_placeholder__/__spack_path_placeholder__/__spack_path_placeholder__/__spack_path_plac/boost-1.81.0-rocmcc-5.3.0-cky6
+
+    export CC=clang
+    export CXX=clang++
+
+    export ROOT_DIR=/lus/work/CT2A/cad14948/SHARED
+    export PREFIX_PATH="$ROCM_ROOT;$ROCM_ROOT/hip"
+
+    export HIP_ARCHITECTURES=gfx90a    # AMD Instinct MI300 = gfx940 architecture
+
+    cd buildAdaptiveCPP23
+    cmake -DCMAKE_C_COMPILER=$CC \
+      -DCMAKE_CXX_COMPILER=$CXX \
+      -DLLVM_DIR=$ROCM_ROOT/llvm/lib/cmake/llvm \
+      -DCLANG_EXECUTABLE_PATH=$ROCM_ROOT/llvm/bin/clang++ \
+      -DCLANG_INCLUDE_PATH=$ROCM_ROOT/llvm/include \
+      -DROCM_PATH=${ROCM_ROOT} \
+      -DWITH_CPU_BACKEND=ON \
+      -DWITH_ROCM_BACKEND=ON \
+      -WITH_OPENCL_BACKEND=OFF \
+      -DWITH_LEVEL_ZERO_BACKEND=OFF \
+      -WITH_SSCP_COMPILER=OFF \
+      -DCMAKE_INSTALL_PREFIX=/lus/work/CT2A/cad14948/SHARED/local/adaptivecpp/v23.10.0 \
+      -DWITH_ACCELERATED_CPU=OFF \
+      -DBOOST_ROOT=$BOOST_ROOT \
+      /lus/work/CT2A/cad14948/SHARED/AdaptiveCpp-v23.10.0
+    make install
+
 
 
 Installing
