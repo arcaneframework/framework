@@ -823,6 +823,43 @@ _readElementsFromFileAscii()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+  template <typename DataType> inline ArrayView<DataType>
+  _broadcastArrayWithSize(IParallelMng* pm, UniqueArray<DataType>& values,
+                          UniqueArray<DataType>& work_values, Int32 dest_rank, Int64 size)
+  {
+    const Int32 my_rank = pm->commRank();
+    ArrayView<DataType> view = values.view();
+    if (my_rank != dest_rank) {
+      work_values.resize(size);
+      view = work_values.view();
+    }
+    pm->broadcast(view, dest_rank);
+    return view;
+  }
+  /*!
+   * \brief Broadcast un tableau et retourne une vue dessus.
+   *
+   * Si on est le rang \a dest_rank, alors on broadcast \a values.
+   * Les autres rangs récupèrent la valeur dans \a work_values et
+   * retournent une vue dessus.
+   */
+  template <typename DataType> inline ArrayView<DataType>
+  _broadcastArray(IParallelMng* pm, UniqueArray<DataType>& values,
+                  UniqueArray<DataType>& work_values, Int32 dest_rank)
+  {
+    const Int32 my_rank = pm->commRank();
+    Int64 size = 0;
+    // Envoie la taille
+    if (dest_rank == my_rank)
+      size = values.size();
+    pm->broadcast(ArrayView<Int64>(1, &size), dest_rank);
+    return _broadcastArrayWithSize(pm, values, work_values, dest_rank, size);
+  }
+
+} // namespace
+
 void MshParallelMeshReader::
 _computeOwnCells(MeshV4ElementsBlock& block)
 {
@@ -841,28 +878,10 @@ _computeOwnCells(MeshV4ElementsBlock& block)
   const Int32 nb_part = m_parts_rank.size();
   for (Int32 i_part = 0; i_part < nb_part; ++i_part) {
     const Int32 dest_rank = m_parts_rank[i_part];
-    ArrayView<Int64> connectivities_view;
-    ArrayView<Int64> uids_view;
-
     // Broadcast la i_part-ème partie des uids et connectivités des mailles
-    {
-      FixedArray<Int64, 2> nb_connectivity_and_uid;
-      if (my_rank == dest_rank) {
-        nb_connectivity_and_uid[0] = block.connectivities.size();
-        nb_connectivity_and_uid[1] = block.uids.size();
-        connectivities_view = block.connectivities;
-        uids_view = block.uids;
-      }
-      pm->broadcast(nb_connectivity_and_uid.view(), dest_rank);
-      if (my_rank != dest_rank) {
-        connectivities.resize(nb_connectivity_and_uid[0]);
-        uids.resize(nb_connectivity_and_uid[1]);
-        connectivities_view = connectivities;
-        uids_view = uids;
-      }
-      pm->broadcast(connectivities_view, dest_rank);
-      pm->broadcast(uids_view, dest_rank);
-    }
+    ArrayView<Int64> connectivities_view = _broadcastArray(pm, block.connectivities, connectivities, dest_rank);
+    ArrayView<Int64> uids_view = _broadcastArray(pm, block.uids, uids, dest_rank);
+
     Int32 nb_item = uids_view.size();
     nodes_rank.resize(nb_item);
     nodes_rank.fill(-1);
@@ -920,34 +939,15 @@ _setNodesCoordinates()
   UniqueArray<Int32> local_ids;
 
   IParallelMng* pm = m_parallel_mng;
-  const Int32 my_rank = pm->commRank();
 
   const IItemFamily* node_family = m_mesh->nodeFamily();
   VariableNodeReal3& nodes_coord_var(m_mesh->nodesCoordinates());
 
   for (Int32 dest_rank : m_parts_rank) {
-    Int32 nb_item = 0;
-    if (my_rank == dest_rank) {
-      nb_item = m_mesh_info.nodes_unique_id.size();
-    }
-    // Envoie le nombre de noeuds aux autres
-    pm->broadcast(ArrayView<Int32>(1, &nb_item), dest_rank);
-    ConstArrayView<Int64> uids;
-    ConstArrayView<Real3> coords;
-    if (my_rank == dest_rank) {
-      pm->broadcast(m_mesh_info.nodes_unique_id, dest_rank);
-      pm->broadcast(m_mesh_info.nodes_coordinates, dest_rank);
-      uids = m_mesh_info.nodes_unique_id.view();
-      coords = m_mesh_info.nodes_coordinates.view();
-    }
-    else {
-      uids_storage.resize(nb_item);
-      coords_storage.resize(nb_item);
-      pm->broadcast(uids_storage, dest_rank);
-      pm->broadcast(coords_storage, dest_rank);
-      uids = uids_storage.view();
-      coords = coords_storage.view();
-    }
+    ConstArrayView<Int64> uids = _broadcastArray(pm, m_mesh_info.nodes_unique_id, uids_storage, dest_rank);
+    ConstArrayView<Real3> coords = _broadcastArray(pm, m_mesh_info.nodes_coordinates, coords_storage, dest_rank);
+
+    Int32 nb_item = uids.size();
     local_ids.resize(nb_item);
 
     // Converti les uniqueId() en localId(). S'ils sont non nuls
@@ -1074,23 +1074,11 @@ void MshParallelMeshReader::
 _addFaceGroup(MeshV4ElementsBlock& block, const String& group_name)
 {
   IParallelMng* pm = m_parallel_mng;
-  const Int32 my_rank = pm->commRank();
   const Int32 item_nb_node = block.item_nb_node;
 
   UniqueArray<Int64> connectivities;
   for (Int32 dest_rank : m_parts_rank) {
-    Int64 nb_connectivity = 0;
-    ArrayView<Int64> connectivities_view;
-    if (my_rank == dest_rank) {
-      nb_connectivity = block.connectivities.size();
-      connectivities_view = block.connectivities;
-    }
-    pm->broadcast(ArrayView<Int64>(1, &nb_connectivity), dest_rank);
-    if (my_rank != dest_rank) {
-      connectivities.resize(nb_connectivity);
-      connectivities_view = connectivities;
-    }
-    pm->broadcast(connectivities_view, dest_rank);
+    ArrayView<Int64> connectivities_view = _broadcastArray(pm, block.connectivities, connectivities, dest_rank);
     _addFaceGroupOnePart(connectivities_view, item_nb_node, group_name, block.index);
   }
 }
@@ -1181,22 +1169,10 @@ void MshParallelMeshReader::
 _addCellOrNodeGroup(MeshV4ElementsBlock& block, const String& group_name, IItemFamily* family)
 {
   IParallelMng* pm = m_parallel_mng;
-  const Int32 my_rank = pm->commRank();
 
   UniqueArray<Int64> uids;
   for (Int32 dest_rank : m_parts_rank) {
-    Int64 nb_uid = 0;
-    ArrayView<Int64> uids_view;
-    if (my_rank == dest_rank) {
-      nb_uid = block.uids.size();
-      uids_view = block.uids;
-    }
-    pm->broadcast(ArrayView<Int64>(1, &nb_uid), dest_rank);
-    if (my_rank != dest_rank) {
-      uids.resize(nb_uid);
-      uids_view = uids;
-    }
-    pm->broadcast(uids_view, dest_rank);
+    ArrayView<Int64> uids_view = _broadcastArray(pm, block.uids, uids, dest_rank);
     _addCellOrNodeGroupOnePart(uids_view, group_name, block.index, family);
   }
 }

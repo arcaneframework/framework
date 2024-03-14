@@ -29,7 +29,9 @@ add_subdirectory(services)
 add_subdirectory(hdf5)
 add_subdirectory(launcher)
 add_subdirectory(main)
-add_subdirectory(materials)
+if (ARCANE_HAS_ACCELERATOR_API)
+  add_subdirectory(materials)
+endif()
 
 # ----------------------------------------------------------------------------
 

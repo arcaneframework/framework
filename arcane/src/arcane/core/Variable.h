@@ -194,6 +194,8 @@ class ARCANE_CORE_EXPORT Variable
 
   void changeGroupIds(Int32ConstArrayView old_to_new_ids) override;
 
+  IVariableInternal* _internalApi() override;
+
  public:
   
   IMemoryAccessTrace* memoryAccessTrace() const override { return nullptr; }
@@ -237,6 +239,7 @@ class ARCANE_CORE_EXPORT Variable
   void _checkSetProperty(VariableRef*);
   bool _hasReference() const;
   void _removeMeshReference();
+  String _computeComparisonHashCollective(IData* sorted_data);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellToAllEnvCellConverter.h                                 (C) 2000-2023 */
+/* CellToAllEnvCellConverter.h                                 (C) 2000-2024 */
 /*                                                                           */
 /* Conversion de 'Cell' en 'AllEnvCell'.                                     */
 /*---------------------------------------------------------------------------*/
@@ -69,14 +69,20 @@ namespace Arcane::Materials
  */
 class CellToAllEnvCellConverter
 {
- public:
+  friend class MeshMaterialMng;
 
-  explicit CellToAllEnvCellConverter(ArrayView<ComponentItemInternal> v)
-  : m_all_env_items_internal(v){}
+ public:
 
   explicit CellToAllEnvCellConverter(IMeshMaterialMng* mm)
   {
     *this = mm->cellToAllEnvCellConverter();
+  }
+
+ private:
+
+  explicit CellToAllEnvCellConverter(ComponentItemSharedInfo* shared_info)
+  : m_shared_info(shared_info)
+  {
   }
 
  public:
@@ -84,18 +90,20 @@ class CellToAllEnvCellConverter
   //! Converti une maille \a Cell en maille \a AllEnvCell
   AllEnvCell operator[](Cell c)
   {
-    return AllEnvCell(matimpl::ConstituentItemBase(&m_all_env_items_internal[c.localId()]));
+    return operator[](CellLocalId(c));
   }
   //! Converti une maille \a CellLocalId en maille \a AllEnvCell
   ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
   {
-    const ComponentItemInternal* p = &m_all_env_items_internal[c.localId()];
-    return AllEnvCell(matimpl::ConstituentItemBase(const_cast<ComponentItemInternal*>(p)));
+    //const ComponentItemInternal* p = &m_all_env_items_internal[c.localId()];
+    // Pour les AllEnvCell, l'index dans la liste est le localid() de la maille.
+    return AllEnvCell(m_shared_info->_item(ConstituentItemIndex(c.localId())));
   }
 
  private:
 
-  ArrayView<ComponentItemInternal> m_all_env_items_internal;
+  ConstArrayView<ComponentItemInternal> m_all_env_items_internal;
+  ComponentItemSharedInfo* m_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

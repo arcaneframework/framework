@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleHydroAcceleratorService.cc                            (C) 2000-2023 */
+/* SimpleHydroAcceleratorService.cc                            (C) 2000-2024 */
 /*                                                                           */
 /* Hydrodynamique simplifiée utilisant les accélerateurs.                    */
 /*---------------------------------------------------------------------------*/
@@ -40,6 +40,7 @@
 #include "arcane/core/SimdItem.h"
 #include "arcane/core/UnstructuredMeshConnectivity.h"
 #include "arcane/core/ItemGenericInfoListView.h"
+#include "arcane/core/MeshUtils.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
@@ -109,11 +110,20 @@ class SimpleHydroAcceleratorService
 
   struct BoundaryCondition
   {
+   public:
+
+    explicit BoundaryCondition(const RunQueue& queue)
+    : queue_ref(queue)
+    {
+    }
+
+   public:
+
     NodeGroup nodes;
     NodeVectorView view;
-    Real value;
-    TypesSimpleHydro::eBoundaryCondition type;
-    Ref<ax::RunQueue> queue_ref;
+    Real value = 0.0;
+    TypesSimpleHydro::eBoundaryCondition type = TypesSimpleHydro::Unknown;
+    ax::RunQueue queue_ref;
   };
 
   // Note: il faut mettre ce champs statique si on veut que sa valeur
@@ -197,7 +207,8 @@ class SimpleHydroAcceleratorService
 
  public:
 
-  void _computePressureAndCellPseudoViscosityForces();
+  void _computePressureForces();
+  void _computePseudoViscosityForces();
 
  private:
 
@@ -276,6 +287,10 @@ hydroExit()
 void SimpleHydroAcceleratorService::
 hydroStartInit()
 {
+  // Indique que les connectivités doivent être dupliquées sur accélérateur
+  // et pré-copie leur valeur.
+  MeshUtils::markMeshConnectivitiesAsMostlyReadOnly(mesh(),m_default_queue,true);
+
   // Juste pour tester l'exemple de calcul du centre des mailles
   _doTestInit(); 
 
@@ -373,14 +388,13 @@ hydroStartInit()
       FaceGroup face_group = bc->getSurface();
       Real value = bc->getValue();
       TypesSimpleHydro::eBoundaryCondition type = bc->getType();
-      BoundaryCondition bcn;
+      RunQueue q = (use_multiple_queue) ? makeQueue(m_runner) : *m_default_queue;
+      BoundaryCondition bcn(makeQueue(m_runner));
       bcn.nodes = face_group.nodeGroup();
       bcn.value = value;
       bcn.type = type;
-      if (use_multiple_queue){
-        bcn.queue_ref = makeQueueRef(m_runner);
-        bcn.queue_ref->setAsync(true);
-      }
+      if (use_multiple_queue)
+        bcn.queue_ref.setAsync(true);
       m_boundary_conditions.add(bcn);
     }
   }
@@ -398,7 +412,8 @@ computeForces()
   // Calcul pour chaque noeud de chaque maille la contribution
   // des forces de pression et de la pseudo-viscosite si necessaire
   if (m_module->getViscosity()==TypesSimpleHydro::ViscosityCellScalar){
-    _computePressureAndCellPseudoViscosityForces();
+    _computePressureForces();
+    _computePseudoViscosityForces();
   }
   else{
     auto command = makeCommand(m_default_queue);
@@ -422,7 +437,7 @@ computeForces()
  * \brief Pseudo viscosité scalaire aux mailles
  */
 void SimpleHydroAcceleratorService::
-_computePressureAndCellPseudoViscosityForces()
+_computePressureForces()
 {
   Real linear_coef = m_module->getViscosityLinearCoef();
   Real quadratic_coef = m_module->getViscosityQuadraticCoef();
@@ -430,65 +445,69 @@ _computePressureAndCellPseudoViscosityForces()
   auto cnc = m_connectivity_view.cellNode();
 
   // Calcul de la divergence de la vitesse et de la viscosité scalaire
-  {
-    auto command = makeCommand(m_default_queue);
-    auto in_density = ax::viewIn(command,m_density);
-    auto in_velocity = ax::viewIn(command,m_velocity);
-    auto in_caracteristic_length = ax::viewIn(command,m_caracteristic_length);
-    auto in_volume = ax::viewIn(command,m_volume);
-    auto in_sound_speed = ax::viewIn(command,m_sound_speed);
-    auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
-    auto out_cell_viscosity_force = ax::viewOut(command,m_cell_viscosity_force);
-    command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
-    {
-      Real delta_speed = 0.0;
-      Int32 i = 0;
-      for( NodeLocalId node : cnc.nodes(cid) ){
-        delta_speed += math::dot(in_velocity[node],in_cell_cqs[cid][i]);
-        ++i;
-      }
-      delta_speed /= in_volume[cid];
 
-      // Capture uniquement les chocs
-      bool shock = (math::min(ARCANE_REAL(0.0),delta_speed)<ARCANE_REAL(0.0));
-      if (shock){
-        Real rho = in_density[cid];
-        Real sound_speed = in_sound_speed[cid];
-        Real dx = in_caracteristic_length[cid];
-        Real quadratic_viscosity = rho * dx * dx * delta_speed * delta_speed;
-        Real linear_viscosity = -rho*sound_speed* dx * delta_speed;
-        Real scalar_viscosity = linear_coef * linear_viscosity + quadratic_coef * quadratic_viscosity;
-        out_cell_viscosity_force[cid] = scalar_viscosity;
-      }
-      else{
-        out_cell_viscosity_force[cid] = 0.0;
-      }
-    };
-  }
-
+  auto command = makeCommand(m_default_queue);
+  auto in_density = ax::viewIn(command,m_density);
+  auto in_velocity = ax::viewIn(command,m_velocity);
+  auto in_caracteristic_length = ax::viewIn(command,m_caracteristic_length);
+  auto in_volume = ax::viewIn(command,m_volume);
+  auto in_sound_speed = ax::viewIn(command,m_sound_speed);
+  auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
+  auto out_cell_viscosity_force = ax::viewOut(command,m_cell_viscosity_force);
+  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
   {
-    auto command = makeCommand(m_default_queue);
-    auto in_pressure = ax::viewIn(command,m_pressure);
-    auto in_cell_viscosity_force = ax::viewIn(command,m_cell_viscosity_force);
-    auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
-    auto out_force = ax::viewOut(command,m_force);
-    auto node_index_in_cells = m_node_index_in_cells.constSpan();
-    auto nc_cty = m_connectivity_view.nodeCell();
-    command << RUNCOMMAND_ENUMERATE(Node,node,allNodes())
-    {
-      Int32 first_pos = node.localId() * MAX_NODE_CELL; //max_node_cell;
-      Real3 force;
-      Integer index = 0;
-      for( CellLocalId cell : nc_cty.cells(node) ){
-        Int16 node_index = node_index_in_cells[first_pos + index];
-        Real scalar_viscosity = in_cell_viscosity_force[cell];
-        Real pressure = in_pressure[cell];
-        force += (pressure + scalar_viscosity)*in_cell_cqs[cell][node_index];
-        ++index;
-      }
-      out_force[node] = force;
-    };
-  }
+    Real delta_speed = 0.0;
+    Int32 i = 0;
+    for( NodeLocalId node : cnc.nodes(cid) ){
+      delta_speed += math::dot(in_velocity[node],in_cell_cqs[cid][i]);
+      ++i;
+    }
+    delta_speed /= in_volume[cid];
+
+    // Capture uniquement les chocs
+    bool shock = (math::min(ARCANE_REAL(0.0),delta_speed)<ARCANE_REAL(0.0));
+    if (shock){
+      Real rho = in_density[cid];
+      Real sound_speed = in_sound_speed[cid];
+      Real dx = in_caracteristic_length[cid];
+      Real quadratic_viscosity = rho * dx * dx * delta_speed * delta_speed;
+      Real linear_viscosity = -rho*sound_speed* dx * delta_speed;
+      Real scalar_viscosity = linear_coef * linear_viscosity + quadratic_coef * quadratic_viscosity;
+      out_cell_viscosity_force[cid] = scalar_viscosity;
+    }
+    else{
+      out_cell_viscosity_force[cid] = 0.0;
+    }
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimpleHydroAcceleratorService::
+_computePseudoViscosityForces()
+{
+  auto command = makeCommand(m_default_queue);
+  auto in_pressure = ax::viewIn(command,m_pressure);
+  auto in_cell_viscosity_force = ax::viewIn(command,m_cell_viscosity_force);
+  auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
+  auto out_force = ax::viewOut(command,m_force);
+  auto node_index_in_cells = m_node_index_in_cells.constSpan();
+  auto nc_cty = m_connectivity_view.nodeCell();
+  command << RUNCOMMAND_ENUMERATE(Node,node,allNodes())
+  {
+    Int32 first_pos = node.localId() * MAX_NODE_CELL; //max_node_cell;
+    Real3 force;
+    Integer index = 0;
+    for( CellLocalId cell : nc_cty.cells(node) ){
+      Int16 node_index = node_index_in_cells[first_pos + index];
+      Real scalar_viscosity = in_cell_viscosity_force[cell];
+      Real pressure = in_pressure[cell];
+      force += (pressure + scalar_viscosity)*in_cell_cqs[cell][node_index];
+      ++index;
+    }
+    out_force[node] = force;
+  };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -573,7 +592,9 @@ applyBoundaryCondition()
     TypesSimpleHydro::eBoundaryCondition type = bc.type;
     NodeVectorView view = bc.view;
 
-    ax::RunQueue& used_queue = (use_one_queue) ? queue : *(bc.queue_ref.get());
+    ax::RunQueue used_queue = bc.queue_ref;
+    if (use_one_queue)
+      used_queue = queue;
     auto command = makeCommand(used_queue);
     auto in_out_velocity = ax::viewInOut(command,m_velocity);
     // boucle sur les faces de la surface
@@ -592,7 +613,7 @@ applyBoundaryCondition()
     queue.barrier();
   else
     for( auto bc : m_boundary_conditions ){
-      bc.queue_ref->barrier();
+      bc.queue_ref.barrier();
     }
 }
 

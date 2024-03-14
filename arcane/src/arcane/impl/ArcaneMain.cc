@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.cc                                               (C) 2000-2023 */
+/* ArcaneMain.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -468,6 +468,9 @@ execute()
 void ArcaneMainExecInfo::
 finalize()
 {
+  // Désactive les exceptions flottantes
+  platform::enableFloatingException(false);
+
   // Si l'exécution s'est bien déroulée mais que l'utilisateur a spécifié un
   // code d'erreur, on le récupère.
   int exe_error_code = m_exec_main->errorCode();

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableViews.h                                             (C) 2000-2023 */
+/* VariableViews.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des vues sur les variables pour les accélérateurs.                */
 /*---------------------------------------------------------------------------*/
@@ -25,12 +25,7 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \file Views.h
- *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs des variables du maillage.
- */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,15 +40,11 @@ template<typename DataType> class View1DGetterSetter;
 /*!
  * \brief Classe de base des vues sur les variables.
  */
-class VariableViewBase
+class ARCANE_ACCELERATOR_EXPORT VariableViewBase
 {
  public:
-  // Pour l'instant n'utilise pas encore \a command et \a var
-  // mais il ne faut pas les supprimer
-  VariableViewBase(RunCommand&,IVariable*)
-  {
-  }
- private:
+
+  VariableViewBase(RunCommand& command,IVariable* var);
 };
 
 /*---------------------------------------------------------------------------*/

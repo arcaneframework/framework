@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryCopier.h                                             (C) 2000-2023 */
+/* IMemoryCopier.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Interface pour les copies mémoire.                                        */
 /*---------------------------------------------------------------------------*/
@@ -29,6 +29,10 @@ namespace Arcane
  */
 class ARCANE_UTILS_EXPORT IMemoryCopier
 {
+ public:
+
+  virtual ~IMemoryCopier() = default;
+
  public:
 
   /*!

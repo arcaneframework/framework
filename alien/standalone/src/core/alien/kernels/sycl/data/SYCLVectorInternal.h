@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * Copyright 2020 IFPEN-CEA
  *
@@ -20,14 +26,24 @@
 
 #include <alien/kernels/sycl/SYCLPrecomp.h>
 
+#ifdef USE_SYCL2020
+#include <sycl/sycl.hpp>
+#else
 #include <CL/sycl.hpp>
+#endif
 
+#include "SYCLEnv.h"
+#include "SYCLEnvInternal.h"
 /*---------------------------------------------------------------------------*/
 
 namespace Alien::SYCLInternal
 {
 
 /*---------------------------------------------------------------------------*/
+
+#ifndef USE_SYCL2020
+  using namespace cl ;
+#endif
 
 template <typename ValueT = Real>
 class VectorInternal
@@ -36,13 +52,13 @@ class VectorInternal
   // clang-format off
   typedef ValueT                           ValueType;
   typedef VectorInternal<ValueType>        ThisType;
-  typedef cl::sycl::buffer<ValueType, 1>   ValueBufferType;
+  typedef sycl::buffer<ValueType, 1>       ValueBufferType;
   typedef std::unique_ptr<ValueBufferType> ValueBufferPtrType;
   // clang-format on
 
  public:
   VectorInternal(ValueType const* ptr, std::size_t size)
-  : m_values(ptr, cl::sycl::range<1>(size))
+  : m_values(ptr, sycl::range<1>(size))
   {
     m_values.set_final_data(nullptr);
   }
@@ -70,9 +86,20 @@ class VectorInternal
 
   void copyValuesToHost(std::size_t size, ValueT* ptr)
   {
-    auto h_values = m_values.template get_access<cl::sycl::access::mode::read>();
+    auto h_values = m_values.get_host_access();
     for (std::size_t i = 0; i < size; ++i)
       ptr[i] = h_values[i];
+  }
+
+  void copy(ValueBufferType& src)
+  {
+    auto env = SYCLEnv::instance() ;
+    env->internal()->queue().submit([&](sycl::handler& cgh)
+                                     {
+                                       auto access_x = m_values.template get_access<sycl::access::mode::read_write>(cgh);
+                                       auto access_src = src.template get_access<sycl::access::mode::read>(cgh);
+                                       cgh.copy(access_src,access_x) ;
+                                     }) ;
   }
 
   //VectorInternal<ValueT>* clone() const { return new VectorInternal<ValueT>(*this); }

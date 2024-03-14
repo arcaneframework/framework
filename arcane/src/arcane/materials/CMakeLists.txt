@@ -1,4 +1,4 @@
-message(STATUS "Parsing ${CMAKE_CURRENT_SOURCE_DIR}")
+﻿message(STATUS "Parsing ${CMAKE_CURRENT_SOURCE_DIR}")
 
 include(srcs.cmake)
 
@@ -8,8 +8,27 @@ arcane_add_library(arcane_materials
   FILES ${ARCANE_SOURCES}
   )
 
+arcane_accelerator_add_source_files(
+  AllEnvData.cc
+  ConstituentConnectivityList.cc
+  ComponentItemInternalData.cc
+  IncrementalComponentModifier.cc
+  MeshComponentPartData.cc
+  MeshEnvironment.cc
+  MeshMaterialVariableScalar.cc
+  MeshMaterialVariableArray.cc
+  MeshMaterialVariableIndexer.cc
+)
+
 target_compile_definitions(arcane_materials PRIVATE ARCANE_COMPONENT_arcane_materials)
 target_include_directories(arcane_materials PUBLIC $<BUILD_INTERFACE:${Arcane_SOURCE_DIR}/src> $<INSTALL_INTERFACE:include>)
 
-target_link_libraries(arcane_materials PUBLIC arcane_core)
+target_link_libraries(arcane_materials PUBLIC arcane_accelerator arcane_core)
 arcane_register_library(arcane_materials)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

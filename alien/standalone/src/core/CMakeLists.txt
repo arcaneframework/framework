@@ -13,6 +13,9 @@
 # limitations under the License.
 # 
 # SPDX-License-Identifier: Apache-2.0
+IF(ALIEN_USE_INTELSYCL)
+  set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+ENDIF()
 
 add_subdirectory(alien/utils)
 add_subdirectory(alien/data)
@@ -23,7 +26,29 @@ add_subdirectory(alien/kernels/simple_csr)
 add_subdirectory(alien/index_manager)
 
 IF(ALIEN_USE_SYCL)
-  find_package(hipSYCL CONFIG REQUIRED)
+  IF(ALIEN_USE_HIPSYCL)
+    find_package(hipSYCL CONFIG REQUIRED)
+    set(ALIEN_USE_SYCL ${hipSYCL_FOUND})
+    message(status "hipSYCL FOUND          : ${IntelDPCPP_FOUND}")
+    message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+    message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+  ENDIF()
+  IF(ALIEN_USE_INTELDPCPP)
+    find_package(IntelDPCPP CONFIG REQUIRED)
+    message(status "IntelDPCPP FOUND       : ${IntelDPCPP_FOUND}")
+    message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+    message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    set(ALIEN_USE_SYCL ${IntelDPCPP_FOUND})
+  ENDIF()
+  IF(ALIEN_USE_INTELSYCL)
+    find_package(IntelSYCL REQUIRED)
+    message(status "IntelSYCL FOUND        : ${IntelSYCL_FOUND}")
+    message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+    message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    message(status "      SYCL LINK FLAGS  : ${SYCL_LINK_FLAGS}")
+
+    set(ALIEN_USE_SYCL ${IntelSYCL_FOUND})
+  ENDIF()
   add_subdirectory(alien/kernels/sycl)
 endif()
 
@@ -139,6 +164,15 @@ if (Eigen3_FOUND)
         alien/expression/schur/SchurBlock.h)
 endif()
 
+IF(ALIEN_USE_SYCL)
+   list(APPEND alien_core_list
+        alien/handlers/scalar/sycl/VectorAccessorT.h
+        alien/handlers/scalar/sycl/VectorAccessorImplT.h
+        alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h
+        alien/handlers/scalar/sycl/ProfiledMatrixBuilderImplT.h
+        alien/handlers/scalar/sycl/VectorAccessor.cc)
+ENDIF()
+
 add_library(alien_core ${alien_core_list})
 
 target_link_libraries(alien_core PUBLIC alien_utils alien_data)
@@ -178,9 +212,31 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
 endif()
 
 IF(ALIEN_USE_SYCL)
+  IF(ALIEN_USE_HIPSYCL)
+    IF(CMAKE_COMPILER_IS_GNUCXX)
+      target_compile_options(alien_core PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
+    ENDIF()
+    #add_sycl_to_target(TARGET alien_core)
+  ENDIF()
+  IF(ALIEN_USE_INTELDPCPP)
+    #set(DPCPP_FLAGS -fsycl -v --offload-arch=gfx90a -Wno-linker-warnings)
+    #set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+    #target_compile_options(alien_core PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS} -DUSE_SYCL2020>)
+    #target_link_options(alien_core PRIVATE ${DPCPP_FLAGS} -sycl-std=2020 -std=c++20 -fsycl-unnamed-lambda)
+    #add_sycl_to_target(TARGET alien_core)
+  ENDIF()
+  IF(ALIEN_USE_INTELSYCL)
+    IF(ALIEN_USE_CUDA)
+      set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings)
+      target_compile_options(alien_core PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+      target_link_options(alien_core PRIVATE ${DPCPP_FLAGS})
+    ENDIF()
+    IF(ALIEN_USE_HIP)
+      set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+      target_link_options(alien_core PRIVATE ${DPCPP_FLAGS})
+    ENDIF()
+  ENDIF()
   target_link_libraries(alien_core PUBLIC alien_kernel_sycl)
-  target_compile_options(alien_core PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
-  add_sycl_to_target(TARGET alien_core)
 ENDIF()
 
 
@@ -198,13 +254,17 @@ find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(MPI REQUIRED)
 
 target_link_libraries(alien_core PRIVATE MPI::MPI_CXX)
-target_link_libraries(alien_core PUBLIC Boost::boost)
+target_link_libraries(alien_core PUBLIC Boost::dynamic_linking)
+target_link_libraries(alien_core PUBLIC Boost::program_options)
 
 generate_export_header(alien_core
         EXPORT_MACRO_NAME ALIEN_EXPORT
         EXPORT_FILE_NAME alien/AlienExport.h)
 
 target_link_libraries(alien_core PUBLIC alien_headers)
+
+find_package(BLAS REQUIRED)
+target_link_libraries(alien_core PUBLIC BLAS::BLAS)
 
 install(DIRECTORY alien
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}

@@ -101,11 +101,10 @@ MpiParallelMngBuildInfo(MPI_Comm comm)
   ::MPI_Comm_rank(comm,&comm_rank);
   ::MPI_Comm_size(comm,&comm_nb_rank);
 
-  m_dispatchers_ref = makeRef<MP::Dispatchers>(new MP::Dispatchers());
+  m_dispatchers_ref = createRef<MP::Dispatchers>();
   MP::Mpi::MpiMessagePassingMng::BuildInfo bi(comm_rank,comm_nb_rank,m_dispatchers_ref.get(),mpi_comm);
 
-  auto* mp = new MP::Mpi::MpiMessagePassingMng(bi);
-  m_message_passing_mng_ref = makeRef<MP::MessagePassingMng>(mp);
+  m_message_passing_mng_ref = createRef<MP::Mpi::MpiMessagePassingMng>(bi);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -309,7 +308,7 @@ class MpiParallelMngUtilsFactory
     else if (m_synchronizer_version == 5){
       if (do_print)
         tm->info() << "Using MpiSynchronizer V5";
-      topology_info = makeRef<IVariableSynchronizerMpiCommunicator>(new VariableSynchronizerMpiCommunicator(mpi_pm));
+      topology_info = createRef<VariableSynchronizerMpiCommunicator>(mpi_pm);
 #if defined(ARCANE_HAS_MPI_NEIGHBOR)
       generic_factory = arcaneCreateMpiNeighborVariableSynchronizerFactory(mpi_pm,topology_info);
 #else
@@ -323,9 +322,11 @@ class MpiParallelMngUtilsFactory
     }
     if (!generic_factory.get())
       ARCANE_FATAL("No factory created");
-    return makeRef<IVariableSynchronizer>(new MpiVariableSynchronizer(pm,group,generic_factory,topology_info));
+    return createRef<MpiVariableSynchronizer>(pm,group,generic_factory,topology_info);
   }
+
  private:
+
   Integer m_synchronizer_version = 1;
   Int32 m_synchronize_block_size = 32000;
   Int32 m_synchronize_nb_sequence = 1;
@@ -353,7 +354,7 @@ MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 , m_is_communicator_owned(bi.is_mpi_comm_owned)
 , m_mpi_lock(bi.mpi_lock)
 , m_non_blocking_collective(nullptr)
-, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new MpiParallelMngUtilsFactory()))
+, m_utils_factory(createRef<MpiParallelMngUtilsFactory>())
 {
   if (!m_world_parallel_mng){
     m_trace->debug()<<"[MpiParallelMng] No m_world_parallel_mng found, reverting to ourselves!";
@@ -872,8 +873,7 @@ class MpiParallelMng::RequestList
 Ref<IRequestList> MpiParallelMng::
 createRequestListRef()
 {
-  IRequestList* x = new RequestList(this);
-  return makeRef(x);
+  return createRef<RequestList>(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -891,7 +891,7 @@ _internalUtilsFactory() const
 bool MpiParallelMng::
 _isAcceleratorAware() const
 {
-  return arcaneIsCudaAwareMPI();
+  return arcaneIsAcceleratorAwareMPI();
 }
 
 /*---------------------------------------------------------------------------*/

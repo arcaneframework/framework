@@ -100,7 +100,7 @@ void ParallelMngDispatcherBuildInfo::
 _init()
 {
   if (!m_dispatchers){
-    m_dispatchers_ref = makeRef(new MP::Dispatchers());
+    m_dispatchers_ref = createRef<MP::Dispatchers>();
     m_dispatchers = m_dispatchers_ref.get();
   }
   if (!m_message_passing_mng){

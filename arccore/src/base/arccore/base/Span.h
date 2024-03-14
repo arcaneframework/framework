@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span.h                                                      (C) 2000-2023 */
+/* Span.h                                                      (C) 2000-2024 */
 /*                                                                           */
 /* Vues sur des tableaux C.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -854,11 +854,11 @@ asSpanInternal(Span<ByteType,Extent> bytes)
   Int64 size = bytes.size();
   if (size==0)
     return {};
-  static constexpr Int64 data_type = static_cast<Int64>(sizeof(data_type));
-  static_assert(data_type>0,"Bad datatype size");
-  ARCCORE_ASSERT((size%data_type)==0,("Size is not a multiple of sizeof(DataType)"));
+  static constexpr Int64 data_type_size = static_cast<Int64>(sizeof(DataType));
+  static_assert(data_type_size>0,"Bad datatype size");
+  ARCCORE_ASSERT((size%data_type_size)==0,("Size is not a multiple of sizeof(DataType)"));
   auto* ptr = reinterpret_cast<DataType*>(bytes.data());
-  return { ptr, size / data_type };
+  return { ptr, size / data_type_size };
 }
 
 }

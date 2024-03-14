@@ -1,4 +1,10 @@
-﻿#include <mpi.h>
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+#include <mpi.h>
 
 #include <string>
 #include <map>
@@ -14,6 +20,9 @@
 #include <arcane/utils/IMemoryInfo.h>
 #include <arcane/utils/OStringStream.h>
 #include <arcane/ITimeLoopMng.h>
+
+
+
 #include <alien/arcane_tools/accessors/ItemVectorAccessor.h>
 #include <alien/core/block/VBlock.h>
 
@@ -36,10 +45,12 @@
 
 #include <alien/expression/solver/SolverStater.h>
 
+
 #ifdef ALIEN_USE_PETSC
 #include <alien/kernels/petsc/io/AsciiDumper.h>
 #include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>
 #endif
+
 #ifdef ALIEN_USE_MTL4
 #include <alien/kernels/mtl/algebra/MTLLinearAlgebra.h>
 #endif
@@ -52,6 +63,22 @@
 #include <alien/kernels/trilinos/TrilinosBackEnd.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosMatrix.h>
 #include <alien/kernels/trilinos/algebra/TrilinosLinearAlgebra.h>
+#endif
+
+#ifdef ALIEN_USE_SYCL
+#include <arccore/base/Span.h>
+#include <alien/kernels/sycl/SYCLPrecomp.h>
+
+#include "alien/kernels/sycl/data/SYCLEnv.h"
+
+#include <alien/kernels/sycl/data/SYCLBEllPackMatrix.h>
+#include <alien/kernels/sycl/data/SYCLVector.h>
+#include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
+
+#include <alien/kernels/sycl/algebra/SYCLInternalLinearAlgebra.h>
+
+#include "alien/kernels/sycl/data/SYCLSendRecvOp.h"
+#include <alien/kernels/sycl/algebra/SYCLKernelInternal.h>
 #endif
 
 #include <alien/expression/solver/ILinearSolver.h>
@@ -86,21 +113,26 @@ AlienBenchModule::init()
   m_lambdaz = options()->lambdaz();
   m_alpha = options()->alpha();
 
-  Alien::ILinearSolver* solver = options()->linearSolver();
-  solver->init();
+  m_use_accelerator = options()->useAccelerator() ;
+
+  if(options()->linearSolver.size()>0)
+  {
+    Alien::ILinearSolver* solver = options()->linearSolver[0];
+    solver->init();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
-
 void
 AlienBenchModule::test()
 {
+
   Timer pbuild_timer(subDomain(), "PBuildPhase", Timer::TimerReal);
   Timer psolve_timer(subDomain(), "PSolvePhase", Timer::TimerReal);
   Timer rbuild_timer(subDomain(), "RBuildPhase", Timer::TimerReal);
   Timer rsolve_timer(subDomain(), "RSolvePhase", Timer::TimerReal);
 
-  ItemGroup areaU = allCells();
+  CellGroup areaU = allCells();
   CellCellGroup cell_cell_connection(areaU.own(), areaU, m_stencil_kind);
   CellCellGroup all_cell_cell_connection(areaU, areaU, m_stencil_kind);
 
@@ -117,7 +149,6 @@ AlienBenchModule::test()
   // CREATE VECTORS ASSOCIATED TO Space
   //
 
-  // Accès à l'indexation
   Arccore::UniqueArray<Arccore::Integer> allUIndex = index_manager.getIndexes(indexSetU);
 
   Alien::ArcaneTools::Space space(&index_manager, "TestSpace");
@@ -147,144 +178,40 @@ AlienBenchModule::test()
   Alien::Vector coordY(m_vdist);
   Alien::Vector coordZ(m_vdist);
 
-
-  ///////////////////////////////////////////////////////////////////////////
-  //
-  // VECTOR BUILDING AND FILLING
-  //
-  info() << "Building & initializing vector b";
-  info() << "Space size = " << m_vdist.globalSize()
-         << ", local size= " << m_vdist.localSize();
-
-  ENUMERATE_CELL (icell, areaU) {
-    Real3 x;
-    for (Arcane::Node node : icell->nodes()) {
-      x += m_node_coord[node];
-    }
-    x /= icell->nbNode();
-    m_cell_center[icell] = x;
-    m_u[icell] = funcn(x);
-    m_k[icell] = funck(x);
-  }
-  {
-    // Builder du vecteur
-    Alien::VectorWriter writer(vectorX);
-    Alien::VectorWriter x(coordX);
-    Alien::VectorWriter y(coordY);
-    Alien::VectorWriter z(coordZ);
-
-    ENUMERATE_CELL(icell,areaU.own())
-    {
-      const Integer iIndex = allUIndex[icell->localId()];
-      writer[iIndex] = m_u[icell] ;
-      x[iIndex] = m_cell_center[icell].x ;
-      y[iIndex] = m_cell_center[icell].y ;
-      z[iIndex] = m_cell_center[icell].z ;
-    }
-  }
-
   Alien::Matrix matrixA(m_mdist); // local matrix for exact measure without side effect
                                   // (however, you can reuse a matrix with several
                                   // builder)
 
-  ///////////////////////////////////////////////////////////////////////////
-  //
-  // MATRIX BUILDING AND FILLING
-  //
-  {
-    Timer::Sentry ts(&pbuild_timer);
-    Alien::MatrixProfiler profiler(matrixA);
-    ///////////////////////////////////////////////////////////////////////////
-    //
-    // DEFINE PROFILE
-    //
-    ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
-    {
-      const Cell& cell = *icell;
-      const Integer iIndex = allUIndex[cell.localId()];
-      profiler.addMatrixEntry(iIndex, allUIndex[cell.localId()]);
-      ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
-      {
-        const Cell& subcell = *isubcell;
-        profiler.addMatrixEntry(iIndex, allUIndex[subcell.localId()]);
-      }
-    }
-  }
-  {
-    Timer::Sentry ts(&pbuild_timer);
-    Alien::ProfiledMatrixBuilder builder(
-        matrixA, Alien::ProfiledMatrixOptions::eResetValues);
-    ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
-    {
-      const Cell& cell = *icell;
-      double diag = dii(cell);
+#ifdef ALIEN_USE_SYCL
+  if(m_use_accelerator)
+    _testSYCL(pbuild_timer,
+              areaU,
+              cell_cell_connection,
+              all_cell_cell_connection,
+              allUIndex,
+              vectorB,
+              vectorBB,
+              vectorX,
+              coordX,
+              coordY,
+              coordZ,
+              matrixA) ;
+  else
+#endif
+    _test(pbuild_timer,
+          areaU,
+          cell_cell_connection,
+          all_cell_cell_connection,
+          allUIndex,
+          vectorB,
+          vectorBB,
+          vectorX,
+          coordX,
+          coordY,
+          coordZ,
+          matrixA) ;
 
-      Integer i = allUIndex[cell.localId()];
-      builder(i, i) += diag;
-      ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
-      {
-        const Cell& subcell = *isubcell;
-        double off_diag = fij(cell, subcell);
-        builder(i, i) += off_diag;
-        Integer j = allUIndex[subcell.localId()];
-        builder(i, j) -= off_diag;
-      }
-    }
-    if (options()->sigma() > 0.) {
-      m_sigma = options()->sigma();
-      auto xCmax = Real3{ 0.25, 0.25, 0.25 };
-      auto xCmin = Real3{ 0.75, 0.75, 0.55 };
-      ENUMERATE_ITEMPAIR(Cell, Cell, icell, all_cell_cell_connection)
-      {
-        const Cell& cell = *icell;
-        Real3 xC = m_cell_center[icell];
-        Real3 xDmax = xC - xCmax;
-        Real3 xDmin = xC - xCmin;
-        m_s[cell] = 0;
-        if (xDmax.abs() < options()->epsilon()) {
-          m_s[cell] = 1.;
-          Integer i = allUIndex[cell.localId()];
-          info() << "MATRIX TRANSFO SIGMAMAX " << i;
-          if (cell.isOwn())
-            builder(i, i) = m_sigma;
-          ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
-          {
-            const Cell& subcell = *isubcell;
-            if (subcell.isOwn()) {
-              Integer j = allUIndex[subcell.localId()];
-              builder(j, i) = 0.;
-            }
-          }
-        }
-        if (xDmin.abs() < options()->epsilon()) {
-          m_s[cell] = -1.;
-          Integer i = allUIndex[cell.localId()];
-          info() << "MATRIX TRANSFO SIGMA MIN" << i;
 
-          if (cell.isOwn())
-            builder(i, i) = 1. / m_sigma;
-          ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
-          {
-            const Cell& subcell = *isubcell;
-            if (subcell.isOwn()) {
-              Integer j = allUIndex[subcell.localId()];
-              builder(j, i) = 0.;
-            }
-          }
-        }
-      }
-    }
-
-    builder.finalize();
-  }
-
-  {
-    Alien::SimpleCSRLinearAlgebra csrAlg;
-    csrAlg.mult(matrixA, vectorX, vectorB);
-    csrAlg.mult(matrixA, vectorX, vectorBB);
-    Real normeb = csrAlg.norm2(vectorB);
-    info() << "||b||=" << normeb;
-  }
 #ifdef ALIEN_USE_HTSSOLVER
 /*{
   info()<<"HTS";
@@ -328,6 +255,18 @@ AlienBenchModule::test()
   //
   if(options()->alienCoreSolver.size()>0)
   {
+#ifdef ALIEN_USE_SYCL
+    if(m_use_accelerator)
+    {
+        Alien::SYCLInternalLinearAlgebra syclAlg;
+        auto const& true_bb = vectorBB.impl()->get<Alien::SYCLInternalLinearAlgebra::BackEndType>() ;
+        auto&       true_b = vectorB.impl()->get<Alien::SYCLInternalLinearAlgebra::BackEndType>(true) ;
+        auto&       true_x = vectorX.impl()->get<Alien::SYCLInternalLinearAlgebra::BackEndType>(true) ;
+        syclAlg.copy(true_bb,true_b) ;
+        syclAlg.assign(true_x,0.) ;
+    }
+    else
+#endif
     {
       Alien::LocalVectorReader reader(vectorBB);
       Alien::LocalVectorWriter vb(vectorB);
@@ -343,11 +282,8 @@ AlienBenchModule::test()
     typedef Alien::CG<AlgebraType>                   SolverType ;
 
     AlgebraType alg ;
-    auto const& true_A = matrixA.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
-    auto const& true_b = vectorB.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
-    auto&       true_x = vectorX.impl()->get<Alien::BackEnd::tag::simplecsr>(true) ;
 
-    auto const& opt           = options()->alienCoreSolver[0] ;
+    auto const& opt   = options()->alienCoreSolver[0] ;
     int output_level  = opt->outputLevel() ;
     int max_iteration = opt->maxIter() ;
     double tol        = opt->tol() ;
@@ -511,7 +447,6 @@ AlienBenchModule::test()
                         solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
                     }
                     break ;
-
                   case AlienCoreSolverOptionTypes::Diag:
                   default:
                     {
@@ -545,8 +480,165 @@ AlienBenchModule::test()
                   info()<<"Solver convergence failed";
                 }
               } ;
+
+    auto run2 = [&](auto& alg)
+              {
+                typedef typename
+                    std::remove_reference<decltype(alg)>::type AlgebraType ;
+                typedef typename AlgebraType::BackEndType        BackEndType ;
+                typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
+
+                auto const& true_A = matrixA.impl()->get<BackEndType>() ;
+                auto const& true_b = vectorB.impl()->get<BackEndType>() ;
+                auto&       true_x = vectorX.impl()->get<BackEndType>(true) ;
+
+                StopCriteriaType stop_criteria{alg,true_b,tol,max_iteration,output_level>0?traceMng():nullptr} ;
+
+                switch(solver_opt)
+                {
+                  case AlienCoreSolverOptionTypes::CG:
+                  {
+                    typedef Alien::CG<AlgebraType> SolverType ;
+
+                    SolverType solver{alg,traceMng()} ;
+                    solver.setOutputLevel(output_level) ;
+                    switch(precond_opt)
+                    {
+                      case AlienCoreSolverOptionTypes::ChebyshevPoly:
+                      {
+                          info()<<"CHEBYSHEV PRECONDITIONER";
+                          double polynom_factor          = opt->polyFactor() ;
+                          int    polynom_order           = opt->polyOrder() ;
+                          int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
+
+                          typedef Alien::ChebyshevPreconditioner<AlgebraType,true> PrecondType ;
+                          PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
+                          precond.setOutputLevel(output_level) ;
+                          precond.init() ;
+
+                          Timer::Sentry ts(&psolve_timer);
+                          if(asynch==0)
+                            solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                          else
+                            solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                      }
+                      break;
+                      case AlienCoreSolverOptionTypes::NeumannPoly:
+                        {
+                          info()<<"NEUMANN PRECONDITIONER";
+                          double polynom_factor          = opt->polyFactor() ;
+                          int    polynom_order           = opt->polyOrder() ;
+                          int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
+
+                          typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
+                          PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
+                          precond.init() ;
+
+                          Timer::Sentry ts(&psolve_timer);
+                          if(asynch==0)
+                            solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                          else
+                            solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                        }
+                        case AlienCoreSolverOptionTypes::Diag:
+                        default:
+                        {
+                          info()<<"DIAG PRECONDITIONER";
+                          typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+                          PrecondType      precond{alg,true_A} ;
+                          precond.init() ;
+
+                          Timer::Sentry ts(&psolve_timer);
+                          if(asynch==0)
+                            solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                          else
+                            solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                        }
+                        break ;
+                    }
+                }
+                break ;
+                case AlienCoreSolverOptionTypes::BCGS:
+                {
+                  typedef Alien::BiCGStab<AlgebraType> SolverType ;
+                  SolverType solver{alg,traceMng()} ;
+                  solver.setOutputLevel(output_level) ;
+                  switch(precond_opt)
+                  {
+                  case AlienCoreSolverOptionTypes::ChebyshevPoly:
+                   {
+                      info()<<"CHEBYSHEV PRECONDITIONER";
+                      double polynom_factor          = opt->polyFactor() ;
+                      int    polynom_order           = opt->polyOrder() ;
+                      int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
+
+                      typedef Alien::ChebyshevPreconditioner<AlgebraType,true> PrecondType ;
+                      PrecondType      precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
+                      precond.setOutputLevel(output_level) ;
+                      precond.init() ;
+
+                      Timer::Sentry ts(&psolve_timer);
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                   break ;
+                  case AlienCoreSolverOptionTypes::NeumannPoly:
+                    {
+                      info()<<"NEUMANN PRECONDITIONER";
+                      double polynom_factor          = opt->polyFactor() ;
+                      int    polynom_order           = opt->polyOrder() ;
+                      int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
+
+                      typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
+                      precond.init() ;
+
+                      Timer::Sentry ts(&psolve_timer);
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                    break ;
+                  case AlienCoreSolverOptionTypes::Diag:
+                  default:
+                    {
+                      info()<<"DIAG PRECONDITIONER";
+                      typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+                      PrecondType      precond{alg,true_A} ;
+                      precond.init() ;
+
+                      Timer::Sentry ts(&psolve_timer);
+                      if(asynch==0)
+                        solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                      else
+                        solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                    }
+                    break ;
+                  }
+                }
+                break ;
+                default :
+                  fatal()<<"unknown solver";
+                }
+
+                if(stop_criteria.getStatus())
+                {
+                  info()<<"Solver has converged";
+                  info()<<"Nb iterations  : "<<stop_criteria();
+                  info()<<"Criteria value : "<<stop_criteria.getValue();
+                }
+                else
+                {
+                  info()<<"Solver convergence failed";
+                }
+              } ;
+
     // clang-format on
 
+    info()<<"START SOLVE A.X=B";
     switch(backend)
     {
       case AlienCoreSolverOptionTypes::SimpleCSR:
@@ -559,8 +651,8 @@ AlienBenchModule::test()
       {
 #ifdef ALIEN_USE_SYCL
         Alien::SYCLInternalLinearAlgebra alg;
-        alg.setDotAlgo(vm["dot-algo"].as<int>());
-        run(alg);
+        //alg.setDotAlgo(vm["dot-algo"].as<int>());
+        run2(alg);
 #else
         fatal() << "SYCL BackEnd not available";
 #endif
@@ -573,7 +665,7 @@ AlienBenchModule::test()
   }
   else
   {
-    Alien::ILinearSolver* solver = options()->linearSolver();
+    Alien::ILinearSolver* solver = options()->linearSolver[0];
     solver->init();
 #ifdef ALIEN_USE_TRILINOS
       if(solver->getBackEndName().contains("tpetraserial"))
@@ -644,7 +736,7 @@ AlienBenchModule::test()
               Real3 xDmax = xC - xCmax;
               Real3 xDmin = xC - xCmin;
               m_s[cell] = 0;
-              if (xDmax.abs() < options()->epsilon()) {
+              if (xDmax.normL2() < options()->epsilon()) {
                 m_s[cell] = 1.;
                 Integer i = allUIndex[cell.localId()];
                 info() << "MATRIX TRANSFO SIGMAMAX " << i;
@@ -659,7 +751,7 @@ AlienBenchModule::test()
                   }
                 }
               }
-              if (xDmin.abs() < options()->epsilon()) {
+              if (xDmin.normL2() < options()->epsilon()) {
                 m_s[cell] = -1.;
                 Integer i = allUIndex[cell.localId()];
                 info() << "MATRIX TRANSFO SIGMA MIN" << i;
@@ -752,7 +844,7 @@ AlienBenchModule::test()
     Alien::RedistributedVector rr(vectorR, redist);
     rbuild_timer.stop();
     if (keep_proc) {
-      auto solver = options()->linearSolver();
+      auto solver = options()->linearSolver[0];
       // solver->updateParallelMng(Aa.distribution().parallelMng());
       solver->init();
       {
@@ -779,6 +871,162 @@ AlienBenchModule::test()
   subDomain()->timeLoopMng()->stopComputeLoop(true);
 }
 
+void
+AlienBenchModule::_test(Timer& pbuild_timer,
+                        CellGroup& areaU,
+                        CellCellGroup& cell_cell_connection,
+                        CellCellGroup& all_cell_cell_connection,
+                        Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                        Alien::Vector& vectorB,
+                        Alien::Vector& vectorBB,
+                        Alien::Vector& vectorX,
+                        Alien::Vector& coordX,
+                        Alien::Vector& coordY,
+                        Alien::Vector& coordZ,
+                        Alien::Matrix& matrixA)
+{
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // VECTOR BUILDING AND FILLING
+  //
+  info() << "Building & initializing vector b";
+  info() << "Space size = " << m_vdist.globalSize()
+         << ", local size= " << m_vdist.localSize();
+
+  {
+      ENUMERATE_CELL (icell, areaU)
+      {
+        Real3 x;
+        for (Arcane::Node node : icell->nodes()) {
+          x += m_node_coord[node];
+        }
+        x /= icell->nbNode();
+        m_cell_center[icell] = x;
+        m_u[icell] = funcn(x);
+        m_k[icell] = funck(x);
+      }
+  }
+
+  {
+    // Builder du vecteur
+    Alien::VectorWriter writer(vectorX);
+    Alien::VectorWriter x(coordX);
+    Alien::VectorWriter y(coordY);
+    Alien::VectorWriter z(coordZ);
+
+    ENUMERATE_CELL(icell,areaU.own())
+    {
+      const Integer iIndex = allUIndex[icell->localId()];
+      writer[iIndex] = m_u[icell] ;
+      x[iIndex] = m_cell_center[icell].x ;
+      y[iIndex] = m_cell_center[icell].y ;
+      z[iIndex] = m_cell_center[icell].z ;
+    }
+  }
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // MATRIX BUILDING AND FILLING
+  //
+
+  {
+    Timer::Sentry ts(&pbuild_timer);
+    {
+      Alien::MatrixProfiler profiler(matrixA);
+      ///////////////////////////////////////////////////////////////////////////
+      //
+      // DEFINE PROFILE
+      //
+      ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
+      {
+        const Cell& cell = *icell;
+        const Integer iIndex = allUIndex[cell.localId()];
+        profiler.addMatrixEntry(iIndex, allUIndex[cell.localId()]);
+        ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+        {
+          const Cell& subcell = *isubcell;
+          profiler.addMatrixEntry(iIndex, allUIndex[subcell.localId()]);
+        }
+      }
+    }
+    {
+      Alien::ProfiledMatrixBuilder builder(
+          matrixA, Alien::ProfiledMatrixOptions::eResetValues);
+      ENUMERATE_ITEMPAIR(Cell, Cell, icell, cell_cell_connection)
+      {
+        const Cell& cell = *icell;
+        double diag = dii(cell);
+
+        Integer i = allUIndex[cell.localId()];
+        builder(i, i) += diag;
+        ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+        {
+          const Cell& subcell = *isubcell;
+          double off_diag = fij(cell, subcell);
+          builder(i, i) += off_diag;
+          Integer j = allUIndex[subcell.localId()];
+          builder(i, j) -= off_diag;
+        }
+      }
+      if (options()->sigma() > 0.) {
+        m_sigma = options()->sigma();
+        auto xCmax = Real3{ 0.25, 0.25, 0.25 };
+        auto xCmin = Real3{ 0.75, 0.75, 0.55 };
+        ENUMERATE_ITEMPAIR(Cell, Cell, icell, all_cell_cell_connection)
+        {
+          const Cell& cell = *icell;
+          Real3 xC = m_cell_center[icell];
+          Real3 xDmax = xC - xCmax;
+          Real3 xDmin = xC - xCmin;
+          m_s[cell] = 0;
+          if (xDmax.normL2() < options()->epsilon()) {
+            m_s[cell] = 1.;
+            Integer i = allUIndex[cell.localId()];
+            info() << "MATRIX TRANSFO SIGMAMAX " << i;
+            if (cell.isOwn())
+              builder(i, i) = m_sigma;
+            ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+            {
+              const Cell& subcell = *isubcell;
+              if (subcell.isOwn()) {
+                Integer j = allUIndex[subcell.localId()];
+                builder(j, i) = 0.;
+              }
+            }
+          }
+          if (xDmin.normL2() < options()->epsilon()) {
+            m_s[cell] = -1.;
+            Integer i = allUIndex[cell.localId()];
+            info() << "MATRIX TRANSFO SIGMA MIN" << i;
+
+            if (cell.isOwn())
+              builder(i, i) = 1. / m_sigma;
+            ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+            {
+              const Cell& subcell = *isubcell;
+              if (subcell.isOwn()) {
+                Integer j = allUIndex[subcell.localId()];
+                builder(j, i) = 0.;
+              }
+            }
+          }
+        }
+      }
+      builder.finalize();
+    }
+  }
+  {
+    Alien::SimpleCSRLinearAlgebra csrAlg;
+    csrAlg.mult(matrixA, vectorX, vectorB);
+    csrAlg.mult(matrixA, vectorX, vectorBB);
+    Real normeb = csrAlg.norm2(vectorB);
+    std::cout << "||b||=" << normeb<<std::endl;
+  }
+
+}
 /*---------------------------------------------------------------------------*/
 
 Real
@@ -787,7 +1035,8 @@ AlienBenchModule::funcn(Real3 p) const
   return p.x * p.x * p.y;
 }
 
-Real
+
+ARCCORE_HOST_DEVICE Real
 AlienBenchModule::funck(Real3 p) const
 {
 #define PI 3.14159265358979323846264
@@ -798,6 +1047,7 @@ AlienBenchModule::funck(Real3 p) const
     return std::exp(-m_alpha * 0.5 * (1 + std::sin(2 * PI * p.x / m_lambdax))
         * (1 + std::sin(2 * PI * p.y / m_lambday)));
 }
+
 
 Real
 AlienBenchModule::dii([[maybe_unused]] const Cell& ci) const
@@ -814,6 +1064,19 @@ AlienBenchModule::fij(const Cell& ci, const Cell& cj) const
     Real3 xi = m_cell_center[ci];
     Real3 xj = m_cell_center[cj];
     Real3 xij = xi + xj;
+    xij /= 2.;
+
+    return funck(xij);
+  }
+}
+
+ARCCORE_HOST_DEVICE Real
+AlienBenchModule::fij(Integer vi, Integer vj, Arcane::Real3 xi, Arcane::Real3 xj) const
+{
+  if (vi == vj)
+    return dii(vi);
+  else {
+    auto xij = xi + xj;
     xij /= 2.;
 
     return funck(xij);

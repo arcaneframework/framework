@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableIndexer.cc                              (C) 2000-2023 */
+/* MeshMaterialVariableIndexer.cc                              (C) 2000-2024 */
 /*                                                                           */
 /* Indexer pour les variables materiaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -17,10 +17,16 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 #include "arcane/materials/internal/ConstituentModifierWorkInfo.h"
+
+#include "arcane/accelerator/Filter.h"
+#include "arcane/accelerator/Reduce.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,15 +38,13 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariableIndexer::
-MeshMaterialVariableIndexer(ITraceMng* tm,const String& name)
+MeshMaterialVariableIndexer(ITraceMng* tm, const String& name)
 : TraceAccessor(tm)
-, m_index(-1)
-, m_max_index_in_multiple_array(-1)
 , m_name(name)
 , m_matvar_indexes(platform::getAcceleratorHostMemoryAllocator())
 , m_local_ids(platform::getAcceleratorHostMemoryAllocator())
-, m_is_environment(false)
 {
+  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -55,36 +59,52 @@ MeshMaterialVariableIndexer(const MeshMaterialVariableIndexer& rhs)
 , m_cells(rhs.m_cells)
 , m_matvar_indexes(rhs.m_matvar_indexes)
 , m_local_ids(rhs.m_local_ids)
-, m_is_environment(false)
 {
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableIndexer::
+_init()
+{
+  // Pour tester l'ancienne version de la transformation qui
+  // n'utilise pas les filtres (février 2024)
+  // A supprimer par la suite lorsque tout sera validé.
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_TRANSFORM_NO_FILTER", true))
+    m_use_transform_no_filter = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdate(const ComponentItemListBuilder& builder)
+endUpdate(const ComponentItemListBuilderOld& builder)
 {
   ConstArrayView<MatVarIndex> pure_matvar = builder.pureMatVarIndexes();
   ConstArrayView<MatVarIndex> partial_matvar = builder.partialMatVarIndexes();
 
   Integer nb_pure = pure_matvar.size();
   Integer nb_partial = partial_matvar.size();
-  m_matvar_indexes.resize(nb_pure+nb_partial);
+  m_matvar_indexes.resize(nb_pure + nb_partial);
 
-  m_matvar_indexes.subView(0,nb_pure).copy(pure_matvar);
-  m_matvar_indexes.subView(nb_pure,nb_partial).copy(partial_matvar);
+  m_matvar_indexes.subView(0, nb_pure).copy(pure_matvar);
+  m_matvar_indexes.subView(nb_pure, nb_partial).copy(partial_matvar);
 
   Int32ConstArrayView local_ids_in_multiple = builder.partialLocalIds();
 
   {
-    m_local_ids.resize(nb_pure+nb_partial);
+    m_local_ids.resize(nb_pure + nb_partial);
     Integer index = 0;
-    for( Integer i=0, n=nb_pure; i<n; ++i ){
+    for (Integer i = 0, n = nb_pure; i < n; ++i) {
       m_local_ids[index] = pure_matvar[i].valueIndex();
       ++index;
     }
-    for( Integer i=0, n=nb_partial; i<n; ++i ){
+    for (Integer i = 0, n = nb_partial; i < n; ++i) {
       m_local_ids[index] = local_ids_in_multiple[i];
       ++index;
     }
@@ -94,8 +114,8 @@ endUpdate(const ComponentItemListBuilder& builder)
   // nb_partial+1
   {
     Int32 max_index_in_multiple = (-1);
-    for( Integer i=0; i<nb_partial; ++i ){
-      max_index_in_multiple = math::max(partial_matvar[i].valueIndex(),max_index_in_multiple);
+    for (Integer i = 0; i < nb_partial; ++i) {
+      max_index_in_multiple = math::max(partial_matvar[i].valueIndex(), max_index_in_multiple);
     }
     m_max_index_in_multiple_array = max_index_in_multiple;
   }
@@ -107,44 +127,59 @@ endUpdate(const ComponentItemListBuilder& builder)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdateAdd(const ComponentItemListBuilder& builder)
+endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
 {
-  ConstArrayView<MatVarIndex> pure_matvar = builder.pureMatVarIndexes();
-  ConstArrayView<MatVarIndex> partial_matvar = builder.partialMatVarIndexes();
+  SmallSpan<const MatVarIndex> pure_matvar = builder.pureMatVarIndexes();
+  SmallSpan<const MatVarIndex> partial_matvar = builder.partialMatVarIndexes();
 
   Integer nb_pure_to_add = pure_matvar.size();
   Integer nb_partial_to_add = partial_matvar.size();
   Integer total_to_add = nb_pure_to_add + nb_partial_to_add;
   Integer current_nb_item = nbItem();
+  const Int32 new_size = current_nb_item + total_to_add;
 
-  m_matvar_indexes.resize(current_nb_item + total_to_add);
+  MemoryUtils::checkResizeArrayWithCapacity(m_matvar_indexes, new_size, false);
+  MemoryUtils::checkResizeArrayWithCapacity(m_local_ids, new_size, false);
 
-  m_matvar_indexes.subView(current_nb_item,nb_pure_to_add).copy(pure_matvar);
-  m_matvar_indexes.subView(current_nb_item+nb_pure_to_add,nb_partial_to_add).copy(partial_matvar);
+  SmallSpan<const Int32> local_ids_in_multiple = builder.partialLocalIds();
+  SmallSpan<Int32> local_ids_view = m_local_ids.subView(current_nb_item, total_to_add);
+  SmallSpan<MatVarIndex> matvar_indexes = m_matvar_indexes.subView(current_nb_item, total_to_add);
 
-  Int32ConstArrayView local_ids_in_multiple = builder.partialLocalIds();
-
-  {
-    m_local_ids.resize(current_nb_item + total_to_add);
-    Int32ArrayView local_ids_view = m_local_ids.subView(current_nb_item,total_to_add);
-    Integer index = 0;
-    for( Integer i=0, n=nb_pure_to_add; i<n; ++i ){
-      local_ids_view[index] = pure_matvar[i].valueIndex();
-      ++index;
+  const bool use_v2 = !m_use_transform_no_filter;
+  Int32 max_index_in_multiple = m_max_index_in_multiple_array;
+  if (use_v2) {
+    auto command = makeCommand(queue);
+    Arcane::Accelerator::ReducerMax<Int32> max_index_reducer(command);
+    Int32 max_to_add = math::max(nb_pure_to_add, nb_partial_to_add);
+    command << RUNCOMMAND_LOOP1(iter, max_to_add)
+    {
+      auto [i] = iter();
+      if (i < nb_pure_to_add) {
+        local_ids_view[i] = pure_matvar[i].valueIndex();
+        matvar_indexes[i] = pure_matvar[i];
+      }
+      if (i < nb_partial_to_add) {
+        local_ids_view[nb_pure_to_add + i] = local_ids_in_multiple[i];
+        matvar_indexes[nb_pure_to_add + i] = partial_matvar[i];
+        max_index_reducer.max(partial_matvar[i].valueIndex());
+      }
+    };
+    max_index_in_multiple = math::max(max_index_reducer.reduce(), m_max_index_in_multiple_array);
+  }
+  else {
+    for (Integer i = 0, n = nb_pure_to_add; i < n; ++i) {
+      local_ids_view[i] = pure_matvar[i].valueIndex();
+      matvar_indexes[i] = pure_matvar[i];
     }
-    for( Integer i=0, n=nb_partial_to_add; i<n; ++i ){
-      local_ids_view[index] = local_ids_in_multiple[i];
-      ++index;
+    Int32 base_index = nb_pure_to_add;
+    for (Integer i = 0, n = nb_partial_to_add; i < n; ++i) {
+      local_ids_view[base_index + i] = local_ids_in_multiple[i];
+      matvar_indexes[base_index + i] = partial_matvar[i];
+      max_index_in_multiple = math::max(partial_matvar[i].valueIndex(), max_index_in_multiple);
     }
   }
+  m_max_index_in_multiple_array = max_index_in_multiple;
 
-  {
-    Int32 max_index_in_multiple = m_max_index_in_multiple_array;
-    for( Integer i=0; i<nb_partial_to_add; ++i ){
-      max_index_in_multiple = math::max(partial_matvar[i].valueIndex(),max_index_in_multiple);
-    }
-    m_max_index_in_multiple_array = max_index_in_multiple;
-  }
   info(4) << "END_UPDATE_ADD max_index=" << m_max_index_in_multiple_array
           << " nb_partial_to_add=" << nb_partial_to_add;
 }
@@ -153,23 +188,25 @@ endUpdateAdd(const ComponentItemListBuilder& builder)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove)
+endUpdateRemove(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue)
 {
-  // TODO: à supprimer et à remplacer par la version qui prend un
-  // ConstituentModifierWorkInfo à la place
-
+  const bool use_v2 = !m_use_transform_no_filter;
+  if (use_v2) {
+    endUpdateRemoveV2(work_info, nb_remove, queue);
+    return;
+  }
   Integer nb_item = nbItem();
   Integer orig_nb_item = nb_item;
 
   //ATTENTION: on modifie nb_item pendant l'itération.
-  for (Integer i=0; i<nb_item; ++i) {
+  for (Integer i = 0; i < nb_item; ++i) {
     Int32 lid = m_local_ids[i];
-    if (removed_local_ids_filter[lid]) {
+    if (work_info.isRemovedCell(lid)) {
       // Déplace le dernier MatVarIndex vers l'élément courant.
       Int32 last = nb_item - 1;
       m_matvar_indexes[i] = m_matvar_indexes[last];
       m_local_ids[i] = m_local_ids[last];
-      //info() << "REMOVE ITEM lid=" << lid << " i=" << i;
+      //info() << "REMOVE ITEM lid=" << lid << " i=" << i << " new=" << m_matvar_indexes[i] << " " << m_local_ids[i] << " last=" << last;
       --nb_item;
       --i; // Il faut refaire l'itération courante.
     }
@@ -179,9 +216,9 @@ endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove)
 
   // Vérifie qu'on a bien supprimé autant d'entité que prévu.
   Integer nb_remove_computed = (orig_nb_item - nb_item);
-  if (nb_remove_computed!=nb_remove)
+  if (nb_remove_computed != nb_remove)
     ARCANE_FATAL("Bad number of removed material items expected={0} v={1} name={2}",
-                 nb_remove,nb_remove_computed,name());
+                 nb_remove, nb_remove_computed, name());
   info(4) << "END_UPDATE_REMOVE nb_removed=" << nb_remove_computed;
 
   // TODO: il faut recalculer m_max_index_in_multiple_array
@@ -192,33 +229,77 @@ endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-endUpdateRemove(const ConstituentModifierWorkInfo& work_info,Integer nb_remove)
+endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue)
 {
+  if (nb_remove == 0)
+    return;
+
   Integer nb_item = nbItem();
   Integer orig_nb_item = nb_item;
 
-  //ATTENTION: on modifie nb_item pendant l'itération.
-  for (Integer i=0; i<nb_item; ++i) {
-    Int32 lid = m_local_ids[i];
-    if (work_info.isRemovedCell(lid)) {
-      // Déplace le dernier MatVarIndex vers l'élément courant.
-      Int32 last = nb_item - 1;
-      m_matvar_indexes[i] = m_matvar_indexes[last];
-      m_local_ids[i] = m_local_ids[last];
-      //info() << "REMOVE ITEM lid=" << lid << " i=" << i;
-      --nb_item;
-      --i; // Il faut refaire l'itération courante.
-    }
+  info(4) << "EndUpdateRemoveV2 nb_remove=" << nb_remove << " nb_item=" << nb_item;
+
+  if (nb_remove == nb_item) {
+    m_matvar_indexes.clear();
+    m_local_ids.clear();
+    return;
   }
+
+  bool is_device = isAcceleratorPolicy(queue.executionPolicy());
+  auto saved_matvar_indexes_modifier = work_info.m_saved_matvar_indexes.modifier(is_device);
+  auto saved_local_ids_modifier = work_info.m_saved_local_ids.modifier(is_device);
+
+  saved_matvar_indexes_modifier.resize(nb_remove);
+  saved_local_ids_modifier.resize(nb_remove);
+
+  Accelerator::GenericFilterer filterer(&queue);
+  SmallSpan<const bool> removed_cells = work_info.removedCells();
+  Span<MatVarIndex> last_matvar_indexes(saved_matvar_indexes_modifier.view());
+  Span<Int32> last_local_ids(saved_local_ids_modifier.view());
+  Span<Int32> local_ids(m_local_ids);
+  Span<MatVarIndex> matvar_indexes(m_matvar_indexes);
+
+  // Conserve \a nb_remove valeurs en partant de la fin de la liste
+  {
+    Int32 last_index = nb_item - 1;
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      Int32 lid = local_ids[last_index - index];
+      return !removed_cells[lid];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      Int32 true_index = (last_index - input_index);
+      if (output_index < nb_remove) {
+        last_matvar_indexes[output_index] = matvar_indexes[true_index];
+        last_local_ids[output_index] = local_ids[true_index];
+      }
+    };
+    filterer.applyWithIndex(orig_nb_item, select_lambda, setter_lambda, A_FUNCINFO);
+    filterer.nbOutputElement();
+  }
+
+  // Remplit les trous des mailles supprimées avec les derniers éléments de la liste
+  {
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      Int32 lid = local_ids[index];
+      return removed_cells[lid];
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      matvar_indexes[input_index] = last_matvar_indexes[output_index];
+      local_ids[input_index] = last_local_ids[output_index];
+    };
+    filterer.applyWithIndex(orig_nb_item - nb_remove, select_lambda, setter_lambda, A_FUNCINFO);
+    filterer.nbOutputElement();
+  }
+  nb_item -= nb_remove;
   m_matvar_indexes.resize(nb_item);
   m_local_ids.resize(nb_item);
 
   // Vérifie qu'on a bien supprimé autant d'entité que prévu.
   Integer nb_remove_computed = (orig_nb_item - nb_item);
-  if (nb_remove_computed!=nb_remove)
+  if (nb_remove_computed != nb_remove)
     ARCANE_FATAL("Bad number of removed material items expected={0} v={1} name={2}",
-                 nb_remove,nb_remove_computed,name());
-  info(4) << "END_UPDATE_REMOVE nb_removed=" << nb_remove_computed;
+                 nb_remove, nb_remove_computed, name());
+  info(4) << "END_UPDATE_REMOVE nb_removed=" << nb_remove;
 
   // TODO: il faut recalculer m_max_index_in_multiple_array
   // et compacter éventuellement les variables. (pas indispensable)
@@ -230,14 +311,14 @@ endUpdateRemove(const ConstituentModifierWorkInfo& work_info,Integer nb_remove)
 void MeshMaterialVariableIndexer::
 changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
-  this->_changeLocalIdsV2(this,old_to_new_ids);
+  this->_changeLocalIdsV2(this, old_to_new_ids);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-_changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,Int32ConstArrayView old_to_new_ids)
+_changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer, Int32ConstArrayView old_to_new_ids)
 {
   // Nouvelle version du changement des localId() qui ne modifie pas l'ordre
   // des m_matvar_indexes.
@@ -256,16 +337,16 @@ _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,Int32ConstArrayView o
 
   tm->info(4) << "-- -- BEGIN_PROCESSING N=" << ids_copy.size();
 
-  for( Integer i=0; i<nb; ++i ){
+  for (Integer i = 0; i < nb; ++i) {
     Int32 lid = ids_copy[i];
     Int32 new_lid = old_to_new_ids[lid];
     tm->info(5) << "I=" << i << " lid=" << lid << " new_lid=" << new_lid;
 
-    if (new_lid!=NULL_ITEM_LOCAL_ID){
+    if (new_lid != NULL_ITEM_LOCAL_ID) {
       MatVarIndex mvi = matvar_indexes_copy[i];
       tm->info(5) << "I=" << i << " new_lid=" << new_lid << " mv=" << mvi;
       Int32 value_index = mvi.valueIndex();
-      if (mvi.arrayIndex()==0){
+      if (mvi.arrayIndex() == 0) {
         // TODO: Vérifier si value_index, qui contient le localId() de l'entité
         // ne dois pas être modifié.
         // Normalement, il faudra avoir:
@@ -275,10 +356,10 @@ _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,Int32ConstArrayView o
         // que nous n'ayons pas les bons ids. (C'est quand même bizarre...)
 
         // Variable globale: met à jour le localId() dans le MatVarIndex.
-        var_indexer->m_matvar_indexes.add(MatVarIndex(0,value_index));
+        var_indexer->m_matvar_indexes.add(MatVarIndex(0, value_index));
         var_indexer->m_local_ids.add(value_index);
       }
-      else{
+      else {
         // Valeur partielle: rien ne change dans le MatVarIndex
         var_indexer->m_matvar_indexes.add(mvi);
         var_indexer->m_local_ids.add(new_lid);
@@ -296,115 +377,19 @@ _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,Int32ConstArrayView o
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-transformCells(Int32ConstArrayView nb_env_per_cell,
-                Int32ConstArrayView nb_mat_per_cell,
-                Int32Array& pure_local_ids,Int32Array& partial_indexes,
-                bool is_add_operation,bool is_env, bool is_verbose)
+transformCellsV2(ConstituentModifierWorkInfo& work_info, RunQueue& queue)
 {
-  if (is_add_operation)
-    _transformPureToPartial(nb_env_per_cell,nb_mat_per_cell,
-                            pure_local_ids,partial_indexes,
-                            is_env,is_verbose);
-  else
-    _transformPartialToPure(nb_env_per_cell,nb_mat_per_cell,
-                            pure_local_ids,partial_indexes,
-                            is_env,is_verbose);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshMaterialVariableIndexer::
-_transformPureToPartial(Int32ConstArrayView nb_env_per_cell,
-                        Int32ConstArrayView nb_mat_per_cell,
-                        Int32Array& pure_local_ids,Int32Array& partial_indexes,
-                        bool is_env, bool is_verbose)
-{
-  Integer nb = nbItem();
-  for( Integer i=0; i<nb; ++i ){
-    MatVarIndex mvi = m_matvar_indexes[i];
-    if (mvi.arrayIndex()!=0)
-      continue;
-    // Comme la maille est pure, le localId() est dans \a mvi
-    Int32 local_id = mvi.valueIndex();
-    bool do_transform = false;
-    // Teste si on doit transformer la maille.
-    // Pour un milieu, c'est le cas s'il y a plusieurs milieux.
-    // Pour un matériau, c'est le cas s'il y a plusieurs matériaux dans le milieu
-    // ou s'il y a plusieurs milieux.
-    if (is_env)
-      do_transform = nb_env_per_cell[local_id]>1;
-    else
-      do_transform = nb_env_per_cell[local_id]>1 || nb_mat_per_cell[local_id]>1;
-    if (do_transform){
-      pure_local_ids.add(local_id);
-      Int32 current_index = m_max_index_in_multiple_array+1;
-      partial_indexes.add(current_index);
-      //TODO: regarder s'il faut faire +1 ou -1 pour m_max_index_in_multiple_array
-      //TODO: prendre le premier var_index libre une fois que la liste des index libres existera
-      m_matvar_indexes[i] = MatVarIndex(m_index+1,current_index);
-      ++m_max_index_in_multiple_array;
-      if (is_verbose)
-        info() << "Transform pure cell to partial cell i=" << i
-               << " local_id=" << mvi.valueIndex()
-               << " var_index =" << m_matvar_indexes[i].valueIndex();
+  const bool use_filter = !m_use_transform_no_filter;
+  if (use_filter) {
+    _switchBetweenPureAndPartial(work_info, queue, work_info.isAdd());
+  }
+  else {
+    if (work_info.isAdd())
+      _transformPureToPartialV2(work_info);
+    else {
+      _transformPartialToPureV2(work_info);
     }
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshMaterialVariableIndexer::
-_transformPartialToPure(Int32ConstArrayView nb_env_per_cell,
-                        Int32ConstArrayView nb_mat_per_cell,
-                        Int32Array& pure_local_ids,Int32Array& partial_indexes,
-                        bool is_env, bool is_verbose)
-{
-  Integer nb = nbItem();
-  for( Integer i=0; i<nb; ++i ){
-    MatVarIndex mvi = m_matvar_indexes[i];
-    if (mvi.arrayIndex()==0)
-      continue;
-    Int32 local_id = m_local_ids[i];
-    Int32 var_index = mvi.valueIndex();
-    bool do_transform = false;
-    // Teste si on transforme la maille partielle en maille pure.
-    // Pour un milieu, c'est le cas s'il n'y a plus qu'un milieu.
-    // Pour un matériau, c'est le cas s'il y a plus qu'un matériau et un milieu.
-    if (is_env)
-      do_transform = nb_env_per_cell[local_id]==1;
-    else
-      do_transform = nb_env_per_cell[local_id]==1 && nb_mat_per_cell[local_id]==1;
-    if (do_transform){
-      pure_local_ids.add(local_id);
-      partial_indexes.add(var_index);
-
-      m_matvar_indexes[i] = MatVarIndex(0,local_id);
-
-      // TODO: ajouter le var_index à la liste des index libres.
-
-      if (is_verbose)
-        info() << "Transform partial cell to pure cell i=" << i
-               << " local_id=" << local_id
-               << " var_index =" << var_index;
-    }
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshMaterialVariableIndexer::
-transformCellsV2(ConstituentModifierWorkInfo& work_info)
-{
-  if (work_info.isAdd())
-    _transformPureToPartialV2(work_info);
-  else
-    _transformPartialToPureV2(work_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -413,25 +398,28 @@ transformCellsV2(ConstituentModifierWorkInfo& work_info)
 void MeshMaterialVariableIndexer::
 _transformPureToPartialV2(ConstituentModifierWorkInfo& work_info)
 {
-  Int32Array& pure_local_ids = work_info.pure_local_ids;
-  Int32Array& partial_indexes = work_info.partial_indexes;
+  auto pure_local_ids_modifier = work_info.pure_local_ids.hostModifier();
+  auto partial_indexes_modifier = work_info.partial_indexes.hostModifier();
+
+  Int32Array& pure_local_ids = pure_local_ids_modifier.container();
+  Int32Array& partial_indexes = partial_indexes_modifier.container();
   bool is_verbose = work_info.is_verbose;
 
   Integer nb = nbItem();
-  for( Integer i=0; i<nb; ++i ){
+  for (Integer i = 0; i < nb; ++i) {
     MatVarIndex mvi = m_matvar_indexes[i];
-    if (mvi.arrayIndex()!=0)
+    if (mvi.arrayIndex() != 0)
       continue;
     // Comme la maille est pure, le localId() est dans \a mvi
     Int32 local_id = mvi.valueIndex();
     bool do_transform = work_info.isTransformedCell(CellLocalId(local_id));
-    if (do_transform){
+    if (do_transform) {
       pure_local_ids.add(local_id);
-      Int32 current_index = m_max_index_in_multiple_array+1;
+      Int32 current_index = m_max_index_in_multiple_array + 1;
       partial_indexes.add(current_index);
       //TODO: regarder s'il faut faire +1 ou -1 pour m_max_index_in_multiple_array
       //TODO: prendre le premier var_index libre une fois que la liste des index libres existera
-      m_matvar_indexes[i] = MatVarIndex(m_index+1,current_index);
+      m_matvar_indexes[i] = MatVarIndex(m_index + 1, current_index);
       ++m_max_index_in_multiple_array;
       if (is_verbose)
         info() << "Transform pure cell to partial cell i=" << i
@@ -447,14 +435,17 @@ _transformPureToPartialV2(ConstituentModifierWorkInfo& work_info)
 void MeshMaterialVariableIndexer::
 _transformPartialToPureV2(ConstituentModifierWorkInfo& work_info)
 {
-  Int32Array& pure_local_ids = work_info.pure_local_ids;
-  Int32Array& partial_indexes = work_info.partial_indexes;
+  auto pure_local_ids_modifier = work_info.pure_local_ids.hostModifier();
+  auto partial_indexes_modifier = work_info.partial_indexes.hostModifier();
+
+  Int32Array& pure_local_ids = pure_local_ids_modifier.container();
+  Int32Array& partial_indexes = partial_indexes_modifier.container();
   bool is_verbose = work_info.is_verbose;
 
   Integer nb = nbItem();
-  for( Integer i=0; i<nb; ++i ){
+  for (Integer i = 0; i < nb; ++i) {
     MatVarIndex mvi = m_matvar_indexes[i];
-    if (mvi.arrayIndex()==0)
+    if (mvi.arrayIndex() == 0)
       continue;
     Int32 local_id = m_local_ids[i];
     Int32 var_index = mvi.valueIndex();
@@ -462,11 +453,11 @@ _transformPartialToPureV2(ConstituentModifierWorkInfo& work_info)
     // Teste si on transforme la maille partielle en maille pure.
     // Pour un milieu, c'est le cas s'il n'y a plus qu'un milieu.
     // Pour un matériau, c'est le cas s'il y a plus qu'un matériau et un milieu.
-    if (do_transform){
+    if (do_transform) {
       pure_local_ids.add(local_id);
       partial_indexes.add(var_index);
 
-      m_matvar_indexes[i] = MatVarIndex(0,local_id);
+      m_matvar_indexes[i] = MatVarIndex(0, local_id);
 
       // TODO: ajouter le var_index à la liste des index libres.
 
@@ -480,6 +471,83 @@ _transformPartialToPureV2(ConstituentModifierWorkInfo& work_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Échange des mailles entre pures et partielles.
+ */
+void MeshMaterialVariableIndexer::
+_switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
+                             RunQueue& queue,
+                             bool is_pure_to_partial)
+{
+  bool is_device = isAcceleratorPolicy(queue.executionPolicy());
+
+  Integer nb = nbItem();
+  auto pure_local_ids_modifier = work_info.pure_local_ids.modifier(is_device);
+  auto partial_indexes_modifier = work_info.partial_indexes.modifier(is_device);
+  pure_local_ids_modifier.resize(nb);
+  partial_indexes_modifier.resize(nb);
+
+  SmallSpan<Int32> pure_local_ids = pure_local_ids_modifier.view();
+  SmallSpan<Int32> partial_indexes = partial_indexes_modifier.view();
+  SmallSpan<MatVarIndex> matvar_indexes = m_matvar_indexes.view();
+  SmallSpan<Int32> local_ids = m_local_ids.view();
+  SmallSpan<const bool> transformed_cells = work_info.transformedCells();
+
+  Accelerator::GenericFilterer filterer(&queue);
+
+  if (is_pure_to_partial) {
+    // Transformation Pure -> Partial
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      MatVarIndex mvi = matvar_indexes[index];
+      if (mvi.arrayIndex() != 0)
+        return false;
+      Int32 local_id = local_ids[index];
+      bool do_transform = transformed_cells[local_id];
+      return do_transform;
+    };
+
+    Int32 max_index_in_multiple_array = m_max_index_in_multiple_array + 1;
+    const Int32 var_index = m_index + 1;
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      Int32 current_index = max_index_in_multiple_array + output_index;
+      Int32 local_id = local_ids[input_index];
+      pure_local_ids[output_index] = local_id;
+      partial_indexes[output_index] = current_index;
+      matvar_indexes[input_index] = MatVarIndex(var_index, current_index);
+    };
+    filterer.applyWithIndex(nb, select_lambda, setter_lambda, A_FUNCINFO);
+  }
+  else {
+    // Transformation Partial -> Pure
+    auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      MatVarIndex mvi = matvar_indexes[index];
+      if (mvi.arrayIndex() == 0)
+        return false;
+      Int32 local_id = local_ids[index];
+      bool do_transform = transformed_cells[local_id];
+      return do_transform;
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      MatVarIndex mvi = matvar_indexes[input_index];
+      Int32 local_id = local_ids[input_index];
+      Int32 var_index = mvi.valueIndex();
+      pure_local_ids[output_index] = local_id;
+      partial_indexes[output_index] = var_index;
+      matvar_indexes[input_index] = MatVarIndex(0, local_id);
+    };
+    filterer.applyWithIndex(nb, select_lambda, setter_lambda, A_FUNCINFO);
+  }
+
+  Int32 nb_out = filterer.nbOutputElement();
+  pure_local_ids_modifier.resize(nb_out);
+  partial_indexes_modifier.resize(nb_out);
+
+  if (is_pure_to_partial)
+    m_max_index_in_multiple_array += nb_out;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
 checkValid()
@@ -488,7 +556,7 @@ checkValid()
 
   Integer nb_item = nbItem();
 
-  vc.areEqual(nb_item,m_matvar_indexes.size(),"Incoherent size for local ids and matvar indexes");
+  vc.areEqual(nb_item, m_matvar_indexes.size(), "Incoherent size for local ids and matvar indexes");
 
   // TODO: vérifier que les m_local_ids pour les parties pures correspondent
   // au m_matvar_indexes.valueIndex() correspondant.

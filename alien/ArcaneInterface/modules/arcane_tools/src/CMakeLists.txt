@@ -16,6 +16,14 @@ addSources(alien_arcane_tools
   alien/arcane_tools/block/BlockSizes.cc
   )
 
+IF(ALIEN_USE_SYCL)
+   addSources(alien_arcane_tools
+        alien/arcane_tools/accelerator/ArcaneParallelEngine.h
+        alien/arcane_tools/accelerator/ArcaneParallelEngineInternal.h
+        alien/arcane_tools/accelerator/ArcaneParallelEngineImplT.h
+        alien/arcane_tools/accelerator/ArcaneParallelEngine.cc)
+ENDIF()
+
 if(TARGET petsc)
   addSources(alien_arcane_tools 
     alien/arcane_tools/io/MatrixRowPrinter.cc

@@ -76,6 +76,7 @@ set(ARCANE_SOURCES
   SimpleTableOutputUnitTest.cc
   SimpleTableComparatorUnitTest.cc
   StringVariableReplaceTest.cc
+  TimeHistoryAdderTestModule.cc
 )
 
 set(AXL_FILES
@@ -125,5 +126,6 @@ set(AXL_FILES
   SimpleTableComparatorUnitTest
   SimpleTableOutputUnitTest
   StringVariableReplaceTest
+  TimeHistoryAdderTest
 )
 

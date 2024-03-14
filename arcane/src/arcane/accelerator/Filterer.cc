@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Filtering.cc                                                (C) 2000-2023 */
+/* Filtering.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Algorithme de filtrage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -35,9 +35,6 @@ _nbOutputElement() const
 {
   if (m_queue)
     m_queue->barrier();
-  // Peut arriver si on n'a pas encore appelé _allocate()
-  //if (m_host_nb_out_storage.totalNbElement()==0)
-  //ARCANE_FATAL("Can not get output return 0;
   return m_host_nb_out_storage[0];
 }
 

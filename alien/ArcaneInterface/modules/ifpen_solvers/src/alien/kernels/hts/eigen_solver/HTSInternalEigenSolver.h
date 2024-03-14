@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*
  * HTSInternalEIGENSolver.h
  *
@@ -108,7 +114,7 @@ HTSInternalEigenSolver::solve(
   typedef HartsSolver::ProfileView MCProfileViewType;
   typedef MCProfileType::PermutationType MCProfilePermType;
 
-  CSRMatrixType::ProfileType const& matrix_profile = A.internal().getCSRProfile();
+  CSRMatrixType::ProfileType const& matrix_profile = A.internal()->getCSRProfile();
   int nrows = matrix_profile.getNRow();
   int const* kcol = matrix_profile.getRowOffset().unguardedBasePointer();
   int const* cols = matrix_profile.getCols().unguardedBasePointer();
@@ -116,7 +122,7 @@ HTSInternalEigenSolver::solve(
   MCProfileType hts_profileA(nrows, kcol, cols);
   typedef HartsSolver::CSRMatrix<Real, 1> MCMatrixType;
   MCMatrixType hts_A(&hts_profileA);
-  hts_A.setValues(A.internal().getDataPtr());
+  hts_A.setValues(A.internal()->getDataPtr());
 
   std::vector<double>& real_eigen_values = problem.getRealEigenValues();
   std::vector<double>& imaginary_eigen_values = problem.getImaginaryEigenValues();
@@ -152,7 +158,7 @@ HTSInternalEigenSolver::solve(
   typedef HartsSolver::ProfileView MCProfileViewType;
   typedef MCProfileType::PermutationType MCProfilePermType;
 
-  CSRMatrixType::ProfileType const& profileA = A.internal().getCSRProfile();
+  CSRMatrixType::ProfileType const& profileA = A.internal()->getCSRProfile();
   int nrowsA = profileA.getNRow();
   int const* kcolA = profileA.getRowOffset().unguardedBasePointer();
   int const* colsA = profileA.getCols().unguardedBasePointer();
@@ -160,15 +166,15 @@ HTSInternalEigenSolver::solve(
   MCProfileType hts_profileA(nrowsA, kcolA, colsA);
   typedef HartsSolver::CSRMatrix<Real, 1> MCMatrixType;
   MCMatrixType hts_A(&hts_profileA);
-  hts_A.setValues(A.internal().getDataPtr());
+  hts_A.setValues(A.internal()->getDataPtr());
 
-  CSRMatrixType::ProfileType const& profileB = B.internal().getCSRProfile();
+  CSRMatrixType::ProfileType const& profileB = B.internal()->getCSRProfile();
   int nrowsB = profileB.getNRow();
   int const* kcolB = profileB.getRowOffset().unguardedBasePointer();
   int const* colsB = profileB.getCols().unguardedBasePointer();
   MCProfileType hts_profileB(nrowsB, kcolB, colsB);
   MCMatrixType hts_B(&hts_profileB);
-  hts_B.setValues(B.internal().getDataPtr());
+  hts_B.setValues(B.internal()->getDataPtr());
 
   std::vector<double>& real_eigen_values = problem.getRealEigenValues();
   std::vector<double>& imaginary_eigen_values = problem.getImaginaryEigenValues();

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelSuperMng.cc                                      (C) 2000-2023 */
+/* MpiParallelSuperMng.cc                                      (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -239,7 +239,7 @@ build()
   if (rank==0){
     tm->info() << "MPI has non blocking collective";
     tm->info() << "MPI: sizeof(MPI_Count)=" << sizeof(MPI_Count);
-    tm->info() << "MPI: is Cuda Aware?=" << arcaneIsCudaAwareMPI();
+    tm->info() << "MPI: is GPU Aware?=" << arcaneIsAcceleratorAwareMPI();
     tm->info() << "MPI: init_time (seconds)=" << (end_time-start_time);
   }
 
@@ -286,7 +286,7 @@ internalCreateWorldParallelMng(Int32 local_rank)
   bi.mpi_lock = nullptr;
 
   tm->debug()<<"[MpiParallelSuperMng::internalCreateWorldParallelMng] pm->build()";
-  Ref<IParallelMng> pm = makeRef<IParallelMng>(new MpiParallelMng(bi));
+  Ref<IParallelMng> pm = createRef<MpiParallelMng>(bi);
   pm->build();
   return pm;
 }

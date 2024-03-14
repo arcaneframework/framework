@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriter.h                                         (C) 2000-2023 */
+/* BasicReaderWriter.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Lecture/Ecriture simple.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_BASICREADERWRITER_H
-#define ARCANE_STD_INTERANL_BASICREADERWRITER_H
+#define ARCANE_STD_INTERNAL_BASICREADERWRITER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,9 +30,9 @@
 #include "arcane/core/IDataReader2.h"
 
 #include "arcane/std/internal/BasicReaderWriterDatabase.h"
+#include "arcane/std/internal/VariableDataInfo.h"
 
 #include <map>
-#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,92 +43,10 @@ class ISerializedData;
 class IParallelMng;
 class ParallelDataWriter;
 class ParallelDataReader;
-namespace impl
-{
-  class TextWriter;
 }
-} // namespace Arcane
 
 namespace Arcane::impl
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class VariableDataInfo
-{
- public:
-
-  VariableDataInfo(const String& full_name, const ISerializedData* sdata);
-  VariableDataInfo(const String& full_name, const XmlNode& element);
-
- public:
-
-  const String& fullName() const { return m_full_name; }
-  Integer nbDimension() const { return m_nb_dimension; }
-  Int64 dim1Size() const { return m_dim1_size; }
-  Int64 dim2Size() const { return m_dim2_size; }
-  Int64 nbElement() const { return m_nb_element; }
-  Int64 nbBaseElement() const { return m_nb_base_element; }
-  Integer dimensionArraySize() const { return m_dimension_array_size; }
-  bool isMultiSize() const { return m_is_multi_size; }
-  eDataType baseDataType() const { return m_base_data_type; }
-  Int64 memorySize() const { return m_memory_size; }
-  const ArrayShape& shape() const { return m_shape; }
-  void setFileOffset(Int64 v) { m_file_offset = v; }
-  Int64 fileOffset() const { return m_file_offset; }
-
- public:
-
-  void write(XmlNode element);
-
- private:
-
-  void _addAttribute(XmlNode& node, const String& attr_name, Int64 value)
-  {
-    node.setAttrValue(attr_name, String::fromNumber(value));
-  }
-
-  void _addAttribute(XmlNode& node, const String& attr_name, const String& value)
-  {
-    node.setAttrValue(attr_name, value);
-  }
-
-  Integer _readInteger(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).valueAsInteger(true);
-  }
-
-  Int64 _readInt64(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).valueAsInt64(true);
-  }
-
-  bool _readBool(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).valueAsBoolean(true);
-  }
-
-  String _readString(const XmlNode& node, const String& attr_name)
-  {
-    return node.attr(attr_name, true).value();
-  }
-
- private:
-
-  String m_full_name;
-  Integer m_nb_dimension;
-  Int64 m_dim1_size;
-  Int64 m_dim2_size;
-  Int64 m_nb_element;
-  Int64 m_nb_base_element;
-  Integer m_dimension_array_size;
-  bool m_is_multi_size;
-  eDataType m_base_data_type;
-  Int64 m_memory_size;
-  Int64 m_file_offset;
-  ArrayShape m_shape;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -137,12 +55,12 @@ class BasicVariableMetaData
 {
  public:
 
-  BasicVariableMetaData(VariableMetaData* varmd)
+  explicit BasicVariableMetaData(VariableMetaData* varmd)
+  : m_full_name(varmd->fullName())
+  , m_item_group_name(varmd->itemGroupName())
+  , m_mesh_name(varmd->meshName())
+  , m_item_family_name(varmd->itemFamilyName())
   {
-    m_full_name = varmd->fullName();
-    m_item_group_name = varmd->itemGroupName();
-    m_mesh_name = varmd->meshName();
-    m_item_family_name = varmd->itemFamilyName();
   }
 
  public:
@@ -171,7 +89,7 @@ class IGenericReader
 {
  public:
 
-  virtual ~IGenericReader() {}
+  virtual ~IGenericReader() = default;
 
  public:
 
@@ -179,11 +97,15 @@ class IGenericReader
   virtual void readData(const String& var_full_name, IData* data) = 0;
   virtual void readItemGroup(const String& group_name, Int64Array& written_unique_ids,
                              Int64Array& wanted_unique_ids) = 0;
+  virtual String comparisonHashValue(const String& var_full_name) const = 0;
+  virtual const VariableDataInfoMap& variablesDataInfoMap() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Implémentation basique de \a IGenericReader
+ */
 class BasicGenericReader
 : public TraceAccessor
 , public IGenericReader
@@ -193,7 +115,6 @@ class BasicGenericReader
   // Si 'version==-1', alors cela sera déterminé lors de
   // l'initialisation.
   BasicGenericReader(IApplication* app, Int32 version, Ref<KeyValueTextReader> text_reader);
-  ~BasicGenericReader() override;
 
  public:
 
@@ -201,21 +122,24 @@ class BasicGenericReader
   void readData(const String& var_full_name, IData* data) override;
   void readItemGroup(const String& group_name, Int64Array& written_unique_ids,
                      Int64Array& wanted_unique_ids) override;
+  String comparisonHashValue(const String& var_full_name) const override;
+  const VariableDataInfoMap& variablesDataInfoMap() const override
+  {
+    return m_variables_data_info;
+  }
 
  private:
 
-  using VariableDataInfoMap = std::map<String, VariableDataInfo*>;
-
-  IApplication* m_application;
+  IApplication* m_application = nullptr;
   Ref<KeyValueTextReader> m_text_reader;
   String m_path;
-  Int32 m_rank;
-  Int32 m_version;
+  Int32 m_rank = A_NULL_RANK;
+  Int32 m_version = -1;
   VariableDataInfoMap m_variables_data_info;
 
  private:
 
-  VariableDataInfo* _getVarInfo(const String& full_name);
+  Ref<VariableDataInfo> _getVarInfo(const String& full_name);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -228,12 +152,21 @@ class IGenericWriter
 {
  public:
 
-  virtual ~IGenericWriter() {}
+  virtual ~IGenericWriter() = default;
 
  public:
 
   virtual void initialize(const String& path, Int32 rank) = 0;
-  virtual void writeData(const String& var_full_name, const ISerializedData* sdata) = 0;
+  /*!
+   * \brief Sauve une variable.
+   * \param var_full_name Nom de la variable
+   * \param sdata valeurs sérialisées de la variable
+   * \param comparison_hash hash de comparaison (null si aucun)
+   * \param is_save_values Indique si on sauvegarde les valeurs.
+   */
+  virtual void writeData(const String& var_full_name, const ISerializedData* sdata,
+                         const String& comparison_hash,
+                         bool is_save_values) = 0;
   virtual void writeItemGroup(const String& group_full_name,
                               SmallSpan<const Int64> written_unique_ids,
                               SmallSpan<const Int64> wanted_unique_ids) = 0;
@@ -251,24 +184,22 @@ class BasicGenericWriter
 
   BasicGenericWriter(IApplication* app, Int32 version,
                      Ref<KeyValueTextWriter> text_writer);
-  ~BasicGenericWriter() override;
 
  public:
 
   void initialize(const String& path, Int32 rank) override;
-  void writeData(const String& var_full_name, const ISerializedData* sdata) override;
+  void writeData(const String& var_full_name, const ISerializedData* sdata,
+                 const String& compare_hash, bool is_save_values) override;
   void writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_unique_ids,
                       SmallSpan<const Int64> wanted_unique_ids) override;
   void endWrite() override;
 
  private:
 
-  using VariableDataInfoMap = std::map<String, VariableDataInfo*>;
-
-  IApplication* m_application;
-  Int32 m_version;
+  IApplication* m_application = nullptr;
+  Int32 m_version = -1;
   String m_path;
-  Int32 m_rank;
+  Int32 m_rank = A_NULL_RANK;
   Ref<KeyValueTextWriter> m_text_writer;
   VariableDataInfoMap m_variables_data_info;
 };
@@ -296,19 +227,18 @@ class BasicReaderWriterCommon
 
   BasicReaderWriterCommon(IApplication* app, IParallelMng* pm,
                           const String& path, eOpenMode open_mode);
-  ~BasicReaderWriterCommon();
 
  protected:
 
-  IApplication* m_application;
-  IParallelMng* m_parallel_mng;
-  eOpenMode m_open_mode;
+  IApplication* m_application = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
+  eOpenMode m_open_mode = OpenModeRead;
   String m_path;
-  Integer m_verbose_level;
+  Integer m_verbose_level = 0;
 
  protected:
 
-  String _getMetaDataFileName(Int32 rank);
+  String _getMetaDataFileName(Int32 rank) const;
 
  protected:
 
@@ -320,135 +250,6 @@ class BasicReaderWriterCommon
   static Ref<IDataCompressor> _createDeflater(IApplication* app, const String& name);
   static Ref<IHashAlgorithm> _createHashAlgorithm(IApplication* app, const String& name);
   static void _fillUniqueIds(const ItemGroup& group, Array<Int64>& uids);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Lecture/Ecriture simple.
- */
-class BasicWriter
-: public BasicReaderWriterCommon
-, public IDataWriter
-{
- public:
-
-  BasicWriter(IApplication* app, IParallelMng* pm, const String& path,
-              eOpenMode open_mode, Integer version, bool want_parallel);
-  ~BasicWriter() override;
-
- public:
-
-  //! Positionne le service de compression. Doit être appelé avant initialize()
-  void setDataCompressor(Ref<IDataCompressor> data_compressor)
-  {
-    m_data_compressor = data_compressor;
-  }
-  void initialize();
-
-  void beginWrite(const VariableCollection& vars) override;
-  void endWrite() override;
-
-  void setMetaData(const String& meta_data) override;
-
-  void write(IVariable* v, IData* data) override;
-
- private:
-
-  bool m_want_parallel;
-  bool m_is_gather;
-  Int32 m_version;
-
-  Ref<IDataCompressor> m_data_compressor;
-  Ref<IHashAlgorithm> m_hash_algorithm;
-  Ref<KeyValueTextWriter> m_text_writer;
-
-  std::map<ItemGroup, ParallelDataWriter*> m_parallel_data_writers;
-  std::set<ItemGroup> m_written_groups;
-
-  ScopedPtrT<IGenericWriter> m_global_writer;
-
- private:
-
-  void _directWriteVal(IVariable* v, IData* data);
-  void _writeVal(TextWriter* writer, VariableDataInfo* data_info,
-                 const ISerializedData* sdata);
-
-  ParallelDataWriter* _getWriter(IVariable* var);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Lecteur simple.
- */
-class BasicReader
-: public BasicReaderWriterCommon
-, public IDataReader
-, public IDataReader2
-{
- public:
-
-  /*!
-    \brief  Interface pour retrouver le groupe associée à une variable à partir
-    de ces meta-données.
-  */
-  class IItemGroupFinder
-  {
-   public:
-
-    virtual ~IItemGroupFinder() {}
-    virtual ItemGroup getWantedGroup(VariableMetaData* vmd) = 0;
-  };
-
- public:
-
-  BasicReader(IApplication* app, IParallelMng* pm, Int32 forced_rank_to_read,
-              const String& path, bool want_parallel);
-  ~BasicReader() override;
-
- public:
-
-  void beginRead(const VariableCollection& vars) override;
-  void endRead() override {}
-  String metaData() override;
-  void read(IVariable* v, IData* data) override;
-
-  void fillMetaData(ByteArray& bytes) override;
-  void beginRead(const DataReaderInfo& infos) override;
-  void read(const VariableDataReadInfo& infos) override;
-
- public:
-
-  void initialize();
-  void setItemGroupFinder(IItemGroupFinder* group_finder)
-  {
-    m_item_group_finder = group_finder;
-  }
-
- private:
-
-  bool m_want_parallel;
-  Integer m_nb_written_part;
-  Int32 m_version;
-
-  Int32 m_first_rank_to_read;
-  Int32 m_nb_rank_to_read;
-  Int32 m_forced_rank_to_read;
-
-  std::map<String, ParallelDataReader*> m_parallel_data_readers;
-  UniqueArray<IGenericReader*> m_global_readers;
-  IItemGroupFinder* m_item_group_finder;
-  Ref<KeyValueTextReader> m_forced_rank_to_read_text_reader; //!< Lecteur pour le premier rang à lire.
-  Ref<IDataCompressor> m_data_compressor;
-
- private:
-
-  void _directReadVal(VariableMetaData* varmd, IData* data);
-
-  ParallelDataReader* _getReader(VariableMetaData* varmd);
-  void _setRanksToRead();
-  IGenericReader* _readOwnMetaDataAndCreateReader(Int32 rank);
 };
 
 /*---------------------------------------------------------------------------*/

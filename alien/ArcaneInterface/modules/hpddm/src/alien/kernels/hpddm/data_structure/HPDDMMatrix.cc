@@ -1,4 +1,9 @@
-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <list>
 #include <vector>
 #include <sstream>
@@ -284,11 +289,11 @@ MatrixInternal<ValueT>::_computeMPIGhostMatrix(
   m_nnz = m_local_nnz + m_ghost_nnz;
 
   {
-    auto& profile_dirichlet = m_csr_matrix_dirichlet.internal().getCSRProfile();
+    auto& profile_dirichlet = m_csr_matrix_dirichlet.internal()->getCSRProfile();
     profile_dirichlet.init(m_ndofs, m_nnz);
     m_csr_matrix_dirichlet.allocate();
 
-    auto& profile_neumann = m_csr_matrix_neumann.internal().getCSRProfile();
+    auto& profile_neumann = m_csr_matrix_neumann.internal()->getCSRProfile();
     profile_neumann.init(m_ndofs, m_nnz);
     m_csr_matrix_neumann.allocate();
 
@@ -443,7 +448,7 @@ MatrixInternal<ValueT>::_createDirchletMatrix(
 
   _computeMPIGhostMatrix(A);
 
-  auto& profile_dirichlet = m_csr_matrix_dirichlet.internal().getCSRProfile();
+  auto& profile_dirichlet = m_csr_matrix_dirichlet.internal()->getCSRProfile();
   auto kcol = profile_dirichlet.kcol();
   auto cols = profile_dirichlet.cols();
   ValueT* values = m_csr_matrix_dirichlet.getAddressData();
@@ -458,7 +463,7 @@ HPDDM::MatrixCSR<ValueT>*
 MatrixInternal<ValueT>::_createNeunmanMatrix(
     typename MatrixInternal<ValueT>::CSRMatrixType const& A)
 {
-  auto& profile_neumann = m_csr_matrix_neumann.internal().getCSRProfile();
+  auto& profile_neumann = m_csr_matrix_neumann.internal()->getCSRProfile();
   auto kcol = profile_neumann.kcol();
   auto cols = profile_neumann.cols();
   ValueT* values = m_csr_matrix_neumann.getAddressData();

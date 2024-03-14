@@ -1,11 +1,15 @@
-﻿/*
- * alienc.h
- *
- *  Created on: Nov 25, 2020
- *      Author: gratienj
- */
-
-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* alienc                                         (C) 2000-2024              */
+/*                                                                           */
+/* Interface C for alien                                                     */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 #include <mpi.h>
 #include <assert.h>
 #include <memory>
@@ -173,6 +177,80 @@ public :
     return m_linear_systems[system_id].get() ;
   }
 
+  class ParamSystem
+  {
+  public :
+    template<typename T>
+    void addToCommandLine(std::string const& key, T value)
+    {
+      {
+        std::stringstream token;
+        token<<"--"<<key;
+        m_command_line.push_back(token.str());
+      }
+      {
+        std::stringstream token;
+        token<<value;
+        m_command_line.push_back(token.str());
+      }
+    }
+
+    void setParam(std::string const& key,std::string const& value)
+    {
+      m_string_params[key] = value ;
+      addToCommandLine(key,value) ;
+    }
+
+    void setParam(std::string const& key,int value)
+    {
+      m_integer_params[key] = value ;
+      addToCommandLine(key,value) ;
+    }
+
+    void setParam(std::string const& key,double value)
+    {
+      m_double_params[key] = value ;
+      addToCommandLine(key,value) ;
+    }
+
+    std::vector<const char *> commandLine() const {
+      std::vector<const char *> command_line(m_command_line.size()) ;
+      for(std::size_t i=0;i<m_command_line.size();++i)
+      {
+        command_line[i] = m_command_line[i].c_str() ;
+      }
+      return command_line ;
+    }
+
+  public:
+    std::map<std::string,std::string> m_string_params ;
+    std::map<std::string,int>         m_integer_params ;
+    std::map<std::string,double>      m_double_params ;
+    std::vector<std::string>          m_command_line = {"ALIENCommndLine"} ;
+  };
+
+
+  int createNewParamSystem()
+  {
+    int id = m_param_systems.size() ;
+    m_param_systems.push_back(std::make_unique<ParamSystem>()) ;
+
+    return id ;
+  }
+
+  int destroyParamSystem(int system_id)
+  {
+    assert((std::size_t)system_id < m_param_systems.size()) ;
+    m_param_systems[system_id].reset() ;
+    return 0 ;
+  }
+
+  ParamSystem* getParamSystem(int system_id)
+  {
+    assert((std::size_t)system_id < m_param_systems.size()) ;
+    return m_param_systems[system_id].get() ;
+  }
+
 
   class LinearSolver
   {
@@ -184,9 +262,11 @@ public :
     , m_config_file(config_file)
     {}
 
-    void init(int argc, char** argv);
+    void init(int argc, const char** argv);
 
     void init(std::string const& configfile);
+
+    void init(ParamSystem const& param_system);
 
     int solve(Alien::Matrix const& A, Alien::Vector const& B, Alien::Vector& X);
 
@@ -225,6 +305,8 @@ public :
 private :
 
   std::vector<std::unique_ptr<LinearSystem> > m_linear_systems ;
+
+  std::vector<std::unique_ptr<ParamSystem> >  m_param_systems ;
 
   std::vector<std::unique_ptr<LinearSolver> > m_linear_solvers ;
 
@@ -409,7 +491,7 @@ getSolutionValues(int local_nrows,
 
 void
 AlienManager::LinearSolver::
-init(int argc, char** argv)
+init(int argc, const char** argv)
 {
   using namespace boost::program_options;
   options_description generic("Generic options");
@@ -540,20 +622,20 @@ extern "C" {
 
   #include "alien/c/alienc.h"
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_init([[maybe_unused]] int argc,[[maybe_unused]] char** argv)
+  int ALIEN_init(int argc, char** argv)
   {
     AlienManager::initialize() ;
     return 0 ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_create_linear_system(MPI_Comm comm)
+  int ALIEN_create_linear_system(MPI_Comm comm)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
     return alien_mng->createNewLinearSystem(comm) ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_destroy_linear_system(int system_id)
+  int ALIEN_destroy_linear_system(int system_id)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -561,7 +643,7 @@ extern "C" {
   }
 
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_init_linear_system(int system_id,
+  int ALIEN_init_linear_system(int system_id,
                                int global_nrows,
                                int local_nrows,
                                uid_type* row_uids,
@@ -583,7 +665,7 @@ extern "C" {
     return 0 ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_define_matrix_profile(int system_id,
+  int ALIEN_define_matrix_profile(int system_id,
                                   int local_nrows,
                                   uid_type* row_uids,
                                   int* row_offset,
@@ -600,7 +682,7 @@ extern "C" {
     return 0 ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_set_matrix_values(int system_id,
+  int ALIEN_set_matrix_values(int system_id,
                               int local_nrows,
                               uid_type* row_uids,
                               int* row_offset,
@@ -620,7 +702,7 @@ extern "C" {
     return 0 ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_set_rhs_values(int system_id,
+  int ALIEN_set_rhs_values(int system_id,
                            int local_nrows,
                            uid_type* row_uids,
                            double const* values)
@@ -633,7 +715,7 @@ extern "C" {
     return 0 ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_get_solution_values(int system_id,
+  int ALIEN_get_solution_values(int system_id,
                                 int local_nrows,
                                 uid_type* row_uids,
                                 double* values)
@@ -646,7 +728,57 @@ extern "C" {
     return 0 ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_create_solver(MPI_Comm comm,const char* config_file)
+
+  int ALIEN_create_parameter_system()
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    return alien_mng->createNewParamSystem() ;
+  }
+
+
+  int ALIEN_destroy_parameter_system(int param_system_id)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    alien_mng->destroyParamSystem(param_system_id) ;
+    return 0 ;
+  }
+
+  void ALIEN_set_parameter_string_value(int param_system_id,
+                                        const char* key,
+                                        const char* value)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    auto* param_system = alien_mng->getParamSystem(param_system_id) ;
+    assert(param_system!=nullptr) ;
+    param_system->setParam(std::string(key),std::string(value)) ;
+  }
+
+  void ALIEN_set_parameter_integer_value(int param_system_id,
+                                         const char* key,
+                                         int value)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    auto* param_system = alien_mng->getParamSystem(param_system_id) ;
+    assert(param_system!=nullptr) ;
+    param_system->setParam(std::string(key),value) ;
+  }
+
+  void ALIEN_set_parameter_double_value(int param_system_id,
+                                        const char* key,
+                                        double value)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    auto* param_system = alien_mng->getParamSystem(param_system_id) ;
+    assert(param_system!=nullptr) ;
+    param_system->setParam(std::string(key),value) ;
+  }
+
+  int ALIEN_create_solver(MPI_Comm comm,const char* config_file)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -654,7 +786,7 @@ extern "C" {
   }
 
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver(int solver_id,int argc, char** argv)
+  int ALIEN_init_solver(int solver_id,int argc, const char** argv)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -664,7 +796,7 @@ extern "C" {
   }
 
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver_with_configfile(int solver_id,const char* path)
+  int ALIEN_init_solver_with_configfile(int solver_id,const char* path)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -674,7 +806,21 @@ extern "C" {
     return 0 ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_destroy_solver(int solver_id)
+  int ALIEN_init_solver_with_parameters(int solver_id,int param_system_id)
+  {
+    auto* alien_mng = AlienManager::instance() ;
+    assert(alien_mng!=nullptr) ;
+    auto* solver = alien_mng->getLinearSolver(solver_id) ;
+    assert(solver!=nullptr) ;
+
+    auto* param_system = alien_mng->getParamSystem(param_system_id) ;
+    assert(param_system!=nullptr) ;
+    auto command_line = param_system->commandLine() ;
+    solver->init(command_line.size(),command_line.data()) ;
+    return 0 ;
+  }
+
+  int ALIEN_destroy_solver(int solver_id)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -682,7 +828,7 @@ extern "C" {
     return 0 ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_solve(int solver_id, int system_id)
+  int ALIEN_solve(int solver_id, int system_id)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -693,7 +839,7 @@ extern "C" {
     return solver->solve(system->getA(),system->getB(),system->getX()) ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_get_solver_status(int solver_id, ALIEN_Solver_Status* status)
+  int ALIEN_get_solver_status(int solver_id, ALIEN_Solver_Status* status)
   {
     auto* alien_mng = AlienManager::instance() ;
     assert(alien_mng!=nullptr) ;
@@ -702,7 +848,7 @@ extern "C" {
     return 0 ;
   }
 
-  ALIEN_INTERFACE_C_EXPORT int ALIEN_finalize()
+  int ALIEN_finalize()
   {
     AlienManager::finalize() ;
     return 0 ;

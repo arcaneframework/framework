@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshNumberingMng.cc                                (C) 2000-2023 */
+/* CartesianMeshNumberingMng.cc                                (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de numérotation de maillage cartesian. La numérotation       */
 /* utilisée ici est la même que celle utilisée dans la renumérotation V2.    */
@@ -443,6 +443,62 @@ getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_
   uid[1] += first_face_uid;
   uid[2] += first_face_uid;
   uid[3] += first_face_uid;
+}
+
+void CartesianMeshNumberingMng::
+getCellUidsAround(ArrayView<Int64> uid, Cell cell)
+{
+  uid.fill(-1);
+
+  Int64 coord_cell_x = uidToCoordX(cell);
+  Int64 coord_cell_y = uidToCoordY(cell);
+
+  Integer level = cell.level();
+  Int64 nb_cells_y = getGlobalNbCellsY(level);
+  Int64 nb_cells_x = getGlobalNbCellsX(level);
+
+  if(m_mesh->dimension() == 2){
+    ARCANE_ASSERT((uid.size() == 9), ("Size of uid array != 9"));
+
+    for(Integer j = -1; j < 2; ++j){
+      Int64 coord_around_cell_y = coord_cell_y + j;
+      if(coord_around_cell_y >= 0 && coord_around_cell_y < nb_cells_y){
+
+        for(Integer i = -1; i < 2; ++i){
+          Int64 coord_around_cell_x = coord_cell_x + i;
+          if(coord_around_cell_x >= 0 && coord_around_cell_x < nb_cells_x) {
+            uid[(i+1) + ((j+1) * 3)] = getCellUid(level, coord_around_cell_x, coord_around_cell_y);
+          }
+        }
+      }
+    }
+  }
+
+  else {
+    ARCANE_ASSERT((uid.size() == 27), ("Size of uid array != 27"));
+
+    Int64 coord_cell_z = uidToCoordZ(cell);
+    Int64 nb_cells_z = getGlobalNbCellsZ(level);
+
+    for(Integer k = -1; k < 2; ++k){
+      Int64 coord_around_cell_z = coord_cell_z + k;
+      if(coord_around_cell_z >= 0 && coord_around_cell_z < nb_cells_z) {
+
+        for(Integer j = -1; j < 2; ++j){
+          Int64 coord_around_cell_y = coord_cell_y + j;
+          if(coord_around_cell_y >= 0 && coord_around_cell_y < nb_cells_y){
+
+            for(Integer i = -1; i < 2; ++i){
+              Int64 coord_around_cell_x = coord_cell_x + i;
+              if(coord_around_cell_x >= 0 && coord_around_cell_x < nb_cells_x) {
+                uid[(i+1) + ((j+1) * 3) + ((k+1) * 9)] = getCellUid(level, coord_around_cell_x, coord_around_cell_y, coord_around_cell_z);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 void CartesianMeshNumberingMng::

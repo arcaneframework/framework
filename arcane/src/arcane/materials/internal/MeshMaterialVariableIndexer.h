@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableIndexer.h                               (C) 2000-2023 */
+/* MeshMaterialVariableIndexer.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Indexer pour les variables materiaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -33,11 +33,10 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMeshMaterialVariableIndexerMng;
 class MeshMaterialInfo;
 class IMeshEnvironment;
-class MatItemInternal;
 class ComponentItemListBuilder;
+class ComponentItemListBuilderOld;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,11 +57,11 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   friend class MeshComponentData;
   friend class MeshMaterialMng;
   friend class IncrementalComponentModifier;
-  template<typename DataType> friend class ItemMaterialVariableScalar;
+  template <typename DataType> friend class ItemMaterialVariableScalar;
 
  public:
 
-  MeshMaterialVariableIndexer(ITraceMng* tm,const String& name);
+  MeshMaterialVariableIndexer(ITraceMng* tm, const String& name);
   MeshMaterialVariableIndexer(const MeshMaterialVariableIndexer& rhs);
 
  public:
@@ -75,7 +74,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
    *
    * Il s'agit du maximum de l'indice maximal plus 1.
    */
-  Integer maxIndexInMultipleArray() const { return m_max_index_in_multiple_array+1; }
+  Integer maxIndexInMultipleArray() const { return m_max_index_in_multiple_array + 1; }
 
   Integer index() const { return m_index; }
   ConstArrayView<MatVarIndex> matvarIndexes() const { return m_matvar_indexes; }
@@ -84,11 +83,17 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //! Vrai si cet indexeur est celui d'un milieu.
   bool isEnvironment() const { return m_is_environment; }
 
+ public:
+
+  // Méthodes publiques car utilisées sur accélérateurs
+  void endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue);
+  void endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue);
+
  private:
-  
+
   //! Fonctions publiques mais réservées aux classes de Arcane.
   //@{
-  void endUpdate(const ComponentItemListBuilder& builder);
+  void endUpdate(const ComponentItemListBuilderOld& builder);
   Array<MatVarIndex>& matvarIndexesArray() { return m_matvar_indexes; }
   void setCells(const CellGroup& cells) { m_cells = cells; }
   void setIsEnvironment(bool is_environment) { m_is_environment = is_environment; }
@@ -97,27 +102,20 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   ConstArrayView<Int32> localIds() const { return m_local_ids; }
 
   void changeLocalIds(Int32ConstArrayView old_to_new_ids);
-  void transformCells(Int32ConstArrayView nb_env_per_cell,
-                      Int32ConstArrayView nb_mat_per_cell,
-                      Int32Array& pure_local_ids,
-                      Int32Array& partial_indexes,
-                      bool is_add_operation, bool is_env,bool is_verbose);
-  void endUpdateAdd(const ComponentItemListBuilder& builder);
-  void endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove);
-  void endUpdateRemove(const ConstituentModifierWorkInfo& args,Integer nb_remove);
+  void endUpdateRemove(ConstituentModifierWorkInfo& args, Integer nb_remove, RunQueue& queue);
   //@}
 
  private:
 
-  void transformCellsV2(ConstituentModifierWorkInfo& args);
+  void transformCellsV2(ConstituentModifierWorkInfo& args, RunQueue& queue);
 
  private:
 
   //! Index de cette instance dans la liste des indexeurs.
-  Integer m_index;
+  Integer m_index = -1;
 
   //! Indice max plus 1 dans le tableau des valeurs multiples
-  Integer m_max_index_in_multiple_array;
+  Integer m_max_index_in_multiple_array = -1;
 
   //! Nom du matériau ou milieu
   String m_name;
@@ -139,25 +137,24 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   UniqueArray<Int32> m_local_ids;
 
   //! Vrai si l'indexeur est associé à un milieu.
-  bool m_is_environment;
+  bool m_is_environment = false;
+
+  //! Vrai si on utilise l'ancienne version de gestion de la transformation
+  bool m_use_transform_no_filter = false;
 
  private:
 
   static void _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,
                                 Int32ConstArrayView old_to_new_ids);
-  void _transformPureToPartial(Int32ConstArrayView nb_env_per_cell,
-                               Int32ConstArrayView nb_mat_per_cell,
-                               Int32Array& pure_local_ids,
-                               Int32Array& partial_indexes,
-                               bool is_env,bool is_verbose);
-  void _transformPartialToPure(Int32ConstArrayView nb_env_per_cell,
-                               Int32ConstArrayView nb_mat_per_cell,
-                               Int32Array& pure_local_ids,
-                               Int32Array& partial_indexes,
-                               bool is_env,bool is_verbose);
-
   void _transformPureToPartialV2(ConstituentModifierWorkInfo& args);
   void _transformPartialToPureV2(ConstituentModifierWorkInfo& args);
+  void _init();
+
+ public:
+
+  void _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
+                                    RunQueue& queue,
+                                    bool is_pure_to_partial);
 };
 
 /*---------------------------------------------------------------------------*/

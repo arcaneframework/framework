@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.cc                                                (C) 2000-2023 */
+/* MeshUtils.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -49,6 +49,8 @@
 #include "arcane/core/IVariableSynchronizer.h"
 #include "arcane/core/UnstructuredMeshConnectivity.h"
 #include "arcane/core/datatype/DataAllocationInfo.h"
+
+#include "arcane/core/VariableUtils.h"
 
 #include <algorithm>
 #include <map>
@@ -1739,7 +1741,7 @@ computeConnectivityPatternOccurence(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 void MeshUtils::
-markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh)
+markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh, RunQueue* queue, bool do_prefetch)
 {
   if (!mesh)
     return;
@@ -1747,13 +1749,17 @@ markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh)
   VariableCollection used_variables = vm->usedVariables();
   const String tag_name = "ArcaneConnectivity";
   DataAllocationInfo alloc_info(eMemoryLocationHint::HostAndDeviceMostlyRead);
+
   // Les variables associées à la connectivité ont le tag 'ArcaneConnectivity'.
   for (VariableCollection::Enumerator iv(used_variables); ++iv;) {
     IVariable* v = *iv;
     if (!v->hasTag(tag_name))
       continue;
-    if (v->meshHandle().meshOrNull() == mesh)
+    if (v->meshHandle().meshOrNull() == mesh) {
       v->setAllocationInfo(alloc_info);
+      if (do_prefetch)
+        VariableUtils::prefetchVariableAsync(v, queue);
+    }
   }
 }
 
@@ -1779,20 +1785,6 @@ findOneItem(IItemFamily* family, ItemUniqueId unique_id)
   if (v)
     return { v };
   return {};
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64 MeshUtils::impl::
-computeCapacity(Int64 size)
-{
-  Int64 new_capacity = size * 2;
-  if (size > 5000000)
-    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.2);
-  else if (size > 500000)
-    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.5);
-  return new_capacity;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1858,6 +1850,18 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
   if (!expected_hash.empty() && hash_str != expected_hash)
     ARCANE_FATAL("Bad hash for uniqueId() for family '{0}' v={1} expected='{2}'",
                  family->fullName(), hash_str, expected_hash);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUtils::
+fillUniqueIds(ItemVectorView items,Array<Int64>& uids)
+{
+  Integer nb_item = items.size();
+  uids.resize(nb_item);
+  ENUMERATE_ITEM (iitem, items)
+    uids[iitem.index()] = iitem->uniqueId();
 }
 
 /*---------------------------------------------------------------------------*/

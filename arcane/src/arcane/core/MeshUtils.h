@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.h                                                 (C) 2000-2023 */
+/* MeshUtils.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires diverses sur le maillage.                           */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FunctorUtils.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/Item.h"
 
@@ -238,9 +239,14 @@ computeConnectivityPatternOccurence(IMesh* mesh);
  * En cas d'utilisation sur accélérateur, cela permet de dupliquer les
  * informations entre l'accélérateur et l'hôte pour éviter des aller-retour
  * multiples si les connectivités sont utilisées sur les deux à la fois.
+ *
+ * Si \a q est non nul et que \a do_prefetch vaut \a true, alors
+ * VariableUtils::prefetchVariableAsync() est appelé pour chaque variable
+ * gérant la connectivité.
  */
 extern "C++" ARCANE_CORE_EXPORT void
-markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh);
+markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh,RunQueue* q = nullptr,
+                                       bool do_prefetch = false);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -330,9 +336,10 @@ visitGroups(IMesh* mesh, const LambdaType& f)
 
 namespace impl
 {
-  //! Calcule une capacité adaptée pour une taille de \a size
-  extern "C++" ARCANE_CORE_EXPORT Int64
-  computeCapacity(Int64 size);
+  inline Int64 computeCapacity(Int64 size)
+  {
+    return Arcane::MemoryUtils::impl::computeCapacity(size);
+  }
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/
@@ -356,15 +363,7 @@ namespace impl
 template <typename DataType> inline bool
 checkResizeArray(Array<DataType>& array, Int64 new_size, bool force_resize)
 {
-  Int64 s = array.largeSize();
-  if (new_size > s || force_resize) {
-    if (new_size > array.capacity()) {
-      array.reserve(impl::computeCapacity(new_size));
-    }
-    array.resize(new_size);
-    return true;
-  }
-  return false;
+  return Arcane::MemoryUtils::checkResizeArrayWithCapacity(array, new_size, force_resize);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -402,6 +401,14 @@ getMaxItemUniqueIdCollective(IMesh* mesh);
 extern "C++" ARCANE_CORE_EXPORT void
 checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
                              const String& expected_hash, bool print_hash_value);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Rempli \a uids avec les uniqueId() des entités de \a view.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+fillUniqueIds(ItemVectorView items,Array<Int64>& uids);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

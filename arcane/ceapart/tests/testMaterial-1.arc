@@ -19,7 +19,6 @@
     <variable>Density</variable>
     <variable>Density_ENV1_MAT1</variable>
     <variable>Pressure</variable>
-    <variable>StdMat_CellNbEnvironment</variable>
     <groupe>StdMat_ENV1</groupe>
     <groupe>StdMat_ENV1_MAT1</groupe>
     <groupe>AllCells</groupe>

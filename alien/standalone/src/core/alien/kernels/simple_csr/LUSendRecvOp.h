@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LUSendRecvOp.h                                              (C) 2000-2023 */
+/* LUSendRecvOp.h                                              (C) 2000-2024 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -89,7 +89,7 @@ class LUSendRecvOp
     std::size_t recv_uids_size = m_recv_info.m_uids.size();
     std::vector<int> conn_size(recv_uids_size);
     std::fill(conn_size.begin(), conn_size.end(), 0);
-    for (int irow = 0; irow < nrows; ++irow) {
+    for (std::size_t irow = 0; irow < nrows; ++irow) {
       for (int k = kcol[irow] + local_row_size[irow]; k < kcol[irow + 1]; ++k) {
         ++conn_size[cols[k] - nrows];
       }
@@ -102,11 +102,11 @@ class LUSendRecvOp
     m_recv_connectivity_ids.resize(total_conn_size);
     m_recv_connectivity_krow.resize(total_conn_size);
     std::fill(conn_size.begin(), conn_size.end(), 0);
-    for (int irow = 0; irow < nrows; ++irow) {
-      for (int k = kcol[irow] + local_row_size[irow]; k < kcol[irow + 1]; ++k) {
+    for (std::size_t irow = 0; irow < nrows; ++irow) {
+      for (auto k = kcol[irow] + local_row_size[irow]; k < kcol[irow + 1]; ++k) {
         int col = cols[k];
-        int id = col - nrows;
-        m_recv_connectivity_ids[m_recv_connectivity_ids_ptr[id] + conn_size[id]] = irow;
+        auto id = col - nrows;
+        m_recv_connectivity_ids[m_recv_connectivity_ids_ptr[id] + conn_size[id]] = (int) irow;
         m_recv_connectivity_krow[m_recv_connectivity_ids_ptr[id] + conn_size[id]] = k;
         ++conn_size[id];
       }
@@ -195,13 +195,13 @@ class LUSendRecvOp
       Arccore::MessagePassing::mpReceive(m_parallel_mng, buffer, neighb);
       int icount = 0;
       int icount2 = 0;
-      for (int i = m_recv_info.m_ids_offset[ineighb]; i < m_recv_info.m_ids_offset[ineighb + 1]; ++i) {
-        int irow = i - nrows;
+      for (auto i = m_recv_info.m_ids_offset[ineighb]; i < m_recv_info.m_ids_offset[ineighb + 1]; ++i) {
+        auto irow = i - nrows;
         int int_row_size = ibuffer[icount++];
         int ext_row_size = ibuffer[icount++];
         for (int conn_k = m_recv_connectivity_ids_ptr[irow]; conn_k < m_recv_connectivity_ids_ptr[irow + 1]; ++conn_k) {
-          int conn_row = m_recv_connectivity_ids[conn_k];
-          int krow = m_recv_connectivity_krow[conn_k];
+          auto conn_row = m_recv_connectivity_ids[conn_k];
+          auto krow = m_recv_connectivity_krow[conn_k];
           for (int k = krow + 1; k < kcol[conn_row + 1]; ++k) {
             m_work[cols[k]] = k;
           }

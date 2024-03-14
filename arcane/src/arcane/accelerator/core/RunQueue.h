@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.h                                                  (C) 2000-2023 */
+/* RunQueue.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,8 @@
 #define ARCANE_ACCELERATOR_CORE_RUNQUEUE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/AutoRef.h"
 
 #include "arcane/accelerator/core/RunCommand.h"
 
@@ -74,15 +76,17 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  public:
 
-  RunQueue(const RunQueue&) = delete;
-  RunQueue(RunQueue&&) = delete;
-  RunQueue& operator=(const RunQueue&) = delete;
-  RunQueue& operator=(RunQueue&&) = delete;
+  RunQueue(const RunQueue&);
+  RunQueue& operator=(const RunQueue&);
+  RunQueue(RunQueue&&);
+  RunQueue& operator=(RunQueue&&);
 
  public:
 
   //! Politique d'exécution de la file.
   eExecutionPolicy executionPolicy() const;
+  //! Indique si l'instance est associée à un accélérateur
+  bool isAcceleratorPolicy() const;
   /*!
    * \brief Positionne l'asynchronisme de l'instance.
    *
@@ -92,7 +96,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   void setAsync(bool v);
   //! Indique si la file d'exécution est asynchrone.
   bool isAsync() const;
-   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
+  //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
   void barrier();
 
   //! Copie des informations entre deux zones mémoires
@@ -128,9 +132,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl();
 
+  // Pour VariableViewBase
+  friend class VariableViewBase;
+  bool _isAutoPrefetchCommand() const;
+
  private:
 
-  impl::RunQueueImpl* m_p;
+  AutoRef2<impl::RunQueueImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/

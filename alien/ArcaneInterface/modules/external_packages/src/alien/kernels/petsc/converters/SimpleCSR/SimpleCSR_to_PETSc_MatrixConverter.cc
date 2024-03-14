@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <alien/core/backend/IMatrixConverter.h>
 #include <alien/core/backend/MatrixConverterRegisterer.h>
 
@@ -79,7 +85,7 @@ SimpleCSR_to_PETSc_MatrixConverter::_build(
   const bool isParallel = dist.isParallel();
 
   const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
-      sourceImpl.internal();
+      *sourceImpl.internal();
 
   alien_debug([&] {
     cout() << "Matrix range : [" << localOffset << ":" << localOffset + localSize - 1
@@ -174,7 +180,7 @@ SimpleCSR_to_PETSc_MatrixConverter::_buildBlock(
   const bool isParallel = dist.isParallel();
 
   const SimpleCSRMatrix<Arccore::Real>::MatrixInternal& matrixInternal =
-      sourceImpl.internal();
+      *sourceImpl.internal();
 
   Arccore::Integer max_line_size = localScalarizedSize; // taille mini pour y mettre rhs
   Arccore::UniqueArray<Arccore::Integer> diag_sizes(localScalarizedSize);

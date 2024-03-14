@@ -1,3 +1,33 @@
+
+
+
+if(ALIEN_USE_SYCL)
+    IF(ALIEN_USE_HIPSYCL)
+      find_package(hipSYCL CONFIG REQUIRED)
+      message(status "HIPSYCL                : ${hipSYCL_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+
+    IF(ALIEN_USE_INTELDPCPP)
+      find_package(IntelDPCPP CONFIG REQUIRED)
+      message(status "IntelDPCPP : ${IntelDPCPP_FOUND}")
+      message(status "IntelDPCPP FOUND : ${IntelDPCPP_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+    IF(ALIEN_USE_INTELSYCL)
+      find_package(IntelSYCL REQUIRED)
+      message(status "IntelSYCL : ${IntelDPCPP_FOUND}")
+      message(status "IntelSYCL FOUND : ${IntelDPCPP_FOUND}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+      message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR_HINT}")
+      message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    ENDIF()
+ENDIF()
+
 createExecutable(alien_bench.exe)
 
 addSources(alien_bench.exe
@@ -11,7 +41,34 @@ generateAxl(alien_bench.exe
         AlienBench.axl
         AlienStokes.axl
         NO_COPY
+        USER_INSTALL_PREFIX ALIEN
         )
+
+if(ALIEN_USE_SYCL)
+    addSources(alien_bench.exe
+               AlienBenchSYCL.cc
+              )
+    IF(ALIEN_USE_HIPSYCL)
+        add_sycl_to_target(TARGET  alien_bench.exe
+                           SOURCES AlienBenchSYCL.cc)
+    ENDIF()
+
+    IF(ALIEN_USE_INTELSYCL)
+        set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+        IF(ALIEN_USE_HIP)
+          set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+          target_compile_options(alien_bench.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+        ENDIF()
+        IF(ALIEN_USE_CUDA)
+          set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+          target_compile_options(alien_bench.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+          target_link_options(alien_bench.exe PRIVATE ${DPCPP_FLAGS})
+        ENDIF()
+        add_sycl_to_target(TARGET  alien_bench.exe
+                           SOURCES AlienBenchSYCL.cc)
+    ENDIF()
+     
+ENDIF()
 
 if (TARGET intel)
     linkLibraries(alien_bench.exe intel)
@@ -47,18 +104,32 @@ install(
         RUNTIME DESTINATION bin
 )
 
-if (TARGET petsc)
+configure_file(AlienBench.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.config COPYONLY)
+configure_file(AlienBench-aliensolver.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver.arc COPYONLY)
 
-    configure_file(AlienBench.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.config COPYONLY)
+list(APPEND ALIEN_EXAMPLE_FILES
+            AlienBench.config
+            AlienBench-aliensolver.arc
+            )
+
+if (TARGET petsc)
     configure_file(AlienBench.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.arc COPYONLY)
     configure_file(AlienBench-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-4P.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
-            AlienBench.config
             AlienBench.arc
             AlienBench-4P.arc
             )
+endif ()
 
+if (TARGET hypre)
+    configure_file(AlienBench-hypre.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hypre.arc COPYONLY)
+    configure_file(AlienBench-hypre-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hypre-2P.arc COPYONLY)
+
+    list(APPEND ALIEN_EXAMPLE_FILES
+            AlienBench-hypre.arc
+            AlienBench-hypre-2P.arc
+            )
 endif ()
 
 #Examples !
@@ -82,9 +153,15 @@ install(FILES
         RENAME Makefile
         )
 
+alien_test(
+            BENCH alien.bench.aliensolver
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-aliensolver.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
 if (TARGET petsc)
-
     set(ENV (ARCANE_PARALLEL_SERVICE) "Mpi")
 
     alien_test(
@@ -103,4 +180,24 @@ if (TARGET petsc)
             OPTIONS AlienBench-4P.arc
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
+endif ()
+
+if (TARGET hypre)
+    set(ENV (ARCANE_PARALLEL_SERVICE) "Mpi")
+
+    alien_test(
+            BENCH alien.bench.hypre
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hypre.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.hypre
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hypre-2P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()

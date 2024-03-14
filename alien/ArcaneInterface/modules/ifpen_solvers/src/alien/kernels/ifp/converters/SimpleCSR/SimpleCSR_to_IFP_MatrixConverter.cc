@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <alien/core/backend/IMatrixConverter.h>
 #include <alien/core/backend/MatrixConverterRegisterer.h>
 
@@ -64,7 +70,7 @@ SimpleCSR_to_IFP_MatrixConverter::_build(
 {
   const MatrixDistribution& dist = sourceImpl.distribution();
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
-  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = sourceImpl.internal();
+  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = *sourceImpl.internal();
   const Integer localSize = profile.getNRow();
   const Integer globalSize = dist.globalRowSize();
   const Integer localOffset = dist.rowOffset();
@@ -92,7 +98,7 @@ SimpleCSR_to_IFP_MatrixConverter::_buildBlock(
 {
   const MatrixDistribution& dist = sourceImpl.distribution();
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
-  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = sourceImpl.internal();
+  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = *sourceImpl.internal();
 
   const Integer block_size = sourceImpl.block()->size();
   const Integer localSize = profile.getNRow();

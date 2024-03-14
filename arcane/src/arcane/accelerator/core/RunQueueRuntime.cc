@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueRuntime.cc                                          (C) 2000-2022 */
+/* RunQueueRuntime.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'un RunQueue pour une cible donnée.                       */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
   }
   void prefetchMemory(const MemoryPrefetchArgs&) override {}
   void* _internalImpl() override { return nullptr; }
+  bool _barrierNoException() override { return false; }
 
  private:
 

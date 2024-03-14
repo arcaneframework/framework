@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMpi.cc                                                (C) 2000-2023 */
+/* ArcaneMpi.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations globales pour la partie MPI de Arcane.                       */
 /*---------------------------------------------------------------------------*/
@@ -46,6 +46,31 @@ arcaneIsCudaAwareMPI()
   is_aware =  (MPIX_Query_cuda_support()==1);
 #endif
   return is_aware;
+}
+
+extern "C++" ARCANE_MPI_EXPORT bool
+arcaneIsHipAwareMPI()
+{
+  bool is_aware = false;
+  // OpenMPI définit MPIX_HIP_AWARE_SUPPORT et mpich définit MPIX_GPU_SUPPORT_HIP
+  // pour indiquer que MPIX_Query_hip_support() est disponible.
+
+  // MPICH
+#if defined(MPIX_GPU_SUPPORT_HIP)
+  is_aware =  (MPIX_Query_hip_support()==1);
+#endif
+
+  // OpenMPI:
+#if defined(MPIX_ROCM_AWARE_SUPPORT)
+  is_aware =  (MPIX_Query_rocm_support()==1);
+#endif
+  return is_aware;
+}
+
+extern "C++" ARCANE_MPI_EXPORT bool
+arcaneIsAcceleratorAwareMPI()
+{
+  return arcaneIsCudaAwareMPI() || arcaneIsHipAwareMPI();
 }
 
 /*---------------------------------------------------------------------------*/

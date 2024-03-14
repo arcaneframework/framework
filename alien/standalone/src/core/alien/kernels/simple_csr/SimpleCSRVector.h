@@ -71,7 +71,7 @@ class SimpleCSRVector : public IVectorImpl
 
   Integer getAllocSize() const { return m_values.size(); }
 
-  void clear()
+  void clear() override
   {
     m_values.dispose();
     delete m_vblock;
@@ -130,7 +130,7 @@ class SimpleCSRVector : public IVectorImpl
     }
   }
 
-  const VectorDistribution& distribution() const
+  const VectorDistribution& distribution() const override
   {
     if (this->m_multi_impl)
       return IVectorImpl::distribution();
@@ -138,7 +138,7 @@ class SimpleCSRVector : public IVectorImpl
       return m_own_distribution;
   }
 
-  Arccore::Integer scalarizedLocalSize() const
+  Arccore::Integer scalarizedLocalSize() const override
   {
     if (this->m_multi_impl)
       return IVectorImpl::scalarizedLocalSize();
@@ -146,7 +146,7 @@ class SimpleCSRVector : public IVectorImpl
       return m_own_distribution.localSize();
   }
 
-  Arccore::Integer scalarizedGlobalSize() const
+  Arccore::Integer scalarizedGlobalSize() const override
   {
     if (this->m_multi_impl)
       return IVectorImpl::scalarizedGlobalSize();
@@ -154,7 +154,7 @@ class SimpleCSRVector : public IVectorImpl
       return m_own_distribution.globalSize();
   }
 
-  Arccore::Integer scalarizedOffset() const
+  Arccore::Integer scalarizedOffset() const override
   {
     if (this->m_multi_impl)
       return IVectorImpl::scalarizedOffset();
@@ -164,8 +164,8 @@ class SimpleCSRVector : public IVectorImpl
 
   const VBlockImpl& vblockImpl() const { return *m_vblock; }
 
-  //@{ @name Interface ? soi-m?me
-  void update(const SimpleCSRVector<ValueT>& v)
+  //@{ @name Interface à soi-même
+  void update([[maybe_unused]] const SimpleCSRVector<ValueT>& v)
   {
     ALIEN_ASSERT((this == &v), ("Unexpected error"));
   }

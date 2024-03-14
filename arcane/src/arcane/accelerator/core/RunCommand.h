@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.h                                                (C) 2000-2023 */
+/* RunCommand.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   friend impl::IReduceMemoryImpl* impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
   friend impl::RunCommandLaunchInfo;
   friend impl::RunQueueImpl;
+  friend class VariableViewBase;
   friend RunCommand makeCommand(RunQueue& run_queue);
   friend RunCommand makeCommand(RunQueue* run_queue);
 

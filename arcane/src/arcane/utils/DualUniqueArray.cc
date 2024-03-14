@@ -1,60 +1,47 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataWriter.h                                        (C) 2000-2020 */
+/* DualUniqueArray.cc                                          (C) 2000-2024 */
 /*                                                                           */
-/* Ecrivain de IData en parallèle.                                           */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_PARALLELDATAWRITER_H
-#define ARCANE_STD_PARALLELDATAWRITER_H
+/* Tableau 1D alloué à la fois sur CPU et accélérateur.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/utils/DualUniqueArray.h"
+
+#include "arcane/utils/String.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryView.h"
+#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class IParallelMng;
-class IData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParallelDataWriter
+void DualUniqueArrayBase::
+_memoryCopy(Span<const std::byte> from, Span<std::byte> to)
 {
-  class Impl;
-
- public:
-
-  ParallelDataWriter(IParallelMng* pm);
-  ParallelDataWriter(const ParallelDataWriter& rhs) = delete;
-  ~ParallelDataWriter();
-
- public:
-
-  Int64ConstArrayView sortedUniqueIds() const;
-  void setGatherAll(bool v);
-  void sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid);
-  Ref<IData> getSortedValues(IData* data);
-
- private:
-
-  Impl* m_p;
-};
+  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+  eMemoryRessource from_mem = eMemoryRessource::Unknown;
+  eMemoryRessource to_mem = eMemoryRessource::Unknown;
+  mrm->_internal()->copy(ConstMemoryView(from), from_mem, MutableMemoryView(to), to_mem, nullptr);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif

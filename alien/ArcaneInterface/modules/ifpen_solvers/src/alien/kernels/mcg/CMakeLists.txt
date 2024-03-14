@@ -15,6 +15,7 @@ generateAxl(alien_ifpen_solvers
     ${IS_WITH_ARCANE}
     ${IS_WITH_MESH}
     INSTALL_GENERATED_FILES
+    USER_INSTALL_PREFIX ALIEN
     )
 
 addSources(alien_ifpen_solvers

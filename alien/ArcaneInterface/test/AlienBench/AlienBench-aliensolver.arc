@@ -29,6 +29,7 @@
 
 
     <alien-bench>
+      <use-accelerator>false</use-accelerator>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <diagonal-coefficient>1.</diagonal-coefficient>
       <!--lambdax>0.125</lambdax>
@@ -40,12 +41,12 @@
       <zero-rhs>false</zero-rhs>
       <nb-resolutions>1</nb-resolutions>
       <alien-core-solver>
+        <backend>SimpleCSR</backend>
         <solver>BCGS</solver>
         <preconditioner>Diag</preconditioner>
         <max-iter>1000</max-iter>
         <tol>1.e-6</tol>
         <output-level>1</output-level>
       </alien-core-solver>
-
   </alien-bench>
 </case>

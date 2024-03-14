@@ -14,6 +14,10 @@
 # 
 # SPDX-License-Identifier: Apache-2.0
 
+IF(ALIEN_USE_INTELSYCL)
+	set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+ENDIF()
+
 set(alien_semantic_public_header
         alien/move/handlers/block/BlockVectorReader.h
         alien/move/handlers/block/BlockVectorWriter.h

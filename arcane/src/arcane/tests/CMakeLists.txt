@@ -42,6 +42,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorReduceUnitTest.cc
   accelerator/AcceleratorScanUnitTest.cc
   accelerator/AcceleratorFilterUnitTest.cc
+  accelerator/AcceleratorPartitionerUnitTest.cc
   accelerator/RunQueueUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
@@ -280,7 +281,7 @@ ARCANE_ADD_TEST_SEQUENTIAL(utils1 testUtils-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(json1 testJSON-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(xml1 testXml-1.arc -We,ARCANE_XML_PATH,${ARCANE_ARC_PATH})
 ARCANE_ADD_TEST_SEQUENTIAL(random1 testRandom-1.arc)
-ARCANE_ADD_TEST_SEQUENTIAL(simd1 testSimd-1.arc)
+ARCANE_ADD_TEST_SEQUENTIAL(simd1 testSimd-1.arc -We,ARCANE_CHECK_SIMDPADDING,2)
 ARCANE_ADD_TEST_SEQUENTIAL(singleton1 testSingletonService-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(array1 testArcane-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(configuration1 testConfiguration-1.arc)
@@ -560,6 +561,7 @@ arcane_add_test(checkpoint_basic2-v1 testCheckpoint-basic2-v1.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2 testCheckpoint-basic2.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2-v3 testCheckpoint-basic2-v3.arc -c 3 -m 5)
 arcane_add_test(checkpoint_basic2-v3_json_metadata testCheckpoint-basic2-v3.arc -c 3 -m 5 -We,ARCANE_USE_JSON_METADATA,1)
+arcane_add_test(checkpoint_basic2-v3_xml_metadata testCheckpoint-basic2-v3.arc -c 3 -m 5 -We,ARCANE_USE_JSON_METADATA,0)
 arcane_add_test(checkpoint_basic_hash_file testCheckpoint-basic2-v3.arc -c 3 -m 5 -We,ARCANE_HASHDATABASE_DIRECTORY,${CMAKE_CURRENT_BINARY_DIR}/hashdb)
 
 if (ARCANE_ENABLE_REDIS_TEST)
@@ -600,10 +602,12 @@ endif()
 
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_sequential(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
+  arcane_add_accelerator_test_sequential(hydro_accelerator5_prefetch testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_PREFETCH_COMMAND,1")
   arcane_add_accelerator_test_parallel(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
   arcane_add_accelerator_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
   arcane_add_accelerator_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
   arcane_add_test(hydro_accelerator5 testHydroAccelerator-5.arc -m 50)
+  arcane_add_test_sequential(hydro_accelerator5_prefetch testHydroAccelerator-5.arc -m 50 "-We,ARCANE_ACCELERATOR_PREFETCH_COMMAND,1")
   arcane_add_test_sequential_task(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
   arcane_add_test_parallel_thread(hydro_accelerator5 testHydroAccelerator-5.arc 4 -m 50)
   arcane_add_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
@@ -693,6 +697,10 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential_task(accelerator_filter1 testAcceleratorFilter-1.arc 4)
   arcane_add_accelerator_test_sequential(accelelerator_filter1 testAcceleratorFilter-1.arc)
 
+  arcane_add_test_sequential(accelerator_partitioner1 testAcceleratorPartitioner-1.arc)
+  arcane_add_test_sequential_task(accelerator_partitioner1 testAcceleratorPartitioner-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelerator_partitioner1 testAcceleratorPartitioner-1.arc)
+
   arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
   arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
   arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
@@ -726,7 +734,8 @@ arcane_add_test_sequential(simple_csv_output_service testSimpleCsvOutputService.
 arcane_add_test_sequential(simple_csv_comparator_service testSimpleCsvComparatorService.arc)
 
 arcane_add_test(geometry testGeom.arc)
-arcane_add_test(geometry_applyoperation_v2 testGeom.arc -We,ARCANE_APPLYOPERATION_VERSION,2 -We,ARCANE_DEBUG_APPLYOPERATION,1)
+arcane_add_test(geometry_applyoperation_v2 testGeom.arc -We,ARCANE_DEBUG_APPLYOPERATION,1)
+arcane_add_test(geometry_applyoperation_v1 testGeom.arc -We,ARCANE_APPLYOPERATION_VERSION,1 -We,ARCANE_DEBUG_APPLYOPERATION,1)
 
 if(ARCANE_HAS_SOLVERS)
   ARCANE_ADD_TEST_PARALLEL(solver testSolver.arc 1)
@@ -925,6 +934,9 @@ ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 8)
 # Test les comparaisons bit à bit entre deux exécutions
 arcane_add_test_script(compare_seq_seq compare_seq_seq.xml)
 arcane_add_test_script(compare_seq_seq_v3 compare_seq_seq_v3.xml)
+arcane_add_test_script(compare_seq_seq_hash_only compare_seq_seq_hash_only.xml)
+arcane_add_test_script(compare_seq_par_hash_only compare_seq_par_hash_only.xml)
+arcane_add_test_script(compare_par_par_hash_only compare_par_par_hash_only.xml)
 if (LZ4_FOUND)
   arcane_add_test_script(compare_seq_seq_lz4 compare_seq_seq_lz4.xml)
   arcane_add_test_script(compare_seq_seq_lz4_v3 compare_seq_seq_lz4_v3.xml)
@@ -961,6 +973,12 @@ endif()
 
 # Test pour la partie StringVariableReplace.
 arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc)
+
+#################################################################
+#################################################################
+
+# Test pour les implementations de TimeHistoryAdder.
+arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
 
 
 # ----------------------------------------------------------------------------

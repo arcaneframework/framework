@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ReduceMemoryImpl.cc                                         (C) 2000-2023 */
+/* ReduceMemoryImpl.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Gestion de la mémoire pour les réductions.                                */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
+#include "arcane/accelerator/core/internal/RunnerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,7 +66,7 @@ release()
 void ReduceMemoryImpl::
 _setReducePolicy()
 {
-  m_grid_memory_info.m_reduce_policy = m_command->runner()->deviceReducePolicy();
+  m_grid_memory_info.m_reduce_policy = m_command->runner()->reducePolicy();
 }
 
 /*---------------------------------------------------------------------------*/

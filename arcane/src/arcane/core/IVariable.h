@@ -747,6 +747,11 @@ class ARCANE_CORE_EXPORT IVariable
 
   //! Incrémente le compteur de modification et retourne sa valeur avant modification
   static Int64 incrementModifiedTime();
+
+ public:
+
+  //! API interne à Arcane
+  virtual IVariableInternal* _internalApi() =0;
 };
 
 /*---------------------------------------------------------------------------*/

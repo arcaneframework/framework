@@ -17,10 +17,10 @@ else ()
             )
 endif ()
 
-linkLibraries(alien_interface_c Alien::alien_core alien_external_packages)
+linkLibraries(alien_interface_c Alien::alien_core)
 
 if (TARGET intel)
-    linkLibraries(gtest.refmvhandlers intel)
+    linkLibraries(alien_interface_c intel)
 endif ()
 
 if (TARGET alien_external_packages)
@@ -53,3 +53,5 @@ install(DIRECTORY alien
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
   )
+
+target_compile_definitions(alien_interface_c PRIVATE alien_core_EXPORTS)

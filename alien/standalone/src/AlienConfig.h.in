@@ -33,4 +33,7 @@
 // Eigen3
 #cmakedefine ALIEN_USE_EIGEN3
 
+// SYCL
+#cmakedefine ALIEN_USE_SYCL
+
 #endif // ALIENCONFIG_H

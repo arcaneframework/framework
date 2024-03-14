@@ -1,12 +1,7 @@
 set(ARCANE_SOURCES
   RayMeshIntersectionUnitTest.cc
-  MaterialHeatTestModule.cc
-  MeshMaterialTesterModule.cc
   CartesianMeshTesterModule.cc
-  HyodaMixedCellsUnitTest.cc
   GeometricUnitTest.cc
-  MeshMaterialSyncUnitTest.cc
-  MeshMaterialSimdUnitTest.cc
   AMRCartesianMeshTesterModule.cc
   CartesianMeshTestUtils.cc
   CartesianMeshTestUtils.h
@@ -14,6 +9,14 @@ set(ARCANE_SOURCES
   CartesianMeshV2TestUtils.h
   UnitTestCartesianMeshPatch.cc
   IMaterialEquationOfState.h
+)
+
+set(ARCANE_MATERIAL_SOURCES
+  HyodaMixedCellsUnitTest.cc
+  MeshMaterialTesterModule.cc
+  MeshMaterialSyncUnitTest.cc
+  MeshMaterialSimdUnitTest.cc
+  MaterialHeatTestModule.cc
 )
 
 set(AXL_FILES 

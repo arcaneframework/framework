@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -79,8 +79,27 @@ TEST(String, Utf8AndUtf16)
       std::cout << "Utf16: " << std::hex << x << "\n";
     ASSERT_EQ(big_endian_ref_vector, utf16_vector);
     Span<const UChar> utf16_bytes(utf16_vector.data(), utf16_vector.size());
+    std::cout << "Utf16_size=" << utf16_bytes.smallView() << "\n";
+
+    std::cout << "BEFORE_CREATE_STR2\n";
     String str2(utf16_bytes.smallView());
+    std::cout << "str1.utf16=" << str1.utf16() << "\n";
+    std::cout << "str2.utf16=" << str2.utf16() << "\n";
+
+    bool is_same = (str1 == str2);
+
+    std::cout << "is_same=" << is_same << "\n";
     ASSERT_EQ(str1, str2);
+
+    std::cout << "str1.utf16=" << str1.utf16() << "\n";
+    std::cout << "str2.utf16=" << str2.utf16() << "\n";
+    std::cout.flush();
+
+    ASSERT_EQ(str1.utf16().size(), 6);
+    ASSERT_EQ(str2.utf16().size(), 6);
+
+    ASSERT_EQ(str1.utf8().size(), str2.utf8().size());
+    ASSERT_EQ(str1.utf16().size(), str2.utf16().size());
   }
   {
     String str2;
