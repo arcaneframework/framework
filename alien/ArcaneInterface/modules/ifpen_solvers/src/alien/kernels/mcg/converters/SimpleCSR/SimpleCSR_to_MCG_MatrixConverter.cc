@@ -72,8 +72,8 @@ SimpleCSR_to_MCG_MatrixConverter::_build(
   ConstArrayView<Integer> row_offset = profile.getRowOffset();
   ConstArrayView<Integer> cols = profile.getCols();
 
-  const SimpleCSRMatrix<Real>::MatrixInternal& matrixInternal = sourceImpl.internal();
-  ConstArrayView<Real> values = matrixInternal.getValues();
+  const SimpleCSRMatrix<Real>::MatrixInternal* matrixInternal = sourceImpl.internal();
+  ConstArrayView<Real> values = matrixInternal->getValues();
   int block_size = 1;
   int block_size2 = 1;
 
