@@ -1,4 +1,4 @@
-[]
+# ALIEN TOOL SET
 
 Written by CEA/IFPEN and Contributors
 
@@ -9,7 +9,7 @@ All content is the property of the respective authors or their employers.
 For more information regarding authorship of content, please consult 
 the listed source code repository logs.
 
-## Alien
+## Introduction
 
 Alien is a set a tools to handle and solve Linear Systems in applications.
 
@@ -25,7 +25,7 @@ Alien is composed of three main sub-projets:
   Arcane variables and mesh entities with algebraic indexes.
 
 
-## How to use ?
+## Installation
 
 Simply clone the framework repository.
 
@@ -43,7 +43,6 @@ cmake ..
 
 Useful CMake options:
 
-- ALIEN_FRAMEWORK_EXTERNAL, compile each subproject separately, default=OFF
 - ALIEN_BUILD_COMPONENT=all, compile all components 
 - ALIEN_PLUGIN_PETSC=ON,OFF enable compile [Petsc][petsc] plugin default=OFF
 - ALIEN_PLUGIN_HYPRE=ON,OFF enable compile [Hypre][hypre] plugin default=OFF
