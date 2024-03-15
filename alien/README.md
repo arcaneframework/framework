@@ -1,12 +1,16 @@
-# [Alien][alien]
+# Alien
 
 Alien is a set a tools to handle and solve Linear Systems in applications.
 
 Alien is composed of three main sub-projets:
 
 - standalone : provides the core library
-- plugins : provides plugins of external solver package like hypre, petsc, trilinos, ginkgo
-- ArcaneInterface : provides IFPEN legacy plugins (hypre, petsc, mtl4, trilinos, hpddm, ifpsolver, mcgsolver and htssolver) and their adapters to Arcane services and a set of tools to manage the links between Arcane variables and mesh entities with algebraic indexes.
+- plugins : provides plugins of external solver package like hypre, petsc, 
+ trilinos, ginkgo
+- ArcaneInterface : provides IFPEN legacy plugins (hypre, petsc, mtl4, trilinos,
+ hpddm, ifpsolver, mcgsolver and htssolver) and their adapters to 
+ Arcane services and a set of tools to manage the links between Arcane variables
+ and mesh entities with algebraic indexes.
 
 
 ## How to use ?
@@ -29,19 +33,19 @@ Useful CMake options:
 
 - ALIEN_FRAMEWORK_EXTERNAL, compile each subproject separately, default=OFF
 - ALIEN_BUILD_COMPONENT=all, compile all components 
-- ALIEN_PLUGIN_PETSC=ON,OFF enable [Petsc][petsc] plugin is compiled, default=OFF
-- ALIEN_PLUGIN_HYPRE=ON,OFF enable [Hypre][hypre] plugin is compiled, default=OFF
-- ALIEN_PLUGIN_TRILINOS=ON,OFF enable [Trilinos][trilinos] plugin is compiled, default=OFF
-- ALIEN_PLUGIN_GINKGO=ON,OFF enable [Ginkgo][ginkgo] plugin is compiled, default=OFF
-- ALIEN_USE_HDF5=ON,OFF enable HDF5 support for import-export tools, OFF by default
-- ALIEN_USE_LIBXML2=ON,OFF enable LIBXML2 support for import-export tools, OFF by default
+- ALIEN_PLUGIN_PETSC=ON,OFF enable compile [Petsc][petsc] plugin default=OFF
+- ALIEN_PLUGIN_HYPRE=ON,OFF enable compile [Hypre][hypre] plugin default=OFF
+- ALIEN_PLUGIN_TRILINOS=ON,OFF enable [Trilinos][trilinos] plugin default=OFF
+- ALIEN_PLUGIN_GINKGO=ON,OFF enable [Ginkgo][ginkgo] plugin default=OFF
+- ALIEN_USE_HDF5=ON,OFF enable HDF5 support for import-export tools
+- ALIEN_USE_LIBXML2=ON,OFF enable LIBXML2 support for import-export tool
 - ALIEN_USE_EIGEN3=ON,OFF enable eigen3 support
 - ALIEN_GENERATE_DOCUMENTATION=ON,OFF enable doc generation, default=OFF
 - ALIEN_USE_SYCL=ON,OFF enable SYCL backend support, default=OFF
 - ALIEN_USE_CUDA=ON,OFF enable SYCL backend with CUDA, default=OFF
 - ALIEN_USE_HIP=ON,OFF enable  SYCL backend with HIP default=OFF
 - ALIEN_USE_HIPSYCL=ON,OFF to use HIPSYCL to compile SYCL backend, default=OFF
-- ALIEN_USE_INTELSYCL=ON,OFF to use OneAPI dcpx sycl-2020 to compile SYCL backend, default=OFF
+- ALIEN_USE_INTELSYCL=ON,OFF to use OneAPI icpx compiler for SYCL backend
 
 
 We can mention also other generic CMake options :
