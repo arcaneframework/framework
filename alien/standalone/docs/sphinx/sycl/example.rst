@@ -11,6 +11,87 @@ Introduction
 This tutorial illustrates how to build vectors and matrices, to apply linear algebra operations
 and to solve linear systems with solver supporting the Alien SYCL BackEnd.
 
+Direct Linear System assembly on device SYCL Handlers
+-----------------------------------------------------
+
+.. code-block:: bash
+
+    const Alien::Space s(global_size, "MySpace");
+    Alien::MatrixDistribution mdist(s, s, pm);
+    Alien::VectorDistribution vdist(s, pm);
+    Alien::Matrix A(mdist); // A.setName("A") ;
+    Alien::Vector x(vdist); // x.setName("x") ;
+    Alien::Vector y(vdist); // y.setName("y") ;
+
+    auto local_size = vdist.localSize();
+    auto offset = vdist.offset();
+
+    Alien::SYCLParallelEngine engine;
+    {
+      auto x_acc = Alien::SYCL::VectorAccessorT<Real>(x);
+      engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
+                    {
+                       auto xv = x_acc.view(cgh) ;
+                       cgh.parallel_for(engine.maxNumThreads(),
+                                        [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         {
+                                            auto id = item.get_id(0);
+                                            for (std::size_t index = id; id < local_size; id += item.get_range()[0])
+                                               xv[index] = 1.*index;
+                                         });
+
+                    }) ;
+
+      auto y_acc = Alien::SYCL::VectorAccessorT<Real>(y);
+      engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
+                    {
+                      auto yv = y_acc.view(cgh) ;
+                      auto xcv = x_acc.constView(cgh) ;
+                      cgh.parallel_for(engine.maxNumThreads(),
+                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         {
+                                            auto index = item.get_id(0) ;
+                                            auto id = item.get_id(0);
+                                            for (std::size_t index = id; id < local_size; id += item.get_range()[0])
+                                              yv[index] = 2*xcv[index] ;
+                                         });
+                    }) ;
+
+
+    {
+      Alien::SYCL::MatrixProfiler profiler(A);
+      for (Integer i = 0; i < local_size; ++i) {
+        Integer row = offset + i;
+        profiler.addMatrixEntry(row, row);
+        if (row + 1 < global_size)
+          profiler.addMatrixEntry(row, row + 1);
+        if (row - 1 >= 0)
+          profiler.addMatrixEntry(row, row - 1);
+     }
+    }
+    {
+      Alien::SYCL::ProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
+      engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
+                    {
+                      auto matrix_acc = builder.view(cgh) ;
+                      cgh.parallel_for(engine.maxNumThreads(),
+                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         {
+                                            auto index = item.get_id(0) ;
+                                            auto id = item.get_id(0);
+                                            for (std::size_t index = id; id < local_size; id += item.get_range()[0])
+                                            {
+                                              Integer row = offset + index;
+                                              matrix_acc[matrix_acc.entryIndex(row,row)] = 2.;
+                                              if (row + 1 < global_size)
+                                                matrix_acc[matrix_acc.entryIndex(row, row + 1)] = -1.;
+                                              if (row - 1 >= 0)
+                                                matrix_acc[matrix_acc.entryIndex(row, row - 1)] = -1.;
+                                            }
+                                         });
+                    }) ;
+    }
+
 
 Using SYCL Linear Algebra
 -------------------------

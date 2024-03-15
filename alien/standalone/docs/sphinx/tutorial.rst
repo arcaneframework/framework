@@ -1,5 +1,5 @@
-Tutorial
-========
+Tutorial C++ API
+================
 
 
 Intro
