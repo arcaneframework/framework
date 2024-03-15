@@ -197,8 +197,6 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   bool m_use_thread = false;
   Integer m_num_thread = 0;
 
-  int m_current_ctx_id = 0;
-
   Integer m_output_level = 0;
 
   Integer m_solve_num = 0;
@@ -226,17 +224,17 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   MCGSolverLinearSystem* m_system = nullptr;
 
   MCGInternal::UniqueKey m_A_key;
-  Integer m_A_time_stamp = 0;
+  int64_t m_A_time_stamp = 0;
   bool m_A_update = true;
 
   MCGInternal::UniqueKey m_b_key;
-  Integer m_b_time_stamp = 0;
+  int64_t m_b_time_stamp = 0;
   bool m_b_update = true;
 
   MCGInternal::UniqueKey m_x_key;
 
   MCGInternal::UniqueKey m_x0_key;
-  Integer m_x0_time_stamp = 0;
+  int64_t m_x0_time_stamp = 0;
   bool m_x0_update = true;
 
   std::vector<int> m_edge_weight;
