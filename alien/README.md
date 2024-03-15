@@ -1,4 +1,16 @@
-# Alien
+[//]: <> (Comment: -*- coding: utf-8-with-signature -*-)
+<img src="https://www.cea.fr/PublishingImages/cea.jpg" height="50" align="right" />
+<img src="https://www.ifpenergiesnouvelles.fr/sites/ifpen.fr/files/logo_ifpen_2.jpg" height="50" align="right"/>
+
+Written by CEA/IFPEN and Contributors
+
+(C) Copyright 2000-2023 CEA/IFPEN. All rights reserved.
+
+All content is the property of the respective authors or their employers.
+
+For more information regarding authorship of content, please consult the listed source code repository logs.
+
+## Alien
 
 Alien is a set a tools to handle and solve Linear Systems in applications.
 
@@ -6,11 +18,12 @@ Alien is composed of three main sub-projets:
 
 - standalone : provides the core library
 - plugins : provides plugins of external solver package like hypre, petsc, 
- trilinos, ginkgo
-- ArcaneInterface : provides IFPEN legacy plugins (hypre, petsc, mtl4, trilinos,
- hpddm, ifpsolver, mcgsolver and htssolver) and their adapters to 
- Arcane services and a set of tools to manage the links between Arcane variables
- and mesh entities with algebraic indexes.
+  trilinos, ginkgo
+- ArcaneInterface : provides IFPEN legacy plugins 
+  (hypre, petsc, mtl4, trilinos, hpddm, ifpsolver, mcgsolver and htssolver) 
+  and their adapters to Arcane services and 
+  a set of tools to manage the links between 
+  Arcane variables and mesh entities with algebraic indexes.
 
 
 ## How to use ?
