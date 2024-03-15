@@ -1,14 +1,13 @@
-[//]: <> (Comment: -*- coding: utf-8-with-signature -*-)
-<img src="https://www.cea.fr/PublishingImages/cea.jpg" height="50" align="right" />
-<img src="https://www.ifpenergiesnouvelles.fr/sites/ifpen.fr/files/logo_ifpen_2.jpg" height="50" align="right"/>
+[]
 
 Written by CEA/IFPEN and Contributors
 
-(C) Copyright 2000-2023 CEA/IFPEN. All rights reserved.
+(C) Copyright 2000-2024 CEA/IFPEN. All rights reserved.
 
 All content is the property of the respective authors or their employers.
 
-For more information regarding authorship of content, please consult the listed source code repository logs.
+For more information regarding authorship of content, please consult 
+the listed source code repository logs.
 
 ## Alien
 
@@ -61,13 +60,6 @@ Useful CMake options:
 - ALIEN_USE_INTELSYCL=ON,OFF to use OneAPI icpx compiler for SYCL backend
 
 
-We can mention also other generic CMake options :
-
-- CMAKE_EXE_LINKER_FLAGS="-Wl,--no-as-needed", useful on debian based linux
-  distribution (like ubuntu), as without
-  linker drops libraries that are not explicitly referenced, breaking our plugin
-  interface.
-- CMAKE_VERBOSE_MAKEFILE=ON
 
 ## Requirements
 
@@ -83,32 +75,6 @@ Alien requires a recent build environment:
 - [Arccore][arcane]
 - Google Tests, for unit tests
 
-On Ubuntu-20.04, installing these packages is sufficient for running hypre
-solvers:
-
- ```shell script
-apt-get install build-essential cmake gcc g++ gdb \
-        libhypre-dev \
-        libboost-dev libboost-program-options-dev libgtest-dev libglib2.0-dev
-```
-
-For GoogleTest, one must finish installation by running:
-
-```shell script
-cd $(mktemp -d) && cmake /usr/src/googletest && cmake --build . --target install
-```
-
-## How it works ?
-
-This repository contains the following subdirectories:
-
-- src, the main repository for linear algebra,
-- plugins, with different plugins for Alien, to
-  call [Ginkgo][ginkgo], [hypre][], [PETSc][petsc],
-  or [Trilinos][trilinos] external libraries.
-
-For git developers, Arccore and Arccon dependencies can be built on the fly
-by setting `ALIENDEV_EMBEDDED` to `ON`.
 
 ## Documentation generation
 
