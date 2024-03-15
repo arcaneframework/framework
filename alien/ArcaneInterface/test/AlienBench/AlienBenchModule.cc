@@ -114,6 +114,15 @@ AlienBenchModule::init()
   m_alpha = options()->alpha();
 
   m_use_accelerator = options()->useAccelerator() ;
+  m_with_usm = false ;
+#ifdef ALIEN_USE_SYCL
+  if(m_runner)
+    if(m_runner->executionPolicy()==Accelerator::eExecutionPolicy::CUDA ||
+       m_runner->executionPolicy()==Accelerator::eExecutionPolicy::HIP)
+    {
+        m_with_usm = options()->useUsm() ;
+    }
+#endif
 
   if(options()->linearSolver.size()>0)
   {
@@ -184,18 +193,35 @@ AlienBenchModule::test()
 
 #ifdef ALIEN_USE_SYCL
   if(m_use_accelerator)
-    _testSYCL(pbuild_timer,
-              areaU,
-              cell_cell_connection,
-              all_cell_cell_connection,
-              allUIndex,
-              vectorB,
-              vectorBB,
-              vectorX,
-              coordX,
-              coordY,
-              coordZ,
-              matrixA) ;
+  {
+    if(m_with_usm)
+      _testSYCLWithUSM(pbuild_timer,
+                areaU,
+                cell_cell_connection,
+                all_cell_cell_connection,
+                allUIndex,
+                vectorB,
+                vectorBB,
+                vectorX,
+                coordX,
+                coordY,
+                coordZ,
+                matrixA) ;
+    else
+      _testSYCL(pbuild_timer,
+                areaU,
+                cell_cell_connection,
+                all_cell_cell_connection,
+                allUIndex,
+                vectorB,
+                vectorBB,
+                vectorX,
+                coordX,
+                coordY,
+                coordZ,
+                matrixA) ;
+
+  }
   else
 #endif
     _test(pbuild_timer,

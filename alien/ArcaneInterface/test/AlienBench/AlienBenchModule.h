@@ -69,6 +69,18 @@ class AlienBenchModule : public ArcaneAlienBenchObject
              Alien::Vector& coordZ,
              Alien::Matrix& matrixA);
 #ifdef ALIEN_USE_SYCL
+  void _testSYCLWithUSM( Timer& pbuild_timer,
+                         CellGroup& areaU,
+                         CellCellGroup& cell_cell_connection,
+                         CellCellGroup& all_cell_cell_connection,
+                         Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                         Alien::Vector& vectorB,
+                         Alien::Vector& vectorBB,
+                         Alien::Vector& vectorX,
+                         Alien::Vector& coordX,
+                         Alien::Vector& coordY,
+                         Alien::Vector& coordZ,
+                         Alien::Matrix& matrixA);
   void _testSYCL(Timer& pbuild_timer,
                  CellGroup& areaU,
                  CellCellGroup& cell_cell_connection,
@@ -110,11 +122,12 @@ class AlienBenchModule : public ArcaneAlienBenchObject
   Alien::MatrixDistribution m_mdist;
   Alien::VectorDistribution m_vdist;
 
-  bool m_use_accelerator = false ;
+  bool                           m_use_accelerator       = false ;
+  bool                           m_with_usm              = false ;
 #ifdef ALIEN_USE_SYCL
-  UniqueArray<Int16> m_node_index_in_cells;
-  Arcane::Accelerator::Runner* m_runner = nullptr;
-  Arcane::Accelerator::RunQueue* m_default_queue = nullptr;
+  UniqueArray<Int16>             m_node_index_in_cells;
+  Arcane::Accelerator::Runner*   m_runner                = nullptr;
+  Arcane::Accelerator::RunQueue* m_default_queue         = nullptr;
 
 
   UnstructuredMeshConnectivityView m_connectivity_view;

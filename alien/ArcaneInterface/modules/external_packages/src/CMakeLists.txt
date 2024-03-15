@@ -50,12 +50,20 @@ else ()
     linkLibraries(alien_external_packages alien_strong_options)
 endif()
 
+
 if(TARGET umfpack)
     linkLibraries(alien_external_packages umfpack)
 endif()
 
+if (TARGET Alien::alien_core)
+    linkLibraries(alien_external_packages Alien::alien_core)
+endif()
+
+if (TARGET Alien::alien_semantic_ref)
+    linkLibraries(alien_external_packages Alien::alien_semantic_ref)
+endif()
+
 linkLibraries(alien_external_packages 
-              Alien::alien_core 
               Boost::program_options
               BLAS::BLAS)
 

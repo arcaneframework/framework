@@ -163,6 +163,8 @@
   ! ALIEN FINALIZE
   !
   call ALIEN_finalize()
+  
+  call MPI_Finalize(ierr)
 
 
 end subroutine test
