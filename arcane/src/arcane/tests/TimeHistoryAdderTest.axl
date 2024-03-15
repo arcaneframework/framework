@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<module name="TimeHistoryAdderTest" version="1.0" namespace-name="ArcaneTest">
+  <description>
+  </description>
+
+  <variables>
+    <variable
+        field-name="pressure"
+        name="Pressure"
+        data-type="real"
+        item-kind="cell"
+        dim="0"
+        dump="true"
+        need-sync="true"
+    />
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="init" name="Init" where="init" property="none" />
+    <entry-point method-name="loop" name="Loop" where="compute-loop" property="none" />
+    <entry-point method-name="exit" name="Exit" where="exit" property="none" />
+  </entry-points>
+
+  <options>
+  </options>
+</module>

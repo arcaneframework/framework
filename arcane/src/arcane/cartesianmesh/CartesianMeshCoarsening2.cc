@@ -217,6 +217,12 @@ createCoarseCells()
     m_cartesian_mesh->_internalApi()->addPatchFromExistingChildren(parent_cells.view().localIds());
   }
 
+  // Recalcule les informations de synchronisation
+  // Cela n'est pas nécessaire pour l'AMR car ces informations seront recalculées
+  // lors du raffinement mais comme on ne sais pas si on va faire du raffinement
+  // après il est préférable de calculer ces informations dans tous les cas.
+  mesh->computeSynchronizeInfos();
+
   // Il faut recalculer les nouvelles directions après les modifications
   // et l'ajout de patch.
   m_cartesian_mesh->computeDirections();

@@ -55,9 +55,27 @@ ALIEN_INTERFACE_C_EXPORT int ALIEN_get_solution_values(int system_id,
                               uid_type* row_uids,
                               double* values) ;
 
+ALIEN_INTERFACE_C_EXPORT int ALIEN_create_parameter_system() ;
+
+ALIEN_INTERFACE_C_EXPORT int ALIEN_destroy_parameter_system(int param_system_id) ;
+
+ALIEN_INTERFACE_C_EXPORT void ALIEN_set_parameter_string_value(int param_system_id,
+                                                               const char* key,
+                                                               const char* value) ;
+
+ALIEN_INTERFACE_C_EXPORT void ALIEN_set_parameter_integer_value(int param_system_id,
+                                                                const char* key,
+                                                                int value) ;
+
+ALIEN_INTERFACE_C_EXPORT void ALIEN_set_parameter_double_value(int param_system_id,
+                                                               const char* key,
+                                                               double value) ;
+
 ALIEN_INTERFACE_C_EXPORT int ALIEN_create_solver(MPI_Comm comm, const char* config_file) ;
 
-ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver(int solver_id,int argc, char** argv) ;
+ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver(int solver_id,int argc, const char** argv) ;
+
+ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver_with_parameters(int solver_id,int param_system_id) ;
 
 ALIEN_INTERFACE_C_EXPORT int ALIEN_init_solver_with_configfile(int solver_id,const char* config_file) ;
 

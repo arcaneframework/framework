@@ -1,9 +1,11 @@
-/*
- * alienc.h
- *
- *  Created on: Nov 25, 2020
- *      Author: gratienj
- */
+﻿/* -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+*/
 
 #ifndef MODULES_INTERFACE_C_SRC_ALIEN_F_ALIENC_H_
 #define MODULES_INTERFACE_C_SRC_ALIEN_F_ALIENC_H_
@@ -103,6 +105,46 @@ void F2C(alien_get_solution_values_f)(int* system_id,
                             values) ;
 }
 
+
+int F2C(alien_create_parameter_system_f)()
+{
+  return ALIEN_create_parameter_system() ;
+}
+
+void F2C(alien_destroy_parameter_system_f)(int* param_system_id)
+{
+  ALIEN_destroy_parameter_system(*param_system_id) ;
+}
+
+void F2C(alien_set_parameter_string_value_f)(int* param_system_id,
+                                             const char* key, int* key_length,
+                                             const char* value, int* value_length)
+{
+  char* key_string = (char*) key ;
+  key_string[*key_length] = 0 ;
+  char* value_string = (char*) value ;
+  value_string[*value_length] = 0 ;
+  ALIEN_set_parameter_string_value(*param_system_id,key_string,value_string) ;
+}
+
+void F2C(alien_set_parameter_integer_value_f)(int* param_system_id,
+                                              const char* key, int* key_length,
+                                              int* value)
+{
+  char* key_string = (char*) key ;
+  key_string[*key_length] = 0 ;
+  ALIEN_set_parameter_integer_value(*param_system_id,key_string,*value) ;
+}
+
+void F2C(alien_set_parameter_double_value_f)(int* param_system_id,
+                                              const char* key, int* key_length,
+                                              double* value)
+{
+  char* key_string = (char*) key ;
+  key_string[*key_length] = 0 ;
+  ALIEN_set_parameter_double_value(*param_system_id,key_string,*value) ;
+}
+
 int F2C(alien_create_solver_f)(MPI_Fint* f_comm)
 {
   MPI_Comm comm = MPI_Comm_f2c(*f_comm) ;
@@ -116,6 +158,12 @@ void F2C(alien_init_solver_f)(int* solver_id,
   char* string = (char*) config_file ;
   string[*length] = 0 ;
   ALIEN_init_solver_with_configfile(*solver_id,config_file) ;
+}
+
+void F2C(alien_init_solver_with_parameters_f)(int* solver_id,
+                                              int* param_system_id)
+{
+  ALIEN_init_solver_with_parameters(*solver_id,*param_system_id) ;
 }
 
 void F2C(alien_destroy_solver_f)(int* solver_id)

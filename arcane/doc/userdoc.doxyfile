@@ -954,6 +954,8 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @ARCANESRCROOT@/doc/doc_user/chap_execution \
                          @ARCANESRCROOT@/doc/doc_user/chap_general \
                          @ARCANESRCROOT@/doc/doc_user/chap_getting_started \
+                         @ARCANESRCROOT@/doc/doc_user/chap_io \
+                         @ARCANESRCROOT@/doc/doc_user/chap_io/subchap_timehistory \
                          @ARCANESRCROOT@/doc/doc_user/chap_materials \
                          @ARCANESRCROOT@/doc/doc_user/chap_parallel \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules \
@@ -1100,6 +1102,7 @@ IMAGE_PATH             = @ARCANESRCROOT@/doc/specifs/images \
                          @ARCANESRCROOT@/doc/doc_user/chap_entities/img \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_simple_example/img \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_concret_example/img \
+                         @ARCANESRCROOT@/doc/doc_user/chap_io/subchap_timehistory/img \
                          @ARCANESRCROOT@/doc/doc_user/chap_getting_started/img
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should

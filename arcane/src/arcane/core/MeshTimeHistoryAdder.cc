@@ -24,15 +24,47 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 MeshTimeHistoryAdder::
-MeshTimeHistoryAdder(ITimeHistoryMng* thm, IMesh* mesh)
-: m_thm(thm)
-, m_mesh(mesh)
-{}
+MeshTimeHistoryAdder(ITimeHistoryMng* time_history_mng, const MeshHandle& mesh_handle)
+: m_thm(time_history_mng)
+, m_mesh_handle(mesh_handle)
+{
+  m_thm->_internalApi()->setIOMasterWriteOnly(true);
+}
 
 void MeshTimeHistoryAdder::
 addValue(const TimeHistoryAddValueArg& thp, Real value)
 {
-  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh->name()), value);
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
+}
+
+void MeshTimeHistoryAdder::
+addValue(const TimeHistoryAddValueArg& thp, Int64 value)
+{
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
+}
+
+void MeshTimeHistoryAdder::
+addValue(const TimeHistoryAddValueArg& thp, Int32 value)
+{
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), value);
+}
+
+void MeshTimeHistoryAdder::
+addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values)
+{
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
+}
+
+void MeshTimeHistoryAdder::
+addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values)
+{
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
+}
+
+void MeshTimeHistoryAdder::
+addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values)
+{
+  m_thm->_internalApi()->addValue(TimeHistoryAddValueArgInternal(thp, m_mesh_handle), values);
 }
 
 /*---------------------------------------------------------------------------*/

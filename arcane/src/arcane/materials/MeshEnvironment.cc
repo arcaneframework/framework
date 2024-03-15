@@ -236,35 +236,19 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& 
   else {
     // Calcul l'indice de la première MatCell pour chaque Cell.
     Int32 nb_id = local_ids.size();
-    UniqueArray<Int32> cells_local_index(platform::getDefaultDataAllocator());
-    cells_local_index.resize(nb_id);
-    UniqueArray<Int32> cells_nb_mat(platform::getDefaultDataAllocator());
-    cells_nb_mat.resize(nb_id);
     {
-      auto command = makeCommand(queue);
-      SmallSpan<Int32> cells_nb_mat_view(cells_nb_mat.view());
-      command << RUNCOMMAND_LOOP1(iter, nb_id)
-      {
-        auto [i] = iter();
-        matimpl::ConstituentItemBase env_item = constituent_item_list_view._constituenItemBase(i);
-        cells_nb_mat_view[i] = env_item.nbSubItem();
-      };
-
-      Accelerator::Scanner<Int32> scanner;
-      SmallSpan<Int32> cells_local_index_view(cells_local_index);
-      scanner.exclusiveSum(&queue, cells_nb_mat_view, cells_local_index_view);
-    }
-
-    {
-      auto command = makeCommand(queue);
+      Accelerator::GenericScanner scanner(queue);
       SmallSpan<Int32> cells_index_view(cells_index);
-      SmallSpan<const Int32> cells_local_index_view(cells_local_index);
-      command << RUNCOMMAND_LOOP1(iter, nb_id)
-      {
-        auto [i] = iter();
-        Int32 lid = local_ids[i];
-        cells_index_view[lid] = cells_local_index_view[i];
+
+      auto getter = [=] ARCCORE_HOST_DEVICE(Int32 index) -> Int32 {
+        return constituent_item_list_view._constituenItemBase(index).nbSubItem();
       };
+      auto setter = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 value) {
+        Int32 lid = local_ids[index];
+        cells_index_view[lid] = value;
+      };
+      Accelerator::ScannerSumOperator<Int32> op;
+      scanner.applyWithIndexExclusive(nb_id, 0, getter, setter, op, A_FUNCINFO);
     }
   }
   {
