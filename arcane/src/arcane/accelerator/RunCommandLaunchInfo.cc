@@ -63,7 +63,7 @@ RunCommandLaunchInfo::
 void RunCommandLaunchInfo::
 _begin()
 {
-  RunQueue& queue = m_command._internalQueue();
+  const RunQueue& queue = m_command._internalQueue();
   m_exec_policy = queue.executionPolicy();
   m_queue_stream = queue._internalStream();
   m_runtime = queue._internalRuntime();
@@ -109,7 +109,7 @@ _doEndKernelLaunch()
   m_is_notify_end_kernel_done = true;
   m_command._internalNotifyEndLaunchKernel();
 
-  RunQueue& q = m_command._internalQueue();
+  const RunQueue& q = m_command._internalQueue();
   if (!q.isAsync())
     q.barrier();
 }

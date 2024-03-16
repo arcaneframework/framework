@@ -28,7 +28,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 RunCommand::
-RunCommand(RunQueue& run_queue)
+RunCommand(const RunQueue& run_queue)
 : m_run_queue(run_queue)
 , m_p(run_queue._getCommandImpl())
 {
