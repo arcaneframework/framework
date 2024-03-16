@@ -66,7 +66,12 @@ class ARCANE_CORE_EXPORT ComponentCell
   , m_shared_info(mii.m_shared_info)
   {}
 
-  ComponentCell() = default;
+  ARCCORE_HOST_DEVICE ComponentCell()
+  {
+#ifndef ARCCORE_DEVICE_CODE
+    m_shared_info = ComponentItemSharedInfo::_nullInstance();
+#endif
+  }
 
  public:
 
@@ -78,7 +83,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   //! \internal
   ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const { return m_shared_info->_varIndex(m_constituent_item_index); }
 
-  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase constituentItemBase() const { return { m_shared_info, m_constituent_item_index}; }
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase constituentItemBase() const { return { m_shared_info, m_constituent_item_index }; }
 
   //! Composant associé
   IMeshComponent* component() const { return m_shared_info->_component(m_constituent_item_index); }
@@ -87,10 +92,10 @@ class ARCANE_CORE_EXPORT ComponentCell
   ARCCORE_HOST_DEVICE Int32 componentId() const { return m_shared_info->_componentId(m_constituent_item_index); }
 
   //! Indique s'il s'agit de la maille nulle
-  bool null() const { return m_constituent_item_index.isNull(); }
+  ARCCORE_HOST_DEVICE bool null() const { return m_constituent_item_index.isNull(); }
 
   //! Maille de niveau supérieur dans la hiérarchie
-  ComponentCell superCell() const { return ComponentCell(_superItemBase()); }
+  ARCCORE_HOST_DEVICE ComponentCell superCell() const { return ComponentCell(_superItemBase()); }
 
   //! Niveau hiérarchique de l'entité
   ARCCORE_HOST_DEVICE Int32 level() const { return m_shared_info->m_level; }
@@ -114,6 +119,9 @@ class ARCANE_CORE_EXPORT ComponentCell
    */
   Int64 componentUniqueId() const { return m_shared_info->_componentUniqueId(m_constituent_item_index); }
 
+  //! Liste des sous-constituents de cette entité
+  ARCCORE_HOST_DEVICE inline CellComponentCellEnumerator subItems() const;
+
  protected:
 
   static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] matimpl::ConstituentItemBase item_base,
@@ -129,11 +137,11 @@ class ARCANE_CORE_EXPORT ComponentCell
   }
   static void _badConversion(matimpl::ConstituentItemBase item_base, Int32 level, Int32 expected_level);
 
-  matimpl::ConstituentItemBase _subItemBase(Int32 index) const
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(Int32 index) const
   {
     return m_shared_info->_subItemBase(m_constituent_item_index, index);
   }
-  matimpl::ConstituentItemBase _superItemBase() const
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _superItemBase() const
   {
     return m_shared_info->_superItemBase(m_constituent_item_index);
   }
@@ -145,7 +153,7 @@ class ARCANE_CORE_EXPORT ComponentCell
  protected:
 
   ConstituentItemIndex m_constituent_item_index;
-  ComponentItemSharedInfo* m_shared_info = ComponentItemSharedInfo::_nullInstance();
+  ComponentItemSharedInfo* m_shared_info = nullptr;
 
  private:
 
@@ -158,6 +166,180 @@ class ARCANE_CORE_EXPORT ComponentCell
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Enumérateur sur les constituants d'une maille.
+ */
+class ARCANE_CORE_EXPORT CellComponentCellEnumerator
+{
+  friend class EnumeratorTracer;
+
+ public:
+
+  class Sentinel
+  {};
+  class Iterator
+  {
+    friend class CellComponentCellEnumerator;
+
+   public:
+
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = ComponentCell;
+
+   private:
+
+    ARCCORE_HOST_DEVICE explicit Iterator(CellComponentCellEnumerator enumerator)
+    : m_index(enumerator.m_index)
+    , m_size(enumerator.m_size)
+    , m_first_sub_index(enumerator.m_first_sub_index)
+    , m_sub_constituent_shared_info(enumerator.m_sub_constituent_shared_info)
+    {}
+
+   public:
+
+    ARCCORE_HOST_DEVICE void operator++() { ++m_index; }
+    ARCCORE_HOST_DEVICE ComponentCell operator*() const
+    {
+      ARCANE_CHECK_AT(m_index, m_size);
+      return ComponentCell(_currentSubItemBase());
+    }
+    ARCCORE_HOST_DEVICE operator ComponentItemLocalId() const
+    {
+      return ComponentItemLocalId(_varIndex());
+    }
+    friend ARCCORE_HOST_DEVICE bool operator==(const Iterator& x, const Sentinel&)
+    {
+      return x.m_index == x.m_size;
+    }
+
+   private:
+
+    Int32 m_index = 0;
+    Int32 m_size = 0;
+    Int32 m_first_sub_index = -1;
+    ComponentItemSharedInfo* m_sub_constituent_shared_info = nullptr;
+
+   private:
+
+    ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _currentSubItemBase() const
+    {
+      return m_sub_constituent_shared_info->_item(ConstituentItemIndex(m_first_sub_index + m_index));
+    }
+    ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const
+    {
+      return m_sub_constituent_shared_info->_varIndex(ConstituentItemIndex(m_first_sub_index + m_index));
+    }
+  };
+
+  template <typename ConstituentItemType>
+  class IteratorT : public Iterator
+  {
+   public:
+
+    using value_type = ConstituentItemType;
+    friend class CellComponentCellEnumeratorT<ConstituentItemType>;
+
+   private:
+
+    ARCCORE_HOST_DEVICE explicit IteratorT(CellComponentCellEnumeratorT<ConstituentItemType> enumerator)
+    : Iterator(enumerator)
+    {}
+
+   public:
+
+    ARCCORE_HOST_DEVICE ConstituentItemType operator*() const
+    {
+      ARCANE_CHECK_AT(m_index, m_size);
+      return ConstituentItemType(_currentSubItemBase());
+    }
+  };
+
+ public:
+
+  ARCCORE_HOST_DEVICE explicit CellComponentCellEnumerator(ComponentCell super_item)
+  : m_size(super_item.nbSubItem())
+  , m_first_sub_index(super_item._firstSubConstituentLocalId().localId())
+  , m_sub_constituent_shared_info(super_item.m_shared_info->m_sub_component_item_shared_info)
+  {
+  }
+
+ public:
+
+  ARCCORE_HOST_DEVICE void operator++() { ++m_index; }
+  ARCCORE_HOST_DEVICE bool hasNext() const { return m_index < m_size; }
+
+  ARCCORE_HOST_DEVICE ComponentCell operator*() const
+  {
+    ARCANE_CHECK_AT(m_index, m_size);
+    return ComponentCell(_currentSubItemBase());
+  }
+  ARCCORE_HOST_DEVICE MatVarIndex _varIndex() const
+  {
+    return m_sub_constituent_shared_info->_varIndex(ConstituentItemIndex(m_first_sub_index + m_index));
+  }
+  ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
+  ARCCORE_HOST_DEVICE operator ComponentItemLocalId() const
+  {
+    return ComponentItemLocalId(_varIndex());
+  }
+  ARCCORE_HOST_DEVICE Iterator begin() const { return Iterator(*this); }
+  ARCCORE_HOST_DEVICE Sentinel end() const { return {}; }
+
+ protected:
+
+  Int32 m_index = 0;
+  Int32 m_size = 0;
+  Int32 m_first_sub_index = -1;
+  ComponentItemSharedInfo* m_sub_constituent_shared_info = nullptr;
+
+ protected:
+
+  ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _currentSubItemBase() const
+  {
+    return m_sub_constituent_shared_info->_item(ConstituentItemIndex(m_first_sub_index + m_index));
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Enumérateur typés sur les mailles composants d'une maille.
+ */
+template <typename ComponentCellType> class CellComponentCellEnumeratorT
+: public CellComponentCellEnumerator
+{
+ public:
+
+  using IteratorType = CellComponentCellEnumerator::IteratorT<ComponentCellType>;
+
+ public:
+
+  explicit ARCCORE_HOST_DEVICE CellComponentCellEnumeratorT(ComponentCell super_item)
+  : CellComponentCellEnumerator(super_item)
+  {}
+
+ public:
+
+  ARCCORE_HOST_DEVICE ComponentCellType operator*() const
+  {
+    ARCANE_CHECK_AT(m_index, m_size);
+    return ComponentCellType(_currentSubItemBase());
+  }
+  ARCCORE_HOST_DEVICE IteratorType begin() const { return IteratorType(*this); }
+  ARCCORE_HOST_DEVICE Sentinel end() const { return {}; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellComponentCellEnumerator ComponentCell::
+subItems() const
+{
+  return CellComponentCellEnumerator(*this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::Materials
 
@@ -165,4 +347,3 @@ class ARCANE_CORE_EXPORT ComponentCell
 /*---------------------------------------------------------------------------*/
 
 #endif
-
