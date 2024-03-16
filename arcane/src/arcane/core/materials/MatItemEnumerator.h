@@ -349,29 +349,6 @@ class ARCANE_CORE_EXPORT  EnvPartCellEnumerator
   }
 };
 
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Enumérateur typés sur les mailles composants d'une maille.
- */
-template <typename ComponentCellType> class CellComponentCellEnumeratorT
-: public CellComponentCellEnumerator
-{
- public:
-
-  explicit ARCCORE_HOST_DEVICE CellComponentCellEnumeratorT(ComponentCell super_item)
-  : CellComponentCellEnumerator(super_item){}
-
- public:
-
-  ARCCORE_HOST_DEVICE ComponentCellType operator*() const
-  {
-    ARCANE_CHECK_AT(m_index,m_size);
-    return ComponentCellType(_currentSubItemBase());
-  }
-};
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!

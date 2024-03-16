@@ -189,14 +189,14 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     m_global_item_local_id_data[id.localId()] = global_item_lid.localId();
   }
-  matimpl::ConstituentItemBase _superItemBase(ConstituentItemIndex id) const;
+  ARCCORE_HOST_DEVICE inline matimpl::ConstituentItemBase _superItemBase(ConstituentItemIndex id) const;
 
   ARCCORE_HOST_DEVICE void _setSuperItem(ConstituentItemIndex id, ConstituentItemIndex super_id)
   {
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     m_super_component_item_local_id_data[id.localId()] = super_id;
   }
-  inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(ConstituentItemIndex id,Int32 sub_index) const;
+  inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(ConstituentItemIndex id, Int32 sub_index) const;
 
   ARCCORE_HOST_DEVICE MatVarIndex _varIndex(ConstituentItemIndex id)
   {
@@ -364,7 +364,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
   }
 
   //! Composant supérieur (0 si aucun)
-  inline matimpl::ConstituentItemBase _superItemBase() const;
+  ARCCORE_HOST_DEVICE inline matimpl::ConstituentItemBase _superItemBase() const;
 
   ARCCORE_HOST_DEVICE inline void _setSuperAndGlobalItem(ConstituentItemIndex cii, ItemLocalId ii)
   {
@@ -428,7 +428,7 @@ _item(ConstituentItemIndex id)
   return matimpl::ConstituentItemBase(this,id);
 }
 
-inline matimpl::ConstituentItemBase ComponentItemSharedInfo::
+ARCCORE_HOST_DEVICE inline matimpl::ConstituentItemBase ComponentItemSharedInfo::
 _superItemBase(ConstituentItemIndex id) const
 {
   ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
@@ -447,7 +447,7 @@ _subItemBase(ConstituentItemIndex id,Int32 sub_index) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline matimpl::ConstituentItemBase matimpl::ConstituentItemBase::
+inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase matimpl::ConstituentItemBase::
 _superItemBase() const
 {
   return m_shared_info->_superItemBase(m_constituent_item_index);
