@@ -42,6 +42,7 @@
 #include "arcane/accelerator/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/Scan.h"
+#include "arcane/accelerator/SpanViews.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -238,7 +239,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& 
     Int32 nb_id = local_ids.size();
     {
       Accelerator::GenericScanner scanner(queue);
-      SmallSpan<Int32> cells_index_view(cells_index);
+      auto cells_index_view = viewOut(queue, cells_index);
 
       auto getter = [=] ARCCORE_HOST_DEVICE(Int32 index) -> Int32 {
         return constituent_item_list_view._constituenItemBase(index).nbSubItem();
@@ -252,12 +253,12 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& 
     }
   }
   {
-    SmallSpan<ConstituentItemIndex> cells_env_view(cells_env);
-    SmallSpan<const Int32> cells_index_view(cells_index);
-    SmallSpan<Int32> cells_pos_view(cells_pos);
+    auto command = makeCommand(queue);
+    auto cells_env_view = viewOut(command, cells_env);
+    auto cells_index_view = viewIn(command, cells_index);
+    auto cells_pos_view = viewOut(command, cells_pos);
     Int32 nb_id = local_ids.size();
 
-    auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_id)
     {
       auto [z] = iter();
@@ -284,15 +285,15 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& 
 
       mat->resizeItemsInternal(var_indexer->nbItem());
 
-      SmallSpan<const MatVarIndex> matvar_indexes = var_indexer->matvarIndexes();
-      SmallSpan<const Int32> local_ids = var_indexer->localIds();
+      auto command = makeCommand(queue);
+      auto matvar_indexes = viewIn(command, var_indexer->matvarIndexes());
+      auto local_ids = viewIn(command, var_indexer->localIds());
       SmallSpan<Int32> cells_pos_view(cells_pos);
-      SmallSpan<const ConstituentItemIndex> cells_env_view(cells_env);
+      auto cells_env_view = viewIn(command, cells_env);
       ComponentItemSharedInfo* mat_shared_info = item_internal_data->matSharedInfo();
       ComponentItemInternalRange mat_item_internal_range(item_internal_data->matItemsInternalRange(env_id));
       SmallSpan<ConstituentItemIndex> mat_id_list = mat->componentData()->m_constituent_local_id_list.mutableLocalIds();
       const Int32 nb_id = local_ids.size();
-      auto command = makeCommand(queue);
       command << RUNCOMMAND_LOOP1(iter, nb_id)
       {
         auto [z] = iter();

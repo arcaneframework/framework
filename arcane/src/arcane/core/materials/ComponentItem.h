@@ -332,7 +332,7 @@ template <typename ComponentCellType> class CellComponentCellEnumeratorT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CellComponentCellEnumerator ComponentCell::
+ARCCORE_HOST_DEVICE CellComponentCellEnumerator ComponentCell::
 subItems() const
 {
   return CellComponentCellEnumerator(*this);

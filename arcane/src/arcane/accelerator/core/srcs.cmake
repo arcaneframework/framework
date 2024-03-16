@@ -31,6 +31,7 @@ set( ARCANE_SOURCES
   RunQueueImpl.h
   RunQueueImpl.cc
   RunQueueRuntime.cc
+  ViewBuildInfo.h
   internal/IRunnerRuntime.h
   internal/AcceleratorCoreGlobalInternal.h
   internal/MemoryTracer.h

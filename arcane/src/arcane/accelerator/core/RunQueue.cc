@@ -100,7 +100,7 @@ RunQueue::
 /*---------------------------------------------------------------------------*/
 
 void RunQueue::
-barrier()
+barrier() const
 {
   m_p->_internalBarrier();
 }
@@ -136,7 +136,7 @@ _internalStream() const
 /*---------------------------------------------------------------------------*/
 
 impl::RunCommandImpl* RunQueue::
-_getCommandImpl()
+_getCommandImpl() const
 {
   return m_p->_internalCreateOrGetRunCommandImpl();
 }
@@ -154,7 +154,7 @@ platformStream()
 /*---------------------------------------------------------------------------*/
 
 void RunQueue::
-copyMemory(const MemoryCopyArgs& args)
+copyMemory(const MemoryCopyArgs& args) const
 {
   _internalStream()->copyMemory(args);
 }
@@ -163,7 +163,7 @@ copyMemory(const MemoryCopyArgs& args)
 /*---------------------------------------------------------------------------*/
 
 void RunQueue::
-prefetchMemory(const MemoryPrefetchArgs& args)
+prefetchMemory(const MemoryPrefetchArgs& args) const
 {
   _internalStream()->prefetchMemory(args);
 }

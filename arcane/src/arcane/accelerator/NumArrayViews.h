@@ -50,7 +50,7 @@ class NumArrayViewBase
 
   // Pour l'instant n'utilise pas encore \a command
   // mais il ne faut pas le supprimer
-  explicit NumArrayViewBase(RunCommand&)
+  explicit NumArrayViewBase(const ViewBuildInfo&)
   {
   }
 
@@ -76,7 +76,7 @@ class NumArrayView
 
  public:
 
-  NumArrayView(RunCommand& command, SpanType v)
+  NumArrayView(const ViewBuildInfo& command, SpanType v)
   : NumArrayViewBase(command)
   , m_values(v)
   {}
@@ -162,7 +162,7 @@ class NumArrayView
  * \brief Vue en écriture.
  */
 template <typename DataType, typename Extents, typename LayoutPolicy> auto
-viewOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& var)
+viewOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy>& var)
 {
   using Accessor = DataViewSetter<DataType>;
   return NumArrayView<Accessor, Extents, LayoutPolicy>(command, var.span());
@@ -175,7 +175,7 @@ viewOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& var)
  * \brief Vue en lecture/écriture.
  */
 template <typename DataType, typename Extents, typename LayoutPolicy> auto
-viewInOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& v)
+viewInOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy>& v)
 {
   using Accessor = DataViewGetterSetter<DataType>;
   return NumArrayView<Accessor, Extents, LayoutPolicy>(command, v.span());
@@ -187,7 +187,7 @@ viewInOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& v)
  * \brief Vue en lecture.
  */
 template <typename DataType, typename Extents, typename LayoutType> auto
-viewIn(RunCommand& command, const NumArray<DataType, Extents, LayoutType>& v)
+viewIn(const ViewBuildInfo& command, const NumArray<DataType, Extents, LayoutType>& v)
 {
   using Accessor = DataViewGetter<DataType>;
   return NumArrayView<Accessor, Extents, LayoutType>(command, v.constSpan());

@@ -97,12 +97,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   //! Indique si la file d'exécution est asynchrone.
   bool isAsync() const;
   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
-  void barrier();
+  void barrier() const;
 
   //! Copie des informations entre deux zones mémoires
-  void copyMemory(const MemoryCopyArgs& args);
+  void copyMemory(const MemoryCopyArgs& args) const;
   //! Effectue un préfetching de la mémoire
-  void prefetchMemory(const MemoryPrefetchArgs& args);
+  void prefetchMemory(const MemoryPrefetchArgs& args) const;
 
   //! Enregistre l'état de l'instance dans \a event.
   void recordEvent(RunQueueEvent& event);
@@ -130,7 +130,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
-  impl::RunCommandImpl* _getCommandImpl();
+  impl::RunCommandImpl* _getCommandImpl() const;
 
   // Pour VariableViewBase
   friend class VariableViewBase;
@@ -150,7 +150,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
  * \brief Créé une commande associée à la file \a run_queue.
  */
 inline RunCommand
-makeCommand(RunQueue& run_queue)
+makeCommand(const RunQueue& run_queue)
 {
   return RunCommand(run_queue);
 }
@@ -159,7 +159,7 @@ makeCommand(RunQueue& run_queue)
  * \brief Créé une commande associée à la file \a run_queue.
  */
 inline RunCommand
-makeCommand(RunQueue* run_queue)
+makeCommand(const RunQueue* run_queue)
 {
   ARCANE_CHECK_POINTER(run_queue);
   return RunCommand(*run_queue);

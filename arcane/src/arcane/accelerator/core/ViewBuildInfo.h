@@ -5,28 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ViewsCommon.h                                               (C) 2000-2024 */
+/* ViewBuildInfo.h                                             (C) 2000-2024 */
 /*                                                                           */
-/* Types de base pour la gestion des vues pour les accélérateurs.            */
+/* Informations pour construire une vue pour les données sur accélérateur.   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_VIEWSCOMMON_H
-#define ARCANE_ACCELERATOR_VIEWSCOMMON_H
+#ifndef ARCANE_ACCELERATOR_CORE_VIEWBUILDINFO_H
+#define ARCANE_ACCELERATOR_CORE_VIEWBUILDINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
-#include "arcane/core/DataView.h"
-#include "arcane/accelerator/core/ViewBuildInfo.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \file ViewsCommon.h
- *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs.
- */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,17 +24,46 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations pour construire une vue pour les données sur accélérateur.
+ *
+ * Les instances de cette classes sont temporaires et ne doivent pas être
+ * conservées au dela de la durée de vie de la RunCommand ou RunQueue utilisées
+ * pour leur création.
+ */
+class ARCANE_ACCELERATOR_CORE_EXPORT ViewBuildInfo
+{
+ public:
 
-template <typename DataType> using DataViewSetter = Arcane::DataViewSetter<DataType>;
-template <typename DataType> using DataViewGetterSetter = Arcane::DataViewGetterSetter<DataType>;
-template <typename DataType> using DataViewGetter = Arcane::DataViewGetter<DataType>;
+  //! Créé instance associée a la file \a queue.
+  ViewBuildInfo(const RunQueue& queue)
+  : m_queue(queue)
+  {}
+  //! Créé instance associée a la file \a queue.
+  ViewBuildInfo(const RunQueue* queue)
+  : m_queue(*queue)
+  {}
+  //! Créé instance associée a la commande \a command.
+  ViewBuildInfo(RunCommand& command);
+
+ public:
+
+  const RunQueue& queue() const { return m_queue; }
+
+ private:
+
+  const RunQueue& m_queue;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+#endif  
