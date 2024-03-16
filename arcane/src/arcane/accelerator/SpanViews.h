@@ -23,7 +23,8 @@
  * \file SpanViews.h
  *
  * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs de la classe 'NumArray'.
+ * les vues pour les accélérateurs des classes Array, Span, SmallSpan,
+ * ArrayView et ConstArrayView.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,6 +70,7 @@ class SpanView
   using DataType = typename Accessor::ValueType;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
   using SpanType = Span<DataType>;
+  using size_type = typename SpanType::size_type;
 
  public:
 
@@ -77,15 +79,55 @@ class SpanView
   , m_values(v)
   {}
 
-  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i) const
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(size_type i) const
   {
     return Accessor::build(m_values.ptrAt(i));
   }
 
-  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator[](Int32 i) const
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator[](size_type i) const
   {
     return Accessor::build(m_values.ptrAt(i));
   }
+  constexpr ARCCORE_HOST_DEVICE size_type size() const { return m_values.size(); }
+
+ private:
+
+  SpanType m_values;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture, écriture ou lecture/écriture sur un 'SmallSpan'.
+ */
+template <typename Accessor>
+class SmallSpanView
+: public SpanViewBase
+{
+ public:
+
+  using DataType = typename Accessor::ValueType;
+  using AccessorReturnType = typename Accessor::AccessorReturnType;
+  using SpanType = SmallSpan<DataType>;
+  using size_type = typename SpanType::size_type;
+
+ public:
+
+  SmallSpanView(const ViewBuildInfo& command, SpanType v)
+  : SpanViewBase(command)
+  , m_values(v)
+  {}
+
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(size_type i) const
+  {
+    return Accessor::build(m_values.ptrAt(i));
+  }
+
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator[](size_type i) const
+  {
+    return Accessor::build(m_values.ptrAt(i));
+  }
+  constexpr ARCCORE_HOST_DEVICE size_type size() const { return m_values.size(); }
 
  private:
 
@@ -98,7 +140,7 @@ class SpanView
  * \brief Vue en écriture.
  */
 template <typename DataType> auto
-viewOut(const ViewBuildInfo& command, Span<DataType>& var)
+viewOut(const ViewBuildInfo& command, Span<DataType> var)
 {
   using Accessor = DataViewSetter<DataType>;
   return SpanView<Accessor>(command, var);
@@ -112,8 +154,29 @@ viewOut(const ViewBuildInfo& command, Span<DataType>& var)
 template <typename DataType> auto
 viewOut(const ViewBuildInfo& command, Array<DataType>& var)
 {
+  return viewOut(command, var.span());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en écriture.
+ */
+template <typename DataType> auto
+viewOut(const ViewBuildInfo& command, SmallSpan<DataType> var)
+{
   using Accessor = DataViewSetter<DataType>;
-  return SpanView<Accessor>(command, var.span());
+  return SmallSpanView<Accessor>(command, var);
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en écriture.
+ */
+template <typename DataType> auto
+viewOut(const ViewBuildInfo& command, ArrayView<DataType> var)
+{
+  return viewOut(command, SmallSpan<DataType>(var));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -122,7 +185,7 @@ viewOut(const ViewBuildInfo& command, Array<DataType>& var)
  * \brief Vue en lecture/écriture.
  */
 template <typename DataType> auto
-viewInOut(const ViewBuildInfo& command, Span<DataType>& var)
+viewInOut(const ViewBuildInfo& command, Span<DataType> var)
 {
   using Accessor = DataViewGetterSetter<DataType>;
   return SpanView<Accessor>(command, var);
@@ -136,8 +199,30 @@ viewInOut(const ViewBuildInfo& command, Span<DataType>& var)
 template <typename DataType> auto
 viewInOut(const ViewBuildInfo& command, Array<DataType>& var)
 {
+  return viewInOut(command, var.span());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture/écriture.
+ */
+template <typename DataType> auto
+viewInOut(const ViewBuildInfo& command, SmallSpan<DataType> var)
+{
   using Accessor = DataViewGetterSetter<DataType>;
-  return SpanView<Accessor>(command, var.span());
+  return SmallSpanView<Accessor>(command, var);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture/écriture.
+ */
+template <typename DataType> auto
+viewInOut(const ViewBuildInfo& command, ArrayView<DataType> var)
+{
+  return viewInOut(command, SmallSpan<DataType>(var));
 }
 
 /*----------------------------------------------1-----------------------------*/
@@ -146,7 +231,7 @@ viewInOut(const ViewBuildInfo& command, Array<DataType>& var)
  * \brief Vue en lecture.
  */
 template <typename DataType> auto
-viewIn(const ViewBuildInfo& command, const Span<DataType>& var)
+viewIn(const ViewBuildInfo& command, Span<DataType> var)
 {
   using Accessor = DataViewGetter<DataType>;
   return SpanView<Accessor>(command, var);
@@ -160,8 +245,29 @@ viewIn(const ViewBuildInfo& command, const Span<DataType>& var)
 template <typename DataType> auto
 viewIn(const ViewBuildInfo& command, const Array<DataType>& var)
 {
+  return viewIn(command, var.span());
+}
+
+/*----------------------------------------------1-----------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture.
+ */
+template <typename DataType> auto
+viewIn(const ViewBuildInfo& command, SmallSpan<DataType> var)
+{
   using Accessor = DataViewGetter<DataType>;
-  return SpanView<Accessor>(command, var.span());
+  return SmallSpanView<Accessor>(command, var);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! \brief Vue en lecture
+template <typename DataType> auto
+viewIn(const ViewBuildInfo& command, ConstArrayView<DataType> var)
+{
+  return viewIn(command, SmallSpan<const DataType>(var));
 }
 
 /*---------------------------------------------------------------------------*/
