@@ -147,6 +147,18 @@ class IArrayMeshMaterialVariable;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class CellComponentCellEnumerator;
+template <typename ConstituentCellType> class CellComponentCellEnumeratorT;
+
+//! Enumérateur sur les mailles matériaux d'une maille.
+using CellMatCellEnumerator = CellComponentCellEnumeratorT<MatCell>;
+
+//! Enumérateur sur les mailles milieux d'une maille.
+using CellEnvCellEnumerator = CellComponentCellEnumeratorT<EnvCell>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 static const Int32 LEVEL_MATERIAL = 1;
 static const Int32 LEVEL_ENVIRONMENT = 2;
 static const Int32 LEVEL_ALLENVIRONMENT = 0;
