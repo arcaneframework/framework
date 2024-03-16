@@ -87,14 +87,14 @@ MatCell MeshMaterial::
 findMatCell(AllEnvCell c) const
 {
   Int32 mat_id = m_data.componentId();
-  ENUMERATE_CELL_ENVCELL (ienvcell, c) {
-    ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
-      MatCell mc = *imatcell;
+  for( EnvCell env_cell : c.subEnvItems() )  {
+    for( MatCell mc : env_cell.subMatItems())  {
       Int32 mid = mc.materialId();
       if (mid == mat_id)
         return mc;
     }
   }
+
   return MatCell();
 }
 
