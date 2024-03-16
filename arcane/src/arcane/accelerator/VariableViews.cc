@@ -36,9 +36,9 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 VariableViewBase::
-VariableViewBase(RunCommand& command, IVariable* var)
+VariableViewBase(const ViewBuildInfo& vbi, IVariable* var)
 {
-  const RunQueue& q = command.m_run_queue;
+  const RunQueue& q = vbi.queue();
   if (q._isAutoPrefetchCommand())
     VariableUtils::prefetchVariableAsync(var, &q);
 }

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorCore.cc                                          (C) 2000-2023 */
+/* AcceleratorCore.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,8 @@
 
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
+#include "arcane/accelerator/core/ViewBuildInfo.h"
+#include "arcane/accelerator/core/RunCommand.h"
 
 #include <iostream>
 
@@ -209,8 +211,8 @@ getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribu
   if (attr.isValid()) {
     if (isAcceleratorPolicy(policy))
       return attr.devicePointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
-    else{
-      if (attr.memoryType()==ePointerMemoryType::Unregistered)
+    else {
+      if (attr.memoryType() == ePointerMemoryType::Unregistered)
         return ePointerAccessibility::Yes;
       return attr.hostPointer() ? ePointerAccessibility::Yes : ePointerAccessibility::No;
     }
@@ -259,12 +261,22 @@ arcaneCheckPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
 /*---------------------------------------------------------------------------*/
 
 std::ostream&
-operator<<(std::ostream& o,const PointerAttribute& a)
+operator<<(std::ostream& o, const PointerAttribute& a)
 {
   o << "(mem_type=" << a.memoryType() << ", ptr=" << a.originalPointer()
     << ", host_ptr=" << a.hostPointer()
     << ", device_ptr=" << a.devicePointer() << " device=" << a.device() << ")";
-  return o; 
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Créé instance associée a la commande \a command.
+ViewBuildInfo::
+ViewBuildInfo(RunCommand& command)
+: m_queue(command._internalQueue())
+{
 }
 
 /*---------------------------------------------------------------------------*/

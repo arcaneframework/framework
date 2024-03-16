@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SpanViews.h                                                 (C) 2000-2023 */
+/* SpanViews.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des vues pour les 'Span' pour les accélérateurs.                  */
 /*---------------------------------------------------------------------------*/
@@ -48,7 +48,7 @@ class SpanViewBase
 
   // Pour l'instant n'utilise pas encore \a command
   // mais il ne faut pas le supprimer
-  explicit SpanViewBase(RunCommand&)
+  explicit SpanViewBase(const ViewBuildInfo&)
   {
   }
 
@@ -72,7 +72,7 @@ class SpanView
 
  public:
 
-  SpanView(RunCommand& command, SpanType v)
+  SpanView(const ViewBuildInfo& command, SpanType v)
   : SpanViewBase(command)
   , m_values(v)
   {}
@@ -98,7 +98,7 @@ class SpanView
  * \brief Vue en écriture.
  */
 template <typename DataType> auto
-viewOut(RunCommand& command, Span<DataType>& var)
+viewOut(const ViewBuildInfo& command, Span<DataType>& var)
 {
   using Accessor = DataViewSetter<DataType>;
   return SpanView<Accessor>(command, var);
@@ -110,7 +110,7 @@ viewOut(RunCommand& command, Span<DataType>& var)
  * \brief Vue en écriture.
  */
 template <typename DataType> auto
-viewOut(RunCommand& command, Array<DataType>& var)
+viewOut(const ViewBuildInfo& command, Array<DataType>& var)
 {
   using Accessor = DataViewSetter<DataType>;
   return SpanView<Accessor>(command, var.span());
@@ -122,7 +122,7 @@ viewOut(RunCommand& command, Array<DataType>& var)
  * \brief Vue en lecture/écriture.
  */
 template <typename DataType> auto
-viewInOut(RunCommand& command, Span<DataType>& var)
+viewInOut(const ViewBuildInfo& command, Span<DataType>& var)
 {
   using Accessor = DataViewGetterSetter<DataType>;
   return SpanView<Accessor>(command, var);
@@ -134,7 +134,7 @@ viewInOut(RunCommand& command, Span<DataType>& var)
  * \brief Vue en lecture/écriture.
  */
 template <typename DataType> auto
-viewInOut(RunCommand& command, Array<DataType>& var)
+viewInOut(const ViewBuildInfo& command, Array<DataType>& var)
 {
   using Accessor = DataViewGetterSetter<DataType>;
   return SpanView<Accessor>(command, var.span());
@@ -146,7 +146,7 @@ viewInOut(RunCommand& command, Array<DataType>& var)
  * \brief Vue en lecture.
  */
 template <typename DataType> auto
-viewIn(RunCommand& command, const Span<DataType>& var)
+viewIn(const ViewBuildInfo& command, const Span<DataType>& var)
 {
   using Accessor = DataViewGetter<DataType>;
   return SpanView<Accessor>(command, var);
@@ -158,7 +158,7 @@ viewIn(RunCommand& command, const Span<DataType>& var)
  * \brief Vue en lecture.
  */
 template <typename DataType> auto
-viewIn(RunCommand& command, const Array<DataType>& var)
+viewIn(const ViewBuildInfo& command, const Array<DataType>& var)
 {
   using Accessor = DataViewGetter<DataType>;
   return SpanView<Accessor>(command, var.span());
