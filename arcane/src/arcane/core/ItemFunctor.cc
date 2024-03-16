@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFunctor.cc                                              (C) 2000-2023 */
+/* ItemFunctor.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Fonctor sur les entités.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemFunctor.h"
+#include "arcane/core/ItemFunctor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,12 +47,14 @@ AbstractItemRangeFunctor(ItemVectorView items_view,Integer grain_size)
 /*---------------------------------------------------------------------------*/
 
 ItemVectorView AbstractItemRangeFunctor::
-_view(Integer begin_block,Integer nb_block) const
+_view(Integer begin_block, Integer nb_block, Int32* true_begin) const
 {
   // Converti (begin_block,nb_block) en (begin,size) correspondant à m_items.
   Integer begin = begin_block * m_block_size;
   Integer nb_item = m_items.size();
   Integer size = math::min(nb_block * m_block_size,nb_item-begin);
+  if (true_begin)
+    *true_begin = begin;
   return m_items.subView(begin,size);
 }
 
