@@ -16,6 +16,7 @@
 
 #include "arcane/utils/MemoryRessource.h"
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arccore/collections/MemoryAllocationArgs.h"
 
@@ -100,6 +101,29 @@ checkResizeArrayWithCapacity(Array<DataType>& array, Int64 new_size, bool force_
     return true;
   }
   return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Copie de \a source vers \a destination en utilisant la file \a queue.
+extern "C++" ARCANE_UTILS_EXPORT void
+copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue = nullptr);
+
+//! Copie de \a source vers \a destination en utilisant la file \a queue.
+template <typename DataType> inline void
+copy(Span<DataType> destination, Span<const DataType> source, const RunQueue* queue = nullptr)
+{
+  ConstMemoryView input(asBytes(source));
+  MutableMemoryView output(asWritableBytes(destination));
+  copy(output, input, queue);
+}
+
+//! Copie de \a source vers \a destination en utilisant la file \a queue.
+template <typename DataType> inline void
+copy(SmallSpan<DataType> destination, SmallSpan<const DataType> source, const RunQueue* queue = nullptr)
+{
+  copy(Span<DataType>(destination), Span<const DataType>(source), queue);
 }
 
 /*---------------------------------------------------------------------------*/

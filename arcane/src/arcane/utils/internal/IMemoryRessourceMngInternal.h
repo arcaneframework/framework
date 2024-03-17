@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryRessourceMngInternal.h                               (C) 2000-2023 */
+/* IMemoryRessourceMngInternal.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Partie interne à Arcane de 'IMemoryRessourceMng'.                         */
 /*---------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ class ARCANE_UTILS_EXPORT IMemoryRessourceMngInternal
  public:
 
   virtual void copy(ConstMemoryView from, eMemoryRessource from_mem,
-                    MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue) = 0;
+                    MutableMemoryView to, eMemoryRessource to_mem, const RunQueue* queue) = 0;
 
  public:
 

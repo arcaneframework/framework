@@ -41,7 +41,8 @@ class ARCANE_UTILS_EXPORT IMemoryCopier
    * \a queue peut-être nul.
    */
   virtual void copy(ConstMemoryView from, eMemoryRessource from_mem,
-                    MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue) = 0;
+                    MutableMemoryView to, eMemoryRessource to_mem,
+                    const RunQueue* queue) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
