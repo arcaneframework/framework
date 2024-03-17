@@ -251,8 +251,9 @@ class EnvAndGlobalCellRunCommand
 
    public:
 
-    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid)
+    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid, Int32 index)
     : m_internal_data{ mvi, cid }
+    , m_index(index)
     {
     }
 
@@ -274,15 +275,19 @@ class EnvAndGlobalCellRunCommand
       return { m_internal_data.m_mvi, m_internal_data.m_cid };
     }
 
-    ///! Accesseur sur la partie MatVarIndex
-    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() { return m_internal_data.m_mvi; };
+    //! Accesseur sur la partie MatVarIndex
+    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() const { return m_internal_data.m_mvi; };
 
-    ///! Accesseur sur la partie cell local id
-    ARCCORE_HOST_DEVICE CellLocalId globalCellId() { return m_internal_data.m_cid; }
+    //! Accesseur sur la partie cell local id
+    ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
+
+    //! Index de l'itération courante
+    ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
 
    private:
 
     Data m_internal_data;
+    Int32 m_index = -1;
   };
 
   /*!
@@ -314,7 +319,7 @@ class EnvAndGlobalCellRunCommand
     //! Accesseur pour le i-ème élément de la liste
     constexpr ARCCORE_HOST_DEVICE Accessor operator[](Int32 i) const
     {
-      return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]) };
+      return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]), i };
     }
   };
 
@@ -369,8 +374,9 @@ class MatAndGlobalCellRunCommand
 
    public:
 
-    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid)
+    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid, Int32 index)
     : m_internal_data{ mvi, cid }
+    , m_index(index)
     {
     }
 
@@ -393,14 +399,18 @@ class MatAndGlobalCellRunCommand
     }
 
     ///! Accesseur sur la partie MatVarIndex
-    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() { return m_internal_data.m_mvi; };
+    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() const { return m_internal_data.m_mvi; };
 
     ///! Accesseur sur la partie cell local id
-    ARCCORE_HOST_DEVICE CellLocalId globalCellId() { return m_internal_data.m_cid; }
+    ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
+
+    //! Index de l'itération courante
+    ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
 
    private:
 
     Data m_internal_data;
+    Int32 m_index = -1;
   };
 
   /*!
@@ -432,7 +442,7 @@ class MatAndGlobalCellRunCommand
     //! Accesseur pour le i-ème élément de la liste
     constexpr ARCCORE_HOST_DEVICE Accessor operator[](Int32 i) const
     {
-      return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]) };
+      return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]), i };
     }
   };
 
