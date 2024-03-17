@@ -41,7 +41,7 @@ namespace Arcane::Accelerator::impl
  */
 class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 {
-  template <typename DataType, typename FlagType>
+  template <typename DataType, typename FlagType, typename OutputDataType>
   friend class GenericFilteringFlag;
   friend class GenericFilteringIf;
 
@@ -71,12 +71,12 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
  * \a DataType est le type de donnée.
  * \a FlagType est le type du tableau de filtre.
  */
-template <typename DataType, typename FlagType>
+template <typename DataType, typename FlagType, typename OutputDataType>
 class GenericFilteringFlag
 {
  public:
 
-  void apply(GenericFilteringBase& s, SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
+  void apply(GenericFilteringBase& s, SmallSpan<const DataType> input, SmallSpan<OutputDataType> output, SmallSpan<const FlagType> flag)
   {
     const Int32 nb_item = input.size();
     if (output.size() != nb_item)
@@ -240,6 +240,8 @@ namespace Arcane::Accelerator
  *
  * Dans les méthodes suivantes, l'argument \a queue peut être nul auquel cas
  * l'algorithme s'applique sur l'hôte en séquentiel.
+ *
+ * \deprecated Cette classe est obsolète. Utiliser GenericFilterer à la place.
  */
 template <typename DataType>
 class Filterer
@@ -263,30 +265,8 @@ class Filterer
 
  public:
 
-  /*!
-   * \brief Applique un filtre.
-   *
-   * Filtre tous les éléments de \a input pour lesquels \a flag est différent de 0 et
-   * remplit \a output avec les valeurs filtrées. \a output doit avoir une taille assez
-   * grande pour contenir tous les éléments filtrés.
-   *
-   * L'algorithme séquentiel est le suivant:
-   *
-   * \code
-   * Int32 index = 0;
-   * for (Int32 i = 0; i < nb_item; ++i) {
-   *   if (flag[i] != 0) {
-   *     output[index] = input[i];
-   *     ++index;
-   *   }
-   * }
-   * return index;
-   * \endcode
-   *
-   * Il faut appeler la méthode nbOutputElement() pour obtenir le nombre d'éléments
-   * après filtrage.
-   */
   template <typename FlagType>
+  ARCANE_DEPRECATED_REASON("Y2024: Use GenericFilterer::apply() instead")
   void apply(SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
   {
     const Int32 nb_item = input.size();
@@ -295,7 +275,7 @@ class Filterer
 
     _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringFlag<DataType, FlagType> gf;
+    impl::GenericFilteringFlag<DataType, FlagType, DataType> gf;
     gf.apply(*base_ptr, input, output, flag);
   }
 
@@ -326,7 +306,7 @@ class Filterer
     m_queue = queue;
     _allocate();
     impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringFlag<DataType, FlagType> gf;
+    impl::GenericFilteringFlag<DataType, FlagType, DataType> gf;
     gf.apply(*base_ptr, input, output, flag);
   }
 
@@ -437,6 +417,46 @@ class GenericFilterer
   }
 
  public:
+
+  /*!
+   * \brief Applique un filtre.
+   *
+   * Filtre tous les éléments de \a input pour lesquels \a flag est différent de 0 et
+   * remplit \a output avec les valeurs filtrées. \a output doit avoir une taille assez
+   * grande pour contenir tous les éléments filtrés.
+   *
+   * L'algorithme séquentiel est le suivant:
+   *
+   * \code
+   * Int32 index = 0;
+   * for (Int32 i = 0; i < nb_item; ++i) {
+   *   if (flag[i] != 0) {
+   *     output[index] = input[i];
+   *     ++index;
+   *   }
+   * }
+   * return index;
+   * \endcode
+   *
+   * Il faut appeler la méthode nbOutputElement() pour obtenir le nombre d'éléments
+   * après filtrage.
+   */
+  template <typename InputDataType, typename OutputDataType, typename FlagType>
+  void apply(SmallSpan<const InputDataType> input, SmallSpan<OutputDataType> output, SmallSpan<const FlagType> flag)
+  {
+    const Int32 nb_value = input.size();
+    if (output.size() != nb_value)
+      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_value, output.size());
+    if (flag.size() != nb_value)
+      ARCANE_FATAL("Sizes are not equals: input={0} flag={1}", nb_value, flag.size());
+
+    _setCalled();
+    if (_checkEmpty(nb_value))
+      return;
+    impl::GenericFilteringBase* base_ptr = this;
+    impl::GenericFilteringFlag<InputDataType, FlagType, OutputDataType> gf;
+    gf.apply(*base_ptr, input, output, flag);
+  }
 
   /*!
    * \brief Applique un filtre.
