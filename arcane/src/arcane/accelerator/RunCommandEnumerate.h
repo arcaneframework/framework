@@ -28,6 +28,78 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane
+{
+
+class IteratorWithIndexBase
+{
+};
+
+template <typename T>
+class IteratorWithIndex
+: public IteratorWithIndexBase
+{
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE IteratorWithIndex(Int32 i, T v)
+  : m_index(i)
+  , m_value(v)
+  {}
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
+  constexpr ARCCORE_HOST_DEVICE T value() const { return m_value; }
+
+ private:
+
+  Int32 m_index;
+  T m_value;
+};
+
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::impl
+{
+
+template <typename T>
+class IterBuilderWithIndex
+{
+ public:
+
+  using ValueType = T;
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE static IteratorWithIndex<T> create(Int32 index, T value)
+  {
+    return IteratorWithIndex<T>(index, value);
+  }
+};
+
+template <typename T>
+class IterBuilderNoIndex
+{
+ public:
+
+  using ValueType = T;
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE static T create(Int32, T value)
+  {
+    return value;
+  }
+};
+
+} // namespace Arcane::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane::Accelerator::impl
 {
 
@@ -40,7 +112,7 @@ namespace Arcane::Accelerator::impl
  * type de numéro local (CellLocalId, NodeLocalId, ...)
  */
 template <typename T>
-concept RunCommandEnumerateIteratorConcept = std::derived_from<T, Item> || std::derived_from<T, ItemLocalId>;
+concept RunCommandEnumerateIteratorConcept = std::derived_from<T, Item> || std::derived_from<T, ItemLocalId> || std::derived_from<T, IteratorWithIndexBase>;
 
 //! Template pour connaitre le type d'entité associé à T
 template <typename T>
@@ -49,6 +121,8 @@ class RunCommandItemEnumeratorSubTraitsT
  public:
 
   using ItemType = T;
+  using ValueType = ItemTraitsT<ItemType>::LocalIdType;
+  using BuilderType = Arcane::impl::IterBuilderNoIndex<ValueType>;
 };
 
 //! Spécialisation pour ItemLocalIdT.
@@ -58,6 +132,19 @@ class RunCommandItemEnumeratorSubTraitsT<ItemLocalIdT<T>>
  public:
 
   using ItemType = typename ItemLocalIdT<T>::ItemType;
+  using ValueType = ItemLocalIdT<T>;
+  using BuilderType = Arcane::impl::IterBuilderNoIndex<ValueType>;
+};
+
+//! Spécialisation pour IteratorWithIndex<T>
+template <typename T>
+requires std::derived_from<T, ItemLocalId> class RunCommandItemEnumeratorSubTraitsT<IteratorWithIndex<T>>
+{
+ public:
+
+  using ItemType = typename T::ItemType;
+  using ValueType = IteratorWithIndex<T>;
+  using BuilderType = Arcane::impl::IterBuilderWithIndex<T>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -76,10 +163,12 @@ class RunCommandItemEnumeratorTraitsT
 {
  public:
 
-  using ItemType = typename RunCommandItemEnumeratorSubTraitsT<IteratorValueType_>::ItemType;
+  using SubTraitsType = RunCommandItemEnumeratorSubTraitsT<IteratorValueType_>;
+  using ItemType = typename SubTraitsType::ItemType;
   using LocalIdType = ItemTraitsT<ItemType>::LocalIdType;
-  using ValueType = ItemTraitsT<ItemType>::LocalIdType;
+  using ValueType = typename SubTraitsType::ValueType;
   using ContainerType = ItemVectorViewT<ItemType>;
+  using BuilderType = SubTraitsType::BuilderType;
 
  public:
 
@@ -99,14 +188,15 @@ class RunCommandItemEnumeratorTraitsT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename LocalIdType, typename ContainerType, typename Lambda>
-void _doIndirectThreadLambda(ContainerType sub_items, const Lambda& func)
+template <typename BuilderType, typename ContainerType, typename Lambda>
+void _doIndirectThreadLambda(Int32 base_index, ContainerType sub_items, const Lambda& func)
 {
+  using LocalIdType = BuilderType::ValueType;
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   ENUMERATE_ITEM (iitem, sub_items) {
-    body(LocalIdType(iitem.itemLocalId()));
+    body(BuilderType::create(iitem.index() + base_index, LocalIdType(iitem.itemLocalId())));
   }
 }
 
@@ -122,29 +212,30 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items, const
   Integer vsize = items.size();
   if (vsize == 0)
     return;
-  using LocalIdType = typename TraitsType::LocalIdType;
-  using ItemType = typename TraitsType::ItemType;
+  using LocalIdType = TraitsType::LocalIdType;
+  using ItemType = TraitsType::ItemType;
+  using BuilderType = TraitsType::BuilderType;
   impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.computeLoopRunInfo(vsize);
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda) < ItemType, Lambda >, func, items.localIds());
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda) < BuilderType, Lambda >, func, items.localIds());
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda) < ItemType, Lambda >, func, items.localIds());
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda) < BuilderType, Lambda >, func, items.localIds());
     break;
   case eExecutionPolicy::Sequential:
     ENUMERATE_NO_TRACE_(ItemType, iitem, items)
     {
-      func(LocalIdType(iitem.itemLocalId()));
+      func(BuilderType::create(iitem.index(), LocalIdType(iitem.itemLocalId())));
     }
     break;
   case eExecutionPolicy::Thread:
     arcaneParallelForeach(items, launch_info.loopRunInfo(),
-                          [&](ItemVectorViewT<ItemType> sub_items) {
-                            impl::_doIndirectThreadLambda<LocalIdType>(sub_items, func);
+                          [&](ItemVectorViewT<ItemType> sub_items, Int32 base_index) {
+                            impl::_doIndirectThreadLambda<BuilderType>(base_index, sub_items, func);
                           });
     break;
   default:
@@ -183,7 +274,7 @@ class ItemRunCommand
   {
   }
   RunCommand& m_command;
-  const TraitsType& m_traits;
+  TraitsType m_traits;
 };
 
 /*---------------------------------------------------------------------------*/

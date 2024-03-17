@@ -67,10 +67,10 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 
-template<typename ItemType,typename Lambda> __global__
+template<typename BuilderType,typename Lambda> __global__
 void doIndirectGPULambda(SmallSpan<const Int32> ids,Lambda func)
 {
-  typedef typename ItemType::LocalIdType LocalIdType;
+  using LocalIdType = BuilderType::ValueType;
 
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -80,7 +80,7 @@ void doIndirectGPULambda(SmallSpan<const Int32> ids,Lambda func)
     LocalIdType lid(ids[i]);
     //if (i<10)
     //printf("CUDA %d lid=%d\n",i,lid.localId());
-    body(lid);
+    body(BuilderType::create(i,lid));
   }
 }
 
