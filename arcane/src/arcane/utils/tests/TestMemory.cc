@@ -10,11 +10,8 @@
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/Exception.h"
-
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/NumericTypes.h"
 
 #include <random>
 
@@ -125,9 +122,9 @@ class MemoryTester
       to.copyFromIndexesHost(from, copy_indexes);
       ASSERT_EQ(array2, array3);
       ConstMemoryView view2(array1.view());
-      ASSERT_EQ(view2.bytes(),asBytes(array1));
-      ConstMemoryView view3(array1.view(),1);
-      ASSERT_EQ(view3.bytes(),asBytes(array1));
+      ASSERT_EQ(view2.bytes(), asBytes(array1));
+      ConstMemoryView view3(array1.view(), 1);
+      ASSERT_EQ(view3.bytes(), asBytes(array1));
     }
 
     // Teste MutableMemoryView::copyToIndexesHost()
@@ -173,6 +170,33 @@ TEST(Memory, Basic)
   catch (const Exception& ex) {
     std::cerr << "ERROR=" << ex << "\n";
     throw;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Memory, Copy)
+{
+  Int32 n = 2500;
+  UniqueArray<Int32> r1(n);
+  for (Int32 i = 0; i < n; ++i)
+    r1[i] = i + 1;
+
+  {
+    UniqueArray<Int32> r2(n);
+    Span<Int32> r2_view(r2);
+    Span<const Int32> r1_view(r1);
+    MemoryUtils::copy(r2_view, r1_view);
+    ASSERT_EQ(r1, r2);
+  }
+
+  {
+    UniqueArray<Int32> r3(n);
+    SmallSpan<Int32> r3_view(r3.view());
+    SmallSpan<const Int32> r1_view(r1.view());
+    MemoryUtils::copy(r3_view, r1_view);
+    ASSERT_EQ(r1, r3);
   }
 }
 
