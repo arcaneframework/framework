@@ -83,12 +83,13 @@ class ARCANE_CORE_EXPORT ItemLocalId
  * \ingroup Mesh
  * \brief Index d'une entité \a ItemType dans une variable.
  */
-template <typename ItemType>
+template <typename ItemType_>
 class ItemLocalIdT
 : public ItemLocalId
 {
  public:
 
+  using ItemType = ItemType_;
   using ThatClass = ItemLocalIdT<ItemType>;
 
  public:
