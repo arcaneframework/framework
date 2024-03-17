@@ -46,7 +46,7 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
  public:
 
   void copy(ConstMemoryView from, eMemoryRessource from_mem,
-            MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue) override;
+            MutableMemoryView to, eMemoryRessource to_mem, const RunQueue* queue) override;
 
  public:
 

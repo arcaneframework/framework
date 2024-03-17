@@ -15,6 +15,8 @@
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,6 +63,17 @@ computeCapacity(Int64 size)
   else if (size > 500000)
     new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.5);
   return new_capacity;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue)
+{
+  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+  eMemoryRessource mem_type = eMemoryRessource::Unknown;
+  mrm->_internal()->copy(source, mem_type, destination, mem_type, queue);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -75,7 +75,8 @@ class DefaultHostMemoryCopier
  public:
 
   void copy(ConstMemoryView from, eMemoryRessource from_mem,
-            MutableMemoryView to, eMemoryRessource to_mem, [[maybe_unused]] RunQueue* queue) override
+            MutableMemoryView to, eMemoryRessource to_mem,
+            [[maybe_unused]] const RunQueue* queue) override
   {
     // Sans support accélérateur, on peut juste faire un 'memcpy' si la mémoire
     // est accessible depuis le CPU
@@ -158,7 +159,7 @@ setAllocator(eMemoryRessource r, IMemoryAllocator* allocator)
 
 void MemoryRessourceMng::
 copy(ConstMemoryView from, eMemoryRessource from_mem,
-     MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue)
+     MutableMemoryView to, eMemoryRessource to_mem, const RunQueue* queue)
 {
   Int64 from_size = from.bytes().size();
   Int64 to_size = to.bytes().size();
