@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueInternal.h                                          (C) 2000-2023 */
+/* RunQueueInternal.h                                          (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de la gestion d'une file d'exécution sur accélérateur.     */
 /*---------------------------------------------------------------------------*/
@@ -67,10 +67,10 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 
-template<typename ItemType,typename Lambda> __global__
+template<typename BuilderType,typename Lambda> __global__
 void doIndirectGPULambda(SmallSpan<const Int32> ids,Lambda func)
 {
-  typedef typename ItemType::LocalIdType LocalIdType;
+  using LocalIdType = BuilderType::ValueType;
 
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -80,7 +80,7 @@ void doIndirectGPULambda(SmallSpan<const Int32> ids,Lambda func)
     LocalIdType lid(ids[i]);
     //if (i<10)
     //printf("CUDA %d lid=%d\n",i,lid.localId());
-    body(lid);
+    body(BuilderType::create(i,lid));
   }
 }
 
