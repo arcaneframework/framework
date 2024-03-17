@@ -683,6 +683,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
   arcane_add_test_sequential_task(acceleratorviews1 testAcceleratorViews-1.arc 4)
   arcane_add_accelerator_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
+  arcane_add_accelerator_test_parallel(acceleratorviews1 testAcceleratorViews-1.arc 4)
 
   arcane_add_test_sequential(accelerator_reduce1 testAcceleratorReduce-1.arc)
   arcane_add_test_sequential_task(accelerator_reduce1 testAcceleratorReduce-1.arc 4)
