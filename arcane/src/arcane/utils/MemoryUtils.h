@@ -31,11 +31,10 @@ namespace Arcane::MemoryUtils
 /*!
  * \brief Allocateur par défaut pour les données.
  *
- * Cette allocateur utilise celui getAcceleratorHostMemoryAllocator()
- * s'il est disponible, sinon il utilise un allocateur aligné.
- *
- * Il est garanti que l'allocateur retourné permettra d'utiliser la donnée
- * à la fois sur accélerateur et sur l'hôte si cela est disponible.
+ * Si un runtime accélérateur est initialisé, l'allocateur retourné permet
+ * d'allouer en mémoire unifiée et donc la zone allouée sera accessible à la
+ * fois sur l'accélérateur et sur l'hôte. Sinon, retourne un allocateur
+ * aligné.
  *
  * Il est garanti que l'alignement est au moins celui retourné par
  * AlignedMemoryAllocator::Simd().
@@ -49,7 +48,8 @@ getDefaultDataAllocator();
  * \brief Allocateur par défaut pour les données avec informations sur
  * la localisation attendue.
  *
- * \sa getDefaultDataAllocator()
+ * Cette fonction retourne l'allocateur de getDefaulDataAllocator() mais
+ * ajoute les informations de gestion mémoire spécifiées par \a hint.
  */
 extern "C++" ARCANE_UTILS_EXPORT MemoryAllocationOptions
 getDefaultDataAllocator(eMemoryLocationHint hint);
@@ -57,13 +57,25 @@ getDefaultDataAllocator(eMemoryLocationHint hint);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Allocateur par défaut pour les données essentiellements en
+ * \brief Allocateur par défaut pour les données essentiellement en
  * lecture.
  *
  * Cet appel est équivalent à getDefaultDataAllocator(eMemoryLocationHint::HostAndDeviceMostlyRead).
  */
 extern "C++" ARCANE_UTILS_EXPORT MemoryAllocationOptions
 getAllocatorForMostlyReadOnlyData();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Allocateur par défaut pour la ressource \a mem_ressource.
+ *
+ * Lève une exception si aucune allocateur n'est disponible pour la ressource
+ * (par exemple si on demande eMemoryRessource::Device et qu'il n'y a pas de
+ * support pour les accélérateurs.
+ */
+extern "C++" ARCANE_UTILS_EXPORT MemoryAllocationOptions
+getAllocationOptions(eMemoryRessource mem_ressource);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

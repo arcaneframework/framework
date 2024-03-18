@@ -46,6 +46,16 @@ getDefaultDataAllocator(eMemoryLocationHint hint)
 /*---------------------------------------------------------------------------*/
 
 MemoryAllocationOptions MemoryUtils::
+getAllocationOptions(eMemoryRessource mem_ressource)
+{
+  IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_ressource);
+  return MemoryAllocationOptions(allocator);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions MemoryUtils::
 getAllocatorForMostlyReadOnlyData()
 {
   return getDefaultDataAllocator(eMemoryLocationHint::HostAndDeviceMostlyRead);
