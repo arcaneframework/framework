@@ -67,12 +67,13 @@ getAllocatorForMostlyReadOnlyData()
 Int64 MemoryUtils::impl::
 computeCapacity(Int64 size)
 {
-  Int64 new_capacity = size * 2;
+  double d_size = static_cast<double>(size);
+  double d_new_capacity = d_size * 1.8;
   if (size > 5000000)
-    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.2);
+    d_new_capacity = d_size * 1.2;
   else if (size > 500000)
-    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.5);
-  return new_capacity;
+    d_new_capacity = d_size * 1.5;
+  return static_cast<Int64>(d_new_capacity);
 }
 
 /*---------------------------------------------------------------------------*/

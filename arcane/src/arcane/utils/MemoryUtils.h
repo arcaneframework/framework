@@ -102,21 +102,24 @@ namespace impl
  * Si le tableau est redimensionné, on réserve une capacité supplémentaire
  * pour éviter de réallouer à chaque fois.
  *
- * \retval true si un redimensionnement a eu lieu
- * \retval false sinon
+ * \retval 2 si on a réalloué via reserve()
+ * \retval 1 si on a re-dimensionné sans réallouer.
+ * \retval 0 si aucune opération n'a eu lieu.
  */
-template <typename DataType> inline bool
+template <typename DataType> inline Int32
 checkResizeArrayWithCapacity(Array<DataType>& array, Int64 new_size, bool force_resize)
 {
+  Int32 ret_value = 0;
   Int64 s = array.largeSize();
   if (new_size > s || force_resize) {
+    ret_value = 1;
     if (new_size > array.capacity()) {
       array.reserve(impl::computeCapacity(new_size));
+      ret_value = 2;
     }
     array.resize(new_size);
-    return true;
   }
-  return false;
+  return ret_value;
 }
 
 /*---------------------------------------------------------------------------*/
