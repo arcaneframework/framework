@@ -79,11 +79,11 @@ computeCapacity(Int64 size)
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue)
+copy(MutableMemoryView destination, eMemoryRessource destination_mem,
+     ConstMemoryView source, eMemoryRessource source_mem, const RunQueue* queue)
 {
   IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
-  eMemoryRessource mem_type = eMemoryRessource::Unknown;
-  mrm->_internal()->copy(source, mem_type, destination, mem_type, queue);
+  mrm->_internal()->copy(source, destination_mem, destination, source_mem, queue);
 }
 
 /*---------------------------------------------------------------------------*/

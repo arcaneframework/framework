@@ -73,6 +73,10 @@ getAllocatorForMostlyReadOnlyData();
  * Lève une exception si aucune allocateur n'est disponible pour la ressource
  * (par exemple si on demande eMemoryRessource::Device et qu'il n'y a pas de
  * support pour les accélérateurs.
+ *
+ * La ressource eMemoryRessource::UnifiedMemory est toujours disponible. Si
+ * aucun runtime accélérateur n'est chargé, alors c'est équivalent à
+ * eMemoryRessource::Host.
  */
 extern "C++" ARCANE_UTILS_EXPORT MemoryAllocationOptions
 getAllocationOptions(eMemoryRessource mem_ressource);
@@ -117,10 +121,31 @@ checkResizeArrayWithCapacity(Array<DataType>& array, Int64 new_size, bool force_
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie de \a source vers \a destination en utilisant la file \a queue.
+ *
+ * Il est possible de spécifier la ressource mémoire où se trouve la source
+ * et la destination. Si on ne les connait pas, il est préférable d'utiliser
+ * la surcharge copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue).
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copy(MutableMemoryView destination, eMemoryRessource destination_mem,
+     ConstMemoryView source, eMemoryRessource source_mem,
+     const RunQueue* queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Copie de \a source vers \a destination en utilisant la file \a queue.
-extern "C++" ARCANE_UTILS_EXPORT void
-copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue = nullptr);
+inline void
+copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue = nullptr)
+{
+  eMemoryRessource mem_type = eMemoryRessource::Unknown;
+  copy(destination, mem_type, source, mem_type, queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Copie de \a source vers \a destination en utilisant la file \a queue.
 template <typename DataType> inline void
