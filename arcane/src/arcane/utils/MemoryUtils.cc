@@ -46,6 +46,16 @@ getDefaultDataAllocator(eMemoryLocationHint hint)
 /*---------------------------------------------------------------------------*/
 
 MemoryAllocationOptions MemoryUtils::
+getAllocationOptions(eMemoryRessource mem_ressource)
+{
+  IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_ressource);
+  return MemoryAllocationOptions(allocator);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions MemoryUtils::
 getAllocatorForMostlyReadOnlyData()
 {
   return getDefaultDataAllocator(eMemoryLocationHint::HostAndDeviceMostlyRead);
@@ -57,23 +67,24 @@ getAllocatorForMostlyReadOnlyData()
 Int64 MemoryUtils::impl::
 computeCapacity(Int64 size)
 {
-  Int64 new_capacity = size * 2;
+  double d_size = static_cast<double>(size);
+  double d_new_capacity = d_size * 1.8;
   if (size > 5000000)
-    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.2);
+    d_new_capacity = d_size * 1.2;
   else if (size > 500000)
-    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.5);
-  return new_capacity;
+    d_new_capacity = d_size * 1.5;
+  return static_cast<Int64>(d_new_capacity);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue)
+copy(MutableMemoryView destination, eMemoryRessource destination_mem,
+     ConstMemoryView source, eMemoryRessource source_mem, const RunQueue* queue)
 {
   IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
-  eMemoryRessource mem_type = eMemoryRessource::Unknown;
-  mrm->_internal()->copy(source, mem_type, destination, mem_type, queue);
+  mrm->_internal()->copy(source, destination_mem, destination, source_mem, queue);
 }
 
 /*---------------------------------------------------------------------------*/
