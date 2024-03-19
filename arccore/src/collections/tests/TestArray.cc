@@ -427,6 +427,8 @@ void _testArrayNewInternal()
       ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
       c = c2.span();
       ASSERT_EQ(c.constSpan(), c2.constSpan());
+      ASSERT_EQ(c.constSmallSpan(), c2.constSmallSpan());
+      ASSERT_EQ(c.smallSpan(), c2.smallSpan());
     }
   }
 }
@@ -705,6 +707,11 @@ TEST(Array, Misc4)
 TEST(Array, Allocator)
 {
   using namespace Arccore;
+  std::cout << "Sizeof(MemoryAllocationOptions)=" << sizeof(MemoryAllocationOptions) << "\n";
+  std::cout << "Sizeof(ArrayMetaData)=" << sizeof(ArrayMetaData) << "\n";
+  std::cout << "Sizeof(UniqueArray<Int32>)=" << sizeof(UniqueArray<Int32>) << "\n";
+  std::cout << "Sizeof(SharedArray<Int32>)=" << sizeof(SharedArray<Int32>) << "\n";
+
   PrintableMemoryAllocator printable_allocator;
   PrintableMemoryAllocator printable_allocator2;
   IMemoryAllocator* allocator1 = AlignedMemoryAllocator3::Simd();
