@@ -24,6 +24,7 @@
 #include "arcane/core/IApplication.h"
 #include "arcane/core/ISerializedData.h"
 #include "arcane/core/IRessourceMng.h"
+#include "arcane/core/ItemGroup.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
