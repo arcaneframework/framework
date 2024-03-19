@@ -72,8 +72,8 @@ class MeshMaterialModifierImpl
 
  private:
 
-  void _addCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids);
-  void _removeCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids);
+  void _addCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids);
+  void _removeCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids);
 
   void _applyOperationsNoOptimize();
   void _updateEnvironmentsNoOptimize();

@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
+#include "arcane/utils/NumArray.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/internal/IMeshMaterialModifierImpl.h"
@@ -38,21 +39,15 @@ class MaterialModifierOperation
 
  private:
 
-  MaterialModifierOperation(IMeshMaterial* mat, Int32ConstArrayView ids, bool is_add)
-  : MaterialModifierOperation()
-  {
-    m_mat = mat;
-    m_is_add = is_add;
-    m_ids.copy(ids);
-  }
+  MaterialModifierOperation(IMeshMaterial* mat, SmallSpan<const Int32> ids, bool is_add);
 
  public:
 
-  static MaterialModifierOperation* createAdd(IMeshMaterial* mat, Int32ConstArrayView ids)
+  static MaterialModifierOperation* createAdd(IMeshMaterial* mat, SmallSpan<const Int32> ids)
   {
     return new MaterialModifierOperation(mat, ids, true);
   }
-  static MaterialModifierOperation* createRemove(IMeshMaterial* mat, Int32ConstArrayView ids)
+  static MaterialModifierOperation* createRemove(IMeshMaterial* mat, SmallSpan<const Int32> ids)
   {
     return new MaterialModifierOperation(mat, ids, false);
   }
@@ -66,7 +61,7 @@ class MaterialModifierOperation
   IMeshMaterial* material() const { return m_mat; }
 
   //! Liste des localId() des mailles à ajouter/supprimer
-  ConstArrayView<Int32> ids() const { return m_ids; }
+  SmallSpan<const Int32> ids() const { return m_ids.view(); }
 
  public:
 

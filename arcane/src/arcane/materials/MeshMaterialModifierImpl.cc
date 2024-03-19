@@ -150,24 +150,24 @@ removeCells(IMeshMaterial* mat,Int32ConstArrayView ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_addCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids)
+_addCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "ADD_CELLS_TO_MATERIAL: mat=" << mat->name()
          << " nb_item=" << ids.size();
-  cells.addItems(ids);
+  cells.addItems(ids.smallView());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_removeCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids)
+_removeCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "REMOVE_CELLS_TO_MATERIAL: mat=" << mat->name()
          << " nb_item=" << ids.size();
-  cells.removeItems(ids);
+  cells.removeItems(ids.smallView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -229,21 +229,26 @@ _endUpdate()
 
   MeshMaterialBackup backup(m_material_mng,false);
 
-  UniqueArray<Int32> keeped_lids;
   bool no_optimization_done = true;
 
   ++nb_update;
   AllEnvData* all_env_data = m_material_mng->allEnvData();
 
-  for( Integer i=0; i<nb_operation; ++i ){
+  bool is_display = traceMng()->verbosityLevel() >= _localVerboseLevel();
+
+ for( Integer i=0; i<nb_operation; ++i ){
     const Operation* op = m_operations.values()[i];
     IMeshMaterial* mat = op->material();
     const IMeshComponentInternal* mci = mat->_internalApi();
-    linfo() << "MODIFIER_CELLS_TO_MATERIAL: mat=" << mat->name()
-            << " is_add="  << op->isAdd()
-            << " mat_index=" << mci->variableIndexer()->index()
-            << " op_index=" << i
-            << " ids=" << op->ids();
+
+    // N'appelle la méthode que si l'affichage sera réalisé pour éviter
+    // de recopier 'op->ids()' sur l'hôte.
+    if (is_display)
+      linfo() << "MODIFIER_CELLS_TO_MATERIAL: mat=" << mat->name()
+              << " is_add="  << op->isAdd()
+              << " mat_index=" << mci->variableIndexer()->index()
+              << " op_index=" << i
+              << " ids=" << op->ids();
   }
 
   bool is_optimization_active = m_allow_optimization;
@@ -269,7 +274,6 @@ _endUpdate()
         linfo() << "ONLY_ONE_REMOVE: using optimization mat=" << mat->name();
         ++nb_optimize_remove;
       }
-      keeped_lids = op->ids();
 
       incremental_modifier.m_work_info.setCurrentOperation(op);
 
@@ -304,10 +308,6 @@ _endUpdate()
   }
 
   linfo() << "END_UPDATE_MAT End";
-  if (keeped_lids.size()!=0){
-    info(4) << "PRINT KEEPED_IDS size=" << keeped_lids.size();
-    //m_material_mng->allEnvData()->printAllEnvCells(keeped_lids);
-  }
 }
 
 /*---------------------------------------------------------------------------*/

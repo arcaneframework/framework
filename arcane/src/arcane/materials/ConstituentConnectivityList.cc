@@ -335,7 +335,7 @@ endCreate(bool is_continue)
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-_addCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
+_addCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
           ConstituentContainer& component, RunQueue& queue)
 {
   const Int32 nb_item = cells_local_id.size();
@@ -403,7 +403,7 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-_removeCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
+_removeCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
              ConstituentContainer& component, RunQueue& queue)
 {
   SmallSpan<Int16> nb_component = component.m_nb_component_as_array.view();
@@ -433,7 +433,7 @@ _removeCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
+addCellsToEnvironment(Int16 env_id, SmallSpan<const Int32> cell_ids, RunQueue& queue)
 {
   _addCells(env_id, cell_ids, m_container->m_environment, queue);
 }
@@ -442,7 +442,7 @@ addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& qu
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
+removeCellsToEnvironment(Int16 env_id, SmallSpan<const Int32> cell_ids, RunQueue& queue)
 {
   _removeCells(env_id, cell_ids, m_container->m_environment, queue);
 }
@@ -451,7 +451,7 @@ removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue&
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
+addCellsToMaterial(Int16 mat_id, SmallSpan<const Int32> cell_ids, RunQueue& queue)
 {
   _addCells(mat_id, cell_ids, m_container->m_material, queue);
 }
@@ -460,7 +460,7 @@ addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
+removeCellsToMaterial(Int16 mat_id, SmallSpan<const Int32> cell_ids, RunQueue& queue)
 {
   _removeCells(mat_id, cell_ids, m_container->m_material, queue);
 }
