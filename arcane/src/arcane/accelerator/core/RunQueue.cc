@@ -245,6 +245,33 @@ isAcceleratorPolicy() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MemoryAllocationOptions RunQueue::
+allocationOptions() const
+{
+  return m_p->allocationOptions();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueue::
+setMemoryRessource(eMemoryRessource mem)
+{
+  m_p->m_memory_ressource = mem;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+eMemoryRessource RunQueue::
+memoryRessource() const
+{
+  return m_p->m_memory_ressource;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ePointerAccessibility
 getPointerAccessibility(RunQueue* queue, const void* ptr, PointerAttribute* ptr_attr)
 {

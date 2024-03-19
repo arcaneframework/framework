@@ -29,8 +29,15 @@ namespace Arcane::Accelerator
 /*!
  * \brief File d'exécution pour un accélérateur.
  *
+ * Cette classe a une sémantique par référence. La file d'exécution est
+ * détruite lorsque la dernière référence dessus est détruite.
+ *
  * Une file est attachée à une politique d'exécution et permet d'exécuter
  * des commandes (RunCommand) sur un accélérateur ou sur le CPU.
+ *
+ * Les instances de cette classe sont créés par l'appel à makeQueue(Runner).
+ * On peut ensuite créer des noyaux de calcul (RunCommand) via l'appel
+ * à makeCommand().
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
@@ -112,6 +119,32 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   void waitEvent(RunQueueEvent& event);
   //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
   void waitEvent(Ref<RunQueueEvent>& event);
+
+  //@{ \brief Gestion mémoire
+  /*!
+   * \brief Options d'allocation associée à cette file.
+   *
+   * Il est possible de changer la ressource mémoire et donc l'allocateur utilisé
+   * via setMemoryRessource().
+   */
+  MemoryAllocationOptions allocationOptions() const;
+
+  /*!
+   * \brief Positionne la ressource mémoire utilisée pour les allocations avec cette instance.
+   *
+   * La valeur par défaut est eMemoryRessource::UnifiedMemory
+   * si isAcceleratorPolicy()==true et eMemoryRessource::Host sinon.
+   *
+   * \sa memoryRessource()
+   * \sa allocationOptions()
+   */
+  void setMemoryRessource(eMemoryRessource mem);
+
+  /*!
+   * \brief Ressource mémoire utilisée pour les allocations avec cette instance.
+   */
+  eMemoryRessource memoryRessource() const;
+  //@}
 
  public:
 
