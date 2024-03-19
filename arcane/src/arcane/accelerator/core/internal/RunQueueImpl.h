@@ -17,6 +17,7 @@
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
 #include "arcane/utils/Array.h"
+#include "arcane/utils/MemoryRessource.h"
 
 #include <stack>
 #include <atomic>
@@ -65,6 +66,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
   eExecutionPolicy executionPolicy() const { return m_execution_policy; }
   RunnerImpl* runner() const { return m_runner_impl; }
+  MemoryAllocationOptions allocationOptions() const;
 
  public:
 
@@ -88,12 +90,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   void _internalBarrier();
   bool _isInPool() const { return m_is_in_pool; }
   void _release();
+  void _setDefaultMemoryRessource();
   static RunQueueImpl* _reset(RunQueueImpl* p);
 
  private:
 
   RunnerImpl* m_runner_impl = nullptr;
-  eExecutionPolicy m_execution_policy;
+  eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
   IRunnerRuntime* m_runtime = nullptr;
   IRunQueueStream* m_queue_stream = nullptr;
   //! Pool de commandes
@@ -108,6 +111,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   std::atomic<Int32> m_nb_ref = 0;
   //! Indique si la file est asynchrone
   bool m_is_async = false;
+  //! Ressource mémoire par défaut
+  eMemoryRessource m_memory_ressource = eMemoryRessource::Unknown;
 };
 
 /*---------------------------------------------------------------------------*/
