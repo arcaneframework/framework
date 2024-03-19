@@ -426,8 +426,9 @@ void _testArrayNewInternal()
       ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
       ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
       c = c2.span();
+      SmallSpan<const IntSubClassNoPod> c2_small_span = c2;
       ASSERT_EQ(c.constSpan(), c2.constSpan());
-      ASSERT_EQ(c.constSmallSpan(), c2.constSmallSpan());
+      ASSERT_EQ(c.constSmallSpan(), c2_small_span);
       ASSERT_EQ(c.smallSpan(), c2.smallSpan());
     }
   }

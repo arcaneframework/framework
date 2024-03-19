@@ -392,6 +392,10 @@ class AbstractArray
   {
     return Span<const T>(m_ptr,m_md->size);
   }
+  operator SmallSpan<const T>() const
+  {
+    return SmallSpan<const T>(m_ptr,ARCCORE_CAST_SMALL_SIZE(size()));
+  }
 
  public:
 
