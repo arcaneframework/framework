@@ -115,7 +115,6 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 , m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
 {
-  m_modifier = std::make_unique<MeshMaterialModifierImpl>(this);
   m_all_env_data = std::make_unique<AllEnvData>(this);
   m_exchange_mng = std::make_unique<MeshMaterialExchangeMng>(this);
   m_variable_factory_mng = arcaneCreateMeshMaterialVariableFactoryMng(this);
@@ -164,8 +163,10 @@ MeshMaterialMng::
   for( MeshMaterialVariableIndexer* mvi : m_variables_indexer_to_destroy )
     delete mvi;
 
-  m_modifier->dumpStats();
-  m_modifier.reset();
+  if (m_modifier){
+    m_modifier->dumpStats();
+    m_modifier.reset();
+  }
 
   m_internal_api.reset();
 
@@ -457,6 +458,7 @@ endCreate(bool is_continue)
 
   info() << "END CREATE MATERIAL_MNG is_continue=" << is_continue;
 
+  m_modifier = std::make_unique<MeshMaterialModifierImpl>(this);
   m_modifier->initOptimizationFlags();
 
   m_all_env_data->endCreate(is_continue);

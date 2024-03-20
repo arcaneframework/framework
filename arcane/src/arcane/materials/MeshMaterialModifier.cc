@@ -15,6 +15,7 @@
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/TraceInfo.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
@@ -34,6 +35,8 @@ MeshMaterialModifier(IMeshMaterialMng* mm)
 : m_impl(mm->_internalApi()->modifier())
 , m_has_update(false)
 {
+  if (!m_impl)
+    ARCANE_FATAL("Can not create 'MeshMaterialModifier' because IMeshMaterialMng is not yet initialized");
 }
 
 /*---------------------------------------------------------------------------*/
