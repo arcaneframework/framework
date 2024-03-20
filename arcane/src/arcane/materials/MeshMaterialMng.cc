@@ -132,8 +132,6 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 MeshMaterialMng::
 ~MeshMaterialMng()
 {
-  m_runner_info.reset();
-
   //std::cout << "DESTROY MESH MATERIAL MNG this=" << this << '\n';
   IEnumeratorTracer* tracer = IEnumeratorTracer::singleton();
   if (tracer)
@@ -172,6 +170,10 @@ MeshMaterialMng::
 
   if (m_allcell_2_allenvcell)
     AllCellToAllEnvCell::destroy(m_allcell_2_allenvcell);
+
+  // On détruit le Runner à la fin pour être sur qu'il n'y a plus de
+  // références dessus dans les autres instances.
+  m_runner_info.reset();
 }
 
 /*---------------------------------------------------------------------------*/

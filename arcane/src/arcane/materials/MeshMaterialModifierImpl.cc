@@ -79,13 +79,14 @@ MeshMaterialModifierImpl::
 MeshMaterialModifierImpl(MeshMaterialMng* mm)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
+, m_queue(makeQueue(m_material_mng->runner()))
 {
   _setLocalVerboseLevel(4);
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_MATERIAL_MODIFIER", true)){
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_MATERIAL_MODIFIER", true)) {
     Int32 value = v.value();
-    if (value>0)
+    if (value > 0)
       _setLocalVerboseLevel(3);
-    if (value>1)
+    if (value > 1)
       m_print_component_list = true;
   }
 }
@@ -227,7 +228,7 @@ _endUpdate()
 
   m_material_mng->incrementTimestamp();
 
-  MeshMaterialBackup backup(m_material_mng,false);
+  MeshMaterialBackup backup(m_material_mng, false);
 
   bool no_optimization_done = true;
 
@@ -236,7 +237,7 @@ _endUpdate()
 
   bool is_display = traceMng()->verbosityLevel() >= _localVerboseLevel();
 
- for( Integer i=0; i<nb_operation; ++i ){
+  for (Integer i = 0; i < nb_operation; ++i) {
     const Operation* op = m_operations.values()[i];
     IMeshMaterial* mat = op->material();
     const IMeshComponentInternal* mci = mat->_internalApi();
@@ -245,7 +246,7 @@ _endUpdate()
     // de recopier 'op->ids()' sur l'hôte.
     if (is_display)
       linfo() << "MODIFIER_CELLS_TO_MATERIAL: mat=" << mat->name()
-              << " is_add="  << op->isAdd()
+              << " is_add=" << op->isAdd()
               << " mat_index=" << mci->variableIndexer()->index()
               << " op_index=" << i
               << " ids=" << op->ids();
@@ -257,20 +258,20 @@ _endUpdate()
   linfo() << "Check optimize ? = " << is_optimization_active;
 
   // Tableau de travail utilisé lors des modifications incrémentales
-  IncrementalComponentModifier incremental_modifier(all_env_data);
-  if (is_optimization_active && m_use_incremental_recompute){
+  IncrementalComponentModifier incremental_modifier(all_env_data, m_queue);
+  if (is_optimization_active && m_use_incremental_recompute) {
     incremental_modifier.initialize();
   }
 
-  if (is_optimization_active){
-    for( Operation* op : m_operations.values() ){
+  if (is_optimization_active) {
+    for (Operation* op : m_operations.values()) {
       const IMeshMaterial* mat = op->material();
 
-      if (op->isAdd()){
+      if (op->isAdd()) {
         linfo() << "ONLY_ONE_ADD: using optimization mat=" << mat->name();
         ++nb_optimize_add;
       }
-      else{
+      else {
         linfo() << "ONLY_ONE_REMOVE: using optimization mat=" << mat->name();
         ++nb_optimize_remove;
       }
@@ -287,8 +288,8 @@ _endUpdate()
     no_optimization_done = false;
   }
 
-  if (no_optimization_done){
-    if (is_keep_value){
+  if (no_optimization_done) {
+    if (is_keep_value) {
       ++nb_save_restore;
       backup.saveValues();
     }
@@ -298,11 +299,11 @@ _endUpdate()
 
     all_env_data->forceRecompute(true);
 
-    if (is_keep_value){
+    if (is_keep_value) {
       backup.restoreValues();
     }
   }
-  else{
+  else {
     incremental_modifier.finalize();
     all_env_data->recomputeIncremental();
   }

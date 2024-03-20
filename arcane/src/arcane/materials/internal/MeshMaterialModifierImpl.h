@@ -20,6 +20,8 @@
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/IMeshMaterial.h"
 
+#include "arcane/accelerator/RunQueue.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -80,6 +82,7 @@ class MeshMaterialModifierImpl
 
   MeshMaterialMng* m_material_mng = nullptr;
   OperationList m_operations;
+  RunQueue m_queue;
   Int32 nb_update = 0;
   Int32 nb_save_restore = 0;
   Int32 nb_optimize_add = 0;
