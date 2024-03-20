@@ -19,7 +19,6 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/IMeshMaterial.h"
-#include "arcane/materials/internal/IMeshMaterialModifierImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,7 +33,6 @@ class MaterialModifierOperation;
 
 class MeshMaterialModifierImpl
 : public TraceAccessor
-, public IMeshMaterialModifierImpl
 {
  private:
   
@@ -62,12 +60,12 @@ class MeshMaterialModifierImpl
 
  public:
 
-  void addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids) override;
-  void removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids) override;
+  void addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
+  void removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
 
-  void endUpdate() override;
-  void beginUpdate() override;
-  void dumpStats() override;
+  void endUpdate();
+  void beginUpdate();
+  void dumpStats();
 
  private:
 

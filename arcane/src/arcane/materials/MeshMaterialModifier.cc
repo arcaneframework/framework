@@ -20,7 +20,7 @@
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
-#include "arcane/materials/internal/IMeshMaterialModifierImpl.h"
+#include "arcane/materials/internal/MeshMaterialModifierImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

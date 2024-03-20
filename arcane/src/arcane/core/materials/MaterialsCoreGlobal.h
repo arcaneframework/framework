@@ -92,12 +92,13 @@ class IMeshMaterialMngInternal;
 class MeshEnvironmentBuildInfo;
 class MeshBlockBuildInfo;
 class IMeshMaterialMngInternal;
-class IMeshMaterialModifierImpl;
+class MeshMaterialModifierImpl;
 class CellToAllEnvCellConverter;
 class IMeshMaterialVariableSynchronizer;
 class AllCellToAllEnvCell;
 class ConstituentItemIndex;
 class IConstituentItemVectorImpl;
+class ComponentItemSharedInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

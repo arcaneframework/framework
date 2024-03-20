@@ -109,7 +109,7 @@ class MeshMaterialMng
     {
       return m_material_mng->_removeVariable(var);
     }
-    IMeshMaterialModifierImpl* modifier() override
+    MeshMaterialModifierImpl* modifier() override
     {
       return m_material_mng->_modifier();
     }
@@ -374,7 +374,7 @@ class MeshMaterialMng
   void _unregisterAllVariables();
   void _addVariable(IMeshMaterialVariable* var);
   void _removeVariable(IMeshMaterialVariable* var);
-  IMeshMaterialModifierImpl* _modifier();
+  MeshMaterialModifierImpl* _modifier();
   ConstArrayView<MeshMaterialVariableIndexer*> _variablesIndexer()
   {
     return m_variables_indexer;

@@ -70,7 +70,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
 
  private:
 
-  IMeshMaterialModifierImpl* m_impl = nullptr;
+  MeshMaterialModifierImpl* m_impl = nullptr;
   bool m_has_update = false;
 
   void _checkHasUpdate();

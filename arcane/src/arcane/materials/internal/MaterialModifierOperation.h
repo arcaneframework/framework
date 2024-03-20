@@ -18,7 +18,7 @@
 #include "arcane/utils/NumArray.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
-#include "arcane/materials/internal/IMeshMaterialModifierImpl.h"
+#include "arcane/materials/internal/MeshMaterialModifierImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

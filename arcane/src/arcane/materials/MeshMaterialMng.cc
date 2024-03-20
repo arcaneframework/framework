@@ -535,7 +535,7 @@ setDataCompressorServiceName(const String& name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMeshMaterialModifierImpl* MeshMaterialMng::
+MeshMaterialModifierImpl* MeshMaterialMng::
 _modifier()
 {
   return m_modifier.get();

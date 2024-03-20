@@ -123,7 +123,6 @@ set(ARCANE_SOURCES
   internal/ConstituentListPrinter.h
   internal/ConstituentModifierWorkInfo.h
   internal/IncrementalComponentModifier.h
-  internal/IMeshMaterialModifierImpl.h
   internal/MaterialModifierOperation.h
   internal/MeshComponentPartData.h
   internal/MeshEnvironment.h
