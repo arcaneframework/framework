@@ -44,6 +44,7 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
 : TraceAccessor(all_env_data->traceMng())
 , m_all_env_data(all_env_data)
 , m_material_mng(all_env_data->m_material_mng)
+, m_work_info(queue.allocationOptions(), queue.memoryRessource())
 , m_queue(queue)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_TRANSFORM_NO_FILTER", true))
@@ -57,7 +58,7 @@ void IncrementalComponentModifier::
 initialize()
 {
   Int32 max_local_id = m_material_mng->mesh()->cellFamily()->maxLocalId();
-  m_work_info.initialize(max_local_id);
+  m_work_info.initialize(max_local_id, m_queue);
   m_work_info.is_verbose = traceMng()->verbosityLevel() >= 5;
 }
 
@@ -482,7 +483,7 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   const Int16 env_id = env->componentId();
   m_work_info.m_cells_is_partial.resize(nb_to_add);
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  connectivity->fillCellsIsPartial(local_ids, env_id, m_work_info.m_cells_is_partial.view(), m_queue);
+  connectivity->fillCellsIsPartial(local_ids, env_id, m_work_info.m_cells_is_partial.to1DSmallSpan(), m_queue);
 
   _addItemsToIndexer(var_indexer, local_ids);
 
@@ -518,7 +519,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 
   const Int32 component_index = var_indexer->index() + 1;
 
-  SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial.view();
+  SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial;
 
   Accelerator::GenericFilterer filterer(&m_queue);
 
