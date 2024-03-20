@@ -348,23 +348,30 @@ _addCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
   SmallSpan<Int16> nb_component_view = component.m_nb_component_as_array.view();
 
   NumArray<Int32, MDDim1> new_indexes(nb_item);
+  const bool is_device = queue.isAcceleratorPolicy();
+  // Pour recopier le nombre d'éléments à ajouter du device vers le CPU
+  NumArray<Int32, MDDim1> new_indexes_to_add(is_device ? eMemoryRessource::HostPinned : eMemoryRessource::Host);
+  new_indexes_to_add.resize(1);
+
   // Calcul l'index des nouveaux éléments
   {
     Accelerator::GenericScanner scanner(queue);
     SmallSpan<Int32> new_indexes_view = new_indexes;
+    SmallSpan<Int32> new_indexes_to_add_view = new_indexes_to_add;
     auto getter = [=] ARCCORE_HOST_DEVICE(Int32 index) -> Int32 {
       return 1 + nb_component_view[cells_local_id[index]];
     };
     auto setter = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 value) {
       new_indexes_view[index] = value;
+      if (index == (nb_item - 1))
+        new_indexes_to_add_view[0] = new_indexes_view[index] + nb_component_view[cells_local_id[index]] + 1;
     };
     Accelerator::ScannerSumOperator<Int32> op;
     scanner.applyWithIndexExclusive(nb_item, 0, getter, setter, op, A_FUNCINFO);
   }
   queue.barrier();
 
-  // TODO: Utiliser une copie depuis le device pour ces deux valeurs.
-  const Int32 nb_indexes_to_add = new_indexes[nb_item - 1] + nb_component_view[cells_local_id[nb_item - 1]] + 1;
+  const Int32 nb_indexes_to_add = new_indexes_to_add[0];
   const Int32 current_list_index = component_list.size();
 
   MemoryUtils::checkResizeArrayWithCapacity(component_list, current_list_index + nb_indexes_to_add, false);
