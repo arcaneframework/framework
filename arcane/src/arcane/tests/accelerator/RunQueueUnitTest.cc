@@ -62,6 +62,7 @@ class RunQueueUnitTest
 
  public:
 
+  void _executeTestNullQueue();
   void _executeTest1(bool use_priority);
   void _executeTest2();
   void _executeTest3();
@@ -108,6 +109,7 @@ initializeTest()
 void RunQueueUnitTest::
 executeTest()
 {
+  _executeTestNullQueue();
   _executeTest2();
   bool old_v = m_runner->isConcurrentQueueCreation();
   m_runner->setConcurrentQueueCreation(true);
@@ -116,6 +118,35 @@ executeTest()
   _executeTest3();
   _executeTest4();
   m_runner->setConcurrentQueueCreation(old_v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueUnitTest::
+_executeTestNullQueue()
+{
+  using namespace Arcane::Accelerator;
+  ValueChecker vc(A_FUNCINFO);
+  MemoryAllocationOptions default_mem_opt;
+  RunQueue queue;
+  vc.areEqual(queue.isNull(), true, "isNull()");
+  queue.barrier();
+  vc.areEqual(queue.executionPolicy(), eExecutionPolicy::None, "executionPolicy()");
+  vc.areEqual(queue.isAcceleratorPolicy(), false, "isAcceleratorPolicy()");
+  vc.areEqual(queue.memoryRessource(), eMemoryRessource::Unknown, "memoryRessource()");
+  if (queue.allocationOptions() != default_mem_opt)
+    ARCANE_FATAL("Bad null allocationOptions()");
+
+  queue = makeQueue(*m_runner);
+  vc.areEqual(queue.isNull(), false, "not null");
+
+  queue = RunQueue();
+  vc.areEqual(queue.isNull(), true, "is null (2)");
+
+  queue = makeQueue(*m_runner);
+  if (queue.executionPolicy() == eExecutionPolicy::None)
+    ARCANE_FATAL("Bad execution policy");
 }
 
 /*---------------------------------------------------------------------------*/
