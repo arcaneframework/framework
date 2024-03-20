@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MDSpan.h                                                    (C) 2000-2023 */
+/* MDSpan.h                                                    (C) 2000-2024 */
 /*                                                                           */
 /* Vue sur un tableaux multi-dimensionnel pour les types numériques.         */
 /*---------------------------------------------------------------------------*/
@@ -216,9 +216,28 @@ class MDSpan
   {
     return MDSpan<const DataType, Extents, LayoutPolicy>(m_ptr, m_extents);
   }
+
+  constexpr ARCCORE_HOST_DEVICE MDSpan<const DataType, Extents, LayoutPolicy> constMDSpan() const
+  {
+    return MDSpan<const DataType, Extents, LayoutPolicy>(m_ptr, m_extents);
+  }
+
   constexpr ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
   {
     return { m_ptr, m_extents.totalNbElement() };
+  }
+
+  constexpr SmallSpan<DataType> to1DSmallSpan() requires(Extents::rank() == 1)
+  {
+    return { _internalData(), extent0() };
+  }
+  constexpr SmallSpan<const DataType> to1DSmallSpan() const requires(Extents::rank() == 1)
+  {
+    return to1DConstSmallSpan();
+  }
+  constexpr SmallSpan<const DataType> to1DConstSmallSpan() const requires(Extents::rank() == 1)
+  {
+    return { _internalData(), extent0() };
   }
 
  private:

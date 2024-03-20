@@ -44,7 +44,7 @@ class ARCANE_ACCELERATOR_EXPORT VariableViewBase
 {
  public:
 
-  VariableViewBase(RunCommand& command,IVariable* var);
+  VariableViewBase(const ViewBuildInfo& command,IVariable* var);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -125,7 +125,7 @@ class ItemVariableScalarOutViewT
 
  public:
 
-  ItemVariableScalarOutViewT(RunCommand& command,IVariable* var,SmallSpan<DataType> v)
+  ItemVariableScalarOutViewT(const ViewBuildInfo& command,IVariable* var,SmallSpan<DataType> v)
   : VariableViewBase(command,var), m_values(v.data()),
     m_size(v.size()){}
 
@@ -189,7 +189,7 @@ class ItemVariableScalarInViewT
 
  public:
 
-  ItemVariableScalarInViewT(RunCommand& command,IVariable* var,SmallSpan<const DataType> v)
+  ItemVariableScalarInViewT(const ViewBuildInfo& command,IVariable* var,SmallSpan<const DataType> v)
   : VariableViewBase(command,var), m_values(v){}
 
   //! Opérateur d'accès vectoriel avec indirection.
@@ -245,7 +245,7 @@ class ItemVariableArrayInViewT
 
  public:
 
-  ItemVariableArrayInViewT(RunCommand& command,IVariable* var,SmallSpan2<const DataType> v)
+  ItemVariableArrayInViewT(const ViewBuildInfo& command,IVariable* var,SmallSpan2<const DataType> v)
   : VariableViewBase(command,var), m_values(v){}
 
   //! Opérateur d'accès pour l'entité \a item
@@ -287,7 +287,7 @@ class ItemVariableArrayOutViewT
 
  public:
 
-  ItemVariableArrayOutViewT(RunCommand& command,IVariable* var,SmallSpan2<DataType> v)
+  ItemVariableArrayOutViewT(const ViewBuildInfo& command,IVariable* var,SmallSpan2<DataType> v)
   : VariableViewBase(command,var), m_values(v){}
 
   //! Opérateur d'accès pour l'entité \a item
@@ -346,7 +346,7 @@ class ItemVariableRealNScalarOutViewT
  public:
 
   //! Construit la vue
-  ItemVariableRealNScalarOutViewT(RunCommand& command,IVariable* var,SmallSpan<DataType> v)
+  ItemVariableRealNScalarOutViewT(const ViewBuildInfo& command,IVariable* var,SmallSpan<DataType> v)
   : VariableViewBase(command,var), m_values(v.data()), m_size(v.size()){}
 
   //! Opérateur d'accès vectoriel avec indirection.
@@ -412,7 +412,7 @@ class ItemVariableRealNScalarOutViewT
  * \brief Vue en écriture.
  */
 template<typename ItemType,typename DataType> auto
-viewOut(RunCommand& command,MeshVariableScalarRefT<ItemType,DataType>& var)
+viewOut(const ViewBuildInfo& command,MeshVariableScalarRefT<ItemType,DataType>& var)
 {
   using Accessor = DataViewSetter<DataType>;
   return ItemVariableScalarOutViewT<ItemType,Accessor>(command,var.variable(),var.asArray());
@@ -422,7 +422,7 @@ viewOut(RunCommand& command,MeshVariableScalarRefT<ItemType,DataType>& var)
  * \brief Vue en écriture.
  */
 template<typename ItemType> auto
-viewOut(RunCommand& command,MeshVariableScalarRefT<ItemType,Real3>& var)
+viewOut(const ViewBuildInfo& command,MeshVariableScalarRefT<ItemType,Real3>& var)
 {
   using Accessor = DataViewSetter<Real3>;
   return ItemVariableRealNScalarOutViewT<ItemType,Accessor>(command,var.variable(),var.asArray());
@@ -432,7 +432,7 @@ viewOut(RunCommand& command,MeshVariableScalarRefT<ItemType,Real3>& var)
  * \brief Vue en écriture.
  */
 template<typename ItemType> auto
-viewOut(RunCommand& command,MeshVariableScalarRefT<ItemType,Real2>& var)
+viewOut(const ViewBuildInfo& command,MeshVariableScalarRefT<ItemType,Real2>& var)
 {
   using Accessor = DataViewSetter<Real2>;
   return ItemVariableRealNScalarOutViewT<ItemType,Accessor>(command,var.variable(),var.asArray());
@@ -442,7 +442,7 @@ viewOut(RunCommand& command,MeshVariableScalarRefT<ItemType,Real2>& var)
  * \brief Vue en écriture.
  */
 template<typename ItemType,typename DataType> auto
-viewOut(RunCommand& command,MeshVariableArrayRefT<ItemType,DataType>& var)
+viewOut(const ViewBuildInfo& command,MeshVariableArrayRefT<ItemType,DataType>& var)
 {
   using Accessor = View1DSetter<DataType>;
   return ItemVariableArrayOutViewT<ItemType,Accessor>(command,var.variable(),var.asArray());
@@ -454,7 +454,7 @@ viewOut(RunCommand& command,MeshVariableArrayRefT<ItemType,DataType>& var)
  * \brief Vue en lecture/écriture.
  */
 template<typename ItemType,typename DataType> auto
-viewInOut(RunCommand& command,MeshVariableScalarRefT<ItemType,DataType>& var)
+viewInOut(const ViewBuildInfo& command,MeshVariableScalarRefT<ItemType,DataType>& var)
 {
   using Accessor = DataViewGetterSetter<DataType>;
   return ItemVariableScalarOutViewT<ItemType,Accessor>(command,var.variable(),var.asArray());
@@ -464,7 +464,7 @@ viewInOut(RunCommand& command,MeshVariableScalarRefT<ItemType,DataType>& var)
  * \brief Vue en lecture/écriture.
  */
 template<typename ItemType> auto
-viewInOut(RunCommand& command,MeshVariableScalarRefT<ItemType,Real3>& var)
+viewInOut(const ViewBuildInfo& command,MeshVariableScalarRefT<ItemType,Real3>& var)
 {
   using Accessor = DataViewGetterSetter<Real3>;
   return ItemVariableRealNScalarOutViewT<ItemType,Accessor>(command,var.variable(),var.asArray());
@@ -474,7 +474,7 @@ viewInOut(RunCommand& command,MeshVariableScalarRefT<ItemType,Real3>& var)
  * \brief Vue en lecture/écriture.
  */
 template<typename ItemType> auto 
-viewInOut(RunCommand& command,MeshVariableScalarRefT<ItemType,Real2>& var)
+viewInOut(const ViewBuildInfo& command,MeshVariableScalarRefT<ItemType,Real2>& var)
 {
   using Accessor = DataViewGetterSetter<Real2>;
   return ItemVariableRealNScalarOutViewT<ItemType,Accessor>(command,var.variable(),var.asArray());
@@ -484,7 +484,7 @@ viewInOut(RunCommand& command,MeshVariableScalarRefT<ItemType,Real2>& var)
  * \brief Vue en lecture/écriture.
  */
 template<typename ItemType,typename DataType> auto
-viewInOut(RunCommand& command,MeshVariableArrayRefT<ItemType,DataType>& var)
+viewInOut(const ViewBuildInfo& command,MeshVariableArrayRefT<ItemType,DataType>& var)
 {
   using Accessor = View1DGetterSetter<DataType>;
   return ItemVariableArrayOutViewT<ItemType,Accessor>(command,var.variable(),var.asArray());
@@ -496,7 +496,7 @@ viewInOut(RunCommand& command,MeshVariableArrayRefT<ItemType,DataType>& var)
  * \brief Vue en lecture.
  */
 template<typename ItemType,typename DataType> auto
-viewIn(RunCommand& command,const MeshVariableScalarRefT<ItemType,DataType>& var)
+viewIn(const ViewBuildInfo& command,const MeshVariableScalarRefT<ItemType,DataType>& var)
 {
   return ItemVariableScalarInViewT<ItemType,DataType>(command,var.variable(),var.asArray());
 }
@@ -505,7 +505,7 @@ viewIn(RunCommand& command,const MeshVariableScalarRefT<ItemType,DataType>& var)
  * \brief Vue en lecture.
  */
 template<typename ItemType,typename DataType> auto
-viewIn(RunCommand& command,const MeshVariableArrayRefT<ItemType,DataType>& var)
+viewIn(const ViewBuildInfo& command,const MeshVariableArrayRefT<ItemType,DataType>& var)
 {
   return ItemVariableArrayInViewT<ItemType,DataType>(command,var.variable(),var.asArray());
 }

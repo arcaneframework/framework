@@ -392,6 +392,10 @@ class AbstractArray
   {
     return Span<const T>(m_ptr,m_md->size);
   }
+  operator SmallSpan<const T>() const
+  {
+    return SmallSpan<const T>(m_ptr,ARCCORE_CAST_SMALL_SIZE(size()));
+  }
 
  public:
 
@@ -1077,6 +1081,23 @@ class Array
   Span<T> span()
   {
     return Span<T>(m_ptr,m_md->size);
+  }
+  //! Vue immutable sur ce tableau
+  SmallSpan<const T> smallSpan() const
+  {
+    Integer s = arccoreCheckArraySize(m_md->size);
+    return SmallSpan<const T>(m_ptr,s);
+  }
+  //! Vue immutable sur ce tableau
+  SmallSpan<const T> constSmallSpan() const
+  {
+    return smallSpan();
+  }
+  //! Vue mutable sur ce tableau
+  SmallSpan<T> smallSpan()
+  {
+    Integer s = arccoreCheckArraySize(m_md->size);
+    return SmallSpan<T>(m_ptr,s);
   }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.

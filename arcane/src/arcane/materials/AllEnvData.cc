@@ -231,11 +231,7 @@ _computeInfosForEnvCells()
   // dans m_env_items_internal.
   const Int32 max_local_id = cell_family->maxLocalId();
   UniqueArray<Int32> env_cell_indexes(platform::getDefaultDataAllocator());
-  env_cell_indexes.resize(max_local_id);
-
-  // TODO: temporaire car 'Scan' ne supporte pas des tableaux de types différents
-  UniqueArray<Int32> cells_nb_env_int32(platform::getDefaultDataAllocator());
-  cells_nb_env_int32.resize(max_local_id);
+  env_cell_indexes.resize(cells_nb_env.size());
 
   //! Tableau de travail pour le nombre de matériaux par milieu
   UniqueArray<Int16> cells_nb_material(platform::getDefaultDataAllocator());
@@ -256,16 +252,10 @@ _computeInfosForEnvCells()
   else {
     // TODO: Cela ne fonctionne que si all_cells est compacté et
     // local_id[i] <=> i.
-    auto command = makeCommand(queue);
-    SmallSpan<Int32> cells_nb_env_int32_view(cells_nb_env_int32.view());
-    command << RUNCOMMAND_LOOP1(iter, nb_cell)
-    {
-      auto [i] = iter();
-      cells_nb_env_int32_view[i] = cells_nb_env[i];
-    };
-    Accelerator::Scanner<Int32> scanner;
+    Accelerator::GenericScanner scanner(queue);
     SmallSpan<Int32> env_cell_indexes_view(env_cell_indexes);
-    scanner.exclusiveSum(&queue, cells_nb_env_int32_view, env_cell_indexes_view);
+    Accelerator::ScannerSumOperator<Int32> op;
+    scanner.applyExclusive(0, cells_nb_env, env_cell_indexes_view, op, A_FUNCINFO);
   }
 
   // Positionne les infos pour les EnvCell
@@ -457,7 +447,8 @@ forceRecompute(bool compute_all)
     }
   }
 
-  m_material_mng->checkValid();
+  if (arcaneIsCheck())
+    m_material_mng->checkValid();
 
   m_material_mng->syncVariablesReferences();
 

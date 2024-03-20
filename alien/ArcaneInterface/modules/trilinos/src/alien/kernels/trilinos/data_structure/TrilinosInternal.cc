@@ -1,4 +1,9 @@
-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <alien/kernels/trilinos/TrilinosBackEnd.h>
 
 
@@ -10,7 +15,8 @@
 #include <Tpetra_HashTable.hpp>
 #include <Tpetra_Import.hpp>
 #include <Tpetra_Import_Util.hpp>
-
+#define HAVE_MUELU
+#ifdef HAVE_MUELU
 #include <MueLu.hpp>
 #ifdef HAVE_MUELU_AMGX
 //#define USE_DYNAMIC_AMGXLIB
@@ -18,6 +24,7 @@
 #include <amgx_capi.h>
 #endif
 #include <MueLu_AMGX_Setup.hpp>
+#endif
 #endif
 
 #include <alien/kernels/trilinos/data_structure/TrilinosInternal.h>

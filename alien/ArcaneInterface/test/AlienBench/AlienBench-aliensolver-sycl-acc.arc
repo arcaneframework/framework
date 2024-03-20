@@ -20,8 +20,8 @@
       <cartesian>
         <origine>0. 0. 0.</origine>
         <nsd>1 1 1</nsd>
-        <lx nx="10">1.</lx>
-        <ly ny="10">1.</ly>
+        <lx nx="100">1.</lx>
+        <ly ny="100">1.</ly>
         <lz nz="10">1.</lz>
       </cartesian>
     </meshgenerator>
@@ -29,6 +29,7 @@
 
   <alien-bench>
     <use-accelerator>true</use-accelerator>
+    <use-usm>false</use-usm>
     <!-- big diagonal-coefficient keep diagonal dominant matrix -->
     <diagonal-coefficient>1.</diagonal-coefficient>
     <!--lambdax>0.125</lambdax>

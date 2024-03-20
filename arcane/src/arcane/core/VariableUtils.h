@@ -36,14 +36,14 @@ namespace Arcane::VariableUtils
  * L'opération est asynchrone.
  */
 extern "C++" ARCANE_CORE_EXPORT
-void prefetchVariableAsync(IVariable* var, RunQueue* queue_or_null);
+void prefetchVariableAsync(IVariable* var, const RunQueue* queue_or_null);
 
 /*!
  * \brief Pré-copie la mémoire associée à la variable \a var.
  * \sa void prefetchVariableAsync(IVariable* var, RunQueue* queue_or_null);
  */
 extern "C++" ARCANE_CORE_EXPORT
-void prefetchVariableAsync(VariableRef& var, RunQueue* queue_or_null);
+void prefetchVariableAsync(VariableRef& var, const RunQueue* queue_or_null);
 
 /*!
  * \brief Indique que la variable est essentiellement en lecture.

@@ -503,7 +503,6 @@ public :
   void
   add_options(CmdLineOptionDescType& cmdline_options) const
   {
-    std::cout<<"ADD HTS SOLVER OPTIONS"<<std::endl ;
     using namespace boost::program_options;
     options_description desc("HTSSolver options");
     desc.add_options()("hts-solver",     value<std::string>()->default_value("bicgs"),"solver algo name : bicgstab ddml")

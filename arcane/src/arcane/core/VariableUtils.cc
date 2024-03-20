@@ -42,7 +42,7 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 
 void VariableUtils::
-prefetchVariableAsync(IVariable* var, RunQueue* queue_or_null)
+prefetchVariableAsync(IVariable* var, const RunQueue* queue_or_null)
 {
   ARCANE_CHECK_POINTER(var);
   if (!queue_or_null)
@@ -61,7 +61,7 @@ prefetchVariableAsync(IVariable* var, RunQueue* queue_or_null)
 /*---------------------------------------------------------------------------*/
 
 void VariableUtils::
-prefetchVariableAsync(VariableRef& var, RunQueue* queue_or_null)
+prefetchVariableAsync(VariableRef& var, const RunQueue* queue_or_null)
 {
   return prefetchVariableAsync(var.variable(), queue_or_null);
 }

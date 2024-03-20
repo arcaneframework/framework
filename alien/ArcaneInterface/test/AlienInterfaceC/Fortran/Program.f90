@@ -1,9 +1,9 @@
-subroutine test
+﻿subroutine test
     use M_AlienModule
     implicit none
 
   integer :: i,k, r
-  integer :: system_id, solver_id, error
+  integer :: system_id, solver_id
   integer :: global_nrows, local_nrows, nb_ghosts
   integer :: row_size, local_nnz
   integer, allocatable, dimension(:) :: row_offset, ghost_owners
@@ -17,12 +17,17 @@ subroutine test
   character(len=80) :: config_file
   integer :: alloc_stat
 
-
+  !
+  ! MPI INITIALIZATION
+  !
   call MPI_Init(ierr)
   comm = MPI_COMM_WORLD
   call MPI_Comm_size(comm,nprocs,ierr)
   call MPI_Comm_rank(comm,my_rank,ierr)
 
+  !
+  ! ALIEN INITIALIZATION
+  !
   print*, "NPROCS RANK",nprocs,my_rank
   call ALIEN_init()
 
@@ -115,12 +120,21 @@ subroutine test
 
   call ALIEN_SetRhsValues(system_id,local_nrows,row_uids,rhs_values)
 
+
+  !
+  ! CREATE LINEAR SOLVER 
+  !
   solver_id = ALIEN_CreateSolver(comm)
 
+  !
+  ! LINEAR SOLVER SET UP WITH CONFIG FILE 
+  !
   config_file = "solver.json"
   call ALIEN_InitSolver(solver_id,config_file)
 
-
+  !
+  ! LINEAR SYSTEM RESOLUTION
+  !
   call ALIEN_Solve(solver_id,system_id)
 
   call ALIEN_GetSolutionValues(system_id,local_nrows,row_uids,solution_values)
@@ -139,9 +153,18 @@ subroutine test
     print*,"REL ERROR2 : ",gerr2/gnorm2 ;
   endif
 
+  !
+  ! LINEAR SOLVER AND SYSTEM DESTRUCTION
+  !
   call ALIEN_DestroySolver(solver_id)
   call ALIEN_DestroyLinearSystem(system_id)
+
+  ! 
+  ! ALIEN FINALIZE
+  !
   call ALIEN_finalize()
+  
+  call MPI_Finalize(ierr)
 
 
 end subroutine test

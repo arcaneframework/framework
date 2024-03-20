@@ -29,8 +29,15 @@ namespace Arcane::Accelerator
 /*!
  * \brief File d'exécution pour un accélérateur.
  *
+ * Cette classe a une sémantique par référence. La file d'exécution est
+ * détruite lorsque la dernière référence dessus est détruite.
+ *
  * Une file est attachée à une politique d'exécution et permet d'exécuter
  * des commandes (RunCommand) sur un accélérateur ou sur le CPU.
+ *
+ * Les instances de cette classe sont créés par l'appel à makeQueue(Runner).
+ * On peut ensuite créer des noyaux de calcul (RunCommand) via l'appel
+ * à makeCommand().
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
@@ -97,12 +104,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   //! Indique si la file d'exécution est asynchrone.
   bool isAsync() const;
   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
-  void barrier();
+  void barrier() const;
 
   //! Copie des informations entre deux zones mémoires
-  void copyMemory(const MemoryCopyArgs& args);
+  void copyMemory(const MemoryCopyArgs& args) const;
   //! Effectue un préfetching de la mémoire
-  void prefetchMemory(const MemoryPrefetchArgs& args);
+  void prefetchMemory(const MemoryPrefetchArgs& args) const;
 
   //! Enregistre l'état de l'instance dans \a event.
   void recordEvent(RunQueueEvent& event);
@@ -112,6 +119,32 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   void waitEvent(RunQueueEvent& event);
   //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
   void waitEvent(Ref<RunQueueEvent>& event);
+
+  //@{ \brief Gestion mémoire
+  /*!
+   * \brief Options d'allocation associée à cette file.
+   *
+   * Il est possible de changer la ressource mémoire et donc l'allocateur utilisé
+   * via setMemoryRessource().
+   */
+  MemoryAllocationOptions allocationOptions() const;
+
+  /*!
+   * \brief Positionne la ressource mémoire utilisée pour les allocations avec cette instance.
+   *
+   * La valeur par défaut est eMemoryRessource::UnifiedMemory
+   * si isAcceleratorPolicy()==true et eMemoryRessource::Host sinon.
+   *
+   * \sa memoryRessource()
+   * \sa allocationOptions()
+   */
+  void setMemoryRessource(eMemoryRessource mem);
+
+  /*!
+   * \brief Ressource mémoire utilisée pour les allocations avec cette instance.
+   */
+  eMemoryRessource memoryRessource() const;
+  //@}
 
  public:
 
@@ -130,7 +163,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
-  impl::RunCommandImpl* _getCommandImpl();
+  impl::RunCommandImpl* _getCommandImpl() const;
 
   // Pour VariableViewBase
   friend class VariableViewBase;
@@ -150,7 +183,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
  * \brief Créé une commande associée à la file \a run_queue.
  */
 inline RunCommand
-makeCommand(RunQueue& run_queue)
+makeCommand(const RunQueue& run_queue)
 {
   return RunCommand(run_queue);
 }
@@ -159,7 +192,7 @@ makeCommand(RunQueue& run_queue)
  * \brief Créé une commande associée à la file \a run_queue.
  */
 inline RunCommand
-makeCommand(RunQueue* run_queue)
+makeCommand(const RunQueue* run_queue)
 {
   ARCANE_CHECK_POINTER(run_queue);
   return RunCommand(*run_queue);

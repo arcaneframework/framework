@@ -133,7 +133,10 @@ endCreate()
 void ComponentItemInternalData::
 _resetItemsInternal()
 {
-  RunQueue queue(makeQueue(m_material_mng->runner()));
+  if (!arcaneIsCheck())
+    return;
+
+  RunQueue queue(m_material_mng->runQueue());
 
   {
     ComponentItemSharedInfo* all_env_shared_info = allEnvSharedInfo();

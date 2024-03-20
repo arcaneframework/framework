@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryAllocationOptions.h                                   (C) 2000-2023 */
+/* MemoryAllocationOptions.h                                   (C) 2000-2024 */
 /*                                                                           */
 /* Options pour configurer les allocations.                                  */
 /*---------------------------------------------------------------------------*/
@@ -48,8 +48,8 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
 
   MemoryAllocationOptions(IMemoryAllocator* allocator, eMemoryLocationHint mem_hint, Int8 device)
   : m_allocator(allocator)
-  , m_memory_location_hint(mem_hint)
   , m_device(device)
+  , m_memory_location_hint(mem_hint)
   {
   }
 
@@ -67,8 +67,8 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   eMemoryLocationHint memoryLocationHint() const { return m_memory_location_hint; }
   void setMemoryLocationHint(eMemoryLocationHint mem_advice) { m_memory_location_hint = mem_advice; }
 
-  Int8 device() const { return m_device; }
-  void setDevice(Int8 device) { m_device = device; }
+  Int16 device() const { return m_device; }
+  void setDevice(Int16 device) { m_device = device; }
 
   void setArrayName(const String& name);
   String arrayName() const;
@@ -92,9 +92,9 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
  private:
 
   IMemoryAllocator* m_allocator = nullptr;
-  eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
-  Int8 m_device = -1;
   ArrayDebugInfo* m_debug_info = nullptr;
+  Int16 m_device = -1;
+  eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
 };
 
 /*---------------------------------------------------------------------------*/

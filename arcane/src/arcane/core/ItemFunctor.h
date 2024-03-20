@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFunctor.h                                               (C) 2000-2023 */
+/* ItemFunctor.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Fonctor sur les entités.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -17,8 +17,8 @@
 #include "arcane/utils/RangeFunctor.h"
 #include "arcane/utils/Functor.h"
 
-#include "arcane/Item.h"
-#include "arcane/ItemVectorView.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemVectorView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,25 +44,26 @@ class ARCANE_CORE_EXPORT AbstractItemRangeFunctor
 
   static const Integer DEFAULT_GRAIN_SIZE = 400;
 
-  AbstractItemRangeFunctor(ItemVectorView items_view,Integer grain_size);
+  AbstractItemRangeFunctor(ItemVectorView items_view, Int32 grain_size);
 
  public:
 
-  //! Nombre d'indexs.
-  Integer nbBlock() { return m_nb_block; }
+  //! Nombre de blocs.
+  Int32 nbBlock() const { return m_nb_block; }
+
   //! Taille souhaitée d'un intervalle d'itération.
-  Integer blockGrainSize() const { return m_block_grain_size; }
+  Int32 blockGrainSize() const { return m_block_grain_size; }
 
  protected:
 
   ItemVectorView m_items;
-  Integer m_block_size;
-  Integer m_nb_block;
-  Integer m_block_grain_size;
+  Int32 m_block_size = 0;
+  Int32 m_nb_block = 0;
+  Int32 m_block_grain_size = 0;
 
  protected:
 
-  ItemVectorView _view(Integer begin_block,Integer nb_block) const;
+  ItemVectorView _view(Int32 begin_block, Int32 nb_block, Int32* true_begin = nullptr) const;
 
  private:
 };
@@ -95,7 +96,7 @@ class ItemRangeFunctorT
 
  public:
 
-  virtual void executeFunctor(Integer begin,Integer size)
+  virtual void executeFunctor(Int32 begin, Int32 size)
   {
     //cout << "** BLOCKED RANGE! range=" << range.begin() << " end=" << range.end() << " size=" << range.size() << "\n";
     //CellVectorView sub_view = m_cells.subView(range.begin(),range.size());
@@ -118,20 +119,29 @@ class LambdaItemRangeFunctorT
 {
  public:
   LambdaItemRangeFunctorT(ItemVectorView items_view,const LambdaType& lambda_function,
-                          Integer grain_size = DEFAULT_GRAIN_SIZE)
+                          Int32 grain_size = DEFAULT_GRAIN_SIZE)
   : AbstractItemRangeFunctor(items_view,grain_size), m_lambda_function(lambda_function)
   {
   }
  
  public:
-  
-  void executeFunctor(Integer begin,Integer size) override
+
+  void executeFunctor(Int32 begin, Int32 size) override
   {
-    ItemVectorView sub_view(this->_view(begin,size));
-    m_lambda_function(sub_view);
+    Int32 true_begin = 0;
+    ItemVectorView sub_view(this->_view(begin, size, &true_begin));
+    // La lambda peut avoir deux prototypes :
+    // - elle prend uniquement un ItemVectorView en argument (version historique)
+    // - elle prend un ItemVectorView et l'indice du début du vecteur. Cela
+    // permet de connaitre l'index de l'itération
+    if constexpr (std::is_invocable_v<LambdaType, ItemVectorView>)
+      m_lambda_function(sub_view);
+    else
+      m_lambda_function(sub_view, true_begin);
   }
  
  private:
+
   const LambdaType& m_lambda_function;
 };
 
@@ -144,13 +154,16 @@ class ItemGroupComputeFunctor
 : public IFunctor
 {
  public:
-  ItemGroupComputeFunctor() : m_group(0) { }
-  virtual ~ItemGroupComputeFunctor() { }
+
+  ItemGroupComputeFunctor() = default;
+
  public:
+
   void setGroup(ItemGroupImpl* group) { m_group = group; }
- public:
+
  protected:
-  ItemGroupImpl* m_group;
+
+  ItemGroupImpl* m_group = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

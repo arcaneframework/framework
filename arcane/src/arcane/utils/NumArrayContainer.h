@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayContainer.h                                         (C) 2000-2023 */
+/* NumArrayContainer.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Conteneur pour la classe 'NumArray'.                                      */
 /*---------------------------------------------------------------------------*/
@@ -34,8 +34,8 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 {
  protected:
 
-  static IMemoryAllocator* _getDefaultAllocator();
-  static IMemoryAllocator* _getDefaultAllocator(eMemoryRessource r);
+  static MemoryAllocationOptions _getDefaultAllocator();
+  static MemoryAllocationOptions _getDefaultAllocator(eMemoryRessource r);
   static void _checkHost(eMemoryRessource r);
   static void _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
                                Span<std::byte> to, eMemoryRessource to_mem, RunQueue* queue);
@@ -71,7 +71,7 @@ class NumArrayContainer
 
  private:
 
-  explicit NumArrayContainer(IMemoryAllocator* a)
+  explicit NumArrayContainer(const MemoryAllocationOptions& a)
   : BaseClass()
   {
     this->_initFromAllocator(a, 0);
@@ -91,7 +91,7 @@ class NumArrayContainer
   }
 
   NumArrayContainer(const ThatClass& rhs)
-  : NumArrayContainer(rhs.allocator())
+  : NumArrayContainer(rhs.allocationOptions())
   {
     m_memory_ressource = rhs.m_memory_ressource;
     _resizeAndCopy(rhs);
