@@ -43,7 +43,7 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 {
  public:
 
-  ConstituentModifierWorkInfo();
+  ConstituentModifierWorkInfo(const MemoryAllocationOptions& opts, eMemoryRessource mem);
 
  public:
 
@@ -65,14 +65,14 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 
   // Filtre indiquant si une maille sera partielle après l'ajout.
   // Ce tableau est dimensionné au nombre de mailles ajoutées lors de la tranformation courante.
-  UniqueArray<bool> m_cells_is_partial;
+  NumArray<bool, MDDim1> m_cells_is_partial;
 
   ComponentItemListBuilder list_builder;
 
  public:
 
   //! Initialise l'instance.
-  void initialize(Int32 max_local_id);
+  void initialize(Int32 max_local_id, RunQueue& queue);
 
  public:
 
@@ -106,20 +106,20 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   //! Indique si l'opération courante est un ajout (true) ou une suppression (false) de mailles
   bool isAdd() const { return m_is_add; }
 
-  SmallSpan<const bool> transformedCells() const { return m_cells_to_transform.view(); }
-  SmallSpan<bool> transformedCells() { return m_cells_to_transform.view(); }
-  SmallSpan<const bool> removedCells() const { return m_removed_local_ids_filter.view(); }
-  SmallSpan<bool> removedCells() { return m_removed_local_ids_filter.view(); }
+  SmallSpan<const bool> transformedCells() const { return m_cells_to_transform.to1DSmallSpan(); }
+  SmallSpan<bool> transformedCells() { return m_cells_to_transform.to1DSmallSpan(); }
+  SmallSpan<const bool> removedCells() const { return m_removed_local_ids_filter.to1DSmallSpan(); }
+  SmallSpan<bool> removedCells() { return m_removed_local_ids_filter.to1DSmallSpan(); }
 
  private:
 
   // Filtre indiquant les mailles qui sont supprimées du constituant
   // Ce tableau est dimensionné au nombre de mailles.
-  UniqueArray<bool> m_removed_local_ids_filter;
+  NumArray<bool, MDDim1> m_removed_local_ids_filter;
 
   // Filtre indiquant les mailles qui doivent changer de status (Pure<->Partial)
   // Ce tableau est dimensionné au nombre de mailles.
-  UniqueArray<bool> m_cells_to_transform;
+  NumArray<bool, MDDim1> m_cells_to_transform;
 
   bool m_is_add = false;
 };

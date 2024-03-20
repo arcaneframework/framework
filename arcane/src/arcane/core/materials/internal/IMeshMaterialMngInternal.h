@@ -22,7 +22,6 @@
 
 namespace Arcane::Materials
 {
-class ComponentItemSharedInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,7 +63,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    * Pour modifier, il vaut mieux utiliser une instance de MeshMaterialModifier
    * qui garantit que les fonctions de mise à jour sont bien appelées.
    */
-  virtual IMeshMaterialModifierImpl* modifier() = 0;
+  virtual MeshMaterialModifierImpl* modifier() = 0;
 
   /*!
    * \brief Liste des infos pour indexer les variables matériaux.

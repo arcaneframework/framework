@@ -11,8 +11,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/PlatformUtils.h"
-
 #include "arcane/materials/internal/ConstituentModifierWorkInfo.h"
 
 #include "arcane/materials/internal/MaterialModifierOperation.h"
@@ -27,17 +25,17 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 ConstituentModifierWorkInfo::
-ConstituentModifierWorkInfo()
-: pure_local_ids(platform::getDefaultDataAllocator())
-, partial_indexes(platform::getDefaultDataAllocator())
-, cells_changed_in_env(platform::getDefaultDataAllocator())
-, cells_unchanged_in_env(platform::getDefaultDataAllocator())
-, m_saved_matvar_indexes(platform::getDefaultDataAllocator())
-, m_saved_local_ids(platform::getDefaultDataAllocator())
-, m_cells_current_nb_material(platform::getDefaultDataAllocator())
-, m_cells_is_partial(platform::getDefaultDataAllocator())
-, m_removed_local_ids_filter(platform::getDefaultDataAllocator())
-, m_cells_to_transform(platform::getDefaultDataAllocator())
+ConstituentModifierWorkInfo(const MemoryAllocationOptions& opts, eMemoryRessource mem)
+: pure_local_ids(opts.allocator())
+, partial_indexes(opts.allocator())
+, cells_changed_in_env(opts)
+, cells_unchanged_in_env(opts)
+, m_saved_matvar_indexes(opts.allocator())
+, m_saved_local_ids(opts.allocator())
+, m_cells_current_nb_material(opts)
+, m_cells_is_partial(mem)
+, m_removed_local_ids_filter(mem)
+, m_cells_to_transform(mem)
 {
 }
 
@@ -45,12 +43,12 @@ ConstituentModifierWorkInfo()
 /*---------------------------------------------------------------------------*/
 
 void ConstituentModifierWorkInfo::
-initialize(Int32 max_local_id)
+initialize(Int32 max_local_id, RunQueue& queue)
 {
   m_cells_to_transform.resize(max_local_id);
-  m_cells_to_transform.fill(false);
+  m_cells_to_transform.fill(false, &queue);
   m_removed_local_ids_filter.resize(max_local_id);
-  m_removed_local_ids_filter.fill(false);
+  m_removed_local_ids_filter.fill(false, &queue);
 
   m_saved_matvar_indexes.resizeHost(max_local_id);
   m_saved_local_ids.resizeHost(max_local_id);

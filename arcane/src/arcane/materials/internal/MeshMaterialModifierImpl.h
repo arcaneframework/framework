@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialModifierImpl.h                                  (C) 2000-2023 */
+/* MeshMaterialModifierImpl.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -19,7 +19,8 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/IMeshMaterial.h"
-#include "arcane/materials/internal/IMeshMaterialModifierImpl.h"
+
+#include "arcane/accelerator/RunQueue.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,7 +28,6 @@
 namespace Arcane::Materials
 {
 class MeshMaterialMng;
-class IMeshMaterialVariable;
 class MaterialModifierOperation;
 
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,6 @@ class MaterialModifierOperation;
 
 class MeshMaterialModifierImpl
 : public TraceAccessor
-, public IMeshMaterialModifierImpl
 {
  private:
   
@@ -63,17 +62,17 @@ class MeshMaterialModifierImpl
 
  public:
 
-  void addCells(IMeshMaterial* mat,Int32ConstArrayView ids) override;
-  void removeCells(IMeshMaterial* mat,Int32ConstArrayView ids) override;
+  void addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
+  void removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
 
-  void endUpdate() override;
-  void beginUpdate() override;
-  void dumpStats() override;
+  void endUpdate();
+  void beginUpdate();
+  void dumpStats();
 
  private:
 
-  void _addCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids);
-  void _removeCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids);
+  void _addCellsToGroupDirect(IMeshMaterial* mat, SmallSpan<const Int32> ids);
+  void _removeCellsToGroupDirect(IMeshMaterial* mat, SmallSpan<const Int32> ids);
 
   void _applyOperationsNoOptimize();
   void _updateEnvironmentsNoOptimize();
@@ -83,6 +82,7 @@ class MeshMaterialModifierImpl
 
   MeshMaterialMng* m_material_mng = nullptr;
   OperationList m_operations;
+  RunQueue m_queue;
   Int32 nb_update = 0;
   Int32 nb_save_restore = 0;
   Int32 nb_optimize_add = 0;

@@ -40,11 +40,12 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 IncrementalComponentModifier::
-IncrementalComponentModifier(AllEnvData* all_env_data)
+IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
 : TraceAccessor(all_env_data->traceMng())
 , m_all_env_data(all_env_data)
 , m_material_mng(all_env_data->m_material_mng)
-, m_copy_queue(makeQueue(m_material_mng->runner()))
+, m_work_info(queue.allocationOptions(), queue.memoryRessource())
+, m_queue(queue)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_TRANSFORM_NO_FILTER", true))
     m_do_old_implementation = (v.value() != 0);
@@ -57,7 +58,7 @@ void IncrementalComponentModifier::
 initialize()
 {
   Int32 max_local_id = m_material_mng->mesh()->cellFamily()->maxLocalId();
-  m_work_info.initialize(max_local_id);
+  m_work_info.initialize(max_local_id, m_queue);
   m_work_info.is_verbose = traceMng()->verbosityLevel() >= 5;
 }
 
@@ -77,8 +78,8 @@ apply(MaterialModifierOperation* operation)
 {
   bool is_add = operation->isAdd();
   IMeshMaterial* mat = operation->material();
-  ConstArrayView<Int32> orig_ids = operation->ids();
-  ConstArrayView<Int32> ids = orig_ids;
+  SmallSpan<const Int32> orig_ids = operation->ids();
+  SmallSpan<const Int32> ids = orig_ids;
 
   auto* true_mat = ARCANE_CHECK_POINTER(dynamic_cast<MeshMaterial*>(mat));
 
@@ -90,6 +91,7 @@ apply(MaterialModifierOperation* operation)
   Integer nb_mat = env->nbMaterial();
 
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
+  const bool check_if_present = !m_queue.isAcceleratorPolicy();
 
   if (nb_mat != 1) {
 
@@ -112,11 +114,11 @@ apply(MaterialModifierOperation* operation)
     const Int16 env_id = true_env->componentId();
     info(4) << "Using optimisation updateMaterialDirect is_add?=" << is_add;
 
-    connectivity->fillCellsNbMaterial(ids, env_id, cells_current_nb_material.view(), m_copy_queue);
+    connectivity->fillCellsNbMaterial(ids, env_id, cells_current_nb_material.view(), m_queue);
 
     const bool do_new = !m_do_old_implementation;
-    if (do_new){
-      Accelerator::GenericFilterer filterer(&m_copy_queue);
+    if (do_new) {
+      Accelerator::GenericFilterer filterer(&m_queue);
       SmallSpan<Int32> cells_unchanged_in_env_view = cells_unchanged_in_env.view();
       SmallSpan<Int32> cells_changed_in_env_view = cells_changed_in_env.view();
       SmallSpan<const Int16> cells_current_nb_material_view = m_work_info.m_cells_current_nb_material.view();
@@ -143,7 +145,7 @@ apply(MaterialModifierOperation* operation)
         cells_changed_in_env.resize(filterer.nbOutputElement());
       }
     }
-    else{
+    else {
       cells_unchanged_in_env.clear();
       cells_changed_in_env.clear();
       for (Integer i = 0; i < nb_id; ++i) {
@@ -163,14 +165,14 @@ apply(MaterialModifierOperation* operation)
 
     Int16 mat_id = true_mat->componentId();
     if (is_add) {
-      mat->cells().addItems(cells_unchanged_in_env);
-      connectivity->addCellsToMaterial(mat_id, cells_unchanged_in_env, m_copy_queue);
-      _addItemsToEnvironment(true_env, true_mat, cells_unchanged_in_env, false);
+      mat->cells().addItems(cells_unchanged_in_env, check_if_present);
+      connectivity->addCellsToMaterial(mat_id, cells_unchanged_in_env.view(), m_queue);
+      _addItemsToEnvironment(true_env, true_mat, cells_unchanged_in_env.view(), false);
     }
     else {
-      mat->cells().removeItems(cells_unchanged_in_env);
-      connectivity->removeCellsToMaterial(mat_id, cells_unchanged_in_env, m_copy_queue);
-      _removeItemsFromEnvironment(true_env, true_mat, cells_unchanged_in_env, false);
+      mat->cells().removeItems(cells_unchanged_in_env, check_if_present);
+      connectivity->removeCellsToMaterial(mat_id, cells_unchanged_in_env.view(), m_queue);
+      _removeItemsFromEnvironment(true_env, true_mat, cells_unchanged_in_env.view(), false);
     }
 
     // Prend pour \a ids uniquement la liste des mailles
@@ -186,12 +188,12 @@ apply(MaterialModifierOperation* operation)
     Int16 env_id = true_env->componentId();
     Int16 mat_id = true_mat->componentId();
     if (is_add) {
-      connectivity->addCellsToEnvironment(env_id, ids, m_copy_queue);
-      connectivity->addCellsToMaterial(mat_id, ids, m_copy_queue);
+      connectivity->addCellsToEnvironment(env_id, ids, m_queue);
+      connectivity->addCellsToMaterial(mat_id, ids, m_queue);
     }
     else {
-      connectivity->removeCellsToEnvironment(env_id, ids, m_copy_queue);
-      connectivity->removeCellsToMaterial(mat_id, ids, m_copy_queue);
+      connectivity->removeCellsToEnvironment(env_id, ids, m_queue);
+      connectivity->removeCellsToMaterial(mat_id, ids, m_queue);
     }
   }
 
@@ -209,15 +211,15 @@ apply(MaterialModifierOperation* operation)
   bool need_update_env = (nb_mat != 1);
 
   if (is_add) {
-    mat->cells().addItems(ids);
+    mat->cells().addItems(ids.smallView(), check_if_present);
     if (need_update_env)
-      env->cells().addItems(ids);
+      env->cells().addItems(ids.smallView(), check_if_present);
     _addItemsToEnvironment(true_env, true_mat, ids, need_update_env);
   }
   else {
-    mat->cells().removeItems(ids);
+    mat->cells().removeItems(ids.smallView(), check_if_present);
     if (need_update_env)
-      env->cells().removeItems(ids);
+      env->cells().removeItems(ids.smallView(), check_if_present);
     _removeItemsFromEnvironment(true_env, true_mat, ids, need_update_env);
   }
 }
@@ -238,10 +240,10 @@ apply(MaterialModifierOperation* operation)
  */
 void IncrementalComponentModifier::
 _switchCellsForMaterials(const MeshMaterial* modified_mat,
-                         ConstArrayView<Int32> ids)
+                         SmallSpan<const Int32> ids)
 {
   const bool is_add = m_work_info.isAdd();
-  const bool is_device = isAcceleratorPolicy(m_copy_queue.executionPolicy());
+  const bool is_device = isAcceleratorPolicy(m_queue.executionPolicy());
 
   for (MeshEnvironment* true_env : m_material_mng->trueEnvironments()) {
     for (MeshMaterial* mat : true_env->trueMaterials()) {
@@ -259,7 +261,7 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
       info(4) << "TransformCells (V3) is_add?=" << is_add << " indexer=" << indexer->name();
 
       _computeCellsToTransformForMaterial(mat, ids);
-      indexer->transformCellsV2(m_work_info, m_copy_queue);
+      indexer->transformCellsV2(m_work_info, m_queue);
       _resetTransformedCells(ids);
 
       auto pure_local_ids = m_work_info.pure_local_ids.view(is_device);
@@ -272,7 +274,7 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
       MeshVariableCopyBetweenPartialAndGlobalArgs args(indexer->index(),
                                                        pure_local_ids,
                                                        partial_indexes,
-                                                       &m_copy_queue);
+                                                       &m_queue);
       m_all_env_data->_copyBetweenPartialsAndGlobals(args, is_add);
     }
   }
@@ -294,10 +296,10 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
  */
 void IncrementalComponentModifier::
 _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
-                            ConstArrayView<Int32> ids)
+                            SmallSpan<const Int32> ids)
 {
   const bool is_add = m_work_info.isAdd();
-  const bool is_device = m_copy_queue.isAcceleratorPolicy();
+  const bool is_device = m_queue.isAcceleratorPolicy();
 
   // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
   // en cas de suppression de mailles car cela sera fait avec la valeur matériau
@@ -317,21 +319,22 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
 
     MeshMaterialVariableIndexer* indexer = env->variableIndexer();
 
-    info(4) << "TransformCells (V2) is_add?=" << is_add << " indexer=" << indexer->name();
+    info(4) << "TransformCells (V2) is_add?=" << is_add
+            << " indexer=" << indexer->name() << " nb_item=" << ids.size();
 
     _computeCellsToTransformForEnvironments(ids);
-    indexer->transformCellsV2(m_work_info, m_copy_queue);
+    indexer->transformCellsV2(m_work_info, m_queue);
     _resetTransformedCells(ids);
-
-    info(4) << "NB_ENV_TRANSFORM=" << m_work_info.pure_local_ids.size()
-            << " name=" << env->name();
 
     SmallSpan<const Int32> pure_local_ids = m_work_info.pure_local_ids.view(is_device);
     SmallSpan<const Int32> partial_indexes = m_work_info.partial_indexes.view(is_device);
 
+    info(4) << "NB_ENV_TRANSFORM nb_pure=" << pure_local_ids.size()
+            << " name=" << env->name();
+
     if (is_copy) {
       MeshVariableCopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), pure_local_ids,
-                                                            partial_indexes, &m_copy_queue);
+                                                            partial_indexes, &m_queue);
       m_all_env_data->_copyBetweenPartialsAndGlobals(copy_args, is_add);
     }
   }
@@ -343,7 +346,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
  * \brief Calcule les mailles à transformer pour le matériau \at mat.
  */
 void IncrementalComponentModifier::
-_computeCellsToTransformForMaterial(const MeshMaterial* mat, ConstArrayView<Int32> ids)
+_computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   const MeshEnvironment* env = mat->trueEnvironment();
   const Int16 env_id = env->componentId();
@@ -353,7 +356,7 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, ConstArrayView<Int3
   SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
   const bool do_new = !m_do_old_implementation;
   if (do_new)
-    connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_copy_queue);
+    connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_queue);
   else {
     ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
 
@@ -387,7 +390,7 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, ConstArrayView<Int3
  * d'un milieu.
  */
 void IncrementalComponentModifier::
-_computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids)
+_computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids)
 {
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
@@ -395,7 +398,7 @@ _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids)
   SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
 
   const Int32 n = ids.size();
-  auto command = makeCommand(m_copy_queue);
+  auto command = makeCommand(m_queue);
   command << RUNCOMMAND_LOOP1(iter, n)
   {
     auto [i] = iter();
@@ -428,7 +431,7 @@ _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids)
  */
 void IncrementalComponentModifier::
 _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
-                            Int32ConstArrayView local_ids, bool update_env_indexer)
+                            SmallSpan<const Int32> local_ids, bool update_env_indexer)
 {
   info(4) << "MeshEnvironment::removeItemsDirect mat=" << mat->name();
 
@@ -440,14 +443,14 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   // TODO: à faire dans finialize()
   env->addToTotalNbCellMat(-nb_to_remove);
 
-  mat->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_copy_queue);
+  mat->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_queue);
 
   if (update_env_indexer) {
     // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
     // Cela n'est possible que si le nombre de matériaux du milieu
     // est supérieur ou égal à 2 (car sinon le matériau et le milieu
     // ont le même indexeur)
-    env->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_copy_queue);
+    env->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_queue);
   }
 
   // Remet \a removed_local_ids_filter à la valeur initiale pour
@@ -467,7 +470,7 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
  */
 void IncrementalComponentModifier::
 _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
-                       Int32ConstArrayView local_ids, bool update_env_indexer)
+                       SmallSpan<const Int32> local_ids, bool update_env_indexer)
 {
   info(4) << "MeshEnvironment::addItemsDirect" << " mat=" << mat->name();
 
@@ -480,7 +483,7 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   const Int16 env_id = env->componentId();
   m_work_info.m_cells_is_partial.resize(nb_to_add);
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
-  connectivity->fillCellsIsPartial(local_ids, env_id, m_work_info.m_cells_is_partial.view(), m_copy_queue);
+  connectivity->fillCellsIsPartial(local_ids, env_id, m_work_info.m_cells_is_partial.to1DSmallSpan(), m_queue);
 
   _addItemsToIndexer(var_indexer, local_ids);
 
@@ -516,9 +519,9 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 
   const Int32 component_index = var_indexer->index() + 1;
 
-  SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial.view();
+  SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial;
 
-  Accelerator::GenericFilterer filterer(&m_copy_queue);
+  Accelerator::GenericFilterer filterer(&m_queue);
 
   // TODO: pour l'instant on remplit en deux fois mais il serait
   // possible de le faire en une seule fois en utilisation l'algorithme de Partition.
@@ -563,14 +566,14 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
   // TODO: lors de cet appel, on connait le max de \a index_in_partial donc
   // on peut éviter de faire une réduction pour le recalculer.
 
-  var_indexer->endUpdateAdd(list_builder, m_copy_queue);
+  var_indexer->endUpdateAdd(list_builder, m_queue);
 
   // Maintenant que les nouveaux MatVar sont créés, il faut les
   // initialiser avec les bonnes valeurs.
   {
     IMeshMaterialMng* mm = m_material_mng;
     auto func = [&](IMeshMaterialVariable* mv) {
-      mv->_internalApi()->initializeNewItems(list_builder, m_copy_queue);
+      mv->_internalApi()->initializeNewItems(list_builder, m_queue);
     };
     functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
   }
@@ -584,10 +587,10 @@ setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set)
 {
   const Int32 nb_item = local_ids.size();
   SmallSpan<bool> removed_cells = m_work_info.removedCells();
-  auto command = makeCommand(m_copy_queue);
+  auto command = makeCommand(m_queue);
 
-  ARCANE_CHECK_ACCESSIBLE_POINTER(m_copy_queue, local_ids.data());
-  ARCANE_CHECK_ACCESSIBLE_POINTER(m_copy_queue, removed_cells.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(m_queue, local_ids.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(m_queue, removed_cells.data());
 
   command << RUNCOMMAND_LOOP1(iter, nb_item)
   {
@@ -600,10 +603,10 @@ setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalComponentModifier::
-_resetTransformedCells(ConstArrayView<Int32> local_ids)
+_resetTransformedCells(SmallSpan<const Int32> local_ids)
 {
   const Int32 nb_item = local_ids.size();
-  auto command = makeCommand(m_copy_queue);
+  auto command = makeCommand(m_queue);
   SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
   command << RUNCOMMAND_LOOP1(iter, nb_item)
   {
