@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialModifierImpl.h                                  (C) 2000-2023 */
+/* MeshMaterialModifierImpl.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -27,7 +27,6 @@
 namespace Arcane::Materials
 {
 class MeshMaterialMng;
-class IMeshMaterialVariable;
 class MaterialModifierOperation;
 
 /*---------------------------------------------------------------------------*/
@@ -63,8 +62,8 @@ class MeshMaterialModifierImpl
 
  public:
 
-  void addCells(IMeshMaterial* mat,Int32ConstArrayView ids) override;
-  void removeCells(IMeshMaterial* mat,Int32ConstArrayView ids) override;
+  void addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids) override;
+  void removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids) override;
 
   void endUpdate() override;
   void beginUpdate() override;
@@ -72,8 +71,8 @@ class MeshMaterialModifierImpl
 
  private:
 
-  void _addCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids);
-  void _removeCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids);
+  void _addCellsToGroupDirect(IMeshMaterial* mat, SmallSpan<const Int32> ids);
+  void _removeCellsToGroupDirect(IMeshMaterial* mat, SmallSpan<const Int32> ids);
 
   void _applyOperationsNoOptimize();
   void _updateEnvironmentsNoOptimize();

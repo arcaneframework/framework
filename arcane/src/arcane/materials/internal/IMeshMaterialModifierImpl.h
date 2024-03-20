@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialModifierImpl.h                                 (C) 2000-2023 */
+/* IMeshMaterialModifierImpl.h                                 (C) 2000-2024 */
 /*                                                                           */
 /* Interface de l'implémentation de la modification des matériaux.           */
 /*---------------------------------------------------------------------------*/
@@ -23,9 +23,6 @@
 
 namespace Arcane::Materials
 {
-class IMeshMaterialMng;
-class IMeshMaterial;
-class IMeshMaterialModifierImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,19 +38,19 @@ class IMeshMaterialModifierImpl
 {
  public:
 
-  virtual ~IMeshMaterialModifierImpl() {}
+  virtual ~IMeshMaterialModifierImpl() = default;
 
  public:
 
   /*!
    * \brief Ajoute les mailles d'indices locaux \a ids au matériau \a mat.
    */
-  virtual void addCells(IMeshMaterial* mat, Int32ConstArrayView ids) = 0;
+  virtual void addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids) = 0;
 
   /*!
    * \brief Supprime les mailles d'indices locaux \a ids au matériau \a mat.
    */
-  virtual void removeCells(IMeshMaterial* mat, Int32ConstArrayView ids) = 0;
+  virtual void removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids) = 0;
 
   /*!
    * \brief Indique qu'on commence une modification.

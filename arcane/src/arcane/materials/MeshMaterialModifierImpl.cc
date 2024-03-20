@@ -128,22 +128,22 @@ initOptimizationFlags()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-addCells(IMeshMaterial* mat,Int32ConstArrayView ids)
+addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   if (ids.empty())
     return;
-  m_operations.add(Operation::createAdd(mat,ids));
+  m_operations.add(Operation::createAdd(mat, ids));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-removeCells(IMeshMaterial* mat,Int32ConstArrayView ids)
+removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   if (ids.empty())
     return;
-  m_operations.add(Operation::createRemove(mat,ids));
+  m_operations.add(Operation::createRemove(mat, ids));
 }
 
 /*---------------------------------------------------------------------------*/

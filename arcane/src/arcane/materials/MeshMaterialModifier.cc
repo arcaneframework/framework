@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialModifier.cc                                     (C) 2000-2023 */
+/* MeshMaterialModifier.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Objet permettant de modifier les matériaux.                               */
 /*---------------------------------------------------------------------------*/
@@ -64,7 +64,7 @@ _checkHasUpdate()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifier::
-addCells(IMeshMaterial* mat, Int32ConstArrayView ids)
+addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   _checkHasUpdate();
   m_impl->addCells(mat, ids);
@@ -74,7 +74,7 @@ addCells(IMeshMaterial* mat, Int32ConstArrayView ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifier::
-removeCells(IMeshMaterial* mat, Int32ConstArrayView ids)
+removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   _checkHasUpdate();
   m_impl->removeCells(mat, ids);
