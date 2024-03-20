@@ -24,6 +24,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/VariableUtils.h"
 #include "arcane/core/MeshUtils.h"
+#include "arcane/core/IVariableMng.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
@@ -159,7 +160,6 @@ class MaterialHeatTestModule
 
   void _computeCellsCenter();
   void _buildHeatObjects();
-  void _copyToGlobal(const HeatObject& heat_object);
   void _computeTotalTemperature(const HeatObject& heat_object, bool do_check);
   IMeshMaterial* _findMaterial(const String& name);
 
@@ -170,6 +170,7 @@ class MaterialHeatTestModule
   void _computeGlobalTemperature();
   void _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa);
+  void _copyToGlobal(const HeatObject& heat_object);
 
  private:
 
@@ -381,13 +382,6 @@ _compute()
   // Refroidit chaque matériau
   for (const HeatObject& ho : m_heat_objects)
     _addCold(ho);
-
-  // Remplit la variable composante associée de la variable 'AllTemperature'
-  // pour chaque matériau. Cela permet de voir leur valeur facilement dans
-  // les outils de dépouillement
-  ENUMERATE_ (Cell, icell, allCells()) {
-    m_all_temperature[icell].fill(0.0);
-  }
 
   for (const HeatObject& ho : m_heat_objects) {
     _copyToGlobal(ho);
@@ -608,10 +602,17 @@ _copyToGlobal(const HeatObject& heat_object)
 {
   IMeshMaterial* mat = heat_object.material;
   Int32 var_index = heat_object.index;
-  ENUMERATE_MATCELL (imatcell, mat) {
-    MatCell mc = *imatcell;
-    Real t = m_mat_temperature[mc];
-    m_all_temperature[mc.globalCell()][var_index] = t;
+
+  {
+    auto command = makeCommand(m_queue);
+    auto in_mat_temperature = viewIn(command, m_mat_temperature);
+    auto out_all_temperature = viewOut(command, m_all_temperature);
+    command << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, mat)
+    {
+      auto [mvi, cid] = iter();
+      Real t = in_mat_temperature[mvi];
+      out_all_temperature[cid][var_index] = t;
+    };
   }
 }
 
@@ -718,11 +719,9 @@ _computeGlobalTemperature()
     //Cell cell = *icell;
     AllEnvCell all_env_cell = all_env_cell_converter[cellid];
     Real global_temperature = 0.0;
-    ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
-      EnvCell env_cell = *ienvcell;
+    for (EnvCell env_cell : all_env_cell.subEnvItems()) {
       Real env_temperature = 0.0;
-      ENUMERATE_CELL_MATCELL (imatcell, env_cell) {
-        MatCell mc = *imatcell;
+      for (MatCell mc : env_cell.subMatItems()) {
         env_temperature += inout_mat_temperature[mc];
       }
       inout_mat_temperature[env_cell] = env_temperature;
@@ -744,13 +743,11 @@ _printCellsTemperature(Int32ConstArrayView ids)
     AllEnvCell all_env_cell = all_env_cell_converter[cell_id];
     Cell global_cell = all_env_cell.globalCell();
     info() << "Cell=" << global_cell.uniqueId() << " v=" << m_mat_temperature[global_cell];
-    ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
-      EnvCell ec = *ienvcell;
+    for (EnvCell ec : all_env_cell.subEnvItems()) {
       info() << " EnvCell " << m_mat_temperature[ec]
              << " mv=" << ec._varIndex()
              << " env=" << ec.component()->name();
-      ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
-        MatCell mc = *imatcell;
+      for (MatCell mc : ec.subMatItems()) {
         info() << "  MatCell " << m_mat_temperature[mc]
                << " mv=" << mc._varIndex()
                << " mat=" << mc.component()->name();
