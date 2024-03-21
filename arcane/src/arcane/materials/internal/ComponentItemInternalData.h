@@ -114,16 +114,18 @@ class ComponentItemInternalRange
 class ComponentItemInternalData
 : public TraceAccessor
 {
+ public:
+
   //! Conteneur pour les informations de ComponentItemSharedInfo
   class Storage
   {
    public:
 
-    explicit Storage(const MemoryAllocationOptions& alloc_info);
+    explicit Storage(const MemoryAllocationOptions& alloc_info, const String& base_name);
 
    public:
 
-    void resize(Int32 new_size, ComponentItemSharedInfo* shared_info);
+    void resize(Int32 new_size, ComponentItemSharedInfo* shared_info, RunQueue& queue);
     Int32 size() const { return m_size; }
 
    private:
@@ -135,6 +137,11 @@ class ComponentItemInternalData
     UniqueArray<Int16> m_nb_sub_constituent_item_list;
     UniqueArray<Int32> m_global_item_local_id_list;
     UniqueArray<MatVarIndex> m_var_index_list;
+
+   private:
+
+    static MemoryAllocationOptions _allocInfo(const MemoryAllocationOptions& alloc_info,
+                                              const String& base_name, const String& name);
   };
 
  public:
