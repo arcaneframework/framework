@@ -818,9 +818,9 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
   }
   else {
     nb_added = nb_item_to_add;
-    items_lid.resize(current_size+nb_added);
-    Int32ArrayView ptr = items_lid;
-    memcpy(&ptr[current_size],items_local_id.data(),sizeof(Int32)*nb_added);
+    MemoryUtils::checkResizeArrayWithCapacity(items_lid,current_size+nb_added,false);
+    SmallSpan<Int32> ptr = items_lid.subView(current_size,nb_added);
+    MemoryUtils::copy<Int32>(ptr, items_local_id);
   }
 
   if (arcaneIsCheck()){
