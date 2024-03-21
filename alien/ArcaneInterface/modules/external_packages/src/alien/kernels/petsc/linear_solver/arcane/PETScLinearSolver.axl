@@ -11,6 +11,14 @@
   <variables/>
 
   <options>
+    <simple name="null-space-constant-opt" type="bool" default="false">
+      <description>activate null space constant option</description>
+    </simple>
+    
+    <simple name="nearnull-space-opt" type="bool" default="false">
+      <description>activate nearnull space option</description>
+    </simple>
+    
     <service-instance name="solver" type="Alien::IPETScKSP">
        <description>Description of linear solver</description>
     </service-instance>

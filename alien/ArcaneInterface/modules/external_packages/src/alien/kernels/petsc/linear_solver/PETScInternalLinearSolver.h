@@ -1,5 +1,12 @@
-#ifndef ALIEN_KERNELS_PETSC_PETSCLINEARSOLVER_H
-#define ALIEN_KERNELS_PETSC_PETSCLINEARSOLVER_H
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+#pragma once
+
+#include <alien/AlienExternalPackagesPrecomp.h>
 
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/expression/solver/SolverStat.h>
@@ -113,6 +120,17 @@ class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETS
       return false;
   }
 
+
+  void setNullSpaceConstantOption(bool flag)
+  {
+    m_null_space_constant_opt = flag ;
+  }
+
+  void setNearNullSpaceOption(bool flag)
+  {
+    m_nearnull_space_opt = flag ;
+  }
+
  public:
   void checkError(const Arccore::String& msg, int ierr);
 
@@ -138,7 +156,8 @@ class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETS
   VerboseTypes::eChoice m_verbose;
 
   //! option to manage null space constant
-  bool m_null_space_constant_opt;
+  bool m_null_space_constant_opt = false;
+  bool m_nearnull_space_opt = false;
 
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng;
 
@@ -154,6 +173,4 @@ class PETScInternalLinearSolver : public IInternalLinearSolver<PETScMatrix, PETS
 } // namespace Alien
 
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
-#endif /* ALIEN_KERNELS_PETSC_PETSCLINEARSOLVER_H */
