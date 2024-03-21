@@ -58,6 +58,8 @@ VectorInternal::VectorInternal(const int local_size,
 
   if (low != local_offset)
     throw Arccore::FatalErrorException(A_FUNCINFO, "Ill placed parallel vector");
+  if(ierr)
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Errors while creating vector");
 }
 
 
