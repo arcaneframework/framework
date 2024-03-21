@@ -25,6 +25,7 @@
 #include "arcane/core/VariableUtils.h"
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/IVariableMng.h"
+#include "arcane/core/ItemInfoListView.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
@@ -42,8 +43,11 @@
 #include "arcane/accelerator/MaterialVariableViews.h"
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/Filter.h"
 #include "arcane/accelerator/SpanViews.h"
+#include "arcane/accelerator/NumArrayViews.h"
+#include "arcane/accelerator/Reduce.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MaterialHeatTest_axl.h"
@@ -91,11 +95,11 @@ class MaterialHeatTestModule
   //! Tableau de travail pour la mise à jour des liste de matériaux
   struct MaterialWorkArray
   {
-    MaterialWorkArray()
-    : mat_cells_to_add_value(_allocator())
-    , mat_cells_to_add(_allocator())
-    , mat_cells_to_remove(_allocator())
-    , mat_cells_remove_filter(_allocator())
+    MaterialWorkArray(eMemoryRessource mem)
+    : mat_cells_to_add_value(_allocator(mem))
+    , mat_cells_to_add(_allocator(mem))
+    , mat_cells_to_remove(_allocator(mem))
+    , mat_cells_remove_filter(mem)
     {
     }
 
@@ -106,7 +110,7 @@ class MaterialHeatTestModule
       mat_cells_to_add_value.clear();
       mat_cells_to_add.clear();
       mat_cells_to_remove.clear();
-      mat_cells_remove_filter.clear();
+      mat_cells_remove_filter.resize(0);
     }
 
     void resizeNbAdd(Int32 new_size)
@@ -123,7 +127,10 @@ class MaterialHeatTestModule
 
    public:
 
-    static IMemoryAllocator* _allocator() { return MemoryUtils::getDefaultDataAllocator(); }
+    static MemoryAllocationOptions _allocator(eMemoryRessource mem)
+    {
+      return MemoryUtils::getAllocationOptions(mem);
+    }
 
    public:
 
@@ -134,7 +141,7 @@ class MaterialHeatTestModule
     //! Liste des mailles à supprimer
     UniqueArray<Int32> mat_cells_to_remove;
     //! Filtre des mailles à supprimer
-    UniqueArray<bool> mat_cells_remove_filter;
+    NumArray<bool, MDDim1> mat_cells_remove_filter;
   };
 
  public:
@@ -160,7 +167,6 @@ class MaterialHeatTestModule
 
   void _computeCellsCenter();
   void _buildHeatObjects();
-  void _computeTotalTemperature(const HeatObject& heat_object, bool do_check);
   IMeshMaterial* _findMaterial(const String& name);
 
  public:
@@ -171,10 +177,11 @@ class MaterialHeatTestModule
   void _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _copyToGlobal(const HeatObject& heat_object);
+  void _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa);
+  void _computeTotalTemperature(const HeatObject& heat_object, bool do_check);
 
  private:
 
-  void _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa);
   void _compute();
   void _printCellsTemperature(Int32ConstArrayView ids);
 };
@@ -330,7 +337,16 @@ compute()
 void MaterialHeatTestModule::
 _compute()
 {
-  UniqueArray<MaterialWorkArray> work_arrays(m_heat_objects.size());
+  RunQueue* queue = acceleratorMng()->defaultQueue();
+  eMemoryRessource mem = eMemoryRessource::UnifiedMemory;
+  if (queue->isAcceleratorPolicy())
+    mem = eMemoryRessource::Device;
+
+  const Int32 nb_heat = m_heat_objects.size();
+  UniqueArray<MaterialWorkArray> work_arrays;
+  work_arrays.reserve(nb_heat);
+  for (Int32 i = 0; i < nb_heat; ++i)
+    work_arrays.add(MaterialWorkArray(mem));
 
   // Ajoute de la chaleur à chaque matériau
   for (const HeatObject& ho : m_heat_objects)
@@ -393,22 +409,53 @@ _compute()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+  ARCCORE_HOST_DEVICE MatCell _getMatCell(AllEnvCell c, Int32 mat_id)
+  {
+    for (EnvCell env_cell : c.subEnvItems()) {
+      for (MatCell mc : env_cell.subMatItems()) {
+        Int32 mid = mc.materialId();
+        if (mid == mat_id)
+          return mc;
+      }
+    }
+    return {};
+  }
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MaterialHeatTestModule::
 _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa)
 {
+  RunQueue* queue = this->acceleratorMng()->defaultQueue();
+
   // Initialise les nouvelles valeurs partielles
   IMeshMaterial* current_mat = heat_object.material;
+  Int32 mat_id = current_mat->id();
   CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
-  ConstArrayView<Int32> ids(wa.mat_cells_to_add.constView());
+  SmallSpan<const Int32> ids(wa.mat_cells_to_add.constView());
+  const Int32 nb_id = ids.size();
+  {
+    auto command = makeCommand(queue);
+    auto in_value_to_add = viewIn(command, wa.mat_cells_to_add_value);
+    auto out_mat_temperature = viewInOut(command, m_mat_temperature);
+    command << RUNCOMMAND_LOOP1(iter, nb_id)
+    {
+      auto [i] = iter();
 
-  for (Int32 i = 0, n = ids.size(); i < n; ++i) {
-    AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(ids[i])];
-    MatCell mc = current_mat->findMatCell(all_env_cell);
-    // Teste que la maille n'est pas nulle.
-    // Ne devrait pas arriver car on l'a ajouté juste avant
-    if (mc.null())
-      ARCANE_FATAL("Internal invalid null mat cell");
-    m_mat_temperature[mc] = wa.mat_cells_to_add_value[i];
+      // for (Int32 i = 0, n = ids.size(); i < n; ++i) {
+      AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(ids[i])];
+      MatCell mc = _getMatCell(all_env_cell, mat_id);
+      // Teste que la maille n'est pas nulle.
+      // Ne devrait pas arriver car on l'a ajouté juste avant
+      //if (mc.null())
+      //ARCANE_FATAL("Internal invalid null mat cell");
+      out_mat_temperature[mc] = in_value_to_add[i];
+      //}
+    };
   }
 }
 
@@ -478,21 +525,6 @@ _addHeat(const HeatObject& heat_object)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace
-{
-  ARCCORE_HOST_DEVICE MatCell _getMatCell(AllEnvCell c, Int32 mat_id)
-  {
-    for (EnvCell env_cell : c.subEnvItems()) {
-      for (MatCell mc : env_cell.subMatItems()) {
-        Int32 mid = mc.materialId();
-        if (mid == mat_id)
-          return mc;
-      }
-    }
-    return {};
-  }
-} // namespace
 
 void MaterialHeatTestModule::
 _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa)
@@ -584,7 +616,7 @@ _computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa)
     Accelerator::GenericFilterer filterer(m_queue);
     SmallSpan<const Int32> in_remove_view = wa.mat_cells_to_remove.view();
     SmallSpan<Int32> out_remove_view = wa.mat_cells_to_remove.view();
-    SmallSpan<const bool> filter_view = wa.mat_cells_remove_filter.view();
+    SmallSpan<const bool> filter_view = wa.mat_cells_remove_filter.to1DSmallSpan();
     filterer.apply(in_remove_view, out_remove_view, filter_view);
     Int32 nb_out = filterer.nbOutputElement();
     wa.resizeNbRemove(nb_out);
@@ -624,12 +656,23 @@ _computeTotalTemperature(const HeatObject& heat_object, bool do_check)
 {
   IMeshMaterial* mat = heat_object.material;
   Real total_mat_temperature = 0.0;
-  ENUMERATE_MATCELL (imatcell, mat) {
-    MatCell mc = *imatcell;
-    Cell cell = mc.globalCell();
-    if (cell.isOwn())
-      total_mat_temperature += m_mat_temperature[mc];
+
+  {
+    auto command = makeCommand(m_queue);
+    auto in_mat_temperature = viewIn(command, m_mat_temperature);
+    Accelerator::ReducerSum<double> total_temperature_reducer(command);
+    CellInfoListView cells_info(defaultMesh()->cellFamily());
+    command << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, mat)
+    {
+      auto [mvi, cid] = iter();
+      if (cells_info.isOwn(cid)) {
+        Real t = in_mat_temperature[mvi];
+        total_temperature_reducer.add(t);
+      }
+    };
+    total_mat_temperature = total_temperature_reducer.reduce();
   }
+
   total_mat_temperature = parallelMng()->reduce(Parallel::ReduceSum, total_mat_temperature);
   info() << "TotalMatTemperature mat=" << mat->name() << " T=" << total_mat_temperature;
   if (do_check) {
