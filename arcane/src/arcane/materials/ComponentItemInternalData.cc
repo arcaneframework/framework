@@ -116,7 +116,6 @@ ComponentItemInternalData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
 , m_material_mng(mmg)
 , m_shared_infos(MemoryUtils::getAllocatorForMostlyReadOnlyData())
-, m_mat_items_internal_range(_allocOptions())
 , m_all_env_storage(_allocOptions(), "AllEnvStorage")
 , m_env_storage(_allocOptions(), "EnvStorage")
 , m_mat_storage(_allocOptions(), "MatStorage")
@@ -193,6 +192,10 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
 {
   RunQueue& queue(m_material_mng->runQueue());
 
+  auto environments = m_material_mng->trueEnvironments();
+  const Int32 nb_env = environments.size();
+  NumArray<ComponentItemInternalRange, MDDim1> host_mats_range(nb_env);
+
   // Calcule le nombre total de ComponentItemInternal dont on a besoin
   Int32 total_nb_mat_cell = 0;
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments())
@@ -206,7 +209,7 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
     for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
       Int32 nb_cell_mat = env->totalNbCellMat();
       Int32 env_id = env->id();
-      m_mat_items_internal_range[env_id].setRange(index_in_container, nb_cell_mat);
+      host_mats_range[env_id].setRange(index_in_container, nb_cell_mat);
       index_in_container += nb_cell_mat;
     }
   }
@@ -216,6 +219,7 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
          << " total_nb_mat_cell=" << total_nb_mat_cell;
   {
     RunQueue::ScopedAsync sc(&queue);
+    m_mat_items_internal_range.copy(host_mats_range, &queue);
     m_all_env_storage.resize(max_local_id, allEnvSharedInfo(), queue);
     m_env_storage.resize(total_nb_env_cell, envSharedInfo(), queue);
     m_mat_storage.resize(total_nb_mat_cell, matSharedInfo(), queue);
