@@ -27,10 +27,12 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 ConstituentItemLocalIdList::
-ConstituentItemLocalIdList(ComponentItemSharedInfo* shared_info)
-: m_constituent_item_index_list(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+ConstituentItemLocalIdList(ComponentItemSharedInfo* shared_info,const String& debug_name)
+: m_constituent_item_index_list(MemoryUtils::getDefaultDataAllocator())
 , m_shared_info(shared_info)
 {
+  if (!debug_name.empty())
+    m_constituent_item_index_list.setDebugName(debug_name);
 }
 
 /*---------------------------------------------------------------------------*/

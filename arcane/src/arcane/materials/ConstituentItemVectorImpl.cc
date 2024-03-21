@@ -35,7 +35,7 @@ ConstituentItemVectorImpl(IMeshComponent* component)
 , m_component(component)
 , m_matvar_indexes(platform::getDefaultDataAllocator())
 , m_items_local_id(platform::getDefaultDataAllocator())
-, m_part_data(std::make_unique<MeshComponentPartData>(component))
+  , m_part_data(std::make_unique<MeshComponentPartData>(component,String()))
 {
   Int32 level = -1;
   if (component->isMaterial())
@@ -45,7 +45,7 @@ ConstituentItemVectorImpl(IMeshComponent* component)
   else
     ARCANE_FATAL("Bad internal type of component");
   ComponentItemSharedInfo* shared_info = m_material_mng->_internalApi()->componentItemSharedInfo(level);
-  m_constituent_list = std::make_unique<ConstituentItemLocalIdList>(shared_info);
+  m_constituent_list = std::make_unique<ConstituentItemLocalIdList>(shared_info,String());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -91,7 +91,7 @@ _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
       idx[i] = multiples[i].valueIndex();
   }
 
-  m_part_data->_notifyValueIndexesChanged();
+  m_part_data->_notifyValueIndexesChanged(nullptr);
 }
 
 /*---------------------------------------------------------------------------*/
