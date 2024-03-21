@@ -26,6 +26,7 @@
 #include "arcane/materials/internal/MeshComponentPartData.h"
 
 #include "arcane/accelerator/Filter.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,11 +66,38 @@ MeshComponentPartData(IMeshComponent* component, const String& debug_name)
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentPartData::
-_notifyValueIndexesChanged()
+_notifyValueIndexesChanged(RunQueue* queue)
 {
-  // TODO: faire sur accélérateur
-  applySimdPadding(m_value_indexes[0]);
-  applySimdPadding(m_value_indexes[1]);
+  if (queue && queue->isAcceleratorPolicy()) {
+    SmallSpan<Int32> v0 = m_value_indexes[0].smallSpan();
+    SmallSpan<Int32> v1 = m_value_indexes[1].smallSpan();
+    Int32 size0 = v0.size();
+    Int32 size1 = v1.size();
+    Int32 padding_size0 = arcaneSizeWithPadding(size0);
+    Int32 padding_size1 = arcaneSizeWithPadding(size1);
+    SmallSpan<Int32> padded_v0(v0.data(), padding_size0);
+    SmallSpan<Int32> padded_v1(v1.data(), padding_size1);
+    if (padding_size0 != size0 || padding_size1 != size1) {
+      auto command = makeCommand(queue);
+      command << RUNCOMMAND_LOOP1(iter, 1)
+      {
+        if (size0 > 0) {
+          Int32 last_value = v0[size0 - 1];
+          for (Int32 k = size0; k < padding_size0; ++k)
+            padded_v0[k] = last_value;
+        }
+        if (size1 > 0) {
+          Int32 last_value = v1[size1 - 1];
+          for (Int32 k = size1; k < padding_size1; ++k)
+            padded_v1[k] = last_value;
+        }
+      };
+    }
+  }
+  else {
+    applySimdPadding(m_value_indexes[0]);
+    applySimdPadding(m_value_indexes[1]);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -134,7 +162,7 @@ _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queu
           << " nb_pure=" << pure_indexes.size()
           << " nb_impure=" << impure_indexes.size();
 
-  _notifyValueIndexesChanged();
+  _notifyValueIndexesChanged(&queue);
 }
 
 /*---------------------------------------------------------------------------*/

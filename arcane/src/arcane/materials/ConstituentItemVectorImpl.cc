@@ -91,7 +91,7 @@ _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
       idx[i] = multiples[i].valueIndex();
   }
 
-  m_part_data->_notifyValueIndexesChanged();
+  m_part_data->_notifyValueIndexesChanged(nullptr);
 }
 
 /*---------------------------------------------------------------------------*/

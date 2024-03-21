@@ -88,11 +88,10 @@ class MeshComponentPartData
     return m_value_indexes[(Int32)k];
   }
 
-  void _notifyValueIndexesChanged();
-
  public:
 
   void _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queue);
+  void _notifyValueIndexesChanged(RunQueue* queue);
 
  private:
 
