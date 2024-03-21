@@ -44,7 +44,7 @@ class MeshComponentPartData
 
  public:
 
-  explicit MeshComponentPartData(IMeshComponent* component);
+  MeshComponentPartData(IMeshComponent* component,const String& debug_name);
 
  public:
 

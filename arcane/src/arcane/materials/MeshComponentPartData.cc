@@ -37,7 +37,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshComponentPartData::
-MeshComponentPartData(IMeshComponent* component)
+MeshComponentPartData(IMeshComponent* component, const String& debug_name)
 : TraceAccessor(component->traceMng())
 , m_component(component)
 , m_impure_var_idx(component->_internalApi()->variableIndexerIndex() + 1)
@@ -48,6 +48,13 @@ MeshComponentPartData(IMeshComponent* component)
   for (Integer i = 0; i < 2; ++i) {
     m_value_indexes[i] = UniqueArray<Int32>(allocator);
     m_items_internal_indexes[i] = UniqueArray<Int32>(allocator);
+  }
+  if (!debug_name.empty()) {
+    String base_name = String("MeshComponentPartData") + debug_name;
+    for (Integer i = 0; i < 2; ++i) {
+      m_value_indexes[i].setDebugName(base_name + "ValueIndexes" + String::fromNumber(i));
+      m_items_internal_indexes[i].setDebugName(base_name + "ValueIndexes" + String::fromNumber(i));
+    }
   }
 }
 
@@ -60,6 +67,7 @@ MeshComponentPartData(IMeshComponent* component)
 void MeshComponentPartData::
 _notifyValueIndexesChanged()
 {
+  // TODO: faire sur accélérateur
   applySimdPadding(m_value_indexes[0]);
   applySimdPadding(m_value_indexes[1]);
 }

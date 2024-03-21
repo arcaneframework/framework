@@ -37,6 +37,8 @@ ConstituentModifierWorkInfo(const MemoryAllocationOptions& opts, eMemoryRessourc
 , m_removed_local_ids_filter(mem)
 , m_cells_to_transform(mem)
 {
+  cells_changed_in_env.setDebugName("WorkInfoCellsChangedInEnv");
+  cells_unchanged_in_env.setDebugName("WorkInfoCellsUnchangedInEnv");
 }
 
 /*---------------------------------------------------------------------------*/
