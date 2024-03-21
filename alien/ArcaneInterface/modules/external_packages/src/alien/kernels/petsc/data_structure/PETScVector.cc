@@ -51,8 +51,22 @@ PETScVector::allocate()
   else
     comm = MPI_COMM_NULL ;
 
-  m_internal.reset(new VectorInternal(this->scalarizedLocalSize(), this->scalarizedOffset(),
-      this->scalarizedGlobalSize(), dist.isParallel(),comm));
+  auto blk = this->block() ;
+  if(blk)
+  {
+      const Arccore::Integer block_size = blk->size();
+      m_internal.reset(new VectorInternal(this->scalarizedLocalSize(),
+                                          this->scalarizedOffset(),
+                                          this->scalarizedGlobalSize(),
+                                          block_size,
+                                          dist.isParallel(),
+                                          comm));
+  }
+  else
+  {
+      m_internal.reset(new VectorInternal(this->scalarizedLocalSize(), this->scalarizedOffset(),
+                                          this->scalarizedGlobalSize(), dist.isParallel(),comm));
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -63,6 +77,17 @@ PETScVector::setValues(const int nrow, const int* rows, const double* values)
   if (m_internal->m_internal == nullptr)
     return false;
   int ierr = VecSetValues(m_internal->m_internal,
+      nrow, // nb de valeurs
+      rows, values, INSERT_VALUES);
+  return (ierr == 0);
+}
+
+bool
+PETScVector::setBlockValues(const int nrow, const int* rows, const int block_size, const double* values)
+{
+  if (m_internal->m_internal == nullptr)
+    return false;
+  int ierr = VecSetValuesBlocked(m_internal->m_internal,
       nrow, // nb de valeurs
       rows, values, INSERT_VALUES);
   return (ierr == 0);
@@ -86,6 +111,20 @@ PETScVector::setValues(const int nrow, const double* values)
   return (ierr == 0);
 }
 
+bool
+PETScVector::setBlockValues(const int nrow, const int block_size, const double* values)
+{
+  if (!m_internal.get())
+    return false;
+
+  std::vector<int> rows(nrow);
+  for (int i = 0; i < nrow; ++i)
+    rows[i] = m_internal->m_offset + i;
+  int ierr = VecSetValuesBlocked(m_internal->m_internal,
+      nrow, // nb de valeurs
+      rows.data(), values, INSERT_VALUES);
+  return (ierr == 0);
+}
 /*---------------------------------------------------------------------------*/
 
 bool
@@ -94,6 +133,23 @@ PETScVector::setValues(Arccore::ConstArrayView<Arccore::Real> values)
   ALIEN_ASSERT((m_internal.get()), ("Not initialized PETScVector before updating"));
   if (not setValues(this->scalarizedLocalSize(), values.unguardedBasePointer()))
     throw Arccore::FatalErrorException(A_FUNCINFO, "Error while setting vetor data");
+  if (not assemble())
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Error while assembling vector data");
+  return true;
+}
+
+
+bool
+PETScVector::setBlockValues(int block_size, Arccore::ConstArrayView<Arccore::Real> values)
+{
+  ALIEN_ASSERT((m_internal.get()), ("Not initialized PETScVector before updating"));
+#ifdef  PETSC_HAVE_VECSETBLOCKSIZE
+  if (not setBlockValues(this->scalarizedLocalSize()/block_size, block_size, values.unguardedBasePointer()))
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Error while setting vetor data");
+#else
+  if (not setValues(this->scalarizedLocalSize(), values.unguardedBasePointer()))
+    throw Arccore::FatalErrorException(A_FUNCINFO, "Error while setting vetor data");
+#endif
   if (not assemble())
     throw Arccore::FatalErrorException(A_FUNCINFO, "Error while assembling vector data");
   return true;

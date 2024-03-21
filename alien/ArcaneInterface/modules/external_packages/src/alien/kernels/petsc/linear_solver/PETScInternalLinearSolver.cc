@@ -248,6 +248,8 @@ PETScInternalLinearSolver::init()
   }
 
   m_verbose = m_options->verbose();
+  m_null_space_constant_opt = m_options->nullSpaceConstantOpt() ;
+  m_nearnull_space_opt = m_options->nearnullSpaceOpt() ;
   // m_stater.stopInitializationMeasure();
 }
 
@@ -313,10 +315,69 @@ PETScInternalLinearSolver::solve(
 #endif // PETSC_VERSION
                                          ));
 
+  if(matrix.internal()->m_has_coordinates)
+  {
+    auto const& vec_coords = matrix.internal()->m_coordinates ;
+    if (m_nearnull_space_opt)
+    {
+        MatNullSpace matnull;
+        PetscBool    has_const;
+        PetscInt     bs, nvec;
+        const Vec   *vecs;
+        MatNullSpaceCreateRigidBody(matrix.internal()->m_coordinates, &matnull);
+        MatGetBlockSize(matrix.internal()->m_internal, &bs) ;
+        MatNullSpaceGetVecs(matnull, &has_const, &nvec, &vecs);
+        MatSetNearNullSpace(matrix.internal()->m_internal, matnull);
+        MatNullSpaceDestroy(&matnull);
+        if (m_verbose == VerboseTypes::high ) {
+            alien_info([&] {
+              cout() << "|---------------------------------------------|";
+              cout() << "| Nearnull Space Option is activated          |";
+              cout() << "| Rigid Body Mode is activated                |";
+              cout() << "| BlockSize     : "<<bs;
+              cout() << "| Nb Interp Vec : "<<nvec;
+              cout() << "| Has constant  : "<<has_const;
+              cout() << "|---------------------------------------------|";
+            }) ;
+        }
+
+#if PETSC_HAVE_JACOBIROWL1SCALE
+        PCJacobiSetRowl1Scale(pc, 0.5);
+#endif
+    }
+    /*
+    else
+    {
+        PetscInt idx[] = {1, 2};
+        PetscScalar *coords;
+        VecGetArray(matrix.internal()->m_coordinates, &coords);
+        PCSetCoordinates(pc, 3, matrix.internal()->m_local_size / 3,coords) ;
+        PCGAMGSetUseSAEstEig(pc, PETSC_FALSE);
+#if PETSC_VERSION_MAIN
+        PCGAMGSetLowMemoryFilter(pc, PETSC_TRUE);
+        PCGAMGMISkSetMinDegreeOrdering(pc, PETSC_TRUE);
+        PCGAMGSetAggressiveSquareGraph(pc, PETSC_FALSE);
+        PCGAMGSetInjectionIndex(pc, 2, idx); // code coverage, same as command line
+#endif
+    }*/
+  }
+
   // On utilise row space pour le moment
   // N'est utilisé que dans FieldSplit
   // Voir avec refactoring PETSc
+
+  if (m_verbose == VerboseTypes::high ) {
+      alien_info([&] {
+        cout()<<"START KSP CONFIGURE";
+      }) ;
+  }
   m_options->solver()->configure(ksp, matrix.rowSpace(), matrix.distribution());
+  if (m_verbose == VerboseTypes::high ) {
+      alien_info([&] {
+        cout()<<"KSP IS CONFIGURED";
+      }) ;
+  }
+
 
 // Impact local : à réactiver en tant qu'option spécifique et probablement dans
 // l'interface ILinearSolver

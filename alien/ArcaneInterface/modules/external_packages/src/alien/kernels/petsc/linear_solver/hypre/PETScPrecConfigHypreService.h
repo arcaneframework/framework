@@ -20,6 +20,7 @@ struct PETScPrecConfigHypreOptions
   {
     PILUT,
     AMG,
+    AMGN,
     ParaSails,
     Euclid
   };

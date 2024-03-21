@@ -30,6 +30,7 @@
 
     <alien-bench>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
+      <redistribution>true</redistribution>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
@@ -41,11 +42,12 @@
         <solver name="BiCGStab">
           <num-iterations-max>1000</num-iterations-max>
           <stop-criteria-value>1e-8</stop-criteria-value>
-          <preconditioner name="BlockILU">
-          </preconditioner>
-        </solver>
-       <verbose>high</verbose>
-      </linear-solver>
+           <preconditioner name="Hypre">
+              <field-split-mode>true</field-split-mode>
+              <type>AMG</type>
+           </preconditioner>
+         </solver>
+       </linear-solver>
 
     
   </alien-bench>

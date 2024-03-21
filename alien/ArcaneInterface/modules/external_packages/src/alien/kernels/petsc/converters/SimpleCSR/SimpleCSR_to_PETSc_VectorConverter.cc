@@ -1,3 +1,10 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+
 #include <alien/core/backend/IVectorConverter.h>
 #include <alien/core/backend/VectorConverterRegisterer.h>
 
@@ -50,8 +57,17 @@ SimpleCSR_to_PETSc_VectorConverter::convert(
   });
 
   Arccore::ConstArrayView<Arccore::Real> values = v.values();
-  if (not v2.setValues(values))
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Error while setting values");
+  if (sourceImpl->block())
+  {
+      const Arccore::Integer block_size = sourceImpl->block()->size();
+      if (not v2.setBlockValues(block_size,values))
+        throw Arccore::FatalErrorException(A_FUNCINFO, "Error while setting values");
+  }
+  else
+  {
+    if (not v2.setValues(values))
+      throw Arccore::FatalErrorException(A_FUNCINFO, "Error while setting values");
+  }
 }
 
 /*---------------------------------------------------------------------------*/
