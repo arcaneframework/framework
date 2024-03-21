@@ -113,7 +113,7 @@ PETScVector::setValues(const int nrow, const double* values)
     rows[i] = m_internal->m_offset + i;
   int ierr = VecSetValues(m_internal->m_internal,
       nrow, // nb de valeurs
-      rows, values, INSERT_VALUES);
+      rows.data(), values, INSERT_VALUES);
   return (ierr == 0);
 }
 
