@@ -320,14 +320,6 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Termine une transaction
   void endTransaction();
 
-  /*!
-   * \internal
-   * \brief Liste des numéros locaux des entités de ce groupe.
-   * \warning a utiliser avec moult précaution, en général
-   * uniquement par le functor de recalcul.
-   */
-  Int32Array& unguardedItemsLocalId(const bool self_invalidate = true);
-
   ARCANE_DEPRECATED_REASON("Y2022: Use itemInfoListView() instead")
   //! Liste des entités sur lesquelles s'appuie le groupe
   ItemInternalList itemsInternal() const;
@@ -439,6 +431,18 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 
   //! API interne à Arcane
   ItemGroupImplInternal* _internalApi() const;
+
+ public:
+
+  /*!
+   * \internal
+   * \brief Liste des numéros locaux des entités de ce groupe.
+   * \warning a utiliser avec moult précaution, en général
+   * uniquement par le functor de recalcul.
+   */
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
+  Int32Array& unguardedItemsLocalId(const bool self_invalidate = true);
+
 
  public:
 
