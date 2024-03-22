@@ -451,12 +451,6 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! \internal
   static void _destroySharedNull();
 
-  /*!
-   * \internal
-   * \brief Indique que le groupe est associé à un constituant.
-   */
-  void _setAsConstituentGroup();
-
  private:
 
   //! Initialisation des sous-groupes par types

@@ -37,6 +37,11 @@ class ItemGroupImplInternal
   : m_p(p)
   {}
 
+ public:
+
+  //! Indique que le groupe est associé à un constituant.
+  void setAsConstituentGroup();
+
  private:
 
   ItemGroupInternal* m_p = nullptr;
