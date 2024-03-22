@@ -98,13 +98,13 @@ _init()
 {
   if (m_item_family)
     m_full_name = m_item_family->fullName() + "_" + m_name;
-  // Si maillage associé et pas un groupe enfant alors les données du groupe
+
+  // Si un maillage est associé et qu'on n'est un groupe enfant alors les données du groupe
   // sont conservées dans une variable.
   if (m_mesh && !m_parent){
     int property = IVariable::PSubDomainDepend | IVariable::PPrivate;
     VariableBuildInfo vbi(m_mesh,m_variable_name,property);
     m_variable_items_local_id = new VariableArrayInt32(vbi);
-    m_variable_items_local_id->variable()->setAllocationInfo(DataAllocationInfo(eMemoryLocationHint::HostAndDeviceMostlyRead));
     m_items_local_id = &m_variable_items_local_id->_internalTrueData()->_internalDeprecatedValue();
     updateTimestamp();
   }

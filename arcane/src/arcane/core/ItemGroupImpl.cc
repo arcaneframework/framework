@@ -1385,7 +1385,7 @@ _initChildrenByTypeV2()
   Int32 nb_basic_item_type= ItemTypeMng::nbBasicItemType();
   m_p->m_children_by_type_ids.resize(nb_basic_item_type);
   for( Integer i=0; i<nb_basic_item_type; ++i ){
-    m_p->m_children_by_type_ids[i] = UniqueArray<Int32>{MemoryUtils::getAllocatorForMostlyReadOnlyData()};
+    m_p->m_children_by_type_ids[i] = UniqueArray<Int32>{MemoryUtils::getDefaultDataAllocator()};
   }
 }
 
