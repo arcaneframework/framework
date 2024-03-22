@@ -10,7 +10,7 @@
 /* Classe pour ajouter du 'padding' pour la vectorisation.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ARRAYSIMDPADDER_H
-#define ARCANE_UTILS_ARRAYSIMDAPDDER_H
+#define ARCANE_UTILS_ARRAYSIMDPADDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
