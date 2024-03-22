@@ -16,8 +16,10 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FunctorUtils.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/IItemFamily.h"
+#include "arcane/core/internal/ItemGroupImplInternal.h"
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
@@ -171,7 +173,7 @@ apply(MaterialModifierOperation* operation)
     }
     else {
       flagRemovedCells(cells_unchanged_in_env, true);
-      mat->cells().removeItems(cells_unchanged_in_env, check_if_present);
+      _removeItemsInGroup(mat->cells(), cells_unchanged_in_env);
       connectivity->removeCellsToMaterial(mat_id, cells_unchanged_in_env.view(), m_queue);
       _removeItemsFromEnvironment(true_env, true_mat, cells_unchanged_in_env.view(), false);
       flagRemovedCells(cells_unchanged_in_env, false);
@@ -220,9 +222,9 @@ apply(MaterialModifierOperation* operation)
   }
   else {
     flagRemovedCells(ids, true);
-    mat->cells().removeItems(ids.smallView(), check_if_present);
+    _removeItemsInGroup(mat->cells(), ids);
     if (need_update_env)
-      env->cells().removeItems(ids.smallView(), check_if_present);
+      _removeItemsInGroup(env->cells(), ids);
     _removeItemsFromEnvironment(true_env, true_mat, ids, need_update_env);
     // Remet \a removed_local_ids_filter à la valeur initiale pour les prochaines opérations
     flagRemovedCells(ids, false);
@@ -619,6 +621,47 @@ _resetTransformedCells(SmallSpan<const Int32> local_ids)
     Int32 lid = local_ids[i];
     transformed_cells[lid] = false;
   };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+_removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
+{
+  const Int32 nb_removed = removed_ids.size();
+  if (nb_removed == 0)
+    return;
+
+  const bool do_old = false;
+  if (do_old) {
+    cells.removeItems(removed_ids.smallView(), false);
+  }
+  else {
+    // Filtre les entités du groupe \a cells en considérant que
+    // m_work_info.removedCells() vaut vrai pour les mailles qui
+    // doivent être supprimées.
+    ItemGroupImplInternal* impl_internal = cells._internalApi();
+    SmallSpan<Int32> items_local_id(impl_internal->itemsLocalId());
+
+    // Lors de l'application du filtre, le tableau d'entrée et de sortie
+    // est le même (c'est normalement supporté par le GenericFilterer).
+    SmallSpan<const Int32> input_ids(items_local_id);
+    SmallSpan<Int32> output_ids_view(items_local_id);
+    SmallSpan<const bool> filtered_cells(m_work_info.removedCells());
+    Accelerator::GenericFilterer filterer(&m_queue);
+    auto select_filter = [=] ARCCORE_HOST_DEVICE(Int32 local_id) -> bool {
+      return !filtered_cells[local_id];
+    };
+    filterer.applyIf(input_ids, output_ids_view, select_filter, A_FUNCINFO);
+
+    Int32 current_nb_item = items_local_id.size();
+    Int32 nb_remaining = filterer.nbOutputElement();
+    if ((nb_remaining + nb_removed) != current_nb_item)
+      ARCANE_FATAL("Internal error in removing nb_remaining={0} nb_removed={1} original_size={2}",
+                   nb_remaining, nb_removed, current_nb_item);
+    impl_internal->notifyDirectRemoveItems(removed_ids, nb_remaining);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

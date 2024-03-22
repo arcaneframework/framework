@@ -69,6 +69,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void _resetTransformedCells(SmallSpan<const Int32> ids);
   void _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                           SmallSpan<const Int32> local_ids);
+  void _removeItemsInGroup(ItemGroup cells,SmallSpan<const Int32> removed_ids);
 
  private:
 

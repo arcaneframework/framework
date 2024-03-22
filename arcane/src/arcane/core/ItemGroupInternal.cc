@@ -426,7 +426,6 @@ _removeItems(SmallSpan<const Int32> items_local_id)
   notifyReduceObservers(&observation_info);
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -506,6 +505,22 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void ItemGroupInternal::
+_notifyDirectRemoveItems(SmallSpan<const Int32> removed_ids, Int32 nb_remaining)
+{
+  mutableItemsLocalId().resize(nb_remaining);
+  updateTimestamp();
+  if (arcaneIsCheck())
+    checkValid();
+  // NOTE: la liste \a removed_ids n'est pas forcément dans le même ordre
+  // que celle obtenue via removeItems()
+  Int32ConstArrayView observation_info(removed_ids.smallView());
+  notifyReduceObservers(&observation_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -513,6 +528,24 @@ void ItemGroupImplInternal::
 setAsConstituentGroup()
 {
   m_p->m_is_constituent_group = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SmallSpan<Int32> ItemGroupImplInternal::
+itemsLocalId()
+{
+  return m_p->itemsLocalId();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupImplInternal::
+notifyDirectRemoveItems(SmallSpan<const Int32> removed_ids, Int32 nb_remaining)
+{
+  m_p->_notifyDirectRemoveItems(removed_ids, nb_remaining);
 }
 
 /*---------------------------------------------------------------------------*/
