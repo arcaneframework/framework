@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.h                                             (C) 2000-2023 */
+/* ItemGroupImpl.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités du maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -473,9 +473,14 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Notification de SharedReference indiquant qu'il faut détruire l'instance.
   virtual void deleteMe();
 
-private:
+ private:
 
- ItemGroupInternal* m_p; //!< Implémentation du groupe
+ ItemGroupInternal* m_p = nullptr; //!< Implémentation du groupe
+
+ private:
+
+  //! Supprime les entités \a items_local_id du groupe
+  void _removeItems(SmallSpan<const Int32> items_local_id);
 };
 
 /*---------------------------------------------------------------------------*/
