@@ -17,6 +17,7 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/ArraySimdPadder.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IItemFamily.h"
@@ -296,6 +297,7 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& 
       ComponentItemInternalRange mat_item_internal_range(item_internal_data->matItemsInternalRange(env_id));
       SmallSpan<ConstituentItemIndex> mat_id_list = mat->componentData()->m_constituent_local_id_list.mutableLocalIds();
       const Int32 nb_id = local_ids.size();
+      Span<Int32> mat_cells_local_id = mat_cells._internalApi()->itemsLocalId();
       command << RUNCOMMAND_LOOP1(iter, nb_id)
       {
         auto [z] = iter();
@@ -309,7 +311,11 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& 
         ref_ii._setSuperAndGlobalItem(cells_env_view[lid], ItemLocalId(lid));
         ref_ii._setComponent(mat_id);
         ref_ii._setVariableIndex(mvi);
+        // Le rang 0 met à jour le padding SIMD du groupe associé au matériau
+        if (z==0)
+          ArraySimdPadder::applySimdPaddingView(mat_cells_local_id);
       };
+      mat_cells._internalApi()->notifySimdPaddingDone();
     }
   }
 }

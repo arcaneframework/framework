@@ -53,6 +53,9 @@ class ARCANE_CORE_EXPORT ItemGroupImplInternal
    */
   void notifyDirectRemoveItems(SmallSpan<const Int32> removed_ids, Int32 nb_remaining);
 
+  //! Indique que le padding SIMD des entités à été effectué
+  void notifySimdPaddingDone();
+
  private:
 
   ItemGroupInternal* m_p = nullptr;
