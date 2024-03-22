@@ -29,7 +29,7 @@ class ItemGroupImpl;
 /*!
  * \brief API interne à Arcane de ItemGroupImpl
  */
-class ItemGroupImplInternal
+class ARCANE_CORE_EXPORT ItemGroupImplInternal
 {
  public:
 
