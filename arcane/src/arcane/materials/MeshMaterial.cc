@@ -68,6 +68,7 @@ build()
   IItemFamily* cell_family = mesh->cellFamily();
   String group_name = m_material_mng->name() + "_" + name();
   CellGroup items = cell_family->findGroup(group_name, true);
+  items.internal()->_setAsConstituentGroup();
   m_data._setItems(items);
 }
 

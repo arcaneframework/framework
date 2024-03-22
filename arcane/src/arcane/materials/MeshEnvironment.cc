@@ -133,6 +133,7 @@ build()
   IItemFamily* cell_family = mesh->cellFamily();
   String group_name = m_material_mng->name() + "_" + name();
   CellGroup cells = cell_family->findGroup(group_name, true);
+  cells.internal()->_setAsConstituentGroup();
 
   if (m_material_mng->isMeshModificationNotified()) {
     m_group_observer = new MeshEnvironmentObserver(this, traceMng());

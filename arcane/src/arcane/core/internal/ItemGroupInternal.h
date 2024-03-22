@@ -148,7 +148,7 @@ class ItemGroupInternal
   bool m_is_local_to_sub_domain = false; //!< Vrai si le groupe est local au sous-domaine
   IFunctor* m_compute_functor = nullptr; //!< Fonction de calcul du groupe
   bool m_is_all_items = false; //!< Indique s'il s'agit du groupe de toutes les entités
-
+  bool m_is_constituent_group = false; //!< Indique si le groupe est associé à un constituent (IMeshComponent)
   SharedPtrT<GroupIndexTable> m_group_index_table; //!< Table de hachage du local id des items vers leur position en enumeration
   Ref<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
 
