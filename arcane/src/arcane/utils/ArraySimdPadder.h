@@ -55,7 +55,7 @@ class ArraySimdPadder
     using SizeType = Int64;
     const SizeType size = ids.size();
     SizeType padding_size = getSizeWithPadding(size);
-    return (padding_size <= size);
+    return (padding_size > size);
   }
 
   template <typename DataType> ARCCORE_HOST_DEVICE static void applySimdPaddingView(Span<DataType> ids)
