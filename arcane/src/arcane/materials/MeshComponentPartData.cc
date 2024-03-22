@@ -14,6 +14,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ArraySimdPadder.h"
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemPrinter.h"
@@ -64,39 +65,37 @@ MeshComponentPartData(IMeshComponent* component, const String& debug_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Notification de changement des m_values_indexes.
+ *
+ * Applique le padding pour la vectorisation sur les valueIndex() si nécessaire.
+ * \a queue peut-être nul.
+ */
 void MeshComponentPartData::
 _notifyValueIndexesChanged(RunQueue* queue)
 {
-  if (queue && queue->isAcceleratorPolicy()) {
-    SmallSpan<Int32> v0 = m_value_indexes[0].smallSpan();
-    SmallSpan<Int32> v1 = m_value_indexes[1].smallSpan();
-    Int32 size0 = v0.size();
-    Int32 size1 = v1.size();
-    Int32 padding_size0 = arcaneSizeWithPadding(size0);
-    Int32 padding_size1 = arcaneSizeWithPadding(size1);
-    SmallSpan<Int32> padded_v0(v0.data(), padding_size0);
-    SmallSpan<Int32> padded_v1(v1.data(), padding_size1);
-    if (padding_size0 != size0 || padding_size1 != size1) {
-      auto command = makeCommand(queue);
-      command << RUNCOMMAND_LOOP1(iter, 1)
-      {
-        if (size0 > 0) {
-          Int32 last_value = v0[size0 - 1];
-          for (Int32 k = size0; k < padding_size0; ++k)
-            padded_v0[k] = last_value;
-        }
-        if (size1 > 0) {
-          Int32 last_value = v1[size1 - 1];
-          for (Int32 k = size1; k < padding_size1; ++k)
-            padded_v1[k] = last_value;
-        }
-      };
-    }
+  FixedArray<Span<Int32>, 2> indexes;
+  indexes[0] = m_value_indexes[0].span();
+  indexes[1] = m_value_indexes[1].span();
+
+  bool is_need_padding = false;
+  for (Int32 i = 0; i < 2; ++i)
+    is_need_padding |= ArraySimdPadder::isNeedPadding(Span<const Int32>(indexes[i]));
+
+  if (!is_need_padding)
+    return;
+
+  if (queue) {
+    auto command = makeCommand(queue);
+    command << RUNCOMMAND_LOOP1(iter, 2)
+    {
+      auto [i] = iter();
+      ArraySimdPadder::applySimdPaddingView(indexes[i]);
+    };
   }
   else {
-    applySimdPadding(m_value_indexes[0]);
-    applySimdPadding(m_value_indexes[1]);
+    ArraySimdPadder::applySimdPaddingView(indexes[0]);
+    ArraySimdPadder::applySimdPaddingView(indexes[1]);
   }
 }
 
