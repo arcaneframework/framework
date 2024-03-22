@@ -22,6 +22,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/VariableBuildInfo.h"
 #include "arcane/core/ItemGroupObserver.h"
+#include "arcane/core/internal/ItemGroupImplInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
@@ -133,6 +134,7 @@ build()
   IItemFamily* cell_family = mesh->cellFamily();
   String group_name = m_material_mng->name() + "_" + name();
   CellGroup cells = cell_family->findGroup(group_name, true);
+  cells._internalApi()->setAsConstituentGroup();
 
   if (m_material_mng->isMeshModificationNotified()) {
     m_group_observer = new MeshEnvironmentObserver(this, traceMng());

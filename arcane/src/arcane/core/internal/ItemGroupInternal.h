@@ -18,6 +18,7 @@
 
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/VariableTypes.h"
+#include "arcane/core/internal/ItemGroupImplInternal.h"
 
 #include <map>
 
@@ -97,16 +98,25 @@ class ItemGroupInternal
   void applySimdPadding();
 
   void checkUpdateSimdPadding();
+  bool isAllItems() const { return m_is_all_items; }
+  bool isOwn() const { return m_is_own; }
+  Int32 nbItem() const { return itemsLocalId().size(); }
+  void checkValid();
 
  public:
 
-  IMesh* m_mesh; //!< Gestionnare de groupe associé
-  IItemFamily* m_item_family; //!< Famille associée
-  ItemGroupImpl* m_parent; //! Groupe parent (groupe null si aucun)
+  void _removeItems(SmallSpan<const Int32> items_local_id);
+
+ public:
+
+  ItemGroupImplInternal m_internal_api;
+  IMesh* m_mesh = nullptr; //!< Gestionnare de groupe associé
+  IItemFamily* m_item_family = nullptr; //!< Famille associée
+  ItemGroupImpl* m_parent = nullptr; //! Groupe parent (groupe null si aucun)
   String m_variable_name; //!< Nom de la variable contenant les indices des éléments du groupe
   String m_full_name; //!< Nom complet du groupe.
-  bool m_is_null; //!< \a true si le groupe est nul
-  eItemKind m_kind; //!< Genre de entités du groupe
+  bool m_is_null = true; //!< \a true si le groupe est nul
+  eItemKind m_kind = IK_Unknown; //!< Genre de entités du groupe
   String m_name; //!< Nom du groupe
   bool m_is_own = false; //!< \a true si groupe local.
 
@@ -148,7 +158,7 @@ class ItemGroupInternal
   bool m_is_local_to_sub_domain = false; //!< Vrai si le groupe est local au sous-domaine
   IFunctor* m_compute_functor = nullptr; //!< Fonction de calcul du groupe
   bool m_is_all_items = false; //!< Indique s'il s'agit du groupe de toutes les entités
-
+  bool m_is_constituent_group = false; //!< Indique si le groupe est associé à un constituent (IMeshComponent)
   SharedPtrT<GroupIndexTable> m_group_index_table; //!< Table de hachage du local id des items vers leur position en enumeration
   Ref<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
 

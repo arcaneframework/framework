@@ -170,9 +170,11 @@ apply(MaterialModifierOperation* operation)
       _addItemsToEnvironment(true_env, true_mat, cells_unchanged_in_env.view(), false);
     }
     else {
+      flagRemovedCells(cells_unchanged_in_env, true);
       mat->cells().removeItems(cells_unchanged_in_env, check_if_present);
       connectivity->removeCellsToMaterial(mat_id, cells_unchanged_in_env.view(), m_queue);
       _removeItemsFromEnvironment(true_env, true_mat, cells_unchanged_in_env.view(), false);
+      flagRemovedCells(cells_unchanged_in_env, false);
     }
 
     // Prend pour \a ids uniquement la liste des mailles
@@ -217,10 +219,13 @@ apply(MaterialModifierOperation* operation)
     _addItemsToEnvironment(true_env, true_mat, ids, need_update_env);
   }
   else {
+    flagRemovedCells(ids, true);
     mat->cells().removeItems(ids.smallView(), check_if_present);
     if (need_update_env)
       env->cells().removeItems(ids.smallView(), check_if_present);
     _removeItemsFromEnvironment(true_env, true_mat, ids, need_update_env);
+    // Remet \a removed_local_ids_filter à la valeur initiale pour les prochaines opérations
+    flagRemovedCells(ids, false);
   }
 }
 
@@ -438,7 +443,7 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   Int32 nb_to_remove = local_ids.size();
 
   // Positionne le filtre des mailles supprimées.
-  setRemovedCells(local_ids, true);
+  //setRemovedCells(local_ids, true);
 
   // TODO: à faire dans finialize()
   env->addToTotalNbCellMat(-nb_to_remove);
@@ -455,7 +460,7 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 
   // Remet \a removed_local_ids_filter à la valeur initiale pour
   // les prochaines opérations
-  setRemovedCells(local_ids, false);
+  //setRemovedCells(local_ids, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -583,7 +588,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 /*---------------------------------------------------------------------------*/
 
 void IncrementalComponentModifier::
-setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set)
+flagRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set)
 {
   const Int32 nb_item = local_ids.size();
   SmallSpan<bool> removed_cells = m_work_info.removedCells();

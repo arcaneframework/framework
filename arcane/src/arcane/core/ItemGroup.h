@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroup.h                                                 (C) 2000-2020 */
+/* ItemGroup.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Groupes d'entités du maillage.                                            */
 /*---------------------------------------------------------------------------*/
@@ -17,9 +17,9 @@
 #include "arcane/utils/AutoRef.h"
 #include "arcane/utils/Iterator.h"
 
-#include "arcane/ItemGroupImpl.h"
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemEnumerator.h"
+#include "arcane/core/ItemGroupImpl.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemEnumerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -319,6 +319,11 @@ class ARCANE_CORE_EXPORT ItemGroup
   {
     return m_impl->checkIsSorted();
   }
+
+ public:
+
+  //! API interne à Arcane
+  ItemGroupImplInternal* _internalApi() const { return m_impl->_internalApi(); }
 
  public:
 

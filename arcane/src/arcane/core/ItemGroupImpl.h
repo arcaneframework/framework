@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.h                                             (C) 2000-2023 */
+/* ItemGroupImpl.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités du maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,7 @@ class ItemGroupInternal;
 class ItemPairGroupImpl;
 class GroupIndexTable;
 class IVariableSynchronizer;
+class ItemGroupImplInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -319,14 +320,6 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Termine une transaction
   void endTransaction();
 
-  /*!
-   * \internal
-   * \brief Liste des numéros locaux des entités de ce groupe.
-   * \warning a utiliser avec moult précaution, en général
-   * uniquement par le functor de recalcul.
-   */
-  Int32Array& unguardedItemsLocalId(const bool self_invalidate = true);
-
   ARCANE_DEPRECATED_REASON("Y2022: Use itemInfoListView() instead")
   //! Liste des entités sur lesquelles s'appuie le groupe
   ItemInternalList itemsInternal() const;
@@ -436,6 +429,21 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Nombre d'éléments alloués
   Int64 capacity() const;
 
+  //! API interne à Arcane
+  ItemGroupImplInternal* _internalApi() const;
+
+ public:
+
+  /*!
+   * \internal
+   * \brief Liste des numéros locaux des entités de ce groupe.
+   * \warning a utiliser avec moult précaution, en général
+   * uniquement par le functor de recalcul.
+   */
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
+  Int32Array& unguardedItemsLocalId(const bool self_invalidate = true);
+
+
  public:
 
   //! \internal
@@ -473,9 +481,14 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Notification de SharedReference indiquant qu'il faut détruire l'instance.
   virtual void deleteMe();
 
-private:
+ private:
 
- ItemGroupInternal* m_p; //!< Implémentation du groupe
+ ItemGroupInternal* m_p = nullptr; //!< Implémentation du groupe
+
+ private:
+
+  //! Supprime les entités \a items_local_id du groupe
+  void _removeItems(SmallSpan<const Int32> items_local_id);
 };
 
 /*---------------------------------------------------------------------------*/
