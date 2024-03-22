@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneGlobal.cc                                             (C) 2000-2023 */
+/* ArcaneGlobal.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales de Arcane.                                         */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/BadAlignmentException.h"
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/ArraySimdPadder.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/IMemoryInfo.h"
@@ -221,14 +222,7 @@ arcaneCheckAlignment(const void* ptr,Integer alignment)
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneSizeWithPadding(Integer size)
 {
-  if (size<=0)
-    return 0;
-  Integer modulo = size % SIMD_PADDING_SIZE;
-  if (modulo==0)
-    return size;
-  // TODO: vérifier débordement.
-  Integer padding_size = ((size / SIMD_PADDING_SIZE) + 1) * SIMD_PADDING_SIZE;
-  return padding_size;
+  return ArraySimdPadder::getSizeWithPadding(size);
 }
 
 /*---------------------------------------------------------------------------*/

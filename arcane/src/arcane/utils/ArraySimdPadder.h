@@ -27,36 +27,60 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType>
 class ArraySimdPadder
 {
  public:
 
-  static void applySimdPaddingView(ArrayView<DataType> ids)
+  /*!
+   * \brief Calcule la taille nécessaire pour être un multiple de SIMD_PADDING_SIZE.
+   *
+   * \a SizeType peut être un Int32 ou un Int64
+   */
+  template <typename SizeType> ARCCORE_HOST_DEVICE inline static SizeType
+  getSizeWithPadding(SizeType size)
   {
-    const Int32 size = ids.size();
-    if (size == 0)
-      return;
-    Int32 padding_size = arcaneSizeWithPadding(size);
-    if (padding_size == size)
+    if (size <= 0)
+      return 0;
+    SizeType modulo = size % SIMD_PADDING_SIZE;
+    if (modulo == 0)
+      return size;
+    // TODO: vérifier débordement.
+    SizeType padding_size = ((size / SIMD_PADDING_SIZE) + 1) * SIMD_PADDING_SIZE;
+    return padding_size;
+  }
+
+  template <typename DataType>
+  static bool isNeedPadding(Span<const DataType> ids)
+  {
+    using SizeType = Int64;
+    const SizeType size = ids.size();
+    SizeType padding_size = getSizeWithPadding(size);
+    return (padding_size <= size);
+  }
+
+  template <typename DataType> ARCCORE_HOST_DEVICE static void applySimdPaddingView(Span<DataType> ids)
+  {
+    using SizeType = Int64;
+    const SizeType size = ids.size();
+    SizeType padding_size = getSizeWithPadding(size);
+    if (padding_size <= size)
       return;
 
     // Construit une vue avec la taille du padding
     // pour éviter les débordement de tableau lors des tests
-    ArrayView<DataType> padded_ids(padding_size, ids.data());
+    Span<DataType> padded_ids(ids.data(), padding_size);
 
     DataType last_value = ids[size - 1];
-    for (Int32 k = size; k < padding_size; ++k)
+    for (SizeType k = size; k < padding_size; ++k)
       padded_ids[k] = last_value;
   }
 
+  template <typename DataType>
   static void applySimdPadding(Array<DataType>& ids)
   {
-    const Integer size = ids.size();
-    if (size == 0)
-      return;
-    Integer padding_size = arcaneSizeWithPadding(size);
-    if (padding_size == size)
+    const Int64 size = ids.largeSize();
+    Int64 padding_size = getSizeWithPadding(size);
+    if (padding_size <= size)
       return;
     MemoryAllocationArgs args;
     if (ids.allocator()->guarantedAlignment(args) < AlignedMemoryAllocator::simdAlignment())
@@ -65,25 +89,25 @@ class ArraySimdPadder
     if (padding_size > ids.capacity())
       ARCANE_FATAL("Not enough capacity c={0} min_expected={1}", ids.capacity(),
                    padding_size);
-    applySimdPaddingView(ids.view());
+    applySimdPaddingView(ids.span());
   }
 
-  static void checkSimdPadding(ConstArrayView<DataType> ids)
+  template <typename DataType>
+  static void checkSimdPadding(Span<const DataType> ids)
   {
-    Integer size = ids.size();
-    if (size == 0)
-      return;
-    Integer padding_size = arcaneSizeWithPadding(size);
-    if (padding_size == size)
+    using SizeType = Int64;
+    const Int64 size = ids.size();
+    SizeType padding_size = getSizeWithPadding(size);
+    if (padding_size <= size)
       return;
 
     // Construit une vue avec la taille du padding
     // pour éviter les débordements de tableau lors des tests
-    ConstArrayView<DataType> padded_ids(padding_size, ids.data());
+    Span<const DataType> padded_ids(ids.data(), padding_size);
 
     // Vérifie que le padding est fait avec la dernière valeur valide.
-    Int32 last_id = ids[size - 1];
-    for (Integer k = size; k < padding_size; ++k)
+    SizeType last_id = ids[size - 1];
+    for (SizeType k = size; k < padding_size; ++k)
       if (padded_ids[k] != last_id)
         ARCANE_FATAL("Bad padding value i={0} expected={1} value={2}",
                      k, last_id, padded_ids[k]);

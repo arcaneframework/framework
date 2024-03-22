@@ -27,19 +27,19 @@ namespace Arcane
 
 void applySimdPadding(Array<Int16>& ids)
 {
-  ArraySimdPadder<Int16>::applySimdPadding(ids);
+  ArraySimdPadder::applySimdPadding(ids);
 }
 void applySimdPadding(Array<Int32>& ids)
 {
-  ArraySimdPadder<Int32>::applySimdPadding(ids);
+  ArraySimdPadder::applySimdPadding(ids);
 }
 void applySimdPadding(Array<Int64>& ids)
 {
-  ArraySimdPadder<Int64>::applySimdPadding(ids);
+  ArraySimdPadder::applySimdPadding(ids);
 }
 void applySimdPadding(Array<Real>& ids)
 {
-  ArraySimdPadder<Real>::applySimdPadding(ids);
+  ArraySimdPadder::applySimdPadding(ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -47,19 +47,19 @@ void applySimdPadding(Array<Real>& ids)
 
 void applySimdPadding(ArrayView<Int16> ids)
 {
-  ArraySimdPadder<Int16>::applySimdPaddingView(ids);
+  ArraySimdPadder::applySimdPaddingView(Span<Int16>(ids));
 }
 void applySimdPadding(ArrayView<Int32> ids)
 {
-  ArraySimdPadder<Int32>::applySimdPaddingView(ids);
+  ArraySimdPadder::applySimdPaddingView(Span<Int32>(ids));
 }
 void applySimdPadding(ArrayView<Int64> ids)
 {
-  ArraySimdPadder<Int64>::applySimdPaddingView(ids);
+  ArraySimdPadder::applySimdPaddingView(Span<Int64>(ids));
 }
 void applySimdPadding(ArrayView<Real> ids)
 {
-  ArraySimdPadder<Real>::applySimdPaddingView(ids);
+  ArraySimdPadder::applySimdPaddingView(Span<Real>(ids));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ void applySimdPadding(ArrayView<Real> ids)
 void ArrayUtils::
 checkSimdPadding(ConstArrayView<Int32> ids)
 {
-  ArraySimdPadder<Int32>::checkSimdPadding(ids);
+  ArraySimdPadder::checkSimdPadding(Span<const Int32>(ids));
 }
 
 /*---------------------------------------------------------------------------*/
