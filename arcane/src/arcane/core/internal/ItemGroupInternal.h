@@ -97,6 +97,14 @@ class ItemGroupInternal
   void applySimdPadding();
 
   void checkUpdateSimdPadding();
+  bool isAllItems() const { return m_is_all_items; }
+  bool isOwn() const { return m_is_own; }
+  Int32 nbItem() const { return itemsLocalId().size(); }
+  void checkValid();
+
+ public:
+
+  void _removeItems(SmallSpan<const Int32> items_local_id);
 
  public:
 

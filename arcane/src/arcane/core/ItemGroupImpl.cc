@@ -21,14 +21,13 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/IItemOperationByBasicType.h"
 #include "arcane/core/ItemGroupComputeFunctor.h"
 #include "arcane/core/IVariableSynchronizer.h"
-#include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/internal/ItemGroupInternal.h"
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -845,96 +844,7 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
 void ItemGroupImpl::
 removeItems(Int32ConstArrayView items_local_id,[[maybe_unused]] bool check_if_present)
 {
-  _removeItems(items_local_id);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemGroupImpl::
-_removeItems(SmallSpan<const Int32> items_local_id)
-{
-  if ( !((!m_p->m_need_recompute && !isAllItems()) || (m_p->m_transaction_mode && isAllItems())) )
-    ARCANE_FATAL("Operation on invalid group");
-
-  if (m_p->m_compute_functor && !m_p->m_transaction_mode)
-    ARCANE_FATAL("Cannot remove items on computed group ({0})", name());
-
-  IMesh* amesh = mesh();
-  if (!amesh)
-    throw ArgumentException(A_FUNCINFO,"null group");
-
-  ITraceMng* trace = amesh->traceMng();
-  if (isOwn() && amesh->meshPartInfo().nbPart()!=1)
-    ARCANE_THROW(NotSupportedException,"Cannot remove items if isOwn() is true");
-
-  Int32 nb_item_to_remove = items_local_id.size();
-
-  // N'est utile que si on a des observers
-  UniqueArray<Int32> removed_local_ids;
-
-  if (nb_item_to_remove!=0) { // on ne peut tout de même pas faire de retour anticipé à cause des observers
-
-    Int32Array& items_lid = m_p->mutableItemsLocalId();
-    const Int32 old_size = items_lid.size();
-    bool has_removed = false;
-   
-    if (isAllItems()) {
-      // Algorithme anciennement dans DynamicMeshKindInfo
-      // Supprime des items du groupe all_items par commutation avec les 
-      // éléments de fin de ce groupe
-      // ie memoire persistante O(size groupe), algo O(remove items)
-      has_removed = true;
-      Integer nb_item = old_size;
-      for( Integer i=0, n=nb_item_to_remove; i<n; ++i ){
-        Int32 removed_local_id = items_local_id[i];
-        Int32 index = m_p->m_items_index_in_all_group[removed_local_id];
-        --nb_item;
-        Int32 moved_local_id = items_lid[nb_item];
-        items_lid[index] = moved_local_id;
-        m_p->m_items_index_in_all_group[moved_local_id] = index;
-      }
-      items_lid.resize(nb_item);
-    }
-    else {
-      // Algorithme pour les autres groupes
-      // Décalage de tableau
-      // ie mémoire locale O(size groupe), algo O(size groupe)
-      // Marque un tableau indiquant les entités à supprimer
-      UniqueArray<bool> remove_flags(m_p->maxLocalId(),false);
-      for( Int32 i=0; i<nb_item_to_remove; ++i )
-        remove_flags[items_local_id[i]] = true;
-    
-      {
-        Int32 next_index = 0;
-        for( Int32 i=0; i<old_size; ++i ){
-          Int32 lid = items_lid[i];
-          if (remove_flags[lid]) {
-            removed_local_ids.add(lid);
-            continue;
-          }
-          items_lid[next_index] = lid;
-          ++next_index;
-        }
-        if (next_index!=old_size) {
-          has_removed = true;
-          items_lid.resize(next_index);
-        }
-      }
-    }
-  
-    m_p->updateTimestamp();
-    if (arcaneIsCheck()){
-      trace->info(5) << "ItemGroupImpl::removeItems() group <" << name() << "> "
-                     << " old_size=" << old_size
-                     << " new_size=" << size()
-                     << " removed?=" << has_removed;
-      checkValid();
-    }
-  }
-
-  Int32ConstArrayView observation_info(removed_local_ids);
-  m_p->notifyReduceObservers(&observation_info);
+  m_p->_removeItems(items_local_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1191,74 +1101,7 @@ removeSuppressedItems()
 void ItemGroupImpl::
 checkValid()
 {
-  ITraceMng* msg = m_p->mesh()->traceMng();
-  if (m_p->m_need_recompute && m_p->m_compute_functor) {
-    msg->debug(Trace::High) << "ItemGroupImpl::checkValid on " << name() << " : skip group to recompute";
-    return;
-  }
-
-  // Les points suivants sont vérifiés:
-  // - une entité n'est présente qu'une fois dans le groupe
-  // - les entités du groupe ne sont pas détruites
-  UniqueArray<bool> presence_checks(m_p->maxLocalId());
-  presence_checks.fill(0);
-  Integer nb_error = 0;
-
-  ItemInternalList items(m_p->items());
-  Integer items_size = items.size();
-  Int32ConstArrayView items_lid(m_p->itemsLocalId());
-
-  for( Integer i=0, is=items_lid.size(); i<is; ++i ){
-    Integer lid = items_lid[i];
-    if (lid>=items_size){
-      if (nb_error<10){
-        msg->error() << "Wrong local index lid=" << lid << " max=" << items_size
-                     << " var_max_size=" << m_p->maxLocalId();
-      }
-      ++nb_error;
-      continue;
-    }
-    ItemInternal* item = items[lid];
-    if (item->isSuppressed()){
-      if (nb_error<10){
-        msg->error() << "Item " << ItemPrinter(item) << " in group "
-                     << name() << " does not exist anymore";
-      }
-      ++nb_error;
-    }
-    if (presence_checks[lid]){
-      if (nb_error<10){
-        msg->error() << "Item " << ItemPrinter(item) << " in group "
-                     << name() << " was found twice or more";
-      }
-      ++nb_error;
-    }
-    presence_checks[lid] = true;
-  }
-  if (isAllItems()) {
-    for( Integer i=0, n=items_lid.size(); i<n; ++i ){
-      Int32 local_id = items_lid[i];
-      Int32 index_in_all_group = m_p->m_items_index_in_all_group[local_id];
-      if (index_in_all_group!=i){
-        if (nb_error<10){
-          msg->error() << A_FUNCINFO
-                       << ": " << itemKindName(m_p->m_kind)
-                       << ": incoherence between 'local_id' and index in the group 'All' "
-                       << " i=" << i
-                       << " local_id=" << local_id
-                       << " index=" << index_in_all_group;
-        }
-        ++nb_error;
-      }
-    }
-  }
-  if (nb_error!=0) {
-    String parent_name = "none";
-    if (parent())
-      parent_name = parent()->name();
-    ARCANE_FATAL("Error in group name='{0}' parent='{1}' nb_error={2}",
-                 name(),parent_name,nb_error);
-  }
+  m_p->checkValid();
 }
 
 /*---------------------------------------------------------------------------*/
