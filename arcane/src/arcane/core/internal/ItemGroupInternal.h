@@ -18,6 +18,7 @@
 
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/VariableTypes.h"
+#include "arcane/core/internal/ItemGroupImplInternal.h"
 
 #include <map>
 
@@ -108,13 +109,14 @@ class ItemGroupInternal
 
  public:
 
-  IMesh* m_mesh; //!< Gestionnare de groupe associé
-  IItemFamily* m_item_family; //!< Famille associée
-  ItemGroupImpl* m_parent; //! Groupe parent (groupe null si aucun)
+  ItemGroupImplInternal m_internal_api;
+  IMesh* m_mesh = nullptr; //!< Gestionnare de groupe associé
+  IItemFamily* m_item_family = nullptr; //!< Famille associée
+  ItemGroupImpl* m_parent = nullptr; //! Groupe parent (groupe null si aucun)
   String m_variable_name; //!< Nom de la variable contenant les indices des éléments du groupe
   String m_full_name; //!< Nom complet du groupe.
-  bool m_is_null; //!< \a true si le groupe est nul
-  eItemKind m_kind; //!< Genre de entités du groupe
+  bool m_is_null = true; //!< \a true si le groupe est nul
+  eItemKind m_kind = IK_Unknown; //!< Genre de entités du groupe
   String m_name; //!< Nom du groupe
   bool m_is_own = false; //!< \a true si groupe local.
 

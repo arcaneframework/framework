@@ -42,6 +42,7 @@ class ItemGroupInternal;
 class ItemPairGroupImpl;
 class GroupIndexTable;
 class IVariableSynchronizer;
+class ItemGroupImplInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -435,6 +436,9 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 
   //! Nombre d'éléments alloués
   Int64 capacity() const;
+
+  //! API interne à Arcane
+  ItemGroupImplInternal* _internalApi() const;
 
  public:
 

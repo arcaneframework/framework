@@ -37,12 +37,7 @@ namespace Arcane
 
 ItemGroupInternal::
 ItemGroupInternal()
-: m_mesh(nullptr)
-, m_item_family(nullptr)
-, m_parent(nullptr)
-, m_variable_name()
-, m_is_null(true)
-, m_kind(IK_Unknown)
+: m_internal_api(this)
 {
   _init();
 }
@@ -52,9 +47,9 @@ ItemGroupInternal()
 
 ItemGroupInternal::
 ItemGroupInternal(IItemFamily* family,const String& name)
-: m_mesh(family->mesh())
+: m_internal_api(this)
+, m_mesh(family->mesh())
 , m_item_family(family)
-, m_parent(nullptr)
 , m_variable_name(String("GROUP_")+family->name()+name)
 , m_is_null(false)
 , m_kind(family->itemKind())
@@ -68,7 +63,8 @@ ItemGroupInternal(IItemFamily* family,const String& name)
 
 ItemGroupInternal::
 ItemGroupInternal(IItemFamily* family,ItemGroupImpl* parent,const String& name)
-: m_mesh(parent->mesh())
+: m_internal_api(this)
+, m_mesh(parent->mesh())
 , m_item_family(family)
 , m_parent(parent)
 , m_variable_name(String("GROUP_")+m_item_family->name()+name)
