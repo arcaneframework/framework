@@ -61,7 +61,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
  public:
 
-  void setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set);
+  void flagRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set);
 
  public:
 
