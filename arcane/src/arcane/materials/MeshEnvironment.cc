@@ -70,7 +70,7 @@ class MeshEnvironmentObserver
   void executeExtend(const Int32ConstArrayView* info1) override
   {
     if (info1) {
-      info(4) << "EXTEND_ENV " << m_environment->name() << " ids=" << (*info1);
+      //info(4) << "EXTEND_ENV " << m_environment->name() << " ids=" << (*info1);
       if (m_environment->materialMng()->isInMeshMaterialExchange())
         info() << "EXTEND_ENV_IN_LOADBALANCE " << m_environment->name()
                << " ids=" << (*info1);
@@ -79,7 +79,7 @@ class MeshEnvironmentObserver
   void executeReduce(const Int32ConstArrayView* info1) override
   {
     if (info1) {
-      info(4) << "REDUCE_ENV " << m_environment->name() << " ids=" << (*info1);
+      //info(4) << "REDUCE_ENV " << m_environment->name() << " ids=" << (*info1);
       if (m_environment->materialMng()->isInMeshMaterialExchange())
         info() << "REDUCE_ENV_IN_LOADBALANCE " << m_environment->name()
                << " ids=" << (*info1);

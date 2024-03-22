@@ -42,6 +42,17 @@ class ARCANE_CORE_EXPORT ItemGroupImplInternal
   //! Indique que le groupe est associé à un constituant.
   void setAsConstituentGroup();
 
+  //! Liste des localId() des entités du groupe.
+  SmallSpan<Int32> itemsLocalId();
+
+  /*!
+   * \brief Notifie l'instance qu'on a directement modifié la liste des entités du groupe.
+   *
+   * \a nb_remaining est le nombre d'entités restantes et \a removed_ids la liste
+   * des entitées supprimées.
+   */
+  void notifyDirectRemoveItems(SmallSpan<const Int32> removed_ids, Int32 nb_remaining);
+
  private:
 
   ItemGroupInternal* m_p = nullptr;

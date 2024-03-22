@@ -50,6 +50,8 @@ class ItemGroupImpl;
  */
 class ItemGroupInternal
 {
+  friend class ItemGroupImplInternal;
+
  public:
 
   ItemGroupInternal();
@@ -106,6 +108,10 @@ class ItemGroupInternal
  public:
 
   void _removeItems(SmallSpan<const Int32> items_local_id);
+
+ private:
+
+  void _notifyDirectRemoveItems(SmallSpan<const Int32> removed_ids, Int32 nb_remaining);
 
  public:
 
