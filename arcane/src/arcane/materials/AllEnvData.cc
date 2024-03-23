@@ -457,7 +457,7 @@ forceRecompute(bool compute_all)
   if (arcaneIsCheck())
     m_material_mng->checkValid();
 
-  m_material_mng->syncVariablesReferences();
+  m_material_mng->syncVariablesReferences(compute_all);
 
   if (is_verbose_debug) {
     OStringStream ostr;

@@ -58,13 +58,8 @@ namespace Arcane::Materials
 MeshMaterialVariablePrivate::
 MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs,
                             MeshMaterialVariable* variable)
-: m_nb_reference(0)
-, m_first_reference(nullptr)
-, m_name(v.name())
+: m_name(v.name())
 , m_material_mng(v.materialMng())
-, m_keep_on_change(true)
-, m_global_variable_changed_observer(nullptr)
-, m_has_recursive_depend(true)
 , m_var_space(mvs)
 , m_variable(variable)
 {
@@ -165,6 +160,15 @@ void MeshMaterialVariablePrivate::
 initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue)
 {
   m_variable->_initializeNewItems(list_builder, queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariablePrivate::
+syncReferences(bool check_resize)
+{
+  m_variable->_syncReferences(check_resize);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -153,6 +153,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   virtual void _copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
   virtual void _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
   virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
+  virtual void _syncReferences(bool update_views) = 0;
 
  private:
 
@@ -348,15 +349,35 @@ class ItemMaterialVariableBase
   ARCANE_MATERIALS_EXPORT void
   _fillPartialValuesWithSuperValues(MeshComponentList components);
 
+ public:
+
+  ARCANE_MATERIALS_EXPORT void _syncReferences(bool check_resize) override;
+
  protected:
 
-  PrivatePartType* m_global_variable;
-  VariableRef* m_global_variable_ref;
+  PrivatePartType* m_global_variable = nullptr;
+  VariableRef* m_global_variable_ref = nullptr;
   //! Variables pour les différents matériaux.
   UniqueArray<PrivatePartType*> m_vars;
   UniqueArray<ContainerViewType> m_views;
+  //! Liste des vues visibles uniquement depuis l'ĥote
+  UniqueArray<ContainerViewType> m_host_views;
+
+ protected:
+
+  void _setView(Int32 index, bool update_all)
+  {
+    ContainerViewType view;
+    if (m_vars[index])
+      view = m_vars[index]->valueView();
+    m_host_views[index] = view;
+    m_views_as_bytes[index] = TraitsType::toBytes(view);
+    if (update_all)
+      m_views[index] = view;
+  }
 
  private:
+
   bool _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var);
 };
 

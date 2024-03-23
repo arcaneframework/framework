@@ -54,6 +54,7 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
 , m_global_variable_ref(global_var_ref)
 , m_views(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
+  m_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
 }
 
 
@@ -95,6 +96,7 @@ _init(ArrayView<PrivatePartType*> vars)
   m_vars.addRange(vars);
   Integer nb_var = m_vars.size();
   m_views.resize(nb_var);
+  m_host_views.resize(nb_var);
   m_views_as_bytes.resize(nb_var);
   // Il faut maintenir une référence sur les variables qu'on possède pour
   // être sur qu'elles sont bien initialisées et qu'elles ne seront pas détruites
@@ -103,8 +105,6 @@ _init(ArrayView<PrivatePartType*> vars)
   for( Integer i=0; i<nb_var; ++i ){
     // m_vars[i] peut être nul si notre variable est une variable uniquement milieu.
     m_p->m_refs[i] = nullptr;
-    m_views[i] = ContainerViewType();
-    m_views_as_bytes[i] = {};
     if (i==0){
       // Pour la variable globale, il s'agit d'une variable maillage.
       m_p->m_refs[i] = m_global_variable_ref;
@@ -116,10 +116,7 @@ _init(ArrayView<PrivatePartType*> vars)
     }
     // TODO: il faut pouvoir être notifié du changement de cette variable.
     // pour ensuite mettre à jour les vues (peut-être aussi faire un MyVariableRef).
-    if (m_vars[i]) {
-      m_views[i] = m_vars[i]->valueView();
-      m_views_as_bytes[i] = TraitsType::toBytes(m_views[i]);
-    }
+    _setView(i, true);
     //std::cout << "INIT_VIEW: " << i << " v=" << m_views[i].size() << '\n';
   }
 }
@@ -172,7 +169,7 @@ buildFromManager(bool is_continue)
     
     // Note: Ces variables ne sont pas associées au maillage.
     // Il s'agit juste de variables tableau.
-    IVariable* var = 0;
+    IVariable* var = nullptr;
     {
       VariableBuildInfo vbi2(mesh,var_name,property);
       VariableInfo vi = VariableRefType::_internalVariableInfo(vbi2);
@@ -204,8 +201,7 @@ _syncFromGlobalVariable()
   // Cette méthode est appelée lorsque la taille de la variable globale
   // change. Cette variable est la première variable de la liste.
   // Il faut ensuite notifier toutes les références de ce changement.
-  m_views[0] = m_vars[0]->valueView();
-  m_views_as_bytes[0] = TraitsType::toBytes(m_views[0]);
+  _setView(0, true);
 
   for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){
     MeshMaterialVariableRef* ref = *i;
@@ -220,31 +216,34 @@ template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
 syncReferences()
 {
-  ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
-  Integer nb_indexer = indexers.size();
-  for( Integer i=0; i<nb_indexer; ++i ){
-    MeshMaterialVariableIndexer* indexer = indexers[i];
-    PrivatePartType* true_ptr = m_vars[i+1];
-    if (true_ptr)
-      Traits::resizeWithReserve(true_ptr,indexer->maxIndexInMultipleArray());
-  }
+  _syncReferences(true);
+}
 
-  Integer nb_var = m_vars.size();
-  for( Integer i=0; i<nb_var; ++i ){
-    m_views[i] = ContainerViewType();
-    m_views_as_bytes[i] = {};
-    if (m_vars[i]) {
-      m_views[i] = m_vars[i]->valueView();
-      m_views_as_bytes[i] = TraitsType::toBytes(m_views[i]);
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename Traits> void
+ItemMaterialVariableBase<Traits>::
+_syncReferences(bool check_resize)
+{
+  if (check_resize) {
+    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
+    Integer nb_indexer = indexers.size();
+    for (Integer i = 0; i < nb_indexer; ++i) {
+      MeshMaterialVariableIndexer* indexer = indexers[i];
+      PrivatePartType* true_ptr = m_vars[i + 1];
+      if (true_ptr) {
+        Traits::resizeWithReserve(true_ptr, indexer->maxIndexInMultipleArray());
+        _setView(i + 1, true);
+      }
     }
   }
+  _setView(0, true);
 
   for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){
     MeshMaterialVariableRef* ref = *i;
     ref->updateFromInternal();
   }
-
-  //TODO: mettre a jour les references
 }
 
 /*---------------------------------------------------------------------------*/
@@ -347,10 +346,10 @@ _copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 
   {
     // Redimensionne le tableau des valeurs multiples si besoin.
+    // TODO: Faire sur le device pour la mise à jour de view
     ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
     Traits::resizeWithReserve(partial_var,indexers[var_index]->maxIndexInMultipleArray());
-    m_views[var_index+1] = partial_var->valueView();
-    m_views_as_bytes[var_index+1] = TraitsType::toBytes(m_views[var_index+1]);
+    this->_setView(var_index + 1, true);
   }
 
   ContainerConstViewType global_view = m_vars[0]->constValueView();
@@ -394,7 +393,8 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
 
   // Redimensionne le tableau des valeurs multiples si besoin.
   Traits::resizeWithReserve(partial_var,indexer->maxIndexInMultipleArray());
-  m_views[var_index+1] = partial_var->valueView();
+  // TODO: mettre à jour sur le device pour m_views
+  _setView(var_index + 1, true);
 
   bool init_with_zero = m_p->materialMng()->isDataInitialisationWithZero();
 
