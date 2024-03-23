@@ -578,11 +578,16 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
   // Maintenant que les nouveaux MatVar sont créés, il faut les
   // initialiser avec les bonnes valeurs.
   {
+    // TODO: Comme tout est indépendant par variable, on pourrait
+    // éventuellement utiliser plusieurs files.
+    RunQueue::ScopedAsync sc(&m_queue);
     IMeshMaterialMng* mm = m_material_mng;
     auto func = [&](IMeshMaterialVariable* mv) {
+      mv->_internalApi()->resizeForIndexer(var_indexer->index(), m_queue);
       mv->_internalApi()->initializeNewItems(list_builder, m_queue);
     };
     functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
+    m_queue.barrier();
   }
 }
 

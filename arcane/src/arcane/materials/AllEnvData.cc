@@ -540,8 +540,10 @@ _copyBetweenPartialsAndGlobals(const MeshVariableCopyBetweenPartialAndGlobalArgs
   //Integer indexer_index = indexer->index();
   auto func = [&](IMeshMaterialVariable* mv) {
     auto* mvi = mv->_internalApi();
-    if (is_add_operation)
+    if (is_add_operation){
+      mvi->resizeForIndexer(args.m_var_index, *args.m_queue);
       mvi->copyGlobalToPartial(args);
+    }
     else
       mvi->copyPartialToGlobal(args);
   };

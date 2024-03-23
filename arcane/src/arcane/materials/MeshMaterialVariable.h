@@ -36,8 +36,8 @@ namespace Arcane
 class VariableInfo;
 class VariableRef;
 class VariableBuildInfo;
-template <typename ItemType,typename DataTypeT> class MeshVariableScalarRefT;
-}
+template <typename ItemType, typename DataTypeT> class MeshVariableScalarRefT;
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -154,6 +154,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   virtual void _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
   virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
   virtual void _syncReferences(bool update_views) = 0;
+  virtual void _resizeForIndexer(Int32 index, RunQueue& queue) = 0;
 
  private:
 
@@ -348,10 +349,12 @@ class ItemMaterialVariableBase
   void _init(ArrayView<PrivatePartType*> vars);
   ARCANE_MATERIALS_EXPORT void
   _fillPartialValuesWithSuperValues(MeshComponentList components);
+  ARCANE_MATERIALS_EXPORT void _syncReferences(bool check_resize) override;
+  ARCANE_MATERIALS_EXPORT void _resizeForIndexer(Int32 index, RunQueue& queue) override;
+  ARCANE_MATERIALS_EXPORT void _copyHostViewsToViews(RunQueue* queue);
 
  public:
 
-  ARCANE_MATERIALS_EXPORT void _syncReferences(bool check_resize) override;
 
  protected:
 
@@ -365,15 +368,13 @@ class ItemMaterialVariableBase
 
  protected:
 
-  void _setView(Int32 index, bool update_all)
+  void _setView(Int32 index)
   {
     ContainerViewType view;
     if (m_vars[index])
       view = m_vars[index]->valueView();
     m_host_views[index] = view;
     m_views_as_bytes[index] = TraitsType::toBytes(view);
-    if (update_all)
-      m_views[index] = view;
   }
 
  private:
@@ -541,7 +542,7 @@ class MeshMaterialVariableScalar
   VariableRefType* globalVariableReference() const final { return m_true_global_variable_ref; }
   void incrementReference() final { BaseClass::incrementReference(); }
   ArrayView<ArrayView<DataType>> _internalFullValuesView() final { return BaseClass::_containerView(); }
-  void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values) final
+  void fillFromArray(IMeshMaterial* mat, ConstArrayView<DataType> values) final
   {
     return BaseClass::fillFromArray(mat,values);
   }

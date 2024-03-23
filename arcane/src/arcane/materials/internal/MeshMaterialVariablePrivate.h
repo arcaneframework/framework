@@ -83,6 +83,7 @@ class MeshMaterialVariablePrivate
     return m_refs.view();
   }
   void syncReferences(bool check_resize) override;
+  void resizeForIndexer(Int32 index, RunQueue& queue) override;
 
  public:
 
