@@ -1,22 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MathUtils.h                                                 (C) 2000-2022 */
+/* MathUtils.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions mathématiques diverses.                                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATHUTILS_H
-#define ARCANE_MATHUTILS_H
+#ifndef ARCANE_CORE_MATHUTILS_H
+#define ARCANE_CORE_MATHUTILS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Math.h"
 #include "arcane/utils/ArrayView.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/Real2.h"
@@ -49,7 +49,7 @@ namespace math
  * \deprecated Utiliser cross() à la place.
  */
 ARCCORE_HOST_DEVICE inline Real3
-vecMul(Real3 u,Real3 v)
+vecMul(Real3 u, Real3 v)
 {
   return Real3(
 	       u.y * v.z  - u.z * v.y,
@@ -67,7 +67,7 @@ vecMul(Real3 u,Real3 v)
  * \deprecated Utiliser cross2D() à la place.
  */
 ARCCORE_HOST_DEVICE inline Real
-vecMul2D(Real3 u,Real3 v)
+vecMul2D(Real3 u, Real3 v)
 {
   return Real(u.x * v.y  - u.y * v.x);
 }
@@ -110,7 +110,7 @@ dot(Real2 u,Real2 v)
  * \deprecated Utiliser dot(Real2,Real2) à la place
  */
 ARCCORE_HOST_DEVICE inline Real
-scaMul(Real2 u,Real2 v)
+scaMul(Real2 u, Real2 v)
 {
   return (u.x * v.x  +  u.y * v.y );
 }
@@ -142,7 +142,7 @@ dot(Real3 u,Real3 v)
  * \deprecated Utiliser dot(Real2,Real2) à la place
  */
 ARCCORE_HOST_DEVICE inline Real
-scaMul(Real3 u,Real3 v)
+scaMul(Real3 u, Real3 v)
 {
   return (u.x * v.x  +  u.y * v.y  +  u.z * v.z);
 }
@@ -234,8 +234,8 @@ prodVecTens(Real3 v,Real3x3 t)
  * \ingroup GroupMathUtils
  * \brief Produit matrice matrice entre deux tenseurs.
  */
-inline Real3x3
-matrixProduct(Real3x3 t,Real3x3 v)
+ARCCORE_HOST_DEVICE inline Real3x3
+matrixProduct(const Real3x3& t,const Real3x3& v)
 {
   return Real3x3::fromLines(t.x.x*v.x.x+t.x.y*v.y.x+t.x.z*v.z.x,
                             t.x.x*v.x.y+t.x.y*v.y.y+t.x.z*v.z.y,
@@ -254,8 +254,8 @@ matrixProduct(Real3x3 t,Real3x3 v)
  * \brief Transpose la matrice.
  * \deprecated Utiliser matrixTranspose() à la place.
  */
-inline Real3x3
-transpose(Real3x3 t)
+ARCCORE_HOST_DEVICE inline Real3x3
+transpose(const Real3x3& t)
 {
   return Real3x3(Real3(t.x.x, t.y.x, t.z.x),
                  Real3(t.x.y, t.y.y, t.z.y),
@@ -268,8 +268,8 @@ transpose(Real3x3 t)
  * \ingroup GroupMathUtils
  * \brief Transpose la matrice.
  */
-inline Real3x3
-matrixTranspose(Real3x3 t)
+ARCCORE_HOST_DEVICE inline Real3x3
+matrixTranspose(const Real3x3& t)
 {
   return Real3x3(Real3(t.x.x, t.y.x, t.z.x),
                  Real3(t.x.y, t.y.y, t.z.y),
@@ -285,7 +285,7 @@ matrixTranspose(Real3x3 t)
  * U:V = sum_{i,j \in \{x,y,z \}} U_{i,j}V_{i,j} 
  */
 ARCCORE_HOST_DEVICE inline Real
-doubleContraction(Real3x3 u,Real3x3 v)
+doubleContraction(const Real3x3& u, const Real3x3& v)
 {
   Real x1 = u.x.x * v.x.x;
   Real x2 = u.x.y * v.x.y;
@@ -299,7 +299,7 @@ doubleContraction(Real3x3 u,Real3x3 v)
   Real z2 = u.z.y * v.z.y;
   Real z3 = u.z.z * v.z.z;
 
-  return x1+x2+x3+y1+y2+y3+z1+z2+z3;
+  return x1 + x2 + x3 + y1 + y2 + y3 + z1 + z2 + z3;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -311,7 +311,7 @@ doubleContraction(Real3x3 u,Real3x3 v)
  * U:V = sum_{i,j \in \{x,y,z \}} U_{i,j}V_{i,j} 
  */
 ARCCORE_HOST_DEVICE inline Real
-doubleContraction(Real2x2 u,Real2x2 v)
+doubleContraction(const Real2x2& u,const Real2x2& v)
 {
   Real x1 = u.x.x * v.x.x;
   Real x2 = u.x.y * v.x.y;
@@ -350,8 +350,8 @@ min(Real3 a,Real3 b)
  * \brief Retourne le minimum de deux Real2x2
  * \ingroup GroupMathUtils
  */
-inline Real2x2
-min(Real2x2 a,Real2x2 b)
+ARCCORE_HOST_DEVICE inline Real2x2
+min(const Real2x2& a,const Real2x2& b)
 {
   return Real2x2( math::min(a.x,b.x), math::min(a.y,b.y) );
 }
@@ -359,8 +359,8 @@ min(Real2x2 a,Real2x2 b)
  * \brief Retourne le minimum de deux Real3x3
  * \ingroup GroupMathUtils
  */
-inline Real3x3
-min(Real3x3 a,Real3x3 b)
+ARCCORE_HOST_DEVICE inline Real3x3
+min(const Real3x3& a,const Real3x3& b)
 {
   return Real3x3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
 }
@@ -419,8 +419,8 @@ max(Real3 a,Real3 b)
  * \brief Retourne le maximum de deux Real2x2
  * \ingroup GroupMathUtils
  */
-inline Real2x2
-max(Real2x2 a,Real2x2 b)
+ARCCORE_HOST_DEVICE inline Real2x2
+max(const Real2x2& a,const Real2x2& b)
 {
   return Real2x2( math::max(a.x,b.x), math::max(a.y,b.y) );
 }
@@ -428,8 +428,8 @@ max(Real2x2 a,Real2x2 b)
  * \brief Retourne le maximum de deux Real3x3
  * \ingroup GroupMathUtils
  */
-inline Real3x3
-max(Real3x3 a,Real3x3 b)
+ARCCORE_HOST_DEVICE inline Real3x3
+max(const Real3x3& a,const Real3x3& b)
 {
   return Real3x3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
 }
@@ -485,7 +485,6 @@ inline Real max8Real(const Real a[8])
 /*!
  * \ingroup GroupMathUtils 
  * \brief retourne le Min mod de quatre Real
- *
  */
 ARCCORE_HOST_DEVICE inline Real
 minMod(Real a,Real b,Real c,Real d)
@@ -499,7 +498,6 @@ minMod(Real a,Real b,Real c,Real d)
 /*!
  * \ingroup GroupMathUtils
  * \brief retourne le Min mod de deux Reals
- *
  */
 ARCCORE_HOST_DEVICE inline Real
 minMod2(Real a,Real b)
@@ -548,7 +546,7 @@ relativeError(Real a,Real b)
  *
  */
 inline Real
-relativeError(Real3x3 T1,Real3x3 T2)
+relativeError(const Real3x3& T1,const Real3x3& T2)
 {
   Real err = 0;
   err = math::max(err,math::abs(relativeError(T1.x.x,T2.x.x)));
@@ -638,7 +636,7 @@ searchExtrema(ConstArrayView<Real2> array,Real& xmin,Real& xmax,
 /*!
  * \brief Calcul du déterminant d'une matrice 3x3.
  */
-inline Real
+ARCCORE_HOST_DEVICE inline Real
 matrixDeterminant(Real3x3 m)
 {
   return m.determinant();
@@ -662,7 +660,7 @@ normeR3(Real3 v1)
 /*!
  * \brief Matrice identite.
  */
-inline Real3x3
+ARCCORE_HOST_DEVICE inline Real3x3
 matrix3x3Id()
 {
   return Real3x3(Real3(1.0, 0.0, 0.0),
@@ -675,8 +673,8 @@ matrix3x3Id()
 /*!
  * \brief Calcul de l'inverse d'une matrice \a m en supposant connu son déterminant \a d
  */
-inline Real3x3
-inverseMatrix(Real3x3 m,Real d)
+ARCCORE_HOST_DEVICE inline Real3x3
+inverseMatrix(const Real3x3& m,Real d)
 {
   Real3x3 inv(Real3( m.y.y * m.z.z - m.y.z * m.z.y,   -m.x.y * m.z.z + m.x.z * m.z.y,    m.x.y * m.y.z - m.x.z * m.y.y),
               Real3( m.z.x * m.y.z - m.y.x * m.z.z,   -m.z.x * m.x.z + m.x.x * m.z.z,    m.y.x * m.x.z - m.x.x * m.y.z),
@@ -690,8 +688,8 @@ inverseMatrix(Real3x3 m,Real d)
 /*!
  * \brief Calcul de l'inverse d'une matrice \a m.
  */
-inline Real3x3
-inverseMatrix(Real3x3 m)
+ARCCORE_HOST_DEVICE inline Real3x3
+inverseMatrix(const Real3x3& m)
 {
   Real d = m.determinant();
   return inverseMatrix(m,d);
@@ -704,7 +702,8 @@ inverseMatrix(Real3x3 m)
  *
  * \deprecated Utiliser cross() à la place.
  */
-inline Real3 crossProduct3(Real3 v1, Real3 v2)
+inline Real3
+crossProduct3(Real3 v1, Real3 v2)
 {
   Real3 v;
   v.x = v1.y*v2.z - v1.z*v2.y;
@@ -738,7 +737,8 @@ cross(Real3 v1, Real3 v2)
  * \brief Normalisation d'un Real3.
  * \pre la norme de \a v ne doit pas être nulle.
  */
-inline Real3 normalizeReal3(Real3 v)
+inline Real3
+normalizeReal3(Real3 v)
 {
   Real norme = math::sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
       
@@ -751,7 +751,8 @@ inline Real3 normalizeReal3(Real3 v)
  * \ingroup GroupMathUtils 
  * \brief Produit vectoriel normalisé.
  */
-inline Real3 normalizedCrossProduct3(Real3 v1, Real3 v2)
+inline Real3
+normalizedCrossProduct3(Real3 v1, Real3 v2)
 {
   return normalizeReal3(cross(v1,v2));
 }
@@ -804,8 +805,8 @@ matrix3x3Prod(Real3x3 m1, Real3x3 m2)
 /*!
  * \brief Produit matrice 3x3 . vecteur 
  */
-inline Real3
-multiply(Real3x3 m, Real3 v)
+ARCCORE_HOST_DEVICE inline Real3
+multiply(const Real3x3& m, Real3 v)
 {
   return Real3( m.x.x*v.x + m.x.y*v.y + m.x.z*v.z,
                 m.y.x*v.x + m.y.y*v.y + m.y.z*v.z,
@@ -820,35 +821,33 @@ multiply(Real3x3 m, Real3 v)
 inline bool
 isNearlyId(Real3x3 m, Real epsilon = 1.e-10)
 {
-      
-  static Real3x3 id = Real3x3(Real3(1.,0.,0.),Real3(0.,1.,0.),Real3(0.,0.,1.));
+  static Real3x3 id = Real3x3(Real3(1., 0., 0.), Real3(0., 1., 0.), Real3(0., 0., 1.));
   //  static Real epsilon = 1.e-10;
-      
-  Real3x3 m0 = m-id;
-      
-  return m0.x.x < epsilon && m0.x.y < epsilon && m0.x.z < epsilon
-  && m0.y.x < epsilon && m0.y.y < epsilon && m0.y.z < epsilon
-  && m0.z.x < epsilon && m0.z.y < epsilon && m0.z.z < epsilon ;
-      
-  //return (m-id).isNearlyZero(); //trop serré
+
+  Real3x3 m0 = m - id;
+
+  return (m0.x.x < epsilon) && (m0.x.y < epsilon) && (m0.x.z < epsilon) &&
+  (m0.y.x < epsilon) && (m0.y.y < epsilon) && (m0.y.z < epsilon) &&
+  (m0.z.x < epsilon) && (m0.z.y < epsilon) && (m0.z.z < epsilon);
 }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup GroupMathUtils
  * \brief Symétrie d'un vecteur \a u par rapport à un plan de normale \a n.
  */
-inline Real3 
-planarSymmetric(Real3 u,Real3 n) 
+inline Real3
+planarSymmetric(Real3 u, Real3 n)
 {
   Real3 u_tilde;
 #ifdef ARCANE_CHECK
-  if (n.normL2()==0){
-    arcaneMathError(Convert::toDouble(n.normL2()),"planarSymetric");
-  }	
+  if (n.normL2() == 0) {
+    arcaneMathError(Convert::toDouble(n.normL2()), "planarSymetric");
+  }
 #endif
   Real3 norm = n / n.normL2();
-  u_tilde = u - 2.0 * dot(norm,u) * norm;
+  u_tilde = u - 2.0 * dot(norm, u) * norm;
   return u_tilde;
 }
 
