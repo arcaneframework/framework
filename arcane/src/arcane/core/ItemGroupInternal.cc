@@ -25,6 +25,7 @@
 #include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/ItemGroupImplInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -284,7 +285,7 @@ applySimdPadding()
 {
   // Fait un padding des derniers éléments du tableau en recopiant la
   // dernière valeurs.
-  m_simd_timestamp = timestamp();
+  m_internal_api.notifySimdPaddingDone();
   Arcane::applySimdPadding(mutableItemsLocalId());
 }
 
@@ -546,6 +547,15 @@ void ItemGroupImplInternal::
 notifyDirectRemoveItems(SmallSpan<const Int32> removed_ids, Int32 nb_remaining)
 {
   m_p->_notifyDirectRemoveItems(removed_ids, nb_remaining);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupImplInternal::
+notifySimdPaddingDone()
+{
+  m_p->m_simd_timestamp = m_p->timestamp();
 }
 
 /*---------------------------------------------------------------------------*/

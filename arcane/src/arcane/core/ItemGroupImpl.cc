@@ -1108,7 +1108,7 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 
 bool ItemGroupImpl::
-checkNeedUpdate()
+_checkNeedUpdate(bool do_padding)
 {
   // En cas de problème sur des recalculs très imbriqués, une proposition est
   // de désactiver les lignes #A pour activer les lignes #B
@@ -1130,8 +1130,27 @@ checkNeedUpdate()
     }                                              // #A
     has_recompute = true;
   }
-  _checkUpdateSimdPadding();
+  if (do_padding)
+    _checkUpdateSimdPadding();
   return has_recompute;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ItemGroupImpl::
+_checkNeedUpdateNoPadding()
+{
+  return _checkNeedUpdate(false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ItemGroupImpl::
+checkNeedUpdate()
+{
+  return _checkNeedUpdate(true);
 }
 
 /*---------------------------------------------------------------------------*/

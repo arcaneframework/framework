@@ -87,7 +87,7 @@ class ARCANE_CORE_EXPORT ItemGroup
   //! Nombre d'éléments du groupe
   inline Integer size() const
   {
-    m_impl->checkNeedUpdate();
+    m_impl->_checkNeedUpdateNoPadding();
     return m_impl->size();
   }
 
@@ -101,7 +101,7 @@ class ARCANE_CORE_EXPORT ItemGroup
    */
   inline bool empty() const
   {
-    m_impl->checkNeedUpdate();
+    m_impl->_checkNeedUpdateNoPadding();
     return m_impl->empty();
   }
 

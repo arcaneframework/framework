@@ -73,6 +73,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 {
  private:
 
+  friend ItemGroup;
   class ItemSorter;
 
  public:
@@ -489,6 +490,8 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 
   //! Supprime les entités \a items_local_id du groupe
   void _removeItems(SmallSpan<const Int32> items_local_id);
+  bool _checkNeedUpdateNoPadding();
+  bool _checkNeedUpdate(bool do_padding);
 };
 
 /*---------------------------------------------------------------------------*/
