@@ -82,16 +82,18 @@ class MeshMaterialVariablePrivate
   {
     return m_refs.view();
   }
+  void syncReferences(bool check_resize) override;
+  void resizeForIndexer(Int32 index, RunQueue& queue) override;
 
  public:
 
-  Int32 m_nb_reference;
-  MeshMaterialVariableRef* m_first_reference; //! Première référence sur la variable
+  Int32 m_nb_reference = 0;
+  MeshMaterialVariableRef* m_first_reference = nullptr; //! Première référence sur la variable
 
  private:
 
   String m_name;
-  IMeshMaterialMng* m_material_mng;
+  IMeshMaterialMng* m_material_mng = nullptr;
 
  public:
 
@@ -103,8 +105,8 @@ class MeshMaterialVariablePrivate
    */
   UniqueArray<VariableRef*> m_refs;
 
-  bool m_keep_on_change;
-  IObserver* m_global_variable_changed_observer;
+  bool m_keep_on_change = true;
+  IObserver* m_global_variable_changed_observer = nullptr;
 
   //! Liste des dépendances de cette variable
   UniqueArray<MeshMaterialVariableDependInfo> m_mat_depends;
@@ -120,8 +122,8 @@ class MeshMaterialVariablePrivate
 
  private:
 
-  bool m_has_recursive_depend;
-  MatVarSpace m_var_space;
+  bool m_has_recursive_depend = true;
+  MatVarSpace m_var_space = MatVarSpace::MaterialAndEnvironment;
   MeshMaterialVariable* m_variable = nullptr;
 };
 

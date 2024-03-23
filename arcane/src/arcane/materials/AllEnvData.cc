@@ -457,7 +457,7 @@ forceRecompute(bool compute_all)
   if (arcaneIsCheck())
     m_material_mng->checkValid();
 
-  m_material_mng->syncVariablesReferences();
+  m_material_mng->syncVariablesReferences(compute_all);
 
   if (is_verbose_debug) {
     OStringStream ostr;
@@ -540,8 +540,10 @@ _copyBetweenPartialsAndGlobals(const MeshVariableCopyBetweenPartialAndGlobalArgs
   //Integer indexer_index = indexer->index();
   auto func = [&](IMeshMaterialVariable* mv) {
     auto* mvi = mv->_internalApi();
-    if (is_add_operation)
+    if (is_add_operation){
+      mvi->resizeForIndexer(args.m_var_index, *args.m_queue);
       mvi->copyGlobalToPartial(args);
+    }
     else
       mvi->copyPartialToGlobal(args);
   };

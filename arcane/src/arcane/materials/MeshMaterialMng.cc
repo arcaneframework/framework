@@ -32,6 +32,7 @@
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
@@ -638,12 +639,12 @@ _endUpdate()
  * modifiés lors de l'opération.
  */
 void MeshMaterialMng::
-syncVariablesReferences()
+syncVariablesReferences(bool check_resize)
 {
   for( const auto& i : m_full_name_variable_map ){
     IMeshMaterialVariable* mv = i.second;
     info(4) << "SYNC REFERENCES FROM MANAGER name=" << mv->name();
-    mv->syncReferences();
+    mv->_internalApi()->syncReferences(check_resize);
   }
 }
 

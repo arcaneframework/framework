@@ -33,6 +33,7 @@
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
@@ -54,6 +55,7 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
 , m_global_variable_ref(global_var_ref)
 , m_views(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
+  m_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
 }
 
 
@@ -95,6 +97,7 @@ _init(ArrayView<PrivatePartType*> vars)
   m_vars.addRange(vars);
   Integer nb_var = m_vars.size();
   m_views.resize(nb_var);
+  m_host_views.resize(nb_var);
   m_views_as_bytes.resize(nb_var);
   // Il faut maintenir une référence sur les variables qu'on possède pour
   // être sur qu'elles sont bien initialisées et qu'elles ne seront pas détruites
@@ -103,8 +106,6 @@ _init(ArrayView<PrivatePartType*> vars)
   for( Integer i=0; i<nb_var; ++i ){
     // m_vars[i] peut être nul si notre variable est une variable uniquement milieu.
     m_p->m_refs[i] = nullptr;
-    m_views[i] = ContainerViewType();
-    m_views_as_bytes[i] = {};
     if (i==0){
       // Pour la variable globale, il s'agit d'une variable maillage.
       m_p->m_refs[i] = m_global_variable_ref;
@@ -116,12 +117,10 @@ _init(ArrayView<PrivatePartType*> vars)
     }
     // TODO: il faut pouvoir être notifié du changement de cette variable.
     // pour ensuite mettre à jour les vues (peut-être aussi faire un MyVariableRef).
-    if (m_vars[i]) {
-      m_views[i] = m_vars[i]->valueView();
-      m_views_as_bytes[i] = TraitsType::toBytes(m_views[i]);
-    }
+    _setView(i);
     //std::cout << "INIT_VIEW: " << i << " v=" << m_views[i].size() << '\n';
   }
+  _copyHostViewsToViews(nullptr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -172,7 +171,7 @@ buildFromManager(bool is_continue)
     
     // Note: Ces variables ne sont pas associées au maillage.
     // Il s'agit juste de variables tableau.
-    IVariable* var = 0;
+    IVariable* var = nullptr;
     {
       VariableBuildInfo vbi2(mesh,var_name,property);
       VariableInfo vi = VariableRefType::_internalVariableInfo(vbi2);
@@ -204,8 +203,8 @@ _syncFromGlobalVariable()
   // Cette méthode est appelée lorsque la taille de la variable globale
   // change. Cette variable est la première variable de la liste.
   // Il faut ensuite notifier toutes les références de ce changement.
-  m_views[0] = m_vars[0]->valueView();
-  m_views_as_bytes[0] = TraitsType::toBytes(m_views[0]);
+  _setView(0);
+  _copyHostViewsToViews(nullptr);
 
   for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){
     MeshMaterialVariableRef* ref = *i;
@@ -220,31 +219,35 @@ template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
 syncReferences()
 {
-  ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
-  Integer nb_indexer = indexers.size();
-  for( Integer i=0; i<nb_indexer; ++i ){
-    MeshMaterialVariableIndexer* indexer = indexers[i];
-    PrivatePartType* true_ptr = m_vars[i+1];
-    if (true_ptr)
-      Traits::resizeWithReserve(true_ptr,indexer->maxIndexInMultipleArray());
-  }
+  _syncReferences(true);
+}
 
-  Integer nb_var = m_vars.size();
-  for( Integer i=0; i<nb_var; ++i ){
-    m_views[i] = ContainerViewType();
-    m_views_as_bytes[i] = {};
-    if (m_vars[i]) {
-      m_views[i] = m_vars[i]->valueView();
-      m_views_as_bytes[i] = TraitsType::toBytes(m_views[i]);
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename Traits> void
+ItemMaterialVariableBase<Traits>::
+_syncReferences(bool check_resize)
+{
+  if (check_resize) {
+    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
+    Integer nb_indexer = indexers.size();
+    for (Integer i = 0; i < nb_indexer; ++i) {
+      MeshMaterialVariableIndexer* indexer = indexers[i];
+      PrivatePartType* true_ptr = m_vars[i + 1];
+      if (true_ptr) {
+        Traits::resizeWithReserve(true_ptr, indexer->maxIndexInMultipleArray());
+        _setView(i + 1);
+      }
     }
+    _setView(0);
+    _copyHostViewsToViews(nullptr);
   }
 
   for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){
     MeshMaterialVariableRef* ref = *i;
     ref->updateFromInternal();
   }
-
-  //TODO: mettre a jour les references
 }
 
 /*---------------------------------------------------------------------------*/
@@ -270,7 +273,7 @@ _saveData(IMeshComponent* component,IData* data)
 {
   if (m_p->space()==MatVarSpace::Environment && !component->isEnvironment())
     ARCANE_FATAL("Can not save data on material for environment only variable");
-  Traits::saveData(component,data,m_views);
+  Traits::saveData(component,data,m_host_views);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -336,28 +339,52 @@ _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
+ItemMaterialVariableBase<Traits>::
+_resizeForIndexer(Int32 index, RunQueue& queue)
+{
+  _setView(0);
+  PrivatePartType* partial_var = m_vars[index + 1];
+  if (_isValidAndUsedAndGlobalUsed(partial_var)) {
+    // Redimensionne le tableau des valeurs multiples si besoin.
+    // TODO: Faire sur le device pour la mise à jour de view
+    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
+    Traits::resizeWithReserve(partial_var, indexers[index]->maxIndexInMultipleArray());
+    this->_setView(index + 1);
+  }
+  _copyHostViewsToViews(&queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename Traits> void
+ItemMaterialVariableBase<Traits>::
+_copyHostViewsToViews(RunQueue* queue)
+{
+  const bool use_queue = false;
+  if (queue && use_queue){
+    Accelerator::MemoryCopyArgs copy_args(asWritableBytes(m_views),asBytes(m_host_views));
+    copy_args.addAsync(true);
+    queue->copyMemory(copy_args);
+  }
+  else
+    MemoryUtils::copy(asWritableBytes(m_views),asBytes(m_host_views));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
   Int32 var_index = args.m_var_index;
-  PrivatePartType* partial_var = m_vars[var_index+1];
-  if (!_isValidAndUsedAndGlobalUsed(partial_var))
-    return;
-
-  {
-    // Redimensionne le tableau des valeurs multiples si besoin.
-    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
-    Traits::resizeWithReserve(partial_var,indexers[var_index]->maxIndexInMultipleArray());
-    m_views[var_index+1] = partial_var->valueView();
-    m_views_as_bytes[var_index+1] = TraitsType::toBytes(m_views[var_index+1]);
+  PrivatePartType* partial_var = m_vars[var_index + 1];
+  if (_isValidAndUsedAndGlobalUsed(partial_var)) {
+    Traits::copyTo(m_host_views[0], args.m_local_ids, m_host_views[var_index + 1],
+                   args.m_indexes_in_multiple, *args.m_queue);
   }
-
-  ContainerConstViewType global_view = m_vars[0]->constValueView();
-  ContainerViewType partial_view = partial_var->valueView();
-
-  Traits::copyTo(global_view, args.m_local_ids, partial_view,
-                 args.m_indexes_in_multiple, *args.m_queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -369,14 +396,10 @@ _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 {
   Int32 var_index = args.m_var_index;
   PrivatePartType* partial_var = m_vars[var_index+1];
-  if (!_isValidAndUsedAndGlobalUsed(partial_var))
-    return;
-
-  ContainerViewType global_view = m_vars[0]->valueView();
-  ContainerConstViewType partial_view = partial_var->constValueView();
-
-  Traits::copyTo(partial_view, args.m_indexes_in_multiple,
-                 global_view, args.m_local_ids, *args.m_queue);
+  if (_isValidAndUsedAndGlobalUsed(partial_var)) {
+    Traits::copyTo(m_host_views[var_index + 1], args.m_indexes_in_multiple,
+                   m_host_views[0], args.m_local_ids, *args.m_queue);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -392,13 +415,7 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
 
-  // Redimensionne le tableau des valeurs multiples si besoin.
-  Traits::resizeWithReserve(partial_var,indexer->maxIndexInMultipleArray());
-  m_views[var_index+1] = partial_var->valueView();
-
   bool init_with_zero = m_p->materialMng()->isDataInitialisationWithZero();
-
-  ContainerConstViewType global_view = m_vars[0]->valueView();
 
   SmallSpan<const MatVarIndex> partial_matvar = list_builder.partialMatVarIndexes();
 
@@ -410,10 +427,9 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
   DataType zero = DataType();
 
   auto command = makeCommand(queue);
-  SmallSpan<ContainerViewType> views = m_views.view();
+  SmallSpan<ContainerViewType> views = m_views.smallSpan();
 
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, views.data());
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, global_view.data());
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_matvar.data());
 
   if (init_with_zero){
@@ -430,7 +446,7 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
     command << RUNCOMMAND_LOOP1(iter, nb_partial)
     {
       auto [i] = iter();
-      const auto& v = global_view[partial_local_ids[i]];
+      const auto& v = views[0][partial_local_ids[i]];
       MatVarIndex mvi = partial_matvar[i];
       Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],v);
     };
