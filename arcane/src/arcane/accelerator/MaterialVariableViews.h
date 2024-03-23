@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialVariableViews.h                                     (C) 2000-2023 */
+/* MaterialVariableViews.h                                     (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des vues sur les variables matériaux pour les accélérateurs.      */
 /*---------------------------------------------------------------------------*/
@@ -65,7 +65,7 @@ class MatItemVariableScalarInViewT
  public:
 
   MatItemVariableScalarInViewT(RunCommand& cmd, IMeshMaterialVariable* var, ArrayView<DataType>* v)
-  : MatVariableViewBase(cmd, var), m_value(v), m_value0(v[0].data()){}
+  : MatVariableViewBase(cmd, var), m_value(v){}
 
   //! Opérateur d'accès pour l'entité \a item
   ARCCORE_HOST_DEVICE const DataType& operator[](ComponentItemLocalId lid) const
@@ -76,13 +76,13 @@ class MatItemVariableScalarInViewT
   //! Opérateur d'accès pour l'entité \a item
   ARCCORE_HOST_DEVICE const DataType& operator[](PureMatVarIndex pmvi) const
   {
-    return this->m_value0[pmvi.valueIndex()];
+    return this->m_value[0][pmvi.valueIndex()];
   }
 
   //! Surcharge pour accéder à la valeure globale à partir du cell id
   ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType item) const
   {
-    return this->m_value0[item.localId()];
+    return this->m_value[0][item.localId()];
   }
 
   //! Opérateur d'accès pour l'entité \a item
@@ -99,7 +99,6 @@ class MatItemVariableScalarInViewT
  private:
 
   ArrayView<DataType>* m_value;
-  DataType* m_value0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -136,7 +135,7 @@ class MatItemVariableScalarOutViewT
  public:
 
   MatItemVariableScalarOutViewT(RunCommand& cmd,IMeshMaterialVariable* var,ArrayView<DataType>* v)
-  : MatVariableViewBase(cmd, var), m_value(v), m_value0(v[0].data()){}
+  : MatVariableViewBase(cmd, var), m_value(v){}
 
   //! Opérateur d'accès pour l'entité \a item
   ARCCORE_HOST_DEVICE Accessor operator[](ComponentItemLocalId lid) const
@@ -146,14 +145,14 @@ class MatItemVariableScalarOutViewT
 
   ARCCORE_HOST_DEVICE Accessor operator[](PureMatVarIndex pmvi) const
   {
-    return Accessor(this->m_value0[pmvi.valueIndex()]);
+    return Accessor(this->m_value[0][pmvi.valueIndex()]);
   }
 
   //! Surcharge pour accéder à la valeure globale à partir du cell id
   ARCCORE_HOST_DEVICE Accessor operator[](ItemIndexType item) const
   {
     ARCANE_CHECK_AT(item.localId(),this->m_value[0].size());
-    return Accessor(this->m_value0 + item.localId());
+    return Accessor(this->m_value[0].data() + item.localId());
   }
 
   //! Opérateur d'accès pour l'entité \a item
@@ -170,13 +169,12 @@ class MatItemVariableScalarOutViewT
 
   ARCCORE_HOST_DEVICE Accessor value0(PureMatVarIndex idx) const
   {
-    return Accessor(this->m_value0[idx.valueIndex()]);
+    return Accessor(this->m_value[0][idx.valueIndex()]);
   }
 
  private:
 
   ArrayView<DataType>* m_value;
-  DataType* m_value0;
 };
 
 /*---------------------------------------------------------------------------*/
