@@ -1892,12 +1892,22 @@ class UniqueArray
     this->copy(rhs);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const SmallSpan<T>& rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
   void operator=(const ConstArrayView<T>& rhs)
   {
     this->copy(rhs);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
   void operator=(const Span<const T>& rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const SmallSpan<const T>& rhs)
   {
     this->copy(rhs);
   }
