@@ -600,14 +600,6 @@ class MyArrayTest
  public:
 
   using BaseClass = Arccore::Array<DataType>;
-  using BaseClass::_resizeNoInit;
-
- public:
-
-  void resizeNoInit(Int64 new_size)
-  {
-    _resizeNoInit(new_size);
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -637,6 +629,10 @@ TEST(Array, Misc3)
     std::cout << "C4=" << c << "\n";
     for (Int32 i = 9, s = c.size(); i < s; ++i)
       ASSERT_EQ(c[i], ref_value2);
+    for (Int32 i = 9, s = c.size(); i < s; ++i)
+      new (c.data() + i) IntSubClassNoPod(i + 2);
+    for (Int32 i = 9, s = c.size(); i < s; ++i)
+      ASSERT_EQ(c[i], (i + 2));
   }
   {
     MyArrayTest<NoCopyData> c2;

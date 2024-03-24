@@ -1186,6 +1186,18 @@ class Array
     this->_resize(s,fill_value);
   }
 
+  /*!
+   * \brief Redimensionne sans initialiser les nouvelles valeurs.
+   *
+   * \warning Cela peut provoquer un comportement indéfini si les
+   * valeurs ne sont pas initialisées par la suite car le destructeur
+   * de \a T sera appelé lors de la destruction de l'instance.
+   */
+  void resizeNoInit(Int64 s)
+  {
+    this->_resizeNoInit(s);
+  }
+
   //! Réserve le mémoire pour \a new_capacity éléments
   void reserve(Int64 new_capacity)
   {
