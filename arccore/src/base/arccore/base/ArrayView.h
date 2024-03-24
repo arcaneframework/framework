@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayView.h                                                 (C) 2000-2023 */
+/* ArrayView.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Types définissant les vues de tableaux C.                                 */
 /*---------------------------------------------------------------------------*/
@@ -92,10 +92,8 @@ template<typename T> class IterT;
 template<class T>
 class ArrayView
 {
-  friend class Span<T>;
-  friend class Span<const T>;
-  friend class SmallSpan<T>;
-  friend class SmallSpan<const T>;
+  template <typename T2, Int64 Extent, Int64 MinValue> friend class Span;
+  template <typename T2, Int32 Extent, Int32 MinValue> friend class SmallSpan;
 
  public:
 

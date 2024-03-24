@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BaseTypes.h                                                 (C) 2000-2019 */
+/* BaseTypes.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Définition des types de la composante 'base' de Arccore.                  */
 /*---------------------------------------------------------------------------*/
@@ -62,10 +62,11 @@ template<typename T> class Array3View;
 template<typename T> class ConstArray4View;
 template<typename T> class Array4View;
 template<class DataType> class CoreArray;
-template<typename T,typename SizeType,SizeType Extent = -1> class SpanImpl;
-template<typename T,Int64 Extent = DynExtent> class Span;
-template<typename T,Int32 Extent = DynExtent> class SmallSpan;
-template<typename T,typename SizeType, SizeType Extent1 = DynExtent, SizeType Extent2= DynExtent> class Span2Impl;
+template <typename T, typename SizeType, SizeType Extent = DynExtent, SizeType MinValue = 0> class SpanImpl;
+template <typename T, Int64 Extent = DynExtent, Int64 MinValue = 0> class Span;
+template <typename T, Int32 Extent = DynExtent, Int32 MinValue = 0> class SmallSpan;
+template <typename T, Int64 Extent = DynExtent, Int64 MinValue = 0> using LargeSpan = Span<T, Extent, MinValue>;
+template <typename T, typename SizeType, SizeType Extent1 = DynExtent, SizeType Extent2 = DynExtent> class Span2Impl;
 template<typename T, Int64 Extent1 = DynExtent, Int64 Extent2 = DynExtent> class Span2;
 template<typename T, Int32 Extent1 = DynExtent, Int32 Extent2 = DynExtent> class SmallSpan2;
 
