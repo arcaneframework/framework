@@ -26,8 +26,10 @@
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/IVariableMng.h"
 #include "arcane/core/ItemInfoListView.h"
-#include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
+#include "arcane/core/internal/ItemGroupImplInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
@@ -39,6 +41,7 @@
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/MaterialVariableViews.h"
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"
@@ -161,7 +164,8 @@ class MaterialHeatTestModule
   IMeshMaterialMng* m_material_mng = nullptr;
   UniqueArray<HeatObject> m_heat_objects;
   IProfilingService* m_profiling_service = nullptr;
-  RunQueue* m_queue = nullptr;
+  RunQueue m_queue;
+  Runner m_sequential_runner;
 
  private:
 
@@ -184,6 +188,7 @@ class MaterialHeatTestModule
 
   void _compute();
   void _printCellsTemperature(Int32ConstArrayView ids);
+  void _changeVariableAllocator();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -216,7 +221,9 @@ MaterialHeatTestModule::
 void MaterialHeatTestModule::
 buildInit()
 {
-  m_queue = acceleratorMng()->defaultQueue();
+  m_sequential_runner.initialize(Accelerator::eExecutionPolicy::Sequential);
+  //m_queue = makeQueue(m_sequential_runner);
+  m_queue = *acceleratorMng()->defaultQueue();
   ProfilingRegistry::setProfilingLevel(2);
 
   // La création des milieux et des matériaux doit se faire dans un point
@@ -283,21 +290,53 @@ startInit()
   m_mat_temperature.globalVariable().fill(0.0);
   m_material_mng->forceRecompute();
   _computeCellsCenter();
-  MeshUtils::markMeshConnectivitiesAsMostlyReadOnly(defaultMesh(), m_queue, true);
+  MeshUtils::markMeshConnectivitiesAsMostlyReadOnly(defaultMesh(), &m_queue, true);
   VariableUtils::markVariableAsMostlyReadOnly(m_cell_center);
   VariableUtils::markVariableAsMostlyReadOnly(defaultMesh()->nodesCoordinates());
 
-  //eMemoryRessource mem_ressource = eMemoryRessource::Device;
-  eMemoryRessource mem_ressource = eMemoryRessource::UnifiedMemory; // Pour test
+  eMemoryRessource mem_ressource = eMemoryRessource::UnifiedMemory;
+  if (m_queue.isAcceleratorPolicy() && m_material_mng->_internalApi()->runQueue().isAcceleratorPolicy())
+    mem_ressource = eMemoryRessource::Device;
+
   const bool do_change_allocator = true;
   if (do_change_allocator) {
     info() << "Changing allocator to use device memory";
     IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_ressource);
     MemoryAllocationOptions mem_opts(allocator);
     IMeshMaterialVariableInternal* mat_var = m_mat_device_temperature.materialVariable()->_internalApi();
-    for (VariableRef* vref : mat_var->variableReferenceList()) {
-      IDataInternal* dx = vref->variable()->data()->_commonInternal();
-      dx->numericData()->changeAllocator(mem_opts);
+    for (VariableRef* vref : mat_var->variableReferenceList())
+      vref->variable()->_internalApi()->changeAllocator(mem_opts);
+  }
+  {
+    eMemoryRessource group_mem_ressource = mem_ressource;
+    // En mode check il ne faut pas utiliser la mémoire du device car il y a des tests
+    // effectués uniquement sur CPU
+    if (arcaneIsCheck())
+      group_mem_ressource = eMemoryRessource::UnifiedMemory;
+    ENUMERATE_MAT (imat, m_material_mng) {
+      IMeshMaterial* mat = *imat;
+      mat->cells()._internalApi()->setMemoryRessourceForItemLocalId(group_mem_ressource);
+    }
+    ENUMERATE_ENV (ienv, m_material_mng) {
+      IMeshEnvironment* env = *ienv;
+      env->cells()._internalApi()->setMemoryRessourceForItemLocalId(group_mem_ressource);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MaterialHeatTestModule::
+_changeVariableAllocator()
+{
+  VariableCollection used_variables = subDomain()->variableMng()->usedVariables();
+  MemoryAllocationOptions host_mem_opts(MemoryUtils::getAllocationOptions(eMemoryRessource::Host));
+  for (VariableCollection::Enumerator ivar(used_variables); ++ivar;) {
+    IVariable* var = *ivar;
+    if (var->name().startsWith("TimeHistoryMng")) {
+      var->_internalApi()->changeAllocator(host_mem_opts);
+      info() << "Change allocator for '" << var->fullName() << "'";
     }
   }
 }
@@ -319,7 +358,10 @@ void MaterialHeatTestModule::
 compute()
 {
   info() << "MaterialHeatTestModule::compute()";
-  bool is_end = (m_global_iteration() >= options()->nbIteration());
+  Int32 iteration = m_global_iteration();
+  if (iteration <= 2)
+    _changeVariableAllocator();
+  bool is_end = (iteration >= options()->nbIteration());
   if (is_end)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 
@@ -502,8 +544,9 @@ _addHeat(const HeatObject& heat_object)
   const Real heat_radius_norm = heat_object.radius * heat_object.radius;
 
   IMeshMaterial* current_mat = heat_object.material;
-  RunQueue* queue = this->acceleratorMng()->defaultQueue();
-  auto command = makeCommand(queue);
+  //RunQueue* queue = this->acceleratorMng()->defaultQueue();
+  //auto queue = makeQueue(m_sequential_runner);
+  auto command = makeCommand(m_queue);
 
   auto in_cell_center = viewIn(command, m_cell_center);
   auto inout_mat_temperature = viewInOut(command, m_mat_temperature);
@@ -545,7 +588,7 @@ _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa)
 
     const Int32 nb_item = all_cells.size();
     wa.resizeNbAdd(nb_item);
-    Accelerator::GenericFilterer filterer(m_queue);
+    Accelerator::GenericFilterer filterer(&m_queue);
     auto in_cell_center = viewIn(m_queue, m_cell_center);
     auto cells_ids = viewIn(m_queue, all_cells.localIds());
 
@@ -613,7 +656,7 @@ _computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa)
   }
 
   {
-    Accelerator::GenericFilterer filterer(m_queue);
+    Accelerator::GenericFilterer filterer(&m_queue);
     SmallSpan<const Int32> in_remove_view = wa.mat_cells_to_remove.view();
     SmallSpan<Int32> out_remove_view = wa.mat_cells_to_remove.view();
     SmallSpan<const bool> filter_view = wa.mat_cells_remove_filter.to1DSmallSpan();
