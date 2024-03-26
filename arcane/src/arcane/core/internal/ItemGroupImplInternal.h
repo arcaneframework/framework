@@ -56,6 +56,9 @@ class ARCANE_CORE_EXPORT ItemGroupImplInternal
   //! Indique que le padding SIMD des entités à été effectué
   void notifySimdPaddingDone();
 
+  //! Change la ressource mémoire utilisée pour conserver les localId() des entités
+  void setMemoryRessourceForItemLocalId(eMemoryRessource mem);
+
  private:
 
   ItemGroupInternal* m_p = nullptr;

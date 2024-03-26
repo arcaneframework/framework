@@ -52,6 +52,16 @@ class ARCANE_CORE_EXPORT IVariableInternal
    */
   virtual String computeComparisonHashCollective(IHashAlgorithm* hash_algo,
                                                  IData* sorted_data) = 0;
+
+  /*!
+   * \brief Change l'allocateur de la variable.
+   *
+   * Actuellemt valide uniquement pour les variables 1D. Ne fait rien pour
+   * les autres.
+   *
+   * \warning For experimental use only.
+   */
+  virtual void changeAllocator(const MemoryAllocationOptions& alloc_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
