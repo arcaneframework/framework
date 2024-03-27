@@ -21,6 +21,7 @@
 #include "arcane/materials/internal/MeshMaterialMng.h"
 
 #include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/SpanViews.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,14 +32,25 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MemoryAllocationOptions ComponentItemInternalData::Storage::
+_allocInfo(const MemoryAllocationOptions& alloc_info, const String& base_name, const String& name)
+{
+  MemoryAllocationOptions opts(alloc_info);
+  opts.setArrayName(base_name + name);
+  return opts;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ComponentItemInternalData::Storage::
-Storage(const MemoryAllocationOptions& alloc_info)
-: m_first_sub_constituent_item_id_list(alloc_info)
-, m_super_component_item_local_id_list(alloc_info)
-, m_component_id_list(alloc_info)
-, m_nb_sub_constituent_item_list(alloc_info)
-, m_global_item_local_id_list(alloc_info)
-, m_var_index_list(alloc_info)
+Storage(const MemoryAllocationOptions& alloc_info, const String& base_name)
+: m_first_sub_constituent_item_id_list(_allocInfo(alloc_info, base_name, "FirtSubComponentIdList"))
+, m_super_component_item_local_id_list(_allocInfo(alloc_info, base_name, "SuperComponentIdList"))
+, m_component_id_list(_allocInfo(alloc_info, base_name, "ComponentIdList"))
+, m_nb_sub_constituent_item_list(_allocInfo(alloc_info, base_name, "NbSubConstituentItemList"))
+, m_global_item_local_id_list(_allocInfo(alloc_info, base_name, "GlobalItemLocalIdList"))
+, m_var_index_list(_allocInfo(alloc_info, base_name, "VarIndexList"))
 {
 }
 
@@ -46,7 +58,7 @@ Storage(const MemoryAllocationOptions& alloc_info)
 /*---------------------------------------------------------------------------*/
 
 void ComponentItemInternalData::Storage::
-resize(Int32 new_size, ComponentItemSharedInfo* shared_info)
+resize(Int32 new_size, ComponentItemSharedInfo* shared_info, RunQueue& queue)
 {
   // On dimensionne au nombre d'éléments + 1.
   // On décale de 1 la vue pour qu'elle puisse être indexée avec l'entité
@@ -56,30 +68,41 @@ resize(Int32 new_size, ComponentItemSharedInfo* shared_info)
 
   const bool force_resize = false;
   MemoryUtils::checkResizeArrayWithCapacity(m_first_sub_constituent_item_id_list, true_size, force_resize);
-  m_first_sub_constituent_item_id_list[0] = {};
-
   MemoryUtils::checkResizeArrayWithCapacity(m_super_component_item_local_id_list, true_size, force_resize);
-  m_super_component_item_local_id_list[0] = {};
-
   MemoryUtils::checkResizeArrayWithCapacity(m_component_id_list, true_size, force_resize);
-  m_component_id_list[0] = -1;
-
   MemoryUtils::checkResizeArrayWithCapacity(m_nb_sub_constituent_item_list, true_size, force_resize);
-  m_nb_sub_constituent_item_list[0] = 0;
-
   MemoryUtils::checkResizeArrayWithCapacity(m_global_item_local_id_list, true_size, force_resize);
-  m_global_item_local_id_list[0] = NULL_ITEM_LOCAL_ID;
-
   MemoryUtils::checkResizeArrayWithCapacity(m_var_index_list, true_size, force_resize);
-  m_var_index_list[0].reset();
 
-  shared_info->m_storage_size = new_size;
-  shared_info->m_first_sub_constituent_item_id_data = m_first_sub_constituent_item_id_list.data() + 1;
-  shared_info->m_super_component_item_local_id_data = m_super_component_item_local_id_list.data() + 1;
-  shared_info->m_component_id_data = m_component_id_list.data() + 1;
-  shared_info->m_nb_sub_constituent_item_data = m_nb_sub_constituent_item_list.data() + 1;
-  shared_info->m_global_item_local_id_data = m_global_item_local_id_list.data() + 1;
-  shared_info->m_var_index_data = m_var_index_list.data() + 1;
+  auto first_sub_constituent_item_id_list = m_first_sub_constituent_item_id_list.smallSpan();
+  auto super_component_item_local_id_list = m_super_component_item_local_id_list.smallSpan();
+  auto component_id_list = m_component_id_list.smallSpan();
+  auto nb_sub_constituent_item_list = m_nb_sub_constituent_item_list.smallSpan();
+  auto global_item_local_id_list = m_global_item_local_id_list.smallSpan();
+  auto var_index_list = m_var_index_list.smallSpan();
+
+  // Met à jour les pointeurs.
+  // On le fait sur l'accélérateur pour éviter des recopies avec le CPU.
+  {
+    auto command = makeCommand(queue);
+    command << RUNCOMMAND_LOOP1(iter, 1)
+    {
+      shared_info->m_storage_size = new_size;
+      first_sub_constituent_item_id_list[0] = {};
+      component_id_list[0] = -1;
+      nb_sub_constituent_item_list[0] = 0;
+      global_item_local_id_list[0] = NULL_ITEM_LOCAL_ID;
+      var_index_list[0].reset();
+
+      shared_info->m_first_sub_constituent_item_id_data = first_sub_constituent_item_id_list.data() + 1;
+      shared_info->m_super_component_item_local_id_data = super_component_item_local_id_list.data() + 1;
+      shared_info->m_component_id_data = component_id_list.data() + 1;
+
+      shared_info->m_nb_sub_constituent_item_data = nb_sub_constituent_item_list.data() + 1;
+      shared_info->m_global_item_local_id_data = global_item_local_id_list.data() + 1;
+      shared_info->m_var_index_data = var_index_list.data() + 1;
+    };
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -92,16 +115,16 @@ ComponentItemInternalData::
 ComponentItemInternalData(MeshMaterialMng* mmg)
 : TraceAccessor(mmg->traceMng())
 , m_material_mng(mmg)
-, m_shared_infos(_allocOptions())
-, m_mat_items_internal_range(_allocOptions())
-, m_all_env_storage(_allocOptions())
-, m_env_storage(_allocOptions())
-, m_mat_storage(_allocOptions())
+, m_shared_infos(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_all_env_storage(_allocOptions(), "AllEnvStorage")
+, m_env_storage(_allocOptions(), "EnvStorage")
+, m_mat_storage(_allocOptions(), "MatStorage")
 {
   // Il y a une instance pour les MatCell, les EnvCell et les AllEnvCell
   // Il ne faut ensuite plus modifier ce tableau car on conserve des pointeurs
   // vers les éléments de ce tableau.
   m_shared_infos.resize(3);
+  m_shared_infos.setDebugName("ComponentItemInternalDataSharedInfo");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -111,7 +134,6 @@ MemoryAllocationOptions ComponentItemInternalData::
 _allocOptions()
 {
   return MemoryAllocationOptions(platform::getDefaultDataAllocator());
-  //return MemoryUtils::getAllocatorForMostlyReadOnlyData();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -168,6 +190,12 @@ _resetItemsInternal()
 void ComponentItemInternalData::
 resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
 {
+  RunQueue& queue(m_material_mng->runQueue());
+
+  auto environments = m_material_mng->trueEnvironments();
+  const Int32 nb_env = environments.size();
+  NumArray<ComponentItemInternalRange, MDDim1> host_mats_range(nb_env);
+
   // Calcule le nombre total de ComponentItemInternal dont on a besoin
   Int32 total_nb_mat_cell = 0;
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments())
@@ -181,7 +209,7 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
     for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
       Int32 nb_cell_mat = env->totalNbCellMat();
       Int32 env_id = env->id();
-      m_mat_items_internal_range[env_id].setRange(index_in_container, nb_cell_mat);
+      host_mats_range[env_id].setRange(index_in_container, nb_cell_mat);
       index_in_container += nb_cell_mat;
     }
   }
@@ -189,9 +217,13 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
   info() << "ResizeStorage max_local_id=" << max_local_id
          << " total_nb_env_cell=" << total_nb_env_cell
          << " total_nb_mat_cell=" << total_nb_mat_cell;
-  m_all_env_storage.resize(max_local_id, allEnvSharedInfo());
-  m_env_storage.resize(total_nb_env_cell, envSharedInfo());
-  m_mat_storage.resize(total_nb_mat_cell, matSharedInfo());
+  {
+    RunQueue::ScopedAsync sc(&queue);
+    m_mat_items_internal_range.copy(host_mats_range, &queue);
+    m_all_env_storage.resize(max_local_id, allEnvSharedInfo(), queue);
+    m_env_storage.resize(total_nb_env_cell, envSharedInfo(), queue);
+    m_mat_storage.resize(total_nb_mat_cell, matSharedInfo(), queue);
+  }
 
   _resetItemsInternal();
 }

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PartialVariableTester.cc                                    (C) 2000-2023 */
+/* PartialVariableTester.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Service de test des variables partielles.                                 */
 /*---------------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ class PartialVariableTester
 {
  public:
 
-  PartialVariableTester(const ModuleBuildInfo& mbi);
+  explicit PartialVariableTester(const ModuleBuildInfo& mbi);
   ~PartialVariableTester() {}
 
  public:
@@ -53,6 +53,7 @@ class PartialVariableTester
   void compute();
   
  private:
+
   // test historique
   VariableCellReal m_cell_temperature;
   VariableNodeReal m_node_temperature;
@@ -65,8 +66,6 @@ class PartialVariableTester
   PartialVariableCellArrayInteger m_partial_initial_and_current_rank;
   VariableCellInteger m_post_initial_rank;
   VariableCellInteger m_post_current_rank;
-
-  //PartialVariableCellInt64 m_all_cells_uid;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -84,7 +83,6 @@ PartialVariableTester(const ModuleBuildInfo& mbi)
 , m_partial_initial_and_current_rank(VariableBuildInfo(mbi.meshHandle(),"PartialInitialAndCurrentRank",String(),"RankGroup"))
 , m_post_initial_rank(VariableBuildInfo(mbi.meshHandle(),"PostInitialRank"))
 , m_post_current_rank(VariableBuildInfo(mbi.meshHandle(),"PostCurrentRank"))
-  //, m_all_cells_uid(VariableBuildInfo(mbi.meshHandle(),"PartialAllCellsRank",String(),"AllCells"))
 {
 }
 
@@ -166,18 +164,26 @@ init()
   // }
   
   ENUMERATE_CELL(icell,m_partial_initial_rank.itemGroup()){
-    if(icell->isOwn())
+    CellEnumeratorIndex iter_index(icell.index());
+    Int32 wanted_value = -1;
+    if(icell->isOwn()){
+      wanted_value = rank;
       m_partial_initial_rank[*icell] = rank;
-    else
+    }
+    else{
       m_partial_initial_rank[icell] = -1;
+    }
+    if (m_partial_initial_rank[iter_index]!=wanted_value)
+      ARCANE_FATAL("Bad value i={0}  v={1} expected={2}",icell.index(),m_partial_initial_rank[iter_index],wanted_value);
   }
   m_partial_initial_rank.synchronize();
  
   m_partial_initial_and_current_rank.resize(2);
   ENUMERATE_CELL(icell,m_partial_initial_and_current_rank.itemGroup()){
+    CellEnumeratorIndex iter_index(icell.index());
     if(icell->isOwn()) {
       m_partial_initial_and_current_rank[*icell][0] = rank;
-      m_partial_initial_and_current_rank[icell][1] = 0;
+      m_partial_initial_and_current_rank[iter_index][1] = 0;
     } else {
       m_partial_initial_and_current_rank[icell][0] = -1;
     }
@@ -219,8 +225,8 @@ compute()
   IItemFamily* cell_family = mesh()->cellFamily();
   CellGroup high_group = cell_family->findGroup("HIGH");
   if (m_high_cell_temperature.itemGroup()!=high_group)
-    fatal() << "Bad group for m_high_cell_temperature group="
-            << m_high_cell_temperature.itemGroup().name();
+    ARCANE_FATAL("Bad group for m_high_cell_temperature group={0}",
+                 m_high_cell_temperature.itemGroup().name());
 
   // Vérifie que les valeurs partielles sont les même que les valeurs globales.
   // Ce test permet de vérifier après un équilibrage que les valeurs sont correctes

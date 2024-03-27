@@ -475,7 +475,8 @@ class CudaMemoryCopier
 : public IMemoryCopier
 {
   void copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
-            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem, RunQueue* queue) override
+            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem,
+            const RunQueue* queue) override
   {
     if (queue){
       queue->copyMemory(MemoryCopyArgs(to.bytes(),from.bytes()).addAsync(queue->isAsync()));

@@ -30,9 +30,8 @@
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MemoryAllocator.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
-#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
@@ -709,11 +708,7 @@ changeAllocator(const MemoryAllocationOptions& alloc_info)
   // Tant qu'il n'y a pas l'API dans Arccore, il faut faire la copie à la
   // main pour ne pas avoir de plantage si l'allocateur est uniquement sur
   // un accélérateur
-  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
-  eMemoryRessource mem_type = eMemoryRessource::Unknown;
-  ConstMemoryView input_view(asBytes(m_value));
-  MutableMemoryView output_view(asWritableBytes(new_value));
-  mrm->_internal()->copy(input_view, mem_type, output_view, mem_type, nullptr);
+  MemoryUtils::copy(new_value.span(), m_value.constSpan());
 
   std::swap(m_value,new_value);
   m_allocation_info.setMemoryLocationHint(alloc_info.memoryLocationHint());

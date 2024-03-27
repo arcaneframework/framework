@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SodMeshGenerator.cc                                         (C) 2000-2023 */
+/* SodMeshGenerator.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Service de génération d'un maillage à-la 'sod'.                           */
 /*---------------------------------------------------------------------------*/
@@ -18,23 +18,23 @@
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/IMeshReader.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/XmlNode.h"
-#include "arcane/Service.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/Item.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/Properties.h"
-#include "arcane/IMeshBuilder.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/IMeshBuilder.h"
 
 #include "arcane/std/IMeshGenerator.h"
 #include "arcane/std/SodMeshGenerator.h"
@@ -99,6 +99,15 @@ SodMeshGenerator(IPrimaryMesh* mesh,bool zyx)
 , m_mesh(mesh)
 , m_zyx_generate(zyx)
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SodMeshGenerator::
+~SodMeshGenerator()
+{
+  // Nécessaire pour std::unique_ptr.
 }
 
 /*---------------------------------------------------------------------------*/

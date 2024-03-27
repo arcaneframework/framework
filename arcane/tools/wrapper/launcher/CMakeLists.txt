@@ -5,6 +5,10 @@
 set(ARCANE_SWIG_LAUNCHER_FILES
   ArcaneSwigLauncher.i
 )
+if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  # Cette variable est utilisée lors de la génération du fichier '.csproj'
+  set(_HAS_PYTHON_WRAPPER "true")
+endif()
 
 arcane_wrapper_add_swig_target(NAME launcher SOURCE ArcaneSwigLauncher.i NAMESPACE_NAME Arcane
   DLL_NAME Arcane.Launcher

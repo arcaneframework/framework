@@ -13,12 +13,8 @@
 
 #include "arcane/utils/DualUniqueArray.h"
 
-#include "arcane/utils/String.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/MemoryView.h"
-#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
+#include "arcane/utils/MemoryUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,10 +28,7 @@ namespace Arcane
 void DualUniqueArrayBase::
 _memoryCopy(Span<const std::byte> from, Span<std::byte> to)
 {
-  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
-  eMemoryRessource from_mem = eMemoryRessource::Unknown;
-  eMemoryRessource to_mem = eMemoryRessource::Unknown;
-  mrm->_internal()->copy(ConstMemoryView(from), from_mem, MutableMemoryView(to), to_mem, nullptr);
+  MemoryUtils::copy(MutableMemoryView(to), ConstMemoryView(from));
 }
 
 /*---------------------------------------------------------------------------*/

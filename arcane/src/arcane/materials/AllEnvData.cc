@@ -18,11 +18,13 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/ArraySimdPadder.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/internal/ItemGroupImplInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/materials/IMeshMaterialVariable.h"
@@ -288,6 +290,7 @@ _computeInfosForEnvCells()
       const Int32 nb_id = matvar_indexes.size();
       ComponentItemSharedInfo* env_shared_info = m_item_internal_data.envSharedInfo();
 
+      Span<Int32> env_cells_local_id = cells._internalApi()->itemsLocalId();
       SmallSpan<ConstituentItemIndex> env_id_list = env->componentData()->m_constituent_local_id_list.mutableLocalIds();
       command << RUNCOMMAND_LOOP1(iter, nb_id)
       {
@@ -308,7 +311,11 @@ _computeInfosForEnvCells()
         ref_ii._setNbSubItem(nb_mat);
         ref_ii._setVariableIndex(mvi);
         ref_ii._setComponent(env_id);
+        // Le rang 0 met à jour le padding SIMD du groupe associé au matériau
+        if (z==0)
+          ArraySimdPadder::applySimdPaddingView(env_cells_local_id);
       };
+      cells._internalApi()->notifySimdPaddingDone();
     }
     for (MeshEnvironment* env : true_environments) {
       env->computeMaterialIndexes(&m_item_internal_data, queue);
@@ -450,7 +457,7 @@ forceRecompute(bool compute_all)
   if (arcaneIsCheck())
     m_material_mng->checkValid();
 
-  m_material_mng->syncVariablesReferences();
+  m_material_mng->syncVariablesReferences(compute_all);
 
   if (is_verbose_debug) {
     OStringStream ostr;
@@ -533,8 +540,10 @@ _copyBetweenPartialsAndGlobals(const MeshVariableCopyBetweenPartialAndGlobalArgs
   //Integer indexer_index = indexer->index();
   auto func = [&](IMeshMaterialVariable* mv) {
     auto* mvi = mv->_internalApi();
-    if (is_add_operation)
+    if (is_add_operation){
+      mvi->resizeForIndexer(args.m_var_index, *args.m_queue);
       mvi->copyGlobalToPartial(args);
+    }
     else
       mvi->copyPartialToGlobal(args);
   };

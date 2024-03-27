@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FixedArray.h                                                (C) 2000-2023 */
+/* FixedArray.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Tableau 1D de taille fixe.                                                */
 /*---------------------------------------------------------------------------*/
@@ -68,25 +68,25 @@ class FixedArray final
  public:
 
   //! Valeur du \a i-ème élément
-  T& operator[](Int32 index)
+  ARCCORE_HOST_DEVICE T& operator[](Int32 index)
   {
     ARCANE_CHECK_AT(index, NbElement);
     return m_value[index];
   }
   //! Valeur du \a i-ème élément
-  const T& operator[](Int32 index) const
+  ARCCORE_HOST_DEVICE const T& operator[](Int32 index) const
   {
     ARCANE_CHECK_AT(index, NbElement);
     return m_value[index];
   }
   //! Vue modifiable sur le tableau
-  SmallSpan<T, NbElement> span() { return { m_value.data(), NbElement }; }
+  ARCCORE_HOST_DEVICE SmallSpan<T, NbElement> span() { return { m_value.data(), NbElement }; }
   //! Vue non modifiable sur le tableau
-  SmallSpan<const T, NbElement> span() const { return { m_value.data(), NbElement }; }
+  ARCCORE_HOST_DEVICE SmallSpan<const T, NbElement> span() const { return { m_value.data(), NbElement }; }
   //! Vue modifiable sur le tableau
-  ArrayView<T> view() { return { NbElement, m_value.data() }; }
+  ARCCORE_HOST_DEVICE ArrayView<T> view() { return { NbElement, m_value.data() }; }
   //! Vue non modifiable sur le tableau
-  ConstArrayView<T> view() const { return { NbElement, m_value.data() }; }
+  ARCCORE_HOST_DEVICE ConstArrayView<T> view() const { return { NbElement, m_value.data() }; }
   //! Nombre d'éléments tu tableau
   static constexpr Int32 size() { return NbElement; }
 

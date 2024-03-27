@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.cc                                                 (C) 2000-2023 */
+/* NumArray.cc                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Tableaux multi-dimensionnel pour les types numériques sur accélérateur.   */
 /*---------------------------------------------------------------------------*/
@@ -13,11 +13,9 @@
 
 #include "arcane/utils/NumArray.h"
 
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/MemoryView.h"
-#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
+#include "arcane/utils/MemoryUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,7 +26,7 @@ namespace Arcane::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMemoryAllocator* NumArrayBaseCommon::
+MemoryAllocationOptions NumArrayBaseCommon::
 _getDefaultAllocator()
 {
   return _getDefaultAllocator(eMemoryRessource::UnifiedMemory);
@@ -37,10 +35,10 @@ _getDefaultAllocator()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMemoryAllocator* NumArrayBaseCommon::
+MemoryAllocationOptions NumArrayBaseCommon::
 _getDefaultAllocator(eMemoryRessource r)
 {
-  return platform::getDataMemoryRessourceMng()->getAllocator(r);
+  return MemoryUtils::getAllocationOptions(r);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -51,7 +49,7 @@ _checkHost(eMemoryRessource r)
 {
   if (r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory)
     return;
-  ARCANE_FATAL("Invalid access from '{0}' ressource memory to host memory",(int)r);
+  ARCANE_FATAL("Invalid access from '{0}' ressource memory to host memory", (int)r);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -61,8 +59,7 @@ void NumArrayBaseCommon::
 _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
                  Span<std::byte> to, eMemoryRessource to_mem, RunQueue* queue)
 {
-  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
-  mrm->_internal()->copy(ConstMemoryView(from), from_mem, MutableMemoryView(to), to_mem, queue);
+  MemoryUtils::copy(MutableMemoryView(to), to_mem, ConstMemoryView(from), from_mem, queue);
 }
 
 /*---------------------------------------------------------------------------*/

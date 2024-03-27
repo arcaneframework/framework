@@ -43,7 +43,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
  public:
 
-  explicit IncrementalComponentModifier(AllEnvData* all_env_data);
+  IncrementalComponentModifier(AllEnvData* all_env_data,const RunQueue& queue);
 
  public:
 
@@ -56,31 +56,32 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   AllEnvData* m_all_env_data = nullptr;
   MeshMaterialMng* m_material_mng = nullptr;
   ConstituentModifierWorkInfo m_work_info;
-  RunQueue m_copy_queue;
+  RunQueue m_queue;
   bool m_do_old_implementation = false;
 
  public:
 
-  void setRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set);
+  void flagRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set);
 
  public:
 
-  void _computeCellsToTransformForEnvironments(ConstArrayView<Int32> ids);
-  void _resetTransformedCells(ConstArrayView<Int32> ids);
+  void _computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids);
+  void _resetTransformedCells(SmallSpan<const Int32> ids);
   void _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                           SmallSpan<const Int32> local_ids);
+  void _removeItemsInGroup(ItemGroup cells,SmallSpan<const Int32> removed_ids);
 
  private:
 
   void _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
-                                   ConstArrayView<Int32> ids);
+                                   SmallSpan<const Int32> ids);
   void _switchCellsForMaterials(const MeshMaterial* modified_mat,
-                                ConstArrayView<Int32> ids);
-  void _computeCellsToTransformForMaterial(const MeshMaterial* mat, ConstArrayView<Int32> ids);
+                                SmallSpan<const Int32> ids);
+  void _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int32> ids);
   void _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
-                                   Int32ConstArrayView local_ids, bool update_env_indexer);
+                                   SmallSpan<const Int32> local_ids, bool update_env_indexer);
   void _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
-                              Int32ConstArrayView local_ids, bool update_env_indexer);
+                              SmallSpan<const Int32> local_ids, bool update_env_indexer);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -328,7 +328,7 @@ PETScInternalLinearSolver::solve(
         MatGetBlockSize(matrix.internal()->m_internal, &bs) ;
         MatNullSpaceGetVecs(matnull, &has_const, &nvec, &vecs);
         MatSetNearNullSpace(matrix.internal()->m_internal, matnull);
-        //MatNullSpaceDestroy(&matnull);
+        MatNullSpaceDestroy(&matnull);
         if (m_verbose == VerboseTypes::high ) {
             alien_info([&] {
               cout() << "|---------------------------------------------|";

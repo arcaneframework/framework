@@ -426,7 +426,10 @@ void _testArrayNewInternal()
       ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
       ARCCORE_UT_CHECK((c2[2] == 3), "Bad value [7]");
       c = c2.span();
+      SmallSpan<const IntSubClassNoPod> c2_small_span = c2;
       ASSERT_EQ(c.constSpan(), c2.constSpan());
+      ASSERT_EQ(c.constSmallSpan(), c2_small_span);
+      ASSERT_EQ(c.smallSpan(), c2.smallSpan());
     }
   }
 }
@@ -597,14 +600,6 @@ class MyArrayTest
  public:
 
   using BaseClass = Arccore::Array<DataType>;
-  using BaseClass::_resizeNoInit;
-
- public:
-
-  void resizeNoInit(Int64 new_size)
-  {
-    _resizeNoInit(new_size);
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -634,6 +629,10 @@ TEST(Array, Misc3)
     std::cout << "C4=" << c << "\n";
     for (Int32 i = 9, s = c.size(); i < s; ++i)
       ASSERT_EQ(c[i], ref_value2);
+    for (Int32 i = 9, s = c.size(); i < s; ++i)
+      new (c.data() + i) IntSubClassNoPod(i + 2);
+    for (Int32 i = 9, s = c.size(); i < s; ++i)
+      ASSERT_EQ(c[i], (i + 2));
   }
   {
     MyArrayTest<NoCopyData> c2;
@@ -705,6 +704,11 @@ TEST(Array, Misc4)
 TEST(Array, Allocator)
 {
   using namespace Arccore;
+  std::cout << "Sizeof(MemoryAllocationOptions)=" << sizeof(MemoryAllocationOptions) << "\n";
+  std::cout << "Sizeof(ArrayMetaData)=" << sizeof(ArrayMetaData) << "\n";
+  std::cout << "Sizeof(UniqueArray<Int32>)=" << sizeof(UniqueArray<Int32>) << "\n";
+  std::cout << "Sizeof(SharedArray<Int32>)=" << sizeof(SharedArray<Int32>) << "\n";
+
   PrintableMemoryAllocator printable_allocator;
   PrintableMemoryAllocator printable_allocator2;
   IMemoryAllocator* allocator1 = AlignedMemoryAllocator3::Simd();

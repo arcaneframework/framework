@@ -14,6 +14,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ArraySimdPadder.h"
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemPrinter.h"
@@ -26,6 +27,7 @@
 #include "arcane/materials/internal/MeshComponentPartData.h"
 
 #include "arcane/accelerator/Filter.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,7 +39,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshComponentPartData::
-MeshComponentPartData(IMeshComponent* component)
+MeshComponentPartData(IMeshComponent* component, const String& debug_name)
 : TraceAccessor(component->traceMng())
 , m_component(component)
 , m_impure_var_idx(component->_internalApi()->variableIndexerIndex() + 1)
@@ -49,6 +51,13 @@ MeshComponentPartData(IMeshComponent* component)
     m_value_indexes[i] = UniqueArray<Int32>(allocator);
     m_items_internal_indexes[i] = UniqueArray<Int32>(allocator);
   }
+  if (!debug_name.empty()) {
+    String base_name = String("MeshComponentPartData") + debug_name;
+    for (Integer i = 0; i < 2; ++i) {
+      m_value_indexes[i].setDebugName(base_name + "ValueIndexes" + String::fromNumber(i));
+      m_items_internal_indexes[i].setDebugName(base_name + "ValueIndexes" + String::fromNumber(i));
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -56,12 +65,38 @@ MeshComponentPartData(IMeshComponent* component)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Notification de changement des m_values_indexes.
+ *
+ * Applique le padding pour la vectorisation sur les valueIndex() si nécessaire.
+ * \a queue peut-être nul.
+ */
 void MeshComponentPartData::
-_notifyValueIndexesChanged()
+_notifyValueIndexesChanged(RunQueue* queue)
 {
-  applySimdPadding(m_value_indexes[0]);
-  applySimdPadding(m_value_indexes[1]);
+  FixedArray<Span<Int32>, 2> indexes;
+  indexes[0] = m_value_indexes[0].span();
+  indexes[1] = m_value_indexes[1].span();
+
+  bool is_need_padding = false;
+  for (Int32 i = 0; i < 2; ++i)
+    is_need_padding |= ArraySimdPadder::isNeedPadding(Span<const Int32>(indexes[i]));
+
+  if (!is_need_padding)
+    return;
+
+  if (queue) {
+    auto command = makeCommand(queue);
+    command << RUNCOMMAND_LOOP1(iter, 2)
+    {
+      auto [i] = iter();
+      ArraySimdPadder::applySimdPaddingView(indexes[i]);
+    };
+  }
+  else {
+    ArraySimdPadder::applySimdPaddingView(indexes[0]);
+    ArraySimdPadder::applySimdPaddingView(indexes[1]);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -126,7 +161,7 @@ _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queu
           << " nb_pure=" << pure_indexes.size()
           << " nb_impure=" << impure_indexes.size();
 
-  _notifyValueIndexesChanged();
+  _notifyValueIndexesChanged(&queue);
 }
 
 /*---------------------------------------------------------------------------*/

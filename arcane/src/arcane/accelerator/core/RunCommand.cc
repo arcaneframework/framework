@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.cc                                               (C) 2000-2023 */
+/* RunCommand.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 RunCommand::
-RunCommand(RunQueue& run_queue)
+RunCommand(const RunQueue& run_queue)
 : m_run_queue(run_queue)
 , m_p(run_queue._getCommandImpl())
 {

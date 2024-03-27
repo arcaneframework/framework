@@ -127,8 +127,7 @@ HYPRE BoomerAMG Options
       
       </description>
     </simple>
-    
-    
+        
     <simple name="pmax-elements" type="integer" default="0">
       <description>
           Max elements per row for interpolation operator (0=unlimited)

@@ -36,7 +36,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 {
  public:
 
-  explicit ConstituentItemLocalIdList(ComponentItemSharedInfo* shared_info);
+  ConstituentItemLocalIdList(ComponentItemSharedInfo* shared_info, const String& debug_name);
 
  public:
 

@@ -652,11 +652,10 @@ startInit()
                  << " component_uid=" << mc.componentUniqueId();
           //env_density += m_mat_density[imatcell];
         }
-        ENUMERATE_CELL_COMPONENTCELL(iccell,(*ienvcell)){
-          ComponentCell mc = *iccell;
+        for( ComponentCell mc : ec.subItems()){
           info() << "Cell     mat=" << mc.component()->name()
                  << " (id=" << mc.componentId() << ")"
-                 << " density=" << m_mat_density[iccell]
+                 << " density=" << m_mat_density[mc]
                  << " index=" << mc._varIndex()
                  << " component_uid=" << mc.componentUniqueId();
           //env_density += m_mat_density[imatcell];

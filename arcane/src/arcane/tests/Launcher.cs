@@ -38,6 +38,9 @@ public class Launcher
   public static int _ExecStandard()
   {
     Console.WriteLine("ArcaneTest.Launcher.Exec (V2)");
+#if ARCANE_HAS_DOTNET_PYTHON
+    Arcane.Python.MainInit.Init();
+#endif
     return ArcaneMain.Run();
   }
 

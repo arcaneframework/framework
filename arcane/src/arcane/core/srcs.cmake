@@ -65,6 +65,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IMeshInternal.h
   internal/IVariableInternal.h
   internal/IMeshModifierInternal.h
+  internal/ItemGroupImplInternal.h
   internal/ItemGroupInternal.h
   internal/ICaseOptionListInternal.h
   internal/IVariableMngInternal.h

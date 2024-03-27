@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -396,14 +396,17 @@ TEST(Span, StdArray)
     ASSERT_FALSE(fixed_s1==fixed_s2);
     ASSERT_TRUE(fixed_s1!=fixed_s2);
 
-    Span<const Int64> s1_a(s1);
+    LargeSpan<const Int64> s1_a(s1);
     Span<const std::byte> fb1(asBytes(s1_a));
     Span<std::byte> fb2(asWritableBytes(s2));
     ASSERT_FALSE(fb1==fb2);
 
     std::array<Real, 3> v2r{ 2.0, 4.1, -2.3 };
     SmallSpan<const Real> small2(v2r);
-    Span<const std::byte> small_fb2(asBytes(small2));
+    LargeSpan<const std::byte> small_fb2(asBytes(small2));
+
+    Span<Int64,DynExtent,-1> a4(v2.data()+1,v2.size()-1);
+    ASSERT_EQ(a4[-1],2);
   }
 }
 
@@ -711,6 +714,36 @@ template class SmallSpan<Int32>;
 template class SmallSpan<const Int32>;
 template class SmallSpan<double>;
 template class SmallSpan<const double>;
+
+template class Span<Int32,DynExtent,-1>;
+template class Span<const Int32,DynExtent,-1>;
+template class Span<double,DynExtent,-1>;
+template class Span<const double,DynExtent,-1>;
+
+template class SmallSpan<Int32,DynExtent,-1>;
+template class SmallSpan<const Int32,DynExtent,-1>;
+template class SmallSpan<double,DynExtent,-1>;
+template class SmallSpan<const double,DynExtent,-1>;
+
+template class Span<Int32,4>;
+template class Span<const Int32,5>;
+template class Span<double,6>;
+template class Span<const double,7>;
+
+template class SmallSpan<Int32,4>;
+template class SmallSpan<const Int32,5>;
+template class SmallSpan<double,6>;
+template class SmallSpan<const double,7>;
+
+template class Span<Int32,4,-1>;
+template class Span<const Int32,5,-1>;
+template class Span<double,6,-1>;
+template class Span<const double,7,-1>;
+
+template class SmallSpan<Int32,4,-1>;
+template class SmallSpan<const Int32,5,-1>;
+template class SmallSpan<double,6,-1>;
+template class SmallSpan<const double,7,-1>;
 
 template class Span2<Int32>;
 template class Span2<const Int32>;

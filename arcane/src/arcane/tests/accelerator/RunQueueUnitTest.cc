@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueUnitTest.cc                                         (C) 2000-2023 */
+/* RunQueueUnitTest.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Service de test unitaire des 'RunQueue'.                                  */
 /*---------------------------------------------------------------------------*/
@@ -13,9 +13,10 @@
 
 #include "arcane/utils/NumArray.h"
 #include "arcane/utils/ValueChecker.h"
+#include "arcane/utils/MemoryUtils.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ServiceFactory.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceFactory.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Runner.h"
@@ -23,6 +24,7 @@
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/accelerator/NumArrayViews.h"
+#include "arcane/accelerator/SpanViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
 #include <thread>
@@ -60,9 +62,11 @@ class RunQueueUnitTest
 
  public:
 
+  void _executeTestNullQueue();
   void _executeTest1(bool use_priority);
   void _executeTest2();
   void _executeTest3();
+  void _executeTest4();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -105,13 +109,44 @@ initializeTest()
 void RunQueueUnitTest::
 executeTest()
 {
+  _executeTestNullQueue();
   _executeTest2();
   bool old_v = m_runner->isConcurrentQueueCreation();
   m_runner->setConcurrentQueueCreation(true);
   _executeTest1(false);
   _executeTest1(true);
   _executeTest3();
+  _executeTest4();
   m_runner->setConcurrentQueueCreation(old_v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueUnitTest::
+_executeTestNullQueue()
+{
+  using namespace Arcane::Accelerator;
+  ValueChecker vc(A_FUNCINFO);
+  MemoryAllocationOptions default_mem_opt;
+  RunQueue queue;
+  vc.areEqual(queue.isNull(), true, "isNull()");
+  queue.barrier();
+  vc.areEqual(queue.executionPolicy(), eExecutionPolicy::None, "executionPolicy()");
+  vc.areEqual(queue.isAcceleratorPolicy(), false, "isAcceleratorPolicy()");
+  vc.areEqual(queue.memoryRessource(), eMemoryRessource::Unknown, "memoryRessource()");
+  if (queue.allocationOptions() != default_mem_opt)
+    ARCANE_FATAL("Bad null allocationOptions()");
+
+  queue = makeQueue(*m_runner);
+  vc.areEqual(queue.isNull(), false, "not null");
+
+  queue = RunQueue();
+  vc.areEqual(queue.isNull(), true, "is null (2)");
+
+  queue = makeQueue(*m_runner);
+  if (queue.executionPolicy() == eExecutionPolicy::None)
+    ARCANE_FATAL("Bad execution policy");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -191,7 +226,7 @@ _executeTest2()
   {
     auto command1 = makeCommand(queue1);
     auto v = viewOut(command1, values);
-    command1 << RUNCOMMAND_LOOP1 (iter, nb_value)
+    command1 << RUNCOMMAND_LOOP1(iter, nb_value)
     {
       auto [i] = iter();
       v(iter) = i + 3;
@@ -202,7 +237,7 @@ _executeTest2()
     queue2.waitEvent(event);
     auto command2 = makeCommand(queue2);
     auto v = viewInOut(command2, values);
-    command2 << RUNCOMMAND_LOOP1 (iter, nb_value)
+    command2 << RUNCOMMAND_LOOP1(iter, nb_value)
     {
       v(iter) = v(iter) * 2;
     };
@@ -240,7 +275,7 @@ _executeTest3()
   {
     auto command1 = makeCommand(queue1);
     auto v = viewOut(command1, values);
-    command1 << RUNCOMMAND_LOOP1 (iter, nb_value)
+    command1 << RUNCOMMAND_LOOP1(iter, nb_value)
     {
       auto [i] = iter();
       v(iter) = i + 3;
@@ -251,7 +286,7 @@ _executeTest3()
   {
     auto command2 = makeCommand(queue2);
     auto v = viewInOut(command2, values);
-    command2 << RUNCOMMAND_LOOP1 (iter, nb_value)
+    command2 << RUNCOMMAND_LOOP1(iter, nb_value)
     {
       v(iter) = v(iter) * 2;
     };
@@ -265,6 +300,56 @@ _executeTest3()
     Int32 expected_v = (i + 3) * 2;
     vc.areEqual(v, expected_v, "Bad value");
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueUnitTest::
+_executeTest4()
+{
+  info() << "Test RunQueue allocation";
+  ValueChecker vc(A_FUNCINFO);
+
+  auto queue = makeQueue(m_runner);
+  if (queue.isAcceleratorPolicy())
+    queue.setMemoryRessource(eMemoryRessource::Device);
+
+  const Int32 nb_value = 100000;
+
+  UniqueArray<Int32> ref_array1(nb_value);
+  UniqueArray<Int32> ref_array2(nb_value);
+
+  UniqueArray<Int32> array1(queue.allocationOptions());
+  NumArray<Int32, MDDim1> array2(queue.memoryRessource());
+  array1.resize(nb_value);
+  array2.resize(nb_value);
+
+  vc.areEqual(array2.memoryRessource(), queue.memoryRessource(), "NumArray MemoryRessource");
+
+  {
+    auto command = makeCommand(queue);
+    auto v1 = viewOut(command, array1);
+    auto v2 = viewOut(command, array2);
+    command << RUNCOMMAND_LOOP1(iter, nb_value)
+    {
+      auto [i] = iter();
+      v1[i] = i + 3;
+      v2[i] = i * 2;
+    };
+    for (Int32 i = 0; i < nb_value; ++i) {
+      ref_array1[i] = i + 3;
+      ref_array2[i] = i * 2;
+    }
+  }
+
+  NumArray<Int32, MDDim1> host_array(eMemoryRessource::Host);
+  host_array.resize(nb_value);
+  MemoryUtils::copy(host_array.to1DSmallSpan(), array1.constSmallSpan(), &queue);
+  vc.areEqual(host_array.to1DSpan(), ref_array1.span(), "Array1");
+
+  host_array.copy(array2);
+  vc.areEqual(host_array.to1DSpan(), ref_array2.span(), "Array2");
 }
 
 /*---------------------------------------------------------------------------*/
