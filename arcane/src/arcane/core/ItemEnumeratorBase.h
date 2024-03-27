@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemEnumeratorBase.h                                        (C) 2000-2023 */
+/* ItemEnumeratorBase.h                                        (C) 2000-2024 */
 /*                                                                           */
 /* Classe de base des énumérateurs sur les entités du maillage.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMENUMERATORBASE_H
-#define ARCANE_ITEMENUMERATORBASE_H
+#ifndef ARCANE_CORE_ITEMENUMERATORBASE_H
+#define ARCANE_CORE_ITEMENUMERATORBASE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternalEnumerator.h"
-#include "arcane/Item.h"
+#include "arcane/core/ItemInternalEnumerator.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,44 @@ namespace Arcane
 
 class ItemEnumeratorCS;
 class ItemGroupImpl;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Représente un index d'une énumération sur une entité.
+ */
+class ItemEnumeratorIndex
+{
+ public:
+
+  ItemEnumeratorIndex() = default;
+  constexpr ARCCORE_HOST_DEVICE explicit ItemEnumeratorIndex(Int32 index)
+  : m_index(index)
+  {}
+  constexpr ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
+  constexpr ARCCORE_HOST_DEVICE Int32 asInt32() const { return m_index; }
+
+ private:
+
+  Int32 m_index = -1;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Représente un index d'une énumération sur une entité \a ItemType.
+ */
+template <typename ItemType>
+class ItemEnumeratorIndexT
+: public ItemEnumeratorIndex
+{
+ public:
+
+  ItemEnumeratorIndexT() = default;
+  constexpr ARCCORE_HOST_DEVICE explicit ItemEnumeratorIndexT(Int32 index)
+  : ItemEnumeratorIndex(index)
+  {}
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
