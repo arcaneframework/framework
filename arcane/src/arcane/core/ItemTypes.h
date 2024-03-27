@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypes.h                                                 (C) 2000-2023 */
+/* ItemTypes.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Déclaration des types liés aux entités de maillage.                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMTYPES_H
-#define ARCANE_ITEMTYPES_H
+#ifndef ARCANE_CORE_ITEMTYPES_H
+#define ARCANE_CORE_ITEMTYPES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -480,6 +480,25 @@ class FaceInfoListView;
 class CellInfoListView;
 class ParticleInfoListView;
 class DoFInfoListView;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ItemEnumeratorIndex;
+template<typename ItemType>
+class ItemEnumeratorIndexT;
+//! Index d'une énumération sur des noeuds
+using NodeEnumeratorIndex = ItemEnumeratorIndexT<Node>;
+//! Index d'une énumération sur des arêtes
+using EdgeEnumeratorIndex = ItemEnumeratorIndexT<Edge>;
+//! Index d'une énumération sur des faces
+using FaceEnumeratorIndex = ItemEnumeratorIndexT<Face>;
+//! Index d'une énumération sur des mailles
+using CellEnumeratorIndex = ItemEnumeratorIndexT<Cell>;
+//! Index d'une énumération sur des particules
+using ParticleEnumeratorIndex = ItemEnumeratorIndexT<Particle>;
+//! Index d'une énumération sur des DoF
+using DoFEnumeratorIndex = ItemEnumeratorIndexT<DoF>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
