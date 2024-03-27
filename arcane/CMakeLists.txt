@@ -138,6 +138,12 @@ option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_li
 option(ARCANE_ENABLE_TESTS "Enable compilation of tests" ON)
 option(ARCANE_ENABLE_DOTNET_WRAPPER "Enable compilation of '.Net' wrapper" ON)
 
+# Expérimental. Ne pas utiliser en dehors d'Arcane
+option(ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER "Enable compilation python extension using '.Net' wrapper" OFF)
+if(ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  set(ARCANE_ENABLE_DOTNET_WRAPPER ON)
+endif()
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Cherche 'Arccon'
@@ -160,6 +166,9 @@ include(LoadBuildSystem)
 
 find_package(ArcDependencies REQUIRED)
 set(ARCANE_ArcDependencies_NEEDED_VERSION "1.5.0")
+if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  set(ARCANE_ArcDependencies_NEEDED_VERSION "1.7.0")
+endif()
 message(STATUS "ArcDependencies_VERSION = ${ArcDependencies_VERSION}")
 if (ArcDependencies_VERSION VERSION_LESS ARCANE_ArcDependencies_NEEDED_VERSION)
   message(FATAL_ERROR "ArcDependencies version '${ArcDependencies_VERSION}' is too old."

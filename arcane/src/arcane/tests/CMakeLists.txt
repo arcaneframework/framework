@@ -123,6 +123,10 @@ if (TARGET arcane_dotnet_wrapper_services)
   set(OUTLIB ${LIBRARY_OUTPUT_PATH}/ArcaneTest.dll)
   set(CSPATH ${ARCANE_SRC_PATH}/arcane/tests)
   set(CSOUTPATH ${ARCANEBUILDROOT}/arcane/tests)
+  if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+    # Cette variable est utilisée lors de la génération du fichier '.csproj'
+    set(_HAS_PYTHON_WRAPPER "true")
+  endif()
   configure_file(ArcaneTest.csproj.in ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTest/ArcaneTest.csproj @ONLY)
 
   add_custom_command(OUTPUT ${CSOUTPATH}/SimpleHydroCS_axl.cs
@@ -985,6 +989,11 @@ arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
 # Test pour les implementations de TimeHistoryAdder.
 arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
 
+#################################################################
+# Test wrapper python
+if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
+endif()
 
 # ----------------------------------------------------------------------------
 # Local Variables:
