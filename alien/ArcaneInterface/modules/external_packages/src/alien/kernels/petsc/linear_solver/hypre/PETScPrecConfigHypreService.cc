@@ -91,6 +91,16 @@ PETScPrecConfigHypreService::configure(PC& pc, [[maybe_unused]] const ISpace& sp
       checkError("Set Hypre coarsening",         PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_coarsen_type",   options()->coarsenType().localstr()));
       checkError("Set Hypre Interpolation type", PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_interp_type",    options()->interpType().localstr()));
       checkError("Set Hypre Relax type",         PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_relax_type_all", options()->relaxType().localstr()));
+      if(options()->truncfactor()>0)
+      {
+        Arcane::String factor = Arcane::String::format("{0}",options()->truncfactor()) ;
+        checkError("Set Hypre truncfactor",        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_truncfactor",factor.localstr())) ;
+      }
+      if(options()->pmaxElements()>0)
+      {
+        Arcane::String pmax_elements = Arcane::String::format("{0}",options()->pmaxElements()) ;
+        checkError("Set Hypre Pmax Elem per row",  PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_P_max",pmax_elements.localstr())) ;
+      }
       if(options()->nodalCoarsen()>0)
       {
         Arcane::String nodal_coarsen      = Arcane::String::format("{0}",options()->nodalCoarsen()) ;
