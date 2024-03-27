@@ -4,6 +4,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
+  <PropertyGroup Condition="'@_HAS_PYTHON_WRAPPER@' == 'true'">
+    <DefineConstants>ARCANE_HAS_DOTNET_PYTHON</DefineConstants>
+  </PropertyGroup>
 
   <!-- Infos pour NuGet -->
   <PropertyGroup>
@@ -20,5 +23,8 @@
   <ItemGroup>
     <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
     <ProjectReference Include="../Arcane.Services/Arcane.Services.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'@_HAS_PYTHON_WRAPPER@' == 'true'">
+    <ProjectReference Include="../Arcane.Python/Arcane.Python.csproj" />
   </ItemGroup>
 </Project>
