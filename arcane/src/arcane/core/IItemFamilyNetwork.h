@@ -21,6 +21,8 @@
 
 #include "arcane/IItemFamily.h"
 #include "arcane/IIncrementalItemConnectivity.h"
+#include "arcane/IGraph2.h"
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,6 +104,15 @@ public:
 
   //! Récupère l'information relative au stockage de la connectivité
   virtual bool isDeep(IIncrementalItemConnectivity* connectivity) = 0;
+
+  //! enregistre un graphe gérant des DoFs connectés au maillage
+  virtual Integer registerConnectedGraph(IGraph2* graph) = 0 ;
+
+  //! dé enregistre un graphe gérant des DoFs connectés au maillage
+  virtual void releaseConnectedGraph(Integer graph_id) = 0 ;
+
+  //! Deconnecte les mailles supprimer dans les objets Graphs gérant les DoFs connectés aux item du maillage de base
+  virtual void detachCellsInConnectedGraphs(Int32ConstArrayView local_ids) = 0;
 
 };
 

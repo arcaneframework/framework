@@ -205,6 +205,8 @@ class ARCANE_MESH_EXPORT GraphDoFs
   void removeDualNodes(Int32ConstArrayView dual_node_local_ids) override;
   void removeLinks(Int32ConstArrayView link_local_ids) override;
 
+  void detachFromCells(Int32ConstArrayView cell_local_ids) override;
+
   bool isUpdated() override ;
 
   void endUpdate() override;
@@ -257,6 +259,7 @@ class ARCANE_MESH_EXPORT GraphDoFs
   IMesh* m_mesh = nullptr;
   IItemFamilyNetwork* m_item_family_network = nullptr;
   bool m_graph_allocated = false;
+  Integer m_graph_id = -1 ;
 
   ItemConnectivityMng m_connectivity_mng;
   DoFManager m_dof_mng;
@@ -274,6 +277,9 @@ class ARCANE_MESH_EXPORT GraphDoFs
   Int32UniqueArray m_connectivity_indexes_per_type;
   std::array<Integer, NB_BASIC_ITEM_TYPE> m_dualnode_kinds = { IT_DualNode, IT_DualEdge, IT_DualFace, IT_DualCell, IT_DualParticle };
   ItemScalarProperty<Integer> m_dual_node_to_connectivity_index;
+
+  UniqueArray<Int32> m_detached_dualnode_lids ;
+  UniqueArray<Int32> m_detached_link_lids ;
 
   bool m_update_sync_info = false;
 

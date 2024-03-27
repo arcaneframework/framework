@@ -55,6 +55,8 @@ class ARCANE_CORE_EXPORT IGraphModifier2
   //! Suppression de liaisons duaux dans le graphe
   virtual void removeLinks(Int32ConstArrayView link_local_ids) =0;
   
+  //! Suppression des DualNodes et Links connectés aux mailles qui vont être supprimees
+  virtual void detachFromCells(Int32ConstArrayView cell_local_ids) =0;
 
   virtual void endUpdate() =0;
 

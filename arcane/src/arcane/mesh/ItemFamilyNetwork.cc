@@ -296,6 +296,28 @@ _getConnectivityStatus(IIncrementalItemConnectivity* connectivity)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Integer ItemFamilyNetwork::registerConnectedGraph(IGraph2* graph)
+{
+  Integer graph_id = m_registred_graphs.size() ;
+  m_registred_graphs.add(graph) ;
+  return graph_id ;
+}
+
+void ItemFamilyNetwork::releaseConnectedGraph(Integer graph_id)
+{
+  m_registred_graphs[graph_id] = nullptr ;
+}
+
+void ItemFamilyNetwork::detachCellsInConnectedGraphs(Int32ConstArrayView local_ids)
+{
+  for(auto graph : m_registred_graphs)
+  {
+      graph->modifier()->detachFromCells(local_ids) ;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 } // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
