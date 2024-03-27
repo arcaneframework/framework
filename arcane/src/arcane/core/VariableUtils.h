@@ -71,6 +71,19 @@ void markVariableAsMostlyReadOnly(::Arcane::Materials::MeshMaterialVariableRef& 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" ARCANE_CORE_EXPORT
+void experimentalChangeAllocator(::Arcane::Materials::IMeshMaterialVariable* var,
+                                 eMemoryRessource mem);
+
+extern "C++" ARCANE_CORE_EXPORT
+void experimentalChangeAllocator(IVariable* var, eMemoryRessource mem);
+
+extern "C++" ARCANE_CORE_EXPORT
+void experimentalChangeAllocator(VariableRef& var, eMemoryRessource mem);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::VariableUtils
 
 /*---------------------------------------------------------------------------*/
