@@ -19,14 +19,6 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \file NumArrayViews.h
- *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs de la classe 'NumArray'.
- */
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
@@ -44,17 +36,13 @@ class NumArrayView;
 /*!
  * \brief Classe de base des vues sur les 'NumArray'.
  */
-class NumArrayViewBase
+class ARCANE_ACCELERATOR_EXPORT NumArrayViewBase
 {
  protected:
 
   // Pour l'instant n'utilise pas encore \a command
   // mais il ne faut pas le supprimer
-  explicit NumArrayViewBase(const ViewBuildInfo&)
-  {
-  }
-
- private:
+  explicit NumArrayViewBase(const ViewBuildInfo&,Span<const std::byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,7 +65,7 @@ class NumArrayView
  public:
 
   NumArrayView(const ViewBuildInfo& command, SpanType v)
-  : NumArrayViewBase(command)
+  : NumArrayViewBase(command, Arccore::asBytes(v.to1DSpan()))
   , m_values(v)
   {}
 
