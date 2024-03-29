@@ -14,6 +14,7 @@ set( ARCANE_SOURCES
   MemoryCopier.cc
   NumArray.h
   NumArrayViews.h
+  NumArrayViews.cc
   Reduce.h
   RunCommand.h
   RunCommandEnumerate.h

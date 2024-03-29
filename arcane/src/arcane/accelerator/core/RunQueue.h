@@ -196,6 +196,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   // Pour VariableViewBase
   friend class VariableViewBase;
+  friend class NumArrayViewBase;
   bool _isAutoPrefetchCommand() const;
 
  private:
