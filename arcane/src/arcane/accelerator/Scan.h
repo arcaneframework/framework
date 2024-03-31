@@ -17,8 +17,9 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
+
+#include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/CommonUtils.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 
@@ -27,52 +28,9 @@
 
 namespace Arcane::Accelerator
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Opérateur de Scan pour les sommes
-template <typename DataType>
-class ScannerSumOperator
-{
- public:
-
-  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
-  {
-    return a + b;
-  }
-  static DataType defaultValue() { return {}; }
-};
-
-//! Opérateur de Scan pour le minimum
-template <typename DataType>
-class ScannerMinOperator
-{
- public:
-
-  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
-  {
-    return (a < b) ? a : b;
-  }
-  static DataType defaultValue() { return std::numeric_limits<DataType>::max(); }
-};
-
-//! Opérateur de Scan pour le maximum
-template <typename DataType>
-class ScannerMaxOperator
-{
- public:
-
-  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
-  {
-    return (a < b) ? b : a;
-  }
-  static DataType defaultValue() { return std::numeric_limits<DataType>::lowest(); }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+template <typename DataType> using ScannerSumOperator = impl::SumOperator<DataType>;
+template <typename DataType> using ScannerMaxOperator = impl::MaxOperator<DataType>;
+template <typename DataType> using ScannerMinOperator = impl::MinOperator<DataType>;
 } // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/

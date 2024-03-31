@@ -1,10 +1,6 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Runtime Arcane pour les accélérateurs
-#
-# Pour l'instant seul CUDA est supporté
-# Ce fichier doit être inclus après 'arcane/accelerator/cuda' ou
-# 'arcane/accelerator/hip'
 
 include(srcs.cmake)
 
@@ -14,7 +10,7 @@ arcane_add_library(arcane_accelerator
   FILES ${ARCANE_SOURCES}
   )
 
-arcane_accelerator_add_source_files(MemoryCopier.cc Scan.cc CommonUtils.cc)
+arcane_accelerator_add_source_files(MemoryCopier.cc CommonUtils.cc)
 
 target_link_libraries(arcane_accelerator PUBLIC
   arcane_core
