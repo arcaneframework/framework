@@ -482,6 +482,224 @@ class ReducerMin
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/NumArray.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/CommonUtils.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
+template <typename DataType>
+class GenericReducerIf;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe de base pour effectuer une réduction.
+ *
+ * Contient les arguments nécessaires pour effectuer une réduction.
+ */
+template <typename DataType>
+class ARCANE_ACCELERATOR_EXPORT GenericReducerBase
+{
+  friend class GenericReducerIf<DataType>;
+
+ public:
+
+  GenericReducerBase(const RunQueue& queue)
+  : m_queue(queue)
+  {}
+
+ protected:
+
+  DataType _reducedValue() const
+  {
+    m_queue.barrier();
+    return m_host_reduce_storage[0];
+  }
+
+  void _allocate()
+  {
+    eMemoryRessource r = eMemoryRessource::Host;
+    if (m_queue.isAcceleratorPolicy())
+      r = eMemoryRessource::HostPinned;
+    if (m_host_reduce_storage.memoryRessource() != r)
+      m_host_reduce_storage = NumArray<DataType, MDDim1>(r);
+    m_host_reduce_storage.resize(1);
+  }
+
+ protected:
+
+  RunQueue m_queue;
+  GenericDeviceStorage m_algo_storage;
+  DeviceStorage<DataType> m_device_reduce_storage;
+  NumArray<DataType, MDDim1> m_host_reduce_storage;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe pour effectuer un partitionnement d'une liste.
+ *
+ * La liste est partitionnée en deux listes.
+ *
+ * \a DataType est le type de donnée.
+ */
+template <typename DataType>
+class GenericReducerIf
+{
+  // TODO: Faire le malloc sur le device associé à la queue.
+  //       et aussi regarder si on peut utiliser mallocAsync().
+
+ public:
+
+  template <typename InputIterator, typename ReduceOperator>
+  void apply(GenericReducerBase<DataType>& s, Int32 nb_item, const DataType& init_value,
+             InputIterator input_iter, ReduceOperator reduce_op)
+  {
+    RunQueue& queue = s.m_queue;
+    eExecutionPolicy exec_policy = queue.executionPolicy();
+    switch (exec_policy) {
+#if defined(ARCANE_COMPILING_CUDA)
+    case eExecutionPolicy::CUDA: {
+      size_t temp_storage_size = 0;
+      cudaStream_t stream = impl::CudaUtils::toNativeStream(&queue);
+      DataType* reduced_value_ptr = nullptr;
+      // Premier appel pour connaitre la taille pour l'allocation
+      ARCANE_CHECK_CUDA(::cub::DeviceReduce::Reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr,
+                                                    nb_item, reduce_op, init_value, stream));
+
+      s.m_algo_storage.allocate(temp_storage_size);
+      reduced_value_ptr = s.m_device_reduce_storage.allocate();
+      ARCANE_CHECK_CUDA(::cub::DeviceReduce::Reduce(s.m_algo_storage.address(), temp_storage_size,
+                                                    input_iter, reduced_value_ptr, nb_item,
+                                                    reduce_op, init_value, stream));
+      s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, &queue);
+    } break;
+#endif
+#if defined(ARCANE_COMPILING_HIP)
+    case eExecutionPolicy::HIP: {
+      size_t temp_storage_size = 0;
+      hipStream_t stream = impl::HipUtils::toNativeStream(&queue);
+      DataType* reduced_value_ptr = nullptr;
+      // Premier appel pour connaitre la taille pour l'allocation
+      ARCANE_CHECK_HIP(rocprim::reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr, init_value,
+                                       nb_item, reduce_op, stream));
+
+      s.m_algo_storage.allocate(temp_storage_size);
+      reduced_value_ptr = s.m_device_reduce_storage.allocate();
+
+      ARCANE_CHECK_HIP(rocprim::reduce(s.m_algo_storage.address(), temp_storage_size, input_iter, reduced_value_ptr, init_value,
+                                       nb_item, reduce_op, stream));
+      s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, &queue);
+    }
+#endif
+    case eExecutionPolicy::Thread:
+      // Pas encore implémenté en multi-thread
+      [[fallthrough]];
+    case eExecutionPolicy::Sequential: {
+      DataType reduced_value = init_value;
+      for (Int32 i = 0; i < nb_item; ++i) {
+        reduced_value = reduce_op(reduced_value, *input_iter);
+        ++input_iter;
+      }
+      s.m_host_reduce_storage[0] = reduced_value;
+    } break;
+    default:
+      ARCANE_FATAL(getBadPolicyMessage(exec_policy));
+    }
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Algorithme générique de réduction sur accélérateur.
+ */
+template <typename DataType>
+class GenericReducer
+: private impl::GenericReducerBase<DataType>
+{
+ public:
+
+  explicit GenericReducer(const RunQueue& queue)
+  : impl::GenericReducerBase<DataType>(queue)
+  {
+    this->_allocate();
+  }
+
+ public:
+
+  void applyMin(SmallSpan<const DataType> values)
+  {
+    _apply(values.size(), values.data(), impl::MinOperator<DataType>{});
+  }
+
+  void applyMax(SmallSpan<const DataType> values)
+  {
+    _apply(values.size(), values.data(), impl::MaxOperator<DataType>{});
+  }
+
+  void applySum(SmallSpan<const DataType> values)
+  {
+    _apply(values.size(), values.data(), impl::SumOperator<DataType>{});
+  }
+
+  //! Nombre d'éléments de la première partie de la liste.
+  DataType reducedValue()
+  {
+    m_is_already_called = false;
+    return this->_reducedValue();
+  }
+
+ private:
+
+  bool m_is_already_called = false;
+
+ private:
+
+  template <typename InputIterator, typename ReduceOperator>
+  void _apply(Int32 nb_item, InputIterator input_iter, ReduceOperator reduce_op)
+  {
+    _setCalled();
+    impl::GenericReducerBase<DataType>* base_ptr = this;
+    impl::GenericReducerIf<DataType> gf;
+    DataType init_value = reduce_op.defaultValue();
+    gf.apply(*base_ptr, nb_item, init_value, input_iter, reduce_op);
+  }
+
+  void _setCalled()
+  {
+    if (m_is_already_called)
+      ARCANE_FATAL("apply() has already been called for this instance");
+    m_is_already_called = true;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #endif
 
 /*---------------------------------------------------------------------------*/
