@@ -300,12 +300,8 @@ startInit()
 
   const bool do_change_allocator = true;
   if (do_change_allocator) {
-    info() << "Changing allocator to use device memory";
-    IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_ressource);
-    MemoryAllocationOptions mem_opts(allocator);
-    IMeshMaterialVariableInternal* mat_var = m_mat_device_temperature.materialVariable()->_internalApi();
-    for (VariableRef* vref : mat_var->variableReferenceList())
-      vref->variable()->_internalApi()->changeAllocator(mem_opts);
+    info() << "Changing allocator to use device memory to '" << mem_ressource << "'";
+    VariableUtils::experimentalChangeAllocator(m_mat_device_temperature.materialVariable(), mem_ressource);
   }
   {
     eMemoryRessource group_mem_ressource = mem_ressource;

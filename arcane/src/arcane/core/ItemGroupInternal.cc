@@ -23,8 +23,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/MeshPartInfo.h"
-#include "arcane/core/datatype/DataAllocationInfo.h"
-#include "arcane/core/internal/IVariableInternal.h"
+#include "arcane/core/VariableUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/ItemGroupImplInternal.h"
 
@@ -567,7 +566,7 @@ setMemoryRessourceForItemLocalId(eMemoryRessource mem)
 {
   VariableArrayInt32* v = m_p->m_variable_items_local_id;
   if (v)
-    v->variable()->_internalApi()->changeAllocator(MemoryUtils::getAllocationOptions(mem));
+    VariableUtils::experimentalChangeAllocator(v->variable(),mem);
 }
 
 /*---------------------------------------------------------------------------*/
