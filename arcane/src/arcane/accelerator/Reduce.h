@@ -555,7 +555,7 @@ class GenericReducerIf;
  * Contient les arguments nécessaires pour effectuer une réduction.
  */
 template <typename DataType>
-class ARCANE_ACCELERATOR_EXPORT GenericReducerBase
+class GenericReducerBase
 {
   friend class GenericReducerIf<DataType>;
 
