@@ -215,6 +215,54 @@ class IndexIterator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Opérateur de Scan/Reduce pour les sommes
+template <typename DataType>
+class SumOperator
+{
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
+  {
+    return a + b;
+  }
+  static DataType defaultValue() { return {}; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Opérateur de Scan/Reduce pour le minimum
+template <typename DataType>
+class MinOperator
+{
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
+  {
+    return (a < b) ? a : b;
+  }
+  static DataType defaultValue() { return std::numeric_limits<DataType>::max(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Opérateur de Scan/Reduce pour le maximum
+template <typename DataType>
+class MaxOperator
+{
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
+  {
+    return (a < b) ? b : a;
+  }
+  static DataType defaultValue() { return std::numeric_limits<DataType>::lowest(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
