@@ -135,7 +135,7 @@ executeTest()
   else {
     info() << "UseReducePolicy = Grid";
     m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
-    executeTest2(10);
+    executeTest2(100);
   }
 }
 
@@ -245,7 +245,6 @@ _executeTestDataType(Int32 nb_iteration)
   }
 
   // Utilisation des kernels spécifiques
-
   for (int z = 0; z < nb_iteration; ++z) {
     ax::GenericReducer<DataType> reducer(queue);
     reducer.applySum(t1.to1DSmallSpan());
@@ -273,6 +272,44 @@ _executeTestDataType(Int32 nb_iteration)
       info() << "REDUCED_MAX (direct)=" << reduced_max;
     if (reduced_max != max_value)
       ARCANE_FATAL("Bad maximum reduced_max={0} expected={1}", reduced_max, max_value);
+  }
+
+  // Utilisation des kernels spécifiques avec index
+
+  {
+    auto t1_view = t1.to1DSmallSpan();
+    auto getter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> DataType {
+      return t1_view[index];
+    };
+
+    for (int z = 0; z < nb_iteration; ++z) {
+      ax::GenericReducer<DataType> reducer(queue);
+      reducer.applySumWithIndex(n1, getter_lambda);
+      DataType reduced_sum = reducer.reducedValue();
+      if (z == 0)
+        info() << "REDUCED_SUM (direct with index)=" << reduced_sum;
+      _compareSum(reduced_sum, sum);
+    }
+
+    for (int z = 0; z < nb_iteration; ++z) {
+      ax::GenericReducer<DataType> reducer(queue);
+      reducer.applyMinWithIndex(n1, getter_lambda);
+      DataType reduced_min = reducer.reducedValue();
+      if (z == 0)
+        info() << "REDUCED_MIN (direct with index)=" << reduced_min;
+      if (reduced_min != min_value)
+        ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}", reduced_min, min_value);
+    }
+
+    for (int z = 0; z < nb_iteration; ++z) {
+      ax::GenericReducer<DataType> reducer(queue);
+      reducer.applyMaxWithIndex(n1, getter_lambda);
+      DataType reduced_max = reducer.reducedValue();
+      if (z == 0)
+        info() << "REDUCED_MAX (direct)=" << reduced_max;
+      if (reduced_max != max_value)
+        ARCANE_FATAL("Bad maximum reduced_max={0} expected={1}", reduced_max, max_value);
+    }
   }
 }
 

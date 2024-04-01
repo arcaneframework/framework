@@ -682,6 +682,37 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Algorithme générique de réduction sur accélérateur.
+ *
+ * La réduction se fait via les appels à applyMin(), applyMax(), applySum(),
+ * applyMinWithIndex(), applyMaxWithIndex() ou applySumWithIndex().
+ *
+ * Après réduction, il est possible récupérer la valeur réduite via
+ * reducedValue().
+ *
+ * Les instances de cette classe peuvent être utilisées plusieurs fois.
+ *
+ * Voici un exemple pour calculer la somme d'un tableau de 50 éléments:
+ *
+ * \code
+ * using namespace Arcane;
+ * const Int32 nb_value(50);
+ * Arcane::NumArray<Real, MDDim1> t1(nv_value);
+ * Arcane::SmallSpan<const Real> t1_view(t1);
+ * Arcane::RunQueue queue = ...;
+ * Arcane::Accelerator::GenericReducer<Real> reducer(queue);
+ *
+ * // Calcul direct
+ * reducer.applySum(t1_view);
+ * std::cout << "Sum is '" << reducer.reducedValue() << "\n";
+ *
+ * // Calcul avec lambda
+ * auto getter_func = [=] ARCCORE_HOST_DEVICE(Int32 index) -> Real
+ * {
+ *   return t1_view[index];
+ * }
+ * reducer.applySumWithIndex(nb_value,getter_func);
+ * std::cout << "Sum is '" << reducer.reducedValue() << "\n";
+ * \endcode
  */
 template <typename DataType>
 class GenericReducer
@@ -697,22 +728,46 @@ class GenericReducer
 
  public:
 
+  //! Applique une réduction 'Min' sur les valeurs \a values
   void applyMin(SmallSpan<const DataType> values)
   {
     _apply(values.size(), values.data(), impl::MinOperator<DataType>{});
   }
 
+  //! Applique une réduction 'Max' sur les valeurs \a values
   void applyMax(SmallSpan<const DataType> values)
   {
     _apply(values.size(), values.data(), impl::MaxOperator<DataType>{});
   }
 
+  //! Applique une réduction 'Somme' sur les valeurs \a values
   void applySum(SmallSpan<const DataType> values)
   {
     _apply(values.size(), values.data(), impl::SumOperator<DataType>{});
   }
 
-  //! Nombre d'éléments de la première partie de la liste.
+  //! Applique une réduction 'Min' sur les valeurs sélectionnées par \a select_lambda
+  template <typename SelectLambda>
+  void applyMinWithIndex(Int32 nb_value, const SelectLambda& select_lambda)
+  {
+    _applyWithIndex(nb_value, select_lambda, impl::MinOperator<DataType>{});
+  }
+
+  //! Applique une réduction 'Max' sur les valeurs sélectionnées par \a select_lambda
+  template <typename SelectLambda>
+  void applyMaxWithIndex(Int32 nb_value, const SelectLambda& select_lambda)
+  {
+    _applyWithIndex(nb_value, select_lambda, impl::MaxOperator<DataType>{});
+  }
+
+  //! Applique une réduction 'Somme' sur les valeurs sélectionnées par \a select_lambda
+  template <typename SelectLambda>
+  void applySumWithIndex(Int32 nb_value, const SelectLambda& select_lambda)
+  {
+    _applyWithIndex(nb_value, select_lambda, impl::SumOperator<DataType>{});
+  }
+
+  //! Valeur de la réduction
   DataType reducedValue()
   {
     m_is_already_called = false;
@@ -726,13 +781,24 @@ class GenericReducer
  private:
 
   template <typename InputIterator, typename ReduceOperator>
-  void _apply(Int32 nb_item, InputIterator input_iter, ReduceOperator reduce_op)
+  void _apply(Int32 nb_value, InputIterator input_iter, ReduceOperator reduce_op)
   {
     _setCalled();
     impl::GenericReducerBase<DataType>* base_ptr = this;
     impl::GenericReducerIf<DataType> gf;
     DataType init_value = reduce_op.defaultValue();
-    gf.apply(*base_ptr, nb_item, init_value, input_iter, reduce_op);
+    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op);
+  }
+
+  template <typename GetterLambda, typename ReduceOperator>
+  void _applyWithIndex(Int32 nb_value, const GetterLambda& getter_lambda, ReduceOperator reduce_op)
+  {
+    _setCalled();
+    impl::GenericReducerBase<DataType>* base_ptr = this;
+    impl::GenericReducerIf<DataType> gf;
+    impl::GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
+    DataType init_value = reduce_op.defaultValue();
+    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op);
   }
 
   void _setCalled()
