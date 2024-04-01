@@ -289,57 +289,6 @@ class GenericScanner
     SetterLambda m_lambda;
   };
 
-  /*!
-   * \brief Itérateur sur une lambda pour récupérer une valeur via un index.
-   */
-  template <typename DataType, typename GetterLambda>
-  class GetterLambdaIterator
-  {
-   public:
-
-    using value_type = DataType;
-    using iterator_category = std::random_access_iterator_tag;
-    using reference = DataType&;
-    using difference_type = ptrdiff_t;
-    using ThatClass = GetterLambdaIterator<DataType, GetterLambda>;
-
-   public:
-
-    ARCCORE_HOST_DEVICE GetterLambdaIterator(const GetterLambda& s)
-    : m_lambda(s)
-    {}
-    ARCCORE_HOST_DEVICE explicit GetterLambdaIterator(const GetterLambda& s, Int32 v)
-    : m_index(v)
-    , m_lambda(s)
-    {}
-
-   public:
-
-    ARCCORE_HOST_DEVICE ThatClass& operator++()
-    {
-      ++m_index;
-      return (*this);
-    }
-    ARCCORE_HOST_DEVICE ThatClass operator+(Int32 x)
-    {
-      return ThatClass(m_lambda, m_index + x);
-    }
-    ARCCORE_HOST_DEVICE ThatClass operator-(Int32 x)
-    {
-      return ThatClass(m_lambda, m_index - x);
-    }
-    ARCCORE_HOST_DEVICE value_type operator*() const
-    {
-      return m_lambda(m_index);
-    }
-    ARCCORE_HOST_DEVICE value_type operator[](Int32 x) const { return m_lambda(m_index + x); }
-
-   private:
-
-    Int32 m_index = 0;
-    GetterLambda m_lambda;
-  };
-
  public:
 
   explicit GenericScanner(const RunQueue& queue)
@@ -397,7 +346,7 @@ class GenericScanner
                        const Operator& op_lambda,
                        const TraceInfo& trace_info)
   {
-    GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
+    impl::GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
     SetterLambdaIterator<DataType, SetterLambda> output_iter(setter_lambda);
     impl::ScannerImpl scanner(m_queue);
     scanner.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda, trace_info);
