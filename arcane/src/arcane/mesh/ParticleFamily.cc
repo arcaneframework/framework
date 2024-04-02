@@ -88,6 +88,12 @@ build()
   m_cell_connectivity->setPreAllocatedSize(1);
 
   _setSharedInfo();
+
+  auto network = m_mesh->itemFamilyNetwork();
+  if(network)
+  {
+    network->addDependency(this, mesh()->cellFamily(), m_cell_connectivity->customConnectivity(), false);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -298,11 +304,30 @@ internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
   // maille->particule.
   bool want_nullify_cell = (policy!=InternalConnectivityPolicy::Legacy);
   ItemLocalId null_item_lid(NULL_ITEM_LOCAL_ID);
+  std::set<Int32> remove_lids;
   if (want_nullify_cell){
     for( Integer i=0, n=local_ids.size(); i<n; ++i ){
       ItemLocalId lid(local_ids[i]);
       m_cell_connectivity->replaceItem(lid,0,null_item_lid);
+      remove_lids.insert(local_ids[i]) ;
     }
+  }
+
+  auto network = m_mesh->itemFamilyNetwork();
+  if(network)
+  {
+      for (auto parent_connectivity : m_mesh->itemFamilyNetwork()->getParentConnectivities(this)) {
+      //for (auto parent_connectivity : m_mesh->itemFamilyNetwork()->getParentRelations(this)) { // Should be getParentConnectivities, but because legacy connectivity cannot remove a connectivity with a Node as target, we need to restrain to Relations...
+        for(auto source_item : parent_connectivity->sourceFamily()->itemsInternal()) {
+          if (source_item->isSuppressed()) continue;
+          ConnectivityItemVector connectivity_accessor(parent_connectivity);
+          ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(source_item))) {
+            if (remove_lids.find(connected_item->localId()) != remove_lids.end() ) {
+              parent_connectivity->removeConnectedItem(ItemLocalId(source_item),connected_item);
+            }
+          }
+        }
+      }
   }
 
   _removeMany(local_ids);

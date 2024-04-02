@@ -308,11 +308,11 @@ void ItemFamilyNetwork::releaseConnectedGraph(Integer graph_id)
   m_registred_graphs[graph_id] = nullptr ;
 }
 
-void ItemFamilyNetwork::detachCellsInConnectedGraphs(Int32ConstArrayView local_ids)
+void ItemFamilyNetwork::removeConnectedDoFsFromCells(Int32ConstArrayView local_ids)
 {
   for(auto graph : m_registred_graphs)
   {
-      graph->modifier()->detachFromCells(local_ids) ;
+      graph->modifier()->removeConnectedItemsFromCells(local_ids) ;
   }
 }
 

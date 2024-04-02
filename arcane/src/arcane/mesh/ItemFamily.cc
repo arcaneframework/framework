@@ -2206,8 +2206,8 @@ removeNeedRemoveMarkedItems()
   for (auto removed_item: items_to_remove) {
     is_removed_item[*removed_item] = true;
   }
-//  for (auto parent_connectivity : m_mesh->itemFamilyNetwork()->getParentConnectivities(this)) {
-  for (auto parent_connectivity : m_mesh->itemFamilyNetwork()->getParentRelations(this)) { // Should be getParentConnectivities, but because legacy connectivity cannot remove a connectivity with a Node as target, we need to restrain to Relations...
+  for (auto parent_connectivity : m_mesh->itemFamilyNetwork()->getParentConnectivities(this)) {
+  //for (auto parent_connectivity : m_mesh->itemFamilyNetwork()->getParentRelations(this)) { // Should be getParentConnectivities, but because legacy connectivity cannot remove a connectivity with a Node as target, we need to restrain to Relations...
     for(auto source_item : parent_connectivity->sourceFamily()->itemsInternal()) {
       if (source_item->isSuppressed()) continue;
       ConnectivityItemVector connectivity_accessor(parent_connectivity);

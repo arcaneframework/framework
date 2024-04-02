@@ -120,7 +120,7 @@ public:
 
   void releaseConnectedGraph(Integer graph_id) override;
 
-  void detachCellsInConnectedGraphs(Int32ConstArrayView local_ids) override;
+  void removeConnectedDoFsFromCells(Int32ConstArrayView local_ids) override;
  private:
 
   bool m_is_activated = false ;

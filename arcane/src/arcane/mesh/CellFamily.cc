@@ -378,13 +378,6 @@ internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
   for( Integer i=0, is=local_ids.size(); i<is; ++i ){
     removeCell(m_item_internal_list->cells[local_ids[i]]);
   }
-
-  auto network = m_mesh->itemFamilyNetwork();
-  if(network)
-  {
-      network->detachCellsInConnectedGraphs(local_ids) ;
-  }
-
 }
 
 /*---------------------------------------------------------------------------*/

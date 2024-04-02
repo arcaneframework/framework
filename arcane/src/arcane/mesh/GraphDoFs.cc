@@ -393,7 +393,7 @@ removeLinks(Int32ConstArrayView link_local_ids)
 
 
 void GraphDoFs::
-detachFromCells(Int32ConstArrayView cell_local_ids)
+removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
 {
   std::set < Int32 > cell_to_remove_set;
    for(auto lid : cell_local_ids )
@@ -401,11 +401,13 @@ detachFromCells(Int32ConstArrayView cell_local_ids)
   {
     std::set < Int32 > link_to_remove_set;
     ConnectivityItemVector dual_nodes(m_links_incremental_connectivity);
-    ENUMERATE_DOF (ilink, linkFamily()->allItems())
+    //ENUMERATE_DOF (ilink, linkFamily()->allItems())
+    for(auto ilink : linkFamily()->itemsInternal())
     {
-      auto link_lid = ilink->localId() ;
+      if (ilink->isSuppressed()) continue;
+      auto link_lid = ItemLocalId(ilink) ;
       bool to_remove = false ;
-      ENUMERATE_DOF (idual_node, dual_nodes.connectedItems(ilink))
+      ENUMERATE_DOF (idual_node, dual_nodes.connectedItems(link_lid))
       {
         auto dual_item = m_graph_connectivity->dualItem(*idual_node);
         if(cell_to_remove_set.find(dual_item->localId())!=cell_to_remove_set.end())
@@ -417,14 +419,19 @@ detachFromCells(Int32ConstArrayView cell_local_ids)
       if(to_remove)
       {
         link_to_remove_set.insert(link_lid) ;
-        ENUMERATE_DOF (idual_node, dual_nodes.connectedItems(ilink))
+        ENUMERATE_DOF (idual_node, dual_nodes.connectedItems(link_lid))
         {
-          m_dualnodes_incremental_connectivity->removeConnectedItem(ItemLocalId(idual_node->localId()),ItemLocalId(link_lid)) ;
+          m_dualnodes_incremental_connectivity->removeConnectedItem(ItemLocalId(idual_node->localId()),link_lid) ;
         }
       }
     }
     m_detached_link_lids.resize(link_to_remove_set.size()) ;
     std::copy(std::begin(link_to_remove_set), std::end(link_to_remove_set),std::begin(m_detached_link_lids));
+
+    removeLinks(m_detached_link_lids) ;
+    //link_family->endUpdate() ;
+    m_detached_link_lids.clear() ;
+
   }
   {
     auto incremental_dof2cell_connectivity = m_incremental_connectivities[m_connectivity_indexes_per_type[IT_DualCell]] ;
@@ -433,16 +440,23 @@ detachFromCells(Int32ConstArrayView cell_local_ids)
     auto dof_family = dynamic_cast<DoFFamily*>(source_family) ;
     auto accessor = incremental_dof2cell_connectivity->connectivityAccessor() ;
 
-    ENUMERATE_DOF (idualnode, dualNodeFamily()->allItems())
+    //ENUMERATE_ITEM (idualnode, dualNodeFamily()->allItems())
+    for(auto idualnode : dualNodeFamily()->itemsInternal())
     {
-      auto lid = idualnode->localId() ;
-      auto dual_item = m_graph_connectivity->dualItem(*idualnode);
+      if (idualnode->isSuppressed()) continue;
+      auto dualnode_lid = ItemLocalId(idualnode) ;
+      //auto lid = idualnode->localId() ;
+      auto dual_item = m_graph_connectivity->dualItem(DoF(idualnode));
       if(cell_to_remove_set.find(dual_item->localId())!=cell_to_remove_set.end())
       {
-        incremental_dof2cell_connectivity->replaceConnectedItem(ItemLocalId(lid),0,ItemLocalId(-1)) ;
-        m_detached_dualnode_lids.add(lid) ;
+        incremental_dof2cell_connectivity->replaceConnectedItem(dualnode_lid,0,ItemLocalId(-1)) ;
+        m_detached_dualnode_lids.add(dualnode_lid) ;
       }
     }
+
+    removeDualNodes(m_detached_dualnode_lids) ;
+    //dualnode_family->endUpdate() ;
+    m_detached_dualnode_lids.clear() ;
   }
   m_update_sync_info = false ;
 }
@@ -455,46 +469,35 @@ isUpdated()
   if(!m_graph_allocated)
     return true ;
 
-  Integer sync_info = (m_update_sync_info ? 0 : 1) ;
-
-  sync_info = m_mesh->parallelMng()->reduce(Parallel::ReduceSum,sync_info);
-  m_update_sync_info = sync_info==0 ;
-  if(!m_update_sync_info)
-    return false ;
-
   for (Integer index = 0; index < NB_DUAL_ITEM_TYPE; ++index) {
     Integer dual_node_kind = m_dualnode_kinds[index];
     auto dof2dual_incremental_connectivity = m_incremental_connectivities[_connectivityIndex(dual_node_kind)] ;
 
     if (dof2dual_incremental_connectivity && ! m_connectivity_mng.isUpToDate(dof2dual_incremental_connectivity))
-      return false ;
+      m_update_sync_info = false ;
 
     if (! m_connectivity_mng.isUpToDate(m_dualnodes_incremental_connectivity))
-      return false ;
+      m_update_sync_info = false ;
 
     if (! m_connectivity_mng.isUpToDate(m_links_incremental_connectivity))
-      return false ;
+      m_update_sync_info = false ;
   }
-  return true ;
+
+  Integer sync_info = (m_update_sync_info ? 0 : 1) ;
+  sync_info = m_mesh->parallelMng()->reduce(Parallel::ReduceSum,sync_info);
+  m_update_sync_info = sync_info==0 ;
+
+  return m_update_sync_info ;
 }
 
 void GraphDoFs::
 endUpdate()
 {
+  if(!m_graph_allocated)
+    return ;
+
   auto dualnode_family = dualNodeFamily() ;
   auto link_family = linkFamily() ;
-  if(m_detached_link_lids.size()>0)
-  {
-    removeLinks(m_detached_link_lids) ;
-    link_family->endUpdate() ;
-    m_detached_link_lids.clear() ;
-  }
-  if(m_detached_dualnode_lids.size()>0)
-  {
-    removeDualNodes(m_detached_dualnode_lids) ;
-    dualnode_family->endUpdate() ;
-    m_detached_dualnode_lids.clear() ;
-  }
 
 
   DualUniqueIdMng dual_uid_mng(traceMng()) ;
@@ -509,7 +512,7 @@ endUpdate()
     auto dof2dual_incremental_connectivity = m_incremental_connectivities[_connectivityIndex(dual_node_kind)] ;
     if (dof2dual_incremental_connectivity && ! m_connectivity_mng.isUpToDate(dof2dual_incremental_connectivity))
     {
-      //info()<<"UPDATE DUALNODE CONNECTIVITY KIND "<<index<<" "<<dual_node_kind<<" "<<dual_item_kind ;
+      info()<<"UPDATE DUALNODE CONNECTIVITY KIND "<<index<<" "<<dual_node_kind<<" "<<dual_item_kind ;
       // Handle added nodes : create a dof for each own node added
       Int32ArrayView source_family_added_items_lids;
       Int32ArrayView source_family_removed_items_lids;
@@ -530,7 +533,8 @@ endUpdate()
         {
             dual_node_lids.add(idof->localId()) ;
             dual_item_uids.add(std::get<1>(value));
-            //info()<<"    ADDED DOF UID "<<idof->uniqueId()<<" DUAL KIND="<<std::get<0>(value)<<" DUAL UID="<<std::get<1>(value);
+            info()<<"    ADDED DOF UID "<<idof->uniqueId()<<" DUAL KIND="<<std::get<0>(value)<<" DUAL UID="<<std::get<1>(value);
+            info().file().flush() ;
         }
       }
 
@@ -640,8 +644,14 @@ endUpdate()
       obs->notifyUpdateConnectivity();
   }
 
-  //printDualNodes() ;
-  //printLinks() ;
+  for (auto& obs : m_graph_observer)
+  {
+    if(obs.get())
+      obs->notifyUpdate();
+  }
+
+  printDualNodes() ;
+  printLinks() ;
 }
 
 /*---------------------------------------------------------------------------*/

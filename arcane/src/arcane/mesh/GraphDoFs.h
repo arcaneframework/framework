@@ -63,6 +63,28 @@ class GraphConnectivityObserverT
   T* m_parent = nullptr;
 };
 
+
+template<typename T>
+class GraphObserverT
+: public IGraphObserver
+{
+ public:
+  GraphObserverT(T* parent)
+  : m_parent(parent)
+  {}
+
+  virtual ~GraphObserverT() {}
+
+  void notifyUpdate()
+  {
+    m_parent->notifyGraphUpdate() ;
+  }
+
+ private :
+  T* m_parent = nullptr;
+};
+
+
 class GraphDoFs;
 
 class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
@@ -182,6 +204,20 @@ class ARCANE_MESH_EXPORT GraphDoFs
       m_connectivity_observer[observer_id].reset() ;
   }
 
+
+  Integer registerNewGraphObserver(IGraphObserver* observer) override
+  {
+    Integer id = CheckedConvert::toInteger(m_graph_observer.size());
+    m_graph_observer.push_back(std::unique_ptr<IGraphObserver>(observer)) ;
+    return id ;
+  }
+
+  void releaseGraphObserver(Integer observer_id) override
+  {
+    if((observer_id>=0)&&(observer_id < (Integer) m_graph_observer.size()))
+      m_graph_observer[observer_id].reset() ;
+  }
+
   IItemFamily* dualNodeFamily() override { return &m_dual_node_family; }
   const IItemFamily* dualNodeFamily() const override { return &m_dual_node_family; }
 
@@ -205,7 +241,7 @@ class ARCANE_MESH_EXPORT GraphDoFs
   void removeDualNodes(Int32ConstArrayView dual_node_local_ids) override;
   void removeLinks(Int32ConstArrayView link_local_ids) override;
 
-  void detachFromCells(Int32ConstArrayView cell_local_ids) override;
+  void removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids) override;
 
   bool isUpdated() override ;
 
@@ -272,6 +308,8 @@ class ARCANE_MESH_EXPORT GraphDoFs
   Arcane::mesh::IncrementalItemConnectivity* m_links_incremental_connectivity = nullptr;
   std::unique_ptr<GraphIncrementalConnectivity> m_graph_connectivity;
   std::vector<std::unique_ptr<Arcane::IGraphConnectivityObserver>> m_connectivity_observer ;
+
+  std::vector<std::unique_ptr<Arcane::IGraphObserver>> m_graph_observer ;
 
   std::vector<std::unique_ptr<Arcane::GhostLayerFromConnectivityComputer>> m_ghost_layer_computers;
   Int32UniqueArray m_connectivity_indexes_per_type;

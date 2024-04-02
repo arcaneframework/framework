@@ -111,8 +111,8 @@ public:
   //! dé enregistre un graphe gérant des DoFs connectés au maillage
   virtual void releaseConnectedGraph(Integer graph_id) = 0 ;
 
-  //! Deconnecte les mailles supprimer dans les objets Graphs gérant les DoFs connectés aux item du maillage de base
-  virtual void detachCellsInConnectedGraphs(Int32ConstArrayView local_ids) = 0;
+  //! supprime les DoFs et les liens entre DoFs connectés aux mailles supprimées
+  virtual void removeConnectedDoFsFromCells(Int32ConstArrayView local_ids) = 0;
 
 };
 
