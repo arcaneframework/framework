@@ -14,6 +14,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/ItemGroupImpl.h"
 #include "arcane/core/ItemGroup.h"
@@ -32,11 +33,26 @@ GroupIndexTable::
 GroupIndexTable(ItemGroupImpl* group_impl)
 : HashTableBase(0, false)
 , m_group_impl(group_impl)
+, m_key_buffer(MemoryUtils::getDefaultDataAllocator())
+, m_next_buffer(MemoryUtils::getDefaultDataAllocator())
+, m_buckets(MemoryUtils::getDefaultDataAllocator())
 {
   ARCANE_ASSERT((m_group_impl), ("ItemGroupImpl pointer null"));
 #ifdef ARCANE_ASSERT
   m_disable_check_integrity = platform::getEnvironmentVariable("ARCANE_ENABLE_GROUPINDEXTABLE_CHECKINTEGRITY").null();
 #endif
+  _updateSpan();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void GroupIndexTable::
+_updateSpan()
+{
+  m_key_buffer_span = m_key_buffer;
+  m_next_buffer_span = m_next_buffer;
+  m_buckets_span = m_buckets;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -63,6 +79,7 @@ update()
     m_next_buffer[index] = m_buckets[bucket];
     m_buckets[bucket] = index;
   }
+  _updateSpan();
 
   ARCANE_ASSERT((_checkIntegrity()), ("GroupIndexTable integrity failed"));
 }
@@ -97,16 +114,8 @@ compact(const Int32ConstArrayView* infos)
   }
   ARCANE_ASSERT((_checkIntegrity()), ("GroupIndexTable integrity failed"));
 #endif /* NDEBUG */
-}
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer GroupIndexTable::
-_hash(KeyTypeConstRef id) const
-{
-  ARCANE_ASSERT((_initialized()), ("GroupIndexTable not initialized"));
-  return (Integer)(KeyTraitsType::hashFunction(id) % m_nb_bucket);
+  _updateSpan();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -121,30 +130,6 @@ _hasKey(KeyTypeConstRef id) const
       return true;
   }
   return false;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer GroupIndexTable::
-_lookupBucket(Integer bucket, KeyTypeConstRef id) const
-{
-  ARCANE_ASSERT((_initialized()), ("GroupIndexTable not initialized"));
-  for (Integer i = m_buckets[bucket]; i >= 0; i = m_next_buffer[i]) {
-    if (m_key_buffer[i] == id)
-      return i;
-  }
-  return -1;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer GroupIndexTable::
-_lookup(KeyTypeConstRef id) const
-{
-  ARCANE_ASSERT((_checkIntegrity(false)), ("GroupIndexTable integrity failed"));
-  return _lookupBucket(_hash(id), id);
 }
 
 /*---------------------------------------------------------------------------*/
