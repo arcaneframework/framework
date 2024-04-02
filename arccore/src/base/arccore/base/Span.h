@@ -827,7 +827,7 @@ _sampleSpan(SpanImpl<const DataType,SizeType> values,
 template<typename DataType> inline void
 sampleSpan(Span<const DataType> values,Span<const Int64> indexes,Span<DataType> result)
 {
-  _sampleSpan(values,indexes,result);
+  _sampleSpan<DataType,Int64,Int64>(values,indexes,result);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -841,7 +841,7 @@ sampleSpan(Span<const DataType> values,Span<const Int64> indexes,Span<DataType> 
 template<typename DataType> inline void
 sampleSpan(Span<const DataType> values,Span<const Int32> indexes,Span<DataType> result)
 {
-  _sampleSpan(values,indexes,result);
+  _sampleSpan<DataType,Int32,Int64>(values,indexes,result);
 }
 
 /*---------------------------------------------------------------------------*/
