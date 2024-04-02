@@ -69,6 +69,7 @@ update()
   m_buckets.fill(-1);
   m_key_buffer.resize(group_size);
   m_next_buffer.resize(group_size);
+  _updateSpan();
 
   ENUMERATE_ITEM (item, group) {
     const Integer index = item.index();
@@ -79,7 +80,6 @@ update()
     m_next_buffer[index] = m_buckets[bucket];
     m_buckets[bucket] = index;
   }
-  _updateSpan();
 
   ARCANE_ASSERT((_checkIntegrity()), ("GroupIndexTable integrity failed"));
 }
@@ -101,6 +101,7 @@ compact(const Int32ConstArrayView* infos)
   // identique à update() mais peut faire quelque contrôle si infos!=NULL
   m_buckets.fill(-1);
   ItemGroup group(m_group_impl);
+  _updateSpan();
   ENUMERATE_ITEM (iitem, group) {
     const KeyTypeConstRef key = iitem.localId();
     const Integer i = iitem.index();
