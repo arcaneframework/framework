@@ -26,6 +26,50 @@ class ItemGroupImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class ARCANE_CORE_EXPORT GroupIndexTableView
+{
+  friend class GroupIndexTable;
+  typedef Int32 KeyTypeValue;
+  typedef Int32 ValueType;
+  typedef HashTraitsT<KeyTypeValue> KeyTraitsType;
+  typedef KeyTraitsType::KeyTypeConstRef KeyTypeConstRef;
+
+ public:
+
+  ARCCORE_HOST_DEVICE ValueType operator[](Int32 i) const { return _lookup(i); }
+  ARCCORE_HOST_DEVICE Int32 size() const { return m_key_buffer_span.size(); }
+
+ private:
+
+  SmallSpan<const KeyTypeValue> m_key_buffer_span;
+  SmallSpan<const Int32> m_next_buffer_span;
+  SmallSpan<const Int32> m_buckets_span;
+  Int32 m_nb_bucket = 0;
+
+ private:
+
+  //! Recherche d'une clef dans toute la table
+  ARCCORE_HOST_DEVICE Int32 _lookup(KeyTypeConstRef id) const
+  {
+    return _lookupBucket(_hash(id), id);
+  }
+  ARCCORE_HOST_DEVICE Int32 _hash(KeyTypeConstRef id) const
+  {
+    return static_cast<Int32>(KeyTraitsType::hashFunction(id) % m_nb_bucket);
+  }
+  ARCCORE_HOST_DEVICE Integer _lookupBucket(Int32 bucket, KeyTypeConstRef id) const
+  {
+    for (Integer i = m_buckets_span[bucket]; i >= 0; i = m_next_buffer_span[i]) {
+      if (m_key_buffer_span[i] == id)
+        return i;
+    }
+    return -1;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Classe de base d'une table de hachage entre les items d'un groupe 
@@ -57,11 +101,18 @@ class ARCANE_CORE_EXPORT GroupIndexTable
 
   void compact(const Int32ConstArrayView* info);
 
-  ARCCORE_HOST_DEVICE ValueType operator[](Int32 i) const { return _lookup(i); }
+  ValueType operator[](Int32 i) const { return _lookup(i); }
 
   KeyTypeValue keyLocalId(Int32 i) const { return m_key_buffer[i]; }
 
-  ARCCORE_HOST_DEVICE Int32 size() const { return m_key_buffer.size(); }
+  Int32 size() const { return m_key_buffer.size(); }
+
+  GroupIndexTableView view() const
+  {
+    ARCANE_ASSERT((_initialized()), ("GroupIndexTable not initialized"));
+    ARCANE_ASSERT((_checkIntegrity(false)), ("GroupIndexTable integrity failed"));
+    return m_view;
+  }
 
  private:
 
@@ -71,35 +122,25 @@ class ARCANE_CORE_EXPORT GroupIndexTable
    * Utilise la fonction de hachage de Arcane même si quelques
    * collisions sont constatées avec les petites valeurs
    */
-  ARCCORE_HOST_DEVICE Int32 _hash(KeyTypeConstRef id) const
+  Int32 _hash(KeyTypeConstRef id) const
   {
-#ifndef ARCCORE_DEVICE_CODE
     ARCANE_ASSERT((_initialized()), ("GroupIndexTable not initialized"));
-#endif
-    return static_cast<Int32>(KeyTraitsType::hashFunction(id) % m_nb_bucket);
+    return m_view._hash(id);
   }
   //! \a true si une valeur avec la clé \a id est présente
   bool _hasKey(KeyTypeConstRef id) const;
 
   //! Recherche d'une clef dans un bucket
-  ARCCORE_HOST_DEVICE Integer _lookupBucket(Int32 bucket, KeyTypeConstRef id) const
+  Int32 _lookupBucket(Int32 bucket, KeyTypeConstRef id) const
   {
-#ifndef ARCCORE_DEVICE_CODE
     ARCANE_ASSERT((_initialized()), ("GroupIndexTable not initialized"));
-#endif
-    for (Integer i = m_buckets_span[bucket]; i >= 0; i = m_next_buffer_span[i]) {
-      if (m_key_buffer_span[i] == id)
-        return i;
-    }
-    return -1;
+    return m_view._lookupBucket(bucket, id);
   }
 
   //! Recherche d'une clef dans toute la table
-  ARCCORE_HOST_DEVICE Int32 _lookup(KeyTypeConstRef id) const
+  Int32 _lookup(KeyTypeConstRef id) const
   {
-#ifndef ARCCORE_DEVICE_CODE
     ARCANE_ASSERT((_checkIntegrity(false)), ("GroupIndexTable integrity failed"));
-#endif
     return _lookupBucket(_hash(id), id);
   }
 
@@ -116,9 +157,7 @@ class ARCANE_CORE_EXPORT GroupIndexTable
   UniqueArray<Int32> m_next_buffer; //! Table des index suivant associés
   UniqueArray<Int32> m_buckets; //! Tableau des buckets
   bool m_disable_check_integrity = false;
-  SmallSpan<const KeyTypeValue> m_key_buffer_span;
-  SmallSpan<const Int32> m_next_buffer_span;
-  SmallSpan<const Int32> m_buckets_span;
+  GroupIndexTableView m_view;
 
  private:
 

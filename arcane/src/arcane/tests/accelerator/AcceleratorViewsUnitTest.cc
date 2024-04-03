@@ -814,7 +814,7 @@ _executeTestGroupIndexTable()
   info() << "Execute GroupIndexTable";
   ItemGroup cells = allCells();
   SharedPtrT<GroupIndexTable> index_table = cells.localIdToIndex();
-  GroupIndexTable* index_table_ptr = index_table.get();
+  GroupIndexTableView index_table_view = index_table->view();
   IItemFamily* cell_family = mesh()->cellFamily();
   const Int32 max_id = cell_family->maxLocalId();
   NumArray<Int32, MDDim1> ids(max_id);
@@ -826,14 +826,14 @@ _executeTestGroupIndexTable()
     command << RUNCOMMAND_ENUMERATE (Cell, icell, allCells())
     {
       Int32 id1 = icell.localId();
-      Int32 id2 = index_table_ptr->operator[](id1);
+      Int32 id2 = index_table_view[id1];
       out_ids[id1] = id2;
     };
   }
 
   ENUMERATE_ (Cell, icell, allCells()) {
     Int32 lid = icell.itemLocalId();
-    Int32 x = index_table_ptr->operator[](lid);
+    Int32 x = index_table_view[lid];
     if (x != lid)
       ARCANE_FATAL("Bad id index={0} ref={1} v={2}", icell.index(), lid, x);
   }
