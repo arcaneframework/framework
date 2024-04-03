@@ -20,6 +20,9 @@
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/GroupIndexTable.h"
 
+// TODO: Utiliser un même conteneur pour les 3 span 'm_key_buffer',
+// 'm_next_buffer' et 'm_buckets'
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -50,9 +53,10 @@ GroupIndexTable(ItemGroupImpl* group_impl)
 void GroupIndexTable::
 _updateSpan()
 {
-  m_key_buffer_span = m_key_buffer;
-  m_next_buffer_span = m_next_buffer;
-  m_buckets_span = m_buckets;
+  m_view.m_key_buffer_span = m_key_buffer;
+  m_view.m_next_buffer_span = m_next_buffer;
+  m_view.m_buckets_span = m_buckets;
+  m_view.m_nb_bucket = m_nb_bucket;
 }
 
 /*---------------------------------------------------------------------------*/
