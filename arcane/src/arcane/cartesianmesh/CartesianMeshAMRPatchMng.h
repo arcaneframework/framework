@@ -49,6 +49,7 @@ class CartesianMeshAMRPatchMng
 
   void flagCellToCoarse(Int32ConstArrayView cells_lids) override;
   void coarse() override;
+  void createLevelDown();
 
  private:
   IMesh* m_mesh;

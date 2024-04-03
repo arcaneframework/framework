@@ -448,12 +448,17 @@ getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_
 void CartesianMeshNumberingMng::
 getCellUidsAround(ArrayView<Int64> uid, Cell cell)
 {
+  getCellUidsAround(uid, cell.uniqueId(), cell.level());
+}
+
+void CartesianMeshNumberingMng::
+getCellUidsAround(ArrayView<Int64> uid, Int64 cell_uid, Int32 level)
+{
   uid.fill(-1);
 
-  Int64 coord_cell_x = uidToCoordX(cell);
-  Int64 coord_cell_y = uidToCoordY(cell);
+  Int64 coord_cell_x = uidToCoordX(cell_uid, level);
+  Int64 coord_cell_y = uidToCoordY(cell_uid, level);
 
-  Integer level = cell.level();
   Int64 nb_cells_y = getGlobalNbCellsY(level);
   Int64 nb_cells_x = getGlobalNbCellsX(level);
 

@@ -79,6 +79,7 @@ class CartesianMeshNumberingMng
   void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) override;
   void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override{};
 
+  void getCellUidsAround(ArrayView<Int64> uid, Int64 cell_uid, Int32 level) override;
   void getCellUidsAround(ArrayView<Int64> uid, Cell cell) override;
 
   void setNodeCoordinates(Cell child_cell) override;
