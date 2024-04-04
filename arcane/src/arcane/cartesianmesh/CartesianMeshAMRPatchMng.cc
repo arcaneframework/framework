@@ -2760,6 +2760,310 @@ createLevelDown()
       }
     }
   }
+  else if (m_mesh->dimension() == 3) {
+    const bool mask_node_if_cell_left[] = { false, true, true, false, false, true, true, false };
+    const bool mask_node_if_cell_bottom[] = { false, false, true, true, false, false, true, true };
+    const bool mask_node_if_cell_rear[] = { false, false, false, false, true, true, true, true };
+
+    const bool mask_node_if_cell_right[] = { true, false, false, true, true, false, false, true };
+    const bool mask_node_if_cell_top[] = { true, true, false, false, true, true, false, false };
+    const bool mask_node_if_cell_front[] = { true, true, true, true, false, false, false, false };
+
+    const bool mask_face_if_cell_left[] = { true, false, true, true, true, true };
+    const bool mask_face_if_cell_bottom[] = { true, true, false, true, true, true };
+    const bool mask_face_if_cell_rear[] = { false, true, true, true, true, true };
+
+    const bool mask_face_if_cell_right[] = { true, true, true, true, false, true };
+    const bool mask_face_if_cell_top[] = { true, true, true, true, true, false };
+    const bool mask_face_if_cell_front[] = { true, true, true, false, true, true };
+
+    // Petite différence par rapport au 2D. Pour le 2D, la position des noeuds des faces
+    // dans le tableau "child_nodes_uids" est toujours pareil (l et l+1, voir le 2D).
+    // Pour le 3D, ce n'est pas le cas donc on a des tableaux pour avoir une correspondance
+    // entre les noeuds de chaque face et la position des noeuds dans le tableau "child_nodes_uids".
+    // (Exemple : pour la face 1 (même ordre d'énumération qu'Arcane), on doit prendre le
+    // tableau "nodes_in_face_1" et donc les noeuds "child_nodes_uids[0]", "child_nodes_uids[3]",
+    // "child_nodes_uids[7]" et "child_nodes_uids[4]").
+    const Integer nodes_in_face_0[] = { 0, 1, 2, 3 };
+    const Integer nodes_in_face_1[] = { 0, 3, 7, 4 };
+    const Integer nodes_in_face_2[] = { 0, 1, 5, 4 };
+    const Integer nodes_in_face_3[] = { 4, 5, 6, 7 };
+    const Integer nodes_in_face_4[] = { 1, 2, 6, 5 };
+    const Integer nodes_in_face_5[] = { 3, 2, 6, 7 };
+
+    const Integer nb_nodes_in_face = 4;
+
+    for (Int64 parent_cell_uid : cell_uid_to_create) {
+      UniqueArray<Int64> cells_uid_around(27);
+      m_num_mng->getCellUidsAround(cells_uid_around, parent_cell_uid, -1);
+
+      UniqueArray<Int32> owner_cells_around_parent_cell_1d(27);
+      ConstArray3View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3, 3);
+
+      for (Integer i = 0; i < 27; ++i) {
+        Int64 uid_cell = cells_uid_around[i];
+        // Si uid_cell != -1 alors il y a peut-être une maille (mais on ne sait pas si elle est bien présente).
+        // Si around_parent_cells_uid_to_owner[uid_cell] != -1 alors il y a bien une maille.
+        if (uid_cell != -1 && around_parent_cells_uid_to_owner[uid_cell] != -1) {
+          owner_cells_around_parent_cell_1d[i] = around_parent_cells_uid_to_owner[uid_cell];
+        }
+        else {
+          cells_uid_around[i] = -1;
+          owner_cells_around_parent_cell_1d[i] = -1;
+        }
+      }
+
+      info() << cells_uid_around;
+      info() << owner_cells_around_parent_cell_1d;
+
+      auto is_cell_around_parent_cell_different_owner = [&](Integer z, Integer y, Integer x) {
+        return (owner_cells_around_parent_cell(z, y, x) != owner_cells_around_parent_cell(1, 1, 1));
+      };
+
+      auto is_cell_around_parent_cell_exist_and_different_owner = [&](Integer z, Integer y, Integer x) {
+        return (owner_cells_around_parent_cell(z, y, x) != -1 && (owner_cells_around_parent_cell(z, y, x) != owner_cells_around_parent_cell(1, 1, 1)));
+      };
+
+      total_nb_cells++;
+      debug() << "Parent"
+              << " -- x : " << m_num_mng->uidToCoordX(parent_cell_uid, -1)
+              << " -- y : " << m_num_mng->uidToCoordY(parent_cell_uid, -1)
+              << " -- z : " << m_num_mng->uidToCoordZ(parent_cell_uid, -1)
+              << " -- level : " << -1
+              << " -- uid : " << parent_cell_uid;
+
+      m_num_mng->getNodeUids(parent_nodes_uids, -1, parent_cell_uid);
+      m_num_mng->getFaceUids(parent_faces_uids, -1, parent_cell_uid);
+
+      const Integer type_cell = IT_Hexaedron8;
+      const Integer type_face = IT_Quad4;
+
+      // Partie Cell.
+      cells_infos.add(type_cell);
+      cells_infos.add(parent_cell_uid);
+      for (Integer nc = 0; nc < m_num_mng->getNbNode(); nc++) {
+        cells_infos.add(parent_nodes_uids[nc]);
+      }
+
+      // Partie Face.
+      for (Integer l = 0; l < m_num_mng->getNbFace(); ++l) {
+        Integer parent_face_owner = -1;
+
+        if (
+        (mask_face_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 1, 0)) &&
+        (mask_face_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(1, 0, 1)) &&
+        (mask_face_if_cell_rear[l] || is_cell_around_parent_cell_different_owner(0, 1, 1))) {
+          faces_infos.add(type_face);
+          faces_infos.add(parent_faces_uids[l]);
+
+          // On récupère la position des noeuds de la face dans le tableau "ua_node_uid".
+          ConstArrayView<Integer> nodes_in_face_l;
+          switch (l) {
+          case 0:
+            nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_0, nb_nodes_in_face);
+            break;
+          case 1:
+            nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_1, nb_nodes_in_face);
+            break;
+          case 2:
+            nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_2, nb_nodes_in_face);
+            break;
+          case 3:
+            nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_3, nb_nodes_in_face);
+            break;
+          case 4:
+            nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_4, nb_nodes_in_face);
+            break;
+          case 5:
+            nodes_in_face_l = ConstArrayView<Integer>::create(nodes_in_face_5, nb_nodes_in_face);
+            break;
+          default:
+            ARCANE_FATAL("Bizarre...");
+          }
+          for (Integer nc : nodes_in_face_l) {
+            faces_infos.add(parent_nodes_uids[nc]);
+          }
+          total_nb_faces++;
+
+          if ((!mask_face_if_cell_left[l]) && is_cell_around_parent_cell_exist_and_different_owner(1, 1, 0)) {
+            parent_face_owner = owner_cells_around_parent_cell(1, 1, 0);
+          }
+          else if ((!mask_face_if_cell_bottom[l]) && is_cell_around_parent_cell_exist_and_different_owner(1, 0, 1)) {
+            parent_face_owner = owner_cells_around_parent_cell(1, 0, 1);
+          }
+          else if ((!mask_face_if_cell_rear[l]) && is_cell_around_parent_cell_exist_and_different_owner(0, 1, 1)) {
+            parent_face_owner = owner_cells_around_parent_cell(0, 1, 1);
+          }
+          else {
+            parent_face_owner = owner_cells_around_parent_cell(1, 1, 1);
+          }
+          face_uid_to_owner[parent_faces_uids[l]] = parent_face_owner;
+          debug() << "Parent face (create face)  -- parent_cell_uid : " << parent_cell_uid
+                  << " -- level : " << -1
+                  << " -- face : " << l
+                  << " -- uid_face : " << parent_faces_uids[l]
+                  << " -- owner : " << parent_face_owner;
+        }
+      }
+
+      // Partie Node.
+      // Cette partie est assez ressemblante à la partie face, mis à part le fait qu'il peut y avoir
+      // plus de propriétaires possibles.
+      for (Integer l = 0; l < m_num_mng->getNbNode(); ++l) {
+        Integer parent_node_owner = -1;
+        if (
+        (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 1, 0)) &&
+        (mask_node_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(1, 0, 1)) &&
+        (mask_node_if_cell_rear[l] || is_cell_around_parent_cell_different_owner(0, 1, 1))) {
+          nodes_infos.add(parent_nodes_uids[l]);
+          total_nb_nodes++;
+
+          if ((!mask_node_if_cell_left[l])) {
+            if ((!mask_node_if_cell_bottom[l])) {
+              if ((!mask_node_if_cell_rear[l])) {
+
+                if (is_cell_around_parent_cell_exist_and_different_owner(0, 0, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 0, 0);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 0, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 0, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 1, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 1, 0);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 1, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 1, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(1, 0, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 0, 0);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(1, 0, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 0, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(1, 1, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 0);
+                }
+                else {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 1);
+                }
+              }
+              else {
+                if (is_cell_around_parent_cell_exist_and_different_owner(1, 0, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 0, 0);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(1, 0, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 0, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(1, 1, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 0);
+                }
+                else {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 1);
+                }
+              }
+            }
+            else {
+              if ((!mask_node_if_cell_rear[l])) {
+                if (is_cell_around_parent_cell_exist_and_different_owner(0, 1, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 1, 0);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 1, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 1, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 2, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 2, 0);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 2, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 2, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(1, 1, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 0);
+                }
+                else {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 1);
+                }
+              }
+              else {
+                if (is_cell_around_parent_cell_exist_and_different_owner(1, 1, 0)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 0);
+                }
+                else {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 1);
+                }
+              }
+            }
+          }
+          else {
+            if ((!mask_node_if_cell_bottom[l])) {
+              if ((!mask_node_if_cell_rear[l])) {
+                if (is_cell_around_parent_cell_exist_and_different_owner(0, 0, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 0, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 0, 2)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 0, 2);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 1, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 1, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 1, 2)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 1, 2);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(1, 0, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 0, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(1, 0, 2)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 0, 2);
+                }
+                else {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 1);
+                }
+              }
+              else {
+                if (is_cell_around_parent_cell_exist_and_different_owner(1, 0, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 0, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(1, 0, 2)) {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 0, 2);
+                }
+                else {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 1);
+                }
+              }
+            }
+            else {
+              if ((!mask_node_if_cell_rear[l])) {
+                if (is_cell_around_parent_cell_exist_and_different_owner(0, 1, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 1, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 1, 2)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 1, 2);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 2, 1)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 2, 1);
+                }
+                else if (is_cell_around_parent_cell_exist_and_different_owner(0, 2, 2)) {
+                  parent_node_owner = owner_cells_around_parent_cell(0, 2, 2);
+                }
+                else {
+                  parent_node_owner = owner_cells_around_parent_cell(1, 1, 1);
+                }
+              }
+              else {
+                parent_node_owner = owner_cells_around_parent_cell(1, 1, 1);
+              }
+            }
+          }
+
+          node_uid_to_owner[parent_nodes_uids[l]] = parent_node_owner;
+          debug() << "Child node (create node)  -- parent_cell_uid : " << parent_cell_uid
+                  << " -- level : " << -1
+                  << " -- node : " << l
+                  << " -- uid_node : " << parent_nodes_uids[l]
+                  << " -- owner : " << parent_node_owner;
+        }
+      }
+    }
+  }
 
   ARCANE_FATAL("Normal");
 }
