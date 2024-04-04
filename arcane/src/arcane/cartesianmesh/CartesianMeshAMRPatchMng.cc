@@ -2498,7 +2498,7 @@ createLevelDown()
 
   UniqueArray<Int64> cell_uid_to_create;
 
-  std::unordered_map<Int64, Int32> new_owners;
+  std::unordered_map<Int64, Int32> around_parent_cells_uid_to_owner;
 
   std::unordered_map<Int64, Int32> node_uid_to_owner;
   std::unordered_map<Int64, Int32> face_uid_to_owner;
@@ -2509,13 +2509,13 @@ createLevelDown()
     Cell cell = *icell;
 
     Int64 parent_uid = m_num_mng->getParentCellUidOfCell(cell);
-    info() << "Test : " << cell.uniqueId() << " " << cell.level() << " " << parent_uid;
+    info() << "Test : " << cell.uniqueId() << " " << cell.level() << " " << parent_uid << " " << cell.owner();
     if (!cell_uid_to_create.contains(parent_uid)) {
       cell_uid_to_create.add(parent_uid);
-      new_owners[parent_uid] = cell.owner();
+      around_parent_cells_uid_to_owner[parent_uid] = cell.owner();
     }
     else {
-      if (new_owners[parent_uid] != cell.owner()) {
+      if (around_parent_cells_uid_to_owner[parent_uid] != cell.owner()) {
         ARCANE_FATAL("Pb owner");
       }
     }
@@ -2540,29 +2540,15 @@ createLevelDown()
   // lors de la création des mailles.
   UniqueArray<Cell> parent_cells;
 
-  // Maps remplaçant les mailles fantômes.
-  std::unordered_map<Int64, Integer> around_parent_cells_uid_to_owner;
-
   // Partie échange d'informations sur les mailles autour du patch
   // (pour remplacer les mailles fantômes).
   {
-    // On remplit le tableau avec nos infos, pour les autres processus.
-    ENUMERATE_ (Cell, icell, m_mesh->ownCells()) {
-      Cell cell = *icell;
-      around_parent_cells_uid_to_owner[cell.uniqueId()] = my_rank;
-    }
-
-    ENUMERATE_ (Cell, icell, m_mesh->allCells().ghost()) {
-      Cell cell = *icell;
-      around_parent_cells_uid_to_owner[cell.uniqueId()] = cell.owner();
-    }
-
     // Tableau qui contiendra les uids des mailles dont on a besoin des infos.
     UniqueArray<Int64> uid_of_cells_needed;
     {
       UniqueArray<Int64> cell_uids_around((m_mesh->dimension() == 2) ? 9 : 27);
-      for (Cell parent_cell : cell_to_refine_internals) {
-        m_num_mng->getCellUidsAround(cell_uids_around, parent_cell);
+      for (Int64 parent_cell : cell_uid_to_create) {
+        m_num_mng->getCellUidsAround(cell_uids_around, parent_cell, -1);
         for (Int64 cell_uid : cell_uids_around) {
           // Si -1 alors il n'y a pas de mailles à cette position.
           if (cell_uid == -1)
@@ -2581,41 +2567,19 @@ createLevelDown()
     UniqueArray<Int64> uid_of_cells_needed_all_procs;
     pm->allGatherVariable(uid_of_cells_needed, uid_of_cells_needed_all_procs);
 
-    UniqueArray<Int32> flags_of_cells_needed_all_procs(uid_of_cells_needed_all_procs.size());
     UniqueArray<Int32> owner_of_cells_needed_all_procs(uid_of_cells_needed_all_procs.size());
 
     {
-      UniqueArray<Int32> local_ids(uid_of_cells_needed_all_procs.size());
-      m_mesh->cellFamily()->itemsUniqueIdToLocalId(local_ids, uid_of_cells_needed_all_procs, false);
-      Integer compt = 0;
-      ENUMERATE_ (Cell, icell, m_mesh->cellFamily()->view(local_ids)) {
-        // Le isOwn est important vu qu'il peut y avoir les mailles fantômes.
-        if (!icell->null() && icell->isOwn()) {
-          owner_of_cells_needed_all_procs[compt] = my_rank;
-          flags_of_cells_needed_all_procs[compt] = (icell->itemBase().flags() & usefull_flags);
+      for (Integer i = 0; i < uid_of_cells_needed_all_procs.size(); ++i) {
+        if (around_parent_cells_uid_to_owner.find(owner_of_cells_needed_all_procs[i]) != around_parent_cells_uid_to_owner.end()) {
+          owner_of_cells_needed_all_procs[i] = around_parent_cells_uid_to_owner[owner_of_cells_needed_all_procs[i]];
         }
-        else {
-          owner_of_cells_needed_all_procs[compt] = -1;
-          flags_of_cells_needed_all_procs[compt] = 0;
-        }
-        compt++;
       }
     }
 
     pm->reduce(Parallel::eReduceType::ReduceMax, owner_of_cells_needed_all_procs);
-    pm->reduce(Parallel::eReduceType::ReduceMax, flags_of_cells_needed_all_procs);
 
-    // A partir de ce moment, si les parent_cells sont au niveau 0, le tableau
-    // "owner_of_cells_needed_all_procs" ne devrait plus contenir de "-1".
-    // Si les parent_cells sont au niveau 1 ou plus, il peut y avoir des "-1"
-    // car les mailles autour ne sont pas forcément toutes raffinées.
-    // (exemple : on est en train de faire le niveau 2, donc on regarde les mailles
-    // parent de niveau 1 tout autour. Il se peut que la maille d'à coté n'ai jamais
-    // été raffinée, donc n'a pas de mailles de niveau 1. Comme la maille n'existe pas,
-    // aucun processus ne peut mettre un propriétaire, donc le tableau des propriétaires
-    // contiendra "-1".
 
-    // On récupère les infos des mailles autour qui nous intéressent.
     {
       Integer size_uid_of_cells_needed = uid_of_cells_needed.size();
       Integer my_pos_in_all_procs_arrays = 0;
@@ -2628,10 +2592,8 @@ createLevelDown()
       }
 
       ArrayView<Int32> owner_of_cells_needed = owner_of_cells_needed_all_procs.subView(my_pos_in_all_procs_arrays, size_uid_of_cells_needed);
-      ArrayView<Int32> flags_of_cells_needed = flags_of_cells_needed_all_procs.subView(my_pos_in_all_procs_arrays, size_uid_of_cells_needed);
       for (Integer i = 0; i < size_uid_of_cells_needed; ++i) {
         around_parent_cells_uid_to_owner[uid_of_cells_needed[i]] = owner_of_cells_needed[i];
-        around_parent_cells_uid_to_flags[uid_of_cells_needed[i]] = flags_of_cells_needed[i];
       }
     }
   }
@@ -2653,6 +2615,33 @@ createLevelDown()
 
       UniqueArray<Int64> cells_uid_around(9);
       m_num_mng->getCellUidsAround(cells_uid_around, parent_cell_uid, -1);
+
+      UniqueArray<Int32> owner_cells_around_parent_cell_1d(9);
+      ConstArray2View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3);
+
+      for (Integer i = 0; i < 9; ++i) {
+        Int64 uid_cell = cells_uid_around[i];
+        // Si uid_cell != -1 alors il y a peut-être une maille (mais on ne sait pas si elle est bien présente).
+        // Si around_parent_cells_uid_to_owner[uid_cell] != -1 alors il y a bien une maille.
+        if (uid_cell != -1 && around_parent_cells_uid_to_owner[uid_cell] != -1) {
+          owner_cells_around_parent_cell_1d[i] = around_parent_cells_uid_to_owner[uid_cell];
+        }
+        else {
+          cells_uid_around[i] = -1;
+          owner_cells_around_parent_cell_1d[i] = -1;
+        }
+      }
+
+      info() << cells_uid_around;
+      info() << owner_cells_around_parent_cell_1d;
+
+      auto is_cell_around_parent_cell_different_owner = [&](Integer y, Integer x) {
+        return (owner_cells_around_parent_cell(y, x) != owner_cells_around_parent_cell(1, 1));
+      };
+
+      auto is_cell_around_parent_cell_exist_and_different_owner = [&](Integer y, Integer x) {
+        return (owner_cells_around_parent_cell(y, x) != -1 && (owner_cells_around_parent_cell(y, x) != owner_cells_around_parent_cell(1, 1)));
+      };
 
       total_nb_cells++;
       debug() << "Parent"
@@ -2676,7 +2665,97 @@ createLevelDown()
 
       // Partie Face.
       for (Integer l = 0; l < m_num_mng->getNbFace(); ++l) {
-        if (true) {
+        Integer parent_face_owner = -1;
+
+        if (
+        (mask_face_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0)) &&
+        (mask_face_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(0, 1))) {
+          faces_infos.add(type_face);
+          faces_infos.add(parent_faces_uids[l]);
+
+          // Les noeuds de la face sont toujours les noeuds l et l+1
+          // car on utilise la même exploration pour les deux cas.
+          for (Integer nc = l; nc < l + 2; nc++) {
+            faces_infos.add(parent_nodes_uids[nc % m_num_mng->getNbNode()]);
+          }
+          total_nb_faces++;
+
+          if ((!mask_face_if_cell_left[l]) && is_cell_around_parent_cell_exist_and_different_owner(1, 0)) {
+            parent_face_owner = owner_cells_around_parent_cell(1, 0);
+          }
+          else if ((!mask_face_if_cell_bottom[l]) && is_cell_around_parent_cell_exist_and_different_owner(0, 1)) {
+            parent_face_owner = owner_cells_around_parent_cell(0, 1);
+          }
+          else {
+            parent_face_owner = owner_cells_around_parent_cell(1, 1);
+          }
+          face_uid_to_owner[parent_faces_uids[l]] = parent_face_owner;
+          debug() << "Parent face (create face)  -- parent_cell_uid : " << parent_cell_uid
+                  << " -- level : " << -1
+                  << " -- face : " << l
+                  << " -- uid_face : " << parent_faces_uids[l]
+                  << " -- owner : " << parent_face_owner;
+        }
+      }
+
+      // Partie Node.
+      // Cette partie est assez ressemblante à la partie face, mis à part le fait qu'il peut y avoir
+      // plus de propriétaires possibles.
+      for (Integer l = 0; l < m_num_mng->getNbNode(); ++l) {
+        Integer parent_node_owner = -1;
+        if (
+        (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0)) &&
+        (mask_node_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(0, 1))) {
+          nodes_infos.add(parent_nodes_uids[l]);
+          total_nb_nodes++;
+
+          if ((!mask_node_if_cell_left[l])) {
+            if ((!mask_node_if_cell_bottom[l])) {
+              if (is_cell_around_parent_cell_exist_and_different_owner(0, 0)) {
+                parent_node_owner = owner_cells_around_parent_cell(0, 0);
+              }
+              else if (is_cell_around_parent_cell_exist_and_different_owner(0, 1)) {
+                parent_node_owner = owner_cells_around_parent_cell(0, 1);
+              }
+              else if (is_cell_around_parent_cell_exist_and_different_owner(1, 0)) {
+                parent_node_owner = owner_cells_around_parent_cell(1, 0);
+              }
+              else {
+                parent_node_owner = owner_cells_around_parent_cell(1, 1);
+              }
+            }
+            else {
+              if (is_cell_around_parent_cell_exist_and_different_owner(1, 0)) {
+                parent_node_owner = owner_cells_around_parent_cell(1, 0);
+              }
+              else {
+                parent_node_owner = owner_cells_around_parent_cell(1, 1);
+              }
+            }
+          }
+          else {
+            if ((!mask_node_if_cell_bottom[l])) {
+              if (is_cell_around_parent_cell_exist_and_different_owner(0, 1)) {
+                parent_node_owner = owner_cells_around_parent_cell(0, 1);
+              }
+              else if (is_cell_around_parent_cell_exist_and_different_owner(0, 2)) {
+                parent_node_owner = owner_cells_around_parent_cell(0, 2);
+              }
+              else {
+                parent_node_owner = owner_cells_around_parent_cell(1, 1);
+              }
+            }
+            else {
+              parent_node_owner = owner_cells_around_parent_cell(1, 1);
+            }
+          }
+
+          node_uid_to_owner[parent_nodes_uids[l]] = parent_node_owner;
+          debug() << "Child node (create node)  -- parent_cell_uid : " << parent_cell_uid
+                  << " -- level : " << -1
+                  << " -- node : " << l
+                  << " -- uid_node : " << parent_nodes_uids[l]
+                  << " -- owner : " << parent_node_owner;
         }
       }
     }

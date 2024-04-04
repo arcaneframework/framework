@@ -486,14 +486,19 @@ getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid)
 void CartesianMeshNumberingV2Mng::
 getCellUidsAround(ArrayView<Int64> uid, Cell cell)
 {
+  getCellUidsAround(uid, cell.uniqueId(), cell.level());
+}
+
+void CartesianMeshNumberingV2Mng::
+getCellUidsAround(ArrayView<Int64> uid, Int64 cell_uid, Int32 level)
+{
   uid.fill(-1);
 
-  Int64 coord_cell_x = uidToCoordX(cell);
-  Int64 coord_cell_y = uidToCoordY(cell);
+  Int64 coord_cell_x = uidToCoordX(cell_uid, level);
+  Int64 coord_cell_y = uidToCoordY(cell_uid, level);
 
-  Integer level = cell.level();
-  Int64 nb_cells_y = getGlobalNbCellsY(level);
   Int64 nb_cells_x = getGlobalNbCellsX(level);
+  Int64 nb_cells_y = getGlobalNbCellsY(level);
 
   if(m_mesh->dimension() == 2){
     ARCANE_ASSERT((uid.size() == 9), ("Size of uid array != 9"));
@@ -515,7 +520,7 @@ getCellUidsAround(ArrayView<Int64> uid, Cell cell)
   else {
     ARCANE_ASSERT((uid.size() == 27), ("Size of uid array != 27"));
 
-    Int64 coord_cell_z = uidToCoordZ(cell);
+    Int64 coord_cell_z = uidToCoordZ(cell_uid, level);
     Int64 nb_cells_z = getGlobalNbCellsZ(level);
 
     for(Integer k = -1; k < 2; ++k){
