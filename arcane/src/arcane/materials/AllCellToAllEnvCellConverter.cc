@@ -17,7 +17,9 @@
 #include "arcane/core/ItemEnumerator.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
+
 #include "arcane/accelerator/Reduce.h"
+#include "arcane/accelerator/RunCommandEnumerate.h"
 
 #include <algorithm>
 
@@ -43,6 +45,37 @@ namespace
     reducer.applyMaxWithIndex(nb_item, select_func);
     Int32 max_nb_env = reducer.reducedValue();
     return max_nb_env;
+  }
+
+  void _updateValues(IMeshMaterialMng* material_mng,
+                     ComponentItemLocalId* mem_pool,
+                     Span<ComponentItemLocalId>* allcell_allenvcell,
+                     Int32 max_nb_env)
+  {
+    // mise a jour des valeurs
+    CellToAllEnvCellConverter all_env_cell_converter(material_mng);
+    RunQueue& queue = material_mng->_internalApi()->runQueue();
+    auto command = makeCommand(queue);
+    //ComponentItemLocalId* mem_pool = m_mem_pool;
+    //Span<ComponentItemLocalId>* allcell_allenvcell = m_allcell_allenvcell;
+    //Int32 max_nb_env = m_current_max_nb_env;
+    command << RUNCOMMAND_ENUMERATE (CellLocalId, cid, material_mng->mesh()->allCells())
+    {
+      AllEnvCell all_env_cell = all_env_cell_converter[cid];
+      Int32 nb_env = all_env_cell.nbEnvironment();
+      if (nb_env != 0) {
+        Integer i = 0;
+        Integer offset = cid * max_nb_env;
+        for (EnvCell ev : all_env_cell.subEnvItems()) {
+          mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
+          ++i;
+        }
+        allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool + offset, nb_env);
+      }
+      else {
+        allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
+      }
+    };
   }
 } // namespace
 
@@ -117,8 +150,8 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
     Int32 cid = icell->itemLocalId();
     AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(cid)];
     Integer nb_env(all_env_cell.nbEnvironment());
-    if (nb_env) {
-      Integer i(0);
+    if (nb_env != 0) {
+      Integer i = 0;
       Integer offset(cid * _instance->m_current_max_nb_env);
       ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
         EnvCell ev = *ienvcell;
@@ -165,26 +198,8 @@ bruteForceUpdate()
       m_mem_pool = reinterpret_cast<ComponentItemLocalId*>(m_alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
       std::fill_n(m_mem_pool, pool_size, ComponentItemLocalId());
     }
-    // mise a jour des valeurs
-    CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
-    ENUMERATE_CELL (icell, m_material_mng->mesh()->allCells()) {
-      Int32 cid = icell->itemLocalId();
-      AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(cid)];
-      Integer nb_env(all_env_cell.nbEnvironment());
-      if (nb_env) {
-        Integer i(0);
-        Integer offset(cid * m_current_max_nb_env);
-        ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
-          EnvCell ev = *ienvcell;
-          m_mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
-          ++i;
-        }
-        m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(m_mem_pool + offset, nb_env);
-      }
-      else {
-        m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
-      }
-    }
+    // Mise a jour des valeurs
+    _updateValues(m_material_mng, m_mem_pool, m_allcell_allenvcell, m_current_max_nb_env);
   }
 }
 
