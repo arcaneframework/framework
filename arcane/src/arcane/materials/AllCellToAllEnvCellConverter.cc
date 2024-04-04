@@ -13,11 +13,12 @@
 
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
 
-#include <algorithm>
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemEnumerator.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
+
+#include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,7 +69,7 @@ maxNbEnvPerCell() const
   // A voir si c'est interessant...
   CellToAllEnvCellConverter allenvcell_converter(m_material_mng);
   Int32 max_nb_env(0);
-  ENUMERATE_CELL(icell, m_material_mng->mesh()->allCells()) {
+  ENUMERATE_CELL (icell, m_material_mng->mesh()->allCells()) {
     AllEnvCell all_env_cell = allenvcell_converter[icell];
     if (all_env_cell.nbEnvironment() > max_nb_env)
       max_nb_env = all_env_cell.nbEnvironment();
@@ -92,7 +93,7 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   _instance->m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
 
   _instance->m_allcell_allenvcell = reinterpret_cast<Span<ComponentItemLocalId>*>(
-    alloc->allocate(sizeof(Span<ComponentItemLocalId>) * _instance->m_size));
+  alloc->allocate(sizeof(Span<ComponentItemLocalId>) * _instance->m_size));
   // On force la valeur initiale sur tous les elmts car dans le ENUMERATE_CELL ci-dessous
   // il se peut que m_size (qui vaut maxLocalId()+1) soit different de allCells().size()
   std::fill_n(_instance->m_allcell_allenvcell, _instance->m_size, Span<ComponentItemLocalId>());
@@ -115,7 +116,7 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
         _instance->m_mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
         ++i;
       }
-      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(_instance->m_mem_pool+offset, nb_env);
+      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(_instance->m_mem_pool + offset, nb_env);
     }
   }
   return _instance;
@@ -166,11 +167,12 @@ bruteForceUpdate()
         Integer offset(cid * m_current_max_nb_env);
         ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
           EnvCell ev = *ienvcell;
-          m_mem_pool[offset+i] = ComponentItemLocalId(ev._varIndex());
+          m_mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
           ++i;
         }
-        m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(m_mem_pool+offset, nb_env);
-      } else {
+        m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(m_mem_pool + offset, nb_env);
+      }
+      else {
         m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
       }
     }
