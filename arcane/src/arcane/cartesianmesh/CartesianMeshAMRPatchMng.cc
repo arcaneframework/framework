@@ -2536,10 +2536,6 @@ createLevelDown()
   UniqueArray<Int64> parent_nodes_uids(m_num_mng->getNbNode());
   UniqueArray<Int64> parent_faces_uids(m_num_mng->getNbFace());
 
-  // On doit enregistrer les mailles parentes de chaque maille enfant pour mettre à jour les connectivités
-  // lors de la création des mailles.
-  UniqueArray<Cell> parent_cells;
-
   // Partie échange d'informations sur les mailles autour du patch
   // (pour remplacer les mailles fantômes).
   {
@@ -3064,6 +3060,100 @@ createLevelDown()
       }
     }
   }
+  else {
+    ARCANE_FATAL("Bad dimension");
+  }
+
+  // Nodes
+  {
+    debug() << "Nb new nodes in patch : " << total_nb_nodes;
+    {
+      UniqueArray<Int32> nodes_lid(total_nb_nodes);
+
+      // On crée les noeuds. On met les localIds des nouveaux noeuds au début du tableau.
+      m_mesh->modifier()->addNodes(nodes_infos, nodes_lid);
+
+      // On attribue les bons propriétaires aux noeuds.
+      ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(nodes_lid)) {
+        Node node = *inode;
+        node.mutableItemBase().setOwner(node_uid_to_owner[node.uniqueId()], my_rank);
+
+        if (node_uid_to_owner[node.uniqueId()] == my_rank) {
+          node.mutableItemBase().addFlags(ItemFlags::II_Own);
+        }
+      }
+    }
+
+    m_mesh->nodeFamily()->notifyItemsOwnerChanged();
+  }
+
+  // Faces
+  {
+    debug() << "Nb new faces in patch : " << total_nb_faces;
+    {
+      UniqueArray<Int32> faces_lid(total_nb_faces);
+
+      m_mesh->modifier()->addFaces(total_nb_faces, faces_infos, faces_lid);
+
+      // On attribue les bons propriétaires aux faces.
+      ENUMERATE_ (Face, iface, m_mesh->faceFamily()->view(faces_lid)) {
+        Face face = *iface;
+        face.mutableItemBase().setOwner(face_uid_to_owner[face.uniqueId()], my_rank);
+
+        if (face_uid_to_owner[face.uniqueId()] == my_rank) {
+          face.mutableItemBase().addFlags(ItemFlags::II_Own);
+        }
+      }
+    }
+
+    m_mesh->faceFamily()->notifyItemsOwnerChanged();
+  }
+
+  // Cells
+  {
+    debug() << "Nb new cells in patch : " << total_nb_cells;
+
+    UniqueArray<Int32> cells_lid(total_nb_cells);
+    m_mesh->modifier()->addCells(total_nb_cells, cells_infos, cells_lid);
+
+    // Itération sur les nouvelles mailles.
+    CellInfoListView cells(m_mesh->cellFamily());
+    for (Integer i = 0; i < total_nb_cells; ++i) {
+      Cell parent = cells[cells_lid[i]];
+
+      parent.mutableItemBase().setOwner(around_parent_cells_uid_to_owner[parent.uniqueId()], my_rank);
+
+      parent.mutableItemBase().addFlags(ItemFlags::II_JustAdded);
+      parent.mutableItemBase().addFlags(ItemFlags::II_Inactive);
+
+      if (around_parent_cells_uid_to_owner[parent.uniqueId()] == my_rank) {
+        parent.mutableItemBase().addFlags(ItemFlags::II_Own);
+      }
+
+      // TODO
+      //      if (parent_cells[i].itemBase().flags() & ItemFlags::II_Shared) {
+      //        parent.mutableItemBase().addFlags(ItemFlags::II_Shared);
+      //      }
+      //      m_mesh->modifier()->addParentCellToCell(parent, parent_cells[i]);
+      //      m_mesh->modifier()->addChildCellToCell(parent_cells[i], parent);
+    }
+
+    //    ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(0)) {
+    //      icell->mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
+    //    }
+    m_mesh->cellFamily()->notifyItemsOwnerChanged();
+  }
+
+  m_mesh->modifier()->endUpdate();
+
+  // On positionne les noeuds dans l'espace.
+  // TODO
+  //  for (Cell parent_cell : cell_to_refine_internals) {
+  //    for (Integer i = 0; i < parent_cell.nbHChildren(); ++i) {
+  //      Cell child = parent_cell.hChild(i);
+  //      m_num_mng->setNodeCoordinates(child);
+  //    }
+  //  }
 
   ARCANE_FATAL("Normal");
 }
