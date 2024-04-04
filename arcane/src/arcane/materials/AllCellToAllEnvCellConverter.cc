@@ -56,9 +56,6 @@ namespace
     CellToAllEnvCellConverter all_env_cell_converter(material_mng);
     RunQueue& queue = material_mng->_internalApi()->runQueue();
     auto command = makeCommand(queue);
-    //ComponentItemLocalId* mem_pool = m_mem_pool;
-    //Span<ComponentItemLocalId>* allcell_allenvcell = m_allcell_allenvcell;
-    //Int32 max_nb_env = m_current_max_nb_env;
     command << RUNCOMMAND_ENUMERATE (CellLocalId, cid, material_mng->mesh()->allCells())
     {
       AllEnvCell all_env_cell = all_env_cell_converter[cid];
