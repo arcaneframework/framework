@@ -28,6 +28,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace ArcaneTest
+{
+class MeshMaterialAcceleratorUnitTest;
+}
+
 namespace Arcane::Materials
 {
 
@@ -56,15 +61,23 @@ namespace Arcane::Materials
  */
 class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 {
- public:
+  friend class CellToAllEnvCellAccessor;
+  friend class CellToAllComponentCellEnumerator;
+  friend class MeshMaterialMng;
+  friend class AllEnvData;
+  friend ArcaneTest::MeshMaterialAcceleratorUnitTest;
+
+ private:
 
   AllCellToAllEnvCell() = default;
+
+ public:
 
   //! Copies interdites
   AllCellToAllEnvCell(const AllCellToAllEnvCell&) = delete;
   AllCellToAllEnvCell& operator=(const AllCellToAllEnvCell&) = delete;
 
- public:
+ private:
 
   /*!
    * \brief Fonction de création alternative. Il faut attendre que les données
