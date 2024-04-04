@@ -17,6 +17,7 @@
 #include "arcane/core/ItemEnumerator.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
+#include "arcane/accelerator/Reduce.h"
 
 #include <algorithm>
 
@@ -25,6 +26,25 @@
 
 namespace Arcane::Materials
 {
+namespace
+{
+  Int32 _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
+  {
+    CellToAllEnvCellConverter allenvcell_converter(material_mng);
+    RunQueue& queue = material_mng->_internalApi()->runQueue();
+    Accelerator::GenericReducer<Int32> reducer(queue);
+    auto local_ids = material_mng->mesh()->allCells().internal()->itemsLocalId();
+    Int32 nb_item = local_ids.size();
+    auto select_func = [=] ARCCORE_HOST_DEVICE(Int32 i) -> Int32 {
+      CellLocalId lid(local_ids[i]);
+      AllEnvCell all_env_cell = allenvcell_converter[lid];
+      return all_env_cell.nbEnvironment();
+    };
+    reducer.applyMaxWithIndex(nb_item, select_func);
+    Int32 max_nb_env = reducer.reducedValue();
+    return max_nb_env;
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,18 +83,7 @@ destroy(AllCellToAllEnvCell* instance)
 Int32 AllCellToAllEnvCell::
 maxNbEnvPerCell() const
 {
-  // On peut imaginer le faire sur l'accelerator aussi, avec :
-  // 1. runcmd_enum_cell pour remplir un array de max env de size max cell id
-  // 2. runcmd_loop sur le array avec un reducer max
-  // A voir si c'est interessant...
-  CellToAllEnvCellConverter allenvcell_converter(m_material_mng);
-  Int32 max_nb_env(0);
-  ENUMERATE_CELL (icell, m_material_mng->mesh()->allCells()) {
-    AllEnvCell all_env_cell = allenvcell_converter[icell];
-    if (all_env_cell.nbEnvironment() > max_nb_env)
-      max_nb_env = all_env_cell.nbEnvironment();
-  }
-  return max_nb_env;
+  return _computeMaxNbEnvPerCell(m_material_mng);
 }
 
 /*---------------------------------------------------------------------------*/
