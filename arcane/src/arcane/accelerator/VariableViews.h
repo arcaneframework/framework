@@ -20,6 +20,7 @@
 #include "arcane/core/SimdItem.h"
 #include "arcane/core/ItemLocalId.h"
 #include "arcane/core/VariableTypedef.h"
+#include "arcane/core/GroupIndexTable.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/ViewsCommon.h"
@@ -251,26 +252,29 @@ class ItemPartialVariableScalarOutViewT
 /*!
  * \brief Vue en lecture sur une variable scalaire du maillage.
  */
-template <typename _ItemType, typename _DataType, typename _IndexerType, bool _HasSimd>
-class ItemVariableScalarInViewBaseT
+template <typename _ItemType, typename _DataType>
+class ItemVariableScalarInViewT
 : public VariableViewBase
 {
  public:
 
   using ItemType = _ItemType;
   using DataType = _DataType;
-  using IndexerType = _IndexerType;
+  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
 
  public:
 
-  ItemVariableScalarInViewBaseT(const ViewBuildInfo& command, IVariable* var, SmallSpan<const DataType> v)
+  ItemVariableScalarInViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan<const DataType> v)
   : VariableViewBase(command, var)
   , m_values(v)
-  {}
+  {
+  }
+
+ public:
 
   //! Opérateur d'accès vectoriel avec indirection.
   typename SimdTypeTraits<DataType>::SimdType
-  operator[](SimdItemIndexT<ItemType> simd_item) const requires(_HasSimd)
+  operator[](SimdItemIndexT<ItemType> simd_item) const
   {
     typedef typename SimdTypeTraits<DataType>::SimdType SimdType;
     return SimdType(m_values.data(), simd_item.simdLocalIds());
@@ -278,7 +282,7 @@ class ItemVariableScalarInViewBaseT
 
   //! Opérateur d'accès vectoriel avec indirection.
   typename SimdTypeTraits<DataType>::SimdType
-  operator[](SimdItemDirectIndexT<ItemType> simd_item) const requires(_HasSimd)
+  operator[](SimdItemDirectIndexT<ItemType> simd_item) const
   {
     typedef typename SimdTypeTraits<DataType>::SimdType SimdType;
     return SimdType(m_values.data() + simd_item.baseLocalId());
@@ -310,75 +314,181 @@ class ItemVariableScalarInViewBaseT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue en lecture sur une variable scalaire du maillage.
- */
-template <typename _ItemType, typename _DataType>
-class ItemVariableScalarInViewT
-: public ItemVariableScalarInViewBaseT<_ItemType, _DataType, typename ItemTraitsT<_ItemType>::LocalIdType, true>
-{
- private:
-
-  using BaseClass = ItemVariableScalarInViewBaseT<_ItemType, _DataType, typename ItemTraitsT<_ItemType>::LocalIdType, true>;
-
- public:
-
-  using ItemType = _ItemType;
-  using DataType = _DataType;
-
- public:
-
-  ItemVariableScalarInViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan<const DataType> v)
-  : BaseClass(command, var, v)
-  {}
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Vue en lecture sur une variable partielle scalaire du maillage.
  */
 template <typename _ItemType, typename _DataType>
 class ItemPartialVariableScalarInViewT
-: public ItemVariableScalarInViewBaseT<_ItemType, _DataType, ItemEnumeratorIndexT<_ItemType>, false>
+: public VariableViewBase
 {
- private:
-
-  using BaseClass = ItemVariableScalarInViewBaseT<_ItemType, _DataType, ItemEnumeratorIndexT<_ItemType>, false>;
-
  public:
 
   using ItemType = _ItemType;
   using DataType = _DataType;
+  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
+  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
 
  public:
 
-  ItemPartialVariableScalarInViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan<const DataType> v)
-  : BaseClass(command, var, v)
+  ItemPartialVariableScalarInViewT(const ViewBuildInfo& command, IVariable* var,
+                                   SmallSpan<const DataType> v, GroupIndexTableView table_view)
+  : VariableViewBase(command, var)
+  , m_values(v)
+  , m_table_view(table_view)
   {}
+
+ public:
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& operator[](IndexerType item) const
+  {
+    return m_values[item.asInt32()];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& operator()(IndexerType item) const
+  {
+    return m_values[item.asInt32()];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& value(IndexerType item) const
+  {
+    return m_values[item.asInt32()];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& operator[](ItemLocalIdType lid) const
+  {
+    return m_values[_toIndex(lid)];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& operator()(ItemLocalIdType lid) const
+  {
+    return m_values[_toIndex(lid)];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& value(ItemLocalIdType lid) const
+  {
+    return m_values[_toIndex(lid)];
+  }
+
+ private:
+
+  ARCCORE_HOST_DEVICE Int32 _toIndex(ItemLocalIdType lid) const
+  {
+    return m_table_view[lid];
+  }
+
+ private:
+
+  SmallSpan<const DataType> m_values;
+  GroupIndexTableView m_table_view;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture sur une variable partielle tableau du maillage.
+ */
+template <typename _ItemType, typename _DataType>
+class ItemPartialVariableArrayInViewT
+: public VariableViewBase
+{
+ public:
+
+  using ItemType = _ItemType;
+  using DataType = _DataType;
+  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
+  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
+
+ public:
+
+  ItemPartialVariableArrayInViewT(const ViewBuildInfo& command, IVariable* var,
+                                  SmallSpan2<const DataType> v, GroupIndexTableView table_view)
+  : VariableViewBase(command, var)
+  , m_values(v)
+  , m_table_view(table_view)
+  {}
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const SmallSpan<const DataType> operator[](IndexerType i) const
+  {
+    return this->m_values[i.asInt32()];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const SmallSpan<const DataType> operator[](ItemLocalIdType lid) const
+  {
+    return m_values[_toIndex(lid)];
+  }
+
+  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& operator()(IndexerType item, Int32 i) const
+  {
+    return m_values[item.asInt32()][i];
+  }
+
+  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& operator()(ItemLocalIdType lid, Int32 i) const
+  {
+    return m_values[_toIndex(lid)][i];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const SmallSpan<const DataType> value(IndexerType i) const
+  {
+    return m_values[i.asInt32()];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const SmallSpan<const DataType> value(ItemLocalIdType lid) const
+  {
+    return m_values[_toIndex(lid)];
+  }
+
+ protected:
+
+  ARCCORE_HOST_DEVICE Int32 _toIndex(ItemLocalIdType lid) const
+  {
+    return m_table_view[lid];
+  }
+
+ private:
+
+  SmallSpan2<const DataType> m_values;
+  GroupIndexTableView m_table_view;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Vue en lecture sur une variable tableau du maillage.
  */
-template <typename ItemType, typename DataType, typename _Indexer>
-class ItemVariableArrayInViewBaseT
+template <typename _ItemType, typename _DataType>
+class ItemVariableArrayInViewT
 : public VariableViewBase
 {
  private:
 
-  using IndexerType = _Indexer;
+  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
 
  public:
 
-  ItemVariableArrayInViewBaseT(const ViewBuildInfo& command, IVariable* var, SmallSpan2<const DataType> v)
+  using DataType = _DataType;
+
+ public:
+
+  ItemVariableArrayInViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan2<const DataType> v)
   : VariableViewBase(command, var)
   , m_values(v)
   {}
+
+ public:
 
   //! Opérateur d'accès pour l'entité \a item
   ARCCORE_HOST_DEVICE const SmallSpan<const DataType> operator[](IndexerType i) const
@@ -401,54 +511,6 @@ class ItemVariableArrayInViewBaseT
  private:
 
   SmallSpan2<const DataType> m_values;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue en lecture sur une variable tableau du maillage.
- */
-template <typename _ItemType, typename _DataType>
-class ItemPartialVariableArrayInViewT
-: public ItemVariableArrayInViewBaseT<_ItemType, _DataType, ItemEnumeratorIndexT<_ItemType>>
-{
- private:
-
-  using BaseClass = ItemVariableArrayInViewBaseT<_ItemType, _DataType, ItemEnumeratorIndexT<_ItemType>>;
-
- public:
-
-  using DataType = _DataType;
-
- public:
-
-  ItemPartialVariableArrayInViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan2<const DataType> v)
-  : BaseClass(command, var, v)
-  {}
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue en lecture sur une variable tableau du maillage.
- */
-template <typename _ItemType, typename _DataType>
-class ItemVariableArrayInViewT
-: public ItemVariableArrayInViewBaseT<_ItemType, _DataType, typename ItemTraitsT<_ItemType>::LocalIdType>
-{
- private:
-
-  using BaseClass = ItemVariableArrayInViewBaseT<_ItemType, _DataType, typename ItemTraitsT<_ItemType>::LocalIdType>;
-
- public:
-
-  using DataType = _DataType;
-
- public:
-
-  ItemVariableArrayInViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan2<const DataType> v)
-  : BaseClass(command, var, v)
-  {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -682,7 +744,8 @@ class ItemPartialVariableRealNScalarOutViewT
 
  public:
 
-  ItemPartialVariableRealNScalarOutViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan<DataType> v)
+  ItemPartialVariableRealNScalarOutViewT(const ViewBuildInfo& command, IVariable* var,
+                                         SmallSpan<DataType> v)
   : BaseClass(command, var, v)
   {}
 };
@@ -862,7 +925,7 @@ viewInOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, D
 template <typename ItemType, typename DataType> auto
 viewIn(const ViewBuildInfo& command, const MeshPartialVariableScalarRefT<ItemType, DataType>& var)
 {
-  return ItemPartialVariableScalarInViewT<ItemType, DataType>(command, var.variable(), var.asArray());
+  return ItemPartialVariableScalarInViewT<ItemType, DataType>(command, var.variable(), var.asArray(), var.tableView());
 }
 
 /*!
@@ -880,7 +943,7 @@ viewIn(const ViewBuildInfo& command, const MeshVariableScalarRefT<ItemType, Data
 template <typename ItemType, typename DataType> auto
 viewIn(const ViewBuildInfo& command, const MeshPartialVariableArrayRefT<ItemType, DataType>& var)
 {
-  return ItemPartialVariableArrayInViewT<ItemType, DataType>(command, var.variable(), var.asArray());
+  return ItemPartialVariableArrayInViewT<ItemType, DataType>(command, var.variable(), var.asArray(), var.tableView());
 }
 
 /*!
