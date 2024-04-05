@@ -253,10 +253,21 @@ _executeTest1()
       out_partial_cell_array2[iter_index].copy(in_cell_array1[cell_lid]);
       out_partial_cell_array2[iter_index][0] = in_partial_cell_array1[cell_lid][1];
       Real3 xyz(in_partial_cell1_real3[iter_index].y, in_partial_cell1_real3[iter_index].z, in_partial_cell1_real3[iter_index].x);
-      if ((vi.index() % 2) == 0) {
+      Int32 modulo = vi.index() % 4;
+      if (modulo == 3) {
         out_partial_cell_array2[iter_index][1] = in_partial_cell1[iter_index];
         out_partial_cell2[iter_index] = in_partial_cell1[iter_index];
         out_partial_cell2_real3[iter_index] = xyz;
+      }
+      else if (modulo == 2) {
+        inout_partial_cell_array2[cell_lid][1] = in_partial_cell1[cell_lid];
+        inout_partial_cell2[cell_lid] = in_partial_cell1[iter_index];
+        inout_partial_cell2_real3[cell_lid] = xyz;
+      }
+      else if (modulo == 1) {
+        out_partial_cell_array2[cell_lid][1] = in_partial_cell1[iter_index];
+        out_partial_cell2[cell_lid] = in_partial_cell1[iter_index];
+        out_partial_cell2_real3[cell_lid] = xyz;
       }
       else {
         inout_partial_cell_array2[iter_index][1] = in_partial_cell1[cell_lid];
@@ -843,7 +854,7 @@ _executeTestGroupIndexTable()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace ArcaneTest
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
