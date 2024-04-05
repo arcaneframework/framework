@@ -507,62 +507,40 @@ getCellUidsAround(ArrayView<Int64> uid, Int64 cell_uid, Int32 level)
 }
 
 void CartesianMeshNumberingMng::
-setNodeCoordinates(Cell child_cell)
+setChildNodeCoordinates(Cell child_cell)
 {
-  if (!(child_cell.itemBase().flags() & ItemFlags::II_JustAdded)) {
-    ARCANE_FATAL("Cell not II_JustAdded");
-  }
-  Cell parent_cell = child_cell.hParent();
-
-  VariableNodeReal3& nodes_coords = m_mesh->nodesCoordinates();
-
-  Real3 pos(
-    Real(uidToCoordX(child_cell) % m_pattern),
-    Real(uidToCoordY(child_cell) % m_pattern),
-    (m_mesh->dimension() == 2 ? 0 : Real(uidToCoordZ(child_cell) % m_pattern))
-  );
-
-  Real3 size_child_cell;
-
-  if(m_mesh->dimension() == 2) {
-    size_child_cell = nodes_coords[parent_cell.node(2)] - nodes_coords[parent_cell.node(0)];
-  }
-  else{
-    size_child_cell = nodes_coords[parent_cell.node(6)] - nodes_coords[parent_cell.node(0)];
-  }
-  size_child_cell /= m_pattern;
-
-  Real3 origin_parent_cell(nodes_coords[parent_cell.node(0)]);
-  Real3 origin_child_cell(origin_parent_cell + (size_child_cell * pos));
-
-  nodes_coords[child_cell.node(0)] = origin_child_cell;
-
-  nodes_coords[child_cell.node(1)] = origin_child_cell;
-  nodes_coords[child_cell.node(1)].x += size_child_cell.x;
-
-  nodes_coords[child_cell.node(2)] = origin_child_cell;
-  nodes_coords[child_cell.node(2)].x += size_child_cell.x;
-  nodes_coords[child_cell.node(2)].y += size_child_cell.y;
-
-  nodes_coords[child_cell.node(3)] = origin_child_cell;
-  nodes_coords[child_cell.node(3)].y += size_child_cell.y;
-
-  if(m_mesh->dimension() == 3) {
-    nodes_coords[child_cell.node(4)] = origin_child_cell;
-    nodes_coords[child_cell.node(4)].z += size_child_cell.z;
-
-    nodes_coords[child_cell.node(5)] = origin_child_cell;
-    nodes_coords[child_cell.node(5)].x += size_child_cell.x;
-    nodes_coords[child_cell.node(5)].z += size_child_cell.z;
-
-    nodes_coords[child_cell.node(6)] = origin_child_cell + size_child_cell;
-
-    nodes_coords[child_cell.node(7)] = origin_child_cell;
-    nodes_coords[child_cell.node(7)].y += size_child_cell.y;
-    nodes_coords[child_cell.node(7)].z += size_child_cell.z;
-  }
+  ARCANE_NOT_YET_IMPLEMENTED("todo");
 }
 
+void CartesianMeshNumberingMng::
+setParentNodeCoordinates(Cell parent_cell)
+{
+  ARCANE_NOT_YET_IMPLEMENTED("todo");
+}
+
+Int64 CartesianMeshNumberingMng::
+getParentCellUidOfCell(Cell cell)
+{
+  ARCANE_NOT_YET_IMPLEMENTED("todo");
+}
+
+Int64 CartesianMeshNumberingMng::
+getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent)
+{
+  ARCANE_NOT_YET_IMPLEMENTED("todo");
+}
+
+Int64 CartesianMeshNumberingMng::
+getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent, Int64 child_coord_z_in_parent)
+{
+  ARCANE_NOT_YET_IMPLEMENTED("todo");
+}
+
+Int64 CartesianMeshNumberingMng::
+getChildCellUidOfCell(Cell cell, Int64 child_index_in_parent)
+{
+  ARCANE_NOT_YET_IMPLEMENTED("todo");
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

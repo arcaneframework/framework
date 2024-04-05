@@ -39,6 +39,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   virtual void prepareLevel(Int32 level) =0;
 
+  virtual void updateFirstLevel() = 0;
+
   /*!
    * @brief Méthode permettant de récupérer le premier unique id utilisé par les mailles d'un niveau.
    * L'appel de cette méthode avec level et level+1 permet de récupérer l'intervalle des uniqueids
@@ -317,9 +319,40 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    *
    * @param child_cell La maille enfant.
    */
-  virtual void setNodeCoordinates(Cell child_cell) =0;
+  virtual void setChildNodeCoordinates(Cell child_cell) = 0;
 
-  virtual Int64 getParentCellUidOfCell(Cell cell) =0;
+  /*!
+   * @brief Méthode permettant de définir les coordonnées spatiales des nodes d'une maille parent.
+   * Cette méthode doit être appelée après l'appel à endUpdate().
+   *
+   * @param parent_cell La maille parent.
+   */
+  virtual void setParentNodeCoordinates(Cell parent_cell) = 0;
+
+  /*!
+   * \brief TODO
+   * \param cell
+   * \return
+   */
+  virtual Int64 getParentCellUidOfCell(Cell cell) = 0;
+
+  /*!
+   * \brief TODO
+   * \param cell
+   * \param child_index
+   * \return
+   */
+  virtual Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent) = 0;
+
+  /*!
+   * \brief TODO
+   * \param cell
+   * \param child_index
+   * \return
+   */
+  virtual Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent, Int64 child_coord_z_in_parent) = 0;
+
+  virtual Int64 getChildCellUidOfCell(Cell cell, Int64 child_index_in_parent) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

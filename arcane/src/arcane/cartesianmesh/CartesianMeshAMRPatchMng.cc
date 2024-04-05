@@ -13,6 +13,7 @@
 
 #include "CartesianMeshAMRPatchMng.h"
 
+#include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/IParallelMng.h"
@@ -2467,7 +2468,7 @@ refine()
   for(Cell parent_cell : cell_to_refine_internals){
     for(Integer i = 0; i < parent_cell.nbHChildren(); ++i){
       Cell child = parent_cell.hChild(i);
-      m_num_mng->setNodeCoordinates(child);
+      m_num_mng->setChildNodeCoordinates(child);
     }
   }
 
@@ -2499,11 +2500,28 @@ createLevelDown()
   UniqueArray<Int64> cell_uid_to_create;
 
   std::unordered_map<Int64, Int32> around_parent_cells_uid_to_owner;
+  std::unordered_map<Int64, UniqueArray<Cell>> parent_to_child_cells;
 
   std::unordered_map<Int64, Int32> node_uid_to_owner;
   std::unordered_map<Int64, Int32> face_uid_to_owner;
 
   m_num_mng->prepareLevel(-1);
+
+  // CartesianMeshCoarsening2::_doDoubleGhostLayers()
+  IMeshModifier* mesh_modifier = m_mesh->modifier();
+  IGhostLayerMng* gm = m_mesh->ghostLayerMng();
+  // Il faut au moins utiliser la version 3 pour pouvoir supporter
+  // plusieurs couches de mailles fantômes
+  Int32 version = gm->builderVersion();
+  if (version < 3)
+    gm->setBuilderVersion(3);
+  Int32 nb_ghost_layer = gm->nbGhostLayer();
+  gm->setNbGhostLayer(nb_ghost_layer * 2);
+  mesh_modifier->setDynamic(true);
+  mesh_modifier->updateGhostLayers();
+  // Remet le nombre initial de couches de mailles fantômes
+  gm->setNbGhostLayer(nb_ghost_layer);
+  // CartesianMeshCoarsening2::_doDoubleGhostLayers()
 
   ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(0)) {
     Cell cell = *icell;
@@ -2519,9 +2537,13 @@ createLevelDown()
         ARCANE_FATAL("Pb owner");
       }
     }
+    parent_to_child_cells[parent_uid].add(cell);
   }
 
   info() << cell_uid_to_create;
+  for (const auto& [key, value] : parent_to_child_cells) {
+    info() << "Parent : " << key << " -- Children : " << value;
+  }
 
   UniqueArray<Int64> cells_infos;
   UniqueArray<Int64> faces_infos;
@@ -3110,10 +3132,10 @@ createLevelDown()
   }
 
   // Cells
+  UniqueArray<Int32> cells_lid(total_nb_cells);
   {
     debug() << "Nb new cells in patch : " << total_nb_cells;
 
-    UniqueArray<Int32> cells_lid(total_nb_cells);
     m_mesh->modifier()->addCells(total_nb_cells, cells_infos, cells_lid);
 
     // Itération sur les nouvelles mailles.
@@ -3124,36 +3146,38 @@ createLevelDown()
       parent.mutableItemBase().setOwner(around_parent_cells_uid_to_owner[parent.uniqueId()], my_rank);
 
       parent.mutableItemBase().addFlags(ItemFlags::II_JustAdded);
+      parent.mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
       parent.mutableItemBase().addFlags(ItemFlags::II_Inactive);
 
       if (around_parent_cells_uid_to_owner[parent.uniqueId()] == my_rank) {
         parent.mutableItemBase().addFlags(ItemFlags::II_Own);
       }
+      else {
+        parent.mutableItemBase().addFlags(ItemFlags::II_Shared);
+      }
 
-      // TODO
-      //      if (parent_cells[i].itemBase().flags() & ItemFlags::II_Shared) {
-      //        parent.mutableItemBase().addFlags(ItemFlags::II_Shared);
-      //      }
-      //      m_mesh->modifier()->addParentCellToCell(parent, parent_cells[i]);
-      //      m_mesh->modifier()->addChildCellToCell(parent_cells[i], parent);
+      for (Cell child : parent_to_child_cells[parent.uniqueId()]) {
+        m_mesh->modifier()->addParentCellToCell(child, parent);
+        m_mesh->modifier()->addChildCellToCell(parent, child);
+      }
     }
-
-    //    ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(0)) {
-    //      icell->mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
-    //    }
     m_mesh->cellFamily()->notifyItemsOwnerChanged();
   }
 
   m_mesh->modifier()->endUpdate();
+  m_num_mng->updateFirstLevel();
+
+  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+    info() << *icell << icell->level();
+  }
 
   // On positionne les noeuds dans l'espace.
-  // TODO
-  //  for (Cell parent_cell : cell_to_refine_internals) {
-  //    for (Integer i = 0; i < parent_cell.nbHChildren(); ++i) {
-  //      Cell child = parent_cell.hChild(i);
-  //      m_num_mng->setNodeCoordinates(child);
-  //    }
-  //  }
+  info() << "cells_lid : " << cells_lid.size();
+  CellInfoListView cells(m_mesh->cellFamily());
+  for (Integer i = 0; i < total_nb_cells; ++i) {
+    Cell parent = cells[cells_lid[i]];
+    m_num_mng->setParentNodeCoordinates(parent);
+  }
 
   ARCANE_FATAL("Normal");
 }

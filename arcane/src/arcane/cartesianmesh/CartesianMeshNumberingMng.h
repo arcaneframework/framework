@@ -41,7 +41,9 @@ class CartesianMeshNumberingMng
   CartesianMeshNumberingMng(IMesh* mesh);
 
  public:
-  void prepareLevel(Int32 level) override{}
+
+  void prepareLevel(Int32 level) override{};
+  void updateFirstLevel() override{};
 
   Int64 getFirstCellUidLevel(Integer level) override;
   Int64 getFirstNodeUidLevel(Integer level) override;
@@ -82,10 +84,14 @@ class CartesianMeshNumberingMng
   void getCellUidsAround(ArrayView<Int64> uid, Int64 cell_uid, Int32 level) override;
   void getCellUidsAround(ArrayView<Int64> uid, Cell cell) override;
 
-  void setNodeCoordinates(Cell child_cell) override;
+  void setChildNodeCoordinates(Cell child_cell) override;
+  void setParentNodeCoordinates(Cell parent_cell) override;
 
-  Int64 getParentCellUidOfCell(Cell cell) override{/*TODO*/};
+  Int64 getParentCellUidOfCell(Cell cell) override;
+  Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent) override;
+  Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent, Int64 child_coord_z_in_parent) override;
 
+  Int64 getChildCellUidOfCell(Cell cell, Int64 child_index_in_parent) override;
 
  private:
   IMesh* m_mesh;
