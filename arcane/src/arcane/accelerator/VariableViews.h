@@ -207,19 +207,68 @@ class ItemVariableScalarOutViewBaseT
  */
 template <typename _ItemType, typename _Accessor>
 class ItemVariableScalarOutViewT
-: public ItemVariableScalarOutViewBaseT<_ItemType, _Accessor, typename ItemTraitsT<_ItemType>::LocalIdType, true>
+: public VariableViewBase
 {
-  using BaseClass = ItemVariableScalarOutViewBaseT<_ItemType, _Accessor, typename ItemTraitsT<_ItemType>::LocalIdType, true>;
-
  public:
 
   using DataType = typename _Accessor::ValueType;
+  using Accessor = _Accessor;
+  using ItemType = _ItemType;
+  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using DataTypeReturnReference = DataType&;
 
  public:
 
   ItemVariableScalarOutViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan<DataType> v)
-  : BaseClass(command, var, v)
+  : VariableViewBase(command, var)
+  , m_values(v.data())
+  , m_size(v.size())
   {}
+
+  //! Opérateur d'accès vectoriel avec indirection.
+  SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const
+  {
+    return SimdSetter<DataType>(m_values, simd_item.simdLocalIds());
+  }
+
+  //! Opérateur d'accès vectoriel sans indirection.
+  SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const
+  {
+    return SimdDirectSetter<DataType>(m_values + simd_item.baseLocalId());
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator[](IndexerType item) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    return Accessor(this->m_values + item.asInt32());
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator()(IndexerType item) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    return Accessor(this->m_values + item.asInt32());
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor value(IndexerType item) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    return Accessor(this->m_values + item.asInt32());
+  }
+
+  //! Positionne la valeur pour l'entité \a item à \a v
+  ARCCORE_HOST_DEVICE void setValue(IndexerType item, const DataType& v) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    this->m_values[item.asInt32()] = v;
+  }
+
+ private:
+
+  DataType* m_values;
+  Int32 m_size;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -229,19 +278,101 @@ class ItemVariableScalarOutViewT
  */
 template <typename _ItemType, typename _Accessor>
 class ItemPartialVariableScalarOutViewT
-: public ItemVariableScalarOutViewBaseT<_ItemType, _Accessor, ItemEnumeratorIndexT<_ItemType>, false>
+: public VariableViewBase
 {
-  using BaseClass = ItemVariableScalarOutViewBaseT<_ItemType, _Accessor, ItemEnumeratorIndexT<_ItemType>, false>;
-
  public:
 
   using DataType = typename _Accessor::ValueType;
+  using Accessor = _Accessor;
+  using ItemType = _ItemType;
+  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
+  using DataTypeReturnReference = DataType&;
+  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
 
  public:
 
-  ItemPartialVariableScalarOutViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan<DataType> v)
-  : BaseClass(command, var, v)
+  ItemPartialVariableScalarOutViewT(const ViewBuildInfo& command, IVariable* var,
+                                    SmallSpan<DataType> v, GroupIndexTableView table_view)
+  : VariableViewBase(command, var)
+  , m_values(v.data())
+  , m_size(v.size())
+  , m_table_view(table_view)
   {}
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator[](IndexerType item) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    return Accessor(this->m_values + item.asInt32());
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator()(IndexerType item) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    return Accessor(this->m_values + item.asInt32());
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor value(IndexerType item) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    return Accessor(this->m_values + item.asInt32());
+  }
+
+  //! Positionne la valeur pour l'entité \a item à \a v
+  ARCCORE_HOST_DEVICE void setValue(IndexerType item, const DataType& v) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    this->m_values[item.asInt32()] = v;
+  }
+
+ public:
+
+  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  ARCCORE_HOST_DEVICE Accessor operator[](ItemLocalIdType lid) const
+  {
+    Int32 index = _toIndex(lid);
+    ARCANE_CHECK_AT(index, m_size);
+    return Accessor(m_values + index);
+  }
+
+  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  ARCCORE_HOST_DEVICE Accessor operator()(ItemLocalIdType lid) const
+  {
+    Int32 index = _toIndex(lid);
+    ARCANE_CHECK_AT(index, m_size);
+    return Accessor(m_values + index);
+  }
+
+  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  ARCCORE_HOST_DEVICE Accessor value(ItemLocalIdType lid) const
+  {
+    Int32 index = _toIndex(lid);
+    ARCANE_CHECK_AT(index, m_size);
+    return Accessor(m_values + index);
+  }
+
+  //! Positionne la valeur pour l'entité de numéro local \a lid à \a v
+  ARCCORE_HOST_DEVICE void setValue(ItemLocalIdType lid, const DataType& v) const
+  {
+    Int32 index = _toIndex(lid);
+    ARCANE_CHECK_AT(index, m_size);
+    this->m_values[index] = v;
+  }
+
+ private:
+
+  ARCCORE_HOST_DEVICE Int32 _toIndex(ItemLocalIdType lid) const
+  {
+    return m_table_view[lid];
+  }
+
+ private:
+
+  DataType* m_values;
+  Int32 m_size;
+  GroupIndexTableView m_table_view;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -570,18 +701,44 @@ class ItemVariableArrayOutViewBaseT
  */
 template <typename _ItemType, typename _Accessor>
 class ItemVariableArrayOutViewT
-: public ItemVariableArrayOutViewBaseT<_ItemType, _Accessor, typename ItemTraitsT<_ItemType>::LocalIdType>
+: public VariableViewBase
 {
- private:
+ public:
 
-  using DataType = typename _Accessor::ValueType;
-  using BaseClass = ItemVariableArrayOutViewBaseT<_ItemType, _Accessor, typename ItemTraitsT<_ItemType>::LocalIdType>;
+  using ItemType = _ItemType;
+  using Accessor = _Accessor;
+  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using DataType = typename Accessor::ValueType;
+  using DataTypeReturnType = typename Accessor::DataTypeReturnReference;
 
  public:
 
   ItemVariableArrayOutViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan2<DataType> v)
-  : BaseClass(command, var, v)
+  : VariableViewBase(command, var)
+  , m_values(v)
   {}
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE DataTypeReturnType operator[](IndexerType item) const
+  {
+    return DataTypeReturnType(this->m_values[item.asInt32()]);
+  }
+
+  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  ARCCORE_HOST_DEVICE DataType& operator()(IndexerType item, Int32 i) const
+  {
+    return this->m_values[item.asInt32()][i];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE SmallSpan<DataType> value(IndexerType item) const
+  {
+    return DataTypeReturnType(this->m_values[item.asInt32()]);
+  }
+
+ private:
+
+  SmallSpan2<DataType> m_values;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -591,18 +748,77 @@ class ItemVariableArrayOutViewT
  */
 template <typename _ItemType, typename _Accessor>
 class ItemPartialVariableArrayOutViewT
-: public ItemVariableArrayOutViewBaseT<_ItemType, _Accessor, ItemEnumeratorIndexT<_ItemType>>
+: public VariableViewBase
 {
- private:
+ public:
 
-  using DataType = typename _Accessor::ValueType;
-  using BaseClass = ItemVariableArrayOutViewBaseT<_ItemType, _Accessor, ItemEnumeratorIndexT<_ItemType>>;
+  using ItemType = _ItemType;
+  using Accessor = _Accessor;
+  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
+  using DataType = typename Accessor::ValueType;
+  using DataTypeReturnType = typename Accessor::DataTypeReturnReference;
+  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
 
  public:
 
-  ItemPartialVariableArrayOutViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan2<DataType> v)
-  : BaseClass(command, var, v)
+  ItemPartialVariableArrayOutViewT(const ViewBuildInfo& command, IVariable* var,
+                                   SmallSpan2<DataType> v, GroupIndexTableView table_view)
+  : VariableViewBase(command, var)
+  , m_values(v)
+  , m_table_view(table_view)
   {}
+
+ public:
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE DataTypeReturnType operator[](IndexerType item) const
+  {
+    return DataTypeReturnType(m_values[item.asInt32()]);
+  }
+
+  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  ARCCORE_HOST_DEVICE DataType& operator()(IndexerType item, Int32 i) const
+  {
+    return m_values[item.asInt32()][i];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE SmallSpan<DataType> value(IndexerType item) const
+  {
+    return DataTypeReturnType(m_values[item.asInt32()]);
+  }
+
+ public:
+
+  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  ARCCORE_HOST_DEVICE DataTypeReturnType operator[](ItemLocalIdType lid) const
+  {
+    return DataTypeReturnType(m_values[_toIndex(lid)]);
+  }
+
+  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  ARCCORE_HOST_DEVICE DataType& operator()(ItemLocalIdType lid, Int32 i) const
+  {
+    return m_values[_toIndex(lid)][i];
+  }
+
+  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  ARCCORE_HOST_DEVICE SmallSpan<DataType> value(ItemLocalIdType lid) const
+  {
+    return DataTypeReturnType(m_values[_toIndex(lid)]);
+  }
+
+ private:
+
+  ARCCORE_HOST_DEVICE Int32 _toIndex(ItemLocalIdType lid) const
+  {
+    return m_table_view[lid];
+  }
+
+ private:
+
+  SmallSpan2<DataType> m_values;
+  GroupIndexTableView m_table_view;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -626,50 +842,113 @@ class ItemPartialVariableArrayOutViewT
  *
  * \endcode
  */
-template <typename _ItemType, typename _Accessor, typename _IndexerType, bool _HasSimd>
-class ItemVariableRealNScalarOutViewBaseT
+template <typename _ItemType, typename _Accessor>
+class ItemVariableRealNScalarOutViewT
 : public VariableViewBase
 {
  public:
 
   using ItemType = _ItemType;
   using Accessor = _Accessor;
-  using IndexerType = _IndexerType;
+  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
   using DataType = typename _Accessor::ValueType;
   using DataTypeReturnReference = DataType&;
 
  public:
 
   //! Construit la vue
-  ItemVariableRealNScalarOutViewBaseT(const ViewBuildInfo& command, IVariable* var, SmallSpan<DataType> v)
+  ItemVariableRealNScalarOutViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan<DataType> v)
   : VariableViewBase(command, var)
   , m_values(v.data())
   , m_size(v.size())
   {}
 
   //! Opérateur d'accès vectoriel avec indirection.
-  SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const requires(_HasSimd)
+  SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const
   {
     return SimdSetter<DataType>(m_values, simd_item.simdLocalIds());
   }
 
   //! Opérateur d'accès vectoriel avec indirection.
-  SimdSetter<DataType> operator()(SimdItemIndexT<ItemType> simd_item) const requires(_HasSimd)
+  SimdSetter<DataType> operator()(SimdItemIndexT<ItemType> simd_item) const
   {
     return SimdSetter<DataType>(m_values, simd_item.simdLocalIds());
   }
 
   //! Opérateur d'accès vectoriel sans indirection.
-  SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const requires(_HasSimd)
+  SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const
   {
     return SimdDirectSetter<DataType>(m_values + simd_item.baseLocalId());
   }
 
   //! Opérateur d'accès vectoriel sans indirection.
-  SimdDirectSetter<DataType> operator()(SimdItemDirectIndexT<ItemType> simd_item) const requires(_HasSimd)
+  SimdDirectSetter<DataType> operator()(SimdItemDirectIndexT<ItemType> simd_item) const
   {
     return SimdDirectSetter<DataType>(m_values + simd_item.baseLocalId());
   }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator[](IndexerType item) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    return Accessor(m_values + item.asInt32());
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator()(IndexerType item) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    return Accessor(m_values + item.asInt32());
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor value(IndexerType item) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    return Accessor(m_values + item.asInt32());
+  }
+
+  //! Positionne la valeur pour l'entité \a item à \a v
+  ARCCORE_HOST_DEVICE void setValue(IndexerType item, const DataType& v) const
+  {
+    ARCANE_CHECK_AT(item.asInt32(), m_size);
+    this->m_values[item.asInt32()] = v;
+  }
+
+ private:
+
+  DataType* m_values;
+  Int32 m_size;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename _ItemType, typename _Accessor>
+class ItemPartialVariableRealNScalarOutViewT
+: public VariableViewBase
+{
+ public:
+
+  using ItemType = _ItemType;
+  using Accessor = _Accessor;
+  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
+  using DataType = typename _Accessor::ValueType;
+  using DataTypeReturnReference = DataType&;
+  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
+
+ public:
+
+  //! Construit la vue
+  ItemPartialVariableRealNScalarOutViewT(const ViewBuildInfo& command, IVariable* var,
+                                         SmallSpan<DataType> v, GroupIndexTableView table_view)
+  : VariableViewBase(command, var)
+  , m_values(v.data())
+  , m_size(v.size())
+  , m_table_view(table_view)
+  {}
+
+ public:
 
   //! Opérateur d'accès pour l'entité \a item
   ARCCORE_HOST_DEVICE Accessor operator[](IndexerType item) const
@@ -699,55 +978,52 @@ class ItemVariableRealNScalarOutViewBaseT
     this->m_values[item.asInt32()] = v;
   }
 
+ public:
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator[](ItemLocalIdType lid) const
+  {
+    Int32 index = _toIndex(lid);
+    ARCANE_CHECK_AT(index, m_size);
+    return Accessor(m_values + index);
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator()(ItemLocalIdType lid) const
+  {
+    Int32 index = _toIndex(lid);
+    ARCANE_CHECK_AT(index, m_size);
+    return Accessor(m_values + index);
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor value(ItemLocalIdType lid) const
+  {
+    Int32 index = _toIndex(lid);
+    ARCANE_CHECK_AT(index, m_size);
+    return Accessor(m_values + index);
+  }
+
+  //! Positionne la valeur pour l'entité \a item à \a v
+  ARCCORE_HOST_DEVICE void setValue(ItemLocalIdType lid, const DataType& v) const
+  {
+    Int32 index = _toIndex(lid);
+    ARCANE_CHECK_AT(index, m_size);
+    m_values[index] = v;
+  }
+
  private:
 
-  DataType* m_values;
-  Int32 m_size;
-};
+  ARCCORE_HOST_DEVICE Int32 _toIndex(ItemLocalIdType lid) const
+  {
+    return m_table_view[lid];
+  }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename _ItemType, typename _Accessor>
-class ItemVariableRealNScalarOutViewT
-: public ItemVariableRealNScalarOutViewBaseT<_ItemType, _Accessor, typename ItemTraitsT<_ItemType>::LocalIdType, true>
-{
  private:
 
-  using BaseClass = ItemVariableRealNScalarOutViewBaseT<_ItemType, _Accessor, typename ItemTraitsT<_ItemType>::LocalIdType, true>;
-
- public:
-
-  using DataType = typename _Accessor::ValueType;
-
- public:
-
-  ItemVariableRealNScalarOutViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan<DataType> v)
-  : BaseClass(command, var, v)
-  {}
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename _ItemType, typename _Accessor>
-class ItemPartialVariableRealNScalarOutViewT
-: public ItemVariableRealNScalarOutViewBaseT<_ItemType, _Accessor, ItemEnumeratorIndexT<_ItemType>, false>
-{
- private:
-
-  using BaseClass = ItemVariableRealNScalarOutViewBaseT<_ItemType, _Accessor, ItemEnumeratorIndexT<_ItemType>, false>;
-
- public:
-
-  using DataType = typename _Accessor::ValueType;
-
- public:
-
-  ItemPartialVariableRealNScalarOutViewT(const ViewBuildInfo& command, IVariable* var,
-                                         SmallSpan<DataType> v)
-  : BaseClass(command, var, v)
-  {}
+  DataType* m_values = nullptr;
+  Int32 m_size = 0;
+  GroupIndexTableView m_table_view;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -772,7 +1048,8 @@ template <typename ItemType, typename DataType> auto
 viewOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, DataType>& var)
 {
   using Accessor = DataViewSetter<DataType>;
-  return ItemPartialVariableScalarOutViewT<ItemType, Accessor>(command, var.variable(), var.asArray());
+  using ViewType = ItemPartialVariableScalarOutViewT<ItemType, Accessor>;
+  return ViewType(command, var.variable(), var.asArray(), var.tableView());
 }
 
 /*!
@@ -792,7 +1069,8 @@ template <typename ItemType> auto
 viewOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Real3>& var)
 {
   using Accessor = DataViewSetter<Real3>;
-  return ItemPartialVariableRealNScalarOutViewT<ItemType, Accessor>(command, var.variable(), var.asArray());
+  using ViewType = ItemPartialVariableRealNScalarOutViewT<ItemType, Accessor>;
+  return ViewType(command, var.variable(), var.asArray(), var.tableView());
 }
 
 /*!
@@ -812,7 +1090,8 @@ template <typename ItemType> auto
 viewOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Real2>& var)
 {
   using Accessor = DataViewSetter<Real2>;
-  return ItemPartialVariableRealNScalarOutViewT<ItemType, Accessor>(command, var.variable(), var.asArray());
+  using ViewType = ItemPartialVariableRealNScalarOutViewT<ItemType, Accessor>;
+  return ViewType(command, var.variable(), var.asArray(), var.tableView());
 }
 
 /*!
@@ -832,7 +1111,8 @@ template <typename ItemType, typename DataType> auto
 viewOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, DataType>& var)
 {
   using Accessor = View1DSetter<DataType>;
-  return ItemPartialVariableArrayOutViewT<ItemType, Accessor>(command, var.variable(), var.asArray());
+  using ViewType = ItemPartialVariableArrayOutViewT<ItemType, Accessor>;
+  return ViewType(command, var.variable(), var.asArray(), var.tableView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -874,7 +1154,8 @@ template <typename ItemType> auto
 viewInOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Real3>& var)
 {
   using Accessor = DataViewGetterSetter<Real3>;
-  return ItemPartialVariableRealNScalarOutViewT<ItemType, Accessor>(command, var.variable(), var.asArray());
+  using ViewType = ItemPartialVariableRealNScalarOutViewT<ItemType, Accessor>;
+  return ViewType(command, var.variable(), var.asArray(), var.tableView());
 }
 
 /*!
@@ -894,7 +1175,8 @@ template <typename ItemType> auto
 viewInOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Real2>& var)
 {
   using Accessor = DataViewGetterSetter<Real2>;
-  return ItemPartialVariableRealNScalarOutViewT<ItemType, Accessor>(command, var.variable(), var.asArray());
+  using ViewType = ItemPartialVariableRealNScalarOutViewT<ItemType, Accessor>;
+  return ViewType(command, var.variable(), var.asArray(), var.tableView());
 }
 
 /*!
@@ -914,7 +1196,8 @@ template <typename ItemType, typename DataType> auto
 viewInOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, DataType>& var)
 {
   using Accessor = View1DGetterSetter<DataType>;
-  return ItemPartialVariableArrayOutViewT<ItemType, Accessor>(command, var.variable(), var.asArray());
+  using ViewType = ItemPartialVariableArrayOutViewT<ItemType, Accessor>;
+  return ViewType(command, var.variable(), var.asArray(), var.tableView());
 }
 
 /*---------------------------------------------------------------------------*/
