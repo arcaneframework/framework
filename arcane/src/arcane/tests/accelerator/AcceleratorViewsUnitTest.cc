@@ -249,8 +249,9 @@ _executeTest1()
     command << RUNCOMMAND_ENUMERATE (IteratorWithIndex<CellLocalId>, vi, m_partial_cell_array1.itemGroup())
     {
       CellEnumeratorIndex iter_index(vi.index());
-      out_partial_cell_array2[iter_index].copy(in_cell_array1[vi.value()]);
-      out_partial_cell_array2[iter_index][0] = in_partial_cell_array1[iter_index][1];
+      CellLocalId cell_lid(vi.value());
+      out_partial_cell_array2[iter_index].copy(in_cell_array1[cell_lid]);
+      out_partial_cell_array2[iter_index][0] = in_partial_cell_array1[cell_lid][1];
       Real3 xyz(in_partial_cell1_real3[iter_index].y, in_partial_cell1_real3[iter_index].z, in_partial_cell1_real3[iter_index].x);
       if ((vi.index() % 2) == 0) {
         out_partial_cell_array2[iter_index][1] = in_partial_cell1[iter_index];
@@ -258,7 +259,7 @@ _executeTest1()
         out_partial_cell2_real3[iter_index] = xyz;
       }
       else {
-        inout_partial_cell_array2[iter_index][1] = in_partial_cell1[iter_index];
+        inout_partial_cell_array2[iter_index][1] = in_partial_cell1[cell_lid];
         inout_partial_cell2[iter_index] = in_partial_cell1[iter_index];
         inout_partial_cell2_real3[iter_index] = xyz;
       }
