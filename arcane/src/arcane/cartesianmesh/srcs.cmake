@@ -45,6 +45,4 @@ set(ARCANE_SOURCES
   ICartesianMeshNumberingMng.h
   CartesianMeshNumberingMng.cc
   CartesianMeshNumberingMng.h
-  CartesianMeshNumberingV2Mng.cc
-  CartesianMeshNumberingV2Mng.h
 )

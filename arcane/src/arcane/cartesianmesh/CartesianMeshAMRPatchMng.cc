@@ -21,7 +21,7 @@
 #include "arcane/core/IMeshModifier.h"
 
 #include "arcane/cartesianmesh/CellDirectionMng.h"
-#include "arcane/cartesianmesh/CartesianMeshNumberingV2Mng.h"
+#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
 
 #include "arcane/utils/Array2View.h"
 #include "arcane/utils/Array3View.h"
@@ -40,7 +40,7 @@ CartesianMeshAMRPatchMng::
 CartesianMeshAMRPatchMng(ICartesianMesh* cmesh)
 : TraceAccessor(cmesh->mesh()->traceMng())
 , m_mesh(cmesh->mesh())
-, m_num_mng(Arccore::makeRef(new CartesianMeshNumberingV2Mng(cmesh->mesh())))
+, m_num_mng(Arccore::makeRef(new CartesianMeshNumberingMng(cmesh->mesh())))
 {
 
 }
