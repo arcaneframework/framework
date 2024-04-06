@@ -40,9 +40,14 @@ class ARCANE_UTILS_EXPORT IMemoryRessourceMngInternal
 
  public:
 
+  //! Positionne l'allocateur pour la ressource \a r
   virtual void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) = 0;
 
+  //! Positionne l'instance gérant les copies.
   virtual void setCopier(IMemoryCopier* copier) = 0;
+
+  //! Indique si un accélérateur est disponible.
+  virtual void setIsAccelerator(bool v) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
