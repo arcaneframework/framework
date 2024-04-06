@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryRessourceMng.h                                       (C) 2000-2024 */
+/* MemoryRessourceMng.h                                        (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/FixedArray.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include <memory>
@@ -52,6 +53,7 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
 
   void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) override;
   void setCopier(IMemoryCopier* copier) override { m_copier = copier; }
+  void setIsAccelerator(bool v) override { m_is_accelerator = v; }
 
  public:
 
@@ -65,9 +67,10 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
 
  private:
 
-  std::array<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
+  FixedArray<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
   std::unique_ptr<IMemoryCopier> m_default_memory_copier;
   IMemoryCopier* m_copier = nullptr;
+  bool m_is_accelerator = false;
 
  private:
 

@@ -44,9 +44,7 @@ _nbOutputElement() const
 void GenericFilteringBase::
 _allocate()
 {
-  eMemoryRessource r = eMemoryRessource::Host;
-  if (m_queue && isAcceleratorPolicy(m_queue->executionPolicy()))
-    r = eMemoryRessource::HostPinned;
+  eMemoryRessource r = eMemoryRessource::HostPinned;
   if (m_host_nb_out_storage.memoryRessource()!=r)
     m_host_nb_out_storage = NumArray<Int32,MDDim1>(r);
   m_host_nb_out_storage.resize(1);    

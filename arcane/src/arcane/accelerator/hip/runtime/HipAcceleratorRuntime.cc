@@ -435,6 +435,7 @@ arcaneRegisterAcceleratorRuntimehip()
   Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
   Arcane::platform::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
   IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
+  mrm->setIsAccelerator(true);
   mrm->setAllocator(eMemoryRessource::UnifiedMemory, getHipUnifiedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::HostPinned, getHipHostPinnedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::Device, getHipDeviceMemoryAllocator());
