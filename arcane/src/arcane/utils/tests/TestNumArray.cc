@@ -51,8 +51,12 @@ TEST(NumArray, Basic)
   NumArray<Real, MDDim3> array3(2, 3, 4);
   array3(1, 2, 3) = 5.0;
   std::cout << " V=" << array3(1, 2, 3) << "\n";
+  ASSERT_EQ(array3(1, 2, 3), 5.0);
   array3.resize(12, 4, 6);
   ASSERT_EQ(array3.totalNbElement(), (12 * 4 * 6));
+  array3.fill(0.0);
+  array3(1, 2, 3) = 4.0;
+  array3(2, 3, 5) = 1.0;
 
   {
     MDSpan<Real, MDDim3> span_array3(array3.mdspan());
