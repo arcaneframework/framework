@@ -16,7 +16,7 @@
 
 #include "arcane/utils/ArcaneCxx20.h"
 
-#ifdef ARCCORE_DEVICE_CODE
+#if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
 #include "arcane/accelerator/CommonCudaHipAtomicImpl.h"
 #endif
 
@@ -93,7 +93,7 @@ class AtomicImpl
   ARCCORE_HOST_DEVICE static inline void
   doAtomic(DataType* ptr, DataType value)
   {
-#ifdef ARCCORE_DEVICE_CODE
+#if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
     impl::CommonCudaHipAtomic<DataType, Operation>::apply(ptr, value);
 #else
     HostAtomic<Operation>::apply(ptr, value);

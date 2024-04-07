@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/sycl/SyclAccelerator.h"
+#include "arcane/accelerator/sycl/internal/SyclAcceleratorInternal.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Array.h"
@@ -30,7 +31,7 @@ using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-sycl::queue* global_default_queue = nullptr;
+std::unique_ptr<sycl::queue> global_default_queue;
 namespace
 {
   sycl::queue& _defaultQueue()
@@ -188,6 +189,15 @@ Arccore::IMemoryAllocator* Sycl::
 getSyclHostPinnedMemoryAllocator()
 {
   return &host_pinned_sycl_memory_allocator;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Sycl::
+setSyclMemoryQueue(const sycl::queue& memory_queue)
+{
+  global_default_queue = std::make_unique<sycl::queue>(memory_queue);
 }
 
 /*---------------------------------------------------------------------------*/

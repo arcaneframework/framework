@@ -15,10 +15,13 @@
 
 extern "C"
 int arcaneTestSycl1();
+extern "C"
+int arcaneTestSycl2();
 
 extern "C" ARCANE_EXPORT
 int func0()
 {
   arcaneTestSycl1();
+  arcaneTestSycl2();
   return 0;
 }
