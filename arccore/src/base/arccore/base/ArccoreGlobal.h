@@ -120,22 +120,29 @@ typedef ARCCORE_TYPE_INT64 Int64;
    le device.
 */
 
-#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
-#define ARCCORE_DEVICE_CODE
-#if defined(__CUDA_ARCH__)
-#define ARCCORE_DEVICE_TARGET_CUDA
-#if defined(__HIPSYCL__)
+#if defined(__SYCL_DEVICE_ONLY__)
+#  define ARCCORE_DEVICE_CODE
+#  define ARCCORE_DEVICE_TARGET_SYCL
+#elif defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
+#  define ARCCORE_DEVICE_CODE
+#  if defined(__HIP_DEVICE_COMPILE__)
+#    define ARCCORE_DEVICE_TARGET_HIP
+#  endif
+#  if defined(__CUDA_ARCH__)
+#    define ARCCORE_DEVICE_TARGET_CUDA
+#    if defined(__HIPSYCL__)
 // Nécessaire pour assert() par exemple dans arccoreCheckAt()
 // TODO: regarder si cela est aussi nécessaire pour AMD HIP.
 #include <cassert>
-#endif
-#endif
+#    endif
+#  endif
 #endif
 
 #if defined(__CUDACC__) || defined(__HIP__)
 #define ARCCORE_HOST_DEVICE __host__ __device__
 #define ARCCORE_DEVICE __device__
 #endif
+
 
 #ifndef ARCCORE_HOST_DEVICE
 #define ARCCORE_HOST_DEVICE
