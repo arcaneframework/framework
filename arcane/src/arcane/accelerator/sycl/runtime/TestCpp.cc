@@ -5,39 +5,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TestMain.cc                                                 (C) 2000-2024 */
+/* TestCpp.cc                                                  (C) 2000-2024 */
 /*                                                                           */
-/* Fichier main pour lancer les tests de base SYCL.                          */
+/* Fichier de tests pour HIP.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcaneGlobal.h"
-#include "arcane/utils/Exception.h"
 
-#include <iostream>
+extern "C"
+int arcaneTestSycl1();
+extern "C"
+int arcaneTestSycl2();
 
 extern "C" ARCANE_EXPORT
-int func0();
-
-extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimesycl();
-
-int
-main(int argc,char* argv[])
+int func0()
 {
-  std::cout << "TESTMAIN\n";
-  int r = 0;
-  try{
-    arcaneRegisterAcceleratorRuntimesycl();
-    ARCANE_UNUSED(argc);
-    ARCANE_UNUSED(argv);
-    r = func0();
-  }
-  catch(const Arcane::Exception& e){
-    std::cerr << "Exception e=" << e << "\n";
-  }
-  catch(const std::exception& e){
-    std::cerr << "Exception e=" << e.what() << "\n";
-  }
-  return r;
+  arcaneTestSycl1();
+  arcaneTestSycl2();
+  return 0;
 }

@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/sycl/SyclAccelerator.h"
+#include "arcane/accelerator/sycl/internal/SyclAcceleratorInternal.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Array.h"
@@ -93,33 +94,46 @@ class SyclRunnerRuntime
     ARCANE_FATAL("NYI");
   }
 
-  void fillDevices();
+  void fillDevicesAndSetDefaultQueue();
+  const sycl::queue& defaultQueue() const { return *m_default_queue; }
 
  private:
 
   bool m_is_verbose = false;
   impl::DeviceInfoList m_device_info_list;
+  std::unique_ptr<sycl::queue> m_default_queue;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SyclRunnerRuntime::
-fillDevices()
+fillDevicesAndSetDefaultQueue()
 {
-  std::cout << "FILLING DEVICES\n";
   for (auto platform : sycl::platform::get_platforms()) {
     std::cout << "Platform: "
               << platform.get_info<sycl::info::platform::name>()
               << std::endl;
 
     for (auto device : platform.get_devices()) {
-      std::cout << "\tDevice: "
-                << device.get_info<sycl::info::device::name>()
+      std::cout << "\nDevice: " << device.get_info<sycl::info::device::name>()
+                << "\nVersion=" << device.get_info<sycl::info::device::version>()
                 << std::endl;
+      // Pour l'instant, on prend comme file par défaut la première trouvée
+      // et on ne considère qu'un seul device accessible.
+      if (!m_default_queue) {
+        m_default_queue = std::make_unique<sycl::queue>(device);
+
+        DeviceInfo device_info;
+        device_info.setDescription("No description info");
+        device_info.setDeviceId(DeviceId(0));
+        device_info.setName(device.get_info<sycl::info::device::name>());
+        m_device_info_list.addDevice(device_info);
+      }
     }
   }
-  std::cout << "END FILLING DEVICES\n";
+  if (!m_default_queue)
+    ARCANE_FATAL("No device found");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -148,7 +162,8 @@ arcaneRegisterAcceleratorRuntimesycl()
   mrm->setAllocator(eMemoryRessource::UnifiedMemory, getSyclUnifiedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::HostPinned, getSyclHostPinnedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::Device, getSyclDeviceMemoryAllocator());
-  global_sycl_runtime.fillDevices();
+  global_sycl_runtime.fillDevicesAndSetDefaultQueue();
+  setSyclMemoryQueue(global_sycl_runtime.defaultQueue());
 }
 
 /*---------------------------------------------------------------------------*/
