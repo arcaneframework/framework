@@ -16,6 +16,9 @@
 
 #include <iostream>
 
+extern "C" ARCANE_EXPORT
+int func0();
+
 extern "C" ARCANE_EXPORT void
 arcaneRegisterAcceleratorRuntimesycl();
 
@@ -28,7 +31,7 @@ main(int argc,char* argv[])
     arcaneRegisterAcceleratorRuntimesycl();
     ARCANE_UNUSED(argc);
     ARCANE_UNUSED(argv);
-    r = 0;
+    r = func0();
   }
   catch(const Arcane::Exception& e){
     std::cerr << "Exception e=" << e << "\n";
