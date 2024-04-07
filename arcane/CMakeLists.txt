@@ -918,9 +918,11 @@ if(DEFINED ARCANE_ACCELERATOR_MODE)
   elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
     set (ARCANE_WANT_HIP TRUE)
     # TODO: vérifier qu'on utilise bien 'hipcc'
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "DPCPPSYCL" )
+    set (ARCANE_WANT_DPCPPSYCL TRUE)
   else()
     message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
-      "Valid values are 'CUDANVCC' or 'ROCMHIP'")
+      "Valid values are 'CUDANVCC', 'ROCMHIP' ou 'DPCPPSYCL")
   endif()
   set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
   set (ARCANE_HAS_ACCELERATOR TRUE)
@@ -928,33 +930,44 @@ endif()
 
 # ----------------------------------------------------------------------------
 
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
-  # Il faut au moins CMake 3.21 pour qu'il reconnaise langage HIP
-  enable_language(HIP)
-  add_subdirectory(src/arcane/accelerator/hip)
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
-  # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
-  message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
-  cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
+if (ARCANE_HAS_ACCELERATOR)
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
+    # Il faut au moins CMake 3.21 pour qu'il reconnaise langage HIP
+    enable_language(HIP)
+    add_subdirectory(src/arcane/accelerator/hip)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
+    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+    message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
+    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
 
-  # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
-  if (NOT CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+    # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
+    if (NOT CMAKE_CUDA_ARCHITECTURES)
+      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+    endif()
+    enable_language(CUDA)
+    add_subdirectory(src/arcane/accelerator/cuda)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "DPCPPSYCL")
+    add_subdirectory(src/arcane/accelerator/sycl)
+  else()
+    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
   endif()
-  enable_language(CUDA)
-  add_subdirectory(src/arcane/accelerator/cuda)
 endif()
 
 add_subdirectory(src/arcane/accelerator/core)
 if (ARCANE_HAS_ACCELERATOR_API)
   add_subdirectory(src/arcane/accelerator)
 endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
-  add_subdirectory(src/arcane/accelerator/hip/runtime)
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
-  add_subdirectory(src/arcane/accelerator/cuda/runtime)
+
+if (ARCANE_HAS_ACCELERATOR)
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+    add_subdirectory(src/arcane/accelerator/hip/runtime)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
+    add_subdirectory(src/arcane/accelerator/cuda/runtime)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "DPCPPSYCL")
+    add_subdirectory(src/arcane/accelerator/sycl/runtime)
+  else()
+    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------

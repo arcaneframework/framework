@@ -481,6 +481,12 @@ macro(arcane_accelerator_add_source_files)
       set_source_files_properties(${_x} PROPERTIES LANGUAGE HIP)
     endforeach()
   endif()
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "DPCPPSYCL")
+    foreach(_x ${ARGN})
+      message(STATUS "Add SYCL language to file '${_x}'")
+      set_source_files_properties(${_x} PROPERTIES COMPILE_FLAGS "-fsycl")
+    endforeach()
+  endif()
 endmacro()
 
 # ----------------------------------------------------------------------------
