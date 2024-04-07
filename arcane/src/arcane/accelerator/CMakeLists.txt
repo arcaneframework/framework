@@ -17,7 +17,8 @@ target_link_libraries(arcane_accelerator PUBLIC
   arcane_accelerator_core
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_cuda>"
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_hip>"
-  )
+  "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_sycl>"
+)
 
 # Cette cible est optionnelle pour éviter que le code n'utilisant
 # pas les accélérateurs ait besoin d'un runtime accélérateur
