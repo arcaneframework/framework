@@ -11,12 +11,17 @@
  */
 
 #include <chrono>
+
 #if defined(__x86_64__) || defined(__amd64__)
+
 #include <x86intrin.h>
+
 #endif
 
 #include "Common/index.h"
+#include "Common/Utils/UniqueKey.h"
 #include "BCSR/BCSRMatrix.h"
+#include "BCSRgpu/BCSRgpuMatrix.h"
 #include "MCGSolver/LinearSystem/BVector.h"
 #include "Precond/PrecondEquation.h"
 
@@ -24,72 +29,67 @@
 
 BEGIN_MCGINTERNAL_NAMESPACE
 
+#if 0
 //! Check parallel feature for MCG
 inline void
 checkParallel(bool)
 {
-  // This behaviour may be changed when Parallel MCG will be plugged
+    // This behaviour may be changed when Parallel MCG will be plugged
 }
-
-/*---------------------------------------------------------------------------*/
-class UniqueKey
-{
- public:
-  UniqueKey()
-  : m_rand(std::rand())
-  ,
-#if defined(__x86_64__) || defined(__amd64__)
-  m_ts(_rdtsc())
-#else
-  m_ts(std::chrono::system_clock::now())
 #endif
 
-  {}
+    class MatrixInternal {
+    public:
+        typedef MCGSolver::CSRProfile<MCGSolver::Int32SparseIndex> ProfileType;
+        typedef MCGSolver::BCSRMatrix<double, MCGSolver::Int32SparseIndex> MatrixType;
 
-  bool operator==(const UniqueKey& k) const
-  {
-    return m_rand == k.m_rand && m_ts == k.m_ts;
-  }
+        bool m_elliptic_split_tag = false;
+        std::shared_ptr<MCGSolver::BVector<MCGSolver::Equation::eType>> m_equation_type;
 
-  bool operator!=(const UniqueKey& k) const { return !operator==(k); }
+        MCGSolver::UniqueKey m_key;
+        std::shared_ptr<MatrixType> m_matrix;
 
- private:
-  int m_rand = 0;
-#if defined(__x86_64__) || defined(__amd64__)
-  uint64_t m_ts;
-#else
-  std::chrono::time_point<std::chrono::system_clock> m_ts;
-#endif
-};
+        std::vector<int> m_elem_perm;
 
-class MatrixInternal
-{
- public:
-  typedef MCGSolver::CSRProfile<MCGSolver::IntSparseIndex> ProfileType;
-  typedef MCGSolver::BCSRMatrix<double,MCGSolver::IntSparseIndex> MatrixType;
+        MatrixInternal() = default;
 
-  bool m_elliptic_split_tag = false;
-  std::shared_ptr<MCGSolver::BVector<MCGSolver::Equation::eType>> m_equation_type;
+        ~MatrixInternal() = default;
+    };
 
-  UniqueKey m_key;
-  std::shared_ptr<MatrixType> m_matrix;
+    class VectorInternal {
+    public:
+        VectorInternal(int nrow, int block_size)
+                : m_bvector(std::make_shared<MCGSolver::BVector<double>>(nrow, block_size)) {}
 
-  std::vector<int> m_elem_perm;
+        MCGSolver::UniqueKey m_key;
+        std::shared_ptr<MCGSolver::BVector<double>> m_bvector;
+    };
 
-  MatrixInternal() = default;
+    class GpuMatrixInternal {
+    public:
+        typedef MCGSolver::CSRgpuProfile<MCGSolver::Int32SparseIndex> ProfileType;
+        typedef MCGSolver::BCSRgpuMatrix<double, MCGSolver::Int32SparseIndex> MatrixType;
 
-  ~MatrixInternal() = default;
-};
+        bool m_elliptic_split_tag = false;
+        std::shared_ptr<MCGSolver::BVector<MCGSolver::Equation::eType>> m_equation_type;
 
-class VectorInternal
-{
- public:
-  VectorInternal(int nrow, int block_size)
-  : m_bvector(std::make_shared<MCGSolver::BVector<double>>(nrow, block_size))
-  {}
+        MCGSolver::UniqueKey m_key;
+        std::shared_ptr<MatrixType> m_matrix;
 
-  UniqueKey m_key;
-  std::shared_ptr<MCGSolver::BVector<double>> m_bvector;
-};
+        std::vector<int> m_elem_perm;
+
+        MatrixInternal() = default;
+
+        ~MatrixInternal() = default;
+    };
+
+    class VectorInternal {
+    public:
+        VectorInternal(int nrow, int block_size)
+                : m_bvector(std::make_shared<MCGSolver::BVector<double>>(nrow, block_size)) {}
+
+        MCGSolver::UniqueKey m_key;
+        std::shared_ptr<MCGSolver::BVector<double>> m_bvector;
+    };
 
 END_MCGINTERNAL_NAMESPACE

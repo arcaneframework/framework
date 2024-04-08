@@ -17,11 +17,11 @@
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;
 
-class SimpleCSR_to_MCG_MatrixConverter : public IMatrixConverter
+class SimpleCSR_to_MCG_BCSRgpu_MatrixConverter : public IMatrixConverter
 {
  public:
-  SimpleCSR_to_MCG_MatrixConverter();
-  virtual ~SimpleCSR_to_MCG_MatrixConverter() {}
+  SimpleCSR_to_MCG_BCSRgpu_MatrixConverter() = default;
+  virtual ~SimpleCSR_to_MCG_BCSRgpu_MatrixConverter() = default;
 
  public:
   BackEndId sourceBackend() const
@@ -30,7 +30,7 @@ class SimpleCSR_to_MCG_MatrixConverter : public IMatrixConverter
   }
   BackEndId targetBackend() const
   {
-    return AlgebraTraits<BackEnd::tag::mcgsolver>::name();
+    return AlgebraTraits<BackEnd::tag::mcgsolver_gpu>::name();
   }
   void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const;
   // void convert(const IMatrixImpl * sourceImpl, IMatrixImpl * targetImpl, int i, int j)
@@ -39,13 +39,8 @@ class SimpleCSR_to_MCG_MatrixConverter : public IMatrixConverter
   void _build(const SimpleCSRMatrix<Real>& sourceImpl, MCGMatrix& targetImpl) const;
 };
 
-SimpleCSR_to_MCG_MatrixConverter::SimpleCSR_to_MCG_MatrixConverter()
-{
-  ;
-}
-
 void
-SimpleCSR_to_MCG_MatrixConverter::convert(
+SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::convert(
     const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
 {
   const SimpleCSRMatrix<Real>& v =
@@ -63,7 +58,7 @@ SimpleCSR_to_MCG_MatrixConverter::convert(
 }
 
 void
-SimpleCSR_to_MCG_MatrixConverter::_build(
+SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::_build(
     const SimpleCSRMatrix<Real>& sourceImpl, MCGMatrix& targetImpl) const
 {
   const MatrixDistribution& dist = targetImpl.distribution();
@@ -99,4 +94,4 @@ SimpleCSR_to_MCG_MatrixConverter::_build(
   }
 }
 
-REGISTER_MATRIX_CONVERTER(SimpleCSR_to_MCG_MatrixConverter);
+REGISTER_MATRIX_CONVERTER(SimpleCSR_to_MCG_BCSRgpu_MatrixConverter);

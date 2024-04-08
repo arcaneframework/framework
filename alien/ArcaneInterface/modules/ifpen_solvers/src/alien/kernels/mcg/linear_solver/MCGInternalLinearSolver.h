@@ -121,7 +121,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
   String getBackEndName() const { return "mcgsolver"; }
 
-  //! Rï¿œsolution du systï¿œme linï¿œaire
+  //! Linear system solve
   bool solve(IMatrix const& A, IVector const& b, IVector& x);
 
   //! Indicateur de support de r�solution parall�le

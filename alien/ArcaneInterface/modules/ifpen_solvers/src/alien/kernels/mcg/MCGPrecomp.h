@@ -7,9 +7,8 @@
 
 #include <alien/utils/Precomp.h>
 
-#define BEGIN_MCGINTERNAL_NAMESPACE                                                      \
-  namespace Alien {                                                                      \
-  namespace MCGInternal {
-#define END_MCGINTERNAL_NAMESPACE                                                        \
-  }                                                                                      \
-  }
+#define BEGIN_MCGINTERNAL_NAMESPACE \
+namespace Alien::MCGInternal {
+
+#define END_MCGINTERNAL_NAMESPACE }                                                                                      \
+

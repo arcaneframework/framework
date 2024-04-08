@@ -3,7 +3,8 @@ addSources(alien_ifpen_solvers
         linear_solver/MCGInternalLinearSolver.cc
         converters/SimpleCSR/MCG_to_SimpleCSR_VectorConverter.cc
         converters/SimpleCSR/SimpleCSR_to_MCG_VectorConverter.cc
-        converters/SimpleCSR/SimpleCSR_to_MCG_MatrixConverter.cc
+        converters/SimpleCSR/SimpleCSR_to_MCG_BCSR_MatrixConverter.cc
+        converters/SimpleCSR/SimpleCSR_to_MCG_BCSRgpu_MatrixConverter.cc
         data_structure/MCGVector.cc
         data_structure/MCGMatrix.cc
         )

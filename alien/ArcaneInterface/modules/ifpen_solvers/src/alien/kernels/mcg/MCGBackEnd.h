@@ -15,8 +15,8 @@ namespace Alien {
 class MultiVectorImpl;
 class MCGMatrix;
 class MCGVector;
-class MCGCompositeMatrix;
-class MCGCompositeVector;
+class MCGgpuMatrix;
+class MCGgpuVector;
 class MatrixData;
 class MatrixExp;
 class VectorData;
@@ -36,7 +36,7 @@ namespace BackEnd {
   namespace tag {
     struct mcgsolver
     {};
-    struct mcgsolver_composite
+    struct mcgsolver_gpu
     {};
   }
 }
@@ -61,10 +61,10 @@ template <> struct AlgebraTraits<BackEnd::tag::mcgsolver>
   static BackEndId name() { return "mcgsolver"; }
 };
 
-template <> struct AlgebraTraits<BackEnd::tag::mcgsolver_composite>
+template <> struct AlgebraTraits<BackEnd::tag::mcgsolver_gpu>
 {
-  typedef MCGCompositeMatrix matrix_type;
-  typedef MCGCompositeVector vector_type;
+  typedef MCGgpuMatrix matrix_type;
+  typedef MCGgpuVector vector_type;
 
   typedef IOptionsMCGSolver options_type;
   typedef ILinearAlgebra algebra_type;
@@ -78,6 +78,6 @@ template <> struct AlgebraTraits<BackEnd::tag::mcgsolver_composite>
     return MCGInternalLinearSolverFactory(p_mng, options);
   }
 
-  static BackEndId name() { return "mcgsolver_composite"; }
+  static BackEndId name() { return "mcgsolver_gpu"; }
 };
 } // namespace Alien
