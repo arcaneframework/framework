@@ -1160,6 +1160,11 @@ removeCells(Int32ConstArrayView cells_local_id,bool update_graph)
     removeItems(m_cell_family,cells_local_id);
   else
     m_cell_family->internalRemoveItems(cells_local_id);
+
+  if(m_item_family_network)
+  {
+      m_item_family_network->removeConnectedDoFsFromCells(cells_local_id) ;
+  }
 }
 
 /*---------------------------------------------------------------------------*/

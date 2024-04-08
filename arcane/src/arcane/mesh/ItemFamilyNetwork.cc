@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -296,6 +296,28 @@ _getConnectivityStatus(IIncrementalItemConnectivity* connectivity)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Integer ItemFamilyNetwork::registerConnectedGraph(IGraph2* graph)
+{
+  Integer graph_id = m_registred_graphs.size() ;
+  m_registred_graphs.add(graph) ;
+  return graph_id ;
+}
+
+void ItemFamilyNetwork::releaseConnectedGraph(Integer graph_id)
+{
+  m_registred_graphs[graph_id] = nullptr ;
+}
+
+void ItemFamilyNetwork::removeConnectedDoFsFromCells(Int32ConstArrayView local_ids)
+{
+  for(auto graph : m_registred_graphs)
+  {
+      graph->modifier()->removeConnectedItemsFromCells(local_ids) ;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 } // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/

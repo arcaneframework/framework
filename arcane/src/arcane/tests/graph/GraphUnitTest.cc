@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,11 +18,15 @@
 #include "arcane/IItemOperationByBasicType.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IMesh.h"
+#include "arcane/IMeshModifier.h"
+#include "arcane/IPrimaryMesh.h"
+#include "arcane/IMeshUtilities.h"
 #include "arcane/IMeshStats.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/IParticleFamily.h"
 #include "arcane/anyitem/AnyItem.h"
 #include "arcane/mesh/ItemFamily.h"
+#include "arcane/mesh/ParticleFamily.h"
 
 #include "arcane/mesh/DualUniqueIdMng.h"
 
@@ -194,7 +198,7 @@ class GraphUnitTest
 
  private:
 
-  void _createGraphOfDof();
+  IGraph2* _createGraphOfDof(IItemFamily* particle_family);
   void _checkGraphDofConnectivity(IGraph2* graph_dof);
 
  private:
@@ -220,7 +224,104 @@ ARCANE_REGISTER_SERVICE_GRAPHUNITTEST(GraphUnitTest, GraphUnitTest);
 void GraphUnitTest::
 executeTest()
 {
-  _createGraphOfDof();
+  auto pm = subDomain()->parallelMng();
+  Integer nb_own_cell = ownCells().size();
+  Integer max_own_cell = pm->reduce(Parallel::ReduceMax, nb_own_cell);
+  Integer nb_own_face = ownFaces().size();
+  Integer max_own_face = pm->reduce(Parallel::ReduceMax, nb_own_face);
+  Integer comm_rank = pm->commRank();
+
+  Integer max_total = max_own_cell + max_own_face;
+
+  Int64 first_uid = max_total * comm_rank;
+
+  String particle_family_name = mesh::ParticleFamily::defaultFamilyName();
+  //  particles
+  IItemFamily* particle_family = m_mesh->createItemFamily(IK_Particle, particle_family_name);
+  IParticleFamily* true_particle_family = dynamic_cast<IParticleFamily*>(particle_family);
+  if (true_particle_family)
+    true_particle_family->setEnableGhostItems(true);
+
+  VariableItemInt32& cell_new_owners = mesh()->cellFamily()->itemsNewOwner();
+  if (pm->commSize() > 1) {
+    // SAVE ORIGINAL PARTITION MOVE ALL CELLS ON PROC 0
+    ENUMERATE_CELL (icell, allCells()) {
+      m_orig_cell_owner[icell] = icell->owner();
+      cell_new_owners[icell] = 0; // everybody on subdomain 0
+      info() << "Cell uid " << icell->uniqueId() << " has owner " << icell->owner();
+    }
+    mesh()->utilities()->changeOwnersFromCells();
+    mesh()->modifier()->setDynamic(true);
+    mesh()->toPrimaryMesh()->exchangeItems(); // update ghost is done.
+  }
+
+  Arcane::IGraph2* graphdofs = nullptr;
+  if (pm->commRank() == 0) {
+    info() << "CREATE PARTICLE ON MASTER";
+    Int64UniqueArray uids;
+    Int32UniqueArray cell_lids;
+
+    ENUMERATE_CELL (icell, ownCells()) {
+      const Cell& cell = *icell;
+      cell_lids.add(cell.localId());
+      uids.add(first_uid);
+      ++first_uid;
+    }
+
+    Int32UniqueArray particles_lid(m_mesh->allCells().size());
+    particle_family->toParticleFamily()->addParticles(uids, cell_lids, particles_lid);
+  }
+
+  particle_family->endUpdate();
+
+  info() << "==================================================";
+  info() << "CREATE GRAPH";
+  graphdofs = _createGraphOfDof(particle_family);
+
+  info() << "==================================================";
+  info() << "Print DualNodes";
+  graphdofs->printDualNodes();
+
+  info() << "==================================================";
+  info() << "Print Links";
+  graphdofs->printLinks();
+
+  info() << "==================================================";
+  info() << "Check Connectivities";
+  _checkGraphDofConnectivity(graphdofs);
+
+  if (pm->commSize() > 1) {
+    if (pm->commRank() == 0) {
+      info() << "BROADCAST MESH FROM MASTER";
+      // DISPACH CELL TO ORIGINAL PARTITION
+      ENUMERATE_CELL (icell, allCells()) {
+        cell_new_owners[icell] = m_orig_cell_owner[icell];
+      }
+      mesh()->utilities()->changeOwnersFromCells();
+    }
+    mesh()->modifier()->setDynamic(true);
+
+    info() << "EXCHANGE ITEMS";
+    mesh()->toPrimaryMesh()->exchangeItems(); // update ghost is done.
+
+    info() << "MESH ENDUPDATE";
+    mesh()->modifier()->endUpdate();
+
+    info() << "GRAPH ENDUPDATE";
+    graphdofs->modifier()->endUpdate();
+
+    info() << "==================================================";
+    info() << "Print DualNodes";
+    graphdofs->printDualNodes();
+
+    info() << "==================================================";
+    info() << "Print Links";
+    graphdofs->printLinks();
+
+    info() << "==================================================";
+    info() << "Check Connectivities";
+    _checkGraphDofConnectivity(graphdofs);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -234,13 +335,11 @@ initializeTest()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-void GraphUnitTest::
-_createGraphOfDof()
+IGraph2* GraphUnitTest::
+_createGraphOfDof(IItemFamily* particle_family)
 {
 
-  String particle_family_name = "ArcaneParticles";
-  //  particles
-  IItemFamily* particle_family = m_mesh->createItemFamily(IK_Particle, particle_family_name);
+  String particle_family_name = mesh::ParticleFamily::defaultFamilyName();
 
   auto graphdofs = mesh::GraphBuilder::createGraph(m_mesh, particle_family_name);
 
@@ -263,6 +362,7 @@ _createGraphOfDof()
     Int64 dual_item_uid = icell->uniqueId().asInt64();
 
     cells_dual_nodes_infos[infos_index++] = dual_item_uid;
+    info() << "CREATE DUALNODE[" << dual_node_uid << "] DUAL CELL : " << dual_item_uid;
   }
 
   //BD
@@ -284,13 +384,11 @@ _createGraphOfDof()
   infos_index = 0;
   ENUMERATE_FACE (iface, ownFaces()) {
     const Face& face = *iface;
-
     Int64 dual_node_uid = m_dualUid_mng.uniqueIdOf(face);
-
     dual_nodes_infos[infos_index++] = dual_node_uid;
-
     Int64 dual_item_uid = iface->uniqueId().asInt64();
     dual_nodes_infos[infos_index++] = dual_item_uid;
+    info() << "CREATE DUALNODE[" << dual_node_uid << "] DUAL FACE : " << dual_item_uid;
   }
 
   //graphdofs->addDualNodes(graph_nb_dual_node,dual_node_kind,dual_nodes_infos);
@@ -303,34 +401,6 @@ _createGraphOfDof()
     Int64 dual_node_uid = m_dualUid_mng.uniqueIdOf(face);
     face_to_dual_node_property[face] = dual_node_uid;
   }
-
-  Int64UniqueArray uids;
-
-  IParallelMng* pm = subDomain()->parallelMng();
-  Integer nb_own_cell = ownCells().size();
-  Integer max_own_cell = pm->reduce(Parallel::ReduceMax, nb_own_cell);
-  Integer nb_own_face = ownFaces().size();
-  Integer max_own_face = pm->reduce(Parallel::ReduceMax, nb_own_face);
-  Integer comm_rank = pm->commRank();
-
-  Integer max_total = max_own_cell + max_own_face;
-
-  Int64 first_uid = max_total * comm_rank;
-
-  Int32UniqueArray cell_lids;
-
-  ENUMERATE_CELL (icell, ownCells()) {
-    const Cell& cell = *icell;
-    cell_lids.add(cell.localId());
-    uids.add(first_uid);
-    ++first_uid;
-  }
-
-  Int32UniqueArray particles_lid(m_mesh->allCells().size());
-
-  particle_family->toParticleFamily()->addParticles(uids, cell_lids, particles_lid);
-
-  particle_family->endUpdate();
 
   graph_nb_dual_node = particle_family->allItems().size();
   dual_node_kind = IT_DualParticle;
@@ -348,6 +418,7 @@ _createGraphOfDof()
 
     Int64 dual_item_uid = part.uniqueId().asInt64();
     particle_dual_nodes_infos[infos_index++] = dual_item_uid;
+    info() << "CREATE DUALNODE[" << dual_node_uid << "] DUAL PART : " << dual_item_uid;
   }
 
   //graphdofs->addDualNodes(graph_nb_dual_node,dual_node_kind,particle_dual_nodes_infos);
@@ -363,180 +434,177 @@ _createGraphOfDof()
   //
   graph_modifier->endUpdate();
 
-  // Création des links
-
-  Integer nb_link = ownFaces().size();
-
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // CREATION DE LINKS CELL-CELL
+  //
   auto nb_dual_node_per_link = 2;
+  {
+    Integer nb_link = ownFaces().size();
 
-  Int64UniqueArray links_infos(nb_link * (nb_dual_node_per_link + 1));
-  links_infos.fill(NULL_ITEM_UNIQUE_ID);
+    Int64UniqueArray links_infos(nb_link * (nb_dual_node_per_link + 1));
+    links_infos.fill(NULL_ITEM_UNIQUE_ID);
 
-  Integer links_infos_index = 0;
+    Integer links_infos_index = 0;
+    Integer link_count = 0;
 
-  // On remplit le tableau links_infos
-  ENUMERATE_FACE (iface, ownFaces()) {
-    auto const& face = *iface;
-    auto const& back_cell = iface->backCell();
-    auto const& front_cell = iface->frontCell();
+    // CREATION DE LINK CELL-CELL
+    // On remplit le tableau links_infos
+    ENUMERATE_FACE (iface, ownFaces()) {
+      auto const& face = *iface;
+      auto const& back_cell = iface->backCell();
+      auto const& front_cell = iface->frontCell();
 
-    // New test policy : add only internal face
-    if (iface->isSubDomainBoundary()) {
-      nb_link--;
-      continue;
+      // New test policy : add only internal face
+      if (iface->isSubDomainBoundary()) {
+        continue;
+      }
+      if (!back_cell.null() && !front_cell.null()) {
+        links_infos[links_infos_index++] = m_dualUid_mng.uniqueIdOf<Cell, Cell>(back_cell, front_cell);
+        links_infos[links_infos_index++] = cell_to_dual_node_property[back_cell];
+        links_infos[links_infos_index++] = cell_to_dual_node_property[front_cell];
+        info() << "CREATE LINK[" << m_dualUid_mng.uniqueIdOf<Cell, Cell>(back_cell, front_cell) << "] DUALCELL "
+               << cell_to_dual_node_property[back_cell] << " DUALCELL " << cell_to_dual_node_property[front_cell];
+        ++link_count;
+      }
     }
-
-    links_infos[links_infos_index++] = m_dualUid_mng.uniqueIdOf(face);
-
-    if (!back_cell.null()) {
-      links_infos[links_infos_index] = cell_to_dual_node_property[back_cell];
-    }
-
-    links_infos_index++;
-
-    if (!front_cell.null()) {
-      links_infos[links_infos_index] = cell_to_dual_node_property[front_cell];
-    }
-
-    links_infos_index++;
-  }
-  assert(links_infos_index == nb_link * (1 + nb_dual_node_per_link));
-  info() << "Creation des link pour back_cell et front_cell links_infos"; //<<links_infos;
-  //graphdofs->addLinks(nb_link,2,links_infos);
-  links_infos.resize(nb_link * (1 + nb_dual_node_per_link));
-  graph_modifier->addLinks(nb_link, nb_dual_node_per_link, links_infos);
-
-  graphdofs->printLinks();
-
-  // Création des links
-  nb_link = ownCells().size();
-
-  Integer nb_facemax = 6;
-
-  //Int64UniqueArray links_infos2(nb_link*7);
-  Int64UniqueArray links_infos2(nb_link * (nb_facemax + 1));
-  links_infos2.fill(NULL_ITEM_UNIQUE_ID);
-
-  links_infos_index = 0;
-
-  // On remplit le tableau links_infos
-  ENUMERATE_CELL (icell, ownCells()) {
-    Cell cell = *icell;
-
-    //  Take only cell with nb_facemax faces, number of dual node per link is constant...
-    if (cell.faces().size() != nb_facemax) {
-      nb_link--;
-      continue;
-    }
-
-    links_infos2[links_infos_index++] = m_dualUid_mng.uniqueIdOf(cell);
-
-    for ( Face face : cell.faces()) {
-      links_infos2[links_infos_index] = face_to_dual_node_property[face];
-      links_infos_index++;
-    }
+    nb_link = link_count;
+    links_infos.resize(nb_link * (1 + nb_dual_node_per_link));
+    info() << "Creation des links CellCell pour links_infos"; //<<links_infos;
+    graph_modifier->addLinks(nb_link, nb_dual_node_per_link, links_infos);
+    graphdofs->printLinks();
   }
 
-  info() << "Creation des link pour cell et face_cell links_infos2"; //<<links_infos2;
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // CREATION DE LINK CELL-FACE
+  //
+  {
+    Integer nb_facemax = 6;
+    // Création des links
+    Integer nb_link = ownCells().size() * nb_facemax;
 
-  links_infos2.resize(nb_link * (nb_facemax + 1));
-  graph_modifier->addLinks(nb_link, 6, links_infos2);
+    //Int64UniqueArray links_infos2(nb_link*7);
+    Int64UniqueArray links_infos2(nb_link * (nb_dual_node_per_link + 1));
+    links_infos2.fill(NULL_ITEM_UNIQUE_ID);
 
-  graphdofs->printLinks();
+    Integer links_infos_index = 0;
+    Integer link_count = 0;
 
-  // Création des links
-  nb_link = all_particles.size();
+    // On remplit le tableau links_infos
+    ENUMERATE_CELL (icell, ownCells()) {
+      Cell cell = *icell;
 
-  Int64UniqueArray links_infos3(nb_link * 2);
-  links_infos3.fill(NULL_ITEM_UNIQUE_ID);
+      //  Take only cell with nb_facemax faces, number of dual node per link is constant...
+      if (cell.faces().size() != nb_facemax) {
+        continue;
+      }
 
-  links_infos_index = 0;
+      for (Face face : cell.faces()) {
+        links_infos2[links_infos_index++] = m_dualUid_mng.uniqueIdOf(cell, face);
+        links_infos2[links_infos_index++] = cell_to_dual_node_property[cell];
+        links_infos2[links_infos_index++] = face_to_dual_node_property[face];
+        info() << "CREATE LINK[" << m_dualUid_mng.uniqueIdOf(cell, face) << "] DUAL CELL "
+               << cell_to_dual_node_property[cell] << " DUAL FACE " << face_to_dual_node_property[face];
+        ++link_count;
+      }
+    }
+    nb_link = link_count;
+    info() << "Creation des links pour CellFace_cell links_infos2"; //<<links_infos2;
 
-  // On remplit le tableau links_infos
-  ENUMERATE_PARTICLE (i_part, all_particles) {
-    const Particle part = *i_part;
-    const Cell& cell = i_part->cell();
-    links_infos3[links_infos_index++] = m_dualUid_mng.uniqueIdOf(cell, part);
-    links_infos3[links_infos_index++] = particule_to_dual_node_property[part];
+    links_infos2.resize(nb_link * (nb_dual_node_per_link + 1));
+    graph_modifier->addLinks(nb_link, nb_dual_node_per_link, links_infos2);
+    graphdofs->printLinks();
   }
 
-  info() << "Creation des link pour cell et particule links_infos3"; //<<links_infos3;
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // CREATION DE LINK CELL-PARTICLE
+  //
+  {
+    Integer nb_link = all_particles.size();
+    Int64UniqueArray links_infos3(nb_link * (nb_dual_node_per_link + 1));
+    links_infos3.fill(NULL_ITEM_UNIQUE_ID);
 
-  graph_modifier->addLinks(nb_link, 1, links_infos3);
-
-  graphdofs->printLinks();
-
-  // Création des links
-  nb_link = ownFaces().size();
-
-  Int64UniqueArray links_infos4(nb_link * 3);
-  links_infos4.fill(NULL_ITEM_UNIQUE_ID);
-
-  links_infos_index = 0;
-
-  // On remplit le tableau links_infos
-  ENUMERATE_FACE (iface, ownFaces()) {
-    auto const& face = *iface;
-    auto const& back_cell = iface->backCell();
-    auto const& front_cell = iface->frontCell();
-
-    // New test policy : add only internal face
-    if (iface->isSubDomainBoundary()) {
-      nb_link--;
-      continue;
+    Integer links_infos_index = 0;
+    Integer link_count = 0;
+    // On remplit le tableau links_infos
+    ENUMERATE_PARTICLE (i_part, all_particles) {
+      const Particle part = *i_part;
+      const Cell& cell = i_part->cell();
+      links_infos3[links_infos_index++] = m_dualUid_mng.uniqueIdOf(cell, part);
+      links_infos3[links_infos_index++] = cell_to_dual_node_property[cell];
+      links_infos3[links_infos_index++] = particule_to_dual_node_property[part];
+      ++link_count;
     }
+    nb_link = link_count;
+    links_infos3.resize(nb_link * (nb_dual_node_per_link + 1));
+    info() << "Creation des link pour CellParticule links_infos3"; //<<links_infos3;
+    graph_modifier->addLinks(nb_link, nb_dual_node_per_link, links_infos3);
+    graphdofs->printLinks();
+  }
 
-    if (!back_cell.null() && !front_cell.null()) {
-      links_infos4[links_infos_index++] = math::max(m_dualUid_mng.uniqueIdOf(face, back_cell), m_dualUid_mng.uniqueIdOf(face, front_cell));
-    }
-    else if (!front_cell.null()) {
-      links_infos4[links_infos_index++] = m_dualUid_mng.uniqueIdOf(face, front_cell);
-    }
-    else if (!back_cell.null()) {
-      links_infos4[links_infos_index++] = m_dualUid_mng.uniqueIdOf(face, back_cell);
-    }
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // CREATION DE LINK FACE-PARTICLE
+  //
+  {
+    Integer nb_link = ownFaces().size() * all_particles.size();
 
-    if (!back_cell.null()) {
-      ENUMERATE_PARTICLE (i_part, all_particles) {
-        const Particle part = *i_part;
-        const Cell& cell = i_part->cell();
-        if (cell == back_cell) {
-          links_infos4[links_infos_index] = particule_to_dual_node_property[part];
+    Int64UniqueArray links_infos4(nb_link * (nb_dual_node_per_link + 1));
+    links_infos4.fill(NULL_ITEM_UNIQUE_ID);
+
+    Integer links_infos_index = 0;
+    Integer link_count = 0;
+
+    // On remplit le tableau links_infos
+    ENUMERATE_FACE (iface, ownFaces()) {
+      auto const& face = *iface;
+      auto const& back_cell = iface->backCell();
+      auto const& front_cell = iface->frontCell();
+
+      if (iface->isSubDomainBoundary()) {
+        continue;
+      }
+
+      if (!back_cell.null()) {
+        ENUMERATE_PARTICLE (i_part, all_particles) {
+          const Particle part = *i_part;
+          const Cell& cell = i_part->cell();
+          if (cell == back_cell) {
+            links_infos4[links_infos_index++] = m_dualUid_mng.uniqueIdOf(face, part);
+            links_infos4[links_infos_index++] = face_to_dual_node_property[face];
+            links_infos4[links_infos_index++] = particule_to_dual_node_property[part];
+            info() << "CREATE LINK[" << m_dualUid_mng.uniqueIdOf(face, part) << "] DUAL FACE "
+                   << face_to_dual_node_property[face] << " DUAL PART " << particule_to_dual_node_property[part];
+            ++link_count;
+          }
+        }
+      }
+
+      if (!front_cell.null()) {
+        ENUMERATE_PARTICLE (i_part, all_particles) {
+          const Particle part = *i_part;
+          const Cell& cell = i_part->cell();
+          if (cell == front_cell) {
+            links_infos4[links_infos_index++] = m_dualUid_mng.uniqueIdOf(face, part);
+            links_infos4[links_infos_index++] = face_to_dual_node_property[face];
+            links_infos4[links_infos_index++] = particule_to_dual_node_property[part];
+            ++link_count;
+          }
         }
       }
     }
-
-    links_infos_index++;
-
-    if (!front_cell.null()) {
-      ENUMERATE_PARTICLE (i_part, all_particles) {
-        const Particle part = *i_part;
-        const Cell& cell = i_part->cell();
-        if (cell == front_cell) {
-          links_infos4[links_infos_index] = particule_to_dual_node_property[part];
-        }
-      }
-    }
-
-    links_infos_index++;
+    nb_link = link_count;
+    links_infos4.resize(nb_link * (nb_dual_node_per_link + 1));
+    info() << "Creation des links pour FaceParticule links_infos4"; //<<links_infos4;
+    graph_modifier->addLinks(nb_link, nb_dual_node_per_link, links_infos4);
+    graphdofs->printLinks();
   }
-  info() << "Creation des link pour face cell et particule links_infos4"; //<<links_infos4;
-
-  links_infos4.resize(nb_link * 3);
-  graph_modifier->addLinks(nb_link, 2, links_infos4);
 
   graph_modifier->endUpdate();
-  info() << "==================================================";
-  info() << "Print DualNodes";
-  graphdofs->printDualNodes();
 
-  info() << "==================================================";
-  info() << "Print Links";
-  graphdofs->printLinks();
-
-  info() << "==================================================";
-  info() << "Check Connectivities";
-  _checkGraphDofConnectivity(graphdofs);
+  return graphdofs;
 }
 
 void GraphUnitTest::

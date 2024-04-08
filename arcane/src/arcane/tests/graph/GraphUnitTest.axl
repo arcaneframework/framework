@@ -4,7 +4,18 @@
 <service name="GraphUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
  <interface name="Arcane::IUnitTest" inherited="false" />
  
-  <variables/>
+  <variables>
+  
+    <variable
+      field-name="orig_cell_owner"
+      name="OrigCellOwner"
+      data-type="integer"
+      item-kind="cell"
+      dim="0"
+      dump="false"
+      need-sync="true" 
+    />
+  </variables>
 
   <options />
 
