@@ -85,8 +85,8 @@ _allocateGraph()
 
   m_connectivity_mng.registerConnectivity(m_dualnodes_incremental_connectivity);
 
-  //if (m_item_family_network)
-  //  m_item_family_network->addRelation(dualNodeFamily(), linkFamily(), m_dualnodes_incremental_connectivity);
+  if (m_item_family_network)
+    m_item_family_network->addRelation(dualNodeFamily(), linkFamily(), m_dualnodes_incremental_connectivity);
 
   m_links_incremental_connectivity =
   new IncrementalItemConnectivity(linkFamily(),
@@ -137,6 +137,7 @@ addLinks(Integer nb_link,
          Integer nb_dual_nodes_per_link,
          Int64ConstArrayView links_infos)
 {
+  info()<<"GRAPHDOF : ADD LINKS";
   Trace::Setter mci(traceMng(), _className());
   if (!m_graph_allocated)
     _allocateGraph();
@@ -155,6 +156,8 @@ addLinks(Integer nb_link,
     links_infos.subConstView(links_infos_index, nb_dual_nodes_per_link));
     links_infos_index += nb_dual_nodes_per_link;
   }
+  for(auto uid : connected_dual_node_uids)
+    info()<<"        DUALNODE UID : "<<uid;
 
   Int32UniqueArray link_lids(link_uids.size());
   link_family.addDoFs(link_uids, link_lids);
@@ -396,8 +399,24 @@ void GraphDoFs::
 removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
 {
   std::set < Int32 > cell_to_remove_set;
-   for(auto lid : cell_local_ids )
-     cell_to_remove_set.insert(lid) ;
+  std::set < Int32 > node_to_remove_set;
+  std::set < Int32 > face_to_remove_set;
+  auto cell_family = m_mesh->cellFamily() ;
+  auto remove_cells = CellVectorView(cell_family,cell_local_ids) ;
+  ENUMERATE_CELL(icell,remove_cells)
+  {
+    cell_to_remove_set.insert(icell->localId()) ;
+    for(auto face : icell->faces())
+    {
+      if(face.itemBase().isSuppressed())
+        face_to_remove_set.insert(face.localId()) ;
+    }
+    for(auto node : icell->nodes())
+    {
+      if(node.itemBase().isSuppressed())
+        node_to_remove_set.insert(node.localId()) ;
+    }
+  }
   {
     std::set < Int32 > link_to_remove_set;
     ConnectivityItemVector dual_nodes(m_links_incremental_connectivity);
@@ -410,11 +429,27 @@ removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
       ENUMERATE_DOF (idual_node, dual_nodes.connectedItems(link_lid))
       {
         auto dual_item = m_graph_connectivity->dualItem(*idual_node);
-        if(cell_to_remove_set.find(dual_item->localId())!=cell_to_remove_set.end())
+        switch(dual_item.kind())
         {
+          case IK_Cell :
+          if(cell_to_remove_set.find(dual_item->localId())!=cell_to_remove_set.end())
             to_remove = true ;
+          break ;
+          case IK_Face :
+            if(face_to_remove_set.find(dual_item->localId())!=face_to_remove_set.end())
+              to_remove = true ;
             break ;
+          case IK_Node :
+            if(node_to_remove_set.find(dual_item->localId())!=node_to_remove_set.end())
+              to_remove = true ;
+            break ;
+          case IK_Particle:
+            if(dual_item.itemBase().isSuppressed())
+              to_remove = true ;
+          break ;
         }
+        if(to_remove)
+          break ;
       }
       if(to_remove)
       {
@@ -422,6 +457,7 @@ removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
         ENUMERATE_DOF (idual_node, dual_nodes.connectedItems(link_lid))
         {
           m_dualnodes_incremental_connectivity->removeConnectedItem(ItemLocalId(idual_node->localId()),link_lid) ;
+          //info()<<"     REMOVE DUALNODE : "<<idual_node->uniqueId()<<" FROM REMOVED LINK "<<linkFamily()->itemsInternal()[link_lid]->uniqueId();
         }
       }
     }
@@ -435,10 +471,13 @@ removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
   }
   {
     auto incremental_dof2cell_connectivity = m_incremental_connectivities[m_connectivity_indexes_per_type[IT_DualCell]] ;
-    auto source_family = incremental_dof2cell_connectivity->sourceFamily() ;
+    auto incremental_dof2face_connectivity = m_incremental_connectivities[m_connectivity_indexes_per_type[IT_DualFace]] ;
+    auto incremental_dof2node_connectivity = m_incremental_connectivities[m_connectivity_indexes_per_type[IT_DualNode]] ;
+    auto incremental_dof2part_connectivity = m_incremental_connectivities[m_connectivity_indexes_per_type[IT_DualParticle]] ;
 
-    auto dof_family = dynamic_cast<DoFFamily*>(source_family) ;
-    auto accessor = incremental_dof2cell_connectivity->connectivityAccessor() ;
+    //auto source_family = incremental_dof2cell_connectivity->sourceFamily() ;
+    //auto dof_family = dynamic_cast<DoFFamily*>(source_family) ;
+    //auto accessor = incremental_dof2cell_connectivity->connectivityAccessor() ;
 
     //ENUMERATE_ITEM (idualnode, dualNodeFamily()->allItems())
     for(auto idualnode : dualNodeFamily()->itemsInternal())
@@ -447,15 +486,45 @@ removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
       auto dualnode_lid = ItemLocalId(idualnode) ;
       //auto lid = idualnode->localId() ;
       auto dual_item = m_graph_connectivity->dualItem(DoF(idualnode));
-      if(cell_to_remove_set.find(dual_item->localId())!=cell_to_remove_set.end())
+      switch(dual_item.kind())
       {
-        incremental_dof2cell_connectivity->replaceConnectedItem(dualnode_lid,0,ItemLocalId(-1)) ;
-        m_detached_dualnode_lids.add(dualnode_lid) ;
+        case IK_Cell :
+        if(cell_to_remove_set.find(dual_item.localId())!=cell_to_remove_set.end())
+        {
+          incremental_dof2cell_connectivity->replaceConnectedItem(dualnode_lid,0,ItemLocalId(-1)) ;
+          m_detached_dualnode_lids.add(dualnode_lid) ;
+          //info()<<"     REMOVE DUALCELL : "<<idualnode->uniqueId();
+
+        }
+        break ;
+        case IK_Face :
+          if(face_to_remove_set.find(dual_item.localId())!=face_to_remove_set.end())
+          {
+            incremental_dof2face_connectivity->replaceConnectedItem(dualnode_lid,0,ItemLocalId(-1)) ;
+            m_detached_dualnode_lids.add(dualnode_lid) ;
+            //info()<<"     REMOVE DUALFACE : "<<idualnode->uniqueId();
+          }
+          break ;
+        case IK_Node :
+          if(node_to_remove_set.find(dual_item.localId())!=node_to_remove_set.end())
+          {
+            incremental_dof2node_connectivity->replaceConnectedItem(dualnode_lid,0,ItemLocalId(-1)) ;
+            m_detached_dualnode_lids.add(dualnode_lid) ;
+            //info()<<"     REMOVE DUALNODE : "<<idualnode->uniqueId();
+          }
+          break ;
+        case IK_Particle :
+          if(dual_item.itemBase().isSuppressed())
+          {
+              incremental_dof2part_connectivity->replaceConnectedItem(dualnode_lid,0,ItemLocalId(-1)) ;
+              m_detached_dualnode_lids.add(dualnode_lid) ;
+              //info()<<"     REMOVE DUALPART : "<<idualnode->uniqueId();
+          }
       }
     }
 
     removeDualNodes(m_detached_dualnode_lids) ;
-    //dualnode_family->endUpdate() ;
+    //dualNodeFamily()->endUpdate() ;
     m_detached_dualnode_lids.clear() ;
   }
   m_update_sync_info = false ;
@@ -588,13 +657,13 @@ endUpdate()
         link_uids.add(ilink->uniqueId());
         auto value = dual_uid_mng.uniqueIdOfPairOfDualItems(*ilink) ;
         eItemKind dualitem_kind_1 = std::get<0>(value.first) ;
-        Int64   dualitem_uid_1  = std::get<1>(value.first) ;
-        Int64   dof_uid_1       = dual_uid_mng.uniqueIdOf(dualitem_kind_1,dualitem_uid_1) ;
+        Int64     dualitem_uid_1  = std::get<1>(value.first) ;
+        Int64     dof_uid_1       = dual_uid_mng.uniqueIdOf(dualitem_kind_1,dualitem_uid_1) ;
         dualnode_uids.add(dof_uid_1) ;
 
         eItemKind dualitem_kind_2 = std::get<0>(value.second) ;
-        Int64    dualitem_uid_2 = std::get<1>(value.second) ;
-        Int64         dof_uid_2 = dual_uid_mng.uniqueIdOf(dualitem_kind_2,dualitem_uid_2) ;
+        Int64      dualitem_uid_2 = std::get<1>(value.second) ;
+        Int64           dof_uid_2 = dual_uid_mng.uniqueIdOf(dualitem_kind_2,dualitem_uid_2) ;
         dualnode_uids.add(dof_uid_2) ;
 
         //info()<<"    ADDED DOF UID "<<ilink->uniqueId();
@@ -697,6 +766,7 @@ printDualNodes() const
     auto dual_item = graph_connectivity.dualItem(*idualnode);
     info() << "           DualItem : lid = " << dual_item.localId();
     info() << "                      uid = " << dual_item.uniqueId();
+    info() << "                     kind = " << dual_item.kind();
     auto links = graph_connectivity.links(*idualnode);
     for (auto const& link : links) {
       info() << "           Connected link : lid = " << link.localId();
