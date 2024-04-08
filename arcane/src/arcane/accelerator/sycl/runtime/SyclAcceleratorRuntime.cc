@@ -114,26 +114,24 @@ fillDevicesAndSetDefaultQueue()
     std::cout << "Platform: "
               << platform.get_info<sycl::info::platform::name>()
               << std::endl;
-
-    for (auto device : platform.get_devices()) {
-      std::cout << "\nDevice: " << device.get_info<sycl::info::device::name>()
-                << "\nVersion=" << device.get_info<sycl::info::device::version>()
-                << std::endl;
-      // Pour l'instant, on prend comme file par défaut la première trouvée
-      // et on ne considère qu'un seul device accessible.
-      if (!m_default_queue) {
-        m_default_queue = std::make_unique<sycl::queue>(device);
-
-        DeviceInfo device_info;
-        device_info.setDescription("No description info");
-        device_info.setDeviceId(DeviceId(0));
-        device_info.setName(device.get_info<sycl::info::device::name>());
-        m_device_info_list.addDevice(device_info);
-      }
-    }
   }
-  if (!m_default_queue)
-    ARCANE_FATAL("No device found");
+
+  sycl::device device{ sycl::gpu_selector_v };
+  //for (auto device : platform.get_devices()) {
+  std::cout << "\nDevice: " << device.get_info<sycl::info::device::name>()
+            << "\nVersion=" << device.get_info<sycl::info::device::version>()
+            << std::endl;
+  // Pour l'instant, on prend comme file par défaut la première trouvée
+  // et on ne considère qu'un seul device accessible.
+  if (!m_default_queue) {
+    m_default_queue = std::make_unique<sycl::queue>(device);
+
+    DeviceInfo device_info;
+    device_info.setDescription("No description info");
+    device_info.setDeviceId(DeviceId(0));
+    device_info.setName(device.get_info<sycl::info::device::name>());
+    m_device_info_list.addDevice(device_info);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -156,6 +154,8 @@ arcaneRegisterAcceleratorRuntimesycl()
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Sycl;
+  Arcane::Accelerator::impl::setUsingSYCLRuntime(true);
+  Arcane::Accelerator::impl::setSYCLRunQueueRuntime(&global_sycl_runtime);
   Arcane::platform::setAcceleratorHostMemoryAllocator(getSyclMemoryAllocator());
   IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
   mrm->setIsAccelerator(true);

@@ -46,7 +46,7 @@ _applyPropertyVisitor(V& p)
 {
   auto b = p.builder();
   p << b.addString("AcceleratorRuntime")
-        .addDescription("Name of the accelerator runtime (currently only 'cuda' or 'hip') to use")
+        .addDescription("Name of the accelerator runtime (currently only 'cuda', 'hip' or 'sycl') to use")
         .addCommandLineArgument("AcceleratorRuntime")
         .addGetter([](auto a) { return a.x.acceleratorRuntime(); })
         .addSetter([](auto a) { a.x.setAcceleratorRuntime(a.v); });
@@ -153,6 +153,8 @@ executionPolicy() const
     return eExecutionPolicy::CUDA;
   if (a=="hip")
     return eExecutionPolicy::HIP;
+  if (a=="sycl")
+    return eExecutionPolicy::SYCL;
   if (!a.null())
     return eExecutionPolicy::None;
   if (TaskFactory::isActive())

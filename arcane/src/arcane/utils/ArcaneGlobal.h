@@ -57,6 +57,13 @@
  */
 #define ARCANE_COMPILING_HIP
 #endif
+#if defined(ARCANE_HAS_SYCL) && defined(SYCL_LANGUAGE_VERSION)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de SYCL et qu'on utilise le compilateur SYCL.
+ */
+#define ARCANE_COMPILING_SYCL
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
