@@ -426,9 +426,9 @@ removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
       if (ilink->isSuppressed()) continue;
       auto link_lid = ItemLocalId(ilink) ;
       bool to_remove = false ;
-      for( auto dual_node : dual_nodes.connectedItems(link_lid))
+      ENUMERATE_DOF(idual_node,dual_nodes.connectedItems(link_lid))
       {
-        auto dual_item = m_graph_connectivity->dualItem(dual_node);
+        auto dual_item = m_graph_connectivity->dualItem(*idual_node);
         switch(dual_item.kind())
         {
           case IK_Cell :
@@ -454,9 +454,9 @@ removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
       if(to_remove)
       {
         link_to_remove_set.insert(link_lid) ;
-        for(auto dual_node : dual_nodes.connectedItems(link_lid))
+        ENUMERATE_DOF(idual_node,dual_nodes.connectedItems(link_lid))
         {
-          m_dualnodes_incremental_connectivity->removeConnectedItem(ItemLocalId(dual_node.localId()),link_lid) ;
+          m_dualnodes_incremental_connectivity->removeConnectedItem(ItemLocalId(idual_node->localId()),link_lid) ;
         }
       }
     }
