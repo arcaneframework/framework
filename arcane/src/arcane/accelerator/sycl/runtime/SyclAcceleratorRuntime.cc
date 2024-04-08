@@ -40,12 +40,77 @@ namespace Arcane::Accelerator::Sycl
 
 using namespace Arccore;
 
+#define ARCANE_SYCL_FUNC_NOT_HANDLED \
+  std::cout << "WARNING: SYCL: function not handled " << A_FUNCINFO << "\n"
+
+class SyclRunnerRuntime;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class SyclRunQueueStream
+: public impl::IRunQueueStream
+{
+ public:
+
+  SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi);
+  ~SyclRunQueueStream() override
+  {
+  }
+
+ public:
+
+  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
+  {
+    return m_runtime->notifyBeginLaunchKernel();
+  }
+  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
+  {
+    return m_runtime->notifyEndLaunchKernel();
+  }
+  void barrier() override
+  {
+    m_sycl_stream->wait();
+  }
+  bool _barrierNoException() override
+  {
+    m_sycl_stream->wait();
+    return false;
+  }
+  void copyMemory(const MemoryCopyArgs& args) override
+  {
+    ARCANE_FATAL("NYI");
+  }
+  void prefetchMemory(const MemoryPrefetchArgs& args) override
+  {
+    ARCANE_SYCL_FUNC_NOT_HANDLED;
+  }
+  void* _internalImpl() override
+  {
+    return m_sycl_stream.get();
+  }
+
+ public:
+
+  sycl::queue& trueStream() const
+  {
+    return *m_sycl_stream;
+  }
+
+ private:
+
+  impl::IRunnerRuntime* m_runtime;
+  std::unique_ptr<sycl::queue> m_sycl_stream;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class SyclRunnerRuntime
 : public impl::IRunnerRuntime
 {
+  friend class SyclRunQueueStream;
+
  public:
 
   void notifyBeginLaunchKernel() override
@@ -56,7 +121,7 @@ class SyclRunnerRuntime
   }
   void barrier() override
   {
-    ARCANE_FATAL("NYI");
+    ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
   eExecutionPolicy executionPolicy() const override
   {
@@ -64,7 +129,7 @@ class SyclRunnerRuntime
   }
   impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
-    ARCANE_FATAL("NYI");
+    return new SyclRunQueueStream(this, bi);
   }
   impl::IRunQueueEventImpl* createEventImpl() override
   {
@@ -76,33 +141,50 @@ class SyclRunnerRuntime
   }
   void setMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
-    ARCANE_FATAL("NYI");
+    ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
   void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
-    ARCANE_FATAL("NYI");
+    ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
 
   void setCurrentDevice(DeviceId device_id) final
   {
-    ARCANE_FATAL("NYI");
+    ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
   const IDeviceInfoList* deviceInfoList() override { return &m_device_info_list; }
 
   void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
   {
-    ARCANE_FATAL("NYI");
+    ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
 
   void fillDevicesAndSetDefaultQueue();
-  const sycl::queue& defaultQueue() const { return *m_default_queue; }
+  sycl::queue& defaultQueue() const { return *m_default_queue; }
+  sycl::device& defaultDevice() const { return *m_default_device; }
 
  private:
 
   bool m_is_verbose = false;
   impl::DeviceInfoList m_device_info_list;
+  std::unique_ptr<sycl::device> m_default_device;
   std::unique_ptr<sycl::queue> m_default_queue;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SyclRunQueueStream::
+SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
+: m_runtime(runtime)
+{
+  if (bi.isDefault())
+    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice());
+  else {
+    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice());
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -117,21 +199,19 @@ fillDevicesAndSetDefaultQueue()
   }
 
   sycl::device device{ sycl::gpu_selector_v };
-  //for (auto device : platform.get_devices()) {
   std::cout << "\nDevice: " << device.get_info<sycl::info::device::name>()
             << "\nVersion=" << device.get_info<sycl::info::device::version>()
             << std::endl;
   // Pour l'instant, on prend comme file par défaut la première trouvée
   // et on ne considère qu'un seul device accessible.
-  if (!m_default_queue) {
-    m_default_queue = std::make_unique<sycl::queue>(device);
+  m_default_device = std::make_unique<sycl::device>(device);
+  m_default_queue = std::make_unique<sycl::queue>(device);
 
-    DeviceInfo device_info;
-    device_info.setDescription("No description info");
-    device_info.setDeviceId(DeviceId(0));
-    device_info.setName(device.get_info<sycl::info::device::name>());
-    m_device_info_list.addDevice(device_info);
-  }
+  DeviceInfo device_info;
+  device_info.setDescription("No description info");
+  device_info.setDeviceId(DeviceId(0));
+  device_info.setName(device.get_info<sycl::info::device::name>());
+  m_device_info_list.addDevice(device_info);
 }
 
 /*---------------------------------------------------------------------------*/

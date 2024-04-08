@@ -93,6 +93,10 @@ getBadPolicyMessage(eExecutionPolicy policy);
 #define ARCANE_FATAL_NO_CUDA_COMPILATION() \
   ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::CUDA));
 
+//! Macro pour indiquer qu'un noyau n'a pas été compilé avec SYCL
+#define ARCANE_FATAL_NO_SYCL_COMPILATION() \
+  ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::SYCL));
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
