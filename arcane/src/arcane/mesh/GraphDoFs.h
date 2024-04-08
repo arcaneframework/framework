@@ -69,7 +69,7 @@ class GraphObserverT
 : public IGraphObserver
 {
  public:
-  GraphObserverT(T* parent)
+  explicit GraphObserverT(T* parent)
   : m_parent(parent)
   {}
 

@@ -931,7 +931,8 @@ _propagatesToChildConnectivities(IItemFamily* family)
    * child_connectivities.add(m_mesh->itemFamilyNetwork()->getConnectivity(family,m_mesh->cellFamily(),mesh::connectivityName(family,m_mesh->cellFamily())));
    * }
    */
-  auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildConnectivities(family);
+  //auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildConnectivities(family);
+  auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildDependencies(family); // Only dependencies are required to propagate owner
   for (const auto& child_connectivity : child_connectivities){
     //if(!child_connectivity->isEmpty())
     {
