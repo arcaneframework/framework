@@ -50,6 +50,8 @@ namespace
   impl::IRunnerRuntime* global_cuda_runqueue_runtime = nullptr;
   bool global_is_using_hip_runtime = false;
   impl::IRunnerRuntime* global_hip_runqueue_runtime = nullptr;
+  bool global_is_using_sycl_runtime = false;
+  impl::IRunnerRuntime* global_sycl_runqueue_runtime = nullptr;
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -119,6 +121,36 @@ setHIPRunQueueRuntime(impl::IRunnerRuntime* v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT bool impl::
+isUsingSYCLRuntime()
+{
+  return global_is_using_sycl_runtime;
+}
+
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void impl::
+setUsingSYCLRuntime(bool v)
+{
+  global_is_using_sycl_runtime = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT impl::IRunnerRuntime* impl::
+getSYCLRunQueueRuntime()
+{
+  return global_hip_runqueue_runtime;
+}
+
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void impl::
+setSYCLRunQueueRuntime(impl::IRunnerRuntime* v)
+{
+  global_hip_runqueue_runtime = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Affiche le nom de la politique d'exécution
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 std::ostream&
@@ -139,6 +171,9 @@ operator<<(std::ostream& o, eExecutionPolicy exec_policy)
     break;
   case eExecutionPolicy::HIP:
     o << "HIP";
+    break;
+  case eExecutionPolicy::SYCL:
+    o << "SYCL";
     break;
   }
   return o;
@@ -186,6 +221,8 @@ getAcceleratorRunnerRuntime()
     return getCUDARunQueueRuntime();
   if (isUsingHIPRuntime())
     return getHIPRunQueueRuntime();
+  if (isUsingSYCLRuntime())
+    return getSYCLRunQueueRuntime();
   return nullptr;
 }
 
