@@ -43,11 +43,12 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class GraphConnectivityObserverT
 : public IGraphConnectivityObserver
 {
  public:
+
   GraphConnectivityObserverT(T* parent)
   : m_parent(parent)
   {}
@@ -56,19 +57,20 @@ class GraphConnectivityObserverT
 
   void notifyUpdateConnectivity()
   {
-    m_parent->updateGraphConnectivity() ;
+    m_parent->updateGraphConnectivity();
   }
 
- private :
+ private:
+
   T* m_parent = nullptr;
 };
 
-
-template<typename T>
+template <typename T>
 class GraphObserverT
 : public IGraphObserver
 {
  public:
+
   explicit GraphObserverT(T* parent)
   : m_parent(parent)
   {}
@@ -77,13 +79,13 @@ class GraphObserverT
 
   void notifyUpdate()
   {
-    m_parent->notifyGraphUpdate() ;
+    m_parent->notifyGraphUpdate();
   }
 
- private :
+ private:
+
   T* m_parent = nullptr;
 };
-
 
 class GraphDoFs;
 
@@ -91,6 +93,7 @@ class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
 : public IGraphConnectivity
 {
  public:
+
   GraphIncrementalConnectivity(IItemFamily const* dualnode_family,
                                IItemFamily const* link_family,
                                Arcane::mesh::IncrementalItemConnectivity* dualnode_connectivity,
@@ -152,6 +155,7 @@ class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
   }
 
  private:
+
   IItemFamily const* m_dualnode_family = nullptr;
   IItemFamily const* m_link_family = nullptr;
   Arcane::mesh::IncrementalItemConnectivity* m_dualnode_connectivity = nullptr;
@@ -171,6 +175,7 @@ class ARCANE_MESH_EXPORT GraphDoFs
 , public IGraphModifier2
 {
  public:
+
   friend class GraphIncrementalConnectivity;
 
   typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
@@ -179,11 +184,13 @@ class ARCANE_MESH_EXPORT GraphDoFs
   static const String linkFamilyName() { return "Links"; }
 
  public:
+
   GraphDoFs(IMesh* mesh, String particle_family_name = ParticleFamily::defaultFamilyName());
 
   virtual ~GraphDoFs() {}
 
  public:
+
   IGraphModifier2* modifier() override { return this; }
 
   IGraphConnectivity const* connectivity() const override
@@ -194,28 +201,27 @@ class ARCANE_MESH_EXPORT GraphDoFs
   Integer registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer) override
   {
     Integer id = CheckedConvert::toInteger(m_connectivity_observer.size());
-    m_connectivity_observer.push_back(std::unique_ptr<IGraphConnectivityObserver>(observer)) ;
-    return id ;
+    m_connectivity_observer.push_back(std::unique_ptr<IGraphConnectivityObserver>(observer));
+    return id;
   }
 
   void releaseGraphConnectivityObserver(Integer observer_id) override
   {
-    if((observer_id>=0)&&(observer_id < (Integer) m_connectivity_observer.size()))
-      m_connectivity_observer[observer_id].reset() ;
+    if ((observer_id >= 0) && (observer_id < (Integer)m_connectivity_observer.size()))
+      m_connectivity_observer[observer_id].reset();
   }
-
 
   Integer registerNewGraphObserver(IGraphObserver* observer) override
   {
     Integer id = CheckedConvert::toInteger(m_graph_observer.size());
-    m_graph_observer.push_back(std::unique_ptr<IGraphObserver>(observer)) ;
-    return id ;
+    m_graph_observer.push_back(std::unique_ptr<IGraphObserver>(observer));
+    return id;
   }
 
   void releaseGraphObserver(Integer observer_id) override
   {
-    if((observer_id>=0)&&(observer_id < (Integer) m_graph_observer.size()))
-      m_graph_observer[observer_id].reset() ;
+    if ((observer_id >= 0) && (observer_id < (Integer)m_graph_observer.size()))
+      m_graph_observer[observer_id].reset();
   }
 
   IItemFamily* dualNodeFamily() override { return &m_dual_node_family; }
@@ -243,7 +249,7 @@ class ARCANE_MESH_EXPORT GraphDoFs
 
   void removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids) override;
 
-  bool isUpdated() override ;
+  bool isUpdated() override;
 
   void endUpdate() override;
 
@@ -253,6 +259,7 @@ class ARCANE_MESH_EXPORT GraphDoFs
   void printLinks() const override;
 
  private:
+
   String _className() const { return "GraphDoFs"; }
   inline Integer _connectivityIndex(Integer dual_node_IT) const
   {
@@ -262,6 +269,7 @@ class ARCANE_MESH_EXPORT GraphDoFs
   }
 
  private:
+
   IItemFamily* _dualItemFamily(Arcane::eItemKind kind)
   {
     if (kind == IK_Particle) {
@@ -295,7 +303,7 @@ class ARCANE_MESH_EXPORT GraphDoFs
   IMesh* m_mesh = nullptr;
   IItemFamilyNetwork* m_item_family_network = nullptr;
   bool m_graph_allocated = false;
-  Integer m_graph_id = -1 ;
+  Integer m_graph_id = -1;
 
   ItemConnectivityMng m_connectivity_mng;
   DoFManager m_dof_mng;
@@ -307,17 +315,17 @@ class ARCANE_MESH_EXPORT GraphDoFs
   Arcane::mesh::IncrementalItemConnectivity* m_dualnodes_incremental_connectivity = nullptr;
   Arcane::mesh::IncrementalItemConnectivity* m_links_incremental_connectivity = nullptr;
   std::unique_ptr<GraphIncrementalConnectivity> m_graph_connectivity;
-  std::vector<std::unique_ptr<Arcane::IGraphConnectivityObserver>> m_connectivity_observer ;
+  std::vector<std::unique_ptr<Arcane::IGraphConnectivityObserver>> m_connectivity_observer;
 
-  std::vector<std::unique_ptr<Arcane::IGraphObserver>> m_graph_observer ;
+  std::vector<std::unique_ptr<Arcane::IGraphObserver>> m_graph_observer;
 
   std::vector<std::unique_ptr<Arcane::GhostLayerFromConnectivityComputer>> m_ghost_layer_computers;
   Int32UniqueArray m_connectivity_indexes_per_type;
   std::array<Integer, NB_BASIC_ITEM_TYPE> m_dualnode_kinds = { IT_DualNode, IT_DualEdge, IT_DualFace, IT_DualCell, IT_DualParticle };
   ItemScalarProperty<Integer> m_dual_node_to_connectivity_index;
 
-  UniqueArray<Int32> m_detached_dualnode_lids ;
-  UniqueArray<Int32> m_detached_link_lids ;
+  UniqueArray<Int32> m_detached_dualnode_lids;
+  UniqueArray<Int32> m_detached_link_lids;
 
   bool m_update_sync_info = false;
 
