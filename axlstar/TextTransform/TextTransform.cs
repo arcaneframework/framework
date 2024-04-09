@@ -44,13 +44,22 @@ namespace Mono.TextTemplating
 
     static int MainInternal(string[] args)
     {
-      if (args.Length == 0) {
-        Console.WriteLine("Usage: program file.tt");
+      string input_file = "";
+      string class_namespace = "";
+      if (args.Length == 1){
+        class_namespace = "Arcane.Axl";
+        input_file = args[0];
+      }
+      else if (args.Length == 3 && args[0] == "--namespace"){
+        class_namespace = args[1];
+        input_file = args[2];
+      }
+      else{
+        Console.WriteLine("Usage: program --namespace name file.tt");
         return 1;
       }
 
       var generator = new TemplateGenerator();
-      string input_file = args[0];
       if (!File.Exists(input_file)) {
         Console.Error.WriteLine("Input file '{0}' does not exist.", input_file);
         return -1;
@@ -59,10 +68,8 @@ namespace Mono.TextTemplating
       string input_dir = Path.GetDirectoryName(input_file);
       string output_file = Path.Combine(input_dir, class_name + ".cs");
 
-      Console.WriteLine("Generating class name '{0}'", class_name);
+      Console.WriteLine("Generating class name '{0}' with namespace '{1}'", class_name, class_namespace);
       Console.WriteLine("Generating file '{0}'", output_file);
-
-      string class_namespace = "Arcane.Axl";
 
       var out_encoding = new System.Text.UTF8Encoding();
       generator.PreprocessTemplate(input_file, class_name, class_namespace, output_file, out_encoding,
