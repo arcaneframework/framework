@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real3.h                                                     (C) 2000-2023 */
+/* Real3.h                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Vecteur à 3 dimensions.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -149,13 +149,7 @@ class ARCANE_UTILS_EXPORT Real3
     z = az;
   }
   //! Construit un triplet identique à \a f
-  constexpr ARCCORE_HOST_DEVICE Real3(const Real3& f)
-  : Real3POD()
-  {
-    x = f.x;
-    y = f.y;
-    z = f.z;
-  }
+  Real3(const Real3& f) = default;
   //! Construit un triplet identique à \a f
   constexpr ARCCORE_HOST_DEVICE explicit Real3(const Real3POD& f)
   : Real3POD()
@@ -182,13 +176,7 @@ class ARCANE_UTILS_EXPORT Real3
   }
 
   //! Opérateur de recopie.
-  constexpr ARCCORE_HOST_DEVICE Real3& operator=(Real3 f)
-  {
-    x = f.x;
-    y = f.y;
-    z = f.z;
-    return (*this);
-  }
+  Real3& operator=(const Real3& f) = default;
 
   //! Affecte à l'instance le triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE Real3& operator=(Real v)

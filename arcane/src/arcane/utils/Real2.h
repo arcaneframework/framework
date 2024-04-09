@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real2.h                                                     (C) 2000-2023 */
+/* Real2.h                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Vecteur à 2 dimensions de 'Real'.                                         */
 /*---------------------------------------------------------------------------*/
@@ -136,12 +136,7 @@ class ARCANE_UTILS_EXPORT Real2
     y = ay;
   }
   //! Construit un couple identique à \a f
-  constexpr ARCCORE_HOST_DEVICE Real2(const Real2& f)
-  : Real2POD()
-  {
-    x = f.x;
-    y = f.y;
-  }
+  Real2(const Real2& f) = default;
   //! Construit un coupe identique à \a f
   constexpr ARCCORE_HOST_DEVICE explicit Real2(const Real2POD& f)
   : Real2POD()
@@ -160,12 +155,8 @@ class ARCANE_UTILS_EXPORT Real2
   //! Construit l'instance en premier les deux premières composantes de Real3.
   inline constexpr ARCCORE_HOST_DEVICE explicit Real2(const Real3& v);
 
-  constexpr ARCCORE_HOST_DEVICE Real2& operator=(Real2 f)
-  {
-    x = f.x;
-    y = f.y;
-    return (*this);
-  }
+  Real2& operator=(const Real2& f) = default;
+
   //! Affecte à l'instance le couple (v,v).
   constexpr ARCCORE_HOST_DEVICE Real2& operator=(Real v)
   {

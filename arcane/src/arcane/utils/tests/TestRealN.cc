@@ -8,6 +8,9 @@
 #include <gtest/gtest.h>
 
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/NumericTypes.h"
+
+#include <type_traits>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -171,6 +174,14 @@ TEST(TestRealN,Real3x3)
     ASSERT_EQ(v1.z,rz);
     ASSERT_EQ(v1,v2);
   }
+}
+
+TEST(TestRealN,Copyable)
+{
+  ASSERT_TRUE(std::is_trivially_copyable_v<Real2>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<Real3>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<Real2x2>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<Real3x3>);
 }
 
 /*---------------------------------------------------------------------------*/
