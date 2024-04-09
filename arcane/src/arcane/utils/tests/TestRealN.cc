@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -8,6 +8,9 @@
 #include <gtest/gtest.h>
 
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/NumericTypes.h"
+
+#include <type_traits>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -171,6 +174,14 @@ TEST(TestRealN,Real3x3)
     ASSERT_EQ(v1.z,rz);
     ASSERT_EQ(v1,v2);
   }
+}
+
+TEST(TestRealN,Copyable)
+{
+  ASSERT_TRUE(std::is_trivially_copyable_v<Real2>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<Real3>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<Real2x2>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<Real3x3>);
 }
 
 /*---------------------------------------------------------------------------*/

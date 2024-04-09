@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Limits.h                                                    (C) 2000-2021 */
+/* Limits.h                                                    (C) 2000-2024 */
 /*                                                                           */
 /* Fichiers encapsulant <limits> et associés.                                */
 /*---------------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ class FloatInfo<float>
   ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 1; }
   ARCCORE_HOST_DEVICE static constexpr unsigned int maxDigit() { return FLT_DIG; }
   ARCCORE_HOST_DEVICE static constexpr float epsilon() { return FLT_EPSILON; }
-  ARCCORE_HOST_DEVICE static constexpr float nearlyEpsilon() { return FLT_EPSILON*10.; }
+  ARCCORE_HOST_DEVICE static constexpr float nearlyEpsilon() { return FLT_EPSILON*10.0f; }
   ARCCORE_HOST_DEVICE static constexpr float maxValue() { return FLT_MAX; }
   ARCCORE_HOST_DEVICE static constexpr float zero() { return 0.0f; }
 };
@@ -148,17 +148,3 @@ class FloatInfo<apfloat>
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
