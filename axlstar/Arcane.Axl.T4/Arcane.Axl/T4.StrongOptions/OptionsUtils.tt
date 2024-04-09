@@ -52,8 +52,8 @@
 	 enum_count = enum_count + Xml.Enumeration.Count();
 #>
 <# if(enum_count>0)  { #>
-#ifndef ARCANE_OPTIONS_<#= Xml.ClassName.ToUpper() #>_UTILS_H
-#define ARCANE_OPTIONS_<#= Xml.ClassName.ToUpper() #>_UTILS_H
+#ifndef ARCANE_OPTIONS_<#= Xml.CppHeaderGuardName #>_UTILS_H
+#define ARCANE_OPTIONS_<#= Xml.CppHeaderGuardName #>_UTILS_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

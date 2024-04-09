@@ -29,13 +29,13 @@ namespace Arcane.Axl
     public IEnumerable<Xsd.ExtendedType> FlatteningExtended { get; private set; }
     public IEnumerable<Xsd.Complex> FlatteningComplex { get; private set; }
 
-    public bool IsModule  { get; private set; } 
-    public bool IsService { get { return !IsModule; } } 
+    public bool IsModule  { get; private set; }
+    public bool IsService { get { return !IsModule; } }
 
-    public bool IsNotCaseOption { get; private set; } 
+    public bool IsNotCaseOption { get; private set; }
 
     public string Version { get; private set; }
-    
+
     public bool LesserThanVersionOne { get; private set; }
 
     /*!
@@ -44,6 +44,18 @@ namespace Arcane.Axl
      */
     public bool NeedTypeInclude { get; private set; }
 
+    public string CppHeaderGuardName
+    {
+      get
+      {
+        string base_name = "AXLSTAR";
+        if (!String.IsNullOrEmpty(NamespaceName))
+          base_name += "_" + NamespaceName.ToUpper().Replace(":","_");
+        else if (!String.IsNullOrEmpty(NamespaceMacroName))
+          base_name += "_" + NamespaceMacroName;
+        return base_name + "_" + ClassName.ToUpper();
+      }
+    }
     public OptionHandler (Xsd.Module module)
     {
       NamespaceName = module.namespacename;
@@ -60,7 +72,7 @@ namespace Arcane.Axl
 
       if (module.options == null || module.options.Items == null) {
         Options = new List<Xsd.Option> ();
-      } else { 
+      } else {
         Options = module.options.Items;
       }
 
@@ -80,11 +92,11 @@ namespace Arcane.Axl
       ClassName = Name;
 
       Version =  service.versionSpecified ? "1.0" : "0.0";
-      
+
       LesserThanVersionOne = !service.versionSpecified;
       if (service.options==null || service.options.Items == null) {
         Options = new List<Xsd.Option> ();
-      } else { 
+      } else {
         Options = service.options.Items;
       }
 
@@ -95,7 +107,7 @@ namespace Arcane.Axl
     {
       if (complex.Items == null) {
         Options = new List<Xsd.Option> ();
-      } else { 
+      } else {
         Options = complex.Items.Select (p => p as Xsd.Option);
       }
 
@@ -116,7 +128,7 @@ namespace Arcane.Axl
       Enumeration     = OptionsAs<Xsd.Enumeration>();
       Complex         = OptionsAs<Xsd.Complex>();
       Attribute       = OptionsAs<Xsd.Attribute>();
-     
+
       ComputeFlatteningExtended();
       ComputeFlatteningComplex();
 

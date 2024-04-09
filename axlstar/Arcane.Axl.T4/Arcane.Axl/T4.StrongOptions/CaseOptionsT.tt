@@ -92,8 +92,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CASEOPTIONST_<#= Xml.ClassName.ToUpper() #>_H
-#define ARCANE_CASEOPTIONST_<#= Xml.ClassName.ToUpper() #>_H
+#ifndef ARCANE_CASEOPTIONST_<#= Xml.CppHeaderGuardName #>_H
+#define ARCANE_CASEOPTIONST_<#= Xml.CppHeaderGuardName #>_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
