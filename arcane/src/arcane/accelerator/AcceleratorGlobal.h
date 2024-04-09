@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorGlobal.h                                         (C) 2000-2023 */
+/* AcceleratorGlobal.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -92,6 +92,10 @@ getBadPolicyMessage(eExecutionPolicy policy);
 //! Macro pour indiquer qu'un noyau n'a pas été compilé avec CUDA
 #define ARCANE_FATAL_NO_CUDA_COMPILATION() \
   ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::CUDA));
+
+//! Macro pour indiquer qu'un noyau n'a pas été compilé avec SYCL
+#define ARCANE_FATAL_NO_SYCL_COMPILATION() \
+  ARCANE_FATAL(Arcane::Accelerator::impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::SYCL));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

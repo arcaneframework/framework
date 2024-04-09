@@ -44,6 +44,8 @@ namespace
     switch (p) {
     case eExecutionPolicy::None:
       ARCANE_FATAL("No runtime for eExecutionPolicy::None");
+    case eExecutionPolicy::SYCL:
+      return impl::getSYCLRunQueueRuntime();
     case eExecutionPolicy::HIP:
       return impl::getHIPRunQueueRuntime();
     case eExecutionPolicy::CUDA:

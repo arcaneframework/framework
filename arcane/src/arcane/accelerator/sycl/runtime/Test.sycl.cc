@@ -13,6 +13,10 @@
 
 #include "arcane/accelerator/sycl/SyclAccelerator.h"
 
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/RunCommandLoop.h"
+
 #include "arcane/utils/NumArray.h"
 
 using namespace Arccore;
@@ -69,6 +73,40 @@ extern "C" int arcaneTestSycl2()
      inout_data[i] *= 3;
    })
   .wait();
+
+  for (int i = 0; i < N; i++)
+    std::cout << data[i] << std::endl;
+
+  return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Idem Test1 avec des NumArray
+extern "C" int arcaneTestSycl3()
+{
+  const int N = 12;
+  std::cout << "TEST 3\n";
+
+  Runner runner_sycl(eExecutionPolicy::SYCL);
+  RunQueue queue{makeQueue(runner_sycl)};
+  sycl::queue q;
+
+  NumArray<Int32, MDDim1> data(N);
+
+  for (int i = 0; i < N; i++)
+    data[i] = i;
+
+  {
+    auto command = makeCommand(queue);
+    Span<Int32> inout_data(data.to1DSpan());
+    command << RUNCOMMAND_LOOP1(iter, N)
+    {
+      auto [i] = iter();
+      inout_data[i] *= 4;
+    };
+  }
 
   for (int i = 0; i < N; i++)
     std::cout << data[i] << std::endl;

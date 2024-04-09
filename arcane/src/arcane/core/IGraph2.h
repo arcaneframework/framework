@@ -72,6 +72,15 @@ public:
 
 };
 
+class ARCANE_CORE_EXPORT IGraphObserver
+{
+public:
+  virtual ~IGraphObserver() {}
+
+  virtual void notifyUpdate() = 0 ;
+
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -92,6 +101,10 @@ public:
   virtual Integer registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer) = 0 ;
 
   virtual void releaseGraphConnectivityObserver(Integer observer_id) = 0 ;
+
+  virtual Integer registerNewGraphObserver(IGraphObserver* observer) = 0 ;
+
+  virtual void releaseGraphObserver(Integer observer_id) = 0 ;
 
   virtual bool isUpdated() = 0 ;
 

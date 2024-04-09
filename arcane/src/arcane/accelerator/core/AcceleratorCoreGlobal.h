@@ -91,7 +91,9 @@ enum class eExecutionPolicy
   //! Politique d'exécution utilisant l'environnement CUDA
   CUDA,
   //! Politique d'exécution utilisant l'environnement HIP
-  HIP
+  HIP,
+  //! Politique d'exécution utilisant l'environnement SYCL
+  SYCL
 };
 
 //! Affiche le nom de la politique d'exécution
@@ -175,7 +177,7 @@ enum class ePointerAccessibility
 inline bool
 isAcceleratorPolicy(eExecutionPolicy exec_policy)
 {
-  return exec_policy == eExecutionPolicy::CUDA || exec_policy == eExecutionPolicy::HIP;
+  return exec_policy == eExecutionPolicy::CUDA || exec_policy == eExecutionPolicy::HIP || exec_policy == eExecutionPolicy::SYCL;
 }
 
 /*---------------------------------------------------------------------------*/
