@@ -2466,10 +2466,7 @@ refine()
 
   // On positionne les noeuds dans l'espace.
   for(Cell parent_cell : cell_to_refine_internals){
-    for(Integer i = 0; i < parent_cell.nbHChildren(); ++i){
-      Cell child = parent_cell.hChild(i);
-      m_num_mng->setChildNodeCoordinates(child);
-    }
+    m_num_mng->setChildNodeCoordinates(parent_cell);
   }
 
 //  ENUMERATE_(Cell, icell, m_mesh->allCells()){

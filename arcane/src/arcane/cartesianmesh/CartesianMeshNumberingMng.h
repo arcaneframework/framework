@@ -85,7 +85,7 @@ class CartesianMeshNumberingMng
   void getCellUidsAround(ArrayView<Int64> uid, Int64 cell_uid, Int32 level) override;
   void getCellUidsAround(ArrayView<Int64> uid, Cell cell) override;
 
-  void setChildNodeCoordinates(Cell child_cell) override;
+  void setChildNodeCoordinates(Cell parent_cell) override;
   void setParentNodeCoordinates(Cell parent_cell) override;
 
   Int64 getParentCellUidOfCell(Cell cell) override;

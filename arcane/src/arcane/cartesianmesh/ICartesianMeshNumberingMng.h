@@ -319,7 +319,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    *
    * @param child_cell La maille enfant.
    */
-  virtual void setChildNodeCoordinates(Cell child_cell) = 0;
+  virtual void setChildNodeCoordinates(Cell parent_cell) = 0;
 
   /*!
    * @brief Méthode permettant de définir les coordonnées spatiales des nodes d'une maille parent.

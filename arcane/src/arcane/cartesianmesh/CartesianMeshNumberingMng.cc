@@ -557,59 +557,83 @@ getCellUidsAround(ArrayView<Int64> uid, Int64 cell_uid, Int32 level)
 }
 
 void CartesianMeshNumberingMng::
-setChildNodeCoordinates(Cell child_cell)
+setChildNodeCoordinates(Cell parent_cell)
 {
-  // TODO : A refaire
-  if (!(child_cell.itemBase().flags() & ItemFlags::II_JustAdded)) {
-    ARCANE_FATAL("Cell not II_JustAdded");
+  if (!(parent_cell.itemBase().flags() & ItemFlags::II_JustRefined)) {
+    ARCANE_FATAL("Cell not II_JustRefined");
   }
-  Cell parent_cell = child_cell.hParent();
 
   VariableNodeReal3& nodes_coords = m_mesh->nodesCoordinates();
+  Int32 nb_children = parent_cell.nbHChildren();
 
-  Real3 pos(
-  Real(uidToCoordX(child_cell) % m_pattern),
-  Real(uidToCoordY(child_cell) % m_pattern),
-  (m_mesh->dimension() == 2 ? 0 : Real(uidToCoordZ(child_cell) % m_pattern)));
+  auto cell_at_pos = [&](Int32 x, Int32 y, Int32 z, Int64 uid) {
+    Cell fin = parent_cell.hChild(x + (y * m_pattern) + (z * m_pattern * m_pattern));
+    if (fin.uniqueId() != uid) {
+      for (Integer i = 0; i < nb_children; ++i) {
+        if (parent_cell.hChild(i).uniqueId() == uid) {
+          return parent_cell.hChild(i);
+        }
+      }
+      ARCANE_FATAL("Unknown cell uid -- uid : {0} -- parent_uid : {1}", uid, parent_cell.uniqueId());
+    }
+    return fin;
+  };
 
-  Real3 size_child_cell;
+  auto txty = [&](Integer pos_x, Integer pos_y) -> Real3 {
+    Real x = (Real)pos_x / (Real)m_pattern;
+    Real y = (Real)pos_y / (Real)m_pattern;
 
-  if (m_mesh->dimension() == 2) {
-    size_child_cell = nodes_coords[parent_cell.node(2)] - nodes_coords[parent_cell.node(0)];
-  }
-  else {
-    size_child_cell = nodes_coords[parent_cell.node(6)] - nodes_coords[parent_cell.node(0)];
-  }
-  size_child_cell /= m_pattern;
+    info() << "[txty] x : " << x << " -- y : " << y;
 
-  Real3 origin_parent_cell(nodes_coords[parent_cell.node(0)]);
-  Real3 origin_child_cell(origin_parent_cell + (size_child_cell * pos));
+    Real3& node0(nodes_coords[parent_cell.node(0)]);
+    Real3& node1(nodes_coords[parent_cell.node(1)]);
+    Real3& node2(nodes_coords[parent_cell.node(2)]);
+    Real3& node3(nodes_coords[parent_cell.node(3)]);
 
-  nodes_coords[child_cell.node(0)] = origin_child_cell;
+    info() << "[txty] node0 : " << node0
+           << " -- node1 : " << node1
+           << " -- node2 : " << node2
+           << " -- node3 : " << node3;
 
-  nodes_coords[child_cell.node(1)] = origin_child_cell;
-  nodes_coords[child_cell.node(1)].x += size_child_cell.x;
+    Real i = (node3.x - node0.x) * y + node0.x;
+    Real j = (node2.x - node1.x) * y + node1.x;
 
-  nodes_coords[child_cell.node(2)] = origin_child_cell;
-  nodes_coords[child_cell.node(2)].x += size_child_cell.x;
-  nodes_coords[child_cell.node(2)].y += size_child_cell.y;
+    Real k = (node1.y - node0.y) * x + node0.y;
+    Real l = (node2.y - node3.y) * x + node3.y;
 
-  nodes_coords[child_cell.node(3)] = origin_child_cell;
-  nodes_coords[child_cell.node(3)].y += size_child_cell.y;
+    Real tx = (j - i) * x + i;
+    Real ty = (l - k) * y + k;
 
-  if (m_mesh->dimension() == 3) {
-    nodes_coords[child_cell.node(4)] = origin_child_cell;
-    nodes_coords[child_cell.node(4)].z += size_child_cell.z;
+    info() << "[txty] i : " << i
+           << " -- j : " << j
+           << " -- k : " << k
+           << " -- l : " << l
+           << " -- tx : " << tx
+           << " -- ty : " << ty;
 
-    nodes_coords[child_cell.node(5)] = origin_child_cell;
-    nodes_coords[child_cell.node(5)].x += size_child_cell.x;
-    nodes_coords[child_cell.node(5)].z += size_child_cell.z;
+    return { tx, ty, 0 };
+  };
 
-    nodes_coords[child_cell.node(6)] = origin_child_cell + size_child_cell;
+  const Integer node_1d_2d_x[] = { 0, 1, 1, 0 };
+  const Integer node_1d_2d_y[] = { 0, 0, 1, 1 };
 
-    nodes_coords[child_cell.node(7)] = origin_child_cell;
-    nodes_coords[child_cell.node(7)].y += size_child_cell.y;
-    nodes_coords[child_cell.node(7)].z += size_child_cell.z;
+  for (Integer j = 0; j < m_pattern; ++j) {
+    for (Integer i = 0; i < m_pattern; ++i) {
+
+      Integer begin = (i == 0 && j == 0 ? 0 : j == 0 ? 1
+                                                     : 2);
+      Integer end = (i == 0 ? getNbNode() : getNbNode() - 1);
+      Cell child = cell_at_pos(i, j, 0, getChildCellUidOfCell(parent_cell, i, j));
+
+      for (Integer inode = begin; inode < end; ++inode) {
+        Real3 pos = txty(i + node_1d_2d_x[inode], j + node_1d_2d_y[inode]);
+        nodes_coords[child.node(inode)] = pos;
+        info() << "Node uid : " << child.node(inode).uniqueId()
+               << " -- nodeX : " << (i + node_1d_2d_x[inode])
+               << " -- nodeY : " << (j + node_1d_2d_y[inode])
+               << " -- Pos : " << pos;
+      }
+    }
   }
 }
 
