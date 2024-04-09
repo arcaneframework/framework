@@ -223,17 +223,17 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
   MCGSolverLinearSystem* m_system = nullptr;
 
-  MCGInternal::UniqueKey m_A_key;
+  MCGSolver::UniqueKey m_A_key;
   int64_t m_A_time_stamp = 0;
   bool m_A_update = true;
 
-  MCGInternal::UniqueKey m_b_key;
+  MCGSolver::UniqueKey m_b_key;
   int64_t m_b_time_stamp = 0;
   bool m_b_update = true;
 
-  MCGInternal::UniqueKey m_x_key;
+  MCGSolver::UniqueKey m_x_key;
 
-  MCGInternal::UniqueKey m_x0_key;
+  MCGSolver::UniqueKey m_x0_key;
   int64_t m_x0_time_stamp = 0;
   bool m_x0_update = true;
 

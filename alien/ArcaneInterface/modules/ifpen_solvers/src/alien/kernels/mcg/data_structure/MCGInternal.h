@@ -23,20 +23,13 @@
 #include "BCSR/BCSRMatrix.h"
 #include "BCSRgpu/BCSRgpuMatrix.h"
 #include "MCGSolver/LinearSystem/BVector.h"
+#include "MCGSolver/GPULinearSystem/GPUBVector.h"
 #include "Precond/PrecondEquation.h"
 
 #include <alien/kernels/mcg/MCGPrecomp.h>
 
 BEGIN_MCGINTERNAL_NAMESPACE
 
-#if 0
-//! Check parallel feature for MCG
-inline void
-checkParallel(bool)
-{
-    // This behaviour may be changed when Parallel MCG will be plugged
-}
-#endif
 
     class MatrixInternal {
     public:
@@ -78,18 +71,18 @@ checkParallel(bool)
 
         std::vector<int> m_elem_perm;
 
-        MatrixInternal() = default;
+        GpuMatrixInternal() = default;
 
-        ~MatrixInternal() = default;
+        ~GpuMatrixInternal() = default;
     };
 
-    class VectorInternal {
+    class GpuVectorInternal {
     public:
-        VectorInternal(int nrow, int block_size)
-                : m_bvector(std::make_shared<MCGSolver::BVector<double>>(nrow, block_size)) {}
+        GpuVectorInternal(int nrow, int block_size)
+                : m_bvector(std::make_shared<MCGSolver::GPUBVector<double>>(nrow, block_size)) {}
 
         MCGSolver::UniqueKey m_key;
-        std::shared_ptr<MCGSolver::BVector<double>> m_bvector;
+        std::shared_ptr<MCGSolver::GPUBVector<double>> m_bvector;
     };
 
 END_MCGINTERNAL_NAMESPACE

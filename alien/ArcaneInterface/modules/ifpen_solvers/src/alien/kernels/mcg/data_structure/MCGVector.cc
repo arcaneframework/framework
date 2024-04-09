@@ -89,7 +89,6 @@ MCGVector::getValues(double* values) const
 void
 MCGVector::update(const MCGVector& v)
 {
-  MCGInternal::checkParallel(this->distribution().isParallel());
   ALIEN_ASSERT((this == &v), ("Unexpected error"));
 }
 
