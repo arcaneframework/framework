@@ -132,8 +132,7 @@ class ArrayView
   constexpr ArrayView() noexcept : m_size(0), m_ptr(nullptr) {}
 
   //! Constructeur de recopie depuis une autre vue
-  constexpr ArrayView(const ArrayView<T>& from) noexcept
-  : m_size(from.m_size), m_ptr(from.m_ptr) {}
+  ArrayView(const ArrayView<T>& from) = default;
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
@@ -568,11 +567,8 @@ class ConstArrayView
   //! Construit un tableau avec \a s élément
   constexpr ConstArrayView(Integer s,const_pointer ptr) noexcept
   : m_size(s), m_ptr(ptr) {}
-  /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  constexpr ConstArrayView(const ConstArrayView<T>& from) noexcept
-  : m_size(from.m_size), m_ptr(from.m_ptr) {}
+  //! Constructeur par copie.
+  ConstArrayView(const ConstArrayView<T>& from) = default;
   /*!
    * \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
