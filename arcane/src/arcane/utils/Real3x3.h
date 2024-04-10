@@ -103,7 +103,7 @@ class ARCANE_UTILS_EXPORT Real3x3
     x = y = z = v;
   }
   //! Opérateur de recopie
-  constexpr ARCCORE_HOST_DEVICE Real3x3& operator=(const Real3x3& f) = default;
+  Real3x3& operator=(const Real3x3& f) = default;
 
   //! Affecte à l'instance le triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE Real3x3& operator=(Real v)
