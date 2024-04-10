@@ -31,7 +31,7 @@ arccore_add_component_library(concurrency
 
 if(ARCCORE_ENABLE_GLIB)
   target_link_libraries(arccore_concurrency PRIVATE arcconpkg_Glib)
-  target_compile_definitions(arccore_base PRIVATE ARCCORE_HAS_GLIB)
+  target_compile_definitions(arccore_concurrency PRIVATE ARCCORE_HAS_GLIB)
 endif()
 
 target_link_libraries(arccore_concurrency PUBLIC arccore_base)
