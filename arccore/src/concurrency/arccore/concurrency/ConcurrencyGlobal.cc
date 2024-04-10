@@ -14,12 +14,16 @@
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/ReferenceCounter.h"
 #include "arccore/base/Ref.h"
+#include "arccore/base/NotSupportedException.h"
 
 #include "arccore/concurrency/ConcurrencyGlobal.h"
 
 #include "arccore/concurrency/NullThreadImplementation.h"
-#include "arccore/concurrency/GlibThreadImplementation.h"
 #include "arccore/concurrency/SpinLock.h"
+
+#ifdef ARCCORE_HAS_GLIB
+#include "arccore/concurrency/GlibThreadImplementation.h"
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,7 +65,11 @@ setThreadImplementation(IThreadImplementation* service)
 Ref<IThreadImplementation> Concurrency::
 createGlibThreadImplementation()
 {
+#ifdef ARCCORE_HAS_GLIB
   return makeRef<IThreadImplementation>(new GlibThreadImplementation());
+#else
+  throw NotSupportedException(A_FUNCINFO,"GLib is not available Recompile Arccore with ARCCORE_ENABLE_GLIB=TRUE");
+#endif
 }
 
 /*---------------------------------------------------------------------------*/

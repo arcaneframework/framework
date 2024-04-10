@@ -1,5 +1,3 @@
-find_package(Glib REQUIRED)
-
 set(SOURCES
   TraceGlobal.h
   TraceGlobal.cc
@@ -22,4 +20,4 @@ arccore_add_component_library(trace
 )
 
 target_link_libraries(arccore_trace PUBLIC arccore_base)
-target_link_libraries(arccore_trace PRIVATE arcconpkg_Glib arccore_concurrency)
+target_link_libraries(arccore_trace PRIVATE arccore_concurrency)

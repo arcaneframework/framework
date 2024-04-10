@@ -1,28 +1,39 @@
-﻿find_package(Glib REQUIRED)
+﻿if(ARCCORE_ENABLE_GLIB)
+  find_package(Glib REQUIRED)
+endif()
 
 set(SOURCES
   ConcurrencyGlobal.h
   ConcurrencyGlobal.cc
   IThreadImplementation.h
   IThreadBarrier.h
-  GlibThreadImplementation.cc
-  GlibThreadImplementation.h
-  GlibAdapter.h
-  GlibAdapter.cc
   Mutex.h
   Mutex.cc
   NullThreadImplementation.h
   SpinLock.h
   SpinLock.cc
-  ThreadPrivate.h
-  ThreadPrivate.cc
 )
+
+if(ARCCORE_ENABLE_GLIB)
+  list(APPEND SOURCES
+    GlibThreadImplementation.cc
+    GlibThreadImplementation.h
+    GlibAdapter.h
+    GlibAdapter.cc
+    ThreadPrivate.h
+    ThreadPrivate.cc
+  )
+endif()
 
 arccore_add_component_library(concurrency
   FILES ${SOURCES}
 )
 
-target_link_libraries(arccore_concurrency PRIVATE arcconpkg_Glib)
+if(ARCCORE_ENABLE_GLIB)
+  target_link_libraries(arccore_concurrency PRIVATE arcconpkg_Glib)
+  target_compile_definitions(arccore_concurrency PRIVATE ARCCORE_HAS_GLIB)
+endif()
+
 target_link_libraries(arccore_concurrency PUBLIC arccore_base)
 
 # ----------------------------------------------------------------------------

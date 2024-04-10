@@ -1,4 +1,6 @@
-﻿find_package(Glib 2.32 REQUIRED)
+﻿if(ARCCORE_ENABLE_GLIB)
+  find_package(Glib 2.32 REQUIRED)
+endif()
 
 set(SOURCES
   ArccoreGlobal.h
@@ -81,7 +83,10 @@ arccore_add_component_library(base
 
 target_link_libraries(arccore_base PUBLIC $<BUILD_INTERFACE:arccore_build_compile_flags>)
 
-target_link_libraries(arccore_base PRIVATE arcconpkg_Glib)
+if(ARCCORE_ENABLE_GLIB)
+  target_link_libraries(arccore_base PRIVATE arcconpkg_Glib)
+  target_compile_definitions(arccore_base PRIVATE ARCCORE_HAS_GLIB)
+endif()
 
 target_compile_features(arccore_base PUBLIC cxx_std_${ARCCORE_CXX_STANDARD})
 
