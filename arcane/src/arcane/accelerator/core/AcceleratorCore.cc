@@ -288,8 +288,8 @@ getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribu
 }
 
 extern "C++" void impl::
-arcaneCheckPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
-                                const char* name, const TraceInfo& ti)
+arcaneCheckPointerIsAccessible(eExecutionPolicy policy, const void* ptr,
+                               const char* name, const TraceInfo& ti)
 {
   return impl::RuntimeStaticInfo::checkPointerIsAcccessible(policy, ptr, name, ti);
 }

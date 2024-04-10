@@ -255,14 +255,13 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info,const HipKernel& kernel,
  * \param func fonction à exécuter par le noyau
  * \param args arguments de la fonction lambda
  */
-template<typename SyclKernel,typename Lambda,typename LambdaArgs> void
-_applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info,SyclKernel kernel,Lambda& func,[[maybe_unused]] const LambdaArgs& args)
+template <typename SyclKernel, typename Lambda, typename LambdaArgs> void
+_applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func, [[maybe_unused]] const LambdaArgs& args)
 {
 #if defined(ARCANE_COMPILING_SYCL)
-  auto [b,t] = launch_info.threadBlockInfo();
   sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
-  s->parallel_for(sycl::range<1>(args.nbElement()),
-                  [=](sycl::id<1> i){ kernel(i,args,func); });
+  sycl::range<1> loop_size = launch_info.totalLoopSize();
+  s->parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func); });
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
