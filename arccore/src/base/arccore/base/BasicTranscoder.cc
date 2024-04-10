@@ -14,7 +14,11 @@
 #include "arccore/base/CoreArray.h"
 #include "arccore/base/BasicTranscoder.h"
 
+#ifdef ARCCORE_HAS_GLIB
 #include <glib.h>
+#else
+#include <cwctype>
+#endif
 
 #include <iostream>
 
@@ -24,6 +28,31 @@
 namespace
 {
 using namespace Arccore;
+
+bool _isSpace(Int32 wc)
+{
+#ifdef ARCCORE_HAS_GLIB
+  return g_unichar_isspace(wc);
+#else
+  return std::iswspace(wc);
+#endif
+}
+Int32 _toUpper(Int32 wc)
+{
+#ifdef ARCCORE_HAS_GLIB
+  return g_unichar_toupper(wc);
+#else
+  return std::towupper(wc);
+#endif
+}
+Int32 _toLower(Int32 wc)
+{
+#ifdef ARCCORE_HAS_GLIB
+  return g_unichar_tolower(wc);
+#else
+  return std::towlower(wc);
+#endif
+}
 
 int _invalidChar(Int32 pos, Int32& wc)
 {
@@ -313,13 +342,13 @@ replaceWS(CoreArray<Byte>& out_utf8)
   CoreArray<Byte> copy_utf8(out_utf8);
   Span<const Byte> utf8(copy_utf8.view());
   out_utf8.clear();
-  for( Int64 i=0, n=utf8.size(); i<n; ){
+  for (Int64 i = 0, n = utf8.size(); i < n;) {
     Int32 wc;
-    i += utf8_to_ucs4(utf8,i,wc);
-    if (g_unichar_isspace(wc))
+    i += utf8_to_ucs4(utf8, i, wc);
+    if (_isSpace(wc))
       out_utf8.add(' ');
     else
-      ucs4_to_utf8(wc,out_utf8);
+      ucs4_to_utf8(wc, out_utf8);
   }
 }
 
@@ -335,30 +364,30 @@ collapseWS(CoreArray<Byte>& out_utf8)
   Int64 i = 0;
   Int64 n = utf8.size();
   // Si la chaîne est vide, retourne une chaîne vide.
-  if (n==1){
+  if (n == 1) {
     out_utf8.add('\0');
     return;
   }
   bool old_is_space = true;
   bool has_spaces_only = true;
-  for( ; i<n ; ){
+  for (; i < n;) {
     if (utf8[i] == 0)
       break;
     Int32 wc;
-    i += utf8_to_ucs4(utf8,i,wc);
-    if (g_unichar_isspace(wc)){
+    i += utf8_to_ucs4(utf8, i, wc);
+    if (_isSpace(wc)) {
       if (!old_is_space)
         out_utf8.add(' ');
       old_is_space = true;
     }
-    else{
+    else {
       old_is_space = false;
-      ucs4_to_utf8(wc,out_utf8);
+      ucs4_to_utf8(wc, out_utf8);
       has_spaces_only = false;
     }
   }
-  if (old_is_space && (!has_spaces_only)){
-    if (out_utf8.size()>0)
+  if (old_is_space && (!has_spaces_only)) {
+    if (out_utf8.size() > 0)
       out_utf8.back() = 0;
   }
   else {
@@ -377,11 +406,11 @@ upperCase(CoreArray<Byte>& out_utf8)
   CoreArray<Byte> copy_utf8(out_utf8);
   Span<const Byte> utf8(copy_utf8.view());
   out_utf8.clear();
-  for( Int64 i=0, n=utf8.size(); i<n; ){
+  for (Int64 i = 0, n = utf8.size(); i < n;) {
     Int32 wc;
-    i += utf8_to_ucs4(utf8,i,wc);
-    Int32 upper_wc = g_unichar_toupper(wc);
-    ucs4_to_utf8(upper_wc,out_utf8);
+    i += utf8_to_ucs4(utf8, i, wc);
+    Int32 upper_wc = _toUpper(wc);
+    ucs4_to_utf8(upper_wc, out_utf8);
   }
 }
 
@@ -394,11 +423,11 @@ lowerCase(CoreArray<Byte>& out_utf8)
   CoreArray<Byte> copy_utf8(out_utf8);
   Span<const Byte> utf8(copy_utf8.view());
   out_utf8.clear();
-  for( Int64 i=0, n=utf8.size(); i<n; ){
+  for (Int64 i = 0, n = utf8.size(); i < n;) {
     Int32 wc;
-    i += utf8_to_ucs4(utf8,i,wc);
-    Int32 upper_wc = g_unichar_tolower(wc);
-    ucs4_to_utf8(upper_wc,out_utf8);
+    i += utf8_to_ucs4(utf8, i, wc);
+    Int32 upper_wc = _toLower(wc);
+    ucs4_to_utf8(upper_wc, out_utf8);
   }
 }
 
