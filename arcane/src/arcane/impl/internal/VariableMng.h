@@ -136,7 +136,7 @@ class VariableMng
     void initializeVariables(bool is_continue) override { m_variable_mng->initializeVariables(is_continue); }
     ISubDomain* internalSubDomain() const override { return m_variable_mng->_internalSubDomain(); }
     IAcceleratorMng* acceleratorMng() const override { return m_variable_mng->m_accelerator_mng.get(); }
-    void setAcceleratorMng(Ref<IAcceleratorMng> v) { m_variable_mng->m_accelerator_mng = v; }
+    void setAcceleratorMng(Ref<IAcceleratorMng> v) override { m_variable_mng->m_accelerator_mng = v; }
 
    private:
 

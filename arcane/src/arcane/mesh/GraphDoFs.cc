@@ -422,15 +422,15 @@ removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
         auto dual_item = m_graph_connectivity->dualItem(*idual_node);
         switch (dual_item.kind()) {
         case IK_Cell:
-          if (cell_to_remove_set.find(dual_item->localId()) != cell_to_remove_set.end())
+          if (cell_to_remove_set.find(dual_item.localId()) != cell_to_remove_set.end())
             to_remove = true;
           break;
         case IK_Face:
-          if (face_to_remove_set.find(dual_item->localId()) != face_to_remove_set.end())
+          if (face_to_remove_set.find(dual_item.localId()) != face_to_remove_set.end())
             to_remove = true;
           break;
         case IK_Node:
-          if (node_to_remove_set.find(dual_item->localId()) != node_to_remove_set.end())
+          if (node_to_remove_set.find(dual_item.localId()) != node_to_remove_set.end())
             to_remove = true;
           break;
         case IK_Particle:

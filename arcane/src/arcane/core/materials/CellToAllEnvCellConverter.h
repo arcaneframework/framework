@@ -92,17 +92,15 @@ class CellToAllEnvCellConverter
   {
     return operator[](CellLocalId(c));
   }
+
   //! Converti une maille \a CellLocalId en maille \a AllEnvCell
   ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
   {
-    //const ComponentItemInternal* p = &m_all_env_items_internal[c.localId()];
-    // Pour les AllEnvCell, l'index dans la liste est le localid() de la maille.
     return AllEnvCell(m_shared_info->_item(ConstituentItemIndex(c.localId())));
   }
 
  private:
 
-  ConstArrayView<ComponentItemInternal> m_all_env_items_internal;
   ComponentItemSharedInfo* m_shared_info = nullptr;
 };
 
