@@ -70,8 +70,8 @@ RunQueue(const RunQueue& x)
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
-RunQueue(RunQueue&& x)
-: m_p(std::move(x.m_p))
+RunQueue(RunQueue&& x) noexcept
+: m_p(x.m_p)
 {
 }
 
@@ -90,9 +90,9 @@ operator=(const RunQueue& x)
 /*---------------------------------------------------------------------------*/
 
 RunQueue& RunQueue::
-operator=(RunQueue&& x)
+operator=(RunQueue&& x) noexcept
 {
-  m_p = std::move(x.m_p);
+  m_p = x.m_p;
   return (*this);
 }
 
@@ -113,7 +113,7 @@ RunQueue::
 void RunQueue::
 _checkNotNull() const
 {
-  if (!m_p.get())
+  if (!m_p)
     ARCANE_FATAL("Invalid operation on null RunQueue");
 }
 
