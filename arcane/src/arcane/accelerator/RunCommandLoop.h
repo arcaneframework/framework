@@ -53,7 +53,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
     arcaneSequentialFor(bounds,func);
     break;
   case eExecutionPolicy::Thread:
-    arcaneParallelFor(bounds,launch_info.computeParallelLoopOptions(vsize),func);
+    arcaneParallelFor(bounds, launch_info.computeParallelLoopOptions(), func);
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'",exec_policy);

@@ -217,7 +217,7 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items, const
   using BuilderType = TraitsType::BuilderType;
   impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
-  launch_info.computeLoopRunInfo(vsize);
+  launch_info.computeLoopRunInfo();
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
