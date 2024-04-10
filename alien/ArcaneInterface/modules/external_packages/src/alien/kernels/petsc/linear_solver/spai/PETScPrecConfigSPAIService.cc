@@ -6,6 +6,7 @@
 #include <ALIEN/axl/PETScPrecConfigSPAI_StrongOptions.h>
 
 #include <arccore/message_passing/IMessagePassingMng.h>
+#include <alien/index_manager/IIndexManager.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,28 +40,23 @@ PETScPrecConfigSPAIService::configure([[maybe_unused]] PC& pc,
                                       [[maybe_unused]] const ISpace& space,
                                       [[maybe_unused]] const MatrixDistribution& distribution)
 {
-  alien_fatal([&] { cout() << "configure SPAI not available need to be checked"; });
+  //! Check need of KSPSetUp before calling this PC configure
+  //alien_fatal([&] { cout() << "configure SPAI not available need to be checked"; });
+  checkError("Set preconditioner",PCSetType(pc,PCSPAI));
+  double epsilon = options()->epsilon();
+  if (epsilon > 0 and epsilon < 1)
+    checkError("Set SPAI epsilon",PCSPAISetEpsilon(pc,epsilon));
+  else
+    alien_fatal([&] { cout() << "SPAI epsilon must be in [0:1]"; });
+
+  double nonzero_max = options()->nonzeroMax();
+  if (nonzero_max >= 0)
+    checkError("Set SPAI epsilon",PCSPAISetMaxNew(pc,nonzero_max));
+  else
+    alien_fatal([&] { cout() << "SPAI nonzero-max must be positive"; });
 }
 
-//  //! Initialisation
-//  void configure(PC & pc, const IIndexManager * indexManager)
-//  {
-//    checkError("Set preconditioner",PCSetType(pc,PCSPAI));
-//    double epsilon = options()->epsilon();
-//    if (epsilon > 0 and epsilon < 1)
-//      checkError("Set SPAI epsilon",PCSPAISetEpsilon(pc,epsilon));
-//    else
-//      traceMng()->fatal() << "SPAI epsilon must be in [0:1]";
-//
-//    double nonzero_max = options()->nonzeroMax();
-//    if (nonzero_max >= 0)
-//      checkError("Set SPAI epsilon",PCSPAISetMaxNew(pc,nonzero_max));
-//    else
-//      traceMng()->fatal() << "SPAI nonzero-max must be positive";
-//  }
-//
-//
-//  //! Check need of KSPSetUp before calling this PC configure
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
