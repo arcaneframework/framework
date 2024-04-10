@@ -396,7 +396,7 @@ class TimeHistoryValueT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_IMPL_EXPORT TimeHistoryMngInternal
+class TimeHistoryMngInternal
 : public ITimeHistoryMngInternal
 {
  public:
