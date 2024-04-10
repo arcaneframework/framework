@@ -325,8 +325,8 @@ getPointerAccessibility(RunQueue* queue, const void* ptr, PointerAttribute* ptr_
 }
 
 extern "C++" void impl::
-arcaneCheckPointerIsAcccessible(RunQueue* queue, const void* ptr,
-                                const char* name, const TraceInfo& ti)
+arcaneCheckPointerIsAccessible(RunQueue* queue, const void* ptr,
+                               const char* name, const TraceInfo& ti)
 {
   if (!queue || queue->isNull())
     return;

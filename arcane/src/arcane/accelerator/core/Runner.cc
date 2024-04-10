@@ -489,8 +489,8 @@ getPointerAccessibility(Runner* runner, const void* ptr, PointerAttribute* ptr_a
 }
 
 extern "C++" void impl::
-arcaneCheckPointerIsAcccessible(Runner* runner, const void* ptr,
-                                const char* name, const TraceInfo& ti)
+arcaneCheckPointerIsAccessible(Runner* runner, const void* ptr,
+                               const char* name, const TraceInfo& ti)
 {
   if (!runner)
     return;
