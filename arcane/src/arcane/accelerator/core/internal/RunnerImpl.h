@@ -35,9 +35,7 @@ class RunQueueImplStack
 {
  public:
 
-  explicit RunQueueImplStack(RunnerImpl* runner_impl)
-  : m_runner_impl(runner_impl)
-  {}
+  void initialize(RunnerImpl* v) { m_runner_impl = v; }
 
  public:
 
@@ -49,7 +47,6 @@ class RunQueueImplStack
  public:
 
   RunQueueImpl* createRunQueue(const RunQueueBuildInfo& bi);
-
  private:
 
   std::stack<impl::RunQueueImpl*> m_stack;
@@ -96,8 +93,7 @@ class RunnerImpl
 
   ~RunnerImpl()
   {
-    _freePool(m_run_queue_pool);
-    delete m_run_queue_pool;
+    _freePool();
   }
 
  public:
@@ -150,7 +146,7 @@ class RunnerImpl
   eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
   DeviceId m_device_id;
   impl::IRunnerRuntime* m_runtime = nullptr;
-  RunQueueImplStack* m_run_queue_pool = nullptr;
+  RunQueueImplStack m_run_queue_pool;
   std::unique_ptr<std::mutex> m_pool_mutex;
   bool m_use_pool_mutex = false;
   /*!
@@ -164,7 +160,7 @@ class RunnerImpl
 
  private:
 
-  void _freePool(RunQueueImplStack* s);
+  void _freePool();
   void _checkIsInit() const;
 };
 
