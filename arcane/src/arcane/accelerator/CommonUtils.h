@@ -28,12 +28,19 @@
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 #include <cub/cub.cuh>
 #endif
+#if defined(ARCANE_COMPILING_SYCL)
+#include "arcane/accelerator/sycl/SyclAccelerator.h"
+#include <sycl/sycl.hpp>
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator::impl
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #if defined(ARCANE_COMPILING_CUDA)
 class ARCANE_ACCELERATOR_EXPORT CudaUtils

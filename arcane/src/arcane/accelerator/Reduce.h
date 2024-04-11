@@ -270,11 +270,11 @@ namespace impl
  * valide que sur l'hôte.
  */
 template <typename DataType, typename ReduceFunctor>
-class Reducer
+class HostDeviceReducer
 {
  public:
 
-  Reducer(RunCommand& command)
+  HostDeviceReducer(RunCommand& command)
   : m_host_or_device_memory_for_reduced_value(&m_local_value)
   , m_command(&command)
   {
@@ -291,7 +291,7 @@ class Reducer
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
     }
   }
-  ARCCORE_HOST_DEVICE Reducer(const Reducer& rhs)
+  ARCCORE_HOST_DEVICE HostDeviceReducer(const HostDeviceReducer& rhs)
   : m_host_or_device_memory_for_reduced_value(rhs.m_host_or_device_memory_for_reduced_value)
   , m_local_value(rhs.m_local_value)
   , m_identity(rhs.m_identity)
@@ -317,10 +317,10 @@ class Reducer
 #endif
   }
 
-  ARCCORE_HOST_DEVICE Reducer(Reducer&& rhs) = delete;
-  Reducer& operator=(const Reducer& rhs) = delete;
+  ARCCORE_HOST_DEVICE HostDeviceReducer(HostDeviceReducer&& rhs) = delete;
+  HostDeviceReducer& operator=(const HostDeviceReducer& rhs) = delete;
 
-  ARCCORE_HOST_DEVICE ~Reducer()
+  ARCCORE_HOST_DEVICE ~HostDeviceReducer()
   {
 #ifdef ARCCORE_DEVICE_CODE
     //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
@@ -421,6 +421,46 @@ class Reducer
   bool m_is_allocated = false;
   bool m_is_master_instance = false;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation de la réduction pour le backend SYCL.
+ *
+ * \warning Pour l'instant il n'y aucune implémentation. Cette classe permet
+ * juste la compilation.
+ */
+template <typename DataType, typename ReduceFunctor>
+class SyclReducer
+{
+ public:
+
+  SyclReducer(RunCommand&) {}
+
+ public:
+
+  DataType reduce()
+  {
+    return m_local_value;
+  }
+  void setValue(DataType v) { m_local_value = v; }
+
+ protected:
+
+  mutable DataType m_local_value = {};
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_SYCL)
+template <typename DataType, typename ReduceFunctor> using Reducer = SyclReducer<DataType, ReduceFunctor>;
+#else
+template <typename DataType, typename ReduceFunctor> using Reducer = HostDeviceReducer<DataType, ReduceFunctor>;
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -79,7 +79,11 @@ class SyclRunQueueStream
   }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    ARCANE_FATAL("NYI");
+    auto source_bytes = args.source().bytes();
+    m_sycl_stream->memcpy(args.destination().data(), source_bytes.data(),
+                          source_bytes.size());
+    if (!args.isAsync())
+      m_sycl_stream->wait();
   }
   void prefetchMemory(const MemoryPrefetchArgs& args) override
   {
@@ -106,6 +110,51 @@ class SyclRunQueueStream
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class SyclRunQueueEvent
+: public impl::IRunQueueEventImpl
+{
+ public:
+
+  explicit SyclRunQueueEvent([[maybe_unused]] bool has_timer)
+  {
+  }
+  ~SyclRunQueueEvent() override
+  {
+  }
+
+ public:
+
+  // Enregistre l'événement au sein d'une RunQueue
+  void recordQueue(impl::IRunQueueStream* stream) final
+  {
+    ARCANE_FATAL("NYI");
+  }
+
+  void wait() final
+  {
+    m_sycl_event.wait();
+  }
+
+  void waitForEvent(impl::IRunQueueStream* stream) final
+  {
+    ARCANE_FATAL("NYI");
+  }
+
+  Int64 elapsedTime(IRunQueueEventImpl* start_event) final
+  {
+    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    return 0;
+  }
+
+ private:
+
+  sycl::event m_sycl_event;
+  std::vector<sycl::event> m_my_event_as_vector;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class SyclRunnerRuntime
 : public impl::IRunnerRuntime
 {
@@ -121,7 +170,9 @@ class SyclRunnerRuntime
   }
   void barrier() override
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    // TODO Faire le wait sur la file par défaut n'est pas strictement équivalent
+    // à la barrière en CUDA qui synchronize tout le device.
+    m_default_queue->wait();
   }
   eExecutionPolicy executionPolicy() const override
   {
@@ -133,11 +184,11 @@ class SyclRunnerRuntime
   }
   impl::IRunQueueEventImpl* createEventImpl() override
   {
-    ARCANE_FATAL("NYI");
+    return new SyclRunQueueEvent(false);
   }
   impl::IRunQueueEventImpl* createEventImplWithTimer() override
   {
-    ARCANE_FATAL("NYI");
+    return new SyclRunQueueEvent(true);
   }
   void setMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
@@ -156,7 +207,32 @@ class SyclRunnerRuntime
 
   void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    sycl::usm::alloc sycl_mem_type = sycl::get_pointer_type(ptr, *m_default_context);
+    ePointerMemoryType mem_type = ePointerMemoryType::Unregistered;
+    const void* host_ptr = nullptr;
+    const void* device_ptr = nullptr;
+    if (sycl_mem_type == sycl::usm::alloc::host) {
+      // HostPinned. Doit être accessible depuis le device mais
+      //
+      mem_type = ePointerMemoryType::Host;
+      host_ptr = ptr;
+      // TODO: Regarder comment récupérer la valeur
+      device_ptr = ptr;
+    }
+    else if (sycl_mem_type == sycl::usm::alloc::device) {
+      mem_type = ePointerMemoryType::Device;
+      device_ptr = ptr;
+    }
+    else if (sycl_mem_type == sycl::usm::alloc::shared) {
+      mem_type = ePointerMemoryType::Managed;
+      // TODO: pour l'instant on remplit avec le pointeur car on ne sait
+      // pas comment récupérer l'info.
+      host_ptr = ptr;
+      device_ptr = ptr;
+    }
+    // TODO: à corriger
+    Int32 device_id = 0;
+    _fillPointerAttribute(attribute, mem_type, device_id, ptr, device_ptr, host_ptr);
   }
 
   void fillDevicesAndSetDefaultQueue();
@@ -168,7 +244,17 @@ class SyclRunnerRuntime
   bool m_is_verbose = false;
   impl::DeviceInfoList m_device_info_list;
   std::unique_ptr<sycl::device> m_default_device;
+  std::unique_ptr<sycl::context> m_default_context;
   std::unique_ptr<sycl::queue> m_default_queue;
+
+ private:
+
+  void _init(sycl::device& device)
+  {
+    m_default_device = std::make_unique<sycl::device>(device);
+    m_default_queue = std::make_unique<sycl::queue>(device);
+    m_default_context = std::make_unique<sycl::context>(device);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -204,8 +290,7 @@ fillDevicesAndSetDefaultQueue()
             << std::endl;
   // Pour l'instant, on prend comme file par défaut la première trouvée
   // et on ne considère qu'un seul device accessible.
-  m_default_device = std::make_unique<sycl::device>(device);
-  m_default_queue = std::make_unique<sycl::queue>(device);
+  _init(device);
 
   DeviceInfo device_info;
   device_info.setDescription("No description info");
@@ -217,12 +302,48 @@ fillDevicesAndSetDefaultQueue()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class SyclMemoryCopier
+: public IMemoryCopier
+{
+  void copy(ConstMemoryView from, eMemoryRessource from_mem,
+            MutableMemoryView to, eMemoryRessource to_mem,
+            const RunQueue* queue) override;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::Accelerator::Sycl
 
 namespace
 {
 Arcane::Accelerator::Sycl::SyclRunnerRuntime global_sycl_runtime;
+Arcane::Accelerator::Sycl::SyclMemoryCopier global_sycl_memory_copier;
 } // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::Sycl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SyclMemoryCopier::
+copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
+     MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem,
+     const RunQueue* queue)
+{
+  if (queue) {
+    queue->copyMemory(MemoryCopyArgs(to.bytes(), from.bytes()).addAsync(queue->isAsync()));
+    return;
+  }
+  sycl::queue& q = global_sycl_runtime.defaultQueue();
+  q.memcpy(to.data(), from.data(), from.bytes().size()).wait();
+}
+
+} // namespace Arcane::Accelerator::Sycl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -242,6 +363,7 @@ arcaneRegisterAcceleratorRuntimesycl()
   mrm->setAllocator(eMemoryRessource::UnifiedMemory, getSyclUnifiedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::HostPinned, getSyclHostPinnedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::Device, getSyclDeviceMemoryAllocator());
+  mrm->setCopier(&global_sycl_memory_copier);
   global_sycl_runtime.fillDevicesAndSetDefaultQueue();
   setSyclMemoryQueue(global_sycl_runtime.defaultQueue());
 }
