@@ -205,7 +205,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   /*!
    * @brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille à partir de
-   * ces coordonnées.
+   * ses coordonnées.
    *
    * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des noeuds
    * d'une maille d'Arcane.
@@ -224,7 +224,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   /*!
    * @brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille à partir de
-   * ces coordonnées.
+   * ses coordonnées.
    *
    * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des noeuds
    * d'une maille d'Arcane.
@@ -240,6 +240,21 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    */
   virtual void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) =0;
 
+  /*!
+   * @brief Méthode permettant de récupérer les uniqueIds des noeuds d'une maille à partir de
+   * son uniqueId.
+   *
+   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des noeuds
+   * d'une maille d'Arcane.
+   *      3--2
+   * ^y   |  |
+   * |    0--1
+   * ->x
+   *
+   * @param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à getNbNode().
+   * @param level Le niveau de la maille (et donc des noeuds).
+   * @param cell_uid L'uniqueId de la maille.
+   */
   virtual void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid) =0;
 
 
@@ -252,7 +267,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   /*!
    * @brief Méthode permettant de récupérer les uniqueIds des faces d'une maille à partir de
-   * ces coordonnées.
+   * ses coordonnées.
    *
    * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des faces
    * d'une maille d'Arcane.
@@ -271,7 +286,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   /*!
    * @brief Méthode permettant de récupérer les uniqueIds des faces d'une maille à partir de
-   * ces coordonnées.
+   * ses coordonnées.
    *
    * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des faces
    * d'une maille d'Arcane.
@@ -287,6 +302,21 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    */
   virtual void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) =0;
 
+  /*!
+   * @brief Méthode permettant de récupérer les uniqueIds des faces d'une maille à partir de
+   * son uniqueId.
+   *
+   * L'ordre dans lequel les uniqueIds sont placés correspond à l'ordre d'énumération des faces
+   * d'une maille d'Arcane.
+   *      -2-
+   * ^y   3 1
+   * |    -0-
+   * ->x
+   *
+   * @param uid [OUT] Les uniqueIds de la maille. La taille de l'ArrayView doit être égal à getNbFace().
+   * @param level Le niveau de la maille (et donc des faces).
+   * @param cell_uid L'uniqueId de la maille.
+   */
   virtual void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid) =0;
 
   /*!
@@ -330,28 +360,67 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual void setParentNodeCoordinates(Cell parent_cell) = 0;
 
   /*!
-   * \brief TODO
-   * \param cell
-   * \return
+   * \brief Méthode permettant de récupérer l'uniqueId du parent d'une maille.
+   *
+   * \param cell La maille enfant.
+   * \return L'uniqueId de la maille parent de la maille passé en paramètre.
    */
   virtual Int64 getParentCellUidOfCell(Cell cell) = 0;
 
   /*!
-   * \brief TODO
-   * \param cell
-   * \param child_index
-   * \return
+   * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
+   * à partir de la position de la maille enfant dans la maille parent.
+   *
+   * \param cell La maille parent.
+   * \param child_coord_x_in_parent La position X de l'enfant dans la maille parent.
+   * \param child_coord_y_in_parent La position Y de l'enfant dans la maille parent.
+   * \return L'uniqueId de la maille enfant demandée.
    */
   virtual Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent) = 0;
 
   /*!
-   * \brief TODO
-   * \param cell
-   * \param child_index
-   * \return
+   * \brief Méthode permettant de récupérer une maille enfant d'une maille parent
+   * à partir de la position de la maille enfant dans la maille parent.
+   *
+   * \param cell La maille parent.
+   * \param child_coord_x_in_parent La position X de l'enfant dans la maille parent.
+   * \param child_coord_y_in_parent La position Y de l'enfant dans la maille parent.
+   * \return La maille enfant demandée.
+   */
+  virtual Cell getChildCellOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
+   * à partir de la position de la maille enfant dans la maille parent.
+   *
+   * \param cell La maille parent.
+   * \param child_coord_x_in_parent La position X de l'enfant dans la maille parent.
+   * \param child_coord_y_in_parent La position Y de l'enfant dans la maille parent.
+   * \param child_coord_y_in_parent La position Z de l'enfant dans la maille parent.
+   * \return L'uniqueId de la maille enfant demandée.
    */
   virtual Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent, Int64 child_coord_z_in_parent) = 0;
 
+  /*!
+   * \brief Méthode permettant de récupérer une maille enfant d'une maille parent
+   * à partir de la position de la maille enfant dans la maille parent.
+   *
+   * \param cell La maille parent.
+   * \param child_coord_x_in_parent La position X de l'enfant dans la maille parent.
+   * \param child_coord_y_in_parent La position Y de l'enfant dans la maille parent.
+   * \param child_coord_y_in_parent La position Z de l'enfant dans la maille parent.
+   * \return La maille enfant demandée.
+   */
+  virtual Cell getChildCellOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent, Int64 child_coord_z_in_parent) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
+   * à partir de la position de la maille enfant dans la maille parent.
+   *
+   * \param cell La maille parent.
+   * \param child_coord_x_in_parent L'index de l'enfant dans la maille parent.
+   * \return L'uniqueId de la maille enfant demandée.
+   */
   virtual Int64 getChildCellUidOfCell(Cell cell, Int64 child_index_in_parent) = 0;
 };
 

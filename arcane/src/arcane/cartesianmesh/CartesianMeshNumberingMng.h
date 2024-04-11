@@ -89,8 +89,12 @@ class CartesianMeshNumberingMng
   void setParentNodeCoordinates(Cell parent_cell) override;
 
   Int64 getParentCellUidOfCell(Cell cell) override;
+
   Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent) override;
+  Cell getChildCellOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent) override;
+
   Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent, Int64 child_coord_z_in_parent) override;
+  Cell getChildCellOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent, Int64 child_coord_z_in_parent) override;
 
   Int64 getChildCellUidOfCell(Cell cell, Int64 child_index_in_parent) override;
 
