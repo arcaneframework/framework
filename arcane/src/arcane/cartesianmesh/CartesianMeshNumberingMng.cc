@@ -579,59 +579,185 @@ setChildNodeCoordinates(Cell parent_cell)
     return fin;
   };
 
-  auto txty = [&](Integer pos_x, Integer pos_y) -> Real3 {
-    Real x = (Real)pos_x / (Real)m_pattern;
-    Real y = (Real)pos_y / (Real)m_pattern;
+  if (m_mesh->dimension() == 2) {
+    const Real3& node0(nodes_coords[parent_cell.node(0)]);
+    const Real3& node1(nodes_coords[parent_cell.node(1)]);
+    const Real3& node2(nodes_coords[parent_cell.node(2)]);
+    const Real3& node3(nodes_coords[parent_cell.node(3)]);
 
-    info() << "[txty] x : " << x << " -- y : " << y;
+    /*
+                                        =
+                 ┌─────────────────────►= y3
+                 │                      = ▲ l
+                 ▼                      = ▼
+                 X───────────────X◄────►= y2
+                /▲              /▲      =
+               / │             / │      =
+              /  │            /  │      =
+             /   │           /   │      =
+            /    │          /    │      =
+           /     │         /     │      =
+          /      │        /      │      =
+         /       │       /       │      =
+        X───────────────X◄───────│─────►= y1
+        ▲        │      ▲        │      = ▲ k
+        │        │      │        │      = ▼
+        ├──────────────────────────────►= y0
+        │        │      │        │      =
+        │        │      │        │      =
+        ▼        ▼      ▼        ▼
+      ==============================
+        x0 ◄───► x3     x1 ◄───► x2
+             i               j
+     */
 
-    Real3& node0(nodes_coords[parent_cell.node(0)]);
-    Real3& node1(nodes_coords[parent_cell.node(1)]);
-    Real3& node2(nodes_coords[parent_cell.node(2)]);
-    Real3& node3(nodes_coords[parent_cell.node(3)]);
+    auto txty = [&](Integer pos_x, Integer pos_y) -> Real3 {
+      const Real x = (Real)pos_x / (Real)m_pattern;
+      const Real y = (Real)pos_y / (Real)m_pattern;
 
-    info() << "[txty] node0 : " << node0
-           << " -- node1 : " << node1
-           << " -- node2 : " << node2
-           << " -- node3 : " << node3;
+      const Real i = (node3.x - node0.x) * y + node0.x;
+      const Real j = (node2.x - node1.x) * y + node1.x;
 
-    Real i = (node3.x - node0.x) * y + node0.x;
-    Real j = (node2.x - node1.x) * y + node1.x;
+      const Real k = (node1.y - node0.y) * x + node0.y;
+      const Real l = (node2.y - node3.y) * x + node3.y;
 
-    Real k = (node1.y - node0.y) * x + node0.y;
-    Real l = (node2.y - node3.y) * x + node3.y;
+      const Real tx = (j - i) * x + i;
+      const Real ty = (l - k) * y + k;
 
-    Real tx = (j - i) * x + i;
-    Real ty = (l - k) * y + k;
+      //      info() << "[txty]"
+      //             << " x : " << x
+      //             << " -- y : " << y
+      //             << " -- node0 : " << node0
+      //             << " -- node1 : " << node1
+      //             << " -- node2 : " << node2
+      //             << " -- node3 : " << node3
+      //             << " -- i : " << i
+      //             << " -- j : " << j
+      //             << " -- k : " << k
+      //             << " -- l : " << l
+      //             << " -- tx : " << tx
+      //             << " -- ty : " << ty;
 
-    info() << "[txty] i : " << i
-           << " -- j : " << j
-           << " -- k : " << k
-           << " -- l : " << l
-           << " -- tx : " << tx
-           << " -- ty : " << ty;
+      return { tx, ty, 0 };
+    };
 
-    return { tx, ty, 0 };
-  };
+    const Integer node_1d_2d_x[] = { 0, 1, 1, 0 };
+    const Integer node_1d_2d_y[] = { 0, 0, 1, 1 };
 
-  const Integer node_1d_2d_x[] = { 0, 1, 1, 0 };
-  const Integer node_1d_2d_y[] = { 0, 0, 1, 1 };
+    for (Integer j = 0; j < m_pattern; ++j) {
+      for (Integer i = 0; i < m_pattern; ++i) {
 
-  for (Integer j = 0; j < m_pattern; ++j) {
-    for (Integer i = 0; i < m_pattern; ++i) {
+        Integer begin = (i == 0 && j == 0 ? 0 : j == 0 ? 1
+                                                       : 2);
+        Integer end = (i == 0 ? getNbNode() : getNbNode() - 1);
+        Cell child = cell_at_pos(i, j, 0, getChildCellUidOfCell(parent_cell, i, j));
 
-      Integer begin = (i == 0 && j == 0 ? 0 : j == 0 ? 1
-                                                     : 2);
-      Integer end = (i == 0 ? getNbNode() : getNbNode() - 1);
-      Cell child = cell_at_pos(i, j, 0, getChildCellUidOfCell(parent_cell, i, j));
+        for (Integer inode = begin; inode < end; ++inode) {
+          nodes_coords[child.node(inode)] = txty(i + node_1d_2d_x[inode], j + node_1d_2d_y[inode]);
+          //          Real3 pos = txty(i + node_1d_2d_x[inode], j + node_1d_2d_y[inode]);
+          //          nodes_coords[child.node(inode)] = pos;
+          //          info() << "Node uid : " << child.node(inode).uniqueId()
+          //                 << " -- nodeX : " << (i + node_1d_2d_x[inode])
+          //                 << " -- nodeY : " << (j + node_1d_2d_y[inode])
+          //                 << " -- Pos : " << pos;
+        }
+      }
+    }
+  }
 
-      for (Integer inode = begin; inode < end; ++inode) {
-        Real3 pos = txty(i + node_1d_2d_x[inode], j + node_1d_2d_y[inode]);
-        nodes_coords[child.node(inode)] = pos;
-        info() << "Node uid : " << child.node(inode).uniqueId()
-               << " -- nodeX : " << (i + node_1d_2d_x[inode])
-               << " -- nodeY : " << (j + node_1d_2d_y[inode])
-               << " -- Pos : " << pos;
+  else {
+    const Real3& node0(nodes_coords[parent_cell.node(0)]);
+    const Real3& node1(nodes_coords[parent_cell.node(1)]);
+    const Real3& node2(nodes_coords[parent_cell.node(2)]);
+    const Real3& node3(nodes_coords[parent_cell.node(3)]);
+    const Real3& node4(nodes_coords[parent_cell.node(4)]);
+    const Real3& node5(nodes_coords[parent_cell.node(5)]);
+    const Real3& node6(nodes_coords[parent_cell.node(6)]);
+    const Real3& node7(nodes_coords[parent_cell.node(7)]);
+
+    auto txtytz = [&](Integer pos_x, Integer pos_y, Integer pos_z) -> Real3 {
+      const Real x = (Real)pos_x / (Real)m_pattern;
+      const Real y = (Real)pos_y / (Real)m_pattern;
+      const Real z = (Real)pos_z / (Real)m_pattern;
+
+      // Face (m, n, o, p) entre les faces (node0, node1, node2, node3) et (node4, node5, node6, node7).
+      const Real3 m = (node4 - node0) * z + node0;
+      const Real3 n = (node5 - node1) * z + node1;
+      const Real3 o = (node6 - node2) * z + node2;
+      const Real3 p = (node7 - node3) * z + node3;
+
+      const Real i = (p.x - m.x) * y + m.x;
+      const Real j = (o.x - n.x) * y + n.x;
+
+      const Real tx = (j - i) * x + i;
+
+      const Real k = (n.y - m.y) * x + m.y;
+      const Real l = (o.y - p.y) * x + p.y;
+
+      const Real ty = (l - k) * y + k;
+
+      const Real q = (p.z - m.z) * y + m.z;
+      const Real r = (o.z - n.z) * y + n.z;
+
+      const Real s = (n.z - m.z) * x + m.z;
+      const Real t = (o.z - p.z) * x + p.z;
+
+      const Real tz = (((r - q) * x + q) + ((t - s) * y + s)) * 0.5;
+
+      //      info() << "[txtytz]"
+      //             << " x : " << x
+      //             << " -- y : " << y
+      //             << " -- z : " << z
+      //             << " -- node0 : " << node0
+      //             << " -- node1 : " << node1
+      //             << " -- node2 : " << node2
+      //             << " -- node3 : " << node3
+      //             << " -- node4 : " << node4
+      //             << " -- node5 : " << node5
+      //             << " -- node6 : " << node6
+      //             << " -- node7 : " << node7
+      //             << " -- m : " << m
+      //             << " -- n : " << n
+      //             << " -- o : " << o
+      //             << " -- p : " << p
+      //             << " -- j : " << j
+      //             << " -- k : " << k
+      //             << " -- l : " << l
+      //             << " -- q : " << q
+      //             << " -- r : " << r
+      //             << " -- s : " << s
+      //             << " -- t : " << t
+      //             << " -- tx : " << tx
+      //             << " -- ty : " << ty
+      //             << " -- tz : " << tz;
+
+      return { tx, ty, tz };
+    };
+
+    const Integer node_1d_3d_x[] = { 0, 1, 1, 0, 0, 1, 1, 0 };
+    const Integer node_1d_3d_y[] = { 0, 0, 1, 1, 0, 0, 1, 1 };
+    const Integer node_1d_3d_z[] = { 0, 0, 0, 0, 1, 1, 1, 1 };
+
+    for (Integer k = 0; k < m_pattern; ++k) {
+      for (Integer j = 0; j < m_pattern; ++j) {
+        for (Integer i = 0; i < m_pattern; ++i) {
+
+          // TODO : éviter les multiples appels pour un même noeud.
+          Integer begin = 0;
+          Integer end = getNbNode();
+          Cell child = cell_at_pos(i, j, k, getChildCellUidOfCell(parent_cell, i, j, k));
+
+          for (Integer inode = begin; inode < end; ++inode) {
+            nodes_coords[child.node(inode)] = txtytz(i + node_1d_3d_x[inode], j + node_1d_3d_y[inode], k + node_1d_3d_z[inode]);
+            //            Real3 pos = txtytz(i + node_1d_3d_x[inode], j + node_1d_3d_y[inode], k + node_1d_3d_z[inode]);
+            //            nodes_coords[child.node(inode)] = pos;
+            //            info() << "Node uid : " << child.node(inode).uniqueId()
+            //                   << " -- nodeX : " << (i + node_1d_3d_x[inode])
+            //                   << " -- nodeY : " << (j + node_1d_3d_y[inode])
+            //                   << " -- nodeZ : " << (k + node_1d_3d_z[inode])
+            //                   << " -- Pos : " << pos;
+          }
+        }
       }
     }
   }
