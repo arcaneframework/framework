@@ -53,6 +53,7 @@ class CartesianMeshAMRPatchMng
 
  private:
   IMesh* m_mesh;
+  ICartesianMesh* m_cmesh;
   Ref<ICartesianMeshNumberingMng> m_num_mng;
 };
 

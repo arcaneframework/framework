@@ -124,6 +124,29 @@ updateFirstLevel()
   m_nb_cell_x = m_nb_cell_x / (m_pattern * nb_levels_to_add);
   m_nb_cell_y = m_nb_cell_y / (m_pattern * nb_levels_to_add);
   m_nb_cell_z = m_nb_cell_z / (m_pattern * nb_levels_to_add);
+
+  // ----------
+  // CartesianMeshCoarsening2::_recomputeMeshGenerationInfo()
+  // Recalcule les informations sur le nombre de mailles par direction.
+  auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh, false);
+  if (!cmgi)
+    return;
+
+  {
+    ConstArrayView<Int64> v = cmgi->ownCellOffsets();
+    cmgi->setOwnCellOffsets(v[0] / m_pattern, v[1] / m_pattern, v[2] / m_pattern);
+  }
+  {
+    ConstArrayView<Int64> v = cmgi->globalNbCells();
+    cmgi->setGlobalNbCells(v[0] / m_pattern, v[1] / m_pattern, v[2] / m_pattern);
+  }
+  {
+    ConstArrayView<Int32> v = cmgi->ownNbCells();
+    cmgi->setOwnNbCells(v[0] / m_pattern, v[1] / m_pattern, v[2] / m_pattern);
+  }
+  cmgi->setFirstOwnCellUniqueId(getFirstCellUidLevel(0));
+  // CartesianMeshCoarsening2::_recomputeMeshGenerationInfo()
+  // ----------
 }
 
 Int64 CartesianMeshNumberingMng::
@@ -773,7 +796,6 @@ setParentNodeCoordinates(Cell parent_cell)
   }
 
   else {
-
     nodes_coords[parent_cell.node(0)] = nodes_coords[getChildCellOfCell(parent_cell, 0, 0, 0).node(0)];
     nodes_coords[parent_cell.node(1)] = nodes_coords[getChildCellOfCell(parent_cell, m_pattern - 1, 0, 0).node(1)];
     nodes_coords[parent_cell.node(2)] = nodes_coords[getChildCellOfCell(parent_cell, m_pattern - 1, m_pattern - 1, 0).node(2)];

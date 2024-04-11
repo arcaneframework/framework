@@ -22,6 +22,7 @@
 
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 #include "arcane/utils/Array2View.h"
 #include "arcane/utils/Array3View.h"
@@ -40,6 +41,7 @@ CartesianMeshAMRPatchMng::
 CartesianMeshAMRPatchMng(ICartesianMesh* cmesh)
 : TraceAccessor(cmesh->mesh()->traceMng())
 , m_mesh(cmesh->mesh())
+, m_cmesh(cmesh)
 , m_num_mng(Arccore::makeRef(new CartesianMeshNumberingMng(cmesh->mesh())))
 {
 
@@ -2504,6 +2506,7 @@ createLevelDown()
 
   m_num_mng->prepareLevel(-1);
 
+  // ----------
   // CartesianMeshCoarsening2::_doDoubleGhostLayers()
   IMeshModifier* mesh_modifier = m_mesh->modifier();
   IGhostLayerMng* gm = m_mesh->ghostLayerMng();
@@ -2519,6 +2522,7 @@ createLevelDown()
   // Remet le nombre initial de couches de mailles fantômes
   gm->setNbGhostLayer(nb_ghost_layer);
   // CartesianMeshCoarsening2::_doDoubleGhostLayers()
+  // ----------
 
   ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(0)) {
     Cell cell = *icell;
@@ -2617,14 +2621,8 @@ createLevelDown()
     const bool mask_face_if_cell_left[] = { true, true, true, false };
     const bool mask_face_if_cell_bottom[] = { false, true, true, true };
 
-    const bool mask_face_if_cell_right[] = { true, false, true, true };
-    const bool mask_face_if_cell_top[] = { true, true, false, true };
-
     const bool mask_node_if_cell_left[] = { false, true, true, false };
     const bool mask_node_if_cell_bottom[] = { false, false, true, true };
-
-    const bool mask_node_if_cell_right[] = { true, false, false, true };
-    const bool mask_node_if_cell_top[] = { true, true, false, false };
 
     for (Int64 parent_cell_uid : cell_uid_to_create) {
 
@@ -2780,17 +2778,9 @@ createLevelDown()
     const bool mask_node_if_cell_bottom[] = { false, false, true, true, false, false, true, true };
     const bool mask_node_if_cell_rear[] = { false, false, false, false, true, true, true, true };
 
-    const bool mask_node_if_cell_right[] = { true, false, false, true, true, false, false, true };
-    const bool mask_node_if_cell_top[] = { true, true, false, false, true, true, false, false };
-    const bool mask_node_if_cell_front[] = { true, true, true, true, false, false, false, false };
-
     const bool mask_face_if_cell_left[] = { true, false, true, true, true, true };
     const bool mask_face_if_cell_bottom[] = { true, true, false, true, true, true };
     const bool mask_face_if_cell_rear[] = { false, true, true, true, true, true };
-
-    const bool mask_face_if_cell_right[] = { true, true, true, true, false, true };
-    const bool mask_face_if_cell_top[] = { true, true, true, true, true, false };
-    const bool mask_face_if_cell_front[] = { true, true, true, false, true, true };
 
     // Petite différence par rapport au 2D. Pour le 2D, la position des noeuds des faces
     // dans le tableau "child_nodes_uids" est toujours pareil (l et l+1, voir le 2D).
@@ -3152,7 +3142,6 @@ createLevelDown()
       else {
         parent.mutableItemBase().addFlags(ItemFlags::II_Shared);
       }
-
       for (Cell child : parent_to_child_cells[parent.uniqueId()]) {
         m_mesh->modifier()->addParentCellToCell(child, parent);
         m_mesh->modifier()->addChildCellToCell(parent, child);
@@ -3176,7 +3165,21 @@ createLevelDown()
     m_num_mng->setParentNodeCoordinates(parent);
   }
 
-  ARCANE_FATAL("Normal");
+  //! Créé le patch avec les mailles filles
+  {
+    CellGroup parent_cells = m_mesh->allLevelCells(0);
+    m_cmesh->_internalApi()->addPatchFromExistingChildren(parent_cells.view().localIds());
+  }
+
+  // Recalcule les informations de synchronisation
+  // Cela n'est pas nécessaire pour l'AMR car ces informations seront recalculées
+  // lors du raffinement mais comme on ne sais pas si on va faire du raffinement
+  // après il est préférable de calculer ces informations dans tous les cas.
+  m_mesh->computeSynchronizeInfos();
+
+  // Il faut recalculer les nouvelles directions après les modifications
+  // et l'ajout de patch.
+  m_cmesh->computeDirections();
 }
 
 void CartesianMeshAMRPatchMng::
@@ -3204,7 +3207,7 @@ coarse()
     createLevelDown();
   }
 
-  //...
+  ARCANE_FATAL("Normal");
 }
 
 
