@@ -26,6 +26,8 @@ endif()
 find_library(Hypre_LIBRARY
   NAMES HYPRE)
 
+set(Hypre_LIBRARIES ${Hypre_LIBRARY})
+
 # On debian/ubuntu, headers can be found in a /usr/include/"pkg"
 find_path(Hypre_INCLUDE_DIRS HYPRE.h
   PATH_SUFFIXES Hypre hypre)
@@ -38,7 +40,9 @@ set(Hypre_INCLUDE_DIRS ${Hypre_INCLUDE_DIR})
 # It is the case on debian based platform
 get_filename_component(Hypre_LIBRARY_DIR ${Hypre_LIBRARY} DIRECTORY)
 # extra : .so .a .dylib, etc
-file(GLOB Hypre_LIBRARIES ${Hypre_LIBRARY_DIR}/libHYPRE*.*)
+file(GLOB Hypre_EXTRA_LIBRARIES ${Hypre_LIBRARY_DIR}/libHYPRE*.*)
+
+list(APPEND Hypre_LIBRARIES ${Hypre_EXTRA_LIBRARIES})
 
 message(STATUS "Hypre_INCLUDE_DIRS=${Hypre_INCLUDE_DIRS}")
 message(STATUS "Hypre_LIBRARIES=${Hypre_LIBRARIES}")
