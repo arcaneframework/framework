@@ -64,6 +64,10 @@ class FixedArray final
   FixedArray()
   : m_value({})
   {}
+  //! Créé un tableau en initialisant les éléments de \a x
+  FixedArray(const std::array<T, NbElement>& x)
+  : m_value(x)
+  {}
 
  public:
 
@@ -87,6 +91,9 @@ class FixedArray final
   ARCCORE_HOST_DEVICE ArrayView<T> view() { return { NbElement, m_value.data() }; }
   //! Vue non modifiable sur le tableau
   ARCCORE_HOST_DEVICE ConstArrayView<T> view() const { return { NbElement, m_value.data() }; }
+  ARCCORE_HOST_DEVICE const T* data() const { return m_value.data(); }
+  ARCCORE_HOST_DEVICE T* data() { return m_value.data(); }
+
   //! Nombre d'éléments tu tableau
   static constexpr Int32 size() { return NbElement; }
 
