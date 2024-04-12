@@ -399,12 +399,12 @@ class HostDeviceReducer
    * Sur accélérateur, cette donnée est allouée sur le device.
    * Sur CPU, il s'agit de l'adresse de \a m_local_value pour l'instance parente.
    */
-  DataType* m_host_or_device_memory_for_reduced_value;
+  DataType* m_host_or_device_memory_for_reduced_value = nullptr;
   impl::IReduceMemoryImpl::GridMemoryInfo m_grid_memory_info;
 
  private:
 
-  RunCommand* m_command;
+  RunCommand* m_command = nullptr;
 
  protected:
 
