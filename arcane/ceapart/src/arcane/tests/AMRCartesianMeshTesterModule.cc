@@ -256,9 +256,9 @@ init()
 
   const Integer dimension = defaultMesh()->dimension();
   if (dimension==2)
-    m_nb_expected_patch = 1 + options()->refinement2d().size() + options()->coarsement2d().size();
+    m_nb_expected_patch = 1 + options()->refinement2d().size();
   else if (dimension==3)
-    m_nb_expected_patch = 1 + options()->refinement3d().size() + options()->coarsement3d().size();
+    m_nb_expected_patch = 1 + options()->refinement3d().size();
 
   // Si on dé-raffine à l'init, on aura un patch de plus
   if (do_coarse_at_init)

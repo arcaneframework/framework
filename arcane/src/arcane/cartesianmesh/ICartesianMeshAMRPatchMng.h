@@ -47,7 +47,11 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
   virtual void refine() =0;
 
   /*!
-   * \brief TODO
+   * \brief Méthode permettant de déraffiner les mailles de niveau 0.
+   *
+   * Un niveau de maille -1 sera créé avec des mailles parentes aux mailles
+   * de niveau 0 puis tous les niveaux seront incrémentés de 1. Le niveau créé
+   * par cette méthode sera donc le nouveau niveau 0.
    */
   virtual void coarse() =0;
 

@@ -52,10 +52,13 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
   virtual void addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id) = 0;
 
   /*!
-   * \brief TODO
+   * \brief Méthode permettant de créer une instance de CartesianMeshAMRPatchMng.
    */
   virtual void initCartesianMeshAMRPatchMng() = 0;
 
+  /*!
+   * \brief Méthode permettant de récupérer l'instance de CartesianMeshAMRPatchMng.
+   */
   virtual Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() = 0;
 };
 

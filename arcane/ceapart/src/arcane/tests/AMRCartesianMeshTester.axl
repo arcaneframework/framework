@@ -12,15 +12,7 @@
      <simple name="position" type="real2" />
      <simple name="length" type="real2" />
    </complex>
-   <complex name="coarsement-2d" type="Coarsement2D" minOccurs="0" maxOccurs="unbounded">
-     <simple name="position" type="real2" />
-     <simple name="length" type="real2" />
-   </complex>
    <complex name="refinement-3d" type="Refinement3D" minOccurs="0" maxOccurs="unbounded">
-     <simple name="position" type="real3" />
-     <simple name="length" type="real3" />
-   </complex>
-   <complex name="coarsement-3d" type="Coarsement3D" minOccurs="0" maxOccurs="unbounded">
      <simple name="position" type="real3" />
      <simple name="length" type="real3" />
    </complex>

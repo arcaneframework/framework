@@ -74,11 +74,11 @@ _syncFlagCell()
   ENUMERATE_(Cell, icell, m_mesh->ownCells()){
     Cell cell = *icell;
     flag_cells_consistent[cell] = cell.mutableItemBase().flags();
-    debug() << "Send " << cell
-            << " -- flag : " << cell.mutableItemBase().flags()
-            << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
-            << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
-    ;
+    //    debug() << "Send " << cell
+    //            << " -- flag : " << cell.mutableItemBase().flags()
+    //            << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
+    //            << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
+    //    ;
   }
 
   flag_cells_consistent.synchronize();
@@ -95,11 +95,11 @@ _syncFlagCell()
       cell.mutableItemBase().setFlags(ItemFlags::II_Inactive);
     }
 
-    debug() << "After Compute " << cell
-            << " -- flag : " << cell.mutableItemBase().flags()
-            << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
-            << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
-    ;
+    //    debug() << "After Compute " << cell
+    //            << " -- flag : " << cell.mutableItemBase().flags()
+    //            << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
+    //            << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
+    //    ;
   }
 }
 
@@ -2626,9 +2626,6 @@ coarse()
         }
       }
 
-      info() << cells_uid_around;
-      info() << owner_cells_around_parent_cell_1d;
-
       auto is_cell_around_parent_cell_different_owner = [&](Integer y, Integer x) {
         return (owner_cells_around_parent_cell(y, x) != owner_cells_around_parent_cell(1, 1));
       };
@@ -2764,12 +2761,12 @@ coarse()
     const bool mask_face_if_cell_rear[] = { false, true, true, true, true, true };
 
     // Petite différence par rapport au 2D. Pour le 2D, la position des noeuds des faces
-    // dans le tableau "child_nodes_uids" est toujours pareil (l et l+1, voir le 2D).
+    // dans le tableau "parent_nodes_uids" est toujours pareil (l et l+1, voir le 2D).
     // Pour le 3D, ce n'est pas le cas donc on a des tableaux pour avoir une correspondance
-    // entre les noeuds de chaque face et la position des noeuds dans le tableau "child_nodes_uids".
+    // entre les noeuds de chaque face et la position des noeuds dans le tableau "parent_nodes_uids".
     // (Exemple : pour la face 1 (même ordre d'énumération qu'Arcane), on doit prendre le
-    // tableau "nodes_in_face_1" et donc les noeuds "child_nodes_uids[0]", "child_nodes_uids[3]",
-    // "child_nodes_uids[7]" et "child_nodes_uids[4]").
+    // tableau "nodes_in_face_1" et donc les noeuds "parent_nodes_uids[0]", "parent_nodes_uids[3]",
+    // "parent_nodes_uids[7]" et "parent_nodes_uids[4]").
     const Integer nodes_in_face_0[] = { 0, 1, 2, 3 };
     const Integer nodes_in_face_1[] = { 0, 3, 7, 4 };
     const Integer nodes_in_face_2[] = { 0, 1, 5, 4 };
@@ -2798,9 +2795,6 @@ coarse()
           owner_cells_around_parent_cell_1d[i] = -1;
         }
       }
-
-      info() << cells_uid_around;
-      info() << owner_cells_around_parent_cell_1d;
 
       auto is_cell_around_parent_cell_different_owner = [&](Integer z, Integer y, Integer x) {
         return (owner_cells_around_parent_cell(z, y, x) != owner_cells_around_parent_cell(1, 1, 1));
@@ -3135,7 +3129,6 @@ coarse()
   m_num_mng->updateFirstLevel();
 
   // On positionne les noeuds dans l'espace.
-  info() << "cells_lid : " << cells_lid.size();
   CellInfoListView cells(m_mesh->cellFamily());
   for (Integer i = 0; i < total_nb_cells; ++i) {
     Cell parent = cells[cells_lid[i]];

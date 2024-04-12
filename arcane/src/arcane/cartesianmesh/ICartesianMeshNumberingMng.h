@@ -37,8 +37,28 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
  public:
 
+  /*!
+   * \brief Méthode permettant de préparer un nouveau niveau.
+   *
+   * Avant de raffiner ou de déraffiner des mailles, il est
+   * nécessaire d'appeler cette méthode pour préparer l'objet
+   * à fournir les informations concernant le nouveau niveau.
+   *
+   * Il faut aussi noter que ce nouveau niveau doit être le niveau
+   * directement supérieur au plus haut niveau déjà existant ou
+   * directement inférieur au plus bas niveau déjà existant.
+   *
+   * \param level Le nouveau niveau à préparer.
+   */
   virtual void prepareLevel(Int32 level) =0;
 
+  /*!
+   * \brief Méthode permettant de mettre à jour le premier niveau.
+   *
+   * En effet, lors du déraffinement, le nouveau niveau est le
+   * niveau -1. Arcane n'appréciant pas les niveaux négatifs,
+   * on doit mettre à jour les informations pour ne plus en avoir.
+   */
   virtual void updateFirstLevel() = 0;
 
   /*!
