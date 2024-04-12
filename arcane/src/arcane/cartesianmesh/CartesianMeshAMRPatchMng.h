@@ -45,11 +45,9 @@ class CartesianMeshAMRPatchMng
  public:
   void flagCellToRefine(Int32ConstArrayView cells_lids) override;
   void _syncFlagCell();
-  void refine() override;
 
-  void flagCellToCoarse(Int32ConstArrayView cells_lids) override;
+  void refine() override;
   void coarse() override;
-  void createLevelDown();
 
  private:
   IMesh* m_mesh;

@@ -158,10 +158,6 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    */
   virtual void refinePatch3D(Real3 position, Real3 length) = 0;
 
-  virtual void coarsePatch2D(Real2 position, Real2 length) = 0;
-  virtual void coarsePatch3D(Real3 position, Real3 length) = 0;
-
-
   /*!
    * \brief Renumérote les uniqueId() des entités.
    *

@@ -46,7 +46,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
    */
   virtual void refine() =0;
 
-  virtual void flagCellToCoarse(Int32ConstArrayView cells_lids) =0;
+  /*!
+   * \brief TODO
+   */
   virtual void coarse() =0;
 
 };

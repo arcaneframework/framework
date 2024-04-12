@@ -35,6 +35,16 @@ createCartesianMeshCoarsening2(ICartesianMesh* cm)
   return cm->_internalApi()->createCartesianMeshCoarsening2();
 }
 
+/*!
+ * \brief Créé une instance pour gérer le déraffinement du maillage (V3?).
+ * \warning Very experimental method !
+ */
+Ref<ICartesianMeshAMRPatchMng> CartesianMeshUtils::
+cartesianMeshAMRPatchMng(ICartesianMesh* cm)
+{
+  return cm->_internalApi()->cartesianMeshAMRPatchMng();
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

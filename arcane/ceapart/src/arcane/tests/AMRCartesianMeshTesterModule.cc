@@ -17,6 +17,7 @@
 #include "arcane/utils/MD5HashAlgorithm.h"
 
 #include "arcane/core/MeshUtils.h"
+#include "arcane/core/MeshKind.h"
 #include "arcane/core/Directory.h"
 
 #include "arcane/core/ITimeLoopMng.h"
@@ -480,8 +481,17 @@ _initAMR()
     m_cartesian_mesh->computeDirections();
 
     info() << "Doint initial coarsening";
-    Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
-    coarser->createCoarseCells();
+
+    if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+      debug() << "Coarse with specific coarser (for cartesian mesh only)";
+      Ref<ICartesianMeshAMRPatchMng> coarser = CartesianMeshUtils::cartesianMeshAMRPatchMng(m_cartesian_mesh);
+      coarser->coarse();
+    }
+    else {
+      Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
+      coarser->createCoarseCells();
+    }
+
     CartesianMeshPatchListView patches = m_cartesian_mesh->patches();
     Int32 nb_patch = patches.size();
     {
@@ -502,18 +512,10 @@ _initAMR()
       m_cartesian_mesh->refinePatch2D(x->position(),x->length());
       m_cartesian_mesh->computeDirections();
     }
-    for( auto& x : options()->coarsement2d() ){
-      m_cartesian_mesh->coarsePatch2D(x->position(),x->length());
-      m_cartesian_mesh->computeDirections();
-    }
   }
   if (dim==3){
     for( auto& x : options()->refinement3d() ){    
       m_cartesian_mesh->refinePatch3D(x->position(),x->length());
-      m_cartesian_mesh->computeDirections();
-    }
-    for( auto& x : options()->coarsement3d() ){
-      m_cartesian_mesh->coarsePatch3D(x->position(),x->length());
       m_cartesian_mesh->computeDirections();
     }
   }

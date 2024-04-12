@@ -65,20 +65,6 @@ flagCellToRefine(Int32ConstArrayView cells_lids)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRPatchMng::
-flagCellToCoarse(Int32ConstArrayView cells_lids)
-{
-  ItemInfoListView cells(m_mesh->cellFamily());
-  for (int lid : cells_lids) {
-    Item item = cells[lid];
-    item.mutableItemBase().addFlags(ItemFlags::II_Coarsen);
-  }
-  _syncFlagCell();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMeshAMRPatchMng::
 _syncFlagCell()
 {
   if (!m_mesh->parallelMng()->isParallel())
@@ -92,7 +78,6 @@ _syncFlagCell()
             << " -- flag : " << cell.mutableItemBase().flags()
             << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
             << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
-            << " -- II_Coarsen : " << (cell.itemBase().flags() & ItemFlags::II_Coarsen)
     ;
   }
 
@@ -109,14 +94,11 @@ _syncFlagCell()
     if(flag_cells_consistent[cell] & ItemFlags::II_Inactive) {
       cell.mutableItemBase().setFlags(ItemFlags::II_Inactive);
     }
-    if(flag_cells_consistent[cell] & ItemFlags::II_Coarsen) {
-      cell.mutableItemBase().setFlags(ItemFlags::II_Coarsen);
-    }
+
     debug() << "After Compute " << cell
             << " -- flag : " << cell.mutableItemBase().flags()
             << " -- II_Refine : " << (cell.itemBase().flags() & ItemFlags::II_Refine)
             << " -- II_Inactive : " << (cell.itemBase().flags() & ItemFlags::II_Inactive)
-            << " -- II_Coarsen : " << (cell.itemBase().flags() & ItemFlags::II_Coarsen)
     ;
   }
 }
@@ -2490,7 +2472,7 @@ refine()
 }
 
 void CartesianMeshAMRPatchMng::
-createLevelDown()
+coarse()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 nb_rank = pm->commSize();
@@ -2528,7 +2510,6 @@ createLevelDown()
     Cell cell = *icell;
 
     Int64 parent_uid = m_num_mng->getParentCellUidOfCell(cell);
-    info() << "Test : " << cell.uniqueId() << " " << cell.level() << " " << parent_uid << " " << cell.owner();
     if (!cell_uid_to_create.contains(parent_uid)) {
       cell_uid_to_create.add(parent_uid);
       around_parent_cells_uid_to_owner[parent_uid] = cell.owner();
@@ -2541,10 +2522,10 @@ createLevelDown()
     parent_to_child_cells[parent_uid].add(cell);
   }
 
-  info() << cell_uid_to_create;
-  for (const auto& [key, value] : parent_to_child_cells) {
-    info() << "Parent : " << key << " -- Children : " << value;
-  }
+  //  info() << cell_uid_to_create;
+  //  for (const auto& [key, value] : parent_to_child_cells) {
+  //    info() << "Parent : " << key << " -- Children : " << value;
+  //  }
 
   UniqueArray<Int64> cells_infos;
   UniqueArray<Int64> faces_infos;
@@ -2764,7 +2745,7 @@ createLevelDown()
           }
 
           node_uid_to_owner[parent_nodes_uids[l]] = parent_node_owner;
-          debug() << "Child node (create node)  -- parent_cell_uid : " << parent_cell_uid
+          debug() << "Parent node (create node)  -- parent_cell_uid : " << parent_cell_uid
                   << " -- level : " << -1
                   << " -- node : " << l
                   << " -- uid_node : " << parent_nodes_uids[l]
@@ -3060,7 +3041,7 @@ createLevelDown()
           }
 
           node_uid_to_owner[parent_nodes_uids[l]] = parent_node_owner;
-          debug() << "Child node (create node)  -- parent_cell_uid : " << parent_cell_uid
+          debug() << "Parent node (create node)  -- parent_cell_uid : " << parent_cell_uid
                   << " -- level : " << -1
                   << " -- node : " << l
                   << " -- uid_node : " << parent_nodes_uids[l]
@@ -3153,10 +3134,6 @@ createLevelDown()
   m_mesh->modifier()->endUpdate();
   m_num_mng->updateFirstLevel();
 
-  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
-    info() << *icell << icell->level();
-  }
-
   // On positionne les noeuds dans l'espace.
   info() << "cells_lid : " << cells_lid.size();
   CellInfoListView cells(m_mesh->cellFamily());
@@ -3181,35 +3158,6 @@ createLevelDown()
   // et l'ajout de patch.
   m_cmesh->computeDirections();
 }
-
-void CartesianMeshAMRPatchMng::
-coarse()
-{
-  IParallelMng* pm = m_mesh->parallelMng();
-  Int32 nb_rank = pm->commSize();
-  Int32 my_rank = pm->commRank();
-  Int32 min_level = 1;
-
-  UniqueArray<Cell> cell_to_coarse_internals;
-  ENUMERATE_ (Cell, icell, m_mesh->allActiveCells()) {
-    Cell cell = *icell;
-    if (cell.itemBase().flags() & ItemFlags::II_Coarsen) {
-      cell_to_coarse_internals.add(cell);
-      if (min_level == 1) {
-        min_level = cell.level();
-      }
-      if (cell.level() != min_level)
-        ARCANE_FATAL("Different levels not supported");
-    }
-  }
-
-  if (min_level == 0) {
-    createLevelDown();
-  }
-
-  ARCANE_FATAL("Normal");
-}
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

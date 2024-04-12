@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ItemTypes.h"
+#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,6 +50,13 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
    * Les mailles filles de \a parent_cells doivent déjà avoir été créées.
    */
   virtual void addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id) = 0;
+
+  /*!
+   * \brief TODO
+   */
+  virtual void initCartesianMeshAMRPatchMng() = 0;
+
+  virtual Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

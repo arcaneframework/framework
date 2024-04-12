@@ -92,10 +92,20 @@ class CartesianMeshImpl
     {
       m_cartesian_mesh->_addPatchFromExistingChildren(parent_cells_local_id);
     }
+    void initCartesianMeshAMRPatchMng() override
+    {
+      m_amr_mng = makeRef(new CartesianMeshAMRPatchMng(m_cartesian_mesh));
+    }
+
+    Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() override
+    {
+      return m_amr_mng;
+    }
 
    private:
 
     CartesianMeshImpl* m_cartesian_mesh = nullptr;
+    Ref<ICartesianMeshAMRPatchMng> m_amr_mng;
   };
 
  public:
@@ -159,9 +169,6 @@ class CartesianMeshImpl
   void refinePatch2D(Real2 position,Real2 length) override;
   void refinePatch3D(Real3 position,Real3 length) override;
 
-  void coarsePatch2D(Real2 position,Real2 length) override;
-  void coarsePatch3D(Real3 position,Real3 length) override;
-
   void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) override;
 
   void checkValid() const override;
@@ -200,7 +207,6 @@ class CartesianMeshImpl
   bool m_is_mesh_event_added = false;
   Int64 m_mesh_timestamp = 0;
   eMeshAMRKind m_amr_type;
-  Ref<ICartesianMeshAMRPatchMng> m_amr_mng;
 
  private:
 
@@ -209,14 +215,12 @@ class CartesianMeshImpl
                              VariableFaceReal3& faces_center,CellGroup all_cells,
                              NodeGroup all_nodes);
   void _applyRefine(ConstArrayView<Int32> cells_local_id);
-  void _applyCoarse(ConstArrayView<Int32> cells_local_id);
   void _addPatch(const CellGroup& parent_group);
   void _saveInfosInProperties();
 
   std::tuple<CellGroup,NodeGroup>
   _buildPatchGroups(const CellGroup& cells,Integer patch_level);
   void _refinePatch(Real3 position,Real3 length,bool is_3d);
-  void _coarsePatch(Real3 position,Real3 length,bool is_3d);
   void _checkNeedComputeDirections();
   void _checkAddObservableMeshChanged();
   void _addPatchInstance(const Ref<CartesianMeshPatch>& v)
@@ -251,7 +255,8 @@ CartesianMeshImpl(IMesh* mesh)
 , m_amr_type(mesh->meshKind().meshAMRKind())
 {
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly)
-    m_amr_mng = makeRef(new CartesianMeshAMRPatchMng(this));
+    m_internal_api.initCartesianMeshAMRPatchMng();
+
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));
   _addPatchInstance(m_all_items_direction_info);
   Integer nb_dir = mesh->dimension();
@@ -676,58 +681,6 @@ refinePatch3D(Real3 position,Real3 length)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_coarsePatch(Real3 position,Real3 length,bool is_3d)
-{
-  VariableNodeReal3& nodes_coord = m_mesh->nodesCoordinates();
-  UniqueArray<Int32> cells_local_id;
-  // Parcours les mailles actives et ajoute dans la liste des mailles
-  // à raffiner celles qui sont contenues dans le boîte englobante
-  // spécifiée dans le jeu de données.
-  Real3 min_pos = position;
-  Real3 max_pos = min_pos + length;
-  cells_local_id.clear();
-  ENUMERATE_CELL(icell,m_mesh->allActiveCells()){
-    Cell cell = *icell;
-    Real3 center;
-    for( NodeLocalId inode : cell.nodeIds() )
-      center += nodes_coord[inode];
-    center /= cell.nbNode();
-    bool is_inside_x = center.x>min_pos.x && center.x<max_pos.x;
-    bool is_inside_y = center.y>min_pos.y && center.y<max_pos.y;
-    bool is_inside_z = (center.z>min_pos.z && center.z<max_pos.z) || !is_3d;
-    if (is_inside_x && is_inside_y && is_inside_z)
-      cells_local_id.add(icell.itemLocalId());
-  }
-  _applyCoarse(cells_local_id);
-  _saveInfosInProperties();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMeshImpl::
-coarsePatch2D(Real2 position,Real2 length)
-{
-  info() << "coarsement 2D position=" << position << " length=" << length;
-  Real3 position_3d(position.x,position.y,0.0);
-  Real3 length_3d(length.x,length.y,0.0);
-  _coarsePatch(position_3d,length_3d,false);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMeshImpl::
-coarsePatch3D(Real3 position,Real3 length)
-{
-  info() << "coarsement 3D position=" << position << " length=" << length;
-  _coarsePatch(position,length,true);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMeshImpl::
 _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
 {
   IItemFamily* cell_family = m_mesh->cellFamily();
@@ -788,46 +741,12 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
   }
   else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Refine with specific refiner (for cartesian mesh only)";
-    m_amr_mng->flagCellToRefine(cells_local_id);
-    m_amr_mng->refine();
+    computeDirections();
+    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToRefine(cells_local_id);
+    m_internal_api.cartesianMeshAMRPatchMng()->refine();
   }
   else if(m_amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
-  }
-  else{
-    ARCANE_FATAL("AMR is not enabled");
-  }
-
-  {
-    MeshStats ms(traceMng(),m_mesh,m_mesh->parallelMng());
-    ms.dumpStats();
-  }
-  _addPatch(parent_cells);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMeshImpl::
-_applyCoarse(ConstArrayView<Int32> cells_local_id)
-{
-  IItemFamily* cell_family = m_mesh->cellFamily();
-  Integer nb_cell = cells_local_id.size();
-  info(4) << "Local_NbCellToRefine = " << nb_cell;
-  Integer index = m_amr_patch_cell_groups.size();
-  String parent_group_name = String("CartesianMeshPatchParentCells")+index;
-  CellGroup parent_cells = cell_family->createGroup(parent_group_name,cells_local_id,true);
-
-  IParallelMng* pm = m_mesh->parallelMng();
-  Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum,nb_cell);
-  info(4) << "Global_NbCellToRefine = " << total_nb_cell;
-  if (total_nb_cell==0)
-    return;
-
-  if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    debug() << "Coarse with specific coarser (for cartesian mesh only)";
-    m_amr_mng->flagCellToCoarse(cells_local_id);
-    m_amr_mng->coarse();
   }
   else{
     ARCANE_FATAL("AMR is not enabled");
