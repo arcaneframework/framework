@@ -140,6 +140,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   static ComponentItemSharedInfo null_shared_info;
   static ComponentItemSharedInfo* null_shared_info_pointer;
   static ComponentItemSharedInfo* _nullInstance() { return null_shared_info_pointer; }
+  static void _setNullInstance();
 
  private:
 
