@@ -181,6 +181,7 @@ class MeshMaterialTesterModule
   void _initUnitTest();
   void _applyEos(bool is_init);
   void _testDumpProperties();
+  void _checkNullComponentItem();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -716,6 +717,29 @@ startInit()
 
   _applyEos(true);
   _testDumpProperties();
+  _checkNullComponentItem();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialTesterModule::
+_checkNullComponentItem()
+{
+  EnvCell null_env_cell;
+  info() << "NullEnvCell global_cell_id=" << null_env_cell.globalCell().localId();
+
+  info() << "NullEnvCell var_index =" << null_env_cell._varIndex();
+  //info() << "NullEnvCell component =" << null_env_cell.component();
+  info() << "NullEnvCell component_id =" << null_env_cell.componentId();
+  info() << "NullEnvCell null =" << null_env_cell.null();
+  info() << "NullEnvCell super_cell =" << null_env_cell.superCell();
+  info() << "NullEnvCell level =" << null_env_cell.level();
+  info() << "NullEnvCell nb_sub_item=" << null_env_cell.nbSubItem();
+  info() << "NullEnvCell component_unique_id=" << null_env_cell.componentUniqueId();
+  info() << "NullEnvCell sub_items =" << null_env_cell.subItems();
+
+  info() << "NullEnvCell all_env_cell =" << null_env_cell.allEnvCell().null();
 }
 
 /*---------------------------------------------------------------------------*/
