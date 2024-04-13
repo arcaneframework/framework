@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<service name="SimplePostProcessor" parent-name="Arcane::PostProcessorWriterBase"
+        namespace-name="SimpleTest" version="1.0" type="caseoption">
+  <description>Service basique de post-traitemen</description>
+  <interface name="Arcane::IPostProcessorWriter" inherited="false"/>
+  <options>
+  </options>
+</service>
