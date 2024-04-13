@@ -12,6 +12,7 @@ set(SOURCES
   NullThreadImplementation.h
   SpinLock.h
   SpinLock.cc
+  StdThreadImplementation.cc
 )
 
 if(ARCCORE_ENABLE_GLIB)

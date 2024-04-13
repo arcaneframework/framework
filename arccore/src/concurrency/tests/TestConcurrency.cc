@@ -11,7 +11,8 @@
 #include "arccore/base/Ref.h"
 
 #include "arccore/concurrency/SpinLock.h"
-#include "arccore/concurrency/GlibThreadImplementation.h"
+#include "arccore/concurrency/Mutex.h"
+#include "arccore/concurrency/IThreadBarrier.h"
 
 using namespace Arccore;
 
@@ -54,6 +55,7 @@ class MyThread
 class TestSpinLock1
 {
  public:
+
   TestSpinLock1()
   {
   }
@@ -80,7 +82,6 @@ class TestSpinLock1
     std::cout << "Test1 spin_time=" << (v2 - v1) << " count2=" << m_count2 << " count3=" << m_count3 << "\n";
     Int64 expected_count3 = nb_iter * m_nb_sub_iter * nb_thread;
     Int64 expected_count2 = 10 * expected_count3 + (expected_count3 * (expected_count3 + 1)) / 2;
-    ;
     std::cout << " expected_count2=" << expected_count2 << " expected_count3=" << expected_count3 << "\n";
     ASSERT_EQ(m_count2, expected_count2);
     ASSERT_EQ(m_count3, expected_count3);
@@ -104,10 +105,75 @@ class TestSpinLock1
   Int32 m_nb_sub_iter = 1000;
 };
 
-TEST(Concurrency, SpinLock)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class TestMutexLock1
 {
-  Ref<IThreadImplementation> timpl(Concurrency::createGlibThreadImplementation());
-  Concurrency::setThreadImplementation(timpl.get());
+ public:
+
+  TestMutexLock1()
+  : m_thread_implementation(Concurrency::getThreadImplementation())
+  {
+  }
+
+  void exec()
+  {
+    Real v1 = Platform::getRealTime();
+    const Int32 nb_iter = 70;
+    const Int32 nb_thread = 10;
+    m_thread_barrier = m_thread_implementation->createBarrier();
+    m_thread_barrier->init(nb_thread);
+    for (Integer i = 0; i < nb_iter; ++i) {
+      FunctorT<TestMutexLock1> f1(this, &TestMutexLock1::_F1);
+      std::vector<MyThread> threads(nb_thread);
+      for (Integer j = 0; j < nb_thread; ++j)
+        threads[j].create(&f1);
+      for (Integer j = 0; j < nb_thread; ++j)
+        threads[j].join();
+      m_do_print_id = false;
+    }
+    Real v2 = Platform::getRealTime();
+    std::cout << "Test1 spin_time=" << (v2 - v1) << " count2=" << m_count2 << " count3=" << m_count3 << "\n";
+    Int64 expected_count3 = nb_iter * m_nb_sub_iter * nb_thread;
+    Int64 expected_count2 = 10 * expected_count3 + (expected_count3 * (expected_count3 + 1)) / 2;
+    std::cout << " expected_count2=" << expected_count2 << " expected_count3=" << expected_count3 << "\n";
+    ASSERT_EQ(m_count2, expected_count2);
+    ASSERT_EQ(m_count3, expected_count3);
+    m_thread_barrier->destroy();
+  }
+  void _F1()
+  {
+    for (Int32 i = 0; i < m_nb_sub_iter; ++i) {
+      ++m_count;
+      {
+        Mutex::ScopedLock sl(m_mutex);
+        ++m_count3;
+        m_count2 += 10;
+        m_count2 += m_count3;
+      }
+    }
+    m_thread_barrier->wait();
+    if (m_do_print_id) {
+      std::ostringstream ostr;
+      ostr << "THREAD_ID=" << m_thread_implementation->currentThread() << "\n";
+      std::cout << ostr.str();
+    }
+  }
+  IThreadImplementation* m_thread_implementation = nullptr;
+  Mutex m_mutex;
+  IThreadBarrier* m_thread_barrier = nullptr;
+  std::atomic<Int64> m_count = 0;
+  Int64 m_count2 = 0;
+  Int64 m_count3 = 0;
+  Int32 m_nb_sub_iter = 1000;
+  bool m_do_print_id = true;
+};
+
+namespace
+{
+void _doSpinLock()
+{
 
   {
     TestSpinLock1 test1;
@@ -121,8 +187,48 @@ TEST(Concurrency, SpinLock)
     TestSpinLock1 test3(SpinLock::eMode::SpinAndMutex);
     test3.exec();
   }
+}
+void _doMutexLock()
+{
+
+  {
+    TestMutexLock1 test1;
+    test1.exec();
+  }
+}
+} // namespace
+
+TEST(Concurrency, GlibSpinLock)
+{
+  Ref<IThreadImplementation> timpl(Concurrency::createGlibThreadImplementation());
+  Concurrency::setThreadImplementation(timpl.get());
+  _doSpinLock();
   Concurrency::setThreadImplementation(nullptr);
 }
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+TEST(Concurrency, StdSpinLock)
+{
+  Ref<IThreadImplementation> timpl(Concurrency::createStdThreadImplementation());
+  Concurrency::setThreadImplementation(timpl.get());
+  _doSpinLock();
+  Concurrency::setThreadImplementation(nullptr);
+}
+
+TEST(Concurrency, GlibMutexLock)
+{
+  Ref<IThreadImplementation> timpl(Concurrency::createGlibThreadImplementation());
+  Concurrency::setThreadImplementation(timpl.get());
+  _doMutexLock();
+  Concurrency::setThreadImplementation(nullptr);
+}
+
+TEST(Concurrency, StdMutexLock)
+{
+  Ref<IThreadImplementation> timpl(Concurrency::createStdThreadImplementation());
+  Concurrency::setThreadImplementation(timpl.get());
+  _doMutexLock();
+  Concurrency::setThreadImplementation(nullptr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
