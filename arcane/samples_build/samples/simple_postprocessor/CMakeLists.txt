@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+project(SimplePostProcessor LANGUAGES C CXX)
+
+find_package(Arcane REQUIRED)
+arcane_generate_axl(SimplePostProcessor)
+add_library(SimplePostProcessor SimplePostProcessorService.cc SimplePostProcessor_axl.h)
+target_include_directories(SimplePostProcessor PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+arcane_add_arcane_libraries_to_target(SimplePostProcessor)

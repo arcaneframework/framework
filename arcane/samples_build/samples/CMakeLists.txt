@@ -43,6 +43,7 @@ add_subdirectory(multiple_mesh)
 if (ARCANE_HAS_DOTNET_WRAPPER)
   add_subdirectory(user_function)
 endif()
+add_subdirectory(simple_postprocessor)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
