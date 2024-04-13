@@ -21,6 +21,7 @@
 #include "arccore/concurrency/Mutex.h"
 
 #include <new>
+#include <thread>
 #include <condition_variable>
 #include <mutex>
 
