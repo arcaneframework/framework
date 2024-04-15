@@ -5,17 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IThreadImplementationService.h                              (C) 2000-2024 */
+/* StdThreadImplementation.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Interface d'un service de gestion des threads.                            */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_ITHREADIMPLEMENTATIONSERVICE_H
-#define ARCANE_UTILS_ITHREADIMPLEMENTATIONSERVICE_H
+/* Implémentation des threads utilisant la bibliothèque standard C++.        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/concurrency/IThreadImplementation.h"
+#include "arccore/concurrency/ConcurrencyGlobal.h"
+
+#include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/IThreadImplementationService.h"
+#include "arcane/core/FactoryService.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,26 +26,37 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Interface d'un service de gestion des threads.
- */
-class ARCANE_UTILS_EXPORT IThreadImplementationService
+
+class StdThreadImplementationService
+: public IThreadImplementationService
 {
  public:
 
-  virtual ~IThreadImplementationService() = default;
+  explicit StdThreadImplementationService(const ServiceBuildInfo&) {}
 
  public:
 
-  virtual Ref<IThreadImplementation> createImplementation() = 0;
+  void build() {}
+
+ public:
+
+  Ref<IThreadImplementation> createImplementation() override
+  {
+    return Arccore::Concurrency::createStdThreadImplementation();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+ARCANE_REGISTER_APPLICATION_FACTORY(StdThreadImplementationService,
+                                    IThreadImplementationService,
+                                    StdThreadImplementationService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
