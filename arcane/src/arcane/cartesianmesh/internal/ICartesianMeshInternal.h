@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshInternal.h                                    (C) 2000-2023 */
+/* ICartesianMeshInternal.h                                    (C) 2000-2024 */
 /*                                                                           */
 /* Partie interne à Arcane de ICartesianMesh.                                */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ItemTypes.h"
+#include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,6 +50,16 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
    * Les mailles filles de \a parent_cells doivent déjà avoir été créées.
    */
   virtual void addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id) = 0;
+
+  /*!
+   * \brief Méthode permettant de créer une instance de CartesianMeshAMRPatchMng.
+   */
+  virtual void initCartesianMeshAMRPatchMng() = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'instance de CartesianMeshAMRPatchMng.
+   */
+  virtual Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

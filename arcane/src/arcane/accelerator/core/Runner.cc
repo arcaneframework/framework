@@ -44,6 +44,8 @@ namespace
     switch (p) {
     case eExecutionPolicy::None:
       ARCANE_FATAL("No runtime for eExecutionPolicy::None");
+    case eExecutionPolicy::SYCL:
+      return impl::getSYCLRunQueueRuntime();
     case eExecutionPolicy::HIP:
       return impl::getHIPRunQueueRuntime();
     case eExecutionPolicy::CUDA:
@@ -106,7 +108,7 @@ initialize(Runner* runner, eExecutionPolicy v, DeviceId device)
     m_is_auto_prefetch_command = (v.value() != 0);
 
   // Il faut initialiser le pool à la fin car il a besoin d'accéder à \a m_runtime
-  m_run_queue_pool = new RunQueueImplStack(runner->_impl());
+  m_run_queue_pool.initialize(runner->_impl());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -123,13 +125,12 @@ _checkIsInit() const
 /*---------------------------------------------------------------------------*/
 
 void RunnerImpl::
-_freePool(RunQueueImplStack* s)
+_freePool()
 {
-  if (!s)
-    return;
-  while (!s->empty()) {
-    delete s->top();
-    s->pop();
+  RunQueueImplStack& s = m_run_queue_pool;
+  while (!s.empty()) {
+    delete s.top();
+    s.pop();
   }
 }
 
@@ -139,9 +140,7 @@ _freePool(RunQueueImplStack* s)
 RunQueueImplStack* RunnerImpl::
 getPool()
 {
-  if (!m_run_queue_pool)
-    ARCANE_FATAL("Runner is not initialized");
-  return m_run_queue_pool;
+  return &m_run_queue_pool;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -199,6 +198,8 @@ _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
 RunQueueImpl* RunQueueImplStack::
 createRunQueue(const RunQueueBuildInfo& bi)
 {
+  if (!m_runner_impl)
+    ARCANE_FATAL("RunQueueImplStack is not initialized");
   Int32 x = ++m_nb_created;
   auto* q = new impl::RunQueueImpl(m_runner_impl, x, bi);
   q->m_is_in_pool = true;
@@ -487,8 +488,8 @@ getPointerAccessibility(Runner* runner, const void* ptr, PointerAttribute* ptr_a
 }
 
 extern "C++" void impl::
-arcaneCheckPointerIsAcccessible(Runner* runner, const void* ptr,
-                                const char* name, const TraceInfo& ti)
+arcaneCheckPointerIsAccessible(Runner* runner, const void* ptr,
+                               const char* name, const TraceInfo& ti)
 {
   if (!runner)
     return;

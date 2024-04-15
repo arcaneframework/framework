@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Atomic.h                                                    (C) 2000-2023 */
+/* Atomic.h                                                    (C) 2000-2024 */
 /*                                                                           */
 /* Opérations atomiques.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/ArcaneCxx20.h"
 
-#ifdef ARCCORE_DEVICE_CODE
+#if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
 #include "arcane/accelerator/CommonCudaHipAtomicImpl.h"
 #endif
 
@@ -93,7 +93,7 @@ class AtomicImpl
   ARCCORE_HOST_DEVICE static inline void
   doAtomic(DataType* ptr, DataType value)
   {
-#ifdef ARCCORE_DEVICE_CODE
+#if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
     impl::CommonCudaHipAtomic<DataType, Operation>::apply(ptr, value);
 #else
     HostAtomic<Operation>::apply(ptr, value);

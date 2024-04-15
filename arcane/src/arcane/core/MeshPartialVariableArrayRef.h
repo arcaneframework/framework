@@ -121,6 +121,11 @@ class ItemPartialVariableArrayRefT
     return this->m_view[i.index()];
   }
 
+ public:
+
+  //! Vue sur table d'indirection du groupe.
+  GroupIndexTableView tableView() const { return m_table->view(); }
+
  protected:
   
   SharedPtrT<GroupIndexTable> m_table;

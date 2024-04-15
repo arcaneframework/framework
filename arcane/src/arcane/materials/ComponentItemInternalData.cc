@@ -120,6 +120,10 @@ ComponentItemInternalData(MeshMaterialMng* mmg)
 , m_env_storage(_allocOptions(), "EnvStorage")
 , m_mat_storage(_allocOptions(), "MatStorage")
 {
+  // Initialise l'instance nulle. Ce n'est pas grave si on le fait plusieurs fois
+  // car la valeur ne change pas.
+  ComponentItemSharedInfo::_setNullInstance();
+
   // Il y a une instance pour les MatCell, les EnvCell et les AllEnvCell
   // Il ne faut ensuite plus modifier ce tableau car on conserve des pointeurs
   // vers les éléments de ce tableau.

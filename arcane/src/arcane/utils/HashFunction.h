@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HashFunction.h                                              (C) 2000-2023 */
+/* HashFunction.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Fonction de hachage.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ class IntegerHashFunctionT<Int32>
 {
  public:
 
-  static Int32 hashfunc(Int32 key)
+  static constexpr ARCCORE_HOST_DEVICE Int32 hashfunc(Int32 key)
   {
     key += ~(key << 15);
     key ^= (key >> 10);
@@ -71,7 +71,7 @@ class IntegerHashFunctionT<Int64>
 {
  public:
 
-  static Int64 hashfunc(Int64 key)
+  static constexpr ARCCORE_HOST_DEVICE Int64 hashfunc(Int64 key)
   {
     key += ~(key << 32);
     key ^= (key >> 22);
@@ -140,7 +140,7 @@ class HashTraitsT<Int32>
 
  public:
 
-  static Int32 hashFunction(Int32 key)
+  static constexpr ARCCORE_HOST_DEVICE Int32 hashFunction(Int32 key)
   {
     return IntegerHashFunctionT<Int32>::hashfunc(key);
   }
@@ -166,7 +166,7 @@ class HashTraitsT<Int64>
 
  public:
 
-  static Int64 hashFunction(Int64 key)
+  static constexpr ARCCORE_HOST_DEVICE Int64 hashFunction(Int64 key)
   {
     return IntegerHashFunctionT<Int64>::hashfunc(key);
   }

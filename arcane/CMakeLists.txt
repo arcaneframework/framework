@@ -138,6 +138,12 @@ option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_li
 option(ARCANE_ENABLE_TESTS "Enable compilation of tests" ON)
 option(ARCANE_ENABLE_DOTNET_WRAPPER "Enable compilation of '.Net' wrapper" ON)
 
+# Expérimental. Ne pas utiliser en dehors d'Arcane
+option(ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER "Enable compilation python extension using '.Net' wrapper" OFF)
+if(ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  set(ARCANE_ENABLE_DOTNET_WRAPPER ON)
+endif()
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Cherche 'Arccon'
@@ -160,6 +166,9 @@ include(LoadBuildSystem)
 
 find_package(ArcDependencies REQUIRED)
 set(ARCANE_ArcDependencies_NEEDED_VERSION "1.5.0")
+if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  set(ARCANE_ArcDependencies_NEEDED_VERSION "1.7.0")
+endif()
 message(STATUS "ArcDependencies_VERSION = ${ArcDependencies_VERSION}")
 if (ArcDependencies_VERSION VERSION_LESS ARCANE_ArcDependencies_NEEDED_VERSION)
   message(FATAL_ERROR "ArcDependencies version '${ArcDependencies_VERSION}' is too old."
@@ -352,7 +361,7 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.6.4")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.6.7")
 if (NOT Arccore_FOUND)
   find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 endif ()
@@ -909,9 +918,11 @@ if(DEFINED ARCANE_ACCELERATOR_MODE)
   elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
     set (ARCANE_WANT_HIP TRUE)
     # TODO: vérifier qu'on utilise bien 'hipcc'
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
+    set (ARCANE_WANT_SYCL TRUE)
   else()
     message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
-      "Valid values are 'CUDANVCC' or 'ROCMHIP'")
+      "Valid values are 'CUDANVCC', 'ROCMHIP' ou 'SYCLDPCPP")
   endif()
   set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
   set (ARCANE_HAS_ACCELERATOR TRUE)
@@ -919,33 +930,44 @@ endif()
 
 # ----------------------------------------------------------------------------
 
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
-  # Il faut au moins CMake 3.21 pour qu'il reconnaise langage HIP
-  enable_language(HIP)
-  add_subdirectory(src/arcane/accelerator/hip)
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
-  # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
-  message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
-  cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
+if (ARCANE_HAS_ACCELERATOR)
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
+    # Il faut au moins CMake 3.21 pour qu'il reconnaise langage HIP
+    enable_language(HIP)
+    add_subdirectory(src/arcane/accelerator/hip)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
+    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+    message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
+    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
 
-  # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
-  if (NOT CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+    # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
+    if (NOT CMAKE_CUDA_ARCHITECTURES)
+      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+    endif()
+    enable_language(CUDA)
+    add_subdirectory(src/arcane/accelerator/cuda)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP")
+    add_subdirectory(src/arcane/accelerator/sycl)
+  else()
+    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
   endif()
-  enable_language(CUDA)
-  add_subdirectory(src/arcane/accelerator/cuda)
 endif()
 
 add_subdirectory(src/arcane/accelerator/core)
 if (ARCANE_HAS_ACCELERATOR_API)
   add_subdirectory(src/arcane/accelerator)
 endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
-  add_subdirectory(src/arcane/accelerator/hip/runtime)
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
-  add_subdirectory(src/arcane/accelerator/cuda/runtime)
+
+if (ARCANE_HAS_ACCELERATOR)
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+    add_subdirectory(src/arcane/accelerator/hip/runtime)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
+    add_subdirectory(src/arcane/accelerator/cuda/runtime)
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP")
+    add_subdirectory(src/arcane/accelerator/sycl/runtime)
+  else()
+    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------
@@ -1166,6 +1188,7 @@ function(ARCANE_GEN_CORE_CONFIG_FILE filename)
   ARCANE_WRITE_ONE_CONFIG(ARCCORE_DEBUG ARCANE_DEBUG)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_CUDA ARCANE_HAS_CUDA)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_HIP ARCANE_HAS_HIP)
+  ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_SYCL ARCANE_HAS_SYCL)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX11 ARCANE_HAS_CXX11)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX14 ARCANE_HAS_CXX14)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_HAS_CXX20 ARCANE_HAS_CXX20)

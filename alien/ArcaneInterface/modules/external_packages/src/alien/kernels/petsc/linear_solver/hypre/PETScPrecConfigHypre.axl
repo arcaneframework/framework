@@ -127,6 +127,18 @@ HYPRE BoomerAMG Options
       
       </description>
     </simple>
+        
+    <simple name="pmax-elements" type="integer" default="0">
+      <description>
+          Max elements per row for interpolation operator (0=unlimited)
+      </description>
+    </simple>
+    
+    <simple name="truncfactor" type="real" default="0">
+      <description>
+          Truncation factor for interpolation (0=no truncation) (None)
+      </description>
+    </simple>
     
     <enumeration name="type" type="PETScPrecConfigHypreOptions::eType">
       <description>Preconditionment type</description>

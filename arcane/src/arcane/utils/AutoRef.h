@@ -139,11 +139,25 @@ class AutoRef2
   {
     _changeValue(from.m_value);
   }
+  //! Construit une référence référant \a from
+  AutoRef2(ThatClass&& from) noexcept
+  : m_value(from.m_value)
+  {
+    from.m_value = nullptr;
+  }
 
   //! Opérateur de copie
   ThatClass& operator=(const ThatClass& from)
   {
     _changeValue(from.m_value);
+    return (*this);
+  }
+  //! Opérateur de déplacement
+  ThatClass& operator=(ThatClass&& from) noexcept
+  {
+    _removeRef();
+    m_value = from.m_value;
+    from.m_value = nullptr;
     return (*this);
   }
 

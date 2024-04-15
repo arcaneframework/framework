@@ -49,8 +49,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_IOPTIONS_<#= Xml.ClassName.ToUpper() #>_H
-#define ARCANE_IOPTIONS_<#= Xml.ClassName.ToUpper() #>_H
+#ifndef ARCANE_IOPTIONS_<#= Xml.CppHeaderGuardName #>_H
+#define ARCANE_IOPTIONS_<#= Xml.CppHeaderGuardName #>_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

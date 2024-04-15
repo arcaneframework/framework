@@ -8,7 +8,7 @@ addSources(alien_ifpen_solvers
     data_structure/IFPSolverInternal.cc
     )
  
-linkLibraries(alien_ifpen_solvers ifpsolver)
+linkLibraries(alien_ifpen_solvers ifpsolver hypre)
 
 generateAxl(alien_ifpen_solvers
     linear_solver/arcane/IFPLinearSolver.axl

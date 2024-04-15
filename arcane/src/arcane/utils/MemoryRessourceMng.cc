@@ -101,7 +101,6 @@ MemoryRessourceMng()
 : m_default_memory_copier(new DefaultHostMemoryCopier())
 , m_copier(m_default_memory_copier.get())
 {
-  std::fill(m_allocators.begin(), m_allocators.end(), nullptr);
   // Par défaut on utilise l'allocateur CPU. Les allocateurs spécifiques pour
   // les accélérateurs seront positionnés lorsqu'on aura choisi le runtime
   // accélérateur
@@ -128,18 +127,20 @@ IMemoryAllocator* MemoryRessourceMng::
 getAllocator(eMemoryRessource r)
 {
   int x = _checkValidRessource(r);
-  IMemoryAllocator* a = m_allocators[(int)r];
+  IMemoryAllocator* a = m_allocators[x];
 
-  // Si pas d'allocateur spécifique, utilise platform::getAcceleratorHostMemoryAllocator()
-  // pour compatibilité avec l'existant
-  if (r == eMemoryRessource::UnifiedMemory && !a) {
-    a = platform::getAcceleratorHostMemoryAllocator();
-    if (!a)
-      a = m_allocators[(int)eMemoryRessource::Host];
+  // Si pas d'allocateur spécifique et qu'on n'est pas sur accélérateur,
+  // utilise platform::getAcceleratorHostMemoryAllocator().
+  if (!a && !m_is_accelerator) {
+    if (r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned) {
+      a = platform::getAcceleratorHostMemoryAllocator();
+      if (!a)
+        a = m_allocators[(int)eMemoryRessource::Host];
+    }
   }
 
   if (!a)
-    ARCANE_FATAL("Allocator for ressource '{0}' is not available", x);
+    ARCANE_FATAL("Allocator for ressource '{0}' is not available", r);
 
   return a;
 }

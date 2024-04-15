@@ -98,8 +98,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   RunQueue(const RunQueue&);
   RunQueue& operator=(const RunQueue&);
-  RunQueue(RunQueue&&);
-  RunQueue& operator=(RunQueue&&);
+  RunQueue(RunQueue&&) noexcept;
+  RunQueue& operator=(RunQueue&&) noexcept;
 
  public:
 
@@ -196,6 +196,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   // Pour VariableViewBase
   friend class VariableViewBase;
+  friend class NumArrayViewBase;
   bool _isAutoPrefetchCommand() const;
 
  private:

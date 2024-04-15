@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Application.cc                                              (C) 2000-2023 */
+/* Application.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Superviseur.                                                              */
 /*---------------------------------------------------------------------------*/
@@ -375,7 +375,7 @@ build()
       auto sv = _tryCreateService<IThreadImplementationService>(names,&found_name);
       if (sv.get()){
         m_thread_implementation_service = sv;
-        m_thread_implementation = makeRef(sv->createImplementation());
+        m_thread_implementation = sv->createImplementation();
         platform::setThreadImplementationService(m_thread_implementation.get());
         m_thread_implementation->initialize();
         m_used_thread_service_name = found_name;

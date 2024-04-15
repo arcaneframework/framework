@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real2x2.h                                                   (C) 2000-2022 */
+/* Real2x2.h                                                   (C) 2000-2024 */
 /*                                                                           */
 /* Matrice 2x2 de 'Real'.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -72,10 +72,7 @@ class ARCANE_UTILS_EXPORT Real2x2
   , y(ay, by)
   {}
   //! Construit un couple identique à \a f
-  constexpr ARCCORE_HOST_DEVICE Real2x2(const Real2x2& f)
-  : x(f.x)
-  , y(f.y)
-  {}
+  Real2x2(const Real2x2& f) = default;
   //! Construit un couple identique à \a f
   constexpr ARCCORE_HOST_DEVICE explicit Real2x2(const Real2x2POD& f)
   : x(f.x)
@@ -86,12 +83,9 @@ class ARCANE_UTILS_EXPORT Real2x2
   {
     x = y = v;
   }
-  constexpr ARCCORE_HOST_DEVICE Real2x2& operator=(Real2x2 f)
-  {
-    x = f.x;
-    y = f.y;
-    return (*this);
-  }
+  //! Opérateur de recopie
+  Real2x2& operator=(const Real2x2& f) = default;
+
   //! Affecte à l'instance le couple (v,v,v).
   constexpr ARCCORE_HOST_DEVICE Real2x2& operator=(Real v)
   {

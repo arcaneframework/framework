@@ -611,7 +611,7 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func)
 
   RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
-  launch_info.computeLoopRunInfo(vsize);
+  launch_info.computeLoopRunInfo();
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:

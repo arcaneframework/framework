@@ -156,6 +156,8 @@ addLinks(Integer nb_link,
     links_infos.subConstView(links_infos_index, nb_dual_nodes_per_link));
     links_infos_index += nb_dual_nodes_per_link;
   }
+  for (auto uid : connected_dual_node_uids)
+    info() << "        DUALNODE UID : " << uid;
 
   Int32UniqueArray link_lids(link_uids.size());
   link_family.addDoFs(link_uids, link_lids);

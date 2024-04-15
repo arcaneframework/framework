@@ -172,6 +172,9 @@ arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-3 testAMRCart
 arcane_add_test_sequential(amr-cartesian3D-patch-cartesian-mesh-only-4 testAMRCartesianMesh3D-PatchCartesianMeshOnly-4.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-patch-cartesian-mesh-only-4 testAMRCartesianMesh3D-PatchCartesianMeshOnly-4.arc 8 "-m 20")
 
+arcane_add_test(amr-cartesian2D-coarse-patch-cartesian-mesh-only-1 testAMRCartesianMesh2D-coarse-PatchCartesianMeshOnly-1.arc "-m 20")
+
+
 arcane_add_test(amr-cartesian2D-V1-coarse-1 testAMRCartesianMesh2D-V1-coarse-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
 arcane_add_test(amr-cartesian2D-V1-coarse-2 testAMRCartesianMesh2D-V1-coarse-2.arc "-m 20")
 arcane_add_test(amr-cartesian2D-V1-coarse-3 testAMRCartesianMesh2D-V1-coarse-3.arc "-m 10")

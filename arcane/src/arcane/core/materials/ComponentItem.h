@@ -85,7 +85,10 @@ class ARCANE_CORE_EXPORT ComponentCell
 
   ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase constituentItemBase() const { return { m_shared_info, m_constituent_item_index }; }
 
-  //! Composant associé
+  /*!
+   * \brief Constituant associé.
+   * \pre null()==false
+   */
   IMeshComponent* component() const { return m_shared_info->_component(m_constituent_item_index); }
 
   //! Identifiant du composant dans la liste des composants de ce type.

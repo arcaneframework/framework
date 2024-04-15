@@ -13,6 +13,7 @@
 #include "arccore/base/Array4View.h"
 
 #include <vector>
+#include <type_traits>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -693,6 +694,28 @@ TEST(ArrayView, SubViewInterval)
   _testSubPartInterval<ConstArrayView<Int64>>();
   _testSubPartInterval<Span<Int64>>();
   _testSubPartInterval<SmallSpan<Int64>>();
+}
+
+TEST(ArrayView,Copyable)
+{
+  using namespace Arccore;
+  ASSERT_TRUE(std::is_trivially_copyable_v<ArrayView<int>>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<ConstArrayView<int>>);
+
+  ASSERT_TRUE(std::is_trivially_copyable_v<Array2View<int>>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<ConstArray2View<int>>);
+
+  ASSERT_TRUE(std::is_trivially_copyable_v<Array3View<int>>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<ConstArray3View<int>>);
+
+  ASSERT_TRUE(std::is_trivially_copyable_v<Array4View<int>>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<ConstArray4View<int>>);
+
+  ASSERT_TRUE(std::is_trivially_copyable_v<Span<int>>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<Span<const int>>);
+
+  ASSERT_TRUE(std::is_trivially_copyable_v<Span2<int>>);
+  ASSERT_TRUE(std::is_trivially_copyable_v<Span2<const int>>);
 }
 
 /*---------------------------------------------------------------------------*/

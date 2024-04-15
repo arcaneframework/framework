@@ -49,8 +49,7 @@ if(TARGET umfpack)
     linkLibraries(alien_ifpen_solvers umfpack)
 endif()
 
-linkLibraries(alien_ifpen_solvers Alien::alien_core
-                                  Alien::alien_kernel_simplecsr)
+linkLibraries(alien_ifpen_solvers Alien::alien_core)
 
 linkLibraries(alien_ifpen_solvers Boost::program_options)
 if(TARGET htssolver)

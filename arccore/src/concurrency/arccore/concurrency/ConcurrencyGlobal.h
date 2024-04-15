@@ -72,6 +72,9 @@ extern "C++" ARCCORE_CONCURRENCY_EXPORT Ref<IThreadImplementation>
 createGlibThreadImplementation();
 
 extern "C++" ARCCORE_CONCURRENCY_EXPORT Ref<IThreadImplementation>
+createStdThreadImplementation();
+
+extern "C++" ARCCORE_CONCURRENCY_EXPORT Ref<IThreadImplementation>
 createNullThreadImplementation();
 
 /*---------------------------------------------------------------------------*/

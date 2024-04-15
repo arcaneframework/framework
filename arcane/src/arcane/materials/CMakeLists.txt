@@ -10,6 +10,7 @@ arcane_add_library(arcane_materials
 
 arcane_accelerator_add_source_files(
   AllEnvData.cc
+  AllCellToAllEnvCellConverter.cc
   ConstituentConnectivityList.cc
   ComponentItemInternalData.cc
   IncrementalComponentModifier.cc

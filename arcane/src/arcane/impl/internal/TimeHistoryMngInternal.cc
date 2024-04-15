@@ -788,6 +788,18 @@ _removeCurveWriter(const Ref<ITimeHistoryCurveWriter2>& writer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template void TimeHistoryMngInternal::
+_addHistoryValue<Real>(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Real> values);
+
+template void TimeHistoryMngInternal::
+_addHistoryValue<Int32>(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Int32> values);
+
+template void TimeHistoryMngInternal::
+_addHistoryValue<Int64>(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Int64> values);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/

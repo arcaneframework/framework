@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLoop.h                                            (C) 2000-2023 */
+/* RunCommandLoop.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Macros pour exécuter une boucle sur une commande.                         */
 /*---------------------------------------------------------------------------*/
@@ -22,13 +22,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace impl
+namespace Arcane::Accelerator::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -52,11 +46,14 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
   case eExecutionPolicy::HIP:
     _applyKernelHIP(launch_info,ARCANE_KERNEL_HIP_FUNC(impl::doDirectGPULambdaArrayBounds)<LoopBoundType<N>,Lambda>,func,bounds);
     break;
+  case eExecutionPolicy::SYCL:
+    _applyKernelSYCL(launch_info,ARCANE_KERNEL_SYCL_FUNC(impl::DoDirectSYCLLambdaArrayBounds)<LoopBoundType<N>,Lambda>{},func,bounds);
+    break;
   case eExecutionPolicy::Sequential:
     arcaneSequentialFor(bounds,func);
     break;
   case eExecutionPolicy::Thread:
-    arcaneParallelFor(bounds,launch_info.computeParallelLoopOptions(vsize),func);
+    arcaneParallelFor(bounds, launch_info.computeParallelLoopOptions(), func);
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'",exec_policy);
@@ -68,6 +65,9 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 /*---------------------------------------------------------------------------*/
 
 } // End namespace impl
+
+namespace Arcane::Accelerator
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -16,6 +16,7 @@
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceFactory.h"
 #include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -88,6 +89,7 @@ class AcceleratorViewsUnitTest
   void _checkResultReal3(Real to_add);
   void _checkResultReal2x2(Real to_add);
   void _checkResultReal3x3(Real to_add);
+  void _executeTestGroupIndexTable();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -155,7 +157,7 @@ initializeTest()
       for (Int32 i = 0; i < n; ++i)
         m_partial_cell_array1[x][i] = static_cast<Real>(icell.itemLocalId() + icell.index() * 2);
       m_partial_cell1[x] = static_cast<Real>(icell.index()) * 2.5;
-      m_partial_cell1_real3[x] = Real3(m_partial_cell1[x],m_partial_cell1[x]+1.0,m_partial_cell1[x]+2.0);
+      m_partial_cell1_real3[x] = Real3(m_partial_cell1[x], m_partial_cell1[x] + 1.0, m_partial_cell1[x] + 2.0);
     }
   }
 }
@@ -195,6 +197,7 @@ _checkCellArrayValue(const String& message) const
 void AcceleratorViewsUnitTest::
 executeTest()
 {
+  _executeTestGroupIndexTable();
   _executeTest1();
   _executeTest2();
   _executeTest3();
@@ -246,28 +249,40 @@ _executeTest1()
     command << RUNCOMMAND_ENUMERATE (IteratorWithIndex<CellLocalId>, vi, m_partial_cell_array1.itemGroup())
     {
       CellEnumeratorIndex iter_index(vi.index());
-      out_partial_cell_array2[iter_index].copy(in_cell_array1[vi.value()]);
-      out_partial_cell_array2[iter_index][0] = in_partial_cell_array1[iter_index][1];
-      Real3 xyz(in_partial_cell1_real3[iter_index].y,in_partial_cell1_real3[iter_index].z,in_partial_cell1_real3[iter_index].x);
-      if ((vi.index()%2) == 0){
+      CellLocalId cell_lid(vi.value());
+      out_partial_cell_array2[iter_index].copy(in_cell_array1[cell_lid]);
+      out_partial_cell_array2[iter_index][0] = in_partial_cell_array1[cell_lid][1];
+      Real3 xyz(in_partial_cell1_real3[iter_index].y, in_partial_cell1_real3[iter_index].z, in_partial_cell1_real3[iter_index].x);
+      Int32 modulo = vi.index() % 4;
+      if (modulo == 3) {
         out_partial_cell_array2[iter_index][1] = in_partial_cell1[iter_index];
         out_partial_cell2[iter_index] = in_partial_cell1[iter_index];
         out_partial_cell2_real3[iter_index] = xyz;
       }
-      else{
-        inout_partial_cell_array2[iter_index][1] = in_partial_cell1[iter_index];
+      else if (modulo == 2) {
+        inout_partial_cell_array2[cell_lid][1] = in_partial_cell1[cell_lid];
+        inout_partial_cell2[cell_lid] = in_partial_cell1[iter_index];
+        inout_partial_cell2_real3[cell_lid] = xyz;
+      }
+      else if (modulo == 1) {
+        out_partial_cell_array2[cell_lid][1] = in_partial_cell1[iter_index];
+        out_partial_cell2[cell_lid] = in_partial_cell1[iter_index];
+        out_partial_cell2_real3[cell_lid] = xyz;
+      }
+      else {
+        inout_partial_cell_array2[iter_index][1] = in_partial_cell1[cell_lid];
         inout_partial_cell2[iter_index] = in_partial_cell1[iter_index];
         inout_partial_cell2_real3[iter_index] = xyz;
       }
     };
     info() << "Check Partial values";
-    ENUMERATE_(Cell,iter,m_partial_cell_array1.itemGroup()){
+    ENUMERATE_ (Cell, iter, m_partial_cell_array1.itemGroup()) {
       CellEnumeratorIndex iter_index(iter.index());
       if (m_partial_cell2[iter_index] != m_partial_cell1[iter_index])
-        ARCANE_FATAL("Bad value (1) iter={0} v1={1} v2={2}",iter.index(),m_partial_cell2[iter_index],m_partial_cell1[iter_index]);
-      Real3 xyz(m_partial_cell1_real3[iter_index].y,m_partial_cell1_real3[iter_index].z,m_partial_cell1_real3[iter_index].x);
-      if (xyz!=m_partial_cell2_real3[iter_index])
-        ARCANE_FATAL("Bad value (2) iter={0} v1={1} v2={2}",iter.index(),m_partial_cell2_real3[iter_index],xyz);
+        ARCANE_FATAL("Bad value (1) iter={0} v1={1} v2={2}", iter.index(), m_partial_cell2[iter_index], m_partial_cell1[iter_index]);
+      Real3 xyz(m_partial_cell1_real3[iter_index].y, m_partial_cell1_real3[iter_index].z, m_partial_cell1_real3[iter_index].x);
+      if (xyz != m_partial_cell2_real3[iter_index])
+        ARCANE_FATAL("Bad value (2) iter={0} v1={1} v2={2}", iter.index(), m_partial_cell2_real3[iter_index], xyz);
     }
   }
 
@@ -805,7 +820,41 @@ _executeTestVariableFill()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace ArcaneTest
+void AcceleratorViewsUnitTest::
+_executeTestGroupIndexTable()
+{
+  info() << "Execute GroupIndexTable";
+  ItemGroup cells = allCells();
+  SharedPtrT<GroupIndexTable> index_table = cells.localIdToIndex();
+  GroupIndexTableView index_table_view = index_table->view();
+  IItemFamily* cell_family = mesh()->cellFamily();
+  const Int32 max_id = cell_family->maxLocalId();
+  NumArray<Int32, MDDim1> ids(max_id);
+
+  {
+    auto queue = makeQueue(m_runner);
+    auto command = makeCommand(queue);
+    auto out_ids = viewOut(command, ids);
+    command << RUNCOMMAND_ENUMERATE (Cell, icell, allCells())
+    {
+      Int32 id1 = icell.localId();
+      Int32 id2 = index_table_view[id1];
+      out_ids[id1] = id2;
+    };
+  }
+
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Int32 lid = icell.itemLocalId();
+    Int32 x = index_table_view[lid];
+    if (x != lid)
+      ARCANE_FATAL("Bad id index={0} ref={1} v={2}", icell.index(), lid, x);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -23,6 +23,9 @@
 #if defined(ARCANE_COMPILING_HIP)
 #include <hip/hip_runtime.h>
 #endif
+#if defined(ARCANE_COMPILING_SYCL)
+#include <sycl/sycl.hpp>
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,6 +40,12 @@
 #define ARCANE_KERNEL_HIP_FUNC(a) a
 #else
 #define ARCANE_KERNEL_HIP_FUNC(a) Arcane::Accelerator::impl::invalidKernel
+#endif
+
+#if defined(ARCANE_COMPILING_SYCL)
+#define ARCANE_KERNEL_SYCL_FUNC(a) a
+#else
+#define ARCANE_KERNEL_SYCL_FUNC(a) Arcane::Accelerator::impl::InvalidKernelClass
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -118,6 +127,29 @@ void doDirectGPULambdaArrayBounds(LoopBoundType bounds,Lambda func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_COMPILING_SYCL)
+
+template<typename LoopBoundType,typename Lambda>
+class DoDirectSYCLLambdaArrayBounds
+{
+ public:
+  void operator()(sycl::id<1> x, LoopBoundType bounds,Lambda func) const
+  {
+    auto privatizer = privatize(func);
+    auto& body = privatizer.privateCopy();
+
+    Int32 i = static_cast<Int32>(x);
+    if (i<bounds.nbElement()){
+      body(bounds.getIndices(i));
+    }
+  }
+};
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<typename Lambda>
 void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
 {
@@ -139,6 +171,11 @@ inline void invalidKernel(Lambda&,const LambdaArgs&...)
 {
   ARCANE_FATAL("Invalid kernel");
 }
+
+template<typename Lambda,typename... LambdaArgs>
+class InvalidKernelClass
+{
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -206,6 +243,30 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info,const HipKernel& kernel,
   ARCANE_UNUSED(func);
   // ARCANE_UNUSED(args...);  FIXME: ne fonctionne pas, d'où le [[maybe_unused]] dans le prototype
   ARCANE_FATAL_NO_HIP_COMPILATION();
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Fonction générique pour exécuter un kernel SYCL.
+ *
+ * \param kernel noyau SYCL
+ * \param func fonction à exécuter par le noyau
+ * \param args arguments de la fonction lambda
+ */
+template <typename SyclKernel, typename Lambda, typename LambdaArgs> void
+_applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func, [[maybe_unused]] const LambdaArgs& args)
+{
+#if defined(ARCANE_COMPILING_SYCL)
+  sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
+  sycl::range<1> loop_size = launch_info.totalLoopSize();
+  s->parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func); });
+#else
+  ARCANE_UNUSED(launch_info);
+  ARCANE_UNUSED(kernel);
+  ARCANE_UNUSED(func);
+  ARCANE_FATAL_NO_SYCL_COMPILATION();
 #endif
 }
 

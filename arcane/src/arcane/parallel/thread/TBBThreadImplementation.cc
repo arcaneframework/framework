@@ -282,7 +282,7 @@ class TBBThreadImplementation
   }
 
  private:
-  
+
   bool m_use_tbb_barrier;
   MutexImpl* m_global_mutex_impl;
 };
@@ -294,13 +294,16 @@ class TBBThreadImplementationService
 : public IThreadImplementationService
 {
  public:
-  TBBThreadImplementationService(const ServiceBuildInfo&){}
+
+  explicit TBBThreadImplementationService(const ServiceBuildInfo&) {}
+
  public:
+
   void build() {}
  public:
-  IThreadImplementation* createImplementation() override
+  Ref<IThreadImplementation> createImplementation() override
   {
-    return new TBBThreadImplementation();
+    return makeRef<IThreadImplementation>(new TBBThreadImplementation());
   }
 };
 

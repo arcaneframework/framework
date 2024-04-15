@@ -120,8 +120,8 @@ if(parentClassName!=null) fullStrongClassName = "StrongOptions"+parentClassName+
 <# }; #>
 
 
-#ifndef ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_FACTORY_H
-#define ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_FACTORY_H
+#ifndef ARCANE_STRONGOPTIONS_<#= Xml.CppHeaderGuardName #>_FACTORY_H
+#define ARCANE_STRONGOPTIONS_<#= Xml.CppHeaderGuardName #>_FACTORY_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -45,9 +45,7 @@ _nbFirstPart() const
 void GenericPartitionerBase::
 _allocate()
 {
-  eMemoryRessource r = eMemoryRessource::Host;
-  if (m_queue && isAcceleratorPolicy(m_queue->executionPolicy()))
-    r = eMemoryRessource::HostPinned;
+  eMemoryRessource r = eMemoryRessource::HostPinned;
   if (m_host_nb_list1_storage.memoryRessource() != r)
     m_host_nb_list1_storage = NumArray<Int32, MDDim1>(r);
   m_host_nb_list1_storage.resize(1);

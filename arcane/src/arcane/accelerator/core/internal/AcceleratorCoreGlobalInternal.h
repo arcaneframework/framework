@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorCoreGlobalInternal.h                             (C) 2000-2023 */
+/* AcceleratorCoreGlobalInternal.h                             (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -32,8 +32,7 @@ extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT bool isUsingCUDARuntime();
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void setUsingCUDARuntime(bool v);
 
 //! Récupère l'implémentation CUDA de RunQueue (peut être nulle)
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime*
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime*
 getCUDARunQueueRuntime();
 
 //! Positionne l'implémentation CUDA de RunQueue.
@@ -49,12 +48,27 @@ extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT bool isUsingHIPRuntime();
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void setUsingHIPRuntime(bool v);
 
 //! Récupère l'implémentation HIP de RunQueue (peut être nulle)
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime*
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime*
 getHIPRunQueueRuntime();
 
 //! Positionne l'implémentation HIP de RunQueue.
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void setHIPRunQueueRuntime(IRunnerRuntime* v);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Indique si on utilise le runtime SYCL
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT bool isUsingSYCLRuntime();
+
+//! Positionne l'utilisation du runtime SYCL
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void setUsingSYCLRuntime(bool v);
+
+//! Récupère l'implémentation SYCL de RunQueue (peut être nulle)
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime*
+getSYCLRunQueueRuntime();
+
+//! Positionne l'implémentation SYCL de RunQueue.
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void setSYCLRunQueueRuntime(IRunnerRuntime* v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,21 +80,18 @@ extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void setHIPRunQueueRuntime(IRunnerRu
  * Si isUsingCUDARuntime() est vrai, retourne le runtime associé à CUDA.
  * Si isUsingHIPRuntime() est vrai retourne le runtime associé à HIP.
  */
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime*
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime*
 getAcceleratorRunnerRuntime();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Récupère l'implémentation Séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime*
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime*
 getSequentialRunQueueRuntime();
 
 //! Récupère l'implémentation Thread de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunnerRuntime*
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime*
 getThreadRunQueueRuntime();
 
 /*---------------------------------------------------------------------------*/
@@ -96,7 +107,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RuntimeStaticInfo
 
   static void
   checkPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
-                                  const char* name, const TraceInfo& ti);
+                            const char* name, const TraceInfo& ti);
 };
 
 /*---------------------------------------------------------------------------*/

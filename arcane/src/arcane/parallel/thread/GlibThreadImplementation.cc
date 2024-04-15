@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GlibThreadImplementation.cc                                 (C) 2000-2018 */
+/* GlibThreadImplementation.cc                                 (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des threads utilisant la glib.                             */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,13 +32,14 @@ class ArcaneGlibThreadImplementation
 : public Arccore::GlibThreadImplementation
 {
  public:
+
   ArcaneGlibThreadImplementation()
   {
   }
 
  public:
 
-  void build(){}
+  void build() {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -47,13 +49,18 @@ class GlibThreadImplementationService
 : public IThreadImplementationService
 {
  public:
-  GlibThreadImplementationService(const ServiceBuildInfo&){}
+
+  explicit GlibThreadImplementationService(const ServiceBuildInfo&) {}
+
  public:
+
   void build() {}
+
  public:
-  IThreadImplementation* createImplementation() override
+
+  Ref<IThreadImplementation> createImplementation() override
   {
-    return new Arccore::GlibThreadImplementation();
+    return Arccore::Concurrency::createGlibThreadImplementation();
   }
 };
 
@@ -67,7 +74,7 @@ ARCANE_REGISTER_APPLICATION_FACTORY(GlibThreadImplementationService,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
