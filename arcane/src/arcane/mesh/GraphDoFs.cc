@@ -137,7 +137,7 @@ addLinks(Integer nb_link,
          Integer nb_dual_nodes_per_link,
          Int64ConstArrayView links_infos)
 {
-  info() << "GRAPHDOF : ADD LINKS";
+  //info() << "GRAPHDOF : ADD LINKS";
   Trace::Setter mci(traceMng(), _className());
   if (!m_graph_allocated)
     _allocateGraph();
@@ -156,8 +156,6 @@ addLinks(Integer nb_link,
     links_infos.subConstView(links_infos_index, nb_dual_nodes_per_link));
     links_infos_index += nb_dual_nodes_per_link;
   }
-  for (auto uid : connected_dual_node_uids)
-    info() << "        DUALNODE UID : " << uid;
 
   Int32UniqueArray link_lids(link_uids.size());
   link_family.addDoFs(link_uids, link_lids);
@@ -559,7 +557,7 @@ endUpdate()
 
     auto dof2dual_incremental_connectivity = m_incremental_connectivities[_connectivityIndex(dual_node_kind)];
     if (dof2dual_incremental_connectivity && !m_connectivity_mng.isUpToDate(dof2dual_incremental_connectivity)) {
-      info() << "UPDATE DUALNODE CONNECTIVITY KIND " << index << " " << dual_node_kind << " " << dual_item_kind;
+      //info() << "UPDATE DUALNODE CONNECTIVITY KIND " << index << " " << dual_node_kind << " " << dual_item_kind;
       // Handle added nodes : create a dof for each own node added
       Int32ArrayView source_family_added_items_lids;
       Int32ArrayView source_family_removed_items_lids;
@@ -686,8 +684,8 @@ endUpdate()
       obs->notifyUpdate();
   }
 
-  printDualNodes();
-  printLinks();
+  //printDualNodes();
+  //printLinks();
 }
 
 /*---------------------------------------------------------------------------*/
