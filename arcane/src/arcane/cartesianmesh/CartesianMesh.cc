@@ -92,10 +92,20 @@ class CartesianMeshImpl
     {
       m_cartesian_mesh->_addPatchFromExistingChildren(parent_cells_local_id);
     }
+    void initCartesianMeshAMRPatchMng() override
+    {
+      m_amr_mng = makeRef(new CartesianMeshAMRPatchMng(m_cartesian_mesh));
+    }
+
+    Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() override
+    {
+      return m_amr_mng;
+    }
 
    private:
 
     CartesianMeshImpl* m_cartesian_mesh = nullptr;
+    Ref<ICartesianMeshAMRPatchMng> m_amr_mng;
   };
 
  public:
@@ -197,7 +207,6 @@ class CartesianMeshImpl
   bool m_is_mesh_event_added = false;
   Int64 m_mesh_timestamp = 0;
   eMeshAMRKind m_amr_type;
-  Ref<ICartesianMeshAMRPatchMng> m_amr_mng;
 
  private:
 
@@ -246,7 +255,8 @@ CartesianMeshImpl(IMesh* mesh)
 , m_amr_type(mesh->meshKind().meshAMRKind())
 {
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly)
-    m_amr_mng = makeRef(new CartesianMeshAMRPatchMng(this));
+    m_internal_api.initCartesianMeshAMRPatchMng();
+
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));
   _addPatchInstance(m_all_items_direction_info);
   Integer nb_dir = mesh->dimension();
@@ -732,8 +742,8 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
   else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Refine with specific refiner (for cartesian mesh only)";
     computeDirections();
-    m_amr_mng->flagCellToRefine(cells_local_id);
-    m_amr_mng->refine();
+    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToRefine(cells_local_id);
+    m_internal_api.cartesianMeshAMRPatchMng()->refine();
   }
   else if(m_amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
