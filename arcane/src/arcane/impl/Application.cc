@@ -375,7 +375,7 @@ build()
       auto sv = _tryCreateService<IThreadImplementationService>(names,&found_name);
       if (sv.get()){
         m_thread_implementation_service = sv;
-        m_thread_implementation = makeRef(sv->createImplementation());
+        m_thread_implementation = sv->createImplementation();
         platform::setThreadImplementationService(m_thread_implementation.get());
         m_thread_implementation->initialize();
         m_used_thread_service_name = found_name;
