@@ -137,7 +137,7 @@ addLinks(Integer nb_link,
          Integer nb_dual_nodes_per_link,
          Int64ConstArrayView links_infos)
 {
-  info() << "GRAPHDOF : ADD LINKS";
+  //info() << "GRAPHDOF : ADD LINKS";
   Trace::Setter mci(traceMng(), _className());
   if (!m_graph_allocated)
     _allocateGraph();
@@ -422,15 +422,15 @@ removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids)
         auto dual_item = m_graph_connectivity->dualItem(*idual_node);
         switch (dual_item.kind()) {
         case IK_Cell:
-          if (cell_to_remove_set.find(dual_item.localId()) != cell_to_remove_set.end())
+          if (cell_to_remove_set.find(dual_item->localId()) != cell_to_remove_set.end())
             to_remove = true;
           break;
         case IK_Face:
-          if (face_to_remove_set.find(dual_item.localId()) != face_to_remove_set.end())
+          if (face_to_remove_set.find(dual_item->localId()) != face_to_remove_set.end())
             to_remove = true;
           break;
         case IK_Node:
-          if (node_to_remove_set.find(dual_item.localId()) != node_to_remove_set.end())
+          if (node_to_remove_set.find(dual_item->localId()) != node_to_remove_set.end())
             to_remove = true;
           break;
         case IK_Particle:
@@ -559,7 +559,7 @@ endUpdate()
 
     auto dof2dual_incremental_connectivity = m_incremental_connectivities[_connectivityIndex(dual_node_kind)];
     if (dof2dual_incremental_connectivity && !m_connectivity_mng.isUpToDate(dof2dual_incremental_connectivity)) {
-      info() << "UPDATE DUALNODE CONNECTIVITY KIND " << index << " " << dual_node_kind << " " << dual_item_kind;
+      //info() << "UPDATE DUALNODE CONNECTIVITY KIND " << index << " " << dual_node_kind << " " << dual_item_kind;
       // Handle added nodes : create a dof for each own node added
       Int32ArrayView source_family_added_items_lids;
       Int32ArrayView source_family_removed_items_lids;
@@ -686,8 +686,8 @@ endUpdate()
       obs->notifyUpdate();
   }
 
-  printDualNodes();
-  printLinks();
+  //printDualNodes();
+  //printLinks();
 }
 
 /*---------------------------------------------------------------------------*/
